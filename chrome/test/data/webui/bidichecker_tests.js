@@ -27,6 +27,7 @@ function filtersForPage(pageName, isRTL) {
       "RTL" : [
         // BUG: http://code.google.com/p/chromium/issues/detail?id=80791
         bidichecker.FilterFactory.atText("Google"),
+        bidichecker.FilterFactory.atText("www.google.com"),
         // The following two are probably false positives since we can't
         // completely change the environment to RTL on Linux.
         // TODO(ofri): Verify that it's indeed a false positive.

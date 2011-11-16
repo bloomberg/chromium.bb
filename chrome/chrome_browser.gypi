@@ -3724,8 +3724,6 @@
         'browser/ui/webui/flash_ui.h',
         'browser/ui/webui/gpu_internals_ui.cc',
         'browser/ui/webui/gpu_internals_ui.h',
-        'browser/ui/webui/history2_ui.cc',
-        'browser/ui/webui/history2_ui.h',
         'browser/ui/webui/history_ui.cc',
         'browser/ui/webui/history_ui.h',
         'browser/ui/webui/input_window_dialog_ui.cc',

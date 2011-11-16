@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/history_ui.h"
 
-#include <algorithm>
 #include <set>
 
 #include "base/bind.h"
@@ -21,6 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,6 +33,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/user_metrics.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -73,13 +74,12 @@ class HistoryUIHTMLSource : public ChromeWebUIDataSource {
   DISALLOW_COPY_AND_ASSIGN(HistoryUIHTMLSource);
 };
 
-
 HistoryUIHTMLSource::HistoryUIHTMLSource()
     : ChromeWebUIDataSource(chrome::kChromeUIHistoryHost) {
   AddLocalizedString("loading", IDS_HISTORY_LOADING);
   AddLocalizedString("title", IDS_HISTORY_TITLE);
   AddLocalizedString("newest", IDS_HISTORY_NEWEST);
-  AddLocalizedString("newer",  IDS_HISTORY_NEWER);
+  AddLocalizedString("newer", IDS_HISTORY_NEWER);
   AddLocalizedString("older", IDS_HISTORY_OLDER);
   AddLocalizedString("searchresultsfor", IDS_HISTORY_SEARCHRESULTSFOR);
   AddLocalizedString("history", IDS_HISTORY_BROWSERESULTS);
@@ -94,6 +94,10 @@ HistoryUIHTMLSource::HistoryUIHTMLSource()
                      IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
   AddLocalizedString("deletewarning",
                      IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING);
+  AddLocalizedString("actionMenuDescription",
+                     IDS_HISTORY_ACTION_MENU_DESCRIPTION);
+  AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
+  AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
 }
 
 HistoryUIHTMLSource::~HistoryUIHTMLSource() {
@@ -219,7 +223,11 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
 
   // Get day to delete data from.
   int visit_time = 0;
-  ExtractIntegerValue(args, &visit_time);
+  if (!ExtractIntegerValue(args, &visit_time)) {
+    LOG(ERROR) << "Unable to extract integer argument.";
+    web_ui_->CallJavascriptFunction("deleteFailed");
+    return;
+  }
   base::Time::Exploded exploded;
   base::Time::FromTimeT(
       static_cast<time_t>(visit_time)).LocalExplode(&exploded);
@@ -228,7 +236,7 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
   base::Time end_time = begin_time + base::TimeDelta::FromDays(1);
 
   // Get URLs.
-  std::set<GURL> urls;
+  DCHECK(urls_to_be_deleted_.empty());
   for (ListValue::const_iterator v = args->begin() + 1;
        v != args->end(); ++v) {
     if ((*v)->GetType() != Value::TYPE_STRING)
@@ -237,13 +245,14 @@ void BrowsingHistoryHandler::HandleRemoveURLsOnOneDay(const ListValue* args) {
     string16 string16_value;
     if (!string_value->GetAsString(&string16_value))
       continue;
-    urls.insert(GURL(string16_value));
+
+    urls_to_be_deleted_.insert(GURL(string16_value));
   }
 
   HistoryService* hs =
       Profile::FromWebUI(web_ui_)->GetHistoryService(Profile::EXPLICIT_ACCESS);
   hs->ExpireHistoryBetween(
-      urls, begin_time, end_time, &cancelable_delete_consumer_,
+      urls_to_be_deleted_, begin_time, end_time, &cancelable_delete_consumer_,
       base::Bind(&BrowsingHistoryHandler::RemoveComplete,
                  base::Unretained(this)));
 }
@@ -313,22 +322,36 @@ void BrowsingHistoryHandler::QueryComplete(
 }
 
 void BrowsingHistoryHandler::RemoveComplete() {
-  // Some Visits were deleted from history. Reload the list.
+  urls_to_be_deleted_.clear();
+
+  // Notify the page that the deletion request succeeded.
   web_ui_->CallJavascriptFunction("deleteComplete");
 }
 
 void BrowsingHistoryHandler::ExtractSearchHistoryArguments(
-      const ListValue* args,
-      int* month,
-      string16* query) {
-  CHECK(args->GetSize() == 2);
-  query->clear();
-  CHECK(args->GetString(0, query));
-
-  string16 string16_value;
-  CHECK(args->GetString(1, &string16_value));
+    const ListValue* args,
+    int* month,
+    string16* query) {
   *month = 0;
-  base::StringToInt(string16_value, month);
+  Value* list_member;
+
+  // Get search string.
+  if (args->Get(0, &list_member) &&
+      list_member->GetType() == Value::TYPE_STRING) {
+    const StringValue* string_value =
+      static_cast<const StringValue*>(list_member);
+    string_value->GetAsString(query);
+  }
+
+  // Get search month.
+  if (args->Get(1, &list_member) &&
+      list_member->GetType() == Value::TYPE_STRING) {
+    const StringValue* string_value =
+      static_cast<const StringValue*>(list_member);
+    string16 string16_value;
+    if (string_value->GetAsString(&string16_value))
+      base::StringToInt(string16_value, month);
+  }
 }
 
 history::QueryOptions BrowsingHistoryHandler::CreateMonthQueryOptions(
@@ -382,9 +405,12 @@ void BrowsingHistoryHandler::Observe(
     NOTREACHED();
     return;
   }
-
-  // Some URLs were deleted from history. Reload the list.
-  web_ui_->CallJavascriptFunction("historyDeleted");
+  history::URLsDeletedDetails* deletedDetails =
+      content::Details<history::URLsDeletedDetails>(details).ptr();
+  if (deletedDetails->urls != urls_to_be_deleted_) {
+    // Notify the page that someone else deleted from the history.
+    web_ui_->CallJavascriptFunction("historyDeleted");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
