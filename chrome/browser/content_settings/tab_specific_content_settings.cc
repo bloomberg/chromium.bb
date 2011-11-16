@@ -16,6 +16,7 @@
 #include "chrome/browser/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
+#include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
@@ -430,15 +431,6 @@ void TabSpecificContentSettings::DidNavigateMainFrame(
   }
 }
 
-void TabSpecificContentSettings::RenderViewCreated(
-    RenderViewHost* render_view_host) {
-  Profile* profile =
-      Profile::FromBrowserContext(tab_contents()->browser_context());
-  HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-  render_view_host->Send(new ChromeViewMsg_SetDefaultContentSettings(
-      map->GetDefaultContentSettings()));
-}
-
 void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
     int64 frame_id,
     bool is_main_frame,
@@ -485,14 +477,10 @@ void TabSpecificContentSettings::Observe(
       settings_details.ptr()->primary_pattern().Matches(entry_url)) {
     Profile* profile =
         Profile::FromBrowserContext(tab_contents()->browser_context());
-    HostContentSettingsMap* map = profile->GetHostContentSettingsMap();
-    Send(new ChromeViewMsg_SetDefaultContentSettings(
-        map->GetDefaultContentSettings()));
-    Send(new ChromeViewMsg_SetContentSettingsForCurrentURL(
-        entry_url, map->GetContentSettings(entry_url)));
-    ContentSettingsForOneType settings;
-    map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES, "", &settings);
-    Send(new ChromeViewMsg_SetImageSettingRules(settings));
+    RendererContentSettingRules rules;
+    GetRendererContentSettingRules(profile->GetHostContentSettingsMap(),
+                                   &rules);
+    Send(new ChromeViewMsg_SetContentSettingRules(rules));
   }
 }
 

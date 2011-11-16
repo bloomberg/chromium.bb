@@ -88,6 +88,9 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                             bool enabled_per_settings) OVERRIDE;
   virtual bool allowScript(WebKit::WebFrame* frame,
                            bool enabled_per_settings) OVERRIDE;
+  virtual bool allowScriptFromSource(WebKit::WebFrame* frame,
+                                     bool enabled_per_settings,
+                                     const WebKit::WebURL& script_url) OVERRIDE;
   virtual bool allowScriptExtension(WebKit::WebFrame* frame,
                                     const WebKit::WebString& extension_name,
                                     int extension_group) OVERRIDE;

@@ -10,16 +10,6 @@ ContentSetting IntToContentSetting(int content_setting) {
       CONTENT_SETTING_DEFAULT : static_cast<ContentSetting>(content_setting);
 }
 
-ContentSettings::ContentSettings() {
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-    settings[i] = CONTENT_SETTING_DEFAULT;
-}
-
-ContentSettings::ContentSettings(ContentSetting default_setting) {
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-    settings[i] = default_setting;
-}
-
 ContentSettingPatternSource::ContentSettingPatternSource(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -33,3 +23,7 @@ ContentSettingPatternSource::ContentSettingPatternSource(
       incognito(incognito) {}
 
 ContentSettingPatternSource::ContentSettingPatternSource() {}
+
+RendererContentSettingRules::RendererContentSettingRules() {}
+
+RendererContentSettingRules::~RendererContentSettingRules() {}

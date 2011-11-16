@@ -41,13 +41,9 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   // any 'clear cache' commands that were delayed until the next navigation.
   void ExecutePendingClearCache();
 
-  // Returns a pointer to the default content settings owned by
+  // Returns a pointer to the content setting rules owned by
   // |ChromeRenderProcessObserver|.
-  const ContentSettings* default_content_settings() const;
-
-  // Returns a pointer to the image setting rules owned by
-  // |ChromeRenderProcessObserver|.
-  const ContentSettingsForOneType* image_setting_rules() const;
+  const RendererContentSettingRules* content_setting_rules() const;
 
  private:
   // RenderProcessObserver implementation.
@@ -57,8 +53,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   void OnSetIsIncognitoProcess(bool is_incognito_process);
   void OnSetContentSettingsForCurrentURL(
       const GURL& url, const ContentSettings& content_settings);
-  void OnSetDefaultContentSettings(const ContentSettings& content_settings);
-  void OnSetImageSettingRules(const ContentSettingsForOneType& settings);
+  void OnSetContentSettingRules(const RendererContentSettingRules& rules);
   void OnSetCacheCapacities(size_t min_dead_capacity,
                             size_t max_dead_capacity,
                             size_t capacity);
@@ -79,8 +74,7 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver {
   chrome::ChromeContentRendererClient* client_;
   // If true, the web cache shall be cleared before the next navigation event.
   bool clear_cache_pending_;
-  ContentSettings default_content_settings_;
-  ContentSettingsForOneType image_setting_rules_;
+  RendererContentSettingRules content_setting_rules_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRenderProcessObserver);
 };

@@ -58,8 +58,31 @@ GURL GetOriginOrURL(const WebFrame* frame) {
   // The the |top_origin| is unique ("null") e.g., for file:// URLs. Use the
   // document URL as the primary URL in those cases.
   if (top_origin == "null")
-    return frame->document().url();
+    return frame->top()->document().url();
   return GURL(top_origin);
+}
+
+ContentSetting GetContentSettingFromRules(
+    const ContentSettingsForOneType& rules,
+    const WebFrame* frame,
+    const GURL& secondary_url) {
+  ContentSettingsForOneType::const_iterator it;
+  // If there is only one rule, it's the default rule and we don't need to match
+  // the patterns.
+  if (rules.size() == 1) {
+    DCHECK(rules[0].primary_pattern == ContentSettingsPattern::Wildcard());
+    DCHECK(rules[0].secondary_pattern == ContentSettingsPattern::Wildcard());
+    return rules[0].setting;
+  }
+  const GURL& primary_url = GetOriginOrURL(frame);
+  for (it = rules.begin(); it != rules.end(); ++it) {
+    if (it->primary_pattern.Matches(primary_url) &&
+        it->secondary_pattern.Matches(secondary_url)) {
+      return it->setting;
+    }
+  }
+  NOTREACHED();
+  return CONTENT_SETTING_DEFAULT;
 }
 
 }  // namespace
@@ -68,8 +91,7 @@ ContentSettingsObserver::ContentSettingsObserver(
     content::RenderView* render_view)
     : content::RenderViewObserver(render_view),
       content::RenderViewObserverTracker<ContentSettingsObserver>(render_view),
-      default_content_settings_(NULL),
-      image_setting_rules_(NULL),
+      content_setting_rules_(NULL),
       plugins_temporarily_allowed_(false) {
   ClearBlockedContentSettings();
 }
@@ -77,26 +99,9 @@ ContentSettingsObserver::ContentSettingsObserver(
 ContentSettingsObserver::~ContentSettingsObserver() {
 }
 
-void ContentSettingsObserver::SetContentSettings(
-    const ContentSettings& settings) {
-  current_content_settings_ = settings;
-}
-
-void ContentSettingsObserver::SetDefaultContentSettings(
-    const ContentSettings* settings) {
-  default_content_settings_ = settings;
-}
-
-void ContentSettingsObserver::SetImageSettingRules(
-    const ContentSettingsForOneType* image_setting_rules) {
-  image_setting_rules_ = image_setting_rules;
-}
-
-ContentSetting ContentSettingsObserver::GetContentSetting(
-    ContentSettingsType type) {
-  // Don't call this for plug-ins.
-  DCHECK_NE(CONTENT_SETTINGS_TYPE_PLUGINS, type);
-  return current_content_settings_.settings[type];
+void ContentSettingsObserver::SetContentSettingRules(
+    const RendererContentSettingRules* content_setting_rules) {
+  content_setting_rules_ = content_setting_rules;
 }
 
 void ContentSettingsObserver::DidBlockContentType(
@@ -120,8 +125,6 @@ bool ContentSettingsObserver::OnMessageReceived(const IPC::Message& message) {
     // blocked plugin.
     IPC_MESSAGE_HANDLER_GENERIC(ChromeViewMsg_LoadBlockedPlugins,
                                 OnLoadBlockedPlugins(); handled = false)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetContentSettingsForLoadingURL,
-                        OnSetContentSettingsForLoadingURL)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -135,54 +138,19 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   NavigationState* state = NavigationState::FromDataSource(frame->dataSource());
   if (!state->was_within_same_page()) {
     // Clear "block" flags for the new page. This needs to happen before any of
-    // allowScripts(), allowImage(), allowPlugins() is called for the new page
-    // so that these functions can correctly detect that a piece of content
-    // flipped from "not blocked" to "blocked".
+    // |AllowScript()|, |AllowScriptFromSource()|, |AllowImage()|, or
+    // |AllowPlugins()| is called for the new page so that these functions can
+    // correctly detect that a piece of content flipped from "not blocked" to
+    // "blocked".
     ClearBlockedContentSettings();
     plugins_temporarily_allowed_ = false;
   }
 
   GURL url = frame->document().url();
-
-  if (frame->document().securityOrigin().toString() == "null" &&
-      !url.SchemeIs(chrome::kFileScheme)) {
-    // The Frame has a unique security origin. Instead of granting the frame
-    // privileges based on it's URL, we fall back to the default content
-    // settings.
-
-    // We exempt file URLs here because we sandbox them by default, but folks
-    // might reasonably want to supply non-default content settings for various
-    // file URLs.
-    if (default_content_settings_)
-      SetContentSettings(*default_content_settings_);
-    return;
-  }
-
   // If we start failing this DCHECK, please makes sure we don't regress
   // this bug: http://code.google.com/p/chromium/issues/detail?id=79304
-  DCHECK(!url.SchemeIs(chrome::kDataScheme));
-
-  // Set content settings. Default them from the parent window if one exists.
-  // This makes sure about:blank windows work as expected.
-  HostContentSettings::iterator host_content_settings =
-      host_content_settings_.find(url);
-  if (host_content_settings != host_content_settings_.end()) {
-    SetContentSettings(host_content_settings->second);
-
-    // These content settings were merely recorded transiently for this load.
-    // We can erase them now.  If at some point we reload this page, the
-    // browser will send us new, up-to-date content settings.
-    host_content_settings_.erase(host_content_settings);
-  } else if (frame->opener()) {
-    // The opener's view is not guaranteed to be non-null (it could be
-    // detached from its page but not yet destructed).
-    if (WebView* opener_view = frame->opener()->view()) {
-      content::RenderView* opener =
-          content::RenderView::FromWebView(opener_view);
-      ContentSettingsObserver* observer = ContentSettingsObserver::Get(opener);
-      SetContentSettings(observer->current_content_settings_);
-    }
-  }
+  DCHECK(frame->document().securityOrigin().toString() == "null" ||
+         !url.SchemeIs(chrome::kDataScheme));
 }
 
 bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
@@ -220,19 +188,11 @@ bool ContentSettingsObserver::AllowImage(WebFrame* frame,
     return true;
 
   bool allow = enabled_per_settings;
-  const GURL& primary_url = GetOriginOrURL(frame);
-  GURL secondary_url(image_url);
-  if (image_setting_rules_ &&
-      enabled_per_settings) {
-    ContentSettingsForOneType::const_iterator it;
-    for (it = image_setting_rules_->begin();
-         it != image_setting_rules_->end(); ++it) {
-      if (it->primary_pattern.Matches(primary_url) &&
-          it->secondary_pattern.Matches(secondary_url)) {
-        allow = (it->setting != CONTENT_SETTING_BLOCK);
-        break;
-      }
-    }
+  if (content_setting_rules_ && enabled_per_settings) {
+    GURL secondary_url(image_url);
+    allow = GetContentSettingFromRules(
+        content_setting_rules_->image_rules,
+        frame, secondary_url) != CONTENT_SETTING_BLOCK;
   }
 
   if (!allow)
@@ -262,15 +222,47 @@ bool ContentSettingsObserver::AllowPlugins(WebFrame* frame,
 
 bool ContentSettingsObserver::AllowScript(WebFrame* frame,
                                           bool enabled_per_settings) {
-  if (enabled_per_settings &&
-      AllowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT)) {
-    return true;
+  if (!enabled_per_settings)
+    return false;
+
+  std::map<WebFrame*, bool>::const_iterator it =
+      cached_script_permissions_.find(frame);
+  if (it != cached_script_permissions_.end())
+    return it->second;
+
+  // Evaluate the content setting rules before
+  // |IsWhitelistedForContentSettings|; if there is only the default rule
+  // allowing all scripts, it's quicker this way.
+  bool allow = true;
+  if (content_setting_rules_) {
+    ContentSetting setting = GetContentSettingFromRules(
+        content_setting_rules_->script_rules,
+        frame,
+        GURL(frame->document().securityOrigin().toString()));
+    allow = setting != CONTENT_SETTING_BLOCK;
   }
+  allow = allow || IsWhitelistedForContentSettings(frame);
 
-  if (IsWhitelistedForContentSettings(frame))
-    return true;
+  cached_script_permissions_[frame] = allow;
+  return allow;
+}
 
-  return false;  // Other protocols fall through here.
+bool ContentSettingsObserver::AllowScriptFromSource(
+    WebFrame* frame,
+    bool enabled_per_settings,
+    const WebKit::WebURL& script_url) {
+  if (!enabled_per_settings)
+    return false;
+
+  bool allow = true;
+  if (content_setting_rules_) {
+    ContentSetting setting = GetContentSettingFromRules(
+        content_setting_rules_->script_rules,
+        frame,
+        GURL(script_url));
+    allow = setting != CONTENT_SETTING_BLOCK;
+  }
+  return allow || IsWhitelistedForContentSettings(frame);
 }
 
 bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
@@ -303,25 +295,13 @@ void ContentSettingsObserver::DidNotAllowScript(WebFrame* frame) {
   DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string());
 }
 
-void ContentSettingsObserver::OnSetContentSettingsForLoadingURL(
-    const GURL& url,
-    const ContentSettings& content_settings) {
-  host_content_settings_[url] = content_settings;
-}
-
 void ContentSettingsObserver::OnLoadBlockedPlugins() {
   plugins_temporarily_allowed_ = true;
-}
-
-bool ContentSettingsObserver::AllowContentType(
-    ContentSettingsType settings_type) {
-  // CONTENT_SETTING_ASK is only valid for cookies.
-  return current_content_settings_.settings[settings_type] !=
-      CONTENT_SETTING_BLOCK;
 }
 
 void ContentSettingsObserver::ClearBlockedContentSettings() {
   for (size_t i = 0; i < arraysize(content_blocked_); ++i)
     content_blocked_[i] = false;
   cached_storage_permissions_.clear();
+  cached_script_permissions_.clear();
 }

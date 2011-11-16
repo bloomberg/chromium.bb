@@ -26,23 +26,6 @@ using content::BrowserThread;
 
 using ::testing::_;
 
-namespace {
-
-bool SettingsEqual(const ContentSettings& settings1,
-                   const ContentSettings& settings2) {
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    if (settings1.settings[i] != settings2.settings[i]) {
-      LOG(ERROR) << "type: " << i
-                 << " [expected: " << settings1.settings[i]
-                 << " actual: " << settings2.settings[i] << "]";
-      return false;
-    }
-  }
-  return true;
-}
-
-}  // namespace
-
 class HostContentSettingsMapTest : public testing::Test {
  public:
   HostContentSettingsMapTest() : ui_thread_(BrowserThread::UI, &message_loop_) {
@@ -126,48 +109,51 @@ TEST_F(HostContentSettingsMapTest, IndividualSettings) {
                 host, host, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
 
   // Check returning all settings for a host.
-  ContentSettings desired_settings;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_COOKIES] =
-      CONTENT_SETTING_ALLOW;
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(),
       CONTENT_SETTING_DEFAULT);
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_IMAGES] =
-      CONTENT_SETTING_ALLOW;
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_JAVASCRIPT,
       std::string(),
       CONTENT_SETTING_BLOCK);
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] =
-      CONTENT_SETTING_BLOCK;
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
   host_content_settings_map->SetContentSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_PLUGINS,
       std::string(),
       CONTENT_SETTING_ALLOW);
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
-      CONTENT_SETTING_ALLOW;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_POPUPS] =
-      CONTENT_SETTING_BLOCK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_GEOLOCATION] =
-      CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS] =
-      CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
-      CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN] =
-      CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_MOUSELOCK] =
-      CONTENT_SETTING_ASK;
-  ContentSettings settings =
-      host_content_settings_map->GetContentSettings(host);
-  EXPECT_TRUE(SettingsEqual(desired_settings, settings));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_INTENTS, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_FULLSCREEN, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_MOUSELOCK, ""));
 
   // Check returning all hosts for a setting.
   ContentSettingsPattern pattern2 =
@@ -603,48 +589,36 @@ TEST_F(HostContentSettingsMapTest, NestedSettings) {
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
 
-  ContentSettings desired_settings;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_COOKIES] =
-      CONTENT_SETTING_BLOCK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_IMAGES] =
-      CONTENT_SETTING_BLOCK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] =
-      CONTENT_SETTING_BLOCK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
-      CONTENT_SETTING_BLOCK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_POPUPS] =
-      CONTENT_SETTING_BLOCK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_GEOLOCATION] =
-      CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_NOTIFICATIONS] =
-      CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS] =
-      CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN] =
-      CONTENT_SETTING_ASK;
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_MOUSELOCK] =
-      CONTENT_SETTING_ASK;
-  ContentSettings settings =
-      host_content_settings_map->GetContentSettings(host);
-  EXPECT_TRUE(SettingsEqual(desired_settings, settings));
-  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_COOKIES],
-            settings.settings[CONTENT_SETTINGS_TYPE_COOKIES]);
-  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_IMAGES],
-            settings.settings[CONTENT_SETTINGS_TYPE_IMAGES]);
-  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS],
-            settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
-  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_POPUPS],
-            settings.settings[CONTENT_SETTINGS_TYPE_POPUPS]);
-  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_GEOLOCATION],
-            settings.settings[CONTENT_SETTINGS_TYPE_GEOLOCATION]);
-  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_COOKIES],
-            settings.settings[CONTENT_SETTINGS_TYPE_COOKIES]);
-  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_INTENTS],
-            settings.settings[CONTENT_SETTINGS_TYPE_INTENTS]);
-  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN],
-            settings.settings[CONTENT_SETTINGS_TYPE_FULLSCREEN]);
-  EXPECT_EQ(desired_settings.settings[CONTENT_SETTINGS_TYPE_MOUSELOCK],
-            settings.settings[CONTENT_SETTINGS_TYPE_MOUSELOCK]);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_COOKIES, ""));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_IMAGES, ""));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, ""));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_POPUPS, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_GEOLOCATION, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_INTENTS, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_FULLSCREEN, ""));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_MOUSELOCK, ""));
 }
 
 TEST_F(HostContentSettingsMapTest, OffTheRecord) {
@@ -814,10 +788,9 @@ TEST_F(HostContentSettingsMapTest, ResourceIdentifier) {
   ContentSetting default_plugin_setting =
       host_content_settings_map->GetDefaultContentSetting(
           CONTENT_SETTINGS_TYPE_PLUGINS, NULL);
-  ContentSettings settings =
-      host_content_settings_map->GetContentSettings(host);
   EXPECT_EQ(default_plugin_setting,
-            settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS]);
+            host_content_settings_map->GetContentSetting(
+                host, host, CONTENT_SETTINGS_TYPE_PLUGINS, ""));
 
   // If no resource-specific content settings are defined, the setting should be
   // DEFAULT.
