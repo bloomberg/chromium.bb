@@ -679,9 +679,12 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
   if (command.HasSwitch(switches::kFullMemoryCrashReport)) {
     dump_type = kFullDumpType;
   } else {
+    std::wstring channel_name(
+        GoogleUpdateSettings::GetChromeChannel(!is_per_user_install));
+
     // Capture more detail in crash dumps for beta and dev channel builds.
-    if (channel_string == L"dev" || channel_string == L"beta" ||
-        channel_string == GoogleChromeSxSDistribution::ChannelName())
+    if (channel_name == L"dev" || channel_name == L"beta" ||
+        channel_name == GoogleChromeSxSDistribution::ChannelName())
       dump_type = kLargerDumpType;
   }
 
