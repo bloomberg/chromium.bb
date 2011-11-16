@@ -9,48 +9,75 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/download_id.h"
-#include "content/browser/download/download_request_handle.h"
-#include "content/browser/download/download_types.h"
 #include "content/common/content_export.h"
+#include "net/base/net_errors.h"
 
-struct DownloadCreateInfo;
 class DownloadManager;
 
-// These objects live exclusively on the download thread and handle the writing
+// These objects live exclusively on the file thread and handle the writing
 // operations for one download. These objects live only for the duration that
 // the download is 'in progress': once the download has been completed or
 // cancelled, the DownloadFile is destroyed.
-class CONTENT_EXPORT DownloadFile : public BaseFile {
+class CONTENT_EXPORT DownloadFile {
  public:
-  // Takes ownership of the object pointed to by |request_handle|.
-  DownloadFile(const DownloadCreateInfo* info,
-               DownloadRequestHandleInterface* request_handle,
-               DownloadManager* download_manager);
-  virtual ~DownloadFile();
+  virtual ~DownloadFile() {}
+
+  // If calculate_hash is true, sha256 hash will be calculated.
+  // Returns net::OK on success, or a network error code on failure.
+  virtual net::Error Initialize(bool calculate_hash) = 0;
+
+  // Write a new chunk of data to the file.
+  // Returns net::OK on success (all bytes written to the file),
+  // or a network error code on failure.
+  virtual net::Error AppendDataToFile(const char* data, size_t data_len) = 0;
+
+  // Rename the download file.
+  // Returns net::OK on success, or a network error code on failure.
+  virtual net::Error Rename(const FilePath& full_path) = 0;
+
+  // Detach the file so it is not deleted on destruction.
+  virtual void Detach() = 0;
+
+  // Abort the download and automatically close the file.
+  virtual void Cancel() = 0;
+
+  // Indicate that the download has finished. No new data will be received.
+  virtual void Finish() = 0;
+
+  // Informs the OS that this file came from the internet.
+  virtual void AnnotateWithSourceInformation() = 0;
+
+  virtual FilePath FullPath() const = 0;
+  virtual bool InProgress() const = 0;
+  virtual int64 BytesSoFar() const = 0;
+
+  // Set |hash| with sha256 digest for the file.
+  // Returns true if digest is successfully calculated.
+  virtual bool GetSha256Hash(std::string* hash) = 0;
 
   // Cancels the download request associated with this file.
-  void CancelDownloadRequest();
+  virtual void CancelDownloadRequest() = 0;
 
-  int id() const { return id_.local(); }
-  DownloadManager* GetDownloadManager();
-  const DownloadId& global_id() const { return id_; }
+  virtual int Id() const = 0;
+  virtual DownloadManager* GetDownloadManager() = 0;
+  virtual const DownloadId& GlobalId() const = 0;
 
-  virtual std::string DebugString() const;
+  virtual std::string DebugString() const = 0;
 
-  // Appends the passed the number between parenthesis the path before the
-  // extension.
+  // Appends the passed-in |number| between parenthesis to the |path| before
+  // the file extension.
   static void AppendNumberToPath(FilePath* path, int number);
 
-  // Attempts to find a number that can be appended to that path to make it
+  // Appends the passed-in |suffix| to the |path|.
+  static FilePath AppendSuffixToPath(const FilePath& path,
+                                     const FilePath::StringType& suffix);
+
+  // Attempts to find a number that can be appended to the |path| to make it
   // unique. If |path| does not exist, 0 is returned.  If it fails to find such
   // a number, -1 is returned.
   static int GetUniquePathNumber(const FilePath& path);
-
-  static FilePath AppendSuffixToPath(const FilePath& path,
-                                     const FilePath::StringType& suffix);
 
   // Same as GetUniquePathNumber, except that it also checks the existence
   // of it with the given suffix.
@@ -59,20 +86,6 @@ class CONTENT_EXPORT DownloadFile : public BaseFile {
   static int GetUniquePathNumberWithSuffix(
       const FilePath& path,
       const FilePath::StringType& suffix);
-
- private:
-  // The unique identifier for this download, assigned at creation by
-  // the DownloadFileManager for its internal record keeping.
-  DownloadId id_;
-
-  // The handle to the request information.  Used for operations outside the
-  // download system, specifically canceling a download.
-  scoped_ptr<DownloadRequestHandleInterface> request_handle_;
-
-  // DownloadManager this download belongs to.
-  scoped_refptr<DownloadManager> download_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadFile);
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_FILE_H_

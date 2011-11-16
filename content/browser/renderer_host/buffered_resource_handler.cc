@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_resource_handler.h"
+#include "content/browser/download/download_types.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"

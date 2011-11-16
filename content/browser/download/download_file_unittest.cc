@@ -7,7 +7,7 @@
 #include "base/string_number_conversions.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_file.h"
+#include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_manager.h"
@@ -72,20 +72,20 @@ class DownloadFileTest : public testing::Test {
     // info.request_handle default constructed to null.
     info.save_info.file_stream = file_stream_;
     file->reset(
-        new DownloadFile(&info, new DownloadRequestHandle(),
-                         download_manager_));
+        new DownloadFileImpl(&info, new DownloadRequestHandle(),
+                             download_manager_));
   }
 
   virtual void DestroyDownloadFile(scoped_ptr<DownloadFile>* file, int offset) {
-    EXPECT_EQ(kDummyDownloadId + offset, (*file)->id());
+    EXPECT_EQ(kDummyDownloadId + offset, (*file)->Id());
     EXPECT_EQ(download_manager_, (*file)->GetDownloadManager());
-    EXPECT_FALSE((*file)->in_progress());
+    EXPECT_FALSE((*file)->InProgress());
     EXPECT_EQ(static_cast<int64>(expected_data_.size()),
-              (*file)->bytes_so_far());
+              (*file)->BytesSoFar());
 
     // Make sure the data has been properly written to disk.
     std::string disk_data;
-    EXPECT_TRUE(file_util::ReadFileToString((*file)->full_path(),
+    EXPECT_TRUE(file_util::ReadFileToString((*file)->FullPath(),
                                             &disk_data));
     EXPECT_EQ(expected_data_, disk_data);
 
@@ -96,11 +96,11 @@ class DownloadFileTest : public testing::Test {
 
   void AppendDataToFile(scoped_ptr<DownloadFile>* file,
                         const std::string& data) {
-    EXPECT_TRUE((*file)->in_progress());
+    EXPECT_TRUE((*file)->InProgress());
     (*file)->AppendDataToFile(data.data(), data.size());
     expected_data_ += data;
     EXPECT_EQ(static_cast<int64>(expected_data_.size()),
-              (*file)->bytes_so_far());
+              (*file)->BytesSoFar());
   }
 
  protected:
@@ -141,7 +141,7 @@ const int DownloadFileTest::kDummyRequestId = 67;
 TEST_F(DownloadFileTest, RenameFileFinal) {
   CreateDownloadFile(&download_file_, 0);
   ASSERT_EQ(net::OK, download_file_->Initialize(true));
-  FilePath initial_path(download_file_->full_path());
+  FilePath initial_path(download_file_->FullPath());
   EXPECT_TRUE(file_util::PathExists(initial_path));
   FilePath path_1(initial_path.InsertBeforeExtensionASCII("_1"));
   FilePath path_2(initial_path.InsertBeforeExtensionASCII("_2"));
@@ -150,7 +150,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file before downloading any data.
   EXPECT_EQ(net::OK, download_file_->Rename(path_1));
-  FilePath renamed_path = download_file_->full_path();
+  FilePath renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_1, renamed_path);
 
   // Check the files.
@@ -163,7 +163,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading some data.
   EXPECT_EQ(net::OK, download_file_->Rename(path_2));
-  renamed_path = download_file_->full_path();
+  renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_2, renamed_path);
 
   // Check the files.
@@ -174,7 +174,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading all the data.
   EXPECT_EQ(net::OK, download_file_->Rename(path_3));
-  renamed_path = download_file_->full_path();
+  renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_3, renamed_path);
 
   // Check the files.
@@ -189,7 +189,7 @@ TEST_F(DownloadFileTest, RenameFileFinal) {
 
   // Rename the file after downloading all the data and closing the file.
   EXPECT_EQ(net::OK, download_file_->Rename(path_4));
-  renamed_path = download_file_->full_path();
+  renamed_path = download_file_->FullPath();
   EXPECT_EQ(path_4, renamed_path);
 
   // Check the files.

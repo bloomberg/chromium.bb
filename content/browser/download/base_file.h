@@ -15,6 +15,7 @@
 #include "content/browser/power_save_blocker.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
 namespace crypto {
@@ -86,7 +87,6 @@ class CONTENT_EXPORT BaseFile {
 
  private:
   friend class BaseFileTest;
-  friend class DownloadFileWithMockStream;
   FRIEND_TEST_ALL_PREFIXES(BaseFileTest, IsEmptySha256Hash);
 
   static const size_t kSha256HashLen = 32;

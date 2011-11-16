@@ -15,7 +15,7 @@
 #include "content/browser/download/base_file.h"
 #include "content/browser/download/download_buffer.h"
 #include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_file.h"
+#include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
@@ -67,10 +67,10 @@ void DownloadFileManager::CreateDownloadFile(
   // Life of |info| ends here. No more references to it after this method.
   scoped_ptr<DownloadCreateInfo> infop(info);
 
-  scoped_ptr<DownloadFile>
-      download_file(new DownloadFile(info,
-                                     new DownloadRequestHandle(request_handle),
-                                     download_manager));
+  scoped_ptr<DownloadFile> download_file(
+      new DownloadFileImpl(info,
+                           new DownloadRequestHandle(request_handle),
+                           download_manager));
   if (net::OK != download_file->Initialize(get_hash)) {
     request_handle.CancelRequest();
     return;
@@ -90,7 +90,8 @@ void DownloadFileManager::CreateDownloadFile(
                  info->download_id.local()));
 }
 
-DownloadFile* DownloadFileManager::GetDownloadFile(DownloadId global_id) {
+DownloadFile* DownloadFileManager::GetDownloadFile(
+    DownloadId global_id) {
   DownloadFileMap::iterator it = downloads_.find(global_id);
   return it == downloads_.end() ? NULL : it->second;
 }
@@ -119,7 +120,7 @@ void DownloadFileManager::UpdateInProgressDownloads() {
     if (manager) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           base::Bind(&DownloadManager::UpdateDownload, manager,
-                     global_id.local(), download_file->bytes_so_far()));
+                     global_id.local(), download_file->BytesSoFar()));
     }
   }
 }
@@ -173,7 +174,7 @@ void DownloadFileManager::UpdateDownload(
         DownloadManager* download_manager = download_file->GetDownloadManager();
         had_error = true;
 
-        int64 bytes_downloaded = download_file->bytes_so_far();
+        int64 bytes_downloaded = download_file->BytesSoFar();
         // Calling this here in case we get more data, to avoid
         // processing data after an error.  That could lead to
         // files that are corrupted if the later processing succeeded.
@@ -223,13 +224,13 @@ void DownloadFileManager::OnResponseCompleted(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DownloadManager::OnResponseCompleted,
                    download_manager, global_id.local(),
-                   download_file->bytes_so_far(), hash));
+                   download_file->BytesSoFar(), hash));
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DownloadManager::OnDownloadInterrupted,
                    download_manager, global_id.local(),
-                   download_file->bytes_so_far(), reason));
+                   download_file->BytesSoFar(), reason));
   }
   // We need to keep the download around until the UI thread has finalized
   // the name.
@@ -287,7 +288,7 @@ void DownloadFileManager::OnDownloadManagerShutdown(DownloadManager* manager) {
 
   for (std::set<DownloadFile*>::iterator i = to_remove.begin();
        i != to_remove.end(); ++i) {
-    downloads_.erase((*i)->global_id());
+    downloads_.erase((*i)->GlobalId());
     delete *i;
   }
 }
@@ -407,7 +408,7 @@ void DownloadFileManager::CancelDownloadOnRename(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadManager::OnDownloadInterrupted,
                  download_manager, global_id.local(),
-                 download_file->bytes_so_far(),
+                 download_file->BytesSoFar(),
                  ConvertNetErrorToInterruptReason(
                      rename_error, DOWNLOAD_INTERRUPT_FROM_DISK)));
 }

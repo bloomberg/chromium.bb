@@ -19,10 +19,24 @@
 // the saving job is 'in progress': once the saving job has been completed or
 // canceled, the SaveFile is destroyed. One SaveFile object represents one item
 // in a save session.
-class SaveFile : public BaseFile {
+class SaveFile {
  public:
   explicit SaveFile(const SaveFileCreateInfo* info);
   virtual ~SaveFile();
+
+  // BaseFile delegated functions.
+  net::Error Initialize(bool calculate_hash);
+  net::Error AppendDataToFile(const char* data, size_t data_len);
+  net::Error Rename(const FilePath& full_path);
+  void Detach();
+  void Cancel();
+  void Finish();
+  void AnnotateWithSourceInformation();
+  FilePath FullPath() const;
+  bool InProgress() const;
+  int64 BytesSoFar() const;
+  bool GetSha256Hash(std::string* hash);
+  std::string DebugString() const;
 
   // Accessors.
   int save_id() const { return info_->save_id; }
@@ -34,6 +48,7 @@ class SaveFile : public BaseFile {
   }
 
  private:
+  BaseFile file_;
   scoped_ptr<const SaveFileCreateInfo> info_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveFile);

@@ -4,15 +4,8 @@
 
 #include "content/browser/download/download_file.h"
 
-#include <string>
-
 #include "base/file_util.h"
 #include "base/stringprintf.h"
-#include "content/browser/download/download_create_info.h"
-#include "content/browser/download/download_manager.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace {
 
@@ -25,49 +18,23 @@ static const int kMaxUniqueFiles = 100;
 
 }
 
-DownloadFile::DownloadFile(const DownloadCreateInfo* info,
-                           DownloadRequestHandleInterface* request_handle,
-                           DownloadManager* download_manager)
-    : BaseFile(info->save_info.file_path,
-               info->url(),
-               info->referrer_url,
-               info->received_bytes,
-               info->save_info.file_stream),
-      id_(info->download_id),
-      request_handle_(request_handle),
-      download_manager_(download_manager) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-}
-
-DownloadFile::~DownloadFile() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-}
-
-void DownloadFile::CancelDownloadRequest() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  request_handle_->CancelRequest();
-}
-
-DownloadManager* DownloadFile::GetDownloadManager() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return download_manager_.get();
-}
-
-std::string DownloadFile::DebugString() const {
-  return base::StringPrintf("{"
-                            " id_ = " "%d"
-                            " request_handle = %s"
-                            " Base File = %s"
-                            " }",
-                            id_.local(),
-                            request_handle_->DebugString().c_str(),
-                            BaseFile::DebugString().c_str());
-}
-
+// static
 void DownloadFile::AppendNumberToPath(FilePath* path, int number) {
   *path = path->InsertBeforeExtensionASCII(StringPrintf(" (%d)", number));
 }
 
+// static
+FilePath DownloadFile::AppendSuffixToPath(
+    const FilePath& path,
+    const FilePath::StringType& suffix) {
+  FilePath::StringType file_name;
+  base::SStringPrintf(
+      &file_name, PRFilePathLiteral PRFilePathLiteral, path.value().c_str(),
+      suffix.c_str());
+  return FilePath(file_name);
+}
+
+// static
 int DownloadFile::GetUniquePathNumber(const FilePath& path) {
   if (!file_util::PathExists(path))
     return 0;
@@ -84,16 +51,7 @@ int DownloadFile::GetUniquePathNumber(const FilePath& path) {
   return -1;
 }
 
-FilePath DownloadFile::AppendSuffixToPath(
-    const FilePath& path,
-    const FilePath::StringType& suffix) {
-  FilePath::StringType file_name;
-  base::SStringPrintf(
-      &file_name, PRFilePathLiteral PRFilePathLiteral, path.value().c_str(),
-      suffix.c_str());
-  return FilePath(file_name);
-}
-
+// static
 int DownloadFile::GetUniquePathNumberWithSuffix(
     const FilePath& path,
     const FilePath::StringType& suffix) {

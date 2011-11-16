@@ -11,7 +11,7 @@
 using content::BrowserThread;
 
 SaveFile::SaveFile(const SaveFileCreateInfo* info)
-    : BaseFile(FilePath(), info->url, GURL(), 0, linked_ptr<net::FileStream>()),
+    : file_(FilePath(), info->url, GURL(), 0, linked_ptr<net::FileStream>()),
       info_(info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -21,4 +21,52 @@ SaveFile::SaveFile(const SaveFileCreateInfo* info)
 
 SaveFile::~SaveFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+}
+
+net::Error SaveFile::Initialize(bool calculate_hash) {
+  return file_.Initialize(calculate_hash);
+}
+
+net::Error SaveFile::AppendDataToFile(const char* data, size_t data_len) {
+  return file_.AppendDataToFile(data, data_len);
+}
+
+net::Error SaveFile::Rename(const FilePath& full_path) {
+  return file_.Rename(full_path);
+}
+
+void SaveFile::Detach() {
+  file_.Detach();
+}
+
+void SaveFile::Cancel() {
+  file_.Cancel();
+}
+
+void SaveFile::Finish() {
+  file_.Finish();
+}
+
+void SaveFile::AnnotateWithSourceInformation() {
+  file_.AnnotateWithSourceInformation();
+}
+
+FilePath SaveFile::FullPath() const {
+  return file_.full_path();
+}
+
+bool SaveFile::InProgress() const {
+  return file_.in_progress();
+}
+
+int64 SaveFile::BytesSoFar() const {
+  return file_.bytes_so_far();
+}
+
+bool SaveFile::GetSha256Hash(std::string* hash) {
+  return file_.GetSha256Hash(hash);
+}
+
+std::string SaveFile::DebugString() const {
+  return file_.DebugString();
 }

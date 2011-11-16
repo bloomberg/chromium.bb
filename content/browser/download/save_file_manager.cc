@@ -220,7 +220,7 @@ void SaveFileManager::StartSave(SaveFileCreateInfo* info) {
 
   DCHECK(!LookupSaveFile(info->save_id));
   save_file_map_[info->save_id] = save_file;
-  info->path = save_file->full_path();
+  info->path = save_file->FullPath();
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -244,7 +244,7 @@ void SaveFileManager::UpdateSaveProgress(int save_id,
         base::Bind(&SaveFileManager::OnUpdateSaveProgress,
                    this,
                    save_file->save_id(),
-                   save_file->bytes_so_far(),
+                   save_file->BytesSoFar(),
                    write_success == net::OK));
   }
 }
@@ -272,7 +272,7 @@ void SaveFileManager::SaveFinished(int save_id,
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&SaveFileManager::OnSaveFinished, this, save_id,
-            save_file->bytes_so_far(), is_success));
+            save_file->BytesSoFar(), is_success));
 
     save_file->Finish();
     save_file->Detach();
@@ -413,7 +413,7 @@ void SaveFileManager::CancelSave(int save_id) {
       // data from other sources or have finished.
       DCHECK(save_file->save_source() !=
              SaveFileCreateInfo::SAVE_FILE_FROM_NET ||
-             !save_file->in_progress());
+             !save_file->InProgress());
     }
     // Whatever the save file is renamed or not, just delete it.
     save_file_map_.erase(it);
@@ -432,7 +432,7 @@ void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
   if (!save_file)
     return;
   // If it has finished, just return.
-  if (!save_file->in_progress())
+  if (!save_file->InProgress())
     return;
 
   // Close the save file before the copy operation.
@@ -449,9 +449,9 @@ void SaveFileManager::SaveLocalFile(const GURL& original_file_url,
 
   // Copy the local file to the temporary file. It will be renamed to its
   // final name later.
-  bool success = file_util::CopyFile(file_path, save_file->full_path());
+  bool success = file_util::CopyFile(file_path, save_file->FullPath());
   if (!success)
-    file_util::Delete(save_file->full_path(), false);
+    file_util::Delete(save_file->FullPath(), false);
   SaveFinished(save_id, original_file_url, render_process_id, success);
 }
 
@@ -479,7 +479,7 @@ void SaveFileManager::RenameAllFiles(
     SaveFileMap::iterator it = save_file_map_.find(i->first);
     if (it != save_file_map_.end()) {
       SaveFile* save_file = it->second;
-      DCHECK(!save_file->in_progress());
+      DCHECK(!save_file->InProgress());
       save_file->Rename(i->second);
       delete save_file;
       save_file_map_.erase(it);
@@ -513,8 +513,8 @@ void SaveFileManager::RemoveSavedFileFromFileMap(
     SaveFileMap::iterator it = save_file_map_.find(*i);
     if (it != save_file_map_.end()) {
       SaveFile* save_file = it->second;
-      DCHECK(!save_file->in_progress());
-      file_util::Delete(save_file->full_path(), false);
+      DCHECK(!save_file->InProgress());
+      file_util::Delete(save_file->FullPath(), false);
       delete save_file;
       save_file_map_.erase(it);
     }

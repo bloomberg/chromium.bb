@@ -30,6 +30,8 @@
       ],
       'sources': [
         # TODO(phajdan.jr): All of those files should live in content/test.
+        'browser/download/mock_download_file.cc',
+        'browser/download/mock_download_file.h',
         'browser/download/mock_download_manager.h',
         'browser/download/mock_download_manager_delegate.cc',
         'browser/download/mock_download_manager_delegate.h',

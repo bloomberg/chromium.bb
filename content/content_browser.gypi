@@ -114,6 +114,8 @@
     'browser/download/download_create_info.h',
     'browser/download/download_file.cc',
     'browser/download/download_file.h',
+    'browser/download/download_file_impl.cc',
+    'browser/download/download_file_impl.h',
     'browser/download/download_file_manager.cc',
     'browser/download/download_file_manager.h',
     'browser/download/download_id.cc',
