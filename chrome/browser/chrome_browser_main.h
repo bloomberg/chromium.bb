@@ -9,7 +9,6 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/tracked_objects.h"
 #include "chrome/browser/first_run/first_run.h"
@@ -18,7 +17,6 @@
 
 class BrowserInit;
 class BrowserProcessImpl;
-class ChromeBrowserMainExtraParts;
 class FieldTrialSynchronizer;
 class HistogramSynchronizer;
 class MetricsService;
@@ -45,14 +43,23 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
  public:
   virtual ~ChromeBrowserMainParts();
 
-  // Add additional ChromeBrowserMainExtraParts.
-  virtual void AddParts(ChromeBrowserMainExtraParts* parts);
+  // Constructs metrics service and does related initialization, including
+  // creation of field trials. Call only after labs have been converted to
+  // switches.
+  MetricsService* SetupMetricsAndFieldTrials(PrefService* local_state);
+
+  const content::MainFunctionParams& parameters() const {
+    return parameters_;
+  }
+  const CommandLine& parsed_command_line() const {
+    return parsed_command_line_;
+  }
 
  protected:
   explicit ChromeBrowserMainParts(
       const content::MainFunctionParams& parameters);
 
-  // content::BrowserMainParts overrides.
+  // content::BrowserParts overrides
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PostEarlyInitialization() OVERRIDE;
   virtual void ToolkitInitialized() OVERRIDE;
@@ -64,15 +71,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Displays a warning message that we can't find any locale data files.
   virtual void ShowMissingLocaleMessageBox() = 0;
-
-  const content::MainFunctionParams& parameters() const {
-    return parameters_;
-  }
-  const CommandLine& parsed_command_line() const {
-    return parsed_command_line_;
-  }
-
-  Profile* profile() { return profile_; }
 
  private:
   // Methods for |EarlyInitialization()| ---------------------------------------
@@ -106,11 +104,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Methods for |SetupMetricsAndFieldTrials()| --------------------------------
 
-  // Constructs metrics service and does related initialization, including
-  // creation of field trials. Call only after labs have been converted to
-  // switches.
-  MetricsService* SetupMetricsAndFieldTrials(PrefService* local_state);
-
   static MetricsService* InitializeMetrics(
       const CommandLine& parsed_command_line,
       const PrefService* local_state);
@@ -122,6 +115,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Methods for Main Message Loop -------------------------------------------
 
   int PreMainMessageLoopRunImpl();
+  void StartBrowserOrUITask();
 
   // Members initialized on construction ---------------------------------------
 
@@ -142,9 +136,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Statistical testing infrastructure for the entire browser. NULL until
   // SetupMetricsAndFieldTrials is called.
   scoped_ptr<base::FieldTrialList> field_trial_list_;
-
-  // Vector of additional ChromeBrowserMainExtraParts.
-  ScopedVector<ChromeBrowserMainExtraParts> chrome_extra_parts_;
 
   // Members initialized after / released before main_message_loop_ ------------
 

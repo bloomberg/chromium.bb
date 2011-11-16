@@ -33,8 +33,9 @@ class ShellContentBrowserClient : public ContentBrowserClient
     shell_browser_main_parts_ = parts;
   }
 
-  virtual BrowserMainParts* CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters) OVERRIDE;
+  virtual void CreateBrowserMainParts(
+      const content::MainFunctionParams& parameters,
+      std::vector<BrowserMainParts*>* parts_list) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* widget) OVERRIDE;
   virtual TabContentsView* CreateTabContentsView(
