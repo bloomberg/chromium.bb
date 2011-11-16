@@ -38,12 +38,7 @@ class SettingsBackend : public SyncableService {
 
   // Gets a weak reference to the storage area for a given extension.
   // Must be run on the FILE thread.
-  //
-  // By default this will be an SettingsLeveldbStorage, but on
-  // failure to create a leveldb instance will fall back to
-  // InMemorySettingsStorage.
-  SettingsStorage* GetStorage(
-      const std::string& extension_id) const;
+  SettingsStorage* GetStorage(const std::string& extension_id) const;
 
   // Deletes all setting data for an extension.  Call on the FILE thread.
   void DeleteStorage(const std::string& extension_id);
@@ -71,6 +66,9 @@ class SettingsBackend : public SyncableService {
   // Gets all extension IDs known to extension settings.  This may not be all
   // installed extensions.
   std::set<std::string> GetKnownExtensionIDs() const;
+
+  // Disable the syncing of the storage area for |extension_id|.
+  void DisableSyncForExtension(const std::string& extension_id) const;
 
   // The Factory to use for creating leveldb storage areas.  Not owned.
   SettingsStorageFactory* const storage_factory_;

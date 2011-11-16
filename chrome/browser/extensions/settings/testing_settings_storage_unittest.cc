@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/settings/settings_storage_unittest.h"
 
-#include "chrome/browser/extensions/settings/in_memory_settings_storage.h"
+#include "chrome/browser/extensions/settings/testing_settings_storage.h"
 
 namespace extensions {
 
@@ -12,13 +12,13 @@ namespace {
 
 SettingsStorage* Param(
     const FilePath& file_path, const std::string& extension_id) {
-  return new InMemorySettingsStorage();
+  return new TestingSettingsStorage();
 }
 
 }  // namespace
 
 INSTANTIATE_TEST_CASE_P(
-    InMemorySettingsStorage,
+    TestingSettingsStorage,
     ExtensionSettingsStorageTest,
     testing::Values(&Param));
 

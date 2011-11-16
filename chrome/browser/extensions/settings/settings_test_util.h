@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/testing_profile.h"
@@ -63,6 +64,24 @@ class MockProfile : public TestingProfile {
  private:
   MockExtensionService extension_service_;
   scoped_ptr<ExtensionEventRouter> event_router_;
+};
+
+// SettingsStorageFactory which acts as a wrapper for other factories.
+class ScopedSettingsStorageFactory : public SettingsStorageFactory {
+ public:
+  explicit ScopedSettingsStorageFactory(SettingsStorageFactory* delegate);
+
+  virtual ~ScopedSettingsStorageFactory();
+
+  // Sets the delegate factory (equivalent to scoped_ptr::reset).
+  void Reset(SettingsStorageFactory* delegate);
+
+  // SettingsStorageFactory implementation.
+  virtual SettingsStorage* Create(
+      const FilePath& base_path, const std::string& extension_id) OVERRIDE;
+
+ private:
+  scoped_ptr<SettingsStorageFactory> delegate_;
 };
 
 }  // namespace settings_test_util

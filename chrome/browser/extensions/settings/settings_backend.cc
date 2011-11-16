@@ -87,13 +87,16 @@ SettingsBackend::GetOrCreateStorageWithSyncData(
           observers_,
           extension_id,
           storage));
+  storage_objs_[extension_id] = syncable_storage;
+
   if (sync_processor_) {
-    // TODO(kalman): do something if StartSyncing fails.
-    ignore_result(syncable_storage->StartSyncing(
-        sync_type_, sync_data, sync_processor_));
+    SyncError error =
+        syncable_storage->StartSyncing(sync_type_, sync_data, sync_processor_);
+    if (error.IsSet()) {
+      DisableSyncForExtension(extension_id);
+    }
   }
 
-  storage_objs_[extension_id] = syncable_storage;
   return syncable_storage.get();
 }
 
@@ -140,6 +143,13 @@ std::set<std::string> SettingsBackend::GetKnownExtensionIDs() const {
   return result;
 }
 
+void SettingsBackend::DisableSyncForExtension(
+    const std::string& extension_id) const {
+  linked_ptr<SyncableSettingsStorage> storage = storage_objs_[extension_id];
+  DCHECK(storage.get());
+  storage->StopSyncing();
+}
+
 static void AddAllSyncData(
     const std::string& extension_id,
     const DictionaryValue& src,
@@ -165,8 +175,7 @@ SyncDataList SettingsBackend::GetAllSyncData(
 
   for (std::set<std::string>::const_iterator it = known_extension_ids.begin();
       it != known_extension_ids.end(); ++it) {
-    SettingsStorage::ReadResult maybe_settings =
-        GetStorage(*it)->Get();
+    SettingsStorage::ReadResult maybe_settings = GetStorage(*it)->Get();
     if (maybe_settings.HasError()) {
       LOG(WARNING) << "Failed to get settings for " << *it << ": " <<
           maybe_settings.error();
@@ -213,16 +222,17 @@ SyncError SettingsBackend::MergeDataAndStartSyncing(
       it != storage_objs_.end(); ++it) {
     std::map<std::string, linked_ptr<DictionaryValue> >::iterator
         maybe_sync_data = grouped_sync_data.find(it->first);
+    SyncError error;
     if (maybe_sync_data != grouped_sync_data.end()) {
-      // TODO(kalman): do something if StartSyncing fails.
-      ignore_result(
-          it->second->StartSyncing(
-              type, *maybe_sync_data->second, sync_processor));
+      error = it->second->StartSyncing(
+          type, *maybe_sync_data->second, sync_processor);
       grouped_sync_data.erase(it->first);
     } else {
       DictionaryValue empty;
-      // TODO(kalman): do something if StartSyncing fails.
-      ignore_result(it->second->StartSyncing(type, empty, sync_processor));
+      error = it->second->StartSyncing(type, empty, sync_processor);
+    }
+    if (error.IsSet()) {
+      DisableSyncForExtension(it->first);
     }
   }
 
@@ -255,10 +265,12 @@ SyncError SettingsBackend::ProcessSyncChanges(
   DictionaryValue empty;
   for (std::map<std::string, SettingSyncDataList>::iterator
       it = grouped_sync_data.begin(); it != grouped_sync_data.end(); ++it) {
-    // TODO(kalman): do something if ProcessSyncChanges fails.
-    ignore_result(
+    SyncError error =
         GetOrCreateStorageWithSyncData(it->first, empty)->
-            ProcessSyncChanges(it->second));
+            ProcessSyncChanges(it->second);
+    if (error.IsSet()) {
+      DisableSyncForExtension(it->first);
+    }
   }
 
   return SyncError();
@@ -276,6 +288,8 @@ void SettingsBackend::StopSyncing(syncable::ModelType type) {
 
   for (StorageObjMap::iterator it = storage_objs_.begin();
       it != storage_objs_.end(); ++it) {
+    // Some storage areas may have already stopped syncing if they had areas
+    // and syncing was disabled, but StopSyncing is safe to call multiple times.
     it->second->StopSyncing();
   }
 }

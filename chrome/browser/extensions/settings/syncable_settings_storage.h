@@ -41,16 +41,23 @@ class SyncableSettingsStorage : public SettingsStorage {
   virtual WriteResult Clear() OVERRIDE;
 
   // Sync-related methods, analogous to those on SyncableService (handled by
-  // ExtensionSettings).
+  // ExtensionSettings), but with looser guarantees about when the methods
+  // can be called.
+
+  // Must only be called if sync isn't already active; not idempotent since
+  // behaviour would be undefined given differerent values of |sync_state|.
   SyncError StartSyncing(
       // Either SETTINGS or APP_SETTINGS.
       syncable::ModelType type,
       const DictionaryValue& sync_state,
       // Must NOT be NULL. Ownership NOT taken.
       SyncChangeProcessor* sync_processor);
+
+  // May be called at any time (idempotent).
   void StopSyncing();
-  std::vector<SyncError> ProcessSyncChanges(
-      const SettingSyncDataList& sync_changes);
+
+  // May be called at any time; changes will be ignored if sync isn't active.
+  SyncError ProcessSyncChanges(const SettingSyncDataList& sync_changes);
 
  private:
   // Propagates some changes to sync by sending an ADD/UPDATE/DELETE depending

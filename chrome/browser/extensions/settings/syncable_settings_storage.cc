@@ -146,6 +146,8 @@ SyncError SyncableSettingsStorage::StartSyncing(
 SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
     const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(sync_processor_);
+
   SyncChangeList changes;
   for (DictionaryValue::key_iterator it = settings.begin_keys();
       it != settings.end_keys(); ++it) {
@@ -161,6 +163,7 @@ SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
 
   SyncError error = sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
   if (error.IsSet()) {
+    StopSyncing();
     return error;
   }
 
@@ -222,31 +225,30 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
   if (changes.empty()) {
     return SyncError();
   }
-
-  std::vector<SyncError> sync_errors(ProcessSyncChanges(changes));
-  if (sync_errors.empty()) {
-    return SyncError();
-  }
-  // TODO(kalman): something sensible with multiple errors.
-  return sync_errors[0];
+  return ProcessSyncChanges(changes);
 }
 
 void SyncableSettingsStorage::StopSyncing() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(sync_type_ == syncable::EXTENSION_SETTINGS ||
-         sync_type_ == syncable::APP_SETTINGS);
-  DCHECK(sync_processor_);
 
+  // Stop syncing is allowed to be called multiple times without StartSyncing,
+  // so don't DCHECK that these values aren't already disabled.
   sync_type_ = syncable::UNSPECIFIED;
   sync_processor_ = NULL;
   synced_keys_.clear();
 }
 
-std::vector<SyncError> SyncableSettingsStorage::ProcessSyncChanges(
+SyncError SyncableSettingsStorage::ProcessSyncChanges(
     const SettingSyncDataList& sync_changes) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(sync_processor_);
   DCHECK(!sync_changes.empty()) << "No sync changes for " << extension_id_;
+
+  if (!sync_processor_) {
+    return SyncError(
+        FROM_HERE,
+        std::string("Sync is inactive for ") + extension_id_,
+        sync_type_);
+  }
 
   std::vector<SyncError> errors;
   SettingChangeList changes;
@@ -327,7 +329,8 @@ std::vector<SyncError> SyncableSettingsStorage::ProcessSyncChanges(
       extension_id_,
       SettingChange::GetEventJson(changes));
 
-  return errors;
+  // TODO(kalman): Something sensible with multiple errors.
+  return errors.empty() ? SyncError() : errors[0];
 }
 
 void SyncableSettingsStorage::SendChangesToSync(
@@ -376,7 +379,7 @@ void SyncableSettingsStorage::SendChangesToSync(
   SyncError error =
       sync_processor_->ProcessSyncChanges(FROM_HERE, sync_changes);
   if (error.IsSet()) {
-    LOG(WARNING) << "Failed to send changes to sync: " << error.message();
+    StopSyncing();
     return;
   }
 

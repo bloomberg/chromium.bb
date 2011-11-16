@@ -11,7 +11,7 @@
 #include "chrome/browser/extensions/settings/settings_backend.h"
 #include "chrome/browser/extensions/settings/settings_storage_cache.h"
 #include "chrome/browser/extensions/settings/settings_storage_quota_enforcer.h"
-#include "chrome/browser/extensions/settings/in_memory_settings_storage.h"
+#include "chrome/browser/extensions/settings/testing_settings_storage.h"
 
 namespace extensions {
 
@@ -21,9 +21,7 @@ class ExtensionSettingsQuotaTest : public testing::Test {
       : byte_value_1_(Value::CreateIntegerValue(1)),
         byte_value_16_(Value::CreateStringValue("sixteen bytes.")),
         byte_value_256_(new ListValue()),
-        delegate_(
-            new SettingsStorageCache(
-                new InMemorySettingsStorage())) {
+        delegate_(new SettingsStorageCache(new TestingSettingsStorage())) {
     for (int i = 1; i < 89; ++i) {
       byte_value_256_->Append(Value::CreateIntegerValue(i));
     }

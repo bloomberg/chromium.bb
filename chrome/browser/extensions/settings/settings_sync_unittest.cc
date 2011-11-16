@@ -11,19 +11,22 @@
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/task.h"
+#include "chrome/browser/extensions/settings/failing_settings_storage.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/extensions/settings/settings_storage_cache.h"
+#include "chrome/browser/extensions/settings/settings_storage_factory.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
-#include "chrome/browser/extensions/settings/syncable_settings_storage.h"
 #include "chrome/browser/extensions/settings/settings_test_util.h"
+#include "chrome/browser/extensions/settings/syncable_settings_storage.h"
+#include "chrome/browser/extensions/settings/testing_settings_storage.h"
 #include "chrome/browser/sync/api/sync_change_processor.h"
 #include "content/test/test_browser_thread.h"
 
-namespace extensions {
+// TODO(kalman): Integration tests for sync.
 
 using content::BrowserThread;
 
-// TODO(kalman): Integration tests for sync.
+namespace extensions {
 
 using namespace settings_test_util;
 
@@ -77,9 +80,18 @@ testing::AssertionResult SettingsEq(
 // being converted to the more useful SettingSyncData via changes().
 class MockSyncChangeProcessor : public SyncChangeProcessor {
  public:
+  MockSyncChangeProcessor() : fail_all_requests_(false) {}
+
+  // SyncChangeProcessor implementation.
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) OVERRIDE {
+    if (fail_all_requests_) {
+      return SyncError(
+          FROM_HERE,
+          "MockSyncChangeProcessor: configured to fail",
+          change_list[0].sync_data().GetDataType());
+    }
     for (SyncChangeList::const_iterator it = change_list.begin();
         it != change_list.end(); ++it) {
       changes_.push_back(SettingSyncData(*it));
@@ -87,10 +99,16 @@ class MockSyncChangeProcessor : public SyncChangeProcessor {
     return SyncError();
   }
 
+  // Mock methods.
+
   const SettingSyncDataList& changes() { return changes_; }
 
   void ClearChanges() {
     changes_.clear();
+  }
+
+  void SetFailAllRequests(bool fail_all_requests) {
+    fail_all_requests_ = fail_all_requests;
   }
 
   // Returns the only change for a given extension setting.  If there is not
@@ -119,6 +137,31 @@ class MockSyncChangeProcessor : public SyncChangeProcessor {
 
  private:
   SettingSyncDataList changes_;
+  bool fail_all_requests_;
+};
+
+// SettingsStorageFactory which always returns TestingSettingsStorage objects,
+// and allows individually created objects to be returned.
+class TestingSettingsStorageFactory : public SettingsStorageFactory {
+ public:
+  TestingSettingsStorage* GetExisting(const std::string& extension_id) {
+    DCHECK(created_.count(extension_id));
+    return created_[extension_id];
+  }
+
+  // SettingsStorageFactory implementation.
+  virtual SettingsStorage* Create(
+      const FilePath& base_path, const std::string& extension_id) OVERRIDE {
+    TestingSettingsStorage* new_storage = new TestingSettingsStorage();
+    DCHECK(!created_.count(extension_id));
+    created_[extension_id] = new_storage;
+    return new_storage;
+  }
+
+ private:
+  // None of these storage areas are owned by this factory, so care must be
+  // taken when calling GetExisting.
+  std::map<std::string, TestingSettingsStorage*> created_;
 };
 
 void AssignSettingsService(SyncableService** dst, SyncableService* src) {
@@ -136,7 +179,9 @@ class ExtensionSettingsSyncTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new MockProfile(temp_dir_.path()));
-    frontend_.reset(SettingsFrontend::Create(profile_.get()));
+    storage_factory_ =
+        new ScopedSettingsStorageFactory(new SettingsLeveldbStorage::Factory());
+    frontend_.reset(SettingsFrontend::Create(storage_factory_, profile_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -186,6 +231,9 @@ class ExtensionSettingsSyncTest : public testing::Test {
   MockSyncChangeProcessor sync_;
   scoped_ptr<MockProfile> profile_;
   scoped_ptr<SettingsFrontend> frontend_;
+
+  // Owned by |frontend_|.
+  ScopedSettingsStorageFactory* storage_factory_;
 };
 
 // Get a semblance of coverage for both EXTENSION_SETTINGS and APP_SETTINGS
@@ -585,6 +633,617 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   GetSyncableService(syncable::APP_SETTINGS)->
       StopSyncing(syncable::APP_SETTINGS);
   ASSERT_EQ(0u, sync_.changes().size());
+}
+
+TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
+  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  Extension::Type type = Extension::TYPE_EXTENSION;
+
+  StringValue fooValue("fooValue");
+  StringValue barValue("barValue");
+
+  // There is a bit of a convoluted method to get storage areas that can fail;
+  // hand out TestingSettingsStorage object then toggle them failing/succeeding
+  // as necessary.
+  TestingSettingsStorageFactory* testing_factory =
+      new TestingSettingsStorageFactory();
+  storage_factory_->Reset(testing_factory);
+
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
+
+  // Make bad fail for incoming sync changes.
+  testing_factory->GetExisting("bad")->SetFailAllRequests(true);
+  {
+    SyncDataList sync_data;
+    sync_data.push_back(
+        settings_sync_util::CreateData("good", "foo", fooValue));
+    sync_data.push_back(
+        settings_sync_util::CreateData("bad", "foo", fooValue));
+    GetSyncableService(model_type)->MergeDataAndStartSyncing(
+        model_type, sync_data, &sync_);
+  }
+  testing_factory->GetExisting("bad")->SetFailAllRequests(false);
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // Changes made to good should be sent to sync, changes from bad shouldn't.
+  sync_.ClearChanges();
+  good->Set("bar", barValue);
+  bad->Set("bar", barValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(1u, sync_.changes().size());
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // Changes received from sync should go to good but not bad (even when it's
+  // not failing).
+  {
+    SyncChangeList change_list;
+    change_list.push_back(
+        settings_sync_util::CreateUpdate("good", "foo", barValue));
+    // (Sending UPDATE here even though it's adding, since that's what the state
+    // of sync is.  In any case, it won't work.)
+    change_list.push_back(
+        settings_sync_util::CreateUpdate("bad", "foo", barValue));
+    GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
+  }
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // Changes made to bad still shouldn't go to sync, even though it didn't fail
+  // last time.
+  sync_.ClearChanges();
+  good->Set("bar", fooValue);
+  bad->Set("bar", fooValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(1u, sync_.changes().size());
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("bar", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // Failing ProcessSyncChanges shouldn't go to the storage.
+  testing_factory->GetExisting("bad")->SetFailAllRequests(true);
+  {
+    SyncChangeList change_list;
+    change_list.push_back(
+        settings_sync_util::CreateUpdate("good", "foo", fooValue));
+    // (Ditto.)
+    change_list.push_back(
+        settings_sync_util::CreateUpdate("bad", "foo", fooValue));
+    GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
+  }
+  testing_factory->GetExisting("bad")->SetFailAllRequests(false);
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("bar", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // Restarting sync should make bad start syncing again.
+  sync_.ClearChanges();
+  GetSyncableService(model_type)->StopSyncing(model_type);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
+
+  // Local settings will have been pushed to sync, since it's empty (in this
+  // test; presumably it wouldn't be live, since we've been getting changes).
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("bad", "bar").change_type());
+  EXPECT_EQ(3u, sync_.changes().size());
+
+  // Live local changes now get pushed, too.
+  sync_.ClearChanges();
+  good->Set("bar", barValue);
+  bad->Set("bar", barValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("bad", "bar").change_type());
+  EXPECT_EQ(2u, sync_.changes().size());
+
+  // And ProcessSyncChanges work, too.
+  {
+    SyncChangeList change_list;
+    change_list.push_back(
+        settings_sync_util::CreateUpdate("good", "bar", fooValue));
+    change_list.push_back(
+        settings_sync_util::CreateUpdate("bad", "bar", fooValue));
+    GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
+  }
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("bar", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+}
+
+TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
+  // The test above tests a failing ProcessSyncChanges too, but here test with
+  // an initially passing MergeDataAndStartSyncing.
+  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  Extension::Type type = Extension::TYPE_PACKAGED_APP;
+
+  StringValue fooValue("fooValue");
+  StringValue barValue("barValue");
+
+  TestingSettingsStorageFactory* testing_factory =
+      new TestingSettingsStorageFactory();
+  storage_factory_->Reset(testing_factory);
+
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
+
+  // Unlike before, initially succeeding MergeDataAndStartSyncing.
+  {
+    SyncDataList sync_data;
+    sync_data.push_back(
+        settings_sync_util::CreateData("good", "foo", fooValue));
+    sync_data.push_back(
+        settings_sync_util::CreateData("bad", "foo", fooValue));
+    GetSyncableService(model_type)->MergeDataAndStartSyncing(
+        model_type, sync_data, &sync_);
+  }
+
+  EXPECT_EQ(0u, sync_.changes().size());
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // Now fail ProcessSyncChanges for bad.
+  testing_factory->GetExisting("bad")->SetFailAllRequests(true);
+  {
+    SyncChangeList change_list;
+    change_list.push_back(
+        settings_sync_util::CreateAdd("good", "bar", barValue));
+    change_list.push_back(
+        settings_sync_util::CreateAdd("bad", "bar", barValue));
+    GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
+  }
+  testing_factory->GetExisting("bad")->SetFailAllRequests(false);
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // No more changes sent to sync for bad.
+  sync_.ClearChanges();
+  good->Set("foo", barValue);
+  bad->Set("foo", barValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(1u, sync_.changes().size());
+
+  // No more changes received from sync should go to bad.
+  {
+    SyncChangeList change_list;
+    change_list.push_back(
+        settings_sync_util::CreateAdd("good", "foo", fooValue));
+    change_list.push_back(
+        settings_sync_util::CreateAdd("bad", "foo", fooValue));
+    GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
+  }
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("foo", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+}
+
+TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
+  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  Extension::Type type = Extension::TYPE_EXTENSION;
+
+  StringValue fooValue("fooValue");
+  StringValue barValue("barValue");
+
+  TestingSettingsStorageFactory* testing_factory =
+      new TestingSettingsStorageFactory();
+  storage_factory_->Reset(testing_factory);
+
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
+
+  good->Set("foo", fooValue);
+  bad->Set("foo", fooValue);
+
+  // Even though bad will fail to get all sync data, sync data should still
+  // include that from good.
+  testing_factory->GetExisting("bad")->SetFailAllRequests(true);
+  {
+    SyncDataList all_sync_data =
+        GetSyncableService(model_type)->GetAllSyncData(model_type);
+    EXPECT_EQ(1u, all_sync_data.size());
+    EXPECT_EQ("good/foo", all_sync_data[0].GetTag());
+  }
+  testing_factory->GetExisting("bad")->SetFailAllRequests(false);
+
+  // Sync shouldn't be disabled for good (nor bad -- but this is unimportant).
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("bad", "foo").change_type());
+  EXPECT_EQ(2u, sync_.changes().size());
+
+  sync_.ClearChanges();
+  good->Set("bar", barValue);
+  bad->Set("bar", barValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("bad", "bar").change_type());
+  EXPECT_EQ(2u, sync_.changes().size());
+}
+
+TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
+  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  Extension::Type type = Extension::TYPE_PACKAGED_APP;
+
+  StringValue fooValue("fooValue");
+  StringValue barValue("barValue");
+
+  TestingSettingsStorageFactory* testing_factory =
+      new TestingSettingsStorageFactory();
+  storage_factory_->Reset(testing_factory);
+
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
+
+  good->Set("foo", fooValue);
+  bad->Set("foo", fooValue);
+
+  // good will successfully push foo:fooValue to sync, but bad will fail to
+  // get them so won't.
+  testing_factory->GetExisting("bad")->SetFailAllRequests(true);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
+  testing_factory->GetExisting("bad")->SetFailAllRequests(false);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(1u, sync_.changes().size());
+
+  // bad should now be disabled for sync.
+  sync_.ClearChanges();
+  good->Set("bar", barValue);
+  bad->Set("bar", barValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(1u, sync_.changes().size());
+
+  {
+    SyncChangeList change_list;
+    change_list.push_back(
+        settings_sync_util::CreateUpdate("good", "foo", barValue));
+    // (Sending ADD here even though it's updating, since that's what the state
+    // of sync is.  In any case, it won't work.)
+    change_list.push_back(
+        settings_sync_util::CreateAdd("bad", "foo", barValue));
+    GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
+  }
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("foo", fooValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // Re-enabling sync without failing should cause the local changes from bad
+  // to be pushed to sync successfully, as should future changes to bad.
+  sync_.ClearChanges();
+  GetSyncableService(model_type)->StopSyncing(model_type);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("bad", "foo").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("bad", "bar").change_type());
+  EXPECT_EQ(4u, sync_.changes().size());
+
+  sync_.ClearChanges();
+  good->Set("bar", fooValue);
+  bad->Set("bar", fooValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(2u, sync_.changes().size());
+}
+
+TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
+  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  Extension::Type type = Extension::TYPE_EXTENSION;
+
+  StringValue fooValue("fooValue");
+  StringValue barValue("barValue");
+
+  TestingSettingsStorageFactory* testing_factory =
+      new TestingSettingsStorageFactory();
+  storage_factory_->Reset(testing_factory);
+
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
+
+  // Only set bad; setting good will cause it to fail below.
+  bad->Set("foo", fooValue);
+
+  sync_.SetFailAllRequests(true);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
+  sync_.SetFailAllRequests(false);
+
+  // Changes from good will be send to sync, changes from bad won't.
+  sync_.ClearChanges();
+  good->Set("foo", barValue);
+  bad->Set("foo", barValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(1u, sync_.changes().size());
+
+  // Changes from sync will be sent to good, not to bad.
+  {
+    SyncChangeList change_list;
+    change_list.push_back(
+        settings_sync_util::CreateAdd("good", "bar", barValue));
+    change_list.push_back(
+        settings_sync_util::CreateAdd("bad", "bar", barValue));
+    GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
+  }
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("foo", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // Restarting sync makes everything work again.
+  sync_.ClearChanges();
+  GetSyncableService(model_type)->StopSyncing(model_type);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("bad", "foo").change_type());
+  EXPECT_EQ(3u, sync_.changes().size());
+
+  sync_.ClearChanges();
+  good->Set("foo", fooValue);
+  bad->Set("foo", fooValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(2u, sync_.changes().size());
+}
+
+TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
+  syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
+  Extension::Type type = Extension::TYPE_EXTENSION;
+
+  StringValue fooValue("fooValue");
+  StringValue barValue("barValue");
+
+  TestingSettingsStorageFactory* testing_factory =
+      new TestingSettingsStorageFactory();
+  storage_factory_->Reset(testing_factory);
+
+  SettingsStorage* good = AddExtensionAndGetStorage("good", type);
+  SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
+
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
+
+  // bad will fail to send changes.
+  good->Set("foo", fooValue);
+  sync_.SetFailAllRequests(true);
+  bad->Set("foo", fooValue);
+  sync_.SetFailAllRequests(false);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(1u, sync_.changes().size());
+
+  // No further changes should be sent from bad.
+  sync_.ClearChanges();
+  good->Set("foo", barValue);
+  bad->Set("foo", barValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(1u, sync_.changes().size());
+
+  // Changes from sync will be sent to good, not to bad.
+  {
+    SyncChangeList change_list;
+    change_list.push_back(
+        settings_sync_util::CreateAdd("good", "bar", barValue));
+    change_list.push_back(
+        settings_sync_util::CreateAdd("bad", "bar", barValue));
+    GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
+  }
+
+  {
+    DictionaryValue dict;
+    dict.Set("foo", barValue.DeepCopy());
+    dict.Set("bar", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
+  }
+  {
+    DictionaryValue dict;
+    dict.Set("foo", barValue.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
+  }
+
+  // Restarting sync makes everything work again.
+  sync_.ClearChanges();
+  GetSyncableService(model_type)->StopSyncing(model_type);
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("good", "bar").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_ADD,
+      sync_.GetOnlyChange("bad", "foo").change_type());
+  EXPECT_EQ(3u, sync_.changes().size());
+
+  sync_.ClearChanges();
+  good->Set("foo", fooValue);
+  bad->Set("foo", fooValue);
+
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(
+      SyncChange::ACTION_UPDATE,
+      sync_.GetOnlyChange("good", "foo").change_type());
+  EXPECT_EQ(2u, sync_.changes().size());
 }
 
 }  // namespace extensions

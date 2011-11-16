@@ -27,6 +27,8 @@ SettingsStorage* GetStorage(
   return storage;
 }
 
+// MockExtensionService
+
 MockExtensionService::MockExtensionService() {}
 
 MockExtensionService::~MockExtensionService() {}
@@ -73,6 +75,8 @@ void MockExtensionService::AddExtension(
   DCHECK(error.empty());
 }
 
+// MockProfile
+
 MockProfile::MockProfile(const FilePath& file_path)
     : TestingProfile(file_path) {
   event_router_.reset(new ExtensionEventRouter(this));
@@ -92,6 +96,25 @@ ExtensionService* MockProfile::GetExtensionService() {
 
 ExtensionEventRouter* MockProfile::GetExtensionEventRouter() {
   return event_router_.get();
+}
+
+// ScopedSettingsFactory
+
+ScopedSettingsStorageFactory::ScopedSettingsStorageFactory(
+    SettingsStorageFactory* delegate) : delegate_(delegate) {
+  DCHECK(delegate);
+}
+
+ScopedSettingsStorageFactory::~ScopedSettingsStorageFactory() {}
+
+void ScopedSettingsStorageFactory::Reset(SettingsStorageFactory* delegate) {
+  DCHECK(delegate);
+  delegate_.reset(delegate);
+}
+
+SettingsStorage* ScopedSettingsStorageFactory::Create(
+    const FilePath& base_path, const std::string& extension_id) {
+  return delegate_->Create(base_path, extension_id);
 }
 
 }  // namespace settings_test_util

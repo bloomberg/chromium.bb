@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_IN_MEMORY_SETTINGS_STORAGE_H_
-#define CHROME_BROWSER_EXTENSIONS_SETTINGS_IN_MEMORY_SETTINGS_STORAGE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_SETTINGS_TESTING_SETTINGS_STORAGE_H_
+#define CHROME_BROWSER_EXTENSIONS_SETTINGS_TESTING_SETTINGS_STORAGE_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -11,10 +11,15 @@
 
 namespace extensions {
 
-// In-memory storage, as opposed to SettingsLeveldbStorage.
-class InMemorySettingsStorage : public SettingsStorage {
+// SettingsStorage for testing, with an in-memory storage but the ability to
+// optionally fail all operations.
+class TestingSettingsStorage : public SettingsStorage {
  public:
-  InMemorySettingsStorage() {}
+  TestingSettingsStorage();
+  virtual ~TestingSettingsStorage();
+
+  // Sets whether to fail all requests (default is false).
+  void SetFailAllRequests(bool fail_all_requests);
 
   // SettingsStorage implementation.
   virtual ReadResult Get(const std::string& key) OVERRIDE;
@@ -29,9 +34,11 @@ class InMemorySettingsStorage : public SettingsStorage {
  private:
   DictionaryValue storage_;
 
-  DISALLOW_COPY_AND_ASSIGN(InMemorySettingsStorage);
+  bool fail_all_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingSettingsStorage);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_SETTINGS_IN_MEMORY_SETTINGS_STORAGE_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_SETTINGS_TESTING_SETTINGS_STORAGE_H_

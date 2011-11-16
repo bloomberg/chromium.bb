@@ -23,30 +23,6 @@ using namespace settings_test_util;
 
 namespace {
 
-// SettingsStorageFactory which acts as a wrapper for other factories.
-class ScopedSettingsStorageFactory : public SettingsStorageFactory {
- public:
-  explicit ScopedSettingsStorageFactory(SettingsStorageFactory* delegate)
-      : delegate_(delegate) {
-    DCHECK(delegate);
-  }
-
-  virtual ~ScopedSettingsStorageFactory() {}
-
-  void Reset(SettingsStorageFactory* delegate) {
-    DCHECK(delegate);
-    delegate_.reset(delegate);
-  }
-
-  virtual SettingsStorage* Create(
-      const FilePath& base_path, const std::string& extension_id) OVERRIDE {
-    return delegate_->Create(base_path, extension_id);
-  }
-
- private:
-  scoped_ptr<SettingsStorageFactory> delegate_;
-};
-
 // A SettingsStorageFactory which always returns NULL.
 class NullSettingsStorageFactory : public SettingsStorageFactory {
  public:
@@ -81,8 +57,7 @@ class ExtensionSettingsFrontendTest : public testing::Test {
  protected:
   void ResetFrontend() {
     storage_factory_ =
-        new ScopedSettingsStorageFactory(
-            new SettingsLeveldbStorage::Factory());
+        new ScopedSettingsStorageFactory(new SettingsLeveldbStorage::Factory());
     frontend_.reset(SettingsFrontend::Create(storage_factory_, profile_.get()));
   }
 
