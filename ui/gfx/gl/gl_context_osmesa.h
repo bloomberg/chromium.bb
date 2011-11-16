@@ -23,13 +23,13 @@ class GLContextOSMesa : public GLContext {
 
   // Implement GLContext.
   virtual bool Initialize(
-      GLSurface* compatible_surface, GpuPreference gpu_preference);
-  virtual void Destroy();
-  virtual bool MakeCurrent(GLSurface* surface);
-  virtual void ReleaseCurrent(GLSurface* surface);
-  virtual bool IsCurrent(GLSurface* surface);
-  virtual void* GetHandle();
-  virtual void SetSwapInterval(int interval);
+      GLSurface* compatible_surface, GpuPreference gpu_preference) OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual bool MakeCurrent(GLSurface* surface) OVERRIDE;
+  virtual void ReleaseCurrent(GLSurface* surface) OVERRIDE;
+  virtual bool IsCurrent(GLSurface* surface) OVERRIDE;
+  virtual void* GetHandle() OVERRIDE;
+  virtual void SetSwapInterval(int interval) OVERRIDE;
 
  private:
   OSMesaContext context_;

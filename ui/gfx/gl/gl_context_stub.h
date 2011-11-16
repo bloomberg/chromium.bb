@@ -18,14 +18,14 @@ class GL_EXPORT GLContextStub : public GLContext {
 
   // Implement GLContext.
   virtual bool Initialize(
-      GLSurface* compatible_surface, GpuPreference gpu_preference);
-  virtual void Destroy();
-  virtual bool MakeCurrent(GLSurface* surface);
-  virtual void ReleaseCurrent(GLSurface* surface);
-  virtual bool IsCurrent(GLSurface* surface);
-  virtual void* GetHandle();
-  virtual void SetSwapInterval(int interval);
-  virtual std::string GetExtensions();
+      GLSurface* compatible_surface, GpuPreference gpu_preference) OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual bool MakeCurrent(GLSurface* surface) OVERRIDE;
+  virtual void ReleaseCurrent(GLSurface* surface) OVERRIDE;
+  virtual bool IsCurrent(GLSurface* surface) OVERRIDE;
+  virtual void* GetHandle() OVERRIDE;
+  virtual void SetSwapInterval(int interval) OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLContextStub);

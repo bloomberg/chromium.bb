@@ -142,8 +142,8 @@ class GLES2DecoderTestBase : public testing::Test {
     engine_->ClearSharedMemory();
   }
 
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   template <typename T>
   error::Error ExecuteCmd(const T& cmd) {
@@ -406,7 +406,7 @@ class GLES2DecoderTestBase : public testing::Test {
     virtual ~MockCommandBufferEngine() {
     }
 
-    virtual Buffer GetSharedMemoryBuffer(int32 shm_id) {
+    virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE {
       return shm_id == kSharedMemoryId ? valid_buffer_ : invalid_buffer_;
     }
 
@@ -414,18 +414,18 @@ class GLES2DecoderTestBase : public testing::Test {
       memset(data_.get(), kInitialMemoryValue, kSharedBufferSize);
     }
 
-    virtual void set_token(int32 token) {
+    virtual void set_token(int32 token) OVERRIDE {
       DCHECK(false);
     }
 
     // Overridden from CommandBufferEngine.
-    virtual bool SetGetOffset(int32 offset) {
+    virtual bool SetGetOffset(int32 offset) OVERRIDE {
       DCHECK(false);
       return false;
     }
 
     // Overridden from CommandBufferEngine.
-    virtual int32 GetGetOffset() {
+    virtual int32 GetGetOffset() OVERRIDE {
       DCHECK(false);
       return 0;
     }
@@ -447,8 +447,8 @@ class GLES2DecoderWithShaderTestBase : public GLES2DecoderTestBase {
   }
 
  protected:
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
 };
 

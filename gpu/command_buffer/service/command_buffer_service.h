@@ -25,23 +25,23 @@ class CommandBufferService : public CommandBuffer {
   virtual ~CommandBufferService();
 
   // CommandBuffer implementation:
-  virtual bool Initialize(int32 size);
-  virtual bool Initialize(base::SharedMemory* buffer, int32 size);
-  virtual Buffer GetRingBuffer();
-  virtual State GetState();
-  virtual State GetLastState();
-  virtual void Flush(int32 put_offset);
-  virtual State FlushSync(int32 put_offset, int32 last_known_get);
-  virtual void SetGetOffset(int32 get_offset);
-  virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
+  virtual bool Initialize(int32 size) OVERRIDE;
+  virtual bool Initialize(base::SharedMemory* buffer, int32 size) OVERRIDE;
+  virtual Buffer GetRingBuffer() OVERRIDE;
+  virtual State GetState() OVERRIDE;
+  virtual State GetLastState() OVERRIDE;
+  virtual void Flush(int32 put_offset) OVERRIDE;
+  virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
+  virtual void SetGetOffset(int32 get_offset) OVERRIDE;
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) OVERRIDE;
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
                                        size_t size,
-                                       int32 id_request);
-  virtual void DestroyTransferBuffer(int32 id);
-  virtual Buffer GetTransferBuffer(int32 handle);
-  virtual void SetToken(int32 token);
-  virtual void SetParseError(error::Error error);
-  virtual void SetContextLostReason(error::ContextLostReason);
+                                       int32 id_request) OVERRIDE;
+  virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
+  virtual Buffer GetTransferBuffer(int32 handle) OVERRIDE;
+  virtual void SetToken(int32 token) OVERRIDE;
+  virtual void SetParseError(error::Error error) OVERRIDE;
+  virtual void SetContextLostReason(error::ContextLostReason) OVERRIDE;
 
   // Sets a callback that is called whenever the put offset is changed. When
   // called with sync==true, the callback must not return until some progress

@@ -49,10 +49,10 @@ class GpuScheduler
   void SetScheduledCallback(Callback0::Type* scheduled_callback);
 
   // Implementation of CommandBufferEngine.
-  virtual Buffer GetSharedMemoryBuffer(int32 shm_id);
-  virtual void set_token(int32 token);
-  virtual bool SetGetOffset(int32 offset);
-  virtual int32 GetGetOffset();
+  virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE;
+  virtual void set_token(int32 token) OVERRIDE;
+  virtual bool SetGetOffset(int32 offset) OVERRIDE;
+  virtual int32 GetGetOffset() OVERRIDE;
 
   void SetCommandProcessedCallback(Callback0::Type* callback);
 

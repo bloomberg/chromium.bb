@@ -108,19 +108,19 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   explicit GLSurfaceAdapter(GLSurface* surface);
   virtual ~GLSurfaceAdapter();
 
-  virtual bool Initialize();
-  virtual void Destroy();
-  virtual bool Resize(const gfx::Size& size);
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
-  virtual void* GetHandle();
-  virtual unsigned int GetBackingFrameBufferObject();
-  virtual bool OnMakeCurrent(GLContext* context);
-  virtual void* GetShareHandle();
-  virtual void* GetDisplay();
-  virtual void* GetConfig();
-  virtual unsigned GetFormat();
+  virtual bool Initialize() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual bool Resize(const gfx::Size& size) OVERRIDE;
+  virtual bool IsOffscreen() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+  virtual gfx::Size GetSize() OVERRIDE;
+  virtual void* GetHandle() OVERRIDE;
+  virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
+  virtual bool OnMakeCurrent(GLContext* context) OVERRIDE;
+  virtual void* GetShareHandle() OVERRIDE;
+  virtual void* GetDisplay() OVERRIDE;
+  virtual void* GetConfig() OVERRIDE;
+  virtual unsigned GetFormat() OVERRIDE;
 
   GLSurface* surface() const { return surface_.get(); }
 

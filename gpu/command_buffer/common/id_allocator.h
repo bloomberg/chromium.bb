@@ -9,6 +9,9 @@
 
 #include <set>
 #include <utility>
+
+#include "base/compiler_specific.h"
+
 #include "../common/types.h"
 
 namespace gpu {
@@ -46,11 +49,11 @@ class IdAllocator : public IdAllocatorInterface {
   virtual ~IdAllocator();
 
   // Implement IdAllocatorInterface.
-  virtual ResourceId AllocateID();
-  virtual ResourceId AllocateIDAtOrAbove(ResourceId desired_id);
-  virtual bool MarkAsUsed(ResourceId id);
-  virtual void FreeID(ResourceId id);
-  virtual bool InUse(ResourceId id) const;
+  virtual ResourceId AllocateID() OVERRIDE;
+  virtual ResourceId AllocateIDAtOrAbove(ResourceId desired_id) OVERRIDE;
+  virtual bool MarkAsUsed(ResourceId id) OVERRIDE;
+  virtual void FreeID(ResourceId id) OVERRIDE;
+  virtual bool InUse(ResourceId id) const OVERRIDE;
 
  private:
   // TODO(gman): This would work much better with ranges or a hash table.
@@ -78,11 +81,11 @@ class NonReusedIdAllocator : public IdAllocatorInterface {
   virtual ~NonReusedIdAllocator();
 
   // Implement IdAllocatorInterface.
-  virtual ResourceId AllocateID();
-  virtual ResourceId AllocateIDAtOrAbove(ResourceId desired_id);
-  virtual bool MarkAsUsed(ResourceId id);
-  virtual void FreeID(ResourceId id);
-  virtual bool InUse(ResourceId id) const;
+  virtual ResourceId AllocateID() OVERRIDE;
+  virtual ResourceId AllocateIDAtOrAbove(ResourceId desired_id) OVERRIDE;
+  virtual bool MarkAsUsed(ResourceId id) OVERRIDE;
+  virtual void FreeID(ResourceId id) OVERRIDE;
+  virtual bool InUse(ResourceId id) const OVERRIDE;
 
  private:
   ResourceId last_id_;

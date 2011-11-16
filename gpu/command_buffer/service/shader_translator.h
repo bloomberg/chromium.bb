@@ -83,18 +83,18 @@ class ShaderTranslator : public ShaderTranslatorInterface {
       ShShaderSpec shader_spec,
       const ShBuiltInResources* resources,
       GlslImplementationType glsl_implementation_type,
-      GlslBuiltInFunctionBehavior glsl_built_in_function_behavior);
+      GlslBuiltInFunctionBehavior glsl_built_in_function_behavior) OVERRIDE;
 
   // Overridden from ShaderTranslatorInterface.
-  virtual bool Translate(const char* shader);
+  virtual bool Translate(const char* shader) OVERRIDE;
 
   // Overridden from ShaderTranslatorInterface.
-  virtual const char* translated_shader() const;
-  virtual const char* info_log() const;
+  virtual const char* translated_shader() const OVERRIDE;
+  virtual const char* info_log() const OVERRIDE;
 
   // Overridden from ShaderTranslatorInterface.
-  virtual const VariableMap& attrib_map() const;
-  virtual const VariableMap& uniform_map() const;
+  virtual const VariableMap& attrib_map() const OVERRIDE;
+  virtual const VariableMap& uniform_map() const OVERRIDE;
 
  private:
   void ClearResults();
