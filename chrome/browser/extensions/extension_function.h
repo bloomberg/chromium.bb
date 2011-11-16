@@ -142,7 +142,7 @@ class ExtensionFunction
   // Sends the result back to the extension.
   virtual void SendResponse(bool success) = 0;
 
-  // Common implementation for SenderResponse.
+  // Common implementation for SendResponse.
   void SendResponseImpl(base::ProcessHandle process,
                         IPC::Message::Sender* ipc_sender,
                         int routing_id,
@@ -340,10 +340,24 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 // the browser's UI thread*.
 class AsyncExtensionFunction : public UIThreadExtensionFunction {
  public:
+  // A delegate for use in testing, to intercept the call to SendResponse.
+  class DelegateForTests {
+   public:
+    virtual void OnSendResponse(AsyncExtensionFunction* function,
+                                bool success) = 0;
+  };
+
   AsyncExtensionFunction();
+  virtual void SendResponse(bool success) OVERRIDE;
+
+  void set_test_delegate(DelegateForTests* delegate) {
+    delegate_ = delegate;
+  }
 
  protected:
   virtual ~AsyncExtensionFunction();
+
+  DelegateForTests* delegate_;
 };
 
 // A SyncExtensionFunction is an ExtensionFunction that runs synchronously

@@ -4,18 +4,53 @@
 
 #include "chrome/browser/extensions/extension_install_dialog.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
+#include "base/message_loop.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 
-// A flag used for SetExtensionInstallDialogForManifestAutoConfirmForTests
+namespace {
+
+// A flag used for SetExtensionInstallDialogAutoConfirmForTests
 enum AutoConfirmForTest {
   DO_NOT_SKIP = 0,
   PROCEED,
   ABORT
 };
 AutoConfirmForTest auto_confirm_for_tests = DO_NOT_SKIP;
+
+void AutoConfirmTask(ExtensionInstallUI::Delegate* delegate, bool proceed) {
+  if (proceed)
+    delegate->InstallUIProceed();
+  else
+    delegate->InstallUIAbort(true);
+}
+
+void DoAutoConfirm(ExtensionInstallUI::Delegate* delegate) {
+  bool proceed = (auto_confirm_for_tests == PROCEED);
+  // We use PostTask instead of calling the delegate directly here, because in
+  // the real implementations it's highly likely the message loop will be
+  // pumping a few times before the user clicks accept or cancel.
+  MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&AutoConfirmTask, delegate, proceed));
+}
+
+}  // namespace
+
+void ShowExtensionInstallDialog(Profile* profile,
+                                ExtensionInstallUI::Delegate* delegate,
+                                const Extension* extension,
+                                SkBitmap* icon,
+                                const ExtensionInstallUI::Prompt& prompt) {
+  if (auto_confirm_for_tests != DO_NOT_SKIP) {
+    DoAutoConfirm(delegate);
+    return;
+  }
+  ShowExtensionInstallDialogImpl(profile, delegate, extension, icon, prompt);
+}
 
 bool ShowExtensionInstallDialogForManifest(
     Profile *profile,
@@ -59,10 +94,7 @@ bool ShowExtensionInstallDialogForManifest(
   // In tests, we may have setup to proceed or abort without putting up the real
   // confirmation dialog.
   if (auto_confirm_for_tests != DO_NOT_SKIP) {
-    if (auto_confirm_for_tests == PROCEED)
-      delegate->InstallUIProceed();
-    else
-      delegate->InstallUIAbort(true);
+    DoAutoConfirm(delegate);
     return true;
   }
 
@@ -78,7 +110,7 @@ bool ShowExtensionInstallDialogForManifest(
   return true;
 }
 
-void SetExtensionInstallDialogForManifestAutoConfirmForTests(
+void SetExtensionInstallDialogAutoConfirmForTests(
     bool should_proceed) {
   auto_confirm_for_tests = should_proceed ? PROCEED : ABORT;
 }

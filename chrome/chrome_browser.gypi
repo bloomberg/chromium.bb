@@ -1040,6 +1040,8 @@
         'browser/extensions/extension_install_ui.h',
         'browser/extensions/extension_management_api.cc',
         'browser/extensions/extension_management_api.h',
+        'browser/extensions/extension_management_api_constants.cc',
+        'browser/extensions/extension_management_api_constants.h',
         'browser/extensions/extension_mediaplayer_private_api.cc',
         'browser/extensions/extension_mediaplayer_private_api.h',
         'browser/extensions/extension_menu_manager.cc',

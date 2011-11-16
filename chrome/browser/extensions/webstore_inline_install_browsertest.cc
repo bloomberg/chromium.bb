@@ -80,7 +80,7 @@ class WebstoreInlineInstallTest : public InProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
-  SetExtensionInstallDialogForManifestAutoConfirmForTests(true);
+  SetExtensionInstallDialogAutoConfirmForTests(true);
 
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "install.html"));
@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, Install) {
 
 IN_PROC_BROWSER_TEST_F(
     WebstoreInlineInstallTest, InstallNotAllowedFromNonVerifiedDomains) {
-  SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
+  SetExtensionInstallDialogAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(),
       GenerateTestServerUrl(kNonAppDomain, "install_non_verified_domain.html"));
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, FindLink) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
-  SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
+  SetExtensionInstallDialogAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(), GenerateTestServerUrl(kAppDomain, "argument_validation.html"));
 
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, ArgumentValidation) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallTest, InstallNotSupported) {
-  SetExtensionInstallDialogForManifestAutoConfirmForTests(false);
+  SetExtensionInstallDialogAutoConfirmForTests(false);
   ui_test_utils::NavigateToURL(
       browser(),
       GenerateTestServerUrl(kAppDomain, "install_not_supported.html"));
@@ -156,7 +156,7 @@ class WebstoreInlineInstallUnpackFailureTest
 };
 
 IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallUnpackFailureTest, Test) {
-  SetExtensionInstallDialogForManifestAutoConfirmForTests(true);
+  SetExtensionInstallDialogAutoConfirmForTests(true);
 
   ui_test_utils::NavigateToURL(browser(),
       GenerateTestServerUrl(kAppDomain, "install_unpack_failure.html"));
