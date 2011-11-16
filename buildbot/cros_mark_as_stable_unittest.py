@@ -113,14 +113,19 @@ class EBuildTest(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
 
-  def testParseEBuildPath(self):
-    # Test with ebuild with revision number.
-    fake_ebuild_path = '/path/to/test_package/test_package-0.0.1-r1.ebuild'
+  def _makeFakeEbuild(self, fake_ebuild_path):
     self.mox.StubOutWithMock(fileinput, 'input')
     fileinput.input(fake_ebuild_path).AndReturn('')
     self.mox.ReplayAll()
     fake_ebuild = cros_mark_as_stable.EBuild(fake_ebuild_path)
     self.mox.VerifyAll()
+    return fake_ebuild
+
+  def testParseEBuildPath(self):
+    # Test with ebuild with revision number.
+    fake_ebuild_path = '/path/to/test_package/test_package-0.0.1-r1.ebuild'
+    fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
+
     self.assertEquals(fake_ebuild.version_no_rev, '0.0.1')
     self.assertEquals(fake_ebuild.ebuild_path_no_revision,
                       '/path/to/test_package/test_package-0.0.1')
@@ -131,11 +136,7 @@ class EBuildTest(mox.MoxTestBase):
   def testParseEBuildPathNoRevisionNumber(self):
     # Test with ebuild without revision number.
     fake_ebuild_path = '/path/to/test_package/test_package-9999.ebuild'
-    self.mox.StubOutWithMock(fileinput, 'input')
-    fileinput.input(fake_ebuild_path).AndReturn('')
-    self.mox.ReplayAll()
-    fake_ebuild = cros_mark_as_stable.EBuild(fake_ebuild_path)
-    self.mox.VerifyAll()
+    fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
 
     self.assertEquals(fake_ebuild.version_no_rev, '9999')
     self.assertEquals(fake_ebuild.ebuild_path_no_revision,
@@ -143,6 +144,48 @@ class EBuildTest(mox.MoxTestBase):
     self.assertEquals(fake_ebuild.ebuild_path_no_version,
                       '/path/to/test_package/test_package')
     self.assertEquals(fake_ebuild.current_revision, 0)
+
+  def testGetCommitId(self):
+    fake_sources = '/path/to/sources'
+    fake_category = 'test_category'
+    fake_package = 'test_package'
+    fake_ebuild_path = os.path.join(fake_sources, 'overlay',
+                                    fake_category, fake_package,
+                                    fake_package + '-9999.ebuild')
+    fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
+    self.mox.UnsetStubs()
+
+    fake_hash = '24ab3c9f6d6b5c744382dba2ca8fb444b9808e9f'
+    fake_project = 'chromiumos/third_party/test_project'
+    fake_subdir = 'test_project/'
+
+    # We expect Die() will not be called; mock it out so that if
+    # we're wrong, it won't just terminate the test.
+    self.mox.StubOutWithMock(cros_mark_as_stable.cros_build_lib, 'Die')
+    self.mox.StubOutWithMock(cros_mark_as_stable.os.path, 'isdir')
+    self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
+
+    # The first command does 'grep' magic on the ebuild.
+    cros_mark_as_stable._SimpleRunCommand(
+        mox.IgnoreArg()).AndReturn(' '.join([fake_project, fake_subdir]) + '\n')
+
+    # ... the result is used to construct a path, which the EBuild
+    # code expects to be a directory.
+    cros_mark_as_stable.os.path.isdir(
+      os.path.join(fake_sources, 'third_party', fake_subdir)).AndReturn(True)
+
+    # ... the next command does 'git config --get ...'
+    cros_mark_as_stable._SimpleRunCommand(
+        mox.IgnoreArg()).AndReturn(fake_project + '\n')
+
+    # ... and the final command does 'git rev-parse HEAD'
+    cros_mark_as_stable._SimpleRunCommand(
+        mox.IgnoreArg()).AndReturn(fake_hash + '\n')
+
+    self.mox.ReplayAll()
+    test_hash = fake_ebuild.GetCommitId(fake_sources)
+    self.mox.VerifyAll()
+    self.assertEquals(test_hash, fake_hash)
 
 
 class EBuildStableMarkerTest(mox.MoxTestBase):
