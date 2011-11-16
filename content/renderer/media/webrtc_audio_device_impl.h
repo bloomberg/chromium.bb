@@ -91,14 +91,14 @@
 //  - The webrtc::AudioDeviceModule is reference counted.
 //  - Recording is currently not supported on Mac OS X.
 //
-class WebRtcAudioDeviceImpl
+class CONTENT_EXPORT WebRtcAudioDeviceImpl
     : public webrtc::AudioDeviceModule,
       public AudioDevice::RenderCallback,
       public AudioInputDevice::CaptureCallback,
       public AudioInputDevice::CaptureEventHandler {
  public:
   // Methods called on main render thread.
-  CONTENT_EXPORT WebRtcAudioDeviceImpl();
+  WebRtcAudioDeviceImpl();
 
   // webrtc::RefCountedModule implementation.
   // The creator must call AddRef() after construction and use Release()
@@ -250,13 +250,22 @@ class WebRtcAudioDeviceImpl
   virtual int32_t GetLoudspeakerStatus(bool* enabled) const OVERRIDE;
 
   // Sets the session id.
-  CONTENT_EXPORT void SetSessionId(int session_id);
+  void SetSessionId(int session_id);
 
   // Accessors.
   size_t input_buffer_size() const { return input_buffer_size_; }
   size_t output_buffer_size() const { return output_buffer_size_; }
   int input_channels() const { return input_channels_; }
   int output_channels() const { return output_channels_; }
+  int input_sample_rate() const { return static_cast<int>(input_sample_rate_); }
+  int output_sample_rate() const {
+    return static_cast<int>(output_sample_rate_);
+  }
+  int input_delay_ms() const { return input_delay_ms_; }
+  int output_delay_ms() const { return output_delay_ms_; }
+  bool initialized() const { return initialized_; }
+  bool playing() const { return playing_; }
+  bool recording() const { return recording_; }
 
  private:
   // Make destructor private to ensure that we can only be deleted by Release().
@@ -311,7 +320,7 @@ class WebRtcAudioDeviceImpl
   // on the input/capture side.
   int session_id_;
 
-  // Protect |recording_|.
+  // Protects |recording_|.
   base::Lock lock_;
 
   int bytes_per_sample_;
