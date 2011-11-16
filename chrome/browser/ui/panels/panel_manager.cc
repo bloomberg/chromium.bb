@@ -44,6 +44,8 @@ const int kMaxMillisecondsWaitForBottomBarVisibilityChange = 1000;
 // See usage below.
 #if defined(OS_MACOSX)
 const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 3000;
+#elif defined(TOOLKIT_GTK)
+const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 2000;
 #else
 const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 0;
 #endif
@@ -449,6 +451,11 @@ void PanelManager::BringUpOrDownTitlebars(bool bring_up) {
   // it makes it possible to hit the titlebar on OSX if Dock has Magnifying
   // enabled - the panels stay up for a while after Dock magnification effect
   // stops covering the panels.
+  //
+  // Another example would be taskbar in auto-hide mode on Linux. In this mode
+  // taskbar will cover the panel in title hover mode, leaving it up for a few
+  // seconds would allow the user to be able to click on it.
+  //
   // Currently, no platforms use both delays.
   DCHECK(task_delay_milliseconds == 0);
   if (!bring_up)
