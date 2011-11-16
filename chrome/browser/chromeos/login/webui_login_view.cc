@@ -24,7 +24,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "views/desktop/desktop_window_view.h"
+#include "ui/views/desktop/desktop_window_view.h"
 #include "views/widget/widget.h"
 
 #if defined(TOOLKIT_USES_GTK)

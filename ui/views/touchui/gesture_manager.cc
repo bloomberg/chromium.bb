@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/touchui/gesture_manager.h"
+#include "ui/views/touchui/gesture_manager.h"
+
 #ifndef NDEBUG
 #include <ostream>
 #endif

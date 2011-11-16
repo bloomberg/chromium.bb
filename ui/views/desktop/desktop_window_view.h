@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_
-#define VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_
+#ifndef UI_VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_
+#define UI_VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_
 
 #include "base/observer_list.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
@@ -97,4 +97,4 @@ class DesktopWindowView : public WidgetDelegateView,
 }  // namespace desktop
 }  // namespace views
 
-#endif  // VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_
+#endif  // UI_VIEWS_DESKTOP_DESKTOP_WINDOW_VIEW_H_

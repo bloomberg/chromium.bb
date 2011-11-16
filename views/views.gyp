@@ -326,12 +326,6 @@
         'painter.h',
         'repeat_controller.cc',
         'repeat_controller.h',
-        'touchui/gesture_manager.cc',
-        'touchui/gesture_manager.h',
-        'touchui/touch_selection_controller.cc',
-        'touchui/touch_selection_controller.h',
-        'touchui/touch_selection_controller_impl.cc',
-        'touchui/touch_selection_controller_impl.h',
         'view.cc',
         'view.h',
         'view_aura.cc',
@@ -396,6 +390,12 @@
         '../ui/views/animation/bounds_animator.h',
         '../ui/views/accessibility/native_view_accessibility_win.cc',
         '../ui/views/accessibility/native_view_accessibility_win.h',
+        '../ui/views/touchui/gesture_manager.cc',
+        '../ui/views/touchui/gesture_manager.h',
+        '../ui/views/touchui/touch_selection_controller.cc',
+        '../ui/views/touchui/touch_selection_controller.h',
+        '../ui/views/touchui/touch_selection_controller_impl.cc',
+        '../ui/views/touchui/touch_selection_controller_impl.h',
         '../ui/views/window/client_view.cc',
         '../ui/views/window/client_view.h',
         '../ui/views/window/custom_frame_view.cc',
@@ -504,8 +504,8 @@
         }],
         ['touchui==0', {
           'sources!': [
-            'touchui/touch_selection_controller_impl.cc',
-            'touchui/touch_selection_controller_impl.h',
+            '../ui/views/touchui/touch_selection_controller_impl.cc',
+            '../ui/views/touchui/touch_selection_controller_impl.h',
           ],
         }],
         ['touchui==0 and use_aura==0', {
@@ -575,6 +575,7 @@
       ],
       'sources': [
         '../ui/views/animation/bounds_animator_unittest.cc',
+        '../ui/views/touchui/touch_selection_controller_impl_unittest.cc',
         'accessible_pane_view_unittest.cc',
         'bubble/bubble_delegate_unittest.cc',
         'bubble/bubble_frame_view_unittest.cc',
@@ -598,7 +599,6 @@
         'run_all_unittests.cc',
         'test/test_views_delegate.cc',
         'test/test_views_delegate.h',
-        'touchui/touch_selection_controller_impl_unittest.cc',
         'view_unittest.cc',
         'widget/native_widget_test_utils.h',
         'widget/native_widget_test_utils_aura.cc',
@@ -634,7 +634,7 @@
         }],
         ['touchui==0', {
           'sources!': [
-            'touchui/touch_selection_controller_impl_unittest.cc',
+            '../ui/views/touchui/touch_selection_controller_impl_unittest.cc',
           ],
         }],
         ['OS=="win"', {
@@ -794,12 +794,12 @@
         '..',
       ],
       'sources': [
-        'desktop/desktop_background.cc',
-        'desktop/desktop_background.h',
-        'desktop/desktop_window_manager.cc',
-        'desktop/desktop_window_manager.h',
-        'desktop/desktop_window_view.cc',
-        'desktop/desktop_window_view.h',
+        '../ui/views/desktop/desktop_background.cc',
+        '../ui/views/desktop/desktop_background.h',
+        '../ui/views/desktop/desktop_window_manager.cc',
+        '../ui/views/desktop/desktop_window_manager.h',
+        '../ui/views/desktop/desktop_window_view.cc',
+        '../ui/views/desktop/desktop_window_view.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -850,9 +850,9 @@
         '..',
       ],
       'sources': [
-        'desktop/desktop_main.cc',
-        'desktop/desktop_views_delegate.cc',
-        'desktop/desktop_views_delegate.h',
+        '../ui/views/desktop/desktop_main.cc',
+        '../ui/views/desktop/desktop_views_delegate.cc',
+        '../ui/views/desktop/desktop_views_delegate.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',

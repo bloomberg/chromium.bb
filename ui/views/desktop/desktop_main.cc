@@ -9,8 +9,8 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "views/desktop/desktop_views_delegate.h"
-#include "views/desktop/desktop_window_view.h"
+#include "ui/views/desktop/desktop_views_delegate.h"
+#include "ui/views/desktop/desktop_window_view.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/widget/widget.h"
 

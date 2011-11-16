@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/singleton.h"
-#include "views/desktop/desktop_window_view.h"
+#include "ui/views/desktop/desktop_window_view.h"
 #include "views/widget/widget.h"
 
 class KeyboardWidget;

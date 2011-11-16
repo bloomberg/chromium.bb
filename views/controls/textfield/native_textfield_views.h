@@ -11,12 +11,12 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
+#include "ui/views/touchui/touch_selection_controller.h"
 #include "views/border.h"
 #include "views/context_menu_controller.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/controls/textfield/textfield_views_model.h"
 #include "views/drag_controller.h"
-#include "views/touchui/touch_selection_controller.h"
 #include "views/view.h"
 
 namespace base {

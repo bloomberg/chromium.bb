@@ -11,7 +11,7 @@
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/screen_rotation.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "views/desktop/desktop_window_view.h"
+#include "ui/views/desktop/desktop_window_view.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"

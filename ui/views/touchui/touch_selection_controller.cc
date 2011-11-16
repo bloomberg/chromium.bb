@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/touchui/touch_selection_controller.h"
+#include "ui/views/touchui/touch_selection_controller.h"
 
 namespace views {
 
@@ -13,4 +13,4 @@ TouchSelectionController* TouchSelectionController::create(
 }
 #endif
 
-}  // namespace views.
+}  // namespace views

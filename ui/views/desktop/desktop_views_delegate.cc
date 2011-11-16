@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/desktop/desktop_views_delegate.h"
+#include "ui/views/desktop/desktop_views_delegate.h"
 
 #include "base/logging.h"
-#include "views/desktop/desktop_window_view.h"
+#include "ui/views/desktop/desktop_window_view.h"
 
 namespace views {
 namespace desktop {

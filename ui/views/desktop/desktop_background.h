@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_DESKTOP_DESKTOP_BACKGROUND_H_
-#define VIEWS_DESKTOP_DESKTOP_BACKGROUND_H_
+#ifndef UI_VIEWS_DESKTOP_DESKTOP_BACKGROUND_H_
+#define UI_VIEWS_DESKTOP_DESKTOP_BACKGROUND_H_
 
 #include "base/compiler_specific.h"
 #include "views/background.h"
@@ -26,4 +26,4 @@ class DesktopBackground : public Background {
 }  // namespace desktop
 }  // namespace views
 
-#endif  // VIEWS_DESKTOP_DESKTOP_BACKGROUND_H_
+#endif  // UI_VIEWS_DESKTOP_DESKTOP_BACKGROUND_H_

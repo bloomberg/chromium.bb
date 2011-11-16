@@ -6,11 +6,11 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/touchui/touch_selection_controller.h"
+#include "ui/views/touchui/touch_selection_controller_impl.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/test/views_test_base.h"
-#include "views/touchui/touch_selection_controller.h"
-#include "views/touchui/touch_selection_controller_impl.h"
 #include "views/widget/widget.h"
 
 namespace views {

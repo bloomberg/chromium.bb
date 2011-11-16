@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/desktop/desktop_window_manager.h"
+#include "ui/views/desktop/desktop_window_manager.h"
 
 #include "ui/base/hit_test.h"
 #include "ui/gfx/point.h"

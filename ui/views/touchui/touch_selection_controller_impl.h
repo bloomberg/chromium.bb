@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
-#define VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
+#ifndef UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
+#define UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
 #pragma once
 
 #include "base/timer.h"
 #include "ui/gfx/point.h"
-#include "views/touchui/touch_selection_controller.h"
+#include "ui/views/touchui/touch_selection_controller.h"
 #include "views/view.h"
 #include "views/views_export.h"
 
@@ -82,4 +82,4 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
 }  // namespace views
 
-#endif  // VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
+#endif  // UI_UI_VIEWS_TOUCHUI_TOUCH_SELECTION_CONTROLLER_IMPL_H_
