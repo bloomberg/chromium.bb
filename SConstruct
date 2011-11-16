@@ -1972,7 +1972,12 @@ def CommandTest(env, name, command, size='small', direct_emulation=True,
   if 'scale_timeout' in ARGUMENTS:
     max_time = max_time * int(ARGUMENTS['scale_timeout'])
 
-  script_flags = ['--name', '${GetTestName(TARGET)}',
+  if env.Bit('nacl_glibc'):
+    suite = 'nacl_glibc'
+  else:
+    suite = 'nacl_newlib'
+
+  script_flags = ['--name', '%s.${GetTestName(TARGET)}' % suite,
                   '--report', name,
                   '--time_warning', str(max_time),
                   '--time_error', str(10 * max_time),

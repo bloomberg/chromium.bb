@@ -136,15 +136,15 @@ def DestringifyList(lst):
 # The buildbots expect test names in the format "suite_name.test_name", so we
 # prefix the test name with a bogus suite name (nacl).
 def RunMessage():
-  return '[ RUN      ] nacl.%s' % GlobalSettings['name']
+  return '[ RUN      ] %s' % (GlobalSettings['name'],)
 
 def FailureMessage(total_time):
-  return '[  FAILED  ] nacl.%s (%d ms)' % (GlobalSettings['name'],
-                                           total_time * 1000.0)
+  return '[  FAILED  ] %s (%d ms)' % (GlobalSettings['name'],
+                                      total_time * 1000.0)
 
 def SuccessMessage(total_time):
-  return '[       OK ] nacl.%s (%d ms)' % (GlobalSettings['name'],
-                                           total_time * 1000.0)
+  return '[       OK ] %s (%d ms)' % (GlobalSettings['name'],
+                                      total_time * 1000.0)
 
 def LogPerfResult(graph_name, trace_name, value, units):
   # NOTE: This RESULT message is parsed by Chrome's perf graph generator.
