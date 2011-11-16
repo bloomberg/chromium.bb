@@ -105,8 +105,8 @@ class WebSocket_Dev : public Resource {
   /// GetReadyState() returns the ready state of the specified WebSocket
   /// connection.
   ///
-  /// @return Returns <code>PP_WEBSOCKETREADYSTATE_CONNECTING</code> if called
-  /// before the connection is established.
+  /// @return Returns <code>PP_WEBSOCKETREADYSTATE_INVALID_DEV</code> if called
+  /// before connect() is called.
   PP_WebSocketReadyState_Dev GetReadyState();
 
   /// GetURL() returns the URL associated with specified WebSocket connection.

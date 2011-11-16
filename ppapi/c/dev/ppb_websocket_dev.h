@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_websocket_dev.idl modified Mon Nov  7 15:21:42 2011. */
+/* From dev/ppb_websocket_dev.idl modified Wed Nov 16 02:46:08 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
 #define PPAPI_C_DEV_PPB_WEBSOCKET_DEV_H_
@@ -35,6 +35,10 @@
  * GetReadyState() returns one of these states.
  */
 typedef enum {
+  /**
+   * Ready state is queried on an invalid resource.
+   */
+  PP_WEBSOCKETREADYSTATE_INVALID_DEV = -1,
   /**
    * Ready state that the connection has not yet been established.
    */
@@ -243,9 +247,9 @@ struct PPB_WebSocket_Dev {
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @return Returns a <code>PP_VARTYPE_NULL</code> var if called before the
-   * close reason is set, or <code>PP_VARTYPE_UNDEFINED</code> if called on an
-   * invalid resource.
+   * @return Returns a <code>PP_VARTYPE_STRING</code> var. if called before the
+   * close reason is set, its data is empty string. Returns a
+   * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
   struct PP_Var (*GetCloseReason)(PP_Resource web_socket);
   /**
@@ -256,9 +260,9 @@ struct PPB_WebSocket_Dev {
    * WebSocket.
    *
    * @return Returns <code>PP_FALSE</code> if called before the connection is
-   * closed. Otherwise, returns <code>PP_TRUE</code> if the connection was
-   * closed cleanly and returns <code>PP_FALSE</code> if the connection was
-   * closed by abnormal reasons.
+   * closed, or called on an invalid resource. Otherwise, returns
+   * <code>PP_TRUE</code> if the connection was closed cleanly, or returns
+   * <code>PP_FALSE</code> if the connection was closed by abnormal reasons.
    */
   PP_Bool (*GetCloseWasClean)(PP_Resource web_socket);
   /**
@@ -269,9 +273,9 @@ struct PPB_WebSocket_Dev {
    * WebSocket.
    *
    * @return Returns a <code>PP_VARTYPE_STRING</code> var. If called before the
-   * connection is established or called on an invalid resource, its data is
-   * empty string.
-   * Currently its data is always empty string.
+   * connection is established, its data is empty string. Returns a
+   * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
+   * Currently its data for valid resources are always empty string.
    */
   struct PP_Var (*GetExtensions)(PP_Resource web_socket);
   /**
@@ -282,8 +286,8 @@ struct PPB_WebSocket_Dev {
    * WebSocket.
    *
    * @return Returns a <code>PP_VARTYPE_STRING</code> var. If called before the
-   * connection is established, or called on an invalid resource, its data is
-   * empty string.
+   * connection is established, its data is empty string. Returns a
+   * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
   struct PP_Var (*GetProtocol)(PP_Resource web_socket);
   /**
@@ -293,8 +297,8 @@ struct PPB_WebSocket_Dev {
    * @param[in] web_socket A <code>PP_Resource</code> corresponding to a
    * WebSocket.
    *
-   * @return Returns <code>PP_WEBSOCKETREADYSTATE_CONNECTING</code> if called
-   * before the connection is established.
+   * @return Returns <code>PP_WEBSOCKETREADYSTATE_INVALID_DEV</code> if called
+   * before connect() is called, or called on an invalid resource.
    */
   PP_WebSocketReadyState_Dev (*GetReadyState)(PP_Resource web_socket);
   /**
@@ -304,8 +308,8 @@ struct PPB_WebSocket_Dev {
    * WebSocket.
    *
    * @return Returns a <code>PP_VARTYPE_STRING</code> var. If called before the
-   * connection is established, or called on an invalid resource, its data is
-   * empty string.
+   * connection is established, its data is empty string. Return a
+   * <code>PP_VARTYPE_UNDEFINED</code> if called on an invalid resource.
    */
   struct PP_Var (*GetURL)(PP_Resource web_socket);
 };
