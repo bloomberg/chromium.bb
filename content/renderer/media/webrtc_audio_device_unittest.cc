@@ -26,12 +26,35 @@ ACTION_P(QuitMessageLoop, loop_or_proxy) {
 
 class AudioUtil : public AudioUtilInterface {
  public:
+  AudioUtil() {}
+
   virtual double GetAudioHardwareSampleRate() OVERRIDE {
     return media::GetAudioHardwareSampleRate();
   }
   virtual double GetAudioInputHardwareSampleRate() OVERRIDE {
     return media::GetAudioInputHardwareSampleRate();
   }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AudioUtil);
+};
+
+class AudioUtilNoHardware : public AudioUtilInterface {
+ public:
+  AudioUtilNoHardware(double output_rate, double input_rate)
+    : output_rate_(output_rate), input_rate_(input_rate) {
+  }
+
+  virtual double GetAudioHardwareSampleRate() OVERRIDE {
+    return output_rate_;
+  }
+  virtual double GetAudioInputHardwareSampleRate() OVERRIDE {
+    return input_rate_;
+  }
+
+ private:
+  double output_rate_;
+  double input_rate_;
+  DISALLOW_COPY_AND_ASSIGN(AudioUtilNoHardware);
 };
 
 bool IsRunningHeadless() {
@@ -46,7 +69,7 @@ bool IsRunningHeadless() {
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.
 TEST_F(WebRTCAudioDeviceTest, Construct) {
-  AudioUtil audio_util;
+  AudioUtilNoHardware audio_util(48000.0, 48000.0);
   set_audio_util_callback(&audio_util);
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());
