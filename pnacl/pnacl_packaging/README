@@ -1,0 +1,56 @@
+How to package PNaCl translator components (llc, ld, native libs) for Chrome.
+We are approaching this two ways. One is more production-friendly.
+Another is more friendly to churn (e.g., during dogfood).
+
+
+(A) Prod-ready: Install and update using the Chrome component updater
+   (like Pepper Flash). This is distributed through Omaha.
+(B) Churn-friendly: Install via the chrome webstore, as an extension.
+
+With (A) the installer/updater can check the exact target architecture
+and only install those files. The omaha config can also detect your
+Chromium version to determine which translator files go with
+that Chromium version's NaCl plugin (which contains the PNaCl coordinator).
+
+With (B) the chrome webstore will not ask for arch and chrome version,
+so we are stuck with one package for all of the latest chrome channels.
+- However, uploading to the webstore is easy and does not require
+editting config files and pushing those config files to Omaha.
+
+
+How update for scenario (A)
+
+- The Chrome component updater uses Chrome Extensions (CRX) files as an
+  archive format. Thus, we need to generate a CRX via the included script.
+- Place the new CRX at an accessible URL. Each version must have a different
+  URL. A simple way to do this is to add the version quad to the URL.
+- Edit autoupdate-ascii-pnacl.config with the new version information.
+  See "prodversionmin:", etc. for the chrome version requirements -- tweak
+  this to control which version of PNaCl is matched with different
+  versions / channels of Chrome.
+  See "UpdatedVersion:" for the version of PNaCl.
+  See the "Codebase:" URL for the location of the the new version.
+  Again, new versions must have new URLs.
+  See Omaha docs for the format.
+- Validate the config file. Search for doc "OmahaServerUpdate" for how
+  to validate this new config file.
+- Send the new autoupdate-ascii-pnacl.config to the omaha staging sandbox.
+  See the internal Omaha wikis for how to do this.
+- If the staging sandbox works okay, then do a bigger push.
+  TODO(jvoung): figure out how to do the bigger push from Omaha folks.
+  Eventually, the Chromium PMs will be responsible for these pushes.
+
+
+MISC: To discover the public Chrome Extension ID that is specified
+in the omaha config, use chromium/src/tools/crx_id/crx_id.py
+We keep these the same across all versions to simplify the Omaha config
+(one Omaha file instead of a new one each time). This sameness is achieved
+by reusing the old private key to generate the new versions.
+The AppId must also match the Chromium code that pings Omaha (baked in AppID).
+
+
+How update for (B)
+
+- Generate .zip representing the CRX using the include script.
+- Upload .zip to the chrome webstore.
+- Hit publish button on chrome webstore to make it available.
