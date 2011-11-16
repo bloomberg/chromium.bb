@@ -1121,7 +1121,7 @@ const Extension* TaskManagerExtensionProcessResource::GetExtension() const {
 }
 
 bool TaskManagerExtensionProcessResource::IsBackground() const {
-  return extension_host_->extension_host_type() ==
+  return extension_host_->GetRenderViewType() ==
       chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
 }
 

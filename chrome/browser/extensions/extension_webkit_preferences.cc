@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_webkit_preferences.h"
+#include "webkit/glue/webpreferences.h"
 
 #include "chrome/common/extensions/extension.h"
-#include "webkit/glue/webpreferences.h"
 
 namespace extension_webkit_preferences {
 
-void SetPreferences(const Extension* extension,
-                    content::ViewType render_view_type,
-                    WebPreferences* webkit_prefs) {
+void SetPreferences(WebPreferences* webkit_prefs, const Extension* extension) {
   if (extension && !extension->is_hosted_app()) {
     // Extensions are trusted so we override any user preferences for disabling
     // javascript or images.
@@ -24,14 +21,6 @@ void SetPreferences(const Extension* extension,
 
     // Enable privileged WebGL extensions.
     webkit_prefs->privileged_webgl_extensions_enabled = true;
-
-    // Disable anything that requires the GPU process for background pages.
-    // See http://crbug.com/64512 and http://crbug.com/64841.
-    if (render_view_type == chrome::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
-      webkit_prefs->experimental_webgl_enabled = false;
-      webkit_prefs->accelerated_compositing_enabled = false;
-      webkit_prefs->accelerated_2d_canvas_enabled = false;
-    }
   }
 }
 

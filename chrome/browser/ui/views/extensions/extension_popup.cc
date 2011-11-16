@@ -17,7 +17,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "views/widget/root_view.h"
@@ -96,7 +95,7 @@ void ExtensionPopup::BubbleBrowserWindowClosing(BrowserBubble* bubble) {
 
 void ExtensionPopup::BubbleGotFocus(BrowserBubble* bubble) {
   // Forward the focus to the renderer.
-  host()->host_contents()->Focus();
+  host()->render_view_host()->view()->Focus();
 }
 
 void ExtensionPopup::BubbleLostFocus(BrowserBubble* bubble,
