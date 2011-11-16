@@ -19,8 +19,11 @@
 
 using ::testing::Assign;
 using ::testing::AtMost;
+using ::testing::DeleteArg;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Property;
+using ::testing::Return;
 using ::testing::ReturnPointee;
 using ::testing::WithArgs;
 using ::testing::_;
@@ -97,8 +100,10 @@ void MockServiceProcessControl::SetServiceEnabledExpectations() {
       Send(Property(&IPC::Message::type,
                     static_cast<int32>(ServiceMsg_GetCloudPrintProxyInfo::ID))))
       .Times(1).WillOnce(
-          WithoutArgs(
-              Invoke(this, &MockServiceProcessControl::SendEnabledInfo)));
+          DoAll(
+              DeleteArg<0>(),
+              WithoutArgs(
+                  Invoke(this, &MockServiceProcessControl::SendEnabledInfo))));
 }
 
 void MockServiceProcessControl::SetServiceDisabledExpectations() {
@@ -107,8 +112,10 @@ void MockServiceProcessControl::SetServiceDisabledExpectations() {
       Send(Property(&IPC::Message::type,
                     static_cast<int32>(ServiceMsg_GetCloudPrintProxyInfo::ID))))
       .Times(1).WillOnce(
-          WithoutArgs(
-              Invoke(this, &MockServiceProcessControl::SendDisabledInfo)));
+          DoAll(
+              DeleteArg<0>(),
+              WithoutArgs(
+                  Invoke(this, &MockServiceProcessControl::SendDisabledInfo))));
 }
 
 void MockServiceProcessControl::SetWillBeEnabledExpectations() {
@@ -116,7 +123,7 @@ void MockServiceProcessControl::SetWillBeEnabledExpectations() {
       *this,
       Send(Property(&IPC::Message::type,
                     static_cast<int32>(ServiceMsg_EnableCloudPrintProxy::ID))))
-      .Times(1);
+      .Times(1).WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 }
 
 void MockServiceProcessControl::SetWillBeDisabledExpectations() {
@@ -124,7 +131,7 @@ void MockServiceProcessControl::SetWillBeDisabledExpectations() {
       *this,
       Send(Property(&IPC::Message::type,
                     static_cast<int32>(ServiceMsg_DisableCloudPrintProxy::ID))))
-      .Times(1);
+      .Times(1).WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 }
 
 bool MockServiceProcessControl::SendEnabledInfo() {
