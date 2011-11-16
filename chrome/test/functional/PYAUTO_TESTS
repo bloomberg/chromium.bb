@@ -129,6 +129,8 @@
       '-pdf.PDFTest.testPDFRunner',
       # crbug.com/100593
       '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
+      # crbug.com/104484
+      '-policy.PolicyTest.testJavascriptPolicies',
     ],
 
     'win': [
