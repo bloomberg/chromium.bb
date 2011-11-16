@@ -316,3 +316,6 @@ OutOfProcessPPAPITest.FlashClipboard
 
 # Fails intermittently. http://crbug.com/104534.
 PrintPreviewUITest.PrintCommands
+
+# Fails consistently. http://crbug.com/104535.
+OutOfProcessPPAPITest.TCPSocketPrivate
