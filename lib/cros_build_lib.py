@@ -584,8 +584,8 @@ def GetProjectManifestBranch(buildroot, project):
 
 def GetManifestDefaultBranch(cwd):
   """Gets the manifest checkout branch from the manifest."""
-  manifest = RunCommand(['repo', 'manifest', '-o', '-'], redirect_stdout=True,
-                        cwd=cwd).output
+  manifest = RunCommand(['repo', 'manifest', '-o', '-'], print_cmd=False,
+                        redirect_stdout=True, cwd=cwd).output
   m = re.search(r'<default[^>]*revision="(refs/heads/[^"]*)"', manifest)
   assert m, "Can't find default revision in manifest"
   ref = m.group(1)
@@ -770,7 +770,7 @@ def OldRunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
         raise e
       else:
         Warning(str(e))
-        if print_cmd:
+        if print_cmd and retry_count < num_retries:
           Info('PROGRAM(%s) -> RunCommand: retrying %r in dir %s' %
                (GetCallerName(), cmd, cwd))
 

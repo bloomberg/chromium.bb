@@ -37,32 +37,25 @@ class TestException(Exception):
 
 def _BuildRootGitCleanup(buildroot):
   """Put buildroot onto manifest branch. Delete branches created on last run."""
+  def RunCleanupCommands(cmd_list, must_succeed):
+    for command in cmd_list:
+      cros_lib.RunCommand(['repo', 'forall', '-c', "%s" % command],
+                          print_cmd=True, redirect_stdout=True,
+                          redirect_stderr=True, cwd=buildroot,
+                          error_ok=not must_succeed)
+
   manifest_branch = 'remotes/m/' + cros_lib.GetManifestDefaultBranch(buildroot)
-  project_list = cros_lib.RunCommand(['repo', 'forall', '-c', 'pwd'],
-                                     redirect_stdout=True,
-                                     cwd=buildroot).output.splitlines()
-  for project in project_list:
-    # The 'git clean' command below might remove some repositories.
-    if not os.path.exists(project):
-      continue
+  best_effort_list = ['git am --abort', 'git rebase --abort']
+  must_succeed_list = ['git reset --hard HEAD',
+                       'git checkout %s' % manifest_branch, 'git clean -f -d']
 
-    cros_lib.RunCommand(['git', 'am', '--abort'], print_cmd=False,
-                        redirect_stdout=True, redirect_stderr=True,
-                        error_ok=True, cwd=project)
-    cros_lib.RunCommand(['git', 'rebase', '--abort'], print_cmd=False,
-                        redirect_stdout=True, redirect_stderr=True,
-                        error_ok=True, cwd=project)
-    cros_lib.RunCommand(['git', 'reset', '--hard', 'HEAD'], print_cmd=False,
-                        redirect_stdout=True, cwd=project)
-    cros_lib.RunCommand(['git', 'checkout', manifest_branch], print_cmd=False,
-                        redirect_stdout=True, redirect_stderr=True,
-                        cwd=project)
-    cros_lib.RunCommand(['git', 'clean', '-f', '-d'], print_cmd=False,
-                        redirect_stdout=True, cwd=project)
+  RunCleanupCommands(best_effort_list, False)
+  RunCleanupCommands(must_succeed_list, True)
 
-    for branch in constants.CREATED_BRANCHES:
-      if cros_lib.DoesLocalBranchExist(project, branch):
-        cros_lib.RunCommand(['repo', 'abandon', branch, '.'], cwd=project)
+  # Abandon all branches.
+  for branch in constants.CREATED_BRANCHES:
+    cros_lib.RunCommand(['repo', 'abandon', branch],
+                        print_cmd=True, cwd=buildroot, error_ok=True)
 
 
 def _CleanUpMountPoints(buildroot):
