@@ -831,6 +831,7 @@
         ['use_aura==1', {
           'sources!': [
             'test/automation/automation_proxy_uitest.cc',
+            'test/ui/npapi_uitest.cc',
           ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
