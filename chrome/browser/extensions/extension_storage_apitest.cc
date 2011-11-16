@@ -4,6 +4,12 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Storage) {
+#if defined(OS_WIN)
+// Always fails on Windows after r110181: http://crbug.com/104419.
+#define MAYBE_Storage FAILS_Storage
+#else
+#define MAYBE_Storage Storage
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Storage) {
   ASSERT_TRUE(RunExtensionTest("storage")) << message_;
 }
