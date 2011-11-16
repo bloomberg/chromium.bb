@@ -143,6 +143,7 @@ class PolicyTest(pyauto.PyUITest):
     # The Developer Tools still work when javascript is disabled.
     policy['JavascriptEnabled'] = False
     self.SetPolicies(policy)
+    self.NavigateToURL('about:blank')
     self.assertFalse(self.IsJavascriptEnabled())
     self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS))
     self.assertTrue(self.IsMenuCommandEnabled(pyauto.IDC_DEV_TOOLS_CONSOLE))

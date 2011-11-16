@@ -280,7 +280,7 @@
       'name': 'JavascriptEnabled',
       'type': 'main',
       'supported_on': ['chrome.*:8-', 'chrome_os:0.11-'],
-      'features': {'dynamic_refresh': 0},
+      'features': {'dynamic_refresh': 1},
       'deprecated': True,
       'example_value': True,
       'id': 9,
