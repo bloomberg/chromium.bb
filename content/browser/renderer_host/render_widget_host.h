@@ -158,10 +158,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   int routing_id() const { return routing_id_; }
   bool renderer_accessible() { return renderer_accessible_; }
 
-  // Returns whether we have a valid size.
-  bool empty() const {
-    return current_size_.IsEmpty();
-  }
+  bool empty() const { return current_size_.IsEmpty(); }
 
   // Returns the property bag for this widget, where callers can add extra data
   // they may wish to associate with it. Returns a pointer rather than a

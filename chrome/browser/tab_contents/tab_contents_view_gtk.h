@@ -17,31 +17,35 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
-class ConstrainedWindowGtk;
-class RenderViewContextMenuGtk;
-class WebDragBookmarkHandlerGtk;
-
 namespace content {
+class WebDragDestDelegate;
 class WebDragDestGtk;
 class WebDragSourceGtk;
 }
 
+class TabContentsViewWrapperGtk;
+
 class TabContentsViewGtk : public TabContentsView {
  public:
-  // The corresponding TabContents is passed in the constructor, and manages our
-  // lifetime. This doesn't need to be the case, but is this way currently
-  // because that's what was easiest when they were split.
-  explicit TabContentsViewGtk(TabContents* tab_contents);
+  // The corresponding TabContents is passed in the constructor, and manages
+  // our lifetime. This doesn't need to be the case, but is this way currently
+  // because that's what was easiest when they were split. We optionally take
+  // |wrapper| which creates an intermediary widget layer for features from the
+  // embedding layer that live with the TabContentsView.
+  explicit TabContentsViewGtk(TabContents* tab_contents,
+                              TabContentsViewWrapperGtk* wrapper);
   virtual ~TabContentsViewGtk();
-
-  // Unlike Windows, ConstrainedWindows need to collaborate with the
-  // TabContentsViewGtk to position the dialogs.
-  void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
-  void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 
   // Override the stored focus widget. This call only makes sense when the
   // tab contents is not focused.
   void SetFocusedWidget(GtkWidget* widget);
+
+  TabContentsViewWrapperGtk* wrapper() const { return view_wrapper_.get(); }
+  TabContents* tab_contents() { return tab_contents_; }
+  GtkWidget* expanded_container() { return expanded_.get(); }
+
+  // Allows our embeder to intercept incoming drag messages.
+  void SetDragDestDelegate(content::WebDragDestDelegate* delegate);
 
   // TabContentsView implementation --------------------------------------------
 
@@ -73,29 +77,31 @@ class TabContentsViewGtk : public TabContentsView {
   // Backend implementation of RenderViewHostDelegate::View.
   virtual void CreateNewWindow(
       int route_id,
-      const ViewHostMsg_CreateWindow_Params& params);
-  virtual void CreateNewWidget(int route_id, WebKit::WebPopupType popup_type);
-  virtual void CreateNewFullscreenWidget(int route_id);
+      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
+  virtual void CreateNewWidget(int route_id,
+                               WebKit::WebPopupType popup_type) OVERRIDE;
+  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
   virtual void ShowCreatedWindow(int route_id,
                                  WindowOpenDisposition disposition,
                                  const gfx::Rect& initial_pos,
-                                 bool user_gesture);
-  virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
-  virtual void ShowCreatedFullscreenWidget(int route_id);
-  virtual void ShowContextMenu(const ContextMenuParams& params);
+                                 bool user_gesture) OVERRIDE;
+  virtual void ShowCreatedWidget(int route_id,
+                                 const gfx::Rect& initial_pos) OVERRIDE;
+  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
+  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
   virtual void ShowPopupMenu(const gfx::Rect& bounds,
                              int item_height,
                              double item_font_size,
                              int selected_item,
                              const std::vector<WebMenuItem>& items,
-                             bool right_aligned);
+                             bool right_aligned) OVERRIDE;
   virtual void StartDragging(const WebDropData& drop_data,
                              WebKit::WebDragOperationsMask allowed_ops,
                              const SkBitmap& image,
-                             const gfx::Point& image_offset);
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
-  virtual void GotFocus();
-  virtual void TakeFocus(bool reverse);
+                             const gfx::Point& image_offset) OVERRIDE;
+  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
+  virtual void GotFocus() OVERRIDE;
+  virtual void TakeFocus(bool reverse) OVERRIDE;
 
  private:
   // Insert the given widget into the content area. Should only be used for
@@ -104,9 +110,8 @@ class TabContentsViewGtk : public TabContentsView {
   // should be taken that the correct one is hidden/shown.
   void InsertIntoContentArea(GtkWidget* widget);
 
-  void CancelDragIfAny();
-
-  // Handle focus traversal on the render widget native view.
+  // Handle focus traversal on the render widget native view. Can be overridden
+  // by subclasses.
   CHROMEGTK_CALLBACK_1(TabContentsViewGtk, gboolean, OnFocus, GtkDirectionType);
 
   // Used to adjust the size of its children when the size of |expanded_| is
@@ -119,41 +124,29 @@ class TabContentsViewGtk : public TabContentsView {
   CHROMEGTK_CALLBACK_1(TabContentsViewGtk, void, OnSizeAllocate,
                        GtkAllocation*);
 
-  CHROMEGTK_CALLBACK_1(TabContentsViewGtk, void, OnSetFloatingPosition,
-                       GtkAllocation*);
-
   // The TabContents whose contents we display.
   TabContents* tab_contents_;
 
   // Common implementations of some RenderViewHostDelegate::View methods.
   RenderViewHostDelegateViewHelper delegate_view_helper_;
 
-  // Contains |expanded_| as its GtkBin member.
-  ui::OwnedWidgetGtk floating_;
-
   // This container holds the tab's web page views. It is a GtkExpandedContainer
   // so that we can control the size of the web pages.
-  GtkWidget* expanded_;
-
-  // The context menu is reset every time we show it, but we keep a pointer to
-  // between uses so that it won't go out of scope before we're done with it.
-  scoped_ptr<RenderViewContextMenuGtk> context_menu_;
+  ui::OwnedWidgetGtk expanded_;
 
   FocusStoreGtk focus_store_;
-
-  // The UI for the constrained dialog currently displayed. This is owned by
-  // TabContents, not the view.
-  ConstrainedWindowGtk* constrained_window_;
 
   // The helper object that handles drag destination related interactions with
   // GTK.
   scoped_ptr<content::WebDragDestGtk> drag_dest_;
 
-  // The chrome specific delegate that receives events from WebDragDestGtk.
-  scoped_ptr<WebDragBookmarkHandlerGtk> bookmark_handler_gtk_;
-
   // Object responsible for handling drags from the page for us.
   scoped_ptr<content::WebDragSourceGtk> drag_source_;
+
+  // Our optional views wrapper. If non-NULL, we return this widget as our
+  // GetNativeView() and insert |expanded_| as its child in the GtkWidget
+  // hierarchy.
+  scoped_ptr<TabContentsViewWrapperGtk> view_wrapper_;
 
   // The size we want the tab contents view to be.  We keep this in a separate
   // variable because resizing in GTK+ is async.

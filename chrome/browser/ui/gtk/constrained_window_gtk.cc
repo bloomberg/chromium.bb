@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_gtk.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #else
+#include "chrome/browser/tab_contents/chrome_tab_contents_view_wrapper_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents_view_gtk.h"
 #endif
 
@@ -138,7 +139,9 @@ ConstrainedWindowGtk::TabContentsViewType*
       static_cast<TabContentsViewViews*>(wrapper_->view())->
           native_tab_contents_view());
 #else
-  return static_cast<TabContentsViewType*>(wrapper_->view());
+  return static_cast<TabContentsViewType*>(
+      static_cast<TabContentsViewGtk*>(wrapper_->view())->
+          wrapper());
 #endif
 }
 

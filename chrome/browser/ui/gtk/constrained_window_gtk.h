@@ -22,7 +22,7 @@ class TabContentsViewViews;
 #elif defined(TOOLKIT_VIEWS)
 class NativeTabContentsViewGtk;
 #else
-class TabContentsViewGtk;
+class ChromeTabContentsViewWrapperGtk;
 #endif
 
 class ConstrainedWindowGtkDelegate {
@@ -56,7 +56,7 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
 #elif defined(TOOLKIT_VIEWS)
    typedef NativeTabContentsViewGtk TabContentsViewType;
 #else
-   typedef TabContentsViewGtk TabContentsViewType;
+   typedef ChromeTabContentsViewWrapperGtk TabContentsViewType;
 #endif
 
   ConstrainedWindowGtk(TabContentsWrapper* wrapper,
