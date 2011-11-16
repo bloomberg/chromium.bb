@@ -24,7 +24,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread.h"
-#include "base/tracked_objects.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
@@ -146,7 +145,6 @@ const char* const kChromePaths[] = {
   chrome::kChromeUITCMallocHost,
   chrome::kChromeUITermsHost,
   chrome::kChromeUITracingHost,
-  chrome::kChromeUITrackingHost,
   chrome::kChromeUIVersionHost,
   chrome::kChromeUIWorkersHost,
 #if defined(OS_WIN)
@@ -183,7 +181,6 @@ const char* const kAboutSourceNames[] = {
   chrome::kChromeUIStatsHost,
   chrome::kChromeUITaskManagerHost,
   chrome::kChromeUITermsHost,
-  chrome::kChromeUITrackingHost,
   chrome::kChromeUIVersionHost,
 #if defined(USE_TCMALLOC)
   chrome::kChromeUITCMallocHost,
@@ -887,21 +884,6 @@ void AboutMemory(const std::string& path, AboutSource* source, int request_id) {
   }
 }
 
-static std::string AboutTracking(const std::string& query) {
-  std::string unescaped_title("About Tracking");
-  if (!query.empty()) {
-    unescaped_title += " - ";
-    unescaped_title += net::UnescapeURLComponent(query,
-                                                 net::UnescapeRule::NORMAL);
-  }
-  std::string data;
-  AppendHeader(&data, 0, unescaped_title);
-  AppendBody(&data);
-  tracked_objects::ThreadData::WriteHTML(query, &data);
-  AppendFooter(&data);
-  return data;
-}
-
 // Handler for filling in the "about:stats" page, as called by the browser's
 // About handler processing.
 // |query| is roughly the query string of the about:stats URL.
@@ -1471,8 +1453,6 @@ void AboutSource::StartDataRequest(const std::string& path,
 #endif
   } else if (host == chrome::kChromeUIStatsHost) {
     response = AboutStats(path);
-  } else if (host == chrome::kChromeUITrackingHost) {
-    response = AboutTracking(path);
 #if defined(USE_TCMALLOC)
   } else if (host == chrome::kChromeUITCMallocHost) {
     response = AboutTcmalloc();

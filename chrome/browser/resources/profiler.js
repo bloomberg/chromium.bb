@@ -99,6 +99,8 @@ var MainView = (function() {
   // "PAC threads" will be merged together.
   var MERGE_SIMILAR_THREADS_CHECKBOX_ID = 'merge-similar-threads-checkbox';
 
+  var RESET_DATA_LINK_ID = 'reset-data-link';
+
   // --------------------------------------------------------------------------
   // Row keys
   // --------------------------------------------------------------------------
@@ -1197,6 +1199,14 @@ var MainView = (function() {
           }
         }
 
+        if (newRow[KEY_COUNT] == 0) {
+          // When resetting the data, it is possible for the backend to give us
+          // counts of "0". There is no point adding these rows (in fact they
+          // will cause us to do divide by zeros when calculating averages and
+          // stuff), so we skip past them.
+          continue;
+        }
+
         // Add our computed properties.
         augmentDataRow(newRow);
 
@@ -1273,6 +1283,9 @@ var MainView = (function() {
 
       $(MERGE_SIMILAR_THREADS_CHECKBOX_ID).onchange =
           this.onMergeSimilarThreadsCheckboxChanged_.bind(this);
+
+      $(RESET_DATA_LINK_ID).onclick =
+          g_browserBridge.sendResetData.bind(g_browserBridge);
     },
 
     toggleEditColumns_: function() {
