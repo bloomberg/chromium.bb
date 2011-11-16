@@ -904,8 +904,6 @@ gfx::Rect Browser::GetSavedWindowBounds() const {
   return restored_bounds;
 }
 
-// TODO(beng): obtain maximized state some other way so we don't need to go
-//             through all this hassle.
 ui::WindowShowState Browser::GetSavedWindowShowState() const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kStartMaximized))
     return ui::SHOW_STATE_MAXIMIZED;
@@ -913,11 +911,11 @@ ui::WindowShowState Browser::GetSavedWindowShowState() const {
   if (show_state_ != ui::SHOW_STATE_DEFAULT)
     return show_state_;
 
-  // An explicit maximized state was not set. Query the window sizer.
-  gfx::Rect restored_bounds;
+  const DictionaryValue* window_pref =
+      profile()->GetPrefs()->GetDictionary(GetWindowPlacementKey().c_str());
   bool maximized = false;
-  WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, this,
-                                      &restored_bounds, &maximized);
+  window_pref->GetBoolean("maximized", &maximized);
+
   return maximized ? ui::SHOW_STATE_MAXIMIZED : ui::SHOW_STATE_NORMAL;
 }
 
