@@ -120,6 +120,7 @@ class Worker : public Channel::Listener, public Message::Sender {
     DCHECK_EQ(answer, (succeed ? 10 : 0));
     return result;
   }
+  const std::string& channel_name() { return channel_name_; }
   Channel::Mode mode() { return mode_; }
   WaitableEvent* done_event() { return done_.get(); }
   WaitableEvent* shutdown_event() { return &shutdown_event_; }
@@ -156,6 +157,12 @@ class Worker : public Channel::Listener, public Message::Sender {
     NOTREACHED();
   }
 
+  virtual SyncChannel* CreateChannel() {
+    return new SyncChannel(
+        channel_name_, mode_, this, ipc_thread_.message_loop_proxy(), true,
+        &shutdown_event_);
+  }
+
   base::Thread* ListenerThread() {
     return overrided_thread_ ? overrided_thread_ : &listener_thread_;
   }
@@ -167,9 +174,7 @@ class Worker : public Channel::Listener, public Message::Sender {
   void OnStart() {
     // Link ipc_thread_, listener_thread_ and channel_ altogether.
     StartThread(&ipc_thread_, MessageLoop::TYPE_IO);
-    channel_.reset(new SyncChannel(
-        channel_name_, mode_, this, ipc_thread_.message_loop_proxy(), true,
-        &shutdown_event_));
+    channel_.reset(CreateChannel());
     channel_created_->Signal();
     Run();
   }
@@ -306,6 +311,74 @@ TEST_F(IPCSyncChannelTest, Simple) {
   Simple(false);
   Simple(true);
 }
+
+//-----------------------------------------------------------------------------
+
+namespace {
+
+// Worker classes which override how the sync channel is created to use the
+// two-step initialization (calling the lightweight constructor and then
+// ChannelProxy::Init separately) process.
+class TwoStepServer : public Worker {
+ public:
+  explicit TwoStepServer(bool create_pipe_now)
+      : Worker(Channel::MODE_SERVER, "simpler_server"),
+        create_pipe_now_(create_pipe_now) { }
+
+  void Run() {
+    SendAnswerToLife(false, base::kNoTimeout, true);
+    Done();
+  }
+
+  virtual SyncChannel* CreateChannel() {
+    SyncChannel* channel = new SyncChannel(
+        this, ipc_thread().message_loop_proxy(), shutdown_event());
+    channel->Init(channel_name(), mode(), create_pipe_now_);
+    return channel;
+  }
+
+  bool create_pipe_now_;
+};
+
+class TwoStepClient : public Worker {
+ public:
+  TwoStepClient(bool create_pipe_now)
+      : Worker(Channel::MODE_CLIENT, "simple_client"),
+        create_pipe_now_(create_pipe_now) { }
+
+  void OnAnswer(int* answer) {
+    *answer = 42;
+    Done();
+  }
+
+  virtual SyncChannel* CreateChannel() {
+    SyncChannel* channel = new SyncChannel(
+        this, ipc_thread().message_loop_proxy(), shutdown_event());
+    channel->Init(channel_name(), mode(), create_pipe_now_);
+    return channel;
+  }
+
+  bool create_pipe_now_;
+};
+
+void TwoStep(bool create_server_pipe_now, bool create_client_pipe_now) {
+  std::vector<Worker*> workers;
+  workers.push_back(new TwoStepServer(create_server_pipe_now));
+  workers.push_back(new TwoStepClient(create_client_pipe_now));
+  RunTest(workers);
+}
+
+}  // namespace
+
+// Tests basic two-step initialization, where you call the lightweight
+// constructor then Init.
+TEST_F(IPCSyncChannelTest, TwoStepInitialization) {
+  TwoStep(false, false);
+  TwoStep(false, true);
+  TwoStep(true, false);
+  TwoStep(true, true);
+}
+
 
 //-----------------------------------------------------------------------------
 

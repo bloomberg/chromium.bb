@@ -62,12 +62,22 @@ class SyncMessage;
 class IPC_EXPORT SyncChannel : public ChannelProxy,
                                public base::WaitableEventWatcher::Delegate {
  public:
+  // Creates and initializes a sync channel. If create_pipe_now is specified,
+  // the channel will be initialized synchronously.
   SyncChannel(const IPC::ChannelHandle& channel_handle,
               Channel::Mode mode,
               Channel::Listener* listener,
               base::MessageLoopProxy* ipc_message_loop,
               bool create_pipe_now,
               base::WaitableEvent* shutdown_event);
+
+  // Creates an uninitialized sync channel. Call ChannelProxy::Init to
+  // initialize the channel. This two-step setup allows message filters to be
+  // added before any messages are sent or received.
+  SyncChannel(Channel::Listener* listener,
+              base::MessageLoopProxy* ipc_message_loop,
+              base::WaitableEvent* shutdown_event);
+
   virtual ~SyncChannel();
 
   virtual bool Send(Message* message);
@@ -185,6 +195,9 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
   // Runs a nested message loop until a reply arrives, times out, or the process
   // shuts down.
   static void WaitForReplyWithNestedMessageLoop(SyncContext* context);
+
+  // Starts the dispatch watcher.
+  void StartWatching();
 
   bool sync_messages_with_no_timeout_allowed_;
 

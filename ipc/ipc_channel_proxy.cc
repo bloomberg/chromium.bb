@@ -285,18 +285,15 @@ ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
                            Channel::Listener* listener,
                            base::MessageLoopProxy* ipc_thread)
     : context_(new Context(listener, ipc_thread)),
-      outgoing_message_filter_(NULL) {
-  Init(channel_handle, mode, ipc_thread, true);
+      outgoing_message_filter_(NULL),
+      did_init_(false) {
+  Init(channel_handle, mode, true);
 }
 
-ChannelProxy::ChannelProxy(const IPC::ChannelHandle& channel_handle,
-                           Channel::Mode mode,
-                           base::MessageLoopProxy* ipc_thread,
-                           Context* context,
-                           bool create_pipe_now)
+ChannelProxy::ChannelProxy(Context* context)
     : context_(context),
-      outgoing_message_filter_(NULL) {
-  Init(channel_handle, mode, ipc_thread, create_pipe_now);
+      outgoing_message_filter_(NULL),
+      did_init_(false) {
 }
 
 ChannelProxy::~ChannelProxy() {
@@ -305,8 +302,8 @@ ChannelProxy::~ChannelProxy() {
 
 void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
                         Channel::Mode mode,
-                        base::MessageLoopProxy* ipc_thread_loop,
                         bool create_pipe_now) {
+  DCHECK(!did_init_);
 #if defined(OS_POSIX)
   // When we are creating a server on POSIX, we need its file descriptor
   // to be created immediately so that it can be accessed and passed
@@ -332,6 +329,8 @@ void ChannelProxy::Init(const IPC::ChannelHandle& channel_handle,
   // complete initialization on the background thread
   context_->ipc_message_loop()->PostTask(
       FROM_HERE, base::Bind(&Context::OnChannelOpened, context_.get()));
+
+  did_init_ = true;
 }
 
 void ChannelProxy::Close() {
@@ -347,6 +346,7 @@ void ChannelProxy::Close() {
 }
 
 bool ChannelProxy::Send(Message* message) {
+  DCHECK(did_init_);
   if (outgoing_message_filter())
     message = outgoing_message_filter()->Rewrite(message);
 

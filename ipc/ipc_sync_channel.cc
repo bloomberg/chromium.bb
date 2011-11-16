@@ -378,18 +378,19 @@ SyncChannel::SyncChannel(
     base::MessageLoopProxy* ipc_message_loop,
     bool create_pipe_now,
     WaitableEvent* shutdown_event)
-    : ChannelProxy(
-          channel_handle, mode, ipc_message_loop,
-          new SyncContext(listener, ipc_message_loop, shutdown_event),
-          create_pipe_now),
+    : ChannelProxy(new SyncContext(listener, ipc_message_loop, shutdown_event)),
       sync_messages_with_no_timeout_allowed_(true) {
-  // Ideally we only want to watch this object when running a nested message
-  // loop.  However, we don't know when it exits if there's another nested
-  // message loop running under it or not, so we wouldn't know whether to
-  // stop or keep watching.  So we always watch it, and create the event as
-  // manual reset since the object watcher might otherwise reset the event
-  // when we're doing a WaitMany.
-  dispatch_watcher_.StartWatching(sync_context()->GetDispatchEvent(), this);
+  ChannelProxy::Init(channel_handle, mode, create_pipe_now);
+  StartWatching();
+}
+
+SyncChannel::SyncChannel(
+    Channel::Listener* listener,
+    base::MessageLoopProxy* ipc_message_loop,
+    WaitableEvent* shutdown_event)
+    : ChannelProxy(new SyncContext(listener, ipc_message_loop, shutdown_event)),
+      sync_messages_with_no_timeout_allowed_(true) {
+  StartWatching();
 }
 
 SyncChannel::~SyncChannel() {
@@ -512,6 +513,16 @@ void SyncChannel::OnWaitableEventSignaled(WaitableEvent* event) {
   event->Reset();
   dispatch_watcher_.StartWatching(event, this);
   sync_context()->DispatchMessages();
+}
+
+void SyncChannel::StartWatching() {
+  // Ideally we only want to watch this object when running a nested message
+  // loop.  However, we don't know when it exits if there's another nested
+  // message loop running under it or not, so we wouldn't know whether to
+  // stop or keep watching.  So we always watch it, and create the event as
+  // manual reset since the object watcher might otherwise reset the event
+  // when we're doing a WaitMany.
+  dispatch_watcher_.StartWatching(sync_context()->GetDispatchEvent(), this);
 }
 
 }  // namespace IPC
