@@ -94,12 +94,6 @@ class MetricsLogBase {
   // reliability stats, from other builds, can be abandoned.
   static int64 GetBuildTime();
 
-  // Use |extension| in all uploaded appversions in addition to the standard
-  // version string.
-  static void set_version_extension(const std::string& extension) {
-    version_extension_ = extension;
-  }
-
   virtual MetricsLog* AsMetricsLog();
 
  protected:
@@ -150,9 +144,6 @@ class MetricsLogBase {
   // Write the attributes that are common to every metrics event type.
   void WriteCommonEventAttributes();
 
-  // An extension that is appended to the appversion in each log.
-  static std::string version_extension_;
-
   base::Time start_time_;
   base::Time end_time_;
 
@@ -170,6 +161,7 @@ class MetricsLogBase {
 
   int num_events_;  // the number of events recorded in this log
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MetricsLogBase);
 };
 

@@ -186,7 +186,7 @@ static base::LazyInstance<TimeFormatter> g_time_formatter =
 
 void TimeFormatter::BuildFormats(
     FormatType format_type, std::vector<icu::PluralFormat*>* time_formats) {
-  static const icu::UnicodeString kKeywords[] = {
+  const icu::UnicodeString kKeywords[] = {
     UNICODE_STRING_SIMPLE("other"), UNICODE_STRING_SIMPLE("one"),
     UNICODE_STRING_SIMPLE("zero"), UNICODE_STRING_SIMPLE("two"),
     UNICODE_STRING_SIMPLE("few"), UNICODE_STRING_SIMPLE("many")
@@ -237,7 +237,7 @@ void TimeFormatter::BuildFormats(
 // unless translators make a mistake.
 icu::PluralFormat* TimeFormatter::createFallbackFormat(
     const icu::PluralRules& rules, int index, FormatType format_type) {
-  static const icu::UnicodeString kUnits[4][2] = {
+  const icu::UnicodeString kUnits[4][2] = {
     { UNICODE_STRING_SIMPLE("sec"), UNICODE_STRING_SIMPLE("secs") },
     { UNICODE_STRING_SIMPLE("min"), UNICODE_STRING_SIMPLE("mins") },
     { UNICODE_STRING_SIMPLE("hour"), UNICODE_STRING_SIMPLE("hours") },

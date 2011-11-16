@@ -420,8 +420,8 @@ bool SearchBoxExtension::PageSupportsInstant(WebFrame* frame) {
   // The deprecated API needs to notify the page of events it may have missed.
   // This isn't necessary in the SearchBox API, since the page can query the
   // API at any time.
-  static std::string init_script(
-      StringPrintf(kInitScript, kSetOmniboxBoundsScript, kUserInputScript));
+  CR_DEFINE_STATIC_LOCAL(std::string, init_script,
+      (StringPrintf(kInitScript, kSetOmniboxBoundsScript, kUserInputScript)));
   if (supports_deprecated_api) {
     frame->executeScript(WebScriptSource(WebString::fromUTF8(init_script)));
   }

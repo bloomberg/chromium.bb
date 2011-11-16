@@ -89,9 +89,6 @@ class MetricsLogBase::XmlWrapper {
   xmlTextWriterPtr writer_;
 };
 
-// static
-std::string MetricsLogBase::version_extension_;
-
 MetricsLogBase::MetricsLogBase(const std::string& client_id, int session_id,
                                const std::string& version_string)
     : start_time_(Time::Now()),

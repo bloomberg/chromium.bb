@@ -15,6 +15,7 @@
 #include <iostream>
 
 #include "base/debug/stack_trace.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/mac/crash_logging.h"
 #include "base/mac/mac_util.h"
@@ -75,7 +76,8 @@ size_t g_fatZombieSize = 0;
 BOOL g_zombieAllObjects = NO;
 
 // Protects |g_zombieCount|, |g_zombieIndex|, and |g_zombies|.
-base::Lock lock_;
+base::LazyInstance<base::Lock, base::LeakyLazyInstanceTraits<base::Lock> >
+    g_lock = LAZY_INSTANCE_INITIALIZER;
 
 // How many zombies to keep before freeing, and the current head of
 // the circular buffer.
@@ -213,7 +215,7 @@ void ZombieDealloc(id self, SEL _cmd) {
 
   // Don't involve the lock when creating zombies without a treadmill.
   if (g_zombieCount > 0) {
-    base::AutoLock pin(lock_);
+    base::AutoLock pin(g_lock.Get());
 
     // Check the count again in a thread-safe manner.
     if (g_zombieCount > 0) {
@@ -236,7 +238,7 @@ void ZombieDealloc(id self, SEL _cmd) {
 BOOL GetZombieRecord(id object, ZombieRecord* record) {
   // Holding the lock is reasonable because this should be fast, and
   // the process is going to crash presently anyhow.
-  base::AutoLock pin(lock_);
+  base::AutoLock pin(g_lock.Get());
   for (size_t i = 0; i < g_zombieCount; ++i) {
     if (g_zombies[i].object == object) {
       *record = g_zombies[i];
@@ -472,7 +474,7 @@ bool ZombieEnable(bool zombieAllObjects,
   ZombieRecord* oldZombies = g_zombies;
 
   {
-    base::AutoLock pin(lock_);
+    base::AutoLock pin(g_lock.Get());
 
     // Save the old index in case zombies need to be transferred.
     size_t oldIndex = g_zombieIndex;
@@ -543,7 +545,7 @@ void ZombieDisable() {
   ZombieRecord* oldZombies = g_zombies;
 
   {
-    base::AutoLock pin(lock_);  // In case any |-dealloc| are in-progress.
+    base::AutoLock pin(g_lock.Get());  // In case any -dealloc are in progress.
     g_zombieCount = 0;
     g_zombies = NULL;
   }

@@ -65,6 +65,11 @@ class MetricsLog : public MetricsLogBase {
 
   virtual MetricsLog* AsMetricsLog();
 
+  // Use |extension| in all uploaded appversions in addition to the standard
+  // version string.
+  static void set_version_extension(const std::string& extension);
+  static const std::string& version_extension();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
 

@@ -26,15 +26,15 @@
 namespace errors = extension_manifest_errors;
 namespace keys = extension_manifest_keys;
 
-static std::string* GetProcessLocale() {
-  static std::string locale;
-  return &locale;
+static std::string& GetProcessLocale() {
+  CR_DEFINE_STATIC_LOCAL(std::string, locale, ());
+  return locale;
 }
 
 namespace extension_l10n_util {
 
 void SetProcessLocale(const std::string& locale) {
-  *(GetProcessLocale()) = locale;
+  GetProcessLocale() = locale;
 }
 
 std::string GetDefaultLocaleFromManifest(const DictionaryValue& manifest,
@@ -183,7 +183,7 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
 }
 
 std::string CurrentLocaleOrDefault() {
-  std::string current_locale = l10n_util::NormalizeLocale(*GetProcessLocale());
+  std::string current_locale = l10n_util::NormalizeLocale(GetProcessLocale());
   if (current_locale.empty())
     current_locale = "en";
 
@@ -205,7 +205,7 @@ void GetAllLocales(std::set<std::string>* all_locales) {
 bool GetValidLocales(const FilePath& locale_path,
                      std::set<std::string>* valid_locales,
                      std::string* error) {
-  static std::set<std::string> chrome_locales;
+  std::set<std::string> chrome_locales;
   GetAllLocales(&chrome_locales);
 
   // Enumerate all supplied locales in the extension.

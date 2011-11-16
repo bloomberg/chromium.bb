@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
 #include "base/string_util.h"
@@ -36,6 +37,10 @@
 #if defined(OS_WIN)
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
+
+static base::LazyInstance<std::string,
+                          base::LeakyLazyInstanceTraits<std::string > >
+  g_version_extension = LAZY_INSTANCE_INITIALIZER;
 
 MetricsLog::MetricsLog(const std::string& client_id, int session_id)
     : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()) {}
@@ -81,8 +86,8 @@ std::string MetricsLog::GetVersionString() {
   }
 
   std::string version = version_info.Version();
-  if (!version_extension_.empty())
-    version += version_extension_;
+  if (!version_extension().empty())
+    version += version_extension();
   if (!version_info.IsOfficialBuild())
     version.append("-devel");
   return version;
@@ -90,6 +95,16 @@ std::string MetricsLog::GetVersionString() {
 
 MetricsLog* MetricsLog::AsMetricsLog() {
   return this;
+}
+
+// static
+void MetricsLog::set_version_extension(const std::string& extension) {
+  g_version_extension.Get() = extension;
+}
+
+// static
+const std::string& MetricsLog::version_extension() {
+  return g_version_extension.Get();
 }
 
 void MetricsLog::RecordIncrementalStabilityElements() {

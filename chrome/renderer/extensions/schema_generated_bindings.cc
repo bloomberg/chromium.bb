@@ -324,16 +324,14 @@ class ExtensionImpl : public ChromeV8Extension {
         "fjcibdnjlbfnbfdjneajpipnlcppleek",
         "oflbaaikkabfdfkimeclgkackhdkpnip"  // Testing extension.
     };
-    static const std::vector<std::string> allowed_ids(
-        kAllowedIds, kAllowedIds + arraysize(kAllowedIds));
 
     ExtensionImpl* v8_extension = GetFromArguments<ExtensionImpl>(args);
     const ::Extension* extension =
         v8_extension->GetExtensionForCurrentRenderView();
     if (!extension)
       return v8::Undefined();
-    if (allowed_ids.end() == std::find(
-        allowed_ids.begin(), allowed_ids.end(), extension->id())) {
+    if (kAllowedIds + arraysize(kAllowedIds) == std::find(
+        kAllowedIds, kAllowedIds + arraysize(kAllowedIds), extension->id())) {
       return v8::Undefined();
     }
 

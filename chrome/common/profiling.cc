@@ -17,7 +17,7 @@
 namespace {
 std::string GetProfileName() {
   static const char kDefaultProfileName[] = "chrome-profile-{type}-{pid}";
-  static std::string profile_name;
+  CR_DEFINE_STATIC_LOCAL(std::string, profile_name, ());
 
   if (profile_name.empty()) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();

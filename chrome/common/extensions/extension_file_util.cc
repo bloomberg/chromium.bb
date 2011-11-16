@@ -514,8 +514,9 @@ bool CheckForIllegalFilenames(const FilePath& extension_path,
     Extension::kLocaleFolder,
     FILE_PATH_LITERAL("__MACOSX"),
   };
-  static std::set<FilePath::StringType> reserved_underscore_names(
-      reserved_names, reserved_names + arraysize(reserved_names));
+  CR_DEFINE_STATIC_LOCAL(
+      std::set<FilePath::StringType>, reserved_underscore_names,
+      (reserved_names, reserved_names + arraysize(reserved_names)));
 
   // Enumerate all files and directories in the extension root.
   // There is a problem when using pattern "_*" with FileEnumerator, so we have
