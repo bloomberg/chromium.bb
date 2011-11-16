@@ -10,7 +10,7 @@ cr.define('options.autofillOptions', function() {
 
   function AutofillEditProfileButton(guid, edit) {
     var editButtonEl = document.createElement('button');
-    editButtonEl.className = 'raw-button';
+    editButtonEl.className = 'raw-button custom-appearance';
     editButtonEl.textContent =
         templateData.autofillEditProfileButton;
     editButtonEl.onclick = function(e) { edit(guid); };
