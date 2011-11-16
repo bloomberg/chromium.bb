@@ -18,3 +18,15 @@ _NXArgv
 
 # AddressSanitizer-specific symbols.
 ___asan_init
+___asan_register_global
+___asan_register_globals
+___asan_report_load1
+___asan_report_load2
+___asan_report_load4
+___asan_report_load8
+___asan_report_load16
+___asan_report_store1
+___asan_report_store2
+___asan_report_store4
+___asan_report_store8
+___asan_report_store16
