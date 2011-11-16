@@ -19,6 +19,7 @@ import "extension_specifics.proto";
 
 // Settings related to push notifications for apps.
 message AppNotificationSettings {
+  // DEPRECATED: Use oauth_client_id below.
   // Whether or not the user has setup notifications at least once.
   // The value for this field will start out false and will be set
   // to true when the user accepts receiving notifications for the
@@ -27,6 +28,15 @@ message AppNotificationSettings {
 
   // Whether or not the user has disabled notifications.
   optional bool disabled = 2;
+
+  // OAuth2 client id to which the user granted the notification permission.
+  // This field will start out empty.
+  // It will be set when the user accepts receiving notifications.
+  // This field is used when the user revokes the notifications permission.
+  // Note that it is never cleared after it was set once. Hence, the presence
+  // of this field can be used to determine if the user has setup notifications
+  // at least once for the given app.
+  optional string oauth_client_id = 3;
 }
 
 // Properties of app sync objects.
