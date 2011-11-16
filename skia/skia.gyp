@@ -478,6 +478,7 @@
         #'../third_party/skia/src/ports/SkFontHost_linux.cpp',
         '../third_party/skia/src/ports/SkFontHost_mac.cpp',
         #'../third_party/skia/src/ports/SkFontHost_none.cpp',
+        '../third_party/skia/src/ports/SkFontHost_sandbox_none.cpp',
         '../third_party/skia/src/ports/SkFontHost_win.cpp',
         '../third_party/skia/src/ports/SkGlobals_global.cpp',
         #'../third_party/skia/src/ports/SkImageDecoder_CG.cpp',
