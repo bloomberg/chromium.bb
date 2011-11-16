@@ -264,6 +264,8 @@
       'filepath': 'content/browser/renderer_host/backing_store_x\..*' \
                   '|chrome/browser/chromeos/input_method/xkeyboard\..*' \
                   '|chrome/browser/chromeos/system_key_event_listener\..*' \
+                  '|chrome/browser/chromeos/'\
+                  'xinput_hierarchy_changed_event_listener\..*' \
                   '|chrome/browser/chromeos/wm_.*' \
                   '|ui/base/x/.*'
     },
