@@ -3,20 +3,27 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file should match up with the top-level third_party/jsoncpp/jsoncpp.gyp.
+
+import os
+
 Import('env')
 
-env.Append(
-    CPPPATH=['include'])
+# The jsoncpp code is not very clean.
+env.FilterOut(CCFLAGS=['-pedantic', '-Wextra', '-Wswitch-enum'])
 
+# This is used in jsoncpp.gyp so we match it here.
+env.Append(CPPDEFINES=[['JSON_USE_EXCEPTION', '0']])
 
-# normally comment out -- uncomment out to test the pedantic removal
-# check below.
-#if env.Bit('linux') or env.Bit('mac'):
-#  env.FilterOut(CCFLAGS=['-pedantic'])
-#  env.FilterOut(CCFLAGS=['-Wall'])
+source_dir = os.path.join('${SOURCE_ROOT}', 'third_party', 'jsoncpp', 'source')
+include_dir = os.path.join(source_dir, 'include')
+lib_json_dir = os.path.join(source_dir, 'src', 'lib_json')
 
-jsoncpp_inputs = ['src/lib_json/json_writer.cpp',
-                  'src/lib_json/json_value.cpp',
-                  'src/lib_json/json_reader.cpp']
+env.Append(CPPPATH=[include_dir])
 
-env.DualLibrary('jsoncpp', jsoncpp_inputs)
+jsoncpp_sources = ['json_writer.cpp',
+                   'json_value.cpp',
+                   'json_reader.cpp']
+
+env.DualLibrary('jsoncpp', [os.path.join(lib_json_dir, file)
+                            for file in jsoncpp_sources])

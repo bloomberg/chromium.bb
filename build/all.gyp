@@ -12,7 +12,6 @@
         '../src/shared/platform/platform.gyp:*',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
-        '../src/third_party_mod/jsoncpp/jsoncpp.gyp:*',
         '../src/trusted/debug_stub/debug_stub.gyp:*',
         '../src/trusted/desc/desc.gyp:*',
         '../src/trusted/gdb_rsp/gdb_rsp.gyp:*',
