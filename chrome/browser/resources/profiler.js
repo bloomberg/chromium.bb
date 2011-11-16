@@ -1033,6 +1033,7 @@ var MainView = (function() {
         // between platforms.
         link.href = 'http://chromesrc.appspot.com/?path=' +
                     encodeURIComponent(filepath) + '&line=' + linenumber;
+        link.target = '_blank';
         return;
       }
     }
