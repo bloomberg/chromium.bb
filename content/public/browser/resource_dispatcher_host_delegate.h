@@ -9,12 +9,12 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "webkit/glue/resource_type.h"
 
 class GURL;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;
 class ResourceMessageFilter;
-struct ResourceHostMsg_Request;
 struct ResourceResponse;
 
 namespace content {
@@ -35,8 +35,11 @@ class ResourceDispatcherHostDelegate {
  public:
   // Called when a request begins. Return false to abort the request.
   virtual bool ShouldBeginRequest(
-      int child_id, int route_id,
-      const ResourceHostMsg_Request& request_data,
+      int child_id,
+      int route_id,
+      const std::string& method,
+      const GURL& url,
+      ResourceType::Type resource_type,
       const content::ResourceContext& resource_context,
       const GURL& referrer) = 0;
 

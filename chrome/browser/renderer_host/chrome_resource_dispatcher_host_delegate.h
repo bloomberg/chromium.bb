@@ -34,8 +34,11 @@ class ChromeResourceDispatcherHostDelegate
 
   // ResourceDispatcherHostDelegate implementation.
   virtual bool ShouldBeginRequest(
-      int child_id, int route_id,
-      const ResourceHostMsg_Request& request_data,
+      int child_id,
+      int route_id,
+      const std::string& method,
+      const GURL& url,
+      ResourceType::Type resource_type,
       const content::ResourceContext& resource_context,
       const GURL& referrer) OVERRIDE;
   virtual ResourceHandler* RequestBeginning(

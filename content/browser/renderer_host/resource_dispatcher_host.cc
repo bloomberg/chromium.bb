@@ -484,8 +484,11 @@ void ResourceDispatcherHost::BeginRequest(
   const GURL referrer = MaybeStripReferrer(request_data.referrer);
 
   // Allow the observer to block/handle the request.
-  if (delegate_ && !delegate_->ShouldBeginRequest(child_id, route_id,
-                                                  request_data,
+  if (delegate_ && !delegate_->ShouldBeginRequest(child_id,
+                                                  route_id,
+                                                  request_data.method,
+                                                  request_data.url,
+                                                  request_data.resource_type,
                                                   resource_context,
                                                   referrer)) {
     AbortRequestBeforeItStarts(filter_, sync_result, route_id, request_id);
