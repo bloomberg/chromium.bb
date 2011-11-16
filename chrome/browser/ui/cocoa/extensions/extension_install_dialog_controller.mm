@@ -288,7 +288,7 @@ void AppendRatingStarsShim(const SkBitmap* skiaImage, void* data) {
 
 @end  // ExtensionInstallDialogController
 
-void ShowExtensionInstallDialogImpl(
+void ShowExtensionInstallDialog(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,

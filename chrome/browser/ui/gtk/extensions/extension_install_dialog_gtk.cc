@@ -234,7 +234,7 @@ void ExtensionInstallDialog::OnStoreLinkClick(GtkWidget* sender) {
 
 }  // namespace
 
-void ShowExtensionInstallDialogImpl(
+void ShowExtensionInstallDialog(
     Profile* profile,
     ExtensionInstallUI::Delegate* delegate,
     const Extension* extension,

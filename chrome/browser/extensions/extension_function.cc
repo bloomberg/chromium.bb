@@ -187,14 +187,7 @@ void IOThreadExtensionFunction::SendResponse(bool success) {
                    ipc_sender(), routing_id_, success);
 }
 
-AsyncExtensionFunction::AsyncExtensionFunction() : delegate_(NULL) {
-}
-
-void AsyncExtensionFunction::SendResponse(bool success) {
-  if (delegate_)
-    delegate_->OnSendResponse(this, success);
-  else
-    UIThreadExtensionFunction::SendResponse(success);
+AsyncExtensionFunction::AsyncExtensionFunction() {
 }
 
 AsyncExtensionFunction::~AsyncExtensionFunction() {
