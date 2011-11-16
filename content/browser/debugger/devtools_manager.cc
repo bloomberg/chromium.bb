@@ -160,6 +160,15 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
   }
 }
 
+void DevToolsManager::OnCancelPendingNavigation(RenderViewHost* pending,
+                                                RenderViewHost* current) {
+  int cookie = DetachClientHost(pending);
+  if (cookie != -1) {
+    // Navigating to URL in the inspected window.
+    AttachClientHost(cookie, current);
+  }
+}
+
 void DevToolsManager::TabReplaced(TabContents* old_tab,
                                   TabContents* new_tab) {
   RenderViewHost* old_rvh = old_tab->render_view_host();

@@ -60,6 +60,8 @@ class CONTENT_EXPORT DevToolsManager
   void OnNavigatingToPendingEntry(RenderViewHost* inspected_rvh,
                                   RenderViewHost* dest_rvh,
                                   const GURL& gurl);
+  void OnCancelPendingNavigation(RenderViewHost* pending,
+                                 RenderViewHost* current);
 
   // Invoked when a tab is replaced by another tab. This is triggered by
   // TabStripModel::ReplaceTabContentsAt.

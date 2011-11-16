@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -93,6 +94,12 @@ class DevToolsManagerTestBrowserClient
 
   virtual DevToolsManager* GetDevToolsManager() OVERRIDE {
     return &dev_tools_manager_;
+  }
+
+  virtual bool ShouldSwapProcessesForNavigation(
+      const GURL& current_url,
+      const GURL& new_url) OVERRIDE {
+    return true;
   }
 
  private:
@@ -197,4 +204,37 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   EXPECT_TRUE(delegate.renderer_unresponsive_received());
 
   contents()->set_delegate(NULL);
+}
+
+TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
+  contents()->transition_cross_site = true;
+  TestRenderViewHost* orig_rvh = rvh();
+  // Navigate to URL.  First URL should use first RenderViewHost.
+  const GURL url("http://www.google.com");
+  controller().LoadURL(
+      url, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
+  ViewHostMsg_FrameNavigate_Params params1;
+  InitNavigateParams(&params1, 1, url, content::PAGE_TRANSITION_TYPED);
+  contents()->TestDidNavigate(orig_rvh, params1);
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+
+  TestDevToolsClientHost client_host;
+  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
+  devtools_manager->RegisterDevToolsClientHostFor(rvh(), &client_host);
+
+  // Navigate to new site which should get a new RenderViewHost.
+  const GURL url2("http://www.yahoo.com");
+  controller().LoadURL(
+      url2, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
+  EXPECT_TRUE(contents()->cross_navigation_pending());
+  EXPECT_EQ(&client_host,
+            devtools_manager->GetDevToolsClientHostFor(pending_rvh()));
+
+  // Interrupt pending navigation and navigate back to the original site.
+  controller().LoadURL(
+      url, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
+  contents()->TestDidNavigate(orig_rvh, params1);
+  EXPECT_FALSE(contents()->cross_navigation_pending());
+  EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(rvh()));
+  client_host.Close();
 }
