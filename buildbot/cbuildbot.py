@@ -386,8 +386,12 @@ class DistributedBuilder(SimpleBuilder):
 
   def RunStages(self):
     """Runs simple builder logic and publishes information to overlays."""
-    was_build_successful = super(DistributedBuilder, self).RunStages()
-    self.Publish(was_build_successful)
+    was_build_successful = False
+    try:
+      was_build_successful = super(DistributedBuilder, self).RunStages()
+    finally:
+      self.Publish(was_build_successful)
+
     return was_build_successful
 
 
