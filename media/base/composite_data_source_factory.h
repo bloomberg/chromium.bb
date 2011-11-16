@@ -23,13 +23,13 @@ class MEDIA_EXPORT CompositeDataSourceFactory
   void AddFactory(DataSourceFactory* factory);
 
   // DataSourceFactory method.
-  virtual DataSourceFactory* Clone() const;
+  virtual DataSourceFactory* Clone() const OVERRIDE;
 
  protected:
   // AsyncDataSourceFactoryBase methods.
-  virtual bool AllowRequests() const;
+  virtual bool AllowRequests() const OVERRIDE;
   virtual AsyncDataSourceFactoryBase::BuildRequest* CreateRequest(
-      const std::string& url, const BuildCallback& callback);
+      const std::string& url, const BuildCallback& callback) OVERRIDE;
 
  private:
   class BuildRequest;

@@ -31,23 +31,24 @@ class MEDIA_EXPORT ReferenceAudioRenderer
   virtual ~ReferenceAudioRenderer();
 
   // Filter implementation.
-  virtual void SetPlaybackRate(float playback_rate);
+  virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
 
   // AudioRenderer implementation.
-  virtual void SetVolume(float volume);
+  virtual void SetVolume(float volume) OVERRIDE;
 
   // AudioSourceCallback implementation.
   virtual uint32 OnMoreData(AudioOutputStream* stream, uint8* dest,
-                            uint32 len, AudioBuffersState buffers_state);
+                            uint32 len,
+                            AudioBuffersState buffers_state) OVERRIDE;
   virtual void OnClose(AudioOutputStream* stream);
-  virtual void OnError(AudioOutputStream* stream, int code);
+  virtual void OnError(AudioOutputStream* stream, int code) OVERRIDE;
 
  protected:
   // AudioRendererBase implementation.
   virtual bool OnInitialize(int bits_per_channel,
                             ChannelLayout channel_layout,
-                            int sample_rate);
-  virtual void OnStop();
+                            int sample_rate) OVERRIDE;
+  virtual void OnStop() OVERRIDE;
 
  private:
   // Audio output stream device.

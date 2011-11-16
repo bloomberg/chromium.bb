@@ -15,8 +15,9 @@ class MEDIA_EXPORT FileDataSourceFactory : public DataSourceFactory {
   virtual ~FileDataSourceFactory();
 
   // DataSourceFactory methods.
-  virtual void Build(const std::string& url, const BuildCallback& callback);
-  virtual DataSourceFactory* Clone() const;
+  virtual void Build(const std::string& url,
+                     const BuildCallback& callback) OVERRIDE;
+  virtual DataSourceFactory* Clone() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileDataSourceFactory);

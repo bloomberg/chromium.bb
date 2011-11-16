@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "media/base/media_export.h"
 
@@ -47,8 +48,8 @@ class IdentityBitstreamConverter : public BitstreamConverter {
   IdentityBitstreamConverter() {}
   virtual ~IdentityBitstreamConverter() {}
 
-  virtual bool Initialize();
-  virtual bool ConvertPacket(AVPacket* packet);
+  virtual bool Initialize() OVERRIDE;
+  virtual bool ConvertPacket(AVPacket* packet) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IdentityBitstreamConverter);
@@ -66,8 +67,8 @@ class MEDIA_EXPORT FFmpegBitstreamConverter : public BitstreamConverter {
                            AVCodecContext* stream_context);
   virtual ~FFmpegBitstreamConverter();
 
-  virtual bool Initialize();
-  virtual bool ConvertPacket(AVPacket* packet);
+  virtual bool Initialize() OVERRIDE;
+  virtual bool ConvertPacket(AVPacket* packet) OVERRIDE;
 
  private:
   std::string filter_name_;

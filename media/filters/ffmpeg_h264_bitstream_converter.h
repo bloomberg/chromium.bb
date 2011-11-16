@@ -44,8 +44,8 @@ class MEDIA_EXPORT FFmpegH264BitstreamConverter : public BitstreamConverter {
   virtual ~FFmpegH264BitstreamConverter();
 
   // BitstreamConverter implementation
-  virtual bool Initialize();
-  virtual bool ConvertPacket(AVPacket* packet);
+  virtual bool Initialize() OVERRIDE;
+  virtual bool ConvertPacket(AVPacket* packet) OVERRIDE;
 
  private:
   // Actual converter class.

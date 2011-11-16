@@ -18,9 +18,9 @@ class MEDIA_EXPORT MessageLoopFactoryImpl : public MessageLoopFactory {
   MessageLoopFactoryImpl();
 
   // MessageLoopFactory methods.
-  virtual MessageLoop* GetMessageLoop(const std::string& name);
+  virtual MessageLoop* GetMessageLoop(const std::string& name) OVERRIDE;
   virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoopProxy(
-      const std::string& name);
+      const std::string& name) OVERRIDE;
 
  protected:
   virtual ~MessageLoopFactoryImpl();

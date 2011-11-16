@@ -31,17 +31,17 @@ class MEDIA_EXPORT NullAudioRenderer
   virtual ~NullAudioRenderer();
 
   // AudioRenderer implementation.
-  virtual void SetVolume(float volume);
+  virtual void SetVolume(float volume) OVERRIDE;
 
   // PlatformThread::Delegate implementation.
-  virtual void ThreadMain();
+  virtual void ThreadMain() OVERRIDE;
 
  protected:
   // AudioRendererBase implementation.
   virtual bool OnInitialize(int bits_per_channel,
                             ChannelLayout channel_layout,
-                            int sample_rate);
-  virtual void OnStop();
+                            int sample_rate) OVERRIDE;
+  virtual void OnStop() OVERRIDE;
 
  private:
   // A number to convert bytes written in FillBuffer to milliseconds based on

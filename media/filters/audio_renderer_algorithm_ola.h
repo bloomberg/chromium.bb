@@ -26,9 +26,9 @@ class MEDIA_EXPORT AudioRendererAlgorithmOLA
   virtual ~AudioRendererAlgorithmOLA();
 
   // AudioRendererAlgorithmBase implementation
-  virtual uint32 FillBuffer(uint8* dest, uint32 length);
+  virtual uint32 FillBuffer(uint8* dest, uint32 length) OVERRIDE;
 
-  virtual void set_playback_rate(float new_rate);
+  virtual void set_playback_rate(float new_rate) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AudioRendererAlgorithmOLATest,

@@ -54,7 +54,8 @@ class MEDIA_EXPORT AsyncDataSourceFactoryBase : public DataSourceFactory {
   // DataSourceFactory method.
   // Derived classes should not overload this Build() method. AllowRequests() &
   // CreateRequest() should be implemented instead.
-  virtual void Build(const std::string& url, const BuildCallback& callback);
+  virtual void Build(const std::string& url,
+                     const BuildCallback& callback) OVERRIDE;
 
   // DataSourceFactory method.
   // Clone() must be implemented by derived classes.

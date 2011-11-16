@@ -14,9 +14,9 @@ class NullVideoRenderer : public VideoRendererBase {
   NullVideoRenderer();
 
   // VideoRendererBase implementation.
-  virtual bool OnInitialize(VideoDecoder* decoder);
-  virtual void OnStop(const base::Closure& callback);
-  virtual void OnFrameAvailable();
+  virtual bool OnInitialize(VideoDecoder* decoder) OVERRIDE;
+  virtual void OnStop(const base::Closure& callback) OVERRIDE;
+  virtual void OnFrameAvailable() OVERRIDE;
 
  private:
   // Only allow to be deleted by reference counting.

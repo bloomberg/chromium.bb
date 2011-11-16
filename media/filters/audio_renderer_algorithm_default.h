@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,7 +20,7 @@ class AudioRendererAlgorithmDefault : public AudioRendererAlgorithmBase {
   virtual ~AudioRendererAlgorithmDefault();
 
   // AudioRendererAlgorithmBase implementation
-  virtual uint32 FillBuffer(uint8* dest, uint32 length);
+  virtual uint32 FillBuffer(uint8* dest, uint32 length) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererAlgorithmDefault);

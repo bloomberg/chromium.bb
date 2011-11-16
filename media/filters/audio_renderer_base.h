@@ -88,7 +88,7 @@ class MEDIA_EXPORT AudioRendererBase : public AudioRenderer {
                     bool buffers_empty);
 
   // Get/Set the playback rate of |algorithm_|.
-  virtual void SetPlaybackRate(float playback_rate);
+  virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
   virtual float GetPlaybackRate();
 
  private:
