@@ -313,6 +313,10 @@ TEST_F(NPAPITesterBase, PluginThreadAsyncCall) {
 }
 
 // Test checking the privacy mode is on.
+#if defined(OS_LINUX)
+// http://crbug.com/104380
+#define PrivateEnabled FLAKY_PrivateEnabled
+#endif
 TEST_F(NPAPIIncognitoTester, PrivateEnabled) {
   const FilePath test_case(FILE_PATH_LITERAL("private.html"));
   GURL url = ui_test_utils::GetFileUrlWithQuery(
