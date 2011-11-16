@@ -103,6 +103,8 @@ std::string TestCharSet::TestUTF16ToCharSet() {
 }
 
 std::string TestCharSet::TestCharSetToUTF16() {
+  pp::Memory_Dev memory;
+
   // Empty string.
   uint32_t utf16result_len;
   uint16_t* utf16result = char_set_interface_->CharSetToUTF16(
@@ -111,6 +113,7 @@ std::string TestCharSet::TestCharSetToUTF16() {
   ASSERT_TRUE(utf16result);
   ASSERT_TRUE(utf16result_len == 0);
   ASSERT_TRUE(utf16result[0] == 0);
+  memory.MemFree(utf16result);
 
   // Basic Latin1.
   char latin1[] = "H\xef";
@@ -121,6 +124,7 @@ std::string TestCharSet::TestCharSetToUTF16() {
   ASSERT_TRUE(utf16result_len == 2);
   ASSERT_TRUE(utf16result[0] == 'H' && utf16result[1] == 0xef &&
               utf16result[2] == 0);
+  memory.MemFree(utf16result);
 
   // Invalid input encoding with FAIL.
   char badutf8[] = "A\xe4Z";
@@ -129,6 +133,7 @@ std::string TestCharSet::TestCharSetToUTF16() {
       PP_CHARSET_CONVERSIONERROR_FAIL, &utf16result_len);
   ASSERT_TRUE(!utf16result);
   ASSERT_TRUE(utf16result_len == 0);
+  memory.MemFree(utf16result);
 
   // Invalid input with SKIP.
   utf16result = char_set_interface_->CharSetToUTF16(
@@ -138,6 +143,7 @@ std::string TestCharSet::TestCharSetToUTF16() {
   ASSERT_TRUE(utf16result_len == 2);
   ASSERT_TRUE(utf16result[0] == 'A' && utf16result[1] == 'Z' &&
               utf16result[2] == 0);
+  memory.MemFree(utf16result);
 
   // Invalid input with SUBSTITUTE.
   utf16result = char_set_interface_->CharSetToUTF16(
@@ -147,6 +153,7 @@ std::string TestCharSet::TestCharSetToUTF16() {
   ASSERT_TRUE(utf16result_len == 3);
   ASSERT_TRUE(utf16result[0] == 'A' && utf16result[1] == 0xFFFD &&
               utf16result[2] == 'Z' && utf16result[3] == 0);
+  memory.MemFree(utf16result);
 
   // Invalid encoding name.
   utf16result = char_set_interface_->CharSetToUTF16(
@@ -154,6 +161,7 @@ std::string TestCharSet::TestCharSetToUTF16() {
       PP_CHARSET_CONVERSIONERROR_SUBSTITUTE, &utf16result_len);
   ASSERT_TRUE(!utf16result);
   ASSERT_TRUE(utf16result_len == 0);
+  memory.MemFree(utf16result);
 
   PASS();
 }
