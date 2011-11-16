@@ -252,6 +252,7 @@ const char kProxyConfigProperty[] = "ProxyConfig";
 const char kCheckPortalProperty[] = "CheckPortal";
 const char kSSIDProperty[] = "SSID";
 const char kConnectedProperty[] = "Connected";
+const char kUIDataProperty[] = "UIData";
 
 // Flimflam provider property names.
 const char kProviderHostProperty[] = "Provider.Host";
