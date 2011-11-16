@@ -219,10 +219,11 @@ class ExtensionTtsController {
   void SetPlatformImpl(ExtensionTtsPlatformImpl* platform_impl);
   int QueueSize();
 
- private:
+ protected:
   ExtensionTtsController();
   virtual ~ExtensionTtsController();
 
+ private:
   // Get the platform TTS implementation (or injected mock).
   ExtensionTtsPlatformImpl* GetPlatformImpl();
 
@@ -230,8 +231,9 @@ class ExtensionTtsController {
   // |utterance| or delete it if there's an error. Returns true on success.
   void SpeakNow(Utterance* utterance);
 
-  // Clear the utterance queue.
-  void ClearUtteranceQueue();
+  // Clear the utterance queue. If send_events is true, will send
+  // TTS_EVENT_CANCELLED events on each one.
+  void ClearUtteranceQueue(bool send_events);
 
   // Finalize and delete the current utterance.
   void FinishCurrentUtterance();

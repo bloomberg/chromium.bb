@@ -80,6 +80,11 @@ bool GetMatchingExtensionVoice(
     Utterance* utterance,
     const Extension** matching_extension,
     size_t* voice_index) {
+  // This will only happen during unit testing. Otherwise, an utterance
+  // will always have an associated profile.
+  if (!utterance->profile())
+    return false;
+
   ExtensionService* service = utterance->profile()->GetExtensionService();
   DCHECK(service);
   ExtensionEventRouter* event_router =

@@ -150,7 +150,9 @@ ExtensionTtsController::~ExtensionTtsController() {
     current_utterance_->Finish();
     delete current_utterance_;
   }
-  ClearUtteranceQueue();
+
+  // Clear any queued utterances too.
+  ClearUtteranceQueue(false);  // Don't sent events.
 }
 
 void ExtensionTtsController::SpeakOrEnqueue(Utterance* utterance) {
@@ -209,7 +211,7 @@ void ExtensionTtsController::Stop() {
   if (current_utterance_)
     current_utterance_->OnTtsEvent(TTS_EVENT_INTERRUPTED, -1, std::string());
   FinishCurrentUtterance();
-  ClearUtteranceQueue();
+  ClearUtteranceQueue(true);  // Send events.
 }
 
 void ExtensionTtsController::OnTtsEvent(int utterance_id,
@@ -295,11 +297,14 @@ void ExtensionTtsController::SpeakNextUtterance() {
   }
 }
 
-void ExtensionTtsController::ClearUtteranceQueue() {
+void ExtensionTtsController::ClearUtteranceQueue(bool send_events) {
   while (!utterance_queue_.empty()) {
     Utterance* utterance = utterance_queue_.front();
     utterance_queue_.pop();
-    utterance->OnTtsEvent(TTS_EVENT_CANCELLED, -1, std::string());
+    if (send_events)
+      utterance->OnTtsEvent(TTS_EVENT_CANCELLED, -1, std::string());
+    else
+      utterance->Finish();
     delete utterance;
   }
 }
