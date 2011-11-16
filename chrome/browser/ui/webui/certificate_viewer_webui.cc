@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/gtk/certificate_dialogs.h"
+#include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chrome/common/url_constants.h"

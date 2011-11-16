@@ -13,8 +13,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
-#include "chrome/browser/ui/gtk/certificate_dialogs.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/browser_thread.h"  // for FileAccessProvider

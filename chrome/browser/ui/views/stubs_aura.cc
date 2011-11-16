@@ -13,7 +13,7 @@
 #include "chrome/browser/first_run/first_run_import_observer.h"
 #include "chrome/browser/ui/views/first_run_bubble.h"
 #else
-#include "chrome/browser/ui/gtk/certificate_dialogs.h"
+#include "chrome/browser/ui/certificate_dialogs.h"
 #endif
 
 #if defined(USE_NSS)
@@ -76,24 +76,6 @@ void ShowCryptoModulePasswordDialog(
 void ShowCertificateViewer(gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
   // No certificate viewer on Windows.
-}
-
-#else
-void ShowCertSelectFileDialog(SelectFileDialog* select_file_dialog,
-                              SelectFileDialog::Type type,
-                              const FilePath& suggested_path,
-                              TabContents* tab_contents,
-                              gfx::NativeWindow parent,
-                              void* params) {
-  // TODO(saintlou);
-  NOTIMPLEMENTED();
-}
-
-void ShowCertExportDialog(TabContents* tab_contents,
-                          gfx::NativeWindow parent,
-                          net::X509Certificate::OSCertHandle cert) {
-  // TODO(saintlou);
-  NOTIMPLEMENTED();
 }
 #endif // OS_WIN
 

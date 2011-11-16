@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/ui/gtk/certificate_dialogs.h"
+#include "chrome/browser/ui/certificate_dialogs.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "grit/generated_resources.h"

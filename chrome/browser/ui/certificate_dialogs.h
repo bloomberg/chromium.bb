@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_CERTIFICATE_DIALOGS_H_
-#define CHROME_BROWSER_UI_GTK_CERTIFICATE_DIALOGS_H_
+#ifndef CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
+#define CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
 #pragma once
 
 #include "chrome/browser/ui/select_file_dialog.h"
@@ -20,4 +20,4 @@ void ShowCertExportDialog(TabContents* tab_contents,
                           gfx::NativeWindow parent,
                           net::X509Certificate::OSCertHandle cert);
 
-#endif  // CHROME_BROWSER_UI_GTK_CERTIFICATE_DIALOGS_H_
+#endif  // CHROME_BROWSER_UI_CERTIFICATE_DIALOGS_H_
