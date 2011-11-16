@@ -484,10 +484,14 @@ class DownloadProtectionService::CheckClientDownloadRequest
           sb_service_->MatchDownloadWhitelistUrl(info_.referrer_url)) {
         reason = REASON_WHITELISTED_REFERRER;
       }
-      if (reason != REASON_MAX ||
-          signature_info_.certificate_chain_size() > 0) {
+      if (reason != REASON_MAX || signature_info_.trusted()) {
         UMA_HISTOGRAM_COUNTS("SBClientDownload.SignedOrWhitelistedDownload", 1);
       }
+    }
+    if (reason == REASON_MAX && signature_info_.trusted()) {
+      // TODO(noelutz): implement a certificate whitelist and only whitelist
+      // binaries whose certificate match the whitelist.
+      reason = REASON_TRUSTED_EXECUTABLE;
     }
     if (reason != REASON_MAX) {
       RecordImprovedProtectionStats(reason);
@@ -496,8 +500,6 @@ class DownloadProtectionService::CheckClientDownloadRequest
       RecordImprovedProtectionStats(REASON_PING_DISABLED);
       CheckDigestList();
     } else {
-      // TODO(noelutz): check signature and CA against whitelist.
-
       // The URLFetcher is owned by the UI thread, so post a message to
       // start the pingback.
       BrowserThread::PostTask(

@@ -66,6 +66,10 @@ ACTION_P(SetCertificateContents, contents) {
   arg1->add_certificate_chain()->add_element()->set_certificate(contents);
 }
 
+ACTION(TrustSignature) {
+  arg1->set_trusted(true);
+}
+
 // We can't call OnSafeBrowsingResult directly because SafeBrowsingCheck does
 // not have any copy constructor which means it can't be stored in a callback
 // easily.  Note: check will be deleted automatically when the callback is
@@ -546,6 +550,24 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadDigestList) {
       .WillOnce(DoAll(
           CheckDownloadHashDone(SafeBrowsingService::BINARY_MALWARE_HASH),
           Return(false)));
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  EXPECT_EQ(DownloadProtectionService::SAFE, result_);
+  Mock::VerifyAndClearExpectations(sb_service_);
+
+  // If the binary is a trusted executable we will not ping the server but
+  // we will still lookup the digest list.
+  EXPECT_CALL(*sb_service_, MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*signature_util_, CheckSignature(info.local_file, _))
+      .WillOnce(TrustSignature());
+  EXPECT_CALL(*sb_service_,
+              CheckDownloadHash(info.sha256_hash, NotNull()))
+      .WillOnce(DoAll(CheckDownloadHashDone(SafeBrowsingService::SAFE),
+                      Return(false)));
   download_service_->CheckClientDownload(
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,

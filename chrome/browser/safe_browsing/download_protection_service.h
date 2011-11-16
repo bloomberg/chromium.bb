@@ -114,6 +114,7 @@ class DownloadProtectionService {
     REASON_EMPTY_URL_CHAIN,
     REASON_HTTPS_URL,
     REASON_PING_DISABLED,
+    REASON_TRUSTED_EXECUTABLE,
     REASON_MAX  // Always add new values before this one.
   };
 
