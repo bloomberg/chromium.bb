@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -11,11 +12,14 @@
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/net/http_return.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/common/url_fetcher.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -46,6 +50,11 @@ static const char kOAuth2IssueTokenScope[] =
 static const char kCWSChannelServiceURL[] =
     "https://www-googleapis-staging.sandbox.google.com/chromewebstore/"
     "v1internal/channels/app_id/oauth_client_id";
+static const char* kRelevantGaiaServices[] = {
+  GaiaConstants::kCWSService,
+  GaiaConstants::kLSOService,
+};
+static const int kRelevantGaiaServicesCount = arraysize(kRelevantGaiaServices);
 }  // namespace.
 
 AppNotifyChannelSetup::AppNotifyChannelSetup(
@@ -65,43 +74,63 @@ AppNotifyChannelSetup::AppNotifyChannelSetup(
       callback_id_(callback_id),
       delegate_(delegate),
       ui_(ui),
-      state_(INITIAL) {}
+      state_(INITIAL),
+      fetch_token_success_count_(0),
+      fetch_token_fail_count_(0) {}
 
 AppNotifyChannelSetup::~AppNotifyChannelSetup() {}
 
 void AppNotifyChannelSetup::Start() {
-  AddRef(); // Balanced in ReportResult.
+  AddRef();  // Balanced in ReportResult.
+  BeginLogin();
+}
 
-  CHECK_EQ(INITIAL, state_);
-
-  // Check if the user is logged in to the browser.
-  std::string username = profile_->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
-
-  if (username.empty()) {
-    state_ = LOGIN_STARTED;
-    ui_->PromptSyncSetup(this);
-    return; // We'll get called back in OnSyncSetupResult
+void AppNotifyChannelSetup::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
+    TokenService::TokenAvailableDetails* tok_details =
+        content::Details<TokenService::TokenAvailableDetails>(details).ptr();
+    if (IsGaiaServiceRelevant(tok_details->service()))
+      ++fetch_token_success_count_;
+  } else if (type == chrome::NOTIFICATION_TOKEN_REQUEST_FAILED) {
+    TokenService::TokenRequestFailedDetails* error_details =
+        content::Details<TokenService::TokenRequestFailedDetails>(
+            details).ptr();
+    if (IsGaiaServiceRelevant(error_details->service()))
+      ++fetch_token_fail_count_;
+  } else {
+    CHECK(false) << "Received a notification not registered for.";
   }
 
-  state_ = LOGIN_DONE;
-  BeginRecordGrant();
+  // If we already got fetch results (success + failure) for all services
+  // we care about, we are done with fetching tokens.
+  if (fetch_token_success_count_ + fetch_token_fail_count_ ==
+      kRelevantGaiaServicesCount) {
+    UnregisterForTokenServiceNotifications();
+    // We successfully fetched tokens if success count is equal to the
+    // number of services we care about.
+    bool success = (fetch_token_success_count_ == kRelevantGaiaServicesCount);
+    EndFetchTokens(success);
+  }
+}
+
+bool AppNotifyChannelSetup::ShouldFetchServiceTokens() const {
+  TokenService* token_service = profile_->GetTokenService();
+  for (int i = 0; i < kRelevantGaiaServicesCount; ++i) {
+    if (!token_service->HasTokenForService(kRelevantGaiaServices[i]))
+      return true;
+  }
+  return false;
 }
 
 void AppNotifyChannelSetup::OnSyncSetupResult(bool enabled) {
-  CHECK_EQ(LOGIN_STARTED, state_);
-  if (enabled) {
-    state_ = LOGIN_DONE;
-    BeginRecordGrant();
-  } else {
-    state_ = ERROR_STATE;
-    ReportResult("", kChannelSetupCanceledByUser);
-  }
+  EndLogin(enabled);
 }
 
 void AppNotifyChannelSetup::OnURLFetchComplete(const URLFetcher* source) {
   CHECK(source);
-
   switch (state_) {
     case RECORD_GRANT_STARTED:
       EndRecordGrant(source);
@@ -133,8 +162,85 @@ URLFetcher* AppNotifyChannelSetup::CreateURLFetcher(
   return fetcher;
 }
 
-void AppNotifyChannelSetup::BeginRecordGrant() {
+// static
+bool AppNotifyChannelSetup::IsGaiaServiceRelevant(const std::string& service) {
+  for (int i = 0; i < kRelevantGaiaServicesCount; ++i) {
+    if (service == kRelevantGaiaServices[i])
+      return true;
+  }
+  return false;
+}
+
+void AppNotifyChannelSetup::RegisterForTokenServiceNotifications() {
+  content::Source<TokenService> token_service(profile_->GetTokenService());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_TOKEN_AVAILABLE,
+                 token_service);
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_TOKEN_REQUEST_FAILED,
+                 token_service);
+}
+
+void AppNotifyChannelSetup::UnregisterForTokenServiceNotifications() {
+  registrar_.RemoveAll();
+}
+
+bool AppNotifyChannelSetup::ShouldPromptForLogin() const {
+  std::string username = profile_->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername);
+  return username.empty();
+}
+
+void AppNotifyChannelSetup::BeginLogin() {
+  CHECK_EQ(INITIAL, state_);
+  state_ = LOGIN_STARTED;
+  if (ShouldPromptForLogin()) {
+    ui_->PromptSyncSetup(this);
+    // We'll get called back in OnSyncSetupResult
+  } else {
+    EndLogin(true);
+  }
+}
+
+void AppNotifyChannelSetup::EndLogin(bool success) {
+  CHECK_EQ(LOGIN_STARTED, state_);
+  if (success) {
+    state_ = LOGIN_DONE;
+    BeginFetchTokens();
+  } else {
+    state_ = ERROR_STATE;
+    ReportResult("", kChannelSetupCanceledByUser);
+  }
+}
+
+void AppNotifyChannelSetup::BeginFetchTokens() {
   CHECK_EQ(LOGIN_DONE, state_);
+  state_ = FETCH_TOKEN_STARTED;
+  if (ShouldFetchServiceTokens()) {
+    // If a user is logged in already, and a new version of Chrome is released
+    // with new services added to Tokenservice, TokenService will not have
+    // tokens for the new services.
+    RegisterForTokenServiceNotifications();
+    profile_->GetTokenService()->StartFetchingMissingTokens();
+    // Observe will get called with notifications from TokenService.
+  } else {
+    EndFetchTokens(true);
+  }
+}
+
+void AppNotifyChannelSetup::EndFetchTokens(bool success) {
+  CHECK_EQ(FETCH_TOKEN_STARTED, state_);
+  if (success) {
+    state_ = FETCH_TOKEN_DONE;
+    BeginRecordGrant();
+  } else {
+    state_ = ERROR_STATE;
+    ReportResult("", kChannelSetupInternalError);
+  }
+}
+
+void AppNotifyChannelSetup::BeginRecordGrant() {
+  CHECK(FETCH_TOKEN_DONE == state_);
   state_ = RECORD_GRANT_STARTED;
 
   GURL url = GetOAuth2IssueTokenURL();

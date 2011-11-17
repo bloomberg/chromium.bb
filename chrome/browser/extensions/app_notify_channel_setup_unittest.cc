@@ -8,22 +8,59 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/extensions/app_notify_channel_setup.h"
+#include "chrome/browser/extensions/app_notify_channel_ui.h"
+#include "chrome/browser/net/gaia/token_service.h"
+#include "chrome/browser/net/gaia/token_service_unittest.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_pref_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using testing::_;
+using testing::Return;
 
 namespace {
 
 const int kRouteId = 4;
 const int kCallbackId = 5;
 const char* kFakeExtensionId = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+class MockTokenService : public TokenService {
+ public:
+  MockTokenService() { }
+  virtual ~MockTokenService() { }
+
+  bool AreCredentialsValid() const OVERRIDE {
+    return true;
+  }
+
+  MOCK_CONST_METHOD1(HasTokenForService, bool(const char*));
+};
+
+class TestProfile : public TestingProfile {
+ public:
+  TestProfile() : TestingProfile() { }
+  virtual ~TestProfile() { }
+
+  virtual TokenService* GetTokenService() OVERRIDE {
+    return &token_service_;
+  }
+
+  void SetTokenServiceHasTokenResult(bool result) {
+    EXPECT_CALL(token_service_, HasTokenForService(_))
+        .WillRepeatedly(Return(result));
+  }
+
+ private:
+  MockTokenService token_service_;
+};
 
 class TestDelegate : public AppNotifyChannelSetup::Delegate,
                      public base::SupportsWeakPtr<TestDelegate> {
@@ -127,13 +164,13 @@ class AppNotifyChannelSetupTest : public testing::Test {
   virtual AppNotifyChannelSetup* CreateInstance() {
     GURL page_url("http://www.google.com");
     return new AppNotifyChannelSetup(&profile_,
-                                  kFakeExtensionId,
-                                  "1234",
-                                  page_url,
-                                  kRouteId,
-                                  kCallbackId,
-                                  ui_.release(),
-                                  delegate_.AsWeakPtr());
+                                     kFakeExtensionId,
+                                     "1234",
+                                     page_url,
+                                     kRouteId,
+                                     kCallbackId,
+                                     ui_.release(),
+                                     delegate_.AsWeakPtr());
   }
 
   virtual void SetupLogin(bool should_succeed) {
@@ -141,6 +178,16 @@ class AppNotifyChannelSetupTest : public testing::Test {
       SetLoggedInUser("user@gmail.com");
     else
       ui_->SetSyncSetupResult(false);
+  }
+
+  virtual void SetupFetchTokens(bool should_have_tokens, bool should_succeed) {
+    profile_.SetTokenServiceHasTokenResult(should_have_tokens);
+    if (!should_have_tokens) {
+      factory_.SetFakeResponse(
+          GaiaUrls::GetInstance()->issue_auth_token_url(),
+          "some_token",
+          should_succeed);
+    }
   }
 
   virtual void SetupRecordGrant(bool should_succeed) {
@@ -157,7 +204,6 @@ class AppNotifyChannelSetupTest : public testing::Test {
         should_succeed);
   }
 
-
   virtual void RunServerTest(AppNotifyChannelSetup* setup,
                              const std::string& expected_code,
                              const std::string& expected_error) {
@@ -169,22 +215,39 @@ class AppNotifyChannelSetupTest : public testing::Test {
  protected:
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
-  TestingProfile profile_;
+  TestProfile profile_;
   TestDelegate delegate_;
   scoped_ptr<TestUI> ui_;
   FakeURLFetcherFactory factory_;
 };
 
 TEST_F(AppNotifyChannelSetupTest, LoginFailure) {
-  // Set login to fail.
   SetupLogin(false);
 
   scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
   RunServerTest(setup, "", "canceled_by_user");
 }
 
-TEST_F(AppNotifyChannelSetupTest, RecordGrantFailure) {
+TEST_F(AppNotifyChannelSetupTest, FetchTokensFailure) {
   SetupLogin(true);
+  SetupFetchTokens(false, false);
+
+  scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
+  RunServerTest(setup, "", "internal_error");
+}
+
+TEST_F(AppNotifyChannelSetupTest, TokensAvailableRecordGrantFailure) {
+  SetupLogin(true);
+  SetupFetchTokens(true, false);
+  SetupRecordGrant(false);
+
+  scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
+  RunServerTest(setup, "", "internal_error");
+}
+
+TEST_F(AppNotifyChannelSetupTest, TokenFetchSuccessAndRecordGrantFailure) {
+  SetupLogin(true);
+  SetupFetchTokens(false , true);
   SetupRecordGrant(false);
 
   scoped_refptr<AppNotifyChannelSetup> setup = CreateInstance();
@@ -193,6 +256,7 @@ TEST_F(AppNotifyChannelSetupTest, RecordGrantFailure) {
 
 TEST_F(AppNotifyChannelSetupTest, GetChannelIdFailure) {
   SetupLogin(true);
+  SetupFetchTokens(true, false);
   SetupRecordGrant(true);
   SetupGetChannelId(false);
 
@@ -202,6 +266,7 @@ TEST_F(AppNotifyChannelSetupTest, GetChannelIdFailure) {
 
 TEST_F(AppNotifyChannelSetupTest, ServerSuccess) {
   SetupLogin(true);
+  SetupFetchTokens(true, false);
   SetupRecordGrant(true);
   SetupGetChannelId(true);
 

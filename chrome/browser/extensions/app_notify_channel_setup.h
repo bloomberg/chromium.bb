@@ -9,12 +9,18 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/app_notify_channel_ui.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/common/url_fetcher.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 
 class AppNotifyChannelSetupTest;
 class Profile;
+
+namespace content {
+class NotificationDetails;
+}
 
 // This class uses the browser login credentials to setup app notifications
 // for a given app.
@@ -27,6 +33,7 @@ class Profile;
 //    the above steps.
 class AppNotifyChannelSetup
     : public content::URLFetcherDelegate,
+      public content::NotificationObserver,
       public AppNotifyChannelUI::Delegate,
       public base::RefCountedThreadSafe<AppNotifyChannelSetup> {
  public:
@@ -51,10 +58,16 @@ class AppNotifyChannelSetup
                         AppNotifyChannelUI* ui,
                         base::WeakPtr<Delegate> delegate);
 
+  AppNotifyChannelUI* ui() { return ui_.get(); }
+
   // This begins the process of fetching the channel id using the browser login
   // credentials (or using |ui_| to prompt for login if needed).
   void Start();
 
+  // Implementing content::NotificationObserver interface.
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
  protected:
   // content::URLFetcherDelegate.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
@@ -67,6 +80,8 @@ class AppNotifyChannelSetup
     INITIAL,
     LOGIN_STARTED,
     LOGIN_DONE,
+    FETCH_TOKEN_STARTED,
+    FETCH_TOKEN_DONE,
     RECORD_GRANT_STARTED,
     RECORD_GRANT_DONE,
     CHANNEL_ID_SETUP_STARTED,
@@ -84,6 +99,10 @@ class AppNotifyChannelSetup
   // Caller owns the returned instance.
   content::URLFetcher* CreateURLFetcher(
     const GURL& url, const std::string& body, const std::string& auth_token);
+  void BeginLogin();
+  void EndLogin(bool success);
+  void BeginFetchTokens();
+  void EndFetchTokens(bool success);
   void BeginRecordGrant();
   void EndRecordGrant(const content::URLFetcher* source);
   void BeginGetChannelId();
@@ -100,8 +119,16 @@ class AppNotifyChannelSetup
   std::string GetCWSAuthToken();
   static bool ParseCWSChannelServiceResponse(
       const std::string& data, std::string* result);
+  static bool IsGaiaServiceRelevant(const std::string& service);
+  // Checks if the user needs to be prompted for login.
+  bool ShouldPromptForLogin() const;
+  // Checks if we need to fetch auth tokens for services we care about.
+  virtual bool ShouldFetchServiceTokens() const;
+  void RegisterForTokenServiceNotifications();
+  void UnregisterForTokenServiceNotifications();
 
   Profile* profile_;
+  content::NotificationRegistrar registrar_;
   std::string extension_id_;
   std::string client_id_;
   GURL requestor_url_;
@@ -111,6 +138,8 @@ class AppNotifyChannelSetup
   scoped_ptr<content::URLFetcher> url_fetcher_;
   scoped_ptr<AppNotifyChannelUI> ui_;
   State state_;
+  int fetch_token_success_count_;
+  int fetch_token_fail_count_;
 
   DISALLOW_COPY_AND_ASSIGN(AppNotifyChannelSetup);
 };
