@@ -219,12 +219,12 @@ bool DownloadResourceHandler::OnResponseCompleted(
   net::Error error_code = net::OK;
   if (status.status() == net::URLRequestStatus::FAILED)
     error_code = static_cast<net::Error>(status.error());  // Normal case.
-  // ERR_CONNECTION_CLOSED is allowed since a number of servers in the wild
-  // advertise a larger Content-Length than the amount of bytes in the message
-  // body, and then close the connection. Other browsers - IE8, Firefox 4.0.1,
-  // and Safari 5.0.4 - treat the download as complete in this case, so we
-  // follow their lead.
-  if (error_code == net::ERR_CONNECTION_CLOSED)
+  // ERR_CONTENT_LENGTH_MISMATCH is allowed since a number of servers in the
+  // wild advertise a larger Content-Length than the amount of bytes in the
+  // message body, and then close the connection. Other browsers - IE8,
+  // Firefox 4.0.1, and Safari 5.0.4 - treat the download as complete in this
+  // case, so we follow their lead.
+  if (error_code == net::ERR_CONTENT_LENGTH_MISMATCH)
     error_code = net::OK;
   InterruptReason reason =
       ConvertNetErrorToInterruptReason(error_code,

@@ -592,7 +592,7 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
-    const net::URLRequestStatus& status,
+    const net::URLRequestStatus& original_status,
     const std::string& security_info,
     const base::Time& completion_time) {
   if (ftp_listing_delegate_.get()) {
@@ -601,6 +601,16 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
   } else if (multipart_delegate_.get()) {
     multipart_delegate_->OnCompletedRequest();
     multipart_delegate_.reset(NULL);
+  }
+
+  net::URLRequestStatus status = original_status;
+
+  // Rewrite the Content-Length mismatch as a success.
+  // See crbug.com/52847 for justification.
+  if (status.status() != net::URLRequestStatus::SUCCESS &&
+      status.error() == net::ERR_CONTENT_LENGTH_MISMATCH) {
+    status.set_status(net::URLRequestStatus::SUCCESS);
+    status.set_error(net::OK);
   }
 
   // Prevent any further IPC to the browser now that we're complete, but
