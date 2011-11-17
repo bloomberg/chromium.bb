@@ -7,7 +7,6 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/animation/slide_animation.h"
@@ -78,7 +77,6 @@ FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(
       browser_fullscreen_exit_accelerator_(accelerator) {
   views::BubbleBorder* bubble_border =
       new views::BubbleBorder(views::BubbleBorder::NONE);
-  bubble_border->set_background_color(Bubble::kBackgroundColor);
   set_background(new views::BubbleBackground(bubble_border));
   set_border(bubble_border);
   set_focusable(false);
@@ -253,6 +251,7 @@ FullscreenExitBubbleViews::FullscreenExitBubbleViews(
   view_ = new FullscreenExitView(
       this, accelerator.GetShortcutText(), url, bubble_type_);
 
+  // TODO(yzshen): Change to use the new views bubble, BubbleDelegateView.
   // Initialize the popup.
   popup_ = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
