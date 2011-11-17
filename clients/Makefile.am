@@ -23,6 +23,7 @@ clients_programs =				\
 	dnd					\
 	smoke					\
 	resizor					\
+	wscreensaver				\
 	eventdemo
 
 desktop_shell = wayland-desktop-shell
@@ -68,6 +69,9 @@ smoke_LDADD = $(toolkit_libs)
 
 resizor_SOURCES = resizor.c
 resizor_LDADD = $(toolkit_libs)
+
+wscreensaver_SOURCES = wscreensaver.c wscreensaver-glue.c glmatrix.c
+wscreensaver_LDADD = $(toolkit_libs) -lGLU
 
 eventdemo_SOURCES = eventdemo.c
 eventdemo_LDADD = $(toolkit_libs)

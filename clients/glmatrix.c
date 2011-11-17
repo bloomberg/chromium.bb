@@ -28,17 +28,14 @@
 #undef BELLRAND
 #define BELLRAND(n) ((frand((n)) + frand((n)) + frand((n))) / 3)
 
-#include "xlockmore.h"
-#include "xpm-ximage.h"
+#include "wscreensaver-glue.h"
 
 #ifdef __GNUC__
   __extension__  /* don't warn about "string length is greater than the length
                     ISO C89 compilers are required to support" when including
                     the following XPM file... */
 #endif
-#include "../images/matrix3.xpm"
-
-#ifdef USE_GL /* whole file */
+#include "matrix3.xpm"
 
 
 #define DEF_SPEED       "1.0"
@@ -188,6 +185,7 @@ static Bool do_rotate;
 static Bool do_texture;
 static char *mode_str;
 
+#if 0
 static XrmOptionDescRec opts[] = {
   { "-speed",       ".speed",     XrmoptionSepArg, 0 },
   { "-density",     ".density",   XrmoptionSepArg, 0 },
@@ -222,7 +220,7 @@ static argtype vars[] = {
 };
 
 ENTRYPOINT ModeSpecOpt matrix_opts = {countof(opts), opts, countof(vars), vars, NULL};
-
+#endif
 
 /* Re-randomize the state of one strip.
  */
@@ -589,6 +587,7 @@ reshape_matrix (ModeInfo *mi, int width, int height)
 }
 
 
+#if 0
 ENTRYPOINT Bool
 matrix_handle_event (ModeInfo *mi, XEvent *event)
 {
@@ -609,7 +608,7 @@ matrix_handle_event (ModeInfo *mi, XEvent *event)
 
   return False;
 }
-
+#endif
 
 #if 0
 static Bool
@@ -695,8 +694,7 @@ load_textures (ModeInfo *mi, Bool flip_p)
   /* The Matrix XPM is 512x598 -- but GL texture sizes must be powers of 2.
      So we waste some padding rows to round up.
    */
-  xi = xpm_to_ximage (mi->dpy, mi->xgwa.visual, mi->xgwa.colormap,
-                      matrix3_xpm);
+  xi = xpm_to_ximage (matrix3_xpm);
   orig_w = xi->width;
   orig_h = xi->height;
   mp->real_char_rows = CHAR_ROWS;
@@ -990,8 +988,6 @@ ENTRYPOINT void
 draw_matrix (ModeInfo *mi)
 {
   matrix_configuration *mp = &mps[MI_SCREEN(mi)];
-  Display *dpy = MI_DISPLAY(mi);
-  Window window = MI_WINDOW(mi);
   int i;
 
   if (!mp->glx_context)
@@ -1057,9 +1053,12 @@ draw_matrix (ModeInfo *mi)
   if (mi->fps_p) do_fps (mi);
   glFinish();
 
-  glXSwapBuffers(dpy, window);
+  glXSwapBuffers(MI_DISPLAY(mi), MI_WINDOW(mi));
 }
 
-XSCREENSAVER_MODULE_2 ("GLMatrix", glmatrix, matrix)
-
-#endif /* USE_GL */
+WL_EXPORT struct wscreensaver_plugin glmatrix_screensaver = {
+	"GLMatrix",
+	init_matrix,
+	draw_matrix,
+	reshape_matrix
+};

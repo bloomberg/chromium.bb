@@ -17,3 +17,4 @@ desktop-shell-client-protocol.h
 desktop-shell-protocol.c
 desktop-shell
 simple-client
+wscreensaver
