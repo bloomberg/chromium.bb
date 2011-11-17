@@ -4710,7 +4710,7 @@
    bug_100583
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN11webkit_glue18WebMediaPlayerImpl10InitializeEPN6WebKit8WebFrameEb13scoped_refptrINS_16WebVideoRendererEE
+   fun:_ZN11webkit_media18WebMediaPlayerImpl10InitializeEPN6WebKit8WebFrameEb13scoped_refptrINS_16WebVideoRendererEE
    ...
    fun:_ZN6WebKitL20createWebMediaPlayerEPNS_20WebMediaPlayerClientEPN7WebCore5FrameE
    fun:_ZN6WebKit24WebMediaPlayerClientImpl12loadInternalEv
