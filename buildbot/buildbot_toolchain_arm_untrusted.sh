@@ -148,6 +148,7 @@ echo @@@BUILD_STEP show-config@@@
 PNACL_BUILDBOT=true PNACL_PRUNE=true ${PNACL_BUILD} show-config
 
 echo @@@BUILD_STEP compile_toolchain@@@
+rm -rf pnacl-toolchain.tgz pnacl/pnacl-toolchain.tgz
 PNACL_BUILDBOT=true PNACL_PRUNE=true \
   ${PNACL_BUILD} untrusted_sdk pnacl-toolchain.tgz
 chmod a+r pnacl-toolchain.tgz

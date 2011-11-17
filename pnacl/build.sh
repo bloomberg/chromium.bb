@@ -22,6 +22,8 @@
 set -o nounset
 set -o errexit
 
+PWD_ON_ENTRY="$(pwd)"
+
 # The script is located in "native_client/pnacl/".
 # Set pwd to pnacl/
 cd "$(dirname "$0")"
@@ -1048,7 +1050,7 @@ untrusted_sdk() {
     echo "Error: untrusted_sdk needs a tarball name." >&2
     exit 1
   fi
-
+  local tgzname=$(cd "${PWD_ON_ENTRY}"; GetAbsolutePath "$1")
   clean
   everything-translator
 
@@ -1058,7 +1060,7 @@ untrusted_sdk() {
   if ${PNACL_PRUNE}; then
     prune
   fi
-  tarball $1
+  tarball "${tgzname}"
 }
 
 #+ prune                 - Prune toolchain
