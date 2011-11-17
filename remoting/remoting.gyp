@@ -195,6 +195,28 @@
             }],  # 'linux_dump_symbols==1'
           ],  # end of 'conditions'
         },  # end of target 'linux_symbols'
+
+        {
+          'target_name': 'remoting_me2me_host',
+          'type': 'executable',
+          'dependencies': [
+            'remoting_base',
+            'remoting_host',
+            'remoting_jingle_glue',
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
+            '../media/media.gyp:media',
+          ],
+          'sources': [
+            # TODO(lambroslambrou): Remove the dependencies on the Disconnect
+            # and Continue windows for the Me2Me case - crbug.com/104377.
+            'host/continue_window.h',
+            'host/continue_window_linux.cc',
+            'host/disconnect_window_linux.cc',
+            'host/remoting_me2me_host.cc',
+          ],
+        },  # end of target 'remoting_me2me_host'
+
       ],  # end of 'targets'
     }],  # 'OS=="linux"'
   ],  # end of 'conditions'
