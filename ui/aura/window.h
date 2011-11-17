@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -25,10 +26,7 @@
 class SkCanvas;
 
 namespace ui {
-class Animation;
-class Compositor;
 class Layer;
-class LayerAnimationSequence;
 class Transform;
 }
 
@@ -36,11 +34,7 @@ namespace aura {
 
 class Desktop;
 class EventFilter;
-class KeyEvent;
 class LayoutManager;
-class MouseEvent;
-class ToplevelWindowContainer;
-class TouchEvent;
 class WindowDelegate;
 class WindowObserver;
 

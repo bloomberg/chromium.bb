@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_TEST_TEST_UTILS_H_
-#define UI_AURA_TEST_TEST_UTILS_H_
+#ifndef UI_AURA_TEST_TEST_WINDOWS_H_
+#define UI_AURA_TEST_TEST_WINDOWS_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -11,10 +11,6 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window_types.h"
-
-namespace gfx {
-class Canvas;
-}
 
 namespace aura {
 namespace test {
@@ -38,4 +34,4 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
 }  // namespace test
 }  // namespace aura
 
-#endif  // UI_AURA_TEST_TEST_UTILS_H_
+#endif  // UI_AURA_TEST_TEST_WINDOWS_H_

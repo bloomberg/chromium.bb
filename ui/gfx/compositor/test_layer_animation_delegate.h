@@ -13,12 +13,10 @@
 
 namespace ui {
 
-class LayerAnimationSequence;
-
 class TestLayerAnimationDelegate : public LayerAnimationDelegate {
  public:
   TestLayerAnimationDelegate();
-  TestLayerAnimationDelegate(const LayerAnimationDelegate& other);
+  explicit TestLayerAnimationDelegate(const LayerAnimationDelegate& other);
   virtual ~TestLayerAnimationDelegate();
 
   // Implementation of LayerAnimationDelegate

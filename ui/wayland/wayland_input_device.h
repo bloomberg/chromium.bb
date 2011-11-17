@@ -16,7 +16,6 @@ struct wl_array;
 struct wl_buffer;
 struct wl_display;
 struct wl_input_device;
-struct wl_input_device_listener;
 struct wl_surface;
 
 namespace ui {
@@ -79,7 +78,7 @@ class WaylandInputDevice {
   static void OnPointerFocus(void* data,
                              wl_input_device* input_device,
                              uint32_t time,
-                             wl_surface *surface,
+                             wl_surface* surface,
                              int32_t x,
                              int32_t y,
                              int32_t sx,
@@ -88,7 +87,7 @@ class WaylandInputDevice {
   static void OnKeyboardFocus(void* data,
                               wl_input_device* input_device,
                               uint32_t time,
-                              wl_surface *surface,
+                              wl_surface* surface,
                               wl_array* keys);
 
   wl_input_device* input_device_;

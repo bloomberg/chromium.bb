@@ -17,11 +17,7 @@
 
 typedef struct _PangoContext PangoContext;
 
-class SkBitmap;
-
 namespace gfx {
-
-class Rect;
 
 // Creates and returns a PangoContext. The caller owns the context.
 PangoContext* GetPangoContext();

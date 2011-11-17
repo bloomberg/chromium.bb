@@ -27,7 +27,6 @@ namespace ui {
 
 class Compositor;
 class LayerAnimator;
-class LayerAnimationSequence;
 class Texture;
 
 // Layer manages a texture, transform and a set of child Layers. Any View that

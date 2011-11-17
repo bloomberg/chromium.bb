@@ -10,10 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/test_suite.h"
 
-namespace ui {
-class WebKitPlatformSupportImpl;
-}  // namespace ui
-
 class MessageLoop;
 
 class CompositorTestSuite : public base::TestSuite {

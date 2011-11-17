@@ -76,7 +76,6 @@ struct wl_egl_window;
 
 namespace ui {
 class WaylandWindow;
-class WaylandCursor;
 }
 
 typedef struct _GdkRegion GdkRegion;

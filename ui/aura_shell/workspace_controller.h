@@ -26,7 +26,6 @@ class LauncherModel;
 
 namespace internal {
 
-class DefaultContainerLayoutManager;
 class WorkspaceManager;
 
 // WorkspaceControlls owns a WorkspaceManager. WorkspaceControlls bridges
@@ -36,7 +35,7 @@ class AURA_SHELL_EXPORT WorkspaceController :
       public aura::DesktopObserver,
       public aura_shell::internal::WorkspaceObserver,
       public aura_shell::LauncherModelObserver {
-public:
+ public:
   explicit WorkspaceController(aura::Window* workspace_viewport);
   virtual ~WorkspaceController();
 
