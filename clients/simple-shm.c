@@ -37,6 +37,7 @@ struct display {
 	struct wl_compositor *compositor;
 	struct wl_shell *shell;
 	struct wl_shm *shm;
+	uint32_t formats;
 	uint32_t mask;
 };
 
@@ -141,6 +142,18 @@ static const struct wl_callback_listener frame_listener = {
 };
 
 static void
+shm_format(void *data, struct wl_shm *wl_shm, uint32_t format)
+{
+	struct display *d = data;
+
+	d->formats |= (1 << format);
+}
+
+struct wl_shm_listener shm_listenter = {
+	shm_format
+};
+
+static void
 display_handle_global(struct wl_display *display, uint32_t id,
 		      const char *interface, uint32_t version, void *data)
 {
@@ -153,6 +166,7 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		d->shell = wl_display_bind(display, id, &wl_shell_interface);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_display_bind(display, id, &wl_shm_interface);
+		wl_shm_add_listener(d->shm, &shm_listenter, d);
 	}
 }
 
@@ -175,9 +189,16 @@ create_display(void)
 	display->display = wl_display_connect(NULL);
 	assert(display->display);
 
+	display->formats = 0;
 	wl_display_add_global_listener(display->display,
 				       display_handle_global, display);
 	wl_display_iterate(display->display, WL_DISPLAY_READABLE);
+	wl_display_roundtrip(display->display);
+
+	if (!(display->formats & (1 << WL_SHM_FORMAT_XRGB32))) {
+		fprintf(stderr, "WL_SHM_FORMAT_XRGB32 not available\n");
+		exit(1);
+	}
 
 	wl_display_get_fd(display->display, event_mask_update, display);
 	
