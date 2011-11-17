@@ -184,6 +184,7 @@ void SessionsDOMHandler::GetSessionList(
     const browser_sync::SyncedSession* session = *it;
     scoped_ptr<DictionaryValue> session_data(new DictionaryValue());
     session_data->SetString("tag", session->session_tag);
+    session_data->SetString("name", session->session_name);
     scoped_ptr<ListValue> window_list(new ListValue());
     GetWindowList(session->windows, window_list.get());
     session_data->Set("windows", window_list.release());

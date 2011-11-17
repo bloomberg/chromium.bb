@@ -82,8 +82,9 @@ function transformWindow(window) {
  */
 function transformSession(session) {
   var sessionDiv = document.createElement('div');
+  var sessionName = session.name.length == 0 ? 'Session' : session.name;
   sessionDiv.className = "session";
-  sessionDiv.appendChild(createTitleDiv('session-title', 'Session'));
+  sessionDiv.appendChild(createTitleDiv('session-title', sessionName));
   addItems(sessionDiv, session.windows, transformWindow);
   return sessionDiv;
 }
