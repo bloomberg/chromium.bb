@@ -5,10 +5,6 @@
 var g_browserBridge;
 var g_mainView;
 
-// TODO(eroman): Don't repeat the work of grouping, sorting, merging on every
-//               redraw. Rather do it only once when one of its dependencies
-//               change and cache the result.
-
 /**
  * Main entry point called once the page has loaded.
  */
@@ -723,48 +719,6 @@ var MainView = (function() {
   // --------------------------------------------------------------------------
 
   /**
-   * Selects all the data in |rows| which are matched by |filterFunc|, and
-   * buckets the results using |entryToGroupKeyFunc|. For each bucket aggregates
-   * are computed, and the results are sorted.
-   *
-   * Returns a dictionary whose keys are the group name, and the value is an
-   * objected containing two properties: |rows| and |aggregates|.
-   */
-  function prepareData(rows, entryToGroupKeyFunc, filterFunc, sortingFunc) {
-    var groupedData = {};
-
-    for (var i = 0; i < rows.length; ++i) {
-      var e = rows[i];
-
-      if (!filterFunc(e))
-        continue;  // Not matched by our filter, discard the row.
-
-      var groupKey = entryToGroupKeyFunc(e);
-
-      var groupData = groupedData[groupKey];
-      if (!groupData) {
-        groupData = {
-          aggregates: initializeAggregates(ALL_KEYS),
-          rows: [],
-        };
-        groupedData[groupKey] = groupData;
-      }
-
-      // Add the row to our list.
-      groupData.rows.push(e);
-
-      // Update aggregates for each column.
-      consumeAggregates(groupData.aggregates, e);
-    }
-
-    // Sort all the data.
-    for (var groupKey in groupedData)
-      groupedData[groupKey].rows.sort(sortingFunc);
-
-    return groupedData;
-  }
-
-  /**
    * Adds new derived properties to row. Mutates the provided dictionary |e|.
    */
   function augmentDataRow(e) {
@@ -913,12 +867,12 @@ var MainView = (function() {
   /**
    * Renders the information for a particular group.
    */
-  function drawGroup(parent, groupKey, groupData, columns,
+  function drawGroup(parent, groupData, columns,
                      columnOnClickHandler, currentSortKeys) {
     var div = addNode(parent, 'div');
     div.className = 'group-container';
 
-    drawGroupTitle(div, groupKey);
+    drawGroupTitle(div, groupData.key);
 
     var table = addNode(div, 'table');
 
@@ -1211,38 +1165,96 @@ var MainView = (function() {
         // Add our computed properties.
         augmentDataRow(newRow);
 
-        this.allData_.push(newRow);
+        this.flatData_.push(newRow);
       }
 
+      // Recompute the merged data based on flatData_.
+      this.updateMergedData_();
+    },
+
+    updateMergedData_: function() {
+      // Recompute mergedData_.
+      this.mergedData_ = mergeRows(this.flatData_,
+                                   this.getMergeColumns_(),
+                                   this.shouldMergeSimilarThreads_());
+
+      // Recompute filteredData_ (since it is derived from mergedData_)
+      this.updateFilteredData_();
+    },
+
+    updateFilteredData_: function() {
+      // Recompute filteredData_.
+      this.filteredData_ = [];
+      var filterFunc = this.getFilterFunction_();
+      for (var i = 0; i < this.mergedData_.length; ++i) {
+        var r = this.mergedData_[i];
+        if (!filterFunc(r)) {
+          // Not matched by our filter, discard.
+          continue;
+        }
+        this.filteredData_.push(r);
+      }
+
+      // Recompute groupedData_ (since it is derived from filteredData_)
+      this.updateGroupedData_();
+    },
+
+    updateGroupedData_: function() {
+      // Recompute groupedData_.
+      var groupKeyToData = {};
+      var entryToGroupKeyFunc = this.getGroupingFunction_();
+      for (var i = 0; i < this.filteredData_.length; ++i) {
+        var r = this.filteredData_[i];
+
+        var groupKey = entryToGroupKeyFunc(r);
+
+        var groupData = groupKeyToData[groupKey];
+        if (!groupData) {
+          groupData = {
+            key: JSON.parse(groupKey),
+            aggregates: initializeAggregates(ALL_KEYS),
+            rows: [],
+          };
+          groupKeyToData[groupKey] = groupData;
+        }
+
+        // Add the row to our list.
+        groupData.rows.push(r);
+
+        // Update aggregates for each column.
+        consumeAggregates(groupData.aggregates, r);
+      }
+      this.groupedData_ = groupKeyToData;
+
+      // Figure out a display order for the groups themselves.
+      this.sortedGroupKeys_ = getDictionaryKeys(groupKeyToData);
+      this.sortedGroupKeys_.sort(this.getGroupSortingFunction_());
+
+      // Sort the group data.
+      this.sortGroupedData_();
+    },
+
+    sortGroupedData_: function() {
+      var sortingFunc = this.getSortingFunction_();
+      for (var k in this.groupedData_)
+        this.groupedData_[k].rows.sort(sortingFunc);
+
+      // Every cached data dependency is now up to date, all that is left is
+      // to actually draw the result.
       this.redrawData_();
     },
 
-    redrawData_: function() {
-      // Eliminate columns which we are merging on.
-      var mergedKeys = this.getMergeColumns_();
-      var data = mergeRows(
-          this.allData_, mergedKeys, this.shouldMergeSimilarThreads_());
-
+    getVisibleColumnKeys_: function() {
       // Figure out what columns to include, based on the selected checkboxes.
       var columns = this.getSelectionColumns_();
-      deleteValuesFromArray(columns, mergedKeys);
 
-      // Group, aggregate, filter, and sort the data.
-      var groupedData = prepareData(
-          data, this.getGroupingFunction_(), this.getFilterFunction_(),
-          this.getSortingFunction_());
+      // Eliminate columns which we are merging on.
+      deleteValuesFromArray(columns, this.getMergeColumns_());
 
-      // Figure out a display order for the groups.
-      var groupKeys = getDictionaryKeys(groupedData);
-      groupKeys.sort(this.getGroupSortingFunction_());
-
-      // Clear the results div, sine we may be overwriting older data.
-      var parent = $(RESULTS_DIV_ID);
-      parent.innerHTML = '';
-
-      if (groupKeys.length > 0) {
+      // Eliminate columns which we are grouped on.
+      if (this.sortedGroupKeys_.length > 0) {
         // The grouping will be the the same for each so just pick the first.
-        var randomGroupKey = JSON.parse(groupKeys[0]);
+        var randomGroupKey = this.groupedData_[this.sortedGroupKeys_[0]].key;
 
         // The grouped properties are going to be the same for each row in our,
         // table, so avoid drawing them in our table!
@@ -1254,21 +1266,46 @@ var MainView = (function() {
         deleteValuesFromArray(columns, keysToExclude);
       }
 
+      return columns;
+    },
+
+    redrawData_: function() {
+      // Clear the results div, sine we may be overwriting older data.
+      var parent = $(RESULTS_DIV_ID);
+      parent.innerHTML = '';
+
+      var columns = this.getVisibleColumnKeys_();
+
       var columnOnClickHandler = this.onClickColumn_.bind(this);
 
       // Draw each group.
-      for (var i = 0; i < groupKeys.length; ++i) {
-        var groupKeyString = groupKeys[i];
-        var groupData = groupedData[groupKeyString];
-        var groupKey = JSON.parse(groupKeyString);
-
-        drawGroup(parent, groupKey, groupData, columns,
+      for (var i = 0; i < this.sortedGroupKeys_.length; ++i) {
+        var groupData = this.groupedData_[this.sortedGroupKeys_[i]];
+        drawGroup(parent, groupData, columns,
                   columnOnClickHandler, this.currentSortKeys_);
       }
     },
 
     init_: function() {
-      this.allData_ = [];
+      // Data goes through the following pipeline:
+      // (1) Raw data received from browser, and transformed into our own
+      //     internal row format (where properties are indexed by KEY_*
+      //     constants.)
+      // (2) We "augment" each row by adding some extra computed columns
+      //     (like averages).
+      // (3) The rows are merged using current merge settings.
+      // (4) The rows that don't match current search expression are
+      //     tossed out.
+      // (5) The rows are organized into "groups" based on current settings,
+      //     and aggregate values are computed for each resulting group.
+      // (6) The rows within each group are sorted using current settings.
+      // (7) The grouped rows are drawn to the screen.
+      this.flatData_ = [];
+      this.mergedData_ = [];
+      this.filteredData_ = [];
+      this.groupedData_ = {};
+      this.sortedGroupKeys_ = [];
+
       this.fillSelectionCheckboxes_($(COLUMN_TOGGLES_CONTAINER_ID));
       this.fillMergeCheckboxes_($(COLUMN_MERGE_TOGGLES_CONTAINER_ID));
 
@@ -1385,13 +1422,13 @@ var MainView = (function() {
     onChangedGrouping_: function(select, i) {
       updateKeyListFromDropdown(this.currentGroupingKeys_, i, select);
       this.fillGroupingDropdowns_();
-      this.redrawData_();
+      this.updateGroupedData_();
     },
 
     onChangedSorting_: function(select, i) {
       updateKeyListFromDropdown(this.currentSortKeys_, i, select);
       this.fillSortingDropdowns_();
-      this.redrawData_();
+      this.sortGroupedData_();
     },
 
     onSelectCheckboxChanged_: function() {
@@ -1399,15 +1436,15 @@ var MainView = (function() {
     },
 
     onMergeCheckboxChanged_: function() {
-      this.redrawData_();
+      this.updateMergedData_();
     },
 
     onMergeSimilarThreadsCheckboxChanged_: function() {
-      this.redrawData_();
+      this.updateMergedData_();
     },
 
     onChangedFilter_: function() {
-      this.redrawData_();
+      this.updateFilteredData_();
     },
 
     /**
@@ -1456,7 +1493,7 @@ var MainView = (function() {
       }
 
       this.fillSortingDropdowns_();
-      this.redrawData_();
+      this.sortGroupedData_();
     },
 
     getSortingFunction_: function() {
