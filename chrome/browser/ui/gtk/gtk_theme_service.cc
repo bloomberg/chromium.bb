@@ -122,7 +122,7 @@ const int kAutocompleteImages[] = {
 };
 
 bool IsOverridableImage(int id) {
-  static std::set<int> images;
+  CR_DEFINE_STATIC_LOCAL(std::set<int>, images, ());
   if (images.empty()) {
     images.insert(kThemeImages, kThemeImages + arraysize(kThemeImages));
     images.insert(kAutocompleteImages,

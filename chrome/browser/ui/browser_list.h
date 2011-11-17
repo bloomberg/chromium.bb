@@ -170,25 +170,20 @@ class BrowserList {
   // closes.
   static bool WillKeepAlive();
 
-  // Browsers are added to |browsers_| before they have constructed windows,
+  // Browsers are added to the list before they have constructed windows,
   // so the |window()| member function may return NULL.
-  static const_iterator begin() { return browsers_.begin(); }
-  static const_iterator end() { return browsers_.end(); }
+  static const_iterator begin();
+  static const_iterator end();
 
-  static bool empty() { return browsers_.empty(); }
-  static size_t size() { return browsers_.size(); }
+  static bool empty();
+  static size_t size();
 
   // Returns iterated access to list of open browsers ordered by when
   // they were last active. The underlying data structure is a vector
   // and we push_back on recent access so a reverse iterator gives the
   // latest accessed browser first.
-  static const_reverse_iterator begin_last_active() {
-    return last_active_browsers_.rbegin();
-  }
-
-  static const_reverse_iterator end_last_active() {
-    return last_active_browsers_.rend();
-  }
+  static const_reverse_iterator begin_last_active();
+  static const_reverse_iterator end_last_active();
 
   // Return the number of browsers with the following profile which are
   // currently open.
@@ -216,10 +211,6 @@ class BrowserList {
   static void RemoveBrowserFrom(Browser* browser, BrowserVector* browser_list);
   static void MarkAsCleanShutdown();
   static void AttemptExitInternal();
-
-  static BrowserVector browsers_;
-  static BrowserVector last_active_browsers_;
-  static ObserverList<Observer> observers_;
 
   // Counter of calls to StartKeepAlive(). If non-zero, the application will
   // continue running after the last browser has exited.

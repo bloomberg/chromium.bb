@@ -153,7 +153,7 @@ const int kThemeableImages[] = {
 };
 
 bool HasThemeableImage(int themeable_image_id) {
-  static std::set<int> themeable_images;
+  CR_DEFINE_STATIC_LOCAL(std::set<int>, themeable_images, ());
   if (themeable_images.empty()) {
     themeable_images.insert(
         kThemeableImages, kThemeableImages + arraysize(kThemeableImages));
@@ -537,7 +537,7 @@ bool ThemeService::GetDefaultDisplayProperty(int id, int* result) {
 
 // static
 const std::set<int>& ThemeService::GetTintableToolbarButtons() {
-  static std::set<int> button_set;
+  CR_DEFINE_STATIC_LOCAL(std::set<int>, button_set, ());
   if (button_set.empty()) {
     button_set = std::set<int>(
         kToolbarButtonIDs,

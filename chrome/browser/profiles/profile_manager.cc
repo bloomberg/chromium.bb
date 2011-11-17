@@ -53,7 +53,7 @@ namespace {
 
 // Profiles that should be deleted on shutdown.
 std::vector<FilePath>& ProfilesToDelete() {
-  static std::vector<FilePath> profiles_to_delete;
+  CR_DEFINE_STATIC_LOCAL(std::vector<FilePath>, profiles_to_delete, ());
   return profiles_to_delete;
 }
 

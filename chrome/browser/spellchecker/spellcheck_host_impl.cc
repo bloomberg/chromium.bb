@@ -52,7 +52,7 @@ FilePath GetFirstChoiceFilePath(const std::string& language) {
 // spellchecker.
 void RecordSpellCheckStats(bool native_spellchecker_used,
                            const std::string& language) {
-  static std::set<std::string> languages_seen;
+  CR_DEFINE_STATIC_LOCAL(std::set<std::string>, languages_seen, ());
 
   // Only count a language code once for each session..
   if (languages_seen.find(language) != languages_seen.end()) {

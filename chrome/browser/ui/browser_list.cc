@@ -117,6 +117,22 @@ const int kMatchOriginalProfile         = 1 << 0;
 const int kMatchCanSupportWindowFeature = 1 << 1;
 const int kMatchTabbed                  = 1 << 2;
 
+static BrowserList::BrowserVector& browsers() {
+  CR_DEFINE_STATIC_LOCAL(BrowserList::BrowserVector, browser_vector, ());
+  return browser_vector;
+}
+
+static BrowserList::BrowserVector& last_active_browsers() {
+  CR_DEFINE_STATIC_LOCAL(BrowserList::BrowserVector, last_active_vector, ());
+  return last_active_vector;
+}
+
+static ObserverList<BrowserList::Observer>& observers() {
+  CR_DEFINE_STATIC_LOCAL(
+      ObserverList<BrowserList::Observer>, observer_vector, ());
+  return observer_vector;
+}
+
 // Returns true if the specified |browser| matches the specified arguments.
 // |match_types| is a bitmask dictating what parameters to match:
 // . If it contains kMatchOriginalProfile then the original profile of the
@@ -251,13 +267,10 @@ void NotifyWindowManagerAboutSignout() {
 
 }  // namespace
 
-BrowserList::BrowserVector BrowserList::browsers_;
-ObserverList<BrowserList::Observer> BrowserList::observers_;
-
 // static
 void BrowserList::AddBrowser(Browser* browser) {
   DCHECK(browser);
-  browsers_.push_back(browser);
+  browsers().push_back(browser);
 
   g_browser_process->AddRefModule();
 
@@ -271,9 +284,9 @@ void BrowserList::AddBrowser(Browser* browser) {
 
   // Send out notifications after add has occurred. Do some basic checking to
   // try to catch evil observers that change the list from under us.
-  size_t original_count = observers_.size();
-  FOR_EACH_OBSERVER(Observer, observers_, OnBrowserAdded(browser));
-  DCHECK_EQ(original_count, observers_.size())
+  size_t original_count = observers().size();
+  FOR_EACH_OBSERVER(Observer, observers(), OnBrowserAdded(browser));
+  DCHECK_EQ(original_count, observers().size())
       << "observer list modified during notification";
 }
 
@@ -337,30 +350,30 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
 
 // static
 void BrowserList::RemoveBrowser(Browser* browser) {
-  RemoveBrowserFrom(browser, &last_active_browsers_);
+  RemoveBrowserFrom(browser, &last_active_browsers());
 
   // Closing all windows does not indicate quitting the application on the Mac,
   // however, many UI tests rely on this behavior so leave it be for now and
   // simply ignore the behavior on the Mac outside of unit tests.
   // TODO(andybons): Fix the UI tests to Do The Right Thing.
-  bool closing_last_browser = (browsers_.size() == 1);
+  bool closing_last_browser = (browsers().size() == 1);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(browser),
       content::Details<bool>(&closing_last_browser));
 
-  RemoveBrowserFrom(browser, &browsers_);
+  RemoveBrowserFrom(browser, &browsers());
 
   // Do some basic checking to try to catch evil observers
   // that change the list from under us.
-  size_t original_count = observers_.size();
-  FOR_EACH_OBSERVER(Observer, observers_, OnBrowserRemoved(browser));
-  DCHECK_EQ(original_count, observers_.size())
+  size_t original_count = observers().size();
+  FOR_EACH_OBSERVER(Observer, observers(), OnBrowserRemoved(browser));
+  DCHECK_EQ(original_count, observers().size())
       << "observer list modified during notification";
 
   // If the last Browser object was destroyed, make sure we try to close any
   // remaining dependent windows too.
-  if (browsers_.empty()) {
+  if (browsers().empty()) {
     delete activity_observer;
     activity_observer = NULL;
   }
@@ -369,7 +382,7 @@ void BrowserList::RemoveBrowser(Browser* browser) {
 
   // If we're exiting, send out the APP_TERMINATING notification to allow other
   // modules to shut themselves down.
-  if (browsers_.empty() &&
+  if (browsers().empty() &&
       (browser_shutdown::IsTryingToQuit() ||
        g_browser_process->IsShuttingDown())) {
     // Last browser has just closed, and this is a user-initiated quit or there
@@ -384,12 +397,12 @@ void BrowserList::RemoveBrowser(Browser* browser) {
 
 // static
 void BrowserList::AddObserver(BrowserList::Observer* observer) {
-  observers_.AddObserver(observer);
+  observers().AddObserver(observer);
 }
 
 // static
 void BrowserList::RemoveObserver(BrowserList::Observer* observer) {
-  observers_.RemoveObserver(observer);
+  observers().RemoveObserver(observer);
 }
 
 // static
@@ -406,7 +419,7 @@ void BrowserList::CloseAllBrowsers() {
   // If there are no browsers, send the APP_TERMINATING action here. Otherwise,
   // it will be sent by RemoveBrowser() when the last browser has closed.
   if (browser_shutdown::ShuttingDownWithoutClosingBrowsers() ||
-      browsers_.empty()) {
+      browsers().empty()) {
     NotifyAndTerminate(true);
     return;
   }
@@ -623,7 +636,7 @@ void BrowserList::EndKeepAlive() {
     // If there are no browsers open and we aren't already shutting down,
     // initiate a shutdown. Also skips shutdown if this is a unit test
     // (MessageLoop::current() == null).
-    if (browsers_.empty() && !browser_shutdown::IsTryingToQuit() &&
+    if (browsers().empty() && !browser_shutdown::IsTryingToQuit() &&
         MessageLoop::current())
       CloseAllBrowsers();
   }
@@ -635,7 +648,24 @@ bool BrowserList::WillKeepAlive() {
 }
 
 // static
-BrowserList::BrowserVector BrowserList::last_active_browsers_;
+BrowserList::const_iterator BrowserList::begin() {
+  return browsers().begin();
+}
+
+// static
+BrowserList::const_iterator BrowserList::end() {
+  return browsers().end();
+}
+
+// static
+bool BrowserList::empty() {
+  return browsers().empty();
+}
+
+// static
+size_t BrowserList::size() {
+  return browsers().size();
+}
 
 // static
 void BrowserList::SetLastActive(Browser* browser) {
@@ -644,16 +674,16 @@ void BrowserList::SetLastActive(Browser* browser) {
   // intended depending on the order in which the windows close.
   if (browser_shutdown::IsTryingToQuit())
     return;
-  RemoveBrowserFrom(browser, &last_active_browsers_);
-  last_active_browsers_.push_back(browser);
+  RemoveBrowserFrom(browser, &last_active_browsers());
+  last_active_browsers().push_back(browser);
 
-  FOR_EACH_OBSERVER(Observer, observers_, OnBrowserSetLastActive(browser));
+  FOR_EACH_OBSERVER(Observer, observers(), OnBrowserSetLastActive(browser));
 }
 
 // static
 Browser* BrowserList::GetLastActive() {
-  if (!last_active_browsers_.empty())
-    return *(last_active_browsers_.rbegin());
+  if (!last_active_browsers().empty())
+    return *(last_active_browsers().rbegin());
 
   return NULL;
 }
@@ -728,16 +758,13 @@ Browser* BrowserList::FindBrowserWithTabContents(TabContents* tab_contents) {
 }
 
 // static
-size_t BrowserList::GetBrowserCountForType(Profile* profile,
-                                           bool match_tabbed) {
-  size_t result = 0;
-  for (BrowserList::const_iterator i = BrowserList::begin();
-       i != BrowserList::end(); ++i) {
-    if (BrowserMatches(*i, profile, Browser::FEATURE_NONE,
-                       match_tabbed ? kMatchTabbed : kMatchAny))
-      ++result;
-  }
-  return result;
+BrowserList::const_reverse_iterator BrowserList::begin_last_active() {
+  return last_active_browsers().rbegin();
+}
+
+// static
+BrowserList::const_reverse_iterator BrowserList::end_last_active() {
+  return last_active_browsers().rend();
 }
 
 // static
@@ -746,8 +773,21 @@ size_t BrowserList::GetBrowserCount(Profile* profile) {
   for (BrowserList::const_iterator i = BrowserList::begin();
        i != BrowserList::end(); ++i) {
     if (BrowserMatches(*i, profile, Browser::FEATURE_NONE, kMatchAny)) {
-      result++;
+      ++result;
     }
+  }
+  return result;
+}
+
+// static
+size_t BrowserList::GetBrowserCountForType(Profile* profile,
+                                           bool match_tabbed) {
+  size_t result = 0;
+  for (BrowserList::const_iterator i = BrowserList::begin();
+       i != BrowserList::end(); ++i) {
+    if (BrowserMatches(*i, profile, Browser::FEATURE_NONE,
+                       match_tabbed ? kMatchTabbed : kMatchAny))
+      ++result;
   }
   return result;
 }

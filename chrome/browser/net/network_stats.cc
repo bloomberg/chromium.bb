@@ -539,7 +539,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
   // to the server has succeeded.
   DCHECK(!net::NetworkChangeNotifier::IsOffline());
 
-  static scoped_refptr<base::FieldTrial> trial = NULL;
+  CR_DEFINE_STATIC_LOCAL(scoped_refptr<base::FieldTrial>, trial, ());
   static bool collect_stats = false;
 
   if (!trial.get()) {

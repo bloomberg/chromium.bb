@@ -177,10 +177,8 @@ class ChromeURLDataManager {
   // the UI thread, but ChromeURLDataManagerBackend lives on the IO thread.
   const base::Callback<ChromeURLDataManagerBackend*(void)> backend_;
 
-  // Lock used when accessing |data_sources_|.
-  static base::Lock delete_lock_;
-
   // |data_sources_| that are no longer referenced and scheduled for deletion.
+  // Protected by g_delete_lock in the .cc file.
   static DataSources* data_sources_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeURLDataManager);
