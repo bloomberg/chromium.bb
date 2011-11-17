@@ -112,6 +112,7 @@ class GLXImageTransportSurface : public ImageTransportSurface,
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
+  virtual void SetVisible(bool visible) OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation:
@@ -459,6 +460,17 @@ void GLXImageTransportSurface::ReleaseSurface() {
   params.identifier = window_;
   helper_->SendAcceleratedSurfaceRelease(params);
   bound_ = false;
+}
+
+void GLXImageTransportSurface::SetVisible(bool visible) {
+  Display* dpy = static_cast<Display*>(GetDisplay());
+  if (!visible) {
+    XResizeWindow(dpy, window_, 1, 1);
+  } else {
+    XResizeWindow(dpy, window_, size_.width(), size_.height());
+    needs_resize_ = true;
+  }
+  glXWaitX();
 }
 
 void GLXImageTransportSurface::OnResize(gfx::Size size) {
