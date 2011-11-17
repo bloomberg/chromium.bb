@@ -628,13 +628,13 @@ TEST(LayerAnimatorTest, CyclicSequences) {
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), target_opacity);
 
   // Skip ahead by a lot.
-  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000000000000));
+  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000000000));
 
   EXPECT_TRUE(animator->is_animating());
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), start_opacity);
 
   // Skip ahead by a lot.
-  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000000001000));
+  element->Step(start_time + base::TimeDelta::FromMilliseconds(1000001000));
 
   EXPECT_TRUE(animator->is_animating());
   EXPECT_FLOAT_EQ(delegate.GetOpacityForAnimation(), target_opacity);
