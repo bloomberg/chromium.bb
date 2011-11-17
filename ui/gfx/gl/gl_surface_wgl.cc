@@ -5,6 +5,7 @@
 #include "ui/gfx/gl/gl_surface_wgl.h"
 
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gl/gl_bindings.h"
 
 namespace gfx {
@@ -157,13 +158,30 @@ bool GLSurfaceWGL::InitializeOneOff() {
     return true;
 
   DCHECK(g_display == NULL);
-  g_display = new DisplayWGL;
-  if (!g_display->Init()) {
-    delete g_display;
-    g_display = NULL;
+  scoped_ptr<DisplayWGL> wgl_display(new DisplayWGL);
+  if (!wgl_display->Init())
+    return false;
+
+  // Create a temporary GL context to bind to extension entry points.
+  HGLRC gl_context = wglCreateContext(wgl_display->device_context());
+  if (!gl_context) {
+    LOG(ERROR) << "Failed to create temporary context.";
     return false;
   }
+  if (!wglMakeCurrent(wgl_display->device_context(), gl_context)) {
+    LOG(ERROR) << "Failed to make temporary GL context current.";
+    wglDeleteContext(gl_context);
+    return false;
+  }
+  // Get bindings to extension functions that cannot be acquired without a
+  // current context.
+  InitializeGLBindingsGL();
+  InitializeGLBindingsWGL();
 
+  wglMakeCurrent(NULL, NULL);
+  wglDeleteContext(gl_context);
+
+  g_display = wgl_display.release();
   initialized = true;
   return true;
 }
