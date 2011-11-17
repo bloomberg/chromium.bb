@@ -16,7 +16,6 @@ Returns chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 emerge-x86-generic =chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 """
 
-import constants
 import filecmp
 import optparse
 import os
@@ -24,8 +23,13 @@ import re
 import sys
 import time
 
-import cros_mark_as_stable
-from cros_build_lib import RunCommand, Info, Warning
+import constants
+if __name__ == '__main__':
+  sys.path.append(constants.SOURCE_ROOT)
+
+from chromite.buildbot import cros_mark_as_stable
+from chromite.buildbot import ebuild_manager
+from chromite.lib.cros_build_lib import RunCommand, Info, Warning
 
 BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
 
@@ -57,7 +61,7 @@ def _GetSvnUrl(base_url):
 def  _GetTipOfTrunkSvnRevision(base_url):
   """Returns the current svn revision for the chrome tree."""
   svn_url = _GetSvnUrl(base_url)
-  svn_info = RunCommand(['svn', 'info', svn_url], redirect_stdout=True)
+  svn_info = RunCommand(['svn', 'info', svn_url], redirect_stdout=True).output
 
   revision_re = re.compile('^Revision:\s+(\d+).*')
   for line in svn_info.splitlines():
@@ -113,7 +117,7 @@ def _GetSpecificVersionUrl(base_url, revision, time_to_wait=600):
       ['svn', 'cat', '-r', revision, svn_url],
       redirect_stdout=True,
       error_message='Could not read version file at %s revision %s.' %
-                    (svn_url, revision))
+                    (svn_url, revision)).output
 
   return _GetVersionContents(chrome_version_info)
 
@@ -128,7 +132,7 @@ def _GetTipOfTrunkVersionFile(root):
   chrome_version_info = RunCommand(
       ['cat', version_file],
       redirect_stdout=True,
-      error_message='Could not read version file at %s.' % version_file)
+      error_message='Could not read version file at %s.' % version_file).output
 
   return _GetVersionContents(chrome_version_info)
 
@@ -142,19 +146,23 @@ def _GetLatestRelease(base_url, branch=None):
     Latest version string.
   """
   buildspec_url = os.path.join(base_url, 'releases')
-  svn_ls = RunCommand(['svn', 'ls', buildspec_url], redirect_stdout=True)
+  svn_ls = RunCommand(['svn', 'ls', buildspec_url],
+                      redirect_stdout=True).output
   sorted_ls = RunCommand(['sort', '--version-sort', '-r'], input=svn_ls,
-                         redirect_stdout=True)
+                         redirect_stdout=True).output
   if branch:
     chrome_version_re = re.compile('^%s\.\d+.*' % branch)
   else:
     chrome_version_re = re.compile('^[0-9]+\..*')
 
   for chrome_version in sorted_ls.splitlines():
-    if chrome_version_re.match(chrome_version) and RunCommand(['svn', 'ls',
-        os.path.join(buildspec_url, chrome_version, 'DEPS')],
-        error_ok=True, redirect_stdout=True) == 'DEPS\n':
-      return chrome_version.rstrip('/')
+    if chrome_version_re.match(chrome_version):
+      deps_url = os.path.join(buildspec_url, chrome_version, 'DEPS')
+      deps_check = RunCommand(['svn', 'ls', deps_url],
+                              error_ok=True,
+                              redirect_stdout=True).output
+      if deps_check == 'DEPS\n':
+        return chrome_version.rstrip('/')
 
   return None
 
@@ -172,17 +180,17 @@ def _GetStickyEBuild(stable_ebuilds):
   elif len(sticky_ebuilds) > 1:
     Warning('More than one sticky ebuild found')
 
-  return cros_mark_as_stable.BestEBuild(sticky_ebuilds)
+  return ebuild_manager.BestEBuild(sticky_ebuilds)
 
 
-class ChromeEBuild(cros_mark_as_stable.EBuild):
+class ChromeEBuild(ebuild_manager.EBuild):
   """Thin sub-class of EBuild that adds a chrome_version field."""
   chrome_version_re = re.compile('.*chromeos-chrome-(%s|9999).*' % (
       _CHROME_VERSION_REGEX))
   chrome_version = ''
 
   def __init__(self, path):
-    cros_mark_as_stable.EBuild.__init__(self, path)
+    ebuild_manager.EBuild.__init__(self, path)
     re_match = self.chrome_version_re.match(self.ebuild_path_no_revision)
     if re_match:
       self.chrome_version = re_match.group(1)
@@ -230,7 +238,7 @@ def FindChromeCandidates(overlay_dir):
   if not stable_ebuilds:
     Warning('Missing stable ebuild for %s' % overlay_dir)
 
-  return cros_mark_as_stable.BestEBuild(unstable_ebuilds), stable_ebuilds
+  return ebuild_manager.BestEBuild(unstable_ebuilds), stable_ebuilds
 
 
 def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
@@ -272,7 +280,7 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
         candidates.append(ebuild)
 
   if candidates:
-    return cros_mark_as_stable.BestEBuild(candidates)
+    return ebuild_manager.BestEBuild(candidates)
   else:
     return None
 

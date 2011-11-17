@@ -57,6 +57,7 @@ run_test manifest_version_unittest.py
 run_test patch_unittest.py
 run_test prebuilt_unittest.py
 run_test validation_pool_unittest.py
+run_test ebuild_manager_unittest.py yes
 run_test cros_mark_as_stable_unittest.py yes
 run_test cros_mark_chrome_as_stable_unittest.py yes
 

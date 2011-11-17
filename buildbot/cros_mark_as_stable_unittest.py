@@ -12,14 +12,15 @@ import mox
 import os
 import re
 import sys
-import tempfile
 import unittest
 
 import constants
-sys.path.append(constants.SOURCE_ROOT)
-from chromite.lib import cros_build_lib
+if __name__ == '__main__':
+  sys.path.append(constants.SOURCE_ROOT)
 
-import cros_mark_as_stable
+from chromite.lib import cros_build_lib
+from chromite.buildbot import cros_mark_as_stable
+from chromite.buildbot import ebuild_manager
 
 
 # pylint: disable=W0212,R0904
@@ -108,86 +109,6 @@ class GitBranchTest(mox.MoxTestBase):
     self.mox.VerifyAll()
 
 
-class EBuildTest(mox.MoxTestBase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
-  def _makeFakeEbuild(self, fake_ebuild_path):
-    self.mox.StubOutWithMock(fileinput, 'input')
-    fileinput.input(fake_ebuild_path).AndReturn('')
-    self.mox.ReplayAll()
-    fake_ebuild = cros_mark_as_stable.EBuild(fake_ebuild_path)
-    self.mox.VerifyAll()
-    return fake_ebuild
-
-  def testParseEBuildPath(self):
-    # Test with ebuild with revision number.
-    fake_ebuild_path = '/path/to/test_package/test_package-0.0.1-r1.ebuild'
-    fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
-
-    self.assertEquals(fake_ebuild.version_no_rev, '0.0.1')
-    self.assertEquals(fake_ebuild.ebuild_path_no_revision,
-                      '/path/to/test_package/test_package-0.0.1')
-    self.assertEquals(fake_ebuild.ebuild_path_no_version,
-                      '/path/to/test_package/test_package')
-    self.assertEquals(fake_ebuild.current_revision, 1)
-
-  def testParseEBuildPathNoRevisionNumber(self):
-    # Test with ebuild without revision number.
-    fake_ebuild_path = '/path/to/test_package/test_package-9999.ebuild'
-    fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
-
-    self.assertEquals(fake_ebuild.version_no_rev, '9999')
-    self.assertEquals(fake_ebuild.ebuild_path_no_revision,
-                      '/path/to/test_package/test_package-9999')
-    self.assertEquals(fake_ebuild.ebuild_path_no_version,
-                      '/path/to/test_package/test_package')
-    self.assertEquals(fake_ebuild.current_revision, 0)
-
-  def testGetCommitId(self):
-    fake_sources = '/path/to/sources'
-    fake_category = 'test_category'
-    fake_package = 'test_package'
-    fake_ebuild_path = os.path.join(fake_sources, 'overlay',
-                                    fake_category, fake_package,
-                                    fake_package + '-9999.ebuild')
-    fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
-    self.mox.UnsetStubs()
-
-    fake_hash = '24ab3c9f6d6b5c744382dba2ca8fb444b9808e9f'
-    fake_project = 'chromiumos/third_party/test_project'
-    fake_subdir = 'test_project/'
-
-    # We expect Die() will not be called; mock it out so that if
-    # we're wrong, it won't just terminate the test.
-    self.mox.StubOutWithMock(cros_mark_as_stable.cros_build_lib, 'Die')
-    self.mox.StubOutWithMock(cros_mark_as_stable.os.path, 'isdir')
-    self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
-
-    # The first command does 'grep' magic on the ebuild.
-    cros_mark_as_stable._SimpleRunCommand(
-        mox.IgnoreArg()).AndReturn(' '.join([fake_project, fake_subdir]) + '\n')
-
-    # ... the result is used to construct a path, which the EBuild
-    # code expects to be a directory.
-    cros_mark_as_stable.os.path.isdir(
-      os.path.join(fake_sources, 'third_party', fake_subdir)).AndReturn(True)
-
-    # ... the next command does 'git config --get ...'
-    cros_mark_as_stable._SimpleRunCommand(
-        mox.IgnoreArg()).AndReturn(fake_project + '\n')
-
-    # ... and the final command does 'git rev-parse HEAD'
-    cros_mark_as_stable._SimpleRunCommand(
-        mox.IgnoreArg()).AndReturn(fake_hash + '\n')
-
-    self.mox.ReplayAll()
-    test_hash = fake_ebuild.GetCommitId(fake_sources)
-    self.mox.VerifyAll()
-    self.assertEquals(test_hash, fake_hash)
-
-
 class EBuildStableMarkerTest(mox.MoxTestBase):
 
   def setUp(self):
@@ -195,7 +116,7 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(os, 'unlink')
-    self.m_ebuild = self.mox.CreateMock(cros_mark_as_stable.EBuild)
+    self.m_ebuild = self.mox.CreateMock(ebuild_manager.EBuild)
     self.m_ebuild.is_stable = True
     self.m_ebuild.package = 'test_package/test_package'
     self.m_ebuild.version_no_rev = '0.0.1'
@@ -315,92 +236,6 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     self.mox.ReplayAll()
     marker = cros_mark_as_stable.EBuildStableMarker(self.m_ebuild)
     marker.CommitChange(mock_message)
-    self.mox.VerifyAll()
-
-
-class _Package(object):
-  def __init__(self, package):
-    self.package = package
-
-
-class BuildEBuildDictionaryTest(mox.MoxTestBase):
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(cros_mark_as_stable.os, 'walk')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self.package = 'chromeos-base/test_package'
-    self.root = '/overlay/chromeos-base/test_package'
-    self.package_path = self.root + '/test_package-0.0.1.ebuild'
-    paths = [[self.root, [], []]]
-    cros_mark_as_stable.os.walk("/overlay").AndReturn(paths)
-    self.mox.StubOutWithMock(cros_mark_as_stable, '_FindUprevCandidates')
-
-
-  def testWantedPackage(self):
-    overlays = {"/overlay": []}
-    package = _Package(self.package)
-    cros_mark_as_stable._FindUprevCandidates([], None).AndReturn(package)
-    self.mox.ReplayAll()
-    cros_mark_as_stable._BuildEBuildDictionary(overlays, False, [self.package],
-                                               None)
-    self.mox.VerifyAll()
-    self.assertEquals(len(overlays), 1)
-    self.assertEquals(overlays["/overlay"], [package])
-
-  def testUnwantedPackage(self):
-    overlays = {"/overlay": []}
-    package = _Package(self.package)
-    cros_mark_as_stable._FindUprevCandidates([], None).AndReturn(package)
-    self.mox.ReplayAll()
-    cros_mark_as_stable._BuildEBuildDictionary(overlays, False, [], None)
-    self.assertEquals(len(overlays), 1)
-    self.assertEquals(overlays["/overlay"], [])
-    self.mox.VerifyAll()
-
-
-class BlacklistManagerTest(mox.MoxTestBase):
-  """Class that tests the blacklist manager."""
-  FAKE_BLACKLIST = """
-    # A Fake blacklist file.
-
-    chromeos-base/fake-package
-  """
-
-  def setUp(self):
-    mox.MoxTestBase.setUp(self)
-
-  def testInitializeFromFile(self):
-    """Tests whether we can correctly initialize from a fake blacklist file."""
-    file_path = tempfile.mktemp()
-    with open(file_path, 'w+') as fh:
-      fh.write(self.FAKE_BLACKLIST)
-    try:
-      cros_mark_as_stable._BlackListManager.BLACK_LIST_FILE = file_path
-      black_list_manager = cros_mark_as_stable._BlackListManager()
-      self.assertTrue(black_list_manager.IsPackageBlackListed(
-          '/some/crazy/path/'
-          'chromeos-base/fake-package/fake-package-0.0.5.ebuild'))
-      self.assertEqual(len(black_list_manager.black_list_re_array), 1)
-    finally:
-      os.remove(file_path)
-
-  def testIsPackageBlackListed(self):
-    """Tests if we can correctly check if a package is blacklisted."""
-    self.mox.StubOutWithMock(cros_mark_as_stable._BlackListManager,
-                             '_Initialize')
-    cros_mark_as_stable._BlackListManager._Initialize()
-
-    self.mox.ReplayAll()
-    black_list_manager = cros_mark_as_stable._BlackListManager()
-    black_list_manager.black_list_re_array = [
-        re.compile('.*/fake/pkg/pkg-.*\.ebuild') ]
-    self.assertTrue(black_list_manager.IsPackageBlackListed(
-        '/some/crazy/path/'
-        'fake/pkg/pkg-version.ebuild'))
-    self.assertFalse(black_list_manager.IsPackageBlackListed(
-        '/some/crazy/path/'
-        'fake/diff-pkg/diff-pkg-version.ebuild'))
     self.mox.VerifyAll()
 
 
