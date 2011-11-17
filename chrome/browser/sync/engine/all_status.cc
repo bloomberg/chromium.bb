@@ -188,11 +188,6 @@ void AllStatus::SetCryptoHasPendingKeys(bool has_pending_keys) {
   status_.crypto_has_pending_keys = has_pending_keys;
 }
 
-void AllStatus::SetUniqueId(const std::string& guid) {
-  ScopedStatusLock lock(this);
-  status_.unique_id = guid;
-}
-
 ScopedStatusLock::ScopedStatusLock(AllStatus* allstatus)
     : allstatus_(allstatus) {
   allstatus->mutex_.Acquire();

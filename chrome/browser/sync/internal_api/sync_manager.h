@@ -161,9 +161,6 @@ class SyncManager {
     syncable::ModelTypeSet encrypted_types;
     bool cryptographer_ready;
     bool crypto_has_pending_keys;
-
-    // The unique identifer for this client.
-    std::string unique_id;
   };
 
   // An interface the embedding application implements to be notified

@@ -47,8 +47,6 @@ class AllStatus : public SyncEngineEventListener {
   void SetCryptographerReady(bool ready);
   void SetCryptoHasPendingKeys(bool has_pending_keys);
 
-  void SetUniqueId(const std::string& guid);
-
  protected:
   // Examines syncer to calculate syncing and the unsynced count,
   // and returns a Status with new values.
