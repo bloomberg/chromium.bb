@@ -139,7 +139,7 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
 void ManageProfileHandler::DeleteProfile(const ListValue* args) {
   DCHECK(args);
 
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::PROFILE_DELETED);
+  ProfileMetrics::LogProfileDeleteUser(ProfileMetrics::PROFILE_DELETED);
 
   Value* file_path_value;
   FilePath profile_file_path;

@@ -83,7 +83,7 @@ void AvatarMenuModel::SwitchToProfile(size_t index) {
   ProfileSwitchObserver* observer = new ProfileSwitchObserver();
   g_browser_process->profile_manager()->CreateProfileAsync(
       path, observer);
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::SWITCH_PROFILE_ICON);
+  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_ICON);
 }
 
 void AvatarMenuModel::EditProfile(size_t index) {
@@ -101,8 +101,7 @@ void AvatarMenuModel::EditProfile(size_t index) {
 
 void AvatarMenuModel::AddNewProfile() {
   ProfileManager::CreateMultiProfileAsync();
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ADD_NEW_USER);
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ADD_NEW_USER_ICON);
+  ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_ICON);
 }
 
 size_t AvatarMenuModel::GetNumberOfItems() {

@@ -45,16 +45,27 @@ class ProfileMetrics {
     NUM_PROFILE_AVATAR_METRICS
   };
 
+  // Enum for counting the ways users were added.
+  enum ProfileAdd {
+    ADD_NEW_USER_ICON = 0,    // User adds new user from icon menu
+    ADD_NEW_USER_MENU,        // User adds new user from menu bar
+    NUM_PROFILE_ADD_METRICS
+  };
+
+  // Enum for counting the ways user profiles and menus were opened.
   enum ProfileOpen {
-    ADD_NEW_USER = 0,     // Total count of add new user
-    ADD_NEW_USER_ICON,    // User adds new user from icon menu
-    ADD_NEW_USER_MENU,    // User adds new user from menu bar
-    SWITCH_PROFILE_ICON,  // User switches profiles from icon menu
-    SWITCH_PROFILE_MENU,  // User switches profiles from menu bar
-    NTP_AVATAR_BUBBLE,    // User opens avatar icon menu from NTP
-    ICON_AVATAR_BUBBLE,   // User opens avatar icon menu from icon
-    PROFILE_DELETED,      // User deleted a profile
+    NTP_AVATAR_BUBBLE = 0,    // User opens avatar icon menu from NTP
+    ICON_AVATAR_BUBBLE,       // User opens avatar icon menu from icon
+    SWITCH_PROFILE_ICON,      // User switches profiles from icon menu
+    SWITCH_PROFILE_MENU,      // User switches profiles from menu bar
     NUM_PROFILE_OPEN_METRICS
+  };
+
+  // Enum for getting net counts for adding and deleting users.
+  enum ProfileNetUserCounts {
+    ADD_NEW_USER = 0,         // Total count of add new user
+    PROFILE_DELETED,          // User deleted a profile
+    NUM_PROFILE_NET_METRICS
   };
 
   // Sign in is logged once the user has entered their GAIA information.
@@ -62,13 +73,10 @@ class ProfileMetrics {
   // The options for sync are logged after the user has submitted the options
   // form. See sync_setup_handler.h.
   enum ProfileSync {
-    SYNC_SIGN_IN = 0,        // User signed into sync
-    SYNC_SIGN_IN_ORIGINAL,   // User signed into sync in original profile
-    SYNC_SIGN_IN_SECONDARY,  // User signed into sync in secondary profile
-    SYNC_CUSTOMIZE,          // User decided to customize sync
-    SYNC_CHOOSE,             // User chose what to sync
-    SYNC_ENCRYPT,            // User has chosen to encrypt all data
-    SYNC_PASSPHRASE,         // User is using a passphrase
+    SYNC_CUSTOMIZE = 0,       // User decided to customize sync
+    SYNC_CHOOSE,              // User chose what to sync
+    SYNC_ENCRYPT,             // User has chosen to encrypt all data
+    SYNC_PASSPHRASE,          // User is using a passphrase
     NUM_PROFILE_SYNC_METRICS
   };
 
@@ -80,6 +88,9 @@ class ProfileMetrics {
 
   static void LogProfileAvatarSelection(size_t icon_index);
   static void LogProfileOpenMethod(ProfileOpen metric);
+  static void LogProfileAddNewUser(ProfileAdd metric);
+  static void LogProfileSwitchUser(ProfileOpen metric);
+  static void LogProfileDeleteUser(ProfileNetUserCounts metric);
   static void LogProfileSyncInfo(ProfileSync metric);
   static void LogProfileUpdate(FilePath& profile_path);
   static void LogProfileSyncSignIn(FilePath& profile_path);

@@ -82,7 +82,7 @@ class Observer : public BrowserList::Observer,
 
 - (IBAction)switchToProfile:(id)sender {
   model_->SwitchToProfile([sender tag]);
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::SWITCH_PROFILE_MENU);
+  ProfileMetrics::LogProfileSwitchUser(ProfileMetrics::SWITCH_PROFILE_MENU);
 }
 
 - (IBAction)editProfile:(id)sender {
@@ -91,8 +91,7 @@ class Observer : public BrowserList::Observer,
 
 - (IBAction)newProfile:(id)sender {
   model_->AddNewProfile();
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ADD_NEW_USER);
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ADD_NEW_USER_MENU);
+  ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_MENU);
 }
 
 // Private /////////////////////////////////////////////////////////////////////
