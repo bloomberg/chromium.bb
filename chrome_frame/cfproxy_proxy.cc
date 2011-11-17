@@ -4,6 +4,8 @@
 
 #include "chrome_frame/cfproxy_private.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/tuple.h"
 #include "ipc/ipc_sync_message.h"
 #include "chrome/common/automation_messages.h"
@@ -17,28 +19,31 @@ CFProxy::CFProxy(CFProxyTraits* api) : ipc_thread_("ipc"),
 }
 
 CFProxy::~CFProxy() {
-  ipc_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &CFProxy::CleanupOnIoThread));
+  ipc_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CFProxy::CleanupOnIoThread, base::Unretained(this)));
   // ipc_thread destructor will do the Stop anyway. this is for debug :)
   ipc_thread_.Stop();
 }
 
-
 void CFProxy::Init(const ProxyParams& params) {
   ipc_thread_.StartWithOptions(base::Thread::Options(MessageLoop::TYPE_IO, 0));
-  ipc_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &CFProxy::InitInIoThread, params));
+  ipc_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&CFProxy::InitInIoThread, base::Unretained(this), params));
 }
 
 int CFProxy::AddDelegate(ChromeProxyDelegate* delegate) {
-  ipc_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &CFProxy::AddDelegateOnIoThread, delegate));
+  ipc_thread_.message_loop()->PostTask(
+      FROM_HERE, base::Bind(&CFProxy::AddDelegateOnIoThread,
+                            base::Unretained(this), delegate));
   return ++delegate_count_;
 }
 
 int CFProxy::RemoveDelegate(ChromeProxyDelegate* delegate) {
-  ipc_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &CFProxy::RemoveDelegateOnIoThread, delegate));
+  ipc_thread_.message_loop()->PostTask(
+      FROM_HERE, base::Bind(&CFProxy::RemoveDelegateOnIoThread,
+                            base::Unretained(this), delegate));
   return --delegate_count_;
 }
 
@@ -65,9 +70,8 @@ void CFProxy::InitInIoThread(const ProxyParams& params) {
   std::wstring cmd_line = BuildCmdLine(channel_id, params.profile_path,
                                        params.extra_params);
   if (!cmd_line.empty() && api_->LaunchApp(cmd_line)) {
-    CancelableTask* launch_timeout = NewRunnableMethod(this,
-        &CFProxy::LaunchTimeOut);
-    ipc_thread_.message_loop()->PostDelayedTask(FROM_HERE, launch_timeout,
+    ipc_thread_.message_loop()->PostDelayedTask(
+        FROM_HERE, base::Bind(&CFProxy::LaunchTimeOut, base::Unretained(this)),
         params.timeout.InMilliseconds());
   } else {
     OnPeerLost(ChromeProxyDelegate::CHROME_EXE_LAUNCH_FAILED);
@@ -110,8 +114,9 @@ void CFProxy::OnPeerLost(ChromeProxyDelegate::DisconnectReason reason) {
 }
 
 void CFProxy::SendIpcMessage(IPC::Message* m) {
-  ipc_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &CFProxy::SendIpcMessageOnIoThread, m));
+  ipc_thread_.message_loop()->PostTask(
+      FROM_HERE, base::Bind(&CFProxy::SendIpcMessageOnIoThread,
+                            base::Unretained(this), m));
 }
 
 void CFProxy::SendIpcMessageOnIoThread(IPC::Message* m) {

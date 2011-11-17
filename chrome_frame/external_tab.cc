@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "chrome_frame/external_tab.h"
@@ -10,9 +12,6 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/utils.h"
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ExternalTabProxy);
-DISABLE_RUNNABLE_METHOD_REFCOUNT(UIDelegate);
 
 namespace {
   static base::LazyInstance<ChromeProxyFactory> g_proxy_factory =
@@ -115,8 +114,8 @@ void ExternalTabProxy::CreateTab(const CreateTabParams& create_params,
 
 void ExternalTabProxy::Connected(ChromeProxy* proxy) {
   // in ipc thread
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ExternalTabProxy::UiConnected, proxy));
+  ui_.PostTask(FROM_HERE, base::Bind(&ExternalTabProxy::UiConnected,
+                                     base::Unretained(this), proxy));
 }
 
 void ExternalTabProxy::UiConnected(ChromeProxy* proxy) {
@@ -147,8 +146,8 @@ void ExternalTabProxy::Disconnected() {
 }
 
 void ExternalTabProxy::PeerLost(ChromeProxy* proxy, DisconnectReason reason) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(this, &ExternalTabProxy::UiPeerLost,
-      proxy, reason));
+  ui_.PostTask(FROM_HERE, base::Bind(&ExternalTabProxy::UiPeerLost,
+                                     base::Unretained(this), proxy, reason));
 }
 
 void ExternalTabProxy::UiPeerLost(ChromeProxy* proxy, DisconnectReason reason) {
@@ -231,9 +230,10 @@ void ExternalTabProxy::Completed_CreateTab(bool success, HWND chrome_wnd,
                                            HWND tab_window, int tab_handle,
                                            int session_id) {
   // in ipc_thread.
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ExternalTabProxy::UiCompleted_CreateTab,
-      success, chrome_wnd, tab_window, tab_handle, session_id));
+  ui_.PostTask(
+      FROM_HERE, base::Bind(&ExternalTabProxy::UiCompleted_CreateTab,
+                            base::Unretained(this), success, chrome_wnd,
+                            tab_window, tab_handle, session_id));
 }
 
 void ExternalTabProxy::Completed_ConnectToTab(
@@ -250,60 +250,67 @@ void ExternalTabProxy::Completed_Navigate(
 
 void ExternalTabProxy::OnNavigationStateChanged(
     int flags, const NavigationInfo& nav_info) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnNavigationStateChanged, flags, nav_info));
+  ui_.PostTask(FROM_HERE,
+               base::Bind(&UIDelegate::OnNavigationStateChanged,
+                          base::Unretained(ui_delegate_), flags, nav_info));
 }
 
 void ExternalTabProxy::OnUpdateTargetUrl(const std::wstring& url) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnUpdateTargetUrl, url));
+  ui_.PostTask(FROM_HERE, base::Bind(&UIDelegate::OnUpdateTargetUrl,
+                                     base::Unretained(ui_delegate_), url));
 }
 
 void ExternalTabProxy::OnTabLoaded(const GURL& url) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnLoad, url));
+  ui_.PostTask(FROM_HERE, base::Bind(&UIDelegate::OnLoad,
+                                     base::Unretained(ui_delegate_), url));
 }
 
 void ExternalTabProxy::OnMoveWindow(const gfx::Rect& pos) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnMoveWindow, pos));
+  ui_.PostTask(FROM_HERE, base::Bind(&UIDelegate::OnMoveWindow,
+                                     base::Unretained(ui_delegate_), pos));
 }
 
 void ExternalTabProxy::OnMessageToHost(const std::string& message,
                                        const std::string& origin,
                                        const std::string& target) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnMessageFromChromeFrame, message, origin, target));
+  ui_.PostTask(
+      FROM_HERE,
+      base::Bind(&UIDelegate::OnMessageFromChromeFrame,
+                 base::Unretained(ui_delegate_), message, origin, target));
 }
 
 void ExternalTabProxy::OnHandleAccelerator(const MSG& accel_message) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnHandleAccelerator, accel_message));
+  ui_.PostTask(FROM_HERE,
+               base::Bind(&UIDelegate::OnHandleAccelerator,
+                          base::Unretained(ui_delegate_), accel_message));
 }
 
 void ExternalTabProxy::OnHandleContextMenu(
     const ContextMenuModel& context_menu_model,
     int align_flags,
     const MiniContextMenuParams& params) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnHandleContextMenu, context_menu_model, align_flags,
-      params));
+  ui_.PostTask(FROM_HERE,
+               base::Bind(&UIDelegate::OnHandleContextMenu,
+                          base::Unretained(ui_delegate_), context_menu_model,
+                          align_flags, params));
 }
 
 void ExternalTabProxy::OnTabbedOut(bool reverse) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnTabbedOut, reverse));
+  ui_.PostTask(FROM_HERE, base::Bind(&UIDelegate::OnTabbedOut,
+                                     base::Unretained(ui_delegate_), reverse));
 }
 
 void ExternalTabProxy::OnGoToHistoryOffset(int offset) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnGoToHistoryOffset, offset));
+  ui_.PostTask(FROM_HERE, base::Bind(&UIDelegate::OnGoToHistoryOffset,
+                                     base::Unretained(ui_delegate_), offset));
 }
 
 void ExternalTabProxy::OnOpenURL(const GURL& url_to_open, const GURL& referrer,
                                  int open_disposition) {
-  ui_.PostTask(FROM_HERE, NewRunnableMethod(ui_delegate_,
-      &UIDelegate::OnOpenURL, url_to_open, referrer, open_disposition));
+  ui_.PostTask(
+      FROM_HERE,
+      base::Bind(&UIDelegate::OnOpenURL, base::Unretained(ui_delegate_),
+                 url_to_open, referrer, open_disposition));
 }
 
 void ExternalTabProxy::OnNavigationFailed(int error_code, const GURL& gurl) {

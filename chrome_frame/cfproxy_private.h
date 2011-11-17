@@ -172,8 +172,6 @@ class CFProxy : public Interface2IPCMessage,
   bool is_connected_;
 };
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(CFProxy);
-
 // Support functions.
 std::string GenerateChannelId();
 std::wstring BuildCmdLine(const std::string& channel_id,
