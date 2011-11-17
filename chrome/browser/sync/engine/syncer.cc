@@ -143,8 +143,10 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       }
       case PROCESS_UPDATES: {
         VLOG(1) << "Processing Updates";
-        ProcessUpdatesCommand process_updates;
-        process_updates.Execute(session);
+        if (session->status_controller()->ResponseContainsUpdates()) {
+          ProcessUpdatesCommand process_updates;
+          process_updates.Execute(session);
+        }
         next_step = STORE_TIMESTAMPS;
         break;
       }

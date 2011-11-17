@@ -34,7 +34,6 @@ class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
   virtual ~ProcessUpdatesCommand();
 
   // ModelChangingSyncerCommand implementation.
-  virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session);
   virtual void ModelChangingExecuteImpl(sessions::SyncSession* session);
 
  private:

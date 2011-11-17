@@ -26,15 +26,6 @@ using sessions::StatusController;
 ProcessUpdatesCommand::ProcessUpdatesCommand() {}
 ProcessUpdatesCommand::~ProcessUpdatesCommand() {}
 
-bool ProcessUpdatesCommand::ModelNeutralExecuteImpl(SyncSession* session) {
-  const GetUpdatesResponse& updates =
-      session->status_controller()->updates_response().get_updates();
-  const int update_count = updates.entries_size();
-
-  // Don't bother processing updates if there were none.
-  return update_count != 0;
-}
-
 void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
   syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                 session->context()->account_name());
