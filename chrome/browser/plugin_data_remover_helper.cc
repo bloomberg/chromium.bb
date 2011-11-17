@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/plugin_prefs.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +14,7 @@
 #include "content/browser/plugin_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/plugin_data_remover.h"
 
 using content::BrowserThread;
 
@@ -33,6 +33,13 @@ void PluginDataRemoverHelper::Init(const char* pref_name,
   registrar_.Add(this, chrome::NOTIFICATION_PLUGIN_ENABLE_STATUS_CHANGED,
                  content::Source<Profile>(profile));
   StartUpdate();
+}
+
+// static
+bool PluginDataRemoverHelper::IsSupported(PluginPrefs* plugin_prefs) {
+  webkit::WebPluginInfo plugin;
+  return content::PluginDataRemover::IsSupported(&plugin) &&
+      plugin_prefs->IsPluginEnabled(plugin);
 }
 
 void PluginDataRemoverHelper::Observe(
@@ -56,7 +63,7 @@ void PluginDataRemoverHelper::GotPlugins(
     scoped_refptr<PluginPrefs> plugin_prefs,
     const std::vector<webkit::WebPluginInfo>& plugins) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  bool supported = PluginDataRemover::IsSupported(plugin_prefs);
+  bool supported = IsSupported(plugin_prefs);
   // Set the value on the PrefService instead of through the PrefMember to
   // notify observers if it changed.
   profile_->GetPrefs()->SetBoolean(pref_.GetPrefName().c_str(), supported);

@@ -2,49 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PLUGIN_DATA_REMOVER_H_
-#define CHROME_BROWSER_PLUGIN_DATA_REMOVER_H_
+#ifndef CONTENT_BROWSER_PLUGIN_DATA_REMOVER_IMPL_H_
+#define CONTENT_BROWSER_PLUGIN_DATA_REMOVER_IMPL_H_
 #pragma once
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
-#include "base/time.h"
+#include "base/memory/weak_ptr.h"
 #include "content/browser/plugin_process_host.h"
+#include "content/public/browser/plugin_data_remover.h"
 
-class PluginPrefs;
-class Profile;
-
-namespace base {
-class WaitableEvent;
-}
-
-class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
-                          public PluginProcessHost::Client,
-                          public IPC::Channel::Listener {
+class PluginDataRemoverImpl : public content::PluginDataRemover,
+                              public PluginProcessHost::Client,
+                              public IPC::Channel::Listener {
  public:
-  explicit PluginDataRemover(Profile* profile);
+  explicit PluginDataRemoverImpl(
+      const content::ResourceContext& resource_context);
+  virtual ~PluginDataRemoverImpl();
+
+  // content::PluginDataRemover implementation:
+  virtual base::WaitableEvent* StartRemoving(base::Time begin_time) OVERRIDE;
 
   // The plug-in whose data should be removed (usually Flash) is specified via
   // its MIME type. This method sets a different MIME type in order to call a
   // different plug-in (for example in tests).
   void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
-
-  // Starts removing plug-in data stored since |begin_time|.
-  base::WaitableEvent* StartRemoving(base::Time begin_time);
-
-  // Returns whether there is a plug-in installed that supports removing
-  // LSO data. This method will use cached plugin data. Call
-  // PluginService::GetPlugins() if the latest data is needed.
-  static bool IsSupported(PluginPrefs* plugin_prefs);
-
-  // Indicates whether we are still in the process of removing plug-in data.
-  bool is_removing() const { return is_removing_; }
-
-  // Wait until removing has finished. When the browser is still running (i.e.
-  // not during shutdown), you should use a WaitableEventWatcher in combination
-  // with the WaitableEvent returned by StartRemoving.
-  void Wait();
 
   // PluginProcessHost::Client methods.
   virtual int ID() OVERRIDE;
@@ -61,10 +43,6 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   virtual void OnChannelError() OVERRIDE;
 
  private:
-  friend class base::RefCountedThreadSafe<PluginDataRemover>;
-  friend class PluginDataRemoverTest;
-  virtual ~PluginDataRemover();
-
   // Signals that we are finished with removing data (successful or not). This
   // method is safe to call multiple times.
   void SignalDone();
@@ -77,6 +55,7 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   void OnTimeout();
 
   std::string mime_type_;
+  bool is_starting_process_;
   bool is_removing_;
   // The point in time when we start removing data.
   base::Time remove_start_time_;
@@ -90,7 +69,9 @@ class PluginDataRemover : public base::RefCountedThreadSafe<PluginDataRemover>,
   // process.
   IPC::Channel* channel_;
 
-  DISALLOW_COPY_AND_ASSIGN(PluginDataRemover);
+  base::WeakPtrFactory<PluginDataRemoverImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PluginDataRemoverImpl);
 };
 
-#endif  // CHROME_BROWSER_PLUGIN_DATA_REMOVER_H_
+#endif  // CONTENT_BROWSER_PLUGIN_DATA_REMOVER_IMPL_H_

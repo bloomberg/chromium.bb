@@ -21,7 +21,6 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
-#include "content/common/devtools_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/workers_resources.h"
 #include "ui/base/resource/resource_bundle.h"

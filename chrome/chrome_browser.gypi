@@ -1719,8 +1719,6 @@
         'browser/platform_util_linux.cc',
         'browser/platform_util_mac.mm',
         'browser/platform_util_win.cc',
-        'browser/plugin_data_remover.cc',
-        'browser/plugin_data_remover.h',
         'browser/plugin_data_remover_helper.cc',
         'browser/plugin_data_remover_helper.h',
         'browser/plugin_download_helper.cc',

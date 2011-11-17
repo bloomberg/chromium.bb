@@ -195,6 +195,10 @@ void InProcessBrowserTest::TearDown() {
   BrowserTestBase::TearDown();
 }
 
+const content::ResourceContext& InProcessBrowserTest::GetResourceContext() {
+  return browser_->profile()->GetResourceContext();
+}
+
 void InProcessBrowserTest::AddTabAtIndexToBrowser(
     Browser* browser,
     int index,

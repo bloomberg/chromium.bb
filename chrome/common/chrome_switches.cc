@@ -761,9 +761,6 @@ const char kMessageLoopHistogrammer[]       = "message-loop-histogrammer";
 // performance tests.
 const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 
-// The minimum version of Flash that implements the NPP_ClearSiteData API.
-const char kMinClearSiteDataFlashVersion[]  = "min-clearsitedata-flash-version";
-
 // Enables multiprofile Chrome.
 const char kMultiProfiles[]                 = "multi-profiles";
 

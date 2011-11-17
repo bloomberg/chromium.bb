@@ -41,6 +41,10 @@ class PluginDataRemoverHelper : public content::NotificationObserver {
 
   bool GetValue() const { return pref_.GetValue(); }
 
+  // Like PluginDataRemover::IsSupported, but checks that the returned plugin
+  // is enabled by PluginPrefs
+  static bool IsSupported(PluginPrefs* plugin_prefs);
+
   // content::NotificationObserver methods:
   virtual void Observe(int type,
                        const content::NotificationSource& source,

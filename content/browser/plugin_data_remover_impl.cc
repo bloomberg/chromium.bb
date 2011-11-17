@@ -2,25 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/plugin_data_remover.h"
+#include "content/browser/plugin_data_remover_impl.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
-#include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/version.h"
-#include "chrome/browser/plugin_prefs.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/browser/plugin_service.h"
 #include "content/common/plugin_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/plugins/npapi/plugin_group.h"
-
-#if defined(OS_POSIX)
-#include "ipc/ipc_channel_posix.h"
-#endif
 
 using content::BrowserThread;
 
@@ -34,83 +25,104 @@ const uint64 kClearAllData = 0;
 
 }  // namespace
 
-PluginDataRemover::PluginDataRemover(Profile* profile)
-    : mime_type_(kFlashMimeType),
-      is_removing_(false),
-      context_(profile->GetResourceContext()),
-      event_(new base::WaitableEvent(true, false)),
-      channel_(NULL) {
+namespace content {
+
+// static
+PluginDataRemover* PluginDataRemover::Create(
+    const content::ResourceContext& resource_context) {
+  return new PluginDataRemoverImpl(resource_context);
 }
 
-PluginDataRemover::~PluginDataRemover() {
+// static
+bool PluginDataRemover::IsSupported(webkit::WebPluginInfo* plugin) {
+  bool allow_wildcard = false;
+  std::vector<webkit::WebPluginInfo> plugins;
+  PluginService::GetInstance()->GetPluginInfoArray(
+      GURL(), kFlashMimeType, allow_wildcard, &plugins, NULL);
+  std::vector<webkit::WebPluginInfo>::iterator plugin_it = plugins.begin();
+  if (plugin_it == plugins.end())
+    return false;
+  scoped_ptr<Version> version(
+      webkit::npapi::PluginGroup::CreateVersionFromString(plugin_it->version));
+  scoped_ptr<Version> min_version(
+      Version::GetVersionFromString(kMinFlashVersion));
+  bool rv = version.get() && min_version->CompareTo(*version) == -1;
+  if (rv)
+    *plugin = *plugin_it;
+  return rv;
+}
+
+}
+
+PluginDataRemoverImpl::PluginDataRemoverImpl(
+    const content::ResourceContext& resource_context)
+    : mime_type_(kFlashMimeType),
+      is_starting_process_(false),
+      is_removing_(false),
+      context_(resource_context),
+      event_(new base::WaitableEvent(true, false)),
+      channel_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+}
+
+PluginDataRemoverImpl::~PluginDataRemoverImpl() {
+  if (is_starting_process_)
+    PluginService::GetInstance()->CancelOpenChannelToNpapiPlugin(this);
   DCHECK(!is_removing_);
   if (channel_)
     BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, channel_);
 }
 
-base::WaitableEvent* PluginDataRemover::StartRemoving(base::Time begin_time) {
+base::WaitableEvent* PluginDataRemoverImpl::StartRemoving(
+    base::Time begin_time) {
   DCHECK(!is_removing_);
   remove_start_time_ = base::Time::Now();
   begin_time_ = begin_time;
 
+  is_starting_process_ = true;
   is_removing_ = true;
-
-  // Balanced in OnChannelOpened or OnError. Exactly one them will eventually be
-  // called, so we need to keep this object around until then.
-  AddRef();
   PluginService::GetInstance()->OpenChannelToNpapiPlugin(
       0, 0, GURL(), GURL(), mime_type_, this);
 
   BrowserThread::PostDelayedTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&PluginDataRemover::OnTimeout, this),
+      base::Bind(&PluginDataRemoverImpl::OnTimeout, weak_factory_.GetWeakPtr()),
       kRemovalTimeoutMs);
 
   return event_.get();
 }
 
-void PluginDataRemover::Wait() {
-  base::Time start_time(base::Time::Now());
-  if (is_removing_)
-    event_->Wait();
-  UMA_HISTOGRAM_TIMES("ClearPluginData.wait_at_shutdown",
-                      base::Time::Now() - start_time);
-  UMA_HISTOGRAM_TIMES("ClearPluginData.time_at_shutdown",
-                      base::Time::Now() - remove_start_time_);
-}
-
-int PluginDataRemover::ID() {
+int PluginDataRemoverImpl::ID() {
   // Generate a unique identifier for this PluginProcessHostClient.
   return ChildProcessInfo::GenerateChildProcessUniqueId();
 }
 
-bool PluginDataRemover::OffTheRecord() {
+bool PluginDataRemoverImpl::OffTheRecord() {
   return false;
 }
 
-const content::ResourceContext& PluginDataRemover::GetResourceContext() {
+const content::ResourceContext& PluginDataRemoverImpl::GetResourceContext() {
   return context_;
 }
 
-void PluginDataRemover::SetPluginInfo(
+void PluginDataRemoverImpl::SetPluginInfo(
     const webkit::WebPluginInfo& info) {
 }
 
-void PluginDataRemover::OnFoundPluginProcessHost(
+void PluginDataRemoverImpl::OnFoundPluginProcessHost(
     PluginProcessHost* host) {
 }
 
-void PluginDataRemover::OnSentPluginChannelRequest() {
+void PluginDataRemoverImpl::OnSentPluginChannelRequest() {
 }
 
-void PluginDataRemover::OnChannelOpened(const IPC::ChannelHandle& handle) {
+void PluginDataRemoverImpl::OnChannelOpened(const IPC::ChannelHandle& handle) {
+  is_starting_process_ = false;
   ConnectToChannel(handle);
-  // Balancing the AddRef call in StartRemoving.
-  Release();
 }
 
-void PluginDataRemover::ConnectToChannel(const IPC::ChannelHandle& handle) {
+void PluginDataRemoverImpl::ConnectToChannel(const IPC::ChannelHandle& handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // If we timed out, don't bother connecting.
@@ -134,27 +146,25 @@ void PluginDataRemover::ConnectToChannel(const IPC::ChannelHandle& handle) {
   }
 }
 
-void PluginDataRemover::OnError() {
+void PluginDataRemoverImpl::OnError() {
   LOG(DFATAL) << "Couldn't open plugin channel";
   SignalDone();
-  // Balancing the AddRef call in StartRemoving.
-  Release();
 }
 
-void PluginDataRemover::OnClearSiteDataResult(bool success) {
+void PluginDataRemoverImpl::OnClearSiteDataResult(bool success) {
   LOG_IF(ERROR, !success) << "ClearSiteData returned error";
   UMA_HISTOGRAM_TIMES("ClearPluginData.time",
                       base::Time::Now() - remove_start_time_);
   SignalDone();
 }
 
-void PluginDataRemover::OnTimeout() {
+void PluginDataRemoverImpl::OnTimeout() {
   LOG_IF(ERROR, is_removing_) << "Timed out";
   SignalDone();
 }
 
-bool PluginDataRemover::OnMessageReceived(const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(PluginDataRemover, msg)
+bool PluginDataRemoverImpl::OnMessageReceived(const IPC::Message& msg) {
+  IPC_BEGIN_MESSAGE_MAP(PluginDataRemoverImpl, msg)
     IPC_MESSAGE_HANDLER(PluginHostMsg_ClearSiteDataResult,
                         OnClearSiteDataResult)
     IPC_MESSAGE_UNHANDLED_ERROR()
@@ -163,38 +173,18 @@ bool PluginDataRemover::OnMessageReceived(const IPC::Message& msg) {
   return true;
 }
 
-void PluginDataRemover::OnChannelError() {
+void PluginDataRemoverImpl::OnChannelError() {
+  is_starting_process_ = false;
   if (is_removing_) {
     NOTREACHED() << "Channel error";
     SignalDone();
   }
 }
 
-void PluginDataRemover::SignalDone() {
+void PluginDataRemoverImpl::SignalDone() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!is_removing_)
     return;
   is_removing_ = false;
   event_->Signal();
-}
-
-// static
-bool PluginDataRemover::IsSupported(PluginPrefs* plugin_prefs) {
-  bool allow_wildcard = false;
-  std::vector<webkit::WebPluginInfo> plugins;
-  PluginService::GetInstance()->GetPluginInfoArray(
-      GURL(), kFlashMimeType, allow_wildcard, &plugins, NULL);
-  std::vector<webkit::WebPluginInfo>::iterator plugin = plugins.begin();
-  if (plugin == plugins.end())
-    return false;
-  scoped_ptr<Version> version(
-      webkit::npapi::PluginGroup::CreateVersionFromString(plugin->version));
-  scoped_ptr<Version> min_version(Version::GetVersionFromString(
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kMinClearSiteDataFlashVersion)));
-  if (!min_version.get())
-    min_version.reset(Version::GetVersionFromString(kMinFlashVersion));
-  return plugin_prefs->IsPluginEnabled(*plugin) &&
-         version.get() &&
-         min_version->CompareTo(*version) == -1;
 }

@@ -26,7 +26,6 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/plugin_data_remover.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -47,6 +46,7 @@
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/plugin_data_remover.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
 #include "net/base/transport_security_state.h"
@@ -236,8 +236,10 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     UserMetrics::RecordAction(UserMetricsAction("ClearBrowsingData_LSOData"));
 
     waiting_for_clear_lso_data_ = true;
-    if (!plugin_data_remover_.get())
-      plugin_data_remover_ = new PluginDataRemover(profile_);
+    if (!plugin_data_remover_.get()) {
+      plugin_data_remover_.reset(
+          content::PluginDataRemover::Create(profile_->GetResourceContext()));
+    }
     base::WaitableEvent* event =
         plugin_data_remover_->StartRemoving(delete_begin_);
     watcher_.StartWatching(event, this);

@@ -21,8 +21,11 @@
 
 class ExtensionSpecialStoragePolicy;
 class IOThread;
-class PluginDataRemover;
 class Profile;
+
+namespace content {
+class PluginDataRemover;
+}
 
 namespace disk_cache {
 class Backend;
@@ -234,7 +237,7 @@ class BrowsingDataRemover : public content::NotificationObserver,
   scoped_refptr<net::URLRequestContextGetter> media_context_getter_;
 
   // Used to delete plugin data.
-  scoped_refptr<PluginDataRemover> plugin_data_remover_;
+  scoped_ptr<content::PluginDataRemover> plugin_data_remover_;
   base::WaitableEventWatcher watcher_;
 
   // True if we're waiting for various data to be deleted.
