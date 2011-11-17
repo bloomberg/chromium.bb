@@ -110,6 +110,8 @@
         'browser/chromeos/dbus/mock_session_manager_client.h',
         'browser/chromeos/dbus/mock_speech_synthesizer_client.cc',
         'browser/chromeos/dbus/mock_speech_synthesizer_client.h',
+        'browser/chromeos/dbus/mock_update_engine_client.cc',
+        'browser/chromeos/dbus/mock_update_engine_client.h',
         'browser/chromeos/login/mock_signed_settings_helper.cc',
         'browser/chromeos/login/mock_signed_settings_helper.h',
         # The only thing used from browser is Browser::Type.

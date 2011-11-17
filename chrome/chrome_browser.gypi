@@ -450,6 +450,8 @@
         'browser/chromeos/dbus/session_manager_client.h',
         'browser/chromeos/dbus/speech_synthesizer_client.cc',
         'browser/chromeos/dbus/speech_synthesizer_client.h',
+        'browser/chromeos/dbus/update_engine_client.cc',
+        'browser/chromeos/dbus/update_engine_client.h',
         'browser/chromeos/disks/disk_mount_manager.cc',
         'browser/chromeos/disks/disk_mount_manager.h',
         'browser/chromeos/drop_shadow_label.cc',
