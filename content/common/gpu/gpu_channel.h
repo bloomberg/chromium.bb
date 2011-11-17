@@ -12,6 +12,7 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process.h"
 #include "build/build_config.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
@@ -185,7 +186,7 @@ class GpuChannel : public IPC::Channel::Listener,
   bool processed_get_state_fast_;
   int32 num_contexts_preferring_discrete_gpu_;
 
-  ScopedRunnableMethodFactory<GpuChannel> task_factory_;
+  base::WeakPtrFactory<GpuChannel> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannel);
 };

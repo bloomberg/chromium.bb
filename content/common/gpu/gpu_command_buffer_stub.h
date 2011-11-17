@@ -13,7 +13,6 @@
 
 #include "base/id_map.h"
 #include "base/memory/weak_ptr.h"
-#include "base/task.h"
 #include "content/common/gpu/media/gpu_video_decode_accelerator.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -173,8 +172,6 @@ class GpuCommandBufferStub
   // Zero or more video decoders owned by this stub, keyed by their
   // decoder_route_id.
   IDMap<GpuVideoDecodeAccelerator, IDMapOwnPointer> video_decoders_;
-
-  ScopedRunnableMethodFactory<GpuCommandBufferStub> task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuCommandBufferStub);
 };

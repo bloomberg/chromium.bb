@@ -4,6 +4,7 @@
 
 #include "content/common/gpu/gpu_channel_manager.h"
 
+#include "base/bind.h"
 #include "content/common/child_thread.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -12,7 +13,7 @@ GpuChannelManager::GpuChannelManager(ChildThread* gpu_child_thread,
                                      GpuWatchdog* watchdog,
                                      base::MessageLoopProxy* io_message_loop,
                                      base::WaitableEvent* shutdown_event)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       io_message_loop_(io_message_loop),
       shutdown_event_(shutdown_event),
       gpu_child_thread_(gpu_child_thread),
@@ -149,8 +150,9 @@ void GpuChannelManager::OnResizeViewACK(int32 renderer_id,
 
 void GpuChannelManager::LoseAllContexts() {
   MessageLoop::current()->PostTask(
-      FROM_HERE, method_factory_.NewRunnableMethod(
-          &GpuChannelManager::OnLoseAllContexts));
+      FROM_HERE,
+      base::Bind(&GpuChannelManager::OnLoseAllContexts,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void GpuChannelManager::OnLoseAllContexts() {

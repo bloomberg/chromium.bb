@@ -49,8 +49,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       render_view_id_(render_view_id),
       parent_stub_for_initialization_(),
       parent_texture_for_initialization_(0),
-      watchdog_(watchdog),
-      task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      watchdog_(watchdog) {
   if (share_group) {
     context_group_ = share_group->context_group_;
   } else {

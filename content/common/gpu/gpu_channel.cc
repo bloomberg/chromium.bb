@@ -8,6 +8,7 @@
 
 #include "content/common/gpu/gpu_channel.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/process_util.h"
@@ -39,7 +40,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       handle_messages_scheduled_(false),
       processed_get_state_fast_(false),
       num_contexts_preferring_discrete_gpu_(0),
-      task_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(gpu_channel_manager);
   DCHECK(renderer_id);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
@@ -157,8 +158,7 @@ void GpuChannel::OnScheduled() {
   // task to prevent reentrancy.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      task_factory_.NewRunnableMethod(
-          &GpuChannel::HandleMessage));
+      base::Bind(&GpuChannel::HandleMessage, weak_factory_.GetWeakPtr()));
   handle_messages_scheduled_ = true;
 }
 
@@ -168,8 +168,7 @@ void GpuChannel::LoseAllContexts() {
 
 void GpuChannel::DestroySoon() {
   MessageLoop::current()->PostTask(
-      FROM_HERE, NewRunnableMethod(this,
-          &GpuChannel::OnDestroy));
+      FROM_HERE, base::Bind(&GpuChannel::OnDestroy, this));
 }
 
 void GpuChannel::OnDestroy() {

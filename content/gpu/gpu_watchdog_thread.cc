@@ -8,6 +8,7 @@
 
 #include "content/gpu/gpu_watchdog_thread.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "base/process.h"
@@ -30,7 +31,8 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
       watched_thread_handle_(0),
       arm_cpu_time_(0),
 #endif
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_observer_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_observer_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(timeout >= 0);
 
 #if defined(OS_WIN)
@@ -53,7 +55,7 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
 GpuWatchdogThread::~GpuWatchdogThread() {
   // Verify that the thread was explicitly stopped. If the thread is stopped
   // implicitly by the destructor, CleanUp() will not be called.
-  DCHECK(!method_factory_.get());
+  DCHECK(!weak_factory_.HasWeakPtrs());
 
 #if defined(OS_WIN)
   CloseHandle(watched_thread_handle_);
@@ -67,21 +69,16 @@ void GpuWatchdogThread::PostAcknowledge() {
   // the method factory. Rely on reference counting instead.
   message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &GpuWatchdogThread::OnAcknowledge));
+      base::Bind(&GpuWatchdogThread::OnAcknowledge, this));
 }
 
 void GpuWatchdogThread::Init() {
-  // The method factory must be created on the watchdog thread.
-  method_factory_.reset(new MethodFactory(this));
-
   // Schedule the first check.
   OnCheck();
 }
 
 void GpuWatchdogThread::CleanUp() {
-  // The method factory must be destroyed on the watchdog thread.
-  method_factory_->RevokeAll();
-  method_factory_.reset();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 GpuWatchdogThread::GpuWatchdogTaskObserver::GpuWatchdogTaskObserver(
@@ -119,13 +116,13 @@ void GpuWatchdogThread::OnAcknowledge() {
     return;
 
   // Revoke any pending hang termination.
-  method_factory_->RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   armed_ = false;
 
   // The monitored thread has responded. Post a task to check it again.
   message_loop()->PostDelayedTask(
       FROM_HERE,
-      method_factory_->NewRunnableMethod(&GpuWatchdogThread::OnCheck),
+      base::Bind(&GpuWatchdogThread::OnCheck, weak_factory_.GetWeakPtr()),
       kCheckPeriod);
 }
 
@@ -182,14 +179,15 @@ void GpuWatchdogThread::OnCheck() {
   // also wake up the observer. This simply ensures there is at least one.
   watched_message_loop_->PostTask(
       FROM_HERE,
-      NewRunnableFunction(DoNothing));
+      base::Bind(&DoNothing));
 
   // Post a task to the watchdog thread to exit if the monitored thread does
   // not respond in time.
   message_loop()->PostDelayedTask(
       FROM_HERE,
-      method_factory_->NewRunnableMethod(
-          &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang),
+      base::Bind(
+          &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
+          weak_factory_.GetWeakPtr()),
       timeout_);
 }
 
@@ -202,8 +200,9 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   if (time_since_arm < timeout_) {
     message_loop()->PostDelayedTask(
         FROM_HERE,
-        method_factory_->NewRunnableMethod(
-            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang),
+        base::Bind(
+            &GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang,
+            weak_factory_.GetWeakPtr()),
         timeout_ - time_since_arm);
     return;
   }
