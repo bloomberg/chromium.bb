@@ -51,8 +51,8 @@ cr.define('print_preview', function() {
     },
 
     clone: function() {
-      return new Margins(this[MarginSettings.TOP_GROUP],
-                         this[MarginSettings.LEFT_GROUP],
+      return new Margins(this[MarginSettings.LEFT_GROUP],
+                         this[MarginSettings.TOP_GROUP],
                          this[MarginSettings.RIGHT_GROUP],
                          this[MarginSettings.BOTTOM_GROUP]);
     },
