@@ -12,6 +12,7 @@
 
 #include <list>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
@@ -33,7 +34,7 @@ namespace {
 // This is for the code that is to be ran in multiple threads at once,
 // to stress a race condition on first process start.
 // We use the thread safe ref counted base class so that we can use the
-// NewRunnableMethod class to run the StartChrome methods in many threads.
+// base::Bind to run the StartChrome methods in many threads.
 class ChromeStarter : public base::RefCountedThreadSafe<ChromeStarter> {
  public:
   ChromeStarter(int timeout_ms, const FilePath& user_data_dir)
@@ -256,10 +257,10 @@ TEST_F(ProcessSingletonTest, MAYBE_StartupRaceCondition) {
                 chrome_starter_threads_[i]->message_loop());
 
       chrome_starter_threads_[i]->message_loop()->PostTask(
-          FROM_HERE, NewRunnableMethod(chrome_starters_[i].get(),
-                                       &ChromeStarter::StartChrome,
-                                       &threads_waker_,
-                                       first_run));
+          FROM_HERE, base::Bind(&ChromeStarter::StartChrome,
+                                chrome_starters_[i].get(),
+                                &threads_waker_,
+                                first_run));
     }
 
     // Wait for all the starters to be ready.
