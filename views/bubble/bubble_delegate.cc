@@ -109,22 +109,20 @@ BubbleDelegateView::~BubbleDelegateView() {
 // static
 Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
   bubble_delegate->Init();
-  Widget* parent_widget = bubble_delegate->anchor_view() ?
+  Widget* parent = bubble_delegate->anchor_view() ?
       bubble_delegate->anchor_view()->GetWidget() : NULL;
-  Widget* bubble_widget = CreateBubbleWidget(bubble_delegate, parent_widget);
+  Widget* bubble_widget = CreateBubbleWidget(bubble_delegate, parent);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // First set the contents view to initialize view bounds for widget sizing.
   bubble_widget->SetContentsView(bubble_delegate->GetContentsView());
-  bubble_delegate->InitializeBorderWidget(parent_widget);
-  bubble_widget->SetBounds(bubble_delegate->GetBubbleClientBounds());
-#else
-  bubble_widget->SetBounds(bubble_delegate->GetBubbleBounds());
+  bubble_delegate->border_widget_ = CreateBorderWidget(bubble_delegate, parent);
 #endif
 
+  bubble_delegate->SizeToContents();
   bubble_widget->AddObserver(bubble_delegate);
-  if (parent_widget && parent_widget->GetTopLevelWidget())
-    parent_widget->GetTopLevelWidget()->DisableInactiveRendering();
+  if (parent && parent->GetTopLevelWidget())
+    parent->GetTopLevelWidget()->DisableInactiveRendering();
   return bubble_widget;
 }
 
@@ -223,10 +221,9 @@ bool BubbleDelegateView::AcceleratorPressed(
   return true;
 }
 
-void BubbleDelegateView::Init() {}
-
 void BubbleDelegateView::AnimationEnded(const ui::Animation* animation) {
-  DCHECK_EQ(animation, fade_animation_.get());
+  if (animation != fade_animation_.get())
+    return;
   bool closed = fade_animation_->GetCurrentValue() == 0;
   fade_animation_->Reset();
   if (closed)
@@ -234,7 +231,8 @@ void BubbleDelegateView::AnimationEnded(const ui::Animation* animation) {
 }
 
 void BubbleDelegateView::AnimationProgressed(const ui::Animation* animation) {
-  DCHECK_EQ(animation, fade_animation_.get());
+  if (animation != fade_animation_.get())
+    return;
   DCHECK(fade_animation_->is_animating());
   unsigned char opacity = fade_animation_->GetCurrentValue() * 255;
 #if defined(OS_WIN) && !defined(USE_AURA)
@@ -255,6 +253,17 @@ void BubbleDelegateView::AnimationProgressed(const ui::Animation* animation) {
   SchedulePaint();
 }
 
+void BubbleDelegateView::Init() {}
+
+void BubbleDelegateView::SizeToContents() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  border_widget_->SetBounds(GetBubbleBounds());
+  GetWidget()->SetBounds(GetBubbleClientBounds());
+#else
+  GetWidget()->SetBounds(GetBubbleBounds());
+#endif
+}
+
 BubbleFrameView* BubbleDelegateView::GetBubbleFrameView() const {
   const Widget* widget = border_widget_ ? border_widget_ : GetWidget();
   return static_cast<BubbleFrameView*>(widget->non_client_view()->frame_view());
@@ -268,11 +277,6 @@ gfx::Rect BubbleDelegateView::GetBubbleBounds() {
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-void BubbleDelegateView::InitializeBorderWidget(Widget* parent_widget) {
-  border_widget_ = CreateBorderWidget(this, parent_widget);
-  border_widget_->SetBounds(GetBubbleBounds());
-}
-
 gfx::Rect BubbleDelegateView::GetBubbleClientBounds() const {
   gfx::Rect client_bounds(GetBubbleFrameView()->GetBoundsForClientView());
   client_bounds.Offset(border_widget_->GetWindowScreenBounds().origin());

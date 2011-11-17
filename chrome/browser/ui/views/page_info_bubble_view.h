@@ -6,22 +6,17 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_BUBBLE_VIEW_H_
 #pragma once
 
-#include "base/compiler_specific.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_model_observer.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
-#include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
+#include "views/bubble/bubble_delegate.h"
 #include "views/controls/link_listener.h"
-#include "views/view.h"
 
-class PageInfoBubbleView : public views::View,
+class PageInfoBubbleView : public views::BubbleDelegateView,
                            public PageInfoModelObserver,
-                           public BubbleDelegate,
-                           public views::LinkListener,
-                           public ui::AnimationDelegate {
+                           public views::LinkListener {
  public:
-  PageInfoBubbleView(gfx::NativeWindow parent_window,
+  PageInfoBubbleView(views::View* anchor_view,
                      Profile* profile,
                      const GURL& url,
                      const NavigationEntry::SSLStatus& ssl,
@@ -31,19 +26,14 @@ class PageInfoBubbleView : public views::View,
   // Show the certificate dialog.
   void ShowCertDialog();
 
-  void set_bubble(Bubble* bubble) { bubble_ = bubble; }
-
   // views::View methods:
   virtual gfx::Size GetPreferredSize();
 
   // PageInfoModelObserver methods:
   virtual void OnPageInfoModelChanged() OVERRIDE;
 
-  // BubbleDelegate methods:
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
-  virtual bool CloseOnEscape() OVERRIDE;
-  virtual bool FadeInOnShow() OVERRIDE;
-  virtual string16 GetAccessibleName() OVERRIDE;
+  // views::BubbleDelegate methods:
+  virtual gfx::Point GetAnchorPoint() OVERRIDE;
 
   // views::LinkListener methods:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -65,14 +55,8 @@ class PageInfoBubbleView : public views::View,
   // Layout the sections within the bubble.
   void LayoutSections();
 
-  // Global pointer to the bubble that is hosting our view.
-  static Bubble* bubble_;
-
   // The model providing the various section info.
   PageInfoModel model_;
-
-  // The parent window of the Bubble showing this view.
-  gfx::NativeWindow parent_window_;
 
   // The id of the certificate for this page.
   int cert_id_;

@@ -90,16 +90,20 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // View overrides:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
+  // ui::AnimationDelegate overrides:
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+
   // Perform view initialization on the contents for bubble sizing.
   virtual void Init();
+
+  // Resizes and potentially moves the Bubble to best accommodate the
+  // contents preferred size.
+  void SizeToContents();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewBasicTest, NonClientHitTest);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CreateDelegate);
-
-  // ui::AnimationDelegate overrides:
-  virtual void AnimationEnded(const ui::Animation* animation);
-  virtual void AnimationProgressed(const ui::Animation* animation);
 
   BubbleFrameView* GetBubbleFrameView() const;
 
@@ -107,9 +111,6 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   gfx::Rect GetBubbleBounds();
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-  // Initialize the border widget needed for Windows native control hosting.
-  void InitializeBorderWidget(Widget* parent_widget);
-
   // Get bounds for the Windows-only widget that hosts the bubble's contents.
   gfx::Rect GetBubbleClientBounds() const;
 #endif

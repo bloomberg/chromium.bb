@@ -3520,7 +3520,6 @@
         'browser/ui/views/omnibox/omnibox_view_win.h',
         'browser/ui/views/page_info_bubble_view.cc',
         'browser/ui/views/page_info_bubble_view.h',
-        'browser/ui/views/page_info_window.h',
         'browser/ui/views/reload_button.cc',
         'browser/ui/views/reload_button.h',
         'browser/ui/views/repost_form_warning_view.cc',

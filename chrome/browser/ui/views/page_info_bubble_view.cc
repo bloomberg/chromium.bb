@@ -30,6 +30,9 @@
 
 namespace {
 
+// TODO(msw): Get color from theme/window color.
+const SkColor kColor = SK_ColorWHITE;
+
 // Layout constants.
 const int kHGapToBorder = 11;
 const int kVerticalSectionPadding = 8;
@@ -98,22 +101,19 @@ class Section : public views::View,
 ////////////////////////////////////////////////////////////////////////////////
 // PageInfoBubbleView
 
-Bubble* PageInfoBubbleView::bubble_ = NULL;
-
-PageInfoBubbleView::PageInfoBubbleView(gfx::NativeWindow parent_window,
+PageInfoBubbleView::PageInfoBubbleView(views::View* anchor_view,
                                        Profile* profile,
                                        const GURL& url,
                                        const NavigationEntry::SSLStatus& ssl,
                                        bool show_history)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
+    : BubbleDelegateView(anchor_view, views::BubbleBorder::TOP_LEFT, kColor),
+      ALLOW_THIS_IN_INITIALIZER_LIST(model_(profile, url, ssl,
                                             show_history, this)),
-      parent_window_(parent_window),
       cert_id_(ssl.cert_id()),
       help_center_link_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(resize_animation_(this)),
       animation_start_height_(0) {
-  if (bubble_)
-    bubble_->Close();
+
   if (cert_id_ > 0) {
     scoped_refptr<net::X509Certificate> cert;
     CertStore::GetInstance()->RetrieveCert(cert_id_, &cert);
@@ -127,10 +127,13 @@ PageInfoBubbleView::PageInfoBubbleView(gfx::NativeWindow parent_window,
 }
 
 PageInfoBubbleView::~PageInfoBubbleView() {
+  resize_animation_.Reset();
 }
 
 void PageInfoBubbleView::ShowCertDialog() {
-  ShowCertificateViewerByID(parent_window_, cert_id_);
+  gfx::NativeWindow parent =
+      anchor_view() ? anchor_view()->GetWidget()->GetNativeWindow() : NULL;
+  ShowCertificateViewerByID(parent, cert_id_);
 }
 
 gfx::Size PageInfoBubbleView::GetSeparatorSize() {
@@ -288,51 +291,42 @@ void PageInfoBubbleView::OnPageInfoModelChanged() {
   // animation.
   // TODO(derat): Remove this once we're not using a toplevel X window for the
   // bubble.
-  bubble_->SizeToContents();
+  SizeToContents();
 #else
   resize_animation_.SetSlideDuration(kPageInfoSlideDuration);
   resize_animation_.Show();
 #endif
 }
 
-void PageInfoBubbleView::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
-  resize_animation_.Reset();
-  bubble_ = NULL;
-}
-
-bool PageInfoBubbleView::CloseOnEscape() {
-  return true;
-}
-
-bool PageInfoBubbleView::FadeInOnShow() {
-  return false;
-}
-
-string16 PageInfoBubbleView::GetAccessibleName() {
-  return ASCIIToUTF16("PageInfoBubble");
+gfx::Point PageInfoBubbleView::GetAnchorPoint() {
+  // Compensate for some built-in padding in the icon.
+  gfx::Point anchor(BubbleDelegateView::GetAnchorPoint());
+  return anchor_view() ? anchor.Subtract(gfx::Point(0, 5)) : anchor;
 }
 
 void PageInfoBubbleView::LinkClicked(views::Link* source, int event_flags) {
-  // We want to make sure the info bubble closes once the link is activated.  So
-  // we close it explicitly rather than relying on a side-effect of opening a
-  // new tab (see http://crosbug.com/10186).
-  bubble_->Close();
-
   GURL url = google_util::AppendGoogleLocaleParam(
       GURL(chrome::kPageInfoHelpCenterURL));
   Browser* browser = BrowserList::GetLastActive();
   browser->OpenURL(
       url, GURL(), NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK);
+  // NOTE: The bubble closes automatically on deactivation as the link opens.
 }
 
 void PageInfoBubbleView::AnimationEnded(const ui::Animation* animation) {
-  LayoutSections();
-  bubble_->SizeToContents();
+  if (animation == &resize_animation_) {
+    LayoutSections();
+    SizeToContents();
+  }
+  BubbleDelegateView::AnimationEnded(animation);
 }
 
 void PageInfoBubbleView::AnimationProgressed(const ui::Animation* animation) {
-  LayoutSections();
-  bubble_->SizeToContents();
+  if (animation == &resize_animation_) {
+    LayoutSections();
+    SizeToContents();
+  }
+  BubbleDelegateView::AnimationProgressed(animation);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -477,33 +471,15 @@ gfx::Size Section::LayoutItems(bool compute_bounds_only, int width) {
 
 namespace browser {
 
-void ShowPageInfoBubble(BrowserView* browser_view,
+void ShowPageInfoBubble(views::View* anchor_view,
                         Profile* profile,
                         const GURL& url,
                         const NavigationEntry::SSLStatus& ssl,
                         bool show_history) {
-  // Find where to point the bubble at.
-  gfx::Point point;
-  if (base::i18n::IsRTL()) {
-    int width = browser_view->toolbar()->location_bar()->width();
-    point = gfx::Point(width - kIconHorizontalOffset, 0);
-  }
-  point.Offset(0, kIconVerticalOffset);
-  views::View::ConvertPointToScreen(browser_view->toolbar()->location_bar(),
-                                    &point);
-  gfx::Rect bounds = browser_view->toolbar()->location_bar()->bounds();
-  bounds.set_origin(point);
-  bounds.set_width(kIconHorizontalOffset);
-
-  // Show the bubble. If the bubble already exist - it will be closed first.
   PageInfoBubbleView* page_info_bubble =
-      new PageInfoBubbleView(browser_view->GetNativeHandle(),
-                             profile, url, ssl, show_history);
-  Bubble* bubble =
-      Bubble::Show(browser_view->GetWidget(), bounds,
-                   views::BubbleBorder::TOP_LEFT,
-                   views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-                   page_info_bubble, page_info_bubble);
-  page_info_bubble->set_bubble(bubble);
+      new PageInfoBubbleView(anchor_view, profile, url, ssl, show_history);
+  views::BubbleDelegateView::CreateBubble(page_info_bubble);
+  page_info_bubble->Show();
 }
+
 }

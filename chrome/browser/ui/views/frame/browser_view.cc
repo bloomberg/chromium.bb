@@ -59,7 +59,6 @@
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/page_info_window.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -1142,7 +1141,8 @@ void BrowserView::ShowPageInfo(Profile* profile,
                                const GURL& url,
                                const NavigationEntry::SSLStatus& ssl,
                                bool show_history) {
-  browser::ShowPageInfoBubble(this, profile, url, ssl, show_history);
+  browser::ShowPageInfoBubble(GetLocationBarView()->location_icon_view(),
+                              profile, url, ssl, show_history);
 }
 
 void BrowserView::ShowAppMenu() {
