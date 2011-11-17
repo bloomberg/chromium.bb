@@ -876,148 +876,6 @@ var MainView = (function() {
   // HTML drawing code
   // --------------------------------------------------------------------------
 
-  /**
-   * Draws a title into |parent| that describes |groupKey|.
-   */
-  function drawGroupTitle(parent, groupKey) {
-    if (groupKey.length  == 0) {
-      // Empty group key means there was no grouping.
-      return;
-    }
-
-    var parent = addNode(parent, 'div');
-    parent.className = 'group-title-container';
-
-    // Each component of the group key represents the "key=value" constraint for
-    // this group. Show these as an AND separated list.
-    for (var i = 0; i < groupKey.length; ++i) {
-      if (i > 0)
-        addNode(parent, 'i', ' and ');
-      var e = groupKey[i];
-      addNode(parent, 'b', getNameForKey(e.key) + ' = ');
-      addNode(parent, 'span', e.value);
-    }
-  }
-
-  /**
-   * Renders the information for a particular group.
-   */
-  function drawGroup(parent, groupData, columns,
-                     columnOnClickHandler, currentSortKeys, displaySettings,
-                     expandHandler, shrinkHandler, showAllHandler,
-                     showNoneHandler) {
-    var div = addNode(parent, 'div');
-    div.className = 'group-container';
-
-    drawGroupTitle(div, groupData.key);
-
-    var table = addNode(div, 'table');
-
-    drawDataTable(table, groupData, columns, columnOnClickHandler,
-                  currentSortKeys, displaySettings.limit,
-                  expandHandler, shrinkHandler, showAllHandler,
-                  showNoneHandler);
-  }
-
-  /**
-   * Renders a row that describes all the aggregate values for |columns|.
-   */
-  function drawAggregateRow(tbody, aggregates, columns) {
-    var tr = addNode(tbody, 'tr');
-    tr.className = 'aggregator-row';
-
-    for (var i = 0; i < columns.length; ++i) {
-      var key = columns[i];
-      var td = addNode(tr, 'td');
-
-      // Most of our outputs are numeric, so we want to align them to the right.
-      // However for the  unique counts we will center.
-      if (KEY_PROPERTIES[key].aggregator == UniquifyAggregator) {
-        td.align = 'center';
-      } else {
-        td.align = 'right';
-      }
-
-      var aggregator = aggregates[key];
-      if (aggregator)
-        td.innerText = aggregator.getValueAsText();
-    }
-  }
-
-  /**
-   * Renders a table which summarizes all |column| fields for |data|.
-   */
-  function drawDataTable(table, data, columns, columnOnClickHandler,
-                         currentSortKeys, limit, expandHandler, shrinkHandler,
-                         showAllHandler, showNoneHandler) {
-    table.className = 'results-table';
-    var thead = addNode(table, 'thead');
-    var tbody = addNode(table, 'tbody');
-
-    drawAggregateRow(thead, data.aggregates, columns);
-    drawTableHeader(thead, columns, columnOnClickHandler, currentSortKeys);
-    drawTableBody(tbody, data.rows, columns, limit);
-    drawTruncationRow(tbody, data.rows.length, limit, columns.length,
-                      expandHandler, shrinkHandler, showAllHandler,
-                      showNoneHandler);
-  }
-
-  /**
-   * Renders a row which describes how many rows the table has, how many are
-   * currently hidden, and a set of buttons to show more.
-   */
-  function drawTruncationRow(tbody, numRows, limit, numColumns,
-                             expandHandler, shrinkHandler, showAllHandler,
-                             showNoneHandler) {
-    var numHiddenRows = Math.max(numRows - limit, 0);
-    var numVisibleRows = numRows - numHiddenRows;
-
-    var tr = addNode(tbody, 'tr');
-    tr.className = 'truncation-row';
-    var td = addNode(tr, 'td');
-    td.colSpan = numColumns;
-
-    addText(td, numRows + ' rows');
-    if (numHiddenRows > 0) {
-      var s = addNode(td, 'span', ' (' + numHiddenRows + ' hidden) ');
-      s.style.color = 'red';
-    }
-
-    if (numVisibleRows > LIMIT_INCREMENT)
-      addNode(td, 'button', 'Show less').onclick = shrinkHandler;
-    if (numVisibleRows > 0)
-      addNode(td, 'button', 'Show none').onclick = showNoneHandler;
-
-    if (numHiddenRows > 0) {
-      addNode(td, 'button', 'Show more').onclick = expandHandler;
-      addNode(td, 'button', 'Show all').onclick = showAllHandler;
-    }
-  }
-
-  function drawTableHeader(thead, columns, columnOnClickHandler,
-                           currentSortKeys) {
-    var tr = addNode(thead, 'tr');
-    for (var i = 0; i < columns.length; ++i) {
-      var key = columns[i];
-      var th = addNode(tr, 'th', getNameForKey(key));
-      th.onclick = columnOnClickHandler.bind(this, key);
-
-      // Draw an indicator if we are currently sorted on this column.
-      // TODO(eroman): Should use an icon instead of asterisk!
-      for (var j = 0; j < currentSortKeys.length; ++j) {
-        if (sortKeysMatch(currentSortKeys[j], key)) {
-          var sortIndicator = addNode(th, 'span', '*');
-          sortIndicator.style.color = 'red';
-          if (sortKeyIsReversed(currentSortKeys[j])) {
-            // Use double-asterisk for descending columns.
-            addText(sortIndicator, '*');
-          }
-          break;
-        }
-      }
-    }
-  }
-
   function getTextValueForProperty(key, value) {
     if (value == undefined) {
       // A value may be undefined as a result of having merging rows. We
@@ -1078,22 +936,6 @@ var MainView = (function() {
     for (var i = kMinLengthBeforeWrap; i < text.length; ++i) {
       addNode(td, 'wbr');
       addText(td, text.substr(i, 1));
-    }
-  }
-
-  function drawTableBody(tbody, rows, columns, limit) {
-    for (var i = 0; i < rows.length && i < limit; ++i) {
-      var e = rows[i];
-
-      var tr = addNode(tbody, 'tr');
-
-      for (var c = 0; c < columns.length; ++c) {
-        var key = columns[c];
-        var value = e[key];
-
-        var td = addNode(tr, 'td');
-        drawValueToCell(td, key, value);
-      }
     }
   }
 
@@ -1380,21 +1222,168 @@ var MainView = (function() {
 
       var columns = this.getVisibleColumnKeys_();
 
-      var columnOnClickHandler = this.onClickColumn_.bind(this);
-
       // Draw each group.
       for (var i = 0; i < this.sortedGroupKeys_.length; ++i) {
         var k = this.sortedGroupKeys_[i];
-        drawGroup(parent,
-                  this.groupedData_[k],
-                  columns,
-                  columnOnClickHandler,
-                  this.currentSortKeys_,
-                  this.getGroupDisplaySettings_(k),
-                  this.changeGroupDisplayLimit_.bind(this, k, LIMIT_INCREMENT),
-                  this.changeGroupDisplayLimit_.bind(this, k, -LIMIT_INCREMENT),
-                  this.changeGroupDisplayLimit_.bind(this, k, Infinity),
-                  this.changeGroupDisplayLimit_.bind(this, k, -Infinity));
+        this.drawGroup_(parent, k, columns);
+      }
+    },
+
+    /**
+     * Renders the information for a particular group.
+     */
+    drawGroup_: function(parent, groupKey, columns) {
+      var groupData = this.groupedData_[groupKey];
+
+      var div = addNode(parent, 'div');
+      div.className = 'group-container';
+
+      this.drawGroupTitle_(div, groupData.key);
+
+      var table = addNode(div, 'table');
+
+      this.drawDataTable_(table, groupData, columns, groupKey);
+    },
+
+    /**
+     * Draws a title into |parent| that describes |groupKey|.
+     */
+    drawGroupTitle_: function(parent, groupKey) {
+      if (groupKey.length  == 0) {
+        // Empty group key means there was no grouping.
+        return;
+      }
+
+      var parent = addNode(parent, 'div');
+      parent.className = 'group-title-container';
+
+      // Each component of the group key represents the "key=value" constraint
+      // for this group. Show these as an AND separated list.
+      for (var i = 0; i < groupKey.length; ++i) {
+        if (i > 0)
+          addNode(parent, 'i', ' and ');
+        var e = groupKey[i];
+        addNode(parent, 'b', getNameForKey(e.key) + ' = ');
+        addNode(parent, 'span', e.value);
+      }
+    },
+
+    /**
+     * Renders a table which summarizes all |column| fields for |data|.
+     */
+    drawDataTable_: function(table, data, columns, groupKey) {
+      table.className = 'results-table';
+      var thead = addNode(table, 'thead');
+      var tbody = addNode(table, 'tbody');
+
+      var displaySettings = this.getGroupDisplaySettings_(groupKey);
+      var limit = displaySettings.limit;
+
+      this.drawAggregateRow_(thead, data.aggregates, columns);
+      this.drawTableHeader_(thead, columns);
+      this.drawTableBody_(tbody, data.rows, columns, limit);
+      this.drawTruncationRow_(tbody, data.rows.length, limit, columns.length,
+                              groupKey);
+    },
+
+    drawTableHeader_: function(thead, columns) {
+      var tr = addNode(thead, 'tr');
+      for (var i = 0; i < columns.length; ++i) {
+        var key = columns[i];
+        var th = addNode(tr, 'th', getNameForKey(key));
+        th.onclick = this.onClickColumn_.bind(this, key);
+
+        // Draw an indicator if we are currently sorted on this column.
+        // TODO(eroman): Should use an icon instead of asterisk!
+        for (var j = 0; j < this.currentSortKeys_.length; ++j) {
+          if (sortKeysMatch(this.currentSortKeys_[j], key)) {
+            var sortIndicator = addNode(th, 'span', '*');
+            sortIndicator.style.color = 'red';
+            if (sortKeyIsReversed(this.currentSortKeys_[j])) {
+              // Use double-asterisk for descending columns.
+              addText(sortIndicator, '*');
+            }
+            break;
+          }
+        }
+      }
+    },
+
+    drawTableBody_: function(tbody, rows, columns, limit) {
+      for (var i = 0; i < rows.length && i < limit; ++i) {
+        var e = rows[i];
+
+        var tr = addNode(tbody, 'tr');
+
+        for (var c = 0; c < columns.length; ++c) {
+          var key = columns[c];
+          var value = e[key];
+
+          var td = addNode(tr, 'td');
+          drawValueToCell(td, key, value);
+        }
+      }
+    },
+
+    /**
+     * Renders a row that describes all the aggregate values for |columns|.
+     */
+    drawAggregateRow_: function(tbody, aggregates, columns) {
+      var tr = addNode(tbody, 'tr');
+      tr.className = 'aggregator-row';
+
+      for (var i = 0; i < columns.length; ++i) {
+        var key = columns[i];
+        var td = addNode(tr, 'td');
+
+        // Most of our outputs are numeric, so we want to align them to the
+        // right. However for the  unique counts we will center.
+        if (KEY_PROPERTIES[key].aggregator == UniquifyAggregator) {
+          td.align = 'center';
+        } else {
+          td.align = 'right';
+        }
+
+        var aggregator = aggregates[key];
+        if (aggregator)
+          td.innerText = aggregator.getValueAsText();
+      }
+    },
+
+    /**
+     * Renders a row which describes how many rows the table has, how many are
+     * currently hidden, and a set of buttons to show more.
+     */
+    drawTruncationRow_: function(tbody, numRows, limit, numColumns, groupKey) {
+      var numHiddenRows = Math.max(numRows - limit, 0);
+      var numVisibleRows = numRows - numHiddenRows;
+
+      var tr = addNode(tbody, 'tr');
+      tr.className = 'truncation-row';
+      var td = addNode(tr, 'td');
+      td.colSpan = numColumns;
+
+      addText(td, numRows + ' rows');
+      if (numHiddenRows > 0) {
+        var s = addNode(td, 'span', ' (' + numHiddenRows + ' hidden) ');
+        s.style.color = 'red';
+      }
+
+      if (numVisibleRows > LIMIT_INCREMENT) {
+        addNode(td, 'button', 'Show less').onclick =
+            this.changeGroupDisplayLimit_.bind(
+                this, groupKey, -LIMIT_INCREMENT);
+      }
+      if (numVisibleRows > 0) {
+        addNode(td, 'button', 'Show none').onclick =
+            this.changeGroupDisplayLimit_.bind(this, groupKey, -Infinity);
+      }
+
+      if (numHiddenRows > 0) {
+        addNode(td, 'button', 'Show more').onclick =
+            this.changeGroupDisplayLimit_.bind(this, groupKey, LIMIT_INCREMENT);
+        addNode(td, 'button', 'Show all').onclick =
+            this.changeGroupDisplayLimit_.bind(this, groupKey, Infinity);
       }
     },
 
