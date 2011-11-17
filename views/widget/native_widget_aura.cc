@@ -335,7 +335,9 @@ gfx::Rect NativeWidgetAura::GetClientAreaScreenBounds() const {
 }
 
 gfx::Rect NativeWidgetAura::GetRestoredBounds() const {
-  return window_->restore_bounds();
+  gfx::Rect* restore_bounds = reinterpret_cast<gfx::Rect*>(
+      window_->GetProperty(aura::kRestoreBoundsKey));
+  return restore_bounds ? *restore_bounds : window_->bounds();
 }
 
 void NativeWidgetAura::SetBounds(const gfx::Rect& bounds) {

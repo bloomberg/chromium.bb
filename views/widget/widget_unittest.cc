@@ -835,5 +835,34 @@ TEST_F(WidgetObserverTest, VisibilityChange) {
   toplevel->CloseNow();
 }
 
+#if !defined(USE_AURA) && defined(OS_WIN)
+// Aura needs shell to maximize/fullscreen window.
+// NativeWidgetGtk doesn't implement GetRestoredBounds.
+TEST_F(WidgetTest, GetRestoredBounds) {
+  Widget* toplevel = CreateTopLevelPlatformWidget();
+  EXPECT_EQ(toplevel->GetWindowScreenBounds().ToString(),
+            toplevel->GetRestoredBounds().ToString());
+  toplevel->Show();
+  toplevel->Maximize();
+  RunPendingMessages();
+  EXPECT_NE(toplevel->GetWindowScreenBounds().ToString(),
+            toplevel->GetRestoredBounds().ToString());
+  EXPECT_GT(toplevel->GetRestoredBounds().width(), 0);
+  EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);
+
+  toplevel->Restore();
+  RunPendingMessages();
+  EXPECT_EQ(toplevel->GetWindowScreenBounds().ToString(),
+            toplevel->GetRestoredBounds().ToString());
+
+  toplevel->SetFullscreen(true);
+  RunPendingMessages();
+  EXPECT_NE(toplevel->GetWindowScreenBounds().ToString(),
+            toplevel->GetRestoredBounds().ToString());
+  EXPECT_GT(toplevel->GetRestoredBounds().width(), 0);
+  EXPECT_GT(toplevel->GetRestoredBounds().height(), 0);
+}
+#endif
+
 }  // namespace
 }  // namespace views

@@ -75,7 +75,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   WindowDelegate* delegate() { return delegate_; }
 
   const gfx::Rect& bounds() const;
-  const gfx::Rect& restore_bounds() const { return restore_bounds_; }
 
   Window* parent() { return parent_; }
   const Window* parent() const { return parent_; }
@@ -302,9 +301,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   WindowType type_;
 
   WindowDelegate* delegate_;
-
-  // The original bounds of a maximized/fullscreen window.
-  gfx::Rect restore_bounds_;
 
   // The minimum size of the window a user can resize to.
   gfx::Size minimum_size_;
