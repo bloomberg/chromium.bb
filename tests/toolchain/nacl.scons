@@ -10,7 +10,13 @@ Import('env')
 #       undefined symbols which would have to be stubbed out
 DEP_LIBS = ['nacl', 'srpc', 'imc_syscalls', 'platform', 'gio', 'pthread', 'm']
 
-DEP_LINKFLAGS = (['-Wl,--whole-archive', '-lgcc'] +
+# -lgcc is not exposed to the bitcode in PNaCl
+if env.Bit('bitcode'):
+  LIBGCC = []
+else:
+  LIBGCC = ['-lgcc']
+
+DEP_LINKFLAGS = (['-Wl,--whole-archive'] + LIBGCC +
                    ['-l' + name for name in DEP_LIBS] +
                    ['-Wl,--no-whole-archive'])
 
