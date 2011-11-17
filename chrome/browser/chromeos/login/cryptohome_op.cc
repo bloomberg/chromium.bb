@@ -22,7 +22,6 @@ CryptohomeOp::CryptohomeOp(AuthAttemptState* current_attempt,
                            AuthAttemptStateResolver* callback)
     : attempt_(current_attempt),
       resolver_(callback) {
-  CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
 }
 
 CryptohomeOp::~CryptohomeOp() {}

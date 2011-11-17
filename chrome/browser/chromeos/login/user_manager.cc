@@ -129,10 +129,7 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
   }
 
   void RemoveUserCryptohome() {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncRemove(user_email_,
-                                                              this);
-    }
+    CrosLibrary::Get()->GetCryptohomeLibrary()->AsyncRemove(user_email_, this);
   }
 
   void OnComplete(bool success, int return_code) {

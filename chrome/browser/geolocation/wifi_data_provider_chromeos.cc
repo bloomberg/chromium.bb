@@ -127,8 +127,6 @@ WifiDataProviderCommon::WlanApiInterface*
     WifiDataProviderChromeOs::NewWlanApi() {
   chromeos::CrosLibrary* cros_lib = chromeos::CrosLibrary::Get();
   DCHECK(cros_lib);
-  if (!cros_lib->EnsureLoaded())
-    return NULL;
   return NewWlanApi(cros_lib->GetNetworkLibrary());
 }
 

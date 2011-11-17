@@ -18,9 +18,6 @@ namespace chromeos {
 SmsObserver::SmsObserver(Profile* profile)
     : profile_(profile) {
   DCHECK(profile_);
-  if (!CrosLibrary::Get()->EnsureLoaded())
-    return;
-
   UpdateObservers(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
 }
 
@@ -31,8 +28,8 @@ SmsObserver::~SmsObserver() {
 }
 
 void SmsObserver::UpdateObservers(NetworkLibrary* library) {
-  if (!CrosLibrary::Get()->EnsureLoaded() ||
-      !CrosLibrary::Get()->GetNetworkLibrary()->IsCros())
+  // Guard against calls to libcros (http://crosbug.com/17863).
+  if (!CrosLibrary::Get()->libcros_loaded())
     return;
 
   const CellularNetworkVector& networks = library->cellular_networks();
@@ -78,8 +75,8 @@ void SmsObserver::UpdateObservers(NetworkLibrary* library) {
 }
 
 void SmsObserver::DisconnectAll() {
-  if (!CrosLibrary::Get()->EnsureLoaded() ||
-      !CrosLibrary::Get()->GetNetworkLibrary()->IsCros())
+  // Guard against calls to libcros (http://crosbug.com/17863).
+  if (!CrosLibrary::Get()->libcros_loaded())
     return;
 
   for (ObserversMap::iterator it = observers_.begin();

@@ -39,7 +39,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
-    ASSERT_TRUE(CrosLibrary::Get()->EnsureLoaded());
 
     MockSessionManagerClient* mock_session_manager_client
         = mock_dbus_thread_manager->mock_session_manager_client();

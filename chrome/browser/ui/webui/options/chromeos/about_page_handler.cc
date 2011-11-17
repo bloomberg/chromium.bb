@@ -290,9 +290,8 @@ void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
 
 void AboutPageHandler::CheckNow(const ListValue* args) {
   // Make sure that libcros is loaded and OOBE is complete.
-  if (CrosLibrary::Get()->EnsureLoaded() &&
-      (!WizardController::default_controller() ||
-        WizardController::IsDeviceRegistered())) {
+  if (!WizardController::default_controller() ||
+      WizardController::IsDeviceRegistered()) {
     CrosLibrary::Get()->GetUpdateLibrary()->
         RequestUpdateCheck(NULL,   // no callback
                            NULL);  // no userdata

@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -62,11 +63,6 @@ const char kUndefinedValue[] = "undefined";
 // Otherwise |kUndefinedValue| is returned.
 #if defined(OS_CHROMEOS)
 static std::string GetConnectionType() {
-  if (!chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    LOG(ERROR) << "CrosLibrary is not loaded.";
-    return kUndefinedValue;
-  }
-
   chromeos::NetworkLibrary* network_lib =
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   if (network_lib->ethernet_connected())
@@ -237,13 +233,13 @@ void RegisterPageHandler::HandleGetRegistrationUrl(const ListValue* args) {
 
 void RegisterPageHandler::HandleGetUserInfo(const ListValue* args) {
 #if defined(OS_CHROMEOS)
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+  if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
      version_loader_.GetVersion(
          &version_consumer_,
          base::Bind(&RegisterPageHandler::OnVersion, base::Unretained(this)),
          chromeos::VersionLoader::VERSION_FULL);
   } else {
-    SkipRegistration("CrosLibrary is not loaded.");
+    SkipRegistration("Not running on ChromeOS.");
   }
 #endif
 }

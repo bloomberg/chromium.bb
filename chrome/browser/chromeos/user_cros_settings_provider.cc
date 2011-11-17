@@ -347,8 +347,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
   }
 
   virtual ~UserCrosSettingsTrust() {
-    if (BrowserThread::CurrentlyOn(BrowserThread::UI) &&
-        CrosLibrary::Get()->EnsureLoaded()) {
+    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
       // Cancels all pending callbacks from us.
       SignedSettingsHelper::Get()->CancelCallback(this);
     }
@@ -357,9 +356,6 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
   // Called right before boolean property is changed.
   void OnBooleanPropertyChange(const std::string& path, bool new_value) {
     if (path == kSignedDataRoamingEnabled) {
-      if (!CrosLibrary::Get()->EnsureLoaded())
-        return;
-
       NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
       if (cros->IsCellularAlwaysInRoaming()) {
         // If operator requires roaming always enabled, ignore supplied value
@@ -379,9 +375,6 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
                                  bool value,
                                  UseValue use_value) {
     if (path == kSignedDataRoamingEnabled) {
-      if (!CrosLibrary::Get()->EnsureLoaded())
-        return;
-
       NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
       const NetworkDevice* cellular = cros->FindCellularDevice();
       if (cellular) {
@@ -430,9 +423,7 @@ class UserCrosSettingsTrust : public SignedSettingsHelper::Callback {
     // Do not trust before fetching complete.
     prefs->ClearPref((name + kTrustedSuffix).c_str());
     prefs->ScheduleSavePersistentPrefs();
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      SignedSettingsHelper::Get()->StartRetrieveProperty(name, this);
-    }
+    SignedSettingsHelper::Get()->StartRetrieveProperty(name, this);
   }
 
   // Implementation of SignedSettingsHelper::Callback.

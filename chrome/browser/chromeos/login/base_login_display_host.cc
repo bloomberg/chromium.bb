@@ -247,7 +247,7 @@ void ShowLoginWizard(const std::string& first_screen_name,
   chromeos::LoginDisplayHost* display_host;
   display_host = new chromeos::WebUILoginDisplayHost(screen_bounds);
 
-  if (show_login_screen && chromeos::CrosLibrary::Get()->EnsureLoaded()) {
+  if (show_login_screen) {
     // R11 > R12 migration fix. See http://crosbug.com/p/4898.
     // If user has manually changed locale during R11 OOBE, locale will be set.
     // On R12 > R12|R13 etc. this fix won't get activated since

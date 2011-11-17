@@ -99,9 +99,6 @@ class ChooseMobileNetworkHandler
 
 ChooseMobileNetworkHandler::ChooseMobileNetworkHandler()
     : is_page_ready_(false), has_pending_results_(false) {
-  if (!CrosLibrary::Get()->EnsureLoaded())
-    return;
-
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   if (const NetworkDevice* cellular = cros->FindCellularDevice()) {
     device_path_ = cellular->device_path();
@@ -174,9 +171,6 @@ void ChooseMobileNetworkHandler::HandleCancel(const ListValue* args) {
     return;
   }
 
-  if (!CrosLibrary::Get()->EnsureLoaded())
-    return;
-
   // Switch to automatic mode.
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   cros->RequestCellularRegister(std::string());
@@ -190,9 +184,6 @@ void ChooseMobileNetworkHandler::HandleConnect(const ListValue* args) {
     NOTREACHED();
     return;
   }
-
-  if (!CrosLibrary::Get()->EnsureLoaded())
-    return;
 
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   cros->RequestCellularRegister(network_id);

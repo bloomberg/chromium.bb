@@ -423,8 +423,7 @@ void ProfileManager::Observe(
 #if defined(OS_CHROMEOS)
   if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (chromeos::CrosLibrary::Get()->EnsureLoaded() &&
-        !command_line.HasSwitch(switches::kTestType)) {
+    if (!command_line.HasSwitch(switches::kTestType)) {
       // If we don't have a mounted profile directory we're in trouble.
       // TODO(davemoore) Once we have better api this check should ensure that
       // our profile directory is the one that's mounted, and that it's mounted

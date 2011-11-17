@@ -28,13 +28,8 @@ void EulaScreen::PrepareToShow() {
 
 void EulaScreen::Show() {
   // Command to own the TPM.
-  if (chromeos::CrosLibrary::Get()->EnsureLoaded()) {
-    chromeos::CrosLibrary::Get()->
-        GetCryptohomeLibrary()->TpmCanAttemptOwnership();
-  } else {
-    LOG(ERROR) << "Cros library not loaded. "
-               << "We must have disabled the link that led here.";
-  }
+  chromeos::CrosLibrary::Get()->
+      GetCryptohomeLibrary()->TpmCanAttemptOwnership();
   actor_->Show();
 }
 
@@ -43,8 +38,7 @@ void EulaScreen::Hide() {
 }
 
 bool EulaScreen::IsTpmEnabled() const {
-  return chromeos::CrosLibrary::Get()->EnsureLoaded() &&
-         chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->TpmIsEnabled();
+  return chromeos::CrosLibrary::Get()->GetCryptohomeLibrary()->TpmIsEnabled();
 }
 
 GURL EulaScreen::GetOemEulaUrl() const {

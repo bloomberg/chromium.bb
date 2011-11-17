@@ -48,16 +48,6 @@ using chromeos::UserManager;
 
 namespace {
 
-bool EnsureCrosLibraryLoaded(AutomationProvider* provider,
-                             IPC::Message* reply_message) {
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    AutomationJSONReply(provider, reply_message).SendError(
-        "Could not load cros library.");
-    return false;
-  }
-  return true;
-}
-
 DictionaryValue* GetNetworkInfoDict(const chromeos::Network* network) {
   DictionaryValue* item = new DictionaryValue;
   item->SetString("name", network->name());
@@ -283,9 +273,6 @@ void TestingAutomationProvider::Login(DictionaryValue* args,
 
 void TestingAutomationProvider::LockScreen(DictionaryValue* args,
                                            IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   new ScreenLockUnlockObserver(this, reply_message, true);
   CrosLibrary::Get()->GetScreenLockLibrary()->
       NotifyScreenLockRequested();
@@ -334,9 +321,6 @@ void TestingAutomationProvider::SignoutInScreenLocker(
 
 void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
                                                IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
 
   return_value->SetBoolean("battery_is_present",
@@ -363,9 +347,6 @@ void TestingAutomationProvider::GetBatteryInfo(DictionaryValue* args,
 
 void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
                                                IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
 
@@ -469,9 +450,6 @@ void TestingAutomationProvider::GetNetworkInfo(DictionaryValue* args,
 
 void TestingAutomationProvider::NetworkScan(DictionaryValue* args,
                                             IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   network_library->RequestNetworkScan();
 
@@ -481,9 +459,6 @@ void TestingAutomationProvider::NetworkScan(DictionaryValue* args,
 
 void TestingAutomationProvider::ToggleNetworkDevice(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   AutomationJSONReply reply(this, reply_message);
   std::string device;
   bool enable;
@@ -551,9 +526,6 @@ void TestingAutomationProvider::SetProxySettings(Browser* browser,
 
 void TestingAutomationProvider::ConnectToCellularNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   std::string service_path;
   if (!args->GetString("service_path", &service_path)) {
     AutomationJSONReply(this, reply_message).SendError(
@@ -579,9 +551,6 @@ void TestingAutomationProvider::ConnectToCellularNetwork(
 
 void TestingAutomationProvider::DisconnectFromCellularNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   const chromeos::CellularNetwork* cellular =
         network_library->cellular_network();
@@ -599,9 +568,6 @@ void TestingAutomationProvider::DisconnectFromCellularNetwork(
 
 void TestingAutomationProvider::ConnectToWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   AutomationJSONReply reply(this, reply_message);
   std::string service_path, password;
   bool shared;
@@ -636,8 +602,6 @@ void TestingAutomationProvider::ConnectToWifiNetwork(
 
 void TestingAutomationProvider::ForgetWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
   std::string service_path;
   if (!args->GetString("service_path", &service_path)) {
     AutomationJSONReply(this, reply_message).SendError(
@@ -651,9 +615,6 @@ void TestingAutomationProvider::ForgetWifiNetwork(
 
 void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   std::string ssid, security, password;
   bool shared;
   if (!args->GetString("ssid", &ssid) ||
@@ -747,9 +708,6 @@ void TestingAutomationProvider::ConnectToHiddenWifiNetwork(
 
 void TestingAutomationProvider::DisconnectFromWifiNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   AutomationJSONReply reply(this, reply_message);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   const chromeos::WifiNetwork* wifi = network_library->wifi_network();
@@ -764,9 +722,6 @@ void TestingAutomationProvider::DisconnectFromWifiNetwork(
 
 void TestingAutomationProvider::AddPrivateNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   std::string hostname, service_name, provider_type, key, cert_id, cert_nss,
       username, password;
   if (!args->GetString("hostname", &hostname) ||
@@ -845,9 +800,6 @@ void TestingAutomationProvider::AddPrivateNetwork(
 
 void TestingAutomationProvider::ConnectToPrivateNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   AutomationJSONReply reply(this, reply_message);
   std::string service_path;
   if (!args->GetString("service_path", &service_path)) {
@@ -877,9 +829,6 @@ void TestingAutomationProvider::ConnectToPrivateNetwork(
 
 void TestingAutomationProvider::GetPrivateNetworkInfo(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   const chromeos::VirtualNetworkVector& virtual_networks =
@@ -911,9 +860,6 @@ void TestingAutomationProvider::GetPrivateNetworkInfo(
 
 void TestingAutomationProvider::DisconnectFromPrivateNetwork(
     DictionaryValue* args, IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   AutomationJSONReply reply(this, reply_message);
   NetworkLibrary* network_library = CrosLibrary::Get()->GetNetworkLibrary();
   const chromeos::VirtualNetwork* virt = network_library->virtual_network();
@@ -1106,9 +1052,6 @@ void TestingAutomationProvider::SetTimezone(DictionaryValue* args,
 
 void TestingAutomationProvider::GetUpdateInfo(DictionaryValue* args,
                                               IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
   AutomationJSONReply* reply = new AutomationJSONReply(this, reply_message);
   update_library->GetReleaseTrack(GetReleaseTrackCallback, reply);
@@ -1117,9 +1060,6 @@ void TestingAutomationProvider::GetUpdateInfo(DictionaryValue* args,
 void TestingAutomationProvider::UpdateCheck(
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
   AutomationJSONReply* reply = new AutomationJSONReply(this, reply_message);
   update_library->RequestUpdateCheck(UpdateCheckCallback, reply);
@@ -1127,9 +1067,6 @@ void TestingAutomationProvider::UpdateCheck(
 
 void TestingAutomationProvider::SetReleaseTrack(DictionaryValue* args,
                                                 IPC::Message* reply_message) {
-  if (!EnsureCrosLibraryLoaded(this, reply_message))
-    return;
-
   AutomationJSONReply reply(this, reply_message);
   std::string track;
   if (!args->GetString("track", &track)) {

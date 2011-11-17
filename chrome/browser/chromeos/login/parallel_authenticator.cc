@@ -99,7 +99,6 @@ ParallelAuthenticator::ParallelAuthenticator(LoginStatusConsumer* consumer)
               switches::kWebUILogin) &&
           !CommandLine::ForCurrentProcess()->HasSwitch(
                   switches::kSkipOAuthLogin)) {
-  CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
   // If not already owned, this is a no-op.  If it is, this loads the owner's
   // public key off of disk.
   OwnershipService::GetSharedInstance()->StartLoadOwnerKeyAttempt();

@@ -71,10 +71,8 @@ void NetworkScreen::OnNetworkManagerChanged(NetworkLibrary* network_lib) {
 // NetworkScreen, public:
 
 void NetworkScreen::Refresh() {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    SubscribeNetworkNotification();
-    OnNetworkManagerChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
-  }
+  SubscribeNetworkNotification();
+  OnNetworkManagerChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

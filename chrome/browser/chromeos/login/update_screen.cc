@@ -184,15 +184,10 @@ void UpdateScreen::UpdateStatusChanged(const UpdateLibrary::Status& status) {
 }
 
 void UpdateScreen::StartUpdate() {
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
-    LOG(ERROR) << "Error loading CrosLibrary";
-    ExitUpdate(REASON_UPDATE_INIT_FAILED);
-  } else {
-    CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(this);
-    VLOG(1) << "Initiate update check";
-    CrosLibrary::Get()->GetUpdateLibrary()->RequestUpdateCheck(
-        StartUpdateCallback, this);
-  }
+  CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(this);
+  VLOG(1) << "Initiate update check";
+  CrosLibrary::Get()->GetUpdateLibrary()->RequestUpdateCheck(
+      StartUpdateCallback, this);
 }
 
 void UpdateScreen::CancelUpdate() {
@@ -216,8 +211,7 @@ void UpdateScreen::PrepareToShow() {
 }
 
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
+  CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
 
   switch (reason) {
     case REASON_UPDATE_CANCELED:

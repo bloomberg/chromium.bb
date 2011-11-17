@@ -70,8 +70,7 @@ class ScreenLockObserver : public chromeos::ScreenLockLibrary::Observer,
     if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
       // Register Screen Lock after login screen to make sure
       // we don't show the screen lock on top of the login screen by accident.
-      if (chromeos::CrosLibrary::Get()->EnsureLoaded())
-        chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->AddObserver(this);
+      chromeos::CrosLibrary::Get()->GetScreenLockLibrary()->AddObserver(this);
     }
   }
 
@@ -272,8 +271,7 @@ void ScreenLocker::OnLoginSuccess(
       service->SetPassphrase(password, false);
     }
   }
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();
+  CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockRequested();
 
   if (login_status_consumer_)
     login_status_consumer_->OnLoginSuccess(username, password,
@@ -373,8 +371,7 @@ void ScreenLocker::Show() {
     // receive the response within timeout. Just send complete
     // signal.
     VLOG(1) << "Show: locker already exists. Just sending completion event.";
-    if (CrosLibrary::Get()->EnsureLoaded())
-      CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
+    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
   }
 }
 
@@ -428,8 +425,7 @@ ScreenLocker::~ScreenLocker() {
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this),
       content::Details<bool>(&state));
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockCompleted();
+  CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenUnlockCompleted();
 }
 
 void ScreenLocker::SetAuthenticator(Authenticator* authenticator) {
@@ -448,8 +444,7 @@ void ScreenLocker::ScreenLockReady() {
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this),
       content::Details<bool>(&state));
-  if (CrosLibrary::Get()->EnsureLoaded())
-    CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
+  CrosLibrary::Get()->GetScreenLockLibrary()->NotifyScreenLockCompleted();
 }
 
 }  // namespace chromeos

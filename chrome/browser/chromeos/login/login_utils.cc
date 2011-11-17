@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -640,7 +641,7 @@ void LoginUtilsImpl::PrepareProfile(
 
   VLOG(1) << "Completing login for " << username;
 
-  if (CrosLibrary::Get()->EnsureLoaded()) {
+  if (system::runtime_environment::IsRunningOnChromeOS()) {
     btl->AddLoginTimeMarker("StartSession-Start", false);
     DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
         username);
@@ -805,7 +806,7 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
 
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
-  if (CrosLibrary::Get()->EnsureLoaded()) {
+  if (system::runtime_environment::IsRunningOnChromeOS()) {
     CryptohomeLibrary* cryptohome = CrosLibrary::Get()->GetCryptohomeLibrary();
     btl->AddLoginTimeMarker("TPMOwn-Start", false);
     if (cryptohome->TpmIsEnabled() && !cryptohome->TpmIsBeingOwned()) {
@@ -923,7 +924,7 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
 
   UserManager::Get()->GuestUserLoggedIn();
 
-  if (CrosLibrary::Get()->EnsureLoaded()) {
+  if (system::runtime_environment::IsRunningOnChromeOS()) {
     // Session Manager may kill the chrome anytime after this point.
     // Write exit_cleanly and other stuff to the disk here.
     g_browser_process->EndSession();
@@ -1098,7 +1099,7 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver {
 };
 
 void LoginUtilsImpl::PrewarmAuthentication() {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
+  if (system::runtime_environment::IsRunningOnChromeOS()) {
     NetworkLibrary *network = CrosLibrary::Get()->GetNetworkLibrary();
     if (network->Connected()) {
       const int kConnectionsNeeded = 1;

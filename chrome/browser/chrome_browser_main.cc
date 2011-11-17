@@ -230,7 +230,7 @@ void HandleTestParameters(const CommandLine& command_line) {
   // and 1 if it can't be. This is for validation that the library is installed
   // and versioned properly for Chrome to find.
   if (command_line.HasSwitch(switches::kTestLoadLibcros))
-    exit(!chromeos::CrosLibrary::Get()->EnsureLoaded());
+    exit(!chromeos::CrosLibrary::Get()->libcros_loaded());
 #endif
 }
 

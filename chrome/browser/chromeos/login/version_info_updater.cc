@@ -15,6 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_version_info.h"
@@ -43,7 +44,7 @@ VersionInfoUpdater::~VersionInfoUpdater() {
 }
 
 void VersionInfoUpdater::StartUpdate(bool is_official_build) {
-  if (CrosLibrary::Get()->EnsureLoaded()) {
+  if (system::runtime_environment::IsRunningOnChromeOS()) {
     version_loader_.GetVersion(
         &version_consumer_,
         base::Bind(&VersionInfoUpdater::OnVersion, base::Unretained(this)),
@@ -78,7 +79,7 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
 }
 
 void VersionInfoUpdater::UpdateVersionLabel() {
-  if (!CrosLibrary::Get()->EnsureLoaded()) {
+  if (!system::runtime_environment::IsRunningOnChromeOS()) {
     if (delegate_) {
       delegate_->OnOSVersionLabelTextUpdated(
           CrosLibrary::Get()->load_error_string());

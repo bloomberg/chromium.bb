@@ -59,12 +59,8 @@ bool GetChromeosInfoFunction::GetValue(const std::string& property_name,
         chromeos::system::StatisticsProvider::GetInstance();
     provider->GetMachineStatistic(kHardwareClass, value);
   } else if (property_name == kPropertyHomeProvider) {
-    if (CrosLibrary::Get()->EnsureLoaded()) {
-      NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
-      (*value) = netlib->GetCellularHomeCarrierId();
-    } else {
-      LOG(ERROR) << "CrosLibrary can't be loaded.";
-    }
+    NetworkLibrary* netlib = CrosLibrary::Get()->GetNetworkLibrary();
+    (*value) = netlib->GetCellularHomeCarrierId();
   } else if (property_name == kPropertyInitialLocale) {
     *value = chromeos::WizardController::GetInitialLocale();
   } else {

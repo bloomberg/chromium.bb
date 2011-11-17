@@ -46,7 +46,6 @@ OnlineAttempt::OnlineAttempt(bool using_oauth,
       resolver_(callback),
       weak_factory_(this),
       try_again_(true) {
-  CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
 }
 
 OnlineAttempt::~OnlineAttempt() {

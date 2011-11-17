@@ -290,7 +290,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
   bool is_known_user =
       UserManager::Get()->IsKnownUser(last_login_attempt_username_);
   NetworkLibrary* network = CrosLibrary::Get()->GetNetworkLibrary();
-  if (!network || !CrosLibrary::Get()->EnsureLoaded()) {
+  if (!network) {
     ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY, error);
   } else if (!network->Connected()) {
     if (is_known_user)
@@ -586,15 +586,13 @@ void ExistingUserController::SetOwnerUserInCryptohome() {
     // Another attempt will be invoked after verification completion.
     return;
   }
-  if (CrosLibrary::Get()->EnsureLoaded()) {
-    CryptohomeLibrary* cryptohomed = CrosLibrary::Get()->GetCryptohomeLibrary();
-    cryptohomed->AsyncSetOwnerUser(
-        UserCrosSettingsProvider::cached_owner(), NULL);
+  CryptohomeLibrary* cryptohomed = CrosLibrary::Get()->GetCryptohomeLibrary();
+  cryptohomed->AsyncSetOwnerUser(
+      UserCrosSettingsProvider::cached_owner(), NULL);
 
-    // Do not invoke AsyncDoAutomaticFreeDiskSpaceControl(NULL) here
-    // so it does not delay the following mount. Cleanup will be
-    // started in Cryptohomed by timer.
-  }
+  // Do not invoke AsyncDoAutomaticFreeDiskSpaceControl(NULL) here
+  // so it does not delay the following mount. Cleanup will be
+  // started in Cryptohomed by timer.
 }
 
 }  // namespace chromeos

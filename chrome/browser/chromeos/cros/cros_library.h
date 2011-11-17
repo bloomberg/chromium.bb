@@ -79,11 +79,6 @@ class CrosLibrary {
   // Getter for Test API that gives access to internal members of this class.
   TestApi* GetTestApi();
 
-  // TODO(stevenjb): Deprecate this. Libraries should fall back to stub
-  // implementations if libcros_loaded() is false, and/or use libcros_loaded()
-  // to protect calls to libcros. http://crosbug.com/19886
-  bool EnsureLoaded() { return use_stub_impl_ || libcros_loaded_; }
-
   bool libcros_loaded() { return libcros_loaded_; }
 
   // Returns an unlocalized string describing the last load error (if any).

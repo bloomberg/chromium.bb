@@ -334,7 +334,6 @@ CheckWhitelistOp::CheckWhitelistOp(const std::string& email,
 CheckWhitelistOp::~CheckWhitelistOp() {}
 
 void CheckWhitelistOp::Execute() {
-  CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
   std::vector<uint8> sig;
   std::string email_to_check = email_;
   if (!service_->has_cached_policy()) {
@@ -655,7 +654,6 @@ RetrievePropertyOp::RetrievePropertyOp(const std::string& name,
 RetrievePropertyOp::~RetrievePropertyOp() {}
 
 void RetrievePropertyOp::Execute() {
-  CHECK(chromeos::CrosLibrary::Get()->EnsureLoaded());
   // TODO(dilmah): Fix the race:
   // At the moment when device becomes owned there is lapse of time after
   // device has been owned and before temp_storage settings are finally
