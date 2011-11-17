@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
 // you don't have DumpRenderTree loaded.
 
 // http://crbug.com/104582
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_XsltBadImport DISABLED_XsltBadImport
 #else
 #define MAYBE_XsltBadImport XsltBadImport
