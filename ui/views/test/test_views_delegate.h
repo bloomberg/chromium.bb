@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
-#define VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
+#ifndef UI_VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
+#define UI_VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -69,4 +69,4 @@ class TestViewsDelegate : public ViewsDelegate {
 
 }  // namespace views
 
-#endif  // VIEWS_TEST_TEST_VIEWS_DELEGATE_H_
+#endif  // UI_VIEWS_TEST_TEST_VIEWS_DELEGATE_H_

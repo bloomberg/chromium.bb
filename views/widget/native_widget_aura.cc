@@ -26,9 +26,9 @@
 #endif
 
 #if defined(HAVE_IBUS)
-#include "views/ime/input_method_ibus.h"
+#include "ui/views/ime/input_method_ibus.h"
 #else
-#include "views/ime/mock_input_method.h"
+#include "ui/views/ime/mock_input_method.h"
 #endif
 
 namespace views {

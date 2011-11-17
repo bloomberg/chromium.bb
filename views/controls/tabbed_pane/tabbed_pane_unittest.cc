@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/utf_string_conversions.h"
 #include "base/message_loop.h"
+#include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/test/views_test_base.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
-#include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 

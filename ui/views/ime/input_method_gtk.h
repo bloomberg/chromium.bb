@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_IME_INPUT_METHOD_GTK_H_
-#define VIEWS_IME_INPUT_METHOD_GTK_H_
+#ifndef UI_VIEWS_IME_INPUT_METHOD_GTK_H_
+#define UI_VIEWS_IME_INPUT_METHOD_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -13,7 +13,7 @@
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_client.h"
-#include "views/ime/input_method_base.h"
+#include "ui/views/ime/input_method_base.h"
 #include "views/view.h"
 
 namespace views {
@@ -120,4 +120,4 @@ class InputMethodGtk : public InputMethodBase {
 
 }  // namespace views
 
-#endif  // VIEWS_IME_INPUT_METHOD_GTK_H_
+#endif  // UI_VIEWS_IME_INPUT_METHOD_GTK_H_

@@ -5,9 +5,9 @@
 #include "views/accessible_pane_view.h"
 
 #include "ui/base/models/accelerator.h"
+#include "ui/views/test/views_test_base.h"
 #include "views/controls/button/text_button.h"
 #include "views/layout/fill_layout.h"
-#include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
 
 namespace views {

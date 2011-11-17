@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "ui/views/ime/input_method.h"
 #include "views/events/event.h"
-#include "views/ime/input_method.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
 
@@ -24,8 +24,8 @@
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
-#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
 #endif
 

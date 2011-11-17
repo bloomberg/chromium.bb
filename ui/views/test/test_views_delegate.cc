@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/test/test_views_delegate.h"
+#include "ui/views/test/test_views_delegate.h"
 
 #include "base/logging.h"
 #include "ui/base/clipboard/clipboard.h"

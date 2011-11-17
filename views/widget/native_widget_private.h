@@ -8,7 +8,7 @@
 
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
-#include "views/ime/input_method_delegate.h"
+#include "ui/views/ime/input_method_delegate.h"
 #include "views/widget/native_widget.h"
 
 namespace gfx {

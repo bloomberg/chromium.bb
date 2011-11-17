@@ -21,6 +21,7 @@
 #include "ui/gfx/compositor/test_texture.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/test/views_test_base.h"
 #include "ui/views/touchui/gesture_manager.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/background.h"
@@ -32,14 +33,13 @@
 #include "views/events/event.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/focus/view_storage.h"
-#include "views/test/views_test_base.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 
 #if defined(OS_WIN)
-#include "views/test/test_views_delegate.h"
+#include "ui/views/test/test_views_delegate.h"
 #endif
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"

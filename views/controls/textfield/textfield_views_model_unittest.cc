@@ -13,10 +13,10 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/range/range.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/test/test_views_delegate.h"
+#include "ui/views/test/views_test_base.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_views_model.h"
-#include "views/test/test_views_delegate.h"
-#include "views/test/views_test_base.h"
 #include "views/views_delegate.h"
 
 namespace {

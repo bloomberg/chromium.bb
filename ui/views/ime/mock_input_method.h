@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_IME_MOCK_INPUT_METHOD_H_
-#define VIEWS_IME_MOCK_INPUT_METHOD_H_
+#ifndef UI_VIEWS_IME_MOCK_INPUT_METHOD_H_
+#define UI_VIEWS_IME_MOCK_INPUT_METHOD_H_
 #pragma once
 
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/base/ime/composition_text.h"
-#include "views/ime/input_method_base.h"
+#include "ui/views/ime/input_method_base.h"
 #include "views/view.h"
 
 namespace views {
@@ -85,4 +85,4 @@ class VIEWS_EXPORT MockInputMethod : public InputMethodBase {
 
 }  // namespace views
 
-#endif  // VIEWS_IME_MOCK_INPUT_METHOD_H_
+#endif  // UI_VIEWS_IME_MOCK_INPUT_METHOD_H_

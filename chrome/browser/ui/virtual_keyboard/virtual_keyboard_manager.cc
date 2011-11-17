@@ -28,7 +28,7 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/screen.h"
-#include "views/ime/text_input_type_tracker.h"
+#include "ui/views/ime/text_input_type_tracker.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)

@@ -31,8 +31,8 @@
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/views/ime/input_method.h"
 #include "views/events/event.h"
-#include "views/ime/input_method.h"
 #include "views/views_delegate.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
@@ -46,9 +46,10 @@
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
+#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkwindow.h>
-#include <gdk/gdkx.h>
+
 #include "content/browser/renderer_host/gtk_window_utils.h"
 #include "views/widget/native_widget_gtk.h"
 #endif

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/ime/input_method_wayland.h"
+#include "ui/views/ime/input_method_wayland.h"
 
 #include "views/widget/widget.h"
 

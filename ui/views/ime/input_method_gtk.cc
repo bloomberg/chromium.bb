@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/ime/input_method_gtk.h"
+#include "ui/views/ime/input_method_gtk.h"
 
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
@@ -17,8 +17,8 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/gtk/event_synthesis_gtk.h"
 #include "ui/base/gtk/gtk_im_context_util.h"
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
+#include "ui/base/keycodes/keyboard_codes.h"
 #include "views/events/event.h"
 #include "views/widget/widget.h"
 

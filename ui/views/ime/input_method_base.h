@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_IME_INPUT_METHOD_BASE_H_
-#define VIEWS_IME_INPUT_METHOD_BASE_H_
+#ifndef UI_VIEWS_IME_INPUT_METHOD_BASE_H_
+#define UI_VIEWS_IME_INPUT_METHOD_BASE_H_
 #pragma once
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/ime/input_method.h"
+#include "ui/views/ime/input_method_delegate.h"
 #include "views/focus/focus_manager.h"
-#include "views/ime/input_method.h"
-#include "views/ime/input_method_delegate.h"
 
 namespace gfx {
 class Rect;
-}  // namespace gfx
+}
 
 namespace ui {
 class TextInputClient;
-}  // namespace ui
+}
 
 namespace views {
 
@@ -101,4 +101,4 @@ class VIEWS_EXPORT InputMethodBase : public InputMethod,
 
 }  // namespace views
 
-#endif  // VIEWS_IME_INPUT_METHOD_BASE_H_
+#endif  // UI_VIEWS_IME_INPUT_METHOD_BASE_H_

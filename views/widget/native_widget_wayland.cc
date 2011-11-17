@@ -4,10 +4,10 @@
 
 #include "views/widget/native_widget_wayland.h"
 
-#include <cairo.h>
-#include <cairo-gl.h>
 #include <EGL/egl.h>
 #include <GL/gl.h>
+#include <cairo-gl.h>
+#include <cairo.h>
 #include <wayland-egl.h>
 
 #include <algorithm>
@@ -21,11 +21,11 @@
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
+#include "ui/views/ime/input_method_wayland.h"
 #include "ui/wayland/wayland_display.h"
 #include "ui/wayland/wayland_input_device.h"
 #include "ui/wayland/wayland_screen.h"
 #include "ui/wayland/wayland_window.h"
-#include "views/ime/input_method_wayland.h"
 #include "views/views_delegate.h"
 #include "views/widget/native_widget_views.h"
 #include "views/widget/root_view.h"

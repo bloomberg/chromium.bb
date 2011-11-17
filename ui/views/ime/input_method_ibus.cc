@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/ime/input_method_ibus.h"
+#include "ui/views/ime/input_method_ibus.h"
 
 #include <ibus.h>
 #if defined(TOUCH_UI)
@@ -15,8 +15,8 @@
 #include <set>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/string_util.h"

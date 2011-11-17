@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "views/test/views_test_base.h"
-#include "views/view.h"
+#include "ui/views/test/views_test_base.h"
 #include "views/controls/native/native_view_host.h"
+#include "views/view.h"
 #include "views/widget/native_widget_private.h"
-#include "views/widget/widget.h"
 #include "views/widget/native_widget_test_utils.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

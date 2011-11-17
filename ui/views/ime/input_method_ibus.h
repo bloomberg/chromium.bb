@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_IME_INPUT_METHOD_IBUS_H_
-#define VIEWS_IME_INPUT_METHOD_IBUS_H_
+#ifndef UI_VIEWS_IME_INPUT_METHOD_IBUS_H_
+#define UI_VIEWS_IME_INPUT_METHOD_IBUS_H_
 #pragma once
 
 #include <set>
@@ -17,8 +17,8 @@
 #include "ui/base/ime/character_composer.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/views/ime/input_method_base.h"
 #include "views/events/event.h"
-#include "views/ime/input_method_base.h"
 #include "views/view.h"
 
 // Forward declarations, so that we don't need to include ibus.h in this file.
@@ -196,4 +196,4 @@ class InputMethodIBus : public InputMethodBase {
 
 }  // namespace views
 
-#endif  // VIEWS_IME_INPUT_METHOD_IBUS_H_
+#endif  // UI_VIEWS_IME_INPUT_METHOD_IBUS_H_

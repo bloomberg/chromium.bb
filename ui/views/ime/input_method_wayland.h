@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_IME_INPUT_METHOD_WAYLAND_H_
-#define VIEWS_IME_INPUT_METHOD_WAYLAND_H_
+#ifndef UI_VIEWS_IME_INPUT_METHOD_WAYLAND_H_
+#define UI_VIEWS_IME_INPUT_METHOD_WAYLAND_H_
 #pragma once
 
 #include <string>
 
-#include "views/ime/input_method_base.h"
+#include "ui/views/ime/input_method_base.h"
 
 namespace views {
 
@@ -33,4 +33,4 @@ class InputMethodWayland : public InputMethodBase {
 
 }  // namespace views
 
-#endif  // VIEWS_IME_INPUT_METHOD_WAYLAND_H_
+#endif  // UI_VIEWS_IME_INPUT_METHOD_WAYLAND_H_

@@ -4,11 +4,11 @@
 
 #include "views/widget/native_widget_gtk.h"
 
-#include <gdk/gdk.h>
-#include <gdk/gdkx.h>
-#include <X11/extensions/shape.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/shape.h>
+#include <gdk/gdk.h>
+#include <gdk/gdkx.h>
 
 #include <set>
 #include <vector>
@@ -22,8 +22,8 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_gtk.h"
 #include "ui/base/gtk/g_object_destructor_filo.h"
-#include "ui/base/gtk/gtk_windowing.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
+#include "ui/base/gtk/gtk_windowing.h"
 #include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/x/x11_util.h"
@@ -32,11 +32,11 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/ime/input_method_gtk.h"
+#include "views/bubble/bubble_delegate.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/focus/view_storage.h"
-#include "views/ime/input_method_gtk.h"
 #include "views/views_delegate.h"
-#include "views/bubble/bubble_delegate.h"
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/gtk_views_window.h"
@@ -52,7 +52,7 @@
 #endif
 
 #if defined(HAVE_IBUS)
-#include "views/ime/input_method_ibus.h"
+#include "ui/views/ime/input_method_ibus.h"
 #endif
 
 using ui::OSExchangeData;

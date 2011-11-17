@@ -8,8 +8,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "views/test/test_views_delegate.h"
-#include "views/test/views_test_base.h"
+#include "ui/views/test/test_views_delegate.h"
+#include "ui/views/test/views_test_base.h"
 #include "views/views_delegate.h"
 
 #if defined(USE_AURA)

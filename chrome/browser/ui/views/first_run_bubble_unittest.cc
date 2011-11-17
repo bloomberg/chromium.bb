@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/views/first_run_bubble.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "views/test/views_test_base.h"
+#include "ui/views/test/views_test_base.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 

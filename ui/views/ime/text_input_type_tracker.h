@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_IME_TEXT_INPUT_TYPE_TRACKER_H_
-#define VIEWS_IME_TEXT_INPUT_TYPE_TRACKER_H_
+#ifndef UI_VIEWS_IME_TEXT_INPUT_TYPE_TRACKER_H_
+#define UI_VIEWS_IME_TEXT_INPUT_TYPE_TRACKER_H_
 #pragma once
 
 #include "base/memory/singleton.h"
@@ -57,4 +57,4 @@ class VIEWS_EXPORT TextInputTypeTracker {
 
 }  // namespace views
 
-#endif  // VIEWS_IME_TEXT_INPUT_TYPE_TRACKER_H_
+#endif  // UI_VIEWS_IME_TEXT_INPUT_TYPE_TRACKER_H_

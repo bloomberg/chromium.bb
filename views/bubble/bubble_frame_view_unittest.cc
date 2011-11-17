@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "ui/base/hit_test.h"
-#include "views/bubble/bubble_border.h"
+#include "ui/views/test/views_test_base.h"
 #include "views/bubble/border_contents_view.h"
+#include "views/bubble/bubble_border.h"
 #include "views/bubble/bubble_delegate.h"
 #include "views/bubble/bubble_frame_view.h"
-#include "views/test/views_test_base.h"
 #include "views/widget/widget.h"
 
 namespace views {

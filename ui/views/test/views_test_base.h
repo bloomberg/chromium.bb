@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_TEST_VIEWS_TEST_BASE_H_
-#define VIEWS_TEST_VIEWS_TEST_BASE_H_
+#ifndef UI_VIEWS_TEST_VIEWS_TEST_BASE_H_
+#define UI_VIEWS_TEST_VIEWS_TEST_BASE_H_
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "views/test/test_views_delegate.h"
+#include "ui/views/test/test_views_delegate.h"
 
 namespace views {
 
@@ -46,4 +46,4 @@ class ViewsTestBase : public testing::Test {
 
 }  // namespace views
 
-#endif  // VIEWS_TEST_VIEWS_TEST_BASE_H_
+#endif  // UI_VIEWS_TEST_VIEWS_TEST_BASE_H_
