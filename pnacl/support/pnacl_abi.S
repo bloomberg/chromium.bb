@@ -6,6 +6,15 @@
  *
  * TODO(pdox): It would be better to do this in a way that
  *             doesn't require native code.
+ *
+ * for more information on these functions see:
+ * http://www.nongnu.org/libunwind/docs.html
+ * NOTE: libunwind uses slightly different function names:
+ * e.g. _Unwind_DeleteException -> __libunwind_Unwind_DeleteException
+ *
+ * These two functions are pnacl specific:
+ * _Unwind_PNaClSetResult0
+ * _Unwind_PNaClSetResult1
  */
 
 #define STUB(sym) \
@@ -16,6 +25,7 @@ STUB(_Unwind_DeleteException)
 STUB(_Unwind_GetRegionStart)
 STUB(_Unwind_GetDataRelBase)
 STUB(_Unwind_GetIP)
+STUB(_Unwind_GetIPInfo)
 STUB(_Unwind_GetTextRelBase)
 STUB(_Unwind_GetLanguageSpecificData)
 STUB(_Unwind_SetIP)
