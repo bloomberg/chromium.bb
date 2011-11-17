@@ -48,7 +48,7 @@ class LockView : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(LockView);
 };
 
-void CreateLock() {
+void CreateLockScreen() {
   LockView* lock_view = new LockView;
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
