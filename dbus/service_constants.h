@@ -712,6 +712,16 @@ const char kRequestConfirmation[] = "RequestConfirmation";
 const char kAuthorize[] = "Authorize";
 const char kConfirmModeChange[] = "ConfirmModeChange";
 const char kCancel[] = "Cancel";
+
+// Bluetooth Agent capabilities.
+const char kNoInputNoOutputCapability[] = "NoInputNoOutput";
+const char kDisplayOnlyCapability[] = "DisplayOnly";
+const char kKeyboardOnlyCapability[] = "KeyboardOnly";
+const char kDisplayYesNoCapability[] = "DisplayYesNo";
+
+// Bluetooth Agent errors.
+const char kErrorRejected[] = "org.bluez.Error.Rejected";
+const char kErrorCanceled[] = "org.bluez.Error.Canceled";
 }  // namespace bluetooth_agent
 
 namespace bluetooth_device {
