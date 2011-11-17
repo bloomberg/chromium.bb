@@ -7,12 +7,8 @@
 #pragma once
 
 #include <string>
-#include <utility>
 
-#include "base/task.h"
-#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/unrecoverable_error_handler.h"
 
 class PasswordStore;
@@ -21,6 +17,8 @@ class SyncableService;
 class WebDataService;
 
 namespace browser_sync {
+class AssociatorInterface;
+class ChangeProcessor;
 class DataTypeManager;
 class GenericChangeProcessor;
 class SharedChangeProcessor;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/task.h"
 #include "chrome/browser/profiles/profile.h"
