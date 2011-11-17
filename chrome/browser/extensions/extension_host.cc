@@ -37,7 +37,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/browser_resources.h"
@@ -426,8 +425,7 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
 
   if (extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_POPUP ||
       extension_host_type_ == chrome::VIEW_TYPE_EXTENSION_INFOBAR) {
-    render_view_host->EnablePreferredSizeMode(
-        kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+    render_view_host->EnablePreferredSizeMode();
   }
 
   // If the host is bound to a browser, then extract its window id.

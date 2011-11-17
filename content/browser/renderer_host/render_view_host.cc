@@ -1333,8 +1333,8 @@ void RenderViewHost::DisableScrollbarsForThreshold(const gfx::Size& size) {
   Send(new ViewMsg_DisableScrollbarsForSmallWindows(routing_id(), size));
 }
 
-void RenderViewHost::EnablePreferredSizeMode(int flags) {
-  Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id(), flags));
+void RenderViewHost::EnablePreferredSizeMode() {
+  Send(new ViewMsg_EnablePreferredSizeChangedMode(routing_id()));
 }
 
 void RenderViewHost::ExecuteCustomContextMenuCommand(

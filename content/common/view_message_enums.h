@@ -69,15 +69,6 @@ struct ViewHostMsg_AccEvent {
   };
 };
 
-// Values that may be OR'd together to form the 'flags' parameter of the
-// ViewMsg_EnablePreferredSizeChangedMode message.
-enum ViewHostMsg_EnablePreferredSizeChangedMode_Flags {
-  kPreferredSizeNothing,
-  kPreferredSizeWidth = 1 << 0,
-  // Requesting the height currently requires a polling loop in render_view.cc.
-  kPreferredSizeHeightThisIsSlow = 1 << 1,
-};
-
 struct ViewHostMsg_RunFileChooser_Mode {
  public:
   enum Value {

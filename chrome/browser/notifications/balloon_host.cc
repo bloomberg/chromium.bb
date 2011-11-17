@@ -18,7 +18,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
@@ -78,8 +77,7 @@ void BalloonHost::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host->DisableScrollbarsForThreshold(
       balloon_->min_scrollbar_size());
   render_view_host->WasResized();
-  render_view_host->EnablePreferredSizeMode(
-      kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+  render_view_host->EnablePreferredSizeMode();
 
   if (enable_web_ui_)
     render_view_host->AllowBindings(content::BINDINGS_POLICY_WEB_UI);

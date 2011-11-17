@@ -1056,8 +1056,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_MoveOrResizeStarted)
 IPC_MESSAGE_ROUTED0(ViewMsg_Move_ACK)
 
 // Used to instruct the RenderView to send back updates to the preferred size.
-IPC_MESSAGE_ROUTED1(ViewMsg_EnablePreferredSizeChangedMode,
-                    int /*flags*/)
+IPC_MESSAGE_ROUTED0(ViewMsg_EnablePreferredSizeChangedMode)
 
 // Changes the text direction of the currently selected input field (if any).
 IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,

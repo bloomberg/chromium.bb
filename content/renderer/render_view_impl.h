@@ -776,7 +776,7 @@ class RenderViewImpl : public RenderWidget,
   void OnDragTargetDragOver(const gfx::Point& client_pt,
                             const gfx::Point& screen_pt,
                             WebKit::WebDragOperationsMask operations_allowed);
-  void OnEnablePreferredSizeChangedMode(int flags);
+  void OnEnablePreferredSizeChangedMode();
   void OnEnumerateDirectoryResponse(int id, const std::vector<FilePath>& paths);
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnFileChooserResponse(const std::vector<FilePath>& paths);

@@ -3818,8 +3818,7 @@ void RenderViewImpl::OnFileChooserResponse(const std::vector<FilePath>& paths) {
   }
 }
 
-void RenderViewImpl::OnEnablePreferredSizeChangedMode(int flags) {
-  DCHECK(flags != kPreferredSizeNothing);
+void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
   if (send_preferred_size_changes_)
     return;
   send_preferred_size_changes_ = true;

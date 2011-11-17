@@ -439,7 +439,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void DisableScrollbarsForThreshold(const gfx::Size& size);
 
   // Instructs the RenderView to send back updates to the preferred size.
-  void EnablePreferredSizeMode(int flags);
+  void EnablePreferredSizeMode();
 
   // Executes custom context menu action that was provided from WebKit.
   void ExecuteCustomContextMenuCommand(

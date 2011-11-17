@@ -18,7 +18,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -578,8 +577,7 @@ RenderViewHost* Panel::GetRenderViewHost() const {
 
 void Panel::EnableAutoResize(RenderViewHost* render_view_host) {
   DCHECK(render_view_host);
-  render_view_host->EnablePreferredSizeMode(
-      kPreferredSizeWidth | kPreferredSizeHeightThisIsSlow);
+  render_view_host->EnablePreferredSizeMode();
   RequestRenderViewHostToDisableScrollbars(render_view_host);
 }
 
