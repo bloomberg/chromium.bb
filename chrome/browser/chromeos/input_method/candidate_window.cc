@@ -836,6 +836,9 @@ CandidateWindowView::CandidateWindowView(views::Widget* parent_frame)
       previous_annotation_column_width_(0) {
 }
 
+CandidateWindowView::~CandidateWindowView() {
+}
+
 void CandidateWindowView::Init() {
   // Set the background and the border of the view.
   set_background(

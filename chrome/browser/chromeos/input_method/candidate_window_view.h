@@ -29,7 +29,7 @@ class CandidateWindowView : public views::View {
   };
 
   explicit CandidateWindowView(views::Widget* parent_frame);
-  virtual ~CandidateWindowView() {}
+  virtual ~CandidateWindowView();
   void Init();
 
   // Adds the given observer. The ownership is not transferred.
