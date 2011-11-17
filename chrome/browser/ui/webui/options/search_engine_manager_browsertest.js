@@ -18,8 +18,16 @@ SearchEngineManagerWebUITest.prototype = {
   browsePreload: 'chrome://settings/searchEngines',
 };
 
+// See crosbug.com/22673
+GEN('#if defined(OS_CHROMEOS)');
+GEN('#define MAYBE_testOpenSearchEngineManager ' +
+        'DISABLED_testOpenSearchEngineManager');
+GEN('#else');
+GEN('#define MAYBE_testOpenSearchEngineManager testOpenSearchEngineManager');
+GEN('#endif  // defined(OS_CHROMEOS)');
+
 // Test opening the search engine manager has correct location.
-TEST_F('SearchEngineManagerWebUITest', 'testOpenSearchEngineManager',
+TEST_F('SearchEngineManagerWebUITest', 'MAYBE_testOpenSearchEngineManager',
        function() {
          assertEquals(this.browsePreload, document.location.href);
        });
