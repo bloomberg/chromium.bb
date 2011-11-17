@@ -20,6 +20,18 @@ function addAnimation(code) {
 }
 
 /**
+ * Generates css code for fading in an element by animating the height.
+ * @param {number} targetHeight The desired height in pixels after the animation
+ *     ends.
+ * @return {string} The css code for the fade in animation.
+ */
+function getFadeInAnimationCode(targetHeight) {
+  return  '0% { opacity: 0; height: 0; } ' +
+      '80% { height: ' + (targetHeight + 4) + 'px; }' +
+      '100% { opacity: 1; height: ' + targetHeight + 'px; }';
+}
+
+/**
  * Fades in an element. Used for both printing options and error messages
  * appearing underneath the textfields.
  * @param {HTMLElement} el The element to be faded in.
@@ -28,21 +40,17 @@ function fadeInElement(el) {
   if (el.classList.contains('visible'))
     return;
   el.classList.remove('closing');
+  el.hidden = false;
   el.style.height = 'auto';
   var height = el.offsetHeight;
   el.style.height = height + 'px';
-  var animName = addAnimation(
-    '0% { opacity: 0; height: 0; } ' +
-    '80% { height: ' + (height + 4) + 'px; }' +
-    '100% { opacity: 1; height: ' + height + 'px; }');
+  var animName = addAnimation(getFadeInAnimationCode(height));
+  var eventTracker = new EventTracker();
+  eventTracker.add(el, 'webkitAnimationEnd',
+                   onFadeInAnimationEnd.bind(el, eventTracker),
+                   false);
   el.style.webkitAnimationName = animName;
   el.classList.add('visible');
-  el.addEventListener('webkitAnimationEnd', function() {
-    el.style.height = '';
-    el.style.webkitAnimationName = '';
-    fadeInOutCleanup(animName);
-    el.removeEventListener('webkitAnimationEnd', arguments.callee, false);
-  }, false );
 }
 
 /**
@@ -56,16 +64,41 @@ function fadeOutElement(el) {
   el.style.height = 'auto';
   var height = el.offsetHeight;
   el.style.height = height + 'px';
-  var animName = addAnimation(
-    '0% { opacity: 1; height: ' + height + 'px; }' +
-    '100% { opacity: 1; height: 0; }');
-  el.style.webkitAnimationName = animName;
+  var animName = addAnimation('');
+  var eventTracker = new EventTracker();
+  eventTracker.add(el, 'webkitTransitionEnd',
+                   onFadeOutTransitionEnd.bind(el, animName, eventTracker),
+                   false );
   el.classList.add('closing');
   el.classList.remove('visible');
-  el.addEventListener('webkitAnimationEnd', function() {
-    fadeInOutCleanup(animName);
-    el.removeEventListener('webkitAnimationEnd', arguments.callee, false);
-  }, false );
+}
+
+/**
+ * Executes when a fade out animation ends.
+ * @param {string} animationName The name of the animation to be removed.
+ * @param {EventTracker} The |EventTracker| object that was used for adding this
+ *     listener.
+ * @param {WebkitTransitionEvent} event The event that triggered this listener.
+ */
+function onFadeOutTransitionEnd(animationName, eventTracker, event) {
+  if (event.propertyName != 'height')
+    return;
+  fadeInOutCleanup(animationName);
+  eventTracker.remove(this, 'webkitTransitionEnd');
+  this.hidden = true;
+}
+
+/**
+ * Executes when a fade in animation ends.
+ * @param{EventTracker} The |EventTracker| object that was used for adding this
+ *     listener.
+ * @param {WebkitAnimationEvent} event The event that triggered this listener.
+ */
+function onFadeInAnimationEnd(eventTracker, event) {
+  this.style.height = '';
+  this.style.webkitAnimationName = '';
+  fadeInOutCleanup(event.animationName);
+  eventTracker.remove(this, 'webkitAnimationEnd');
 }
 
 /**

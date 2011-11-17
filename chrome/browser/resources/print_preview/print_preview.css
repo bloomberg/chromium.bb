@@ -166,7 +166,6 @@ span.hint.closing {
 }
 
 .collapsible {
-  -webkit-transition: color 200ms;
   height: 0;
   overflow: hidden;
 }
