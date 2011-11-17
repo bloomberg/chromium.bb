@@ -8,11 +8,13 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "content/public/browser/browser_thread.h"
+
+class PrintPreviewHandler;
 
 namespace base {
 class DictionaryValue;
@@ -21,6 +23,7 @@ class StringValue;
 
 namespace printing {
 class PrintBackend;
+struct PrinterCapsAndDefaults;
 }
 
 #if defined(UNIT_TEST) && defined(USE_CUPS) && !defined(OS_MACOSX)
@@ -55,6 +58,33 @@ class PrintSystemTaskProxy
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class DeleteTask<PrintSystemTaskProxy>;
+
+#if defined(UNIT_TEST) && defined(USE_CUPS)
+  FRIEND_TEST_ALL_PREFIXES(PrintSystemTaskProxyTest, DetectDuplexModeCUPS);
+  FRIEND_TEST_ALL_PREFIXES(PrintSystemTaskProxyTest, DetectNoDuplexModeCUPS);
+
+  // Only used for testing.
+  PrintSystemTaskProxy();
+#endif
+
+#if defined(USE_CUPS)
+  bool GetPrinterCapabilitiesCUPS(
+      const printing::PrinterCapsAndDefaults& printer_info,
+      const std::string& printer_name,
+      bool* set_color_as_default,
+      int* printer_color_space_for_color,
+      int* printer_color_space_for_black,
+      bool* set_duplex_as_default,
+      int* default_duplex_setting_value);
+#elif defined(OS_WIN)
+  void GetPrinterCapabilitiesWin(
+      const printing::PrinterCapsAndDefaults& printer_info,
+      bool* set_color_as_default,
+      int* printer_color_space_for_color,
+      int* printer_color_space_for_black,
+      bool* set_duplex_as_default,
+      int* default_duplex_setting_value);
+#endif
 
   void SendDefaultPrinter(const std::string* default_printer,
                           const std::string* cloud_print_data);

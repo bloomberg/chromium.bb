@@ -13,8 +13,10 @@
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/printing/print_system_task_proxy.h"
 #include "printing/backend/print_backend.h"
+#include "printing/print_job_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(OS_MACOSX)
 namespace {
 
 // TestEntry stores the printer name and the expected number of options.
@@ -84,27 +86,27 @@ TEST(PrintSystemTaskProxyTest, MarkLpoptionsInPPD) {
                                    user_lpoptions.size()));
   // Specifies the test ppd data.
   std::string test_ppd_data;
-  test_ppd_data.append("*PPD-Adobe: \"4.3\"\n");
-  test_ppd_data.append("\n*OpenGroup: General/General\n\n");
-  test_ppd_data.append("*OpenUI *ColorModel/Color Model: PickOne\n");
-  test_ppd_data.append("*DefaultColorModel: Gray\n");
-  test_ppd_data.append("*ColorModel Gray/Grayscale: \"");
-  test_ppd_data.append("<</cupsColorSpace 0/cupsColorOrder 0>>");
-  test_ppd_data.append("setpagedevice\"\n");
-  test_ppd_data.append("*ColorModel Black/Inverted Grayscale: \"");
-  test_ppd_data.append("<</cupsColorSpace 3/cupsColorOrder 0>>");
-  test_ppd_data.append("setpagedevice\"\n");
-  test_ppd_data.append("*CloseUI: *ColorModel\n");
-  test_ppd_data.append("*OpenUI *Duplex/2-Sided Printing: PickOne\n");
-  test_ppd_data.append("*DefaultDuplex: DuplexTumble\n");
-  test_ppd_data.append("*Duplex None/Off: \"<</Duplex false>>");
-  test_ppd_data.append("setpagedevice\"\n");
-  test_ppd_data.append("*Duplex DuplexNoTumble/LongEdge: \"");
-  test_ppd_data.append("<</Duplex true/Tumble false>>setpagedevice\"\n");
-  test_ppd_data.append("*Duplex DuplexTumble/ShortEdge: \"");
-  test_ppd_data.append("<</Duplex true/Tumble true>>setpagedevice\"\n");
-  test_ppd_data.append("*CloseUI: *Duplex\n\n");
-  test_ppd_data.append("*CloseGroup: General\n");
+  test_ppd_data.append("*PPD-Adobe: \"4.3\"\n\n"
+                       "*OpenGroup: General/General\n\n"
+                       "*OpenUI *ColorModel/Color Model: PickOne\n"
+                       "*DefaultColorModel: Gray\n"
+                       "*ColorModel Gray/Grayscale: \""
+                       "<</cupsColorSpace 0/cupsColorOrder 0>>"
+                       "setpagedevice\"\n"
+                       "*ColorModel Black/Inverted Grayscale: \""
+                       "<</cupsColorSpace 3/cupsColorOrder 0>>"
+                       "setpagedevice\"\n"
+                       "*CloseUI: *ColorModel\n"
+                       "*OpenUI *Duplex/2-Sided Printing: PickOne\n"
+                       "*DefaultDuplex: DuplexTumble\n"
+                       "*Duplex None/Off: \"<</Duplex false>>"
+                       "setpagedevice\"\n"
+                       "*Duplex DuplexNoTumble/LongEdge: \""
+                       "<</Duplex true/Tumble false>>setpagedevice\"\n"
+                       "*Duplex DuplexTumble/ShortEdge: \""
+                       "<</Duplex true/Tumble true>>setpagedevice\"\n"
+                       "*CloseUI: *Duplex\n\n"
+                       "*CloseGroup: General\n");
 
   // Create a test ppd file.
   FilePath ppd_file_path;
@@ -220,4 +222,71 @@ TEST(PrintSystemTaskProxyTest, ParseLpoptionData) {
     EXPECT_EQ(num_options != 0, options != NULL);
     cupsFreeOptions(num_options, options);
   }
+}
+#endif  // !defined(OS_MACOSX)
+
+// Test duplex detection code, which regressed in http://crbug.com/103999.
+TEST(PrintSystemTaskProxyTest, DetectDuplexModeCUPS) {
+  // Specifies the test ppd data.
+  printing::PrinterCapsAndDefaults printer_info;
+  printer_info.printer_capabilities.append(
+      "*PPD-Adobe: \"4.3\"\n\n"
+      "*OpenGroup: General/General\n\n"
+      "*OpenUI *Duplex/Double-Sided Printing: PickOne\n"
+      "*DefaultDuplex: None\n"
+      "*Duplex None/Off: "
+      "\"<</Duplex false>>setpagedevice\"\n"
+      "*Duplex DuplexNoTumble/Long Edge (Standard): "
+      "\"<</Duplex true/Tumble false>>setpagedevice\"\n"
+      "*Duplex DuplexTumble/Short Edge (Flip): "
+      "\"<</Duplex true/Tumble true>>setpagedevice\"\n"
+      "*CloseUI: *Duplex\n\n"
+      "*CloseGroup: General\n");
+
+  bool set_color_as_default = false;
+  bool set_duplex_as_default = false;
+  int printer_color_space_for_color = printing::UNKNOWN_COLOR_MODEL;
+  int printer_color_space_for_black = printing::UNKNOWN_COLOR_MODEL;
+  int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
+
+  scoped_refptr<PrintSystemTaskProxy> test_proxy;
+  bool res = test_proxy->GetPrinterCapabilitiesCUPS(
+      printer_info,
+      "InvalidPrinter",
+      &set_color_as_default,
+      &printer_color_space_for_color,
+      &printer_color_space_for_black,
+      &set_duplex_as_default,
+      &default_duplex_setting_value);
+  ASSERT_TRUE(res);
+  EXPECT_FALSE(set_duplex_as_default);
+  EXPECT_EQ(printing::SIMPLEX, default_duplex_setting_value);
+}
+
+TEST(PrintSystemTaskProxyTest, DetectNoDuplexModeCUPS) {
+  // Specifies the test ppd data.
+  printing::PrinterCapsAndDefaults printer_info;
+  printer_info.printer_capabilities.append(
+      "*PPD-Adobe: \"4.3\"\n\n"
+      "*OpenGroup: General/General\n\n"
+      "*CloseGroup: General\n");
+
+  bool set_color_as_default = false;
+  bool set_duplex_as_default = false;
+  int printer_color_space_for_color = printing::UNKNOWN_COLOR_MODEL;
+  int printer_color_space_for_black = printing::UNKNOWN_COLOR_MODEL;
+  int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
+
+  scoped_refptr<PrintSystemTaskProxy> test_proxy;
+  bool res = test_proxy->GetPrinterCapabilitiesCUPS(
+      printer_info,
+      "InvalidPrinter",
+      &set_color_as_default,
+      &printer_color_space_for_color,
+      &printer_color_space_for_black,
+      &set_duplex_as_default,
+      &default_duplex_setting_value);
+  ASSERT_TRUE(res);
+  EXPECT_FALSE(set_duplex_as_default);
+  EXPECT_EQ(printing::UNKNOWN_DUPLEX_MODE, default_duplex_setting_value);
 }

@@ -14,6 +14,7 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/ui/webui/print_preview_handler.h"
 #include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
@@ -311,6 +312,12 @@ PrintSystemTaskProxy::PrintSystemTaskProxy(
       has_logged_printers_count_(has_logged_printers_count) {
 }
 
+#if defined(UNIT_TEST) && defined(USE_CUPS)
+// Only used for testing.
+PrintSystemTaskProxy::PrintSystemTaskProxy() {
+}
+#endif
+
 PrintSystemTaskProxy::~PrintSystemTaskProxy() {
 }
 
@@ -387,26 +394,18 @@ void PrintSystemTaskProxy::SetupPrinterList(ListValue* printers) {
   delete printers;
 }
 
-void PrintSystemTaskProxy::GetPrinterCapabilities(
-    const std::string& printer_name) {
-  VLOG(1) << "Get printer capabilities start for " << printer_name;
-  printing::PrinterCapsAndDefaults printer_info;
-
-  bool set_color_as_default = false;
-  bool disable_color_options = true;
-  bool set_duplex_as_default = false;
-  int printer_color_space_for_color = printing::UNKNOWN_COLOR_MODEL;
-  int printer_color_space_for_black = printing::UNKNOWN_COLOR_MODEL;
-  int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
-  if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
-                                                 &printer_info)) {
-    return;
-  }
-
 #if defined(USE_CUPS)
+bool PrintSystemTaskProxy::GetPrinterCapabilitiesCUPS(
+    const printing::PrinterCapsAndDefaults& printer_info,
+    const std::string& printer_name,
+    bool* set_color_as_default,
+    int* printer_color_space_for_color,
+    int* printer_color_space_for_black,
+    bool* set_duplex_as_default,
+    int* default_duplex_setting_value) {
   FilePath ppd_file_path;
   if (!file_util::CreateTemporaryFile(&ppd_file_path))
-    return;
+    return false;
 
   int data_size = printer_info.printer_capabilities.length();
   if (data_size != file_util::WriteFile(
@@ -414,7 +413,7 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
                        printer_info.printer_capabilities.data(),
                        data_size)) {
     file_util::Delete(ppd_file_path, false);
-    return;
+    return false;
   }
 
   ppd_file_t* ppd = ppdOpenFile(ppd_file_path.value().c_str());
@@ -431,10 +430,10 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
 
     if (duplex_choice) {
       if (base::strcasecmp(duplex_choice->choice, kDuplexNone) != 0) {
-        set_duplex_as_default = true;
-        default_duplex_setting_value = printing::LONG_EDGE;
+        *set_duplex_as_default = true;
+        *default_duplex_setting_value = printing::LONG_EDGE;
       } else {
-        default_duplex_setting_value = printing::SIMPLEX;
+        *default_duplex_setting_value = printing::SIMPLEX;
       }
     }
 
@@ -442,47 +441,57 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
     ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, NULL);
     if (attr && attr->value)
       is_color_device = ppd->color_device;
-    disable_color_options = !is_color_device;
-    set_color_as_default = is_color_device;
+    *set_color_as_default = is_color_device;
 
     if (!((is_color_device && getBasicColorModelSettings(
-              ppd, &printer_color_space_for_black,
-              &printer_color_space_for_color, &set_color_as_default)) ||
+              ppd, printer_color_space_for_black,
+              printer_color_space_for_color, set_color_as_default)) ||
           getPrintOutModeColorSettings(
-              ppd, &printer_color_space_for_black,
-              &printer_color_space_for_color, &set_color_as_default) ||
+              ppd, printer_color_space_for_black,
+              printer_color_space_for_color, set_color_as_default) ||
           getColorModeSettings(
-              ppd, &printer_color_space_for_black,
-              &printer_color_space_for_color, &set_color_as_default) ||
+              ppd, printer_color_space_for_black,
+              printer_color_space_for_color, set_color_as_default) ||
           getHPColorSettings(
-              ppd, &printer_color_space_for_black,
-              &printer_color_space_for_color, &set_color_as_default) ||
+              ppd, printer_color_space_for_black,
+              printer_color_space_for_color, set_color_as_default) ||
           getProcessColorModelSettings(
-              ppd, &printer_color_space_for_black,
-              &printer_color_space_for_color, &set_color_as_default))) {
+              ppd, printer_color_space_for_black,
+              printer_color_space_for_color, set_color_as_default))) {
       VLOG(1) << "Unknown printer color model";
     }
     ppdClose(ppd);
   }
   file_util::Delete(ppd_file_path, false);
-#elif defined(OS_WIN)
+  return true;
+}
+#endif  // defined(USE_CUPS)
+
+#if defined(OS_WIN)
+void PrintSystemTaskProxy::GetPrinterCapabilitiesWin(
+    const printing::PrinterCapsAndDefaults& printer_info,
+    bool* set_color_as_default,
+    int* printer_color_space_for_color,
+    int* printer_color_space_for_black,
+    bool* set_duplex_as_default,
+    int* default_duplex_setting_value) {
   // According to XPS 1.0 spec, only color printers have psk:Color.
   // Therefore we don't need to parse the whole XML file, we just need to
   // search the string.  The spec can be found at:
   // http://msdn.microsoft.com/en-us/windows/hardware/gg463431.
   if (printer_info.printer_capabilities.find(kPskColor) != std::string::npos)
-    printer_color_space_for_color = printing::COLOR;
+    *printer_color_space_for_color = printing::COLOR;
 
   if ((printer_info.printer_capabilities.find(kPskGray) !=
           std::string::npos) ||
       (printer_info.printer_capabilities.find(kPskMonochrome) !=
           std::string::npos)) {
-    printer_color_space_for_black = printing::GRAY;
+    *printer_color_space_for_black = printing::GRAY;
   }
-  set_color_as_default =
+  *set_color_as_default =
       (printer_info.printer_defaults.find(kPskColor) != std::string::npos);
 
-  set_duplex_as_default =
+  *set_duplex_as_default =
       (printer_info.printer_defaults.find(kPskDuplexFeature) !=
           std::string::npos) &&
       (printer_info.printer_defaults.find(kPskTwoSided) !=
@@ -492,18 +501,53 @@ void PrintSystemTaskProxy::GetPrinterCapabilities(
           std::string::npos) {
       if (printer_info.printer_defaults.find(kPskTwoSided) !=
               std::string::npos) {
-        default_duplex_setting_value = printing::LONG_EDGE;
+        *default_duplex_setting_value = printing::LONG_EDGE;
       } else {
-        default_duplex_setting_value = printing::SIMPLEX;
+        *default_duplex_setting_value = printing::SIMPLEX;
     }
   }
+}
+#endif  // defined(OS_WIN)
+
+void PrintSystemTaskProxy::GetPrinterCapabilities(
+    const std::string& printer_name) {
+  VLOG(1) << "Get printer capabilities start for " << printer_name;
+  printing::PrinterCapsAndDefaults printer_info;
+  if (!print_backend_->GetPrinterCapsAndDefaults(printer_name,
+                                                 &printer_info)) {
+    return;
+  }
+
+  bool set_color_as_default = false;
+  bool set_duplex_as_default = false;
+  int printer_color_space_for_color = printing::UNKNOWN_COLOR_MODEL;
+  int printer_color_space_for_black = printing::UNKNOWN_COLOR_MODEL;
+  int default_duplex_setting_value = printing::UNKNOWN_DUPLEX_MODE;
+
+#if defined(USE_CUPS)
+  if (!GetPrinterCapabilitiesCUPS(printer_info,
+                                  printer_name,
+                                  &set_color_as_default,
+                                  &printer_color_space_for_color,
+                                  &printer_color_space_for_black,
+                                  &set_duplex_as_default,
+                                  &default_duplex_setting_value)) {
+    return;
+  }
+#elif defined(OS_WIN)
+  GetPrinterCapabilitiesWin(printer_info,
+                            &set_color_as_default,
+                            &printer_color_space_for_color,
+                            &printer_color_space_for_black,
+                            &set_duplex_as_default,
+                            &default_duplex_setting_value);
 #else
   NOTIMPLEMENTED();
 #endif
-  disable_color_options = !printer_color_space_for_color ||
-                          !printer_color_space_for_black ||
-                          (printer_color_space_for_color ==
-                           printer_color_space_for_black);
+  bool disable_color_options = (!printer_color_space_for_color ||
+                                !printer_color_space_for_black ||
+                                (printer_color_space_for_color ==
+                                 printer_color_space_for_black));
 
   DictionaryValue settings_info;
   settings_info.SetBoolean(kDisableColorOption, disable_color_options);

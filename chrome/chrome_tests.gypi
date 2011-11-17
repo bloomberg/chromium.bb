@@ -2354,7 +2354,7 @@
             ['exclude', '^browser/importer/'],
           ],
         }],
-        ['use_cups==1 and OS!="mac"', {
+        ['use_cups==1', {
           'defines': [
             'USE_CUPS',
           ],
