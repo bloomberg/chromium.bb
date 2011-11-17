@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
@@ -157,8 +158,8 @@ class WindowSizer {
       gfx::Rect* bounds) const;
 
   // Providers for persistent storage and monitor metrics.
-  StateProvider* state_provider_;
-  MonitorInfoProvider* monitor_info_provider_;
+  scoped_ptr<StateProvider> state_provider_;
+  scoped_ptr<MonitorInfoProvider> monitor_info_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSizer);
 };

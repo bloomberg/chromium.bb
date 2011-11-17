@@ -102,18 +102,13 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
 ///////////////////////////////////////////////////////////////////////////////
 // WindowSizer, public:
 
-WindowSizer::WindowSizer(
-    StateProvider* state_provider,
-    MonitorInfoProvider* monitor_info_provider)
+WindowSizer::WindowSizer(StateProvider* state_provider,
+                         MonitorInfoProvider* monitor_info_provider)
     : state_provider_(state_provider),
       monitor_info_provider_(monitor_info_provider) {
 }
 
 WindowSizer::~WindowSizer() {
-  if (state_provider_)
-    delete state_provider_;
-  if (monitor_info_provider_)
-    delete monitor_info_provider_;
 }
 
 // static
@@ -146,7 +141,8 @@ void WindowSizer::DetermineWindowBounds(const gfx::Rect& specified_bounds,
 
 bool WindowSizer::GetLastWindowBounds(gfx::Rect* bounds) const {
   DCHECK(bounds);
-  if (!state_provider_ || !state_provider_->GetLastActiveWindowState(bounds))
+  if (!state_provider_.get() ||
+      !state_provider_->GetLastActiveWindowState(bounds))
     return false;
   gfx::Rect last_window_bounds = *bounds;
   bounds->Offset(kWindowTilePixels, kWindowTilePixels);
@@ -159,7 +155,7 @@ bool WindowSizer::GetLastWindowBounds(gfx::Rect* bounds) const {
 bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds) const {
   DCHECK(bounds);
   gfx::Rect saved_work_area;
-  if (!state_provider_ ||
+  if (!state_provider_.get() ||
       !state_provider_->GetPersistentState(bounds, &saved_work_area))
     return false;
   AdjustBoundsToBeVisibleOnMonitorContaining(*bounds, saved_work_area, bounds);
@@ -168,7 +164,7 @@ bool WindowSizer::GetSavedWindowBounds(gfx::Rect* bounds) const {
 
 void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
   DCHECK(default_bounds);
-  DCHECK(monitor_info_provider_);
+  DCHECK(monitor_info_provider_.get());
 
   gfx::Rect work_area = monitor_info_provider_->GetPrimaryMonitorWorkArea();
 
@@ -201,7 +197,7 @@ void WindowSizer::GetDefaultWindowBounds(gfx::Rect* default_bounds) const {
 }
 
 bool WindowSizer::PositionIsOffscreen(int position, Edge edge) const {
-  DCHECK(monitor_info_provider_);
+  DCHECK(monitor_info_provider_.get());
   size_t monitor_count = monitor_info_provider_->GetMonitorCount();
   for (size_t i = 0; i < monitor_count; ++i) {
     gfx::Rect work_area = monitor_info_provider_->GetWorkAreaAt(i);
@@ -239,7 +235,7 @@ void WindowSizer::AdjustBoundsToBeVisibleOnMonitorContaining(
     const gfx::Rect& saved_work_area,
     gfx::Rect* bounds) const {
   DCHECK(bounds);
-  DCHECK(monitor_info_provider_);
+  DCHECK(monitor_info_provider_.get());
 
   // Find the size of the work area of the monitor that intersects the bounds
   // of the anchor window.
