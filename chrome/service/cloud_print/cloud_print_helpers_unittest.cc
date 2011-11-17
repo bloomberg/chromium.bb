@@ -78,7 +78,7 @@ void CheckURLs(const GURL& server_base_url) {
 
   url = CloudPrintHelpers::GetUrlForUserMessage(server_base_url,
                                                 "blahmessageid");
-  expected_url = base::StringPrintf("%suser/message?code=blahmessageid",
+  expected_url = base::StringPrintf("%smessage?code=blahmessageid",
                                     expected_url_base.c_str());
   EXPECT_EQ(expected_url, url.spec());
 
