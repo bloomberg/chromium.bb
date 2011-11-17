@@ -19,6 +19,14 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   static UpgradeDetectorChromeos* GetInstance();
 
+  // Initializes the object. Starts observing changes from the update
+  // engine.
+  void Init();
+
+  // Shuts down the object. Stops observing observe changes from the
+  // update engine.
+  void Shutdown();
+
  private:
   friend struct DefaultSingletonTraits<UpgradeDetectorChromeos>;
 
@@ -36,6 +44,7 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // After we detect an upgrade we start a recurring timer to see if enough time
   // has passed and we should start notifying the user.
   base::RepeatingTimer<UpgradeDetectorChromeos> upgrade_notification_timer_;
+  bool initialized_;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_UPGRADE_DETECTOR_CHROMEOS_H_

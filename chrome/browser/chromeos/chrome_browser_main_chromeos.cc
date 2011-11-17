@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/net/network_change_notifier_chromeos.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -81,6 +82,11 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+  // Shutdown the upgrade detector for Chrome OS. The upgrade detector
+  // stops monitoring changes from the update engine.
+  if (UpgradeDetectorChromeos::GetInstance())
+    UpgradeDetectorChromeos::GetInstance()->Shutdown();
+
   // Shutdown the network change notifier for Chrome OS. The network
   // change notifier stops monitoring changes from the power manager and
   // the network manager.
@@ -179,6 +185,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // change notifier starts to monitor changes from the power manager and
   // the network manager.
   chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Init();
+
+  // Likewise, initialize the upgrade detector for Chrome OS. The upgrade
+  // detector starts to monitor changes from the update engine.
+  UpgradeDetectorChromeos::GetInstance()->Init();
 
   // For http://crosbug.com/p/5795 and http://crosbug.com/p/6245.
   // Enable Num Lock on X start up.

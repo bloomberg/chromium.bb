@@ -53,7 +53,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     // just after creating the update screen, so the expectations for that
     // should be set up here.
     EXPECT_CALL(*mock_update_library_, AddObserver(_))
-        .Times(1);
+        .Times(AtLeast(1));
     EXPECT_CALL(*mock_update_library_, RemoveObserver(_))
         .Times(AtLeast(1));
     EXPECT_CALL(*mock_update_library_, RequestUpdateCheck(_,_))

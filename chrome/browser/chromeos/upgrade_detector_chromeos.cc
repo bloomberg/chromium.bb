@@ -15,12 +15,22 @@ const int kNotifyCycleTimeMs = 20 * 60 * 1000;  // 20 minutes.
 
 }  // namespace
 
-UpgradeDetectorChromeos::UpgradeDetectorChromeos() {
-  if (chromeos::CrosLibrary::Get())
-    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(this);
+UpgradeDetectorChromeos::UpgradeDetectorChromeos() : initialized_(false) {
 }
 
 UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {
+}
+
+void UpgradeDetectorChromeos::Init() {
+  if (chromeos::CrosLibrary::Get())
+    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->AddObserver(this);
+  initialized_ = true;
+}
+
+void UpgradeDetectorChromeos::Shutdown() {
+  // Init() may not be called from tests (ex. BrowserMainTest).
+  if (!initialized_)
+    return;
   if (chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Get()->GetUpdateLibrary()->RemoveObserver(this);
 }
