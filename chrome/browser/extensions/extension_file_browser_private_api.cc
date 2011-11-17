@@ -275,9 +275,9 @@ base::DictionaryValue* MountPointToValue(Profile* profile,
 
     if (mount_point_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
       GURL source_url;
-      if (FileManagerUtil::ConvertFileToFileSystemUrl(profile,
+      if (file_manager_util::ConvertFileToFileSystemUrl(profile,
               FilePath(mount_point_info.source_path),
-              FileManagerUtil::GetFileBrowserExtensionUrl().GetOrigin(),
+              file_manager_util::GetFileBrowserExtensionUrl().GetOrigin(),
               &source_url)) {
         mount_info->SetString("sourceUrl", source_url.spec());
       }
@@ -288,7 +288,7 @@ base::DictionaryValue* MountPointToValue(Profile* profile,
     FilePath relative_mount_path;
     // Convert mount point path to relative path with the external file system
     // exposed within File API.
-    if (FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile,
+    if (file_manager_util::ConvertFileToRelativeFileSystemPath(profile,
             FilePath(mount_point_info.mount_path),
             &relative_mount_path)) {
       mount_info->SetString("mountPath", relative_mount_path.value());
@@ -1124,8 +1124,8 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
   for (FilePathList::const_iterator iter = files.begin();
        iter != files.end();
        ++iter) {
-    FileManagerUtil::ViewItem(*iter,
-                              internal_task_id == kEnqueueTaskId ||
+    file_manager_util::ViewItem(*iter,
+                                internal_task_id == kEnqueueTaskId ||
                                 // Start the first one, enqueue others.
                                 iter != files.begin());
   }
@@ -1465,7 +1465,7 @@ bool GetVolumeMetadataFunction::RunImpl() {
     std::string mount_path;
     if (!volume->mount_path().empty()) {
       FilePath relative_mount_path;
-      FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile_,
+      file_manager_util::ConvertFileToRelativeFileSystemPath(profile_,
           FilePath(volume->mount_path()), &relative_mount_path);
       mount_path = relative_mount_path.value();
     }

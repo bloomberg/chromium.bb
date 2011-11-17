@@ -16,47 +16,41 @@ class Profile;
 
 extern const char kFileBrowserDomain[];
 
-// Helper class for wiring file browser component extension with the rest of UI.
-class FileManagerUtil {
- public:
-  // Gets base file browser url.
-  static GURL GetFileBrowserExtensionUrl();
-  static GURL GetFileBrowserUrl();
-  static GURL GetMediaPlayerUrl();
-  static GURL GetMediaPlayerPlaylistUrl();
+// File manager helper methods.
+namespace file_manager_util {
 
-  // Converts |full_file_path| into external filesystem: url. Returns false
-  // if |full_file_path| is not managed by the external filesystem provider.
-  static bool ConvertFileToFileSystemUrl(Profile* profile,
-      const FilePath& full_file_path, const GURL& origin_url, GURL* url);
+// Gets base file browser url.
+GURL GetFileBrowserExtensionUrl();
+GURL GetFileBrowserUrl();
+GURL GetMediaPlayerUrl();
+GURL GetMediaPlayerPlaylistUrl();
 
-  // Converts |full_file_path| into |relative_path| within the external provider
-  // in File API. Returns false if |full_file_path| is not managed by the
-  // external filesystem provider.
-  static bool ConvertFileToRelativeFileSystemPath(Profile* profile,
-      const FilePath& full_file_path, FilePath* relative_path);
+// Converts |full_file_path| into external filesystem: url. Returns false
+// if |full_file_path| is not managed by the external filesystem provider.
+bool ConvertFileToFileSystemUrl(Profile* profile,
+    const FilePath& full_file_path, const GURL& origin_url, GURL* url);
 
-  // Gets base file browser url for.
-  static GURL GetFileBrowserUrlWithParams(
-      SelectFileDialog::Type type,
-      const string16& title,
-      const FilePath& default_virtual_path,
-      const SelectFileDialog::FileTypeInfo* file_types,
-      int file_type_index,
-      const FilePath::StringType& default_extension);
+// Converts |full_file_path| into |relative_path| within the external provider
+// in File API. Returns false if |full_file_path| is not managed by the
+// external filesystem provider.
+bool ConvertFileToRelativeFileSystemPath(Profile* profile,
+    const FilePath& full_file_path, FilePath* relative_path);
 
-  // Opens file browser UI in its own tab on file system location defined with
-  // |dir|.
-  static void ViewFolder(const FilePath& dir);
+// Gets base file browser url for.
+GURL GetFileBrowserUrlWithParams(
+    SelectFileDialog::Type type,
+    const string16& title,
+    const FilePath& default_virtual_path,
+    const SelectFileDialog::FileTypeInfo* file_types,
+    int file_type_index,
+    const FilePath::StringType& default_extension);
 
-  static void ViewItem(const FilePath& full_path, bool enqueue);
+// Opens file browser UI in its own tab on file system location defined with
+// |dir|.
+void ViewFolder(const FilePath& dir);
 
- private:
-  FileManagerUtil() {}
-  // Helper to convert numeric dialog type to a string.
-  static std::string GetDialogTypeAsString(SelectFileDialog::Type dialog_type);
+void ViewItem(const FilePath& full_path, bool enqueue);
 
-  DISALLOW_COPY_AND_ASSIGN(FileManagerUtil);
-};
+}  // namespace file_manager_util
 
 #endif  // CHROME_BROWSER_EXTENSIONS_FILE_MANAGER_UTIL_H_

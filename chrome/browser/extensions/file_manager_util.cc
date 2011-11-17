@@ -38,6 +38,7 @@ using content::BrowserThread;
 #define FILEBROWSER_DOMAIN "hhaomjibdihmijegdhdafkllkbggdgoj"
 const char kFileBrowserDomain[] = FILEBROWSER_DOMAIN;
 
+namespace file_manager_util {
 namespace {
 
 #define FILEBROWSER_URL(PATH) \
@@ -135,30 +136,57 @@ int UMAExtensionIndex(const char *ext,
   return 0;
 }
 
+// Convert numeric dialog type to a string.
+std::string GetDialogTypeAsString(
+    SelectFileDialog::Type dialog_type) {
+  std::string type_str;
+  switch (dialog_type) {
+    case SelectFileDialog::SELECT_NONE:
+      type_str = "full-page";
+      break;
+
+    case SelectFileDialog::SELECT_FOLDER:
+      type_str = "folder";
+      break;
+
+    case SelectFileDialog::SELECT_SAVEAS_FILE:
+      type_str = "saveas-file";
+      break;
+
+    case SelectFileDialog::SELECT_OPEN_FILE:
+      type_str = "open-file";
+      break;
+
+    case SelectFileDialog::SELECT_OPEN_MULTI_FILE:
+      type_str = "open-multi-file";
+      break;
+
+    default:
+      NOTREACHED();
+  }
+
+  return type_str;
+}
+
 }  // namespace
 
-// static
-GURL FileManagerUtil::GetFileBrowserExtensionUrl() {
+GURL GetFileBrowserExtensionUrl() {
   return GURL(kFileBrowserExtensionUrl);
 }
 
-// static
-GURL FileManagerUtil::GetFileBrowserUrl() {
+GURL GetFileBrowserUrl() {
   return GURL(kBaseFileBrowserUrl);
 }
 
-// static
-GURL FileManagerUtil::GetMediaPlayerUrl() {
+GURL GetMediaPlayerUrl() {
   return GURL(kMediaPlayerUrl);
 }
 
-// static
-GURL FileManagerUtil::GetMediaPlayerPlaylistUrl() {
+GURL GetMediaPlayerPlaylistUrl() {
   return GURL(kMediaPlayerPlaylistUrl);
 }
 
-// static
-bool FileManagerUtil::ConvertFileToFileSystemUrl(
+bool ConvertFileToFileSystemUrl(
     Profile* profile, const FilePath& full_file_path, const GURL& origin_url,
     GURL* url) {
   FilePath virtual_path;
@@ -173,8 +201,7 @@ bool FileManagerUtil::ConvertFileToFileSystemUrl(
   return true;
 }
 
-// static
-bool FileManagerUtil::ConvertFileToRelativeFileSystemPath(
+bool ConvertFileToRelativeFileSystemPath(
     Profile* profile, const FilePath& full_file_path, FilePath* virtual_path) {
   fileapi::FileSystemPathManager* path_manager =
       profile->GetFileSystemContext()->path_manager();
@@ -190,8 +217,7 @@ bool FileManagerUtil::ConvertFileToRelativeFileSystemPath(
   return true;
 }
 
-// static
-GURL FileManagerUtil::GetFileBrowserUrlWithParams(
+GURL GetFileBrowserUrlWithParams(
     SelectFileDialog::Type type,
     const string16& title,
     const FilePath& default_virtual_path,
@@ -234,21 +260,19 @@ GURL FileManagerUtil::GetFileBrowserUrlWithParams(
 
   // kChromeUIFileManagerURL could not be used since query parameters are not
   // supported for it.
-  std::string url = FileManagerUtil::GetFileBrowserUrl().spec() +
+  std::string url = GetFileBrowserUrl().spec() +
                     '?' + net::EscapeUrlEncodedData(json_args, false);
   return GURL(url);
 }
 
-// static
-void FileManagerUtil::ViewFolder(const FilePath& dir) {
+void ViewFolder(const FilePath& dir) {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
 
   FilePath virtual_path;
-  if (!FileManagerUtil::ConvertFileToRelativeFileSystemPath(browser->profile(),
-                                                            dir,
-                                                            &virtual_path)) {
+  if (!ConvertFileToRelativeFileSystemPath(browser->profile(), dir,
+                                           &virtual_path)) {
     return;
   }
 
@@ -259,12 +283,11 @@ void FileManagerUtil::ViewFolder(const FilePath& dir) {
   browser->ShowSingletonTabRespectRef(GURL(url));
 }
 
-// static
-void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
+void ViewItem(const FilePath& full_path, bool enqueue) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     bool result = BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&FileManagerUtil::ViewItem, full_path, enqueue));
+        base::Bind(&ViewItem, full_path, enqueue));
     DCHECK(result);
     return;
   }
@@ -321,34 +344,5 @@ void FileManagerUtil::ViewItem(const FilePath& full_path, bool enqueue) {
           IDS_FILEBROWSER_ERROR_VIEWING_FILE));
 }
 
-// static
-std::string FileManagerUtil::GetDialogTypeAsString(
-    SelectFileDialog::Type dialog_type) {
-  std::string type_str;
-  switch (dialog_type) {
-    case SelectFileDialog::SELECT_NONE:
-      type_str = "full-page";
-      break;
+}  // namespace file_manager_util
 
-    case SelectFileDialog::SELECT_FOLDER:
-      type_str = "folder";
-      break;
-
-    case SelectFileDialog::SELECT_SAVEAS_FILE:
-      type_str = "saveas-file";
-      break;
-
-    case SelectFileDialog::SELECT_OPEN_FILE:
-      type_str = "open-file";
-      break;
-
-    case SelectFileDialog::SELECT_OPEN_MULTI_FILE:
-      type_str = "open-multi-file";
-      break;
-
-    default:
-      NOTREACHED();
-  }
-
-  return type_str;
-}

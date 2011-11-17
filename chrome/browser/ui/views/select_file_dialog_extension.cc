@@ -215,7 +215,7 @@ void SelectFileDialogExtension::SelectFileImpl(
     return;
 
   FilePath virtual_path;
-  if (!FileManagerUtil::ConvertFileToRelativeFileSystemPath(
+  if (!file_manager_util::ConvertFileToRelativeFileSystemPath(
           owner_browser->profile(), default_path, &virtual_path)) {
     virtual_path = default_path.BaseName();
   }
@@ -223,7 +223,7 @@ void SelectFileDialogExtension::SelectFileImpl(
   hasMultipleFileTypeChoices_ =
       file_types ? file_types->extensions.size() > 1 : true;
 
-  GURL file_browser_url = FileManagerUtil::GetFileBrowserUrlWithParams(
+  GURL file_browser_url = file_manager_util::GetFileBrowserUrlWithParams(
       type, title, virtual_path, file_types, file_type_index,
       default_extension);
 

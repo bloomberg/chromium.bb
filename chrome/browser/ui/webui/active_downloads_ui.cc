@@ -250,7 +250,7 @@ void ActiveDownloadsHandler::HandleCancelDownload(const ListValue* args) {
 }
 
 void ActiveDownloadsHandler::HandleShowAllFiles(const ListValue* args) {
-  FileManagerUtil::ViewFolder(
+  file_manager_util::ViewFolder(
       DownloadPrefs::FromDownloadManager(download_manager_)->download_path());
 }
 

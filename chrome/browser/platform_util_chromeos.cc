@@ -34,13 +34,12 @@ void OpenFileBrowserOnUIThread(const FilePath& dir) {
     return;
 
   FilePath virtual_path;
-  if (!FileManagerUtil::ConvertFileToRelativeFileSystemPath(browser->profile(),
-                                                            dir,
-                                                            &virtual_path)) {
+  if (!file_manager_util::ConvertFileToRelativeFileSystemPath(
+      browser->profile(), dir, &virtual_path)) {
     return;
   }
 
-  GURL url = FileManagerUtil::GetFileBrowserUrlWithParams(
+  GURL url = file_manager_util::GetFileBrowserUrlWithParams(
      SelectFileDialog::SELECT_NONE, string16(), virtual_path, NULL, 0,
      FilePath::StringType());
   browser->ShowSingletonTab(url);
@@ -60,9 +59,9 @@ void OpenItemOnFileThread(const FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::Closure callback;
   if (file_util::DirectoryExists(full_path))
-    callback = base::Bind(&FileManagerUtil::ViewFolder, full_path);
+    callback = base::Bind(&file_manager_util::ViewFolder, full_path);
   else
-    callback = base::Bind(&FileManagerUtil::ViewItem, full_path, false);
+    callback = base::Bind(&file_manager_util::ViewItem, full_path, false);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }
 

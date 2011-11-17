@@ -89,8 +89,8 @@ MediaPlayer* MediaPlayer::GetInstance() {
 void MediaPlayer::EnqueueMediaFile(Profile* profile,
                                    const FilePath& file_path) {
   GURL url;
-  if (!FileManagerUtil::ConvertFileToFileSystemUrl(profile, file_path,
-                                                   GetOriginUrl(), &url)) {
+  if (!file_manager_util::ConvertFileToFileSystemUrl(profile, file_path,
+                                                     GetOriginUrl(), &url)) {
   }
   EnqueueMediaFileUrl(url);
 }
@@ -103,8 +103,8 @@ void MediaPlayer::EnqueueMediaFileUrl(const GURL& url) {
 void MediaPlayer::ForcePlayMediaFile(Profile* profile,
                                      const FilePath& file_path) {
   GURL url;
-  if (!FileManagerUtil::ConvertFileToFileSystemUrl(profile, file_path,
-                                                   GetOriginUrl(), &url)) {
+  if (!file_manager_util::ConvertFileToFileSystemUrl(profile, file_path,
+                                                     GetOriginUrl(), &url)) {
     return;
   }
   ForcePlayMediaURL(url);
@@ -286,15 +286,15 @@ net::URLRequestJob* MediaPlayer::MaybeInterceptResponse(
 }
 
 GURL MediaPlayer::GetOriginUrl() const {
-  return FileManagerUtil::GetMediaPlayerUrl().GetOrigin();
+  return file_manager_util::GetMediaPlayerUrl().GetOrigin();
 }
 
 GURL MediaPlayer::GetMediaplayerPlaylistUrl() const {
-  return FileManagerUtil::GetMediaPlayerPlaylistUrl();
+  return file_manager_util::GetMediaPlayerPlaylistUrl();
 }
 
 GURL MediaPlayer::GetMediaPlayerUrl() const {
-  return FileManagerUtil::GetMediaPlayerUrl();
+  return file_manager_util::GetMediaPlayerUrl();
 }
 
 MediaPlayer::MediaPlayer()

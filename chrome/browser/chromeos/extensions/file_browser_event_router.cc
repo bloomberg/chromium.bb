@@ -299,9 +299,9 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
 
   if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
     GURL source_url;
-    if (FileManagerUtil::ConvertFileToFileSystemUrl(profile_,
+    if (file_manager_util::ConvertFileToFileSystemUrl(profile_,
             FilePath(mount_info.source_path),
-            FileManagerUtil::GetFileBrowserExtensionUrl().GetOrigin(),
+            file_manager_util::GetFileBrowserExtensionUrl().GetOrigin(),
             &source_url)) {
       mount_info_value->SetString("sourceUrl", source_url.spec());
     }
@@ -318,7 +318,7 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
       mount_info.mount_condition) {
     // Convert mount point path to relative path with the external file system
     // exposed within File API.
-    if (FileManagerUtil::ConvertFileToRelativeFileSystemPath(profile_,
+    if (file_manager_util::ConvertFileToRelativeFileSystemPath(profile_,
             FilePath(mount_info.mount_path),
             &relative_mount_path)) {
       mount_info_value->SetString("mountPath",
@@ -337,7 +337,7 @@ void ExtensionFileBrowserEventRouter::DispatchMountCompletedEvent(
       mount_info.mount_type == chromeos::MOUNT_TYPE_DEVICE &&
       !mount_info.mount_condition &&
       event == chromeos::disks::DiskMountManager::MOUNTING) {
-    FileManagerUtil::ViewFolder(FilePath(mount_info.mount_path));
+    file_manager_util::ViewFolder(FilePath(mount_info.mount_path));
   }
 }
 
