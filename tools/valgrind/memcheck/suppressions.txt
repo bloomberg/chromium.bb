@@ -5213,6 +5213,16 @@
    fun:_ZN7WebCore14SVGTextMetrics21measureCharacterRangeEPNS_19RenderSVGInlineTextEjj
    fun:_ZNK7WebCore30SVGTextLayoutAttributesBuilder25propagateLayoutAttributesEPNS_12RenderObjectERN3WTF6VectorINS_23SVGTextLayoutAttributesELm0EEERjRt
 }
+{
+   # ProcessSingleton::LinuxWatcher is marked DeleteOnIOThread.  Sometimes it
+   # leaks on shutdown instead of getting deleted.  The destructor doesn't do
+   # anything important, so this shouldn't be a big deal.
+   bug_104578
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16ProcessSingletonC1ERK8FilePath
+   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
