@@ -25,7 +25,12 @@
 set -o nounset
 set -o errexit
 
-CROSS_ARM_TC_PACKAGES="\
+
+# Optional:
+# gdb-arm-linux-gnueabi
+# automake1.9
+# libtool
+readonly CROSS_ARM_TC_PACKAGES="\
   gcc-4.5-arm-linux-gnueabi-base \
   libc6-armel-cross \
   libc6-dev-armel-cross \
@@ -44,11 +49,11 @@ CROSS_ARM_TC_PACKAGES="\
   libmudflap0-dbg-armel-cross
 "
 
-# Optional:
-# gdb-arm-linux-gnueabi
-# automake1.9
-# libtool
-CROSS_ARM_TC_DEP_FILES="\
+# NOTE: the package listing here should be updated using the
+# GeneratePackageListXXX() functions below
+# TODO(robertm): We should probably pull these in from a separte file.
+#                Do this after the GeneratePackageListXXX() have been revised.
+readonly CROSS_ARM_TC_DEP_FILES_64="\
   universe/g/gcc-4.5-armel-cross/cpp-4.5-arm-linux-gnueabi_4.5.2-8ubuntu3cross1.47_amd64.deb \
   universe/g/gcc-4.5-armel-cross/g++-4.5-arm-linux-gnueabi_4.5.2-8ubuntu3cross1.47_amd64.deb \
   universe/g/gcc-4.5-armel-cross/gcc-4.5-arm-linux-gnueabi_4.5.2-8ubuntu3cross1.47_amd64.deb \
@@ -65,6 +70,23 @@ CROSS_ARM_TC_DEP_FILES="\
   main/m/mpfr4/libmpfr4_3.0.0-7_amd64.deb \
   main/c/cloog-ppl/libcloog-ppl0_0.15.9-2_amd64.deb"
 
+readonly CROSS_ARM_TC_DEP_FILES_32="\
+${CROSS_ARM_TC_DEP_FILES_64//_amd64.deb/_i386.deb}"
+
+readonly BUILD_ARCH=$(uname -m)
+if [ "${BUILD_ARCH}" == "i386" ] ||
+   [ "${BUILD_ARCH}" == "i686" ] ; then
+  readonly CROSS_ARM_TC_DEP_FILES="${CROSS_ARM_TC_DEP_FILES_32}"
+  readonly EXTRA_PACKAGES="make"
+elif [ "${BUILD_ARCH}" == "x86_64" ] ; then
+  readonly CROSS_ARM_TC_DEP_FILES="${CROSS_ARM_TC_DEP_FILES_64}"
+  # 32bit compatibility TCs
+  readonly EXTRA_PACKAGES="make ia32-libs libc6-i386"
+else
+  echo "Unknown build arch '${BUILD_ARCH}'"
+  exit -1
+fi
+
 readonly ARMEL_BASE_PACKAGES="\
   libssl-dev \
   libssl0.9.8 \
@@ -78,6 +100,8 @@ readonly ARMEL_BASE_PACKAGES="\
   libxt-dev \
   libxt6"
 
+# NOTE: the package listing here should be updated using the
+# GeneratePackageListXXX() functions below
 readonly ARMEL_BASE_DEP_FILES="\
   main/o/openssl/libssl-dev_0.9.8g-16ubuntu3_armel.deb \
   main/o/openssl/libssl0.9.8_0.9.8g-16ubuntu3_armel.deb \
@@ -90,7 +114,6 @@ readonly ARMEL_BASE_DEP_FILES="\
   main/x/x11proto-core/x11proto-core-dev_7.0.20-1_all.deb \
   main/libx/libxt/libxt-dev_1.0.9-1ubuntu1_armel.deb \
   main/libx/libxt/libxt6_1.0.9-1ubuntu1_armel.deb"
-
 
 readonly ARMEL_EXTRA_PACKAGES="\
   libcups2-dev \
@@ -106,6 +129,8 @@ readonly ARMEL_EXTRA_PACKAGES="\
   zlib1g \
   zlib1g-dev"
 
+# NOTE: the package listing here should be updated using the
+# GeneratePackageListXXX() functions below
 readonly ARMEL_EXTRA_DEP_FILES="
   main/z/zlib/zlib1g_1.2.3.4.dfsg-3ubuntu3_armel.deb \
   main/c/cups/libcups2-dev_1.4.6-5ubuntu1_armel.deb \
@@ -121,11 +146,11 @@ readonly ARMEL_EXTRA_DEP_FILES="
   main/z/zlib/zlib1g-dev_1.2.3.4.dfsg-3ubuntu3_armel.deb"
 
 # this where we get the cross toolchain from for the manual install:
-readonly CROSS_ARM_TC_REPO=http://mirror.pnl.gov/ubuntu/pool
+readonly CROSS_ARM_TC_REPO=http://mirror.pnl.gov/ubuntu
 # this is where we get all the armel packages from
-readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports/pool
+readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports
 #
-readonly PACKAGE_LIST=http://ports.ubuntu.com/ubuntu-ports/dists/natty/main/binary-armel/Packages.bz2
+readonly PACKAGE_LIST="${ARMEL_REPO}/dists/natty/main/binary-armel/Packages.bz2"
 # this where we create the ARMEL "jail"
 readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-trusted
 
@@ -240,7 +265,7 @@ InstallCrossArmBasePackagesManual() {
   SubBanner "Download packages"
   for i in ${CROSS_ARM_TC_DEP_FILES} ; do
     echo $i
-    url=${CROSS_ARM_TC_REPO}/$i
+    url=${CROSS_ARM_TC_REPO}/pool/$i
     file=${dest}/$(basename $i)
     DownloadOrCopy ${url} ${file}
   done
@@ -259,8 +284,7 @@ InstallCrossArmBasePackagesManual() {
   SubBanner "Possibly install additional standard packages"
   # these are needed for the TC packages we are about to install
   sudo apt-get install libelfg0 libgmpxx4ldbl libmpc2 libppl7 libppl-c2
-  # This is needed for qemu
-  sudo apt-get install ia32-libs libc6-i386
+  sudo apt-get install ${EXTRA_PACKAGES}
 
   SubBanner "Install cross arm TC packages"
   sudo dpkg -i ${dest}/*.deb
@@ -323,7 +347,7 @@ InstallMissingArmLibrariesAndHeadersIntoJail() {
   for file in $@ ; do
     local package="${TMP}/armel-packages/${file##*/}"
     Banner "installing ${file}"
-    DownloadOrCopy ${ARMEL_REPO}/${file} ${package}
+    DownloadOrCopy ${ARMEL_REPO}/pool/${file} ${package}
     SubBanner "extracting to ${INSTALL_ROOT}"
     if [[ ! -s ${package} ]] ; then
       echo
