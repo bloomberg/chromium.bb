@@ -80,7 +80,7 @@ class NetworkChangeNotifierLinuxTest : public testing::Test {
   void SendResponse(uint32 state) {
     scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
     dbus::MessageWriter writer(response.get());
-    writer.AppendUint32(state);
+    writer.AppendVariantOfUint32(state);
     RunOnNotifierThread(base::Bind(response_callback_, response.get()));
   }
 
