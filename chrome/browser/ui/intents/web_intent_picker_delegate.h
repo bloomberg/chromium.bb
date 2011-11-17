@@ -20,8 +20,7 @@ class WebIntentPickerDelegate {
   // it manually or otherwise purposefully.
   virtual void OnCancelled() = 0;
 
-  // Callback called when the dialog wants to stop showing (can happen by
-  // cancellation or by the user choosing a service).
+  // Callback called when the dialog stops showing.
   virtual void OnClosing() = 0;
 };
 

@@ -25,9 +25,10 @@ IntentInjector::~IntentInjector() {
 
 void IntentInjector::TabContentsDestroyed(TabContents* tab) {
   if (source_tab_.get() != NULL) {
-    source_tab_->Send(new IntentsMsg_WebIntentReply(
+    scoped_ptr<IPC::Message::Sender> sender;
+    sender.swap(source_tab_);
+    sender->Send(new IntentsMsg_WebIntentReply(
         0, webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16(), intent_id_));
-    source_tab_.reset(NULL);
   }
 
   delete this;
@@ -96,8 +97,11 @@ void IntentInjector::OnReply(const IPC::Message& message,
     NOTREACHED();
 
   if (source_tab_.get() != NULL) {
-    source_tab_->Send(new IntentsMsg_WebIntentReply(
+    // Swap before use since sending this message may cause
+    // TabContentsDestroyed to be called.
+    scoped_ptr<IPC::Message::Sender> sender;
+    sender.swap(source_tab_);
+    sender->Send(new IntentsMsg_WebIntentReply(
         0, reply_type, data, intent_id));
-    source_tab_.reset(NULL);
   }
 }

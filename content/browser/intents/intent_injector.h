@@ -26,7 +26,8 @@ class Message;
 // Injects an intent into the renderer of a TabContents. The intent dispatch
 // logic will create one of these to take care of passing intent data down into
 // the context of the service, which will be running in the TabContents on which
-// this class is an observer. Deletes itself when the tab is closed.
+// this class is an observer. Attaches to the service tab and deletes itself
+// when that TabContents is closed.
 class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
  public:
   // |tab_contents| must not be NULL.

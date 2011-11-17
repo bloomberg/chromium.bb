@@ -262,7 +262,6 @@ TEST_F(WebIntentPickerControllerTest, Cancel) {
   EXPECT_CALL(*controller_, OnClosing())
       .WillOnce(Invoke(controller_.get(),
                        &TestWebIntentPickerController::BaseOnClosing));
-  EXPECT_CALL(*picker_factory_, ClosePicker(_));
 
   controller_->ShowDialog(NULL, kAction1, kType);
   WaitForDialogToShow();

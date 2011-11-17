@@ -13,6 +13,7 @@
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/intents/web_intents_registry_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
 #include "chrome/browser/ui/intents/web_intent_picker_factory.h"
@@ -114,7 +115,8 @@ WebIntentPickerController::WebIntentPickerController(
           picker_(NULL),
           pending_async_count_(0),
           routing_id_(0),
-          intent_id_(0) {
+          intent_id_(0),
+          service_tab_(NULL) {
   NavigationController* controller = &wrapper->controller();
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::Source<NavigationController>(controller));
@@ -176,12 +178,21 @@ class InvokingTabObserver : public TabContentsObserver {
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE {
     if (intent_injector_)
       intent_injector_->SourceTabContentsDestroyed(tab);
+    wrapper_ = NULL;
   }
 
   virtual bool Send(IPC::Message* message) OVERRIDE {
     // The injector can return exactly one message. After that we don't talk
     // to it again, since it may have deleted itself.
     intent_injector_ = NULL;
+
+    if (!wrapper_)
+      return false;
+
+    MessageLoopForUI::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&WebIntentPickerController::OnSendReturnMessage,
+                   base::Unretained(wrapper_->web_intent_picker_controller())));
 
     message->set_routing_id(routing_id_);
     return wrapper_->Send(message);
@@ -221,6 +232,7 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
     params.profile = wrapper_->profile();
     browser::Navigate(&params);
     new_tab_contents = params.target_contents->tab_contents();
+    service_tab_ = new_tab_contents;
 
     ClosePicker();
   }
@@ -233,12 +245,33 @@ void WebIntentPickerController::OnServiceChosen(size_t index) {
 
 void WebIntentPickerController::OnCancelled() {
   InvokingTabObserver forwarder(wrapper_, NULL, routing_id_);
-  forwarder.Send(new IntentsMsg_WebIntentReply(
-      0, webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16(), intent_id_));
+  if (service_tab_) {
+    forwarder.Send(new IntentsMsg_WebIntentReply(
+        0, webkit_glue::WEB_INTENT_SERVICE_TAB_CLOSED, string16(), intent_id_));
+  } else {
+    forwarder.Send(new IntentsMsg_WebIntentReply(
+        0, webkit_glue::WEB_INTENT_PICKER_CANCELLED, string16(), intent_id_));
+  }
+
+  ClosePicker();
 }
 
 void WebIntentPickerController::OnClosing() {
+}
+
+void WebIntentPickerController::OnSendReturnMessage() {
   ClosePicker();
+
+  if (service_tab_) {
+    int index = TabStripModel::kNoTab;
+    Browser* browser = Browser::GetBrowserForController(
+        &service_tab_->controller(), &index);
+    if (browser) {
+      browser->tabstrip_model()->CloseTabContentsAt(
+          index, TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+    }
+    service_tab_ = NULL;
+  }
 }
 
 void WebIntentPickerController::OnWebIntentDataAvailable(

@@ -19,6 +19,7 @@
 class Browser;
 class GURL;
 class SkBitmap;
+class TabContents;
 class TabContentsWrapper;
 class WebIntentPicker;
 class WebIntentPickerFactory;
@@ -64,8 +65,13 @@ class WebIntentPickerController : public content::NotificationObserver,
   virtual void OnClosing() OVERRIDE;
 
  private:
+  // Gets a notification when the return message is sent to the source tab,
+  // so we can close the picker dialog or service tab.
+  void OnSendReturnMessage();
+
   friend class WebIntentPickerControllerTest;
   friend class WebIntentPickerControllerBrowserTest;
+  friend class InvokingTabObserver;
   class WebIntentDataFetcher;
   class FaviconFetcher;
 
@@ -121,6 +127,10 @@ class WebIntentPickerController : public content::NotificationObserver,
 
   // The intent ID assigned to this intent by the renderer.
   int intent_id_;
+
+  // Weak pointer to the tab servicing the intent. Remembered in order to
+  // close it when a reply is sent.
+  TabContents* service_tab_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerController);
 };

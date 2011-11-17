@@ -92,6 +92,8 @@ WebIntentPickerGtk::WebIntentPickerGtk(Browser* browser,
       bubble_(NULL),
       browser_(browser) {
   DCHECK(delegate_ != NULL);
+  DCHECK(browser);
+  DCHECK(browser->window());
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(
           browser->window()->GetNativeHandle());
@@ -165,10 +167,8 @@ void WebIntentPickerGtk::SetDefaultServiceIcon(size_t index) {
 void WebIntentPickerGtk::Close() {
   bubble_->Close();
   bubble_ = NULL;
-
-  inline_disposition_tab_contents_.reset();
-  inline_disposition_delegate_.reset();
-  tab_contents_container_.reset();
+  if (inline_disposition_tab_contents_.get())
+    inline_disposition_tab_contents_->tab_contents()->OnCloseStarted();
 }
 
 void WebIntentPickerGtk::BubbleClosing(BubbleGtk* bubble,

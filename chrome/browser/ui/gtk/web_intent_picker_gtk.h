@@ -98,14 +98,14 @@ class WebIntentPickerGtk : public WebIntentPicker,
   // The browser we're in.
   Browser* browser_;
 
-  // TabContentsDelegate for the inline disposition dialog.
-  scoped_ptr<InlineDispositionDelegate> inline_disposition_delegate_;
-
   // Container for the HTML in the inline disposition case.
   scoped_ptr<TabContentsWrapper> inline_disposition_tab_contents_;
 
   // Widget for displaying the HTML in the inline disposition case.
   scoped_ptr<TabContentsContainerGtk> tab_contents_container_;
+
+  // TabContentsDelegate for the inline disposition dialog.
+  scoped_ptr<InlineDispositionDelegate> inline_disposition_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentPickerGtk);
 };
