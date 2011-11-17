@@ -74,8 +74,7 @@ void SyncJsController::UpdateBackendEventHandler() {
     // handlers.
     WeakHandle<JsEventHandler> backend_event_handler =
         (js_event_handlers_.size() > 0) ?
-        WeakHandle<JsEventHandler>(AsWeakPtr()) :
-        WeakHandle<JsEventHandler>();
+        MakeWeakHandle(AsWeakPtr()) : WeakHandle<SyncJsController>();
     js_backend_.Call(FROM_HERE, &JsBackend::SetJsEventHandler,
                      backend_event_handler);
   }

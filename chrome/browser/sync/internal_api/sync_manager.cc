@@ -826,7 +826,7 @@ bool SyncManager::SyncInternal::Init(
   // a freed pointer. This is because UI thread is not shut down.
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                     OnInitializationComplete(
-                        WeakHandle<JsBackend>(weak_ptr_factory_.GetWeakPtr()),
+                        MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()),
                         signed_in));
 
   if (!signed_in && !setup_for_test_mode_)

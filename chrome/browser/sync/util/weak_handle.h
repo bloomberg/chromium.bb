@@ -54,6 +54,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -280,6 +281,17 @@ class WeakHandle {
   explicit WeakHandle(const base::WeakPtr<T>& ptr)
       : core_(new internal::WeakHandleCore<T>(ptr)) {}
 
+  // Allow conversion from WeakHandle<U> to WeakHandle<T> if U is
+  // convertible to T, but we *must* be on |other|'s owner thread.
+  // Note that this doesn't override the regular copy constructor, so
+  // that one can be called on any thread.
+  template <typename U>
+  WeakHandle(const browser_sync::WeakHandle<U>& other)  // NOLINT
+      : core_(
+          other.IsInitialized() ?
+          new internal::WeakHandleCore<T>(other.Get()) :
+          NULL) {}
+
   // Returns true iff this WeakHandle is initialized.  Note that being
   // initialized isn't a guarantee that the underlying object is still
   // alive.
@@ -348,6 +360,11 @@ class WeakHandle {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WeakHandleTest,
+                           TypeConversionConstructor);
+  FRIEND_TEST_ALL_PREFIXES(WeakHandleTest,
+                           TypeConversionConstructorAssignment);
+
   scoped_refptr<internal::WeakHandleCore<T> > core_;
 };
 

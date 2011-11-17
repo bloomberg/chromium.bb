@@ -43,7 +43,7 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
         new NonBlockingInvalidationNotifier(
             notifier_options,
             InvalidationVersionMap(),
-            browser_sync::WeakHandle<InvalidationVersionTracker>(
+            browser_sync::MakeWeakHandle(
                 base::WeakPtr<sync_notifier::InvalidationVersionTracker>()),
             "fake_client_info"));
     invalidation_notifier_->AddObserver(&mock_observer_);

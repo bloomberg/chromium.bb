@@ -311,7 +311,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 
   backend_->Initialize(
       this,
-      WeakHandle<JsEventHandler>(sync_js_controller_.AsWeakPtr()),
+      MakeWeakHandle(sync_js_controller_.AsWeakPtr()),
       sync_service_url_,
       initial_types,
       credentials,

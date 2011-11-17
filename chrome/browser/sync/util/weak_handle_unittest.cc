@@ -14,7 +14,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
-namespace {
 
 using ::testing::_;
 using ::testing::SaveArg;
@@ -43,6 +42,8 @@ class Base {
  private:
   base::WeakPtrFactory<Base> weak_ptr_factory_;
 };
+
+class Derived : public Base, public base::SupportsWeakPtr<Derived> {};
 
 class WeakHandleTest : public ::testing::Test {
  protected:
@@ -260,5 +261,66 @@ TEST_F(WeakHandleTest, InitializedAcrossCopyAssign) {
   PumpLoop();
 }
 
-}  // namespace
+TEST_F(WeakHandleTest, TypeConversionConstructor) {
+  StrictMock<Derived> d;
+  EXPECT_CALL(d, Test()).Times(2);
+
+  const WeakHandle<Derived> weak_handle = MakeWeakHandle(d.AsWeakPtr());
+
+  // Should trigger type conversion constructor.
+  const WeakHandle<Base> base_weak_handle(weak_handle);
+  // Should trigger regular copy constructor.
+  const WeakHandle<Derived> derived_weak_handle(weak_handle);
+
+  EXPECT_TRUE(base_weak_handle.IsInitialized());
+  base_weak_handle.Call(FROM_HERE, &Base::Test);
+
+  EXPECT_TRUE(derived_weak_handle.IsInitialized());
+  // Copy constructor shouldn't construct a new |core_|.
+  EXPECT_EQ(weak_handle.core_.get(), derived_weak_handle.core_.get());
+  derived_weak_handle.Call(FROM_HERE, &Base::Test);
+
+  PumpLoop();
+}
+
+TEST_F(WeakHandleTest, TypeConversionConstructorMakeWeakHandle) {
+  const base::WeakPtr<Derived> weak_ptr;
+
+  // Should trigger type conversion constructor after MakeWeakHandle.
+  WeakHandle<Base> base_weak_handle(MakeWeakHandle(weak_ptr));
+  // Should trigger regular copy constructor after MakeWeakHandle.
+  const WeakHandle<Derived> derived_weak_handle(MakeWeakHandle(weak_ptr));
+
+  EXPECT_TRUE(base_weak_handle.IsInitialized());
+  EXPECT_TRUE(derived_weak_handle.IsInitialized());
+}
+
+TEST_F(WeakHandleTest, TypeConversionConstructorAssignment) {
+  const WeakHandle<Derived> weak_handle =
+      MakeWeakHandle(Derived().AsWeakPtr());
+
+  // Should trigger type conversion constructor before the assignment.
+  WeakHandle<Base> base_weak_handle;
+  base_weak_handle = weak_handle;
+  // Should trigger regular copy constructor before the assignment.
+  WeakHandle<Derived> derived_weak_handle;
+  derived_weak_handle = weak_handle;
+
+  EXPECT_TRUE(base_weak_handle.IsInitialized());
+  EXPECT_TRUE(derived_weak_handle.IsInitialized());
+  // Copy constructor shouldn't construct a new |core_|.
+  EXPECT_EQ(weak_handle.core_.get(), derived_weak_handle.core_.get());
+}
+
+TEST_F(WeakHandleTest, TypeConversionConstructorUninitialized) {
+  const WeakHandle<Base> base_weak_handle = WeakHandle<Derived>();
+  EXPECT_FALSE(base_weak_handle.IsInitialized());
+}
+
+TEST_F(WeakHandleTest, TypeConversionConstructorUninitializedAssignment) {
+  WeakHandle<Base> base_weak_handle;
+  base_weak_handle = WeakHandle<Derived>();
+  EXPECT_FALSE(base_weak_handle.IsInitialized());
+}
+
 }  // namespace browser_sync

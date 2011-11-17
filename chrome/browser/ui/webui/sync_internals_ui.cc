@@ -113,7 +113,7 @@ void SyncInternalsUI::OnWebUISend(const GURL& source_url,
     if (js_controller_.get()) {
       js_controller_->ProcessJsMessage(
           name, args,
-          WeakHandle<JsReplyHandler>(weak_ptr_factory_.GetWeakPtr()));
+          MakeWeakHandle(weak_ptr_factory_.GetWeakPtr()));
     } else {
       LOG(WARNING) << "No sync service; dropping message " << name
                    << " with args " << args.ToString();
