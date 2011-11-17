@@ -29,10 +29,16 @@ class ResourceCreationImpl : public ::ppapi::FunctionGroupBase,
                                   PP_Resource config_id,
                                   PPB_Audio_Callback audio_callback,
                                   void* user_data) OVERRIDE;
-  virtual PP_Resource CreateAudioTrusted(PP_Instance instace) OVERRIDE;
+  virtual PP_Resource CreateAudioTrusted(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateAudioConfig(PP_Instance instance,
                                         PP_AudioSampleRate sample_rate,
                                         uint32_t sample_frame_count) OVERRIDE;
+  virtual PP_Resource CreateAudioInput(
+      PP_Instance instance,
+      PP_Resource config_id,
+      PPB_AudioInput_Callback audio_input_callback,
+      void* user_data) OVERRIDE;
+  virtual PP_Resource CreateAudioInputTrusted(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
                                    uint32_t size) OVERRIDE;

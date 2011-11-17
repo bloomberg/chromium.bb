@@ -34,7 +34,11 @@ class MockPluginDelegate : public PluginDelegate {
       media::VideoCapture::EventHandler* handler);
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
-                                     PlatformAudio::Client* client);
+                                     PlatformAudioCommonClient* client);
+  virtual PlatformAudioInput* CreateAudioInput(
+      uint32_t sample_rate,
+      uint32_t sample_count,
+      PlatformAudioCommonClient* client);
   virtual PpapiBroker* ConnectToPpapiBroker(PPB_Broker_Impl* client);
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
