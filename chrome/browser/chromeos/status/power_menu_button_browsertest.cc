@@ -28,7 +28,10 @@ class PowerMenuButtonTest : public InProcessBrowserTest {
 
   string16 CallPowerChangedAndGetTooltipText(const PowerSupplyStatus& status) {
     PowerMenuButton* power = GetPowerMenuButton();
+
     power->PowerChanged(status);
+    EXPECT_TRUE(power->IsVisible());
+
     string16 tooltip;
     // There is static_cast<StatusAreaButton*> because GetTootipText is also
     // declared in MenuDelegate
@@ -58,11 +61,30 @@ IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryMissingTest) {
   status.battery_is_present    = false;
   status.battery_percentage    = 42.0;
   status.battery_is_full       = false;
+  status.line_power_on         = true;
+  status.battery_seconds_to_empty = 42;
+  status.battery_seconds_to_full  = 24;
+
+  PowerMenuButton* power = GetPowerMenuButton();
+  power->PowerChanged(status);
+
+  EXPECT_FALSE(power->IsVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryNotSupportedTest) {
+  PowerSupplyStatus status;
+  // No battery present.
+  status.battery_is_present    = false;
+  status.battery_percentage    = 42.0;
+  status.battery_is_full       = false;
   status.line_power_on         = false;
   status.battery_seconds_to_empty = 42;
   status.battery_seconds_to_full  = 24;
 
-  EXPECT_NE(tooltip_before, CallPowerChangedAndGetTooltipText(status));
+  PowerMenuButton* power = GetPowerMenuButton();
+  power->PowerChanged(status);
+
+  EXPECT_FALSE(power->IsVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(PowerMenuButtonTest, BatteryChargedTest) {

@@ -116,10 +116,6 @@ SkBitmap GetImageWithPercentage(ImageSize size, ImageType type,
   return GetImage(size, type, battery_index);
 }
 
-SkBitmap GetMissingImage(ImageSize size) {
-  return GetImage(size, DISCHARGING, kNumPowerImages);
-}
-
 SkBitmap GetUnknownImage(ImageSize size) {
   return GetImage(size, CHARGING, kNumPowerImages);
 }
@@ -157,12 +153,13 @@ class BatteryIconView : public views::View {
  protected:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     SkBitmap image;
-    if (!battery_is_present_) {
-      image = GetMissingImage(LARGE);
-    } else {
+    if (battery_is_present_) {
       image = GetImageWithPercentage(LARGE,
                                      line_power_on_ ? CHARGING : DISCHARGING,
                                      battery_percentage_);
+    } else {
+      NOTREACHED();
+      return;
     }
     const int image_x = 0;
     const int image_y = (height() - image.height()) / 2;
@@ -322,6 +319,13 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
   battery_is_present_ = power_status_.battery_is_present;
   line_power_on_ = power_status_.line_power_on;
 
+  bool should_be_visible = battery_is_present_;
+  if (should_be_visible != IsVisible())
+    SetVisible(should_be_visible);
+
+  if (!should_be_visible)
+    return;
+
   // If fully charged, always show 100% even if internal number is a bit less.
   if (power_status_.battery_is_full)
     battery_percentage_ = 100.0;
@@ -335,19 +339,13 @@ void PowerMenuButton::UpdateIconAndLabelInfo() {
                     TimeDelta::FromSeconds(
                         power_status_.battery_seconds_to_empty));
 
-  string16 tooltip_text;
-  if (!battery_is_present_) {
-    SetIcon(GetMissingImage(SMALL));
-    tooltip_text = l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_BATTERY);
-  } else {
-    SetIcon(GetImageWithPercentage(
-        SMALL, line_power_on_ ? CHARGING : DISCHARGING, battery_percentage_));
-    const int message_id = line_power_on_ ?
-        IDS_STATUSBAR_BATTERY_CHARGING_PERCENTAGE :
-        IDS_STATUSBAR_BATTERY_USING_PERCENTAGE;
-    tooltip_text =  l10n_util::GetStringFUTF16(
-        message_id, base::IntToString16(static_cast<int>(battery_percentage_)));
-  }
+  SetIcon(GetImageWithPercentage(
+      SMALL, line_power_on_ ? CHARGING : DISCHARGING, battery_percentage_));
+  const int message_id = line_power_on_ ?
+      IDS_STATUSBAR_BATTERY_CHARGING_PERCENTAGE :
+      IDS_STATUSBAR_BATTERY_USING_PERCENTAGE;
+  string16 tooltip_text =  l10n_util::GetStringFUTF16(
+       message_id, base::IntToString16(static_cast<int>(battery_percentage_)));
   SetTooltipText(tooltip_text);
   SetAccessibleName(tooltip_text);
   SchedulePaint();
