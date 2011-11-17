@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "content/common/content_export.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/surface/transport_dib.h"
 
@@ -15,7 +14,7 @@
 // on behalf of the RWHVV. It assumes that GL context that will display
 // the image data is current  when an instance of this object is created
 // or destroyed.
-class CONTENT_EXPORT AcceleratedSurfaceContainerLinux {
+class AcceleratedSurfaceContainerLinux {
  public:
   virtual ~AcceleratedSurfaceContainerLinux() { }
   virtual void AddRef() = 0;
