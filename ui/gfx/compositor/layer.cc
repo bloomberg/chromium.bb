@@ -285,7 +285,6 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
     web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
     web_layer_.setOpaque(fills_bounds_opaquely_);
     web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
-    web_layer_.setBounds(bounds_.size());
     RecomputeTransform();
   }
   TextureCC* texture_cc = static_cast<TextureCC*>(texture);
@@ -638,7 +637,6 @@ void Layer::SetBoundsImmediately(const gfx::Rect& bounds) {
 
   SetNeedsToRecomputeHole();
 #if defined(USE_WEBKIT_COMPOSITOR)
-  web_layer_.setBounds(bounds.size());
   RecomputeTransform();
   RecomputeDrawsContentAndUVRect();
 #endif
@@ -720,6 +718,7 @@ void Layer::RecomputeDrawsContentAndUVRect() {
       !hole_rect_.Contains(gfx::Rect(gfx::Point(0, 0), bounds_.size()));
   if (!web_layer_is_accelerated_) {
     web_layer_.to<WebKit::WebContentLayer>().setDrawsContent(should_draw);
+    web_layer_.setBounds(bounds_.size());
   } else {
     DCHECK(texture_);
     TextureCC* texture_cc = static_cast<TextureCC*>(texture_.get());
@@ -727,12 +726,15 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     WebKit::WebExternalTextureLayer texture_layer =
         web_layer_.to<WebKit::WebExternalTextureLayer>();
     texture_layer.setTextureId(should_draw ? texture_id : 0);
+    gfx::Size size(std::min(bounds_.width(), texture_cc->size().width()),
+                   std::min(bounds_.height(), texture_cc->size().height()));
     WebKit::WebFloatRect rect(
         0,
         0,
-        static_cast<float>(bounds_.width())/texture_cc->size().width(),
-        static_cast<float>(bounds_.height())/texture_cc->size().height());
+        static_cast<float>(size.width())/texture_cc->size().width(),
+        static_cast<float>(size.height())/texture_cc->size().height());
     texture_layer.setUVRect(rect);
+    web_layer_.setBounds(size);
   }
 }
 #endif
