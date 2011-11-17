@@ -501,22 +501,18 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
 #if defined(OS_POSIX)
   // For dynamic loading support, NaCl requires a file descriptor on an
   // anonymous file that can have PROT_EXEC applied to its mappings.
-  // Rather than requiring an extra IPC round trip out of the sandbox,
-  // we create an FD here.
-  base::SharedMemory memory_buffer;
-  if (!memory_buffer.CreateAnonymous(/* size= */ 1)) {
+  // Rather than requiring an extra IPC round trip out of the sandbox, we
+  // create an FD here.  Note we're using nacl::CreateMemoryObject rather
+  // than base::SharedMemory here, because the former has code to handle
+  // the Linux cases where shm_open yields objects that do not support
+  // PROT_EXEC mappings.
+  nacl::Handle fd = nacl::CreateMemoryObject(1, true);  // size, executable
+  if (fd == nacl::kInvalidHandle) {
     LOG(ERROR) << "Failed to allocate memory buffer";
     delete this;
     return;
   }
-  nacl::FileDescriptor memory_fd;
-  memory_fd.fd = dup(memory_buffer.handle().fd);
-  if (memory_fd.fd < 0) {
-    LOG(ERROR) << "Failed to dup() a file descriptor";
-    delete this;
-    return;
-  }
-  memory_fd.auto_close = true;
+  nacl::FileDescriptor memory_fd(fd, true);
   handles_for_sel_ldr.push_back(memory_fd);
 #endif
 
