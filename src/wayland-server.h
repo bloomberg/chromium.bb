@@ -216,6 +216,8 @@ struct wl_selection {
 
 void wl_resource_post_event(struct wl_resource *resource,
 			    uint32_t opcode, ...);
+void wl_resource_queue_event(struct wl_resource *resource,
+			     uint32_t opcode, ...);
 void wl_resource_post_error(struct wl_resource *resource,
 			    uint32_t code, const char *msg, ...);
 void wl_resource_post_no_memory(struct wl_resource *resource);

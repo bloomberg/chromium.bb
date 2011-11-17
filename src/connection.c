@@ -65,6 +65,7 @@ struct wl_connection {
 	void *data;
 	wl_connection_update_func_t update;
 	struct wl_closure receive_closure, send_closure;
+	int write_signalled;
 };
 
 union wl_value {
@@ -285,10 +286,13 @@ wl_connection_data(struct wl_connection *connection, uint32_t mask)
 		close_fds(&connection->fds_out);
 
 		connection->out.tail += len;
-		if (connection->out.tail == connection->out.head)
+		if (connection->out.tail == connection->out.head &&
+		    connection->write_signalled) {
 			connection->update(connection,
 					   WL_CONNECTION_READABLE,
 					   connection->data);
+			connection->write_signalled = 0;
+		}
 	}
 
 	if (mask & WL_CONNECTION_READABLE) {
@@ -334,11 +338,24 @@ wl_connection_write(struct wl_connection *connection,
 
 	wl_buffer_put(&connection->out, data, count);
 
-	if (connection->out.head - connection->out.tail == count)
+	if (!connection->write_signalled) {
 		connection->update(connection,
 				   WL_CONNECTION_READABLE |
 				   WL_CONNECTION_WRITABLE,
 				   connection->data);
+		connection->write_signalled = 1;
+	}
+}
+
+static void
+wl_connection_queue(struct wl_connection *connection,
+		    const void *data, size_t count)
+{
+	if (connection->out.head - connection->out.tail +
+	    count > ARRAY_LENGTH(connection->out.data))
+		wl_connection_data(connection, WL_CONNECTION_WRITABLE);
+
+	wl_buffer_put(&connection->out, data, count);
 }
 
 static int
@@ -701,6 +718,15 @@ wl_closure_send(struct wl_closure *closure, struct wl_connection *connection)
 
 	size = closure->start[1] >> 16;
 	wl_connection_write(connection, closure->start, size);
+}
+
+void
+wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection)
+{
+	uint32_t size;
+
+	size = closure->start[1] >> 16;
+	wl_connection_queue(connection, closure->start, size);
 }
 
 void

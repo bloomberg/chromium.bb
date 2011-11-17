@@ -469,10 +469,6 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 
 	len = wl_connection_data(display->connection, mask);
 
-	if (wl_debug && (mask & WL_DISPLAY_READABLE))
-		fprintf(stderr,
-			"[-----------] wakeup, read %d bytes\n", len);
-
 	while (len > 0) {
 		if (len < sizeof p)
 			break;

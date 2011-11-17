@@ -61,6 +61,8 @@ wl_closure_invoke(struct wl_closure *closure,
 void
 wl_closure_send(struct wl_closure *closure, struct wl_connection *connection);
 void
+wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection);
+void
 wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send);
 void
 wl_closure_destroy(struct wl_closure *closure);

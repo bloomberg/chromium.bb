@@ -108,6 +108,28 @@ wl_resource_post_event(struct wl_resource *resource, uint32_t opcode, ...)
 	wl_closure_destroy(closure);
 }
 
+
+WL_EXPORT void
+wl_resource_queue_event(struct wl_resource *resource, uint32_t opcode, ...)
+{
+	struct wl_closure *closure;
+	struct wl_object *object = &resource->object;
+	va_list ap;
+
+	va_start(ap, opcode);
+	closure = wl_connection_vmarshal(resource->client->connection,
+					 object, opcode, ap,
+					 &object->interface->events[opcode]);
+	va_end(ap);
+
+	wl_closure_queue(closure, resource->client->connection);
+
+	if (wl_debug)
+		wl_closure_print(closure, object, true);
+
+	wl_closure_destroy(closure);
+}
+
 WL_EXPORT void
 wl_resource_post_error(struct wl_resource *resource,
 		       uint32_t code, const char *msg, ...)
@@ -314,8 +336,8 @@ wl_resource_destroy(struct wl_resource *resource, uint32_t time)
 {
 	struct wl_client *client = resource->client;
 
-	wl_resource_post_event(resource->client->display_resource,
-			       WL_DISPLAY_DELETE_ID, resource->object.id);
+	wl_resource_queue_event(resource->client->display_resource,
+				WL_DISPLAY_DELETE_ID, resource->object.id);
 	wl_map_insert_at(&client->objects, resource->object.id, NULL);
 	destroy_resource(resource, &time);
 }
