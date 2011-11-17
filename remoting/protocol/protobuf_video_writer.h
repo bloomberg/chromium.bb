@@ -44,6 +44,8 @@ class ProtobufVideoWriter : public VideoWriter {
  private:
   void OnChannelReady(net::StreamSocket* socket);
 
+  Session* session_;
+
   InitializedCallback initialized_callback_;
 
   // TODO(sergeyu): Remove |channel_| and let |buffered_writer_| own it.

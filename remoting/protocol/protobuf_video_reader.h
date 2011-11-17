@@ -33,6 +33,8 @@ class ProtobufVideoReader : public VideoReader {
   void OnChannelReady(net::StreamSocket* socket);
   void OnNewData(VideoPacket* packet, const base::Closure& done_task);
 
+  Session* session_;
+
   InitializedCallback initialized_callback_;
 
   VideoPacketFormat::Encoding encoding_;

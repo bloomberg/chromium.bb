@@ -36,6 +36,7 @@ class JingleSession : public protocol::Session,
   virtual void CreateDatagramChannel(
       const std::string& name,
       const DatagramChannelCallback& callback) OVERRIDE;
+  virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
   virtual net::Socket* control_channel() OVERRIDE;
   virtual net::Socket* event_channel() OVERRIDE;
   virtual const std::string& jid() OVERRIDE;
@@ -54,6 +55,8 @@ class JingleSession : public protocol::Session,
   friend class JingleDatagramConnector;
   friend class JingleSessionManager;
   friend class JingleStreamConnector;
+
+  typedef std::map<std::string, JingleChannelConnector*> ChannelConnectorsMap;
 
   // Create a JingleSession used in client mode. A server certificate is
   // required.
@@ -175,7 +178,7 @@ class JingleSession : public protocol::Session,
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
 
   // Channels that are currently being connected.
-  std::map<std::string, JingleChannelConnector*> channel_connectors_;
+  ChannelConnectorsMap channel_connectors_;
 
   scoped_ptr<net::Socket> control_channel_socket_;
   scoped_ptr<net::Socket> event_channel_socket_;

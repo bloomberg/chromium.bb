@@ -38,7 +38,10 @@ class PepperChannel : public base::NonThreadSafe {
   virtual void AddRemoveCandidate(const cricket::Candidate& candidate) = 0;
 
   // Name of the channel.
-  virtual const std::string& name() = 0;
+  virtual const std::string& name() const = 0;
+
+  // returns true if the channel is already connected
+  virtual bool is_connected() const = 0;
 
  protected:
   DISALLOW_COPY_AND_ASSIGN(PepperChannel);

@@ -15,19 +15,24 @@ namespace remoting {
 namespace protocol {
 
 ProtobufVideoReader::ProtobufVideoReader(VideoPacketFormat::Encoding encoding)
-    : encoding_(encoding),
+    : session_(NULL),
+      encoding_(encoding),
       video_stub_(NULL) {
 }
 
-ProtobufVideoReader::~ProtobufVideoReader() { }
+ProtobufVideoReader::~ProtobufVideoReader() {
+  if (session_)
+    session_->CancelChannelCreation(kVideoChannelName);
+}
 
 void ProtobufVideoReader::Init(protocol::Session* session,
                                VideoStub* video_stub,
                                const InitializedCallback& callback) {
+  session_ = session;
   initialized_callback_ = callback;
   video_stub_ = video_stub;
 
-  session->CreateStreamChannel(
+  session_->CreateStreamChannel(
       kVideoChannelName,
       base::Bind(&ProtobufVideoReader::OnChannelReady, base::Unretained(this)));
 }

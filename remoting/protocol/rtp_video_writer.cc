@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,8 @@ const int kMtu = 1200;
 }  // namespace
 
 RtpVideoWriter::RtpVideoWriter(base::MessageLoopProxy* message_loop)
-    : initialized_(false),
+    : session_(NULL),
+      initialized_(false),
       rtp_writer_(message_loop) {
 }
 
@@ -31,6 +32,7 @@ RtpVideoWriter::~RtpVideoWriter() {
 
 void RtpVideoWriter::Init(protocol::Session* session,
                           const InitializedCallback& callback) {
+  session_ = session;
   initialized_callback_ = callback;
   session->CreateDatagramChannel(
       kVideoRtpChannelName,
@@ -72,6 +74,11 @@ void RtpVideoWriter::Close() {
   rtp_writer_.Close();
   rtp_channel_.reset();
   rtcp_channel_.reset();
+  if (session_) {
+    session_->CancelChannelCreation(kVideoRtpChannelName);
+    session_->CancelChannelCreation(kVideoRtcpChannelName);
+    session_ = NULL;
+  }
 }
 
 void RtpVideoWriter::ProcessVideoPacket(const VideoPacket* packet,

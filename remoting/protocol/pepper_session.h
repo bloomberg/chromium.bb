@@ -48,6 +48,7 @@ class PepperSession : public Session {
   virtual void CreateDatagramChannel(
       const std::string& name,
       const DatagramChannelCallback& callback) OVERRIDE;
+  virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
   virtual net::Socket* control_channel() OVERRIDE;
   virtual net::Socket* event_channel() OVERRIDE;
   virtual const std::string& jid() OVERRIDE;

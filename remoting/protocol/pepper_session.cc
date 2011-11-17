@@ -126,6 +126,14 @@ void PepperSession::CreateDatagramChannel(
   NOTREACHED();
 }
 
+void PepperSession::CancelChannelCreation(const std::string& name) {
+  ChannelsMap::iterator it = channels_.find(name);
+  if (it != channels_.end() && !it->second->is_connected()) {
+    delete it->second;
+    DCHECK(!channels_[name]);
+  }
+}
+
 net::Socket* PepperSession::control_channel() {
   DCHECK(CalledOnValidThread());
   return control_channel_socket_.get();

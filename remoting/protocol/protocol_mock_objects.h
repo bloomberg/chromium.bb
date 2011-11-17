@@ -107,6 +107,7 @@ class MockSession : public Session {
       const std::string& name, const StreamChannelCallback& callback));
   MOCK_METHOD2(CreateDatagramChannel, void(
       const std::string& name, const DatagramChannelCallback& callback));
+  MOCK_METHOD1(CancelChannelCreation, void(const std::string& name));
   MOCK_METHOD0(control_channel, net::Socket*());
   MOCK_METHOD0(event_channel, net::Socket*());
   MOCK_METHOD0(video_channel, net::Socket*());

@@ -17,16 +17,20 @@ namespace remoting {
 namespace protocol {
 
 ProtobufVideoWriter::ProtobufVideoWriter(base::MessageLoopProxy* message_loop)
-    : buffered_writer_(new BufferedSocketWriter(message_loop)) {
+    : session_(NULL),
+      buffered_writer_(new BufferedSocketWriter(message_loop)) {
 }
 
-ProtobufVideoWriter::~ProtobufVideoWriter() { }
+ProtobufVideoWriter::~ProtobufVideoWriter() {
+  Close();
+}
 
 void ProtobufVideoWriter::Init(protocol::Session* session,
                                const InitializedCallback& callback) {
+  session_ = session;
   initialized_callback_ = callback;
 
-  session->CreateStreamChannel(
+  session_->CreateStreamChannel(
       kVideoChannelName,
       base::Bind(&ProtobufVideoWriter::OnChannelReady, base::Unretained(this)));
 }
@@ -48,6 +52,10 @@ void ProtobufVideoWriter::OnChannelReady(net::StreamSocket* socket) {
 void ProtobufVideoWriter::Close() {
   buffered_writer_->Close();
   channel_.reset();
+  if (session_) {
+    session_->CancelChannelCreation(kVideoChannelName);
+    session_ = NULL;
+  }
 }
 
 void ProtobufVideoWriter::ProcessVideoPacket(const VideoPacket* packet,

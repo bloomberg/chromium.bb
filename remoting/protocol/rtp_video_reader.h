@@ -68,6 +68,8 @@ class RtpVideoReader : public VideoReader {
   // |kReceiverReportsIntervalMs|.
   void SendReceiverReportIf();
 
+  Session* session_;
+
   bool initialized_;
   InitializedCallback initialized_callback_;
 

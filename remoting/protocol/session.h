@@ -90,6 +90,11 @@ class Session : public base::NonThreadSafe {
   virtual void CreateDatagramChannel(
       const std::string& name, const DatagramChannelCallback& callback) = 0;
 
+  // Cancels a pending CreateStreamChannel() or CreateDatagramChannel()
+  // operation for the named channel. If the channel creation already
+  // completed then cancelling it has no effect.
+  virtual void CancelChannelCreation(const std::string& name) = 0;
+
   // TODO(sergeyu): Remove these methods, and use CreateChannel()
   // instead.
   virtual net::Socket* control_channel() = 0;

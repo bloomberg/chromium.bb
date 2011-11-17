@@ -24,27 +24,33 @@ RtpVideoReader::PacketsQueueEntry::PacketsQueueEntry()
 }
 
 RtpVideoReader::RtpVideoReader(base::MessageLoopProxy* message_loop)
-    : initialized_(false),
+    : session_(NULL),
+      initialized_(false),
       rtcp_writer_(message_loop),
       last_sequence_number_(0),
       video_stub_(NULL) {
 }
 
 RtpVideoReader::~RtpVideoReader() {
+  if (session_) {
+    session_->CancelChannelCreation(kVideoRtpChannelName);
+    session_->CancelChannelCreation(kVideoRtcpChannelName);
+  }
   ResetQueue();
 }
 
 void RtpVideoReader::Init(protocol::Session* session,
                           VideoStub* video_stub,
                           const InitializedCallback& callback) {
+  session_ = session;
   initialized_callback_ = callback;
   video_stub_ = video_stub;
 
-  session->CreateDatagramChannel(
+  session_->CreateDatagramChannel(
       kVideoRtpChannelName,
       base::Bind(&RtpVideoReader::OnChannelReady,
                  base::Unretained(this), true));
-  session->CreateDatagramChannel(
+  session_->CreateDatagramChannel(
       kVideoRtcpChannelName,
       base::Bind(&RtpVideoReader::OnChannelReady,
                  base::Unretained(this), false));

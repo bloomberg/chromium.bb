@@ -242,6 +242,9 @@ void FakeSession::CreateDatagramChannel(
   callback.Run(channel);
 }
 
+void FakeSession::CancelChannelCreation(const std::string& name) {
+}
+
 FakeSocket* FakeSession::control_channel() {
   return &control_channel_;
 }

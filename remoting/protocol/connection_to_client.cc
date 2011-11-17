@@ -162,10 +162,9 @@ void ConnectionToClient::CloseOnError() {
 }
 
 void ConnectionToClient::CloseChannels() {
-  if (video_writer_.get())
-    video_writer_->Close();
-  if (client_control_sender_.get())
-    client_control_sender_->Close();
+  video_writer_.reset();
+  client_control_sender_.reset();
+  dispatcher_.reset();
 }
 
 }  // namespace protocol

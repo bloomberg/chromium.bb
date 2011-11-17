@@ -81,6 +81,7 @@ PepperStreamChannel::PepperStreamChannel(
 }
 
 PepperStreamChannel::~PepperStreamChannel() {
+  session_->OnDeleteChannel(this);
   // Verify that the |channel_| is ether destroyed or we own it.
   DCHECK_EQ(channel_, owned_channel_.get());
   // Channel should be already destroyed if we were connected.
@@ -163,17 +164,21 @@ void PepperStreamChannel::AddRemoveCandidate(
     channel_->AddRemoteCandidate(jingle_glue::SerializeP2PCandidate(candidate));
 }
 
-const std::string& PepperStreamChannel::name() {
+const std::string& PepperStreamChannel::name() const {
   DCHECK(CalledOnValidThread());
   return name_;
+}
+
+bool PepperStreamChannel::is_connected() const {
+  DCHECK(CalledOnValidThread());
+  return connected_;
 }
 
 void PepperStreamChannel::OnChannelDeleted() {
   if (connected_) {
     channel_ = NULL;
-    // The PepperTransportSocketAdapter is being deleted, so delete the
-    // channel too.
-    session_->OnDeleteChannel(this);
+    // The PepperTransportSocketAdapter is being deleted, so delete
+    // the channel too.
     delete this;
   }
 }

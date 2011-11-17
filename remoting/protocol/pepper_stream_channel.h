@@ -39,7 +39,8 @@ class PepperStreamChannel : public PepperChannel,
                        const TransportConfig& transport_config,
                        const std::string& remote_cert) OVERRIDE;
   virtual void AddRemoveCandidate(const cricket::Candidate& candidate) OVERRIDE;
-  virtual const std::string& name() OVERRIDE;
+  virtual const std::string& name() const OVERRIDE;
+  virtual bool is_connected() const OVERRIDE;
 
   // PepperTransportSocketAdapter implementation.
   virtual void OnChannelDeleted() OVERRIDE;

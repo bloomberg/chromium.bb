@@ -172,6 +172,14 @@ void JingleSession::CreateDatagramChannel(
       name, new JingleDatagramConnector(this, name, callback));
 }
 
+void JingleSession::CancelChannelCreation(const std::string& name) {
+  ChannelConnectorsMap::iterator it = channel_connectors_.find(name);
+  if (it != channel_connectors_.end()) {
+    delete it->second;
+    channel_connectors_.erase(it);
+  }
+}
+
 net::Socket* JingleSession::control_channel() {
   DCHECK(CalledOnValidThread());
   return control_channel_socket_.get();
@@ -432,7 +440,7 @@ void JingleSession::OnChannelConnectorFinished(
     const std::string& name, JingleChannelConnector* connector) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(channel_connectors_[name], connector);
-  channel_connectors_[name] = NULL;
+  channel_connectors_.erase(name);
 }
 
 void JingleSession::CreateChannels() {
