@@ -32,7 +32,21 @@ namespace browser_sync {
 using sessions::ConflictProgress;
 using sessions::StatusController;
 
+namespace {
+
 const int SYNC_CYCLES_BEFORE_ADMITTING_DEFEAT = 8;
+
+// Enumeration of different conflict resolutions. Used for histogramming.
+enum SimpleConflictResolutions {
+  OVERWRITE_LOCAL,           // Resolved by overwriting local changes.
+  OVERWRITE_SERVER,          // Resolved by overwriting server changes.
+  UNDELETE,                  // Resolved by undeleting local item.
+  IGNORE_ENCRYPTION,         // Resolved by ignoring an encryption-only server
+                             // change. TODO(zea): implement and use this.
+  CONFLICT_RESOLUTION_SIZE,
+};
+
+}  // namespace
 
 ConflictResolver::ConflictResolver() {
 }
@@ -44,9 +58,8 @@ void ConflictResolver::IgnoreLocalChanges(MutableEntry* entry) {
   // An update matches local actions, merge the changes.
   // This is a little fishy because we don't actually merge them.
   // In the future we should do a 3-way merge.
-  VLOG(1) << "Server and local changes match, merging:" << entry;
+  VLOG(1) << "Resolving conflict by ignoring local changes:" << entry;
   // With IS_UNSYNCED false, changes should be merged.
-  // METRIC simple conflict resolved by merge.
   entry->Put(syncable::IS_UNSYNCED, false);
 }
 
@@ -57,9 +70,9 @@ void ConflictResolver::OverwriteServerChanges(WriteTransaction* trans,
   // made our local client changes.
   // TODO(chron): This is really a general property clobber. We clobber
   // the server side property. Perhaps we should actually do property merging.
+  VLOG(1) << "Resolving conflict by ignoring server changes:" << entry;
   entry->Put(syncable::BASE_VERSION, entry->Get(syncable::SERVER_VERSION));
   entry->Put(syncable::IS_UNAPPLIED_UPDATE, false);
-  // METRIC conflict resolved by overwrite.
 }
 
 ConflictResolver::ProcessSimpleConflictResult
@@ -119,11 +132,17 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
               << entry;
       IgnoreLocalChanges(&entry);
       status->increment_num_local_overwrites();
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                OVERWRITE_LOCAL,
+                                CONFLICT_RESOLUTION_SIZE);
     } else {
       VLOG(1) << "Resolving simple conflict, overwriting server changes for:"
               << entry;
       OverwriteServerChanges(trans, &entry);
       status->increment_num_server_overwrites();
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                OVERWRITE_SERVER,
+                                CONFLICT_RESOLUTION_SIZE);
     }
     return SYNC_PROGRESS;
   } else {  // SERVER_IS_DEL is true
@@ -149,6 +168,9 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
           "when server-deleted.";
       OverwriteServerChanges(trans, &entry);
       status->increment_num_server_overwrites();
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                OVERWRITE_SERVER,
+                                CONFLICT_RESOLUTION_SIZE);
       // Clobber the versions, just in case the above DCHECK is violated.
       entry.Put(syncable::SERVER_VERSION, 0);
       entry.Put(syncable::BASE_VERSION, 0);
@@ -162,6 +184,9 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       CHECK(server_update.Get(syncable::META_HANDLE) !=
             entry.Get(syncable::META_HANDLE))
           << server_update << entry;
+      UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
+                                UNDELETE,
+                                CONFLICT_RESOLUTION_SIZE);
     }
     return SYNC_PROGRESS;
   }
