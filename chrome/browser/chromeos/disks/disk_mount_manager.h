@@ -236,6 +236,12 @@ class DiskMountManager {
   // Creates the global DiskMountManager instance.
   static void Initialize();
 
+  // Similar to Initialize(), but can inject an alternative
+  // DiskMountManager such as MockDiskMountManager for testing.
+  // The injected object will be owned by the internal pointer and deleted
+  // by Shutdown().
+  static void InitializeForTesting(DiskMountManager* disk_mount_manager);
+
   // Destroys the global DiskMountManager instance if it exists.
   static void Shutdown();
 

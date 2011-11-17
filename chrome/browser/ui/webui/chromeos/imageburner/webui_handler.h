@@ -14,8 +14,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/burn_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_utils.h"
 #include "content/browser/download/download_item.h"
@@ -75,7 +75,7 @@ class WebUIHandlerTaskProxy
 
 class WebUIHandler
     : public WebUIMessageHandler,
-      public chromeos::MountLibrary::Observer,
+      public chromeos::disks::DiskMountManager::Observer,
       public chromeos::BurnLibrary::Observer,
       public chromeos::NetworkLibrary::NetworkManagerObserver,
       public DownloadItem::Observer,
@@ -92,15 +92,18 @@ class WebUIHandler
   virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
-  // chromeos::MountLibrary::Observer interface.
-  virtual void DiskChanged(chromeos::MountLibraryEventType event,
-                           const chromeos::MountLibrary::Disk* disk) OVERRIDE;
-  virtual void DeviceChanged(chromeos::MountLibraryEventType event,
+  // chromeos::disks::DiskMountManager::Observer interface.
+  virtual void DiskChanged(chromeos::disks::DiskMountManagerEventType event,
+                           const chromeos::disks::DiskMountManager::Disk* disk)
+      OVERRIDE;
+  virtual void DeviceChanged(chromeos::disks::DiskMountManagerEventType event,
                              const std::string& device_path) OVERRIDE {
   }
-  virtual void MountCompleted(chromeos::MountLibrary::MountEvent event_type,
+  virtual void MountCompleted(
+      chromeos::disks::DiskMountManager::MountEvent event_type,
       chromeos::MountError error_code,
-      const chromeos::MountLibrary::MountPointInfo& mount_info) OVERRIDE {
+      const chromeos::disks::DiskMountManager::MountPointInfo& mount_info)
+      OVERRIDE {
   }
 
   // chromeos::BurnLibrary::Observer interface.
@@ -127,8 +130,8 @@ class WebUIHandler
   virtual void OnError(int error_message_id) OVERRIDE;
 
  private:
-  void CreateDiskValue(const chromeos::MountLibrary::Disk& disk,
-      DictionaryValue* disk_value);
+  void CreateDiskValue(const chromeos::disks::DiskMountManager::Disk& disk,
+                       DictionaryValue* disk_value);
 
   // Callback for the "getRoots" message.
   void HandleGetDevices(const ListValue* args);
@@ -212,4 +215,3 @@ class WebUIHandler
 
 }  // namespace imageburner.
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_IMAGEBURNER_WEBUI_HANDLER_H_
-

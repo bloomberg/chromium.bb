@@ -50,11 +50,9 @@
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
-#ifdef OS_CHROMEOS
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#endif
-
 using content::BrowserThread;
+
+namespace {
 
 // Error messages.
 const char kFileError[] = "File error %d";
@@ -267,12 +265,13 @@ void UpdateFileHandlerUsageStats(Profile* profile, const std::string& task_id) {
 
 #ifdef OS_CHROMEOS
 base::DictionaryValue* MountPointToValue(Profile* profile,
-    const chromeos::MountLibrary::MountPointInfo& mount_point_info) {
+    const chromeos::disks::DiskMountManager::MountPointInfo& mount_point_info) {
 
     base::DictionaryValue *mount_info = new base::DictionaryValue();
 
     mount_info->SetString("mountType",
-        chromeos::MountLibrary::MountTypeToString(mount_point_info.mount_type));
+                          chromeos::disks::DiskMountManager::MountTypeToString(
+                              mount_point_info.mount_type));
 
     if (mount_point_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
       GURL source_url;
@@ -296,15 +295,16 @@ base::DictionaryValue* MountPointToValue(Profile* profile,
     }
 
     mount_info->SetString("mountCondition",
-        chromeos::MountLibrary::MountConditionToString(
+        chromeos::disks::DiskMountManager::MountConditionToString(
         mount_point_info.mount_condition));
 
     return mount_info;
 }
 #endif
 
+}  // namespace
 
-class LocalFileSystemCallbackDispatcher
+class RequestLocalFileSystemFunction::LocalFileSystemCallbackDispatcher
     : public fileapi::FileSystemCallbackDispatcher {
  public:
   explicit LocalFileSystemCallbackDispatcher(
@@ -622,7 +622,7 @@ bool GetFileTasksFileBrowserFunction::RunImpl() {
   return true;
 }
 
-class ExecuteTasksFileSystemCallbackDispatcher
+class ExecuteTasksFileBrowserFunction::ExecuteTasksFileSystemCallbackDispatcher
     : public fileapi::FileSystemCallbackDispatcher {
  public:
   explicit ExecuteTasksFileSystemCallbackDispatcher(
@@ -992,12 +992,24 @@ int32 FileBrowserFunction::GetTabId() const {
   return ExtensionTabUtil::GetTabId(tab_contents);
 }
 
+void FileBrowserFunction::GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+    const UrlList& file_urls,
+    GetLocalPathsCallback callback) {
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(
+          &FileBrowserFunction::GetLocalPathsOnFileThread,
+          this,
+          file_urls, callback));
+}
+
 // GetFileSystemRootPathOnFileThread can only be called from the file thread,
 // so here we are. This function takes a vector of virtual paths, converts
-// them to local paths and calls GetLocalPathsResponseOnUIThread with the
-// result vector, on the UI thread.
-void FileBrowserFunction::GetLocalPathsOnFileThread(const UrlList& file_urls,
-                                                    void* context) {
+// them to local paths and calls |callback| with the result vector, on the UI
+// thread.
+void FileBrowserFunction::GetLocalPathsOnFileThread(
+    const UrlList& file_urls,
+    GetLocalPathsCallback callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   FilePathList selected_files;
 
@@ -1036,12 +1048,8 @@ void FileBrowserFunction::GetLocalPathsOnFileThread(const UrlList& file_urls,
   }
 #endif
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(
-          &FileBrowserFunction::GetLocalPathsResponseOnUIThread,
-          this,
-          selected_files, context));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(callback, selected_files));
 }
 
 bool SelectFileFunction::RunImpl() {
@@ -1053,20 +1061,15 @@ bool SelectFileFunction::RunImpl() {
   UrlList file_paths;
   file_paths.push_back(GURL(file_url));
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &SelectFileFunction::GetLocalPathsOnFileThread,
-          this,
-          file_paths, reinterpret_cast<void*>(NULL)));
-
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_paths,
+      base::Bind(&SelectFileFunction::GetLocalPathsResponseOnUIThread, this));
   return true;
 }
 
 void SelectFileFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, void* context) {
+    const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!context);
   if (files.size() != 1) {
     SendResponse(false);
     return;
@@ -1106,30 +1109,25 @@ bool ViewFilesFunction::RunImpl() {
     file_urls.push_back(GURL(virtual_path));
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &ViewFilesFunction::GetLocalPathsOnFileThread,
-          this,
-          file_urls,
-          reinterpret_cast<void*>(new std::string(internal_task_id))));
-
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_urls,
+      base::Bind(&ViewFilesFunction::GetLocalPathsResponseOnUIThread,
+                 this,
+                 internal_task_id));
   return true;
 }
 
 void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, void* context) {
+    const std::string& internal_task_id,
+    const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(context);
-  scoped_ptr<std::string> internal_task_id(
-      reinterpret_cast<std::string*>(context));
   for (FilePathList::const_iterator iter = files.begin();
        iter != files.end();
        ++iter) {
     FileManagerUtil::ViewItem(*iter,
-                              *(internal_task_id.get()) == kEnqueueTaskId ||
-                                  // Start the first one, enqueue others.
-                                  iter != files.begin());
+                              internal_task_id == kEnqueueTaskId ||
+                                // Start the first one, enqueue others.
+                                iter != files.begin());
   }
   SendResponse(true);
 }
@@ -1158,20 +1156,15 @@ bool SelectFilesFunction::RunImpl() {
     file_urls.push_back(GURL(virtual_path));
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &SelectFilesFunction::GetLocalPathsOnFileThread,
-          this,
-          file_urls, reinterpret_cast<void*>(NULL)));
-
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_urls,
+      base::Bind(&SelectFilesFunction::GetLocalPathsResponseOnUIThread, this));
   return true;
 }
 
 void SelectFilesFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, void* context) {
+    const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!context);
   int32 tab_id = GetTabId();
   SelectFileDialogExtension::OnMultiFilesSelected(tab_id, files);
   SendResponse(true);
@@ -1191,6 +1184,7 @@ AddMountFunction::~AddMountFunction() {
 }
 
 bool AddMountFunction::RunImpl() {
+  // The third argument is simply ignored.
   if (args_->GetSize() != 2 && args_->GetSize() != 3) {
     error_ = "Invalid argument count";
     return false;
@@ -1210,42 +1204,20 @@ bool AddMountFunction::RunImpl() {
   file_paths.push_back(GURL(file_url));
 
 #if defined(OS_CHROMEOS)
-  chromeos::MountPathOptions options;
-  if (args_->GetSize() == 3) {
-    DictionaryValue *dict;
-    if (!args_->GetDictionary(2, &dict)) {
-      NOTREACHED();
-    }
-
-    for (base::DictionaryValue::key_iterator it = dict->begin_keys();
-         it != dict->end_keys();
-         ++it) {
-      std::string value;
-      if (!dict->GetString(*it, &value)) {
-        NOTREACHED();
-      }
-
-      options.push_back(chromeos::MountPathOptions::value_type((*it).c_str(),
-                                                               value.c_str()));
-    }
-  }
-
-  MountParamaters* params = new MountParamaters(mount_type_str, options);
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &AddMountFunction::GetLocalPathsOnFileThread,
-          this,
-          file_paths, reinterpret_cast<void*>(params)));
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_paths,
+      base::Bind(&AddMountFunction::GetLocalPathsResponseOnUIThread,
+                 this,
+                 mount_type_str));
 #endif  // OS_CHROMEOS
 
   return true;
 }
 
 void AddMountFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, void* context) {
+    const std::string& mount_type_str,
+    const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(context);
 
   if (!files.size()) {
     SendResponse(false);
@@ -1253,24 +1225,20 @@ void AddMountFunction::GetLocalPathsResponseOnUIThread(
   }
 
 #ifdef OS_CHROMEOS
-  scoped_ptr<MountParamaters> params(
-      reinterpret_cast<MountParamaters*>(context));
-  const std::string& mount_type_str = params->mount_type;
-  const chromeos::MountPathOptions& options = params->mount_options;
   FilePath::StringType source_file = files[0].value();
 
-  chromeos::MountLibrary *mount_lib =
-      chromeos::CrosLibrary::Get()->GetMountLibrary();
+  chromeos::disks::DiskMountManager* disk_mount_manager =
+      chromeos::disks::DiskMountManager::GetInstance();
 
   chromeos::MountType mount_type =
-      mount_lib->MountTypeFromString(mount_type_str);
+      disk_mount_manager->MountTypeFromString(mount_type_str);
   if (mount_type == chromeos::MOUNT_TYPE_INVALID) {
     error_ = "Invalid mount type";
     SendResponse(false);
     return;
   }
 
-  mount_lib->MountPath(source_file.data(), mount_type, options);
+  disk_mount_manager->MountPath(source_file.data(), mount_type);
 #endif
 
   SendResponse(true);
@@ -1294,27 +1262,23 @@ bool RemoveMountFunction::RunImpl() {
 
   UrlList file_paths;
   file_paths.push_back(GURL(mount_path));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &RemoveMountFunction::GetLocalPathsOnFileThread,
-          this,
-          file_paths, reinterpret_cast<void*>(NULL)));
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_paths,
+      base::Bind(&RemoveMountFunction::GetLocalPathsResponseOnUIThread, this));
   return true;
 }
 
 void RemoveMountFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, void* context) {
+    const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!context);
 
   if (files.size() != 1) {
     SendResponse(false);
     return;
   }
 #ifdef OS_CHROMEOS
-  chromeos::CrosLibrary::Get()->GetMountLibrary()->UnmountPath(
-      files[0].value().c_str());
+  chromeos::disks::DiskMountManager::GetInstance()->UnmountPath(
+      files[0].value());
 #endif
 
   SendResponse(true);
@@ -1334,12 +1298,12 @@ bool GetMountPointsFunction::RunImpl() {
   result_.reset(mounts);
 
 #ifdef OS_CHROMEOS
-  chromeos::MountLibrary *mount_lib =
-      chromeos::CrosLibrary::Get()->GetMountLibrary();
-  chromeos::MountLibrary::MountPointMap mount_points =
-      mount_lib->mount_points();
+  chromeos::disks::DiskMountManager* disk_mount_manager =
+      chromeos::disks::DiskMountManager::GetInstance();
+  chromeos::disks::DiskMountManager::MountPointMap mount_points =
+      disk_mount_manager->mount_points();
 
-  for (chromeos::MountLibrary::MountPointMap::const_iterator it =
+  for (chromeos::disks::DiskMountManager::MountPointMap::const_iterator it =
            mount_points.begin();
        it != mount_points.end();
        ++it) {
@@ -1369,17 +1333,14 @@ bool GetSizeStatsFunction::RunImpl() {
   UrlList mount_paths;
   mount_paths.push_back(GURL(mount_url));
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &GetSizeStatsFunction::GetLocalPathsOnFileThread,
-          this,
-          mount_paths, reinterpret_cast<void*>(NULL)));
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      mount_paths,
+      base::Bind(&GetSizeStatsFunction::GetLocalPathsResponseOnUIThread, this));
   return true;
 }
 
 void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, void* context) {
+    const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (files.size() != 1) {
@@ -1392,18 +1353,18 @@ void GetSizeStatsFunction::GetLocalPathsResponseOnUIThread(
       base::Bind(
           &GetSizeStatsFunction::CallGetSizeStatsOnFileThread,
           this,
-          files[0].value().c_str()));
+          files[0].value()));
 }
 
 void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
-    const char* mount_path) {
+    const std::string& mount_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   size_t total_size_kb = 0;
   size_t remaining_size_kb = 0;
 #ifdef OS_CHROMEOS
-  chromeos::CrosLibrary::Get()->GetMountLibrary()->GetSizeStatsOnFileThread(
-      mount_path, &total_size_kb, &remaining_size_kb);
+  chromeos::disks::DiskMountManager::GetInstance()->
+      GetSizeStatsOnFileThread(mount_path, &total_size_kb, &remaining_size_kb);
 #endif
 
   BrowserThread::PostTask(
@@ -1415,7 +1376,9 @@ void GetSizeStatsFunction::CallGetSizeStatsOnFileThread(
 }
 
 void GetSizeStatsFunction::GetSizeStatsCallbackOnUIThread(
-    const char* mount_path, size_t total_size_kb, size_t remaining_size_kb) {
+    const std::string&  mount_path,
+    size_t total_size_kb,
+    size_t remaining_size_kb) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   base::DictionaryValue* sizes = new base::DictionaryValue();
@@ -1447,17 +1410,14 @@ bool FormatDeviceFunction::RunImpl() {
   UrlList file_paths;
   file_paths.push_back(GURL(volume_file_url));
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &FormatDeviceFunction::GetLocalPathsOnFileThread,
-          this,
-          file_paths, reinterpret_cast<void*>(NULL)));
+  GetLocalPathsOnFileThreadAndRunCallbackOnUIThread(
+      file_paths,
+      base::Bind(&FormatDeviceFunction::GetLocalPathsResponseOnUIThread, this));
   return true;
 }
 
 void FormatDeviceFunction::GetLocalPathsResponseOnUIThread(
-    const FilePathList& files, void* context) {
+    const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (files.size() != 1) {
@@ -1466,8 +1426,8 @@ void FormatDeviceFunction::GetLocalPathsResponseOnUIThread(
   }
 
 #ifdef OS_CHROMEOS
-  chromeos::CrosLibrary::Get()->GetMountLibrary()->FormatMountedDevice(
-      files[0].value().c_str());
+  chromeos::disks::DiskMountManager::GetInstance()->FormatMountedDevice(
+      files[0].value());
 #endif
 
   SendResponse(true);
@@ -1491,14 +1451,14 @@ bool GetVolumeMetadataFunction::RunImpl() {
   }
 
 #ifdef OS_CHROMEOS
-  chromeos::MountLibrary* mount_lib =
-      chromeos::CrosLibrary::Get()->GetMountLibrary();
-  chromeos::MountLibrary::DiskMap::const_iterator volume_it =
-      mount_lib->disks().find(volume_device_path);
+  chromeos::disks::DiskMountManager* disk_mount_manager =
+      chromeos::disks::DiskMountManager::GetInstance();
+  chromeos::disks::DiskMountManager::DiskMap::const_iterator volume_it =
+      disk_mount_manager->disks().find(volume_device_path);
 
-  if (volume_it != mount_lib->disks().end() &&
+  if (volume_it != disk_mount_manager->disks().end() &&
       !volume_it->second->is_hidden()) {
-    chromeos::MountLibrary::Disk* volume = volume_it->second;
+    chromeos::disks::DiskMountManager::Disk* volume = volume_it->second;
     DictionaryValue* volume_info = new DictionaryValue();
     result_.reset(volume_info);
     // Localising mount path.
@@ -1517,7 +1477,7 @@ bool GetVolumeMetadataFunction::RunImpl() {
     volume_info->SetString("driveLabel", volume->drive_label());
     volume_info->SetString("deviceType",
         DeviceTypeToString(volume->device_type()));
-    volume_info->SetInteger("totalSize", volume->total_size());
+    volume_info->SetInteger("totalSize", volume->total_size_in_bytes());
     volume_info->SetBoolean("isParent", volume->is_parent());
     volume_info->SetBoolean("isReadOnly", volume->is_read_only());
     volume_info->SetBoolean("hasMedia", volume->has_media());

@@ -126,7 +126,7 @@ WebUIHandler::WebUIHandler(TabContents* contents)
       state_machine_(NULL),
       observing_burn_lib_(false),
       working_(false) {
-  chromeos::CrosLibrary::Get()->GetMountLibrary()->AddObserver(this);
+  chromeos::disks::DiskMountManager::GetInstance()->AddObserver(this);
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
       AddNetworkManagerObserver(this);
   burn_manager_ = BurnManager::GetInstance();
@@ -135,7 +135,8 @@ WebUIHandler::WebUIHandler(TabContents* contents)
 }
 
 WebUIHandler::~WebUIHandler() {
-  chromeos::CrosLibrary::Get()->GetMountLibrary()->RemoveObserver(this);
+  chromeos::disks::DiskMountManager::GetInstance()->
+      RemoveObserver(this);
   chromeos::CrosLibrary::Get()->GetBurnLibrary()->RemoveObserver(this);
   chromeos::CrosLibrary::Get()->GetNetworkLibrary()->
       RemoveNetworkManagerObserver(this);
@@ -160,15 +161,16 @@ void WebUIHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void WebUIHandler::DiskChanged(chromeos::MountLibraryEventType event,
-                                   const chromeos::MountLibrary::Disk* disk) {
+void WebUIHandler::DiskChanged(
+    chromeos::disks::DiskMountManagerEventType event,
+    const chromeos::disks::DiskMountManager::Disk* disk) {
   if (!disk->is_parent() || disk->on_boot_device())
     return;
-  if (event == chromeos::MOUNT_DISK_ADDED) {
+  if (event == chromeos::disks::MOUNT_DISK_ADDED) {
     DictionaryValue disk_value;
     CreateDiskValue(*disk, &disk_value);
     web_ui_->CallJavascriptFunction("browserBridge.deviceAdded", disk_value);
-  } else if (event == chromeos::MOUNT_DISK_REMOVED) {
+  } else if (event == chromeos::disks::MOUNT_DISK_REMOVED) {
     StringValue device_path_value(disk->device_path());
     web_ui_->CallJavascriptFunction("browserBridge.deviceRemoved",
         device_path_value);
@@ -180,8 +182,8 @@ void WebUIHandler::DiskChanged(chromeos::MountLibraryEventType event,
 }
 
 void WebUIHandler::BurnProgressUpdated(chromeos::BurnLibrary* object,
-                                           chromeos::BurnEvent evt,
-                                           const ImageBurnStatus& status) {
+                                       chromeos::BurnEvent evt,
+                                       const ImageBurnStatus& status) {
   switch (evt) {
     case(chromeos::BURN_SUCCESS):
       FinalizeBurn();
@@ -278,7 +280,8 @@ void WebUIHandler::OnError(int error_message_id) {
   working_ = false;
 }
 
-void WebUIHandler::CreateDiskValue(const chromeos::MountLibrary::Disk& disk,
+void WebUIHandler::CreateDiskValue(
+    const chromeos::disks::DiskMountManager::Disk& disk,
     DictionaryValue* disk_value) {
   string16 label = ASCIIToUTF16(disk.drive_label());
   base::i18n::AdjustStringForLocaleDirection(&label);
@@ -288,14 +291,16 @@ void WebUIHandler::CreateDiskValue(const chromeos::MountLibrary::Disk& disk,
 }
 
 void WebUIHandler::HandleGetDevices(const ListValue* args) {
-  chromeos::MountLibrary* mount_lib =
-      chromeos::CrosLibrary::Get()->GetMountLibrary();
-  const chromeos::MountLibrary::DiskMap& disks = mount_lib->disks();
+  chromeos::disks::DiskMountManager* disk_mount_manager =
+      chromeos::disks::DiskMountManager::GetInstance();
+  const chromeos::disks::DiskMountManager::DiskMap& disks =
+      disk_mount_manager->disks();
   ListValue results_value;
-  for (chromeos::MountLibrary::DiskMap::const_iterator iter =  disks.begin();
+  for (chromeos::disks::DiskMountManager::DiskMap::const_iterator iter =
+           disks.begin();
        iter != disks.end();
        ++iter) {
-    chromeos::MountLibrary::Disk* disk = iter->second;
+    chromeos::disks::DiskMountManager::Disk* disk = iter->second;
     if (disk->is_parent() && !disk->on_boot_device()) {
       DictionaryValue* disk_value = new DictionaryValue();
       CreateDiskValue(*disk, disk_value);
@@ -613,10 +618,11 @@ void WebUIHandler::ExtractTargetedDevicePath(
 }
 
 int64 WebUIHandler::GetDeviceSize(const std::string& device_path) {
-  chromeos::MountLibrary* mount_lib =
-      chromeos::CrosLibrary::Get()->GetMountLibrary();
-  const chromeos::MountLibrary::DiskMap& disks = mount_lib->disks();
-  return disks.find(device_path)->second->total_size();
+  chromeos::disks::DiskMountManager* disk_mount_manager =
+      chromeos::disks::DiskMountManager::GetInstance();
+  const chromeos::disks::DiskMountManager::DiskMap& disks =
+      disk_mount_manager->disks();
+  return disks.find(device_path)->second->total_size_in_bytes();
 }
 
 bool WebUIHandler::CheckNetwork() {

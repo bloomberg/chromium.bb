@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/dbus/cros_disks_client.h"
 
 #include "base/bind.h"
-#include "base/memory/scoped_vector.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -476,12 +476,11 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
     return;
   }
   // TODO(satorux): Rework this code using Protocol Buffers. crosbug.com/22626
-  ScopedVector<dbus::MessageReader> value_readers_owner;
-  std::map<std::string, dbus::MessageReader*> properties;
+  typedef std::map<std::string, dbus::MessageReader*> PropertiesMap;
+  PropertiesMap properties;
+  STLValueDeleter<PropertiesMap> properties_value_deleter(&properties);
   while (array_reader.HasMoreData()) {
-    // |value_readers_owner| is responsible to delete |value_reader|.
     dbus::MessageReader* value_reader = new dbus::MessageReader(response);
-    value_readers_owner.push_back(value_reader);
     dbus::MessageReader dict_entry_reader(response);
     std::string key;
     if (!array_reader.PopDictEntry(&dict_entry_reader) ||

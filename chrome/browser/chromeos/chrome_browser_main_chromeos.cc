@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
+#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/session_manager_observer.h"
@@ -92,6 +93,8 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
   // the network manager.
   if (chromeos::CrosNetworkChangeNotifierFactory::GetInstance())
     chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Shutdown();
+
+  chromeos::disks::DiskMountManager::Shutdown();
 
   chromeos::BluetoothManager::Shutdown();
 
@@ -180,6 +183,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   session_manager_observer_.reset(new chromeos::SessionManagerObserver);
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
       AddObserver(session_manager_observer_.get());
+
+  // Initialize the disk mount manager.
+  chromeos::disks::DiskMountManager::Initialize();
 
   // Initialize the network change notifier for Chrome OS. The network
   // change notifier starts to monitor changes from the power manager and

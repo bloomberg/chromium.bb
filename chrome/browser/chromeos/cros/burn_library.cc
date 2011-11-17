@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/disks/disk_mount_manager.h"
 #include "chrome/common/zip.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -185,9 +186,10 @@ void BurnLibraryImpl::OnImageUnzipped() {
 
   burning_ = true;
 
-  chromeos::CrosLibrary::Get()->GetMountLibrary()->UnmountDeviceRecursive(
-      target_device_path_.c_str(), &BurnLibraryImpl::DevicesUnmountedCallback,
-      this);
+  chromeos::disks::DiskMountManager::GetInstance()->
+      UnmountDeviceRecursive(target_device_path_,
+                             &BurnLibraryImpl::DevicesUnmountedCallback,
+                             this);
 }
 
 void BurnLibraryImpl::DevicesUnmountedCallback(void* object, bool success) {

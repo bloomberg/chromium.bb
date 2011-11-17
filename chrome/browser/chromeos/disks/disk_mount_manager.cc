@@ -328,7 +328,8 @@ class DiskMountManagerImpl : public DiskMountManager {
     // Check if there is a formatting scheduled.
     PathMap::iterator it = formatting_pending_.find(disk->device_path());
     if (it != formatting_pending_.end()) {
-      const std::string& file_path = it->second;
+      // Copy the string before it gets erased.
+      const std::string file_path = it->second;
       formatting_pending_.erase(it);
       FormatUnmountedDevice(file_path);
     }
@@ -632,19 +633,34 @@ MountType DiskMountManager::MountTypeFromString(const std::string& type_str) {
 
 // static
 void DiskMountManager::Initialize() {
-  VLOG(1) << "DiskMountManager::Initialize";
-  DCHECK(!g_disk_mount_manager);
+  if (g_disk_mount_manager) {
+    LOG(WARNING) << "DiskMountManager was already initialized";
+    return;
+  }
   g_disk_mount_manager = new DiskMountManagerImpl();
-  DCHECK(g_disk_mount_manager);
+  VLOG(1) << "DiskMountManager initialized";
+}
+
+// static
+void DiskMountManager::InitializeForTesting(
+    DiskMountManager* disk_mount_manager) {
+  if (g_disk_mount_manager) {
+    LOG(WARNING) << "DiskMountManager was already initialized";
+    return;
+  }
+  g_disk_mount_manager = disk_mount_manager;
+  VLOG(1) << "DiskMountManager initialized";
 }
 
 // static
 void DiskMountManager::Shutdown() {
-  VLOG(1) << "DiskMountManager::Shutdown";
-  if (g_disk_mount_manager) {
-    delete g_disk_mount_manager;
-    g_disk_mount_manager = NULL;
+  if (!g_disk_mount_manager) {
+    LOG(WARNING) << "DiskMountManager::Shutdown() called with NULL manager";
+    return;
   }
+  delete g_disk_mount_manager;
+  g_disk_mount_manager = NULL;
+  VLOG(1) << "DiskMountManager Shutdown completed";
 }
 
 // static

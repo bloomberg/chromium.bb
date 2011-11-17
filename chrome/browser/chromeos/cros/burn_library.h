@@ -13,7 +13,6 @@
 #include "base/file_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/cros/mount_library.h"
 #include "third_party/cros/chromeos_imageburn.h"
 
 struct ImageBurnStatus {
