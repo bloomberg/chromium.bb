@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
@@ -90,7 +91,7 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &LoginHandler::AddObservers));
+      base::Bind(&LoginHandler::AddObservers, this));
 
   if (!ResourceDispatcherHost::RenderViewForRequest(
           request_, &render_process_host_id_,  &tab_contents_id_)) {
@@ -150,11 +151,10 @@ void LoginHandler::SetAuth(const string16& username,
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &LoginHandler::CloseContentsDeferred));
+      base::Bind(&LoginHandler::CloseContentsDeferred, this));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this, &LoginHandler::SetAuthDeferred, username, password));
+      base::Bind(&LoginHandler::SetAuthDeferred, this, username, password));
 }
 
 void LoginHandler::CancelAuth() {
@@ -167,15 +167,15 @@ void LoginHandler::CancelAuth() {
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &LoginHandler::NotifyAuthCancelled));
+        base::Bind(&LoginHandler::NotifyAuthCancelled, this));
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &LoginHandler::CloseContentsDeferred));
+      base::Bind(&LoginHandler::CloseContentsDeferred, this));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &LoginHandler::CancelAuthDeferred));
+      base::Bind(&LoginHandler::CancelAuthDeferred, this));
 }
 
 void LoginHandler::OnRequestCancelled() {
@@ -325,15 +325,15 @@ void LoginHandler::ReleaseSoon() {
   if (!TestAndSetAuthHandled()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this, &LoginHandler::CancelAuthDeferred));
+        base::Bind(&LoginHandler::CancelAuthDeferred, this));
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &LoginHandler::NotifyAuthCancelled));
+        base::Bind(&LoginHandler::NotifyAuthCancelled, this));
   }
 
   BrowserThread::PostTask(
     BrowserThread::UI, FROM_HERE,
-    NewRunnableMethod(this, &LoginHandler::RemoveObservers));
+    base::Bind(&LoginHandler::RemoveObservers, this));
 
   // Delete this object once all InvokeLaters have been called.
   BrowserThread::ReleaseSoon(BrowserThread::IO, FROM_HERE, this);

@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/input_window_dialog.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
 #include "chrome/browser/ui/webui/input_window_dialog_webui.h"
@@ -109,7 +110,7 @@ class ContentView : public views::DialogDelegateView,
   InputWindowDialogWin* delegate_;
 
   // Helps us set focus to the first Textfield in the window.
-  ScopedRunnableMethodFactory<ContentView> focus_grabber_factory_;
+  base::WeakPtrFactory<ContentView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentView);
 };
@@ -118,7 +119,7 @@ class ContentView : public views::DialogDelegateView,
 // ContentView
 ContentView::ContentView(InputWindowDialogWin* delegate)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
     DCHECK(delegate_);
 }
 
@@ -220,9 +221,9 @@ void ContentView::InitControlLayout() {
   layout->AddView(label);
   layout->AddView(text_field_);
 
-  MessageLoop::current()->PostTask(FROM_HERE,
-      focus_grabber_factory_.NewRunnableMethod(
-          &ContentView::FocusFirstFocusableControl));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&ContentView::FocusFirstFocusableControl,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void ContentView::FocusFirstFocusableControl() {

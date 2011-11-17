@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -12,7 +13,7 @@ HoverTabSelector::HoverTabSelector(
     TabStripModel* tab_strip_model)
     : tab_strip_model_(tab_strip_model),
       tab_transition_tab_index_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   DCHECK(tab_strip_model_);
 }
 
@@ -22,7 +23,7 @@ HoverTabSelector::~HoverTabSelector() {
 void HoverTabSelector::StartTabTransition(int index) {
   // If there is a transition underway already, only start a new
   // transition (canceling the old one) if the target tab differs.
-  if (!task_factory_.empty()) {
+  if (weak_factory_.HasWeakPtrs()) {
     if (index == tab_transition_tab_index_)
       return;
     CancelTabTransition();
@@ -33,16 +34,15 @@ void HoverTabSelector::StartTabTransition(int index) {
     // to that tab taking place.
     const int64 kHoverTransitionDelayInMillis = 500;
     tab_transition_tab_index_ = index;
-    CancelableTask* task = task_factory_.NewRunnableMethod(
-        &HoverTabSelector::PerformTabTransition);
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            task,
-                                            kHoverTransitionDelayInMillis);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&HoverTabSelector::PerformTabTransition,
+                              weak_factory_.GetWeakPtr()),
+        kHoverTransitionDelayInMillis);
   }
 }
 
 void HoverTabSelector::CancelTabTransition() {
-  task_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void HoverTabSelector::PerformTabTransition() {

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/select_file_dialog.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
@@ -69,11 +70,9 @@ void SelectFileDialog::SelectFile(Type type,
     // Inform the listener that no file was selected.
     // Post a task rather than calling FileSelectionCanceled directly to ensure
     // that the listener is called asynchronously.
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     NewRunnableMethod(
-                                         this,
-                                         &SelectFileDialog::CancelFileSelection,
-                                         params));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&SelectFileDialog::CancelFileSelection, this,
+                              params));
     return;
   }
   // Call the platform specific implementation of the file selection dialog.
