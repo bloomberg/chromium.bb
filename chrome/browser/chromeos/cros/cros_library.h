@@ -20,7 +20,6 @@ class BurnLibrary;
 class CertLibrary;
 class CryptohomeLibrary;
 class LibraryLoader;
-class MountLibrary;
 class NetworkLibrary;
 class PowerLibrary;
 class ScreenLockLibrary;
@@ -47,7 +46,6 @@ class CrosLibrary {
     void SetCertLibrary(CertLibrary* library, bool own);
     void SetBurnLibrary(BurnLibrary* library, bool own);
     void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
-    void SetMountLibrary(MountLibrary* library, bool own);
     void SetNetworkLibrary(NetworkLibrary* library, bool own);
     void SetPowerLibrary(PowerLibrary* library, bool own);
     void SetScreenLockLibrary(ScreenLockLibrary* library, bool own);
@@ -73,7 +71,6 @@ class CrosLibrary {
   BurnLibrary* GetBurnLibrary();
   CertLibrary* GetCertLibrary();
   CryptohomeLibrary* GetCryptohomeLibrary();
-  MountLibrary* GetMountLibrary();
   NetworkLibrary* GetNetworkLibrary();
   PowerLibrary* GetPowerLibrary();
   ScreenLockLibrary* GetScreenLockLibrary();
@@ -144,7 +141,6 @@ class CrosLibrary {
   Library<BurnLibrary> burn_lib_;
   Library<CertLibrary> cert_lib_;
   Library<CryptohomeLibrary> crypto_lib_;
-  Library<MountLibrary> mount_lib_;
   Library<NetworkLibrary> network_lib_;
   Library<PowerLibrary> power_lib_;
   Library<ScreenLockLibrary> screen_lock_lib_;
