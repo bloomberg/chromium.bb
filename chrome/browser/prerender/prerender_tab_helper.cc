@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/view_messages.h"
 
 namespace prerender {
 

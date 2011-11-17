@@ -24,7 +24,6 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/view_messages.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "views/focus/accelerator_handler.h"

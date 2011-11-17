@@ -18,7 +18,6 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/view_messages.h"
 #include "ui/gfx/rect.h"
 
 ////////////////

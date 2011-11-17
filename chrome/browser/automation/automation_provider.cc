@@ -86,7 +86,6 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"

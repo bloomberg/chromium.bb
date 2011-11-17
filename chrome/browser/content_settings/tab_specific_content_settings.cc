@@ -28,7 +28,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/view_messages.h"
 #include "webkit/fileapi/file_system_types.h"
 
 using content::BrowserThread;

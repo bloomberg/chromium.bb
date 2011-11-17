@@ -8,7 +8,6 @@
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/view_messages.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources_standard.h"
