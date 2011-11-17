@@ -681,7 +681,11 @@ checkout-all() {
   hg-checkout-binutils
   hg-checkout-newlib
   hg-checkout-compiler-rt
-  git-sync
+  if ${PNACL_IN_CROS_CHROOT}; then
+    git-sync-no-gclient
+  else
+    git-sync
+  fi
 }
 
 hg-checkout-upstream() {
@@ -714,6 +718,20 @@ hg-checkout-newlib() {
 
 hg-checkout-compiler-rt() {
   hg-checkout ${REPO_COMPILER_RT} "${TC_SRC_COMPILER_RT}" ${COMPILER_RT_REV}
+}
+
+git-sync-no-gclient() {
+  if ! [ -d "${TC_SRC_GCC}" ]; then
+    mkdir -p "${PNACL_GIT_ROOT}"
+    git clone http://git.chromium.org/native_client/pnacl-gcc.git \
+              "${TC_SRC_GCC}"
+  fi
+  local gccrev=$(cat ${PNACL_ROOT}/DEPS | tr -d '",' |
+                 grep pnacl_gcc_rev: | awk '{print $2}')
+  spushd "${TC_SRC_GCC}"
+  git fetch
+  git reset --hard "${gccrev}"
+  spopd
 }
 
 git-sync() {
