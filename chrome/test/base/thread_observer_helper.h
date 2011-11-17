@@ -6,6 +6,7 @@
 #define CHROME_TEST_BASE_THREAD_OBSERVER_HELPER_H_
 #pragma once
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,7 +27,7 @@ class ThreadObserverHelper : public base::RefCountedThreadSafe<T, Traits> {
     BrowserThread::PostTask(
         id_,
         FROM_HERE,
-        NewRunnableMethod(this, &ThreadObserverHelper::RegisterObserversTask));
+        base::Bind(&ThreadObserverHelper::RegisterObserversTask, this));
     done_event_.Wait();
   }
 
