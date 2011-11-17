@@ -159,9 +159,31 @@ onload = function() {
     obj.setAttribute("protocol", window.location.protocol);
     var container = document.getElementById("container");
     container.addEventListener("message", handleTestingMessage, true);
+    // Register a bad dispatchEvent to make sure it isn't used. See 'EVIL' note
+    // below.
+    obj.dispatchEvent = function() {
+      LogHTML("<p>Bad dispatchEvent called!");
+    }
     container.appendChild(obj);
   }
 }
+
+// EVIL Note:
+// This part of the script does some nefarious things to make sure that it
+// doesn't affect the behavior of PostMessage (on which all the tests rely). In
+// particular, we replace document.createEvent, MessageEvent.initMessageEvent,
+// and the MessageEvent constructor. Previous versions of the PostMessage
+// implementation made use of these and would fail (http://crbug.com/82604).
+document.createEvent = function() {
+  LogHTML("<p>Bad document.createEvent called!");
+}
+function MessageEvent() {
+  LogHTML("<p>Bad MessageEvent constructor called!");
+}
+MessageEvent.prototype.initMessageEvent = function() {
+  LogHTML("<p>Bad MessageEvent.initMessageEvent called!");
+}
+
 </script>
 </head><body>
 <div>

@@ -10,6 +10,9 @@
 #include "third_party/npapi/bindings/npruntime.h"
 
 struct PP_Var;
+namespace WebKit {
+class WebSerializedScriptValue;
+}
 
 namespace webkit {
 namespace ppapi {
@@ -80,18 +83,10 @@ class MessageChannel {
   // The NPObject we use to expose postMessage to JavaScript.
   MessageChannelNPObject* np_object_;
 
-  // An NPVariant referring to the JavaScript function we use to send a message
-  // to a JavaScript target.
-  NPVariant onmessage_invoker_;
-
-  // Evaluates the JavaScript code for onmessage_invoker_ and makes
-  // it a callable NPVariant for that function.  Returns true on success, false
-  // otherwise.
-  bool EvaluateOnMessageInvoker();
-
   // Post a message to the onmessage handler for this channel's instance
   // synchronously.  This is used by PostMessageToJavaScript.
-  void PostMessageToJavaScriptImpl(PP_Var message_data);
+  void PostMessageToJavaScriptImpl(
+      const WebKit::WebSerializedScriptValue& message_data);
   // Post a message to the PPP_Instance HandleMessage function for this
   // channel's instance.  This is used by PostMessageToNative.
   void PostMessageToNativeImpl(PP_Var message_data);
