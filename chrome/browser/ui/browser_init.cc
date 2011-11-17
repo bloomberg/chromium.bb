@@ -102,7 +102,7 @@
 #include "chrome/browser/chromeos/network_message_observer.h"
 #include "chrome/browser/chromeos/sms_observer.h"
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/wm_message_listener.h"
+#include "chrome/browser/chromeos/legacy_window_manager/wm_message_listener.h"
 #endif
 #endif
 

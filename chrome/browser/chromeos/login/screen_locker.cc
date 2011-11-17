@@ -47,7 +47,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #endif
 
 using content::BrowserThread;

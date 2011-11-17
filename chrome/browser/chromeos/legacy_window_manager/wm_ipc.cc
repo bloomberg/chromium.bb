@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 
 #include <gdk/gdkx.h>
 extern "C" {

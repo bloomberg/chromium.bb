@@ -37,7 +37,7 @@
 #include "views/widget/widget.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #endif
 
 #if defined(TOUCH_UI)

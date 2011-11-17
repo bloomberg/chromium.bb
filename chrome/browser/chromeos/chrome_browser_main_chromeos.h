@@ -11,6 +11,10 @@
 namespace chromeos {
 class BrightnessObserver;
 class SessionManagerObserver;
+
+#if defined(USE_AURA)
+class InitialBrowserWindowObserver;
+#endif
 }  // namespace chromeos
 
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
@@ -27,6 +31,11 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  private:
   scoped_ptr<chromeos::BrightnessObserver> brightness_observer_;
   scoped_ptr<chromeos::SessionManagerObserver> session_manager_observer_;
+
+#if defined(USE_AURA)
+  scoped_ptr<chromeos::InitialBrowserWindowObserver>
+      initial_browser_window_observer_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

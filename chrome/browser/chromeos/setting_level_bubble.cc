@@ -22,7 +22,7 @@
 #include "views/widget/root_view.h"
 
 #if !defined(USE_AURA)
-#include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #endif
 

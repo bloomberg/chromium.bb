@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_WM_MESSAGE_LISTENER_H_
-#define CHROME_BROWSER_CHROMEOS_WM_MESSAGE_LISTENER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LEGACY_WINDOW_MANAGER_WM_MESSAGE_LISTENER_H_
+#define CHROME_BROWSER_CHROMEOS_LEGACY_WINDOW_MANAGER_WM_MESSAGE_LISTENER_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -11,7 +11,7 @@
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 
 namespace chromeos {
 
@@ -64,4 +64,4 @@ class WmMessageListener : public MessageLoopForUI::Observer {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_WM_MESSAGE_LISTENER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LEGACY_WINDOW_MANAGER_WM_MESSAGE_LISTENER_H_

@@ -36,7 +36,7 @@
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #endif
 #endif
 

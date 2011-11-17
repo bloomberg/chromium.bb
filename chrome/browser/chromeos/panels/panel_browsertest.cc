@@ -15,7 +15,7 @@
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chromeos/wm_ipc.h"
+#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
 #endif
 
 namespace chromeos {

@@ -34,6 +34,10 @@
 #include <gtk/gtk.h>
 #endif
 
+#if defined(USE_AURA)
+#include "chrome/browser/chromeos/legacy_window_manager/initial_browser_window_observer.h"
+#endif
+
 class MessageLoopObserver : public MessageLoopForUI::Observer {
 #if defined(TOUCH_UI) || defined(USE_AURA)
   virtual base::EventStatus WillProcessEvent(
@@ -196,10 +200,15 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   // detector starts to monitor changes from the update engine.
   UpgradeDetectorChromeos::GetInstance()->Init();
 
-  // For http://crosbug.com/p/5795 and http://crosbug.com/p/6245.
-  // Enable Num Lock on X start up.
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
-    chromeos::input_method::InputMethodManager::GetInstance()->GetXKeyboard()->
-        SetNumLockEnabled(true);
+    // For http://crosbug.com/p/5795 and http://crosbug.com/p/6245.
+    // Enable Num Lock on X start up.
+      chromeos::input_method::InputMethodManager::GetInstance()->
+          GetXKeyboard()->SetNumLockEnabled(true);
+
+#if defined(USE_AURA)
+      initial_browser_window_observer_.reset(
+          new chromeos::InitialBrowserWindowObserver);
+#endif
   }
 }
