@@ -19,6 +19,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/cookie_util.h"
 
 namespace keys = extension_cookies_api_constants;
 
@@ -59,7 +60,7 @@ DictionaryValue* CreateCookieValue(
   result->SetString(keys::kValueKey, UTF8ToUTF16(cookie.Value()));
   result->SetString(keys::kDomainKey, cookie.Domain());
   result->SetBoolean(keys::kHostOnlyKey,
-                     net::CookieMonster::DomainIsHostOnly(cookie.Domain()));
+                     net::cookie_util::DomainIsHostOnly(cookie.Domain()));
 
   // A non-UTF8 path is invalid, so we just replace it with an empty string.
   result->SetString(keys::kPathKey,
@@ -178,12 +179,12 @@ bool MatchFilter::MatchesDomain(const std::string& domain) {
   if (!details_->GetString(keys::kDomainKey, &filter_value))
     return false;
   // Add a leading '.' character to the filter domain if it doesn't exist.
-  if (net::CookieMonster::DomainIsHostOnly(filter_value))
+  if (net::cookie_util::DomainIsHostOnly(filter_value))
     filter_value.insert(0, ".");
 
   std::string sub_domain(domain);
   // Strip any leading '.' character from the input cookie domain.
-  if (!net::CookieMonster::DomainIsHostOnly(sub_domain))
+  if (!net::cookie_util::DomainIsHostOnly(sub_domain))
     sub_domain = sub_domain.substr(1);
 
   // Now check whether the domain argument is a subdomain of the filter domain.

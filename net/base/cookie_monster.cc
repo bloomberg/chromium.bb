@@ -61,7 +61,7 @@
 #include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "googleurl/src/url_canon.h"
-#include "net/base/net_util.h"
+#include "net/base/cookie_util.h"
 #include "net/base/registry_controlled_domain.h"
 
 using base::Time;
@@ -188,71 +188,6 @@ struct CookieSignature {
   std::string path;
 };
 
-// Returns the effective TLD+1 for a given host. This only makes sense for http
-// and https schemes. For other schemes, the host will be returned unchanged
-// (minus any leading period).
-std::string GetEffectiveDomain(const std::string& scheme,
-                               const std::string& host) {
-  if (scheme == "http" || scheme == "https")
-    return RegistryControlledDomainService::GetDomainAndRegistry(host);
-
-  if (!CookieMonster::DomainIsHostOnly(host))
-    return host.substr(1);
-  return host;
-}
-
-// Determine the actual cookie domain based on the domain string passed
-// (if any) and the URL from which the cookie came.
-// On success returns true, and sets cookie_domain to either a
-//   -host cookie domain (ex: "google.com")
-//   -domain cookie domain (ex: ".google.com")
-bool GetCookieDomainWithString(const GURL& url,
-                               const std::string& domain_string,
-                               std::string* result) {
-  const std::string url_host(url.host());
-
-  // If no domain was specified in the domain string, default to a host cookie.
-  // We match IE/Firefox in allowing a domain=IPADDR if it matches the url
-  // ip address hostname exactly.  It should be treated as a host cookie.
-  if (domain_string.empty() ||
-      (url.HostIsIPAddress() && url_host == domain_string)) {
-    *result = url_host;
-    DCHECK(CookieMonster::DomainIsHostOnly(*result));
-    return true;
-  }
-
-  // Get the normalized domain specified in cookie line.
-  url_canon::CanonHostInfo ignored;
-  std::string cookie_domain(CanonicalizeHost(domain_string, &ignored));
-  if (cookie_domain.empty())
-    return false;
-  if (cookie_domain[0] != '.')
-    cookie_domain = "." + cookie_domain;
-
-  // Ensure |url| and |cookie_domain| have the same domain+registry.
-  const std::string url_scheme(url.scheme());
-  const std::string url_domain_and_registry(
-      GetEffectiveDomain(url_scheme, url_host));
-  if (url_domain_and_registry.empty())
-    return false;  // IP addresses/intranet hosts can't set domain cookies.
-  const std::string cookie_domain_and_registry(
-      GetEffectiveDomain(url_scheme, cookie_domain));
-  if (url_domain_and_registry != cookie_domain_and_registry)
-    return false;  // Can't set a cookie on a different domain + registry.
-
-  // Ensure |url_host| is |cookie_domain| or one of its subdomains.  Given that
-  // we know the domain+registry are the same from the above checks, this is
-  // basically a simple string suffix check.
-  if ((url_host.length() < cookie_domain.length()) ?
-      (cookie_domain != ("." + url_host)) :
-      url_host.compare(url_host.length() - cookie_domain.length(),
-                       cookie_domain.length(), cookie_domain))
-    return false;
-
-  *result = cookie_domain;
-  return true;
-}
-
 // Determine the cookie domain to use for setting the specified cookie.
 bool GetCookieDomain(const GURL& url,
                      const CookieMonster::ParsedCookie& pc,
@@ -260,7 +195,7 @@ bool GetCookieDomain(const GURL& url,
   std::string domain_string;
   if (pc.HasDomain())
     domain_string = pc.Domain();
-  return GetCookieDomainWithString(url, domain_string, result);
+  return cookie_util::GetCookieDomainWithString(url, domain_string, result);
 }
 
 std::string CanonPathWithString(const GURL& url,
@@ -572,10 +507,6 @@ Time CookieMonster::ParseCookieTime(const std::string& time_string) {
   // NOTREACHED() << "Cookie exploded expiration failed: " << time_string;
 
   return Time();
-}
-
-bool CookieMonster::DomainIsHostOnly(const std::string& domain_string) {
-  return (domain_string.empty() || domain_string[0] != '.');
 }
 
 // Task classes for queueing the coming request.
@@ -1128,7 +1059,8 @@ void CookieMonster::DoCookieTaskForURL(
     // then run the task, otherwise load from DB.
     if (!loaded_) {
       // Checks if the domain key has been loaded.
-      std::string key(GetEffectiveDomain(url.scheme(), url.host()));
+      std::string key(cookie_util::GetEffectiveDomain(url.scheme(),
+                                                       url.host()));
       if (keys_loaded_.find(key) == keys_loaded_.end()) {
         std::map<std::string, std::deque<scoped_refptr<CookieMonsterTask> > >
           ::iterator it = tasks_queued_.find(key);
@@ -1734,7 +1666,8 @@ void CookieMonster::FindCookiesForHostAndDomain(
                       cookies);
 
     // See if we can search for domain cookies, i.e. if the host has a TLD + 1.
-    const std::string domain(GetEffectiveDomain(url.scheme(), key));
+    const std::string domain(cookie_util::GetEffectiveDomain(url.scheme(),
+                                                              key));
     if (domain.empty())
       return;
     DCHECK_LE(domain.length(), key.length());
@@ -2643,8 +2576,8 @@ CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
     domain_string = pc.Domain();
   }
   bool result
-      = GetCookieDomainWithString(url, domain_string,
-                                  &cookie_domain);
+      = cookie_util::GetCookieDomainWithString(url, domain_string,
+                                                &cookie_domain);
   // Caller is responsible for passing in good arguments.
   DCHECK(result);
   domain_ = cookie_domain;
@@ -2727,8 +2660,10 @@ CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
   if (parsed_domain != domain)
     return NULL;
   std::string cookie_domain;
-  if (!GetCookieDomainWithString(url, parsed_domain, &cookie_domain))
+  if (!cookie_util::GetCookieDomainWithString(url, parsed_domain,
+                                               &cookie_domain)) {
     return NULL;
+  }
 
   std::string parsed_path = ParsedCookie::ParseValueString(path);
   if (parsed_path != path)
