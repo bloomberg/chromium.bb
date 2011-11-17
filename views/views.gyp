@@ -258,7 +258,6 @@
         'drag_utils.h',
         'drag_utils_aura.cc',
         'drag_utils_gtk.cc',
-        'drag_utils_linux.cc',
         'drag_utils_win.cc',
         'events/event.cc',
         'events/event.h',
@@ -438,7 +437,6 @@
             ['exclude', 'controls/menu/menu_2.*'],
           ],
           'sources!': [
-            'drag_utils_linux.cc',
             'drag_utils_win.cc',
             'controls/menu/menu_config_linux.cc',
             'controls/menu/menu_item_view_linux.cc',
