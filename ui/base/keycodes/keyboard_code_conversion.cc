@@ -57,10 +57,12 @@ uint16 GetCharacterFromKeyCode(KeyboardCode key_code, int flags) {
   }
 
   // Normal characters
-  if (key_code >= VKEY_0 && key_code <= VKEY_9)
-    return shift ? ")!@#$%^&*("[key_code - VKEY_0] : key_code;
-  else if (key_code >= VKEY_NUMPAD0 && key_code <= VKEY_NUMPAD9)
+  if (key_code >= VKEY_0 && key_code <= VKEY_9) {
+    return shift ? ")!@#$%^&*("[key_code - VKEY_0] :
+        static_cast<uint16>(key_code);
+  } else if (key_code >= VKEY_NUMPAD0 && key_code <= VKEY_NUMPAD9) {
     return key_code - VKEY_NUMPAD0 + '0';
+  }
 
   switch (key_code) {
     case VKEY_TAB:
