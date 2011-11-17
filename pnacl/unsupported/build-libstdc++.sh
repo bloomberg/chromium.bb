@@ -13,8 +13,8 @@
 set -o nounset
 set -o errexit
 
-
-readonly INSTALL_ROOT="$(pwd)/../toolchain/pnacl_linux_x86_64_newlib"
+readonly DEFAULT_ROOT="$(pwd)/../toolchain/pnacl_linux_x86_64_newlib"
+readonly INSTALL_ROOT=${INSTALL_ROOT:-${DEFAULT_ROOT}}
 readonly INSTALL_BIN="${INSTALL_ROOT}/bin"
 readonly INSTALL_LIB="${INSTALL_ROOT}/lib"
 readonly LIBSTDCPP_INSTALL_DIR="${INSTALL_ROOT}/pkg/libstdcpp"
@@ -70,25 +70,6 @@ STD_ENV_FOR_LIBSTDCPP_CLANG=(
   OBJDUMP_FOR_TARGET="${ILLEGAL_TOOL}" )
 
 
-unpatch() {
-  pushd ${GCC_SRC}
-  git reset --hard HEAD
-  popd
-}
-
-generate-patch() {
-  pushd ${GCC_SRC}
-  git diff
-  popd
-}
-
-libstdcpp-patch() {
-  pushd ${GCC_SRC}
-  patch -p1 < ../../../pnacl/unsupported/patch-libstdc++
-  popd
-}
-
-
 libstdcpp-configure() {
   mkdir -p ${BUILD}
   pushd ${BUILD}
@@ -140,8 +121,6 @@ libstdcpp-install() {
 }
 
 all() {
-  unpatch
-  libstdcpp-patch
   libstdcpp-configure
   libstdcpp-make
   libstdcpp-install
