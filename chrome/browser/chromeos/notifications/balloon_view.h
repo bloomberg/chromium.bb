@@ -99,8 +99,8 @@ class BalloonViewImpl : public BalloonView,
   // Non-owned pointer to the balloon which owns this object.
   Balloon* balloon_;
 
-  // The renderer of the HTML contents. Pointer owned by the views hierarchy.
-  BalloonViewHost* html_contents_;
+  // The renderer of the HTML contents.
+  scoped_ptr<BalloonViewHost> html_contents_;
 
   // A widget for ControlView.
   scoped_ptr<views::Widget> control_view_host_;

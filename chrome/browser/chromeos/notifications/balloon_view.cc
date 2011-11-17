@@ -214,7 +214,7 @@ BalloonViewImpl::~BalloonViewImpl() {
   if (control_view_host_.get()) {
     control_view_host_->CloseNow();
   }
-  if (html_contents_) {
+  if (html_contents_.get()) {
     html_contents_->Shutdown();
   }
 }
@@ -224,7 +224,7 @@ BalloonViewImpl::~BalloonViewImpl() {
 
 void BalloonViewImpl::Show(Balloon* balloon) {
   balloon_ = balloon;
-  html_contents_ = new BalloonViewHost(balloon);
+  html_contents_.reset(new BalloonViewHost(balloon));
   if (web_ui_)
     html_contents_->EnableWebUI();
   AddChildView(html_contents_->view());
@@ -255,7 +255,7 @@ gfx::Size BalloonViewImpl::GetSize() const {
 }
 
 BalloonHost* BalloonViewImpl::GetHost() const {
-  return html_contents_;
+  return html_contents_.get();
 }
 
 void BalloonViewImpl::RepositionToBalloon() {
@@ -352,7 +352,7 @@ void BalloonViewImpl::Deactivated() {
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
   html_contents_->Shutdown();
-  html_contents_ = NULL;
+  html_contents_.reset();
   balloon_->OnClose(by_user);
 }
 
