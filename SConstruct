@@ -14,7 +14,10 @@ import sys
 import zlib
 sys.path.append("./common")
 sys.path.append('../third_party')
-import simplejson
+try
+  import json
+except Exception:
+  import simplejson as json
 
 from SCons.Errors import UserError
 from SCons.Script import GetBuildFailures
@@ -1314,7 +1317,7 @@ pre_base_env.AddMethod(CopyLibsForExtension)
 # runnable-ld.so.
 def GenerateManifestFunc(target, source, env):
   source_file = open(str(source[0]), 'r')
-  obj = simplejson.load(source_file)
+  obj = json.load(source_file)
   source_file.close()
   libs_file = open(str(source[1]), 'r')
   lib_names = []
@@ -1336,7 +1339,7 @@ def GenerateManifestFunc(target, source, env):
     obj['files']['main.nexe'][k] = v.copy()
     v['url'] = 'runnable-ld.so'
   target_file = open(str(target[0]), 'w')
-  simplejson.dump(obj, target_file)
+  json.dump(obj, target_file)
   target_file.close()
   return 0
 
@@ -1344,7 +1347,7 @@ def GenerateManifestFunc(target, source, env):
 # Returns nexe specified in manifest file.
 def GetNexeFromManifest(env, manifest):
   manifest_file = open(str(env.File(manifest)), 'r')
-  obj = simplejson.load(manifest_file)
+  obj = json.load(manifest_file)
   manifest_file.close()
   nexe = obj['program'][env.subst('${TARGET_FULLARCH}')]['url']
   return nexe
