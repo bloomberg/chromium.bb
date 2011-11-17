@@ -31,7 +31,7 @@ ARM_CROSS_TARGET = 'armv7a-cros-linux-gnueabi'
 # CODE_SOURCERY_PREFIX = J(BASE_DIR, 'arm-2009q3', 'bin', ARM_CROSS_TARGET)
 # CODE_SOURCERY_PREFIX = ""
 # CODE_SOURCERY_JAIL = J(BASE_DIR, 'arm-2009q3', ARM_CROSS_TARGET, 'libc')
-LD_SCRIPT_TRUSTED = J(BASE_DIR, 'ld_script_arm_trusted')
+LD_SCRIPT_TRUSTED = J(NACL_ROOT, 'pnacl', 'ld_script_arm_trusted_cros')
 
 # so do we need to explicitly use the shell scripts in this directory?
 # "/usr/x86_64-pc-linux-gnu/armv7a-cros-linux-gnueabi/gcc-bin/4.4.3/"
