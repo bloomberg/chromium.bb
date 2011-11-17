@@ -67,6 +67,11 @@ var EventsView = (function() {
         g_browser.sourceTracker.deleteAllSourceEntries.bind(
             g_browser.sourceTracker);
 
+    $(EventsView.CLEAR_CACHE_ID).onclick = this.clearCache_.bind(this);
+
+    $(EventsView.FLUSH_SOCKETS_ID).onclick =
+        g_browser.sendFlushSocketPools.bind(g_browser);
+
     $(EventsView.SELECT_ALL_ID).addEventListener(
         'click', this.selectAll_.bind(this), true);
 
@@ -94,6 +99,8 @@ var EventsView = (function() {
   EventsView.FILTER_COUNT_ID = 'events-view-filter-count';
   EventsView.DELETE_SELECTED_ID = 'events-view-delete-selected';
   EventsView.DELETE_ALL_ID = 'events-view-delete-all';
+  EventsView.CLEAR_CACHE_ID = 'events-view-clear-cache';
+  EventsView.FLUSH_SOCKETS_ID = 'events-view-flush-sockets';
   EventsView.SELECT_ALL_ID = 'events-view-select-all';
   EventsView.SORT_BY_ID_ID = 'events-view-sort-by-id';
   EventsView.SORT_BY_SOURCE_TYPE_ID = 'events-view-sort-by-source';
@@ -459,6 +466,12 @@ var EventsView = (function() {
 
     onLoadLogFinish: function(data) {
       return true;
+    },
+
+    // Clear the browser and host caches.
+    clearCache_: function() {
+      g_browser.sendClearHostResolverCache();
+      g_browser.sendClearBrowserCache();
     },
 
     incrementPrefilterCount: function(offset) {

@@ -24,6 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/connection_tester.h"
@@ -174,11 +175,12 @@ class NetInternalsMessageHandler
   // Javascript message handlers.
   void OnRendererReady(const ListValue* list);
   void OnEnableHttpThrottling(const ListValue* list);
+  void OnClearBrowserCache(const ListValue* list);
+  void OnGetPrerenderInfo(const ListValue* list);
 #ifdef OS_CHROMEOS
   void OnRefreshSystemLogs(const ListValue* list);
   void OnGetSystemLog(const ListValue* list);
 #endif
-  void OnGetPrerenderInfo(const ListValue* list);
 
  private:
   class IOThreadImpl;
@@ -532,6 +534,23 @@ void NetInternalsMessageHandler::RegisterMessages() {
       base::Bind(&IOThreadImpl::CallbackHelper,
                  &IOThreadImpl::OnGetServiceProviders, proxy_));
 #endif
+
+  web_ui_->RegisterMessageCallback(
+      "setLogLevel",
+      base::Bind(&IOThreadImpl::CallbackHelper,
+                 &IOThreadImpl::OnSetLogLevel, proxy_));
+  web_ui_->RegisterMessageCallback(
+      "enableHttpThrottling",
+      base::Bind(&NetInternalsMessageHandler::OnEnableHttpThrottling,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "clearBrowserCache",
+      base::Bind(&NetInternalsMessageHandler::OnClearBrowserCache,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback(
+      "getPrerenderInfo",
+      base::Bind(&NetInternalsMessageHandler::OnGetPrerenderInfo,
+                 base::Unretained(this)));
 #ifdef OS_CHROMEOS
   web_ui_->RegisterMessageCallback(
       "refreshSystemLogs",
@@ -542,18 +561,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
       base::Bind(&NetInternalsMessageHandler::OnGetSystemLog,
                  base::Unretained(this)));
 #endif
-  web_ui_->RegisterMessageCallback(
-      "setLogLevel",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnSetLogLevel, proxy_));
-  web_ui_->RegisterMessageCallback(
-      "enableHttpThrottling",
-      base::Bind(&NetInternalsMessageHandler::OnEnableHttpThrottling,
-                 base::Unretained(this)));
-  web_ui_->RegisterMessageCallback(
-      "getPrerenderInfo",
-      base::Bind(&NetInternalsMessageHandler::OnGetPrerenderInfo,
-                 base::Unretained(this)));
 }
 
 void NetInternalsMessageHandler::SendJavascriptCommand(
@@ -613,6 +620,15 @@ void NetInternalsMessageHandler::OnEnableHttpThrottling(const ListValue* list) {
   if (http_throttling_may_experiment_.GetValue()) {
     http_throttling_may_experiment_.SetValue(false);
   }
+}
+
+void NetInternalsMessageHandler::OnClearBrowserCache(const ListValue* list) {
+  BrowsingDataRemover* remover =
+      new BrowsingDataRemover(Profile::FromWebUI(web_ui()),
+                              BrowsingDataRemover::EVERYTHING,
+                              base::Time());
+  remover->Remove(BrowsingDataRemover::REMOVE_CACHE);
+  // BrowsingDataRemover deletes itself.
 }
 
 void NetInternalsMessageHandler::OnGetPrerenderInfo(const ListValue* list) {

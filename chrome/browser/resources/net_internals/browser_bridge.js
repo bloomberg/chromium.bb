@@ -148,6 +148,10 @@ var BrowserBridge = (function() {
       this.send('clearHostResolverCache');
     },
 
+    sendClearBrowserCache: function() {
+      this.send('clearBrowserCache');
+    },
+
     sendStartConnectionTests: function(url) {
       this.send('startConnectionTests', [url]);
     },
