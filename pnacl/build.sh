@@ -237,13 +237,13 @@ else
 fi
 
 # Current milestones in each repo
-readonly UPSTREAM_REV=${UPSTREAM_REV:-506234ae2c6f}
+readonly UPSTREAM_REV=${UPSTREAM_REV:-ee867bdd264a}
 
 readonly NEWLIB_REV=c6358617f3fd
 readonly BINUTILS_REV=17a01203bd48
 readonly COMPILER_RT_REV=1a3a6ffb31ea
 
-readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-144148}
+readonly LLVM_PROJECT_REV=${LLVM_PROJECT_REV:-144909}
 readonly LLVM_MASTER_REV=${LLVM_PROJECT_REV}
 readonly CLANG_REV=${LLVM_PROJECT_REV}
 readonly DRAGONEGG_REV=${LLVM_PROJECT_REV}
@@ -1014,7 +1014,7 @@ clean() {
 #@ fast-clean            - Clean everything except LLVM.
 fast-clean() {
   local did_backup=false
-  local backup_dir="${TC_BUILD_LLVM}-backup"
+  local backup_dir="${PNACL_ROOT}/build/llvm-${LIBMODE}-backup"
 
   if [ -d "${TC_BUILD_LLVM}" ]; then
     rm -rf "${backup_dir}"
