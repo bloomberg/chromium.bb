@@ -226,6 +226,7 @@ def _SetEnvForPnacl(env, root):
   else:
     pnacl_include = os.path.join(root, 'sysroot', 'include')
   pnacl_ar = binprefix + 'ar' + binext
+  pnacl_as = binprefix + 'as' + binext
   pnacl_nm = binprefix + 'nm' + binext
   pnacl_ranlib = binprefix + 'ranlib' + binext
 
@@ -241,6 +242,7 @@ def _SetEnvForPnacl(env, root):
     sys.exit(-1)
 
   pnacl_ld = binprefix + 'ld' + binext
+  pnacl_nativeld = binprefix + 'nativeld' + binext
   pnacl_disass = binprefix + 'dis' + binext
   pnacl_strip = binprefix + 'strip' + binext
 
@@ -285,11 +287,10 @@ def _SetEnvForPnacl(env, root):
               # (SharedLibrary linking) because scons doesn't do anything
               # with shared libraries except use them with the toolchain.
               SHLINK=pnacl_cxx + arch_flag + pnacl_ld_flags,
-              # C_ONLY_LINK is needed when building libehsupport,
-              # because libstdc++ is not yet available.
-              C_ONLY_LINK=pnacl_cc + arch_flag + pnacl_ld_flags,
               LD=pnacl_ld,
+              NATIVELD=pnacl_nativeld,
               AR=pnacl_ar,
+              AS=pnacl_as + arch_flag,
               RANLIB=pnacl_ranlib,
               DISASS=pnacl_disass,
               OBJDUMP=pnacl_disass,
@@ -317,9 +318,12 @@ def PNaClForceNative(env):
   assert(env.Bit('bitcode'))
   env.Replace(OBJSUFFIX='.o',
               SHLIBSUFFIX='.so')
-  env.Append(ASFLAGS=['-arch', '${TARGET_FULLARCH}'],
-             CCFLAGS=['-arch', '${TARGET_FULLARCH}', '--pnacl-allow-translate'],
-             LINKFLAGS=['--pnacl-allow-native'])
+  arch_flag = ' -arch ${TARGET_FULLARCH}'
+  cc_flags = ' --pnacl-allow-native --pnacl-allow-translate'
+  env.Append(CC=arch_flag + cc_flags,
+             CXX=arch_flag + cc_flags,
+             LINK=cc_flags) # Already has -arch
+  env['LD'] = '${NATIVELD}' + arch_flag
   env['SHLINK'] = '${LINK}'
 
 # Get an environment for a different frontend when in
