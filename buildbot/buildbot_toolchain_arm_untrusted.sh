@@ -139,6 +139,10 @@ rm -rf /tmp/.org.chromium.Chromium.*
 rm -rf toolchain/${TOOLCHAIN_LABEL}
 rm -rf toolchain/hg*
 rm -rf toolchain/test-log
+# TODO(robertm):
+# Revert this as soon as we no longer patch the git repo
+# in build.sh
+rm -rf pnacl/git/gcc
 
 echo @@@BUILD_STEP show-config@@@
 PNACL_BUILDBOT=true PNACL_PRUNE=true ${PNACL_BUILD} show-config
