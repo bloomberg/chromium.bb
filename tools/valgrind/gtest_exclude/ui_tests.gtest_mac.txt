@@ -319,3 +319,10 @@ PrintPreviewUITest.PrintCommands
 
 # Fails consistently. http://crbug.com/104535.
 OutOfProcessPPAPITest.TCPSocketPrivate
+PPAPITest.Flash_GetCommandLineArgs
+OutOfProcessPPAPITest.Flash_SetInstanceAlwaysOnTop
+OutOfProcessPPAPITest.Flash_MessageLoop
+OutOfProcessPPAPITest.Flash_GetProxyForURL
+OutOfProcessPPAPITest.Flash_GetLocalTimeZoneOffset
+PPAPITest.Flash_SetInstanceAlwaysOnTop
+PPAPITest.Flash_MessageLoop
