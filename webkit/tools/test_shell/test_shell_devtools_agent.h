@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef TEST_SHELL_DEVTOOLS_AGENT_H_
-#define TEST_SHELL_DEVTOOLS_AGENT_H_
+#ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_DEVTOOLS_AGENT_H_
+#define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_DEVTOOLS_AGENT_H_
+
+#include <string>
 
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
@@ -14,9 +16,8 @@ namespace WebKit {
 
 class WebDevToolsAgent;
 class WebView;
-struct WebDevToolsMessageData;
 
-} // namespace WebKit
+}  // namespace WebKit
 
 class TestShellDevToolsCallArgs;
 class TestShellDevToolsClient;
@@ -61,4 +62,4 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
   DISALLOW_COPY_AND_ASSIGN(TestShellDevToolsAgent);
 };
 
-#endif  // TEST_SHELL_DEVTOOLS_AGENT_H_
+#endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_DEVTOOLS_AGENT_H_

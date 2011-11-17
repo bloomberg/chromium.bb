@@ -18,7 +18,6 @@ class MessageLoopProxy;
 }
 
 namespace quota {
-class QuotaClient;
 class QuotaManagerProxy;
 }
 
@@ -27,7 +26,6 @@ namespace fileapi {
 class FileSystemContext;
 class FileSystemPathManager;
 class FileSystemQuotaUtil;
-class FileSystemUsageTracker;
 class SandboxMountPointProvider;
 
 struct DefaultContextDeleter;

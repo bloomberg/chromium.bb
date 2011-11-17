@@ -17,12 +17,9 @@
 
 namespace base {
 class MessageLoopProxy;
-class Time;
 }
 
 namespace fileapi {
-
-class FileSystemOperationContext;
 
 using base::MessageLoopProxy;
 using base::PlatformFile;

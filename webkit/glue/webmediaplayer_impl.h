@@ -59,8 +59,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerClient.h"
 
-class GURL;
-
 namespace WebKit {
 class WebFrame;
 }
@@ -71,7 +69,6 @@ class MediaLog;
 
 namespace webkit_glue {
 
-class MediaResourceLoaderBridgeFactory;
 class MediaStreamClient;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerProxy;

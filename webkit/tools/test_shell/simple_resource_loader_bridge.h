@@ -11,7 +11,6 @@
 
 class FilePath;
 class GURL;
-class TestShellRequestContext;
 
 class SimpleResourceLoaderBridge {
  public:

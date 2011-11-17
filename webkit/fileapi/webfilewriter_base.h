@@ -11,7 +11,6 @@
 
 namespace WebKit {
 class WebFileWriterClient;
-class WebString;
 class WebURL;
 }
 

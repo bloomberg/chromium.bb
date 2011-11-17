@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_SUPPORT_WEBIT_SUPPORT_H_
-#define WEBKIT_SUPPORT_WEBIT_SUPPORT_H_
+#ifndef WEBKIT_SUPPORT_WEBKIT_SUPPORT_H_
+#define WEBKIT_SUPPORT_WEBKIT_SUPPORT_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/string16.h"
@@ -14,11 +13,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
-class WebURLLoaderMockFactory;
 namespace WebKit {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
-class WebCString;
 class WebFileSystemCallbacks;
 class WebFrame;
 class WebKitPlatformSupport;
@@ -226,4 +223,4 @@ void EnableWebCoreLogChannels(const std::string& channels);
 
 }  // namespace webkit_support
 
-#endif  // WEBKIT_SUPPORT_WEBIT_CLIENT_IMPL_H_
+#endif  // WEBKIT_SUPPORT_WEBKIT_SUPPORT_H_

@@ -12,6 +12,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -44,7 +45,6 @@
 
 struct WebPreferences;
 class GURL;
-class TestGeolocationService;
 class TestShell;
 class WebWidgetHost;
 
@@ -250,7 +250,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void DidStopLoadingForPlugin() OVERRIDE {}
   virtual WebKit::WebCookieJar* GetCookieJar() OVERRIDE;
 
-  TestWebViewDelegate(TestShell* shell);
+  explicit TestWebViewDelegate(TestShell* shell);
   virtual ~TestWebViewDelegate();
   void Reset();
 
@@ -329,7 +329,6 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   }
 
  private:
-
   // Called the title of the page changes.
   // Can be used to update the title of the window.
   void SetPageTitle(const string16& title);

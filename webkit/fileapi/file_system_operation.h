@@ -5,6 +5,7 @@
 #ifndef WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
 #define WEBKIT_FILEAPI_FILE_SYSTEM_OPERATION_H_
 
+#include <string>
 #include <vector>
 
 #include "base/file_path.h"
@@ -38,7 +39,6 @@ class FileSystemCallbackDispatcher;
 class FileSystemContext;
 class FileWriterDelegate;
 class FileSystemOperationTest;
-class FileSystemQuotaUtil;
 
 // This class is designed to serve one-time file system operation per instance.
 // Only one method(CreateFile, CreateDirectory, Copy, Move, DirectoryExists,

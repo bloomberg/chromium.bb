@@ -21,7 +21,6 @@
 namespace sql {
 class Connection;
 class MetaTable;
-class Statement;
 }
 
 class GURL;

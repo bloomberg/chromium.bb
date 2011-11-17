@@ -13,8 +13,6 @@
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
 
-class Extension;
-
 namespace chromeos {
 
 class FileAccessPermissions {
@@ -39,6 +37,6 @@ class FileAccessPermissions {
   PathAccessMap path_map_;
 };
 
-};
+}  // namespace chromeos
 
 #endif  // WEBKIT_CHROMEOS_FILEAPI_FILE_ACCESS_PERMISSIONS_H_

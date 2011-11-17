@@ -35,7 +35,6 @@ class PlatformCanvas;
 namespace WebKit {
 class WebFrame;
 class WebString;
-class WebView;
 }
 
 namespace webkit {
@@ -216,6 +215,6 @@ bool IsSingleProcess();
 // ---- END FUNCTIONS IMPLEMENTED BY EMBEDDER ---------------------------------
 
 
-} // namespace webkit_glue
+}  // namespace webkit_glue
 
 #endif  // WEBKIT_GLUE_WEBKIT_GLUE_H_

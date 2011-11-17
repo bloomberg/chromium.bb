@@ -19,7 +19,6 @@
 
 namespace base {
 struct PlatformFileInfo;
-class MessageLoopProxy;
 class Time;
 }
 

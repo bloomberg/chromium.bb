@@ -16,10 +16,6 @@
 
 class GURL;
 
-namespace base {
-class MessageLoopProxy;
-}
-
 namespace quota {
 
 class QuotaEvictionHandler;

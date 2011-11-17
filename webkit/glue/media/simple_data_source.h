@@ -25,7 +25,6 @@
 #include "webkit/glue/media/web_data_source.h"
 
 class MessageLoop;
-class WebMediaPlayerDelegateImpl;
 
 namespace media {
 class MediaLog;

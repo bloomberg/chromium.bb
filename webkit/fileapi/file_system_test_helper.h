@@ -29,7 +29,6 @@ class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperation;
 class FileSystemOperationContext;
-class FileSystemPathManager;
 
 // Filesystem test helper class that encapsulates test environment for
 // a given {origin, type} pair.
