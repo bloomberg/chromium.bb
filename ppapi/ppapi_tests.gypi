@@ -98,6 +98,8 @@
         'tests/test_file_ref.h',
         'tests/test_file_system.cc',
         'tests/test_file_system.h',
+        'tests/test_flash.cc',
+        'tests/test_flash.h',
         'tests/test_flash_clipboard.cc',
         'tests/test_flash_clipboard.h',
         'tests/test_flash_fullscreen.cc',

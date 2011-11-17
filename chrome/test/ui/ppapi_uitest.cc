@@ -331,3 +331,14 @@ TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate)
 TEST_F(OutOfProcessPPAPITest, TCPSocketPrivate) {
   RunTestViaHTTP("TCPSocketPrivate");
 }
+
+TEST_PPAPI_IN_PROCESS(Flash_SetInstanceAlwaysOnTop)
+TEST_PPAPI_IN_PROCESS(Flash_GetProxyForURL)
+TEST_PPAPI_IN_PROCESS(Flash_MessageLoop)
+TEST_PPAPI_IN_PROCESS(Flash_GetLocalTimeZoneOffset)
+TEST_PPAPI_IN_PROCESS(Flash_GetCommandLineArgs)
+TEST_PPAPI_OUT_OF_PROCESS(Flash_SetInstanceAlwaysOnTop)
+TEST_PPAPI_OUT_OF_PROCESS(Flash_GetProxyForURL)
+TEST_PPAPI_OUT_OF_PROCESS(Flash_MessageLoop)
+TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)
+TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
