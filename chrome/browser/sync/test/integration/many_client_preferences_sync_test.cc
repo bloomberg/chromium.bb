@@ -19,8 +19,7 @@ class ManyClientPreferencesSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(ManyClientPreferencesSyncTest);
 };
 
-// TODO(rsimha): Enable once http://crbug.com/69604 is fixed.
-IN_PROC_BROWSER_TEST_F(ManyClientPreferencesSyncTest, DISABLED_Sanity) {
+IN_PROC_BROWSER_TEST_F(ManyClientPreferencesSyncTest, Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(BooleanPrefMatches(prefs::kHomePageIsNewTabPage));
   ChangeBooleanPref(0, prefs::kHomePageIsNewTabPage);
