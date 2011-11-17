@@ -82,9 +82,9 @@ class CONTENT_EXPORT WifiDataProviderCommon
   WifiDataProviderCommon();
 
   // WifiDataProviderImplBase implementation
-  virtual bool StartDataProvider();
-  virtual void StopDataProvider();
-  virtual bool GetData(WifiData* data);
+  virtual bool StartDataProvider() OVERRIDE;
+  virtual void StopDataProvider() OVERRIDE;
+  virtual bool GetData(WifiData* data) OVERRIDE;
 
  protected:
   virtual ~WifiDataProviderCommon();
@@ -97,8 +97,8 @@ class CONTENT_EXPORT WifiDataProviderCommon
 
  private:
   // Thread implementation
-  virtual void Init();
-  virtual void CleanUp();
+  virtual void Init() OVERRIDE;
+  virtual void CleanUp() OVERRIDE;
 
   // Task which run in the child thread.
   void DoWifiScanTask();

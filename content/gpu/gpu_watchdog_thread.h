@@ -27,11 +27,11 @@ class GpuWatchdogThread : public base::Thread,
   void PostAcknowledge();
 
   // Implement GpuWatchdog.
-  virtual void CheckArmed();
+  virtual void CheckArmed() OVERRIDE;
 
  protected:
-  virtual void Init();
-  virtual void CleanUp();
+  virtual void Init() OVERRIDE;
+  virtual void CleanUp() OVERRIDE;
 
  private:
 

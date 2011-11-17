@@ -86,8 +86,8 @@ class PpapiPluginProcessHost
 
   void RequestPluginChannel(Client* client);
 
-  virtual bool CanShutdown();
-  virtual void OnProcessLaunched();
+  virtual bool CanShutdown() OVERRIDE;
+  virtual void OnProcessLaunched() OVERRIDE;
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;

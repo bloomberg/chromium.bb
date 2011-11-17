@@ -34,10 +34,12 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   void CheckDoneStatus();
 
   // net::URLRequestJob methods
-  virtual void Start();
-  virtual bool GetMimeType(std::string* mime_type) const;
-  virtual void GetResponseInfo(net::HttpResponseInfo* info);
-  virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read);
+  virtual void Start() OVERRIDE;
+  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
+  virtual bool ReadRawData(net::IOBuffer* buf,
+                           int buf_size,
+                           int *bytes_read) OVERRIDE;
 
   static net::URLRequestJob* Factory(net::URLRequest* request,
                                      const std::string& scheme);

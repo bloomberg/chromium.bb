@@ -19,10 +19,11 @@ class CONTENT_EXPORT URLRequestMockHTTPJob : public net::URLRequestFileJob {
  public:
   URLRequestMockHTTPJob(net::URLRequest* request, const FilePath& file_path);
 
-  virtual bool GetMimeType(std::string* mime_type) const;
-  virtual bool GetCharset(std::string* charset);
-  virtual void GetResponseInfo(net::HttpResponseInfo* info);
-  virtual bool IsRedirectResponse(GURL* location, int* http_status_code);
+  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE;
+  virtual bool GetCharset(std::string* charset) OVERRIDE;
+  virtual void GetResponseInfo(net::HttpResponseInfo* info) OVERRIDE;
+  virtual bool IsRedirectResponse(GURL* location,
+                                  int* http_status_code) OVERRIDE;
 
   static net::URLRequest::ProtocolFactory Factory;
 

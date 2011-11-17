@@ -76,7 +76,7 @@ class P2PSocketDispatcher : public content::RenderViewObserver {
   void RemoveNetworkListObserver(NetworkListObserver* network_list_observer);
 
   // RenderViewObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   friend class P2PHostAddressRequest;

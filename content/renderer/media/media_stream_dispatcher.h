@@ -59,7 +59,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
   struct Stream;
 
   // Messages from the browser.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnStreamGenerated(
       int request_id,
       const std::string& label,

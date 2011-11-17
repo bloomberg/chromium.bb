@@ -38,15 +38,15 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   virtual ~VideoCaptureManager();
 
   // Implements MediaStreamProvider.
-  virtual void Register(MediaStreamProviderListener* listener);
+  virtual void Register(MediaStreamProviderListener* listener) OVERRIDE;
 
-  virtual void Unregister();
+  virtual void Unregister() OVERRIDE;
 
-  virtual void EnumerateDevices();
+  virtual void EnumerateDevices() OVERRIDE;
 
-  virtual int Open(const StreamDeviceInfo& device);
+  virtual int Open(const StreamDeviceInfo& device) OVERRIDE;
 
-  virtual void Close(int capture_session_id);
+  virtual void Close(int capture_session_id) OVERRIDE;
 
   // Functions used to start and stop media flow.
   // Start allocates the device and no other application can use the device

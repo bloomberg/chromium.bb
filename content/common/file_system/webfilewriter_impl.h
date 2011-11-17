@@ -18,10 +18,10 @@ class WebFileWriterImpl : public fileapi::WebFileWriterBase,
 
  protected:
   // WebFileWriterBase overrides
-  virtual void DoTruncate(const GURL& path, int64 offset);
+  virtual void DoTruncate(const GURL& path, int64 offset) OVERRIDE;
   virtual void DoWrite(const GURL& path, const GURL& blob_url,
-                       int64 offset);
-  virtual void DoCancel();
+                       int64 offset) OVERRIDE;
+  virtual void DoCancel() OVERRIDE;
 
  private:
   class CallbackDispatcher;

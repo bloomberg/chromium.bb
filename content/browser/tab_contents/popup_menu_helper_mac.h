@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -34,7 +35,7 @@ class PopupMenuHelper : public content::NotificationObserver {
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   content::NotificationRegistrar notification_registrar_;
 

@@ -26,8 +26,8 @@ class WebSharedWorkerStub : public IPC::Channel::Listener {
                       const WorkerAppCacheInitInfo& appcache_init_info);
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnChannelError();
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   // Invoked when the WebWorkerClientProxy is shutting down.
   void Shutdown();

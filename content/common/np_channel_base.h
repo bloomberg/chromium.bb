@@ -73,7 +73,7 @@ class NPChannelBase : public IPC::Channel::Listener,
 
 
   // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   int peer_pid() { return peer_pid_; }
   IPC::ChannelHandle channel_handle() const { return channel_handle_; }

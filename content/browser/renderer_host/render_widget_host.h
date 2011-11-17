@@ -178,10 +178,10 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   virtual bool IsRenderView() const;
 
   // IPC::Channel::Listener
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Sends a message to the corresponding object in the renderer.
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Called to notify the RenderWidget that it has been hidden or restored from
   // having been hidden.

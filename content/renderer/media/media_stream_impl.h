@@ -22,7 +22,8 @@ class MediaStreamImpl
 
   // Implement webkit_media::StreamClient.
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
-      const GURL& url, media::MessageLoopFactory* message_loop_factory);
+      const GURL& url,
+      media::MessageLoopFactory* message_loop_factory) OVERRIDE;
 
  private:
   scoped_refptr<VideoCaptureImplManager> vc_manager_;

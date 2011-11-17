@@ -21,9 +21,9 @@ class GeolocationArbitratorDependencyFactoryWithLocationProvider
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
-      const string16& access_token);
+      const string16& access_token) OVERRIDE;
 
-  virtual LocationProviderBase* NewSystemLocationProvider();
+  virtual LocationProviderBase* NewSystemLocationProvider() OVERRIDE;
 
  protected:
   LocationProviderFactoryFunction factory_function_;

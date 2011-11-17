@@ -148,10 +148,10 @@ class CONTENT_EXPORT AudioInputDevice
   // AudioInputMessageFilter::Delegate impl., called by AudioInputMessageFilter
   virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
                                    base::SyncSocket::Handle socket_handle,
-                                   uint32 length);
-  virtual void OnVolume(double volume);
-  virtual void OnStateChanged(AudioStreamState state);
-  virtual void OnDeviceReady(int index);
+                                   uint32 length) OVERRIDE;
+  virtual void OnVolume(double volume) OVERRIDE;
+  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
+  virtual void OnDeviceReady(int index) OVERRIDE;
 
  private:
   // Methods called on IO thread ----------------------------------------------
@@ -171,7 +171,7 @@ class CONTENT_EXPORT AudioInputDevice
   void FireCaptureCallback();
 
   // DelegateSimpleThread::Delegate implementation.
-  virtual void Run();
+  virtual void Run() OVERRIDE;
 
   // Format
   AudioParameters audio_parameters_;

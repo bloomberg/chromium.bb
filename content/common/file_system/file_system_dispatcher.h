@@ -33,7 +33,7 @@ class FileSystemDispatcher : public IPC::Channel::Listener {
   virtual ~FileSystemDispatcher();
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   bool OpenFileSystem(const GURL& origin_url,
                       fileapi::FileSystemType type,

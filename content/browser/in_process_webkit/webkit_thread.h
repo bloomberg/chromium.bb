@@ -31,8 +31,8 @@ class CONTENT_EXPORT WebKitThread {
     virtual ~InternalWebKitThread();
     // Does the actual initialization and shutdown of WebKit.  Called at the
     // beginning and end of the thread's lifetime.
-    virtual void Init();
-    virtual void CleanUp();
+    virtual void Init() OVERRIDE;
+    virtual void CleanUp() OVERRIDE;
 
    private:
     // The WebKitPlatformSupport implementation.  Only access on WebKit thread.

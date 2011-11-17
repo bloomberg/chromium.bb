@@ -29,8 +29,8 @@ class CONTENT_EXPORT NotificationServiceImpl
 
   // content::NotificationService
   virtual void Notify(int type,
-              const content::NotificationSource& source,
-              const content::NotificationDetails& details);
+                      const content::NotificationSource& source,
+                      const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class content::NotificationRegistrar;

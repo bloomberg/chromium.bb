@@ -96,10 +96,10 @@ class CONTENT_EXPORT RenderWidget
   bool is_fullscreen() const { return is_fullscreen_; }
 
   // IPC::Channel::Listener
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // IPC::Message::Sender
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // WebKit::WebWidgetClient
   virtual void didInvalidateRect(const WebKit::WebRect&);

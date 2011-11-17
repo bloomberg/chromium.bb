@@ -79,8 +79,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter methods:
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
-  virtual void OnDestruct() const;
+                                 bool* message_was_ok) OVERRIDE;
+  virtual void OnDestruct() const OVERRIDE;
 
   bool OffTheRecord() const;
 

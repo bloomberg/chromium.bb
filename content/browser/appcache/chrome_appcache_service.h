@@ -58,14 +58,14 @@ class CONTENT_EXPORT ChromeAppCacheService
 
   // AppCachePolicy overrides
   virtual bool CanLoadAppCache(const GURL& manifest_url,
-                               const GURL& first_party);
+                               const GURL& first_party) OVERRIDE;
   virtual bool CanCreateAppCache(const GURL& manifest_url,
-                                 const GURL& first_party);
+                                 const GURL& first_party) OVERRIDE;
 
   // content::NotificationObserver override
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   const content::ResourceContext* resource_context_;
   content::NotificationRegistrar registrar_;

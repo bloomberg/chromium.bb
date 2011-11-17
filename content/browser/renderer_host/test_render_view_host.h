@@ -125,13 +125,14 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE {}
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
 #endif
-  virtual void SetVisuallyDeemphasized(const SkColor* color, bool animate) { }
+  virtual void SetVisuallyDeemphasized(const SkColor* color,
+                                       bool animate) OVERRIDE { }
   virtual void UnhandledWheelEvent(
-      const WebKit::WebMouseWheelEvent& event) { }
+      const WebKit::WebMouseWheelEvent& event) OVERRIDE { }
   virtual void SetHasHorizontalScrollbar(
-      bool has_horizontal_scrollbar) { }
+      bool has_horizontal_scrollbar) OVERRIDE { }
   virtual void SetScrollOffsetPinning(
-      bool is_pinned_to_left, bool is_pinned_to_right) { }
+      bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE { }
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(
@@ -231,8 +232,8 @@ class TestRenderViewHost : public RenderViewHost {
 
   // RenderViewHost overrides --------------------------------------------------
 
-  virtual bool CreateRenderView(const string16& frame_name);
-  virtual bool IsRenderViewLive() const;
+  virtual bool CreateRenderView(const string16& frame_name) OVERRIDE;
+  virtual bool IsRenderViewLive() const OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderViewHostTest, FilterNavigate);
@@ -270,7 +271,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
       int routing_id,
-      SessionStorageNamespace* session_storage);
+      SessionStorageNamespace* session_storage) OVERRIDE;
 
  private:
   // This is a bit of a hack. With the current design of the site instances /
@@ -319,8 +320,8 @@ class RenderViewHostTestHarness : public testing::Test {
 
  protected:
   // testing::Test
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   // This browser context will be created in SetUp if it has not already been
   // created.  This allows tests to override the browser context if they so

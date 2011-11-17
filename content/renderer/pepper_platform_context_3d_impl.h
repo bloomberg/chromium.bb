@@ -29,12 +29,12 @@ class PlatformContext3DImpl
       PepperParentContextProvider* parent_context_provider);
   virtual ~PlatformContext3DImpl();
 
-  virtual bool Init(const int32* attrib_list);
-  virtual unsigned GetBackingTextureId();
-  virtual gpu::CommandBuffer* GetCommandBuffer();
-  virtual int GetCommandBufferRouteId();
-  virtual void SetContextLostCallback(const base::Closure& callback);
-  virtual bool Echo(const base::Closure& task);
+  virtual bool Init(const int32* attrib_list) OVERRIDE;
+  virtual unsigned GetBackingTextureId() OVERRIDE;
+  virtual gpu::CommandBuffer* GetCommandBuffer() OVERRIDE;
+  virtual int GetCommandBufferRouteId() OVERRIDE;
+  virtual void SetContextLostCallback(const base::Closure& callback) OVERRIDE;
+  virtual bool Echo(const base::Closure& task) OVERRIDE;
 
  private:
   bool InitRaw();

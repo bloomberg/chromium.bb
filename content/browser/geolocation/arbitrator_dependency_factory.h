@@ -50,14 +50,14 @@ class CONTENT_EXPORT DefaultGeolocationArbitratorDependencyFactory
     : public GeolocationArbitratorDependencyFactory {
  public:
   // GeolocationArbitratorDependencyFactory
-  virtual GetTimeNow GetTimeFunction();
-  virtual AccessTokenStore* NewAccessTokenStore();
+  virtual GetTimeNow GetTimeFunction() OVERRIDE;
+  virtual AccessTokenStore* NewAccessTokenStore() OVERRIDE;
   virtual LocationProviderBase* NewNetworkLocationProvider(
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
-      const string16& access_token);
-  virtual LocationProviderBase* NewSystemLocationProvider();
+      const string16& access_token) OVERRIDE;
+  virtual LocationProviderBase* NewSystemLocationProvider() OVERRIDE;
 };
 
 #endif  // CONTENT_BROWSER_GEOLOCATION_ARBITRATOR_DEPENDENCY_FACTORY_H_

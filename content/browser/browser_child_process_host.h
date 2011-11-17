@@ -76,7 +76,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   base::ProcessHandle GetChildProcessHandle() const;
 
   // ChildProcessLauncher::Client implementation.
-  virtual void OnProcessLaunched() {}
+  virtual void OnProcessLaunched() OVERRIDE {}
 
   // Derived classes can override this to know if the process crashed.
   // |exit_code| is the status returned when the process crashed (for
@@ -118,7 +118,7 @@ class CONTENT_EXPORT BrowserChildProcessHost :
   class ClientHook : public ChildProcessLauncher::Client {
    public:
     explicit ClientHook(BrowserChildProcessHost* host);
-    virtual void OnProcessLaunched();
+    virtual void OnProcessLaunched() OVERRIDE;
    private:
     BrowserChildProcessHost* host_;
   };

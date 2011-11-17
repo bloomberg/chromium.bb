@@ -6,6 +6,7 @@
 #define CONTENT_PLUGIN_WEBPLUGIN_ACCELERATED_SURFACE_PROXY_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "ui/gfx/gl/gpu_preference.h"
 #include "webkit/plugins/npapi/webplugin_accelerated_surface_mac.h"
 
@@ -24,11 +25,11 @@ class WebPluginAcceleratedSurfaceProxy
   virtual ~WebPluginAcceleratedSurfaceProxy();
 
   // WebPluginAcceleratedSurface implementation.
-  virtual void SetWindowHandle(gfx::PluginWindowHandle window);
-  virtual void SetSize(const gfx::Size& size);
-  virtual CGLContextObj context();
-  virtual void StartDrawing();
-  virtual void EndDrawing();
+  virtual void SetWindowHandle(gfx::PluginWindowHandle window) OVERRIDE;
+  virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual CGLContextObj context() OVERRIDE;
+  virtual void StartDrawing() OVERRIDE;
+  virtual void EndDrawing() OVERRIDE;
 
  private:
   WebPluginProxy* plugin_proxy_;  // Weak ref.

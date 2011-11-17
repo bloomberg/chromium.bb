@@ -20,11 +20,12 @@ class DatabaseMessageFilter
   explicit DatabaseMessageFilter(webkit_database::DatabaseTracker* db_tracker);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing();
-  virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        content::BrowserThread::ID* thread);
+  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OverrideThreadForMessage(
+      const IPC::Message& message,
+      content::BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
   webkit_database::DatabaseTracker* database_tracker() const {
     return db_tracker_.get();
@@ -71,9 +72,10 @@ class DatabaseMessageFilter
   // DatabaseTracker::Observer callbacks (file thread)
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
                                      const string16& database_name,
-                                     int64 database_size);
-  virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
-                                              const string16& database_name);
+                                     int64 database_size) OVERRIDE;
+  virtual void OnDatabaseScheduledForDeletion(
+      const string16& origin_identifier,
+      const string16& database_name) OVERRIDE;
 
   void DatabaseDeleteFile(const string16& vfs_file_name,
                           bool sync_dir,

@@ -53,10 +53,10 @@ class CONTENT_EXPORT InputEventFilter
   void DidNotHandleInputEvent(bool send_to_widget);
 
   // IPC::ChannelProxy::MessageFilter methods:
-  virtual void OnFilterAdded(IPC::Channel* channel);
-  virtual void OnFilterRemoved();
-  virtual void OnChannelClosing();
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterRemoved() OVERRIDE;
+  virtual void OnChannelClosing() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Expects a ViewMsg_HandleInputEvent message.
   static const WebKit::WebInputEvent* CrackMessage(const IPC::Message& message);

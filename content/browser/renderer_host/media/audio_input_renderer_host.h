@@ -107,23 +107,23 @@ class CONTENT_EXPORT AudioInputRendererHost
       const content::ResourceContext* resource_context);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing();
-  virtual void OnDestruct() const;
+  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
   // AudioInputController::EventHandler implementation.
-  virtual void OnCreated(media::AudioInputController* controller);
-  virtual void OnRecording(media::AudioInputController* controller);
+  virtual void OnCreated(media::AudioInputController* controller) OVERRIDE;
+  virtual void OnRecording(media::AudioInputController* controller) OVERRIDE;
   virtual void OnError(media::AudioInputController* controller,
-                       int error_code);
+                       int error_code) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
                       const uint8* data,
-                      uint32 size);
+                      uint32 size) OVERRIDE;
 
   // media_stream::AudioInputDeviceManagerEventHandler implementation.
-  virtual void OnDeviceStarted(int session_id, int index);
-  virtual void OnDeviceStopped(int session_id);
+  virtual void OnDeviceStarted(int session_id, int index) OVERRIDE;
+  virtual void OnDeviceStopped(int session_id) OVERRIDE;
 
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)

@@ -50,10 +50,10 @@ class GpuChannelManager : public IPC::Channel::Listener,
   void RemoveChannel(int renderer_id);
 
   // Listener overrides.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Sender overrides.
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   void LoseAllContexts();
 

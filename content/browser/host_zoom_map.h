@@ -69,7 +69,7 @@ class CONTENT_EXPORT HostZoomMap
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   double default_zoom_level() const { return default_zoom_level_; }
   void set_default_zoom_level(double level) { default_zoom_level_ = level; }

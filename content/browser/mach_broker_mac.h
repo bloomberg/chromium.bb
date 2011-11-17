@@ -79,12 +79,12 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   static std::string GetMachPortName();
 
   // Implement |ProcessMetrics::PortProvider|.
-  virtual mach_port_t TaskForPid(base::ProcessHandle process) const;
+  virtual mach_port_t TaskForPid(base::ProcessHandle process) const OVERRIDE;
 
   // Implement |content::NotificationObserver|.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
  private:
   // Private constructor.
   MachBroker();

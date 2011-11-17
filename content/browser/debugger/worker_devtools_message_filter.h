@@ -18,7 +18,7 @@ class WorkerDevToolsMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
   // Message handlers.
   void OnForwardToClient(const IPC::Message& message);
   void OnSaveAgentRumtimeState(const std::string& state);

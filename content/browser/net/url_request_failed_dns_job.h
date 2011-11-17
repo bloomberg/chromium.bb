@@ -15,7 +15,7 @@ class URLRequestFailedDnsJob : public net::URLRequestJob {
  public:
   explicit URLRequestFailedDnsJob(net::URLRequest* request);
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
   static net::URLRequestJob* Factory(net::URLRequest* request,
                                      const std::string& scheme);

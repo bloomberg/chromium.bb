@@ -22,32 +22,41 @@ class SaveFileResourceHandler : public ResourceHandler {
                           SaveFileManager* manager);
 
   // ResourceHandler Implementation:
-  virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
+  virtual bool OnUploadProgress(int request_id,
+                                uint64 position,
+                                uint64 size) OVERRIDE;
 
   // Saves the redirected URL to final_url_, we need to use the original
   // URL to match original request.
-  virtual bool OnRequestRedirected(int request_id, const GURL& url,
-                                   ResourceResponse* response, bool* defer);
+  virtual bool OnRequestRedirected(int request_id,
+                                   const GURL& url,
+                                   ResourceResponse* response,
+                                   bool* defer) OVERRIDE;
 
   // Sends the download creation information to the download thread.
-  virtual bool OnResponseStarted(int request_id, ResourceResponse* response);
+  virtual bool OnResponseStarted(int request_id,
+                                 ResourceResponse* response) OVERRIDE;
 
   // Pass-through implementation.
-  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer);
+  virtual bool OnWillStart(int request_id,
+                           const GURL& url,
+                           bool* defer) OVERRIDE;
 
   // Creates a new buffer, which will be handed to the download thread for file
   // writing and deletion.
-  virtual bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
-                          int min_size);
+  virtual bool OnWillRead(int request_id,
+                          net::IOBuffer** buf,
+                          int* buf_size,
+                          int min_size) OVERRIDE;
 
   // Passes the buffer to the download file writer.
-  virtual bool OnReadCompleted(int request_id, int* bytes_read);
+  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE;
 
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& security_info);
+                                   const std::string& security_info) OVERRIDE;
 
-  virtual void OnRequestClosed();
+  virtual void OnRequestClosed() OVERRIDE;
 
   // If the content-length header is not present (or contains something other
   // than numbers), StringToInt64 returns 0, which indicates 'unknown size' and

@@ -29,7 +29,7 @@ class PluginThread : public ChildThread {
   static PluginThread* current();
 
  private:
-  virtual bool OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Callback for when a channel has been created.
   void OnCreateChannel(int renderer_id, bool incognito);

@@ -134,8 +134,8 @@ class WebRTCAudioDeviceTest
   WebRTCAudioDeviceTest();
   virtual ~WebRTCAudioDeviceTest();
 
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   // Sends an IPC message to the IO thread channel.
   bool Send(IPC::Message* message);
@@ -155,7 +155,7 @@ class WebRTCAudioDeviceTest
   void OnGetHardwareInputSampleRate(double* sample_rate);
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Posts a final task to the IO message loop and waits for completion.
   void WaitForIOThreadCompletion();
@@ -199,8 +199,8 @@ class WebRTCTransportImpl : public webrtc::Transport {
   explicit WebRTCTransportImpl(webrtc::VoENetwork* network);
   virtual ~WebRTCTransportImpl();
 
-  virtual int SendPacket(int channel, const void* data, int len);
-  virtual int SendRTCPPacket(int channel, const void* data, int len);
+  virtual int SendPacket(int channel, const void* data, int len) OVERRIDE;
+  virtual int SendRTCPPacket(int channel, const void* data, int len) OVERRIDE;
 
  private:
   webrtc::VoENetwork* network_;

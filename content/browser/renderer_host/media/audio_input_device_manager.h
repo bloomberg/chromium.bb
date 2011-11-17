@@ -39,11 +39,11 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   virtual ~AudioInputDeviceManager();
 
   // MediaStreamProvider implementation, called on IO thread.
-  virtual void Register(MediaStreamProviderListener* listener);
-  virtual void Unregister();
-  virtual void EnumerateDevices();
-  virtual int Open(const StreamDeviceInfo& device);
-  virtual void Close(int session_id);
+  virtual void Register(MediaStreamProviderListener* listener) OVERRIDE;
+  virtual void Unregister() OVERRIDE;
+  virtual void EnumerateDevices() OVERRIDE;
+  virtual int Open(const StreamDeviceInfo& device) OVERRIDE;
+  virtual void Close(int session_id) OVERRIDE;
 
   // Functions used by AudioInputRenderHost, called on IO thread.
   // Start the device referenced by the session id.

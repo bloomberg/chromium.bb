@@ -18,7 +18,7 @@ class MHTMLGenerator : public content::RenderViewObserver {
 
  private:
   // RenderViewObserver implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnSavePageAsMHTML(int job_id,
                          IPC::PlatformFileForTransit file_for_transit);

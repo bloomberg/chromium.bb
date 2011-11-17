@@ -41,7 +41,7 @@ class GpuVideoDecodeAccelerator
   virtual void NotifyResetDone() OVERRIDE;
 
   // Function to delegate sending to actual sender.
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // Initialize the accelerator with the given profile and send the
   // |init_done_msg| when done.

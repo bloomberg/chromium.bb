@@ -47,7 +47,7 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
 
  private:
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Returns true if the worker is running (can send messages to it).
   bool IsStarted();

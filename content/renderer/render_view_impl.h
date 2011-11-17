@@ -288,7 +288,7 @@ class RenderViewImpl : public RenderWidget,
 
   // IPC::Channel::Listener implementation -------------------------------------
 
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // WebKit::WebWidgetClient implementation ------------------------------------
 
@@ -578,13 +578,14 @@ class RenderViewImpl : public RenderWidget,
 
   virtual webkit::npapi::WebPluginDelegate* CreatePluginDelegate(
       const FilePath& file_path,
-      const std::string& mime_type);
-  virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle);
-  virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle);
-  virtual void DidMovePlugin(const webkit::npapi::WebPluginGeometry& move);
-  virtual void DidStartLoadingForPlugin();
-  virtual void DidStopLoadingForPlugin();
-  virtual WebKit::WebCookieJar* GetCookieJar();
+      const std::string& mime_type) OVERRIDE;
+  virtual void CreatedPluginWindow(gfx::PluginWindowHandle handle) OVERRIDE;
+  virtual void WillDestroyPluginWindow(gfx::PluginWindowHandle handle) OVERRIDE;
+  virtual void DidMovePlugin(
+      const webkit::npapi::WebPluginGeometry& move) OVERRIDE;
+  virtual void DidStartLoadingForPlugin() OVERRIDE;
+  virtual void DidStopLoadingForPlugin() OVERRIDE;
+  virtual WebKit::WebCookieJar* GetCookieJar() OVERRIDE;
 
   // webkit_media::WebMediaPlayerDelegate implementation -----------------------
 
@@ -595,7 +596,7 @@ class RenderViewImpl : public RenderWidget,
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
   // nearer to the top you can add it to.
-  virtual void DidFlushPaint();
+  virtual void DidFlushPaint() OVERRIDE;
 
   // Cannot use std::set unfortunately since linked_ptr<> does not support
   // operator<.
@@ -604,25 +605,25 @@ class RenderViewImpl : public RenderWidget,
 
  protected:
   // RenderWidget overrides:
-  virtual void Close();
+  virtual void Close() OVERRIDE;
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect,
-                        bool is_fullscreen);
-  virtual void DidInitiatePaint();
+                        bool is_fullscreen) OVERRIDE;
+  virtual void DidInitiatePaint() OVERRIDE;
   virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,
-      gfx::Rect* clip);
-  virtual gfx::Point GetScrollOffset();
-  virtual void DidHandleKeyEvent();
+      gfx::Rect* clip) OVERRIDE;
+  virtual gfx::Point GetScrollOffset() OVERRIDE;
+  virtual void DidHandleKeyEvent() OVERRIDE;
   virtual bool WillHandleMouseEvent(
       const WebKit::WebMouseEvent& event) OVERRIDE;
-  virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event);
-  virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event);
-  virtual void OnSetFocus(bool enable);
-  virtual void OnWasHidden();
-  virtual void OnWasRestored(bool needs_repainting);
+  virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) OVERRIDE;
+  virtual void DidHandleTouchEvent(const WebKit::WebTouchEvent& event) OVERRIDE;
+  virtual void OnSetFocus(bool enable) OVERRIDE;
+  virtual void OnWasHidden() OVERRIDE;
+  virtual void OnWasRestored(bool needs_repainting) OVERRIDE;
   virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
   virtual void OnImeSetComposition(
       const string16& text,

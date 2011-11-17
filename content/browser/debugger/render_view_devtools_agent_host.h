@@ -27,9 +27,9 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual ~RenderViewDevToolsAgentHost();
 
   // DevToolsAgentHost implementation.
-  virtual void SendMessageToAgent(IPC::Message* msg);
-  virtual void NotifyClientClosing();
-  virtual int GetRenderProcessId();
+  virtual void SendMessageToAgent(IPC::Message* msg) OVERRIDE;
+  virtual void NotifyClientClosing() OVERRIDE;
+  virtual int GetRenderProcessId() OVERRIDE;
 
   // RenderViewHostObserver overrides.
   virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;

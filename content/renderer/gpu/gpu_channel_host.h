@@ -72,7 +72,7 @@ class GpuChannelHost : public IPC::Message::Sender,
   void OnChannelError();
 
   // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Create and connect to a command buffer in the GPU process.
   CommandBufferProxy* CreateViewCommandBuffer(
@@ -158,8 +158,8 @@ class GpuChannelHost : public IPC::Message::Sender,
     void RemoveRoute(int route_id);
 
     // IPC::ChannelProxy::MessageFilter implementation:
-    virtual bool OnMessageReceived(const IPC::Message& msg);
-    virtual void OnChannelError();
+    virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+    virtual void OnChannelError() OVERRIDE;
 
    private:
     GpuChannelHost* parent_;

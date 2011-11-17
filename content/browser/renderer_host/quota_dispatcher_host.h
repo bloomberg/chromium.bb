@@ -29,7 +29,7 @@ class QuotaDispatcherHost : public BrowserMessageFilter {
                       QuotaPermissionContext* permission_context);
   virtual ~QuotaDispatcherHost();
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
  private:
   class RequestDispatcher;

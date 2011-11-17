@@ -28,8 +28,8 @@ class CONTENT_EXPORT TraceSubscriberStdio : public TraceSubscriber {
   bool IsValid();
 
   // Implementation of TraceSubscriber
-  virtual void OnEndTracingComplete();
-  virtual void OnTraceDataCollected(const std::string& trace_fragment);
+  virtual void OnEndTracingComplete() OVERRIDE;
+  virtual void OnTraceDataCollected(const std::string& trace_fragment) OVERRIDE;
 
   virtual ~TraceSubscriberStdio();
 

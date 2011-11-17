@@ -149,14 +149,14 @@ class WorkerProcessHost : public BrowserChildProcessHost {
 
  private:
   // Called when the process has been launched successfully.
-  virtual void OnProcessLaunched();
+  virtual void OnProcessLaunched() OVERRIDE;
 
   // Creates and adds the message filters.
   void CreateMessageFilters(int render_process_id);
 
   // IPC::Channel::Listener implementation:
   // Called when a message arrives from the worker process.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnWorkerContextClosed(int worker_route_id);
   void OnAllowDatabase(int worker_route_id,
@@ -175,7 +175,7 @@ class WorkerProcessHost : public BrowserChildProcessHost {
                     WorkerMessageFilter* filter,
                     int route_id);
 
-  virtual bool CanShutdown();
+  virtual bool CanShutdown() OVERRIDE;
 
   // Updates the title shown in the task manager.
   void UpdateTitle();

@@ -55,24 +55,24 @@ class CONTENT_EXPORT VideoCaptureHost
   explicit VideoCaptureHost(const content::ResourceContext* resource_context);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing();
-  virtual void OnDestruct() const;
+  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnDestruct() const OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
   // VideoCaptureControllerEventHandler implementation.
-  virtual void OnError(const VideoCaptureControllerID& id);
+  virtual void OnError(const VideoCaptureControllerID& id) OVERRIDE;
   virtual void OnBufferCreated(const VideoCaptureControllerID& id,
                                base::SharedMemoryHandle handle,
-                               int length, int buffer_id);
+                               int length, int buffer_id) OVERRIDE;
   virtual void OnBufferReady(const VideoCaptureControllerID& id,
                              int buffer_id,
-                             base::Time timestamp);
+                             base::Time timestamp) OVERRIDE;
   virtual void OnFrameInfo(const VideoCaptureControllerID& id,
                            int width,
                            int height,
-                           int frame_per_second);
-  virtual void OnReadyToDelete(const VideoCaptureControllerID& id);
+                           int frame_per_second) OVERRIDE;
+  virtual void OnReadyToDelete(const VideoCaptureControllerID& id) OVERRIDE;
 
  private:
   friend class content::BrowserThread;

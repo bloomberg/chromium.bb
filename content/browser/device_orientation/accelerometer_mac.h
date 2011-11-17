@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -56,6 +56,7 @@
 
 #include <IOKit/IOKitLib.h>
 
+#include "base/compiler_specific.h"
 #include "content/browser/device_orientation/data_fetcher.h"
 
 namespace device_orientation {
@@ -67,7 +68,7 @@ class AccelerometerMac : public DataFetcher {
   static DataFetcher* Create();
 
   // Implement DataFetcher.
-  virtual bool GetOrientation(Orientation* orientation);
+  virtual bool GetOrientation(Orientation* orientation) OVERRIDE;
 
   virtual ~AccelerometerMac();
 

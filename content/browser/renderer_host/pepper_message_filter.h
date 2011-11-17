@@ -39,7 +39,7 @@ class PepperMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter methods.
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
  private:
   template<class SocketType> class SocketManager;

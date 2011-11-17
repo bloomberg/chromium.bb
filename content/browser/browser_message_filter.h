@@ -31,7 +31,7 @@ class CONTENT_EXPORT BrowserMessageFilter :
   // IPC::Message::Sender implementation.  Can be called on any thread.  Can't
   // send sync messages (since we don't want to block the browser on any other
   // process).
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // If you want the given message to be dispatched to your OnMessageReceived on
   // a different thread, change |thread| to the id of the target thread.

@@ -202,11 +202,13 @@ class CONTENT_EXPORT PluginService
   virtual ~PluginService();
 
   // base::WaitableEventWatcher::Delegate implementation.
-  virtual void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
+  virtual void OnWaitableEventSignaled(
+      base::WaitableEvent* waitable_event) OVERRIDE;
 
   // content::NotificationObserver implementation
-  virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void RegisterPepperPlugins();
 

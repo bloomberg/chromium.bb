@@ -27,7 +27,7 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   // construct a mock URL.
   static GURL GetMockUrl(const FilePath& path);
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
  private:
   virtual ~URLRequestSlowHTTPJob();

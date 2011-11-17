@@ -47,7 +47,7 @@ class CONTENT_EXPORT GeolocationProvider
   bool HasPermissionBeenGranted() const;
 
   // GeolocationObserver
-  virtual void OnLocationUpdate(const Geoposition& position);
+  virtual void OnLocationUpdate(const Geoposition& position) OVERRIDE;
 
   // Gets a pointer to the singleton instance of the location relayer, which
   // is in turn bound to the browser's global context objects. Ownership is NOT
@@ -83,8 +83,8 @@ class CONTENT_EXPORT GeolocationProvider
   void NotifyObservers(const Geoposition& position);
 
   // Thread
-  virtual void Init();
-  virtual void CleanUp();
+  virtual void Init() OVERRIDE;
+  virtual void CleanUp() OVERRIDE;
 
   scoped_refptr<base::MessageLoopProxy> client_loop_;
 

@@ -23,19 +23,19 @@ class PluginChannelHost : public NPChannelBase {
 
   virtual bool Init(base::MessageLoopProxy* ipc_message_loop,
                     bool create_pipe_now,
-                    base::WaitableEvent* shutdown_event);
+                    base::WaitableEvent* shutdown_event) OVERRIDE;
 
-  virtual int GenerateRouteID();
+  virtual int GenerateRouteID() OVERRIDE;
 
   void AddRoute(int route_id, IPC::Channel::Listener* listener,
                 NPObjectBase* npobject);
   void RemoveRoute(int route_id);
 
   // NPChannelBase override:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // IPC::Channel::Listener override
-  virtual void OnChannelError();
+  virtual void OnChannelError() OVERRIDE;
 
   static void SetListening(bool flag);
 
@@ -54,7 +54,7 @@ class PluginChannelHost : public NPChannelBase {
 
   static NPChannelBase* ClassFactory() { return new PluginChannelHost(); }
 
-  virtual bool OnControlMessageReceived(const IPC::Message& message);
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnSetException(const std::string& message);
   void OnPluginShuttingDown();
 

@@ -26,10 +26,10 @@ class TransportTextureService : public IPC::ChannelProxy::MessageFilter,
   virtual ~TransportTextureService();
 
   // IPC::ChannelProxy::MessageFilter implementations.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnFilterAdded(IPC::Channel* channel);
-  virtual void OnFilterRemoved();
-  virtual void OnChannelClosing();
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterRemoved() OVERRIDE;
+  virtual void OnChannelClosing() OVERRIDE;
 
   // Called on ChildThread to create a TransportTextureHost.
   //
@@ -43,7 +43,7 @@ class TransportTextureService : public IPC::ChannelProxy::MessageFilter,
   void RemoveRoute(int32 host_id);
 
   // IPC::Message::Sender Implementation.
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
  private:
   typedef std::pair<int32, IPC::Channel::Listener*> PendingRoute;

@@ -33,12 +33,13 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
       const GURL& active_url);
 
   // pepper::FullscreenContainer API.
-  virtual void Invalidate();
-  virtual void InvalidateRect(const WebKit::WebRect& rect);
-  virtual void ScrollRect(int dx, int dy, const WebKit::WebRect& rect);
-  virtual void Destroy();
-  virtual void DidChangeCursor(const WebKit::WebCursorInfo& cursor);
-  virtual webkit::ppapi::PluginDelegate::PlatformContext3D* CreateContext3D();
+  virtual void Invalidate() OVERRIDE;
+  virtual void InvalidateRect(const WebKit::WebRect& rect) OVERRIDE;
+  virtual void ScrollRect(int dx, int dy, const WebKit::WebRect& rect) OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual void DidChangeCursor(const WebKit::WebCursorInfo& cursor) OVERRIDE;
+  virtual webkit::ppapi::PluginDelegate::PlatformContext3D*
+      CreateContext3D() OVERRIDE;
 
   RendererGLContext* context() const { return context_; }
   void SwapBuffers();
@@ -52,20 +53,20 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   virtual ~RenderWidgetFullscreenPepper();
 
   // RenderWidget API.
-  virtual void DidInitiatePaint();
-  virtual void DidFlushPaint();
-  virtual void Close();
+  virtual void DidInitiatePaint() OVERRIDE;
+  virtual void DidFlushPaint() OVERRIDE;
+  virtual void Close() OVERRIDE;
   virtual webkit::ppapi::PluginInstance* GetBitmapForOptimizedPluginPaint(
       const gfx::Rect& paint_bounds,
       TransportDIB** dib,
       gfx::Rect* location,
-      gfx::Rect* clip);
+      gfx::Rect* clip) OVERRIDE;
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect,
-                        bool is_fullscreen);
+                        bool is_fullscreen) OVERRIDE;
 
   // RenderWidgetFullscreen API.
-  virtual WebKit::WebWidget* CreateWebWidget();
+  virtual WebKit::WebWidget* CreateWebWidget() OVERRIDE;
 
   // RenderWidget overrides.
   virtual bool SupportsAsynchronousSwapBuffers() OVERRIDE;
@@ -89,7 +90,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   void OnSwapBuffersCompleteByRendererGLContext();
 
   // Implementation of PepperParentContextProvider.
-  virtual RendererGLContext* GetParentContextForPlatformContext3D();
+  virtual RendererGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
 
   // URL that is responsible for this widget, passed to ggl::CreateViewContext.
   GURL active_url_;

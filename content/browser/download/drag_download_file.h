@@ -47,20 +47,20 @@ class CONTENT_EXPORT DragDownloadFile
   // DownloadFileProvider methods.
   // Called on drag-and-drop thread (Windows).
   // Called on UI thread (MacOSX).
-  virtual bool Start(ui::DownloadFileObserver* observer);
-  virtual void Stop();
+  virtual bool Start(ui::DownloadFileObserver* observer) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 #if defined(OS_WIN)
   virtual IStream* GetStream() { return NULL; }
 #endif
 
   // DownloadManager::Observer methods.
   // Called on UI thread.
-  virtual void ModelChanged();
+  virtual void ModelChanged() OVERRIDE;
 
   // DownloadItem::Observer methods.
   // Called on UI thread.
-  virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadOpened(DownloadItem* download) { }
+  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE { }
 
  private:
   // Called on drag-and-drop thread (Windows).

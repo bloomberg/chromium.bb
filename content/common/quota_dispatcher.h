@@ -40,7 +40,7 @@ class QuotaDispatcher : public IPC::Channel::Listener {
   virtual ~QuotaDispatcher();
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void QueryStorageUsageAndQuota(const GURL& gurl,
                                  quota::StorageType type,

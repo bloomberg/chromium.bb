@@ -40,7 +40,7 @@ class CONTENT_EXPORT RouteToGpuProcessHostUIShimTask : public Task {
   virtual ~RouteToGpuProcessHostUIShimTask();
 
  private:
-  virtual void Run();
+  virtual void Run() OVERRIDE;
 
   int host_id_;
   IPC::Message msg_;
@@ -66,13 +66,13 @@ class CONTENT_EXPORT GpuProcessHostUIShim
   static GpuProcessHostUIShim* FromID(int host_id);
 
   // IPC::Channel::Sender implementation.
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // IPC::Channel::Listener implementation.
   // The GpuProcessHost causes this to be called on the UI thread to
   // dispatch the incoming messages from the GPU process, which are
   // actually received on the IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // TODO(apatrick): Remove this when mac does not use AcceleratedSurfaces for

@@ -45,8 +45,8 @@ class GpuChildThread : public ChildThread {
   void StopWatchdog();
 
   // ChildThread overrides.
-  virtual bool Send(IPC::Message* msg);
-  virtual bool OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
   // Message handlers.

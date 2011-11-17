@@ -19,12 +19,12 @@ class TraceMessageFilter : public BrowserMessageFilter {
   virtual ~TraceMessageFilter();
 
   // BrowserMessageFilter override.
-  virtual void OnFilterAdded(IPC::Channel* channel);
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing();
+  virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
   void SendBeginTracing(const std::vector<std::string>& included_categories,
                         const std::vector<std::string>& excluded_categories);

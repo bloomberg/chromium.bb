@@ -32,8 +32,8 @@ class ProviderImpl : public Provider {
   CONTENT_EXPORT ProviderImpl(const DataFetcherFactory factories[]);
 
   // From Provider.
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
  private:
   virtual ~ProviderImpl();

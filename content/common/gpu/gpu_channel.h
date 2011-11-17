@@ -70,7 +70,7 @@ class GpuChannel : public IPC::Channel::Listener,
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 
   // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Whether this channel is able to handle IPC messages.
   bool IsScheduled();

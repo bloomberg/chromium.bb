@@ -99,7 +99,7 @@ class CONTENT_EXPORT SSLClientAuthObserver
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Begins observing notifications from other SSLClientAuthHandler instances.
   // If another instance chooses a cert for a matching SSLCertRequestInfo, we

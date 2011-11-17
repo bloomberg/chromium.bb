@@ -121,8 +121,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
                        size_t audio_delay_milliseconds) OVERRIDE;
 
   // AudioInputDevice::CaptureEventHandler implementation.
-  virtual void OnDeviceStarted(int device_index);
-  virtual void OnDeviceStopped();
+  virtual void OnDeviceStarted(int device_index) OVERRIDE;
+  virtual void OnDeviceStopped() OVERRIDE;
 
   // webrtc::Module implementation.
   virtual int32_t Version(char* version,
@@ -164,7 +164,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
   virtual int32_t InitPlayout() OVERRIDE;
   virtual bool PlayoutIsInitialized() const OVERRIDE;
   virtual int32_t RecordingIsAvailable(bool* available) OVERRIDE;
-  virtual int32_t InitRecording();
+  virtual int32_t InitRecording() OVERRIDE;
   virtual bool RecordingIsInitialized() const OVERRIDE;
 
   virtual int32_t StartPlayout() OVERRIDE;

@@ -67,7 +67,7 @@ class CONTENT_EXPORT GeolocationArbitrator
       GeolocationArbitratorDependencyFactory* factory);
 
   // ListenerInterface
-  virtual void LocationUpdateAvailable(LocationProviderBase* provider);
+  virtual void LocationUpdateAvailable(LocationProviderBase* provider) OVERRIDE;
 
  private:
   GeolocationArbitrator(

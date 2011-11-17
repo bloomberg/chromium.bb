@@ -24,7 +24,7 @@ class AppCacheDispatcher : public IPC::Channel::Listener {
   AppCacheBackendProxy* backend_proxy() { return &backend_proxy_; }
 
   // IPC::Channel::Listener implementation
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
   // Ipc message handlers

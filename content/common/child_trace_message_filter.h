@@ -18,9 +18,9 @@ class ChildTraceMessageFilter : public IPC::ChannelProxy::MessageFilter {
   virtual ~ChildTraceMessageFilter();
 
   // IPC::ChannelProxy::MessageFilter implementation.
-  virtual void OnFilterAdded(IPC::Channel* channel);
-  virtual void OnFilterRemoved();
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual void OnFilterAdded(IPC::Channel* channel) OVERRIDE;
+  virtual void OnFilterRemoved() OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   // Message handlers.

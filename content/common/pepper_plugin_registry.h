@@ -64,7 +64,8 @@ class PepperPluginRegistry
   void AddLiveModule(const FilePath& path, webkit::ppapi::PluginModule* module);
 
   // ModuleLifetime implementation.
-  virtual void PluginModuleDead(webkit::ppapi::PluginModule* dead_module);
+  virtual void PluginModuleDead(
+      webkit::ppapi::PluginModule* dead_module) OVERRIDE;
 
  private:
   PepperPluginRegistry();

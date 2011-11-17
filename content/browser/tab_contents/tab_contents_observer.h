@@ -94,7 +94,7 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
 #endif
 
   // IPC::Message::Sender implementation.
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) OVERRIDE;
   int routing_id() const;
 
  protected:
@@ -118,7 +118,7 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
   virtual void TabContentsDestroyed(TabContents* tab);
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   TabContents* tab_contents() const { return tab_contents_; }
 

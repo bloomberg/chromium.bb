@@ -97,7 +97,7 @@ class SSLManager : public content::NotificationObserver {
   // Called on the UI thread.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Entry points for notifications to which we subscribe. Note that

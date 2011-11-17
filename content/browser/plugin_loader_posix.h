@@ -57,7 +57,7 @@ class CONTENT_EXPORT PluginLoaderPosix : public UtilityProcessHost::Client,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // IPC::Message::Sender:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
  private:
   struct PendingCallback {

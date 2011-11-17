@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,11 @@ class MockRenderProcess : public RenderProcess {
   virtual ~MockRenderProcess();
 
   // RenderProcess implementation.
-  virtual skia::PlatformCanvas* GetDrawingCanvas(TransportDIB** memory,
-                                                 const gfx::Rect& rect);
-  virtual void ReleaseTransportDIB(TransportDIB* memory);
-  virtual bool UseInProcessPlugins() const;
+  virtual skia::PlatformCanvas* GetDrawingCanvas(
+      TransportDIB** memory,
+      const gfx::Rect& rect) OVERRIDE;
+  virtual void ReleaseTransportDIB(TransportDIB* memory) OVERRIDE;
+  virtual bool UseInProcessPlugins() const OVERRIDE;
   virtual bool HasInitializedMediaLibrary() const;
 
  private:

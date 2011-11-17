@@ -33,18 +33,19 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   virtual ~MediaStreamDispatcherHost();
 
   // MediaStreamRequester implementation.
-  virtual void StreamGenerated(const std::string& label,
-                               const StreamDeviceInfoArray& audio_devices,
-                               const StreamDeviceInfoArray& video_devices);
+  virtual void StreamGenerated(
+      const std::string& label,
+      const StreamDeviceInfoArray& audio_devices,
+      const StreamDeviceInfoArray& video_devices) OVERRIDE;
 
-  virtual void StreamGenerationFailed(const std::string& label);
-  virtual void AudioDeviceFailed(const std::string& label, int index);
-  virtual void VideoDeviceFailed(const std::string& label, int index);
+  virtual void StreamGenerationFailed(const std::string& label) OVERRIDE;
+  virtual void AudioDeviceFailed(const std::string& label, int index) OVERRIDE;
+  virtual void VideoDeviceFailed(const std::string& label, int index) OVERRIDE;
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
-  virtual void OnChannelClosing();
+                                 bool* message_was_ok) OVERRIDE;
+  virtual void OnChannelClosing() OVERRIDE;
 
  private:
   friend class MockMediaStreamDispatcherHost;

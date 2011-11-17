@@ -169,7 +169,7 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
 
  private:
-  virtual bool OnControlMessageReceived(const IPC::Message& msg);
+  virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void Init();
 

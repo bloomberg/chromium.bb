@@ -172,15 +172,16 @@ class CONTENT_EXPORT RenderViewHostManager
   }
 
   // RenderViewHostDelegate::RendererManagement implementation.
-  virtual void ShouldClosePage(bool for_cross_site_transition, bool proceed);
+  virtual void ShouldClosePage(bool for_cross_site_transition,
+                               bool proceed) OVERRIDE;
   virtual void OnCrossSiteResponse(int new_render_process_host_id,
-                                   int new_request_id);
-  virtual void OnCrossSiteNavigationCanceled();
+                                   int new_request_id) OVERRIDE;
+  virtual void OnCrossSiteNavigationCanceled() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Called when a RenderViewHost is about to be deleted.
   void RenderViewDeleted(RenderViewHost* rvh);

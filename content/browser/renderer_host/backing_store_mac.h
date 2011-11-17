@@ -30,12 +30,12 @@ class BackingStoreMac : public BackingStore {
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,
       const base::Closure& completion_callback,
-      bool* scheduled_completion_callback);
+      bool* scheduled_completion_callback) OVERRIDE;
   virtual bool CopyFromBackingStore(const gfx::Rect& rect,
-                                    skia::PlatformCanvas* output);
+                                    skia::PlatformCanvas* output) OVERRIDE;
   virtual void ScrollBackingStore(int dx, int dy,
                                   const gfx::Rect& clip_rect,
-                                  const gfx::Size& view_size);
+                                  const gfx::Size& view_size) OVERRIDE;
 
  private:
   // Creates a CGLayer associated with its owner view's window's graphics

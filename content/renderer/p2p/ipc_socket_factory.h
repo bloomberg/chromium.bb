@@ -27,18 +27,18 @@ class IpcPacketSocketFactory : public talk_base::PacketSocketFactory {
 
   virtual talk_base::AsyncPacketSocket* CreateUdpSocket(
       const talk_base::SocketAddress& local_address,
-      int min_port, int max_port);
+      int min_port, int max_port) OVERRIDE;
   virtual talk_base::AsyncPacketSocket* CreateServerTcpSocket(
       const talk_base::SocketAddress& local_address,
       int min_port,
       int max_port,
-      bool ssl);
+      bool ssl) OVERRIDE;
   virtual talk_base::AsyncPacketSocket* CreateClientTcpSocket(
       const talk_base::SocketAddress& local_address,
       const talk_base::SocketAddress& remote_address,
       const talk_base::ProxyInfo& proxy_info,
       const std::string& user_agent,
-      bool ssl);
+      bool ssl) OVERRIDE;
 
  private:
   P2PSocketDispatcher* socket_dispatcher_;

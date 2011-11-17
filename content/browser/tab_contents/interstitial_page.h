@@ -102,7 +102,7 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   // Called when tab traversing.
   void FocusThroughTabTraversal(bool reverse);
 
-  virtual content::ViewType GetRenderViewType() const;
+  virtual content::ViewType GetRenderViewType() const OVERRIDE;
 
   // See description above field.
   void set_reload_on_dont_proceed(bool value) {
@@ -114,7 +114,7 @@ class CONTENT_EXPORT InterstitialPage : public content::NotificationObserver,
   // content::NotificationObserver method:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // RenderViewHostDelegate implementation:
   virtual View* GetViewDelegate() OVERRIDE;

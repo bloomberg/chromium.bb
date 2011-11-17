@@ -105,15 +105,16 @@ class CONTENT_EXPORT SpeechRecognizer
   void CancelRecognition();
 
   // AudioInputController::EventHandler methods.
-  virtual void OnCreated(media::AudioInputController* controller) { }
-  virtual void OnRecording(media::AudioInputController* controller) { }
-  virtual void OnError(media::AudioInputController* controller, int error_code);
+  virtual void OnCreated(media::AudioInputController* controller) OVERRIDE { }
+  virtual void OnRecording(media::AudioInputController* controller) OVERRIDE { }
+  virtual void OnError(media::AudioInputController* controller,
+                       int error_code) OVERRIDE;
   virtual void OnData(media::AudioInputController* controller,
                       const uint8* data,
-                      uint32 size);
+                      uint32 size) OVERRIDE;
 
   // SpeechRecognitionRequest::Delegate methods.
-  virtual void SetRecognitionResult(const SpeechInputResult& result);
+  virtual void SetRecognitionResult(const SpeechInputResult& result) OVERRIDE;
 
   static const int kAudioSampleRate;
   static const int kAudioPacketIntervalMs;  // Duration of each audio packet.

@@ -15,7 +15,7 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   DBMessageFilter();
 
  private:
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnDatabaseUpdateSize(const string16& origin_identifier,
                             const string16& database_name,

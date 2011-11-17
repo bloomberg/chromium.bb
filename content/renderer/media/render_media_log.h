@@ -19,7 +19,7 @@ class RenderMediaLog : public media::MediaLog {
   RenderMediaLog();
 
   // MediaLog implementation.
-  virtual void AddEvent(media::MediaLogEvent* event);
+  virtual void AddEvent(media::MediaLogEvent* event) OVERRIDE;
 
  private:
   virtual ~RenderMediaLog();

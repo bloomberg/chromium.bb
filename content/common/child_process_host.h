@@ -93,7 +93,7 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Channel::Listener,
 #endif  // defined(OS_WIN)
 
   // IPC::Message::Sender implementation.
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // Adds an IPC message filter.  A reference will be kept to the filter.
   void AddFilter(IPC::ChannelProxy::MessageFilter* filter);

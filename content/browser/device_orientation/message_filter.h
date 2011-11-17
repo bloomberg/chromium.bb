@@ -18,7 +18,7 @@ class MessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
  private:
   virtual ~MessageFilter();

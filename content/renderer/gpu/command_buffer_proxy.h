@@ -37,29 +37,30 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual ~CommandBufferProxy();
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnChannelError();
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   int route_id() const { return route_id_; }
 
   // CommandBuffer implementation:
-  virtual bool Initialize(int32 size);
-  virtual bool Initialize(base::SharedMemory* buffer, int32 size);
-  virtual gpu::Buffer GetRingBuffer();
-  virtual State GetState();
-  virtual State GetLastState();
-  virtual void Flush(int32 put_offset);
-  virtual State FlushSync(int32 put_offset, int32 last_known_get);
-  virtual void SetGetOffset(int32 get_offset);
-  virtual int32 CreateTransferBuffer(size_t size, int32 id_request);
+  virtual bool Initialize(int32 size) OVERRIDE;
+  virtual bool Initialize(base::SharedMemory* buffer, int32 size) OVERRIDE;
+  virtual gpu::Buffer GetRingBuffer() OVERRIDE;
+  virtual State GetState() OVERRIDE;
+  virtual State GetLastState() OVERRIDE;
+  virtual void Flush(int32 put_offset) OVERRIDE;
+  virtual State FlushSync(int32 put_offset, int32 last_known_get) OVERRIDE;
+  virtual void SetGetOffset(int32 get_offset) OVERRIDE;
+  virtual int32 CreateTransferBuffer(size_t size, int32 id_request) OVERRIDE;
   virtual int32 RegisterTransferBuffer(base::SharedMemory* shared_memory,
                                        size_t size,
-                                       int32 id_request);
-  virtual void DestroyTransferBuffer(int32 id);
-  virtual gpu::Buffer GetTransferBuffer(int32 handle);
-  virtual void SetToken(int32 token);
-  virtual void SetParseError(gpu::error::Error error);
-  virtual void SetContextLostReason(gpu::error::ContextLostReason reason);
+                                       int32 id_request) OVERRIDE;
+  virtual void DestroyTransferBuffer(int32 id) OVERRIDE;
+  virtual gpu::Buffer GetTransferBuffer(int32 handle) OVERRIDE;
+  virtual void SetToken(int32 token) OVERRIDE;
+  virtual void SetParseError(gpu::error::Error error) OVERRIDE;
+  virtual void SetContextLostReason(
+      gpu::error::ContextLostReason reason) OVERRIDE;
 
   // Invoke the task when the channel has been flushed. Takes care of deleting
   // the task whether the echo succeeds or not.

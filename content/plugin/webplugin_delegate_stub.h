@@ -44,10 +44,10 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                         PluginChannel* channel);
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   int instance_id() { return instance_id_; }
   WebPluginProxy* webplugin() { return webplugin_; }

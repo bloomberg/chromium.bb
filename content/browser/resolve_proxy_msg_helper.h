@@ -42,7 +42,7 @@ class CONTENT_EXPORT ResolveProxyMsgHelper : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 

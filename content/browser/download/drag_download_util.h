@@ -47,8 +47,8 @@ class CONTENT_EXPORT PromiseFileFinalizer : public ui::DownloadFileObserver {
   virtual ~PromiseFileFinalizer();
 
   // DownloadFileObserver methods.
-  virtual void OnDownloadCompleted(const FilePath& file_path);
-  virtual void OnDownloadAborted();
+  virtual void OnDownloadCompleted(const FilePath& file_path) OVERRIDE;
+  virtual void OnDownloadAborted() OVERRIDE;
 
  private:
   void Cleanup();

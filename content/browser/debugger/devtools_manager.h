@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "content/browser/debugger/devtools_agent_host.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/common/content_export.h"
@@ -91,10 +92,10 @@ class CONTENT_EXPORT DevToolsManager
   // This method will remove all references from the manager to the
   // DevToolsClientHost and unregister all listeners related to the
   // DevToolsClientHost.
-  virtual void ClientHostClosing(DevToolsClientHost* host);
+  virtual void ClientHostClosing(DevToolsClientHost* host) OVERRIDE;
 
   // DevToolsAgentHost::CloseListener implementation.
-  virtual void AgentHostClosing(DevToolsAgentHost* host);
+  virtual void AgentHostClosing(DevToolsAgentHost* host) OVERRIDE;
 
   // Returns DevToolsAgentHost inspected by the DevToolsClientHost.
   DevToolsAgentHost* GetAgentHost(DevToolsClientHost* client_host);

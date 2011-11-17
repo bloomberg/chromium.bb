@@ -26,7 +26,7 @@ class DeviceOrientationDispatcher : public content::RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // From WebKit::WebDeviceOrientationClient.
   virtual void setController(

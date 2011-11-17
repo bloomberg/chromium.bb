@@ -27,7 +27,7 @@ class NotificationProvider : public content::RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebKit::WebNotificationPresenter interface.
   virtual bool show(const WebKit::WebNotification& proxy);

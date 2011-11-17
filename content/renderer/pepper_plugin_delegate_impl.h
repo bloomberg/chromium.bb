@@ -83,8 +83,8 @@ class PpapiBrokerImpl : public webkit::ppapi::PluginDelegate::PpapiBroker,
                   PepperPluginDelegateImpl* delegate_);
 
   // PpapiBroker implementation.
-  virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client);
-  virtual void Disconnect(webkit::ppapi::PPB_Broker_Impl* client);
+  virtual void Connect(webkit::ppapi::PPB_Broker_Impl* client) OVERRIDE;
+  virtual void Disconnect(webkit::ppapi::PPB_Broker_Impl* client) OVERRIDE;
 
   // Called when the channel to the broker has been established.
   void OnBrokerChannelConnected(base::ProcessHandle broker_process_handle,
@@ -204,35 +204,35 @@ class PepperPluginDelegateImpl
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void PluginRequestedCancelComposition(
       webkit::ppapi::PluginInstance* instance) OVERRIDE;
-  virtual void PluginCrashed(webkit::ppapi::PluginInstance* instance);
+  virtual void PluginCrashed(webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void InstanceCreated(
-      webkit::ppapi::PluginInstance* instance);
+      webkit::ppapi::PluginInstance* instance) OVERRIDE;
   virtual void InstanceDeleted(
-      webkit::ppapi::PluginInstance* instance);
-  virtual SkBitmap* GetSadPluginBitmap();
+      webkit::ppapi::PluginInstance* instance) OVERRIDE;
+  virtual SkBitmap* GetSadPluginBitmap() OVERRIDE;
   virtual PlatformAudio* CreateAudio(
       uint32_t sample_rate,
       uint32_t sample_count,
-      PlatformAudio::Client* client);
-  virtual PlatformImage2D* CreateImage2D(int width, int height);
-  virtual PlatformContext3D* CreateContext3D();
+      PlatformAudio::Client* client) OVERRIDE;
+  virtual PlatformImage2D* CreateImage2D(int width, int height) OVERRIDE;
+  virtual PlatformContext3D* CreateContext3D() OVERRIDE;
   virtual PlatformVideoCapture* CreateVideoCapture(
       media::VideoCapture::EventHandler* handler) OVERRIDE;
   virtual PlatformVideoDecoder* CreateVideoDecoder(
       media::VideoDecodeAccelerator::Client* client,
-      int32 command_buffer_route_id);
+      int32 command_buffer_route_id) OVERRIDE;
   virtual PpapiBroker* ConnectToPpapiBroker(
-      webkit::ppapi::PPB_Broker_Impl* client);
+      webkit::ppapi::PPB_Broker_Impl* client) OVERRIDE;
   virtual void NumberOfFindResultsChanged(int identifier,
                                           int total,
-                                          bool final_result);
-  virtual void SelectedFindResultChanged(int identifier, int index);
+                                          bool final_result) OVERRIDE;
+  virtual void SelectedFindResultChanged(int identifier, int index) OVERRIDE;
   virtual bool RunFileChooser(
       const WebKit::WebFileChooserParams& params,
-      WebKit::WebFileChooserCompletion* chooser_completion);
+      WebKit::WebFileChooserCompletion* chooser_completion) OVERRIDE;
   virtual bool AsyncOpenFile(const FilePath& path,
                              int flags,
-                             const AsyncOpenFileCallback& callback);
+                             const AsyncOpenFileCallback& callback) OVERRIDE;
   virtual bool AsyncOpenFileSystemURL(
       const GURL& path,
       int flags,
@@ -356,7 +356,7 @@ class PepperPluginDelegateImpl
   }
 
   // Implementation of PepperParentContextProvider.
-  virtual RendererGLContext* GetParentContextForPlatformContext3D();
+  virtual RendererGLContext* GetParentContextForPlatformContext3D() OVERRIDE;
 
   // Pointer to the RenderView that owns us.
   RenderViewImpl* render_view_;

@@ -33,23 +33,24 @@ class SocketStreamDispatcherHost : public BrowserMessageFilter,
 
   // BrowserMessageFilter methods.
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
   // The object died, so cancel and detach all requests associated with it.
   void CancelRequestsForProcess(int host_id);
 
   // SocketStream::Delegate methods.
   virtual void OnConnected(net::SocketStream* socket,
-                           int max_pending_send_allowed);
-  virtual void OnSentData(net::SocketStream* socket, int amount_sent);
+                           int max_pending_send_allowed) OVERRIDE;
+  virtual void OnSentData(net::SocketStream* socket, int amount_sent) OVERRIDE;
   virtual void OnReceivedData(net::SocketStream* socket,
-                              const char* data, int len);
-  virtual void OnClose(net::SocketStream* socket);
-  virtual bool CanGetCookies(net::SocketStream* socket, const GURL& url);
+                              const char* data, int len) OVERRIDE;
+  virtual void OnClose(net::SocketStream* socket) OVERRIDE;
+  virtual bool CanGetCookies(net::SocketStream* socket,
+                             const GURL& url) OVERRIDE;
   virtual bool CanSetCookie(net::SocketStream* request,
                             const GURL& url,
                             const std::string& cookie_line,
-                            net::CookieOptions* options);
+                            net::CookieOptions* options) OVERRIDE;
 
  private:
   // Message handlers called by OnMessageReceived.

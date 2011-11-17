@@ -50,28 +50,29 @@ class CONTENT_EXPORT BrowserRenderProcessHost
   virtual ~BrowserRenderProcessHost();
 
   // RenderProcessHost implementation (public portion).
-  virtual void EnableSendQueue();
-  virtual bool Init(bool is_accessibility_enabled);
-  virtual int GetNextRoutingID();
-  virtual void CancelResourceRequests(int render_widget_id);
-  virtual void CrossSiteSwapOutACK(const ViewMsg_SwapOut_Params& params);
+  virtual void EnableSendQueue() OVERRIDE;
+  virtual bool Init(bool is_accessibility_enabled) OVERRIDE;
+  virtual int GetNextRoutingID() OVERRIDE;
+  virtual void CancelResourceRequests(int render_widget_id) OVERRIDE;
+  virtual void CrossSiteSwapOutACK(
+      const ViewMsg_SwapOut_Params& params) OVERRIDE;
   virtual bool WaitForUpdateMsg(int render_widget_id,
                                 const base::TimeDelta& max_delay,
-                                IPC::Message* msg);
-  virtual void ReceivedBadMessage();
-  virtual void WidgetRestored();
-  virtual void WidgetHidden();
-  virtual int VisibleWidgetCount() const;
-  virtual bool FastShutdownIfPossible();
-  virtual void DumpHandles();
-  virtual base::ProcessHandle GetHandle();
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
+                                IPC::Message* msg) OVERRIDE;
+  virtual void ReceivedBadMessage() OVERRIDE;
+  virtual void WidgetRestored() OVERRIDE;
+  virtual void WidgetHidden() OVERRIDE;
+  virtual int VisibleWidgetCount() const OVERRIDE;
+  virtual bool FastShutdownIfPossible() OVERRIDE;
+  virtual void DumpHandles() OVERRIDE;
+  virtual base::ProcessHandle GetHandle() OVERRIDE;
+  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
   virtual void SetCompositingSurface(
       int render_widget_id,
-      gfx::PluginWindowHandle compositing_surface);
+      gfx::PluginWindowHandle compositing_surface) OVERRIDE;
 
   // IPC::Channel::Sender via RenderProcessHost.
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // IPC::Channel::Listener via RenderProcessHost.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
@@ -79,7 +80,7 @@ class CONTENT_EXPORT BrowserRenderProcessHost
   virtual void OnChannelError() OVERRIDE;
 
   // ChildProcessLauncher::Client implementation.
-  virtual void OnProcessLaunched();
+  virtual void OnProcessLaunched() OVERRIDE;
 
   // base::WaitableEventWatcher::Delegate implementation.
   virtual void OnWaitableEventSignaled(

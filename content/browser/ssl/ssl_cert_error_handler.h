@@ -23,7 +23,7 @@ class SSLCertErrorHandler : public SSLErrorHandler {
                       const net::SSLInfo& ssl_info,
                       bool is_hsts_host);
 
-  virtual SSLCertErrorHandler* AsSSLCertErrorHandler();
+  virtual SSLCertErrorHandler* AsSSLCertErrorHandler() OVERRIDE;
 
   // These accessors are available on either thread
   const net::SSLInfo& ssl_info() const { return ssl_info_; }
@@ -32,8 +32,8 @@ class SSLCertErrorHandler : public SSLErrorHandler {
 
  protected:
   // SSLErrorHandler methods
-  virtual void OnDispatchFailed();
-  virtual void OnDispatched();
+  virtual void OnDispatchFailed() OVERRIDE;
+  virtual void OnDispatched() OVERRIDE;
 
  private:
   virtual ~SSLCertErrorHandler();

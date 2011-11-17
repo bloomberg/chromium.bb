@@ -54,7 +54,7 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
   virtual ~UtilityProcessHost();
 
   // BrowserChildProcessHost override
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // Starts utility process in batch mode. Caller must call EndBatchMode()
   // to finish the utility process.
@@ -80,11 +80,11 @@ class CONTENT_EXPORT UtilityProcessHost : public BrowserChildProcessHost {
   bool StartProcess();
 
   // IPC messages:
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // BrowserChildProcessHost:
-  virtual void OnProcessCrashed(int exit_code);
-  virtual bool CanShutdown();
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
+  virtual bool CanShutdown() OVERRIDE;
 
   // A pointer to our client interface, who will be informed of progress.
   scoped_refptr<Client> client_;

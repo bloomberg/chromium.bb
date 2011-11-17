@@ -109,9 +109,9 @@ class RenderViewTest : public testing::Test {
   WebKit::WebWidget* GetWebWidget();
 
   // testing::Test
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 
-  virtual void TearDown();
+  virtual void TearDown() OVERRIDE;
 
   MessageLoop msg_loop_;
   scoped_ptr<MockRenderProcess> mock_process_;

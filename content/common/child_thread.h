@@ -35,7 +35,7 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
   virtual ~ChildThread();
 
   // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // See documentation on MessageRouter for AddRoute and RemoveRoute
   void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
@@ -103,8 +103,8 @@ class CONTENT_EXPORT ChildThread : public IPC::Channel::Listener,
   void Init();
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelError();
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   std::string channel_name_;
   scoped_ptr<IPC::SyncChannel> channel_;

@@ -144,7 +144,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // Returns the current navigation properties, which if a navigation is
   // pending may be provisional (e.g., the navigation could result in a
   // download, in which case the URL would revert to what it was previously).
-  virtual const GURL& GetURL() const;
+  virtual const GURL& GetURL() const OVERRIDE;
   virtual const string16& GetTitle() const;
 
   // The max PageID of any page that this TabContents has loaded.  PageIDs
@@ -315,13 +315,13 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // Returns true if the location bar should be focused by default rather than
   // the page contents. The view calls this function when the tab is focused
   // to see what it should do.
-  virtual bool FocusLocationBarByDefault();
+  virtual bool FocusLocationBarByDefault() OVERRIDE;
 
   // Focuses the location bar.
-  virtual void SetFocusToLocationBar(bool select_all);
+  virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
 
   // Creates a view and sets the size for the specified RVH.
-  virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh);
+  virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) OVERRIDE;
 
   // Toolbars and such ---------------------------------------------------------
 
@@ -546,9 +546,10 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual void HandleMouseDown() OVERRIDE;
   virtual void HandleMouseUp() OVERRIDE;
   virtual void HandleMouseActivate() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void RunFileChooser(RenderViewHost* render_view_host,
-                              const ViewHostMsg_RunFileChooser_Params& params);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void RunFileChooser(
+      RenderViewHost* render_view_host,
+      const ViewHostMsg_RunFileChooser_Params& params) OVERRIDE;
   virtual void ToggleFullscreenMode(bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForCurrentTab() const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;
@@ -708,16 +709,17 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
 
   virtual void BeforeUnloadFiredFromRenderManager(
       bool proceed,
-      bool* proceed_to_fire_unload);
+      bool* proceed_to_fire_unload) OVERRIDE;
   virtual void DidStartLoadingFromRenderManager(
-      RenderViewHost* render_view_host);
+      RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewGoneFromRenderManager(
-      RenderViewHost* render_view_host);
-  virtual void UpdateRenderViewSizeForRenderManager();
-  virtual void NotifySwappedFromRenderManager();
-  virtual NavigationController& GetControllerForRenderManager();
-  virtual WebUI* CreateWebUIForRenderManager(const GURL& url);
-  virtual NavigationEntry* GetLastCommittedNavigationEntryForRenderManager();
+      RenderViewHost* render_view_host) OVERRIDE;
+  virtual void UpdateRenderViewSizeForRenderManager() OVERRIDE;
+  virtual void NotifySwappedFromRenderManager() OVERRIDE;
+  virtual NavigationController& GetControllerForRenderManager() OVERRIDE;
+  virtual WebUI* CreateWebUIForRenderManager(const GURL& url) OVERRIDE;
+  virtual NavigationEntry*
+      GetLastCommittedNavigationEntryForRenderManager() OVERRIDE;
 
   // Initializes the given renderer if necessary and creates the view ID
   // corresponding to this view host. If this method is not called and the
@@ -728,7 +730,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // If you are attaching to an already-existing RenderView, you should call
   // InitWithExistingID.
   virtual bool CreateRenderViewForRenderManager(
-      RenderViewHost* render_view_host);
+      RenderViewHost* render_view_host) OVERRIDE;
 
   // Stores random bits of data for others to associate with this object.
   // WARNING: this needs to be deleted after NavigationController.

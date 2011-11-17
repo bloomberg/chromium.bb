@@ -168,7 +168,7 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // The next available SiteInstance ID.
   static int32 next_site_instance_id_;

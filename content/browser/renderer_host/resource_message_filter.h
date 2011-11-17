@@ -48,9 +48,9 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
                         ResourceDispatcherHost* resource_dispatcher_host);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing();
+  virtual void OnChannelClosing() OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
   const content::ResourceContext& resource_context() const {
     return *resource_context_;

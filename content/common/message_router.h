@@ -37,7 +37,7 @@ class MessageRouter : public IPC::Channel::Listener,
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // Like OnMessageReceived, except it only handles routed messages.  Returns
   // true if the message was dispatched, or false if there was no listener for
@@ -45,7 +45,7 @@ class MessageRouter : public IPC::Channel::Listener,
   virtual bool RouteMessage(const IPC::Message& msg);
 
   // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // Called to add/remove a listener for a particular message routing ID.
   void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);

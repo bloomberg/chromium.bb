@@ -25,22 +25,22 @@ class CONTENT_EXPORT VideoCaptureImpl
  public:
   // media::VideoCapture interface.
   virtual void StartCapture(media::VideoCapture::EventHandler* handler,
-                            const VideoCaptureCapability& capability);
-  virtual void StopCapture(media::VideoCapture::EventHandler* handler);
-  virtual void FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer);
-  virtual bool CaptureStarted();
-  virtual int CaptureWidth();
-  virtual int CaptureHeight();
-  virtual int CaptureFrameRate();
+                            const VideoCaptureCapability& capability) OVERRIDE;
+  virtual void StopCapture(media::VideoCapture::EventHandler* handler) OVERRIDE;
+  virtual void FeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) OVERRIDE;
+  virtual bool CaptureStarted() OVERRIDE;
+  virtual int CaptureWidth() OVERRIDE;
+  virtual int CaptureHeight() OVERRIDE;
+  virtual int CaptureFrameRate() OVERRIDE;
 
   // VideoCaptureMessageFilter::Delegate interface.
   virtual void OnBufferCreated(base::SharedMemoryHandle handle,
-                               int length, int buffer_id);
-  virtual void OnBufferReceived(int buffer_id, base::Time timestamp);
-  virtual void OnStateChanged(const media::VideoCapture::State& state);
+                               int length, int buffer_id) OVERRIDE;
+  virtual void OnBufferReceived(int buffer_id, base::Time timestamp) OVERRIDE;
+  virtual void OnStateChanged(const media::VideoCapture::State& state) OVERRIDE;
   virtual void OnDeviceInfoReceived(
-      const media::VideoCaptureParams& device_info);
-  virtual void OnDelegateAdded(int32 device_id);
+      const media::VideoCaptureParams& device_info) OVERRIDE;
+  virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
 
  private:
   friend class VideoCaptureImplManager;

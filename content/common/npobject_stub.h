@@ -45,16 +45,16 @@ class NPObjectStub : public IPC::Channel::Listener,
   void DeleteSoon();
 
   // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // NPObjectBase implementation.
-  virtual NPObject* GetUnderlyingNPObject();
-  virtual IPC::Channel::Listener* GetChannelListener();
+  virtual NPObject* GetUnderlyingNPObject() OVERRIDE;
+  virtual IPC::Channel::Listener* GetChannelListener() OVERRIDE;
 
  private:
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnChannelError();
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   // message handlers
   void OnRelease(IPC::Message* reply_msg);

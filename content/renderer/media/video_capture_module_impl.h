@@ -37,17 +37,17 @@ class VideoCaptureModuleImpl
       webrtc::VideoCaptureCapability& settings) OVERRIDE;
 
   // media::VideoCapture::EventHandler implementation.
-  virtual void OnStarted(media::VideoCapture* capture);
-  virtual void OnStopped(media::VideoCapture* capture);
-  virtual void OnPaused(media::VideoCapture* capture);
-  virtual void OnError(media::VideoCapture* capture, int error_code);
-  virtual void OnRemoved(media::VideoCapture* capture);
+  virtual void OnStarted(media::VideoCapture* capture) OVERRIDE;
+  virtual void OnStopped(media::VideoCapture* capture) OVERRIDE;
+  virtual void OnPaused(media::VideoCapture* capture) OVERRIDE;
+  virtual void OnError(media::VideoCapture* capture, int error_code) OVERRIDE;
+  virtual void OnRemoved(media::VideoCapture* capture) OVERRIDE;
   virtual void OnBufferReady(
       media::VideoCapture* capture,
-      scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf);
+      scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf) OVERRIDE;
   virtual void OnDeviceInfoReceived(
       media::VideoCapture* capture,
-      const media::VideoCaptureParams& device_info);
+      const media::VideoCaptureParams& device_info) OVERRIDE;
 
  private:
   virtual ~VideoCaptureModuleImpl();

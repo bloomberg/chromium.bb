@@ -29,33 +29,44 @@ class X509UserCertResourceHandler : public ResourceHandler {
  public:
   X509UserCertResourceHandler(ResourceDispatcherHost* host,
                               net::URLRequest* request,
-                              int render_process_host_id, int render_view_id);
+                              int render_process_host_id,
+                              int render_view_id);
 
-  virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
+  virtual bool OnUploadProgress(int request_id,
+                                uint64 position,
+                                uint64 size) OVERRIDE;
 
   // Not needed, as this event handler ought to be the final resource.
-  virtual bool OnRequestRedirected(int request_id, const GURL& url,
-                                   ResourceResponse* resp, bool* defer);
+  virtual bool OnRequestRedirected(int request_id,
+                                   const GURL& url,
+                                   ResourceResponse* resp,
+                                   bool* defer) OVERRIDE;
 
   // Check if this indeed an X509 cert.
-  virtual bool OnResponseStarted(int request_id, ResourceResponse* resp);
+  virtual bool OnResponseStarted(int request_id,
+                                 ResourceResponse* resp) OVERRIDE;
 
   // Pass-through implementation.
-  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer);
+  virtual bool OnWillStart(int request_id,
+                           const GURL& url,
+                           bool* defer) OVERRIDE;
 
   // Create a new buffer to store received data.
-  virtual bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
-                          int min_size);
+  virtual bool OnWillRead(int request_id,
+                          net::IOBuffer** buf,
+                          int* buf_size,
+                          int min_size) OVERRIDE;
 
   // A read was completed, maybe allocate a new buffer for further data.
-  virtual bool OnReadCompleted(int request_id, int* bytes_read);
+  virtual bool OnReadCompleted(int request_id,
+                               int* bytes_read) OVERRIDE;
 
   // Done downloading the certificate.
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& urs,
-                                   const std::string& sec_info);
+                                   const std::string& sec_info) OVERRIDE;
 
-  virtual void OnRequestClosed();
+  virtual void OnRequestClosed() OVERRIDE;
 
  private:
   virtual ~X509UserCertResourceHandler();

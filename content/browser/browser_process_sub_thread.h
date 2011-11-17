@@ -31,8 +31,8 @@ class CONTENT_EXPORT BrowserProcessSubThread : public BrowserThreadImpl {
   virtual ~BrowserProcessSubThread();
 
  protected:
-  virtual void Init();
-  virtual void CleanUp();
+  virtual void Init() OVERRIDE;
+  virtual void CleanUp() OVERRIDE;
 
  private:
   // Each specialized thread has its own notification service.

@@ -79,7 +79,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
   virtual void ClosePage() {}
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // This is called by the RenderView when it's going away so that this object
   // can null out its pointer.
@@ -90,7 +90,7 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Channel::Listener,
   virtual ~RenderViewObserver();
 
   // IPC::Message::Sender implementation.
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   RenderView* render_view();
   int routing_id() { return routing_id_; }

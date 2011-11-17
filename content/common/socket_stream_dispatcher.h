@@ -34,7 +34,7 @@ class SocketStreamDispatcher : public IPC::Channel::Listener {
       webkit_glue::WebSocketStreamHandleDelegate* delegate);
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
  private:
   void OnConnected(int socket_id, int max_amount_send_allowed);

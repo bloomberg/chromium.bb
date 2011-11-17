@@ -72,15 +72,16 @@ class DevToolsHttpProtocolHandler
 
   // net::HttpServer::Delegate implementation.
   virtual void OnHttpRequest(int connection_id,
-                             const net::HttpServerRequestInfo& info);
-  virtual void OnWebSocketRequest(int connection_id,
-                                  const net::HttpServerRequestInfo& info);
+                             const net::HttpServerRequestInfo& info) OVERRIDE;
+  virtual void OnWebSocketRequest(
+      int connection_id,
+      const net::HttpServerRequestInfo& info) OVERRIDE;
   virtual void OnWebSocketMessage(int connection_id,
-                                  const std::string& data);
-  virtual void OnClose(int connection_id);
+                                  const std::string& data) OVERRIDE;
+  virtual void OnClose(int connection_id) OVERRIDE;
 
   virtual void OnJsonRequestUI(int connection_id,
-                             const net::HttpServerRequestInfo& info);
+                               const net::HttpServerRequestInfo& info);
   virtual void OnWebSocketRequestUI(int connection_id,
                                     const net::HttpServerRequestInfo& info);
   virtual void OnWebSocketMessageUI(int connection_id,
@@ -88,8 +89,9 @@ class DevToolsHttpProtocolHandler
   virtual void OnCloseUI(int connection_id);
 
   // net::URLRequest::Delegate implementation.
-  virtual void OnResponseStarted(net::URLRequest* request);
-  virtual void OnReadCompleted(net::URLRequest* request, int bytes_read);
+  virtual void OnResponseStarted(net::URLRequest* request) OVERRIDE;
+  virtual void OnReadCompleted(net::URLRequest* request,
+                               int bytes_read) OVERRIDE;
 
   void Init();
   void Teardown();

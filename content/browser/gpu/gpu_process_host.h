@@ -52,7 +52,7 @@ class GpuProcessHost : public BrowserChildProcessHost,
   static GpuProcessHost* FromID(int host_id);
   int host_id() const { return host_id_; }
 
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   // ChildProcessHost implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -92,10 +92,10 @@ class GpuProcessHost : public BrowserChildProcessHost,
   // Post an IPC message to the UI shim's message handler on the UI thread.
   void RouteOnUIThread(const IPC::Message& message);
 
-  virtual bool CanShutdown();
-  virtual void OnProcessLaunched();
-  virtual void OnChildDied();
-  virtual void OnProcessCrashed(int exit_code);
+  virtual bool CanShutdown() OVERRIDE;
+  virtual void OnProcessLaunched() OVERRIDE;
+  virtual void OnChildDied() OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   // Message handlers.
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);

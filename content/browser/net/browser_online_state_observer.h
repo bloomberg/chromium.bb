@@ -19,7 +19,7 @@ class CONTENT_EXPORT BrowserOnlineStateObserver
   virtual ~BrowserOnlineStateObserver();
 
   // OnlineStateObserver implementation.
-  virtual void OnOnlineStateChanged(bool online);
+  virtual void OnOnlineStateChanged(bool online) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserOnlineStateObserver);

@@ -15,17 +15,18 @@ class TestBackingStore : public BackingStore {
   virtual ~TestBackingStore();
 
   // BackingStore implementation.
-  virtual void PaintToBackingStore(RenderProcessHost* process,
-                                   TransportDIB::Id bitmap,
-                                   const gfx::Rect& bitmap_rect,
-                                   const std::vector<gfx::Rect>& copy_rects,
-                                   const base::Closure& completion_callback,
-                                   bool* scheduled_completion_callback);
+  virtual void PaintToBackingStore(
+      RenderProcessHost* process,
+      TransportDIB::Id bitmap,
+      const gfx::Rect& bitmap_rect,
+      const std::vector<gfx::Rect>& copy_rects,
+      const base::Closure& completion_callback,
+      bool* scheduled_completion_callback) OVERRIDE;
   virtual bool CopyFromBackingStore(const gfx::Rect& rect,
-                                    skia::PlatformCanvas* output);
+                                    skia::PlatformCanvas* output) OVERRIDE;
   virtual void ScrollBackingStore(int dx, int dy,
                                   const gfx::Rect& clip_rect,
-                                  const gfx::Size& view_size);
+                                  const gfx::Size& view_size) OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBackingStore);
 };

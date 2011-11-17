@@ -69,7 +69,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHost {
   bool Init(const webkit::WebPluginInfo& info, const std::string& locale);
 
   // Force the plugin process to shutdown (cleanly).
-  virtual void ForceShutdown();
+  virtual void ForceShutdown() OVERRIDE;
 
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
   virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
@@ -135,7 +135,7 @@ class CONTENT_EXPORT PluginProcessHost : public BrowserChildProcessHost {
   void OnPluginSetCursorVisibility(bool visible);
 #endif
 
-  virtual bool CanShutdown();
+  virtual bool CanShutdown() OVERRIDE;
 
   void CancelRequests();
 

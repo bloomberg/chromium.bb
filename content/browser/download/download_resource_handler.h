@@ -49,29 +49,38 @@ class DownloadResourceHandler : public ResourceHandler {
                           const OnStartedCallback& started_cb,
                           const DownloadSaveInfo& save_info);
 
-  virtual bool OnUploadProgress(int request_id, uint64 position, uint64 size);
+  virtual bool OnUploadProgress(int request_id,
+                                uint64 position,
+                                uint64 size) OVERRIDE;
 
   // Not needed, as this event handler ought to be the final resource.
-  virtual bool OnRequestRedirected(int request_id, const GURL& url,
-                                   ResourceResponse* response, bool* defer);
+  virtual bool OnRequestRedirected(int request_id,
+                                   const GURL& url,
+                                   ResourceResponse* response,
+                                   bool* defer) OVERRIDE;
 
   // Send the download creation information to the download thread.
-  virtual bool OnResponseStarted(int request_id, ResourceResponse* response);
+  virtual bool OnResponseStarted(int request_id,
+                                 ResourceResponse* response) OVERRIDE;
 
   // Pass-through implementation.
-  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer);
+  virtual bool OnWillStart(int request_id,
+                           const GURL& url,
+                           bool* defer) OVERRIDE;
 
   // Create a new buffer, which will be handed to the download thread for file
   // writing and deletion.
-  virtual bool OnWillRead(int request_id, net::IOBuffer** buf, int* buf_size,
-                          int min_size);
+  virtual bool OnWillRead(int request_id,
+                          net::IOBuffer** buf,
+                          int* buf_size,
+                          int min_size) OVERRIDE;
 
-  virtual bool OnReadCompleted(int request_id, int* bytes_read);
+  virtual bool OnReadCompleted(int request_id, int* bytes_read) OVERRIDE;
 
   virtual bool OnResponseCompleted(int request_id,
                                    const net::URLRequestStatus& status,
-                                   const std::string& security_info);
-  virtual void OnRequestClosed();
+                                   const std::string& security_info) OVERRIDE;
+  virtual void OnRequestClosed() OVERRIDE;
 
   // If the content-length header is not present (or contains something other
   // than numbers), the incoming content_length is -1 (unknown size).

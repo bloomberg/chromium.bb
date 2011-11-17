@@ -59,23 +59,23 @@ class WebPluginDelegateProxy
                          const base::WeakPtr<RenderViewImpl>& render_view);
 
   // WebPluginDelegate implementation:
-  virtual void PluginDestroyed();
+  virtual void PluginDestroyed() OVERRIDE;
   virtual bool Initialize(const GURL& url,
                           const std::vector<std::string>& arg_names,
                           const std::vector<std::string>& arg_values,
                           webkit::npapi::WebPlugin* plugin,
-                          bool load_manually);
+                          bool load_manually) OVERRIDE;
   virtual void UpdateGeometry(const gfx::Rect& window_rect,
-                              const gfx::Rect& clip_rect);
-  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect);
-  virtual NPObject* GetPluginScriptableObject();
-  virtual bool GetFormValue(string16* value);
+                              const gfx::Rect& clip_rect) OVERRIDE;
+  virtual void Paint(WebKit::WebCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
+  virtual NPObject* GetPluginScriptableObject() OVERRIDE;
+  virtual bool GetFormValue(string16* value) OVERRIDE;
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
-                                       int notify_id);
-  virtual void SetFocus(bool focused);
+                                       int notify_id) OVERRIDE;
+  virtual void SetFocus(bool focused) OVERRIDE;
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
-                                WebKit::WebCursorInfo* cursor);
-  virtual int GetProcessId();
+                                WebKit::WebCursorInfo* cursor) OVERRIDE;
+  virtual int GetProcessId() OVERRIDE;
 
   // Informs the plugin that its containing content view has gained or lost
   // first responder status.
@@ -105,29 +105,29 @@ class WebPluginDelegateProxy
 #endif
 
   // IPC::Channel::Listener implementation:
-  virtual bool OnMessageReceived(const IPC::Message& msg);
-  virtual void OnChannelError();
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
 
   // IPC::Message::Sender implementation:
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   virtual void SendJavaScriptStream(const GURL& url,
                                     const std::string& result,
                                     bool success,
-                                    int notify_id);
+                                    int notify_id) OVERRIDE;
 
   virtual void DidReceiveManualResponse(const GURL& url,
                                         const std::string& mime_type,
                                         const std::string& headers,
                                         uint32 expected_length,
-                                        uint32 last_modified);
-  virtual void DidReceiveManualData(const char* buffer, int length);
-  virtual void DidFinishManualLoading();
-  virtual void DidManualLoadFail();
+                                        uint32 last_modified) OVERRIDE;
+  virtual void DidReceiveManualData(const char* buffer, int length) OVERRIDE;
+  virtual void DidFinishManualLoading() OVERRIDE;
+  virtual void DidManualLoadFail() OVERRIDE;
   virtual webkit::npapi::WebPluginResourceClient* CreateResourceClient(
-      unsigned long resource_id, const GURL& url, int notify_id);
+      unsigned long resource_id, const GURL& url, int notify_id) OVERRIDE;
   virtual webkit::npapi::WebPluginResourceClient* CreateSeekableResourceClient(
-      unsigned long resource_id, int range_request_id);
+      unsigned long resource_id, int range_request_id) OVERRIDE;
 
   gfx::PluginWindowHandle GetPluginWindowHandle();
 

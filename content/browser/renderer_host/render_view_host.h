@@ -82,7 +82,7 @@ class ExecuteNotificationObserver : public content::NotificationObserver {
   virtual ~ExecuteNotificationObserver();
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   int id() const { return id_; }
 

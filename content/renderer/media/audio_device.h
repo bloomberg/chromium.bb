@@ -106,13 +106,14 @@ class CONTENT_EXPORT AudioDevice
 
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
-  virtual void OnRequestPacket(AudioBuffersState buffers_state);
-  virtual void OnStateChanged(AudioStreamState state);
-  virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length);
+  virtual void OnRequestPacket(AudioBuffersState buffers_state) OVERRIDE;
+  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
+  virtual void OnCreated(base::SharedMemoryHandle handle,
+                         uint32 length) OVERRIDE;
   virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
                                    base::SyncSocket::Handle socket_handle,
-                                   uint32 length);
-  virtual void OnVolume(double volume);
+                                   uint32 length) OVERRIDE;
+  virtual void OnVolume(double volume) OVERRIDE;
 
  private:
   // Methods called on IO thread ----------------------------------------------
@@ -132,7 +133,7 @@ class CONTENT_EXPORT AudioDevice
   void FireRenderCallback();
 
   // DelegateSimpleThread::Delegate implementation.
-  virtual void Run();
+  virtual void Run() OVERRIDE;
 
   // Format
   size_t buffer_size_;  // in sample-frames

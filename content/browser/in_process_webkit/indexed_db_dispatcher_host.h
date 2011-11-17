@@ -43,11 +43,12 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
   IndexedDBDispatcherHost(int process_id, WebKitContext* webkit_context);
 
   // BrowserMessageFilter implementation.
-  virtual void OnChannelClosing();
-  virtual void OverrideThreadForMessage(const IPC::Message& message,
-                                        content::BrowserThread::ID* thread);
+  virtual void OnChannelClosing() OVERRIDE;
+  virtual void OverrideThreadForMessage(
+      const IPC::Message& message,
+      content::BrowserThread::ID* thread) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
   void TransactionComplete(int32 transaction_id);
 

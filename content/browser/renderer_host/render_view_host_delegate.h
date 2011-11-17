@@ -191,7 +191,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
 
   // IPC::Channel::Listener implementation.
   // This is used to give the delegate a chance to filter IPC messages.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Gets the URL that is currently being displayed, if there is one.
   virtual const GURL& GetURL() const;

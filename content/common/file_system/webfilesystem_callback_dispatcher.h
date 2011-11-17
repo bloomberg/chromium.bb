@@ -22,17 +22,17 @@ class WebFileSystemCallbackDispatcher
       WebKit::WebFileSystemCallbacks* callbacks);
 
   // FileSystemCallbackDispatcher implementation
-  virtual void DidSucceed();
+  virtual void DidSucceed() OVERRIDE;
   virtual void DidReadMetadata(
       const base::PlatformFileInfo& file_info,
-      const FilePath& platform_path);
+      const FilePath& platform_path) OVERRIDE;
   virtual void DidReadDirectory(
       const std::vector<base::FileUtilProxy::Entry>& entries,
-      bool has_more);
+      bool has_more) OVERRIDE;
   virtual void DidOpenFileSystem(const std::string&,
-                                 const GURL&);
-  virtual void DidFail(base::PlatformFileError);
-  virtual void DidWrite(int64 bytes, bool complete);
+                                 const GURL&) OVERRIDE;
+  virtual void DidFail(base::PlatformFileError) OVERRIDE;
+  virtual void DidWrite(int64 bytes, bool complete) OVERRIDE;
 
  private:
   WebKit::WebFileSystemCallbacks* callbacks_;

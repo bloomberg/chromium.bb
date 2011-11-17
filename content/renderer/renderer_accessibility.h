@@ -36,9 +36,9 @@ class RendererAccessibility : public content::RenderViewObserver {
   virtual ~RendererAccessibility();
 
   // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void FocusedNodeChanged(const WebKit::WebNode& node);
-  virtual void DidFinishLoad(WebKit::WebFrame* frame);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
+  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
 
   // Called when an accessibility notification occurs in WebKit.
   virtual void PostAccessibilityNotification(

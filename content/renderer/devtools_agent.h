@@ -39,7 +39,7 @@ class DevToolsAgent : public content::RenderViewObserver,
   friend class DevToolsAgentFilter;
 
   // RenderView::Observer implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebDevToolsAgentClient implementation
   virtual void sendMessageToInspectorFrontend(const WebKit::WebString& data);
