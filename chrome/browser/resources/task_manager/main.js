@@ -193,8 +193,11 @@ TaskManager.prototype = {
       var compare_func = function() {
           var value_id = column_id + 'Value';
           return function(a, b) {
-              return dm.defaultValuesCompareFunction(a[value_id][0],
-                                                     b[value_id][0]);
+              var aValues = a[value_id];
+              var bValues = b[value_id];
+              var aValue = aValues && aValues[0] || 0;
+              var bvalue = bValues && bValues[0] || 0;
+              return dm.defaultValuesCompareFunction(aValue, bvalue);
           };
       }();
       dm.setCompareFunction(column_id, compare_func);
