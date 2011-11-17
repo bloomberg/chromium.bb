@@ -49,15 +49,25 @@
       <include src="header_footer_settings.html"></include>
       <div>
         <if expr="pp_ifdef('chromeos')">
-          <button id="system-dialog-link" class="link-button"
+          <button id="system-dialog-link"
+              class="link-button preview-link-button"
               i18n-content="cloudPrintDialogOption"></button>
         </if>
         <if expr="not pp_ifdef('chromeos')">
-          <button id="system-dialog-link" class="link-button"
+          <button id="system-dialog-link"
+              class="link-button preview-link-button"
               i18n-content="systemDialogOption"></button>
         </if>
         <div id="system-dialog-throbber" class="throbber" hidden></div>
       </div>
+      <if expr="os == 'darwin'">
+        <div>
+          <button id="open-pdf-in-preview-link"
+              class="link-button preview-link-button"
+              i18n-content="openPdfInPreviewOption"></button>
+          <div id="open-preview-app-throbber" class="throbber" hidden></div>
+        </div>
+      </if>
     </div>
   </div>
   <div id="mainview">

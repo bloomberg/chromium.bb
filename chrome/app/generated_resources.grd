@@ -6325,6 +6325,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PRINT_PREVIEW_PRINTING_TO_PDF_IN_PROGRESS" desc="Text shown after the user clicks on the print button while Print To PDF is selected, but the PDF file is not ready yet.">
         Printing to PDF in progress
       </message>
+      <if expr="is_macosx">
+        <message name="IDS_PRINT_PREVIEW_OPENING_PDF_IN_PREVIEW" desc="Text shown after the user clicks on the open pdf in preview button while the pdf file is not ready yet.">
+        Opening PDF in Preview
+        </message>
+      </if>
       <message name="IDS_PRINT_PREVIEW_CANCEL_BUTTON" desc="Cancel button.">
         Cancel
       </message>
@@ -6410,8 +6415,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         page
       </message>
       <message name="IDS_PRINT_PREVIEW_PAGE_LABEL_PLURAL" desc="Label shown in the print preview summary.">
-        pages
       </message>
+      <if expr="is_macosx">
+        <message name="IDS_PRINT_PREVIEW_OPEN_PDF_IN_PREVIEW_APP" desc="Option allowing the user to open the pdf in native preview app">
+        Open PDF in Preview
+        </message>
+      </if>
       <message name="IDS_PRINT_PREVIEW_SYSTEM_DIALOG_OPTION" desc="Option allowing the user to access advanced printer settings using the native print system dialog instead of printing through the print preview mechanism. Shortcut key is not translated">
         Print using system dialog... <ph name="SHORTCUT_KEY">$1<ex>(Shift+Ctrl+P)</ex></ph>
       </message>

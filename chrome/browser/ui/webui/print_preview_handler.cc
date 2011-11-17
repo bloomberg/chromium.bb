@@ -401,18 +401,23 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
   bool print_to_pdf = false;
   settings->GetBoolean(printing::kSettingPrintToPDF, &print_to_pdf);
 
+  bool open_pdf_in_preview = false;
+#if defined(OS_MACOSX)
+  open_pdf_in_preview = settings->HasKey(printing::kSettingOpenPDFInPreview);
+#endif
+
   settings->SetBoolean(printing::kSettingHeaderFooterEnabled, false);
 
   bool is_cloud_printer = settings->HasKey(printing::kSettingCloudPrintId);
   bool is_cloud_dialog = false;
   settings->GetBoolean(printing::kSettingCloudPrintDialog, &is_cloud_dialog);
-  if (is_cloud_printer) {
+  if (is_cloud_printer && !open_pdf_in_preview) {
     std::string print_ticket;
     args->GetString(1, &print_ticket);
     SendCloudPrintJob(*settings, print_ticket);
-  } else if (print_to_pdf) {
+  } else if (print_to_pdf && !open_pdf_in_preview) {
     HandlePrintToPdf(*settings);
-  } else if (is_cloud_dialog) {
+  } else if (is_cloud_dialog && !open_pdf_in_preview) {
     HandlePrintWithCloudPrint();
   } else {
     ReportPrintSettingsStats(*settings);

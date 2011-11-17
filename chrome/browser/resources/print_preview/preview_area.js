@@ -195,6 +195,14 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Clears the custom message with dots animation.
+     */
+    clearCustomMessageWithDots: function() {
+      this.customMessageWithDots_.innerHTML = '';
+      this.customMessageWithDots_.hidden = true;
+    },
+
+    /**
      * Display an error message in the center of the preview area.
      * @param {string} errorMessage The error message to be displayed.
      */
@@ -227,6 +235,8 @@ cr.define('print_preview', function() {
       this.errorButton.hidden = false;
       $('system-dialog-throbber').hidden = true;
       $('native-print-dialog-throbber').hidden = true;
+      if (cr.isMac)
+        $('open-preview-app-throbber').hidden = true;
       this.displayErrorMessageAndNotify(errorMessage);
     }
   };

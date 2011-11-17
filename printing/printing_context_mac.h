@@ -61,6 +61,10 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
   // Returns true if the paper was set else returns false.
   bool UpdatePageFormatWithPaperInfo();
 
+  // Sets the print job destination type as preview job.
+  // Returns true if the print job destination type is set.
+  bool SetPrintPreviewJob();
+
   // Sets |copies| in PMPrintSettings.
   // Returns true if the number of copies is set.
   bool SetCopiesInPrintSettings(int copies);

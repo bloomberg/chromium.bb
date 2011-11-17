@@ -5,6 +5,7 @@
 #ifndef PRINTING_PRINT_JOB_CONSTANTS_H_
 #define PRINTING_PRINT_JOB_CONSTANTS_H_
 
+#include "build/build_config.h"
 #include "printing/printing_export.h"
 
 namespace printing {
@@ -48,6 +49,10 @@ PRINTING_EXPORT extern const char kSettingPrintToPDF[];
 
 PRINTING_EXPORT extern const int FIRST_PAGE_INDEX;
 PRINTING_EXPORT extern const int COMPLETE_PREVIEW_DOCUMENT_INDEX;
+
+#if defined(OS_MACOSX)
+PRINTING_EXPORT extern const char kSettingOpenPDFInPreview[];
+#endif  // defined(OS_MACOSX)
 
 #if defined (USE_CUPS)
 // Printer color models

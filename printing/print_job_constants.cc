@@ -123,6 +123,10 @@ const char kSettingPrintToPDF[] = "printToPDF";
 const int FIRST_PAGE_INDEX = 0;
 const int COMPLETE_PREVIEW_DOCUMENT_INDEX = -1;
 
+#if defined(OS_MACOSX)
+const char kSettingOpenPDFInPreview[] = "OpenPDFInPreview";
+#endif
+
 #if defined (USE_CUPS)
 const char kBlack[] = "Black";
 const char kCMYK[] = "CMYK";

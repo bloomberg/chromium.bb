@@ -124,6 +124,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
   }
 
   bool print_to_cloud = job_settings.HasKey(kSettingCloudPrintId);
+  bool open_pdf_in_preview = job_settings.HasKey(kSettingOpenPDFInPreview);
 
   if (!print_to_pdf && !print_to_cloud && !is_cloud_dialog) {
     if (!SetPrinter(device_name))
@@ -143,6 +144,11 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
     if (!SetOutputColor(color))
       return OnError();
   }
+  if (open_pdf_in_preview) {
+    if (!SetPrintPreviewJob())
+      return OnError();
+  }
+
   if (!UpdatePageFormatWithPaperInfo())
     return OnError();
 
@@ -153,6 +159,16 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
 
   InitPrintSettingsFromPrintInfo(ranges);
   return OK;
+}
+
+bool PrintingContextMac::SetPrintPreviewJob() {
+  PMPrintSession print_session =
+      static_cast<PMPrintSession>([print_info_.get() PMPrintSession]);
+  PMPrintSettings print_settings =
+      static_cast<PMPrintSettings>([print_info_.get() PMPrintSettings]);
+  return PMSessionSetDestination(
+      print_session, print_settings, kPMDestinationPreview,
+      NULL, NULL) == noErr;
 }
 
 void PrintingContextMac::InitPrintSettingsFromPrintInfo(

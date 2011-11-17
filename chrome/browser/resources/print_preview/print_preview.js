@@ -83,6 +83,9 @@ var previewArea;
 // dialog.
 var showingSystemDialog = false;
 
+// True if the user has clicked 'Open PDF in Preview' option.
+var previewAppRequested = false;
+
 // The range of options in the printer dropdown controlled by cloud print.
 var firstCloudPrintOptionPos = 0;
 var lastCloudPrintOptionPos = firstCloudPrintOptionPos;
@@ -151,6 +154,10 @@ function onLoad() {
   }
 
   $('system-dialog-link').addEventListener('click', onSystemDialogLinkClicked);
+  if (cr.isMac) {
+    $('open-pdf-in-preview-link').addEventListener(
+        'click', onOpenPdfInPreviewLinkClicked);
+  }
   $('mainview').parentElement.removeChild($('dummy-viewer'));
 
   $('printer-list').disabled = true;
@@ -198,6 +205,15 @@ function disableInputElementsInSidebar() {
 }
 
 /**
+ * Enables the input elements in the sidebar.
+ */
+function enableInputElementsInSidebar() {
+  var els = $('navbar-container').querySelectorAll('input, button, select');
+  for (var i = 0; i < els.length; i++)
+    els[i].disabled = false;
+}
+
+/**
  * Disables the controls in the sidebar, shows the throbber and instructs the
  * backend to open the native print dialog.
  */
@@ -209,6 +225,20 @@ function onSystemDialogLinkClicked() {
   printHeader.disableCancelButton();
   $('system-dialog-throbber').hidden = false;
   chrome.send('showSystemDialog');
+}
+
+/**
+ * Disables the controls in the sidebar, shows the throbber and instructs the
+ * backend to open the pdf in native preview app. This is only for Mac.
+ */
+function onOpenPdfInPreviewLinkClicked() {
+  if (previewAppRequested)
+    return;
+  previewAppRequested = true;
+  disableInputElementsInSidebar();
+  $('open-preview-app-throbber').hidden = false;
+  printHeader.disableCancelButton();
+  requestToPrintDocument();
 }
 
 /**
@@ -233,6 +263,9 @@ function updateControlsWithSelectedPrinterCapabilities() {
   var selectedIndex = printerList.selectedIndex;
   if (selectedIndex < 0)
     return;
+  if (cr.isMac)
+    $('open-pdf-in-preview-link').disabled = false;
+
   var skip_refresh = false;
   var selectedValue = printerList.options[selectedIndex].value;
   if (cloudprint.isCloudPrint(printerList.options[selectedIndex])) {
@@ -461,7 +494,10 @@ function requestToPrintDocument() {
   var printToPDF = selectedPrinterName == PRINT_TO_PDF;
   var printWithCloudPrint = selectedPrinterName == PRINT_WITH_CLOUD_PRINT;
   if (hasPendingPrintDocumentRequest) {
-    if (printToPDF) {
+    if (previewAppRequested) {
+      previewArea.showCustomMessage(
+          localStrings.getString('openingPDFInPreview'));
+    } else if (printToPDF) {
       sendPrintDocumentRequest();
     } else if (printWithCloudPrint) {
       previewArea.showCustomMessage(
@@ -474,7 +510,7 @@ function requestToPrintDocument() {
     return;
   }
 
-  if (printToPDF) {
+  if (printToPDF || previewAppRequested) {
     sendPrintDocumentRequest();
   } else {
     window.setTimeout(function() { sendPrintDocumentRequest(); }, 1000);
@@ -496,7 +532,12 @@ function sendPrintDocumentRequest() {
   var printerList = $('printer-list');
   var printer = printerList[printerList.selectedIndex];
   chrome.send('saveLastPrinter', [printer.value, cloudprint.getData(printer)]);
-  chrome.send('print', [JSON.stringify(getSettings()),
+
+  var settings = getSettings();
+  if (cr.isMac && previewAppRequested)
+    settings.OpenPDFInPreview = true;
+
+  chrome.send('print', [JSON.stringify(settings),
                         cloudprint.getPrintTicketJSON(printer)]);
 }
 
@@ -744,6 +785,16 @@ function printPreviewFailed() {
  * Called from PrintPreviewMessageHandler::OnInvalidPrinterSettings().
  */
 function invalidPrinterSettings() {
+  if (cr.isMac) {
+    if (previewAppRequested) {
+      $('open-preview-app-throbber').hidden = true;
+      previewArea.clearCustomMessageWithDots();
+      previewAppRequested = false;
+      hasPendingPrintDocumentRequest = false;
+      enableInputElementsInSidebar();
+    }
+    $('open-pdf-in-preview-link').disabled = true;
+  }
   previewArea.displayErrorMessageAndNotify(
       localStrings.getString('invalidPrinterSettings'));
 }
