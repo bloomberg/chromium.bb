@@ -1250,6 +1250,7 @@
         'browser/chromeos/extensions/file_browser_notifications_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/gview_request_interceptor_unittest.cc',
+        'browser/chromeos/input_method/candidate_window_view_unittest.cc',
         'browser/chromeos/input_method/hotkey_manager_unittest.cc',
         'browser/chromeos/input_method/ibus_controller_unittest.cc',
         'browser/chromeos/input_method/input_method_util_unittest.cc',
@@ -2183,6 +2184,7 @@
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
+            'browser/chromeos/input_method/input_method.gyp:mozc_commands_proto',
           ],
         }],
         ['use_gnome_keyring == 0', {
