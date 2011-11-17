@@ -128,7 +128,6 @@
                     'crypt32.dll',
                     'cryptui.dll',
                     'dhcpcsvc.dll',
-                    'd3d9.dll',
                     'imagehlp.dll',
                     'imm32.dll',
                     'iphlpapi.dll',

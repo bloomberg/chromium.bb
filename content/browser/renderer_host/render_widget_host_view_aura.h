@@ -70,15 +70,16 @@ class CONTENT_EXPORT RenderWidgetHostViewAura : public RenderWidgetHostView,
   virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
-  virtual void AcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
-      int gpu_host_id) OVERRIDE;
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(
       int32 width,
       int32 height,
       uint64* surface_id,
       TransportDIB::Handle* surface_handle) OVERRIDE;
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      uint64 surface_id,
+      int32 route_id,
+      int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
 #endif
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
