@@ -45,9 +45,6 @@ SearchProviderTest::SearchProviderTest()
   if (!test_server_started_)
     return;
 
-  // Enable the search provider additions.
-  launch_arguments_.AppendSwitch(switches::kEnableSearchProviderApiV2);
-
   // Map all hosts to our local server.
   std::string host_rule("MAP * " + test_server_.host_port_pair().ToString());
   launch_arguments_.AppendSwitchASCII(switches::kHostRules, host_rule);

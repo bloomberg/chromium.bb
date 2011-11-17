@@ -20,43 +20,20 @@ using content::RenderView;
 
 namespace extensions_v8 {
 
-static const char* const kSearchProviderApiV1 =
+static const char* const kSearchProviderApi =
     "var external;"
     "if (!external)"
     "  external = {};"
     "external.AddSearchProvider = function(name) {"
     "  native function NativeAddSearchProvider();"
     "  NativeAddSearchProvider(name);"
-    "};";
-
-static const char* const kSearchProviderApiV2 =
-    "var external;"
-    "if (!external)"
-    "  external = {};"
-    "external.AddSearchProvider = function(name, default_provider) {"
-    "  native function NativeAddSearchProvider();"
-    "  NativeAddSearchProvider(name, default_provider);"
     "};"
     "external.IsSearchProviderInstalled = function(name) {"
     "  native function NativeIsSearchProviderInstalled();"
     "  return NativeIsSearchProviderInstalled(name);"
     "};";
 
-#undef SEARCH_PROVIDER_API_V1
-
 const char* const kExternalExtensionName = "v8/External";
-
-// Should the new api's "IsSearchProviderInstalled and InstallSearchProvider
-// with an extra parameter to indicate if the provider should be the default"
-// be available?
-static bool EnableSearchProviderV2() {
-#if defined(OS_WIN)
-  return true;
-#else
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSearchProviderApiV2);
-#endif
-}
 
 class ExternalExtensionWrapper : public v8::Extension {
  public:
@@ -84,8 +61,7 @@ class ExternalExtensionWrapper : public v8::Extension {
 ExternalExtensionWrapper::ExternalExtensionWrapper()
     : v8::Extension(
         kExternalExtensionName,
-        !EnableSearchProviderV2() ?
-        kSearchProviderApiV1 : kSearchProviderApiV2) {
+        kSearchProviderApi) {
 }
 
 v8::Handle<v8::FunctionTemplate> ExternalExtensionWrapper::GetNativeFunction(
@@ -120,22 +96,14 @@ v8::Handle<v8::Value> ExternalExtensionWrapper::AddSearchProvider(
   std::string name = std::string(*v8::String::Utf8Value(args[0]));
   if (!name.length()) return v8::Undefined();
 
-  search_provider::OSDDType provider_type =
-      ((args.Length() < 2) || !args[1]->BooleanValue()) ?
-      search_provider::EXPLICIT_PROVIDER :
-      search_provider::EXPLICIT_DEFAULT_PROVIDER;
-
   RenderView* render_view = GetRenderView();
   if (!render_view) return v8::Undefined();
 
-  if (provider_type != search_provider::EXPLICIT_DEFAULT_PROVIDER ||
-      render_view->GetWebView()->mainFrame()->isProcessingUserGesture()) {
-    GURL osd_url(name);
-    if (!osd_url.is_empty()) {
-      render_view->Send(new ChromeViewHostMsg_PageHasOSDD(
-          render_view->GetRoutingId(), render_view->GetPageId(), osd_url,
-          provider_type));
-    }
+  GURL osd_url(name);
+  if (!osd_url.is_empty()) {
+    render_view->Send(new ChromeViewHostMsg_PageHasOSDD(
+        render_view->GetRoutingId(), render_view->GetPageId(), osd_url,
+        search_provider::EXPLICIT_PROVIDER));
   }
 
   return v8::Undefined();
