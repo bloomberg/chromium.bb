@@ -189,9 +189,6 @@ class StatusController {
   // download: in that case, this also returns false.
   bool ServerSaysNothingMoreToDownload() const;
 
-  // Returns true if there are updates to be processed.
-  bool ResponseContainsUpdates() const;
-
   ModelSafeGroup group_restriction() const {
     return group_restriction_;
   }

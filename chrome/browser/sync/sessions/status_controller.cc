@@ -242,10 +242,6 @@ bool StatusController::ServerSaysNothingMoreToDownload() const {
   return updates_response().get_updates().changes_remaining() == 0;
 }
 
-bool StatusController::ResponseContainsUpdates() const {
-  return updates_response().get_updates().entries_size() != 0;
-}
-
 void StatusController::set_debug_info_sent() {
   shared_.control_params.debug_info_sent = true;
 }

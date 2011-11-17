@@ -15,6 +15,9 @@ namespace browser_sync {
 
 void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
   work_session_ = session;
+  if (!ModelNeutralExecuteImpl(work_session_)) {
+    return;
+  }
 
   // Project the list of active types (i.e., types in the routing
   // info) to a list of groups.
@@ -54,6 +57,11 @@ void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
     ignore_result(worker->DoWorkAndWaitUntilDone(c));
 
   }
+}
+
+bool ModelChangingSyncerCommand::ModelNeutralExecuteImpl(
+    sessions::SyncSession* session) {
+  return true;
 }
 
 }  // namespace browser_sync
