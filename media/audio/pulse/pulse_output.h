@@ -16,8 +16,8 @@
 // inside PulseAudio in Start() and repeated during playback, waiting for
 // PulseAudio write callbacks to occur.
 
-#ifndef MEDIA_AUDIO_LINUX_PULSE_OUTPUT_H_
-#define MEDIA_AUDIO_LINUX_PULSE_OUTPUT_H_
+#ifndef MEDIA_AUDIO_PULSE_PULSE_OUTPUT_H_
+#define MEDIA_AUDIO_PULSE_PULSE_OUTPUT_H_
 
 #include <pulse/pulseaudio.h>
 
@@ -31,14 +31,23 @@ namespace media {
 class SeekableBuffer;
 }
 
+#if defined(OS_LINUX)
 class AudioManagerLinux;
+typedef AudioManagerLinux AudioManagerPulse;
+#elif defined(OS_OPENBSD)
+class AudioManagerOpenBSD;
+typedef AudioManagerOpenBSD AudioManagerPulse;
+#else
+#error Unsupported platform
+#endif
+
 struct AudioParameters;
 class MessageLoop;
 
 class PulseAudioOutputStream : public AudioOutputStream {
  public:
   PulseAudioOutputStream(const AudioParameters& params,
-                         AudioManagerLinux* manager,
+                         AudioManagerPulse* manager,
                          MessageLoop* message_loop);
 
   virtual ~PulseAudioOutputStream();
@@ -86,7 +95,7 @@ class PulseAudioOutputStream : public AudioOutputStream {
   const uint32 bytes_per_frame_;
 
   // Audio manager that created us.  Used to report that we've closed.
-  AudioManagerLinux* manager_;
+  AudioManagerPulse* manager_;
 
   // PulseAudio API structs.
   pa_context* pa_context_;
@@ -128,4 +137,4 @@ class PulseAudioOutputStream : public AudioOutputStream {
   DISALLOW_COPY_AND_ASSIGN(PulseAudioOutputStream);
 };
 
-#endif  // MEDIA_AUDIO_LINUX_PULSE_OUTPUT_H_
+#endif  // MEDIA_AUDIO_PULSE_PULSE_OUTPUT_H_
