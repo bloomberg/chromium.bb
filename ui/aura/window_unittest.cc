@@ -664,6 +664,36 @@ TEST_F(WindowTest, StopsEventPropagation) {
   EXPECT_EQ(w121.get(), w1->GetFocusManager()->GetFocusedWindow());
 }
 
+TEST_F(WindowTest, IgnoreEventsTest) {
+  TestWindowDelegate d11;
+  TestWindowDelegate d12;
+  TestWindowDelegate d111;
+  TestWindowDelegate d121;
+  scoped_ptr<Window> w1(CreateTestWindowWithDelegate(NULL, 1,
+      gfx::Rect(0, 0, 500, 500), NULL));
+  scoped_ptr<Window> w11(CreateTestWindowWithDelegate(&d11, 11,
+      gfx::Rect(0, 0, 500, 500), w1.get()));
+  scoped_ptr<Window> w111(CreateTestWindowWithDelegate(&d111, 111,
+      gfx::Rect(50, 50, 450, 450), w11.get()));
+  scoped_ptr<Window> w12(CreateTestWindowWithDelegate(&d12, 12,
+      gfx::Rect(0, 0, 500, 500), w1.get()));
+  scoped_ptr<Window> w121(CreateTestWindowWithDelegate(&d121, 121,
+      gfx::Rect(150, 150, 50, 50), w12.get()));
+
+  EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
+  w12->set_ignore_events(true);
+  EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(10, 10)));
+  w12->set_ignore_events(false);
+
+  EXPECT_EQ(w121.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  w121->set_ignore_events(true);
+  EXPECT_EQ(w12.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  w12->set_ignore_events(true);
+  EXPECT_EQ(w111.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+  w111->set_ignore_events(true);
+  EXPECT_EQ(w11.get(), w1->GetEventHandlerForPoint(gfx::Point(160, 160)));
+}
+
 // Various assertions for activating/deactivating.
 TEST_F(WindowTest, Deactivate) {
   TestWindowDelegate d1;

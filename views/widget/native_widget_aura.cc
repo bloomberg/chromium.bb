@@ -147,6 +147,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     SetAlwaysOnTop(params.keep_on_top);
     window_->SetParent(NULL);
   }
+  window_->set_ignore_events(!params.accept_events);
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
   can_activate_ = params.can_activate;

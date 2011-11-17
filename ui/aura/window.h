@@ -208,6 +208,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
     stops_event_propagation_ = stops_event_propagation;
   }
 
+  void set_ignore_events(bool ignore_events) { ignore_events_ = ignore_events; }
+
   // Returns true if relative-to-this-Window's-origin |local_point| falls
   // within this Window's bounds.
   bool ContainsPoint(const gfx::Point& local_point);
@@ -339,6 +341,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // When true, events are not sent to windows behind this one in the z-order,
   // provided this window has children. See set_stops_event_propagation().
   bool stops_event_propagation_;
+
+  // Makes the window pass all events through to any windows behind it.
+  bool ignore_events_;
 
   ObserverList<WindowObserver> observers_;
 

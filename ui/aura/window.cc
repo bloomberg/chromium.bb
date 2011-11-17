@@ -30,7 +30,8 @@ Window::Window(WindowDelegate* delegate)
       transient_parent_(NULL),
       id_(-1),
       user_data_(NULL),
-      stops_event_propagation_(false) {
+      stops_event_propagation_(false),
+      ignore_events_(false) {
 }
 
 Window::~Window() {
@@ -474,7 +475,7 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
   for (Windows::const_reverse_iterator it = children_.rbegin();
        it != children_.rend(); ++it) {
     Window* child = *it;
-    if (!child->IsVisible())
+    if (!child->IsVisible() || (for_event_handling && child->ignore_events_))
       continue;
 
     gfx::Point point_in_child_coords(local_point);
