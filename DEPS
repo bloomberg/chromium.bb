@@ -6,7 +6,7 @@ vars = {
   "pnacl_toolchain_version": "7216",
 
   # ARM trusted toolchain version cannot be changed for now.
-  "arm_trusted_toolchain_version": "6645",
+  "arm_trusted_toolchain_version": "6999",
 
   # When possible, keep chrome_rev and chromebinaries_rev at the same
   # value.  chromebinaries_rev should match LKGR so that we can download
