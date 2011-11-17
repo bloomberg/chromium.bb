@@ -429,19 +429,35 @@ gfx::Rect ConstrainedWindowFrameView::IconBounds() const {
 }
 
 void ConstrainedWindowFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+#if defined(USE_AURA)
+  // TODO(jamescook): Remove this when Aura defaults to its own window frame,
+  // BrowserNonClientFrameViewAura.  Until then, use custom square corners to
+  // avoid performance penalties associated with transparent layers.
+  SkBitmap* top_left_corner = rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_LEFT);
+  SkBitmap* top_right_corner = rb.GetBitmapNamed(IDR_AURA_WINDOW_TOP_RIGHT);
+  SkBitmap* bottom_left_corner =
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_LEFT);
+  SkBitmap* bottom_right_corner =
+      rb.GetBitmapNamed(IDR_AURA_WINDOW_BOTTOM_RIGHT);
+  SkBitmap* top_edge = rb.GetBitmapNamed(IDR_WINDOW_TOP_CENTER);
+  SkBitmap* right_edge = rb.GetBitmapNamed(IDR_WINDOW_RIGHT_SIDE);
+  SkBitmap* left_edge = rb.GetBitmapNamed(IDR_WINDOW_LEFT_SIDE);
+  SkBitmap* bottom_edge = rb.GetBitmapNamed(IDR_WINDOW_BOTTOM_CENTER);
+#else
   SkBitmap* top_left_corner = resources_->GetPartBitmap(FRAME_TOP_LEFT_CORNER);
   SkBitmap* top_right_corner =
       resources_->GetPartBitmap(FRAME_TOP_RIGHT_CORNER);
-  SkBitmap* top_edge = resources_->GetPartBitmap(FRAME_TOP_EDGE);
-  SkBitmap* right_edge = resources_->GetPartBitmap(FRAME_RIGHT_EDGE);
-  SkBitmap* left_edge = resources_->GetPartBitmap(FRAME_LEFT_EDGE);
   SkBitmap* bottom_left_corner =
       resources_->GetPartBitmap(FRAME_BOTTOM_LEFT_CORNER);
   SkBitmap* bottom_right_corner =
       resources_->GetPartBitmap(FRAME_BOTTOM_RIGHT_CORNER);
+  SkBitmap* top_edge = resources_->GetPartBitmap(FRAME_TOP_EDGE);
+  SkBitmap* right_edge = resources_->GetPartBitmap(FRAME_RIGHT_EDGE);
+  SkBitmap* left_edge = resources_->GetPartBitmap(FRAME_LEFT_EDGE);
   SkBitmap* bottom_edge = resources_->GetPartBitmap(FRAME_BOTTOM_EDGE);
+#endif
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap* theme_frame = rb.GetBitmapNamed(IDR_THEME_FRAME);
   SkColor frame_color = ResourceBundle::frame_color;
 
