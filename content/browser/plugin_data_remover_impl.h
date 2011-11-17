@@ -12,9 +12,9 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/public/browser/plugin_data_remover.h"
 
-class PluginDataRemoverImpl : public content::PluginDataRemover,
-                              public PluginProcessHost::Client,
-                              public IPC::Channel::Listener {
+class CONTENT_EXPORT PluginDataRemoverImpl : public content::PluginDataRemover,
+                                             public PluginProcessHost::Client,
+                                             public IPC::Channel::Listener {
  public:
   explicit PluginDataRemoverImpl(
       const content::ResourceContext& resource_context);
