@@ -39,11 +39,18 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, AbortOnEnd) {
 // destroying the Document, so it is not a use after free unless
 // you don't have DumpRenderTree loaded.
 
+// http://crbug.com/104582
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#define MAYBE_XsltBadImport DISABLED_XsltBadImport
+#else
+#define MAYBE_XsltBadImport XsltBadImport
+#endif
+
 // TODO(gavinp): remove this browser_test if we can get good LayoutTest
 // coverage of the same issue.
 const char kXsltBadImportPage[] =
     "files/webkit/xslt-bad-import.html";
-IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
+IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, MAYBE_XsltBadImport) {
   ASSERT_TRUE(test_server()->Start());
   URLRequestAbortOnEndJob::AddUrlHandler();
   GURL url = test_server()->GetURL(kXsltBadImportPage);
@@ -53,4 +60,3 @@ IN_PROC_BROWSER_TEST_F(WebKitBrowserTest, XsltBadImport) {
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   EXPECT_FALSE(tab_contents->is_crashed());
 }
-
