@@ -2,41 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <gmock/gmock.h>
+#include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
+
 #include <gtest/gtest.h>
 #include <string>
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/chromeos/extensions/file_browser_notifications.h"
-#include "chrome/browser/chromeos/notifications/balloon_collection_impl.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/balloon_collection.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 
-using ::testing::_;
-using ::testing::InSequence;
-using ::testing::Return;
-using ::testing::StrEq;
-
 namespace chromeos {
-
-class MockNotificationUI : public BalloonCollectionImpl::NotificationUI {
- public:
-  virtual ~MockNotificationUI() {}
-
-  MOCK_METHOD1(Add, void(Balloon* balloon));
-  MOCK_METHOD1(Update, bool(Balloon* balloon));
-  MOCK_METHOD1(Remove, void(Balloon* balloon));
-  MOCK_METHOD1(Show, void(Balloon* balloon));
-
-  virtual void ResizeNotification(Balloon* balloon, const gfx::Size& size)
-      OVERRIDE {
-  }
-  virtual void SetActiveView(BalloonViewImpl* view) OVERRIDE {}
-};
 
 class MockFileBrowserNotifications : public FileBrowserNotifications {
  public:
@@ -45,19 +25,21 @@ class MockFileBrowserNotifications : public FileBrowserNotifications {
   }
   virtual ~MockFileBrowserNotifications() {}
 
+  // Records the notification so we can force it to show later.
   virtual void PostDelayedShowNotificationTask(
       const std::string& notification_id,
       NotificationType type,
       const string16&  message,
-      size_t delay_ms) {
+      size_t delay_ms) OVERRIDE {
     show_callback_data_.id = notification_id;
     show_callback_data_.type = type;
     show_callback_data_.message = message;
   }
 
+  // Records the notification so we can force it to hide later.
   virtual void PostDelayedHideNotificationTask(NotificationType type,
                                                const std::string  path,
-                                               size_t delay_ms) {
+                                               size_t delay_ms) OVERRIDE {
     hide_callback_data_.type = type;
     hide_callback_data_.path = path;
   }
@@ -92,19 +74,15 @@ class MockFileBrowserNotifications : public FileBrowserNotifications {
 
 class FileBrowserNotificationsTest : public InProcessBrowserTest {
  public:
-  FileBrowserNotificationsTest() {}
+  FileBrowserNotificationsTest() : collection_(NULL) {}
 
  protected:
-  void ChangeNotificationUIMock() {
-    // collection will take ownership of the mock.
-    mock_notification_ui_ = new MockNotificationUI();
-    collection_->set_notification_ui(mock_notification_ui_);
-  }
-
-  void InitNotificationUIMock() {
-    collection_ = static_cast<BalloonCollectionImpl*>(
-        g_browser_process->notification_ui_manager()->balloon_collection());
-    ChangeNotificationUIMock();
+  // This must be initialized late in test startup.
+  void InitNotifications() {
+    Profile* profile = browser()->profile();
+    notifications_.reset(new MockFileBrowserNotifications(profile));
+    collection_ =
+        g_browser_process->notification_ui_manager()->balloon_collection();
   }
 
   bool FindNotification(const std::string& id) {
@@ -112,138 +90,176 @@ class FileBrowserNotificationsTest : public InProcessBrowserTest {
            notifications_->notifications().end();
   }
 
-  BalloonCollectionImpl* collection_;
-  MockNotificationUI* mock_notification_ui_;
-  scoped_ptr<FileBrowserNotifications> notifications_;
+  bool FindBalloon(const std::string& id) {
+    const std::deque<Balloon*>& balloons = collection_->GetActiveBalloons();
+    for (std::deque<Balloon*>::const_iterator it = balloons.begin();
+         it != balloons.end();
+         ++it) {
+      Balloon* balloon = *it;
+      if (balloon->notification().notification_id() == id)
+        return true;
+    }
+    return false;
+  }
+
+  BalloonCollection* collection_;
+  scoped_ptr<MockFileBrowserNotifications> notifications_;
 };
 
-MATCHER_P(BalloonNotificationMatcher, expected_id, "") {
-  return arg->notification().notification_id() == expected_id;
-}
+#if defined(USE_AURA)
+// TODO(jamescook): Fails on linux_chromeos_aura because we haven't implemented
+// chromeos::SystemNotification yet.  http://crbug.com/104471
+#define MAYBE_TestBasic FAILS_TestBasic
+#else
+#define MAYBE_TestBasic TestBasic
+#endif
+IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_TestBasic) {
+  InitNotifications();
+  // We start with no balloons.
+  EXPECT_EQ(0u, collection_->GetActiveBalloons().size());
 
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, TestBasic) {
-  InitNotificationUIMock();
-  notifications_.reset(new MockFileBrowserNotifications(browser()->profile()));
-
-  EXPECT_CALL(*mock_notification_ui_,
-              Add(BalloonNotificationMatcher("Dpath")));
+  // Showing a notification both updates our data and shows a balloon.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
-
-  EXPECT_CALL(*mock_notification_ui_,
-              Update(BalloonNotificationMatcher("Dpath")))
-      .WillOnce(Return(true));
-  notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
-
   EXPECT_EQ(1u, notifications_->notifications().size());
   EXPECT_TRUE(FindNotification("Dpath"));
+  EXPECT_EQ(1u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("Dpath"));
 
-  EXPECT_CALL(*mock_notification_ui_,
-              Add(BalloonNotificationMatcher("DFpath")));
+  // Updating the same notification maintains the same balloon.
+  notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
+  EXPECT_EQ(1u, notifications_->notifications().size());
+  EXPECT_TRUE(FindNotification("Dpath"));
+  EXPECT_EQ(1u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("Dpath"));
+
+  // A new notification adds a new balloon.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
   EXPECT_EQ(2u, notifications_->notifications().size());
   EXPECT_TRUE(FindNotification("DFpath"));
+  EXPECT_TRUE(FindNotification("Dpath"));
+  EXPECT_EQ(2u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("DFpath"));
+  EXPECT_TRUE(FindBalloon("Dpath"));
 
-  EXPECT_CALL(*mock_notification_ui_,
-              Remove(BalloonNotificationMatcher("DFpath")));
+  // Hiding a notification removes it from our data.
   notifications_->HideNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
-
   EXPECT_EQ(1u, notifications_->notifications().size());
   EXPECT_FALSE(FindNotification("DFpath"));
+  EXPECT_TRUE(FindNotification("Dpath"));
 
+  // Balloons don't go away until we run the message loop.
+  EXPECT_EQ(2u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("DFpath"));
+  EXPECT_TRUE(FindBalloon("Dpath"));
+
+  // Running the message loop allows the balloon to disappear.
   ui_test_utils::RunAllPendingInMessageLoop();
-
-  ChangeNotificationUIMock();
-
-  EXPECT_CALL(*mock_notification_ui_, Remove(_))
-      .Times(1);
+  EXPECT_EQ(1u, collection_->GetActiveBalloons().size());
+  EXPECT_FALSE(FindBalloon("DFpath"));
+  EXPECT_TRUE(FindBalloon("Dpath"));
 };
 
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, ShowDelayedTest) {
-  InitNotificationUIMock();
-  MockFileBrowserNotifications* mocked_notifications =
-      new MockFileBrowserNotifications(browser()->profile());
-  notifications_.reset(mocked_notifications);
-
-  EXPECT_CALL(*mock_notification_ui_,
-              Add(BalloonNotificationMatcher("Dpath")));
+#if defined(USE_AURA)
+// TODO(jamescook): Fails on linux_chromeos_aura because we haven't implemented
+// chromeos::SystemNotification yet.  http://crbug.com/104471
+#define MAYBE_ShowDelayedTest FAILS_ShowDelayedTest
+#else
+// TODO(jamescook): This test is flaky on linux_chromeos, occasionally causing
+// this assertion failure inside Gtk:
+//   "murrine_style_draw_box: assertion `height >= -1' failed"
+// There may be an underlying bug in the ChromeOS notification code.
+// I'm not marking it as FLAKY because this doesn't happen on the bots.
+#define MAYBE_ShowDelayedTest ShowDelayedTest
+#endif
+IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_ShowDelayedTest) {
+  InitNotifications();
+  // Adding a delayed notification does not show a balloon.
   notifications_->ShowNotificationDelayed(FileBrowserNotifications::DEVICE,
                                           "path", 3000);
-  mocked_notifications->ExecuteShow();
+  EXPECT_EQ(0u, collection_->GetActiveBalloons().size());
 
-  EXPECT_CALL(*mock_notification_ui_,
-              Add(BalloonNotificationMatcher("DFpath")));
+  // Forcing the show to happen makes the balloon appear.
+  notifications_->ExecuteShow();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(1u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("Dpath"));
+
+  // Showing a notification both immediately and delayed results in one
+  // additional balloon.
   notifications_->ShowNotificationDelayed(FileBrowserNotifications::DEVICE_FAIL,
                                           "path", 3000);
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
+  EXPECT_EQ(2u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("Dpath"));
+  EXPECT_TRUE(FindBalloon("DFpath"));
 
-  ChangeNotificationUIMock();
-  EXPECT_CALL(*mock_notification_ui_,
-              Update(BalloonNotificationMatcher("DFpath")));
-  mocked_notifications->ExecuteShow();
+  // When the delayed notification arrives, it's an update, so we still only
+  // have two balloons.
+  notifications_->ExecuteShow();
+  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(2u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("Dpath"));
+  EXPECT_TRUE(FindBalloon("DFpath"));
 
-  EXPECT_CALL(*mock_notification_ui_,
-              Remove(BalloonNotificationMatcher("Fpath")))
-      .Times(0);
-  EXPECT_CALL(*mock_notification_ui_,
-              Add(BalloonNotificationMatcher("Fpath")))
-      .Times(0);
+  // If we schedule a show for later, then hide before it becomes visible,
+  // the balloon should not be added.
   notifications_->ShowNotificationDelayed(
       FileBrowserNotifications::FORMAT_FAIL, "path", 3000);
   notifications_->HideNotification(FileBrowserNotifications::FORMAT_FAIL,
                                    "path");
+  EXPECT_EQ(2u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("Dpath"));
+  EXPECT_TRUE(FindBalloon("DFpath"));
+  EXPECT_FALSE(FindBalloon("Fpath"));
+
+  // Even when we try to force the show, nothing appears, because the balloon
+  // was explicitly hidden.
+  notifications_->ExecuteShow();
   ui_test_utils::RunAllPendingInMessageLoop();
-
-  mocked_notifications->ExecuteShow();
-
-  ChangeNotificationUIMock();
-  EXPECT_CALL(*mock_notification_ui_, Remove(_))
-      .Times(2);
-
-  ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(2u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("Dpath"));
+  EXPECT_TRUE(FindBalloon("DFpath"));
+  EXPECT_FALSE(FindBalloon("Fpath"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, HideDelayedTest) {
-  InitNotificationUIMock();
-  MockFileBrowserNotifications* mocked_notifications =
-      new MockFileBrowserNotifications(browser()->profile());
-  notifications_.reset(mocked_notifications);
-
-  EXPECT_CALL(*mock_notification_ui_,
-              Add(BalloonNotificationMatcher("Dpath")));
+#if defined(USE_AURA)
+// TODO(jamescook): Fails on linux_chromeos_aura because we haven't implemented
+// chromeos::SystemNotification yet.  http://crbug.com/104471
+#define MAYBE_HideDelayedTest FAILS_HideDelayedTest
+#else
+#define MAYBE_HideDelayedTest HideDelayedTest
+#endif
+IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_HideDelayedTest) {
+  InitNotifications();
+  // Showing now, and scheduling a hide for later, results in one balloon.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE, "path");
-
   notifications_->HideNotificationDelayed(FileBrowserNotifications::DEVICE,
                                           "path", 3000);
-  ChangeNotificationUIMock();
-  EXPECT_CALL(*mock_notification_ui_,
-              Remove(BalloonNotificationMatcher("Dpath")));
-  mocked_notifications->ExecuteHide();
+  EXPECT_EQ(1u, collection_->GetActiveBalloons().size());
+  EXPECT_TRUE(FindBalloon("Dpath"));
 
+  // Forcing the hide removes the balloon.
+  notifications_->ExecuteHide();
   ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(0u, collection_->GetActiveBalloons().size());
 
-  EXPECT_CALL(*mock_notification_ui_,
-              Add(BalloonNotificationMatcher("DFpath")));
-  EXPECT_CALL(*mock_notification_ui_,
-              Remove(BalloonNotificationMatcher("DFpath")));
+  // Immediate show then hide results in no balloons.
   notifications_->ShowNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
   notifications_->HideNotification(FileBrowserNotifications::DEVICE_FAIL,
                                    "path");
   ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(0u, collection_->GetActiveBalloons().size());
 
+  // Delayed hide for a notification that doesn't exist does nothing.
   notifications_->HideNotificationDelayed(FileBrowserNotifications::DEVICE_FAIL,
                                           "path", 3000);
-  ChangeNotificationUIMock();
-  EXPECT_CALL(*mock_notification_ui_,
-              Remove(BalloonNotificationMatcher("DFpath")))
-      .Times(0);
-  mocked_notifications->ExecuteHide();
-
+  notifications_->ExecuteHide();
   ui_test_utils::RunAllPendingInMessageLoop();
+  EXPECT_EQ(0u, collection_->GetActiveBalloons().size());
 }
 
 }  // namespace chromeos.
-
