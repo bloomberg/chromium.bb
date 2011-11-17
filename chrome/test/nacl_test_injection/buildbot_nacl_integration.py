@@ -58,11 +58,6 @@ def Main(args):
         'run_fault_pq_dep_pm_nameservice_chrome_browser_test',
         ])
 
-    # TODO(mcgrathr): Reenable when resolved.
-    # Was seen to fail repeatedly on Windows.
-    # http://code.google.com/p/nativeclient/issues/detail?id=2173
-    tests_to_disable.append('run_inbrowser_crash_in_syscall_test')
-
   if sys.platform in ('win32', 'cygwin'):
     tests_to_disable.append('run_ppapi_ppp_input_event_browser_test')
 
