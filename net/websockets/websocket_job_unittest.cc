@@ -277,7 +277,7 @@ class MockHttpTransactionFactory : public net::HttpTransactionFactory {
                                         transport_params_,
                                         net::MEDIUM,
                                         NULL,
-                                        http_session_->transport_socket_pool(),
+                                        http_session_->GetTransportSocketPool(),
                                         net::BoundNetLog()));
     EXPECT_EQ(net::OK,
               session_->InitializeWithSocket(connection, false, net::OK));

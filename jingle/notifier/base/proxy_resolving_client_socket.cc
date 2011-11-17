@@ -165,7 +165,7 @@ void ProxyResolvingClientSocket::ProcessProxyResolveDone(int status) {
 
   transport_.reset(new net::ClientSocketHandle);
   // Now that we have resolved the proxy, we need to connect.
-  status = net::ClientSocketPoolManager::InitSocketHandleForRawConnect(
+  status = net::InitSocketHandleForRawConnect(
       dest_host_port_pair_,
       network_session_.get(),
       proxy_info_,
