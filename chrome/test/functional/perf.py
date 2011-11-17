@@ -659,6 +659,13 @@ class WebGLTest(BasePerfTest):
                                    'field.html'),
         'WebGLField')
 
+  def testWebGLSpaceRocks(self):
+    """Measures performance using the WebGL SpaceRocks demo."""
+    self._RunWebGLTest(
+        self.GetFileURLForDataPath('pyauto_private', 'webgl', 'spacerocks',
+                                   'spacerocks.html'),
+        'WebGLSpaceRocks')
+
 
 class FileUploadDownloadTest(BasePerfTest):
   """Tests that involve measuring performance of upload and download."""
