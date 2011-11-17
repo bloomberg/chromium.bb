@@ -303,10 +303,7 @@
       'filepath': 'base/message_.*'
     },
     'clipboard': {
-      'filepath': 'clipboard',
-      'filepath': 'dnd',
-      'filepath': 'drag',
-      'filepath': 'drop',
+      'filepath': 'clipboard|dnd|drag|drop',
     },
   },
 
