@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/media/simple_data_source.h"
+#include "webkit/media/simple_data_source.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
@@ -17,13 +17,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
-#include "webkit/glue/media/web_data_source_factory.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/media/web_data_source_factory.h"
 
 using WebKit::WebString;
 using WebKit::WebURLLoaderOptions;
 
-namespace webkit_glue {
+namespace webkit_media {
 
 static const char kDataScheme[] = "data";
 
@@ -96,7 +96,7 @@ void SimpleDataSource::Initialize(
 
     // Validate the URL.
     url_ = GURL(url);
-    if (!url_.is_valid() || !IsProtocolSupportedForMedia(url_)) {
+    if (!url_.is_valid() || !webkit_glue::IsProtocolSupportedForMedia(url_)) {
       DoneInitialization_Locked(false);
       return;
     }
@@ -358,4 +358,4 @@ void SimpleDataSource::UpdateHostState() {
   }
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

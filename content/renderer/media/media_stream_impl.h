@@ -7,20 +7,20 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "webkit/glue/media/media_stream_client.h"
+#include "webkit/media/media_stream_client.h"
 
 class VideoCaptureImplManager;
 
 // A implementation of StreamClient to provide supporting functions, such as
 // GetVideoDecoder.
 class MediaStreamImpl
-    : public webkit_glue::MediaStreamClient,
+    : public webkit_media::MediaStreamClient,
       public base::RefCountedThreadSafe<MediaStreamImpl> {
  public:
   explicit MediaStreamImpl(VideoCaptureImplManager* vc_manager);
   virtual ~MediaStreamImpl();
 
-  // Implement webkit_glue::StreamClient.
+  // Implement webkit_media::StreamClient.
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
       const GURL& url, media::MessageLoopFactory* message_loop_factory);
 

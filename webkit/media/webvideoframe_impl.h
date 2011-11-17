@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBVIDEOFRAME_IMPL_H_
-#define WEBKIT_GLUE_WEBVIDEOFRAME_IMPL_H_
+#ifndef WEBKIT_MEDIA_WEBVIDEOFRAME_IMPL_H_
+#define WEBKIT_MEDIA_WEBVIDEOFRAME_IMPL_H_
 
 #include "base/compiler_specific.h"
 #include "media/base/video_frame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 
-namespace webkit_glue {
+namespace webkit_media {
 
 class WebVideoFrameImpl : public WebKit::WebVideoFrame {
  public:
@@ -31,6 +31,6 @@ class WebVideoFrameImpl : public WebKit::WebVideoFrame {
   DISALLOW_COPY_AND_ASSIGN(WebVideoFrameImpl);
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_WEBVIDEOFRAME_IMPL_H_
+#endif  // WEBKIT_MEDIA_WEBVIDEOFRAME_IMPL_H_

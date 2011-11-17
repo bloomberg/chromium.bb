@@ -24,6 +24,7 @@
         'fileapi',
         'glue',
         'webkit_gpu',
+        'webkit_media',
         'webkit_support_common',
       ],
       'include_dirs': [

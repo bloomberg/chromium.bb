@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webmediaplayer_impl.h"
+#include "webkit/media/webmediaplayer_impl.h"
 
 #include <limits>
 #include <string>
@@ -30,14 +30,14 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVideoFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
-#include "webkit/glue/media/buffered_data_source.h"
-#include "webkit/glue/media/simple_data_source.h"
-#include "webkit/glue/media/media_stream_client.h"
-#include "webkit/glue/media/video_renderer_impl.h"
-#include "webkit/glue/media/web_video_renderer.h"
-#include "webkit/glue/webmediaplayer_delegate.h"
-#include "webkit/glue/webmediaplayer_proxy.h"
-#include "webkit/glue/webvideoframe_impl.h"
+#include "webkit/media/buffered_data_source.h"
+#include "webkit/media/media_stream_client.h"
+#include "webkit/media/simple_data_source.h"
+#include "webkit/media/video_renderer_impl.h"
+#include "webkit/media/web_video_renderer.h"
+#include "webkit/media/webmediaplayer_delegate.h"
+#include "webkit/media/webmediaplayer_proxy.h"
+#include "webkit/media/webvideoframe_impl.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebRect;
@@ -96,7 +96,7 @@ base::TimeDelta ConvertSecondsToTimestamp(float seconds) {
 
 }  // namespace
 
-namespace webkit_glue {
+namespace webkit_media {
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(
     WebKit::WebMediaPlayerClient* client,
@@ -914,4 +914,4 @@ void WebMediaPlayerImpl::IncrementExternallyAllocatedMemory() {
   v8::V8::AdjustAmountOfExternalAllocatedMemory(kPlayerExtraMemory);
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

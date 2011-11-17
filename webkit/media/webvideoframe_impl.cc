@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webvideoframe_impl.h"
+#include "webkit/media/webvideoframe_impl.h"
 
 #include "base/logging.h"
 #include "media/base/video_frame.h"
@@ -10,7 +10,7 @@
 
 using WebKit::WebVideoFrame;
 
-namespace webkit_glue {
+namespace webkit_media {
 
 media::VideoFrame* WebVideoFrameImpl::toVideoFrame(
     WebVideoFrame* web_video_frame) {
@@ -80,4 +80,4 @@ const void* WebVideoFrameImpl::data(unsigned plane) const {
   return NULL;
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

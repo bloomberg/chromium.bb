@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/media/video_renderer_impl.h"
+#include "webkit/media/video_renderer_impl.h"
 
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
-#include "webkit/glue/webmediaplayer_proxy.h"
+#include "webkit/media/webmediaplayer_proxy.h"
 
-namespace webkit_glue {
+namespace webkit_media {
 
 VideoRendererImpl::VideoRendererImpl(bool pts_logging)
     : last_converted_frame_(NULL),
@@ -275,4 +275,4 @@ void VideoRendererImpl::FastPaint(media::VideoFrame* video_frame,
   }
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

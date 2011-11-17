@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_MEDIA_MEDIA_STREAM_CLIENT_H_
-#define WEBKIT_GLUE_MEDIA_MEDIA_STREAM_CLIENT_H_
+#ifndef WEBKIT_MEDIA_MEDIA_STREAM_CLIENT_H_
+#define WEBKIT_MEDIA_MEDIA_STREAM_CLIENT_H_
 
 #include "base/memory/ref_counted.h"
 
@@ -14,7 +14,7 @@ class VideoDecoder;
 class MessageLoopFactory;
 }
 
-namespace webkit_glue {
+namespace webkit_media {
 
 // Define an interface for media stream client to get some information about
 // the media stream.
@@ -28,6 +28,6 @@ class MediaStreamClient {
   virtual ~MediaStreamClient() {}
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_MEDIA_MEDIA_STREAM_CLIENT_H_
+#endif  // WEBKIT_MEDIA_MEDIA_STREAM_CLIENT_H_

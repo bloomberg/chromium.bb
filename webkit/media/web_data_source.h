@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_MEDIA_WEB_DATA_SOURCE_H_
-#define WEBKIT_GLUE_MEDIA_WEB_DATA_SOURCE_H_
+#ifndef WEBKIT_MEDIA_WEB_DATA_SOURCE_H_
+#define WEBKIT_MEDIA_WEB_DATA_SOURCE_H_
 
 #include "base/callback.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline_status.h"
 
-namespace webkit_glue {
+namespace webkit_media {
 
 // An interface that allows WebMediaPlayerImpl::Proxy to communicate with the
 // DataSource in the pipeline.
@@ -54,6 +54,6 @@ class WebDataSource : public media::DataSource {
 // a WebDataSource list or call Abort().
 typedef base::Callback<void(WebDataSource*)> WebDataSourceBuildObserverHack;
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_MEDIA_WEB_DATA_SOURCE_H_
+#endif  // WEBKIT_MEDIA_WEB_DATA_SOURCE_H_

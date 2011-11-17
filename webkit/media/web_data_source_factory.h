@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
-#define WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
+#ifndef WEBKIT_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
+#define WEBKIT_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
 
 #include "base/memory/ref_counted.h"
 #include "media/base/async_filter_factory_base.h"
-#include "webkit/glue/media/web_data_source.h"
+#include "webkit/media/web_data_source.h"
 
 class MessageLoop;
 
@@ -19,7 +19,7 @@ namespace WebKit {
 class WebFrame;
 }
 
-namespace webkit_glue {
+namespace webkit_media {
 
 class WebDataSourceFactory : public media::AsyncDataSourceFactoryBase {
  public:
@@ -54,6 +54,6 @@ class WebDataSourceFactory : public media::AsyncDataSourceFactoryBase {
   DISALLOW_COPY_AND_ASSIGN(WebDataSourceFactory);
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_
+#endif  // WEBKIT_MEDIA_BUFFERED_DATA_SOURCE_FACTORY_H_

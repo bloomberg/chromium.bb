@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_MEDIA_BUFFERED_RESOURCE_LOADER_H_
-#define WEBKIT_GLUE_MEDIA_BUFFERED_RESOURCE_LOADER_H_
+#ifndef WEBKIT_MEDIA_BUFFERED_RESOURCE_LOADER_H_
+#define WEBKIT_MEDIA_BUFFERED_RESOURCE_LOADER_H_
 
 #include <string>
 
@@ -17,14 +17,14 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoader.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
-#include "webkit/glue/media/web_data_source.h"
-#include "webkit/glue/webmediaplayer_impl.h"
+#include "webkit/media/web_data_source.h"
+#include "webkit/media/webmediaplayer_impl.h"
 
 namespace media {
 class MediaLog;
 }
 
-namespace webkit_glue {
+namespace webkit_media {
 
 const int64 kPositionNotSpecified = -1;
 
@@ -299,6 +299,6 @@ class BufferedResourceLoader
   DISALLOW_COPY_AND_ASSIGN(BufferedResourceLoader);
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_MEDIA_BUFFERED_RESOURCE_LOADER_H_
+#endif  // WEBKIT_MEDIA_BUFFERED_RESOURCE_LOADER_H_

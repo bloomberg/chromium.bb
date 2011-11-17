@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_H_
-#define WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_H_
+#ifndef WEBKIT_MEDIA_BUFFERED_DATA_SOURCE_H_
+#define WEBKIT_MEDIA_BUFFERED_DATA_SOURCE_H_
 
 #include <string>
 
@@ -12,13 +12,13 @@
 #include "base/synchronization/lock.h"
 #include "media/base/filter_factories.h"
 #include "media/base/filters.h"
-#include "webkit/glue/media/buffered_resource_loader.h"
+#include "webkit/media/buffered_resource_loader.h"
 
 namespace media {
 class MediaLog;
 }
 
-namespace webkit_glue {
+namespace webkit_media {
 
 // This class may be created on any thread, and is callable from the render
 // thread as well as media-specific threads.
@@ -230,6 +230,6 @@ class BufferedDataSource : public WebDataSource {
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_MEDIA_BUFFERED_DATA_SOURCE_H_
+#endif  // WEBKIT_MEDIA_BUFFERED_DATA_SOURCE_H_

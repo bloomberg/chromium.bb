@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/media/web_data_source_factory.h"
+#include "webkit/media/web_data_source_factory.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/media_log.h"
 
-namespace webkit_glue {
+namespace webkit_media {
 
 class WebDataSourceFactory::BuildRequest
     : public media::AsyncDataSourceFactoryBase::BuildRequest {
@@ -107,4 +107,4 @@ void WebDataSourceFactory::BuildRequest::InitDone(
   // RequestComplete().
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

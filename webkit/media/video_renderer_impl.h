@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
-#define WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
+#ifndef WEBKIT_MEDIA_VIDEO_RENDERER_IMPL_H_
+#define WEBKIT_MEDIA_VIDEO_RENDERER_IMPL_H_
 
 #include "media/base/buffers.h"
 #include "media/base/filters.h"
@@ -11,9 +11,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
 #include "ui/gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/glue/media/web_video_renderer.h"
+#include "webkit/media/web_video_renderer.h"
 
-namespace webkit_glue {
+namespace webkit_media {
 
 // The video renderer implementation to be use by the media pipeline. It lives
 // inside video renderer thread and also WebKit's main thread. We need to be
@@ -77,6 +77,6 @@ class VideoRendererImpl : public WebVideoRenderer {
   DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
+#endif  // WEBKIT_MEDIA_VIDEO_RENDERER_IMPL_H_

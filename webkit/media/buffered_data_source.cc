@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/media/buffered_data_source.h"
+#include "webkit/media/buffered_data_source.h"
 
 #include "base/bind.h"
 #include "media/base/filter_host.h"
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
-#include "webkit/glue/media/web_data_source_factory.h"
+#include "webkit/media/web_data_source_factory.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
 
-namespace webkit_glue {
+namespace webkit_media {
 
 // BufferedDataSource has an intermediate buffer, this value governs the initial
 // size of that buffer. It is set to 32KB because this is a typical read size
@@ -105,7 +105,7 @@ void BufferedDataSource::Initialize(const std::string& url,
   if (url_.SchemeIs(kDataScheme)) {
     callback.Run(media::DATASOURCE_ERROR_URL_NOT_SUPPORTED);
     return;
-  } else if (!IsProtocolSupportedForMedia(url_)) {
+  } else if (!webkit_glue::IsProtocolSupportedForMedia(url_)) {
     callback.Run(media::PIPELINE_ERROR_NETWORK);
     return;
   }
@@ -669,4 +669,4 @@ void BufferedDataSource::UpdateHostState_Locked() {
   }
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

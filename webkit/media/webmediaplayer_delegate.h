@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBMEDIAPLAYER_DELEGATE_H_
-#define WEBKIT_GLUE_WEBMEDIAPLAYER_DELEGATE_H_
+#ifndef WEBKIT_MEDIA_WEBMEDIAPLAYER_DELEGATE_H_
+#define WEBKIT_MEDIA_WEBMEDIAPLAYER_DELEGATE_H_
 
-namespace webkit_glue {
+namespace webkit_media {
 
 class WebMediaPlayerImpl;
 
@@ -26,6 +26,6 @@ class WebMediaPlayerDelegate {
   virtual void PlayerGone(WebMediaPlayerImpl* player) {}
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_WEBMEDIAPLAYER_DELEGATE_H_
+#endif  // WEBKIT_MEDIA_WEBMEDIAPLAYER_DELEGATE_H_

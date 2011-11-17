@@ -137,13 +137,13 @@
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/glue_serialize.h"
-#include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/password_form_dom_manager.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/webmediaplayer_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
+#include "webkit/media/video_renderer_impl.h"
+#include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
@@ -1909,15 +1909,15 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     collection->AddAudioRenderer(new AudioRendererImpl());
   }
 
-  scoped_refptr<webkit_glue::WebVideoRenderer> video_renderer;
+  scoped_refptr<webkit_media::WebVideoRenderer> video_renderer;
   bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
-  scoped_refptr<webkit_glue::VideoRendererImpl> renderer(
-      new webkit_glue::VideoRendererImpl(pts_logging));
+  scoped_refptr<webkit_media::VideoRendererImpl> renderer(
+      new webkit_media::VideoRendererImpl(pts_logging));
   collection->AddVideoRenderer(renderer);
   video_renderer = renderer;
 
-  scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
-      new webkit_glue::WebMediaPlayerImpl(client,
+  scoped_ptr<webkit_media::WebMediaPlayerImpl> result(
+      new webkit_media::WebMediaPlayerImpl(client,
                                           AsWeakPtr(),
                                           collection.release(),
                                           message_loop_factory.release(),
@@ -3241,7 +3241,7 @@ WebCookieJar* RenderViewImpl::GetCookieJar() {
   return &cookie_jar_;
 }
 
-void RenderViewImpl::DidPlay(webkit_glue::WebMediaPlayerImpl* player) {
+void RenderViewImpl::DidPlay(webkit_media::WebMediaPlayerImpl* player) {
   Send(new ViewHostMsg_MediaNotification(routing_id_,
                                          reinterpret_cast<int64>(player),
                                          player->hasVideo(),
@@ -3249,7 +3249,7 @@ void RenderViewImpl::DidPlay(webkit_glue::WebMediaPlayerImpl* player) {
                                          true));
 }
 
-void RenderViewImpl::DidPause(webkit_glue::WebMediaPlayerImpl* player) {
+void RenderViewImpl::DidPause(webkit_media::WebMediaPlayerImpl* player) {
   Send(new ViewHostMsg_MediaNotification(routing_id_,
                                          reinterpret_cast<int64>(player),
                                          player->hasVideo(),
@@ -3257,7 +3257,7 @@ void RenderViewImpl::DidPause(webkit_glue::WebMediaPlayerImpl* player) {
                                          false));
 }
 
-void RenderViewImpl::PlayerGone(webkit_glue::WebMediaPlayerImpl* player) {
+void RenderViewImpl::PlayerGone(webkit_media::WebMediaPlayerImpl* player) {
   DidPause(player);
 }
 

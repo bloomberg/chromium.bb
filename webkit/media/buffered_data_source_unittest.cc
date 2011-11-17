@@ -14,7 +14,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/media/buffered_data_source.h"
+#include "webkit/media/buffered_data_source.h"
 #include "webkit/mocks/mock_webframeclient.h"
 #include "webkit/mocks/mock_weburlloader.h"
 
@@ -40,7 +40,10 @@ using WebKit::WebURLError;
 using WebKit::WebURLResponse;
 using WebKit::WebView;
 
-namespace webkit_glue {
+using webkit_glue::MockWebFrameClient;
+using webkit_glue::MockWebURLLoader;
+
+namespace webkit_media {
 
 static const char* kHttpUrl = "http://test";
 static const char* kFileUrl = "file://test";
@@ -785,4 +788,4 @@ TEST_F(BufferedDataSourceTest2, SetPlaybackRate) {
   StopDataSource();
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

@@ -37,13 +37,13 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
-#include "webkit/glue/media/audio_decoder.h"
-#include "webkit/plugins/npapi/plugin_instance.h"
-#include "webkit/plugins/webplugininfo.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/webthread_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
+#include "webkit/media/audio_decoder.h"
+#include "webkit/plugins/npapi/plugin_instance.h"
+#include "webkit/plugins/webplugininfo.h"
 
 #if defined(OS_LINUX)
 #include "v8/include/v8.h"
@@ -450,10 +450,10 @@ WebData WebKitPlatformSupportImpl::loadResource(const char* name) {
 bool WebKitPlatformSupportImpl::loadAudioResource(
     WebKit::WebAudioBus* destination_bus, const char* audio_file_data,
     size_t data_size, double sample_rate) {
-  return DecodeAudioFileData(destination_bus,
-                             audio_file_data,
-                             data_size,
-                             sample_rate);
+  return webkit_media::DecodeAudioFileData(destination_bus,
+                                           audio_file_data,
+                                           data_size,
+                                           sample_rate);
 }
 
 WebString WebKitPlatformSupportImpl::queryLocalizedString(

@@ -29,6 +29,7 @@
         '../ui/gfx/surface/surface.gyp:surface',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:webkit_gpu',
+        '../webkit/support/webkit_support.gyp:webkit_media',
         '../webkit/support/webkit_support.gyp:webkit_resources',
       ],
       'include_dirs': [

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/webmediaplayer_proxy.h"
+#include "webkit/media/webmediaplayer_proxy.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "media/base/pipeline_status.h"
 #include "media/filters/chunk_demuxer.h"
-#include "webkit/glue/media/web_video_renderer.h"
-#include "webkit/glue/webmediaplayer_impl.h"
+#include "webkit/media/web_video_renderer.h"
+#include "webkit/media/webmediaplayer_impl.h"
 
 using media::PipelineStatus;
 
-namespace webkit_glue {
+namespace webkit_media {
 
 // Limits the maximum outstanding repaints posted on render thread.
 // This number of 50 is a guess, it does not take too much memory on the task
@@ -235,4 +235,4 @@ void WebMediaPlayerProxy::DemuxerClosedTask() {
   chunk_demuxer_ = NULL;
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

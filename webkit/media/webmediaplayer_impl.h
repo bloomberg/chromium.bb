@@ -45,8 +45,8 @@
 // at destruction of this class we will need to unhook it from destruction event
 // list of the main thread.
 
-#ifndef WEBKIT_GLUE_WEBMEDIAPLAYER_IMPL_H_
-#define WEBKIT_GLUE_WEBMEDIAPLAYER_IMPL_H_
+#ifndef WEBKIT_MEDIA_WEBMEDIAPLAYER_IMPL_H_
+#define WEBKIT_MEDIA_WEBMEDIAPLAYER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -67,7 +67,7 @@ namespace media {
 class MediaLog;
 }
 
-namespace webkit_glue {
+namespace webkit_media {
 
 class MediaStreamClient;
 class WebMediaPlayerDelegate;
@@ -271,6 +271,6 @@ class WebMediaPlayerImpl
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_WEBMEDIAPLAYER_IMPL_H_
+#endif  // WEBKIT_MEDIA_WEBMEDIAPLAYER_IMPL_H_

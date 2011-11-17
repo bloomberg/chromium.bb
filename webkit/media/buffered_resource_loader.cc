@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/media/buffered_resource_loader.h"
+#include "webkit/media/buffered_resource_loader.h"
 
 #include "base/format_macros.h"
 #include "base/stringprintf.h"
@@ -27,7 +27,7 @@ using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using webkit_glue::MultipartResponseDelegate;
 
-namespace webkit_glue {
+namespace webkit_media {
 
 static const int kHttpOK = 200;
 static const int kHttpPartialContent = 206;
@@ -358,7 +358,7 @@ void BufferedResourceLoader::willSendRequest(
   if (single_origin_)
     single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
 
-  if (!IsProtocolSupportedForMedia(newRequest.url())) {
+  if (!webkit_glue::IsProtocolSupportedForMedia(newRequest.url())) {
     // Set the url in the request to an invalid value (empty url).
     newRequest.setURL(WebKit::WebURL());
     DoneStart(net::ERR_ADDRESS_INVALID);
@@ -810,4 +810,4 @@ void BufferedResourceLoader::Log() {
   }
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

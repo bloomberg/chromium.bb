@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_MEDIA_WEB_VIDEO_RENDERER_H_
-#define WEBKIT_GLUE_MEDIA_WEB_VIDEO_RENDERER_H_
+#ifndef WEBKIT_MEDIA_WEB_VIDEO_RENDERER_H_
+#define WEBKIT_MEDIA_WEB_VIDEO_RENDERER_H_
 
 #include "media/base/video_frame.h"
 #include "media/filters/video_renderer_base.h"
@@ -11,7 +11,7 @@
 
 class SkCanvas;
 
-namespace webkit_glue {
+namespace webkit_media {
 
 class WebMediaPlayerProxy;
 
@@ -42,6 +42,6 @@ class WebVideoRenderer : public media::VideoRendererBase {
   DISALLOW_COPY_AND_ASSIGN(WebVideoRenderer);
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_MEDIA_WEB_VIDEO_RENDERER_H_
+#endif  // WEBKIT_MEDIA_WEB_VIDEO_RENDERER_H_

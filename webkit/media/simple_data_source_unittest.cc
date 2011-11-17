@@ -13,7 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/media/simple_data_source.h"
+#include "webkit/media/simple_data_source.h"
 #include "webkit/mocks/mock_webframeclient.h"
 #include "webkit/mocks/mock_weburlloader.h"
 
@@ -34,7 +34,10 @@ using WebKit::WebURLRequest;
 using WebKit::WebURLResponse;
 using WebKit::WebView;
 
-namespace webkit_glue {
+using webkit_glue::MockWebFrameClient;
+using webkit_glue::MockWebURLLoader;
+
+namespace webkit_media {
 
 static const int kDataSize = 1024;
 static const char kHttpUrl[] = "http://test";
@@ -281,4 +284,4 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
   DestroyDataSource();
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

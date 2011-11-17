@@ -44,12 +44,12 @@
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
-#include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_constants.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
-#include "webkit/glue/webmediaplayer_impl.h"
+#include "webkit/media/video_renderer_impl.h"
+#include "webkit/media/webmediaplayer_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
 #include "webkit/plugins/npapi/webplugin_page_delegate.h"
@@ -318,14 +318,14 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
 
-  scoped_refptr<webkit_glue::VideoRendererImpl> video_renderer(
-      new webkit_glue::VideoRendererImpl(false));
+  scoped_refptr<webkit_media::VideoRendererImpl> video_renderer(
+      new webkit_media::VideoRendererImpl(false));
   collection->AddVideoRenderer(video_renderer);
 
-  scoped_ptr<webkit_glue::WebMediaPlayerImpl> result(
-      new webkit_glue::WebMediaPlayerImpl(
+  scoped_ptr<webkit_media::WebMediaPlayerImpl> result(
+      new webkit_media::WebMediaPlayerImpl(
           client,
-          base::WeakPtr<webkit_glue::WebMediaPlayerDelegate>(),
+          base::WeakPtr<webkit_media::WebMediaPlayerDelegate>(),
           collection.release(),
           message_loop_factory.release(),
           NULL,

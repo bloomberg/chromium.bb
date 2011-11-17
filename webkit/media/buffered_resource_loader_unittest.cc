@@ -18,7 +18,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/media/buffered_resource_loader.h"
+#include "webkit/media/buffered_resource_loader.h"
 #include "webkit/mocks/mock_webframeclient.h"
 #include "webkit/mocks/mock_weburlloader.h"
 
@@ -32,7 +32,10 @@ using WebKit::WebURLError;
 using WebKit::WebURLResponse;
 using WebKit::WebView;
 
-namespace webkit_glue {
+using webkit_glue::MockWebFrameClient;
+using webkit_glue::MockWebURLLoader;
+
+namespace webkit_media {
 
 static const char* kHttpUrl = "http://test";
 static const char kHttpRedirectToSameDomainUrl1[] = "http://test/ing";
@@ -1105,4 +1108,4 @@ TEST_F(BufferedResourceLoaderTest, BufferWindow_PlaybackRate_AboveUpperBound) {
   StopWhenLoad();
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media

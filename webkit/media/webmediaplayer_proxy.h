@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_WEBMEDIAPLAYER_PROXY_H_
-#define WEBKIT_GLUE_WEBMEDIAPLAYER_PROXY_H_
+#ifndef WEBKIT_MEDIA_WEBMEDIAPLAYER_PROXY_H_
+#define WEBKIT_MEDIA_WEBMEDIAPLAYER_PROXY_H_
 
 #include <list>
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "media/filters/chunk_demuxer_client.h"
-#include "webkit/glue/media/web_data_source.h"
+#include "webkit/media/web_data_source.h"
 
 class MessageLoop;
 class SkCanvas;
@@ -19,7 +19,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace webkit_glue {
+namespace webkit_media {
 
 class WebMediaPlayerImpl;
 class WebVideoRenderer;
@@ -115,6 +115,6 @@ class WebMediaPlayerProxy
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerProxy);
 };
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
 
-#endif  // WEBKIT_GLUE_WEBMEDIAPLAYER_PROXY_H_
+#endif  // WEBKIT_MEDIA_WEBMEDIAPLAYER_PROXY_H_

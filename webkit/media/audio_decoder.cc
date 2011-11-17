@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/media/audio_decoder.h"
+#include "webkit/media/audio_decoder.h"
 
 #include <vector>
 #include "base/basictypes.h"
@@ -18,7 +18,7 @@ using media::InMemoryUrlProtocol;
 using std::vector;
 using WebKit::WebAudioBus;
 
-namespace webkit_glue {
+namespace webkit_media {
 
 // Decode in-memory audio file data.
 bool DecodeAudioFileData(
@@ -84,4 +84,4 @@ bool DecodeAudioFileData(
   return reader.Read(audio_data, number_of_frames);
 }
 
-}  // namespace webkit_glue
+}  // namespace webkit_media
