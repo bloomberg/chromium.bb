@@ -510,8 +510,9 @@ TEST_F(TextfieldViewsModelTest, SetText) {
 TEST_F(TextfieldViewsModelTest, MAYBE_Clipboard) {
   ui::Clipboard* clipboard
       = views::ViewsDelegate::views_delegate->GetClipboard();
-  string16 initial_clipboard_text;
-  clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &initial_clipboard_text);
+  string16 initial_clipboard_text = ASCIIToUTF16("initial text");
+  ui::ScopedClipboardWriter(clipboard).WriteText(initial_clipboard_text);
+
   string16 clipboard_text;
   TextfieldViewsModel model(NULL);
   model.Append(ASCIIToUTF16("HELLO WORLD"));
