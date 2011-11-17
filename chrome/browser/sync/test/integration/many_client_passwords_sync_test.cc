@@ -27,7 +27,8 @@ class ManyClientPasswordsSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(ManyClientPasswordsSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ManyClientPasswordsSyncTest, Sanity) {
+// TODO(rsimha): Enable once http://crbug.com/69604 is fixed.
+IN_PROC_BROWSER_TEST_F(ManyClientPasswordsSyncTest, DISABLED_Sanity) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   PasswordForm form = CreateTestPasswordForm(0);
