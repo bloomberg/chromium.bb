@@ -14,19 +14,57 @@ from driver_tools import *
 EXTRA_ENV = {
   'PIC'           : '0',
 
-  # These are temporary. Since we don't have
-  # DT_NEEDED metadata in bitcode yet, it must be provided
-  # on the command-line.
-  'EXTRA_LD_FLAGS': '',
+  # Flags for pnacl-nativeld
+  'LD_FLAGS': '${STATIC ? -static : ${SHARED ? -shared}}',
 
-  # If translating a .pexe which was linked statically against
-  # glibc, then you must do pnacl-translate -static. This will
-  # be removed once we can detect .pexe type.
   'STATIC'        : '0',
+  'SHARED'        : '0',
+  'STDLIB'        : '1',
 
   'INPUTS'        : '',
   'OUTPUT'        : '',
   'OUTPUT_TYPE'   : '',
+
+  # Library Strings
+  'EMITMODE'         : '${STATIC ? static : ${SHARED ? shared : dynamic}}',
+
+  'LD_ARGS' : '${STDLIB ? ' +
+              '${LD_ARGS_%LIBMODE%_%EMITMODE%} : ${LD_ARGS_nostdlib}}',
+
+  'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
+
+  # These are just the dependencies in the native link.
+  # TODO(pdox): To simplify translation, reduce from 4 to 2 cases.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
+  'LD_ARGS_newlib_static':
+    '-l:crtbegin.o --start-group ${ld_inputs} -lgcc_eh -lgcc --end-group ' +
+    '-l:libcrt_platform.a -l:crtend.o',
+
+  'LD_ARGS_glibc_static' :
+     '-l:crt1.o -l:crti.o -l:crtbeginT.o ${ld_inputs} ' +
+     '${GLIBC_HACK} --start-group -lgcc -lgcc_eh -lc --end-group ' +
+     '-l:crtend.o -l:crtn.o',
+
+  'LD_ARGS_glibc_shared' :
+     '--eh-frame-hdr -shared -l:crti.o -l:crtbeginS.o ' +
+     '${ld_inputs} ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
+     '-lgcc -lgcc_s -l:crtendS.o -l:crtn.o',
+
+  'LD_ARGS_glibc_dynamic':
+    '--eh-frame-hdr -l:crt1.o -l:crti.o -l:crtbegin.o ' +
+    '${ld_inputs} ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
+    '-lgcc -lgcc_s -l:crtend.o -l:crtn.o',
+
+  # Because of ABI and symbol versioning issues, these still need to
+  # be included directly in the native link.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=577
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2089
+  'GLIBC_HACK': '--as-needed -lstdc++ -lm --no-as-needed -lc -lpthread',
+  'DSO_HACK'  : '-l:ld-2.9.so',
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
+  'SDK_HACK'  : '',
+  # END HACK
+
   'LLC'           : '${SANDBOXED ? ${LLC_SB} : ${LLVM_LLC}}',
 
   'TRIPLE'      : '${TRIPLE_%ARCH%}',
@@ -86,115 +124,167 @@ TranslatorPatterns = [
   ( '(-sfi-.+)',       "env.append('LLC_FLAGS', $0)"),
   ( '(-mtls-use-call)',  "env.append('LLC_FLAGS', $0)"),
 
+  # If translating a .pexe which was linked statically against
+  # glibc, then you must do pnacl-translate -static. This will
+  # be removed once GLibC is actually statically linked.
   ( '-static',         "env.set('STATIC', '1')"),
+  ( '-shared',         "env.set('SHARED', '1')"),
+  ( '-nostdlib',       "env.set('STDLIB', '0')"),
+
+  ( '-rpath-link=(.+)', "env.append('LD_FLAGS', '-L'+$0)"),
+
   ( '-fPIC',           "env.set('PIC', '1')"),
 
-  ( '(-L.*)',          "env.append('EXTRA_LD_FLAGS', $0)"),
-  ( ('(-L)','(.*)'),   "env.append('EXTRA_LD_FLAGS', $0, $1)"),
-  ( '(-l.*)',          "env.append('EXTRA_LD_FLAGS', $0)"),
-  ( '(-Wl,.*)',        "env.append('EXTRA_LD_FLAGS', $0)"),
+  ( '-Wl,(.*)',        "env.append('LD_FLAGS', *($0).split(','))"),
 
-  ( '(-*)',            UnrecognizedOption),
+  ( '(-.*)',            UnrecognizedOption),
 
   ( '(.*)',            "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
-
 def main(argv):
   ParseArgs(argv, TranslatorPatterns)
+
+  if env.getbool('SHARED') and env.getbool('STATIC'):
+    Log.Fatal('Cannot mix -static and -shared')
 
   GetArch(required = True)
 
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
+
+  if len(inputs) == 0:
+    Log.Fatal("No input files")
+
+  # If there's a bitcode file, find it.
+  bcfiles = filter(IsBitcode, inputs)
+  if len(bcfiles) > 1:
+    Log.Fatal('Expecting at most 1 bitcode file')
+
+  if bcfiles:
+    bcfile = bcfiles[0]
+    bctype = FileType(bcfile)
+    has_bitcode = True
+    # Placeholder for actual object file
+    inputs = ListReplace(inputs, bcfile, '__BITCODE__')
+    env.set('INPUTS', *inputs)
+  else:
+    bcfile = None
+    has_bitcode = False
+
+  # Determine the output type, in this order of precedence:
+  # 1) Output type can be specified on command-line (-S, -c, -shared, -static)
+  # 2) If bitcode file given, use it's output type. (pso->so, pexe->nexe, po->o)
+  # 3) Otherwise, assume nexe output.
   output_type = env.getone('OUTPUT_TYPE')
+  if output_type == '':
+    if env.getbool('SHARED'):
+      output_type = 'so'
+    elif env.getbool('STATIC'):
+      output_type = 'nexe'
+    elif bcfile:
+      DefaultOutputTypes = {
+        'pso' : 'so',
+        'pexe': 'nexe',
+        'po'  : 'o',
+      }
+      output_type = DefaultOutputTypes[bctype]
+    else:
+      output_type = 'nexe'
 
-  if len(inputs) != 1:
-    Log.Fatal('Expecting exactly one input file')
+  # Default to -static for newlib.
+  # TODO(pdox): This shouldn't be necessary.
+  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
+  if env.getbool('LIBMODE_NEWLIB'):
+    if env.getbool('SHARED'):
+      Log.Fatal('Cannot handle -shared with newlib toolchain')
+    env.set('STATIC', '1')
 
-  infile = inputs[0]
+  if bcfile:
+    ApplyBitcodeConfig(bcfile, bctype)
 
-  if not IsBitcode(infile):
-    Log.Fatal('%s: File is not bitcode', pathtools.touser(infile))
+  if output == '':
+    if bcfile:
+      output = DefaultOutputName(bcfile, output_type)
+    else:
+      output = pathtools.normalize('a.out')
 
-  intype = FileType(infile)
-  if intype not in ('pso', 'po', 'pexe'):
-    Log.Fatal('Expecting input file to be bitcode (.pexe, .pso, .po, or .bc)')
+  tng = TempNameGen(inputs + bcfiles, output)
+  chain = DriverChain(bcfile, output, tng)
+  SetupChain(chain, has_bitcode, output_type)
+  chain.run()
+  return 0
 
-  if intype == 'pso':
+def ApplyBitcodeConfig(bcfile, bctype):
+  if bctype == 'pso':
+    env.set('SHARED', '1')
+
+  if env.getbool('SHARED'):
     env.set('PIC', '1')
 
   # Normally, only pso files need to be translated with PIC, but since we
   # are linking executables with unresolved symbols, dynamic nexe's
   # also need to be PIC to be able to generate the correct relocations.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2351
-  if intype == 'pexe' and env.getbool('LIBMODE_GLIBC'):
+  if bctype == 'pexe' and env.getbool('LIBMODE_GLIBC'):
     env.set('PIC', '1')
-    env.append('EXTRA_LD_FLAGS', '-Wl,--unresolved-symbols=ignore-all')
+    env.append('LD_FLAGS', '--unresolved-symbols=ignore-all')
 
   # Read the bitcode metadata to extract library
   # dependencies and SOName.
-  metadata = GetBitcodeMetadata(infile)
+  metadata = GetBitcodeMetadata(bcfile)
   for lib in metadata['NeedsLibrary']:
-    env.append('EXTRA_LD_FLAGS', '-Wl,--pnacl-add-libdep=' + lib)
+    env.append('LD_FLAGS', '--add-extra-dt-needed=' + lib)
+    # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
+    direct_libs = ['srpc','ppapi_cpp']
+    for libname in direct_libs:
+      if lib == 'lib'+libname+'.so':
+        env.append('SDK_HACK', '-l'+libname)
 
-  if intype == 'pso':
+  if bctype == 'pso':
     soname = metadata['SOName']
     if soname:
-      env.append('EXTRA_LD_FLAGS', '-Wl,-soname=' + soname)
+      env.append('LD_FLAGS', '-soname=' + soname)
 
-  if output_type == '':
-    DefaultOutputTypes = {
-      'pso' : 'so',
-      'pexe': 'nexe',
-      'po'  : 'o',
-    }
-    output_type = DefaultOutputTypes[intype]
-
-  if output == '':
-    output = DefaultOutputName(infile, output_type)
-
-  tng = TempNameGen([infile], output)
-  chain = DriverChain(infile, output, tng)
-  SetupChain(chain, output_type)
-  chain.run()
-  return 0
-
-def SetupChain(chain, output_type):
+def SetupChain(chain, has_bitcode, output_type):
   assert output_type in ('o','s','so','nexe')
 
-  if output_type == 's' or not env.getbool('MC_DIRECT'):
-    chain.add(RunLLC, 's', filetype='asm')
-    if output_type == 's':
+  if has_bitcode:
+    if output_type == 's' or not env.getbool('MC_DIRECT'):
+      chain.add(RunLLC, 's', filetype='asm')
+      if output_type == 's':
+        return
+      chain.add(RunAS, 'o')
+    else:
+      chain.add(RunLLC, 'o', filetype='obj')
+    if output_type == 'o':
       return
-    chain.add(RunAS, 'o')
-  else:
-    chain.add(RunLLC, 'o', filetype='obj')
-
-  if output_type == 'o':
-    return
 
   if output_type == 'so':
-    chain.add(RunLD, 'so', shared = True)
+    chain.add(RunLD, 'so')
   elif output_type == 'nexe':
-    chain.add(RunLD, 'nexe', shared = False)
+    chain.add(RunLD, 'nexe')
 
 def RunAS(infile, outfile):
   RunDriver('pnacl-as', [infile, '-o', outfile])
 
-# For now, we use pnacl-g++ instead of ld,
-# because we need to link against native libraries.
-def RunLD(infile, outfile, shared):
-  args = ['--pnacl-native-hack', infile, '-o', outfile]
+def ListReplace(items, old, new):
+  ret = []
+  for k in items:
+    if k == old:
+      ret.append(new)
+    else:
+      ret.append(k)
+  return ret
 
-  if shared:
-    args += ['-shared']
-  elif env.getbool('STATIC'):
-    args += ['-static']
-
-  extra_ld_flags = env.get('EXTRA_LD_FLAGS')
-  # TODO(robertm): this is a little unexpected and needs better documentation
-  RunDriver('pnacl-clang++', args + extra_ld_flags)
+def RunLD(infile, outfile):
+  inputs = env.get('INPUTS')
+  if infile:
+    inputs = ListReplace(inputs, '__BITCODE__', '--shm=' + infile)
+  env.set('ld_inputs', *inputs)
+  args = env.get('LD_ARGS') + ['-o', outfile]
+  args += env.get('LD_FLAGS')
+  RunDriver('pnacl-nativeld', args)
 
 
 def RunLLC(infile, outfile, filetype):

@@ -791,7 +791,25 @@ def SimpleCache(f):
 
 @SimpleCache
 def IsNative(filename):
-  return FileType(filename) in ['o','so']
+  return (IsNativeObject(filename) or
+          IsNativeDSO(filename) or
+          IsNativeArchive(filename))
+
+@SimpleCache
+def IsNativeObject(filename):
+  return FileType(filename) == 'o'
+
+@SimpleCache
+def IsNativeDSO(filename):
+  return FileType(filename) == 'so'
+
+@SimpleCache
+def IsBitcodeDSO(filename):
+  return FileType(filename) == 'pso'
+
+@SimpleCache
+def IsBitcodeObject(filename):
+  return FileType(filename) == 'po'
 
 @SimpleCache
 def IsBitcode(filename):
@@ -962,7 +980,8 @@ def FileType(filename):
   if IsBitcode(filename):
     return GetBitcodeType(filename)
 
-  if ext in ('o','so','a','po','pso','pa') and ldtools.IsLinkerScript(filename):
+  if (ext in ('o','so','a','po','pso','pa','x') and
+      ldtools.IsLinkerScript(filename)):
     return 'ldscript'
 
   # Use the file extension if it is recognized

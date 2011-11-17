@@ -2360,6 +2360,15 @@ translate-and-install-sb-tool() {
   local mode=$2
   local name=$3
 
+  if ${LIBMODE_GLIBC}; then
+    # SCons SDK install is currently broken, in that it produces
+    # X86-32 .so files instead of .pso files.
+    # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2420
+    # And translation requires libsrpc, so we cannot correctly translate these.
+    # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
+    return 0
+  fi
+
   # Translate bitcode program into an actual native executable.
   # If arch = universal, we need to translate and install multiple times.
   local bindir="${INSTALL_SB_TOOLS}/${arch}/${mode}/bin"
@@ -2394,7 +2403,8 @@ translate-and-install-sb-tool() {
   for tarch in ${arches}; do
     local nexe="${bindir}/${name}.${tarch}.nexe"
     StepBanner "TRANSLATE" "Translating ${name}.pexe to ${tarch}${extra}"
-    "${PNACL_TRANSLATE}" -arch ${tarch} "${pexe}" -o "${nexe}" &
+    "${PNACL_TRANSLATE}" -arch ${tarch} -Wl,-L"${INSTALL_SDK_LIB}" \
+                         "${pexe}" -o "${nexe}" &
     QueueLastProcess
   done
 
@@ -2860,9 +2870,9 @@ libs-support-bitcode() {
   ${PNACL_CC} ${flags} -c bitcode/crtbegin.c -o "${INSTALL_LIB}"/crtbeginS.bc \
                        -DSHARED
 
-  # Install crt1.o (linker script)
-  StepBanner "LIBS-SUPPORT" "Install crt1.o (linker script)"
-  cp crt1.x "${INSTALL_LIB}"/crt1.o
+  # Install crt1.x (linker script)
+  StepBanner "LIBS-SUPPORT" "Install crt1.x (linker script)"
+  cp crt1.x "${INSTALL_LIB}"/crt1.x
 
   spopd
 }
@@ -2882,6 +2892,10 @@ libs-support-native() {
   StepBanner "LIBS-SUPPORT" "Install crtbegin.o / crtend.o"
   ${PNACL_CC} ${flags} -c crtbegin.c -o "${destdir}"/crtbegin.o
   ${PNACL_CC} ${flags} -c crtend.c -o "${destdir}"/crtend.o
+
+  # Install pnacl_abi.o
+  StepBanner "LIBS-SUPPORT" "Install pnacl_abi.o"
+  ${PNACL_CC} ${flags} -c pnacl_abi.S -o "${destdir}"/pnacl_abi.o
 
   # TODO(pdox): Use this for shared objects when we build libgcc_s.so ourselves
   # Compile crtbeginS.o / crtendS.o

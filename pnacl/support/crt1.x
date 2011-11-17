@@ -11,3 +11,6 @@
  */
 
 EXTERN ( main exit _exit __nacl_read_tp )
+
+/* These are needed by libgcc_eh */
+EXTERN ( malloc free strlen abort )

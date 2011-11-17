@@ -14,6 +14,7 @@
 # TODO(pdox): Refactor driver_tools so that there is no circular dependency.
 import driver_tools
 import os
+import pathtools
 
 def IsLinkerScript(filename):
   return ParseLinkerScript(filename) is not None
@@ -142,3 +143,100 @@ def ReadPastComment(fp, terminator):
       break
 
   return True
+
+##############################################################################
+
+def FindFirstLinkerScriptInput(inputs):
+  for i in xrange(len(inputs)):
+    f = inputs[i]
+    if IsFlag(f):
+      continue
+    if driver_tools.FileType(f) == 'ldscript':
+      return (i, f)
+  return (None, None)
+
+def ExpandLinkerScripts(inputs, searchdirs, static_only):
+  while True:
+    # Find a ldscript in the input list
+    i, path = FindFirstLinkerScriptInput(inputs)
+
+    # If none, we are done.
+    if path is None:
+      break
+
+    new_inputs = ParseLinkerScript(path)
+    ExpandLibFlags(new_inputs, searchdirs, static_only)
+    inputs = inputs[:i] + new_inputs + inputs[i+1:]
+  return inputs
+
+def ExpandLibFlags(inputs, searchdirs, static_only):
+  """ Given an input list, expand -lfoo or -l:foo.so
+      into a full filename. Returns the new input list """
+  for i in xrange(len(inputs)):
+    f = inputs[i]
+    if IsFlag(f):
+      continue
+    if IsLib(f):
+      inputs[i] = FindLib(f, searchdirs, static_only)
+
+def IsFlag(arg):
+  return arg.startswith('-') and not IsLib(arg)
+
+def IsLib(arg):
+  return arg.startswith('-l')
+
+def FindLib(arg, searchdirs, static_only):
+  """Returns the full pathname for the library input.
+     For example, name might be "-lc" or "-lm".
+     Returns None if the library is not found.
+  """
+  assert(IsLib(arg))
+  assert(searchdirs is not None)
+  name = arg[len('-l'):]
+  is_whole_name = (name[0] == ':')
+
+  searchnames = []
+  if is_whole_name:
+    # -l:filename  (search for the filename)
+    name = name[1:]
+    searchnames.append(name)
+
+    # .pso may exist in lieu of .so, or vice versa.
+    if '.so' in name:
+      searchnames.append(name.replace('.so', '.pso'))
+    if '.pso' in name:
+      searchnames.append(name.replace('.pso', '.so'))
+  else:
+    # -lfoo
+    if static_only:
+      extensions = [ 'a' ]
+    else:
+      extensions = [ 'pso', 'so', 'a' ]
+    for ext in extensions:
+      searchnames.append('lib' + name + '.' + ext)
+
+  foundpath = FindFile(searchnames, searchdirs)
+  if foundpath:
+    return foundpath
+
+  if is_whole_name:
+    label = name
+  else:
+    label = arg
+  driver_tools.Log.Fatal("Cannot find '%s'", label)
+
+def FindFile(search_names, search_dirs):
+  for curdir in search_dirs:
+    for name in search_names:
+      path = pathtools.join(curdir, name)
+      if pathtools.exists(path):
+        return path
+  return None
+
+def ExpandInputs(inputs, searchdirs, static_only):
+  # Expand all -l flags into filenames
+  ExpandLibFlags(inputs, searchdirs, static_only)
+
+  # Expand input files which are linker scripts
+  inputs = ExpandLinkerScripts(inputs, searchdirs, static_only)
+  return inputs

@@ -108,32 +108,30 @@ EXTRA_ENV = {
   #             and into pnacl-translate.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
-    '-l:crtbegin.o ' +
-    # <bitcode>
-    '-l:crt1.o -l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
+    '-l:crt1.x -l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
     '--start-group ${LIBSTDCPP} -lc -lnacl --end-group ' +
-    # </bitcode>
-    '-lgcc_eh -lgcc -l:libcrt_platform.a -l:crtend.o',
+    '-l:pnacl_abi.o',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
     '-l:crt1.o -l:crti.o -l:crtbeginT.o ' +
-    '${ld_inputs} ${LIBSTDCPP} ' +
-    '--start-group -lgcc -lgcc_eh -lc ' +
-    '--end-group -l:crtend.o -l:crtn.o',
+    '${ld_inputs} ${LIBSTDCPP} -lc ' +
+    # Replace with pnacl_abi.o
+    '--start-group -lgcc_eh -lc -lgcc --end-group ' +
+    '-l:crtend.o -l:crtn.o',
 
   'LD_ARGS_glibc_shared':
-    '--eh-frame-hdr -shared -l:crti.o -l:crtbeginS.o ' +
-    '${ld_inputs} ${LIBSTDCPP} ' +
-    '-lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
+    '-shared -l:crti.o -l:crtbeginS.o ' +
+    '${ld_inputs} ${LIBSTDCPP} -lc ' +
+    # Replace with pnacl_abi.o
+    '-lgcc_s ' +
     '-l:crtendS.o -l:crtn.o',
 
   'LD_ARGS_glibc_dynamic':
-    '--eh-frame-hdr -l:crt1.o -l:crti.o ' +
-    '-l:crtbegin.o ${ld_inputs} ${LIBSTDCPP} ' +
-    '-lgcc --as-needed -lgcc_s --no-as-needed ' +
-    '-lc -lgcc --as-needed -lgcc_s --no-as-needed ' +
+    '-l:crt1.o -l:crti.o ' +
+    '-l:crtbegin.o ${ld_inputs} ${LIBSTDCPP} -lc ' +
+    # Replace with pnacl_abi.o
+    '-lgcc_s ' +
     '-l:crtend.o -l:crtn.o',
 
   'LIBSTDCPP'   : '${LANGUAGE==CXX ? -lstdc++ -lm }',
@@ -187,8 +185,6 @@ CustomPatterns = [
 
   ( '--pnacl-allow-native',      "env.set('ALLOW_NATIVE', '1')"),
   ( '--pnacl-allow-translate',   "env.set('ALLOW_TRANSLATE', '1')"),
-  ( '--pnacl-native-hack', "env.append('LD_FLAGS', '--pnacl-native-hack')\n"
-                           "env.set('ALLOW_NATIVE', '1')"),
 ]
 
 GCCPatterns = [
@@ -327,14 +323,17 @@ def main(argv):
   if env.getbool('STATIC') and env.getbool('SHARED'):
     Log.Fatal("Can't handle both -static and -shared")
 
+  # If -arch was given, we are compiling directly to native code
+  compiling_to_native = GetArch() is not None
+
+  if env.getbool('ALLOW_NATIVE') and not compiling_to_native:
+    Log.Fatal("--pnacl-allow-native without -arch is not meaningful.")
+
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
 
   if len(inputs) == 0:
     Log.Fatal('No input files')
-
-  # If -arch was given, we are compiling directly to native code
-  compiling_to_native = GetArch() is not None
 
   gcc_mode = env.getone('GCC_MODE')
 
@@ -431,6 +430,9 @@ def main(argv):
       ld_inputs += f[len('-Wl,'):].split(',')
     else:
       ld_inputs.append(f)
+
+  if env.getbool('ALLOW_NATIVE'):
+    ld_inputs.append('--pnacl-allow-native')
 
   # Invoke the linker
   env.set('ld_inputs', *ld_inputs)

@@ -18,26 +18,11 @@ if not IsWindowsPython():
   import fcntl
 
 EXTRA_ENV = {
-  'NATIVE_HACK' : '0',    # Only link native code, ignore bitcode libraries.
-                          #
-                          # This is currently only used for translating .pexe's
-                          # which are linked against glibc. Since they continue
-                          # to have native object dependencies, they have to go
-                          # through pnacl-gcc again, followed by pnacl-ld.
-                          # But since we know the bitcode dependencies have
-                          # already been linked in, we remove those from the
-                          # link line with this flag.
-
-  'WHICH_LD'    : 'BFD',  # Which ld to use for native linking: GOLD or BFD
-
+  'ALLOW_NATIVE': '0', # Allow LD args which will change the behavior
+                       # of native linking. This must be accompanied by
+                       # -arch to produce a .nexe.
   'INPUTS'   : '',
   'OUTPUT'   : '',
-
-  # Library dependencies to add (as DT_NEEDED records)
-  # This only applies to native dynamic/shared linking.
-  # This is used during pso -> so translation to set the
-  # correct dependencies on the generated ELF file.
-  'LIBDEPS'  : '',
 
   'SHARED'   : '0',
   'STATIC'   : '0',
@@ -51,7 +36,8 @@ EXTRA_ENV = {
   'STRIP_FLAGS_all'  : '-s',
   'STRIP_FLAGS_debug': '-S',
 
-  'PNACL_TRANSLATE_FLAGS': '${PIC ? -fPIC}',
+  'PNACL_TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!STDLIB ? -nostdlib} ' +
+                           '${STATIC ? -static}',
 
   'OPT_FLAGS': '-O${OPT_LEVEL} ${OPT_STRIP_%STRIP_MODE%} ' +
                '-inline-threshold=${OPT_INLINE_THRESHOLD}',
@@ -61,97 +47,69 @@ EXTRA_ENV = {
   'OPT_STRIP_all': '-disable-opt --strip',
   'OPT_STRIP_debug': '-disable-opt --strip-debug',
 
-  # Sandboxed LD is always BFD.
-  'LD'          : '${SANDBOXED ? ${LD_SB} ${LD_BFD_FLAGS} ' +
-                             ' : ${LD_%WHICH_LD%} ${LD_%WHICH_LD%_FLAGS}}',
-
-  'LD_BFD_FLAGS': '-m ${LD_EMUL} ${#LD_SCRIPT ? -T ${LD_SCRIPT}}',
-
-  'LD_GOLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} ' +
-                   '${#LD_SCRIPT ? -T ${LD_SCRIPT} : -Ttext=0x20000}',
-
   'GOLD_PLUGIN_ARGS': '-plugin=${GOLD_PLUGIN_SO} ' +
                       '-plugin-opt=emit-llvm',
 
    # Symbols to wrap
   'WRAP_SYMBOLS': '',
 
-  # Common to both GOLD and BFD.
   'LD_FLAGS'       : '-nostdlib ${@AddPrefix:-L:SEARCH_DIRS} ' +
                      '${SHARED ? -shared} ${STATIC ? -static} ' +
-                     '${RELOCATABLE ? -relocatable} ' +
-                     '${LIBMODE_GLIBC && ' +
-                     '!STATIC ? ${@AddPrefix:-rpath-link=:SEARCH_DIRS}}',
+                     '${RELOCATABLE ? -relocatable} ${LD_FLAGS_NATIVE}',
 
-
+  # Flags that affect native linking
+  # Only allowed if ALLOW_NATIVE is true.
+  'LD_FLAGS_NATIVE': '',
 
   'SEARCH_DIRS'        : '${SEARCH_DIRS_USER} ${SEARCH_DIRS_BUILTIN}',
   'SEARCH_DIRS_USER'   : '',
   'SEARCH_DIRS_BUILTIN': '${STDLIB ? ' +
-                         '${LIBS_SDK_BC}/ ${LIBS_SDK_ARCH}/ ' +
-                         '${LIBS_ARCH}/ ${LIBS_BC}/}',
+                         '${LIBS_SDK_BC}/ ${LIBS_BC}/ ${SEARCH_DIRS_NATIVE}}',
 
   # Standard Library Directories
   'LIBS_BC'          : '${BASE}/lib',
+  'LIBS_SDK_BC'      : '${BASE_SDK}/lib',
+
+  # HACK-BEGIN
+  # Add lib-<arch>/ to the search path.
+  # These are here to let the bitcode link find the native objects
+  # used in the GLibC toolchain.
+  # TODO(pdox): Remove these when the bitcode link is pure bitcode.
+  'SEARCH_DIRS_NATIVE': '${STDLIB ? ${LIBS_SDK_ARCH}/ ${LIBS_ARCH}/}',
 
   'LIBS_ARCH'        : '${LIBS_%ARCH%}',
   'LIBS_ARM'         : '${BASE}/lib-arm',
   'LIBS_X8632'       : '${BASE}/lib-x86-32',
   'LIBS_X8664'       : '${BASE}/lib-x86-64',
 
-  'LIBS_SDK_BC'      : '${BASE_SDK}/lib',
-
   'LIBS_SDK_ARCH'    : '${LIBS_SDK_%ARCH%}',
   'LIBS_SDK_X8632'   : '${BASE_SDK}/lib-x86-32',
   'LIBS_SDK_X8664'   : '${BASE_SDK}/lib-x86-64',
   'LIBS_SDK_ARM'     : '${BASE_SDK}/lib-arm',
-
+  # HACK-END
 
   'LD_GOLD_OFORMAT'        : '${LD_GOLD_OFORMAT_%ARCH%}',
   'LD_GOLD_OFORMAT_ARM'    : 'elf32-littlearm',
   'LD_GOLD_OFORMAT_X8632'  : 'elf32-nacl',
   'LD_GOLD_OFORMAT_X8664'  : 'elf64-nacl',
 
-  'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
-  'LD_EMUL_ARM'    : 'armelf_nacl',
-  'LD_EMUL_X8632'  : 'elf_nacl',
-  'LD_EMUL_X8664'  : 'elf64_nacl',
-
-  'EMITMODE'         : '${RELOCATABLE ? relocatable : ' +
-                       '${STATIC ? static : ' +
-                       '${SHARED ? shared : dynamic}}}',
-
-  'LD_SCRIPT'      : '${LD_SCRIPT_%LIBMODE%_%EMITMODE%}',
-
-  # For newlib, omit the -T flag (the builtin linker script works fine).
-  'LD_SCRIPT_newlib_static': '',
-
-  # For glibc, the linker script is always explicitly specified.
-  'LD_SCRIPT_glibc_static' : '${LD_EMUL}.x.static',
-  'LD_SCRIPT_glibc_shared' : '${LD_EMUL}.xs',
-  'LD_SCRIPT_glibc_dynamic': '${LD_EMUL}.x',
-
-  'LD_SCRIPT_newlib_relocatable': '',
-  'LD_SCRIPT_glibc_relocatable' : '',
-
   'BCLD'      : '${LD_GOLD}',
-  'BCLD_FLAGS': '${LD_GOLD_FLAGS} ' +
+  'BCLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} -Ttext=0x20000 ' +
                 '${!SHARED && !RELOCATABLE ? --undef-sym-check} ' +
-                '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
-
-
-  'LIBDEPS_FLAGS': '${@AddPrefix:--add-extra-dt-needed :LIBDEPS}',
-
-  'RUN_LD' : '${LD} ${LD_FLAGS} ${LIBDEPS_FLAGS} ${inputs} -o "${output}"',
-
+                '${GOLD_PLUGIN_ARGS} ${LD_FLAGS_NATIVE} ${LD_FLAGS}',
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} '
                '-o "${output}"'),
 }
 env.update(EXTRA_ENV)
 
+def AddBCLinkFlags(*args):
+  env.append('LD_FLAGS', *args)
+
+def AddNativeFlags(*args):
+  env.append('LD_FLAGS_NATIVE', *args)
+
 LDPatterns = [
-  ( '--pnacl-native-hack', "env.set('NATIVE_HACK', '1')"),
-  ( '--pnacl-add-libdep=(.+)', "env.append('LIBDEPS', $0)"),
+  ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
   ( ('--add-translate-option=(.+)'),
                        "env.append('PNACL_TRANSLATE_FLAGS', $0)"),
   # todo(dschuff): get rid of this when we get closer to tip and fix bug 1941
@@ -162,48 +120,49 @@ LDPatterns = [
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
   ( '-shared',         "env.set('SHARED', '1')"),
-
-  ( '-static',         "env.set('STATIC', '1')\n"
-                       "env.set('SHARED', '0')"),
+  ( '-static',         "env.set('STATIC', '1')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
-
-  ( '-r',                  "env.set('RELOCATABLE', '1')"),
-  ( '-relocatable',        "env.set('RELOCATABLE', '1')"),
+  ( '-r',              "env.set('RELOCATABLE', '1')"),
+  ( '-relocatable',    "env.set('RELOCATABLE', '1')"),
 
   ( ('-L', '(.+)'),
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
   ( '-L(.+)',
     "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))\n"),
 
-  ( ('(-rpath)','(.*)'),
-    "env.append('LD_FLAGS', $0+'='+pathtools.normalize($1))"),
-  ( ('(-rpath)=(.*)'),
-    "env.append('LD_FLAGS', $0+'='+pathtools.normalize($1))"),
-
+  # We just ignore undefined symbols in shared objects, so
+  # -rpath-link should not be necessary.
+  #
+  # However, libsrpc.so still needs to be linked in directly (in non-IRT mode)
+  # or it malfunctions. This is the only way that -rpath-link is still used.
+  # There's a corresponding hack in pnacl-translate to recognize libsrpc.so
+  # and link it in directly.
+  # TODO(pdox): Investigate this situation.
+  ( ('(-rpath)','(.*)'), ""),
+  ( ('(-rpath)=(.*)'), ""),
   ( ('(-rpath-link)','(.*)'),
-    "env.append('LD_FLAGS', $0+'='+pathtools.normalize($1))"),
+    "env.append('PNACL_TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
   ( ('(-rpath-link)=(.*)'),
-    "env.append('LD_FLAGS', $0+'='+pathtools.normalize($1))"),
+    "env.append('PNACL_TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
 
-  ( ('(-Ttext)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
-  ( ('(-Ttext=.*)'),     "env.append('LD_FLAGS', $0)"),
+  ( ('(-Ttext)','(.*)'), AddNativeFlags),
+  ( ('(-Ttext=.*)'),     AddNativeFlags),
 
   # This overrides the builtin linker script.
-  ( ('-T', '(.*)'),      "env.set('LD_SCRIPT', $0)"),
+  ( ('(-T)', '(.*)'),    AddNativeFlags),
 
-  ( ('-e','(.*)'),     "env.append('LD_FLAGS', '-e', $0)"),
-  ( ('(--section-start)','(.*)'), "env.append('LD_FLAGS', $0, $1)"),
-  ( '(-?-soname=.*)',             "env.append('LD_FLAGS', $0)"),
-  ( ('(-?-soname)', '(.*)'),      "env.append('LD_FLAGS', $0, $1)"),
-  ( '(--eh-frame-hdr)',           "env.append('LD_FLAGS', $0)"),
-  ( '(-M)',                       "env.append('LD_FLAGS', $0)"),
-  ( '(-t)',                       "env.append('LD_FLAGS', $0)"),
-  ( ('-y','(.*)'),                "env.append('LD_FLAGS', '-y', $0)"),
-  ( ('-defsym','(.*)'),           "env.append('LD_FLAGS', '-defsym', $0)"),
+  # TODO(pdox): Allow settinge an alternative _start symbol in bitcode
+  ( ('(-e)','(.*)'),     AddNativeFlags),
 
-  ( '(--print-gc-sections)',      "env.append('LD_FLAGS', $0)"),
-  ( '(-gc-sections)',             "env.append('LD_FLAGS', $0)"),
-  ( '(--unresolved-symbols=.*)',  "env.append('LD_FLAGS', $0)"),
+  ( ('(--section-start)','(.*)'), AddNativeFlags),
+
+  ( '(-?-soname=.*)',             AddBCLinkFlags),
+  ( ('(-?-soname)', '(.*)'),      AddBCLinkFlags),
+
+  ( '(-M)',                       AddBCLinkFlags),
+  ( '(-t)',                       AddBCLinkFlags),
+  ( ('(-y)','(.*)'),              AddBCLinkFlags),
+  ( ('(-defsym)','(.*)'),         AddBCLinkFlags),
 
   ( '-melf_nacl',          "env.set('ARCH', 'X8632')"),
   ( ('-m','elf_nacl'),     "env.set('ARCH', 'X8632')"),
@@ -241,6 +200,7 @@ LDPatterns = [
   ( '(-Bstatic)',          "env.append('INPUTS', $0)"),
   ( '(-Bdynamic)',          "env.append('INPUTS', $0)"),
   ( '(--(no-)?whole-archive)', "env.append('INPUTS', $0)"),
+  ( '(--undefined=.*)',    "env.append('INPUTS', $0)"),
   ( '(-.*)',               UnrecognizedOption),
   ( '(.*)',                "env.append('INPUTS', pathtools.normalize($0))"),
 ]
@@ -249,11 +209,27 @@ LDPatterns = [
 def main(argv):
   ParseArgs(argv, LDPatterns)
 
+  # If the user passed -arch, then they want native output.
+  arch_flag_given = GetArch() is not None
+
+  allow_native = env.getbool('ALLOW_NATIVE')
+  ld_flags_native = env.get('LD_FLAGS_NATIVE')
+  if len(ld_flags_native) > 0:
+    if not allow_native:
+      flagstr = ' '.join(ld_flags_native)
+      Log.Fatal('"%s" affects native linking. '
+                'To allow, specify --pnacl-allow-native' % flagstr)
+
+  if env.getbool('ALLOW_NATIVE') and not arch_flag_given:
+      Log.Fatal("--pnacl-allow-native given, but native linking "
+                "is not happening (missing -arch?)")
+
   if env.getbool('RELOCATABLE'):
     if env.getbool('SHARED'):
       Log.Fatal("-r and -shared may not be used together")
     env.set('STATIC', '0')
 
+  # Default to -static for newlib.
   if env.getbool('LIBMODE_NEWLIB'):
     if env.getbool('SHARED'):
       Log.Fatal("Cannot generate shared objects with newlib-based toolchain")
@@ -265,61 +241,65 @@ def main(argv):
   if output == '':
     output = pathtools.normalize('a.out')
 
-  # If the user passed -arch, then they want native output.
-  arch_flag_given = GetArch() is not None
-
   if not arch_flag_given:
-    # If the arch flag was not given, we must auto-detect the link arch.
-    # This is for two reasons:
-    # 1) gold (for bitcode linking) requires an architecture
-    # 2) we don't know which standard search directories to use
-    #    until ARCH is correctly set. (see SEARCH_DIRS_BUILTIN)
-    DetectArch(inputs)
-
+    # If -arch is not given, assume X86-32.
+    # This is because gold requires an arch (even for bitcode linking).
+    SetArch('X8632')
   assert(GetArch() is not None)
 
-  # If there's a linker script which needs to be searched for, find it.
-  LocateLinkerScript()
-
-  # Expand all -l flags
-  ExpandLibFlags(inputs)
-
-  # Expand input files which are linker scripts
-  inputs = ExpandLinkerScripts(inputs)
-
+  # Expand all parameters
+  # This resolves -lfoo into actual filenames,
+  # and expands linker scripts into command-line arguments.
+  inputs = ldtools.ExpandInputs(inputs,
+                                env.get('SEARCH_DIRS'),
+                                env.getbool('STATIC'))
   if env.getbool('LIBMODE_GLIBC'):
     TranslateInputs(inputs)
 
-  # NATIVE HACK
-  native_left, native_right = RemoveBitcode(inputs)
-  if env.getbool('NATIVE_HACK'):
-    inputs = native_left + native_right
-  # END NATIVE HACK
+  # Make sure the inputs have matching arch.
+  CheckInputsArch(inputs)
 
-  has_native, has_bitcode = AnalyzeInputs(inputs)
+  regular_inputs, native_objects = SplitLinkLine(inputs)
 
-  # If there is bitcode, we do a bitcode link. If -arch is also specified,
-  # we invoke pnacl-translate afterwards.
-  if has_bitcode:
-    if env.getbool('SHARED'):
-      bitcode_type = 'pso'
-      native_type = 'so'
-    elif env.getbool('RELOCATABLE'):
-      bitcode_type = 'po'
-      native_type = 'o'
-    else:
-      bitcode_type = 'pexe'
-      native_type = 'nexe'
-  elif has_native:
-    # If there is no bitcode, then we do a native link only.
-    if not arch_flag_given:
-      Log.Fatal("Native linking requires -arch")
+  # Filter out object files which are currently used in the bitcode link.
+  # These don't actually need to be treated separately, since the
+  # translator includes them automatically. Eventually, these will
+  # be compiled to bitcode or replaced by bitcode stubs, and this list
+  # can go away.
+  if env.getbool('LIBMODE_GLIBC'):
+    autofiles = ['crt1.o', 'crti.o', 'crtbegin.o', 'crtbeginS.o',
+                 'crtbeginT.o', 'crtend.o', 'crtendS.o', 'crtn.o',
+                 'libc_nonshared.a', 'libpthread_nonshared.a',
+                 'libc.a', 'libstdc++.a', 'libgcc.a', 'libgcc_eh.a',
+                 'libm.a']
   else:
-    Log.Fatal("No input objects")
+    autofiles = ['pnacl_abi.o']
+  def native_filter(f):
+    for k in autofiles:
+      if f.endswith(k):
+        return False
+    return True
+  native_objects = filter(native_filter, native_objects)
 
-  # Path A: Bitcode link, then opt, then translate.
-  if has_bitcode:
-    tng = TempNameGen([], output)
+  if env.getbool('SHARED'):
+    bitcode_type = 'pso'
+    native_type = 'so'
+  elif env.getbool('RELOCATABLE'):
+    bitcode_type = 'po'
+    native_type = 'o'
+  else:
+    bitcode_type = 'pexe'
+    native_type = 'nexe'
+
+  if native_objects and not allow_native:
+    argstr = ' '.join(native_objects)
+    Log.Fatal("Native objects '%s' detected in the link. "
+              "To allow, specify --pnacl-allow-native" % argstr)
+
+  tng = TempNameGen([], output)
+
+  # Do the bitcode link.
+  if HasBitcodeInputs(inputs):
     chain = DriverChain(inputs, output, tng)
     chain.add(LinkBC, 'pre_opt.' + bitcode_type)
     if NeedsWrap():
@@ -330,140 +310,52 @@ def main(argv):
       chain.add(DoOPT, 'opt.' + bitcode_type)
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)
-    if arch_flag_given:
-      # TODO(pdox): This should call pnacl-translate and nothing
-      # else. However, since we still use native objects in the
-      # scons and gcc builds, and special LD flags, we can't
-      # translate without including these extra libraries/flags.
-      chain.add(DoTranslate, 'o', mode = '-c')
-      chain.add(DoNativeLink, native_type,
-                native_left = native_left,
-                native_right = native_right)
-    chain.run()
-    return 0
   else:
-    # Path B: Native link only
-    LinkNative(inputs, output)
+    chain = DriverChain('', output, tng)
 
+  # If -arch is also specified, invoke pnacl-translate afterwards.
+  if arch_flag_given:
+    env.set('NATIVE_OBJECTS', *native_objects)
+    chain.add(DoTranslate, native_type)
+
+  chain.run()
   return 0
 
-def IsLib(arg):
-  return arg.startswith('-l')
-
-def IsFlag(arg):
-  return arg.startswith('-') and not IsLib(arg)
-
-def IsUndefMarker(arg):
-  return arg.startswith('--undefined=')
-
-def ExpandLibFlags(inputs):
-  for i in xrange(len(inputs)):
-    f = inputs[i]
-    if IsFlag(f):
-      continue
-    if IsLib(f):
-      inputs[i] = FindLib(f)
-
-def LocateLinkerScript():
-  ld_script = env.getone('LD_SCRIPT')
-  if not ld_script:
-    # No linker script specified
-    return
-
-  # See if it's an absolute or relative path
-  path = pathtools.normalize(ld_script)
-  if pathtools.exists(path):
-    env.set('LD_SCRIPT', path)
-    return
-
-  # Search for the script
-  search_dirs = [pathtools.normalize('.')] + env.get('SEARCH_DIRS')
-  path = FindFile([ld_script], search_dirs)
-  if not path:
-    Log.Fatal("Unable to find linker script '%s'", ld_script)
-
-  env.set('LD_SCRIPT', path)
-
-def FindFirstLinkerScriptInput(inputs):
-  for i in xrange(len(inputs)):
-    f = inputs[i]
-    if IsFlag(f):
-      continue
-    if FileType(f) == 'ldscript':
-      return (i, f)
-
-  return (None, None)
-
-def ExpandLinkerScripts(inputs):
-  while True:
-    # Find a ldscript in the input list
-    i, path = FindFirstLinkerScriptInput(inputs)
-
-    # If none, we are done.
-    if path is None:
-      break
-
-    new_inputs = ldtools.ParseLinkerScript(path)
-    ExpandLibFlags(new_inputs)
-    inputs = inputs[:i] + new_inputs + inputs[i+1:]
-
-  # Handle --undefined=sym
-  ret = []
+def SplitLinkLine(inputs):
+  """ Pull native objects (.o, .a) out of the input list.
+      These need special handling since they cannot be
+      encoded in the bitcode file.
+      (NOTE: native .so files do not need special handling,
+       because they can be encoded as dependencies in the bitcode)
+  """
+  normal = []
+  native = []
   for f in inputs:
-    if IsUndefMarker(f):
-      env.append('LD_FLAGS', f)
+    if ldtools.IsFlag(f):
+      normal.append(f)
+    elif IsNativeArchive(f) or IsNativeObject(f):
+      native.append(f)
     else:
-      ret.append(f)
+      normal.append(f)
+  return (normal, native)
 
-  return ret
-
-def IsBitcodeInput(f):
-  if IsFlag(f):
-    return False
-  # .pso files are not considered bitcode input because
-  # they are translated to .so before invoking ld
-  return IsBitcodeArchive(f) or FileType(f) == 'po'
-
-def RemoveBitcode(inputs):
-  # Library order is important. We need to reinsert the
-  # bitcode translation object in between the objects on
-  # the left and the objects/libraries on the right.
-  left = []
-  right = []
-  found_bc = False
+def HasBitcodeInputs(inputs):
   for f in inputs:
-    if IsBitcodeInput(f):
-      found_bc = True
+    if ldtools.IsFlag(f):
       continue
-    if not found_bc:
-      left.append(f)
-    else:
-      right.append(f)
+    elif IsBitcodeObject(f) or IsBitcodeArchive(f):
+      return True
+  return False
 
-  return (left,right)
-
-# Determine the kind of input files.
-# Make sure the input files are valid.
-# Make sure the input files have matching architectures.
-# Returns (has_native, has_bitcode)
-def AnalyzeInputs(inputs):
-  has_native = False
-  has_bitcode = False
+def CheckInputsArch(inputs):
   count = 0
-
   for f in inputs:
-    if IsFlag(f):
+    if ldtools.IsFlag(f):
       continue
-    elif IsBitcodeInput(f):
-      has_bitcode |= True
+    elif IsBitcodeObject(f) or IsBitcodeDSO(f) or IsBitcodeArchive(f):
+      pass
     elif IsNative(f):
       ArchMerge(f, True)
-      has_native |= True
-    elif IsNativeArchive(f):
-      ArchMerge(f, True)
-      has_native |= True
-    elif FileType(f) == 'pso':
-      pass
     else:
       Log.Fatal("%s: Unexpected type of file for linking (%s)",
                 pathtools.touser(f), FileType(f))
@@ -471,127 +363,6 @@ def AnalyzeInputs(inputs):
 
   if count == 0:
     Log.Fatal("no input files")
-
-  return (has_native, has_bitcode)
-
-def DetectArch(inputs):
-  # Scan the inputs looking for a native file (.o or .so).
-  # At this point, library searches can only use the directories passed in
-  # with -L. Since we can't search the arch-specific standard search
-  # directories, there may be missing libraries, which we must ignore.
-  search_dirs = env.get('SEARCH_DIRS_USER')
-
-  for f in inputs:
-    if IsFlag(f):
-      continue
-    if IsLib(f):
-      f = FindLib(f, search_dirs, must_find = False)
-      if not f:
-        # Ignore missing libraries
-        continue
-
-    # TODO(pdox): If needed, we could also grab ARCH from linker scripts,
-    # either directly (using OUTPUT_ARCH or OUTPUT_FORMAT) or
-    # indirectly by expanding the linker script's INPUTS/GROUP.
-    if IsNative(f) or IsNativeArchive(f):
-      ArchMerge(f, True)
-      return
-
-  # If we've reached here, there are no externally-specified native objects.
-  # It should be safe to assume the default neutral architecture.
-  SetArch('X8632')
-  return
-
-
-def RunLDSRPC():
-  CheckTranslatorPrerequisites()
-  # The "main" input file is the application's combined object file.
-  all_inputs = env.get('inputs')
-
-  #############################################################
-  # This is kind of arbitrary, but we need to treat one file as
-  # the "main" file for sandboxed LD. When this code moves into
-  # pnacl-translate, the selection of the main_input will be the
-  # object emitted by llc. This make a lot more sense.
-  objects = filter(lambda u: u.endswith('.o'), all_inputs)
-  if len(objects) == 0:
-    print "Sandboxed LD requires at least one .o file"
-  main_input = objects[0]
-  #############################################################
-
-  outfile = env.getone('output')
-
-  assert(main_input != '')
-  files = LinkerFiles(all_inputs)
-  ld_flags = env.get('LD_FLAGS') + env.get('LD_BFD_FLAGS')
-
-  # In this mode, we assume we only use the builtin linker script.
-  assert(env.getone('LD_SCRIPT') == '')
-  script = MakeSelUniversalScriptForLD(ld_flags,
-                                       main_input,
-                                       files,
-                                       outfile)
-
-  RunWithLog('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ' +
-             '${SEL_UNIVERSAL_FLAGS} -- ${LD_SRPC}',
-             stdin=script, echo_stdout = False, echo_stderr = False)
-
-def MakeSelUniversalScriptForFile(filename):
-  """ Return sel_universal script text for sending a commandline argument
-      representing an input file to LD.nexe. """
-  script = []
-  basename = pathtools.basename(filename)
-  # A nice name for making a sel_universal variable.
-  # Hopefully this does not clash...
-  nicename = basename.replace('.','_').replace('-','_')
-  script.append('echo "adding %s"' % basename)
-  script.append('readonly_file %s %s' % (nicename, filename))
-  script.append('rpc AddFile s("%s") h(%s) *' % (basename, nicename))
-  script.append('rpc AddArg s("%s") *' % basename)
-  return script
-
-
-def MakeSelUniversalScriptForLD(ld_flags,
-                                main_input,
-                                files,
-                                outfile):
-  """ Return sel_universal script text for invoking LD.nexe with the
-      given ld_flags, main_input (which is treated specially), and
-      other input files. The output will be written to outfile.  """
-  script = []
-
-  # Go through all the arguments and add them.
-  # Based on the format of RUN_LD, the order of arguments is:
-  # ld_flags, then input files (which are more sensitive to order).
-  # Omit the "-o" for output so that it will use "a.out" internally.
-  # We will take the fd from "a.out" and write it to the proper -o filename.
-  for flag in ld_flags:
-    script.append('rpc AddArg s("%s") *' % flag)
-    script.append('')
-
-  # We need to virtualize these files.
-  for f in files:
-    if f == main_input:
-      # Reload the temporary main_input object file into a new shmem region.
-      basename = pathtools.basename(f)
-      script.append('file_size %s in_size' % f)
-      script.append('shmem in_file in_addr ${in_size}')
-      script.append('load_from_file %s ${in_addr} 0 ${in_size}' % f)
-      script.append('rpc AddFileWithSize s("%s") h(in_file) i(${in_size}) *' %
-                    basename)
-      script.append('rpc AddArg s("%s") *' % basename)
-    else:
-      script += MakeSelUniversalScriptForFile(f)
-    script.append('')
-
-  script.append('rpc Link * h() i()')
-  script.append('set_variable out_file ${result0}')
-  script.append('set_variable out_size ${result1}')
-  script.append('map_shmem ${out_file} out_addr')
-  script.append('save_to_file %s ${out_addr} 0 ${out_size}' % outfile)
-  script.append('echo "ld complete"')
-  script.append('')
-  return '\n'.join(script)
 
 def DoOPT(infile, outfile):
   opt_flags = env.get('OPT_FLAGS')
@@ -601,15 +372,14 @@ def DoStrip(infile, outfile):
   strip_flags = env.get('STRIP_FLAGS')
   RunDriver('pnacl-strip', strip_flags + [ infile, '-o', outfile ])
 
-def DoTranslate(infile, outfile, mode = ''):
-  args = [infile, '-o', outfile]
-  if mode:
-    args += [mode]
-  args += env.get('PNACL_TRANSLATE_FLAGS')
+def DoTranslate(infile, outfile):
+  args = env.get('PNACL_TRANSLATE_FLAGS')
+  args += ['-Wl,'+s for s in env.get('LD_FLAGS_NATIVE')]
+  if infile:
+    args += [infile]
+  args += [s for s in env.get('NATIVE_OBJECTS')]
+  args += ['-o', outfile]
   RunDriver('pnacl-translate', args)
-
-def DoNativeLink(infile, outfile, native_left, native_right):
-  LinkNative(native_left + [infile] + native_right, outfile)
 
 def LinkBC(inputs, output):
   '''Input: a bunch of bc/o/lib input files
@@ -689,7 +459,7 @@ def TranslateInputs(inputs):
 
   for i in xrange(len(inputs)):
     f = inputs[i]
-    if IsFlag(f):
+    if ldtools.IsFlag(f):
       continue
     if FileType(f) == 'pso':
       inputs[i] = TranslatePSO(arch, f)
@@ -788,88 +558,6 @@ class FileLockUnix(object):
       fcntl.lockf(self.fd, fcntl.LOCK_UN)
       self.fd.close()
     self.fd = None
-
-# Final native linking step
-# TODO(pdox): Move this into pnacl-translator.
-def LinkNative(inputs, output):
-  env.push()
-  env.set('inputs', *inputs)
-  env.set('output', output)
-
-  if env.getbool('SANDBOXED') and env.getbool('SRPC'):
-    RunLDSRPC()
-  else:
-    RunWithLog('${RUN_LD}')
-
-  env.pop()
-  return
-
-def FindFile(search_names, search_dirs):
-  for curdir in search_dirs:
-    for name in search_names:
-      path = pathtools.join(curdir, name)
-      if pathtools.exists(path):
-        return path
-  return None
-
-def FindLib(arg, searchdirs = None, must_find = True):
-  """Returns the full pathname for the library input.
-     For example, name might be "-lc" or "-lm".
-     Returns None if the library is not found.
-  """
-  assert(IsLib(arg))
-  name = arg[len('-l'):]
-  is_whole_name = (name[0] == ':')
-
-  if searchdirs is None:
-    searchdirs = env.get('SEARCH_DIRS')
-
-  searchnames = []
-  if is_whole_name:
-    # -l:filename  (search for the filename)
-    name = name[1:]
-    searchnames.append(name)
-
-    # .pso may exist in lieu of .so, or vice versa.
-    if '.so' in name:
-      searchnames.append(name.replace('.so', '.pso'))
-    if '.pso' in name:
-      searchnames.append(name.replace('.pso', '.so'))
-  else:
-    # -lfoo
-    shared_ok = not env.getbool('STATIC')
-    if shared_ok:
-      extensions = [ 'pso', 'so', 'a' ]
-    else:
-      extensions = [ 'a' ]
-    for ext in extensions:
-      searchnames.append('lib' + name + '.' + ext)
-
-  foundpath = FindFile(searchnames, searchdirs)
-  if foundpath:
-    return foundpath
-
-  if must_find:
-    if is_whole_name:
-      label = name
-    else:
-      label = arg
-    Log.Fatal("Cannot find '%s'", label)
-
-  return None
-
-# Given linker arguments (including -L, -l, and filenames),
-# returns the list of files which are pulled by the linker.
-def LinkerFiles(args):
-  ret = []
-  for f in args:
-    if IsFlag(f):
-      continue
-    else:
-      if not pathtools.exists(f):
-        Log.Fatal("Unable to open '%s'", pathtools.touser(f))
-      ret.append(f)
-  return ret
 
 if __name__ == "__main__":
   DriverMain(main)
