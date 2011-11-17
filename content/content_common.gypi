@@ -123,6 +123,8 @@
     'common/font_list_mac.mm',
     'common/font_list_win.cc',
     'common/font_list_x11.cc',
+    'common/gamepad_hardware_buffer.h',
+    'common/gamepad_messages.h',
     'common/geolocation_messages.h',
     'common/geoposition.cc',
     'common/geoposition.h',
