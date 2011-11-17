@@ -79,6 +79,10 @@ const int kInfolistHideDelayMilliSeconds = 500;
 // VerticalCandidateLabel is used for rendering candidate text in
 // the vertical candidate window.
 class VerticalCandidateLabel : public views::Label {
+ public:
+  VerticalCandidateLabel() {}
+
+ private:
   virtual ~VerticalCandidateLabel() {}
 
   // Returns the preferred size, but guarantees that the width has at
@@ -97,6 +101,8 @@ class VerticalCandidateLabel : public views::Label {
     }
     return size;
   }
+
+  DISALLOW_COPY_AND_ASSIGN(VerticalCandidateLabel);
 };
 
 // Wraps the given view with some padding, and returns it.
@@ -368,6 +374,8 @@ class HidableArea : public views::View {
  private:
   scoped_ptr<views::View> contents_;
   scoped_ptr<views::View> place_holder_;
+
+  DISALLOW_COPY_AND_ASSIGN(HidableArea);
 };
 
 // InformationTextArea is a HidableArea having a single Label in it.
@@ -410,6 +418,8 @@ class InformationTextArea : public HidableArea {
  private:
   views::Label* label_;
   int minWidth_;
+
+  DISALLOW_COPY_AND_ASSIGN(InformationTextArea);
 };
 
 }  // namespace
@@ -649,6 +659,8 @@ class CandidateView : public views::View {
   // The infolist icon.
   views::Label* infolist_label_;
   bool infolist_icon_enabled_;
+
+  DISALLOW_COPY_AND_ASSIGN(CandidateView);
 };
 
 class InfolistView;
@@ -698,6 +710,8 @@ class InfolistWindowView : public views::View {
   bool visible_;
 
   base::OneShotTimer<InfolistWindowView> show_hide_timer_;
+
+  DISALLOW_COPY_AND_ASSIGN(InfolistWindowView);
 };
 
 // InfolistRow renderes a row of a infolist.
@@ -737,8 +751,9 @@ class InfolistView : public views::View {
   views::Label* title_label_;
   // The description label.
   views::Label* description_label_;
-};
 
+  DISALLOW_COPY_AND_ASSIGN(InfolistView);
+};
 
 // The implementation of CandidateWindowController.
 // CandidateWindowController controls the CandidateWindow.
@@ -788,6 +803,8 @@ class CandidateWindowController::Impl : public CandidateWindowView::Observer,
   // This is the outer frame of the infolist window view. The frame will
   // own |infolist_window_|.
   scoped_ptr<views::Widget> infolist_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(Impl);
 };
 
 CandidateView::CandidateView(
