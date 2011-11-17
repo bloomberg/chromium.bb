@@ -935,6 +935,7 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
       base::Base64Encode(state, &encoded_state);
       VLOG(1) << "Read notification state: " << encoded_state;
     }
+    allstatus_.SetUniqueId(unique_id);
   } else {
     LOG(ERROR) << "Could not read notification unique ID/state";
   }

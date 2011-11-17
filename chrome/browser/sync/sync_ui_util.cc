@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
@@ -491,6 +492,7 @@ void ConstructAboutInformation(ProfileSyncService* service,
                        ProfileSyncService::BuildSyncStatusSummaryText(
                        full_status.summary));
 
+    strings->SetString("version", GetVersionString());
     strings->Set("authenticated",
                  new base::FundamentalValue(full_status.authenticated));
     strings->SetString("auth_problem",
@@ -505,6 +507,10 @@ void ConstructAboutInformation(ProfileSyncService* service,
                                     service->sync_initialized());
     sync_ui_util::AddBoolSyncDetail(details, "Sync Setup Has Completed",
                                     service->HasSyncSetupCompleted());
+    sync_ui_util::AddStringSyncDetails(
+        details,
+        "Client ID",
+        full_status.unique_id.empty() ? "none" : full_status.unique_id);
     sync_ui_util::AddBoolSyncDetail(details,
                                     "Server Up",
                                     full_status.server_up);
@@ -661,6 +667,30 @@ void ConstructAboutInformation(ProfileSyncService* service,
       }
     }
   }
+}
+
+std::string GetVersionString() {
+  // Build a version string that matches MakeUserAgentForSyncApi with the
+  // addition of channel info and proper OS names.
+  chrome::VersionInfo chrome_version;
+  if (!chrome_version.is_valid())
+    return "invalid";
+  // GetVersionStringModifier returns empty string for stable channel or
+  // unofficial builds, the channel string otherwise. We want to have "-devel"
+  // for unofficial builds only.
+  std::string version_modifier =
+      chrome::VersionInfo::GetVersionStringModifier();
+  if (version_modifier.empty()) {
+    if (chrome::VersionInfo::GetChannel() !=
+            chrome::VersionInfo::CHANNEL_STABLE) {
+      version_modifier = "-devel";
+    }
+  } else {
+    version_modifier = " " + version_modifier;
+  }
+  return chrome_version.Name() + " " + chrome_version.OSType() + " " +
+      chrome_version.Version() + " (" + chrome_version.LastChange() + ")" +
+      version_modifier;
 }
 
 }  // namespace sync_ui_util
