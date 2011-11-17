@@ -767,7 +767,7 @@ wlsc_buffer_post_release(struct wl_buffer *buffer)
 		return;
 
 	assert(buffer->resource.client != NULL);
-	wl_resource_post_event(&buffer->resource, WL_BUFFER_RELEASE);
+	wl_resource_queue_event(&buffer->resource, WL_BUFFER_RELEASE);
 }
 
 WL_EXPORT void
