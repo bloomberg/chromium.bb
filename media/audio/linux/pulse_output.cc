@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/pulse/pulse_output.h"
+#include "media/audio/linux/pulse_output.h"
 
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/audio_util.h"
-#if defined(OS_LINUX)
 #include "media/audio/linux/audio_manager_linux.h"
-#elif defined(OS_OPENBSD)
-#include "media/audio/openbsd/audio_manager_openbsd.h"
-#endif
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
 
@@ -132,7 +128,7 @@ void PulseAudioOutputStream::WriteRequestCallback(
 }
 
 PulseAudioOutputStream::PulseAudioOutputStream(const AudioParameters& params,
-                                               AudioManagerPulse* manager,
+                                               AudioManagerLinux* manager,
                                                MessageLoop* message_loop)
     : channel_layout_(params.channel_layout),
       channel_count_(ChannelLayoutToChannelCount(channel_layout_)),
@@ -160,7 +156,7 @@ PulseAudioOutputStream::PulseAudioOutputStream(const AudioParameters& params,
 
 PulseAudioOutputStream::~PulseAudioOutputStream() {
   // All internal structures should already have been freed in Close(),
-  // which calls AudioManagerPulse::Release which deletes this object.
+  // which calls AudioManagerLinux::Release which deletes this object.
   DCHECK(!playback_handle_);
   DCHECK(!pa_context_);
   DCHECK(!pa_mainloop_);
