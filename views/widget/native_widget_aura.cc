@@ -440,6 +440,7 @@ void NativeWidgetAura::Maximize() {
 }
 
 void NativeWidgetAura::Minimize() {
+  // No minimized window for aura. crbug.com/104571.
   NOTREACHED();
 }
 
