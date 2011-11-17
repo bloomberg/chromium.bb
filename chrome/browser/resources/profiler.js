@@ -541,6 +541,24 @@ var MainView = (function() {
    */
   var PROCESS_DATA_DELAY_MS = 500;
 
+  /**
+   * The initial number of rows to display (the rest are hidden) when no
+   * grouping is selected. We use a higher limit than when grouping is used
+   * since there is a lot of vertical real estate.
+   */
+  var INITIAL_UNGROUPED_ROW_LIMIT = 30;
+
+  /**
+   * The initial number of rows to display (rest are hidden) for each group.
+   */
+  var INITIAL_GROUP_ROW_LIMIT = 10;
+
+  /**
+   * The number of extra rows to show/hide when clicking the "Show more" or
+   * "Show less" buttons.
+   */
+  var LIMIT_INCREMENT = 10;
+
   // --------------------------------------------------------------------------
   // General utility functions
   // --------------------------------------------------------------------------
@@ -885,7 +903,9 @@ var MainView = (function() {
    * Renders the information for a particular group.
    */
   function drawGroup(parent, groupData, columns,
-                     columnOnClickHandler, currentSortKeys) {
+                     columnOnClickHandler, currentSortKeys, displaySettings,
+                     expandHandler, shrinkHandler, showAllHandler,
+                     showNoneHandler) {
     var div = addNode(parent, 'div');
     div.className = 'group-container';
 
@@ -894,7 +914,9 @@ var MainView = (function() {
     var table = addNode(div, 'table');
 
     drawDataTable(table, groupData, columns, columnOnClickHandler,
-                  currentSortKeys);
+                  currentSortKeys, displaySettings.limit,
+                  expandHandler, shrinkHandler, showAllHandler,
+                  showNoneHandler);
   }
 
   /**
@@ -926,14 +948,50 @@ var MainView = (function() {
    * Renders a table which summarizes all |column| fields for |data|.
    */
   function drawDataTable(table, data, columns, columnOnClickHandler,
-                         currentSortKeys) {
+                         currentSortKeys, limit, expandHandler, shrinkHandler,
+                         showAllHandler, showNoneHandler) {
     table.className = 'results-table';
     var thead = addNode(table, 'thead');
     var tbody = addNode(table, 'tbody');
 
     drawAggregateRow(thead, data.aggregates, columns);
     drawTableHeader(thead, columns, columnOnClickHandler, currentSortKeys);
-    drawTableBody(tbody, data.rows, columns);
+    drawTableBody(tbody, data.rows, columns, limit);
+    drawTruncationRow(tbody, data.rows.length, limit, columns.length,
+                      expandHandler, shrinkHandler, showAllHandler,
+                      showNoneHandler);
+  }
+
+  /**
+   * Renders a row which describes how many rows the table has, how many are
+   * currently hidden, and a set of buttons to show more.
+   */
+  function drawTruncationRow(tbody, numRows, limit, numColumns,
+                             expandHandler, shrinkHandler, showAllHandler,
+                             showNoneHandler) {
+    var numHiddenRows = Math.max(numRows - limit, 0);
+    var numVisibleRows = numRows - numHiddenRows;
+
+    var tr = addNode(tbody, 'tr');
+    tr.className = 'truncation-row';
+    var td = addNode(tr, 'td');
+    td.colSpan = numColumns;
+
+    addText(td, numRows + ' rows');
+    if (numHiddenRows > 0) {
+      var s = addNode(td, 'span', ' (' + numHiddenRows + ' hidden) ');
+      s.style.color = 'red';
+    }
+
+    if (numVisibleRows > LIMIT_INCREMENT)
+      addNode(td, 'button', 'Show less').onclick = shrinkHandler;
+    if (numVisibleRows > 0)
+      addNode(td, 'button', 'Show none').onclick = showNoneHandler;
+
+    if (numHiddenRows > 0) {
+      addNode(td, 'button', 'Show more').onclick = expandHandler;
+      addNode(td, 'button', 'Show all').onclick = showAllHandler;
+    }
   }
 
   function drawTableHeader(thead, columns, columnOnClickHandler,
@@ -1023,8 +1081,8 @@ var MainView = (function() {
     }
   }
 
-  function drawTableBody(tbody, rows, columns) {
-    for (var i = 0; i < rows.length; ++i) {
+  function drawTableBody(tbody, rows, columns, limit) {
+    for (var i = 0; i < rows.length && i < limit; ++i) {
       var e = rows[i];
 
       var tr = addNode(tbody, 'tr');
@@ -1326,10 +1384,61 @@ var MainView = (function() {
 
       // Draw each group.
       for (var i = 0; i < this.sortedGroupKeys_.length; ++i) {
-        var groupData = this.groupedData_[this.sortedGroupKeys_[i]];
-        drawGroup(parent, groupData, columns,
-                  columnOnClickHandler, this.currentSortKeys_);
+        var k = this.sortedGroupKeys_[i];
+        drawGroup(parent,
+                  this.groupedData_[k],
+                  columns,
+                  columnOnClickHandler,
+                  this.currentSortKeys_,
+                  this.getGroupDisplaySettings_(k),
+                  this.changeGroupDisplayLimit_.bind(this, k, LIMIT_INCREMENT),
+                  this.changeGroupDisplayLimit_.bind(this, k, -LIMIT_INCREMENT),
+                  this.changeGroupDisplayLimit_.bind(this, k, Infinity),
+                  this.changeGroupDisplayLimit_.bind(this, k, -Infinity));
       }
+    },
+
+    /**
+     * Adjusts the row limit for group |groupKey| by |delta|.
+     */
+    changeGroupDisplayLimit_: function(groupKey, delta) {
+      // Get the current settings for this group.
+      var settings = this.getGroupDisplaySettings_(groupKey, true);
+
+      // Compute the adjusted limit.
+      var newLimit = settings.limit;
+      var totalNumRows = this.groupedData_[groupKey].rows.length;
+      newLimit = Math.min(totalNumRows, newLimit);
+      newLimit += delta;
+      newLimit = Math.max(0, newLimit);
+
+      // Update the settings with the new limit.
+      settings.limit = newLimit;
+
+      // TODO(eroman): It isn't necessary to redraw *all* the data. Really we
+      // just need to insert the missing rows (everything else stays the same)!
+      this.redrawData_();
+    },
+
+    /**
+     * Returns the rendering settings for group |groupKey|. This includes things
+     * like how many rows to display in the table.
+     */
+    getGroupDisplaySettings_: function(groupKey, opt_create) {
+      var settings = this.groupDisplaySettings_[groupKey];
+      if (!settings) {
+        // If we don't have any settings for this group yet, create some
+        // default ones.
+        if (groupKey == '[]') {
+          // (groupKey of '[]' is what we use for ungrouped data).
+          settings = {limit: INITIAL_UNGROUPED_ROW_LIMIT};
+        } else {
+          settings = {limit: INITIAL_GROUP_ROW_LIMIT};
+        }
+        if (opt_create)
+          this.groupDisplaySettings_[groupKey] = settings;
+      }
+      return settings;
     },
 
     init_: function() {
@@ -1351,6 +1460,8 @@ var MainView = (function() {
       this.filteredData_ = [];
       this.groupedData_ = {};
       this.sortedGroupKeys_ = [];
+
+      this.groupDisplaySettings_ = {};
 
       this.fillSelectionCheckboxes_($(COLUMN_TOGGLES_CONTAINER_ID));
       this.fillMergeCheckboxes_($(COLUMN_MERGE_TOGGLES_CONTAINER_ID));
