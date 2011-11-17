@@ -126,7 +126,7 @@ class CBuildBotTest(mox.MoxTestBase):
                            print_cmd=False)
     shutil.rmtree(path_to_results)
     self.mox.ReplayAll()
-    commands.ArchiveTestResults(buildroot, test_results_dir)
+    commands.ArchiveTestResults(buildroot, test_results_dir, '')
     self.mox.VerifyAll()
 
   def testGenerateMinidumpStackTraces(self):

@@ -457,9 +457,9 @@ class VMTestStageTest(AbstractStageTest):
     self.fake_chroot_results_dir = '/my/fake_chroot/tmp/fake_results_dir'
     self.mox.StubOutWithMock(commands, 'SetNiceness')
     commands.SetNiceness(foreground=True)
-    self.mox.StubOutWithMock(commands, 'BuildAutotestTarball')
-    commands.BuildAutotestTarball(mox.IgnoreArg(), mox.IgnoreArg(),
-      mox.IgnoreArg())
+    self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
+    commands.ArchiveTestResults(self.build_root, self.fake_results_dir,
+                                prefix='')
 
   def ConstructStage(self):
     return stages.VMTestStage(self.bot_id, self.options, self.build_config,
@@ -473,12 +473,11 @@ class VMTestStageTest(AbstractStageTest):
 
     self.mox.StubOutWithMock(cros_lib, 'OldRunCommand')
     self.mox.StubOutWithMock(commands, 'RunTestSuite')
-    self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
-    self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
+    self.mox.StubOutWithMock(commands, 'CreateTestRoot')
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
     tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
-    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
+    commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),
@@ -487,7 +486,6 @@ class VMTestStageTest(AbstractStageTest):
                           build_config=self.bot_id,
                           nplus1_archive_dir=self.fake_results_dir,
                           test_type=constants.FULL_AU_TEST_TYPE)
-    commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -500,12 +498,11 @@ class VMTestStageTest(AbstractStageTest):
     self.build_config['vm_tests'] = constants.SIMPLE_AU_TEST_TYPE
 
     self.mox.StubOutWithMock(commands, 'RunTestSuite')
-    self.mox.StubOutWithMock(commands, 'ArchiveTestResults')
-    self.mox.StubOutWithMock(stages.VMTestStage, '_CreateTestRoot')
+    self.mox.StubOutWithMock(commands, 'CreateTestRoot')
     self.mox.StubOutWithMock(tempfile, 'mkdtemp')
 
     tempfile.mkdtemp(prefix='cbuildbot').AndReturn(self.fake_results_dir)
-    stages.VMTestStage._CreateTestRoot().AndReturn(self.fake_results_dir)
+    commands.CreateTestRoot(self.build_root).AndReturn(self.fake_results_dir)
     commands.RunTestSuite(self.build_root,
                           self.build_config['board'],
                           mox.IgnoreArg(),
@@ -514,7 +511,6 @@ class VMTestStageTest(AbstractStageTest):
                           build_config=self.bot_id,
                           nplus1_archive_dir=self.fake_results_dir,
                           test_type=constants.SIMPLE_AU_TEST_TYPE)
-    commands.ArchiveTestResults(self.build_root, self.fake_results_dir)
 
     self.mox.ReplayAll()
     self.RunStage()
@@ -802,6 +798,9 @@ class UprevStageTest(AbstractStageTest):
     self.RunStage()
     self.mox.VerifyAll()
 
+def _DoSteps(steps):
+  for step in steps:
+    step()
 
 class BuildTargetStageTest(AbstractStageTest):
 
@@ -829,6 +828,12 @@ class BuildTargetStageTest(AbstractStageTest):
     self.mox.StubOutWithMock(commands, 'BuildImage')
     self.mox.StubOutWithMock(commands, 'BuildVMImageForTesting')
     self.mox.StubOutWithMock(bs.BuilderStage, '_GetPortageEnvVar')
+
+    self.mox.StubOutWithMock(background, 'RunParallelSteps')
+    background.RunParallelSteps(mox.IgnoreArg()).WithSideEffects(_DoSteps)
+
+    self.mox.StubOutWithMock(commands, 'BuildAutotestTarball')
+    self.mox.StubOutWithMock(os, 'rename')
 
   def ConstructStage(self):
     return stages.BuildTargetStage(self.bot_id,

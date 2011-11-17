@@ -489,18 +489,55 @@ class BuildTargetStage(bs.BuilderStage):
 
   option_name = 'build'
 
+  def __init__(self, bot_id, options, build_config):
+    super(BuildTargetStage, self).__init__(bot_id, options, build_config)
+    self._env = {}
+    if self._build_config.get('useflags'):
+      self._env['USE'] = ' '.join(self._build_config['useflags'])
+
+    if self._options.chrome_root:
+      self._env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
+
+    if self._options.clobber:
+      self._env['IGNORE_PREFLIGHT_BINHOST'] = '1'
+
+    self._autotest_tarball = None
+
+  def _BuildImages(self):
+    # We only build base, dev, and test images from this stage.
+    images_can_build = set(['base', 'dev', 'test'])
+    images_to_build = set(self._build_config['images']).intersection(
+        images_can_build)
+
+    commands.BuildImage(self._build_root,
+                        self._build_config['board'],
+                        list(images_to_build),
+                        extra_env=self._env)
+
+    if self._build_config['vm_tests']:
+      commands.BuildVMImageForTesting(self._build_root,
+                                      self._build_config['board'],
+                                      extra_env=self._env)
+
+    # Update link to latest image.
+    latest_image = os.readlink(self.GetImageDirSymlink('latest'))
+    cbuildbot_image_link = self.GetImageDirSymlink()
+    if os.path.lexists(cbuildbot_image_link):
+      os.remove(cbuildbot_image_link)
+    os.symlink(latest_image, cbuildbot_image_link)
+
+
+  def _BuildAutotestTarball(self):
+    # Build autotest tarball, which is used in archive step. This is generated
+    # here because the test directory is modified during the test phase, and we
+    # don't want to include the modifications in the tarball.
+    commands.BuildAutotestTarball(self._build_root,
+                                  self._build_config['board'],
+                                  self._autotest_tarball)
+
   def _PerformStage(self):
     build_autotest = (self._build_config['build_tests'] and
                       self._options.tests)
-    env = {}
-    if self._build_config.get('useflags'):
-      env['USE'] = ' '.join(self._build_config['useflags'])
-
-    if self._options.chrome_root:
-      env['CHROME_ORIGIN'] = 'LOCAL_SOURCE'
-
-    if self._options.clobber:
-      env['IGNORE_PREFLIGHT_BINHOST'] = '1'
 
     # If we are using ToT toolchain, don't attempt to update
     # the toolchain during build_packages.
@@ -513,30 +550,51 @@ class BuildTargetStage(bs.BuilderStage):
                    fast=self._build_config['fast'],
                    usepkg=self._build_config['usepkg_build_packages'],
                    nowithdebug=self._build_config['nowithdebug'],
-                   extra_env=env)
+                   extra_env=self._env)
 
-    # We only build base, dev, and test images from this stage.
-    images_can_build = set(['base', 'dev', 'test'])
-    images_to_build = set(self._build_config['images']).intersection(
-        images_can_build)
+    # Build images and autotest tarball in parallel.
+    steps = []
+    if build_autotest and self._build_config['archive_build_debug']:
+      self._autotest_tarball = os.path.join(self._build_root,
+                                            'autotest.tar.bz2')
+      steps.append(self._BuildAutotestTarball)
+    steps.append(self._BuildImages)
+    background.RunParallelSteps(steps)
 
-    commands.BuildImage(self._build_root,
-                        self._build_config['board'],
-                        list(images_to_build),
-                        extra_env=env)
+    # Rename autotest tarball into place.
+    if build_autotest and self._build_config['archive_build_debug']:
+      os.rename(self._autotest_tarball,
+                os.path.join(self.GetImageDirSymlink(), 'autotest.tar.bz2'))
 
-    if self._build_config['vm_tests']:
-      commands.BuildVMImageForTesting(self._build_root,
-                                      self._build_config['board'],
-                                      extra_env=env)
 
-    # Update link to latest image.
-    latest_image = os.readlink(self.GetImageDirSymlink('latest'))
-    cbuildbot_image_link = self.GetImageDirSymlink()
-    if os.path.lexists(cbuildbot_image_link):
-      os.remove(cbuildbot_image_link)
+class ChromeTestStage(bs.BuilderStage):
+  """Run chrome tests in a virtual machine."""
 
-    os.symlink(latest_image, cbuildbot_image_link)
+  option_name = 'tests'
+
+  def __init__(self, bot_id, options, build_config, archive_stage):
+    super(ChromeTestStage, self).__init__(bot_id, options, build_config)
+    self._archive_stage = archive_stage
+
+  def _PerformStage(self):
+    test_results_dir = commands.CreateTestRoot(self._build_root)
+    try:
+      commands.RunChromeSuite(self._build_root,
+                              self._build_config['board'],
+                              self.GetImageDirSymlink(),
+                              os.path.join(test_results_dir,
+                                           'chrome_results'))
+    except commands.TestException:
+      raise bs.NonBacktraceBuildException()  # Suppress redundant output.
+    finally:
+      test_tarball = None
+      if test_results_dir:
+        test_tarball = commands.ArchiveTestResults(self._build_root,
+                                                   test_results_dir,
+                                                   prefix='chrome_')
+
+      if self._archive_stage:
+        self._archive_stage.TestResultsReady(test_tarball)
 
 
 class UnitTestStage(bs.BuilderStage):
@@ -561,62 +619,31 @@ class VMTestStage(bs.BuilderStage):
     super(VMTestStage, self).__init__(bot_id, options, build_config)
     self._archive_stage = archive_stage
 
-  def _CreateTestRoot(self):
-    """Returns a temporary directory for test results in chroot.
-
-    Returns:
-      Returns relative path from chroot rather than whole path.
-    """
-    # Create test directory within tmp in chroot.
-    chroot = os.path.join(self._build_root, 'chroot')
-    chroot_tmp = os.path.join(chroot, 'tmp')
-    test_root = tempfile.mkdtemp(prefix='cbuildbot', dir=chroot_tmp)
-
-    # Relative directory.
-    (_, _, relative_path) = test_root.partition(chroot)
-    return relative_path
-
   def _PerformStage(self):
     # VM tests should run with higher priority than other tasks
     # because they are usually the bottleneck, and don't use much CPU.
     commands.SetNiceness(foreground=True)
 
-    # Build autotest tarball, which is used in archive step.
-    if self._build_config['archive_build_debug']:
-      filename = None
-      try:
-        filename = commands.BuildAutotestTarball(self._build_root,
-                                                 self._build_config['board'],
-                                                 self.GetImageDirSymlink())
-      finally:
-        if self._archive_stage:
-          self._archive_stage.AutotestTarballReady(filename)
-
     # These directories are used later to archive test artifacts.
-    test_results_dir = None
     payloads_dir = None
+    test_results_dir = None
+
     try:
-      if self._build_config['vm_tests'] and self._options.tests:
+      if self._options.tests:
         # Payloads dir is not in the chroot as ctest archives them outside of
         # the chroot.
         payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')
+        test_results_dir = commands.CreateTestRoot(self._build_root)
 
-        test_results_dir = self._CreateTestRoot()
-        commands.RunTestSuite(self._build_root,
-                              self._build_config['board'],
-                              self.GetImageDirSymlink(),
-                              os.path.join(test_results_dir,
-                                           'test_harness'),
-                              test_type=self._build_config['vm_tests'],
-                              nplus1_archive_dir=payloads_dir,
-                              build_config=self._bot_id)
-
-        if self._build_config['chrome_tests']:
-          commands.RunChromeSuite(self._build_root,
-                                  self._build_config['board'],
-                                  self.GetImageDirSymlink(),
-                                  os.path.join(test_results_dir,
-                                               'chrome_results'))
+        if self._build_config['vm_tests']:
+          commands.RunTestSuite(self._build_root,
+                                self._build_config['board'],
+                                self.GetImageDirSymlink(),
+                                os.path.join(test_results_dir,
+                                             'test_harness'),
+                                test_type=self._build_config['vm_tests'],
+                                nplus1_archive_dir=payloads_dir,
+                                build_config=self._bot_id)
 
     except commands.TestException:
       raise bs.NonBacktraceBuildException()  # Suppress redundant output.
@@ -624,7 +651,8 @@ class VMTestStage(bs.BuilderStage):
       test_tarball = None
       if test_results_dir:
         test_tarball = commands.ArchiveTestResults(self._build_root,
-                                                   test_results_dir)
+                                                   test_results_dir,
+                                                   prefix='')
 
       if self._archive_stage:
         self._archive_stage.UpdatePayloadsReady(payloads_dir)
@@ -843,13 +871,17 @@ class ArchiveStage(NonHaltingBuilderStage):
 
   def _GetTestResults(self):
     """Get the path to the test results tarball."""
-    cros_lib.Info('Waiting for test results dir...')
-    test_tarball = self._test_results_queue.get()
-    if test_tarball:
-      cros_lib.Info('Found test results tarball at %s...' % test_tarball)
-    else:
-      cros_lib.Info('No test results.')
-    return test_tarball
+    num_test_results = (bool(self._build_config['vm_tests']) +
+                        bool(self._build_config['chrome_tests']))
+    for _ in range(num_test_results):
+      cros_lib.Info('Waiting for test results dir...')
+      test_tarball = self._test_results_queue.get()
+      if test_tarball:
+        cros_lib.Info('Found test results tarball at %s...' % test_tarball)
+      else:
+        cros_lib.Info('No test results.')
+        return
+      yield test_tarball
 
   def _SetupArchivePath(self):
     """Create a fresh directory for archiving a build."""
@@ -895,8 +927,7 @@ class ArchiveStage(NonHaltingBuilderStage):
 
     def UploadTestResults():
       """Upload test results when they are ready."""
-      test_results = self._GetTestResults()
-      if test_results:
+      for test_results in self._GetTestResults():
         if self._WaitForBreakpadSymbols():
           filenames = commands.GenerateMinidumpStackTraces(buildroot,
                                                            board, test_results,
@@ -955,11 +986,6 @@ class ArchiveStage(NonHaltingBuilderStage):
     def ArchiveRegularImages():
       """Build and archive image.zip and the hwqual image."""
 
-      if config['archive_build_debug']:
-        # Wait for the autotest tarball to be ready. This tarball will be
-        # included in the zip file.
-        self._GetAutotestTarball()
-
       # Zip up everything in the image directory.
       filename = commands.BuildImageZip(archive_path, image_dir)
 
@@ -989,11 +1015,11 @@ class ArchiveStage(NonHaltingBuilderStage):
       background.RunParallelSteps([BuildAndArchiveFactoryImages,
                                    ArchiveRegularImages])
 
-    background.RunParallelSteps([
-      UploadUpdatePayloads,
-      UploadTestResults,
-      ArchiveDebugSymbols,
-      BuildAndArchiveAllImages])
+    steps = []
+    if self._options.tests:
+      steps += [UploadUpdatePayloads, UploadTestResults]
+    steps += [ArchiveDebugSymbols, BuildAndArchiveAllImages]
+    background.RunParallelSteps(steps)
 
     # Update and upload LATEST file.
     commands.UpdateLatestFile(self._bot_archive_root, self._set_version)

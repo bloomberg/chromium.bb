@@ -366,7 +366,7 @@ def RunRemoteTest(buildroot, board, remote_ip, test_name, args=None):
                          print_cmd=True)
 
 
-def ArchiveTestResults(buildroot, test_results_dir):
+def ArchiveTestResults(buildroot, test_results_dir, prefix):
   """Archives the test results into a tarball.
 
   Arguments:
@@ -382,7 +382,7 @@ def ArchiveTestResults(buildroot, test_results_dir):
     cros_lib.OldRunCommand(['sudo', 'chmod', '-R', 'a+rw', results_path],
                            print_cmd=False)
 
-    test_tarball = os.path.join(buildroot, 'test_results.tgz')
+    test_tarball = os.path.join(buildroot, '%stest_results.tgz' % prefix)
     if os.path.exists(test_tarball): os.remove(test_tarball)
     cros_lib.OldRunCommand(['tar',
                             'czf',
@@ -889,27 +889,25 @@ def BuildRecoveryImage(buildroot, board, image_dir, extra_env):
                       cwd=scripts_dir)
 
 
-def BuildAutotestTarball(buildroot, board, image_dir):
+def BuildAutotestTarball(buildroot, board, filename):
   """Tar up the autotest artifacts into image_dir.
 
   Args:
     buildroot: Root directory where build occurs.
     board: Board type that was built on this machine.
-    image_dir: Directory for storing autotest tarball
+    filename: Location for storing autotest tarball
 
   Returns the basename of the autotest tarball.
   """
-  filename = 'autotest.tar.bz2'
   cwd = os.path.join(buildroot, 'chroot', 'build', board, 'usr', 'local')
   pbzip2 = os.path.join(buildroot, 'chroot', 'usr', 'bin', 'pbzip2')
   cmd = ['tar',
          'cf',
-         os.path.join(image_dir, filename),
+         filename,
          '--checkpoint=10000',
          '--use-compress-program=%s' % pbzip2,
          'autotest']
   cros_lib.RunCommand(cmd, cwd=cwd)
-  return filename
 
 
 def BuildImageZip(archive_dir, image_dir):
@@ -1023,3 +1021,18 @@ def RemoveOldArchives(bot_archive_root, keep_max):
   # +2 because line numbers start at 1 and need to skip LATEST file
   cmd = 'ls -t1 | tail --lines=+%d | xargs rm -rf' % (keep_max + 2)
   cros_lib.RunCommand(cmd, cwd=bot_archive_root, shell=True)
+
+
+def CreateTestRoot(build_root):
+  """Returns a temporary directory for test results in chroot.
+
+  Returns:
+    Returns the path inside the chroot rather than whole path.
+  """
+  # Create test directory within tmp in chroot.
+  chroot = os.path.join(build_root, 'chroot')
+  chroot_tmp = os.path.join(chroot, 'tmp')
+  test_root = tempfile.mkdtemp(prefix='cbuildbot', dir=chroot_tmp)
+
+  # Path inside chroot.
+  return os.path.sep + os.path.relpath(test_root, start=chroot)

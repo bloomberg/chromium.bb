@@ -353,6 +353,8 @@ class SimpleBuilder(Builder):
     archive_stage = self._GetStageInstance(stages.ArchiveStage)
     self.archive_url = archive_stage.GetDownloadUrl()
     vm_test_stage = self._GetStageInstance(stages.VMTestStage, archive_stage)
+    chrome_test_stage = self._GetStageInstance(stages.ChromeTestStage,
+                                               archive_stage)
     unit_test_stage = self._GetStageInstance(stages.UnitTestStage)
     prebuilts_stage = self._GetStageInstance(stages.UploadPrebuiltsStage)
     try:
@@ -364,7 +366,10 @@ class SimpleBuilder(Builder):
       try:
         # Run the steps in parallel. If any exceptions occur, RunParallelSteps
         # will combine them into a single BackgroundException and throw it.
-        steps = [vm_test_stage.Run, unit_test_stage.Run, prebuilts_stage.Run]
+        steps = [vm_test_stage.Run]
+        if self.build_config['chrome_tests']:
+          steps.append(chrome_test_stage.Run)
+        steps += [unit_test_stage.Run, prebuilts_stage.Run]
         background.RunParallelSteps(steps)
       finally:
         archive_stage.TestStageExited()
