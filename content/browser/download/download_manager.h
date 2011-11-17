@@ -28,34 +28,21 @@
 #define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_
 #pragma once
 
-#include <map>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/hash_tables.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
-#include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_item.h"
-#include "content/browser/download/download_status_updater_delegate.h"
 #include "content/browser/download/interrupt_reasons.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
 class DownloadFileManager;
-class DownloadIdFactory;
 class DownloadRequestHandle;
-class DownloadStatusUpdater;
 class GURL;
 class TabContents;
 struct DownloadCreateInfo;
@@ -69,15 +56,12 @@ class DownloadManagerDelegate;
 // Browser's download manager: manages all downloads and destination view.
 class CONTENT_EXPORT DownloadManager
     : public base::RefCountedThreadSafe<
-          DownloadManager, content::BrowserThread::DeleteOnUIThread>,
-      public DownloadStatusUpdaterDelegate {
+          DownloadManager, content::BrowserThread::DeleteOnUIThread> {
  public:
-  DownloadManager(content::DownloadManagerDelegate* delegate,
-                  DownloadIdFactory* id_factory,
-                  DownloadStatusUpdater* status_updater);
+  virtual ~DownloadManager() {}
 
   // Shutdown the download manager. Must be called before destruction.
-  void Shutdown();
+  virtual void Shutdown() = 0;
 
   // Interface to implement for observers that wish to be informed of changes
   // to the DownloadManager's collection of downloads.
@@ -103,323 +87,209 @@ class CONTENT_EXPORT DownloadManager
   typedef std::vector<DownloadItem*> DownloadVector;
 
   // Return all temporary downloads that reside in the specified directory.
-  void GetTemporaryDownloads(const FilePath& dir_path, DownloadVector* result);
+  virtual void GetTemporaryDownloads(const FilePath& dir_path,
+                                     DownloadVector* result) = 0;
 
   // Return all non-temporary downloads in the specified directory that are
   // are in progress or have completed.
-  void GetAllDownloads(const FilePath& dir_path, DownloadVector* result);
+  virtual void GetAllDownloads(const FilePath& dir_path,
+                               DownloadVector* result) = 0;
 
   // Returns all non-temporary downloads matching |query|. Empty query matches
   // everything.
-  void SearchDownloads(const string16& query, DownloadVector* result);
+  virtual void SearchDownloads(const string16& query,
+                               DownloadVector* result) = 0;
 
   // Returns true if initialized properly.
-  bool Init(content::BrowserContext* browser_context);
+  virtual bool Init(content::BrowserContext* browser_context) = 0;
 
   // Notifications sent from the download thread to the UI thread
-  void StartDownload(int32 id);
-  void UpdateDownload(int32 download_id, int64 size);
+  virtual void StartDownload(int32 id) = 0;
+  virtual void UpdateDownload(int32 download_id, int64 size) = 0;
 
   // |download_id| is the ID of the download.
   // |size| is the number of bytes that have been downloaded.
   // |hash| is sha256 hash for the downloaded file. It is empty when the hash
   // is not available.
-  void OnResponseCompleted(int32 download_id, int64 size,
-                           const std::string& hash);
+  virtual void OnResponseCompleted(int32 download_id, int64 size,
+                           const std::string& hash) = 0;
 
   // Offthread target for cancelling a particular download.  Will be a no-op
   // if the download has already been cancelled.
-  void CancelDownload(int32 download_id);
+  virtual void CancelDownload(int32 download_id) = 0;
 
   // Called when there is an error in the download.
   // |download_id| is the ID of the download.
   // |size| is the number of bytes that are currently downloaded.
   // |reason| is a download interrupt reason code.
-  void OnDownloadInterrupted(int32 download_id, int64 size,
-                             InterruptReason reason);
+  virtual void OnDownloadInterrupted(int32 download_id, int64 size,
+                             InterruptReason reason) = 0;
 
   // Called from DownloadItem to handle the DownloadManager portion of a
   // Cancel; should not be called from other locations.
-  void DownloadCancelledInternal(DownloadItem* download);
+  virtual void DownloadCancelledInternal(DownloadItem* download) = 0;
 
   // Called from a view when a user clicks a UI button or link.
-  void RemoveDownload(int64 download_handle);
+  virtual void RemoveDownload(int64 download_handle) = 0;
 
   // Determine if the download is ready for completion, i.e. has had
   // all data saved, and completed the filename determination and
   // history insertion.
-  bool IsDownloadReadyForCompletion(DownloadItem* download);
+  virtual bool IsDownloadReadyForCompletion(DownloadItem* download) = 0;
 
   // If all pre-requisites have been met, complete download processing, i.e.
   // do internal cleanup, file rename, and potentially auto-open.
   // (Dangerous downloads still may block on user acceptance after this
   // point.)
-  void MaybeCompleteDownload(DownloadItem* download);
+  virtual void MaybeCompleteDownload(DownloadItem* download) = 0;
 
   // Called when the download is renamed to its final name.
   // |uniquifier| is a number used to make unique names for the file.  It is
   // only valid for the DANGEROUS_BUT_VALIDATED state of the download item.
-  void OnDownloadRenamedToFinalName(int download_id,
+  virtual void OnDownloadRenamedToFinalName(int download_id,
                                     const FilePath& full_path,
-                                    int uniquifier);
+                                    int uniquifier) = 0;
 
   // Remove downloads after remove_begin (inclusive) and before remove_end
   // (exclusive). You may pass in null Time values to do an unbounded delete
   // in either direction.
-  int RemoveDownloadsBetween(const base::Time remove_begin,
-                             const base::Time remove_end);
+  virtual int RemoveDownloadsBetween(const base::Time remove_begin,
+                             const base::Time remove_end) = 0;
 
   // Remove downloads will delete all downloads that have a timestamp that is
   // the same or more recent than |remove_begin|. The number of downloads
   // deleted is returned back to the caller.
-  int RemoveDownloads(const base::Time remove_begin);
+  virtual int RemoveDownloads(const base::Time remove_begin) = 0;
 
   // Remove all downloads will delete all downloads. The number of downloads
   // deleted is returned back to the caller.
-  int RemoveAllDownloads();
+  virtual int RemoveAllDownloads() = 0;
 
   // Final download manager transition for download: Update the download
   // history and remove the download from |active_downloads_|.
-  void DownloadCompleted(int32 download_id);
+  virtual void DownloadCompleted(int32 download_id) = 0;
 
   // Download the object at the URL. Used in cases such as "Save Link As..."
-  void DownloadUrl(const GURL& url,
+  virtual void DownloadUrl(const GURL& url,
                    const GURL& referrer,
                    const std::string& referrer_encoding,
-                   TabContents* tab_contents);
+                   TabContents* tab_contents) = 0;
 
   // Download the object at the URL and save it to the specified path. The
   // download is treated as the temporary download and thus will not appear
   // in the download history. Used in cases such as drag and drop.
-  void DownloadUrlToFile(const GURL& url,
+  virtual void DownloadUrlToFile(const GURL& url,
                          const GURL& referrer,
                          const std::string& referrer_encoding,
                          const DownloadSaveInfo& save_info,
-                         TabContents* tab_contents);
+                         TabContents* tab_contents) = 0;
 
   // Allow objects to observe the download creation process.
-  void AddObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) = 0;
 
   // Remove a download observer from ourself.
-  void RemoveObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer) = 0;
 
   // Called by the embedder, after creating the download manager, to let it know
   // about downloads from previous runs of the browser.
-  void OnPersistentStoreQueryComplete(
-      std::vector<DownloadPersistentStoreInfo>* entries);
+  virtual void OnPersistentStoreQueryComplete(
+      std::vector<DownloadPersistentStoreInfo>* entries) = 0;
 
   // Called by the embedder, in response to
   // DownloadManagerDelegate::AddItemToPersistentStore.
-  void OnItemAddedToPersistentStore(int32 download_id, int64 db_handle);
+  virtual void OnItemAddedToPersistentStore(int32 download_id,
+                                            int64 db_handle) = 0;
 
   // Display a new download in the appropriate browser UI.
-  void ShowDownloadInBrowser(DownloadItem* download);
+  virtual void ShowDownloadInBrowser(DownloadItem* download) = 0;
 
   // The number of in progress (including paused) downloads.
-  int in_progress_count() const {
-    return static_cast<int>(in_progress_.size());
-  }
+  virtual int InProgressCount() const = 0;
 
-  content::BrowserContext* browser_context() { return browser_context_; }
+  virtual content::BrowserContext* BrowserContext() = 0;
 
-  FilePath last_download_path() { return last_download_path_; }
+  virtual FilePath LastDownloadPath() = 0;
 
   // Creates the download item.  Must be called on the UI thread.
-  void CreateDownloadItem(DownloadCreateInfo* info,
-                          const DownloadRequestHandle& request_handle);
+  virtual void CreateDownloadItem(DownloadCreateInfo* info,
+                          const DownloadRequestHandle& request_handle) = 0;
 
   // Clears the last download path, used to initialize "save as" dialogs.
-  void ClearLastDownloadPath();
-
-  // Overridden from DownloadStatusUpdaterDelegate:
-  virtual bool IsDownloadProgressKnown() const OVERRIDE;
-  virtual int64 GetInProgressDownloadCount() const OVERRIDE;
-  virtual int64 GetReceivedDownloadBytes() const OVERRIDE;
-  virtual int64 GetTotalDownloadBytes() const OVERRIDE;
+  virtual void ClearLastDownloadPath() = 0;
 
   // Called by the delegate after the save as dialog is closed.
-  void FileSelected(const FilePath& path, void* params);
-  void FileSelectionCanceled(void* params);
+  virtual void FileSelected(const FilePath& path, void* params) = 0;
+  virtual void FileSelectionCanceled(void* params) = 0;
 
   // Called by the delegate if it delayed the download in
   // DownloadManagerDelegate::ShouldStartDownload and now is ready.
-  void RestartDownload(int32 download_id);
+  virtual void RestartDownload(int32 download_id) = 0;
 
   // Mark the download opened in the persistent store.
-  void MarkDownloadOpened(DownloadItem* download);
+  virtual void MarkDownloadOpened(DownloadItem* download) = 0;
 
   // Checks whether downloaded files still exist. Updates state of downloads
   // that refer to removed files. The check runs in the background and may
   // finish asynchronously after this method returns.
-  void CheckForHistoryFilesRemoval();
+  virtual void CheckForHistoryFilesRemoval() = 0;
 
   // Checks whether a downloaded file still exists and updates the file's state
   // if the file is already removed. The check runs in the background and may
   // finish asynchronously after this method returns.
-  void CheckForFileRemoval(DownloadItem* download_item);
+  virtual void CheckForFileRemoval(DownloadItem* download_item) = 0;
 
   // Assert the named download item is on the correct queues
   // in the DownloadManager.  For debugging.
-  void AssertQueueStateConsistent(DownloadItem* download);
+  virtual void AssertQueueStateConsistent(DownloadItem* download) = 0;
 
   // Get the download item from the history map.  Useful after the item has
   // been removed from the active map, or was retrieved from the history DB.
-  DownloadItem* GetDownloadItem(int id);
+  virtual DownloadItem* GetDownloadItem(int id) = 0;
 
   // Called when Save Page download starts. Transfers ownership of |download|
   // to the DownloadManager.
-  void SavePageDownloadStarted(DownloadItem* download);
+  virtual void SavePageDownloadStarted(DownloadItem* download) = 0;
 
   // Called when Save Page download is done.
-  void SavePageDownloadFinished(DownloadItem* download);
+  virtual void SavePageDownloadFinished(DownloadItem* download) = 0;
 
   // Get the download item from the active map.  Useful when the item is not
   // yet in the history map.
-  DownloadItem* GetActiveDownloadItem(int id);
+  virtual DownloadItem* GetActiveDownloadItem(int id) = 0;
 
-  content::DownloadManagerDelegate* delegate() const { return delegate_; }
+  virtual content::DownloadManagerDelegate* delegate() const = 0;
 
   // For testing only.  May be called from tests indirectly (through
   // other for testing only methods).
-  void SetDownloadManagerDelegate(content::DownloadManagerDelegate* delegate);
+  virtual void SetDownloadManagerDelegate(
+      content::DownloadManagerDelegate* delegate) = 0;
 
-  DownloadId GetNextId();
+  virtual DownloadId GetNextId() = 0;
+
+ protected:
+  // These functions are here for unit tests.
+
+  // Called back after a target path for the file to be downloaded to has been
+  // determined, either automatically based on the suggested file name, or by
+  // the user in a Save As dialog box.
+  virtual void ContinueDownloadWithPath(DownloadItem* download,
+                                        const FilePath& chosen_file) = 0;
+
+  // Retrieves the download from the |download_id|.
+  // Returns NULL if the download is not active.
+  virtual DownloadItem* GetActiveDownload(int32 download_id) = 0;
+
+  virtual void SetFileManager(DownloadFileManager* file_manager) = 0;
 
  private:
-  typedef std::set<DownloadItem*> DownloadSet;
-  typedef base::hash_map<int64, DownloadItem*> DownloadMap;
-
   // For testing.
   friend class DownloadManagerTest;
-  friend class DownloadTest;
-  friend class MockDownloadManager;
 
   friend class base::RefCountedThreadSafe<
       DownloadManager, content::BrowserThread::DeleteOnUIThread>;
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
   friend class DeleteTask<DownloadManager>;
-
-  virtual ~DownloadManager();
-
-  // Called on the FILE thread to check the existence of a downloaded file.
-  void CheckForFileRemovalOnFileThread(int64 db_handle, const FilePath& path);
-
-  // Called on the UI thread if the FILE thread detects the removal of
-  // the downloaded file. The UI thread updates the state of the file
-  // and then notifies this update to the file's observer.
-  void OnFileRemovalDetected(int64 db_handle);
-
-  // Called back after a target path for the file to be downloaded to has been
-  // determined, either automatically based on the suggested file name, or by
-  // the user in a Save As dialog box.
-  void ContinueDownloadWithPath(DownloadItem* download,
-                                const FilePath& chosen_file);
-
-  // Retrieves the download from the |download_id|.
-  // Returns NULL if the download is not active.
-  DownloadItem* GetActiveDownload(int32 download_id);
-
-  // Removes |download| from the active and in progress maps.
-  // Called when the download is cancelled or has an error.
-  // Does nothing if the download is not in the history DB.
-  void RemoveFromActiveList(DownloadItem* download);
-
-  // Updates the delegate about the overall download progress.
-  void UpdateDownloadProgress();
-
-  // Inform observers that the model has changed.
-  void NotifyModelChanged();
-
-  // Debugging routine to confirm relationship between below
-  // containers; no-op if NDEBUG.
-  void AssertContainersConsistent() const;
-
-  // Add a DownloadItem to history_downloads_.
-  void AddDownloadItemToHistory(DownloadItem* item, int64 db_handle);
-
-  // Remove from internal maps.
-  int RemoveDownloadItems(const DownloadVector& pending_deletes);
-
-  // Called when a download entry is committed to the persistent store.
-  void OnDownloadItemAddedToPersistentStore(int32 download_id, int64 db_handle);
-
-  // Called when Save Page As entry is commited to the persistent store.
-  void OnSavePageItemAddedToPersistentStore(int32 download_id, int64 db_handle);
-
-  // |downloads_| is the owning set for all downloads known to the
-  // DownloadManager.  This includes downloads started by the user in
-  // this session, downloads initialized from the history system, and
-  // "save page as" downloads.  All other DownloadItem containers in
-  // the DownloadManager are maps; they do not own the DownloadItems.
-  // Note that this is the only place (with any functional implications;
-  // see save_page_downloads_ below) that "save page as" downloads are
-  // kept, as the DownloadManager's only job is to hold onto those
-  // until destruction.
-  //
-  // |history_downloads_| is map of all downloads in this browser context. The
-  // key is the handle returned by the history system, which is unique across
-  // sessions.
-  //
-  // |active_downloads_| is a map of all downloads that are currently being
-  // processed. The key is the ID assigned by the DownloadFileManager,
-  // which is unique for the current session.
-  //
-  // |in_progress_| is a map of all downloads that are in progress and that have
-  // not yet received a valid history handle. The key is the ID assigned by the
-  // DownloadFileManager, which is unique for the current session.
-  //
-  // |save_page_downloads_| (if defined) is a collection of all the
-  // downloads the "save page as" system has given to us to hold onto
-  // until we are destroyed. They key is DownloadFileManager, so it is unique
-  // compared to download item. It is only used for debugging.
-  //
-  // When a download is created through a user action, the corresponding
-  // DownloadItem* is placed in |active_downloads_| and remains there until the
-  // download is in a terminal state (COMPLETE or CANCELLED).  It is also
-  // placed in |in_progress_| and remains there until it has received a
-  // valid handle from the history system. Once it has a valid handle, the
-  // DownloadItem* is placed in the |history_downloads_| map.  When the
-  // download reaches a terminal state, it is removed from |in_progress_|.
-  // Downloads from past sessions read from a persisted state from the
-  // history system are placed directly into |history_downloads_| since
-  // they have valid handles in the history system.
-
-  DownloadSet downloads_;
-  DownloadMap history_downloads_;
-  DownloadMap in_progress_;
-  DownloadMap active_downloads_;
-  DownloadMap save_page_downloads_;
-
-  // True if the download manager has been initialized and requires a shutdown.
-  bool shutdown_needed_;
-
-  // Observers that want to be notified of changes to the set of downloads.
-  ObserverList<Observer> observers_;
-
-  // The current active browser context.
-  content::BrowserContext* browser_context_;
-
-  // Non-owning pointer for handling file writing on the download_thread_.
-  DownloadFileManager* file_manager_;
-
-  // Non-owning pointer for updating the download status.
-  base::WeakPtr<DownloadStatusUpdater> status_updater_;
-
-  // The user's last choice for download directory. This is only used when the
-  // user wants us to prompt for a save location for each download.
-  FilePath last_download_path_;
-
-  // Allows an embedder to control behavior. Guaranteed to outlive this object.
-  content::DownloadManagerDelegate* delegate_;
-
-  DownloadIdFactory* id_factory_;
-
-  // TODO(rdsmith): Remove when http://crbug.com/85408 is fixed.
-  // For debugging only.
-  int64 largest_db_handle_in_history_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadManager);
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_H_

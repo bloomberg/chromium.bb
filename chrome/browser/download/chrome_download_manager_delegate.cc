@@ -405,8 +405,8 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     // 1) using the default download directory.
     // 2) prompting the user.
     if (state.prompt_user_for_save_location &&
-        !download_manager_->last_download_path().empty()) {
-      state.suggested_path = download_manager_->last_download_path();
+        !download_manager_->LastDownloadPath().empty()) {
+      state.suggested_path = download_manager_->LastDownloadPath();
     } else {
       state.suggested_path = download_prefs_->download_path();
     }

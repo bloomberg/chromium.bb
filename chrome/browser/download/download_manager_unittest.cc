@@ -28,7 +28,7 @@
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_item.h"
-#include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
@@ -57,7 +57,7 @@ class DownloadManagerTest : public testing::Test {
         download_manager_delegate_(new ChromeDownloadManagerDelegate(
             profile_.get())),
         id_factory_(new DownloadIdFactory(kValidIdDomain)),
-        download_manager_(new MockDownloadManager(
+        download_manager_(new DownloadManagerImpl(
             download_manager_delegate_,
             id_factory_,
             &download_status_updater_)),
@@ -120,9 +120,7 @@ class DownloadManagerTest : public testing::Test {
 
   // Get the download item with ID |id|.
   DownloadItem* GetActiveDownloadItem(int32 id) {
-    if (ContainsKey(download_manager_->active_downloads_, id))
-      return download_manager_->active_downloads_[id];
-    return NULL;
+    return download_manager_->GetActiveDownload(id);
   }
 
  protected:
@@ -140,7 +138,7 @@ class DownloadManagerTest : public testing::Test {
   DownloadFileManager* file_manager() {
     if (!file_manager_) {
       file_manager_ = new DownloadFileManager(NULL);
-      download_manager_->file_manager_ = file_manager_;
+      download_manager_->SetFileManager(file_manager_);
     }
     return file_manager_;
   }

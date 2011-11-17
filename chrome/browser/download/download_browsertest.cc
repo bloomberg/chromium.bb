@@ -167,7 +167,7 @@ class DownloadsHistoryDataCollector {
       : result_valid_(false),
         download_db_handle_(download_db_handle) {
     HistoryService* hs =
-        Profile::FromBrowserContext(manager->browser_context())->
+        Profile::FromBrowserContext(manager->BrowserContext())->
             GetHistoryService(Profile::EXPLICIT_ACCESS);
     DCHECK(hs);
     hs->QueryDownloads(

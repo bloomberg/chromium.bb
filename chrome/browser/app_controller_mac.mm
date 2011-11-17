@@ -639,8 +639,8 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     DownloadManager* download_manager =
         (download_service->HasCreatedDownloadManager() ?
          download_service->GetDownloadManager() : NULL);
-    if (download_manager && download_manager->in_progress_count() > 0) {
-      int downloadCount = download_manager->in_progress_count();
+    if (download_manager && download_manager->InProgressCount() > 0) {
+      int downloadCount = download_manager->InProgressCount();
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {
         // Create a new browser window (if necessary) and navigate to the
         // downloads page if the user chooses to wait.
