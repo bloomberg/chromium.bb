@@ -40,6 +40,10 @@ class LauncherIconUpdater : public TabStripModelObserver {
       TabContentsWrapper* tab,
       int index,
       TabStripModelObserver::TabChangeType change_type) OVERRIDE;
+  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
+                             TabContentsWrapper* old_contents,
+                             TabContentsWrapper* new_contents,
+                             int index) OVERRIDE;
 
  private:
   typedef std::deque<TabContentsWrapper*> Tabs;

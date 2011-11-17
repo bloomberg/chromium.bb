@@ -86,6 +86,19 @@ void LauncherIconUpdater::TabChangedAt(
   }
 }
 
+void LauncherIconUpdater::TabReplacedAt(TabStripModel* tab_strip_model,
+                                        TabContentsWrapper* old_contents,
+                                        TabContentsWrapper* new_contents,
+                                        int index) {
+  Tabs::iterator i = std::find(tabs_.begin(), tabs_.end(), old_contents);
+  if (i != tabs_.end()) {
+    int pos = i - tabs_.begin();
+    tabs_[pos] = new_contents;
+    if (pos < kMaxCount)
+      UpdateLauncher();
+  }
+}
+
 void LauncherIconUpdater::UpdateLauncher() {
   if (tabs_.empty())
     return;  // Assume the window is going to be closed if there are no tabs.
