@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
-#include "chrome/browser/plugin_download_helper.h"
 #include "chrome/browser/plugin_installer_infobar_delegate.h"
 #include "chrome/browser/plugin_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +19,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/plugin_download_helper.h"
+#endif
 
 using content::BrowserThread;
 
@@ -36,7 +39,7 @@ ChromePluginMessageFilter::~ChromePluginMessageFilter() {
 bool ChromePluginMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromePluginMessageFilter, message)
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(ChromePluginProcessHostMsg_DownloadUrl, OnDownloadUrl)
 #endif
     IPC_MESSAGE_HANDLER(ChromePluginProcessHostMsg_GetPluginFinderUrl,
@@ -53,7 +56,7 @@ bool ChromePluginMessageFilter::Send(IPC::Message* message) {
   return process_->Send(message);
 }
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 void ChromePluginMessageFilter::OnDownloadUrl(const std::string& url,
                                               gfx::NativeWindow caller_window,
                                               int render_process_id) {

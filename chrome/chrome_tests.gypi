@@ -2063,6 +2063,11 @@
             '../content/renderer/p2p/p2p_transport_impl_unittest.cc',
           ],
         }],
+        ['use_aura==1', {
+          'sources/': [
+            ['exclude', '^browser/automation/automation_provider_unittest.cc'],
+          ],
+        }],
         ['touchui==0', {
           'sources/': [
             ['exclude', '^browser/ui/touch/'],

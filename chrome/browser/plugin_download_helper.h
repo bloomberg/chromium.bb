@@ -7,9 +7,8 @@
 #pragma once
 
 #include <string>
-#include "build/build_config.h"
 
-#if defined(OS_WIN)
+#include "build/build_config.h"
 #include "base/file_path.h"
 #include "base/message_loop_proxy.h"
 #include "content/public/common/url_fetcher_delegate.h"
@@ -63,7 +62,5 @@ class PluginDownloadUrlHelper : public content::URLFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(PluginDownloadUrlHelper);
 };
-
-#endif  // OS_WIN
 
 #endif  // CHROME_BROWSER_PLUGIN_DOWNLOAD_HELPER_H_

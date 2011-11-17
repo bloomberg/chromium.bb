@@ -329,7 +329,9 @@ void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
 
 void ChromeContentBrowserClient::PluginProcessHostCreated(
     PluginProcessHost* host) {
+#if !defined(USE_AURA)
   host->AddFilter(new ChromePluginMessageFilter(host));
+#endif
 }
 
 content::WebUIFactory* ChromeContentBrowserClient::GetWebUIFactory() {

@@ -292,7 +292,7 @@ void SynchronizeWidgetSize(views::Widget* widget) {
 
 void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
                                int state, const base::Closure& task) {
-#if defined(OS_LINUX) && !defined(USE_AURA)
+#if defined(OS_LINUX)
   // X is asynchronous and we need to wait until the window gets
   // resized to desired size.
   SynchronizeWidgetSize(view->GetWidget());

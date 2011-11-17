@@ -4149,19 +4149,6 @@
             ['exclude', '^browser/chromeos/input_method/candidate_window.h'],
           ],
         }],
-        # For now, always include status area code for aura builds, even
-        # though the code is under browser/chromeos.
-        # TODO: (stevenjb/beng): Find a home for these.
-        ['use_aura==1', {
-          'sources/': [
-            ['include', '^browser/chromeos/status/clock_menu_button.cc'],
-            ['include', '^browser/chromeos/status/clock_menu_button.h'],
-            ['include', '^browser/chromeos/status/status_area_button.cc'],
-            ['include', '^browser/chromeos/status/status_area_button.h'],
-            ['include', '^browser/chromeos/status/status_area_view.cc'],
-            ['include', '^browser/chromeos/status/status_area_view.h'],
-          ],
-        }],
         # linux/chromeos only status area button.
         ['OS=="linux" and use_aura==1', {
           'sources/': [
@@ -4173,7 +4160,11 @@
           'sources/': [
             ['exclude', '^browser/aeropeek_manager.cc'],
             ['exclude', '^browser/automation/automation_provider_win.cc'],
+            ['exclude', '^browser/automation/chrome_frame_automation_provider.cc'],
+            ['exclude', '^browser/automation/chrome_frame_automation_provider.h'],            
             ['exclude', '^browser/automation/testing_automation_provider_win.cc'],
+            ['exclude', '^browser/chrome_plugin_message_filter.cc'],
+            ['exclude', '^browser/chrome_plugin_message_filter.h'],
             ['exclude', '^browser/chromeos/native_dialog_window.cc'],
             ['exclude', '^browser/chromeos/native_dialog_window.h'],
             ['exclude', '^browser/external_tab_container_win.cc'],
@@ -4185,6 +4176,10 @@
             ['exclude', '^browser/google/google_update.h'],
             ['exclude', '^browser/hang_monitor/'],
             ['exclude', '^browser/platform_util_win.cc'],
+            ['exclude', '^browser/plugin_download_helper.cc'],
+            ['exclude', '^browser/plugin_download_helper.h'],
+            ['exclude', '^browser/plugin_installer_infobar_delegate.cc'],
+            ['exclude', '^browser/plugin_installer_infobar_delegate.h'],            
             ['exclude', '^browser/renderer_host/render_widget_host_view_views*'],
             ['exclude', '^browser/tab_contents/web_drag_source_win.cc'],
             ['exclude', '^browser/tab_contents/web_drag_source_win.h'],
@@ -4214,8 +4209,6 @@
             ['exclude', '^browser/ui/views/omnibox/omnibox_view_win.cc'],
             ['exclude', '^browser/ui/views/omnibox/omnibox_view_win.h'],
             ['exclude', '^browser/ui/views/select_file_dialog_win.cc'],
-            ['include', '^browser/ui/views/simple_message_box_views.cc'],
-            ['include', '^browser/ui/views/simple_message_box_views.h'],
             ['exclude', '^browser/ui/views/simple_message_box_win.cc'],
             ['exclude', '^browser/ui/views/ssl_client_certificate_selector.cc'],
             ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_container_views*'],
@@ -4232,6 +4225,19 @@
             ['exclude', '^browser/ui/views/task_manager_view.cc'],
             ['exclude', '^browser/ui/views/task_manager_view.h'],
             ['exclude', '^browser/ui/views/user_data_dir_dialog.cc'],
+            ['exclude', '^browser/ui/window_sizer_win.cc'],
+            ['exclude', '^browser/ui/window_snapshot/window_snapshot_win.cc'],
+            # For now, always include status area code for aura builds, even
+            # though the code is under browser/chromeos.
+            # TODO: (stevenjb/beng): Find a home for these.
+            ['include', '^browser/chromeos/status/clock_menu_button.cc'],
+            ['include', '^browser/chromeos/status/clock_menu_button.h'],
+            ['include', '^browser/chromeos/status/status_area_button.cc'],
+            ['include', '^browser/chromeos/status/status_area_button.h'],
+            ['include', '^browser/chromeos/status/status_area_view.cc'],
+            ['include', '^browser/chromeos/status/status_area_view.h'],
+            ['include', '^browser/ui/views/simple_message_box_views.cc'],
+            ['include', '^browser/ui/views/simple_message_box_views.h'],
             ['include', '^browser/ui/webui/certificate_viewer_webui.cc'],
             ['include', '^browser/ui/webui/certificate_viewer_webui.h'],
             ['include', '^browser/ui/webui/certificate_viewer_ui.cc'],
@@ -4240,8 +4246,6 @@
             ['include', '^browser/ui/webui/collected_cookies_ui_delegate.h'],
             ['include', '^browser/ui/webui/cookies_tree_model_adapter.cc'],
             ['include', '^browser/ui/webui/cookies_tree_model_adapter.h'],
-            ['exclude', '^browser/ui/window_sizer_win.cc'],
-            ['exclude', '^browser/ui/window_snapshot/window_snapshot_win.cc'],
           ],
           'dependencies': [
             '../ui/aura_shell/aura_shell.gyp:aura_shell',
@@ -4589,6 +4593,10 @@
             # Exclude try chrome dialog.
             ['exclude', '^browser/first_run/try_chrome_dialog_view.cc'],
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
+
+            # Exclude plugin download helper.
+            ['exclude', '^browser/plugin_download_helper.cc'],
+            ['exclude', '^browser/plugin_download_helper.h'],
           ],
           'conditions': [
             ['OS=="linux" or use_aura==1',{
