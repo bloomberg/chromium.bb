@@ -29,7 +29,7 @@ namespace chromeos {
 class InitialBrowserWindowObserver : public content::NotificationObserver {
  public:
   InitialBrowserWindowObserver();
-  ~InitialBrowserWindowObserver() {}
+  virtual ~InitialBrowserWindowObserver() {}
 
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
