@@ -2773,18 +2773,17 @@ def MakeLinuxEnv():
 
         linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'])
     else:
-      jail = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
-      linker_script = jail + '/ld_script_arm_trusted'
-      linux_env.Replace(CC='arm-linux-gnueabi-gcc-4.5',
-                        CXX='arm-linux-gnueabi-g++-4.5',
-                        LD='arm-linux-gnueabi-ld',
-                        EMULATOR=jail + '/run_under_qemu_arm',
+      base_dir = '${SCONSTRUCT_DIR}/toolchain/linux_arm-trusted'
+      tool_prefix = base_dir + '/arm-2009q3/bin/arm-none-linux-gnueabi-'
+      jail = base_dir + '/arm-2009q3/arm-none-linux-gnueabi/libc'
+      linker_script = base_dir + '/ld_script_arm_trusted'
+      linux_env.Replace(CC=tool_prefix + 'gcc',
+                        CXX=tool_prefix + 'g++',
+                        LD=tool_prefix + 'ld',
+                        EMULATOR=base_dir + '/run_under_qemu_arm',
                         ASFLAGS=[],
                         LIBPATH=['${LIB_DIR}',
-                                 jail + '/usr/lib',
-                                 jail + '/lib',
-                                 jail + '/usr/lib/arm-linux-gnueabi',
-                                 jail + '/lib/arm-linux-gnueabi',
+                                 jail + '/usr/lib'
                                  ],
                         # NOTE: we do build .sos so this needs to be revisited
                         LINKFLAGS=['-static',
@@ -2793,8 +2792,7 @@ def MakeLinuxEnv():
                                    ]
                         )
       linux_env.Prepend(CCFLAGS=['-march=armv7-a',
-                                 '-isystem',
-                                 jail + '/usr/include',
+                                 '-I%s' % (jail + '/usr/include'),
                                 ])
      # This appears to be needed for sel_universal
     linux_env.Append(LIBS=['dl'])

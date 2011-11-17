@@ -9,7 +9,7 @@ PNACL_ROOT=../../toolchain/pnacl_linux_x86_64_glibc
 PNACL_CC=$(PNACL_ROOT)/bin/pnacl-clang
 PNACL_LD=$(PNACL_ROOT)/bin/pnacl-ld
 
-ARM_CC=arm-linux-gnueabi-gcc-4.5
+ARM_CC=../../toolchain/linux_arm-trusted/arm-2009q3/bin/arm-none-linux-gnueabi-gcc
 QEMU= ../../toolchain/linux_arm-trusted/qemu_tool.sh run
 
 # NOTE: built this using:
@@ -48,18 +48,13 @@ LLC_ARM_ARGS= --add-translate-option=-sfi-zero-mask
 ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 
 # mostly sandboxed
-# NOTE: we need to clear out byte 7 (EI_OSABI) and 8 (EI_ABIVERSION)
-#       of the elf header to make it compatible with the ubuntu trusted
-#       TC. We used to have a tool for this but it is gone.
 libsimple1.arm.so: hello.bc fortytwo.bc
-	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@.raw $^
-	$(NCVAL_ARM) --zero-masks $@.raw
-	(head --bytes=7 $@.raw; printf '\x00\x00'; tail --bytes=+10 $@.raw) >$@
+	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@ $^
+	$(NCVAL_ARM) --zero-masks $@
 
 # mostly sandboxed
 libsimple2.arm.so: hello2.bc fortytwo2.bc
-	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@.raw $^
-	(head --bytes=7 $@.raw; printf '\x00\x00'; tail --bytes=+10 $@.raw) >$@
+	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@ $^
 	# plt does not validate yet
 	# http://code.google.com/p/nativeclient/issues/detail?id=1816
 	#$(NCVAL_ARM) --zero-masks $@
