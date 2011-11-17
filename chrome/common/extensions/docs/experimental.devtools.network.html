@@ -16,7 +16,8 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.devtools.network API - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.experimental.devtools.network
+API - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -481,7 +482,7 @@ You can find more examples that use this API in
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Returns HAR archive that contains all known network requests.</p>
+                <p>Returns HAR log that contains all known network requests.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -517,7 +518,7 @@ You can find more examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A function that is called upon request completion.</dd>
+          <dd>A function that receives the HAR log when the request completes.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -580,12 +581,12 @@ You can find more examples that use this API in
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>object har</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>object harLog</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>har</var>
+            <var>harLog</var>
               <em>
 
                 <!-- TYPE -->
@@ -613,7 +614,7 @@ You can find more examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A HAR archive. See HAR specification for details.</dd>
+          <dd>A HAR log. See HAR specification for details.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -937,7 +938,7 @@ You can find more examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Represents a network request for a document resource (script, image etc). See HAR Specification for reference.</dd>
+          <dd>Represents a network request for a document resource (script, image and so on). See HAR Specification for reference.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1012,7 +1013,7 @@ You can find more examples that use this API in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A function that is called upon request completion.</dd>
+          <dd>A function that receives the response body when the request completes.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

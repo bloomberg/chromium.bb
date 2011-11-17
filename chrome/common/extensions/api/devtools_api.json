@@ -5,7 +5,7 @@
       {
         "id": "Resource",
         "type": "object",
-        "description": "A resource within the inspected page, such as a document, a script or an image.",
+        "description": "A resource within the inspected page, such as a document, a script, or an image.",
         "properties": {
           "url": {
             "type": "string",
@@ -21,7 +21,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "A function that is called upon request completion.",
+                "description": "A function that receives resource content when the request completes.",
                 "parameters": [
                   {
                     "name": "content",
@@ -50,18 +50,19 @@
               {
                 "name": "commit",
                 "type": "boolean",
-                "description": "True if the user has finished editing the resource and the new content of the resource should be persisted, false if this is a minor change sent in progress of the user editing the resource."
+                "description": "True if the user has finished editing the resource, and the new content of the resource should be persisted; false if this is a minor change sent in progress of the user editing the resource."
               },
               {
                 "name": "callback",
                 "type": "function",
                 "description": "A function called upon request completion.",
+                "optional": true,
                 "parameters": [
                   {
                     "name": "error",
                     "type": "object",
                     "optional": true,
-                    "description": "Set to undefined if the operation completed successfully, describes error otherwise."
+                    "description": "Set to undefined if the resource content was set successfully; describes error otherwise."
                   }
                 ]
               }
@@ -91,6 +92,7 @@
             "name": "callback",
             "type": "function",
             "description": "A function called when evaluation completes.",
+            "optional": true,
             "parameters": [
               {
                 "name": "result",
@@ -100,7 +102,7 @@
               {
                 "name": "isException",
                 "type": "boolean",
-                "description": "Set if an exception was caught while evaluating the expression"
+                "description": "Set if an exception was caught while evaluating the expression."
               }
             ]
           }
@@ -143,7 +145,7 @@
           {
             "name": "callback",
             "type": "function",
-            "description": "A function that is called upon request completion.",
+            "description": "A function that receives the list of resources when the request completes.",
             "parameters": [
               {
                 "name": "resources",
@@ -183,10 +185,15 @@
     "namespace": "experimental.devtools.panels",
     "types": [
       {
-        "id": "PanelWithSidebars",
+        "id": "ElementsPanel",
         "type": "object",
-        "isInstanceOf": "Panel",
-        "description": "A panel within Web Inspector UI that has sidebars.",
+        "description": "Represents the Elements panel.",
+        "events": [
+          {
+            "name": "onSelectionChanged",
+            "description": "Fired when an object is selected in the panel."
+          }
+        ],
         "functions": [
           {
             "name": "createSidebarPane",
@@ -196,12 +203,13 @@
               {
                 "name": "title",
                 "type": "string",
-                "description": "A text that is displayed in sidebar caption."
+                "description": "Text that is displayed in sidebar caption."
               },
               {
                 "name": "callback",
                 "type": "function",
-                "description": "A callback invoked when sidebar is created.",
+                "description": "A callback invoked when the sidebar is created.",
+                "optional": true,
                 "parameters": [
                   {
                     "name": "result",
@@ -215,26 +223,13 @@
         ]
       },
       {
-        "id": "ElementsPanel",
-        "type": "object",
-        "isInstanceOf": "PanelWithSidebars",
-        "description": "Represents Elements panel",
-        "events": [
-          {
-            "name": "onSelectionChanged",
-            "description": "Fired when an object is selected in the panel."
-          }
-        ]
-      },
-      {
         "id": "ExtensionPanel",
         "type": "object",
-        "isInstanceOf": "Panel",
         "description": "Represents a panel created by extension.",
         "events": [
           {
             "name": "onSearch",
-            "description": "Fired upon a search action (start of a new search, search result navigation or search being canceled).",
+            "description": "Fired upon a search action (start of a new search, search result navigation, or search being canceled).",
             "parameters": [
               {
                 "name": "action",
@@ -248,6 +243,23 @@
                 "description": "Query string (only for 'performSearch')."
               }
             ]
+          },
+          {
+            "name": "onShown",
+            "type": "function",
+            "description": "Fired when the user switches to the panel.",
+            "parameters": [
+              { 
+                "name": "window",
+                "type": "DOMWindow",
+                "description": "The <code>window</code> object of panel's page."
+              }
+            ]
+          },
+          {
+            "name": "onHidden",
+            "type": "function",
+            "description": "Fired when the user switches away from the panel."
           }
         ]
       },
@@ -310,11 +322,31 @@
             "description": "Sets an HTML page to be displayed in the sidebar pane.",
             "parameters": [
               {
-                "name": "url",
+                "name": "path",
                 "type": "string",
-                "description": "A URL of an extension page to display within the sidebar."
+                "description": "Relative path of an extension page to display within the sidebar."
               }
             ]
+          }
+        ],
+        "events": [
+          {
+            "name": "onShown",
+            "type": "function",
+            "description": "Fired when the sidebar pane becomes visible as a result of user switching to the panel that hosts it.",
+            "parameters": [
+              { 
+                "name": "window",
+                "type": "DOMWindow",
+                "optional": true,
+                "description": "The <code>window</code> object of the sidebar page, if one was set with the <code>setPage()</code> method."
+              }
+            ]
+          },
+          {
+            "name": "onHidden",
+            "type": "function",
+            "description": "Fired when the sidebar pane becomes hidden as a result of the user switching away from the panel that hosts the sidebar pane."
           }
         ]
       }
@@ -334,22 +366,23 @@
           {
             "name": "title",
             "type": "string",
-            "description": "Title that is displayed under the extension icon in the toolbar."
+            "description": "Title that is displayed next to the extension icon in the Developer Tools toolbar."
           },
           {
-            "name": "iconURL",
+            "name": "iconPath",
             "type": "string",
-            "description": "A URL of the toolbar icon."
+            "description": "Path of the panel's icon relative to the extension directory."
           },
           {
-            "name": "pageURL",
+            "name": "pagePath",
             "type": "string",
-            "description": "A URL of the page that represents this panel."
+            "description": "Path of the panel's HTML page relative to the extension directory."
           },
           {
             "name": "callback",
             "type": "function",
-            "description": "A function that is called upon request completion.",
+            "optional": true,
+            "description": "A function that is called when the panel is created.",
             "parameters": [
               {
                 "name": "panel",
@@ -388,7 +421,7 @@
       {
         "id": "Request",
         "type": "object",
-        "description": "Represents a network request for a document resource (script, image etc). See HAR Specification for reference.",
+        "description": "Represents a network request for a document resource (script, image and so on). See HAR Specification for reference.",
         "functions": [
           {
             "name": "getContent",
@@ -398,7 +431,7 @@
               {
                 "name": "callback",
                 "type": "function",
-                "description": "A function that is called upon request completion.",
+                "description": "A function that receives the response body when the request completes.",
                 "parameters": [
                   {
                     "name": "content",
@@ -421,17 +454,17 @@
       {
         "name": "getHAR",
         "type": "function",
-        "description": "Returns HAR archive that contains all known network requests.",
+        "description": "Returns HAR log that contains all known network requests.",
         "parameters": [
           {
             "name": "callback",
             "type": "function",
-            "description": "A function that is called upon request completion.",
+            "description": "A function that receives the HAR log when the request completes.",
             "parameters": [
               {
-                "name": "har",
+                "name": "harLog",
                 "type": "object",
-                "description": "A HAR archive. See HAR specification for details."
+                "description": "A HAR log. See HAR specification for details."
               }
             ]
           }
@@ -481,7 +514,7 @@
           {
             "name": "callback",
             "type": "function",
-            "description": "A function that is called upon request completion.",
+            "description": "A function that receives console messages when the request completes.",
             "parameters": [
               {
                 "name": "messages",
@@ -720,7 +753,7 @@
       {
         "id": "AuditResultSeverity",
         "type": "object",
-        "description": "This type contains possible values for a result severity. The results of different severities are distinguished by colored bullets near the result's display name.", 
+        "description": "This type contains possible values for a result severity. The results of different severities are distinguished by colored bullets near the result's display name.",
         "properties": {
           "Info": {
             "type": "string"

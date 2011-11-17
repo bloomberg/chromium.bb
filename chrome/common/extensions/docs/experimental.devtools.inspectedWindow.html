@@ -587,7 +587,7 @@ You can find more examples that use Developer Tools APIs in
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.experimental.devtools.inspectedWindow.eval</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
-                      <var><span>expression</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>expression</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -674,7 +674,7 @@ You can find more examples that use Developer Tools APIs in
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="optional">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
@@ -749,11 +749,11 @@ You can find more examples that use Developer Tools APIs in
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p>
+                  <p style="display: none; ">
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p style="display: none; ">
+                  <p>
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
@@ -860,7 +860,7 @@ You can find more examples that use Developer Tools APIs in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Set if an exception was caught while evaluating the expression</dd>
+          <dd>Set if an exception was caught while evaluating the expression.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -958,7 +958,7 @@ You can find more examples that use Developer Tools APIs in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A function that is called upon request completion.</dd>
+          <dd>A function that receives the list of resources when the request completes.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1725,7 +1725,7 @@ You can find more examples that use Developer Tools APIs in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A resource within the inspected page, such as a document, a script or an image.</dd>
+          <dd>A resource within the inspected page, such as a document, a script, or an image.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1865,7 +1865,7 @@ You can find more examples that use Developer Tools APIs in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A function that is called upon request completion.</dd>
+          <dd>A function that receives resource content when the request completes.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1918,7 +1918,7 @@ You can find more examples that use Developer Tools APIs in
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p>
+                  <p style="">
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
@@ -2088,7 +2088,7 @@ You can find more examples that use Developer Tools APIs in
                   <!-- Note: intentionally longer 80 columns -->
                   <span>resource.setContent</span>(<span class="null"><span style="display: none; ">, </span><span>string</span>
                       <var><span>content</span></var></span><span class="null"><span style="">, </span><span>boolean</span>
-                      <var><span>commit</span></var></span><span class="null"><span style="">, </span><span>function</span>
+                      <var><span>commit</span></var></span><span class="optional"><span style="">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -2197,7 +2197,7 @@ You can find more examples that use Developer Tools APIs in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>True if the user has finished editing the resource and the new content of the resource should be persisted, false if this is a minor change sent in progress of the user editing the resource.</dd>
+          <dd>True if the user has finished editing the resource, and the new content of the resource should be persisted; false if this is a minor change sent in progress of the user editing the resource.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -2243,7 +2243,7 @@ You can find more examples that use Developer Tools APIs in
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional" style="display: none; ">optional</span>
+                    <span class="optional" style="">optional</span>
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
@@ -2318,11 +2318,11 @@ You can find more examples that use Developer Tools APIs in
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p>
+                  <p style="display: none; ">
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p style="display: none; ">
+                  <p style="">
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
@@ -2372,7 +2372,7 @@ You can find more examples that use Developer Tools APIs in
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Set to undefined if the operation completed successfully, describes error otherwise.</dd>
+          <dd>Set to undefined if the resource content was set successfully; describes error otherwise.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
