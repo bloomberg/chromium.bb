@@ -2664,10 +2664,12 @@ prune-translator-install() {
   StepBanner "PRUNE" "Pruning translator installs [${srpc_kind}]"
   for arch in ${SBTC_BUILD_WITH_PNACL} ; do
     StepBanner "PRUNE" "llvm cruft [${arch}]"
-    spushd "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}"
-    rm -rf include lib nacl share
-    rm -rf bin/llvm-config bin/tblgen
-    spopd
+    if [ -d "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}" ]; then
+      spushd "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}"
+      rm -rf include lib nacl share
+      rm -rf bin/llvm-config bin/tblgen
+      spopd
+    fi
   done
 
   if ! ${SBTC_PRODUCTION}; then
@@ -2676,7 +2678,9 @@ prune-translator-install() {
 
   StepBanner "PRUNE" "Stripping tools-sb nexes"
   for arch in ${SBTC_BUILD_WITH_PNACL} ; do
-    ${PNACL_STRIP} "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}"/bin/*
+    if [ -d "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}" ]; then
+      ${PNACL_STRIP} "${INSTALL_SB_TOOLS}/${arch}/${srpc_kind}"/bin/*
+    fi
   done
 
   StepBanner "PRUNE" "remove driver log"
