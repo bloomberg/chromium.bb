@@ -42,7 +42,7 @@ class ProviderInterface {
       const ResourceIdentifier& resource_identifier,
       bool incognito) const = 0;
 
-  // Askes the provider to set the website setting for a particular
+  // Asks the provider to set the website setting for a particular
   // |primary_pattern|, |secondary_pattern|, |content_type| tuple. If the
   // provider accepts the setting it returns true and takes the ownership of the
   // |value|. Otherwise false is returned and the ownership of the |value| stays

@@ -211,12 +211,11 @@ void HostContentSettingsMap::SetDefaultContentSetting(
   DCHECK(IsSettingAllowedForType(setting, content_type));
 
   base::Value* value = Value::CreateIntegerValue(setting);
-  content_settings_providers_[DEFAULT_PROVIDER]->SetWebsiteSetting(
-      ContentSettingsPattern::Wildcard(),
-      ContentSettingsPattern::Wildcard(),
-      content_type,
-      std::string(),
-      value);
+  if (!content_settings_providers_[DEFAULT_PROVIDER]->SetWebsiteSetting(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      content_type, std::string(), value)) {
+    delete value;
+  }
 }
 
 void HostContentSettingsMap::SetWebsiteSetting(
