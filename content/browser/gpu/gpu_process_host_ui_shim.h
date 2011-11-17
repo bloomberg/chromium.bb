@@ -34,7 +34,7 @@ class Message;
 }
 
 // A task that will forward an IPC message to the UI shim.
-class RouteToGpuProcessHostUIShimTask : public Task {
+class CONTENT_EXPORT RouteToGpuProcessHostUIShimTask : public Task {
  public:
   RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg);
   virtual ~RouteToGpuProcessHostUIShimTask();
@@ -46,7 +46,7 @@ class RouteToGpuProcessHostUIShimTask : public Task {
   IPC::Message msg_;
 };
 
-class GpuProcessHostUIShim
+class CONTENT_EXPORT GpuProcessHostUIShim
     : public IPC::Channel::Listener,
       public IPC::Channel::Sender,
       public base::NonThreadSafe {
