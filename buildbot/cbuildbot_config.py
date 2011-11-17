@@ -698,9 +698,13 @@ add_config('arm-tegra2_kaen-release', [
 add_config('aura-tot-chrome-pfq-informational', [chrome_pfq_info, {
   'board' : 'x86-generic',
   'profile' : 'aura',
+  'vm_tests' : False,
+  'chrome_tests' : False
 }])
 
 add_config('aura-release', [internal, full, official, release, {
   'board' : 'stumpy',
   'profile' : 'aura',
+  'vm_tests' : False,
+  'chrome_tests' : False
 }])
