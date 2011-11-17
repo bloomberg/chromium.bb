@@ -258,7 +258,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
       int32 height,
       TransportDIB::Handle transport_dib) OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+      gfx::PluginWindowHandle window,
+      uint64 surface_id,
+      int renderer_id,
+      int32 route_id,
       int gpu_host_id) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;

@@ -865,26 +865,28 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceSetTransportDIB(
 }
 
 void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+    gfx::PluginWindowHandle window,
+    uint64 surface_id,
+    int renderer_id,
+    int32 route_id,
     int gpu_host_id) {
   TRACE_EVENT0("browser",
       "RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped");
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
+  AcceleratedPluginView* view = ViewForPluginWindowHandle(window);
   DCHECK(view);
   if (view) {
-    plugin_container_manager_.SetSurfaceWasPaintedTo(params.window,
-                                                     params.surface_id);
+    plugin_container_manager_.SetSurfaceWasPaintedTo(window, surface_id);
 
     // The surface is hidden until its first paint, to not show gargabe.
-    if (plugin_container_manager_.SurfaceShouldBeVisible(params.window))
+    if (plugin_container_manager_.SurfaceShouldBeVisible(window))
       [view setHidden:NO];
     [view drawView];
   }
 
-  if (params.renderer_id != 0 || params.route_id != 0) {
-    AcknowledgeSwapBuffers(params.renderer_id,
-                           params.route_id,
+  if (renderer_id != 0 || route_id != 0) {
+    AcknowledgeSwapBuffers(renderer_id,
+                           route_id,
                            gpu_host_id);
   }
 }

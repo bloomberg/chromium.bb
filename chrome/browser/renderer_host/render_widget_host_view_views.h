@@ -99,9 +99,6 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
   virtual void ShowingContextMenu(bool showing) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
-  virtual void AcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
-      int gpu_host_id) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
 #if defined(OS_POSIX) || defined(USE_AURA)
   virtual void GetDefaultScreenInfo(WebKit::WebScreenInfo* results);
@@ -190,6 +187,10 @@ class RenderWidgetHostViewViews : public RenderWidgetHostView,
       int32 height,
       uint64* surface_id,
       TransportDIB::Handle* surface_handle) OVERRIDE;
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      uint64 surface_id,
+      int32 route_id,
+      int gpu_host_id) OVERRIDE;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE;
 
   // CompositorObserver implementation:
