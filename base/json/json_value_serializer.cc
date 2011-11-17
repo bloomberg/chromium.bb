@@ -104,5 +104,6 @@ Value* JSONFileValueSerializer::Deserialize(int* error_code,
   }
 
   JSONStringValueSerializer serializer(json_string);
+  serializer.set_allow_trailing_comma(allow_trailing_comma_);
   return serializer.Deserialize(error_code, error_str);
 }

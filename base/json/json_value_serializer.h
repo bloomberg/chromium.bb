@@ -75,7 +75,8 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   // When deserializing, the file should exist, but when serializing, the
   // serializer will attempt to create the file at the specified location.
   explicit JSONFileValueSerializer(const FilePath& json_file_path)
-    : json_file_path_(json_file_path) {}
+    : json_file_path_(json_file_path),
+      allow_trailing_comma_(false) {}
 
   virtual ~JSONFileValueSerializer() {}
 
@@ -118,8 +119,13 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   // be a JsonFileError.
   static const char* GetErrorMessageForCode(int error_code);
 
+  void set_allow_trailing_comma(bool new_value) {
+    allow_trailing_comma_ = new_value;
+  }
+
  private:
   FilePath json_file_path_;
+  bool allow_trailing_comma_;
 
   // A wrapper for file_util::ReadFileToString which returns a non-zero
   // JsonFileError if there were file errors.
