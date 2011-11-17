@@ -14,9 +14,6 @@ if env.Bit('nacl_glibc'):
 if env.Bit('use_sandboxed_translator'):
   Return()
 
-if env.Bit('bitcode'):
-  env.PNaClForceNative()
-
 env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_DATA_REGION_START}')
 # An explicit output name is specified so an object file is created in the
 # blob_library_loading output directory.

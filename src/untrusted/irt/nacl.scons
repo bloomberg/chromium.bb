@@ -11,11 +11,6 @@ if env.Bit('nacl_glibc'):
   raise UserError('src/untrusted/irt/nacl.scons in the wrong environment?')
 
 blob_env = env.Clone()
-
-if blob_env.Bit('bitcode'):
-  # Tell pnacl-ld to allow control over native linking behavior.
-  blob_env.Append(LINKFLAGS='-Wl,--pnacl-allow-native')
-
 blob_env.Append(LINKFLAGS='-Wl,--section-start,.rodata=${IRT_BLOB_DATA_START}')
 # The PNaCl linker (gold) does not implement the "-Ttext-segment"
 # option.  However, with the linker for x86, the "-Ttext" option does
