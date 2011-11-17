@@ -143,17 +143,6 @@ class DownloadManagerTest : public testing::Test {
     return file_manager_;
   }
 
-  // Make sure download item |id| was set with correct safety state for
-  // given |is_dangerous_file| and |is_dangerous_url|.
-  bool VerifySafetyState(bool is_dangerous_file,
-                         bool is_dangerous_url,
-                         int id) {
-    DownloadItem::SafetyState safety_state =
-        download_manager_->GetDownloadItem(id)->safety_state();
-    return (is_dangerous_file || is_dangerous_url) ?
-        safety_state != DownloadItem::SAFE : safety_state == DownloadItem::SAFE;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(DownloadManagerTest);
 };
 
@@ -262,29 +251,29 @@ const struct {
 
 const struct {
   FilePath::StringType suggested_path;
-  bool is_dangerous_file;
-  bool is_dangerous_url;
+  DownloadStateInfo::DangerType danger;
   bool finish_before_rename;
   int expected_rename_count;
 } kDownloadRenameCases[] = {
   // Safe download, download finishes BEFORE file name determined.
   // Renamed twice (linear path through UI).  Crdownload file does not need
   // to be deleted.
-  { FILE_PATH_LITERAL("foo.zip"), false, false, true, 2, },
-  // Dangerous download (file is dangerous or download URL is not safe or both),
-  // download finishes BEFORE file name determined. Needs to be renamed only
-  // once.
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), true, false, true, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), false, true, true, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), true, true, true, 1, },
+  { FILE_PATH_LITERAL("foo.zip"), DownloadStateInfo::NOT_DANGEROUS, true, 2, },
+  // Potentially dangerous download (e.g., file is dangerous), download finishes
+  // BEFORE file name determined. Needs to be renamed only once.
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT, true, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+    DownloadStateInfo::DANGEROUS_FILE, true, 1, },
   // Safe download, download finishes AFTER file name determined.
   // Needs to be renamed twice.
-  { FILE_PATH_LITERAL("foo.zip"), false, false, false, 2, },
-  // Dangerous download, download finishes AFTER file name determined.
-  // Needs to be renamed only once.
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), true, false, false, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), false, true, false, 1, },
-  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"), true, true, false, 1, },
+  { FILE_PATH_LITERAL("foo.zip"), DownloadStateInfo::NOT_DANGEROUS, false, 2, },
+  // Potentially dangerous download, download finishes AFTER file name
+  // determined. Needs to be renamed only once.
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+    DownloadStateInfo::MAYBE_DANGEROUS_CONTENT, false, 1, },
+  { FILE_PATH_LITERAL("Unconfirmed xxx.crdownload"),
+    DownloadStateInfo::DANGEROUS_FILE, false, 1, },
 };
 
 // This is an observer that records what download IDs have opened a select
@@ -435,10 +424,9 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
     DownloadItem* download = GetActiveDownloadItem(i);
     ASSERT_TRUE(download != NULL);
-    if (kDownloadRenameCases[i].is_dangerous_file)
-      download->MarkFileDangerous();
-    if (kDownloadRenameCases[i].is_dangerous_url)
-      download->MarkUrlDangerous();
+    DownloadStateInfo state = download->state_info();
+    state.danger = kDownloadRenameCases[i].danger;
+    download->SetFileCheckResults(state);
 
     int32* id_ptr = new int32;
     *id_ptr = i;  // Deleted in FileSelected().
@@ -451,14 +439,10 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
       message_loop_.RunAllPending();
       OnResponseCompleted(i, 1024, std::string("fake_hash"));
     }
-
     message_loop_.RunAllPending();
     EXPECT_EQ(
         kDownloadRenameCases[i].expected_rename_count,
         recorder.Count(MockDownloadFile::StatisticsRecorder::STAT_RENAME));
-    EXPECT_TRUE(VerifySafetyState(kDownloadRenameCases[i].is_dangerous_file,
-                                  kDownloadRenameCases[i].is_dangerous_url,
-                                  i));
   }
 }
 

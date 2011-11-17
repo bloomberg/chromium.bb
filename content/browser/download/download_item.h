@@ -75,23 +75,6 @@ class CONTENT_EXPORT DownloadItem {
     DANGEROUS_BUT_VALIDATED  // Dangerous but the user confirmed the download.
   };
 
-  // This enum is used by histograms.  Do not change the ordering or remove
-  // items.
-  enum DangerType {
-    NOT_DANGEROUS = 0,
-
-    // A dangerous file to the system (e.g.: an executable or extension from
-    // places other than gallery).
-    DANGEROUS_FILE,
-
-    // Safebrowsing service shows this URL leads to malicious file download.
-    DANGEROUS_URL,
-
-    // Memory space for histograms is determined by the max.
-    // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
-    DANGEROUS_TYPE_MAX
-  };
-
   // Reason for deleting the download.  Passed to Delete().
   enum DeleteReason {
     DELETE_DUE_TO_BROWSER_SHUTDOWN = 0,
@@ -297,10 +280,11 @@ class CONTENT_EXPORT DownloadItem {
   bool file_externally_removed() const { return file_externally_removed_; }
   SafetyState safety_state() const { return safety_state_; }
   // Why |safety_state_| is not SAFE.
-  DangerType GetDangerType() const;
+  DownloadStateInfo::DangerType GetDangerType() const;
   bool IsDangerous() const;
   void MarkFileDangerous();
   void MarkUrlDangerous();
+  void MarkContentDangerous();
 
   bool auto_opened() { return auto_opened_; }
   const FilePath& target_name() const { return state_info_.target_name; }
@@ -364,8 +348,8 @@ class CONTENT_EXPORT DownloadItem {
   // Call to transition state; all state transitions should go through this.
   void TransitionTo(DownloadState new_state);
 
-  // Called when safety_state_ should be recomputed from is_dangerous_file
-  // and is_dangerous_url.
+  // Called when safety_state_ should be recomputed from the DangerType of the
+  // state info.
   void UpdateSafetyState();
 
   // Helper function to recompute |state_info_.target_name| when

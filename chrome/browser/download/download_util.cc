@@ -35,6 +35,7 @@
 #include "content/browser/download/download_file.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -427,10 +428,10 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   if (download->IsInProgress()) {
     if (download->safety_state() == DownloadItem::DANGEROUS) {
       file_value->SetString("state", "DANGEROUS");
-      DCHECK(download->GetDangerType() == DownloadItem::DANGEROUS_FILE ||
-             download->GetDangerType() == DownloadItem::DANGEROUS_URL);
+      DCHECK(download->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ||
+             download->GetDangerType() == DownloadStateInfo::DANGEROUS_URL);
       const char* danger_type_value =
-          download->GetDangerType() == DownloadItem::DANGEROUS_FILE ?
+          download->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ?
           "DANGEROUS_FILE" : "DANGEROUS_URL";
       file_value->SetString("danger_type", danger_type_value);
     } else if (download->is_paused()) {

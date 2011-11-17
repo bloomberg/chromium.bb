@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
+#include "content/browser/download/download_state_info.h"
 
 class ResourceDispatcherHost;
 

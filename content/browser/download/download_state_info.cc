@@ -11,8 +11,7 @@ DownloadStateInfo::DownloadStateInfo()
       has_user_gesture(false),
       transition_type(content::PAGE_TRANSITION_LINK),
       prompt_user_for_save_location(false),
-      is_dangerous_file(false),
-      is_dangerous_url(false) {
+      danger(NOT_DANGEROUS) {
 }
 
 DownloadStateInfo::DownloadStateInfo(
@@ -22,8 +21,7 @@ DownloadStateInfo::DownloadStateInfo(
       has_user_gesture(has_user_gesture),
       transition_type(content::PAGE_TRANSITION_LINK),
       prompt_user_for_save_location(prompt_user_for_save_location),
-      is_dangerous_file(false),
-      is_dangerous_url(false) {
+      danger(NOT_DANGEROUS) {
 }
 
 DownloadStateInfo::DownloadStateInfo(
@@ -33,18 +31,22 @@ DownloadStateInfo::DownloadStateInfo(
     content::PageTransition transition_type,
     bool prompt_user_for_save_location,
     int uniquifier,
-    bool dangerous_file,
-    bool dangerous_url)
+    DangerType danger_type)
     : target_name(target),
       path_uniquifier(uniquifier),
       has_user_gesture(has_user_gesture),
       transition_type(transition_type),
       prompt_user_for_save_location(prompt_user_for_save_location),
-      is_dangerous_file(dangerous_file),
-      is_dangerous_url(dangerous_url),
+      danger(danger_type),
       force_file_name(forced_name) {
 }
 
 bool DownloadStateInfo::IsDangerous() const {
-  return is_dangerous_url || is_dangerous_file;
+  // TODO(noelutz): At this point we can't mark the download as dangerous
+  // if it's content is dangerous because the UI doesn't yet support it.
+  // Once the UI has been changed we should return true when the danger
+  // type is set to DANGEROUS_CONTENT.
+  // |dangerous_content| is true.
+  return (danger == DANGEROUS_FILE ||
+          danger == DANGEROUS_URL);
 }

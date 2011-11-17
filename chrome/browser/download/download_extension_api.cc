@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/download/interrupt_reasons.h"
 #include "content/browser/renderer_host/render_process_host.h"
@@ -53,6 +54,7 @@ const char kInvalidURL[] = "Invalid URL";
 const char kBodyKey[] = "body";
 const char kBytesReceivedKey[] = "bytesReceived";
 const char kDangerAcceptedKey[] = "dangerAccepted";
+const char kDangerContent[] = "content";
 const char kDangerFile[] = "file";
 const char kDangerKey[] = "danger";
 const char kDangerSafe[] = "safe";
@@ -77,11 +79,13 @@ const char kStateKey[] = "state";
 const char kTotalBytesKey[] = "totalBytes";
 const char kUrlKey[] = "url";
 
-const char* DangerString(DownloadItem::DangerType danger) {
+const char* DangerString(DownloadStateInfo::DangerType danger) {
   switch (danger) {
-    case DownloadItem::NOT_DANGEROUS: return kDangerSafe;
-    case DownloadItem::DANGEROUS_FILE: return kDangerFile;
-    case DownloadItem::DANGEROUS_URL: return kDangerUrl;
+    case DownloadStateInfo::MAYBE_DANGEROUS_CONTENT:
+    case DownloadStateInfo::NOT_DANGEROUS: return kDangerSafe;
+    case DownloadStateInfo::DANGEROUS_FILE: return kDangerFile;
+    case DownloadStateInfo::DANGEROUS_URL: return kDangerUrl;
+    case DownloadStateInfo::DANGEROUS_CONTENT: return kDangerContent;
     default:
       NOTREACHED();
       return "";

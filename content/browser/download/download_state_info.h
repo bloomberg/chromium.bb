@@ -13,6 +13,32 @@
 // Contains information relating to the process of determining what to do with
 // the download.
 struct DownloadStateInfo {
+  // This enum is also used by histograms.  Do not change the ordering or remove
+  // items.
+  enum DangerType {
+    // The download is safe.
+    NOT_DANGEROUS = 0,
+
+    // A dangerous file to the system (e.g.: a pdf or extension from
+    // places other than gallery).
+    DANGEROUS_FILE,
+
+    // Safebrowsing download service shows this URL leads to malicious file
+    // download.
+    DANGEROUS_URL,
+
+    // SafeBrowsing download service shows this file content as being malicious.
+    DANGEROUS_CONTENT,
+
+    // The content of this download may be malicious (e.g., extension is exe but
+    // SafeBrowsing has not finished checking the content).
+    MAYBE_DANGEROUS_CONTENT,
+
+    // Memory space for histograms is determined by the max.
+    // ALWAYS ADD NEW VALUES BEFORE THIS ONE.
+    DANGEROUS_TYPE_MAX
+  };
+
   DownloadStateInfo();
   DownloadStateInfo(bool has_user_gesture,
                     bool prompt_user_for_save_location);
@@ -22,8 +48,7 @@ struct DownloadStateInfo {
                     content::PageTransition transition_type,
                     bool prompt_user_for_save_location,
                     int uniquifier,
-                    bool dangerous_file,
-                    bool dangerous_url);
+                    DangerType danger);
 
   // Indicates if the download is dangerous.
   CONTENT_EXPORT bool IsDangerous() const;
@@ -50,11 +75,7 @@ struct DownloadStateInfo {
   // default location.
   bool prompt_user_for_save_location;
 
-  // True if this download file is potentially dangerous (ex: exe, dll, ...).
-  bool is_dangerous_file;
-
-  // If safebrowsing believes this URL leads to malware.
-  bool is_dangerous_url;
+  DangerType danger;
 
   // True if this download's file name was specified initially.
   FilePath force_file_name;

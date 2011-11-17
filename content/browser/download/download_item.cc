@@ -91,25 +91,6 @@ const char* DebugDownloadStateString(DownloadItem::DownloadState state) {
   };
 }
 
-DownloadItem::SafetyState GetSafetyState(bool dangerous_file,
-                                         bool dangerous_url) {
-  return (dangerous_url || dangerous_file) ?
-      DownloadItem::DANGEROUS : DownloadItem::SAFE;
-}
-
-// Note: When a download has both |dangerous_file| and |dangerous_url| set,
-// danger type is set to DANGEROUS_URL since the risk of dangerous URL
-// overweights that of dangerous file type.
-DownloadItem::DangerType GetDangerType(bool dangerous_file,
-                                       bool dangerous_url) {
-  if (dangerous_url) {
-    // dangerous URL overweights dangerous file. We check dangerous URL first.
-    return DownloadItem::DANGEROUS_URL;
-  }
-  return dangerous_file ?
-      DownloadItem::DANGEROUS_FILE : DownloadItem::NOT_DANGEROUS;
-}
-
 // Classes to null out request handle calls (for SavePage DownloadItems, which
 // may have, e.g., Cancel() called on them without it doing anything)
 // and to DCHECK on them (for history DownloadItems, which should never have
@@ -187,7 +168,7 @@ DownloadItem::DownloadItem(DownloadManager* download_manager,
     : state_info_(info.original_name, info.save_info.file_path,
                   info.has_user_gesture, info.transition_type,
                   info.prompt_user_for_save_location, info.path_uniquifier,
-                  false, false),
+                  DownloadStateInfo::NOT_DANGEROUS),
       request_handle_(request_handle),
       download_id_(info.download_id),
       full_path_(info.path),
@@ -338,7 +319,7 @@ void DownloadItem::DangerousDownloadValidated() {
 
   UMA_HISTOGRAM_ENUMERATION("Download.DangerousDownloadValidated",
                             GetDangerType(),
-                            DANGEROUS_TYPE_MAX);
+                            DownloadStateInfo::DANGEROUS_TYPE_MAX);
 
   safety_state_ = DANGEROUS_BUT_VALIDATED;
   UpdateObservers();
@@ -462,9 +443,8 @@ void DownloadItem::TransitionTo(DownloadState new_state) {
 }
 
 void DownloadItem::UpdateSafetyState() {
-  SafetyState updated_value(
-      GetSafetyState(state_info_.is_dangerous_file,
-                     state_info_.is_dangerous_url));
+  SafetyState updated_value = state_info_.IsDangerous() ?
+      DownloadItem::DANGEROUS : DownloadItem::SAFE;
   if (updated_value != safety_state_) {
     safety_state_ = updated_value;
     UpdateObservers();
@@ -501,11 +481,11 @@ void DownloadItem::Delete(DeleteReason reason) {
   switch (reason) {
     case DELETE_DUE_TO_USER_DISCARD:
       UMA_HISTOGRAM_ENUMERATION("Download.UserDiscard", GetDangerType(),
-                                DANGEROUS_TYPE_MAX);
+                                DownloadStateInfo::DANGEROUS_TYPE_MAX);
       break;
     case DELETE_DUE_TO_BROWSER_SHUTDOWN:
       UMA_HISTOGRAM_ENUMERATION("Download.Discard", GetDangerType(),
-                                DANGEROUS_TYPE_MAX);
+                                DownloadStateInfo::DANGEROUS_TYPE_MAX);
       break;
     default:
       NOTREACHED();
@@ -671,28 +651,32 @@ void DownloadItem::SetFileCheckResults(const DownloadStateInfo& state) {
   UpdateSafetyState();
 }
 
-DownloadItem::DangerType DownloadItem::GetDangerType() const {
-  return ::GetDangerType(state_info_.is_dangerous_file,
-                         state_info_.is_dangerous_url);
+DownloadStateInfo::DangerType DownloadItem::GetDangerType() const {
+  return state_info_.danger;
 }
 
 bool DownloadItem::IsDangerous() const {
-  return GetDangerType() != DownloadItem::NOT_DANGEROUS;
+  return state_info_.IsDangerous();
 }
 
 void DownloadItem::MarkFileDangerous() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  state_info_.is_dangerous_file = true;
+  state_info_.danger = DownloadStateInfo::DANGEROUS_FILE;
   UpdateSafetyState();
 }
 
 void DownloadItem::MarkUrlDangerous() {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  state_info_.danger = DownloadStateInfo::DANGEROUS_URL;
+  UpdateSafetyState();
+}
 
-  state_info_.is_dangerous_url = true;
+void DownloadItem::MarkContentDangerous() {
+  // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  state_info_.danger = DownloadStateInfo::DANGEROUS_CONTENT;
   UpdateSafetyState();
 }
 

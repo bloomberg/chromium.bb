@@ -192,8 +192,7 @@ TEST_F(DownloadItemTest, NotificationAfterSetFileCheckResults) {
   MockObserver safe_observer(safe_item);
 
   DownloadStateInfo state = safe_item->state_info();;
-  state.is_dangerous_file = false;
-  state.is_dangerous_url = false;
+  state.danger = DownloadStateInfo::NOT_DANGEROUS;
   safe_item->SetFileCheckResults(state);
   ASSERT_FALSE(safe_observer.CheckUpdated());
 
@@ -202,8 +201,7 @@ TEST_F(DownloadItemTest, NotificationAfterSetFileCheckResults) {
   MockObserver unsafeurl_observer(unsafeurl_item);
 
   state = unsafeurl_item->state_info();;
-  state.is_dangerous_file = false;
-  state.is_dangerous_url = true;
+  state.danger = DownloadStateInfo::DANGEROUS_URL;
   unsafeurl_item->SetFileCheckResults(state);
   ASSERT_TRUE(unsafeurl_observer.CheckUpdated());
 
@@ -214,8 +212,7 @@ TEST_F(DownloadItemTest, NotificationAfterSetFileCheckResults) {
   MockObserver unsafefile_observer(unsafefile_item);
 
   state = unsafefile_item->state_info();;
-  state.is_dangerous_file = true;
-  state.is_dangerous_url = false;
+  state.danger = DownloadStateInfo::DANGEROUS_FILE;
   unsafefile_item->SetFileCheckResults(state);
   ASSERT_TRUE(unsafefile_observer.CheckUpdated());
 

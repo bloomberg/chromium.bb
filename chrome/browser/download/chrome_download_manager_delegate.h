@@ -99,6 +99,10 @@ class ChromeDownloadManagerDelegate
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Returns the SafeBrowsing download protection service if it's
+  // enabled. Returns NULL otherwise.
+  safe_browsing::DownloadProtectionService* GetDownloadProtectionService();
+
   // Callback function after url is checked with safebrowsing service.
   void CheckDownloadUrlDone(
       int32 download_id,

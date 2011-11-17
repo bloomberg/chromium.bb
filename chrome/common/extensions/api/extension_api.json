@@ -4315,7 +4315,12 @@
       "DANGER_URL": {
         "type": "string",
         "value": "url",
-        "description": "The download's URL is suspicious."
+        "description": "The download's URL is malicious."
+      },
+      "DANGER_CONTENT": {
+        "type": "string",
+        "value": "content",
+        "description": "The download's content is malicious."
       }
     },
     "types": [

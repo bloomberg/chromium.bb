@@ -87,13 +87,11 @@ bool ChromeDownloadManagerDelegate::ShouldStartDownload(int32 download_id) {
     return false;
 
 #if defined(ENABLE_SAFE_BROWSING)
-  SafeBrowsingService* sb_service =
-      g_browser_process->safe_browsing_service();
-  if (sb_service && sb_service->download_protection_service() &&
-      profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+  DownloadProtectionService* service = GetDownloadProtectionService();
+  if (service) {
     VLOG(2) << __FUNCTION__ << "() Start SB URL check for download = "
             << download->DebugString(false);
-    sb_service->download_protection_service()->CheckDownloadUrl(
+    service->CheckDownloadUrl(
         DownloadProtectionService::DownloadInfo::FromDownloadItem(*download),
         base::Bind(
             &ChromeDownloadManagerDelegate::CheckDownloadUrlDone,
@@ -118,9 +116,9 @@ void ChromeDownloadManagerDelegate::ChooseDownloadPath(
 bool ChromeDownloadManagerDelegate::OverrideIntermediatePath(
     DownloadItem* item,
     FilePath* intermediate_path) {
-  if (item->IsDangerous()) {
-    // The download is not safe.  It's name is already set to an intermediate
-    // name, so no need to override.
+  if (item->GetDangerType() != DownloadStateInfo::NOT_DANGEROUS) {
+    // The download might not be safe.  It's name is already set to an
+    // intermediate name, so no need to override.
     return false;
   }
 
@@ -164,13 +162,11 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(DownloadItem* item) {
     return !state.pending;
   }
   // Begin the safe browsing download protection check.
-  SafeBrowsingService* sb_service =
-      g_browser_process->safe_browsing_service();
-  if (sb_service && sb_service->download_protection_service() &&
-      profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+  DownloadProtectionService* service = GetDownloadProtectionService();
+  if (service) {
     VLOG(2) << __FUNCTION__ << "() Start SB download check for download = "
             << item->DebugString(false);
-    sb_service->download_protection_service()->CheckClientDownload(
+    service->CheckClientDownload(
         DownloadProtectionService::DownloadInfo::FromDownloadItem(*item),
         base::Bind(
             &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
@@ -299,6 +295,18 @@ void ChromeDownloadManagerDelegate::DownloadProgressUpdated() {
       download_count, progress_known, progress);
 }
 
+#if defined(ENABLE_SAFE_BROWSING)
+DownloadProtectionService*
+    ChromeDownloadManagerDelegate::GetDownloadProtectionService() {
+  SafeBrowsingService* sb_service = g_browser_process->safe_browsing_service();
+  if (sb_service && sb_service->download_protection_service() &&
+      profile_->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+    return sb_service->download_protection_service();
+  }
+  return NULL;
+}
+#endif
+
 void ChromeDownloadManagerDelegate::CheckDownloadUrlDone(
     int32 download_id,
     DownloadProtectionService::DownloadCheckResult result) {
@@ -330,10 +338,11 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
 
   VLOG(2) << __FUNCTION__ << "() download = " << item->DebugString(false)
           << " verdict = " << result;
-  // TODO(noelutz):
-  //  1) display a warning if the result is DANGEROUS.
-  //  2) make sure we haven't already displayed a warning for the URL.
-  //  3) disable the existing dangerous file warning for executables.
+  // We only mark the content as being dangerous if the download's safety state
+  // has not been set to DANGEROUS yet.  We don't want to show two warnings.
+  if (result == DownloadProtectionService::DANGEROUS &&
+      item->safety_state() == DownloadItem::SAFE)
+    item->MarkContentDangerous();
 
   SafeBrowsingStateMap::iterator it = safe_browsing_state_.find(item->id());
   DCHECK(it != safe_browsing_state_.end() && it->second.pending);
@@ -415,10 +424,24 @@ void ChromeDownloadManagerDelegate::CheckVisitedReferrerBeforeDone(
     state.suggested_path = state.force_file_name;
   }
 
-  if (!state.prompt_user_for_save_location && state.force_file_name.empty()) {
-    state.is_dangerous_file =
-        IsDangerousFile(*download, state, visited_referrer_before);
+  if (!state.prompt_user_for_save_location &&
+      state.force_file_name.empty() &&
+      IsDangerousFile(*download, state, visited_referrer_before)) {
+    state.danger = DownloadStateInfo::DANGEROUS_FILE;
   }
+
+#if defined(ENABLE_SAFE_BROWSING)
+  DownloadProtectionService* service = GetDownloadProtectionService();
+  // Return false if this type of files is handled by the enhanced SafeBrowsing
+  // download protection.
+  if (service && service->enabled() &&
+      service->IsSupportedFileType(state.suggested_path.BaseName())) {
+    // TODO(noelutz): if the user changes the extension name in the UI to
+    // something like .exe SafeBrowsing will currently *not* check if the
+    // download is malicious.
+    state.danger = DownloadStateInfo::MAYBE_DANGEROUS_CONTENT;
+  }
+#endif
 
   // We need to move over to the download thread because we don't want to stat
   // the suggested path on the UI thread.
@@ -453,8 +476,8 @@ void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
     state.suggested_path = state.suggested_path.Append(filename);
   }
 
-  // If the download is deemed dangerous, we'll use a temporary name for it.
-  if (state.IsDangerous()) {
+  // If the download is possibly dangerous, we'll use a temporary name for it.
+  if (state.danger != DownloadStateInfo::NOT_DANGEROUS) {
     state.target_name = FilePath(state.suggested_path).BaseName();
     // Create a temporary file to hold the file until the user approves its
     // download.
@@ -506,7 +529,7 @@ void ChromeDownloadManagerDelegate::CheckIfSuggestedPathExists(
   // See: http://code.google.com/p/chromium/issues/detail?id=3662
   if (!state.prompt_user_for_save_location &&
       state.force_file_name.empty()) {
-    if (state.IsDangerous())
+    if (state.danger != DownloadStateInfo::NOT_DANGEROUS)
       file_util::WriteFile(state.suggested_path, "", 0);
     else
       file_util::WriteFile(download_util::GetCrDownloadPath(
@@ -540,10 +563,6 @@ bool ChromeDownloadManagerDelegate::IsDangerousFile(
   // Anything loaded directly from the address bar is OK.
   if (state.transition_type & content::PAGE_TRANSITION_FROM_ADDRESS_BAR)
     return false;
-
-  // Return false if this type of files is handled by the enhanced SafeBrowsing
-  // download protection.
-  // TODO(noelutz): implement that check.
 
   // Extensions that are not from the gallery are considered dangerous.
   if (IsExtensionDownload(&download)) {

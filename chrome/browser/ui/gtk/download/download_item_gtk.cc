@@ -560,14 +560,14 @@ void DownloadItemGtk::UpdateDangerWarning() {
     string16 dangerous_warning;
 
     // The dangerous download label text is different for different cases.
-    if (get_download()->GetDangerType() == DownloadItem::DANGEROUS_URL) {
+    if (get_download()->GetDangerType() == DownloadStateInfo::DANGEROUS_URL) {
       // Safebrowsing shows the download URL leads to malicious file.
       dangerous_warning =
           l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
     } else {
       // It's a dangerous file type (e.g.: an executable).
       DCHECK(get_download()->GetDangerType() ==
-             DownloadItem::DANGEROUS_FILE);
+             DownloadStateInfo::DANGEROUS_FILE);
       if (ChromeDownloadManagerDelegate::IsExtensionDownload(get_download())) {
         dangerous_warning =
             l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
@@ -617,7 +617,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
 void DownloadItemGtk::UpdateDangerIcon() {
   if (theme_service_->UsingNativeTheme()) {
     const char* stock =
-        get_download()->GetDangerType() == DownloadItem::DANGEROUS_URL ?
+        get_download()->GetDangerType() == DownloadStateInfo::DANGEROUS_URL ?
         GTK_STOCK_DIALOG_ERROR : GTK_STOCK_DIALOG_WARNING;
     gtk_image_set_from_stock(
         GTK_IMAGE(dangerous_image_), stock, GTK_ICON_SIZE_SMALL_TOOLBAR);
@@ -625,7 +625,7 @@ void DownloadItemGtk::UpdateDangerIcon() {
     // Set the warning icon.
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     int pixbuf_id =
-        get_download()->GetDangerType() == DownloadItem::DANGEROUS_URL ?
+        get_download()->GetDangerType() == DownloadStateInfo::DANGEROUS_URL ?
         IDR_SAFEBROWSING_WARNING : IDR_WARNING;
     GdkPixbuf* download_pixbuf = rb.GetNativeImageNamed(pixbuf_id);
     gtk_image_set_from_pixbuf(GTK_IMAGE(dangerous_image_), download_pixbuf);

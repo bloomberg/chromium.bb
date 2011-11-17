@@ -23,6 +23,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
+#include "content/browser/download/download_state_info.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -254,14 +255,14 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     // The dangerous download label text and icon are different
     // under different cases.
     string16 dangerous_label;
-    if (download->GetDangerType() == DownloadItem::DANGEROUS_URL) {
+    if (download->GetDangerType() == DownloadStateInfo::DANGEROUS_URL) {
       // Safebrowsing shows the download URL leads to malicious file.
       warning_icon_ = rb.GetBitmapNamed(IDR_SAFEBROWSING_WARNING);
       dangerous_label =
           l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
     } else {
       // The download file has dangerous file type (e.g.: an executable).
-      DCHECK(download->GetDangerType() == DownloadItem::DANGEROUS_FILE);
+      DCHECK(download->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE);
       warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
       if (ChromeDownloadManagerDelegate::IsExtensionDownload(download)) {
         dangerous_label =

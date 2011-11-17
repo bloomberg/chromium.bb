@@ -22,6 +22,7 @@
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/ui_localizer.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_state_info.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -173,7 +174,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     // The dangerous download label, button text and icon are different under
     // different cases.
     if (downloadModel->download()->GetDangerType() ==
-        DownloadItem::DANGEROUS_URL) {
+        DownloadStateInfo::DANGEROUS_URL) {
       // Safebrowsing shows the download URL leads to malicious file.
       alertIcon = rb.GetNativeImageNamed(IDR_SAFEBROWSING_WARNING);
       dangerousWarning = l10n_util::GetNSStringWithFixup(
@@ -183,7 +184,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     } else {
       // It's a dangerous file type (e.g.: an executable).
       DCHECK_EQ(downloadModel->download()->GetDangerType(),
-                DownloadItem::DANGEROUS_FILE);
+                DownloadStateInfo::DANGEROUS_FILE);
       alertIcon = rb.GetNativeImageNamed(IDR_WARNING);
       if (ChromeDownloadManagerDelegate::IsExtensionDownload(
               downloadModel->download())) {

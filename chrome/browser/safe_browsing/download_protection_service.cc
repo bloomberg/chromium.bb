@@ -575,6 +575,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void RecordImprovedProtectionStats(DownloadCheckResultReason reason) {
+    VLOG(2) << "SafeBrowsing download verdict for: "
+            << info_.DebugString() << " verdict:" << reason;
     UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats",
                               reason,
                               REASON_MAX);
@@ -638,6 +640,11 @@ void DownloadProtectionService::CheckDownloadUrl(
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(&DownloadUrlSBClient::StartCheck, client));
+}
+
+bool DownloadProtectionService::IsSupportedFileType(
+    const FilePath& filename) const {
+  return IsBinaryFile(filename);
 }
 
 void DownloadProtectionService::CancelPendingRequests() {
