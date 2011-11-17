@@ -75,8 +75,8 @@ EXTRA_ENV = {
   'ISYSTEM_newlib' :
     '${BASE_SDK}/include ' +
     '${ISYSTEM_%FRONTEND%} ' +
-    '${BASE_LIBSTDCPP}/include/c++/4.2.1 ' +
-    '${BASE_LIBSTDCPP}/include/c++/4.2.1/arm-none-linux-gnueabi ' +
+    '${BASE_LIBSTDCPP}/include/c++/4.6.2 ' +
+    '${BASE_LIBSTDCPP}/include/c++/4.6.2/arm-none-linux-gnueabi ' +
     '${BASE_INCLUDE} ' +
     '${BASE_NEWLIB}/arm-none-linux-gnueabi/include',
 
