@@ -53,6 +53,7 @@ const char* kLaunchLocalPath = "app.launch.local_path";
 const char* kLaunchWebURL = "app.launch.web_url";
 const char* kLaunchWidth = "app.launch.width";
 const char* kLayouts = "layouts";
+const char* kManifestVersion = "manifest_version";
 const char* kMatches = "matches";
 const char* kMinimumChromeVersion = "minimum_chrome_version";
 const char* kName = "name";
@@ -271,6 +272,8 @@ const char* kInvalidLaunchWidthContainer =
     "Invalid container type for 'app.launch.width'.";
 const char* kInvalidManifest =
     "Manifest file is invalid.";
+const char* kInvalidManifestVersion =
+    "Invalid value for 'manifest_version'.";
 const char* kInvalidMatch =
     "Invalid value for 'content_scripts[*].matches[*]': *";
 const char* kInvalidMatchCount =

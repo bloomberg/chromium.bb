@@ -63,6 +63,9 @@ const char kPrivate[] = "PRIVATE";
 
 const int kRSAKeySize = 1024;
 
+const char kDefaultContentSecurityPolicy[] =
+    "script-src 'self'; object-src 'self'";
+
 // Converts a normal hexadecimal string into the alphabet used by extensions.
 // We use the characters 'a'-'p' instead of '0'-'f' to avoid ever having a
 // completely numeric host, since some software interprets that as an IP
@@ -1275,7 +1278,8 @@ bool Extension::IsTrustedId(const std::string& id) {
 }
 
 Extension::Extension(const FilePath& path, Location location)
-    : incognito_split_mode_(false),
+    : manifest_version_(0),
+      incognito_split_mode_(false),
       offline_enabled_(false),
       location_(location),
       converted_from_user_script_(false),
@@ -1453,6 +1457,19 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   runtime_data_.SetActivePermissions(new ExtensionPermissionSet());
   optional_permission_set_ = new ExtensionPermissionSet();
   required_permission_set_ = new ExtensionPermissionSet();
+
+  if (source.HasKey(keys::kManifestVersion)) {
+    int manifest_version = 0;
+    if (!source.GetInteger(keys::kManifestVersion, &manifest_version) ||
+        manifest_version < 1) {
+      *error = errors::kInvalidManifestVersion;
+      return false;
+    }
+    manifest_version_ = manifest_version;
+  } else {
+    // Version 1 was the original version, which lacked a version indicator.
+    manifest_version_ = 1;
+  }
 
   if (source.HasKey(keys::kPublicKey)) {
     std::string public_key_bytes;
@@ -2217,6 +2234,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
       return false;
     }
     content_security_policy_ = content_security_policy;
+  } else if (manifest_version_ >= 2) {
+    // Manifest version 2 introduced a default Content-Security-Policy.
+    // TODO(abarth): Should we continue to let extensions override the
+    //               default Content-Security-Policy?
+    content_security_policy_ = kDefaultContentSecurityPolicy;
   }
 
   // Initialize devtools page url (optional).

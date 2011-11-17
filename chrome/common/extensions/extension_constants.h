@@ -55,6 +55,7 @@ namespace extension_manifest_keys {
   extern const char* kLaunchWebURL;
   extern const char* kLaunchWidth;
   extern const char* kLayouts;
+  extern const char* kManifestVersion;
   extern const char* kMatches;
   extern const char* kMinimumChromeVersion;
   extern const char* kNaClModules;
@@ -203,6 +204,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidLaunchWidth;
   extern const char* kInvalidLaunchWidthContainer;
   extern const char* kInvalidManifest;
+  extern const char* kInvalidManifestVersion;
   extern const char* kInvalidMatch;
   extern const char* kInvalidMatchCount;
   extern const char* kInvalidMatches;

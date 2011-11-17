@@ -494,6 +494,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const std::string& name() const { return name_; }
   const std::string& public_key() const { return public_key_; }
   const std::string& description() const { return description_; }
+  int manifest_version() const { return manifest_version_; }
   bool converted_from_user_script() const {
     return converted_from_user_script_;
   }
@@ -713,6 +714,14 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
 
   // The absolute path to the directory the extension is stored in.
   FilePath path_;
+
+  // The version of this extension's manifest. We increase the manifest
+  // version when making breaking changes to the extension system.
+  // Version 1 was the first manifest version (implied by a lack of a
+  // manifest_version attribute in the extension's manifest). We initialize
+  // this member variable to 0 to distinguish the "uninitialized" case from
+  // the case when we know the manifest version actually is 1.
+  int manifest_version_;
 
   // Default locale for fall back. Can be empty if extension is not localized.
   std::string default_locale_;
