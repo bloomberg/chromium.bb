@@ -104,6 +104,7 @@ LDPatterns = [
   ( ('-T', '(.*)'),      "env.set('LD_SCRIPT', $0)"),
 
   ( ('(-e)','(.*)'),              PassThrough),
+  ( '(-entry=.*)',                PassThrough),
   ( ('(--section-start)','(.*)'), PassThrough),
   ( '(-?-soname=.*)',             PassThrough),
   ( ('(-?-soname)', '(.*)'),      PassThrough),

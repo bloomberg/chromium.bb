@@ -13,6 +13,7 @@ from driver_tools import *
 
 EXTRA_ENV = {
   'PIC'           : '0',
+  'IRT_ABI_HACK_64': '0',
 
   # Flags for pnacl-nativeld
   'LD_FLAGS': '${STATIC ? -static : ${SHARED ? -shared}}',
@@ -33,11 +34,15 @@ EXTRA_ENV = {
 
   'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
 
+  'LD_ARGS_IRT_ABI_HACK_64':
+    '-lpnacl_irt_shim  -entry=_pnacl_wrapper_start',
+
   # These are just the dependencies in the native link.
   # TODO(pdox): To simplify translation, reduce from 4 to 2 cases.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
-    '-l:crtbegin.o --start-group ${ld_inputs} -lgcc_eh -lgcc --end-group ' +
+    '-l:crtbegin.o ${IRT_ABI_HACK_64 ? ${LD_ARGS_IRT_ABI_HACK_64} } ' +
+    '--start-group ${ld_inputs} -lgcc_eh -lgcc --end-group ' +
     '-l:libcrt_platform.a -l:crtend.o',
 
   'LD_ARGS_glibc_static' :

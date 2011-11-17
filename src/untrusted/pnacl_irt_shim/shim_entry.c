@@ -4,10 +4,6 @@
  * found in the LICENSE file.
  */
 
-#include <assert.h>
-#include <unistd.h>
-#include <string.h>
-
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -30,10 +26,8 @@ void _pnacl_wrapper_start(uint32_t *info) {
     }
   }
   if (entry == NULL) {
-    static const char fatal_msg[] =
-        "pnacl_wrapper_start: No AT_SYSINFO item found in auxv.\n";
-    write(2, fatal_msg, sizeof(fatal_msg) - 1);
-    exit(-1);
+    volatile char* p = NULL;
+    *p = 0;
   }
 
   /*
