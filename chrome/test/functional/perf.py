@@ -601,6 +601,65 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
         'extrapolation')
 
 
+class WebGLTest(BasePerfTest):
+  """Tests for WebGL performance."""
+
+  def _RunWebGLTest(self, url, description):
+    """Measures FPS using a specified WebGL demo.
+
+    Args:
+      url: The string URL that, once loaded, will run the WebGL demo (default
+           WebGL demo settings are used, since this test does not modify any
+           settings in the demo).
+      description: A string description for this demo, used as a performance
+                   value description.  Should not contain any spaces.
+    """
+    self.assertTrue(self.AppendTab(pyauto.GURL(url)),
+                    msg='Failed to append tab for %s.' % description)
+
+    get_fps_js = """
+      var fps_field = document.getElementById("fps");
+      var result = -1;
+      if (fps_field)
+        result = fps_field.innerHTML;
+      window.domAutomationController.send(JSON.stringify(result));
+    """
+
+    # Wait until we start getting FPS values.
+    self.assertTrue(
+        self.WaitUntil(
+            lambda: self.ExecuteJavascript(get_fps_js, tab_index=1) != '-1',
+            timeout=300, retry_sleep=1),
+        msg='Timed out when waiting for FPS values to be available.')
+
+    # Let the experiment run for 5 seconds before we start collecting perf
+    # measurements.
+    time.sleep(5)
+
+    # Collect the current FPS value each second for the next 30 seconds.  The
+    # final result of this test will be the average of these FPS values.
+    fps_vals = []
+    for _ in xrange(30):
+      fps = self.ExecuteJavascript(get_fps_js, tab_index=1)
+      fps_vals.append(float(fps.replace('"', '')))
+      time.sleep(1)
+    self._PrintSummaryResults(description, fps_vals, 'fps')
+
+  def testWebGLAquarium(self):
+    """Measures performance using the WebGL Aquarium demo."""
+    self._RunWebGLTest(
+        self.GetFileURLForDataPath('pyauto_private', 'webgl', 'aquarium',
+                                   'aquarium.html'),
+        'WebGLAquarium')
+
+  def testWebGLField(self):
+    """Measures performance using the WebGL Field demo."""
+    self._RunWebGLTest(
+        self.GetFileURLForDataPath('pyauto_private', 'webgl', 'field',
+                                   'field.html'),
+        'WebGLField')
+
+
 class FileUploadDownloadTest(BasePerfTest):
   """Tests that involve measuring performance of upload and download."""
 
