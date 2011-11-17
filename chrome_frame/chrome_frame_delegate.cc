@@ -6,35 +6,41 @@
 
 #include "chrome/common/automation_messages.h"
 
+#define NO_CODE ((void)0)
+
 bool ChromeFrameDelegateImpl::IsTabMessage(const IPC::Message& message) {
   bool is_tab_message = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeFrameDelegateImpl, message)
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_NavigationStateChanged, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_UpdateTargetUrl, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_HandleAccelerator, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_TabbedOut, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_OpenURL, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_NavigationFailed, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_DidNavigate, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_TabLoaded, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_MoveWindow, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_ForwardMessageToExternalHost, )
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_NavigationStateChanged, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_UpdateTargetUrl, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_HandleAccelerator, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_TabbedOut, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_OpenURL, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_NavigationFailed, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_DidNavigate, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_TabLoaded, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_MoveWindow, NO_CODE)
     IPC_MESSAGE_HANDLER_GENERIC(
-        AutomationMsg_ForwardContextMenuToExternalHost, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestStart, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestRead, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestEnd, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_DownloadRequestInHost, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_SetCookieAsync, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_AttachExternalTab, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestGoToHistoryEntryOffset, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_GetCookiesFromHost, )
-    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_CloseExternalTab, )
+        AutomationMsg_ForwardMessageToExternalHost, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(
+        AutomationMsg_ForwardContextMenuToExternalHost, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestStart, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestRead, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_RequestEnd, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_DownloadRequestInHost, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_SetCookieAsync, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_AttachExternalTab, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(
+        AutomationMsg_RequestGoToHistoryEntryOffset, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_GetCookiesFromHost, NO_CODE)
+    IPC_MESSAGE_HANDLER_GENERIC(AutomationMsg_CloseExternalTab, NO_CODE)
     IPC_MESSAGE_UNHANDLED(is_tab_message = false);
   IPC_END_MESSAGE_MAP()
 
   return is_tab_message;
 }
+
+#undef NO_CODE
 
 bool ChromeFrameDelegateImpl::OnMessageReceived(const IPC::Message& msg) {
   if (!IsValid()) {
