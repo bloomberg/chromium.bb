@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NET_SQLITE_ORIGIN_BOUND_CERT_STORE_H_
 #pragma once
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "net/base/default_origin_bound_cert_store.h"
@@ -31,7 +32,7 @@ class SQLiteOriginBoundCertStore
   virtual void DeleteOriginBoundCert(
       const net::DefaultOriginBoundCertStore::OriginBoundCert& cert) OVERRIDE;
   virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
-  virtual void Flush(Task* completion_task) OVERRIDE;
+  virtual void Flush(const base::Closure& completion_task) OVERRIDE;
 
  private:
   class Backend;

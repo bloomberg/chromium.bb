@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
@@ -130,7 +131,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestFlush) {
   }
 
   // Call Flush() and wait until the DB thread is idle.
-  store_->Flush(NULL);
+  store_->Flush(base::Closure());
   scoped_refptr<base::ThreadTestHelper> helper(
       new base::ThreadTestHelper(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
@@ -166,7 +167,7 @@ TEST_F(SQLiteOriginBoundCertStoreTest, TestFlushCompletionCallback) {
   // Callback shouldn't be invoked until we call Flush().
   ASSERT_EQ(0, counter->callback_count());
 
-  store_->Flush(NewRunnableMethod(counter.get(), &CallbackCounter::Callback));
+  store_->Flush(base::Bind(&CallbackCounter::Callback, counter.get()));
 
   scoped_refptr<base::ThreadTestHelper> helper(
       new base::ThreadTestHelper(

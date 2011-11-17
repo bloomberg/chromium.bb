@@ -4,6 +4,7 @@
 
 #include "net/base/default_origin_bound_cert_store.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 
 namespace net {
@@ -16,12 +17,13 @@ DefaultOriginBoundCertStore::DefaultOriginBoundCertStore(
     : initialized_(false),
       store_(store) {}
 
-void DefaultOriginBoundCertStore::FlushStore(Task* completion_task) {
+void DefaultOriginBoundCertStore::FlushStore(
+    const base::Closure& completion_task) {
   base::AutoLock autolock(lock_);
 
   if (initialized_ && store_)
     store_->Flush(completion_task);
-  else if (completion_task)
+  else if (!completion_task.is_null())
     MessageLoop::current()->PostTask(FROM_HERE, completion_task);
 }
 

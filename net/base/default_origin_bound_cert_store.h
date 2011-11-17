@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -51,7 +52,7 @@ class NET_EXPORT DefaultOriginBoundCertStore : public OriginBoundCertStore {
   // It may be posted to the current thread, or it may run on the thread that
   // actually does the flushing. Your Task should generally post a notification
   // to the thread you actually want to be notified on.
-  void FlushStore(Task* completion_task);
+  void FlushStore(const base::Closure& completion_task);
 
   // OriginBoundCertStore implementation.
   virtual bool GetOriginBoundCert(const std::string& origin,
@@ -154,7 +155,7 @@ class NET_EXPORT DefaultOriginBoundCertStore::PersistentStore
   virtual void SetClearLocalStateOnExit(bool clear_local_state) = 0;
 
   // Flush the store and post the given Task when complete.
-  virtual void Flush(Task* completion_task) = 0;
+  virtual void Flush(const base::Closure& completion_task) = 0;
 
  protected:
   PersistentStore();

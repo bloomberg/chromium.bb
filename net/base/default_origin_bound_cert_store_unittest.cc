@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -30,7 +31,7 @@ class MockPersistentStore
   virtual void DeleteOriginBoundCert(
       const DefaultOriginBoundCertStore::OriginBoundCert& cert) OVERRIDE;
   virtual void SetClearLocalStateOnExit(bool clear_local_state) OVERRIDE;
-  virtual void Flush(Task* completion_task) OVERRIDE;
+  virtual void Flush(const base::Closure& completion_task) OVERRIDE;
 
  private:
   typedef std::map<std::string, DefaultOriginBoundCertStore::OriginBoundCert>
@@ -67,7 +68,7 @@ void MockPersistentStore::DeleteOriginBoundCert(
 
 void MockPersistentStore::SetClearLocalStateOnExit(bool clear_local_state) {}
 
-void MockPersistentStore::Flush(Task* completion_task) {
+void MockPersistentStore::Flush(const base::Closure& completion_task) {
   NOTREACHED();
 }
 
