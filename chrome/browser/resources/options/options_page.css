@@ -540,7 +540,7 @@ html[os=mac] list[hasElementFocus] {
 }
 
 .suboption {
-  -webkit-margin-start: 16px;
+  -webkit-margin-start: 23px;
 }
 
 .informational-text {

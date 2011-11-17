@@ -5,6 +5,7 @@
 <title i18n-content="page-title"></title>
 <!-- We want to keep our style in sync with the options page. -->
 <link rel="stylesheet" href="chrome://resources/css/button.css">
+<link rel="stylesheet" href="chrome://resources/css/checkbox.css">
 <link rel="stylesheet" href="chrome://resources/css/select.css">
 <link rel="stylesheet" href="chrome://resources/css/chrome_shared.css">
 <link rel="stylesheet" href="bug_report.css">
@@ -61,10 +62,12 @@
                         <table class="bug-report-table">
                           <tr>
                             <td class="bug-report-fieldlabel">
-                              <input id="page-url-checkbox" type="checkbox"
-                                  value="pageurl" checked>
-                              <span id="page-url-label" i18n-content="page-url">
-                              </span>
+                              <label>
+                                <input id="page-url-checkbox" type="checkbox"
+                                    value="pageurl" checked>
+                                <span id="page-url-label"
+                                    i18n-content="page-url"></span>
+                              </label>
                             </td>
                             <td>
                               <input id="page-url-text" class="bug-report-field"
@@ -81,10 +84,12 @@
                         <table id="user-email-table" class="bug-report-table">
                           <tr>
                             <td class="bug-report-fieldlabel">
-                              <input id="user-email-checkbox" type="checkbox"
-                                  checked>
-                              <span id="user-email-label"
-                                  i18n-content="user-email"></span>
+                              <label>
+                                <input id="user-email-checkbox" type="checkbox"
+                                    checked>
+                                <span id="user-email-label"
+                                    i18n-content="user-email"></span>
+                              </label>
                             </td>
                             <td>
                               <label id="user-email-text"
@@ -100,12 +105,14 @@
                         <table class="bug-report-table">
                           <tr>
                             <td class="bug-report-fieldlabel">
-                              <input id="sys-info-checkbox" type="checkbox"
-                                  checked>
-                              <span id="sysinfo-label">
-                                <a id="sysinfo-url" href="#"
-                                    i18n-content="sysinfo"></a>
-                              </span>
+                              <label>
+                                <input id="sys-info-checkbox" type="checkbox"
+                                    checked>
+                                <span id="sysinfo-label">
+                                  <a id="sysinfo-url" href="#"
+                                      i18n-content="sysinfo"></a>
+                                </span>
+                              </label>
                             </td>
                           </tr>
                         </table>
@@ -118,10 +125,11 @@
                         <table class="bug-report-table">
                           <tr>
                             <td class="bug-report-fieldlabel">
-                              <input id="screenshot-checkbox" type="checkbox">
-                              <span id="screenshot-label-current"
-                                  i18n-content="current-screenshot">
-                              </span>
+                              <label>
+                                <input id="screenshot-checkbox" type="checkbox">
+                                <span id="screenshot-label-current"
+                                    i18n-content="current-screenshot"></span>
+                              </label>
 <if expr="pp_ifdef('chromeos')">
                               <span id="screenshot-label-saved"
                                   style="display: none;"

@@ -8,7 +8,7 @@ input[type='checkbox'] {
                       0 1px 2px rgba(0, 0, 0, .2);
   -webkit-appearance: none;
   -webkit-margin-start: 0;
-  -webkit-margin-end: 5px;
+  -webkit-margin-end: 3px;
   background: -webkit-linear-gradient(#fafafa, #dcdcdc);
   border-radius: 3px;
   border: 1px solid #a0a0a0;
@@ -26,12 +26,12 @@ input[type='checkbox']:disabled {
   opacity: .75;
 }
 
-input[type='checkbox']:not(:disabled):not(.disabled):not(:active):hover {
+input[type='checkbox']:not(:disabled):not(:active):hover {
   background: -webkit-linear-gradient(#fff, #e6e6e6);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
 }
 
-input[type='checkbox']:active {
+input[type='checkbox']:not(:disabled):active {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
   background: -webkit-linear-gradient(#f0f0f0, #bebebe);
   border: 1px solid #808080;
@@ -55,7 +55,7 @@ input[type='radio'] {
                       0 1px 2px rgba(0, 0, 0, .2);
   -webkit-appearance: none;
   -webkit-margin-start: 0;
-  -webkit-margin-end: 5px;
+  -webkit-margin-end: 3px;
   -webkit-transition: border 500ms;
   background: -webkit-linear-gradient(#fafafa, #dcdcdc);
   border-radius: 100%;
@@ -64,7 +64,7 @@ input[type='radio'] {
   height: 15px;
   margin-top: 0;
   position: relative;
-  top: 2px;
+  top: 3px;
   vertical-align: baseline;
   width: 15px;
 }
@@ -73,12 +73,12 @@ input[type='radio']:disabled {
   opacity: .75;
 }
 
-input[type='radio']:not(:disabled):not(.disabled):not(:active):hover {
+input[type='radio']:not(:disabled):not(:active):hover {
   background: -webkit-linear-gradient(#fff, #e6e6e6);
   text-shadow: 0 1px 0 rgba(255, 255, 255, 1);
 }
 
-input[type='radio']:active {
+input[type='radio']:not(:disabled):active {
   -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, .2);
   background: -webkit-linear-gradient(#f0f0f0, #bebebe);
   border: 1px solid #808080;
@@ -123,4 +123,14 @@ input[type='radio']:not(.custom-appearance):focus {
   -webkit-transition: border-color 200ms;
   border-color: #4080fa;
   outline: none;
+}
+
+label:hover > input[type=checkbox]:disabled ~ span,
+label:hover > input[type=radio]:disabled ~ span {
+  color: #888;
+}
+
+label:hover > input[type=checkbox]:not(:disabled) ~ span,
+label:hover > input[type=radio]:not(:disabled) ~ span {
+  color: #222;
 }

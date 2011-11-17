@@ -125,12 +125,6 @@ html.hide-menu #mainview {
   padding: 0 24px;
 }
 
-div.checkbox,
-div.radio {
-  margin: 5px 0;
-  color: #444;
-}
-
 div.disabled {
   color: #888;
 }
@@ -146,57 +140,21 @@ input:not([type]) {
   padding: 3px;
 }
 
+input[type='text']:disabled {
+  color: #888;
+}
+
 /* CHECKBOX, RADIO */
 /* TODO(estade): all of this should be merged into checkbox.css and then we can
  * remove the print-preview hack. */
-html:not(#print-preview) input[type=checkbox],
-html:not(#print-preview) input[type=radio] {
-  margin-left: 0;
-  margin-right: 0;
-  position: relative;
-  top: 1px;
+div.checkbox,
+div.radio {
+  margin: 5px 0;
 }
 
-/* Checkbox and radio buttons have different sizes on different platforms. The
- * following rules have platform specific tweaks.
- * TODO(arv): Test the vertical position on Linux and CrOS as well.
- */
-html:not(#print-preview) label > input[type=checkbox],
-html:not(#print-preview) label > input[type=radio] {
-  opacity: 0.7;
-  margin-top: 1px;
-}
-
-html[os=mac]:not(#print-preview) label > input[type=checkbox],
-html[os=mac]:not(#print-preview) label > input[type=radio] {
-  margin-top: 2px;
-}
-
-html[os=chromeos]:not(#print-preview) label > input[type=checkbox],
-html[os=chromeos]:not(#print-preview) label > input[type=radio] {
-  top: 2px;
-}
-
-/* Checkbox and radio hover visuals.
- * Their appearance when checked is set to be the same.
- */
-label:hover:not(#print-preview) > input[type=checkbox]:not([disabled]),
-label:hover:not(#print-preview) > input[type=radio]:not([disabled]),
-label:not(#print-preview) > input:not([disabled]):checked {
-  opacity: 1;
-}
-
-label:hover:not(#print-preview) > input[type=checkbox]:not([disabled]) ~ span,
-label:hover:not(#print-preview) > input[type=radio]:not([disabled]) ~ span,
-label:not(#print-preview) > input:not([disabled]):checked ~ span {
-  color: #222;
-}
-
-/* This will 'disable' the label associated with any input whose next sibling is
- * the span containing the label (usually a checkbox or radio).
- */
-label:not(#print-preview) > input[disabled] ~ span {
-  color: #888;
+input[type=radio] ~ span,
+input[type=checkbox] ~ span {
+  color: #444;
 }
 
 /* Elements that need to be LTR even in an RTL context, but should align
@@ -212,8 +170,8 @@ html[dir='rtl'] .weakrtl {
  * on some), the class needs to be on the enclosing div.
  */
 html[dir='rtl'] div.weakrtl input {
-    direction: ltr;
-    text-align: right;
+  direction: ltr;
+  text-align: right;
 }
 
 html[dir='rtl'] .favicon-cell.weakrtl {
