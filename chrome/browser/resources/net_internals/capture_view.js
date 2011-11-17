@@ -36,7 +36,7 @@ var CaptureView = (function() {
 
     this.updateEventCounts_();
 
-    g_browser.sourceTracker.addObserver(this);
+    g_browser.sourceTracker.addSourceEntryObserver(this);
   }
 
   // ID for special HTML element in category_tabs.html

@@ -23,7 +23,7 @@ body {
   background: #bfbfbf;
   border-left: 1px inset black;
   border-right: 1px solid black;
-  position:absolute;
+  position: absolute;
   width: 8px;
   cursor: col-resize;
   user-select: none;

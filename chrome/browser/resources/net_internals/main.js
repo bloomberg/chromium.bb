@@ -44,13 +44,14 @@ var MainView = (function() {
   function MainView() {
     assertFirstConstructorCall(MainView);
 
-    // Tracks if we're viewing a loaded log file, so views can behave
-    // appropriately.
-    this.isViewingLoadedLog_ = false;
-
     // This must be initialized before the tabs, so they can register as
     // observers.
     g_browser = BrowserBridge.getInstance();
+
+    // This must be the first constants observer, so other constants observers
+    // can safely use the globals, rather than depending on walking through
+    // the constants themselves.
+    g_browser.addConstantsObserver(new ConstantsObserver());
 
     // This view is a left (resizable) navigation bar.
     this.categoryTabSwitcher_ = new TabSwitcherView();
@@ -81,6 +82,8 @@ var MainView = (function() {
     tabs.addTab(ProxyView.TAB_HANDLE_ID, ProxyView.getInstance(),
                 false, true);
     tabs.addTab(EventsView.TAB_HANDLE_ID, EventsView.getInstance(),
+                false, true);
+    tabs.addTab(TimelineView.TAB_HANDLE_ID, TimelineView.getInstance(),
                 false, true);
     tabs.addTab(DnsView.TAB_HANDLE_ID, DnsView.getInstance(),
                 false, true);
@@ -127,8 +130,6 @@ var MainView = (function() {
     // Select the initial view based on the current URL.
     window.onhashchange();
 
-    g_browser.addConstantsObserver(new ConstantsObserver());
-
     // Tell the browser that we are ready to start receiving log events.
     g_browser.sendReady();
   }
@@ -142,6 +143,14 @@ var MainView = (function() {
   MainView.STATUS_VIEW_DUMP_FILE_NAME_ID = 'status-view-dump-file-name';
 
   cr.addSingletonGetter(MainView);
+
+  // Tracks if we're viewing a loaded log file, so views can behave
+  // appropriately.  Global so safe to call during construction.
+  var isViewingLoadedLog = false;
+
+  MainView.isViewingLoadedLog = function() {
+    return isViewingLoadedLog;
+  };
 
   MainView.prototype = {
     // Inherit the superclass's methods.
@@ -163,9 +172,9 @@ var MainView = (function() {
      * @param {String} fileName The name of the log file that has been loaded.
      */
     onLoadLogFile: function(fileName) {
-      this.isViewingLoadedLog_ = true;
+      isViewingLoadedLog = true;
 
-       // Swap out the status bar to indicate we have loaded from a file.
+      // Swap out the status bar to indicate we have loaded from a file.
       setNodeDisplay($(MainView.STATUS_VIEW_FOR_CAPTURE_ID), false);
       setNodeDisplay($(MainView.STATUS_VIEW_FOR_FILE_ID), true);
 
@@ -177,15 +186,7 @@ var MainView = (function() {
       g_browser.sourceTracker.setSecurityStripping(false);
       g_browser.disable();
     },
-
-    /**
-     * Returns true if we're viewing a loaded log file.
-     */
-    isViewingLoadedLog: function() {
-      return this.isViewingLoadedLog_;
-    }
   };
-
 
   /*
    * Takes the current hash in form of "#tab&param1=value1&param2=value2&...".

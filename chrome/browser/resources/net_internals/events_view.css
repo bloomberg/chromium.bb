@@ -99,33 +99,3 @@ found in the LICENSE file.
 #events-view-source-list-tbody .source_NONE {
   color: red;
 }
-
-.events-view-tab-switcher {
-  margin-top: 10px;
-  margin-left: 10px;
-}
-
-.events-view-tab-switcher th {
-  background: rgb(229,236,249);
-  cursor: pointer;
-  background-clip: border-box;
-  border-top-left-radius: 5px 5px;
-  border-top-right-radius: 5px 5px;
-  padding-left: 4px;
-  padding-top: 4px;
-  padding-right: 4px;
-  font-size: 12px;
-  margin-left: 30px;
-}
-
-.events-view-tab-switcher th.selected, .events-view-tab-switcher-line {
-  background: rgb(195,217,255);
-}
-
-.events-view-tab-switcher-line {
-  height: 10px;
-}
-
-#events-view-details-tab-handles {
-  border: 1px solid white;
-}

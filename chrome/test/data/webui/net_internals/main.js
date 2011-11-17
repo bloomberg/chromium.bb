@@ -20,6 +20,7 @@ netInternalsTest.test('netInternalsTourTabs', function() {
     import: true,
     proxy: true,
     events: true,
+    timeline: true,
     dns: true,
     sockets: true,
     spdy: true,

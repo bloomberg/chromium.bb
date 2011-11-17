@@ -23,8 +23,11 @@
 <include src="events_view.js"/>
 <include src="details_view.js"/>
 <include src="source_entry.js"/>
+<include src="horizontal_scrollbar_view.js"/>
 <include src="top_mid_bottom_view.js"/>
-<include src="timeline_view_painter.js"/>
+<include src="timeline_data_series.js"/>
+<include src="timeline_graph_view.js"/>
+<include src="timeline_view.js"/>
 <include src="log_view_painter.js"/>
 <include src="log_grouper.js"/>
 <include src="proxy_view.js"/>

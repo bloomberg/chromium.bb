@@ -228,6 +228,7 @@ void NetInternalsTest::SetUpInProcessBrowserTestFixture() {
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/main.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/prerender_view.js")));
   AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/test_view.js")));
+  AddLibrary(FilePath(FILE_PATH_LITERAL("net_internals/timeline_view.js")));
 }
 
 void NetInternalsTest::SetUpOnMainThread() {
@@ -299,6 +300,48 @@ IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTourTabs) {
 // TODO(mmenke):  Add a test for a log created with --log-net-log.
 IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsExportImportDump) {
   EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsExportImportDump"));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// timeline_view.js
+////////////////////////////////////////////////////////////////////////////////
+
+// TODO(mmenke):  Add tests for labels and DataSeries.
+
+// Tests setting and updating range.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTimelineViewRange) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsTimelineViewRange"));
+}
+
+// Tests using the scroll bar.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTimelineViewScrollbar) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsTimelineViewScrollbar"));
+}
+
+// Tests case of having no events.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTimelineViewNoEvents) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsTimelineViewNoEvents"));
+}
+
+// Dumps a log file to memory, modifies its events, loads it again, and
+// makes sure the range is correctly set and not automatically updated.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTimelineViewLoadLog) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsTimelineViewLoadLog"));
+}
+
+// Zooms out twice, and then zooms in once.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTimelineViewZoomOut) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsTimelineViewZoomOut"));
+}
+
+// Zooms in as much as allowed, and zooms out once.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTimelineViewZoomIn) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsTimelineViewZoomIn"));
+}
+
+// Tests case of all events having the same time.
+IN_PROC_BROWSER_TEST_F(NetInternalsTest, NetInternalsTimelineViewDegenerate) {
+  EXPECT_TRUE(RunJavascriptAsyncTest("netInternalsTimelineViewDegenerate"));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -198,7 +198,7 @@ var SourceEntry = (function() {
      */
     getEndTime: function() {
       if (!this.isInactive_) {
-        return (new Date()).getTime();
+        return timeutil.getCurrentTime();
       } else {
         var endTicks = this.entries_[this.entries_.length - 1].time;
         return timeutil.convertTimeTicksToDate(endTicks).getTime();

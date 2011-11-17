@@ -1,0 +1,74 @@
+/*
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+*/
+
+#timeline-view-selection-div {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#timeline-view-selection-div li {
+  list-style: none;
+  white-space: nowrap;
+}
+
+.timeline-view-text {
+  color: black;
+}
+
+#timeline-view-open-sockets {
+  color: #A0A;
+}
+
+#timeline-view-in-use-sockets {
+  color: #F3C;
+}
+
+#timeline-view-url-requests {
+  color: black;
+}
+
+#timeline-view-dns-requests {
+  color: #6BB;
+}
+
+#timeline-view-bytes-received {
+  color: #0B0;
+}
+
+#timeline-view-bytes-sent {
+  color: red;
+}
+
+#timeline-view-disk-cache-bytes-read {
+  color: #00F;
+}
+
+#timeline-view-disk-cache-bytes-written {
+  color: #999;
+}
+
+/* Need the id in this rule to override the above color rules. */
+#timeline-view-selection-div .timeline-view-hidden {
+  color: white;
+}
+
+#timeline-view-graph-div {
+  background-color: white;
+}
+
+#timeline-view-graph-canvas {
+  padding: 10px 10px 2px 10px;
+  cursor: pointer;
+}
+
+#timeline-view-scrollbar-div {
+  overflow-y: hidden;
+  overflow-x: scroll;
+}
+
+#timeline-view-scrollbar-inner-div {
+  height: 1px;
+}

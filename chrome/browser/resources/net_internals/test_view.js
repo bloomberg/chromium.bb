@@ -102,7 +102,7 @@ var TestView = (function() {
         dtCell: dtCell,
         resultCell: resultCell,
         passFailCell: passFailCell,
-        startTime: (new Date()).getTime()
+        startTime: timeutil.getCurrentTime()
       };
 
       addTextNode(experimentCell, 'Fetch ' + experiment.url);
@@ -129,7 +129,7 @@ var TestView = (function() {
     onCompletedConnectionTestExperiment: function(experiment, result) {
       var r = this.currentExperimentRow_;
 
-      var endTime = (new Date()).getTime();
+      var endTime = timeutil.getCurrentTime();
 
       r.dtCell.innerHTML = '';
       addTextNode(r.dtCell, (endTime - r.startTime));

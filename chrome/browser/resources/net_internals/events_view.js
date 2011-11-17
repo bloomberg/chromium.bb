@@ -46,16 +46,12 @@ var EventsView = (function() {
                                         new DivView(EventsView.MIDDLE_BOX_ID),
                                         new DivView(EventsView.BOTTOM_BAR_ID));
 
-    this.detailsView_ = new DetailsView(EventsView.TAB_HANDLES_CONTAINER_ID,
-                                        EventsView.LOG_TAB_ID,
-                                        EventsView.TIMELINE_TAB_ID,
-                                        EventsView.DETAILS_LOG_BOX_ID,
-                                        EventsView.DETAILS_TIMELINE_BOX_ID);
+    this.detailsView_ = new DetailsView(EventsView.DETAILS_LOG_BOX_ID);
 
     this.splitterView_ = new ResizableVerticalSplitView(
         leftPane, this.detailsView_, new DivView(EventsView.SIZER_ID));
 
-    g_browser.sourceTracker.addObserver(this);
+    g_browser.sourceTracker.addSourceEntryObserver(this);
 
     this.tableBody_ = $(EventsView.TBODY_ID);
 
@@ -102,11 +98,7 @@ var EventsView = (function() {
   EventsView.SORT_BY_ID_ID = 'events-view-sort-by-id';
   EventsView.SORT_BY_SOURCE_TYPE_ID = 'events-view-sort-by-source';
   EventsView.SORT_BY_DESCRIPTION_ID = 'events-view-sort-by-description';
-  EventsView.TAB_HANDLES_CONTAINER_ID = 'events-view-details-tab-handles';
-  EventsView.LOG_TAB_ID = 'events-view-details-log-tab';
-  EventsView.TIMELINE_TAB_ID = 'events-view-details-timeline-tab';
   EventsView.DETAILS_LOG_BOX_ID = 'events-view-details-log-box';
-  EventsView.DETAILS_TIMELINE_BOX_ID = 'events-view-details-timeline-box';
   EventsView.TOPBAR_ID = 'events-view-filter-box';
   EventsView.MIDDLE_BOX_ID = 'events-view-source-list';
   EventsView.BOTTOM_BAR_ID = 'events-view-action-box';

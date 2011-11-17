@@ -10,7 +10,8 @@ var TopMidBottomView = (function() {
 
   /**
    * This view stacks three boxes -- one at the top, one at the bottom, and
-   * one that fills the remaining space between those two.
+   * one that fills the remaining space between those two.  Either the top
+   * or the bottom bar may be null.
    *
    *  +----------------------+
    *  |      topbar          |
@@ -47,23 +48,34 @@ var TopMidBottomView = (function() {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
 
       // Calculate the vertical split points.
-      var topbarHeight = this.topView_.getHeight();
-      var bottombarHeight = this.bottomView_.getHeight();
+      var topbarHeight = 0;
+      if (this.topView_)
+        topbarHeight = this.topView_.getHeight();
+      var bottombarHeight = 0;
+      if (this.bottomView_)
+        bottombarHeight = this.bottomView_.getHeight();
       var middleboxHeight = height - (topbarHeight + bottombarHeight);
+      if (middleboxHeight < 0)
+        middleboxHeight = 0;
 
       // Position the boxes using calculated split points.
-      this.topView_.setGeometry(left, top, width, topbarHeight);
-      this.midView_.setGeometry(left, this.topView_.getBottom(),
-                                width, middleboxHeight);
-      this.bottomView_.setGeometry(left, this.midView_.getBottom(),
-                                   width, bottombarHeight);
+      if (this.topView_)
+        this.topView_.setGeometry(left, top, width, topbarHeight);
+      this.midView_.setGeometry(left, top + topbarHeight, width,
+                                middleboxHeight);
+      if (this.bottomView_) {
+        this.bottomView_.setGeometry(left, top + topbarHeight + middleboxHeight,
+                                     width, bottombarHeight);
+      }
     },
 
     show: function(isVisible) {
       superClass.prototype.show.call(this, isVisible);
-      this.topView_.show(isVisible);
+      if (this.topView_)
+        this.topView_.show(isVisible);
       this.midView_.show(isVisible);
-      this.bottomView_.show(isVisible);
+      if (this.bottomView_)
+        this.bottomView_.show(isVisible);
     }
   };
 

@@ -100,7 +100,7 @@ var DnsView = (function() {
       // Date the cache was logged.  This will be either now, when actively
       // logging data, or the date the log dump was created.
       var logDate;
-      if (MainView.getInstance().isViewingLoadedLog()) {
+      if (MainView.isViewingLoadedLog()) {
         if (typeof ClientInfo.numericDate == 'number') {
           logDate = new Date(ClientInfo.numericDate);
         } else {

@@ -13,7 +13,12 @@ var SourceTracker = (function() {
    * @constructor
    */
   function SourceTracker() {
-    this.observers_ = [];
+    // Observers that are sent all events as they happen.  This allows for easy
+    // watching for particular events.
+    this.logEntryObservers_ = [];
+
+    // Observers that only want to receive lists of updated SourceEntries.
+    this.sourceEntryObservers_ = [];
 
     // True when cookies and authentication information should be removed from
     // displayed events.  When true, such information should be hidden from
@@ -115,7 +120,7 @@ var SourceTracker = (function() {
     },
 
     /**
-     * Sends each entry to all log observers, and updates |capturedEvents_|.
+     * Sends each entry to all observers and updates |capturedEvents_|.
      * Also assigns unique ids to log entries without a source.
      */
     onReceivedLogEntries: function(logEntries) {
@@ -153,8 +158,12 @@ var SourceTracker = (function() {
       }
 
       this.capturedEvents_ = this.capturedEvents_.concat(logEntries);
-      for (var i = 0; i < this.observers_.length; ++i)
-        this.observers_[i].onSourceEntriesUpdated(updatedSourceEntries);
+      for (var i = 0; i < this.sourceEntryObservers_.length; ++i) {
+        this.sourceEntryObservers_[i].onSourceEntriesUpdated(
+            updatedSourceEntries);
+      }
+      for (var i = 0; i < this.logEntryObservers_.length; ++i)
+        this.logEntryObservers_[i].onReceivedLogEntries(logEntries);
     },
 
     /**
@@ -179,8 +188,8 @@ var SourceTracker = (function() {
       }
       this.capturedEvents_ = newEventList;
 
-      for (var i = 0; i < this.observers_.length; ++i)
-        this.observers_[i].onSourceEntriesDeleted(sourceEntryIds);
+      for (var i = 0; i < this.sourceEntryObservers_.length; ++i)
+        this.sourceEntryObservers_[i].onSourceEntriesDeleted(sourceEntryIds);
     },
 
     /**
@@ -188,8 +197,10 @@ var SourceTracker = (function() {
      */
     deleteAllSourceEntries: function() {
       this.clearEntries_();
-      for (var i = 0; i < this.observers_.length; ++i)
-        this.observers_[i].onAllSourceEntriesDeleted();
+      for (var i = 0; i < this.sourceEntryObservers_.length; ++i)
+        this.sourceEntryObservers_[i].onAllSourceEntriesDeleted();
+      for (var i = 0; i < this.logEntryObservers_.length; ++i)
+        this.logEntryObservers_[i].onAllLogEntriesDeleted();
     },
 
     /**
@@ -198,9 +209,9 @@ var SourceTracker = (function() {
      */
     setSecurityStripping: function(enableSecurityStripping) {
       this.enableSecurityStripping_ = enableSecurityStripping;
-      for (var i = 0; i < this.observers_.length; ++i) {
-        if (this.observers_[i].onSecurityStrippingChanged)
-          this.observers_[i].onSecurityStrippingChanged();
+      for (var i = 0; i < this.sourceEntryObservers_.length; ++i) {
+        if (this.sourceEntryObservers_[i].onSecurityStrippingChanged)
+          this.sourceEntryObservers_[i].onSecurityStrippingChanged();
       }
     },
 
@@ -213,17 +224,28 @@ var SourceTracker = (function() {
     },
 
     /**
-     * Adds a listener of log entries. |observer| will be called back when new
-     * log data arrives, source entries are deleted, or security stripping
-     * changes through:
+     * Adds a listener of SourceEntries. |observer| will be called back when
+     * SourceEntries are added or modified, source entries are deleted, or
+     * security stripping changes:
      *
      *   observer.onSourceEntriesUpdated(sourceEntries)
-     *   observer.deleteSourceEntries(sourceEntryIds)
-     *   ovserver.deleteAllSourceEntries()
+     *   observer.onSourceEntriesDeleted(sourceEntryIds)
+     *   ovserver.onAllSourceEntriesDeleted()
      *   observer.onSecurityStrippingChanged()
      */
-    addObserver: function(observer) {
-      this.observers_.push(observer);
+    addSourceEntryObserver: function(observer) {
+      this.sourceEntryObservers_.push(observer);
+    },
+
+    /**
+     * Adds a listener of log entries. |observer| will be called back when new
+     * log data arrives or all entries are deleted:
+     *
+     *   observer.onReceivedLogEntries(entries)
+     *   ovserver.onAllLogEntriesDeleted()
+     */
+    addLogEntryObserver: function(observer) {
+      this.logEntryObservers_.push(observer);
     }
   };
 

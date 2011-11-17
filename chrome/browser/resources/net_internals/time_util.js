@@ -32,8 +32,18 @@ var timeutil = (function() {
     return new Date(timeStampMs);
   }
 
+  /**
+   * Returns the current time.
+   *
+   * @returns {number} Milliseconds since the Unix epoch.
+   */
+  function getCurrentTime() {
+    return (new Date()).getTime();
+  }
+
   return {
     setTimeTickOffset: setTimeTickOffset,
-    convertTimeTicksToDate: convertTimeTicksToDate
+    convertTimeTicksToDate: convertTimeTicksToDate,
+    getCurrentTime: getCurrentTime
   };
 })();

@@ -35,6 +35,7 @@ var netInternalsTest = (function() {
     import: ImportView.TAB_HANDLE_ID,
     proxy: ProxyView.TAB_HANDLE_ID,
     events: EventsView.TAB_HANDLE_ID,
+    timeline: TimelineView.TAB_HANDLE_ID,
     dns: DnsView.TAB_HANDLE_ID,
     sockets: SocketsView.TAB_HANDLE_ID,
     spdy: SpdyView.TAB_HANDLE_ID,
@@ -318,6 +319,15 @@ var netInternalsTest = (function() {
     },
 
     /**
+     * Adds a Task to the end of the queue.  The task will call the provided
+     * function, and then complete.
+     * @param {function}: taskFunction The function the task will call.
+     */
+    addFunctionTask: function(taskFunction) {
+      this.addTask(new CallFunctionTask(taskFunction));
+    },
+
+    /**
      * Starts running the Tasks in the queue.  Once called, may not be called
      * again.
      */
@@ -391,12 +401,101 @@ var netInternalsTest = (function() {
   };
 
   /**
+   * A Task that can be added to a TaskQueue.  A Task is started with a call to
+   * the start function, and must call its own onTaskDone when complete.
+   * @constructor
+   */
+  function CallFunctionTask(taskFunction) {
+    Task.call(this);
+    assertEquals('function', typeof taskFunction);
+    this.taskFunction_ = taskFunction;
+  }
+
+  CallFunctionTask.prototype = {
+    __proto__: Task.prototype,
+
+    /**
+     * Runs the function and then completes.
+     */
+    start: function() {
+      this.taskFunction_();
+      this.onTaskDone();
+    }
+  };
+
+  /**
    * Returns true if a node does not have a 'display' property of 'none'.
    * @param {node}: node The node to check.
    */
   function isDisplayed(node) {
     var style = getComputedStyle(node);
     return style.getPropertyValue('display') != 'none';
+  }
+
+  /**
+   * Creates a new NetLog source.  Note that the id may conflict with events
+   * received from the browser.
+   * @param {int}: type The source type.
+   * @param {int}: id The source id.
+   * @constructor
+   */
+  function Source(type, id) {
+    assertNotEquals(getKeyWithValue(LogSourceType, type), '?');
+    assertGE(id, 0);
+    this.type = type;
+    this.id = id;
+  }
+
+  /**
+   * Creates a new NetLog event.
+   * @param {Source}: source The source associated with the event.
+   * @param {int}: type The event id.
+   * @param {int}: time When the event occurred.
+   * @param {int}: phase The event phase.
+   * @param {object}: params The event parameters.  May be null.
+   * @constructor
+   */
+  function Event(source, type, time, phase, params) {
+    assertNotEquals(getKeyWithValue(LogEventType, type), '?');
+    assertNotEquals(getKeyWithValue(LogEventPhase, phase), '?');
+
+    this.source = source;
+    this.phase = phase;
+    this.type = type;
+    this.time = "" + time;
+    this.phase = phase;
+    if (params)
+      this.params = params;
+  }
+
+  /**
+   * Creates a new NetLog begin event.  Parameters are the same as Event,
+   * except there's no |phase| argument.
+   * @see Event
+   */
+  function CreateBeginEvent(source, type, time, params) {
+    return new Event(source, type, time,  LogEventPhase.PHASE_BEGIN, params);
+  }
+
+  /**
+   * Creates a new NetLog end event.  Parameters are the same as Event,
+   * except there's no |phase| argument.
+   * @see Event
+   */
+  function CreateEndEvent(source, type, time, params) {
+    return new Event(source, type, time,  LogEventPhase.PHASE_END, params);
+  }
+
+  /**
+   * Creates a new NetLog end event matching the given begin event.
+   * @param {Event}: beginEvent The begin event.  Returned event will have the
+   *                 same source and type.
+   * @param {int}: time When the event occurred.
+   * @param {object}: params The event parameters.  May be null.
+   * @see Event
+   */
+  function CreateMatchingEndEvent(beginEvent, time, params) {
+    return CreateEndEvent(beginEvent.source, beginEvent.type, time, params);
   }
 
   // Exported functions.
@@ -408,8 +507,13 @@ var netInternalsTest = (function() {
     isDisplayed: isDisplayed,
     runTest: runTest,
     switchToView: switchToView,
+    TaskQueue: TaskQueue,
     Task: Task,
-    TaskQueue: TaskQueue
+    Source: Source,
+    Event: Event,
+    CreateBeginEvent: CreateBeginEvent,
+    CreateEndEvent: CreateEndEvent,
+    CreateMatchingEndEvent: CreateMatchingEndEvent
   };
 })();
 
