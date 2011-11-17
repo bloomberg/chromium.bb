@@ -33,13 +33,13 @@ class IPC_EXPORT SyncMessageFilter : public ChannelProxy::MessageFilter,
   virtual ~SyncMessageFilter();
 
   // Message::Sender implementation.
-  virtual bool Send(Message* message);
+  virtual bool Send(Message* message) OVERRIDE;
 
   // ChannelProxy::MessageFilter implementation.
-  virtual void OnFilterAdded(Channel* channel);
-  virtual void OnChannelError();
-  virtual void OnChannelClosing();
-  virtual bool OnMessageReceived(const Message& message);
+  virtual void OnFilterAdded(Channel* channel) OVERRIDE;
+  virtual void OnChannelError() OVERRIDE;
+  virtual void OnChannelClosing() OVERRIDE;
+  virtual bool OnMessageReceived(const Message& message) OVERRIDE;
 
  private:
   void SendOnIOThread(Message* message);

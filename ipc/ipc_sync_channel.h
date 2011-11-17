@@ -80,7 +80,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
 
   virtual ~SyncChannel();
 
-  virtual bool Send(Message* message);
+  virtual bool Send(Message* message) OVERRIDE;
   virtual bool SendWithTimeout(Message* message, int timeout_ms);
 
   // Whether we allow sending messages with no time-out.
@@ -154,19 +154,19 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
     // ChannelProxy methods that we override.
 
     // Called on the listener thread.
-    virtual void Clear();
+    virtual void Clear() OVERRIDE;
 
     // Called on the IPC thread.
-    virtual bool OnMessageReceived(const Message& msg);
-    virtual void OnChannelError();
-    virtual void OnChannelOpened();
-    virtual void OnChannelClosed();
+    virtual bool OnMessageReceived(const Message& msg) OVERRIDE;
+    virtual void OnChannelError() OVERRIDE;
+    virtual void OnChannelOpened() OVERRIDE;
+    virtual void OnChannelClosed() OVERRIDE;
 
     // Cancels all pending Send calls.
     void CancelPendingSends();
 
     // WaitableEventWatcher::Delegate implementation.
-    virtual void OnWaitableEventSignaled(base::WaitableEvent* arg);
+    virtual void OnWaitableEventSignaled(base::WaitableEvent* arg) OVERRIDE;
 
     typedef std::deque<PendingSyncMsg> PendingSyncMessageQueue;
     PendingSyncMessageQueue deserializers_;
@@ -181,7 +181,7 @@ class IPC_EXPORT SyncChannel : public ChannelProxy,
 
  private:
   // WaitableEventWatcher::Delegate implementation.
-  virtual void OnWaitableEventSignaled(base::WaitableEvent* arg);
+  virtual void OnWaitableEventSignaled(base::WaitableEvent* arg) OVERRIDE;
 
   SyncContext* sync_context() {
     return reinterpret_cast<SyncContext*>(context());

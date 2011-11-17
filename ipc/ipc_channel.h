@@ -140,7 +140,7 @@ class IPC_EXPORT Channel : public Message::Sender {
   //
   // |message| must be allocated using operator new.  This object will be
   // deleted once the contents of the Message have been sent.
-  virtual bool Send(Message* message);
+  virtual bool Send(Message* message) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_NACL)
   // On POSIX an IPC::Channel wraps a socketpair(), this method returns the

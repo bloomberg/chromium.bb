@@ -147,7 +147,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
 
   // Send a message asynchronously.  The message is routed to the background
   // thread where it is passed to the IPC::Channel's Send method.
-  virtual bool Send(Message* message);
+  virtual bool Send(Message* message) OVERRIDE;
 
   // Used to intercept messages as they are received on the background thread.
   //

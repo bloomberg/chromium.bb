@@ -78,7 +78,7 @@ class TestSink : public Channel {
 
   // Interface in IPC::Channel. This copies the message to the sink and then
   // deletes it.
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // Used by the source of the messages to send the message to the sink. This
   // will make a copy of the message and store it in the list.

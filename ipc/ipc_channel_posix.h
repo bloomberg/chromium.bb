@@ -82,8 +82,8 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   bool IsHelloMessage(const Message* m) const;
 
   // MessageLoopForIO::Watcher implementation.
-  virtual void OnFileCanReadWithoutBlocking(int fd);
-  virtual void OnFileCanWriteWithoutBlocking(int fd);
+  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
 
   Mode mode_;
 
