@@ -4,6 +4,7 @@
 
 #include "chrome/browser/task_manager/task_manager.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
@@ -612,8 +613,8 @@ void TaskManagerModel::StartUpdating() {
   // If update_state_ is STOPPING, it means a task is still pending.  Setting
   // it to TASK_PENDING ensures the tasks keep being posted (by Refresh()).
   if (update_state_ == IDLE) {
-      MessageLoop::current()->PostDelayedTask(FROM_HERE,
-          NewRunnableMethod(this, &TaskManagerModel::Refresh),
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, base::Bind(&TaskManagerModel::Refresh, this),
           kUpdateTimeMs);
   }
   update_state_ = TASK_PENDING;
@@ -882,9 +883,8 @@ void TaskManagerModel::Refresh() {
   }
 
   // Schedule the next update.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableMethod(this, &TaskManagerModel::Refresh),
-      kUpdateTimeMs);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&TaskManagerModel::Refresh, this), kUpdateTimeMs);
 }
 
 int64 TaskManagerModel::GetNetworkUsageForResource(
@@ -969,12 +969,9 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
   // This happens in the IO thread, post it to the UI thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &TaskManagerModel::BytesRead,
-          BytesReadParam(origin_pid,
-                         render_process_host_child_id,
-                         routing_id, byte_count)));
+      base::Bind(&TaskManagerModel::BytesRead, this,
+                 BytesReadParam(origin_pid, render_process_host_child_id,
+                                routing_id, byte_count)));
 }
 
 bool TaskManagerModel::GetProcessMetricsForRow(

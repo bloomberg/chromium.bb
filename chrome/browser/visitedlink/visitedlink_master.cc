@@ -13,6 +13,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -991,7 +992,7 @@ void VisitedLinkMaster::TableBuilder::OnComplete(bool success) {
   // rebuild is complete.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &TableBuilder::OnCompleteMainThread));
+      base::Bind(&TableBuilder::OnCompleteMainThread, this));
 }
 
 void VisitedLinkMaster::TableBuilder::OnCompleteMainThread() {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UPGRADE_DETECTOR_IMPL_H_
 #pragma once
 
+#include "base/memory/weak_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/upgrade_detector.h"
 
@@ -45,7 +46,7 @@ class UpgradeDetectorImpl : public UpgradeDetector {
   // We use this factory to create callback tasks for UpgradeDetected. We pass
   // the task to the actual upgrade detection code, which is in
   // DetectUpgradeTask.
-  ScopedRunnableMethodFactory<UpgradeDetectorImpl> method_factory_;
+  base::WeakPtrFactory<UpgradeDetectorImpl> weak_factory_;
 
   // True if this build is a dev or canary channel build.
   bool is_unstable_channel_;

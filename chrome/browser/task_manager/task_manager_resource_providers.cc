@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_version_info.h"
 #include "base/i18n/rtl.h"
 #include "base/process_util.h"
@@ -920,9 +921,9 @@ void TaskManagerChildProcessResourceProvider::StartUpdating() {
   // Get the existing child processes.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo));
+      base::Bind(
+          &TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo,
+          this));
 }
 
 void TaskManagerChildProcessResourceProvider::StopUpdating() {
@@ -1032,8 +1033,9 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo() {
   // processes.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-          &TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived));
+      base::Bind(
+          &TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived,
+          this));
 }
 
 // This is called on the UI thread.

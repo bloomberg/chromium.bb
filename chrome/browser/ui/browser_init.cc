@@ -6,11 +6,14 @@
 
 #include <algorithm>   // For max().
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
 #include "base/event_recorder.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -171,7 +174,7 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool should_expire_;
 
   // Used to delay the expiration of the info-bar.
-  ScopedRunnableMethodFactory<DefaultBrowserInfoBarDelegate> method_factory_;
+  base::WeakPtrFactory<DefaultBrowserInfoBarDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserInfoBarDelegate);
 };
@@ -183,12 +186,13 @@ DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
       prefs_(prefs),
       action_taken_(false),
       should_expire_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // We want the info-bar to stick-around for few seconds and then be hidden
   // on the next navigation after that.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &DefaultBrowserInfoBarDelegate::AllowExpiry), 8000);  // 8 seconds.
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&DefaultBrowserInfoBarDelegate::AllowExpiry,
+                            weak_factory_.GetWeakPtr()),
+      8000);  // 8 seconds.
 }
 
 DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
@@ -1331,8 +1335,9 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
     if (g_browser_process->local_state()->GetBoolean(
         prefs::kDefaultBrowserSettingEnabled)) {
       BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE, NewRunnableFunction(
-              &ShellIntegration::SetAsDefaultBrowser));
+          BrowserThread::FILE, FROM_HERE,
+          base::IgnoreReturn<bool>(
+              base::Bind(&ShellIntegration::SetAsDefaultBrowser)));
     } else {
       // TODO(pastarmovj): We can't really do anything meaningful here yet but
       // just prevent showing the infobar.

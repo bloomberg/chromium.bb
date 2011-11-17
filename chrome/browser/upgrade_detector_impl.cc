@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -67,7 +68,7 @@ int GetCheckForUpgradeEveryMs() {
 // callback task. Otherwise it just deletes the task.
 class DetectUpgradeTask : public Task {
  public:
-  DetectUpgradeTask(Task* upgrade_detected_task,
+  DetectUpgradeTask(const base::Closure& upgrade_detected_task,
                     bool* is_unstable_channel,
                     bool* is_critical_upgrade)
       : upgrade_detected_task_(upgrade_detected_task),
@@ -76,10 +77,10 @@ class DetectUpgradeTask : public Task {
   }
 
   virtual ~DetectUpgradeTask() {
-    if (upgrade_detected_task_) {
+    if (!upgrade_detected_task_.is_null()) {
       // This has to get deleted on the same thread it was created.
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              new DeleteTask<Task>(upgrade_detected_task_));
+                              upgrade_detected_task_);
     }
   }
 
@@ -160,12 +161,12 @@ class DetectUpgradeTask : public Task {
       // Fire off the upgrade detected task.
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                               upgrade_detected_task_);
-      upgrade_detected_task_ = NULL;
+      upgrade_detected_task_.Reset();
     }
   }
 
  private:
-  Task* upgrade_detected_task_;
+  base::Closure upgrade_detected_task_;
   bool* is_unstable_channel_;
   bool* is_critical_upgrade_;
 };
@@ -173,7 +174,7 @@ class DetectUpgradeTask : public Task {
 }  // namespace
 
 UpgradeDetectorImpl::UpgradeDetectorImpl()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       is_unstable_channel_(false) {
   CommandLine command_line(*CommandLine::ForCurrentProcess());
   if (command_line.HasSwitch(switches::kDisableBackgroundNetworking))
@@ -197,9 +198,10 @@ UpgradeDetectorImpl::~UpgradeDetectorImpl() {
 }
 
 void UpgradeDetectorImpl::CheckForUpgrade() {
-  method_factory_.RevokeAll();
-  Task* callback_task =
-      method_factory_.NewRunnableMethod(&UpgradeDetectorImpl::UpgradeDetected);
+  weak_factory_.InvalidateWeakPtrs();
+  base::Closure callback_task =
+      base::Bind(&UpgradeDetectorImpl::UpgradeDetected,
+                 weak_factory_.GetWeakPtr());
   // We use FILE as the thread to run the upgrade detection code on all
   // platforms. For Linux, this is because we don't want to block the UI thread
   // while launching a background process and reading its output; on the Mac and
