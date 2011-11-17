@@ -860,7 +860,9 @@ everything-translator() {
   install-translators srpc
   if ${PNACL_PRUNE}; then
     prune-translator-install srpc
-    track-translator-size ${SBTC_BUILD_WITH_PNACL}
+    if ${LIBMODE_NEWLIB}; then
+      track-translator-size ${SBTC_BUILD_WITH_PNACL}
+    fi
   fi
 }
 
