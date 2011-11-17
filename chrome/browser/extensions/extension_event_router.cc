@@ -20,11 +20,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "chrome/common/extensions/api/extension_api.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_service.h"
 
 using content::BrowserThread;
+using extensions::ExtensionAPI;
 
 namespace {
 
@@ -274,8 +276,13 @@ void ExtensionEventRouter::DispatchEventImpl(
         listener->process->browser_context());
     extensions::ProcessMap* process_map =
         listener_profile->GetExtensionService()->process_map();
-    if (!process_map->Contains(extension->id(), listener->process->id()))
+
+    // If the event is privileged, only send to extension processes. Otherwise,
+    // it's OK to send to normal renderers (e.g., for content scripts).
+    if (ExtensionAPI::GetInstance()->IsPrivileged(event->event_name) &&
+        !process_map->Contains(extension->id(), listener->process->id())) {
       continue;
+    }
 
     // Is this event from a different profile than the renderer (ie, an
     // incognito tab event sent to a normal process, or vice versa).

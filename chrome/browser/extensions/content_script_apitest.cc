@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -114,9 +115,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptCSSLocalization) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContentScriptExtensionAPIs) {
   ASSERT_TRUE(StartTestServer());
-  LoadExtension(test_data_dir_.AppendASCII("content_scripts/extension_api"));
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("content_scripts/extension_api"));
+
   ResultCatcher catcher;
   ui_test_utils::NavigateToURL(
       browser(), test_server()->GetURL("functions.html"));
+  EXPECT_TRUE(catcher.GetNextResult());
+
+  // Navigate to a page that will cause a content script to run that starts
+  // listening for an extension event.
+  ui_test_utils::NavigateToURL(
+      browser(), test_server()->GetURL("events.html"));
+
+  // Navigate to an extension page that will fire the event events.js is
+  // listening for.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), extension->GetResourceURL("fire_event.html"),
+      NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_NONE);
   EXPECT_TRUE(catcher.GetNextResult());
 }
