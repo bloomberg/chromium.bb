@@ -483,6 +483,9 @@ class TabStripGtk : public TabStripModelObserver,
   // ResizeLayoutTabsNow method.
   base::WeakPtrFactory<TabStripGtk> weak_factory_;
 
+  // A different factory for calls to Layout().
+  base::WeakPtrFactory<TabStripGtk> layout_factory_;
+
   // True if the tabstrip has already been added as a MessageLoop observer.
   bool added_as_message_loop_observer_;
 

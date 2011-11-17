@@ -55,6 +55,10 @@ const int kNewTabButtonVOffset = 5;
 // is started.
 const int kResizeTabsTimeMs = 300;
 
+// A very short time just to make sure we don't clump up our Layout() calls
+// during slow window resizes.
+const int kLayoutAfterSizeAllocateMs = 10;
+
 // The range outside of the tabstrip where the pointer must enter/leave to
 // start/stop the resize animation.
 const int kTabStripAnimationVSlop = 40;
@@ -706,6 +710,7 @@ TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
       window_(window),
       theme_service_(GtkThemeService::GetFrom(model->profile())),
       weak_factory_(this),
+      layout_factory_(this),
       added_as_message_loop_observer_(false),
       hover_tab_selector_(model) {
 }
@@ -1556,6 +1561,7 @@ int TabStripGtk::tab_start_x() const {
 
 bool TabStripGtk::ResizeLayoutTabs() {
   weak_factory_.InvalidateWeakPtrs();
+  layout_factory_.InvalidateWeakPtrs();
 
   // It is critically important that this is unhooked here, otherwise we will
   // keep spying on messages forever.
@@ -1622,7 +1628,6 @@ void TabStripGtk::ReStack() {
   if (active_tab)
     active_tab->Raise();
 }
-
 
 void TabStripGtk::AddMessageLoopObserver() {
   if (!added_as_message_loop_observer_) {
@@ -2081,10 +2086,16 @@ void TabStripGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
     return;
 
   // When there is only one tab, Layout() so we don't animate it. With more
-  // tabs, do ResizeLayoutTabs(). In RTL(), we will also need to manually
-  // Layout() when ResizeLayoutTabs() is a no-op.
-  if ((GetTabCount() == 1) || (!ResizeLayoutTabs() && base::i18n::IsRTL()))
+  // tabs, we should always attempt a resize unless we already have one coming
+  // up in our message loop.
+  if (GetTabCount() == 1) {
     Layout();
+  } else if (!layout_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&TabStripGtk::Layout, layout_factory_.GetWeakPtr()),
+        kLayoutAfterSizeAllocateMs);
+  }
 }
 
 gboolean TabStripGtk::OnDragMotion(GtkWidget* widget, GdkDragContext* context,
