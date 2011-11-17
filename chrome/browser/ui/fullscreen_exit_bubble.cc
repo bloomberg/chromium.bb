@@ -12,7 +12,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
-const int FullscreenExitBubble::kPaddingPx = 8;
+const int FullscreenExitBubble::kPaddingPx = 0;
 const int FullscreenExitBubble::kInitialDelayMs = 3800;
 const int FullscreenExitBubble::kIdleTimeMs = 2300;
 const int FullscreenExitBubble::kPositionCheckHz = 10;

@@ -34,6 +34,11 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
     FLOAT = 9   // No arrow. Centered over the supplied rect.
   };
 
+  enum Shadow {
+    SHADOW    = 0,
+    NO_SHADOW = 1
+  };
+
   // The position of the bubble in relation to the anchor.
   enum BubbleAlignment {
     // The tip of the arrow points to the middle of the anchor.
@@ -42,13 +47,7 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
     ALIGN_EDGE_TO_ANCHOR_EDGE
   };
 
-  explicit BubbleBorder(ArrowLocation arrow_location)
-      : override_arrow_offset_(0),
-        arrow_location_(arrow_location),
-        alignment_(ALIGN_ARROW_TO_MID_ANCHOR),
-        background_color_(SK_ColorWHITE) {
-    InitClass();
-  }
+  BubbleBorder(ArrowLocation arrow_location, Shadow shadow);
 
   // Returns the radius of the corner of the border.
   static int GetCornerRadius() {
@@ -117,8 +116,10 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   virtual void GetInsets(gfx::Insets* insets) const;
 
  private:
+  struct BorderImages;
+
   // Loads images if necessary.
-  static void InitClass();
+  static BorderImages* GetBorderImages(Shadow shadow);
 
   virtual ~BubbleBorder();
 
@@ -143,21 +144,14 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
                          int shift_y) const;
 
   // Border graphics.
-  static SkBitmap* left_;
-  static SkBitmap* top_left_;
-  static SkBitmap* top_;
-  static SkBitmap* top_right_;
-  static SkBitmap* right_;
-  static SkBitmap* bottom_right_;
-  static SkBitmap* bottom_;
-  static SkBitmap* bottom_left_;
-  static SkBitmap* left_arrow_;
-  static SkBitmap* top_arrow_;
-  static SkBitmap* right_arrow_;
-  static SkBitmap* bottom_arrow_;
+  struct BorderImages* images_;
+
+  // Image bundles.
+  static struct BorderImages* normal_images_;
+  static struct BorderImages* shadow_images_;
 
   // Minimal offset of the arrow from the closet edge of bounding rect.
-  static int arrow_offset_;
+  int arrow_offset_;
 
   // If specified, overrides the pre-calculated |arrow_offset_| of the arrow.
   int override_arrow_offset_;

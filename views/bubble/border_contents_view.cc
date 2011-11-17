@@ -78,7 +78,10 @@ void BorderContentsView::Init() {
     arrow_location = BubbleBorder::horizontal_mirror(arrow_location);
   DCHECK(!bubble_border_);
 
-  bubble_border_ = new BubbleBorder(arrow_location);
+  // TODO(alicet): Expose the shadow option in BorderContentsView when we make
+  // the fullscreen exit bubble use the new bubble code.
+  bubble_border_ = new BubbleBorder(arrow_location,
+                                    views::BubbleBorder::NO_SHADOW);
   set_border(bubble_border_);
   set_background(new BubbleBackground(bubble_border_));
 }

@@ -26,6 +26,15 @@
       <include name="IDR_BUBBLE_TL" file="bubble_tl.png" type="BINDATA" />
       <include name="IDR_BUBBLE_TR" file="bubble_tr.png" type="BINDATA" />
       <include name="IDR_BUBBLE_T_ARROW" file="bubble_pointer_t.png" type="BINDATA" />
+
+      <include name="IDR_BUBBLE_SHADOW_B" file="bubble_shadow_b.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_BL" file="bubble_shadow_bl.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_BR" file="bubble_shadow_br.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_L" file="bubble_shadow_l.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_R" file="bubble_shadow_r.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_T" file="bubble_shadow_t.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_TL" file="bubble_shadow_tl.png" type="BINDATA" />
+      <include name="IDR_BUBBLE_SHADOW_TR" file="bubble_shadow_tr.png" type="BINDATA" />
     </includes>
   </release>
 </grit>
