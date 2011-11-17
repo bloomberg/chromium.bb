@@ -201,10 +201,10 @@
 }
 
 - (void)removeFromTabsAtIndex:(int)index {
-  browser_->tabstrip_model()->DetachTabContentsAt(index);
+  browser_->CloseTabContents(browser_->GetTabContentsAt(index));
 }
 
-- (NSNumber*)orderedIndex{
+- (NSNumber*)orderedIndex {
   return [NSNumber numberWithInt:[[self nativeHandle] orderedIndex]];
 }
 
