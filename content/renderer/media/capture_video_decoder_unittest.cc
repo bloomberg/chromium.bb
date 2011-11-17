@@ -152,6 +152,16 @@ class CaptureVideoDecoderTest : public ::testing::Test {
     message_loop_->RunAllPending();
   }
 
+  void Flush() {
+    // Issue a read.
+    EXPECT_CALL(*this, FrameReady(_));
+    decoder_->Read(read_cb_);
+
+    decoder_->Pause(media::NewExpectedClosure());
+    decoder_->Flush(media::NewExpectedClosure());
+    message_loop_->RunAllPending();
+  }
+
   void Stop() {
     EXPECT_CALL(*vc_impl_, StopCapture(capture_client()))
         .Times(1)
@@ -198,6 +208,7 @@ TEST_F(CaptureVideoDecoderTest, Play) {
   Initialize();
   Start();
   Play();
+  Flush();
   Stop();
 }
 

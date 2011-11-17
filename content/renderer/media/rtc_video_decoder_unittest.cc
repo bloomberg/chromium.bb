@@ -114,6 +114,8 @@ class RTCVideoDecoderTest : public testing::Test {
   RTCVideoDecoderTest() {
     decoder_ = new RTCVideoDecoder(&message_loop_, kUrl);
     renderer_ = new MockVideoRenderer();
+    read_cb_ = base::Bind(&RTCVideoDecoderTest::FrameReady,
+                          base::Unretained(this));
 
     DCHECK(decoder_);
 
@@ -149,6 +151,7 @@ class RTCVideoDecoderTest : public testing::Test {
   MockStatisticsCallback stats_callback_object_;
   StrictMock<MockFilterHost> host_;
   MessageLoop message_loop_;
+  media::VideoDecoder::ReadCB read_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderTest);
@@ -178,6 +181,20 @@ TEST_F(RTCVideoDecoderTest, DoSeek) {
 
   message_loop_.RunAllPending();
   EXPECT_EQ(RTCVideoDecoder::kNormal, decoder_->state_);
+}
+
+TEST_F(RTCVideoDecoderTest, DoFlush) {
+  const base::TimeDelta kZero;
+
+  InitializeDecoderSuccessfully();
+
+  EXPECT_CALL(*this, FrameReady(_));
+  decoder_->Read(read_cb_);
+  decoder_->Pause(media::NewExpectedClosure());
+  decoder_->Flush(media::NewExpectedClosure());
+
+  message_loop_.RunAllPending();
+  EXPECT_EQ(RTCVideoDecoder::kPaused, decoder_->state_);
 }
 
 TEST_F(RTCVideoDecoderTest, DoRenderFrame) {

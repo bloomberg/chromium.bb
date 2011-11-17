@@ -79,20 +79,21 @@ void VideoCaptureImpl::Init() {
 }
 
 void VideoCaptureImpl::DeInit(base::Closure task) {
+  ml_proxy_->PostTask(FROM_HERE,
+      base::Bind(&VideoCaptureImpl::DoDeInit,
+                 base::Unretained(this), task));
+}
+
+void VideoCaptureImpl::DoDeInit(base::Closure task) {
   if (state_ == kStarted)
     Send(new VideoCaptureHostMsg_Stop(device_id_));
 
   base::MessageLoopProxy* io_message_loop_proxy =
       ChildProcess::current()->io_message_loop_proxy();
 
-  if (!io_message_loop_proxy->BelongsToCurrentThread()) {
-    io_message_loop_proxy->PostTask(FROM_HERE,
-        base::Bind(&VideoCaptureImpl::RemoveDelegateOnIOThread,
-                   base::Unretained(this), task));
-    return;
-  }
-
-  RemoveDelegateOnIOThread(task);
+  io_message_loop_proxy->PostTask(FROM_HERE,
+      base::Bind(&VideoCaptureImpl::RemoveDelegateOnIOThread,
+                 base::Unretained(this), task));
 }
 
 void VideoCaptureImpl::StartCapture(
@@ -237,14 +238,14 @@ void VideoCaptureImpl::DoStopCapture(
   if (clients_.find(handler) == clients_.end())
     return;
 
-  handler->OnStopped(this);
-  handler->OnRemoved(this);
   clients_.erase(handler);
 
   if (clients_.empty()) {
     DVLOG(1) << "StopCapture: No more client, stopping ...";
     StopDevice();
   }
+  handler->OnStopped(this);
+  handler->OnRemoved(this);
 }
 
 void VideoCaptureImpl::DoFeedBuffer(scoped_refptr<VideoFrameBuffer> buffer) {
@@ -420,8 +421,8 @@ void VideoCaptureImpl::AddDelegateOnIOThread() {
 }
 
 void VideoCaptureImpl::RemoveDelegateOnIOThread(base::Closure task) {
-  base::ScopedClosureRunner task_runner(task);
   message_filter_->RemoveDelegate(this);
+  ml_proxy_->PostTask(FROM_HERE, task);
 }
 
 void VideoCaptureImpl::Send(IPC::Message* message) {

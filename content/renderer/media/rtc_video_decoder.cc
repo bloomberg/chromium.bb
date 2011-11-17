@@ -4,8 +4,6 @@
 
 #include "content/renderer/media/rtc_video_decoder.h"
 
-#include <deque>
-
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/message_loop.h"
@@ -87,6 +85,34 @@ void RTCVideoDecoder::Pause(const base::Closure& callback) {
   VideoDecoder::Pause(callback);
 }
 
+void RTCVideoDecoder::Flush(const base::Closure& callback) {
+  if (MessageLoop::current() != message_loop_) {
+    message_loop_->PostTask(FROM_HERE,
+                            base::Bind(&RTCVideoDecoder::Flush,
+                                       this, callback));
+    return;
+  }
+
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+
+  ReadCB read_cb;
+  {
+    base::AutoLock auto_lock(lock_);
+    if (!read_cb_.is_null()) {
+      std::swap(read_cb, read_cb_);
+    }
+  }
+
+  if (!read_cb.is_null()) {
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::CreateBlackFrame(visible_size_.width(),
+                                            visible_size_.height());
+    read_cb.Run(video_frame);
+  }
+
+  VideoDecoder::Flush(callback);
+}
+
 void RTCVideoDecoder::Stop(const base::Closure& callback) {
   if (MessageLoop::current() != message_loop_) {
     message_loop_->PostTask(FROM_HERE,
@@ -141,6 +167,10 @@ bool RTCVideoDecoder::SetSize(int width, int height, int reserved) {
   return true;
 }
 
+// TODO(wjia): this function can be split into two parts so that the |lock_|
+// can be removed.
+// First creates media::VideoFrame, then post a task onto |message_loop_|
+// to deliver that frame.
 bool RTCVideoDecoder::RenderFrame(const cricket::VideoFrame* frame) {
   // Called from libjingle thread.
   DCHECK(frame);

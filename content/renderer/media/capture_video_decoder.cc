@@ -67,6 +67,13 @@ void CaptureVideoDecoder::Pause(const base::Closure& callback) {
                  this, callback));
 }
 
+void CaptureVideoDecoder::Flush(const base::Closure& callback) {
+  message_loop_proxy_->PostTask(
+      FROM_HERE,
+      base::Bind(&CaptureVideoDecoder::FlushOnDecoderThread,
+                 this, callback));
+}
+
 void CaptureVideoDecoder::Stop(const base::Closure& callback) {
   message_loop_proxy_->PostTask(
       FROM_HERE,
@@ -156,6 +163,18 @@ void CaptureVideoDecoder::PauseOnDecoderThread(const base::Closure& callback) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
   state_ = kPaused;
   media::VideoDecoder::Pause(callback);
+}
+
+void CaptureVideoDecoder::FlushOnDecoderThread(const base::Closure& callback) {
+  DVLOG(1) << "FlushOnDecoderThread";
+  DCHECK(message_loop_proxy_->BelongsToCurrentThread());
+  if (!read_cb_.is_null()) {
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::CreateBlackFrame(natural_size_.width(),
+                                            natural_size_.height());
+    DeliverFrame(video_frame);
+  }
+  media::VideoDecoder::Flush(callback);
 }
 
 void CaptureVideoDecoder::StopOnDecoderThread(const base::Closure& callback) {

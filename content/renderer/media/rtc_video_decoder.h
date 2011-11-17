@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_MEDIA_RTC_VIDEO_DECODER_H_
 #define CONTENT_RENDERER_MEDIA_RTC_VIDEO_DECODER_H_
 
-#include <deque>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -36,6 +35,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   virtual void Seek(base::TimeDelta time,
                     const media::FilterStatusCB& cb) OVERRIDE;
   virtual void Pause(const base::Closure& callback) OVERRIDE;
+  virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // Decoder implementation.
@@ -54,6 +54,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   friend class RTCVideoDecoderTest;
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, Initialize_Successful);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoSeek);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoFlush);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoRenderFrame);
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, DoSetSize);
 

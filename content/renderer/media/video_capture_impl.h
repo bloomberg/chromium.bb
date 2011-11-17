@@ -68,6 +68,7 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   void Init();
   void DeInit(base::Closure task);
+  void DoDeInit(base::Closure task);
   void StopDevice();
   void RestartCapture();
   void StartCaptureInternal();

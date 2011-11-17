@@ -5,8 +5,6 @@
 #ifndef CONTENT_RENDERER_MEDIA_CAPTURE_VIDEO_DECODER_H_
 #define CONTENT_RENDERER_MEDIA_CAPTURE_VIDEO_DECODER_H_
 
-#include <deque>
-
 #include "base/time.h"
 #include "content/common/content_export.h"
 #include "media/base/demuxer_stream.h"
@@ -37,6 +35,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
   virtual void Seek(base::TimeDelta time,
                     const media::FilterStatusCB& cb) OVERRIDE;
   virtual void Pause(const base::Closure& callback) OVERRIDE;
+  virtual void Flush(const base::Closure& callback) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
 
   // Decoder implementation.
@@ -74,6 +73,7 @@ class CONTENT_EXPORT CaptureVideoDecoder
   void SeekOnDecoderThread(base::TimeDelta time,
                            const media::FilterStatusCB& cb);
   void PauseOnDecoderThread(const base::Closure& callback);
+  void FlushOnDecoderThread(const base::Closure& callback);
   void StopOnDecoderThread(const base::Closure& callback);
 
   void InitializeOnDecoderThread(
