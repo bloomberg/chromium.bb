@@ -374,15 +374,13 @@ bool CreateWindowFunction::RunImpl() {
 
   // Try to position the new browser relative its originating browser window.
   gfx::Rect  window_bounds;
-  bool maximized;
   // The call offsets the bounds by kWindowTilePixels (defined in WindowSizer to
   // be 10)
   //
   // NOTE(rafaelw): It's ok if GetCurrentBrowser() returns NULL here.
   // GetBrowserWindowBounds will default to saved "default" values for the app.
   WindowSizer::GetBrowserWindowBounds(std::string(), gfx::Rect(),
-                                      GetCurrentBrowser(), &window_bounds,
-                                      &maximized);
+                                      GetCurrentBrowser(), &window_bounds);
 
   // Calculate popup and panels bounds separately.
   gfx::Rect popup_bounds;

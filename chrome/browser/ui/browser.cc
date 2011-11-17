@@ -898,9 +898,8 @@ gfx::Rect Browser::GetSavedWindowBounds() const {
   }
 
   gfx::Rect restored_bounds = override_bounds_;
-  bool maximized;
   WindowSizer::GetBrowserWindowBounds(app_name_, restored_bounds, this,
-                                      &restored_bounds, &maximized);
+                                      &restored_bounds);
   return restored_bounds;
 }
 

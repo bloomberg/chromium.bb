@@ -391,9 +391,8 @@ DownloadShelf* Panel::GetDownloadShelf() {
     // Set initial bounds so window will not be positioned at an offset
     // to this panel as panels are at the bottom of the screen.
     gfx::Rect window_bounds;
-    bool maximized;
-    WindowSizer::GetBrowserWindowBounds(
-        std::string(), gfx::Rect(), panel_browser, &window_bounds, &maximized);
+    WindowSizer::GetBrowserWindowBounds(std::string(), gfx::Rect(),
+                                        panel_browser, &window_bounds);
     Browser::CreateParams params(Browser::TYPE_TABBED, profile);
     params.initial_bounds = window_bounds;
     tabbed_browser = Browser::CreateWithParams(params);

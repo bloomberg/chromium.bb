@@ -85,7 +85,6 @@ class WindowSizer {
     // Retrieve the persisted bounds of the window. Returns true if there was
     // persisted data to retrieve state information, false otherwise.
     virtual bool GetPersistentState(gfx::Rect* bounds,
-                                    bool* maximized,
                                     gfx::Rect* work_area) const = 0;
 
     // Retrieve the bounds of the most recent window of the matching type.
@@ -94,20 +93,14 @@ class WindowSizer {
     virtual bool GetLastActiveWindowState(gfx::Rect* bounds) const = 0;
   };
 
-  // Determines the position, size and maximized state for a window as it is
-  // created. This function uses several strategies to figure out optimal size
-  // and placement, first looking for an existing active window, then falling
-  // back to persisted data from a previous session, finally utilizing a default
+  // Determines the position and size for a window as it is created. This
+  // function uses several strategies to figure out optimal size and placement,
+  // first looking for an existing active window, then falling back to persisted
+  // data from a previous session, finally utilizing a default
   // algorithm. If |specified_bounds| are non-empty, this value is returned
   // instead. For use only in testing.
-  //
-  // NOTE: |maximized| is only set if we're restoring a saved maximized window.
-  // When creating a new window based on an existing active window, standard
-  // Windows behavior is to have it always be nonmaximized, even if the existing
-  // window is maximized.
   void DetermineWindowBounds(const gfx::Rect& specified_bounds,
-                             gfx::Rect* bounds,
-                             bool* maximized) const;
+                             gfx::Rect* bounds) const;
 
   // Determines the size, position and maximized state for the browser window.
   // See documentation for DetermineWindowBounds above. Normally,
@@ -117,8 +110,7 @@ class WindowSizer {
   static void GetBrowserWindowBounds(const std::string& app_name,
                                      const gfx::Rect& specified_bounds,
                                      const Browser* browser,
-                                     gfx::Rect* window_bounds,
-                                     bool* maximized);
+                                     gfx::Rect* window_bounds);
 
   // Returns the default origin for popups of the given size.
   static gfx::Point GetDefaultPopupOrigin(const gfx::Size& size);
@@ -140,7 +132,7 @@ class WindowSizer {
   // in local state preferences. Returns true if local state exists containing
   // this information, false if this information does not exist and a default
   // size should be used.
-  bool GetSavedWindowBounds(gfx::Rect* bounds, bool* maximized) const;
+  bool GetSavedWindowBounds(gfx::Rect* bounds) const;
 
   // Gets the default window position and size if there is no last window and
   // no saved window placement in prefs. This function determines the default
