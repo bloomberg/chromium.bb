@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "base/base64.h"
 #include "chrome/browser/sync/util/cryptographer.h"
 #include "chrome/browser/password_manager/encryptor.h"
@@ -326,7 +328,7 @@ void Cryptographer::UpdateEncryptedTypesFromNigori(
     return;
   }
 
-  SetEncryptedTypes(encrypted_types);
+  MergeEncryptedTypes(encrypted_types);
 }
 
 void Cryptographer::UpdateNigoriFromEncryptedTypes(
@@ -376,14 +378,15 @@ syncable::ModelTypeSet Cryptographer::GetEncryptedTypes() const {
   return encrypted_types_;
 }
 
-void Cryptographer::SetEncryptedTypesForTest(
+void Cryptographer::MergeEncryptedTypesForTest(
     const syncable::ModelTypeSet& encrypted_types) {
-  SetEncryptedTypes(encrypted_types);
+  MergeEncryptedTypes(encrypted_types);
 }
 
-void Cryptographer::SetEncryptedTypes(
+void Cryptographer::MergeEncryptedTypes(
     const syncable::ModelTypeSet& encrypted_types) {
-  if (encrypted_types_ == encrypted_types) {
+  if (std::includes(encrypted_types_.begin(), encrypted_types_.end(),
+                    encrypted_types.begin(), encrypted_types.end())) {
     return;
   }
   encrypted_types_ = encrypted_types;

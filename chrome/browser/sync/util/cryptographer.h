@@ -182,17 +182,17 @@ class Cryptographer {
   // Return the set of encrypted types.
   syncable::ModelTypeSet GetEncryptedTypes() const;
 
-  // Forwards to SetEncryptedTypes.
-  void SetEncryptedTypesForTest(
+  // Forwards to MergeEncryptedTypes.
+  void MergeEncryptedTypesForTest(
       const syncable::ModelTypeSet& encrypted_types);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CryptographerTest, PackUnpack);
   typedef std::map<std::string, linked_ptr<const Nigori> > NigoriMap;
 
-  // Changes the set of encrypted types and emits a notification if
-  // necessary.
-  void SetEncryptedTypes(const syncable::ModelTypeSet& encrypted_types);
+  // Merges the given set of encrypted types with the existing set and emits a
+  // notification if necessary.
+  void MergeEncryptedTypes(const syncable::ModelTypeSet& encrypted_types);
 
   void EmitEncryptedTypesChangedNotification();
 

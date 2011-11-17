@@ -207,7 +207,7 @@ TEST(CryptographerTest, NigoriEncryptionTypes) {
   // Just set the sensitive types (shouldn't trigger any
   // notifications).
   ModelTypeSet encrypted_types(Cryptographer::SensitiveTypes());
-  cryptographer.SetEncryptedTypesForTest(encrypted_types);
+  cryptographer.MergeEncryptedTypesForTest(encrypted_types);
   cryptographer.UpdateNigoriFromEncryptedTypes(&nigori);
   cryptographer2.UpdateEncryptedTypesFromNigori(nigori);
   EXPECT_EQ(encrypted_types, cryptographer.GetEncryptedTypes());
@@ -225,11 +225,18 @@ TEST(CryptographerTest, NigoriEncryptionTypes) {
 
   // Set all encrypted types
   encrypted_types = syncable::GetAllRealModelTypes();
-  cryptographer.SetEncryptedTypesForTest(encrypted_types);
+  cryptographer.MergeEncryptedTypesForTest(encrypted_types);
   cryptographer.UpdateNigoriFromEncryptedTypes(&nigori);
   cryptographer2.UpdateEncryptedTypesFromNigori(nigori);
   EXPECT_EQ(encrypted_types, cryptographer.GetEncryptedTypes());
   EXPECT_EQ(encrypted_types, cryptographer2.GetEncryptedTypes());
+
+   // Receiving an empty nigori should not reset any encrypted types or trigger
+   // an observer notification.
+   Mock::VerifyAndClearExpectations(&observer);
+   nigori = sync_pb::NigoriSpecifics();
+   cryptographer.UpdateEncryptedTypesFromNigori(nigori);
+   EXPECT_EQ(encrypted_types, cryptographer.GetEncryptedTypes());
 }
 
 TEST(CryptographerTest, EncryptEverythingExplicit) {
