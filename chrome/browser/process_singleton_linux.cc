@@ -59,6 +59,7 @@
 
 #include "base/base_paths.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
@@ -461,7 +462,8 @@ bool ConnectSocket(ScopedSocket* socket,
 class ProcessSingleton::LinuxWatcher
     : public MessageLoopForIO::Watcher,
       public MessageLoop::DestructionObserver,
-      public base::RefCountedThreadSafe<ProcessSingleton::LinuxWatcher> {
+      public base::RefCountedThreadSafe<ProcessSingleton::LinuxWatcher,
+                                        BrowserThread::DeleteOnIOThread> {
  public:
   // A helper class to read message from an established socket.
   class SocketReader : public MessageLoopForIO::Watcher {
@@ -473,11 +475,13 @@ class ProcessSingleton::LinuxWatcher
           ui_message_loop_(ui_message_loop),
           fd_(fd),
           bytes_read_(0) {
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
       // Wait for reads.
       MessageLoopForIO::current()->WatchFileDescriptor(
           fd, true, MessageLoopForIO::WATCH_READ, &fd_reader_, this);
+      // If we haven't completed in a reasonable amount of time, give up.
       timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kTimeoutInSeconds),
-                   this, &SocketReader::OnTimerExpiry);
+                   this, &SocketReader::CleanupAndDeleteSelf);
     }
 
     virtual ~SocketReader() {
@@ -496,8 +500,9 @@ class ProcessSingleton::LinuxWatcher
     void FinishWithACK(const char *message, size_t length);
 
    private:
-    // If we haven't completed in a reasonable amount of time, give up.
-    void OnTimerExpiry() {
+    void CleanupAndDeleteSelf() {
+      DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
       parent_->RemoveSocketReader(this);
       // We're deleted beyond this point.
     }
@@ -540,7 +545,7 @@ class ProcessSingleton::LinuxWatcher
   // |reader| is for sending back ACK message.
   void HandleMessage(const std::string& current_dir,
                      const std::vector<std::string>& argv,
-                     SocketReader *reader);
+                     SocketReader* reader);
 
   // MessageLoopForIO::Watcher impl.  These run on the IO thread.
   virtual void OnFileCanReadWithoutBlocking(int fd);
@@ -555,9 +560,11 @@ class ProcessSingleton::LinuxWatcher
   }
 
  private:
-  friend class base::RefCountedThreadSafe<ProcessSingleton::LinuxWatcher>;
+  friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
+  friend class DeleteTask<ProcessSingleton::LinuxWatcher>;
 
   virtual ~LinuxWatcher() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
     STLDeleteElements(&readers_);
   }
 
@@ -579,6 +586,7 @@ class ProcessSingleton::LinuxWatcher
 };
 
 void ProcessSingleton::LinuxWatcher::OnFileCanReadWithoutBlocking(int fd) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Accepting incoming client.
   sockaddr_un from;
   socklen_t from_len = sizeof(from);
@@ -664,6 +672,7 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
 }
 
 void ProcessSingleton::LinuxWatcher::RemoveSocketReader(SocketReader* reader) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(reader);
   readers_.erase(reader);
   delete reader;
@@ -675,6 +684,7 @@ void ProcessSingleton::LinuxWatcher::RemoveSocketReader(SocketReader* reader) {
 
 void ProcessSingleton::LinuxWatcher::SocketReader::OnFileCanReadWithoutBlocking(
     int fd) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(fd, fd_);
   while (bytes_read_ < sizeof(buf_)) {
     ssize_t rv = HANDLE_EINTR(
@@ -702,6 +712,7 @@ void ProcessSingleton::LinuxWatcher::SocketReader::OnFileCanReadWithoutBlocking(
   if (bytes_read_ < kMinMessageLength) {
     buf_[bytes_read_] = 0;
     LOG(ERROR) << "Invalid socket message (wrong length):" << buf_;
+    CleanupAndDeleteSelf();
     return;
   }
 
@@ -711,6 +722,7 @@ void ProcessSingleton::LinuxWatcher::SocketReader::OnFileCanReadWithoutBlocking(
 
   if (tokens.size() < 3 || tokens[0] != kStartToken) {
     LOG(ERROR) << "Wrong message format: " << str;
+    CleanupAndDeleteSelf();
     return;
   }
 
@@ -725,9 +737,9 @@ void ProcessSingleton::LinuxWatcher::SocketReader::OnFileCanReadWithoutBlocking(
   tokens.erase(tokens.begin());
 
   // Return to the UI thread to handle opening a new browser tab.
-  ui_message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      parent_,
+  ui_message_loop_->PostTask(FROM_HERE, base::Bind(
       &ProcessSingleton::LinuxWatcher::HandleMessage,
+      parent_,
       current_dir,
       tokens,
       this));
@@ -747,8 +759,13 @@ void ProcessSingleton::LinuxWatcher::SocketReader::FinishWithACK(
   if (shutdown(fd_, SHUT_WR) < 0)
     PLOG(ERROR) << "shutdown() failed";
 
-  parent_->RemoveSocketReader(this);
-  // We are deleted beyond this point.
+  BrowserThread::PostTask(
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&ProcessSingleton::LinuxWatcher::RemoveSocketReader,
+                 parent_,
+                 this));
+  // We will be deleted once the posted RemoveSocketReader task runs.
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -983,9 +1000,9 @@ bool ProcessSingleton::Create() {
   // socket.
   MessageLoop* ml = g_browser_process->io_thread()->message_loop();
   DCHECK(ml);
-  ml->PostTask(FROM_HERE, NewRunnableMethod(
-    watcher_.get(),
+  ml->PostTask(FROM_HERE, base::Bind(
     &ProcessSingleton::LinuxWatcher::StartListening,
+    watcher_.get(),
     sock));
 
   return true;
