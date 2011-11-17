@@ -673,8 +673,10 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 }
 
 void RenderThreadImpl::OnSetNextPageID(int32 next_page_id) {
-  // This should only be called at process initialization time, so we shouldn't
-  // have to worry about thread-safety.
+  // This is called at process initialization time or when this process is
+  // being re-used for a new RenderView.  It is ok if another RenderView
+  // has identical page_ids or inflates next_page_id_ just before this arrives,
+  // as long as we ensure next_page_id_ is at least this large.
   RenderViewImpl::SetNextPageID(next_page_id);
 }
 

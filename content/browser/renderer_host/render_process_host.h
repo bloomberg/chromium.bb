@@ -166,6 +166,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Channel::Sender,
   // Gets the next available routing id.
   virtual int GetNextRoutingID() = 0;
 
+  // Update the max page ID and send the update to the renderer process as well.
+  virtual void UpdateAndSendMaxPageID(int32 page_id) = 0;
+
   // Called on the UI thread to cancel any outstanding resource requests for
   // the specified render widget.
   virtual void CancelResourceRequests(int render_widget_id) = 0;

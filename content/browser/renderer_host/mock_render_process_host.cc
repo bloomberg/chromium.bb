@@ -36,6 +36,10 @@ int MockRenderProcessHost::GetNextRoutingID() {
   return ++prev_routing_id;
 }
 
+void MockRenderProcessHost::UpdateAndSendMaxPageID(int32 page_id) {
+  UpdateMaxPageID(page_id);
+}
+
 void MockRenderProcessHost::CancelResourceRequests(int render_widget_id) {
 }
 

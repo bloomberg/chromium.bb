@@ -506,11 +506,12 @@ RenderViewImpl* RenderViewImpl::Create(
 
 // static
 void RenderViewImpl::SetNextPageID(int32 next_page_id) {
-  // This method should only be called during process startup, and the given
-  // page id had better not exceed our current next page id!
-  DCHECK_EQ(next_page_id_, 1);
-  DCHECK(next_page_id >= next_page_id_);
-  next_page_id_ = next_page_id;
+  // This method is called on startup or when the browser knows it needs to
+  // inflate the page_id when re-using the process.  The renderer may have
+  // incremented this just as the browser was sending the message, but we
+  // only care that next_page_id_ is at least as large as next_page_id.
+  if (next_page_id > next_page_id_)
+    next_page_id_ = next_page_id;
 }
 
 void RenderViewImpl::AddObserver(RenderViewObserver* observer) {

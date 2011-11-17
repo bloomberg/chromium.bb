@@ -438,6 +438,12 @@ int BrowserRenderProcessHost::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
 }
 
+void BrowserRenderProcessHost::UpdateAndSendMaxPageID(int32 page_id) {
+  if (page_id > max_page_id_)
+    Send(new ViewMsg_SetNextPageID(page_id + 1));
+  UpdateMaxPageID(page_id);
+}
+
 void BrowserRenderProcessHost::CancelResourceRequests(int render_widget_id) {
   widget_helper_->CancelResourceRequests(render_widget_id);
 }

@@ -35,6 +35,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void EnableSendQueue() OVERRIDE;
   virtual bool Init(bool is_accessibility_enabled) OVERRIDE;
   virtual int GetNextRoutingID() OVERRIDE;
+  virtual void UpdateAndSendMaxPageID(int32 page_id) OVERRIDE;
   virtual void CancelResourceRequests(int render_widget_id) OVERRIDE;
   virtual void CrossSiteSwapOutACK(
       const ViewMsg_SwapOut_Params& params) OVERRIDE;
