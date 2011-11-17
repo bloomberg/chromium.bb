@@ -80,8 +80,7 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
   // Changes the opening rectangle associated with |source|.
   virtual void MoveContents(TabContents* source, const gfx::Rect& new_bounds);
 
-  // Always returns true.
-  virtual bool IsPopup(const TabContents* source) const;
+  virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
 
   // Always returns true.
   virtual bool ShouldSuppressDialogs();

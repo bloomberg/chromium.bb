@@ -106,10 +106,6 @@ void SidebarContainer::SetTitle(const string16& title) {
   title_ = title;
 }
 
-bool SidebarContainer::IsPopup(const TabContents* source) const {
-  return false;
-}
-
 content::JavaScriptDialogCreator*
 SidebarContainer::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();

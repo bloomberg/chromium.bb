@@ -223,10 +223,6 @@ void DraggedTabControllerGtk::LoadingStateChanged(TabContents* source) {
     dragged_view_->Update();
 }
 
-bool DraggedTabControllerGtk::IsPopup(const TabContents* source) const {
-  return false;
-}
-
 content::JavaScriptDialogCreator*
 DraggedTabControllerGtk::GetJavaScriptDialogCreator() {
   return GetJavaScriptDialogCreatorInstance();

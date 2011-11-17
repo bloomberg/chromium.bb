@@ -11,6 +11,8 @@
 #include <set>
 #include <vector>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/gtk/tabs/drag_data.h"
@@ -94,14 +96,13 @@ class DraggedTabControllerGtk : public content::NotificationObserver,
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
   virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags);
+                                      unsigned changed_flags) OVERRIDE;
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture);
-  virtual void LoadingStateChanged(TabContents* source);
-  virtual bool IsPopup(const TabContents* source) const;
+                              bool user_gesture) OVERRIDE;
+  virtual void LoadingStateChanged(TabContents* source) OVERRIDE;
   virtual content::JavaScriptDialogCreator*
       GetJavaScriptDialogCreator() OVERRIDE;
 

@@ -161,7 +161,7 @@ void BlockedContentContainer::MoveContents(TabContents* source,
   }
 }
 
-bool BlockedContentContainer::IsPopup(const TabContents* source) const {
+bool BlockedContentContainer::IsPopupOrPanel(const TabContents* source) const {
   // Assume everything added is a popup. This may turn out to be wrong, but
   // callers don't cache this information so it should be fine if the value ends
   // up changing.
