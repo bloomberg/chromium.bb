@@ -2951,8 +2951,11 @@ sdk() {
   sdk-clean
   sdk-headers
   sdk-libs
-  sdk-irt-shim
-
+  if ${PNACL_IN_CROS_CHROOT}; then
+    Banner "NOT COMPILING THE IRT SHIM on CrOS chroot"
+  else
+    sdk-irt-shim
+  fi
   sdk-verify
 }
 
