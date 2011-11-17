@@ -970,6 +970,28 @@ void RenderWidget::didDeactivateCompositor() {
     using_asynchronous_swapbuffers_ = false;
 }
 
+void RenderWidget::didCommitAndDrawCompositorFrame() {
+}
+
+void RenderWidget::didCompleteSwapBuffers() {
+  if (update_reply_pending())
+    return;
+
+  if (!next_paint_flags_ && !plugin_window_moves_.size())
+    return;
+
+  ViewHostMsg_UpdateRect_Params params;
+  params.view_size = size_;
+  params.resizer_rect = resizer_rect_;
+  params.plugin_window_moves.swap(plugin_window_moves_);
+  params.flags = next_paint_flags_;
+  params.scroll_offset = GetScrollOffset();
+  update_reply_pending_ = true;
+
+  Send(new ViewHostMsg_UpdateRect(routing_id_, params));
+  next_paint_flags_ = 0;
+}
+
 void RenderWidget::scheduleComposite() {
   if (WebWidgetHandlesCompositorScheduling())
     webwidget_->composite(false);

@@ -993,11 +993,11 @@ void RenderWidgetHost::OnMsgUpdateRect(
     UMA_HISTOGRAM_TIMES("MPArch.RWH_RepaintDelta", delta);
   }
 
-  DCHECK(!params.bitmap_rect.IsEmpty());
   DCHECK(!params.view_size.IsEmpty());
 
   bool was_async = false;
   if (!is_accelerated_compositing_active_) {
+    DCHECK(!params.bitmap_rect.IsEmpty());
     const size_t size = params.bitmap_rect.height() *
         params.bitmap_rect.width() * 4;
     TransportDIB* dib = process_->GetTransportDIB(params.bitmap);
