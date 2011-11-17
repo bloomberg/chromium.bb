@@ -10,6 +10,7 @@
 #include "content/public/common/webkit_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_data_predictions.h"
 #include "webkit/glue/form_field.h"
@@ -122,10 +123,11 @@ IPC_MESSAGE_ROUTED3(AutofillHostMsg_TextFieldDidChange,
                     base::TimeTicks /* timestamp */)
 
 // Queries the browser for Autofill suggestions for a form input field.
-IPC_MESSAGE_ROUTED3(AutofillHostMsg_QueryFormFieldAutofill,
+IPC_MESSAGE_ROUTED4(AutofillHostMsg_QueryFormFieldAutofill,
                     int /* id of this message */,
                     webkit_glue::FormData /* the form */,
-                    webkit_glue::FormField /* the form field */)
+                    webkit_glue::FormField /* the form field */,
+                    gfx::Rect /* input field bounds, window-relative */)
 
 // Sent when the popup with Autofill suggestions for a form is shown.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_DidShowAutofillSuggestions,
@@ -155,4 +157,5 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_RemoveAutocompleteEntry,
 // Instructs the browser to show the Autofill dialog.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_ShowAutofillDialog)
 
-
+// Instructs the browser to hide the Autofill popup.
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillPopup)

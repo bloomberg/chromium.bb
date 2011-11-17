@@ -19,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -124,6 +125,8 @@ bool AutofillAgent::InputElementClicked(const WebInputElement& element,
 }
 
 bool AutofillAgent::InputElementLostFocus() {
+  Send(new AutofillHostMsg_HideAutofillPopup(routing_id()));
+
   return false;
 }
 
@@ -414,8 +417,13 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
     WebFormControlElementToFormField(element, EXTRACT_VALUE, &field);
   }
 
+  // TODO(csharp): Stop using the hardcoded value once the WebKit change to
+  // expose the position lands.
+  // gfx::Rect bounding_box(autofill_query_element_.boundsInRootViewSpace());
+  gfx::Rect bounding_box(26, 51, 155, 22);
+
   Send(new AutofillHostMsg_QueryFormFieldAutofill(
-      routing_id(), autofill_query_id_, form, field));
+      routing_id(), autofill_query_id_, form, field, bounding_box));
 }
 
 void AutofillAgent::FillAutofillFormData(const WebNode& node,

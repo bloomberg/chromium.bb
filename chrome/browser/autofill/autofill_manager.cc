@@ -52,6 +52,7 @@
 #include "grit/generated_resources.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_data_predictions.h"
 #include "webkit/glue/form_field.h"
@@ -311,6 +312,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnDidFillAutofillFormData)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_DidShowAutofillSuggestions,
                         OnDidShowAutofillSuggestions)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_HideAutofillPopup,
+                        OnHideAutofillPopup)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -439,14 +442,16 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
 
 void AutofillManager::OnQueryFormFieldAutofill(int query_id,
                                                const FormData& form,
-                                               const FormField& field) {
+                                               const FormField& field,
+                                               const gfx::Rect& bounding_box) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
   std::vector<int> unique_ids;
 
-  if (external_delegate_)
-    external_delegate_->OnQuery(query_id, form, field);
+  if (external_delegate_) {
+    external_delegate_->OnQuery(query_id, form, field, bounding_box);
+  }
 
   RenderViewHost* host = NULL;
   FormStructure* form_structure = NULL;
@@ -671,6 +676,11 @@ void AutofillManager::OnDidShowAutofillSuggestions(bool is_new_popup) {
           AutofillMetrics::SUGGESTIONS_SHOWN_ONCE);
     }
   }
+}
+
+void AutofillManager::OnHideAutofillPopup() {
+  if (external_delegate_)
+    external_delegate_->HideAutofillPopup();
 }
 
 void AutofillManager::OnLoadedServerPredictions(

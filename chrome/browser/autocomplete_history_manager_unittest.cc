@@ -19,6 +19,7 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/form_data.h"
 
 using content::BrowserThread;
@@ -146,13 +147,16 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 
   virtual void OnQuery(int query_id,
                        const webkit_glue::FormData& form,
-                       const webkit_glue::FormField& field) {}
+                       const webkit_glue::FormField& field,
+                       const gfx::Rect& bounds) OVERRIDE {}
   MOCK_METHOD5(OnSuggestionsReturned,
                void(int query_id,
                     const std::vector<string16>& autofill_values,
                     const std::vector<string16>& autofill_labels,
                     const std::vector<string16>& autofill_icons,
                     const std::vector<int>& autofill_unique_ids));
+
+  virtual void HideAutofillPopup() OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
@@ -186,4 +190,3 @@ TEST_F(AutocompleteHistoryManagerTest, ExternalDelegate) {
   // Should trigger a call to OnSuggestionsReturned, verified by the mock.
   autocomplete_history_manager.SendSuggestions(NULL);
 }
-

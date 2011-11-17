@@ -219,6 +219,11 @@ void AutocompleteHistoryManager::OnWebDataServiceRequestDone(
   SendSuggestions(&suggestions);
 }
 
+void AutocompleteHistoryManager::SetExternalDelegate(
+    AutofillExternalDelegate* delegate) {
+  external_delegate_ = delegate;
+}
+
 AutocompleteHistoryManager::AutocompleteHistoryManager(
     TabContents* tab_contents,
     Profile* profile,
@@ -271,14 +276,14 @@ void AutocompleteHistoryManager::SendSuggestions(
         autofill_labels_,
         autofill_icons_,
         autofill_unique_ids_);
+  } else {
+    Send(new AutofillMsg_SuggestionsReturned(routing_id(),
+                                             query_id_,
+                                             autofill_values_,
+                                             autofill_labels_,
+                                             autofill_icons_,
+                                             autofill_unique_ids_));
   }
-
-  Send(new AutofillMsg_SuggestionsReturned(routing_id(),
-                                           query_id_,
-                                           autofill_values_,
-                                           autofill_labels_,
-                                           autofill_icons_,
-                                           autofill_unique_ids_));
 
   query_id_ = 0;
   autofill_values_.clear();

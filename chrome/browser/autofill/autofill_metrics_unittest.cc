@@ -22,6 +22,7 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
@@ -976,12 +977,12 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
               LogAddressSuggestionsCount(2)).Times(1);
 
   // Simulate activating the autofill popup for the phone field.
-  autofill_manager_->OnQueryFormFieldAutofill(0, form, field);
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect());
 
   // Simulate activating the autofill popup for the email field after typing.
   // No new metric should be logged, since we're still on the same page.
   autofill_test::CreateTestFormField("Email", "email", "b", "email", &field);
-  autofill_manager_->OnQueryFormFieldAutofill(0, form, field);
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect());
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
@@ -993,7 +994,7 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
               LogAddressSuggestionsCount(1)).Times(1);
 
   // Simulate activating the autofill popup for the email field after typing.
-  autofill_manager_->OnQueryFormFieldAutofill(0, form, field);
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect());
 
   // Reset the autofill manager state again.
   autofill_manager_->Reset();
@@ -1006,7 +1007,7 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
 
   // Simulate activating the autofill popup for the email field after typing.
   form.fields[0].is_autofilled = true;
-  autofill_manager_->OnQueryFormFieldAutofill(0, form, field);
+  autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect());
 }
 
 // Test that we log whether Autofill is enabled when filling a form.

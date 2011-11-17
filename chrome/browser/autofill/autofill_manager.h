@@ -36,6 +36,10 @@ class TabContentsWrapper;
 
 struct ViewHostMsg_FrameNavigate_Params;
 
+namespace gfx {
+class Rect;
+};
+
 namespace IPC {
 class Message;
 }
@@ -143,9 +147,12 @@ class AutofillManager : public TabContentsObserver,
   void OnTextFieldDidChange(const webkit_glue::FormData& form,
                             const webkit_glue::FormField& field,
                             const base::TimeTicks& timestamp);
+
+  // The |bounding_box| is a window relative value.
   void OnQueryFormFieldAutofill(int query_id,
                                 const webkit_glue::FormData& form,
-                                const webkit_glue::FormField& field);
+                                const webkit_glue::FormField& field,
+                                const gfx::Rect& bounding_box);
   void OnFillAutofillFormData(int query_id,
                               const webkit_glue::FormData& form,
                               const webkit_glue::FormField& field,
@@ -154,6 +161,7 @@ class AutofillManager : public TabContentsObserver,
   void OnDidPreviewAutofillFormData();
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
   void OnDidShowAutofillSuggestions(bool is_new_popup);
+  void OnHideAutofillPopup();
 
   // Fills |host| with the RenderViewHost for this tab.
   // Returns false if Autofill is disabled or if the host is unavailable.

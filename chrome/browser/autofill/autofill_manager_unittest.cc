@@ -38,6 +38,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/rect.h"
 #include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 
@@ -567,7 +568,10 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
   void GetAutofillSuggestions(int query_id,
                               const webkit_glue::FormData& form,
                               const webkit_glue::FormField& field) {
-    autofill_manager_->OnQueryFormFieldAutofill(query_id, form, field);
+    autofill_manager_->OnQueryFormFieldAutofill(query_id,
+                                                form,
+                                                field,
+                                                gfx::Rect());
   }
 
   void GetAutofillSuggestions(const webkit_glue::FormData& form,
@@ -2863,15 +2867,18 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
       : AutofillExternalDelegate(wrapper) {}
   virtual ~MockAutofillExternalDelegate() {}
 
-  MOCK_METHOD3(OnQuery, void(int query_id,
+  MOCK_METHOD4(OnQuery, void(int query_id,
                              const webkit_glue::FormData& form,
-                             const webkit_glue::FormField& field));
+                             const webkit_glue::FormField& field,
+                             const gfx::Rect& bounds));
   virtual void OnSuggestionsReturned(
       int query_id,
       const std::vector<string16>& autofill_values,
       const std::vector<string16>& autofill_labels,
       const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids) {}
+      const std::vector<int>& autofill_unique_ids) OVERRIDE {}
+
+  virtual void HideAutofillPopup() OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
@@ -2882,7 +2889,7 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 // Test our external delegate is called at the right time.
 TEST_F(AutofillManagerTest, TestExternalDelegate) {
   MockAutofillExternalDelegate external_delegate(contents_wrapper());
-  EXPECT_CALL(external_delegate, OnQuery(_, _, _));
+  EXPECT_CALL(external_delegate, OnQuery(_, _, _, _));
   autofill_manager_->SetExternalDelegate(&external_delegate);
 
   FormData form;

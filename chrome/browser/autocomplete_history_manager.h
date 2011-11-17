@@ -49,9 +49,7 @@ class AutocompleteHistoryManager : public TabContentsObserver,
   void OnFormSubmitted(const webkit_glue::FormData& form);
 
   // Sets our external delegate.
-  void SetExternalDelegate(AutofillExternalDelegate* delegate) {
-    external_delegate_ = delegate;
-  }
+  void SetExternalDelegate(AutofillExternalDelegate* delegate);
 
  protected:
   friend class AutocompleteHistoryManagerTest;

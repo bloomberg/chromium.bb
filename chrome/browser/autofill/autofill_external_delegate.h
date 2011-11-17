@@ -13,6 +13,10 @@
 class AutofillManager;
 class TabContentsWrapper;
 
+namespace gfx {
+class Rect;
+}
+
 namespace webkit_glue {
 struct FormData;
 struct FormField;
@@ -30,20 +34,28 @@ class AutofillExternalDelegate {
   void SelectAutofillSuggestionAtIndex(int listIndex);
 
   // Records and associates a query_id with web form data.  Called
-  // when the renderer posts an Autofill query to the browser.
+  // when the renderer posts an Autofill query to the browser. |bounds|
+  // is window relative.
   virtual void OnQuery(int query_id,
                        const webkit_glue::FormData& form,
-                       const webkit_glue::FormField& field) = 0;
+                       const webkit_glue::FormField& field,
+                       const gfx::Rect& bounds) = 0;
 
   // Records query results.  Displays them to the user with an external
   // Autofill popup that lives completely in the browser.  Called when
   // an Autofill query result is available.
+  // TODO(csharp): This should contain the logic found in
+  // AutofillAgent::OnSuggestionsReturned.
+  // See http://crbug.com/51644
   virtual void OnSuggestionsReturned(
       int query_id,
       const std::vector<string16>& autofill_values,
       const std::vector<string16>& autofill_labels,
       const std::vector<string16>& autofill_icons,
       const std::vector<int>& autofill_unique_ids) = 0;
+
+  // Hide the Autofill poup.
+  virtual void HideAutofillPopup() = 0;
 
   // Platforms that wish to implement an external Autofill delegate
   // MUST implement this.  The 1st arg is the tab contents that owns
