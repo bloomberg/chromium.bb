@@ -244,6 +244,10 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWhenDisabled) {
   EXPECT_EQ(GURL(kPdfUrlIntercepted), request.url());
 }
 
+#if !defined(OFFICIAL_BUILD)
+// Official builds have pdf plugin by default, and we cannot unload it, so the
+// test fails. Since pdf plugin is always present, we don't need to run this
+// test.
 TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
   SetPDFPluginLoadedState(false);
 
@@ -254,6 +258,7 @@ TEST_F(GViewRequestInterceptorTest, InterceptPdfWithNoPlugin) {
   EXPECT_EQ(1, test_delegate_.received_redirect_count());
   EXPECT_EQ(GURL(kPdfUrlIntercepted), request.url());
 }
+#endif
 
 TEST_F(GViewRequestInterceptorTest, InterceptPowerpoint) {
   net::URLRequest request(GURL(kPptUrl), &test_delegate_);
