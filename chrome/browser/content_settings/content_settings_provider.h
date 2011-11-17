@@ -42,19 +42,20 @@ class ProviderInterface {
       const ResourceIdentifier& resource_identifier,
       bool incognito) const = 0;
 
-  // Sets the content setting for a particular |primary_pattern|,
-  // |secondary_pattern|, |content_type| tuple. For ContentSettingsTypes that
-  // require a resource identifier to be specified, the |resource_identifier|
-  // must be non-empty.
+  // Askes the provider to set the website setting for a particular
+  // |primary_pattern|, |secondary_pattern|, |content_type| tuple. If the
+  // provider accepts the setting it returns true and takes the ownership of the
+  // |value|. Otherwise false is returned and the ownership of the |value| stays
+  // with the caller.
   //
   // This should only be called on the UI thread, and not after
   // ShutdownOnUIThread has been called.
-  virtual void SetContentSetting(
+  virtual bool SetWebsiteSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting content_setting) = 0;
+      Value* value) = 0;
 
   // Resets all content settings for the given |content_type| and empty resource
   // identifier to CONTENT_SETTING_DEFAULT.

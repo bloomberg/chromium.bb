@@ -109,11 +109,13 @@ class HostContentSettingsMap
   void SetDefaultContentSetting(ContentSettingsType content_type,
                                 ContentSetting setting);
 
-  // Sets the content setting for the given patterns and content type.
-  // Setting the value to CONTENT_SETTING_DEFAULT causes the default setting
-  // for that type to be used when loading pages matching this pattern. For
-  // ContentSettingsTypes that require an resource identifier to be specified,
-  // the |resource_identifier| must be non-empty.
+  // Sets the content |setting| for the given patterns, |content_type| and
+  // |resource_identifier|. Setting the value to CONTENT_SETTING_DEFAULT causes
+  // the default setting for that type to be used when loading pages matching
+  // this pattern.
+  // NOTICE: This is just a convenience method for content types that use
+  // |CONTENT_SETTING| as their data type. For content types that use other
+  // data types please use the method SetWebsiteSetting.
   //
   // This should only be called on the UI thread.
   void SetContentSetting(const ContentSettingsPattern& primary_pattern,
@@ -121,6 +123,17 @@ class HostContentSettingsMap
                          ContentSettingsType content_type,
                          const std::string& resource_identifier,
                          ContentSetting setting);
+
+  // Sets the |value| for the given patterns, |content_type| and
+  // |resource_identifier|. Setting the value to NULL causes the default value
+  // for that type to be used when loading pages matching this pattern.
+  //
+  // Takes ownership of the passed value.
+  void SetWebsiteSetting(const ContentSettingsPattern& primary_pattern,
+                         const ContentSettingsPattern& secondary_pattern,
+                         ContentSettingsType content_type,
+                         const std::string& resource_identifier,
+                         base::Value* value);
 
   // Convenience method to add a content setting for the given URLs, making sure
   // that there is no setting overriding it. For ContentSettingsTypes that
@@ -139,6 +152,8 @@ class HostContentSettingsMap
   // This should only be called on the UI thread.
   void ClearSettingsForOneType(ContentSettingsType content_type);
 
+  static bool IsValueAllowedForType(const base::Value* value,
+                                    ContentSettingsType content_type);
   static bool IsSettingAllowedForType(ContentSetting setting,
                                       ContentSettingsType content_type);
 

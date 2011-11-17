@@ -33,20 +33,21 @@ RuleIterator* MockProvider::GetRuleIterator(
   return value_map_.GetRuleIterator(content_type, resource_identifier, NULL);
 }
 
-void MockProvider::SetContentSetting(
+bool MockProvider::SetWebsiteSetting(
     const ContentSettingsPattern& requesting_url_pattern,
     const ContentSettingsPattern& embedding_url_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    ContentSetting content_setting) {
+    base::Value* value) {
   if (read_only_)
-    return;
+    return false;
   value_map_.clear();
   value_map_.SetValue(requesting_url_pattern,
                       embedding_url_pattern,
                       content_type,
                       resource_identifier,
-                      Value::CreateIntegerValue(content_setting));
+                      value);
+  return true;
 }
 
 void MockProvider::ShutdownOnUIThread() {

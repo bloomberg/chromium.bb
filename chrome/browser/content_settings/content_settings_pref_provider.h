@@ -44,12 +44,12 @@ class PrefProvider : public ObservableProvider,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const OVERRIDE;
 
-  virtual void SetContentSetting(
+  virtual bool SetWebsiteSetting(
       const ContentSettingsPattern& primary_pattern,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting content_setting) OVERRIDE;
+      Value* value) OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) OVERRIDE;
@@ -77,7 +77,7 @@ class PrefProvider : public ObservableProvider,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting setting);
+      const base::Value* value);
 
   // Updates the given |pattern_pairs_settings| dictionary value.
   void UpdatePatternPairsSettings(
@@ -85,7 +85,7 @@ class PrefProvider : public ObservableProvider,
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting setting,
+      const base::Value* value,
       DictionaryValue* pattern_pairs_settings);
 
   // Updates the preferences prefs::kContentSettingsPatterns. This preferences

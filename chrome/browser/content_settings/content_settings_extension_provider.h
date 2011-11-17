@@ -28,12 +28,12 @@ class ExtensionProvider : public ObservableProvider,
       const ResourceIdentifier& resource_identifier,
       bool incognito) const OVERRIDE;
 
-  virtual void SetContentSetting(
-      const ContentSettingsPattern& embedded_url_pattern,
-      const ContentSettingsPattern& top_level_url_pattern,
+  virtual bool SetWebsiteSetting(
+      const ContentSettingsPattern& primary_pattern,
+      const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting content_setting) OVERRIDE {}
+      Value* value) OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(ContentSettingsType content_type)
       OVERRIDE {}

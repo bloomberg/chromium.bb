@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
+#include "base/values.h"
 #include "chrome/browser/content_settings/content_settings_mock_observer.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -133,12 +134,12 @@ TEST_F(PrefProviderTest, Observer) {
 
   pref_content_settings_provider.AddObserver(&mock_observer);
 
-  pref_content_settings_provider.SetContentSetting(
+  pref_content_settings_provider.SetWebsiteSetting(
       pattern,
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
       "",
-      CONTENT_SETTING_ALLOW);
+      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
 
   pref_content_settings_provider.ShutdownOnUIThread();
 }
@@ -172,12 +173,12 @@ TEST_F(PrefProviderTest, Incognito) {
   PrefProvider pref_content_settings_provider_incognito(otr_prefs, true);
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]example.com");
-  pref_content_settings_provider.SetContentSetting(
+  pref_content_settings_provider.SetWebsiteSetting(
       pattern,
       pattern,
       CONTENT_SETTINGS_TYPE_IMAGES,
       "",
-      CONTENT_SETTING_ALLOW);
+      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
 
   GURL host("http://example.com/");
   // The value should of course be visible in the regular PrefProvider.
@@ -214,11 +215,12 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
                 &provider, primary_url, primary_url,
                 CONTENT_SETTINGS_TYPE_IMAGES, "", false));
 
-  provider.SetContentSetting(primary_pattern,
-                             primary_pattern,
-                             CONTENT_SETTINGS_TYPE_IMAGES,
-                             "",
-                             CONTENT_SETTING_BLOCK);
+  provider.SetWebsiteSetting(
+      primary_pattern,
+      primary_pattern,
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      "",
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&provider, primary_url, primary_url,
                               CONTENT_SETTINGS_TYPE_IMAGES, "", false));
@@ -229,11 +231,11 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
   value_ptr->GetAsInteger(&int_value);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, IntToContentSetting(int_value));
 
-  provider.SetContentSetting(primary_pattern,
+  provider.SetWebsiteSetting(primary_pattern,
                              primary_pattern,
                              CONTENT_SETTINGS_TYPE_IMAGES,
                              "",
-                             CONTENT_SETTING_DEFAULT);
+                             NULL);
   EXPECT_EQ(NULL,
             GetContentSettingValue(
                 &provider, primary_url, primary_url,
@@ -261,12 +263,12 @@ TEST_F(PrefProviderTest, Patterns) {
             GetContentSetting(
                 &pref_content_settings_provider,
                 host1, host1, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
-  pref_content_settings_provider.SetContentSetting(
+  pref_content_settings_provider.SetWebsiteSetting(
       pattern1,
       pattern1,
       CONTENT_SETTINGS_TYPE_IMAGES,
       "",
-      CONTENT_SETTING_BLOCK);
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(
                 &pref_content_settings_provider,
@@ -280,12 +282,12 @@ TEST_F(PrefProviderTest, Patterns) {
             GetContentSetting(
                 &pref_content_settings_provider,
                 host3, host3, CONTENT_SETTINGS_TYPE_IMAGES, "", false));
-  pref_content_settings_provider.SetContentSetting(
+  pref_content_settings_provider.SetWebsiteSetting(
       pattern2,
       pattern2,
       CONTENT_SETTINGS_TYPE_IMAGES,
       "",
-      CONTENT_SETTING_BLOCK);
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(
                 &pref_content_settings_provider,
@@ -295,12 +297,12 @@ TEST_F(PrefProviderTest, Patterns) {
             GetContentSetting(&pref_content_settings_provider,
                               host4, host4, CONTENT_SETTINGS_TYPE_IMAGES, "",
                               false));
-  pref_content_settings_provider.SetContentSetting(
+  pref_content_settings_provider.SetWebsiteSetting(
       pattern3,
       pattern3,
       CONTENT_SETTINGS_TYPE_IMAGES,
       "",
-      CONTENT_SETTING_BLOCK);
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(
                 &pref_content_settings_provider,
@@ -325,12 +327,12 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
                 &pref_content_settings_provider,
                 host, host, CONTENT_SETTINGS_TYPE_PLUGINS,
                 resource1, false));
-  pref_content_settings_provider.SetContentSetting(
+  pref_content_settings_provider.SetWebsiteSetting(
       pattern,
       pattern,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       resource1,
-      CONTENT_SETTING_BLOCK);
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(
                 &pref_content_settings_provider,
@@ -413,11 +415,11 @@ TEST_F(PrefProviderTest, SyncObsoletePref) {
       ContentSettingsPattern::FromString("[*.]example.com");
   ContentSettingsPattern secondary_pattern =
       ContentSettingsPattern::Wildcard();
-  provider.SetContentSetting(primary_pattern,
+  provider.SetWebsiteSetting(primary_pattern,
                              secondary_pattern,
                              CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                              std::string(),
-                             CONTENT_SETTING_BLOCK);
+                             Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
 
   // Test whether the obsolete preference is synced correctly.
   patterns = prefs->GetDictionary(prefs::kContentSettingsPatterns);
@@ -679,12 +681,12 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
                 std::string(),
                 false));
 
-  provider.SetContentSetting(
+  provider.SetWebsiteSetting(
       ContentSettingsPattern::FromURL(primary_url),
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
       std::string(),
-      CONTENT_SETTING_ALLOW);
+      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(
                 &provider,

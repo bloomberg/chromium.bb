@@ -35,12 +35,12 @@ class MockProvider : public ObservableProvider {
 
   // The MockProvider is only able to store one content setting. So every time
   // this method is called the previously set content settings is overwritten.
-  virtual void SetContentSetting(
+  virtual bool SetWebsiteSetting(
       const ContentSettingsPattern& requesting_url_pattern,
       const ContentSettingsPattern& embedding_url_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      ContentSetting content_setting) OVERRIDE;
+      base::Value* value) OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) OVERRIDE {}

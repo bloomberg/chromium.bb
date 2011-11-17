@@ -210,12 +210,36 @@ void HostContentSettingsMap::SetDefaultContentSetting(
   DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
   DCHECK(IsSettingAllowedForType(setting, content_type));
 
-  content_settings_providers_[DEFAULT_PROVIDER]->SetContentSetting(
+  base::Value* value = Value::CreateIntegerValue(setting);
+  content_settings_providers_[DEFAULT_PROVIDER]->SetWebsiteSetting(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::Wildcard(),
       content_type,
       std::string(),
-      setting);
+      value);
+}
+
+void HostContentSettingsMap::SetWebsiteSetting(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const std::string& resource_identifier,
+    base::Value* value) {
+  DCHECK(IsValueAllowedForType(value, content_type));
+  DCHECK(content_settings::SupportsResourceIdentifier(content_type) ||
+         resource_identifier.empty());
+  for (ProviderIterator provider = content_settings_providers_.begin();
+       provider != content_settings_providers_.end();
+       ++provider) {
+    if (provider->second->SetWebsiteSetting(primary_pattern,
+                                            secondary_pattern,
+                                            content_type,
+                                            resource_identifier,
+                                            value)) {
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void HostContentSettingsMap::SetContentSetting(
@@ -225,19 +249,14 @@ void HostContentSettingsMap::SetContentSetting(
     const std::string& resource_identifier,
     ContentSetting setting) {
   DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
-  DCHECK(IsSettingAllowedForType(setting, content_type));
-  DCHECK(content_settings::SupportsResourceIdentifier(content_type) ||
-         resource_identifier.empty());
-  for (ProviderIterator provider = content_settings_providers_.begin();
-       provider != content_settings_providers_.end();
-       ++provider) {
-    provider->second->SetContentSetting(
-        primary_pattern,
-        secondary_pattern,
-        content_type,
-        resource_identifier,
-        setting);
-  }
+  base::Value* value = NULL;
+  if (setting != CONTENT_SETTING_DEFAULT)
+    value = Value::CreateIntegerValue(setting);
+  SetWebsiteSetting(primary_pattern,
+                    secondary_pattern,
+                    content_type,
+                    resource_identifier,
+                    value);
 }
 
 void HostContentSettingsMap::AddExceptionForURL(
@@ -272,6 +291,12 @@ void HostContentSettingsMap::ClearSettingsForOneType(
        ++provider) {
     provider->second->ClearAllContentSettingsRules(content_type);
   }
+}
+
+bool HostContentSettingsMap::IsValueAllowedForType(
+    const base::Value* value, ContentSettingsType type) {
+  return IsSettingAllowedForType(
+      content_settings::ValueToContentSetting(value), type);
 }
 
 // static

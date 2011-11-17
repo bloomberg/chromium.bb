@@ -31,6 +31,15 @@ RuleIterator* ExtensionProvider::GetRuleIterator(
                                                incognito);
 }
 
+bool ExtensionProvider::SetWebsiteSetting(
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern,
+    ContentSettingsType content_type,
+    const ResourceIdentifier& resource_identifier,
+    Value* value) {
+  return false;
+}
+
 void ExtensionProvider::ShutdownOnUIThread() {
   RemoveAllObservers();
   extensions_settings_->RemoveObserver(this);

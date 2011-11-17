@@ -53,24 +53,28 @@ TEST(ContentSettingsProviderTest, Mock) {
                                    CONTENT_SETTINGS_TYPE_GEOLOCATION, "",
                                    false));
 
-  mock_provider.SetContentSetting(
+  bool owned = mock_provider.SetWebsiteSetting(
       pattern,
       pattern,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       "java_plugin",
-      CONTENT_SETTING_ALLOW);
+      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+  EXPECT_TRUE(owned);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(&mock_provider, url, url,
                               CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
                               false));
 
   mock_provider.set_read_only(true);
-  mock_provider.SetContentSetting(
+  scoped_ptr<base::Value> value(
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  owned = mock_provider.SetWebsiteSetting(
       pattern,
       pattern,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       "java_plugin",
-      CONTENT_SETTING_BLOCK);
+      value.get());
+  EXPECT_FALSE(owned);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(&mock_provider, url, url,
                               CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
@@ -79,12 +83,13 @@ TEST(ContentSettingsProviderTest, Mock) {
   EXPECT_TRUE(mock_provider.read_only());
 
   mock_provider.set_read_only(false);
-  mock_provider.SetContentSetting(
+  owned = mock_provider.SetWebsiteSetting(
       pattern,
       pattern,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       "java_plugin",
-      CONTENT_SETTING_BLOCK);
+      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+  EXPECT_TRUE(owned);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&mock_provider, url, url,
                               CONTENT_SETTINGS_TYPE_PLUGINS, "java_plugin",
