@@ -92,7 +92,8 @@ ConstrainedHtmlDelegateGtk::ConstrainedHtmlDelegateGtk(
       tab_container_(NULL),
       html_delegate_(delegate),
       window_(NULL),
-      closed_via_webui_(false) {
+      closed_via_webui_(false),
+      release_tab_on_close_(false) {
   CHECK(delegate);
   TabContents* tab_contents =
       new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL, NULL);
