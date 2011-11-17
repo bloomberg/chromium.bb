@@ -371,8 +371,7 @@ void ExistingUserController::OnLoginSuccess(
   // Even in case when following online,offline protocol and returning
   // requests_pending = false, let LoginPerformer delete itself.
   login_performer_->set_delegate(NULL);
-  LoginPerformer* performer = login_performer_.release();
-  performer = NULL;
+  ignore_result(login_performer_.release());
 
   // Will call OnProfilePrepared() in the end.
   LoginUtils::Get()->PrepareProfile(username,

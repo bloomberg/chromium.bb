@@ -638,14 +638,12 @@ class MountLibraryImpl : public MountLibrary {
     std::set<std::string> current_device_set;
     if (error == MOUNT_METHOD_ERROR_NONE && devices && devices_len) {
       // Initiate properties fetch for all removable disks,
-      bool found_disk = false;
       for (size_t i = 0; i < devices_len; i++) {
         if (!devices[i]) {
           NOTREACHED();
           continue;
         }
         current_device_set.insert(std::string(devices[i]));
-        found_disk = true;
         // Initiate disk property retrieval for each relevant device path.
         libcros_proxy_->CallGetDiskProperties(devices[i],
             &GetDiskPropertiesCallback, this);

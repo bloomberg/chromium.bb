@@ -796,8 +796,7 @@ void ScreenLockerViews::ShowCaptchaAndErrorMessage(const GURL& captcha_url,
     captcha_view_->set_delegate(this);
   }
   // CaptchaView ownership is passed to grab_container_.
-  views::View* view = secondary_view_.release();
-  view = NULL;
+  ignore_result(secondary_view_.release());
   screen_lock_view_->SetVisible(false);
   grab_container_->SetScreenLockView(captcha_view_);
   background_container_->SetScreenLockView(captcha_view_);
@@ -842,8 +841,7 @@ void ScreenLockerViews::OnCaptchaEntered(const std::string& captcha) {
   // ScreenLockView ownership is passed to grab_container_.
   // Need to save return value here so that compile
   // doesn't fail with "unused result" warning.
-  views::View* view = secondary_view_.release();
-  view = NULL;
+  ignore_result(secondary_view_.release());
   captcha_view_->SetVisible(false);
   grab_container_->SetScreenLockView(screen_lock_view_);
   background_container_->SetScreenLockView(screen_lock_view_);
