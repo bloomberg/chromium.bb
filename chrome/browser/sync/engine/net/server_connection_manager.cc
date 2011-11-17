@@ -180,7 +180,6 @@ ServerConnectionManager::ServerConnectionManager(
       use_ssl_(use_ssl),
       proto_sync_path_(kSyncServerSyncPath),
       get_time_path_(kSyncServerGetTimePath),
-      error_count_(0),
       server_status_(HttpResponse::NONE),
       server_reachable_(false),
       terminated_(false),
@@ -252,14 +251,11 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
   bool ok = post.get()->Init(
       path.c_str(), auth_token, params->buffer_in, &params->response);
 
-  if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR) {
+  if (params->response.server_status == HttpResponse::SYNC_AUTH_ERROR)
     InvalidateAndClearAuthToken();
-  }
 
-  if (!ok || RC_REQUEST_OK != params->response.response_code) {
-    IncrementErrorCount();
+  if (!ok || RC_REQUEST_OK != params->response.response_code)
     return false;
-  }
 
   if (post.get()->ReadBufferResponse(
       &params->buffer_out, &params->response, true)) {
@@ -311,7 +307,6 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
     VLOG(1) << "Server was reachable.";
     return true;
   }
-  IncrementErrorCount();
   return false;
 }
 
@@ -334,25 +329,6 @@ bool ServerConnectionManager::CheckServerReachable() {
     NotifyStatusChanged();
   }
   return server_is_reachable;
-}
-
-bool ServerConnectionManager::IncrementErrorCount() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  error_count_++;
-
-  if (error_count_ > kMaxConnectionErrorsBeforeReset) {
-    error_count_ = 0;
-
-    if (!IsServerReachable()) {
-      LOG(WARNING) << "Too many connection failures, server is not reachable. "
-                   << "Resetting connections.";
-    } else {
-      LOG(WARNING) << "Multiple connection failures while server is reachable.";
-    }
-    return false;
-  }
-
-  return true;
 }
 
 void ServerConnectionManager::SetServerParameters(const string& server_url,
