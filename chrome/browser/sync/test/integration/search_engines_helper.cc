@@ -86,7 +86,7 @@ bool ServiceMatchesVerifier(int profile) {
 
   std::vector<const TemplateURL*> verifier_turls = verifier->GetTemplateURLs();
   if (verifier_turls.size() != other->GetTemplateURLs().size()) {
-    LOG(ERROR) << "verifier and other service have a different count of TURLs: "
+    LOG(ERROR) << "Verifier and other service have a different count of TURLs: "
                << verifier_turls.size() << " vs "
                << other->GetTemplateURLs().size() << " respectively.";
     return false;
@@ -156,10 +156,12 @@ bool ServicesMatch(int profile_a, int profile_b) {
 
 bool AllServicesMatch() {
   // Use 0 as the baseline.
-  if (!ServiceMatchesVerifier(0))
+  if (test()->use_verifier() && !ServiceMatchesVerifier(0)) {
+    LOG(ERROR) << "TemplateURLService 0 does not match verifier.";
     return false;
+  }
 
-  for (int it = 0; it < test()->num_clients(); ++it) {
+  for (int it = 1; it < test()->num_clients(); ++it) {
     if (!ServicesMatch(0, it)) {
       LOG(ERROR) << "TemplateURLService " << it << " does not match with "
                  << "service 0.";
@@ -241,15 +243,15 @@ void DeleteSearchEngineBySeed(int profile, int seed) {
 void ChangeDefaultSearchProvider(int profile, int seed) {
   TemplateURLService* service = GetServiceForProfile(profile);
   ASSERT_TRUE(service);
-  const TemplateURL* new_default = service->GetTemplateURLForKeyword(
+  const TemplateURL* turl = service->GetTemplateURLForKeyword(
       CreateKeyword(seed));
-  ASSERT_TRUE(new_default);
-  service->SetDefaultSearchProvider(new_default);
+  ASSERT_TRUE(turl);
+  service->SetDefaultSearchProvider(turl);
   if (test()->use_verifier()) {
-    new_default = GetVerifierService()->GetTemplateURLForKeyword(
-        CreateKeyword(seed));
-    ASSERT_TRUE(new_default);
-    GetVerifierService()->SetDefaultSearchProvider(new_default);
+    const TemplateURL* verifier_turl =
+        GetVerifierService()->GetTemplateURLForKeyword(CreateKeyword(seed));
+    ASSERT_TRUE(verifier_turl);
+    GetVerifierService()->SetDefaultSearchProvider(verifier_turl);
   }
 }
 
