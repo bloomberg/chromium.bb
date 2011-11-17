@@ -8,9 +8,12 @@
 
 #if defined(ENABLE_GPU)
 
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
+#include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -48,9 +51,13 @@ class GLES2Decoder;
 
 class ImageTransportSurface {
  public:
+  ImageTransportSurface();
+  virtual ~ImageTransportSurface();
+
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) = 0;
   virtual void OnBuffersSwappedACK() = 0;
+  virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
 
   // Creates the appropriate surface depending on the GL implementation.
@@ -60,6 +67,8 @@ class ImageTransportSurface {
                     int32 renderer_id,
                     int32 command_buffer_id,
                     gfx::PluginWindowHandle handle);
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);
 };
 
 class ImageTransportHelper : public IPC::Channel::Listener {
@@ -87,9 +96,12 @@ class ImageTransportHelper : public IPC::Channel::Listener {
       GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params);
   void SendAcceleratedSurfaceRelease(
       GpuHostMsg_AcceleratedSurfaceRelease_Params params);
+  void SendResizeView(const gfx::Size& size);
 
   // Whether or not we should execute more commands.
   void SetScheduled(bool is_scheduled);
+
+  void DeferToFence(base::Closure task);
 
   // Make the surface's context current.
   bool MakeCurrent();
@@ -101,9 +113,13 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   // IPC::Message handlers.
   void OnNewSurfaceACK(uint64 surface_id, TransportDIB::Handle surface_handle);
   void OnBuffersSwappedACK();
+  void OnResizeViewACK();
 
   // Backbuffer resize callback.
   void Resize(gfx::Size size);
+
+  // Set the default swap interval on the surface.
+  void SetSwapInterval();
 
   // Weak pointers that point to objects that outlive this helper.
   ImageTransportSurface* surface_;
@@ -116,6 +132,36 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   gfx::PluginWindowHandle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageTransportHelper);
+};
+
+// An implementation of ImageTransportSurface that implements GLSurface through
+// GLSurfaceAdapter, thereby forwarding GLSurface methods through to it.
+class PassThroughImageTransportSurface
+    : public gfx::GLSurfaceAdapter,
+      public ImageTransportSurface {
+ public:
+  PassThroughImageTransportSurface(GpuChannelManager* manager,
+                                   int32 render_view_id,
+                                   int32 renderer_id,
+                                   int32 command_buffer_id,
+                                   gfx::GLSurface* surface);
+  virtual ~PassThroughImageTransportSurface();
+
+  // GLSurface implementation.
+  virtual bool Initialize();
+  virtual void Destroy();
+
+  // ImageTransportSurface implementation.
+  virtual void OnNewSurfaceACK(
+      uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
+  virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnResizeViewACK() OVERRIDE;
+  virtual void OnResize(gfx::Size size) OVERRIDE;
+
+ private:
+  scoped_ptr<ImageTransportHelper> helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(PassThroughImageTransportSurface);
 };
 
 #endif  // defined(ENABLE_GPU)

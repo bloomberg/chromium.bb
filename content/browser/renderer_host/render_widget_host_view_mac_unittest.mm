@@ -7,6 +7,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
+#include "content/common/gpu/gpu_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/cocoa_test_event_utils.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
@@ -57,8 +58,9 @@ class RenderWidgetHostViewMacTest : public RenderViewHostTestHarness {
 
     // The accelerated view isn't shown until it has a valid rect and has been
     // painted to.
-    rwhv_mac_->AcceleratedSurfaceBuffersSwapped(accelerated_handle,
-                                                0, 0, 0, 0);
+    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+    params.window = accelerated_handle;
+    rwhv_mac_->AcceleratedSurfaceBuffersSwapped(params, 0);
     webkit::npapi::WebPluginGeometry geom;
     gfx::Rect rect(0, 0, w, h);
     geom.window = accelerated_handle;
