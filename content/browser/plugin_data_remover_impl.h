@@ -8,13 +8,15 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/public/browser/plugin_data_remover.h"
 
-class CONTENT_EXPORT PluginDataRemoverImpl : public content::PluginDataRemover,
-                                             public PluginProcessHost::Client,
-                                             public IPC::Channel::Listener {
+class CONTENT_EXPORT PluginDataRemoverImpl
+    : public content::PluginDataRemover,
+      public NON_EXPORTED_BASE(PluginProcessHost::Client),
+      public IPC::Channel::Listener {
  public:
   explicit PluginDataRemoverImpl(
       const content::ResourceContext& resource_context);
