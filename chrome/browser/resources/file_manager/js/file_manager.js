@@ -477,6 +477,18 @@ FileManager.prototype = {
 
     metrics.startInterval('RequestLocalFileSystem');
     var self = this;
+
+    // The list of active mount points to distinct them from other directories.
+    chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
+      self.mountPoints_ = mountPoints;
+      onDone();
+    });
+
+    function onDone() {
+      if (self.mountPoints_ && self.rootEntries_)
+        self.init_();
+    }
+
     chrome.fileBrowserPrivate.requestLocalFileSystem(function(filesystem) {
       self.filesystem_ = filesystem;
       util.installFileErrorToString();
@@ -488,7 +500,7 @@ FileManager.prototype = {
 
       function onAllRootsFound() {
         self.rootEntries_ = rootEntries;
-        self.init_();
+        onDone();
       }
 
       function onPathError(path, err) {
@@ -520,8 +532,6 @@ FileManager.prototype = {
    */
   FileManager.prototype.init_ = function() {
     metrics.startInterval('InitFileManager');
-    this.initFileList_();
-    this.initDialogs_();
 
     // TODO(rginda): 6/22/11: Remove this test when createDateTimeFormat is
     // available in all chrome trunk builds.
@@ -558,6 +568,9 @@ FileManager.prototype = {
         (this.dialogType_ == FileManager.DialogType.FULL_PAGE ||
          this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE);
 
+    this.initFileList_();
+    this.initDialogs_();
+
     // DirectoryEntry representing the current directory of the dialog.
     this.currentDirEntry_ = null;
 
@@ -587,11 +600,6 @@ FileManager.prototype = {
     // The list of callbacks to be invoked during the directory rescan after
     // all paste tasks are complete.
     this.pasteSuccessCallbacks_ = [];
-
-    // The list of active mount points to distinct them from other directories.
-    chrome.fileBrowserPrivate.getMountPoints(function(mountPoints) {
-        self.mountPoints_ = mountPoints;
-    });
 
     this.initCommands_();
 
@@ -648,7 +656,6 @@ FileManager.prototype = {
     this.previewPanel_ = this.dialogDom_.querySelector('.preview-panel');
     this.previewFilename_ = this.dialogDom_.querySelector('.preview-filename');
     this.previewSummary_ = this.dialogDom_.querySelector('.preview-summary');
-    this.previewMetadata_ = this.dialogDom_.querySelector('.preview-metadata');
     this.filenameInput_ = this.dialogDom_.querySelector('.filename-input');
     this.taskButtons_ = this.dialogDom_.querySelector('.task-buttons');
     this.okButton_ = this.dialogDom_.querySelector('.ok');
@@ -1133,13 +1140,9 @@ FileManager.prototype = {
    * Initialize the file list table.
    */
   FileManager.prototype.initTable_ = function() {
-    var checkWidth = this.showCheckboxes_ ? 5 : 0;
-
     var columns = [
-        new cr.ui.table.TableColumn('cachedIconType_', '',
-                                    5.4 + checkWidth),
         new cr.ui.table.TableColumn('name', str('NAME_COLUMN_LABEL'),
-                                    64 - checkWidth),
+                                    64),
         new cr.ui.table.TableColumn('cachedSize_',
                                     str('SIZE_COLUMN_LABEL'), 15.5),
         new cr.ui.table.TableColumn('type',
@@ -1148,11 +1151,15 @@ FileManager.prototype = {
                                     str('DATE_COLUMN_LABEL'), 21)
     ];
 
-    columns[0].renderFunction = this.renderIconType_.bind(this);
-    columns[1].renderFunction = this.renderName_.bind(this);
-    columns[2].renderFunction = this.renderSize_.bind(this);
-    columns[3].renderFunction = this.renderType_.bind(this);
-    columns[4].renderFunction = this.renderDate_.bind(this);
+    columns[0].renderFunction = this.renderName_.bind(this);
+    columns[1].renderFunction = this.renderSize_.bind(this);
+    columns[2].renderFunction = this.renderType_.bind(this);
+    columns[3].renderFunction = this.renderDate_.bind(this);
+
+    if (this.showCheckboxes_) {
+      columns.unshift(new cr.ui.table.TableColumn('checkbox_', '', 3));
+      columns[0].renderFunction = this.renderCheckbox_.bind(this);
+    }
 
     this.table_ = this.dialogDom_.querySelector('.detail-table');
     cr.ui.Table.decorate(this.table_);
@@ -1635,9 +1642,6 @@ FileManager.prototype = {
     var div = this.document_.createElement('div');
     div.className = 'detail-icon-container';
 
-    if (this.showCheckboxes_)
-      div.appendChild(this.renderCheckbox_(entry));
-
     var icon = this.document_.createElement('div');
     icon.className = 'detail-icon';
     this.getIconType(entry);
@@ -1672,12 +1676,14 @@ FileManager.prototype = {
    */
   FileManager.prototype.renderName_ = function(entry, columnId, table) {
     var label = this.document_.createElement('div');
+    label.appendChild(this.renderIconType_(entry, columnId, table));
     label.entry = entry;
     label.className = 'detail-name filename-label';
     if (this.currentDirEntry_.name == '') {
-      label.textContent = this.getLabelForRootPath_(entry.name);
+      label.appendChild(this.document_.createTextNode(
+          this.getLabelForRootPath_(entry.name)));
     } else {
-      label.textContent = entry.name;
+      label.appendChild(this.document_.createTextNode(entry.name));
     }
 
     return label;
@@ -1877,32 +1883,49 @@ FileManager.prototype = {
   };
 
   FileManager.prototype.updatePreviewPanelVisibility_ = function() {
-    var wasHidden = this.previewPanel_.hasAttribute('hidden');
-    var hide = (this.selection.totalCount == 0);
+    var panel = this.previewPanel_;
+    var state = panel.getAttribute('visibility');
+    var mustBeVisible = (this.selection.totalCount > 0);
+    var self = this;
 
-    if (hide == wasHidden)
-      return;
+    switch (state) {
+      case 'visible':
+        if (!mustBeVisible)
+          startHiding();
+        break;
 
-    if (this.hidingTimeout_) {
-      // Hiding is not complete. display == block.
-      clearTimeout(this.hidingTimeout_);
-      this.hidingTimeout_ = 0;
-    } else if (wasHidden) {
-      // Hiding complete. display == none.
-      this.previewPanel_.style.display = '';
-      this.onResize_();
+      case 'hiding':
+        if (mustBeVisible)
+          stopHidingAndShow();
+        break;
+
+      case 'hidden':
+        if (mustBeVisible)
+          show();
     }
 
-    var self = this;
-    if (hide) {
-      this.previewPanel_.setAttribute('hidden', '');
-      this.hidingTimeout_ = setTimeout(function() {
+    function stopHidingAndShow() {
+      clearTimeout(self.hidingTimeout_);
+      self.hidingTimeout_ = 0;
+      setVisibility('visible');
+    }
+
+    function startHiding() {
+      setVisibility('hiding');
+      self.hidingTimeout_ = setTimeout(function() {
           self.hidingTimeout_ = 0;
-          self.previewPanel_.style.display = 'none';
+          setVisibility('hidden');
           self.onResize_();
         }, 250);
-    } else {
-      this.previewPanel_.removeAttribute('hidden');
+    }
+
+    function show() {
+      setVisibility('visible');
+      self.onResize_();
+    }
+
+    function setVisibility(visibility) {
+      panel.setAttribute('visibility', visibility);
     }
   };
 
@@ -2326,39 +2349,6 @@ FileManager.prototype = {
       var fmt = this.locale_.createDateTimeFormat({skeleton:fmtSkeleton});
 
       return fmt.format(date);
-    }
-  };
-
-  FileManager.prototype.setPreviewMetadata = function(metadata) {
-    this.previewMetadata_.textContent = '';
-    if (!(metadata && metadata.ifd))
-      return;
-
-    var self = this;
-
-    function addProperty(id, v) {
-      var dom = self.document_.createElement('div');
-      dom.className = 'metadata-item';
-      var label = self.document_.createElement('div');
-      label.className = 'metadata-label';
-      label.textContent = str(id) || id;
-      dom.appendChild(label);
-      var value = self.document_.createElement('div');
-      value.className = 'metadata-value';
-      value.textContent = v;
-      dom.appendChild(value);
-
-      self.previewMetadata_.appendChild(dom);
-    }
-
-    // TODO(rginda): Split this function into metadata specific routines when
-    // we add new metadata types.
-    // TODO(rginda): Add const names for these numerics.
-    var exifDir = metadata.ifd.exif;
-    if (0xa002 in exifDir && 0xa003 in exifDir) {
-      addProperty('DIMENSIONS_LABEL',
-                  strf('DIMENSIONS_FORMAT', exifDir[0xa002].value,
-                       exifDir[0xa003].value));
     }
   };
 
@@ -3201,7 +3191,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.allowRenameClick_ = function(event, row) {
     if (this.dialogType_ != FileManager.DialogType.FULL_PAGE ||
-        this.currentDirEntry_.name == '' ||
+        this.currentDirEntry_ == null || this.currentDirEntry_.name == '' ||
         isSystemDirEntry(this.currentDirEntry_)) {
       // Renaming only enabled for full-page mode, outside of the root
       // directory.

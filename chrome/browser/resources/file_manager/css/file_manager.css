@@ -286,10 +286,15 @@ div.img-container > img {
   -webkit-transform: translate(0, 0);
 }
 
-.preview-panel[hidden] {
+.preview-panel[visibility=hiding] {
   -webkit-transition: all 220ms ease;
   -webkit-transform: translate(0, 5px);
    opacity: 0;
+}
+
+.preview-panel[visibility=hidden] {
+  display: none;
+  opacity: 0;
 }
 
 .preview-thumbnails {
@@ -398,7 +403,6 @@ li.thumbnail-item[selected] .file-checkbox {
 
 .detail-icon-container {
   -webkit-box-orient: horizontal;
-  -webkit-box-flex: 1;
   -webkit-box-pack: end;
   display: -webkit-box;
 }
@@ -499,13 +503,6 @@ li.thumbnail-item[selected] .file-checkbox {
   -webkit-box-shadow: 5px 5px 0 #aaa;
 }
 
-.preview-metadata {
-  -webkit-box-orient: vertical;
-  -webkit-box-flex: 1;
-  display: -webkit-box;
-  color: #666;
-}
-
 .metadata-item {
   -webkit-box-orient: horizontal;
   -webkit-box-flex: 1;
@@ -577,25 +574,6 @@ li.thumbnail-item[selected] .file-checkbox {
   -webkit-box-orient: vertical;
   -webkit-box-flex: 1;
   display: -webkit-box;
-}
-
-.preview-metadata {
-    text-align:center;
-}
-
-.preview-metadata-table tbody tr th {
-    text-align: right;
-    color: #666;
-    font-size: 12px;
-    font-weight: normal;
-    padding-left:10px;
-}
-
-.preview-metadata-table tbody tr td {
-    text-align: left;
-    color:#000;
-    font-size: 12px;
-    font-weight: normal;
 }
 
 /* Overlay pane covering the entire file manager window (e.g. image editor)*/

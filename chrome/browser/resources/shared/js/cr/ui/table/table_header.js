@@ -80,7 +80,9 @@ cr.define('cr.ui.table', function() {
         var cell = this.ownerDocument.createElement('div');
         cell.style.width = cm.getWidth(i) + '%';
         cell.className = 'table-header-cell';
-        cell.addEventListener('click', this.createSortFunction_(i).bind(this));
+        if (dm.isSortable(cm.getId(i)))
+          cell.addEventListener('click',
+                                this.createSortFunction_(i).bind(this));
 
         cell.appendChild(this.createHeaderLabel_(i));
         this.headerInner_.appendChild(cell);

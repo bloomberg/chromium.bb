@@ -13,7 +13,8 @@ function MetadataProvider(opt_workerPath) {
 
   if (!opt_workerPath) {
     var path = document.location.pathname;
-    opt_workerPath = path.substring(0, path.lastIndexOf('/') + 1) +
+    opt_workerPath = document.location.origin +
+        path.substring(0, path.lastIndexOf('/') + 1) +
         'js/metadata_dispatcher.js';
   }
 

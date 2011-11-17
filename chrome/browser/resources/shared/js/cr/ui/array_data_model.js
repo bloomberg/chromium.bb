@@ -72,6 +72,10 @@ cr.define('cr.ui', function() {
       this.compareFunctions_[field] = compareFunction;
     },
 
+    isSortable: function(field) {
+      return this.compareFunctions_ && field in this.compareFunctions_;
+    },
+
     /**
      * Returns current sort status.
      * @return {!Object} Current sort status.
