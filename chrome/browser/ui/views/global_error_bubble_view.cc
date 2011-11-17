@@ -98,7 +98,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
 
   layout->StartRow(1, 1);
   layout->AddView(message_label_);
-  layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
+  layout->AddPaddingRow(0, views::kLabelToControlVerticalSpacing);
 
   layout->StartRow(0, 2);
   layout->AddView(accept_button.release());
