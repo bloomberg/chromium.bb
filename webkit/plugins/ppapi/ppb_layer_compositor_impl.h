@@ -10,7 +10,6 @@
 #include "ppapi/shared_impl/resource.h"
 
 struct PP_Rect;
-struct PP_Size;
 
 namespace webkit {
 namespace ppapi {

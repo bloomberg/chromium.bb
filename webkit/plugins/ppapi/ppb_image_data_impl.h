@@ -17,7 +17,6 @@ namespace skia {
 class PlatformCanvas;
 }
 
-struct PPB_ImageDataTrusted;
 class SkBitmap;
 
 namespace webkit {
@@ -98,7 +97,7 @@ class PPB_ImageData_Impl : public ::ppapi::Resource,
 //   image_data->mapped_canvas()->blah();  // Guaranteed valid.
 class ImageDataAutoMapper {
  public:
-  ImageDataAutoMapper(PPB_ImageData_Impl* image_data)
+  explicit ImageDataAutoMapper(PPB_ImageData_Impl* image_data)
         : image_data_(image_data) {
     if (image_data_->is_mapped()) {
       is_valid_ = true;

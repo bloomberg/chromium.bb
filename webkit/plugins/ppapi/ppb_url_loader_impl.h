@@ -19,14 +19,12 @@
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
 namespace WebKit {
-class WebFrame;
 class WebURL;
 }
 
 namespace webkit {
 namespace ppapi {
 
-class PPB_URLRequestInfo_Impl;
 class PPB_URLResponseInfo_Impl;
 
 class PPB_URLLoader_Impl : public ::ppapi::Resource,

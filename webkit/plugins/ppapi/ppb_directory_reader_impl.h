@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define WEBKIT_PLUGINS_PPAPI_PPB_DIRECTORY_READER_IMPL_H_
 
 #include <queue>
+#include <vector>
 
 #include "base/file_util_proxy.h"
 #include "ppapi/shared_impl/resource.h"
@@ -13,7 +14,6 @@
 
 struct PP_CompletionCallback;
 struct PP_DirectoryEntry_Dev;
-struct PPB_DirectoryReader_Dev;
 
 namespace webkit {
 namespace ppapi {

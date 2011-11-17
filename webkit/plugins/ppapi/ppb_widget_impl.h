@@ -11,8 +11,6 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_widget_api.h"
 
-struct PPB_Widget_Dev;
-
 namespace gfx {
 class Rect;
 }

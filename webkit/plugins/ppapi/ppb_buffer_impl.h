@@ -12,8 +12,6 @@
 #include "ppapi/thunk/ppb_buffer_trusted_api.h"
 #include "ppapi/shared_impl/resource.h"
 
-struct PPB_Buffer_Dev;
-
 namespace webkit {
 namespace ppapi {
 
@@ -58,7 +56,7 @@ class PPB_Buffer_Impl : public ::ppapi::Resource,
 // mapped state in the destructor.
 class BufferAutoMapper {
  public:
-  BufferAutoMapper(::ppapi::thunk::PPB_Buffer_API* api);
+  explicit BufferAutoMapper(::ppapi::thunk::PPB_Buffer_API* api);
   ~BufferAutoMapper();
 
   // Will be NULL on failure to map.

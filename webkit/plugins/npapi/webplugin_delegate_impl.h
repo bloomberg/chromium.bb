@@ -6,7 +6,7 @@
 #define WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_DELEGATE_IMPL_H_
 
 #include <string>
-#include <list>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,10 +31,6 @@ typedef struct _GdkDrawable GdkPixmap;
 #endif
 
 class FilePath;
-
-namespace WebKit {
-class WebMouseEvent;
-}
 
 #if defined(OS_MACOSX)
 #ifdef __OBJC__
@@ -238,7 +234,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   friend class WebPluginDelegate;
 
   WebPluginDelegateImpl(gfx::PluginWindowHandle containing_view,
-                        PluginInstance *instance);
+                        PluginInstance* instance);
   virtual ~WebPluginDelegateImpl();
 
   // Called by Initialize() for platform-specific initialization.

@@ -21,15 +21,9 @@ typedef void* HANDLE;
 class GURL;
 struct NPObject;
 
-namespace WebKit {
-class WebFrame;
-}
-
 namespace webkit {
 namespace npapi {
 
-class WebPluginDelegate;
-class WebPluginParentView;
 class WebPluginResourceClient;
 #if defined(OS_MACOSX)
 class WebPluginAcceleratedSurface;
@@ -146,10 +140,10 @@ class WebPlugin {
 
 #if defined(OS_MACOSX)
   // Called to inform the WebPlugin that the plugin has gained or lost focus.
-  virtual void FocusChanged(bool focused) {};
+  virtual void FocusChanged(bool focused) {}
 
   // Starts plugin IME.
-  virtual void StartIme() {};
+  virtual void StartIme() {}
 
   // Synthesize a fake window handle for the plug-in to identify the instance
   // to the browser, allowing mapping to a surface for hardware accelleration

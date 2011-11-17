@@ -12,10 +12,6 @@
 #include "webkit/plugins/ppapi/callbacks.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
-namespace gfx {
-class Size;
-}
-
 namespace webkit {
 namespace ppapi {
 

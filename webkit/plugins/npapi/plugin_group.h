@@ -18,10 +18,6 @@ class FilePath;
 class PluginExceptionsTableModelTest;
 class Version;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace webkit {
 namespace npapi {
 

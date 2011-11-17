@@ -23,28 +23,12 @@
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
 class FilePath;
-class MessageLoop;
 struct PPB_Core;
-struct PPB_Memory_Dev;
 typedef void* NPIdentifier;
-
-namespace base {
-class WaitableEvent;
-}
 
 namespace ppapi {
 class WebKitForwarding;
 }  // namespace ppapi
-
-namespace pp {
-namespace proxy {
-class HostDispatcher;
-}  // namespace proxy
-}  // namespace pp
-
-namespace IPC {
-struct ChannelHandle;
-}
 
 namespace webkit {
 namespace ppapi {

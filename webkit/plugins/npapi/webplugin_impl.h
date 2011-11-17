@@ -22,8 +22,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/plugins/npapi/webplugin.h"
 
-class WebViewDelegate;
-
 namespace WebKit {
 class WebFrame;
 class WebPluginContainer;

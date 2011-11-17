@@ -26,7 +26,6 @@ namespace ppapi {
 
 class PPB_ImageData_Impl;
 class PluginInstance;
-class PluginModule;
 
 class PPB_Graphics2D_Impl : public ::ppapi::Resource,
                             public ::ppapi::thunk::PPB_Graphics2D_API {
@@ -86,7 +85,7 @@ class PPB_Graphics2D_Impl : public ::ppapi::Resource,
       Clear();
     }
 
-    FlushCallbackData(const PP_CompletionCallback& callback) {
+    explicit FlushCallbackData(const PP_CompletionCallback& callback) {
       Set(callback);
     }
 

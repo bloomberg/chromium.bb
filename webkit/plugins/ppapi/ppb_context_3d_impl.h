@@ -11,10 +11,7 @@
 #include "ppapi/thunk/ppb_context_3d_api.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
-struct PPB_Context3DTrusted_Dev;
-
 namespace gpu {
-class CommandBuffer;
 namespace gles2 {
 class GLES2CmdHelper;
 class GLES2Implementation;

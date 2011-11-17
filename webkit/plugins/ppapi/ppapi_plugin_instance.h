@@ -67,7 +67,6 @@ namespace ppapi {
 
 class FullscreenContainer;
 class MessageChannel;
-class ObjectVar;
 class PluginDelegate;
 class PluginModule;
 class PluginObject;

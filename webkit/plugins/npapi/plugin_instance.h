@@ -33,7 +33,6 @@ class PluginLib;
 class PluginHost;
 class PluginStream;
 class PluginStreamUrl;
-class PluginDataStream;
 class WebPlugin;
 class WebPluginResourceClient;
 
@@ -47,7 +46,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
  public:
   // Create a new instance of a plugin.  The PluginInstance
   // will hold a reference to the plugin.
-  PluginInstance(PluginLib *plugin, const std::string &mime_type);
+  PluginInstance(PluginLib* plugin, const std::string &mime_type);
 
   // Activates the instance by calling NPP_New.
   // This should be called after our instance is all
@@ -150,7 +149,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   WebPluginResourceClient* GetRangeRequest(int id);
 
   // Have the plugin create it's script object.
-  NPObject *GetPluginScriptableObject();
+  NPObject* GetPluginScriptableObject();
 
   // Returns the form value of this instance.
   bool GetFormValue(string16* value);
@@ -169,7 +168,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 
   // Helper that implements NPN_PluginThreadAsyncCall semantics
   void PluginThreadAsyncCall(void (*func)(void *),
-                             void *userData);
+                             void* userData);
 
   uint32 ScheduleTimer(uint32 interval,
                        NPBool repeat,
@@ -188,15 +187,15 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // NPAPI methods for calling the Plugin Instance
   //
   NPError NPP_New(unsigned short, short, char *[], char *[]);
-  NPError NPP_SetWindow(NPWindow *);
-  NPError NPP_NewStream(NPMIMEType, NPStream *, NPBool, unsigned short *);
-  NPError NPP_DestroyStream(NPStream *, NPReason);
-  int NPP_WriteReady(NPStream *);
-  int NPP_Write(NPStream *, int, int, void *);
-  void NPP_StreamAsFile(NPStream *, const char *);
-  void NPP_URLNotify(const char *, NPReason, void *);
-  NPError NPP_GetValue(NPPVariable, void *);
-  NPError NPP_SetValue(NPNVariable, void *);
+  NPError NPP_SetWindow(NPWindow*);
+  NPError NPP_NewStream(NPMIMEType, NPStream*, NPBool, unsigned short*);
+  NPError NPP_DestroyStream(NPStream*, NPReason);
+  int NPP_WriteReady(NPStream*);
+  int NPP_Write(NPStream*, int, int, void*);
+  void NPP_StreamAsFile(NPStream*, const char*);
+  void NPP_URLNotify(const char*, NPReason, void*);
+  NPError NPP_GetValue(NPPVariable, void*);
+  NPError NPP_SetValue(NPNVariable, void*);
   short NPP_HandleEvent(void*);
   void NPP_Destroy();
   bool NPP_Print(NPPrint* platform_print);
@@ -258,7 +257,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
 #endif
 
   ~PluginInstance();
-  void OnPluginThreadAsyncCall(void (*func)(void *), void *userData);
+  void OnPluginThreadAsyncCall(void (*func)(void *), void* userData);
   void OnTimerCall(void (*func)(NPP id, uint32 timer_id),
                    NPP id, uint32 timer_id);
   bool IsValidStream(const NPStream* stream);

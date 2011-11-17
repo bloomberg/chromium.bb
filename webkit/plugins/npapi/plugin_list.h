@@ -34,8 +34,6 @@ namespace npapi {
 
 extern FilePath::CharType kDefaultPluginLibraryName[];
 
-class PluginInstance;
-
 // This struct holds entry points into a plugin.  The entry points are
 // slightly different between Win/Mac and Unixes.  Note that the interface for
 // querying plugins is synchronous and it is preferable to use a higher-level

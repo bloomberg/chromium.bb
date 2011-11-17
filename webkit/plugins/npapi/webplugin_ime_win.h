@@ -13,11 +13,6 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "ui/gfx/rect.h"
 
-namespace WebKit {
-class WebInputEvent;
-class WebCompositionEvent;
-}
-
 namespace webkit {
 namespace npapi {
 

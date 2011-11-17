@@ -11,14 +11,10 @@
 #include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "base/utf_string_conversions.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
 
 #pragma comment(lib, "imm32.lib")
-
-using WebKit::WebInputEvent;
-using WebKit::WebCompositionEvent;
 
 namespace webkit {
 namespace npapi {

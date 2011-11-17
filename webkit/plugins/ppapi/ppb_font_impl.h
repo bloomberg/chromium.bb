@@ -13,10 +13,6 @@
 #include "ppapi/shared_impl/webkit_forwarding.h"
 #include "ppapi/thunk/ppb_font_api.h"
 
-namespace WebKit {
-class WebFont;
-}
-
 namespace webkit {
 namespace ppapi {
 
@@ -59,7 +55,7 @@ class PPB_Font_Impl : public ::ppapi::Resource,
 class PPB_Font_FunctionImpl : public ::ppapi::FunctionGroupBase,
                               public ::ppapi::thunk::PPB_Font_FunctionAPI {
  public:
-  PPB_Font_FunctionImpl(PluginInstance* instance);
+  explicit PPB_Font_FunctionImpl(PluginInstance* instance);
   virtual ~PPB_Font_FunctionImpl();
 
   // FunctionGroupBase overrides.

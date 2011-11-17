@@ -27,20 +27,14 @@
 #include "webkit/plugins/ppapi/dir_contents.h"
 #include "webkit/quota/quota_types.h"
 
-class AudioMessageFilter;
 class GURL;
 struct PP_NetAddress_Private;
 class SkBitmap;
-class Task;
 class TransportDIB;
 
 namespace base {
 class MessageLoopProxy;
 class Time;
-}
-
-namespace content {
-class P2PSocketDispatcher;
 }
 
 namespace fileapi {
@@ -49,7 +43,6 @@ class FileSystemCallbackDispatcher;
 
 namespace gfx {
 class Point;
-class Rect;
 }
 
 namespace gpu {

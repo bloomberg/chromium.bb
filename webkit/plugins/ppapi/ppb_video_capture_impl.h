@@ -19,7 +19,6 @@
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 
 struct PP_VideoCaptureDeviceInfo_Dev;
-struct PPB_VideoCapture_Dev;
 
 namespace webkit {
 namespace ppapi {
@@ -89,4 +88,4 @@ class PPB_VideoCapture_Impl : public ::ppapi::Resource,
 }  // namespace ppapi
 }  // namespace webkit
 
-#endif  // WEBKIT_PLUGINS_PPAPI_PPB_VIDEO_DECODER_IMPL_H_
+#endif  // WEBKIT_PLUGINS_PPAPI_PPB_VIDEO_CAPTURE_IMPL_H_

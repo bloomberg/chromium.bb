@@ -14,7 +14,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCanvas.h"
 #include "ui/gfx/native_widget_types.h"
 
-class FilePath;
 class GURL;
 struct NPObject;
 

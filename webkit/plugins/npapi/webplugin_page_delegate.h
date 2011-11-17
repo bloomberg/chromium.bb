@@ -1,14 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_PAGE_DELEGATE_
-#define WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_PAGE_DELEGATE_
+#ifndef WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_PAGE_DELEGATE_H_
+#define WEBKIT_PLUGINS_NPAPI_WEBPLUGIN_PAGE_DELEGATE_H_
+
+#include <string>
 
 #include "ui/gfx/native_widget_types.h"
 
 class FilePath;
-class GURL;
 
 namespace WebKit {
 class WebCookieJar;

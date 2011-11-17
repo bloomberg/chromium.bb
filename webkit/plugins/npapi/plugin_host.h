@@ -17,8 +17,6 @@
 namespace webkit {
 namespace npapi {
 
-class PluginInstance;
-
 // The Plugin Host implements the NPN_xxx functions for NPAPI plugins.
 // These are the functions exposed from the Plugin Host for use
 // by the Plugin.
@@ -30,10 +28,10 @@ class PluginHost : public base::RefCounted<PluginHost> {
  public:
   // Access the single PluginHost instance.  Callers
   // must call deref() when finished with the object.
-  static PluginHost *Singleton();
+  static PluginHost* Singleton();
 
   // The table of functions provided to the plugin.
-  NPNetscapeFuncs *host_functions() { return &host_funcs_; }
+  NPNetscapeFuncs* host_functions() { return &host_funcs_; }
 
   // Helper function for parsing post headers, and applying attributes
   // to the stream.  NPAPI post data include headers + data combined.

@@ -22,13 +22,10 @@
 
 struct PP_CompletionCallback;
 struct PPB_FileIO;
-struct PPB_FileIOTrusted;
 
 namespace webkit {
 namespace ppapi {
 
-class PluginModule;
-class PPB_FileRef_Impl;
 class QuotaFileIO;
 
 class PPB_FileIO_Impl : public ::ppapi::Resource,

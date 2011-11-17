@@ -18,7 +18,6 @@ namespace webkit {
 namespace ppapi {
 
 class PluginInstance;
-class PluginModule;
 class PluginObject;
 
 // Utilities -------------------------------------------------------------------

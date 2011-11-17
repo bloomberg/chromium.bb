@@ -29,13 +29,6 @@ class GLES2Implementation;
 }  // namespace gles2
 }  // namespace gpu
 
-namespace ppapi {
-namespace thunk {
-class PPB_Context3D_API;
-}  // namespace thunk
-}  // namespace ppapi
-
-
 namespace webkit {
 namespace ppapi {
 

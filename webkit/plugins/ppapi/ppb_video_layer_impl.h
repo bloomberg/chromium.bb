@@ -9,9 +9,6 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_video_layer_api.h"
 
-struct PP_Rect;
-struct PP_Size;
-
 namespace webkit {
 namespace ppapi {
 
