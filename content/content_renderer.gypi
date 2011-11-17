@@ -24,6 +24,8 @@
   ],
   'sources': [
     'public/renderer/content_renderer_client.h',
+    'public/renderer/document_state.cc',
+    'public/renderer/document_state.h',
     'public/renderer/navigation_state.cc',
     'public/renderer/navigation_state.h',
     'public/renderer/render_process_observer.cc',

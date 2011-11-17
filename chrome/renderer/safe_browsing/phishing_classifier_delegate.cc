@@ -16,6 +16,7 @@
 #include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
+#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -24,6 +25,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
+using content::DocumentState;
 using content::NavigationState;
 using content::RenderThread;
 
@@ -149,12 +151,13 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   // this case, we need to properly deal with the fact that PageCaptured will
   // be called again for the in-page navigation.  We need to be sure not to
   // swap out the page text while the term feature extractor is still running.
-  NavigationState* state = NavigationState::FromDataSource(
+  DocumentState* document_state = DocumentState::FromDataSource(
       frame->dataSource());
-  CancelPendingClassification(state->was_within_same_page() ?
+  NavigationState* navigation_state = document_state->navigation_state();
+  CancelPendingClassification(navigation_state->was_within_same_page() ?
                               NAVIGATE_WITHIN_PAGE : NAVIGATE_AWAY);
   if (frame == render_view()->GetWebView()->mainFrame()) {
-    last_main_frame_transition_ = state->transition_type();
+    last_main_frame_transition_ = navigation_state->transition_type();
   }
 }
 

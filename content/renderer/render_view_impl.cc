@@ -42,6 +42,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -237,6 +238,7 @@ using WebKit::WebWorkerClient;
 using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
+using content::DocumentState;
 using content::NavigationState;
 using content::RenderThread;
 using content::RenderViewObserver;
@@ -281,14 +283,20 @@ static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
     result->push_back(urls[i]);
 }
 
-// If |data_source| is non-null and has a NavigationState associated with it,
+// If |data_source| is non-null and has a DocumentState associated with it,
 // the AltErrorPageResourceFetcher is reset.
 static void StopAltErrorPageFetcher(WebDataSource* data_source) {
   if (data_source) {
-    NavigationState* state = NavigationState::FromDataSource(data_source);
-    if (state)
-      state->set_alt_error_page_fetcher(NULL);
+    DocumentState* document_state = DocumentState::FromDataSource(data_source);
+    if (document_state)
+      document_state->set_alt_error_page_fetcher(NULL);
   }
+}
+
+static bool IsReload(const ViewMsg_Navigate_Params& params) {
+  return
+      params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
+      params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -700,9 +708,7 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, Navigate(params.url));
 
-  bool is_reload =
-      params.navigation_type == ViewMsg_Navigate_Type::RELOAD ||
-      params.navigation_type == ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE;
+  bool is_reload = IsReload(params);
 
   // If this is a stale back/forward (due to a recent navigation the browser
   // didn't know about), ignore it.
@@ -732,50 +738,20 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
     is_reload = false;
   }
 
-  // A navigation resulting from loading a javascript URL should not be treated
-  // as a browser initiated event.  Instead, we want it to look as if the page
-  // initiated any load resulting from JS execution.
-  if (!params.url.SchemeIs(chrome::kJavaScriptScheme)) {
-    NavigationState* state = NavigationState::CreateBrowserInitiated(
-        params.page_id,
-        params.pending_history_list_offset,
-        params.transition,
-        params.request_time);
-    if (params.navigation_type == ViewMsg_Navigate_Type::RESTORE) {
-      // We're doing a load of a page that was restored from the last session.
-      // By default this prefers the cache over loading (LOAD_PREFERRING_CACHE)
-      // which can result in stale data for pages that are set to expire. We
-      // explicitly override that by setting the policy here so that as
-      // necessary we load from the network.
-      state->set_cache_policy_override(WebURLRequest::UseProtocolCachePolicy);
-    }
-    pending_navigation_state_.reset(state);
-  }
-
-  NavigationState* navigation_state = pending_navigation_state_.get();
-
-  if (navigation_state) {
-    // New loads need to reset the error page fetcher. Otherwise if there is an
-    // outstanding error page fetcher it may complete and clobber the current
-    // page load.
-    navigation_state->set_alt_error_page_fetcher(NULL);
-  }
+  pending_navigation_params_.reset(new ViewMsg_Navigate_Params);
+  *pending_navigation_params_.get() = params;
 
   // If we are reloading, then WebKit will use the history state of the current
   // page, so we should just ignore any given history state.  Otherwise, if we
   // have history state, then we need to navigate to it, which corresponds to a
   // back/forward navigation event.
   if (is_reload) {
-    if (navigation_state)
-      navigation_state->set_load_type(NavigationState::RELOAD);
     bool ignore_cache = (params.navigation_type ==
                              ViewMsg_Navigate_Type::RELOAD_IGNORING_CACHE);
     main_frame->reload(ignore_cache);
   } else if (!params.state.empty()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
-    if (navigation_state)
-      navigation_state->set_load_type(NavigationState::HISTORY_LOAD);
     main_frame->loadHistoryItem(
         webkit_glue::HistoryItemFromString(params.state));
   } else {
@@ -806,13 +782,11 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
       }
     }
 
-    if (navigation_state)
-      navigation_state->set_load_type(NavigationState::NORMAL_LOAD);
     main_frame->loadRequest(request);
   }
 
   // In case LoadRequest failed before DidCreateDataSource was called.
-  pending_navigation_state_.reset();
+  pending_navigation_params_.reset();
 }
 
 bool RenderViewImpl::IsBackForwardToStaleEntry(
@@ -1052,8 +1026,8 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   const WebURLRequest& original_request = ds->originalRequest();
   const WebURLResponse& response = ds->response();
 
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  DCHECK(navigation_state);
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  NavigationState* navigation_state = document_state->navigation_state();
 
   ViewHostMsg_FrameNavigate_Params params;
   params.http_status_code = response.httpStatusCode();
@@ -1064,13 +1038,13 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   params.socket_address.set_port(response.remotePort());
   params.was_fetched_via_proxy = response.wasFetchedViaProxy();
   params.was_within_same_page = navigation_state->was_within_same_page();
-  if (!navigation_state->security_info().empty()) {
+  if (!document_state->security_info().empty()) {
     // SSL state specified in the request takes precedence over the one in the
     // response.
     // So far this is only intended for error pages that are not expected to be
     // over ssl, so we should not get any clash.
     DCHECK(response.securityInfo().isEmpty());
-    params.security_info = navigation_state->security_info();
+    params.security_info = document_state->security_info();
   } else {
     params.security_info = response.securityInfo();
   }
@@ -1086,12 +1060,12 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   params.should_update_history = !ds->hasUnreachableURL() &&
       !response.isMultipartPayload() && (response.httpStatusCode() != 404);
 
-  params.searchable_form_url = navigation_state->searchable_form_url();
+  params.searchable_form_url = document_state->searchable_form_url();
   params.searchable_form_encoding =
-      navigation_state->searchable_form_encoding();
+      document_state->searchable_form_encoding();
 
   const PasswordForm* password_form_data =
-      navigation_state->password_form_data();
+      document_state->password_form_data();
   if (password_form_data)
     params.password_form = *password_form_data;
 
@@ -2012,8 +1986,8 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
   // A content initiated navigation may have originated from a link-click,
   // script, drag-n-drop operation, etc.
   bool is_content_initiated =
-      NavigationState::FromDataSource(frame->provisionalDataSource())->
-          is_content_initiated();
+      DocumentState::FromDataSource(frame->provisionalDataSource())->
+          navigation_state()->is_content_initiated();
 
   // Experimental:
   // If --enable-strict-site-isolation is enabled, send all top-level
@@ -2192,28 +2166,29 @@ void RenderViewImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
   // into a hidden field and then clear the password. (Issue 28910.)
   // This method gets called before any of those handlers run, so save away
   // a copy of the password in case it gets lost.
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->dataSource());
-  navigation_state->set_password_form_data(
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  document_state->set_password_form_data(
       PasswordFormDomManager::CreatePasswordForm(form));
 }
 
 void RenderViewImpl::willSubmitForm(WebFrame* frame,
                                     const WebFormElement& form) {
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->provisionalDataSource());
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->provisionalDataSource());
+  NavigationState* navigation_state = document_state->navigation_state();
 
   if (navigation_state->transition_type() == content::PAGE_TRANSITION_LINK)
     navigation_state->set_transition_type(content::PAGE_TRANSITION_FORM_SUBMIT);
 
   // Save these to be processed when the ensuing navigation is committed.
   WebSearchableFormData web_searchable_form_data(form);
-  navigation_state->set_searchable_form_url(web_searchable_form_data.url());
-  navigation_state->set_searchable_form_encoding(
+  document_state->set_searchable_form_url(web_searchable_form_data.url());
+  document_state->set_searchable_form_encoding(
       web_searchable_form_data.encoding().utf8());
   PasswordForm* password_form_data =
       PasswordFormDomManager::CreatePasswordForm(form);
-  navigation_state->set_password_form_data(password_form_data);
+  document_state->set_password_form_data(password_form_data);
 
   // In order to save the password that the user actually typed and not one
   // that may have gotten transformed by the site prior to submit, recover it
@@ -2221,10 +2196,10 @@ void RenderViewImpl::willSubmitForm(WebFrame* frame,
   // dataSource's NavigationState (as opposed to the provisionalDataSource's,
   // which is what we're storing into now.)
   if (password_form_data) {
-    NavigationState* old_navigation_state =
-        NavigationState::FromDataSource(frame->dataSource());
-    if (old_navigation_state) {
-      PasswordForm* old_form_data = old_navigation_state->password_form_data();
+    DocumentState* old_document_state =
+        DocumentState::FromDataSource(frame->dataSource());
+    if (old_document_state) {
+      PasswordForm* old_form_data = old_document_state->password_form_data();
       if (old_form_data && old_form_data->action == password_form_data->action)
         password_form_data->password_value = old_form_data->password_value;
     }
@@ -2256,17 +2231,25 @@ void RenderViewImpl::didCompleteClientRedirect(
 }
 
 void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  if (!document_state) {
+    document_state = new DocumentState;
+    ds->setExtraData(document_state);
+  }
+
   // The rest of RenderView assumes that a WebDataSource will always have a
   // non-null NavigationState.
-  bool content_initiated = !pending_navigation_state_.get();
-  NavigationState* state = content_initiated ?
-      NavigationState::CreateContentInitiated() :
-      pending_navigation_state_.release();
+  bool content_initiated = !pending_navigation_params_.get();
+  if (content_initiated)
+    document_state->set_navigation_state(
+        NavigationState::CreateContentInitiated());
+  else
+    PopulateStateFromPendingNavigationParams(document_state);
 
-  // NavigationState::referred_by_prefetcher_ is true if we are
+  // DocumentState::referred_by_prefetcher_ is true if we are
   // navigating from a page that used prefetching using a link on that
   // page.  We are early enough in the request process here that we
-  // can still see the NavigationState of the previous page and set
+  // can still see the DocumentState of the previous page and set
   // this value appropriately.
   // TODO(gavinp): catch the important case of navigation in a new
   // renderer process.
@@ -2276,12 +2259,12 @@ void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
       const GURL referrer(
           original_request.httpHeaderField(WebString::fromUTF8("Referer")));
       if (!referrer.is_empty() &&
-          NavigationState::FromDataSource(
+          DocumentState::FromDataSource(
               old_frame->dataSource())->was_prefetcher()) {
         for (;old_frame;old_frame = old_frame->traverseNext(false)) {
           WebDataSource* old_frame_ds = old_frame->dataSource();
           if (old_frame_ds && referrer == GURL(old_frame_ds->request().url())) {
-            state->set_was_referred_by_prefetcher(true);
+            document_state->set_was_referred_by_prefetcher(true);
             break;
           }
         }
@@ -2293,39 +2276,78 @@ void RenderViewImpl::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
     const WebURLRequest& request = ds->request();
     switch (request.cachePolicy()) {
       case WebURLRequest::UseProtocolCachePolicy:  // normal load.
-        state->set_load_type(NavigationState::LINK_LOAD_NORMAL);
+        document_state->set_load_type(DocumentState::LINK_LOAD_NORMAL);
         break;
       case WebURLRequest::ReloadIgnoringCacheData:  // reload.
-        state->set_load_type(NavigationState::LINK_LOAD_RELOAD);
+        document_state->set_load_type(DocumentState::LINK_LOAD_RELOAD);
         break;
       case WebURLRequest::ReturnCacheDataElseLoad:  // allow stale data.
-        state->set_load_type(NavigationState::LINK_LOAD_CACHE_STALE_OK);
+        document_state->set_load_type(
+            DocumentState::LINK_LOAD_CACHE_STALE_OK);
         break;
       case WebURLRequest::ReturnCacheDataDontLoad:  // Don't re-post.
-        state->set_load_type(NavigationState::LINK_LOAD_CACHE_ONLY);
+        document_state->set_load_type(DocumentState::LINK_LOAD_CACHE_ONLY);
         break;
     }
   }
-
-  ds->setExtraData(state);
 
   FOR_EACH_OBSERVER(
       RenderViewObserver, observers_, DidCreateDataSource(frame, ds));
 }
 
+void RenderViewImpl::PopulateStateFromPendingNavigationParams(
+    DocumentState* document_state) {
+  const ViewMsg_Navigate_Params& params = *pending_navigation_params_.get();
+
+  if (document_state->request_time().is_null())
+    document_state->set_request_time(params.request_time);
+
+  // A navigation resulting from loading a javascript URL should not be treated
+  // as a browser initiated event.  Instead, we want it to look as if the page
+  // initiated any load resulting from JS execution.
+  if (!params.url.SchemeIs(chrome::kJavaScriptScheme)) {
+    NavigationState* navigation_state = NavigationState::CreateBrowserInitiated(
+        params.page_id,
+        params.pending_history_list_offset,
+        params.transition);
+    if (params.navigation_type == ViewMsg_Navigate_Type::RESTORE) {
+      // We're doing a load of a page that was restored from the last session.
+      // By default this prefers the cache over loading (LOAD_PREFERRING_CACHE)
+      // which can result in stale data for pages that are set to expire. We
+      // explicitly override that by setting the policy here so that as
+      // necessary we load from the network.
+      document_state->set_cache_policy_override(
+          WebURLRequest::UseProtocolCachePolicy);
+    }
+    document_state->set_navigation_state(navigation_state);
+  } else {
+    document_state->set_navigation_state(
+        NavigationState::CreateContentInitiated());
+  }
+
+  if (IsReload(params))
+    document_state->set_load_type(DocumentState::RELOAD);
+  else if (!params.state.empty())
+    document_state->set_load_type(DocumentState::HISTORY_LOAD);
+  else
+    document_state->set_load_type(DocumentState::NORMAL_LOAD);
+
+  pending_navigation_params_.reset();
+}
+
 void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
   WebDataSource* ds = frame->provisionalDataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
 
   // Update the request time if WebKit has better knowledge of it.
-  if (navigation_state->request_time().is_null()) {
+  if (document_state->request_time().is_null()) {
     double event_time = ds->triggeringEventTime();
     if (event_time != 0.0)
-      navigation_state->set_request_time(Time::FromDoubleT(event_time));
+      document_state->set_request_time(Time::FromDoubleT(event_time));
   }
 
   // Start time is only set after request time.
-  navigation_state->set_start_load_time(Time::Now());
+  document_state->set_start_load_time(Time::Now());
 
   bool is_top_most = !frame->parent();
   if (is_top_most) {
@@ -2337,7 +2359,7 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
   } else if (frame->parent()->isLoading()) {
     // Take note of AUTO_SUBFRAME loads here, so that we can know how to
     // load an error page.  See didFailProvisionalLoad.
-    navigation_state->set_transition_type(
+    document_state->navigation_state()->set_transition_type(
         content::PAGE_TRANSITION_AUTO_SUBFRAME);
   }
 
@@ -2410,7 +2432,8 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   // Make sure we never show errors in view source mode.
   frame->enableViewSourceMode(false);
 
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  NavigationState* navigation_state = document_state->navigation_state();
 
   // If this is a failed back/forward/reload navigation, then we need to do a
   // 'replace' load.  This is necessary to avoid messing up session history.
@@ -2428,11 +2451,15 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   // If we failed on a browser initiated request, then make sure that our error
   // page load is regarded as the same browser initiated request.
   if (!navigation_state->is_content_initiated()) {
-    pending_navigation_state_.reset(NavigationState::CreateBrowserInitiated(
-        navigation_state->pending_page_id(),
-        navigation_state->pending_history_list_offset(),
-        navigation_state->transition_type(),
-        navigation_state->request_time()));
+    pending_navigation_params_.reset(new ViewMsg_Navigate_Params);
+    pending_navigation_params_->page_id =
+        navigation_state->pending_page_id();
+    pending_navigation_params_->pending_history_list_offset =
+        navigation_state->pending_history_list_offset();
+    pending_navigation_params_->transition =
+        navigation_state->transition_type();
+    pending_navigation_params_->request_time =
+        document_state->request_time();
   }
 
   // Provide the user with a more helpful error page?
@@ -2446,17 +2473,20 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
 void RenderViewImpl::didReceiveDocumentData(
     WebFrame* frame, const char* data, size_t data_len,
     bool& prevent_default) {
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->dataSource());
-  navigation_state->set_use_error_page(false);
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  document_state->set_use_error_page(false);
 }
 
 void RenderViewImpl::didCommitProvisionalLoad(WebFrame* frame,
                                               bool is_new_navigation) {
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->dataSource());
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  NavigationState* navigation_state = document_state->navigation_state();
 
-  navigation_state->set_commit_load_time(Time::Now());
+  if (document_state->commit_load_time().is_null())
+    document_state->set_commit_load_time(Time::Now());
+
   if (is_new_navigation) {
     // When we perform a new navigation, we need to update the last committed
     // session history entry with state for the page we are leaving.
@@ -2560,9 +2590,8 @@ void RenderViewImpl::didChangeIcon(WebFrame* frame, WebIconURL::Type type) {
 
 void RenderViewImpl::didFinishDocumentLoad(WebFrame* frame) {
   WebDataSource* ds = frame->dataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  DCHECK(navigation_state);
-  navigation_state->set_finish_document_load_time(Time::Now());
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  document_state->set_finish_document_load_time(Time::Now());
 
   Send(new ViewHostMsg_DocumentLoadedInFrame(routing_id_, frame->identifier()));
 
@@ -2586,9 +2615,9 @@ void RenderViewImpl::didFailLoad(WebFrame* frame, const WebURLError& error) {
 
 void RenderViewImpl::didFinishLoad(WebFrame* frame) {
   WebDataSource* ds = frame->dataSource();
-  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-  DCHECK(navigation_state);
-  navigation_state->set_finish_load_time(Time::Now());
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  if (document_state->finish_load_time().is_null())
+    document_state->set_finish_load_time(Time::Now());
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFinishLoad(frame));
 
@@ -2598,7 +2627,7 @@ void RenderViewImpl::didFinishLoad(WebFrame* frame) {
 void RenderViewImpl::didNavigateWithinPage(
     WebFrame* frame, bool is_new_navigation) {
   // If this was a reference fragment navigation that we initiated, then we
-  // could end up having a non-null pending navigation state.  We just need to
+  // could end up having a non-null pending navigation params.  We just need to
   // update the ExtraData on the datasource so that others who read the
   // ExtraData will get the new NavigationState.  Similarly, if we did not
   // initiate this navigation, then we need to take care to reset any pre-
@@ -2606,8 +2635,9 @@ void RenderViewImpl::didNavigateWithinPage(
   // DidCreateDataSource conveniently takes care of this for us.
   didCreateDataSource(frame, frame->dataSource());
 
-  NavigationState* new_state =
-      NavigationState::FromDataSource(frame->dataSource());
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  NavigationState* new_state = document_state->navigation_state();
   new_state->set_was_within_same_page(true);
 
   didCommitProvisionalLoad(frame, is_new_navigation);
@@ -2645,11 +2675,12 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
   }
 
   content::PageTransition transition_type = content::PAGE_TRANSITION_LINK;
-  NavigationState* data_state = NavigationState::FromDataSource(data_source);
-  if (data_state) {
-    if (data_state->is_cache_policy_override_set())
-      request.setCachePolicy(data_state->cache_policy_override());
-    transition_type = data_state->transition_type();
+  DocumentState* document_state = DocumentState::FromDataSource(data_source);
+  NavigationState* navigation_state = document_state->navigation_state();
+  if (document_state) {
+    if (document_state->is_cache_policy_override_set())
+      request.setCachePolicy(document_state->cache_policy_override());
+    transition_type = navigation_state->transition_type();
   }
 
   request.setExtraData(
@@ -2659,14 +2690,14 @@ void RenderViewImpl::willSendRequest(WebFrame* frame,
                            frame->parent() ? frame->parent()->identifier() : -1,
                            transition_type));
 
-  NavigationState* top_data_state =
-      NavigationState::FromDataSource(top_data_source);
+  DocumentState* top_document_state =
+      DocumentState::FromDataSource(top_data_source);
   // TODO(gavinp): separate out prefetching and prerender field trials
   // if the rel=prerender rel type is sticking around.
-  if (top_data_state &&
+  if (top_document_state &&
       (request.targetType() == WebURLRequest::TargetIsPrefetch ||
        request.targetType() == WebURLRequest::TargetIsPrerender))
-    top_data_state->set_was_prefetcher(true);
+    top_document_state->set_was_prefetcher(true);
 
   request.setRequestorID(routing_id_);
   request.setHasUserGesture(frame->isProcessingUserGesture());
@@ -2690,29 +2721,28 @@ void RenderViewImpl::didReceiveResponse(
   if (frame->isViewSourceModeEnabled())
     return;
 
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->provisionalDataSource());
-  CHECK(navigation_state);
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->provisionalDataSource());
   int http_status_code = response.httpStatusCode();
 
   // Record page load flags.
-  navigation_state->set_was_fetched_via_spdy(response.wasFetchedViaSPDY());
-  navigation_state->set_was_npn_negotiated(response.wasNpnNegotiated());
-  navigation_state->set_was_alternate_protocol_available(
+  document_state->set_was_fetched_via_spdy(response.wasFetchedViaSPDY());
+  document_state->set_was_npn_negotiated(response.wasNpnNegotiated());
+  document_state->set_was_alternate_protocol_available(
       response.wasAlternateProtocolAvailable());
-  navigation_state->set_was_fetched_via_proxy(response.wasFetchedViaProxy());
-  navigation_state->set_http_status_code(http_status_code);
+  document_state->set_was_fetched_via_proxy(response.wasFetchedViaProxy());
+  document_state->set_http_status_code(http_status_code);
   // Whether or not the http status code actually corresponds to an error is
   // only checked when the page is done loading, if |use_error_page| is
   // still true.
-  navigation_state->set_use_error_page(true);
+  document_state->set_use_error_page(true);
 }
 
 void RenderViewImpl::didFinishResourceLoad(
     WebFrame* frame, unsigned identifier) {
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->dataSource());
-  if (!navigation_state->use_error_page())
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
+  if (!document_state->use_error_page())
     return;
 
   // Do not show error page when DevTools is attached.
@@ -2720,7 +2750,7 @@ void RenderViewImpl::didFinishResourceLoad(
     return;
 
   // Display error page, if appropriate.
-  int http_status_code = navigation_state->http_status_code();
+  int http_status_code = document_state->http_status_code();
   if (http_status_code == 404) {
     // On 404s, try a remote search page as a fallback.
     const GURL& document_url = frame->document().url();
@@ -2733,7 +2763,7 @@ void RenderViewImpl::didFinishResourceLoad(
       original_error.reason = 404;
       original_error.unreachableURL = document_url;
 
-      navigation_state->set_alt_error_page_fetcher(
+      document_state->set_alt_error_page_fetcher(
           new AltErrorPageResourceFetcher(
               error_page_url, frame, original_error,
               NewCallback(this, &RenderViewImpl::AltErrorPageFinished)));
@@ -3993,9 +4023,9 @@ bool RenderViewImpl::MaybeLoadAlternateErrorPage(WebFrame* frame,
   // Now, create a fetcher for the error page and associate it with the data
   // source we just created via the LoadHTMLString call.  That way if another
   // navigation occurs, the fetcher will get destroyed.
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->provisionalDataSource());
-  navigation_state->set_alt_error_page_fetcher(
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->provisionalDataSource());
+  document_state->set_alt_error_page_fetcher(
       new AltErrorPageResourceFetcher(
           error_page_url, frame, error,
           NewCallback(this, &RenderViewImpl::AltErrorPageFinished)));
@@ -4049,18 +4079,17 @@ void RenderViewImpl::DidFlushPaint() {
   // of loading and we don't want to save stats.
   if (!main_frame->provisionalDataSource()) {
     WebDataSource* ds = main_frame->dataSource();
-    NavigationState* navigation_state = NavigationState::FromDataSource(ds);
-    DCHECK(navigation_state);
+    DocumentState* document_state = DocumentState::FromDataSource(ds);
 
     // TODO(jar): The following code should all be inside a method, probably in
     // NavigatorState.
     Time now = Time::Now();
-    if (navigation_state->first_paint_time().is_null()) {
-      navigation_state->set_first_paint_time(now);
+    if (document_state->first_paint_time().is_null()) {
+      document_state->set_first_paint_time(now);
     }
-    if (navigation_state->first_paint_after_load_time().is_null() &&
-        !navigation_state->finish_load_time().is_null()) {
-      navigation_state->set_first_paint_after_load_time(now);
+    if (document_state->first_paint_after_load_time().is_null() &&
+        !document_state->finish_load_time().is_null()) {
+      document_state->set_first_paint_after_load_time(now);
     }
   }
 }

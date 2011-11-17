@@ -13,7 +13,7 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
-#include "content/public/renderer/navigation_state.h"
+#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_view.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -28,7 +28,7 @@ using WebKit::WebPerformance;
 using WebKit::WebString;
 using base::Time;
 using base::TimeDelta;
-using content::NavigationState;
+using content::DocumentState;
 
 static const TimeDelta kPLTMin(TimeDelta::FromMilliseconds(10));
 static const TimeDelta kPLTMax(TimeDelta::FromMinutes(10));
@@ -50,15 +50,15 @@ static URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
 static void DumpWebTiming(const Time& navigation_start,
                           const Time& load_event_start,
                           const Time& load_event_end,
-                          content::NavigationState* navigation_state) {
+                          DocumentState* document_state) {
   if (navigation_start.is_null() ||
       load_event_start.is_null() ||
       load_event_end.is_null())
     return;
 
-  if (navigation_state->web_timing_histograms_recorded())
+  if (document_state->web_timing_histograms_recorded())
     return;
-  navigation_state->set_web_timing_histograms_recorded(true);
+  document_state->set_web_timing_histograms_recorded(true);
 
   // TODO(tonyg): There are many new details we can record, add them after the
   // basic metrics are evaluated.
@@ -108,8 +108,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   if (frame->dataSource()->response().isMultipartPayload())
     return;
 
-  NavigationState* navigation_state =
-      NavigationState::FromDataSource(frame->dataSource());
+  DocumentState* document_state =
+      DocumentState::FromDataSource(frame->dataSource());
 
   // Times based on the Web Timing metrics.
   // http://www.w3.org/TR/navigation-timing/
@@ -121,16 +121,16 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   Time load_event_start = Time::FromDoubleT(performance.loadEventStart());
   Time load_event_end = Time::FromDoubleT(performance.loadEventEnd());
   DumpWebTiming(navigation_start, load_event_start, load_event_end,
-                navigation_state);
+                document_state);
 
   // If we've already dumped, do nothing.
   // This simple bool works because we only dump for the main frame.
-  if (navigation_state->load_histograms_recorded())
+  if (document_state->load_histograms_recorded())
     return;
 
   // Collect measurement times.
-  Time start = navigation_state->start_load_time();
-  Time commit = navigation_state->commit_load_time();
+  Time start = document_state->start_load_time();
+  Time commit = document_state->commit_load_time();
 
   // TODO(tonyg, jar): Start can be missing after an in-document navigation and
   // possibly other cases like a very premature abandonment of the page.
@@ -146,11 +146,11 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     return;
 
   // We properly handle null values for the next 3 variables.
-  Time request = navigation_state->request_time();
-  Time first_paint = navigation_state->first_paint_time();
-  Time first_paint_after_load = navigation_state->first_paint_after_load_time();
-  Time finish_doc = navigation_state->finish_document_load_time();
-  Time finish_all_loads = navigation_state->finish_load_time();
+  Time request = document_state->request_time();
+  Time first_paint = document_state->first_paint_time();
+  Time first_paint_after_load = document_state->first_paint_after_load_time();
+  Time finish_doc = document_state->finish_document_load_time();
+  Time finish_all_loads = document_state->finish_load_time();
 
   // TODO(tonyg, jar): We suspect a bug in abandonment counting, this temporary
   // histogram should help us to troubleshoot.
@@ -165,7 +165,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   bool abandoned_page = finish_doc.is_null();
   if (abandoned_page) {
     finish_doc = Time::Now();
-    navigation_state->set_finish_document_load_time(finish_doc);
+    document_state->set_finish_document_load_time(finish_doc);
   }
 
   // TODO(jar): We should really discriminate the definition of "abandon" more
@@ -175,14 +175,14 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   if (finish_all_loads.is_null()) {
     finish_all_loads = Time::Now();
-    navigation_state->set_finish_load_time(finish_all_loads);
+    document_state->set_finish_load_time(finish_all_loads);
   } else {
     DCHECK(!abandoned_page);  // How can the doc have finished but not the page?
     if (abandoned_page)
       return;  // Don't try to record a stat which is broken.
   }
 
-  navigation_state->set_load_histograms_recorded(true);
+  document_state->set_load_histograms_recorded(true);
 
   // Note: Client side redirects will have no request time.
   Time begin = request.is_null() ? start : request;
@@ -191,16 +191,16 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   TimeDelta start_to_finish_all_loads = finish_all_loads - start;
   TimeDelta start_to_commit = commit - start;
 
-  NavigationState::LoadType load_type = navigation_state->load_type();
+  DocumentState::LoadType load_type = document_state->load_type();
 
   // The above code sanitized all values of times, in preparation for creating
   // actual histograms.  The remainder of this code could be run at destructor
-  // time for the navigation_state, since all data is intact.
+  // time for the document_state, since all data is intact.
 
   // Aggregate PLT data across all link types.
   UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned", abandoned_page ? 1 : 0, 2);
   UMA_HISTOGRAM_ENUMERATION("PLT.LoadType", load_type,
-      NavigationState::kLoadTypeMax);
+      DocumentState::kLoadTypeMax);
   PLT_HISTOGRAM("PLT.StartToCommit", start_to_commit);
   PLT_HISTOGRAM("PLT.CommitToFinishDoc", finish_doc - commit);
   PLT_HISTOGRAM("PLT.FinishDocToFinish", finish_all_loads - finish_doc);
@@ -233,41 +233,41 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
 
   // Load type related histograms.
   switch (load_type) {
-    case NavigationState::UNDEFINED_LOAD:
+    case DocumentState::UNDEFINED_LOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_UndefLoad", begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_UndefLoad", begin_to_finish_all_loads);
       break;
-    case NavigationState::RELOAD:
+    case DocumentState::RELOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_Reload", begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_Reload", begin_to_finish_all_loads);
       break;
-    case NavigationState::HISTORY_LOAD:
+    case DocumentState::HISTORY_LOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_HistoryLoad", begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_HistoryLoad", begin_to_finish_all_loads);
       break;
-    case NavigationState::NORMAL_LOAD:
+    case DocumentState::NORMAL_LOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_NormalLoad", begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_NormalLoad", begin_to_finish_all_loads);
       break;
-    case NavigationState::LINK_LOAD_NORMAL:
+    case DocumentState::LINK_LOAD_NORMAL:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadNormal",
           begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadNormal",
                     begin_to_finish_all_loads);
       break;
-    case NavigationState::LINK_LOAD_RELOAD:
+    case DocumentState::LINK_LOAD_RELOAD:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadReload",
            begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadReload",
                     begin_to_finish_all_loads);
       break;
-    case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+    case DocumentState::LINK_LOAD_CACHE_STALE_OK:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadStaleOk",
            begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadStaleOk",
                     begin_to_finish_all_loads);
       break;
-    case NavigationState::LINK_LOAD_CACHE_ONLY:
+    case DocumentState::LINK_LOAD_CACHE_ONLY:
       PLT_HISTOGRAM("PLT.BeginToFinishDoc_LinkLoadCacheOnly",
            begin_to_finish_doc);
       PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadCacheOnly",
@@ -286,24 +286,24 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         abandoned_page ? 1 : 0, 2);
     UMA_HISTOGRAM_ENUMERATION(
         base::FieldTrial::MakeName("PLT.LoadType", "DnsImpact"),
-        load_type, NavigationState::kLoadTypeMax);
+        load_type, DocumentState::kLoadTypeMax);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "DnsImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "DnsImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "DnsImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "DnsImpact"),
             begin_to_finish_all_loads);
@@ -320,7 +320,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   static const bool prefetching_fieldtrial =
       base::FieldTrialList::TrialExists("Prefetch");
   if (prefetching_fieldtrial) {
-    if (navigation_state->was_prefetcher()) {
+    if (document_state->was_prefetcher()) {
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
           "PLT.BeginToFinishDoc_ContentPrefetcher", "Prefetch"),
           begin_to_finish_doc);
@@ -328,7 +328,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
           "PLT.BeginToFinish_ContentPrefetcher", "Prefetch"),
           begin_to_finish_all_loads);
     }
-    if (navigation_state->was_referred_by_prefetcher()) {
+    if (document_state->was_referred_by_prefetcher()) {
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
           "PLT.BeginToFinishDoc_ContentPrefetcherReferrer", "Prefetch"),
           begin_to_finish_doc);
@@ -356,24 +356,24 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         abandoned_page ? 1 : 0, 2);
     UMA_HISTOGRAM_ENUMERATION(
         base::FieldTrial::MakeName("PLT.LoadType", "ConnnectBackupJobs"),
-        load_type, NavigationState::kLoadTypeMax);
+        load_type, DocumentState::kLoadTypeMax);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "ConnnectBackupJobs"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "ConnnectBackupJobs"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "ConnnectBackupJobs"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "ConnnectBackupJobs"),
             begin_to_finish_all_loads);
@@ -394,22 +394,22 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         base::FieldTrial::MakeName("PLT.Abandoned", "ConnCountImpact"),
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "ConnCountImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "ConnCountImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "ConnCountImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "ConnCountImpact"),
             begin_to_finish_all_loads);
@@ -427,22 +427,22 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         base::FieldTrial::MakeName("PLT.Abandoned", "IdleSktToImpact"),
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "IdleSktToImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "IdleSktToImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "IdleSktToImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "IdleSktToImpact"),
             begin_to_finish_all_loads);
@@ -460,22 +460,22 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         base::FieldTrial::MakeName("PLT.Abandoned", "ProxyConnectionImpact"),
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "ProxyConnectionImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "ProxyConnectionImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "ProxyConnectionImpact"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "ProxyConnectionImpact"),
             begin_to_finish_all_loads);
@@ -492,29 +492,29 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   if (use_sdch_histogram) {
     UMA_HISTOGRAM_ENUMERATION(
         base::FieldTrial::MakeName("PLT.LoadType", "GlobalSdch"),
-        load_type, NavigationState::kLoadTypeMax);
+        load_type, DocumentState::kLoadTypeMax);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "GlobalSdch"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "GlobalSdch"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "GlobalSdch"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "GlobalSdch"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_ONLY:
+      case DocumentState::LINK_LOAD_CACHE_ONLY:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadCacheOnly", "GlobalSdch"),
             begin_to_finish_all_loads);
@@ -532,37 +532,37 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         base::FieldTrial::MakeName("PLT.Abandoned", "CacheListSize"),
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
-      case NavigationState::RELOAD:
+      case DocumentState::RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_Reload", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::HISTORY_LOAD:
+      case DocumentState::HISTORY_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_HistoryLoad", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadReload", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadStaleOk", "CacheListSize"),
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_ONLY:
+      case DocumentState::LINK_LOAD_CACHE_ONLY:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadCacheOnly", "CacheListSize"),
             begin_to_finish_all_loads);
@@ -570,8 +570,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       default:
         break;
     }
-    if (NavigationState::RELOAD <= load_type &&
-        NavigationState::LINK_LOAD_CACHE_ONLY >= load_type) {
+    if (DocumentState::RELOAD <= load_type &&
+        DocumentState::LINK_LOAD_CACHE_ONLY >= load_type) {
       PLT_HISTOGRAM(base::FieldTrial::MakeName(
           "PLT.BeginToFinish", "CacheListSize"),
            begin_to_finish_all_loads);
@@ -590,22 +590,22 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         "PLT.Abandoned_ExtensionAdblock",
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_NormalLoad_ExtensionAdblock",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadNormal_ExtensionAdblock",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadReload_ExtensionAdblock",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionAdblock",
             begin_to_finish_all_loads);
@@ -621,22 +621,22 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         "PLT.Abandoned_ExtensionAdblockPlus",
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_NormalLoad_ExtensionAdblockPlus",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadNormal_ExtensionAdblockPlus",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadReload_ExtensionAdblockPlus",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionAdblockPlus",
             begin_to_finish_all_loads);
@@ -653,22 +653,22 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         "PLT.Abandoned_ExtensionWebRequestAdblock",
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_NormalLoad_ExtensionWebRequestAdblock",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestAdblock",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestAdblock",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestAdblock",
             begin_to_finish_all_loads);
@@ -685,22 +685,22 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         "PLT.Abandoned_ExtensionWebRequestAdblockPlus",
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_NormalLoad_ExtensionWebRequestAdblockPlus",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestAdblockPlus",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestAdblockPlus",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestAdblockPlus",
             begin_to_finish_all_loads);
@@ -717,22 +717,22 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
         "PLT.Abandoned_ExtensionWebRequestOther",
         abandoned_page ? 1 : 0, 2);
     switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_NormalLoad_ExtensionWebRequestOther",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadNormal_ExtensionWebRequestOther",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_RELOAD:
+      case DocumentState::LINK_LOAD_RELOAD:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadReload_ExtensionWebRequestOther",
             begin_to_finish_all_loads);
         break;
-      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      case DocumentState::LINK_LOAD_CACHE_STALE_OK:
         PLT_HISTOGRAM(
             "PLT.BeginToFinish_LinkLoadStaleOk_ExtensionWebRequestOther",
             begin_to_finish_all_loads);
@@ -757,19 +757,19 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     static bool in_http_trial = base::FieldTrialList::Find(
         "SpdyImpact")->group_name() == "npn_with_http";
 
-    bool spdy_trial_success = navigation_state->was_fetched_via_spdy() ?
+    bool spdy_trial_success = document_state->was_fetched_via_spdy() ?
         in_spdy_trial : in_http_trial;
     if (spdy_trial_success) {
       // Histograms to determine if SPDY has an impact for https traffic.
       // TODO(mbelshe): After we've seen the difference between BeginToFinish
       //                and StartToFinish, consider removing one or the other.
       if (scheme_type == URLPattern::SCHEME_HTTPS &&
-          navigation_state->was_npn_negotiated()) {
+          document_state->was_npn_negotiated()) {
         UMA_HISTOGRAM_ENUMERATION(
             base::FieldTrial::MakeName("PLT.Abandoned", "SpdyImpact"),
             abandoned_page ? 1 : 0, 2);
         switch (load_type) {
-          case NavigationState::LINK_LOAD_NORMAL:
+          case DocumentState::LINK_LOAD_NORMAL:
             PLT_HISTOGRAM(base::FieldTrial::MakeName(
                 "PLT.BeginToFinish_LinkLoadNormal", "SpdyImpact"),
                 begin_to_finish_all_loads);
@@ -780,7 +780,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
                 "PLT.StartToCommit_LinkLoadNormal", "SpdyImpact"),
                 start_to_commit);
             break;
-          case NavigationState::NORMAL_LOAD:
+          case DocumentState::NORMAL_LOAD:
             PLT_HISTOGRAM(base::FieldTrial::MakeName(
                 "PLT.BeginToFinish_NormalLoad", "SpdyImpact"),
                 begin_to_finish_all_loads);
@@ -799,12 +799,12 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
       // Histograms to compare the impact of alternate protocol over http
       // traffic: when spdy is used vs. when http is used.
       if (scheme_type == URLPattern::SCHEME_HTTP &&
-          navigation_state->was_alternate_protocol_available()) {
-        if (!navigation_state->was_npn_negotiated()) {
+          document_state->was_alternate_protocol_available()) {
+        if (!document_state->was_npn_negotiated()) {
           // This means that even there is alternate protocols for npn_http or
           // npn_spdy, they are not taken (due to the base::FieldTrial).
           switch (load_type) {
-            case NavigationState::LINK_LOAD_NORMAL:
+            case DocumentState::LINK_LOAD_NORMAL:
               PLT_HISTOGRAM(
                   "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_http",
                   start_to_finish_all_loads);
@@ -812,7 +812,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
                   "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_http",
                   start_to_commit);
               break;
-            case NavigationState::NORMAL_LOAD:
+            case DocumentState::NORMAL_LOAD:
               PLT_HISTOGRAM(
                   "PLT.StartToFinish_NormalLoad_AlternateProtocol_http",
                   start_to_finish_all_loads);
@@ -823,9 +823,9 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
             default:
               break;
           }
-        } else if (navigation_state->was_fetched_via_spdy()) {
+        } else if (document_state->was_fetched_via_spdy()) {
           switch (load_type) {
-            case NavigationState::LINK_LOAD_NORMAL:
+            case DocumentState::LINK_LOAD_NORMAL:
               PLT_HISTOGRAM(
                   "PLT.StartToFinish_LinkLoadNormal_AlternateProtocol_spdy",
                   start_to_finish_all_loads);
@@ -833,7 +833,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
                   "PLT.StartToCommit_LinkLoadNormal_AlternateProtocol_spdy",
                   start_to_commit);
               break;
-            case NavigationState::NORMAL_LOAD:
+            case DocumentState::NORMAL_LOAD:
               PLT_HISTOGRAM(
                   "PLT.StartToFinish_NormalLoad_AlternateProtocol_spdy",
                   start_to_finish_all_loads);
@@ -850,9 +850,9 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   // Record SpdyCwnd field trial results.
-  if (navigation_state->was_fetched_via_spdy()) {
+  if (document_state->was_fetched_via_spdy()) {
     switch (load_type) {
-      case NavigationState::LINK_LOAD_NORMAL:
+      case DocumentState::LINK_LOAD_NORMAL:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_LinkLoadNormal", "SpdyCwnd"),
             begin_to_finish_all_loads);
@@ -863,7 +863,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
             "PLT.StartToCommit_LinkLoadNormal", "SpdyCwnd"),
             start_to_commit);
         break;
-      case NavigationState::NORMAL_LOAD:
+      case DocumentState::NORMAL_LOAD:
         PLT_HISTOGRAM(base::FieldTrial::MakeName(
             "PLT.BeginToFinish_NormalLoad", "SpdyCwnd"),
             begin_to_finish_all_loads);
@@ -880,7 +880,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 
   // Record page load time and abandonment rates for proxy cases.
-  if (navigation_state->was_fetched_via_proxy()) {
+  if (document_state->was_fetched_via_proxy()) {
     if (scheme_type == URLPattern::SCHEME_HTTPS) {
       PLT_HISTOGRAM("PLT.StartToFinish.Proxy.https", start_to_finish_all_loads);
       UMA_HISTOGRAM_ENUMERATION("PLT.Abandoned.Proxy.https",
@@ -913,7 +913,7 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
                        same_origin_access_count_);
 
   // Log the PLT to the info log.
-  LogPageLoadTime(navigation_state, frame->dataSource());
+  LogPageLoadTime(document_state, frame->dataSource());
 
   // Record prerendering histograms.
   prerender::PrerenderHelper::RecordHistograms(render_view(),
@@ -949,18 +949,18 @@ void PageLoadHistograms::ClosePage() {
   ResetCrossFramePropertyAccess();
 }
 
-void PageLoadHistograms::LogPageLoadTime(const NavigationState* state,
+void PageLoadHistograms::LogPageLoadTime(const DocumentState* document_state,
                                          const WebDataSource* ds) const {
   // Because this function gets called on every page load,
   // take extra care to optimize it away if logging is turned off.
   if (logging::LOG_INFO < logging::GetMinLogLevel())
     return;
 
-  DCHECK(state);
+  DCHECK(document_state);
   DCHECK(ds);
   GURL url(ds->request().url());
-  Time start = state->start_load_time();
-  Time finish = state->finish_load_time();
+  Time start = document_state->start_load_time();
+  Time finish = document_state->finish_load_time();
   // TODO(mbelshe): should we log more stats?
   VLOG(1) << "PLT: " << (finish - start).InMilliseconds() << "ms "
           << url.spec();

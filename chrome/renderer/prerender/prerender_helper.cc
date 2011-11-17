@@ -7,12 +7,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "chrome/common/render_messages.h"
-#include "content/public/renderer/navigation_state.h"
+#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 
-using content::NavigationState;
+using content::DocumentState;
 
 // Helper macro for histograms.
 #define RECORD_PLT(tag, perceived_page_load_time) { \
@@ -130,9 +130,9 @@ void PrerenderHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
       NOTREACHED();
       return;
     }
-    NavigationState* navigation_state =
-        NavigationState::FromDataSource(data_source);
-    prerender_start_time_ = navigation_state->request_time();
+    DocumentState* document_state =
+        DocumentState::FromDataSource(data_source);
+    prerender_start_time_ = document_state->request_time();
     // The first navigation for prerendering RenderViews can only be triggered
     // from PrerenderContents, so there should be a request_time.
     DCHECK(!prerender_start_time_.is_null());

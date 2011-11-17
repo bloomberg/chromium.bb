@@ -79,10 +79,10 @@ class WebPluginDelegateProxy;
 class WebUIBindings;
 
 namespace content {
-class RenderViewTest;
-class NavigationState;
+class DocumentState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
+class RenderViewTest;
 }  // namespace content
 
 namespace gfx {
@@ -907,6 +907,11 @@ class RenderViewImpl : public RenderWidget,
                                    const WebKit::WebURLError& error,
                                    bool replace);
 
+  // If we initiated a navigation, this function will populate |document_state|
+  // with the navigation information saved in OnNavigate().
+  void PopulateStateFromPendingNavigationParams(
+      content::DocumentState* document_state);
+
   // Starts nav_state_sync_timer_ if it isn't already running.
   void StartNavStateSyncTimerIfNecessary();
 
@@ -995,7 +1000,7 @@ class RenderViewImpl : public RenderWidget,
   // the WebDataSource::ExtraData attribute.  We use pending_navigation_state_
   // as a temporary holder for the state until the WebDataSource corresponding
   // to the new navigation is created.  See DidCreateDataSource.
-  scoped_ptr<content::NavigationState> pending_navigation_state_;
+  scoped_ptr<ViewMsg_Navigate_Params> pending_navigation_params_;
 
   // Timer used to delay the updating of nav state (see SyncNavigationState).
   base::OneShotTimer<RenderViewImpl> nav_state_sync_timer_;

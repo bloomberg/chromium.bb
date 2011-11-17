@@ -6,6 +6,7 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDataSource.h"
@@ -23,6 +24,7 @@ using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebView;
+using content::DocumentState;
 using content::NavigationState;
 
 namespace {
@@ -135,8 +137,10 @@ void ContentSettingsObserver::DidCommitProvisionalLoad(
   if (frame->parent())
     return; // Not a top-level navigation.
 
-  NavigationState* state = NavigationState::FromDataSource(frame->dataSource());
-  if (!state->was_within_same_page()) {
+  DocumentState* document_state = DocumentState::FromDataSource(
+      frame->dataSource());
+  NavigationState* navigation_state = document_state->navigation_state();
+  if (!navigation_state->was_within_same_page()) {
     // Clear "block" flags for the new page. This needs to happen before any of
     // |AllowScript()|, |AllowScriptFromSource()|, |AllowImage()|, or
     // |AllowPlugins()| is called for the new page so that these functions can

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,14 +7,14 @@
 #include <math.h>
 
 #include "base/time.h"
-#include "content/public/renderer/navigation_state.h"
+#include "content/public/renderer/document_state.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebDataSource;
 using WebKit::WebFrame;
 using WebKit::WebNavigationType;
-using content::NavigationState;
+using content::DocumentState;
 
 // Values for CSI "tran" property
 const int kTransitionLink = 0;
@@ -100,45 +100,45 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     if (frame) {
       WebDataSource* data_source = frame->dataSource();
       if (data_source) {
-        NavigationState* navigation_state =
-            NavigationState::FromDataSource(data_source);
+        DocumentState* document_state =
+            DocumentState::FromDataSource(data_source);
         v8::Local<v8::Object> load_times = v8::Object::New();
         load_times->Set(
             v8::String::New("requestTime"),
-            v8::Number::New(navigation_state->request_time().ToDoubleT()));
+            v8::Number::New(document_state->request_time().ToDoubleT()));
         load_times->Set(
             v8::String::New("startLoadTime"),
-            v8::Number::New(navigation_state->start_load_time().ToDoubleT()));
+            v8::Number::New(document_state->start_load_time().ToDoubleT()));
         load_times->Set(
             v8::String::New("commitLoadTime"),
-            v8::Number::New(navigation_state->commit_load_time().ToDoubleT()));
+            v8::Number::New(document_state->commit_load_time().ToDoubleT()));
         load_times->Set(
             v8::String::New("finishDocumentLoadTime"),
             v8::Number::New(
-                navigation_state->finish_document_load_time().ToDoubleT()));
+                document_state->finish_document_load_time().ToDoubleT()));
         load_times->Set(
             v8::String::New("finishLoadTime"),
-            v8::Number::New(navigation_state->finish_load_time().ToDoubleT()));
+            v8::Number::New(document_state->finish_load_time().ToDoubleT()));
         load_times->Set(
             v8::String::New("firstPaintTime"),
-            v8::Number::New(navigation_state->first_paint_time().ToDoubleT()));
+            v8::Number::New(document_state->first_paint_time().ToDoubleT()));
         load_times->Set(
             v8::String::New("firstPaintAfterLoadTime"),
             v8::Number::New(
-                navigation_state->first_paint_after_load_time().ToDoubleT()));
+                document_state->first_paint_after_load_time().ToDoubleT()));
         load_times->Set(
             v8::String::New("navigationType"),
             v8::String::New(GetNavigationType(data_source->navigationType())));
         load_times->Set(
             v8::String::New("wasFetchedViaSpdy"),
-            v8::Boolean::New(navigation_state->was_fetched_via_spdy()));
+            v8::Boolean::New(document_state->was_fetched_via_spdy()));
         load_times->Set(
             v8::String::New("wasNpnNegotiated"),
-            v8::Boolean::New(navigation_state->was_npn_negotiated()));
+            v8::Boolean::New(document_state->was_npn_negotiated()));
         load_times->Set(
             v8::String::New("wasAlternateProtocolAvailable"),
             v8::Boolean::New(
-                navigation_state->was_alternate_protocol_available()));
+                document_state->was_alternate_protocol_available()));
         return load_times;
       }
     }
@@ -150,14 +150,14 @@ class LoadTimesExtensionWrapper : public v8::Extension {
     if (frame) {
       WebDataSource* data_source = frame->dataSource();
       if (data_source) {
-        NavigationState* navigation_state =
-            NavigationState::FromDataSource(data_source);
+        DocumentState* document_state =
+            DocumentState::FromDataSource(data_source);
         v8::Local<v8::Object> csi = v8::Object::New();
         base::Time now = base::Time::Now();
-        base::Time start = navigation_state->request_time().is_null() ?
-            navigation_state->start_load_time() :
-            navigation_state->request_time();
-        base::Time onload = navigation_state->finish_document_load_time();
+        base::Time start = document_state->request_time().is_null() ?
+            document_state->start_load_time() :
+            document_state->request_time();
+        base::Time onload = document_state->finish_document_load_time();
         base::TimeDelta page = now - start;
         csi->Set(
             v8::String::New("startE"),

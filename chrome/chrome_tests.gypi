@@ -770,6 +770,7 @@
         'common/chrome_switches_uitest.cc',
         'common/logging_chrome_uitest.cc',
         'renderer/external_extension_uitest.cc',
+        'renderer/loadtimes_extension_bindings_uitest.cc',
         'test/automation/automation_proxy_uitest.cc',
         'test/automation/automation_proxy_uitest.h',
         'test/automation/extension_proxy_uitest.cc',
