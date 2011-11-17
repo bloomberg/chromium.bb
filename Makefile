@@ -88,6 +88,7 @@ TEST_LINK_FLAGS=\
 ifeq (g++,$(CXX))
 CXXFLAGS+=\
 	-O1 \
+	-DVCSID="\"1234 TESTVERSION\"" \
 	--coverage \
 	-ftest-coverage \
 	-fprofile-arcs

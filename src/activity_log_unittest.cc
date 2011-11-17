@@ -118,4 +118,10 @@ TEST(ActivityLogTest, WrapAroundTest) {
   EXPECT_NE(first_prefix, second_prefix);
 }
 
+TEST(ActivityLogTest, VersionTest) {
+  ActivityLog log(NULL);
+  string thelog = log.Encode();
+  EXPECT_TRUE(thelog.find(VCSID) != string::npos);
+}
+
 }  // namespace gestures

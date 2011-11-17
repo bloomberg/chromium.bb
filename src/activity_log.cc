@@ -17,6 +17,11 @@
 #include "gestures/include/logging.h"
 #include "gestures/include/prop_registry.h"
 
+// This should be set by build system:
+#ifndef VCSID
+#define VCSID "Unknown"
+#endif  // VCSID
+
 using std::set;
 using std::string;
 
@@ -111,16 +116,16 @@ const char kSubSubEntryPadding[] = "      ";
   ret->Set(kKeyHardwarePropXDpi, new FundamentalValue(hwprops_.screen_x_dpi));
   ret->Set(kKeyHardwarePropYDpi, new FundamentalValue(hwprops_.screen_y_dpi));
   ret->Set(kKeyHardwarePropMaxFingerCount,
-          new FundamentalValue(hwprops_.max_finger_cnt));
+           new FundamentalValue(hwprops_.max_finger_cnt));
   ret->Set(kKeyHardwarePropMaxTouchCount,
-          new FundamentalValue(hwprops_.max_touch_cnt));
+           new FundamentalValue(hwprops_.max_touch_cnt));
 
   ret->Set(kKeyHardwarePropSupportsT5R2,
-          new FundamentalValue(hwprops_.supports_t5r2 != 0));
+           new FundamentalValue(hwprops_.supports_t5r2 != 0));
   ret->Set(kKeyHardwarePropSemiMt,
-          new FundamentalValue(hwprops_.support_semi_mt != 0));
+           new FundamentalValue(hwprops_.support_semi_mt != 0));
   ret->Set(kKeyHardwarePropIsButtonPad,
-          new FundamentalValue(hwprops_.is_button_pad != 0));
+           new FundamentalValue(hwprops_.is_button_pad != 0));
   return ret;
 }
 
@@ -244,6 +249,11 @@ const char kSubSubEntryPadding[] = "      ";
 string ActivityLog::Encode() {
   DictionaryValue root;
   root.Set("version", new FundamentalValue(1));
+  string gestures_version = VCSID;
+
+  // Strip tailing whitespace.
+  TrimWhitespaceASCII(gestures_version, TRIM_ALL, &gestures_version);
+  root.Set("gesturesVersion", new StringValue(gestures_version));
   root.Set(kKeyProperties, EncodePropRegistry());
   root.Set(kKeyHardwarePropRoot, EncodeHardwareProperties());
 
