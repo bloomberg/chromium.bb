@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/process.h"
 #include "base/task.h"
@@ -40,8 +41,7 @@ class RendererHistogramSnapshots : public HistogramSender,
   // Send only a delta to what we have already sent.
   void UploadAllHistrograms(int sequence_number);
 
-  ScopedRunnableMethodFactory<RendererHistogramSnapshots>
-      renderer_histogram_snapshots_factory_;
+  base::WeakPtrFactory<RendererHistogramSnapshots> weak_factory_;
 
   // HistogramSender interface (override) methods.
   virtual void TransmitHistogramDelta(

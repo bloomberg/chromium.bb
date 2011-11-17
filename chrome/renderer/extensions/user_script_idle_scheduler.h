@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/memory/linked_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 
 class ExtensionDispatcher;
 class RenderView;
@@ -60,7 +60,7 @@ class UserScriptIdleScheduler {
   bool GetAllChildFrames(WebKit::WebFrame* parent_frame,
                          std::vector<WebKit::WebFrame*>* frames_vector) const;
 
-  ScopedRunnableMethodFactory<UserScriptIdleScheduler> method_factory_;
+  base::WeakPtrFactory<UserScriptIdleScheduler> weak_factory_;
 
   // The Frame we will run scripts in.
   WebKit::WebFrame* frame_;

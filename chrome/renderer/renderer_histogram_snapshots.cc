@@ -6,6 +6,7 @@
 
 #include <ctype.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -19,8 +20,7 @@ using base::StatisticsRecorder;
 using content::RenderThread;
 
 RendererHistogramSnapshots::RendererHistogramSnapshots()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          renderer_histogram_snapshots_factory_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 RendererHistogramSnapshots::~RendererHistogramSnapshots() {
@@ -28,9 +28,9 @@ RendererHistogramSnapshots::~RendererHistogramSnapshots() {
 
 // Send data quickly!
 void RendererHistogramSnapshots::SendHistograms(int sequence_number) {
-  RenderThread::Get()->GetMessageLoop()->PostTask(FROM_HERE,
-      renderer_histogram_snapshots_factory_.NewRunnableMethod(
-          &RendererHistogramSnapshots::UploadAllHistrograms, sequence_number));
+  RenderThread::Get()->GetMessageLoop()->PostTask(
+      FROM_HERE, base::Bind(&RendererHistogramSnapshots::UploadAllHistrograms,
+                            weak_factory_.GetWeakPtr(), sequence_number));
 }
 
 bool RendererHistogramSnapshots::OnControlMessageReceived(

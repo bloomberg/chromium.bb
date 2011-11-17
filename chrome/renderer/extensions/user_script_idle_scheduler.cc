@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/extensions/user_script_idle_scheduler.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/extension_messages.h"
@@ -30,7 +31,7 @@ using WebKit::WebView;
 
 UserScriptIdleScheduler::UserScriptIdleScheduler(
     WebFrame* frame, ExtensionDispatcher* extension_dispatcher)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       frame_(frame),
       has_run_(false),
       extension_dispatcher_(extension_dispatcher) {
@@ -52,22 +53,24 @@ void UserScriptIdleScheduler::ExecuteCode(
 }
 
 void UserScriptIdleScheduler::DidFinishDocumentLoad() {
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&UserScriptIdleScheduler::MaybeRun),
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&UserScriptIdleScheduler::MaybeRun,
+                            weak_factory_.GetWeakPtr()),
       kUserScriptIdleTimeoutMs);
 }
 
 void UserScriptIdleScheduler::DidFinishLoad() {
   // Ensure that running scripts does not keep any progress UI running.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&UserScriptIdleScheduler::MaybeRun));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&UserScriptIdleScheduler::MaybeRun,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void UserScriptIdleScheduler::DidStartProvisionalLoad() {
   // The frame is navigating, so reset the state since we'll want to inject
   // scripts once the load finishes.
   has_run_ = false;
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   while (!pending_code_execution_queue_.empty())
     pending_code_execution_queue_.pop();
 }

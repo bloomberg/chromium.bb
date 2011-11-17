@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/chrome_render_view_observer.h"
 
+#include "base/bind.h"
+#include "base/callback_old.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
@@ -226,7 +228,7 @@ ChromeRenderViewObserver::ChromeRenderViewObserver(
       last_indexed_page_id_(-1),
       allow_displaying_insecure_content_(false),
       allow_running_insecure_content_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(page_info_method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kDomAutomationController)) {
     int old_bindings = render_view->GetEnabledBindings();
@@ -629,10 +631,8 @@ void ChromeRenderViewObserver::DidStartLoading() {
 void ChromeRenderViewObserver::DidStopLoading() {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      page_info_method_factory_.NewRunnableMethod(
-          &ChromeRenderViewObserver::CapturePageInfo,
-          render_view()->GetPageId(),
-          false),
+      base::Bind(&ChromeRenderViewObserver::CapturePageInfo,
+                 weak_factory_.GetWeakPtr(), render_view()->GetPageId(), false),
       render_view()->GetContentStateImmediately() ? 0 : kDelayForCaptureMs);
 
   WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
@@ -687,10 +687,8 @@ void ChromeRenderViewObserver::DidCommitProvisionalLoad(
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      page_info_method_factory_.NewRunnableMethod(
-          &ChromeRenderViewObserver::CapturePageInfo,
-          render_view()->GetPageId(),
-          true),
+      base::Bind(&ChromeRenderViewObserver::CapturePageInfo,
+                 weak_factory_.GetWeakPtr(), render_view()->GetPageId(), true),
       kDelayForForcedCaptureMs);
 }
 

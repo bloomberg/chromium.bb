@@ -4,9 +4,11 @@
 
 #include "chrome/renderer/chrome_render_process_observer.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/native_library.h"
@@ -59,7 +61,7 @@ static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
  public:
   RendererResourceDelegate()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   }
 
   virtual webkit_glue::ResourceLoaderBridge::Peer* OnRequestComplete(
@@ -68,11 +70,11 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
       const net::URLRequestStatus& status) {
     // Update the browser about our cache.
     // Rate limit informing the host of our cache stats.
-    if (method_factory_.empty()) {
+    if (!weak_factory_.HasWeakPtrs()) {
       MessageLoop::current()->PostDelayedTask(
          FROM_HERE,
-         method_factory_.NewRunnableMethod(
-             &RendererResourceDelegate::InformHostOfCacheStats),
+         base::Bind(&RendererResourceDelegate::InformHostOfCacheStats,
+                    weak_factory_.GetWeakPtr()),
          kCacheStatsDelayMS);
     }
 
@@ -101,7 +103,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
     RenderThread::Get()->Send(new ChromeViewHostMsg_UpdatedCacheStats(stats));
   }
 
-  ScopedRunnableMethodFactory<RendererResourceDelegate> method_factory_;
+  base::WeakPtrFactory<RendererResourceDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };

@@ -12,7 +12,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPermissionClient.h"
@@ -212,8 +212,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // External host exposed through automation controller.
   scoped_ptr<ExternalHostBindings> external_host_bindings_;
 
-  ScopedRunnableMethodFactory<ChromeRenderViewObserver>
-      page_info_method_factory_;
+  base::WeakPtrFactory<ChromeRenderViewObserver> weak_factory_;
 
   typedef std::vector<linked_ptr<webkit_glue::ImageResourceFetcher> >
       ImageResourceFetcherList;
