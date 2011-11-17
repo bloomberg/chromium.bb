@@ -401,6 +401,14 @@ bool ChromeContentBrowserClient::IsSuitableHost(
   ExtensionService* service = profile->GetExtensionService();
   extensions::ProcessMap* process_map = service->process_map();
 
+  // Don't allow the Task Manager to share a process with anything else.
+  // Otherwise it can affect the renderers it is observing.
+  // Note: we could create another RenderProcessHostPrivilege bucket for
+  // this to allow multiple chrome://tasks instances to share, but that's
+  // a very unlikely case without serious consequences.
+  if (site_url.GetOrigin() == GURL(chrome::kChromeUITaskManagerURL).GetOrigin())
+    return false;
+
   // These may be NULL during tests. In that case, just assume any site can
   // share any host.
   if (!service || !process_map)
