@@ -322,8 +322,7 @@ BrowserView::BrowserView(Browser* browser)
       hung_window_detector_(&hung_plugin_action_),
       ticker_(0),
 #endif
-      force_location_bar_focus_(false)
-                 {
+      force_location_bar_focus_(false) {
   browser_->tabstrip_model()->AddObserver(this);
 
   registrar_.Add(
@@ -333,6 +332,12 @@ BrowserView::BrowserView(Browser* browser)
 }
 
 BrowserView::~BrowserView() {
+#if defined(USE_AURA)
+  // Destroy LauncherIconUpdater early on as it listens to the TabstripModel,
+  // which is destroyed by the browser.
+  icon_updater_.reset();
+#endif
+
   browser_->tabstrip_model()->RemoveObserver(this);
 
 #if defined(OS_WIN) && !defined(USE_AURA)

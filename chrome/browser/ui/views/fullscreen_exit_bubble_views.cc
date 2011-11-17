@@ -64,6 +64,8 @@ class FullscreenExitBubbleViews::FullscreenExitView
   views::NativeTextButton* accept_button_;
   views::NativeTextButton* deny_button_;
   const string16 browser_fullscreen_exit_accelerator_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullscreenExitView);
 };
 
 FullscreenExitBubbleViews::FullscreenExitView::FullscreenExitView(

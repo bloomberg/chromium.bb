@@ -53,6 +53,10 @@ class FullscreenExitBubbleViews : public views::LinkListener,
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
+  // ui::AnimationDelegate:
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+
   // The root view containing us.
   views::View* root_view_;
 
@@ -60,10 +64,6 @@ class FullscreenExitBubbleViews : public views::LinkListener,
 
   // Animation controlling sliding into/out of the top of the screen.
   scoped_ptr<ui::SlideAnimation> size_animation_;
-
-  // ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
-  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // The contents of the popup.
   FullscreenExitView* view_;
