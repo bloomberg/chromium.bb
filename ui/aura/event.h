@@ -10,6 +10,7 @@
 #include "base/event_types.h"
 #include "base/time.h"
 #include "ui/aura/aura_export.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
@@ -178,6 +179,29 @@ class AURA_EXPORT KeyEvent : public Event {
 
   uint16 character_;
   uint16 unmodified_character_;
+};
+
+class AURA_EXPORT DropTargetEvent : public LocatedEvent {
+ public:
+  DropTargetEvent(const ui::OSExchangeData& data,
+                  const gfx::Point& location,
+                  int source_operations)
+      : LocatedEvent(ui::ET_DROP_TARGET_EVENT, location, 0),
+        data_(data),
+        source_operations_(source_operations) {
+  }
+
+  const ui::OSExchangeData& data() const { return data_; }
+  int source_operations() const { return source_operations_; }
+
+ private:
+  // Data associated with the drag/drop session.
+  const ui::OSExchangeData& data_;
+
+  // Bitmask of supported ui::DragDropTypes::DragOperation by the source.
+  int source_operations_;
+
+  DISALLOW_COPY_AND_ASSIGN(DropTargetEvent);
 };
 
 }  // namespace aura

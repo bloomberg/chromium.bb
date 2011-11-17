@@ -256,6 +256,7 @@
         'drag_controller.h',
         'drag_utils.cc',
         'drag_utils.h',
+        'drag_utils_aura.cc',
         'drag_utils_gtk.cc',
         'drag_utils_linux.cc',
         'drag_utils_win.cc',
@@ -437,6 +438,8 @@
             ['exclude', 'controls/menu/menu_2.*'],
           ],
           'sources!': [
+            'drag_utils_linux.cc',
+            'drag_utils_win.cc',
             'controls/menu/menu_config_linux.cc',
             'controls/menu/menu_item_view_linux.cc',
             'controls/menu/menu_separator_linux.cc',
@@ -462,18 +465,8 @@
             'widget/child_window_message_processor.cc',
             'widget/child_window_message_processor.h',
           ],
-          'conditions': [
-            ['OS=="win"', {
-              'sources/': [
-                ['include', 'drag_utils_win.cc'],
-              ],
-            }],
-          ],
-        }, { # else: use_aura==1
-          'sources!': [
-            'drag_utils_linux.cc',
-          ]
-        }],
+        },
+        ],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',

@@ -5,17 +5,21 @@
 #include "views/widget/native_widget_aura.h"
 
 #include "base/bind.h"
+#include "base/string_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
+#include "views/widget/drop_helper.h"
 #include "views/widget/native_widget_delegate.h"
 #include "views/widget/tooltip_manager_views.h"
 
@@ -151,11 +155,17 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   // TODO(beng): do this some other way.
   delegate_->OnNativeWidgetSizeChanged(params.bounds.size());
   can_activate_ = params.can_activate;
+  DCHECK(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP && !params.child) {
-    DCHECK(GetWidget()->GetRootView());
     views::TooltipManagerViews* manager = new views::TooltipManagerViews(
         GetWidget()->GetRootView());
     tooltip_manager_.reset(manager);
+  }
+  drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
+  if (params.type != Widget::InitParams::TYPE_TOOLTIP &&
+      params.type != Widget::InitParams::TYPE_POPUP) {
+    window_->SetProperty(aura::kDragDropDelegateKey,
+        static_cast<aura::WindowDragDropDelegate*>(this));
   }
 }
 
@@ -473,8 +483,11 @@ bool NativeWidgetAura::IsAccessibleWidget() const {
 void NativeWidgetAura::RunShellDrag(View* view,
                                    const ui::OSExchangeData& data,
                                    int operation) {
-  // http://crbug.com/97845
-  NOTIMPLEMENTED();
+  aura::DragDropClient* client = static_cast<aura::DragDropClient*>(
+      aura::Desktop::GetInstance()->GetProperty(
+          aura::kDesktopDragDropClientKey));
+  if (client)
+    client->StartDragAndDrop(data, operation);
 }
 
 void NativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -626,6 +639,7 @@ void NativeWidgetAura::OnPaint(gfx::Canvas* canvas) {
 }
 
 void NativeWidgetAura::OnWindowDestroying() {
+  window_->SetProperty(aura::kDragDropDelegateKey, NULL);
   delegate_->OnNativeWidgetDestroying();
 
   // If the aura::Window is destroyed, we can no longer show tooltips.
@@ -642,6 +656,37 @@ void NativeWidgetAura::OnWindowDestroyed() {
 
 void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
   delegate_->OnNativeWidgetVisibilityChanged(visible);
+}
+
+bool NativeWidgetAura::CanDrop(const aura::DropTargetEvent& event) {
+  DCHECK(drop_helper_.get() != NULL);
+  View* view = drop_helper_->target_view();
+  if (view)
+    return view->CanDrop(event.data());
+  return false;
+}
+
+void NativeWidgetAura::OnDragEntered(const aura::DropTargetEvent& event) {
+  DCHECK(drop_helper_.get() != NULL);
+  drop_helper_->OnDragOver(event.data(), event.location(),
+      event.source_operations());
+}
+
+int NativeWidgetAura::OnDragUpdated(const aura::DropTargetEvent& event) {
+  DCHECK(drop_helper_.get() != NULL);
+  return drop_helper_->OnDragOver(event.data(), event.location(),
+      event.source_operations());
+}
+
+void NativeWidgetAura::OnDragExited() {
+  DCHECK(drop_helper_.get() != NULL);
+  drop_helper_->OnDragExit();
+}
+
+int NativeWidgetAura::OnPerformDrop(const aura::DropTargetEvent& event) {
+  DCHECK(drop_helper_.get() != NULL);
+  return drop_helper_->OnDrop(event.data(), event.location(),
+      event.source_operations());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

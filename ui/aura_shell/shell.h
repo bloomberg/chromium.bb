@@ -30,6 +30,7 @@ class Launcher;
 class ShellDelegate;
 
 namespace internal {
+class DragDropController;
 class ShelfLayoutController;
 class WorkspaceController;
 }
@@ -84,6 +85,7 @@ class AURA_SHELL_EXPORT Shell {
 
   scoped_ptr<Launcher> launcher_;
 
+  scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
   scoped_ptr<internal::ShelfLayoutController> shelf_layout_controller_;
 

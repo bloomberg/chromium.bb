@@ -429,6 +429,10 @@ void Desktop::SetCapture(Window* window) {
       mouse_pressed_handler_ = capture_window_;
     if (touch_event_handler_)
       touch_event_handler_ = capture_window_;
+  } else {
+    // When capture is lost, we must reset the event handlers.
+    mouse_pressed_handler_ = NULL;
+    touch_event_handler_ = NULL;
   }
 }
 

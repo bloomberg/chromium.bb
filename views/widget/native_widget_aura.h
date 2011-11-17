@@ -8,6 +8,7 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/aura/client/window_drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events.h"
 #include "views/views_export.h"
@@ -22,10 +23,12 @@ class Font;
 
 namespace views {
 
+class DropHelper;
 class TooltipManagerViews;
 
 class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
-                                      public aura::WindowDelegate {
+                                      public aura::WindowDelegate,
+                                      public aura::WindowDragDropDelegate {
  public:
   explicit NativeWidgetAura(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetAura();
@@ -139,6 +142,13 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowDestroyed() OVERRIDE;
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
+  // Overridden from aura::WindowDragDropDelegate:
+  virtual bool CanDrop(const aura::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragEntered(const aura::DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const aura::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragExited() OVERRIDE;
+  virtual int OnPerformDrop(const aura::DropTargetEvent& event) OVERRIDE;
+
  private:
   class DesktopObserverImpl;
 
@@ -161,6 +171,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   scoped_ptr<TooltipManagerViews> tooltip_manager_;
 
   scoped_ptr<DesktopObserverImpl> desktop_observer_;
+
+  scoped_ptr<DropHelper> drop_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetAura);
 };

@@ -45,6 +45,10 @@
         'desktop_event_filter.h',
         'desktop_layout_manager.cc',
         'desktop_layout_manager.h',
+        'drag_drop_controller.cc',
+        'drag_drop_controller.h',
+        'drag_image_view.cc',
+        'drag_image_view.h',
         'launcher/app_launcher_button.cc',
         'launcher/app_launcher_button.h',
         'launcher/launcher.cc',
@@ -124,6 +128,7 @@
       'sources': [
         'default_container_layout_manager_unittest.cc',
         'desktop_event_filter_unittest.cc',
+        'drag_drop_controller_unittest.cc',
         'launcher/launcher_model_unittest.cc',
         'launcher/view_model_unittest.cc',
         'launcher/view_model_utils_unittest.cc',

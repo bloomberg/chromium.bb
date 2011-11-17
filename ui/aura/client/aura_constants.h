@@ -29,6 +29,13 @@ AURA_EXPORT extern const char kTooltipTextKey[];
 // A property key to store the boolean property of window modality.
 AURA_EXPORT extern const char kModalKey[];
 
+// A property key to store the drag and drop client for the desktop. The type of
+// the value is |aura::DragDropClient*|.
+AURA_EXPORT extern const char kDesktopDragDropClientKey[];
+
+// A property key to store the drag and drop delegate for a window. The type of
+// the value is |aura::WindowDragDropDelegate*|.
+AURA_EXPORT extern const char kDragDropDelegateKey[];
 }  // namespace aura
 
 #endif  // UI_AURA_CLIENT_AURA_CONSTANTS_H_

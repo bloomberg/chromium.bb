@@ -11,5 +11,7 @@ const char kRestoreBoundsKey[] = "RestoreBoundsKey";
 const char kShowStateKey[] = "ShowStateKey";
 const char kTooltipTextKey[] = "TooltipTextKey";
 const char kModalKey[] = "ModalKey";
+const char kDesktopDragDropClientKey[] = "DesktopDragDropClientKey";
+const char kDragDropDelegateKey[] = "DragDropDelegateKey";
 
 }  // namespace aura

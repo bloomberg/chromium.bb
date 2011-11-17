@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "ui/aura/aura_switches.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
@@ -14,6 +16,7 @@
 #include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/desktop_event_filter.h"
 #include "ui/aura_shell/desktop_layout_manager.h"
+#include "ui/aura_shell/drag_drop_controller.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/modal_container_layout_manager.h"
 #include "ui/aura_shell/shelf_layout_controller.h"
@@ -103,6 +106,9 @@ Shell::Shell(ShellDelegate* delegate)
 }
 
 Shell::~Shell() {
+  // Drag drop controller needs a valid shell instance. We destroy it first.
+  drag_drop_controller_.reset();
+
   DCHECK(instance_ == this);
   instance_ = NULL;
 
@@ -180,6 +186,11 @@ void Shell::Init() {
 
   // Force a layout.
   desktop_layout->OnWindowResized();
+
+  // Initialize drag drop controller.
+  drag_drop_controller_.reset(new internal::DragDropController);
+  aura::Desktop::GetInstance()->SetProperty(aura::kDesktopDragDropClientKey,
+      static_cast<aura::DragDropClient*>(drag_drop_controller_.get()));
 }
 
 aura::Window* Shell::GetContainer(int container_id) {
