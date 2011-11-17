@@ -531,6 +531,16 @@ var MainView = (function() {
     KEY_LINE_NUMBER,
   ];
 
+  /**
+   * The time (in milliseconds) to wait after receiving new data before
+   * re-drawing it to the screen. The reason we wait a bit is to avoid
+   * repainting repeatedly during the loading phase (which can slow things
+   * down). Note that this only slows down the addition of new data. It does
+   * not impact the  latency of user-initiated operations like sorting or
+   * merging.
+   */
+  var PROCESS_DATA_DELAY_MS = 500;
+
   // --------------------------------------------------------------------------
   // General utility functions
   // --------------------------------------------------------------------------
@@ -712,6 +722,13 @@ var MainView = (function() {
       return path;
 
     return path.substr(lastSlash + 1);
+  }
+
+  /**
+   * Returns the current time in milliseconds since unix epoch.
+   */
+  function getTimeMillis() {
+    return (new Date()).getTime();
   }
 
   // --------------------------------------------------------------------------
@@ -1168,8 +1185,37 @@ var MainView = (function() {
         this.flatData_.push(newRow);
       }
 
-      // Recompute the merged data based on flatData_.
-      this.updateMergedData_();
+      // We may end up calling addData() repeatedly (once for each process).
+      // To avoid this from slowing us down we do bulk updates on a timer.
+      this.updateMergedDataSoon_();
+    },
+
+    updateMergedDataSoon_: function() {
+      if (this.updateMergedDataPending_) {
+        // If a delayed task has already been posted to re-merge the data,
+        // then we don't need to do anything extra.
+        return;
+      }
+
+      // Otherwise schedule updateMergeData_() to be called later. We want it to
+      // be called no more than once every PROCESS_DATA_DELAY_MS milliseconds.
+
+      if (this.lastUpdateMergedDataTime_ == undefined)
+        this.lastUpdateMergedDataTime_ = 0;
+
+      var timeSinceLastMerge = getTimeMillis() - this.lastUpdateMergedDataTime_;
+      var timeToWait = Math.max(0, PROCESS_DATA_DELAY_MS - timeSinceLastMerge);
+
+      var functionToRun = function() {
+        // Do the actual update.
+        this.updateMergedData_();
+        // Keep track of when we last ran.
+        this.lastUpdateMergedDataTime_ = getTimeMillis();
+        this.updateMergedDataPending_ = false;
+      }.bind(this);
+
+      this.updateMergedDataPending_ = true;
+      window.setTimeout(functionToRun, timeToWait);
     },
 
     updateMergedData_: function() {
