@@ -1134,10 +1134,9 @@
    bug_16092b
    Memcheck:Leak
    ...
-   fun:_ZNSt11_Deque_baseIN11MessageLoop11PendingTaskESaIS1_EE17_M_initialize_mapE*
+   fun:_ZNSt11_Deque_baseIN4base11PendingTaskESaIS1_EE17_M_initialize_mapE*
    ...
    fun:_ZN11MessageLoopC1ENS_4TypeE
-   fun:_ZN4base6Thread10ThreadMainEv
 }
 {
    # very common in ui tests
