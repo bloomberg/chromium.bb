@@ -28,7 +28,10 @@ namespace ppapi {
 
 PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)
     : Resource(instance),
-      audio_(NULL) {
+      audio_(NULL),
+      create_callback_pending_(false),
+      shared_memory_size_for_create_callback_(0) {
+  create_callback_ = PP_MakeCompletionCallback(NULL, NULL);
 }
 
 PPB_Audio_Impl::~PPB_Audio_Impl() {
@@ -40,6 +43,13 @@ PPB_Audio_Impl::~PPB_Audio_Impl() {
   if (audio_) {
     audio_->ShutDown();
     audio_ = NULL;
+  }
+
+  // If the completion callback hasn't fired yet, do so here
+  // with an error condition.
+  if (create_callback_pending_) {
+    PP_RunCompletionCallback(&create_callback_, PP_ERROR_ABORTED);
+    create_callback_pending_ = false;
   }
 }
 
@@ -131,25 +141,67 @@ int32_t PPB_Audio_Impl::OpenTrusted(PP_Resource config,
   // At this point, we are guaranteeing ownership of the completion
   // callback.  Audio promises to fire the completion callback
   // once and only once.
-  SetCallbackInfo(true, create_callback);
-
+  create_callback_ = create_callback;
+  create_callback_pending_ = true;
   return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t PPB_Audio_Impl::GetSyncSocket(int* sync_socket) {
-  return GetSyncSocketImpl(sync_socket);
+  if (socket_for_create_callback_.get()) {
+#if defined(OS_POSIX)
+    *sync_socket = socket_for_create_callback_->handle();
+#elif defined(OS_WIN)
+    *sync_socket = reinterpret_cast<int>(socket_for_create_callback_->handle());
+#else
+    #error "Platform not supported."
+#endif
+    return PP_OK;
+  }
+  return PP_ERROR_FAILED;
 }
 
-int32_t PPB_Audio_Impl::GetSharedMemory(int* shm_handle,
-                                        uint32_t* shm_size) {
-  return GetSharedMemoryImpl(shm_handle, shm_size);
+int32_t PPB_Audio_Impl::GetSharedMemory(int* shm_handle, uint32_t* shm_size) {
+  if (shared_memory_for_create_callback_.get()) {
+#if defined(OS_POSIX)
+    *shm_handle = shared_memory_for_create_callback_->handle().fd;
+#elif defined(OS_WIN)
+    *shm_handle = reinterpret_cast<int>(
+        shared_memory_for_create_callback_->handle());
+#else
+    #error "Platform not supported."
+#endif
+    *shm_size = shared_memory_size_for_create_callback_;
+    return PP_OK;
+  }
+  return PP_ERROR_FAILED;
 }
 
-void PPB_Audio_Impl::OnSetStreamInfo(
+void PPB_Audio_Impl::StreamCreated(
     base::SharedMemoryHandle shared_memory_handle,
     size_t shared_memory_size,
     base::SyncSocket::Handle socket_handle) {
-  SetStreamInfo(shared_memory_handle, shared_memory_size, socket_handle);
+  if (create_callback_pending_) {
+    // Trusted side of proxy can specify a callback to recieve handles. In
+    // this case we don't need to map any data or start the thread since it
+    // will be handled by the proxy.
+    shared_memory_for_create_callback_.reset(
+        new base::SharedMemory(shared_memory_handle, false));
+    shared_memory_size_for_create_callback_ = shared_memory_size;
+    socket_for_create_callback_.reset(new base::SyncSocket(socket_handle));
+
+    PP_RunCompletionCallback(&create_callback_, 0);
+    create_callback_pending_ = false;
+
+    // It might be nice to close the handles here to free up some system
+    // resources, but we can't since there's a race condition. The handles must
+    // be valid until they're sent over IPC, which is done from the I/O thread
+    // which will often get done after this code executes. We could do
+    // something more elaborate like an ACK from the plugin or post a task to
+    // the I/O thread and back, but this extra complexity doesn't seem worth it
+    // just to clean up these handles faster.
+  } else {
+    SetStreamInfo(shared_memory_handle, shared_memory_size, socket_handle);
+  }
 }
 
 }  // namespace ppapi

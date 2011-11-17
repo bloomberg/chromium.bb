@@ -10,7 +10,6 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_audio_input_proxy.h"
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
@@ -81,22 +80,6 @@ PP_Resource ResourceCreationProxy::CreateAudioConfig(
 
 PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
   // Proxied plugins can't created trusted audio devices.
-  return 0;
-}
-
-PP_Resource ResourceCreationProxy::CreateAudioInput(
-    PP_Instance instance,
-    PP_Resource config_id,
-    PPB_Audio_Callback audio_input_callback,
-    void* user_data) {
-  return PPB_AudioInput_Proxy::CreateProxyResource(instance, config_id,
-                                                   audio_input_callback,
-                                                   user_data);
-}
-
-PP_Resource ResourceCreationProxy::CreateAudioInputTrusted(
-    PP_Instance instance) {
-  // Proxied plugins can't created trusted audio input devices.
   return 0;
 }
 

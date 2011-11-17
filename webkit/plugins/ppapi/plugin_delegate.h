@@ -180,21 +180,19 @@ class PluginDelegate {
     virtual bool Echo(const base::Callback<void()>& callback) = 0;
   };
 
-  // The (interface for the) client used by |PlatformAudio| and
-  // |PlatformAudioInput|.
-  class PlatformAudioCommonClient {
-   protected:
-    virtual ~PlatformAudioCommonClient() {}
-
-   public:
-    // Called when the stream is created.
-    virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
-                               size_t shared_memory_size,
-                               base::SyncSocket::Handle socket) = 0;
-  };
-
   class PlatformAudio {
    public:
+    class Client {
+     protected:
+      virtual ~Client() {}
+
+     public:
+      // Called when the stream is created.
+      virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
+                                 size_t shared_memory_size,
+                                 base::SyncSocket::Handle socket) = 0;
+    };
+
     // Starts the playback. Returns false on error or if called before the
     // stream is created or after the stream is closed.
     virtual bool StartPlayback() = 0;
@@ -209,24 +207,6 @@ class PluginDelegate {
 
    protected:
     virtual ~PlatformAudio() {}
-  };
-
-  class PlatformAudioInput {
-   public:
-    // Starts the playback. Returns false on error or if called before the
-    // stream is created or after the stream is closed.
-    virtual bool StartCapture() = 0;
-
-    // Stops the capture. Returns false on error or if called before the stream
-    // is created or after the stream is closed.
-    virtual bool StopCapture() = 0;
-
-    // Closes the stream. Make sure to call this before the object is
-    // destructed.
-    virtual void ShutDown() = 0;
-
-   protected:
-    virtual ~PlatformAudioInput() {}
   };
 
   // Interface for PlatformVideoDecoder is directly inherited from general media
@@ -305,13 +285,7 @@ class PluginDelegate {
   // to clean up the corresponding resources allocated during this call.
   virtual PlatformAudio* CreateAudio(uint32_t sample_rate,
                                      uint32_t sample_count,
-                                     PlatformAudioCommonClient* client) = 0;
-
-  // The caller is responsible for calling Shutdown() on the returned pointer
-  // to clean up the corresponding resources allocated during this call.
-  virtual PlatformAudioInput* CreateAudioInput(uint32_t sample_rate,
-      uint32_t sample_count,
-      PlatformAudioCommonClient* client) = 0;
+                                     PlatformAudio::Client* client) = 0;
 
   // A pointer is returned immediately, but it is not ready to be used until
   // BrokerConnected has been called.

@@ -27,7 +27,6 @@
 #undef PROXIED_IFACE
 #undef IFACE
 
-struct PPB_AudioInputTrusted_Dev;
 struct PPB_AudioTrusted;
 struct PPB_BrokerTrusted;
 struct PPB_BufferTrusted;
@@ -53,8 +52,6 @@ namespace thunk {
 // Old-style thunk getters. Only put trusted/private stuff here (it hasn't
 // yet been converted to the new system). Otherwise, add the declaration to
 // the appropriate interfaces_*.h file.
-PPAPI_THUNK_EXPORT const PPB_AudioInputTrusted_Dev*
-    GetPPB_AudioInputTrusted_Thunk();
 PPAPI_THUNK_EXPORT const PPB_AudioTrusted* GetPPB_AudioTrusted_Thunk();
 PPAPI_THUNK_EXPORT const PPB_BrokerTrusted* GetPPB_Broker_Thunk();
 PPAPI_THUNK_EXPORT const PPB_BufferTrusted* GetPPB_BufferTrusted_Thunk();

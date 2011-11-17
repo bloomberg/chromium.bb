@@ -35,7 +35,6 @@
 #include "content/renderer/gpu/gpu_channel_host.h"
 #include "content/renderer/gpu/renderer_gl_context.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/renderer/media/audio_input_message_filter.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/p2p/p2p_transport_impl.h"
@@ -171,7 +170,7 @@ class PlatformAudioImpl
  public:
   PlatformAudioImpl()
       : client_(NULL), stream_id_(0),
-        main_message_loop_proxy_(base::MessageLoopProxy::current()) {
+        main_message_loop_(MessageLoop::current()) {
     filter_ = RenderThreadImpl::current()->audio_message_filter();
   }
 
@@ -185,7 +184,7 @@ class PlatformAudioImpl
   // Initialize this audio context. StreamCreated() will be called when the
   // stream is created.
   bool Initialize(uint32_t sample_rate, uint32_t sample_count,
-       webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
+       webkit::ppapi::PluginDelegate::PlatformAudio::Client* client);
 
   // PlatformAudio implementation (called on main thread).
   virtual bool StartPlayback();
@@ -217,7 +216,7 @@ class PlatformAudioImpl
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.
-  webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client_;
+  webkit::ppapi::PluginDelegate::PlatformAudio::Client* client_;
 
   // MessageFilter used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
   // I/O thread except to send messages and get the message loop.
@@ -227,14 +226,14 @@ class PlatformAudioImpl
   // or else you could race with the initialize function which sets it.
   int32 stream_id_;
 
-  base::MessageLoopProxy* main_message_loop_proxy_;
+  MessageLoop* main_message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformAudioImpl);
 };
 
 bool PlatformAudioImpl::Initialize(
     uint32_t sample_rate, uint32_t sample_count,
-    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
+    webkit::ppapi::PluginDelegate::PlatformAudio::Client* client) {
 
   DCHECK(client);
   // Make sure we don't call init more than once.
@@ -325,180 +324,14 @@ void PlatformAudioImpl::OnLowLatencyCreated(
 #endif
   DCHECK(length);
 
-  if (base::MessageLoopProxy::current() == main_message_loop_proxy_) {
+  if (MessageLoop::current() == main_message_loop_) {
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
     if (client_)
       client_->StreamCreated(handle, length, socket_handle);
   } else {
-    main_message_loop_proxy_->PostTask(FROM_HERE,
+    main_message_loop_->PostTask(FROM_HERE,
         NewRunnableMethod(this, &PlatformAudioImpl::OnLowLatencyCreated,
-                          handle, socket_handle, length));
-  }
-}
-
-class PlatformAudioInputImpl
-    : public webkit::ppapi::PluginDelegate::PlatformAudioInput,
-      public AudioInputMessageFilter::Delegate,
-      public base::RefCountedThreadSafe<PlatformAudioInputImpl> {
- public:
-  PlatformAudioInputImpl()
-      : client_(NULL), stream_id_(0),
-        main_message_loop_proxy_(base::MessageLoopProxy::current()) {
-    filter_ = RenderThreadImpl::current()->audio_input_message_filter();
-  }
-
-  virtual ~PlatformAudioInputImpl() {
-    // Make sure we have been shut down. Warning: this will usually happen on
-    // the I/O thread!
-    DCHECK_EQ(0, stream_id_);
-    DCHECK(!client_);
-  }
-
-  // Initialize this audio context. StreamCreated() will be called when the
-  // stream is created.
-  bool Initialize(
-    uint32_t sample_rate, uint32_t sample_count,
-    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
-
-  // PlatformAudio implementation (called on main thread).
-  virtual bool StartCapture();
-  virtual bool StopCapture();
-  virtual void ShutDown();
-
- private:
-  // I/O thread backends to above functions.
-  void InitializeOnIOThread(const AudioParameters& params);
-  void StartCaptureOnIOThread();
-  void StopCaptureOnIOThread();
-  void ShutDownOnIOThread();
-
-  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
-                                   base::SyncSocket::Handle socket_handle,
-                                   uint32 length);
-
-  virtual void OnVolume(double volume) {}
-
-  virtual void OnStateChanged(AudioStreamState state) {}
-
-  virtual void OnDeviceReady(int index) {}
-
-  // The client to notify when the stream is created. THIS MUST ONLY BE
-  // ACCESSED ON THE MAIN THREAD.
-  webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client_;
-
-  // MessageFilter used to send/receive IPC. THIS MUST ONLY BE ACCESSED ON THE
-  // I/O thread except to send messages and get the message loop.
-  scoped_refptr<AudioInputMessageFilter> filter_;
-
-  // Our ID on the MessageFilter. THIS MUST ONLY BE ACCESSED ON THE I/O THREAD
-  // or else you could race with the initialize function which sets it.
-  int32 stream_id_;
-
-  base::MessageLoopProxy* main_message_loop_proxy_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlatformAudioInputImpl);
-};
-
-bool PlatformAudioInputImpl::Initialize(
-    uint32_t sample_rate, uint32_t sample_count,
-    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
-  DCHECK(client);
-  // Make sure we don't call init more than once.
-  DCHECK_EQ(0, stream_id_);
-
-  client_ = client;
-
-  AudioParameters params;
-  params.format = AudioParameters::AUDIO_PCM_LINEAR;
-  params.channels = 1;
-  params.sample_rate = sample_rate;
-  params.bits_per_sample = 16;
-  params.samples_per_packet = sample_count;
-
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &PlatformAudioInputImpl::InitializeOnIOThread,
-                        params));
-  return true;
-}
-
-bool PlatformAudioInputImpl::StartCapture() {
-  ChildProcess::current()->io_message_loop()->PostTask(
-    FROM_HERE,
-    NewRunnableMethod(this,
-        &PlatformAudioInputImpl::StartCaptureOnIOThread));
-  return true;
-}
-
-bool PlatformAudioInputImpl::StopCapture() {
-  ChildProcess::current()->io_message_loop()->PostTask(
-    FROM_HERE,
-    NewRunnableMethod(this,
-        &PlatformAudioInputImpl::StopCaptureOnIOThread));
-  return true;
-}
-
-void PlatformAudioInputImpl::ShutDown() {
-  // Called on the main thread to stop all audio callbacks. We must only change
-  // the client on the main thread, and the delegates from the I/O thread.
-  client_ = NULL;
-  ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&PlatformAudioInputImpl::ShutDownOnIOThread, this));
-}
-
-void PlatformAudioInputImpl::InitializeOnIOThread(
-    const AudioParameters& params) {
-  stream_id_ = filter_->AddDelegate(this);
-  filter_->Send(new AudioInputHostMsg_CreateStream(stream_id_, params, true));
-}
-
-void PlatformAudioInputImpl::StartCaptureOnIOThread() {
-  if (stream_id_)
-    filter_->Send(new AudioInputHostMsg_RecordStream(stream_id_));
-}
-
-void PlatformAudioInputImpl::StopCaptureOnIOThread() {
-  if (stream_id_)
-    filter_->Send(new AudioInputHostMsg_CloseStream(stream_id_));
-}
-
-void PlatformAudioInputImpl::ShutDownOnIOThread() {
-  // Make sure we don't call shutdown more than once.
-  if (!stream_id_)
-    return;
-
-  filter_->Send(new AudioInputHostMsg_CloseStream(stream_id_));
-  filter_->RemoveDelegate(stream_id_);
-  stream_id_ = 0;
-
-  Release();  // Release for the delegate, balances out the reference taken in
-              // PepperPluginDelegateImpl::CreateAudioInput.
-}
-
-void PlatformAudioInputImpl::OnLowLatencyCreated(
-    base::SharedMemoryHandle handle,
-    base::SyncSocket::Handle socket_handle,
-    uint32 length) {
-
-#if defined(OS_WIN)
-  DCHECK(handle);
-  DCHECK(socket_handle);
-#else
-  DCHECK_NE(-1, handle.fd);
-  DCHECK_NE(-1, socket_handle);
-#endif
-  DCHECK(length);
-
-  if (base::MessageLoopProxy::current() == main_message_loop_proxy_) {
-    // Must dereference the client only on the main thread. Shutdown may have
-    // occurred while the request was in-flight, so we need to NULL check.
-    if (client_)
-      client_->StreamCreated(handle, length, socket_handle);
-  } else {
-    main_message_loop_proxy_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &PlatformAudioInputImpl::OnLowLatencyCreated,
                           handle, socket_handle, length));
   }
 }
@@ -1254,9 +1087,8 @@ void PepperPluginDelegateImpl::SelectedFindResultChanged(int identifier,
 
 webkit::ppapi::PluginDelegate::PlatformAudio*
 PepperPluginDelegateImpl::CreateAudio(
-    uint32_t sample_rate,
-    uint32_t sample_count,
-    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
+    uint32_t sample_rate, uint32_t sample_count,
+    webkit::ppapi::PluginDelegate::PlatformAudio::Client* client) {
   scoped_refptr<PlatformAudioImpl> audio(new PlatformAudioImpl());
   if (audio->Initialize(sample_rate, sample_count, client)) {
     // Balanced by Release invoked in PlatformAudioImpl::ShutDownOnIOThread().
@@ -1264,21 +1096,6 @@ PepperPluginDelegateImpl::CreateAudio(
   } else {
     return NULL;
   }
-}
-
-webkit::ppapi::PluginDelegate::PlatformAudioInput*
-PepperPluginDelegateImpl::CreateAudioInput(
-    uint32_t sample_rate,
-    uint32_t sample_count,
-    webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client) {
-  scoped_refptr<PlatformAudioInputImpl>
-    audio_input(new PlatformAudioInputImpl());
-  if (audio_input->Initialize(sample_rate, sample_count, client)) {
-    // Balanced by Release invoked in
-    // PlatformAudioInputImpl::ShutDownOnIOThread().
-    return audio_input.release();
-  }
-  return NULL;
 }
 
 // If a broker has not already been created for this plugin, creates one.

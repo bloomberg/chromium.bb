@@ -56,8 +56,6 @@
         'proxy/ppapi_messages.h',
         'proxy/ppapi_param_traits.cc',
         'proxy/ppapi_param_traits.h',
-        'proxy/ppb_audio_input_proxy.cc',
-        'proxy/ppb_audio_input_proxy.h',
         'proxy/ppb_audio_proxy.cc',
         'proxy/ppb_audio_proxy.h',
         'proxy/ppb_broker_proxy.cc',

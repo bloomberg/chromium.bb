@@ -216,14 +216,6 @@ IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
                     base::SharedMemoryHandle /* handle */,
                     int32_t /* length */)
 
-// PPB_AudioInput_Dev.
-IPC_MESSAGE_ROUTED5(PpapiMsg_PPBAudioInput_NotifyAudioStreamCreated,
-                    ppapi::HostResource /* audio_id */,
-                    int32_t /* result_code (will be != PP_OK on failure) */,
-                    IPC::PlatformFileForTransit /* socket_handle */,
-                    base::SharedMemoryHandle /* handle */,
-                    int32_t /* length */)
-
 // PPB_Broker.
 IPC_MESSAGE_ROUTED3(
     PpapiMsg_PPBBroker_ConnectComplete,
@@ -497,16 +489,6 @@ IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudio_Create,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBAudio_StartOrStop,
                     ppapi::HostResource /* audio_id */,
                     bool /* play */)
-
-// PPB_AudioInput.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBAudioInput_Create,
-                           PP_Instance /* instance_id */,
-                           int32_t /* sample_rate */,
-                           uint32_t /* sample_frame_count */,
-                           ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBAudioInput_StartOrStop,
-                    ppapi::HostResource /* audio_id */,
-                    bool /* capture */)
 
 // PPB_Broker.
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBBroker_Create,

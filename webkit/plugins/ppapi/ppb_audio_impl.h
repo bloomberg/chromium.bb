@@ -17,7 +17,6 @@
 #include "ppapi/shared_impl/audio_impl.h"
 #include "ppapi/shared_impl/scoped_pp_resource.h"
 #include "ppapi/shared_impl/resource.h"
-#include "webkit/plugins/ppapi/audio_helper.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 
@@ -28,7 +27,7 @@ namespace ppapi {
 // AudioImpl so it can be shared with the proxy.
 class PPB_Audio_Impl : public ::ppapi::Resource,
                        public ::ppapi::AudioImpl,
-                       public AudioHelper {
+                       public PluginDelegate::PlatformAudio::Client {
  public:
   // Trusted initialization. You must call Init after this.
   //
@@ -62,10 +61,10 @@ class PPB_Audio_Impl : public ::ppapi::Resource,
   virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) OVERRIDE;
 
  private:
-  // AudioHelper implementation.
-  virtual void OnSetStreamInfo(base::SharedMemoryHandle shared_memory_handle,
-                               size_t shared_memory_size_,
-                               base::SyncSocket::Handle socket);
+  // PluginDelegate::PlatformAudio::Client implementation.
+  virtual void StreamCreated(base::SharedMemoryHandle shared_memory_handle,
+                             size_t shared_memory_size_,
+                             base::SyncSocket::Handle socket);
 
   // AudioConfig used for creating this Audio object. We own a ref.
   ::ppapi::ScopedPPResource config_;
@@ -73,6 +72,20 @@ class PPB_Audio_Impl : public ::ppapi::Resource,
   // PluginDelegate audio object that we delegate audio IPC through. We don't
   // own this pointer but are responsible for calling Shutdown on it.
   PluginDelegate::PlatformAudio* audio_;
+
+  // Is a create callback pending to fire?
+  bool create_callback_pending_;
+
+  // Trusted callback invoked from StreamCreated.
+  PP_CompletionCallback create_callback_;
+
+  // When a create callback is being issued, these will save the info for
+  // querying from the callback. The proxy uses this to get the handles to the
+  // other process instead of mapping them in the renderer. These will be
+  // invalid all other times.
+  scoped_ptr<base::SharedMemory> shared_memory_for_create_callback_;
+  size_t shared_memory_size_for_create_callback_;
+  scoped_ptr<base::SyncSocket> socket_for_create_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_Audio_Impl);
 };
