@@ -318,7 +318,7 @@
       # crosbug.com/14971
       '-infobars.InfobarTest.testPluginCrashInfobar',
       # Flaky: crosbug.com/14439
-      '-instant.InstantSettingsTest.testEnableDisableInstant',
+      '-instant',
       # crosbug.com/14256
       '-ntp.NTPTest.testLaunchAppFullScreen',
       # Content history broken in omnibox.  crosbug.com/14416
