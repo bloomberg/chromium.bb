@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
@@ -11,7 +12,7 @@
 #include "net/url_request/url_request_status.h"
 
 SdchDictionaryFetcher::SdchDictionaryFetcher()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       task_is_pending_(false) {
 }
 
@@ -46,7 +47,8 @@ void SdchDictionaryFetcher::ScheduleDelayedRun() {
   if (fetch_queue_.empty() || current_fetch_.get() || task_is_pending_)
     return;
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&SdchDictionaryFetcher::StartFetching),
+      base::Bind(&SdchDictionaryFetcher::StartFetching,
+      weak_factory_.GetWeakPtr()),
       kMsDelayFromRequestTillDownload);
   task_is_pending_ = true;
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/chrome_url_request_context.h"
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
@@ -161,8 +162,8 @@ net::CookieStore* ChromeURLRequestContextGetter::DONTUSEME_GetCookieStore() {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-          &ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper,
+      base::Bind(&ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper,
+          this,
           &completion,
           &result));
 
@@ -275,27 +276,27 @@ void ChromeURLRequestContextGetter::Observe(
           prefs->GetString(prefs::kAcceptLanguages);
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
+          base::Bind(
               &ChromeURLRequestContextGetter::OnAcceptLanguageChange,
+              this,
               accept_language));
     } else if (*pref_name_in == prefs::kDefaultCharset) {
       std::string default_charset =
           prefs->GetString(prefs::kDefaultCharset);
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
+          base::Bind(
               &ChromeURLRequestContextGetter::OnDefaultCharsetChange,
+              this,
               default_charset));
     } else if (*pref_name_in == prefs::kClearSiteDataOnExit) {
       bool clear_site_data =
           prefs->GetBoolean(prefs::kClearSiteDataOnExit);
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(
-              this,
+          base::Bind(
               &ChromeURLRequestContextGetter::OnClearSiteDataOnExitChange,
+              this,
               clear_site_data));
     }
   } else {

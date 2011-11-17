@@ -492,7 +492,7 @@ class Predictor {
   // A time after which we need to do more trimming of referrers.
   base::TimeTicks next_trim_time_;
 
-  scoped_ptr<ScopedRunnableMethodFactory<Predictor> > trim_task_factory_;
+  scoped_ptr<base::WeakPtrFactory<Predictor> > weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Predictor);
 };

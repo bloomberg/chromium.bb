@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/connection_tester.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -262,7 +263,7 @@ class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
   // |tester| will be notified of completion.
   explicit TestRunner(ConnectionTester* tester)
       : tester_(tester),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {}
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
 
   // Starts running |experiment|. Notifies tester->OnExperimentCompleted() when
   // it is done.
@@ -288,7 +289,7 @@ class ConnectionTester::TestRunner : public net::URLRequest::Delegate {
   ConnectionTester* tester_;
   scoped_ptr<net::URLRequest> request_;
 
-  ScopedRunnableMethodFactory<TestRunner> method_factory_;
+  base::WeakPtrFactory<TestRunner> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRunner);
 };
@@ -340,8 +341,8 @@ void ConnectionTester::TestRunner::OnResponseCompleted(
   // to end up deleting the URLRequest while in the middle of processing).
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &TestRunner::OnExperimentCompletedWithResult, result));
+      base::Bind(&TestRunner::OnExperimentCompletedWithResult,
+                 weak_factory_.GetWeakPtr(), result));
 }
 
 void ConnectionTester::TestRunner::OnExperimentCompletedWithResult(int result) {

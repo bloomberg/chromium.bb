@@ -701,7 +701,8 @@ void Predictor::FinalizeInitializationOnIOThread(
   // on the same thread. The predictor lives on the IO thread and will die
   // from there so now that we're on the IO thread we need to properly
   // initialize the ScopedrunnableMethodFactory.
-  trim_task_factory_.reset(new ScopedRunnableMethodFactory<Predictor>(this));
+  // TODO(groby): Check if WeakPtrFactory has the same constraint.
+  weak_factory_.reset(new base::WeakPtrFactory<Predictor>(this));
 
   // Prefetch these hostnames on startup.
   DnsPrefetchMotivatedList(startup_urls, UrlInfo::STARTUP_LIST_MOTIVATED);
@@ -1054,8 +1055,8 @@ void Predictor::PostIncrementalTrimTask() {
     return;
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      trim_task_factory_->NewRunnableMethod(
-          &Predictor::IncrementalTrimReferrers, false),
+      base::Bind(&Predictor::IncrementalTrimReferrers,
+                 weak_factory_->GetWeakPtr(), false),
       kDurationBetweenTrimmingIncrements.InMilliseconds());
 }
 

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
@@ -191,7 +192,7 @@ class NetworkStats {
   base::TimeTicks start_time_;
 
   // We use this factory to create timeout tasks for socket's ReadData.
-  ScopedRunnableMethodFactory<NetworkStats> timers_factory_;
+  base::WeakPtrFactory<NetworkStats> weak_factory_;
 };
 
 class UDPStatsClient : public NetworkStats {

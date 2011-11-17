@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/network_stats.h"
 
+#include "base/bind.h"
 #include "base/callback_old.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -87,7 +88,7 @@ NetworkStats::NetworkStats()
           write_callback_(this, &NetworkStats::OnWriteComplete)),
       finished_callback_(NULL),
       start_time_(base::TimeTicks::Now()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(timers_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 NetworkStats::~NetworkStats() {
@@ -205,7 +206,7 @@ void NetworkStats::OnReadComplete(int result) {
     const int kReadDataDelayMs = 1;
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        timers_factory_.NewRunnableMethod(&NetworkStats::ReadData),
+        base::Bind(&NetworkStats::ReadData, weak_factory_.GetWeakPtr()),
         kReadDataDelayMs);
   }
 }
@@ -281,7 +282,7 @@ int NetworkStats::SendData() {
 void NetworkStats::StartReadDataTimer(int milliseconds) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      timers_factory_.NewRunnableMethod(&NetworkStats::OnReadDataTimeout),
+      base::Bind(&NetworkStats::OnReadDataTimeout, weak_factory_.GetWeakPtr()),
       milliseconds);
 }
 
@@ -528,7 +529,7 @@ void CollectNetworkStats(const std::string& network_stats_server,
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableFunction(
+        base::Bind(
             &CollectNetworkStats, network_stats_server, io_thread));
     return;
   }

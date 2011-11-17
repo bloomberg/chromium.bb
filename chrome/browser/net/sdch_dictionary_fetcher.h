@@ -61,7 +61,7 @@ class SdchDictionaryFetcher : public content::URLFetcherDelegate,
   // Always spread out the dictionary fetches, so that they don't steal
   // bandwidth from the actual page load.  Create delayed tasks to spread out
   // the download.
-  ScopedRunnableMethodFactory<SdchDictionaryFetcher> method_factory_;
+  base::WeakPtrFactory<SdchDictionaryFetcher> weak_factory_;
   bool task_is_pending_;
 
   // Althought the SDCH spec does not preclude a server from using a single URL
