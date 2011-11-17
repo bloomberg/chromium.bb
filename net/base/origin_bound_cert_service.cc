@@ -326,7 +326,7 @@ int OriginBoundCertService::GenerateCert(const std::string& origin,
     return ERR_KEY_GENERATION_FAILED;
   }
   std::string der_cert;
-  if (!x509_util::CreateOriginBoundCert(
+  if (!x509_util::CreateOriginBoundCertRSA(
       key.get(),
       origin,
       serial_number,
