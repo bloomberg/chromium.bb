@@ -121,11 +121,19 @@
       ],
       'conditions': [
         ['use_webkit_compositor == 1', {
-            'dependencies': [
-              '<(DEPTH)/base/allocator/allocator.gyp:allocator',
-              '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
-              '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
-            ],
+          'dependencies': [
+            '<(DEPTH)/webkit/support/webkit_support.gyp:webkit_support',
+            '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+          ],
+        }],
+        ['os_posix == 1 and OS != "mac"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
         }],
       ],
     },
