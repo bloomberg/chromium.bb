@@ -424,7 +424,7 @@ void InstantController::SetSuggestedTextFor(
     const string16& text,
     InstantCompleteBehavior behavior) {
   if (!is_out_of_date_ &&
-      !InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile())) {
+      InstantFieldTrial::ShouldSetSuggestedText(tab_contents_->profile())) {
     delegate_->SetSuggestedText(text, behavior);
   }
 }
@@ -497,14 +497,13 @@ void InstantController::UpdateLoader(const TemplateURL* template_url,
                                      bool verbatim,
                                      string16* suggested_text) {
   is_out_of_date_ = false;
-  bool hidden = InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile());
-  if (!hidden)
+  if (!InstantFieldTrial::IsHiddenExperiment(tab_contents_->profile()))
     loader_->SetOmniboxBounds(omnibox_bounds_);
   loader_->Update(tab_contents_, template_url, url, transition_type, user_text,
                   verbatim, suggested_text);
   UpdateIsDisplayable();
   // For the HIDDEN and SILENT field trials, don't send back suggestions.
-  if (hidden)
+  if (!InstantFieldTrial::ShouldSetSuggestedText(tab_contents_->profile()))
     suggested_text->clear();
 }
 

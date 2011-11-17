@@ -712,6 +712,8 @@ const char kInstantFieldTrialHidden[]       = "hidden";
 const char kInstantFieldTrialInstant[]      = "instant";
 // The field trial is forced into the SILENT_EXPERIMENT group.
 const char kInstantFieldTrialSilent[]       = "silent";
+// The field trial is forced into the SUGGEST_EXPERIMENT group.
+const char kInstantFieldTrialSuggest[]      = "suggest";
 
 // URL to use for instant. If specified this overrides the url from the
 // TemplateURL.

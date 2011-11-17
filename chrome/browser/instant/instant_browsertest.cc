@@ -933,3 +933,48 @@ IN_PROC_BROWSER_TEST_F(InstantFieldTrialSilentTest, MAYBE(ExperimentEnabled)) {
   EXPECT_FALSE(instant()->IsCurrent());
   EXPECT_EQ(preview_tab, browser()->GetSelectedTabContents());
 }
+
+// Tests the SUGGEST experiment of the field trial.
+class InstantFieldTrialSuggestTest : public InstantTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitchASCII(switches::kInstantFieldTrial,
+                                    switches::kInstantFieldTrialSuggest);
+  }
+};
+
+// Tests that instant is active, even without calling EnableInstant().
+IN_PROC_BROWSER_TEST_F(InstantFieldTrialSuggestTest, MAYBE(ExperimentEnabled)) {
+  // Check that instant is enabled, despite not setting the preference.
+  Profile* profile = browser()->profile();
+  EXPECT_FALSE(profile->GetPrefs()->GetBoolean(prefs::kInstantEnabled));
+  EXPECT_TRUE(InstantController::IsEnabled(profile));
+
+  ASSERT_TRUE(test_server()->Start());
+  SetupInstantProvider("instant.html");
+  DetermineInstantSupport();
+
+  // Type into the omnibox, but don't press <Enter> yet.
+  omnibox()->SetUserText(ASCIIToUTF16("def"));
+  ASSERT_TRUE(WaitForMessageToBeProcessedByRenderer());
+
+  // Check that instant is active, but the preview is not showing.
+  EXPECT_TRUE(preview());
+  EXPECT_TRUE(loader()->ready());
+  EXPECT_FALSE(instant()->is_displayable());
+  EXPECT_FALSE(instant()->IsCurrent());
+
+  // Check that the suggested text has actually been set in the omnibox.
+  EXPECT_EQ("defghi", GetSuggestion());
+  EXPECT_EQ("defghi", UTF16ToUTF8(omnibox()->GetText()));
+
+  // Press <Enter> in the omnibox, causing the preview to be committed.
+  TabContents* preview_tab = preview()->tab_contents();
+  ASSERT_TRUE(PressEnter());
+
+  // The preview contents should now be the active tab contents.
+  EXPECT_FALSE(preview());
+  EXPECT_FALSE(instant()->is_displayable());
+  EXPECT_FALSE(instant()->IsCurrent());
+  EXPECT_EQ(preview_tab, browser()->GetSelectedTabContents());
+}

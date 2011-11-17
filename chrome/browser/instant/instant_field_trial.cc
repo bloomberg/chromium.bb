@@ -19,13 +19,19 @@ namespace {
 // file for what these groups represent.
 int g_instant_experiment_a = 0;
 int g_instant_experiment_b = 0;
+
 int g_hidden_experiment_a = 0;
 int g_hidden_experiment_b = 0;
+
 int g_silent_experiment_a = 0;
 int g_silent_experiment_b = 0;
 
+int g_suggest_experiment_a = 0;
+int g_suggest_experiment_b = 0;
+
 int g_uma_control_a = 0;
 int g_uma_control_b = 0;
+
 int g_all_control_a = 0;
 int g_all_control_b = 0;
 
@@ -43,13 +49,19 @@ void InstantFieldTrial::Activate() {
   // Each group is of total size 10% (5% each for the _a and _b variants).
   g_instant_experiment_a = trial->AppendGroup("InstantExperimentA", 50);
   g_instant_experiment_b = trial->AppendGroup("InstantExperimentB", 50);
+
   g_hidden_experiment_a = trial->AppendGroup("HiddenExperimentA", 50);
   g_hidden_experiment_b = trial->AppendGroup("HiddenExperimentB", 50);
+
   g_silent_experiment_a = trial->AppendGroup("SilentExperimentA", 50);
   g_silent_experiment_b = trial->AppendGroup("SilentExperimentB", 50);
 
+  g_suggest_experiment_a = trial->AppendGroup("SuggestExperimentA", 50);
+  g_suggest_experiment_b = trial->AppendGroup("SuggestExperimentB", 50);
+
   g_uma_control_a = trial->AppendGroup("UmaControlA", 50);
   g_uma_control_b = trial->AppendGroup("UmaControlB", 50);
+
   g_all_control_a = trial->AppendGroup("AllControlA", 50);
   g_all_control_b = trial->AppendGroup("AllControlB", 50);
 }
@@ -66,6 +78,8 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
       return HIDDEN_EXPERIMENT_A;
     else if (switch_value == switches::kInstantFieldTrialSilent)
       return SILENT_EXPERIMENT_A;
+    else if (switch_value == switches::kInstantFieldTrialSuggest)
+      return SUGGEST_EXPERIMENT_A;
     else
       return INACTIVE;
   }
@@ -88,6 +102,7 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
     return SILENT_EXPERIMENT_A;
   if (group == g_silent_experiment_b)
     return SILENT_EXPERIMENT_B;
+
   if (group == g_all_control_a)
     return ALL_CONTROL_A;
   if (group == g_all_control_b)
@@ -104,10 +119,17 @@ InstantFieldTrial::Group InstantFieldTrial::GetGroup(Profile* profile) {
     return INSTANT_EXPERIMENT_A;
   if (group == g_instant_experiment_b)
     return INSTANT_EXPERIMENT_B;
+
   if (group == g_hidden_experiment_a)
     return HIDDEN_EXPERIMENT_A;
   if (group == g_hidden_experiment_b)
     return HIDDEN_EXPERIMENT_B;
+
+  if (group == g_suggest_experiment_a)
+    return SUGGEST_EXPERIMENT_A;
+  if (group == g_suggest_experiment_b)
+    return SUGGEST_EXPERIMENT_B;
+
   if (group == g_uma_control_a)
     return UMA_CONTROL_A;
   if (group == g_uma_control_b)
@@ -122,14 +144,16 @@ bool InstantFieldTrial::IsInstantExperiment(Profile* profile) {
   Group group = GetGroup(profile);
   return group == INSTANT_EXPERIMENT_A || group == INSTANT_EXPERIMENT_B ||
          group == HIDDEN_EXPERIMENT_A || group == HIDDEN_EXPERIMENT_B ||
-         group == SILENT_EXPERIMENT_A || group == SILENT_EXPERIMENT_B;
+         group == SILENT_EXPERIMENT_A || group == SILENT_EXPERIMENT_B ||
+         group == SUGGEST_EXPERIMENT_A || group == SUGGEST_EXPERIMENT_B;
 }
 
 // static
 bool InstantFieldTrial::IsHiddenExperiment(Profile* profile) {
   Group group = GetGroup(profile);
   return group == HIDDEN_EXPERIMENT_A || group == HIDDEN_EXPERIMENT_B ||
-         group == SILENT_EXPERIMENT_A || group == SILENT_EXPERIMENT_B;
+         group == SILENT_EXPERIMENT_A || group == SILENT_EXPERIMENT_B ||
+         group == SUGGEST_EXPERIMENT_A || group == SUGGEST_EXPERIMENT_B;
 }
 
 // static
@@ -145,13 +169,19 @@ std::string InstantFieldTrial::GetGroupName(Profile* profile) {
 
     case INSTANT_EXPERIMENT_A: return "_InstantExperimentA";
     case INSTANT_EXPERIMENT_B: return "_InstantExperimentB";
+
     case HIDDEN_EXPERIMENT_A: return "_HiddenExperimentA";
     case HIDDEN_EXPERIMENT_B: return "_HiddenExperimentB";
+
     case SILENT_EXPERIMENT_A: return "_SilentExperimentA";
     case SILENT_EXPERIMENT_B: return "_SilentExperimentB";
 
+    case SUGGEST_EXPERIMENT_A: return "_SuggestExperimentA";
+    case SUGGEST_EXPERIMENT_B: return "_SuggestExperimentB";
+
     case UMA_CONTROL_A: return "_UmaControlA";
     case UMA_CONTROL_B: return "_UmaControlB";
+
     case ALL_CONTROL_A: return "_AllControlA";
     case ALL_CONTROL_B: return "_AllControlB";
   }
@@ -167,17 +197,30 @@ std::string InstantFieldTrial::GetGroupAsUrlParam(Profile* profile) {
 
     case INSTANT_EXPERIMENT_A: return "ix=iea&";
     case INSTANT_EXPERIMENT_B: return "ix=ieb&";
+
     case HIDDEN_EXPERIMENT_A: return "ix=hea&";
     case HIDDEN_EXPERIMENT_B: return "ix=heb&";
+
     case SILENT_EXPERIMENT_A: return "ix=sea&";
     case SILENT_EXPERIMENT_B: return "ix=seb&";
 
+    case SUGGEST_EXPERIMENT_A: return "ix=tea&";
+    case SUGGEST_EXPERIMENT_B: return "ix=teb&";
+
     case UMA_CONTROL_A: return "ix=uca&";
     case UMA_CONTROL_B: return "ix=ucb&";
+
     case ALL_CONTROL_A: return "ix=aca&";
     case ALL_CONTROL_B: return "ix=acb&";
   }
 
   NOTREACHED();
   return std::string();
+}
+
+// static
+bool InstantFieldTrial::ShouldSetSuggestedText(Profile* profile) {
+  Group group = GetGroup(profile);
+  return !(group == HIDDEN_EXPERIMENT_A || group == HIDDEN_EXPERIMENT_B ||
+           group == SILENT_EXPERIMENT_A || group == SILENT_EXPERIMENT_B);
 }

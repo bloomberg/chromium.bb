@@ -28,10 +28,14 @@ class Profile;
 //
 // HIDDEN_EXPERIMENT: Queries are issued as the user types, but no preview is
 //     shown until they press <Enter>. If the user hasn't opted to send metrics
-//     (UMA) data, they are bounced back to INACTIVE.
+//     (UMA) data, they are bounced back to INACTIVE. Suggestions obtained from
+//     Instant are not propagated back to the omnibox.
 //
 // SILENT_EXPERIMENT: No queries are issued until the user presses <Enter>. No
 //     previews are shown. The user is not required to send metrics (UMA) data.
+//
+// SUGGEST_EXPERIMENT: Same as HIDDEN, except that the Instant suggestions are
+//     autocompleted inline into the omnibox.
 //
 // UMA_CONTROL: Instant is disabled. If the user hasn't opted to send metrics
 //     (UMA) data, they are bounced back to INACTIVE.
@@ -51,13 +55,19 @@ class InstantFieldTrial {
 
     INSTANT_EXPERIMENT_A,
     INSTANT_EXPERIMENT_B,
+
     HIDDEN_EXPERIMENT_A,
     HIDDEN_EXPERIMENT_B,
+
     SILENT_EXPERIMENT_A,
     SILENT_EXPERIMENT_B,
 
+    SUGGEST_EXPERIMENT_A,
+    SUGGEST_EXPERIMENT_B,
+
     UMA_CONTROL_A,
     UMA_CONTROL_B,
+
     ALL_CONTROL_A,
     ALL_CONTROL_B,
   };
@@ -72,7 +82,7 @@ class InstantFieldTrial {
   // Check if the user is in any of the EXPERIMENT groups.
   static bool IsInstantExperiment(Profile* profile);
 
-  // Check if the user is in the HIDDEN or SILENT EXPERIMENT groups.
+  // Check if the user is in the HIDDEN, SILENT or SUGGEST EXPERIMENT groups.
   static bool IsHiddenExperiment(Profile* profile);
 
   // Check if the user is in the SILENT EXPERIMENT group.
@@ -84,6 +94,10 @@ class InstantFieldTrial {
 
  // Returns a string denoting the user's group, for adding as a URL param.
  static std::string GetGroupAsUrlParam(Profile* profile);
+
+ // Returns whether the Instant suggested text should be autocompleted inline
+ // into the omnibox.
+ static bool ShouldSetSuggestedText(Profile* profile);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(InstantFieldTrial);

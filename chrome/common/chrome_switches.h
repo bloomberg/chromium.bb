@@ -198,6 +198,7 @@ extern const char kInstantFieldTrial[];
 extern const char kInstantFieldTrialHidden[];
 extern const char kInstantFieldTrialInstant[];
 extern const char kInstantFieldTrialSilent[];
+extern const char kInstantFieldTrialSuggest[];
 extern const char kInstantURL[];
 extern const char kKeepAliveForTest[];
 extern const char kLoadExtension[];
