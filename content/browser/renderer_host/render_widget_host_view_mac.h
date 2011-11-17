@@ -130,13 +130,6 @@ class RenderWidgetHostViewMacEditCommandHelper;
 - (void)setTakesFocusOnlyOnMouseDown:(BOOL)b;
 - (void)setCloseOnDeactivate:(BOOL)b;
 - (void)setToolTipAtMousePoint:(NSString *)string;
-// Set frame, then notify the RenderWidgetHost that the frame has been changed,
-// but do it in a separate task, using |performSelector:withObject:afterDelay:|.
-// This stops the flickering issue in http://crbug.com/31970
-- (void)setFrameWithDeferredUpdate:(NSRect)frame;
-// Notify the RenderWidgetHost that the frame was updated so it can resize
-// its contents.
-- (void)renderWidgetHostWasResized;
 // Cancel ongoing composition (abandon the marked text).
 - (void)cancelComposition;
 // Confirm ongoing composition.

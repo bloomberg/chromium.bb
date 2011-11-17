@@ -12,11 +12,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/perftimer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "content/browser/javascript_dialogs.h"
-#include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/view_types.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/extensions/extension_view.h"
@@ -38,16 +39,12 @@ struct WebPreferences;
 // It handles setting up the renderer process, if needed, with special
 // privileges available to extensions.  It may have a view to be shown in the
 // browser UI, or it may be hidden.
-class ExtensionHost : public RenderViewHostDelegate,
-                      public RenderViewHostDelegate::View,
+class ExtensionHost : public TabContentsDelegate,
+                      public TabContentsObserver,
                       public ExtensionFunctionDispatcher::Delegate,
-                      public content::NotificationObserver,
-                      public content::JavaScriptDialogDelegate {
+                      public content::NotificationObserver {
  public:
   class ProcessCreationQueue;
-
-  // Enable DOM automation in created render view hosts.
-  static void EnableDOMAutomation() { enable_dom_automation_ = true; }
 
   ExtensionHost(const Extension* extension, SiteInstance* site_instance,
                 const GURL& url, content::ViewType host_type);
@@ -73,9 +70,9 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   const Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
-  RenderViewHost* render_view_host() const { return render_view_host_; }
+  TabContents* host_contents() const { return host_contents_.get(); }
+  RenderViewHost* render_view_host() const;
   RenderProcessHost* render_process_host() const;
-  SiteInstance* site_instance() const;
   bool did_stop_loading() const { return did_stop_loading_; }
   bool document_element_available() const {
     return document_element_available_;
@@ -83,9 +80,8 @@ class ExtensionHost : public RenderViewHostDelegate,
 
   Profile* profile() const { return profile_; }
 
-  content::ViewType extension_host_type() const {
-    return extension_host_type_;
-  }
+  content::ViewType extension_host_type() const { return extension_host_type_; }
+  const GURL& GetURL() const;
 
   // ExtensionFunctionDispatcher::Delegate
   virtual TabContents* GetAssociatedTabContents() const OVERRIDE;
@@ -99,10 +95,7 @@ class ExtensionHost : public RenderViewHostDelegate,
   // Prepares to initializes our RenderViewHost by creating its RenderView and
   // navigating to this host's url. Uses host_view for the RenderViewHost's view
   // (can be NULL). This happens delayed to avoid locking the UI.
-  void CreateRenderViewSoon(RenderWidgetHostView* host_view);
-
-  // Sets |url_| and navigates |render_view_host_|.
-  void NavigateToURL(const GURL& url);
+  void CreateRenderViewSoon();
 
   // Insert a default style sheet for Extension Infobars.
   void InsertInfobarCSS();
@@ -111,116 +104,47 @@ class ExtensionHost : public RenderViewHostDelegate,
   // |size_limit| in both width and height.
   void DisableScrollbarsForSmallWindows(const gfx::Size& size_limit);
 
-  // RenderViewHostDelegate implementation.
+  // TabContentsObserver
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual const GURL& GetURL() const OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewReady(RenderViewHost* render_view_host) OVERRIDE;
-  virtual content::ViewType GetRenderViewType() const OVERRIDE;
-  virtual void RenderViewGone(RenderViewHost* render_view_host,
-                              base::TerminationStatus status,
-                              int error_code) OVERRIDE;
-  virtual void DidNavigate(
-      RenderViewHost* render_view_host,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+  virtual void RenderViewReady() OVERRIDE;
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual void DocumentAvailableInMainFrame() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
-  virtual void DocumentAvailableInMainFrame(
-      RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DocumentOnLoadCompletedInMainFrame(
-      RenderViewHost* render_view_host,
-      int32 page_id) OVERRIDE;
-  virtual RenderViewHostDelegate::View* GetViewDelegate() OVERRIDE;
-  virtual WebPreferences GetWebkitPrefs() OVERRIDE;
-  virtual void RunJavaScriptMessage(const RenderViewHost* rvh,
-                                    const string16& message,
-                                    const string16& default_prompt,
-                                    const GURL& frame_url,
-                                    const int flags,
-                                    IPC::Message* reply_msg,
-                                    bool* did_suppress_message) OVERRIDE;
-  virtual void Close(RenderViewHost* render_view_host) OVERRIDE;
-  virtual content::RendererPreferences GetRendererPrefs(
-      content::BrowserContext* browser_context) const OVERRIDE;
+
+  // TabContentsDelegate
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut) OVERRIDE;
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event)
       OVERRIDE;
-  virtual void HandleMouseMove() OVERRIDE;
-  virtual void HandleMouseDown() OVERRIDE;
-  virtual void HandleMouseLeave() OVERRIDE;
-  virtual void HandleMouseUp() OVERRIDE;
-  virtual void HandleMouseActivate() OVERRIDE;
-  virtual void RunFileChooser(RenderViewHost* render_view_host,
-                              const ViewHostMsg_RunFileChooser_Params& params);
-  virtual void UpdatePreferredSize(const gfx::Size& new_size);
-
-  // RenderViewHostDelegate::View
-  virtual void CreateNewWindow(
-      int route_id,
-      const ViewHostMsg_CreateWindow_Params& params) OVERRIDE;
-  virtual void CreateNewWidget(int route_id,
-                               WebKit::WebPopupType popup_type) OVERRIDE;
-  virtual void CreateNewFullscreenWidget(int route_id) OVERRIDE;
-  virtual void ShowCreatedWindow(int route_id,
-                                 WindowOpenDisposition disposition,
-                                 const gfx::Rect& initial_pos,
-                                 bool user_gesture) OVERRIDE;
-  virtual void ShowCreatedWidget(int route_id,
-                                 const gfx::Rect& initial_pos) OVERRIDE;
-  virtual void ShowCreatedFullscreenWidget(int route_id) OVERRIDE;
-  virtual void ShowContextMenu(const ContextMenuParams& params) OVERRIDE;
-  virtual void ShowPopupMenu(const gfx::Rect& bounds,
-                             int item_height,
-                             double item_font_size,
-                             int selected_item,
-                             const std::vector<WebMenuItem>& items,
-                             bool right_aligned) OVERRIDE;
-  virtual void StartDragging(const WebDropData& drop_data,
-                             WebKit::WebDragOperationsMask allowed_operations,
-                             const SkBitmap& image,
-                             const gfx::Point& image_offset) OVERRIDE;
-  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) OVERRIDE;
-  virtual void GotFocus() OVERRIDE;
-  virtual void TakeFocus(bool reverse) OVERRIDE;
+  virtual void UpdatePreferredSize(TabContents* source,
+                                   const gfx::Size& pref_size) OVERRIDE;
+  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator()
+      OVERRIDE;
+  virtual void AddNewContents(TabContents* source,
+                              TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) OVERRIDE;
+  virtual void CloseContents(TabContents* contents) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overridden from content::JavaScriptDialogDelegate:
-  virtual void OnDialogClosed(IPC::Message* reply_msg,
-                              bool success,
-                              const string16& user_input) OVERRIDE;
-  virtual gfx::NativeWindow GetDialogRootWindow() OVERRIDE;
-
  protected:
   // This should only be used by unit tests.
   ExtensionHost(const Extension* extension, content::ViewType host_type);
 
-  // Internal functions used to support the CreateNewWidget() method. If a
-  // platform requires plugging into widget creation at a lower level, then a
-  // subclass might want to override these functions, but otherwise they should
-  // be fine just implementing RenderWidgetHostView::InitAsPopup().
-  //
-  // The Create function returns the newly created widget so it can be
-  // associated with the given route. When the widget needs to be shown later,
-  // we'll look it up again and pass the object to the Show functions rather
-  // than the route ID.
-  virtual RenderWidgetHostView* CreateNewWidgetInternal(
-      int route_id,
-      WebKit::WebPopupType popup_type);
-  virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
-                                         const gfx::Rect& initial_pos);
  private:
   friend class ProcessCreationQueue;
 
-  // Whether to allow DOM automation for created RenderViewHosts. This is used
-  // for testing.
-  static bool enable_dom_automation_;
-
   // Actually create the RenderView for this host. See CreateRenderViewSoon.
   void CreateRenderViewNow();
+
+  // Navigates to the initial page.
+  void LoadInitialURL();
 
   // Const version of below function.
   const Browser* GetBrowser() const;
@@ -260,10 +184,7 @@ class ExtensionHost : public RenderViewHostDelegate,
 #endif
 
   // The host for our HTML content.
-  RenderViewHost* render_view_host_;
-
-  // Common implementations of some RenderViewHostDelegate::View methods.
-  RenderViewHostDelegateViewHelper delegate_view_helper_;
+  scoped_ptr<TabContents> host_contents_;
 
   // Whether the RenderWidget has reported that it has stopped loading.
   bool did_stop_loading_;
@@ -271,8 +192,8 @@ class ExtensionHost : public RenderViewHostDelegate,
   // True if the main frame has finished parsing.
   bool document_element_available_;
 
-  // The URL being hosted.
-  GURL url_;
+  // The original URL of the page being hosted.
+  GURL initial_url_;
 
   content::NotificationRegistrar registrar_;
 

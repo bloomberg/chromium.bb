@@ -55,8 +55,6 @@ class ExtensionViewGtk {
 
   ExtensionHost* extension_host_;
 
-  RenderWidgetHostViewGtk* render_widget_host_view_;
-
   // The background the view should have once it is initialized. This is set
   // when the view has a custom background, but hasn't been initialized yet.
   SkBitmap pending_background_;

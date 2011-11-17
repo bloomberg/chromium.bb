@@ -14,7 +14,6 @@
 class Browser;
 class ExtensionHost;
 class RenderViewHost;
-class RenderWidgetHostViewMac;
 class SkBitmap;
 
 // This class represents extension views. An extension view internally contains
@@ -34,6 +33,10 @@ class ExtensionViewMac {
 
   // Returns the browser the extension belongs to.
   Browser* browser() const { return browser_; }
+
+  // Method for the ExtensionHost to notify us that the extension page is
+  // loaded.
+  void DidStopLoading();
 
   // Sets the extensions's background image.
   void SetBackground(const SkBitmap& background);
@@ -63,17 +66,20 @@ class ExtensionViewMac {
 
   void CreateWidgetHostView();
 
+  // We wait to show the ExtensionView until several things have loaded.
+  void ShowIfCompletelyLoaded();
+
   Browser* browser_;  // weak
 
   ExtensionHost* extension_host_;  // weak
 
-  // Created by us, but owned by its |native_view()|. We |release| the
-  // rwhv's native view in our destructor, effectively freeing this.
-  RenderWidgetHostViewMac* render_widget_host_view_;
-
   // The background the view should have once it is initialized. This is set
   // when the view has a custom background, but hasn't been initialized yet.
   SkBitmap pending_background_;
+
+  // What we should set the preferred width to once the ExtensionView has
+  // loaded.
+  gfx::Size pending_preferred_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewMac);
 };

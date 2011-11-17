@@ -22,33 +22,6 @@ ExtensionHostMac::~ExtensionHostMac() {
   }
 }
 
-RenderWidgetHostView* ExtensionHostMac::CreateNewWidgetInternal(
-    int route_id,
-    WebKit::WebPopupType popup_type) {
-  // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
-  // to allow it to survive the trip without being hosed.
-  RenderWidgetHostView* widget_view =
-      ExtensionHost::CreateNewWidgetInternal(route_id, popup_type);
-  RenderWidgetHostViewMac* widget_view_mac =
-      static_cast<RenderWidgetHostViewMac*>(widget_view);
-  [widget_view_mac->native_view() retain];
-
-  return widget_view;
-}
-
-void ExtensionHostMac::ShowCreatedWidgetInternal(
-    RenderWidgetHostView* widget_host_view,
-    const gfx::Rect& initial_pos) {
-  ExtensionHost::ShowCreatedWidgetInternal(widget_host_view, initial_pos);
-
-  // A RenderWidgetHostViewMac has lifetime scoped to the view. Now that it's
-  // properly embedded (or purposefully ignored) we can release the reference we
-  // took in CreateNewWidgetInternal().
-  RenderWidgetHostViewMac* widget_view_mac =
-      static_cast<RenderWidgetHostViewMac*>(widget_host_view);
-  [widget_view_mac->native_view() release];
-}
-
 void ExtensionHostMac::UnhandledKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char ||

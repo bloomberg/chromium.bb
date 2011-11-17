@@ -83,8 +83,6 @@ class ExtensionPopup : public BrowserBubble,
                        const content::NotificationDetails& details);
 
   // ExtensionView::Container overrides.
-  virtual void OnExtensionMouseMove(ExtensionView* view) { }
-  virtual void OnExtensionMouseLeave(ExtensionView* view) { }
   virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
 
   // The min/max height of popups.

@@ -1670,18 +1670,6 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
     renderWidgetHostView_->render_widget_host_->WasResized();
 }
 
-- (void)setFrameWithDeferredUpdate:(NSRect)frameRect {
-  [super setFrame:frameRect];
-  [self performSelector:@selector(renderWidgetHostWasResized)
-             withObject:nil
-             afterDelay:0];
-}
-
-- (void)renderWidgetHostWasResized {
-  if (renderWidgetHostView_->render_widget_host_)
-    renderWidgetHostView_->render_widget_host_->WasResized();
-}
-
 - (void)callSetNeedsDisplayInRect {
   DCHECK([NSThread isMainThread]);
   DCHECK(renderWidgetHostView_->call_set_needs_display_in_rect_pending_);

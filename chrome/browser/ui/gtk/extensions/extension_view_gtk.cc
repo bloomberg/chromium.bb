@@ -7,13 +7,14 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/gtk/extensions/extension_popup_gtk.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/tab_contents/tab_contents_view.h"
 
 ExtensionViewGtk::ExtensionViewGtk(ExtensionHost* extension_host,
                                    Browser* browser)
     : browser_(browser),
       extension_host_(extension_host),
-      render_widget_host_view_(NULL),
       container_(NULL) {
 }
 
@@ -22,7 +23,7 @@ void ExtensionViewGtk::Init() {
 }
 
 gfx::NativeView ExtensionViewGtk::native_view() {
-  return render_widget_host_view_->native_view();
+  return extension_host_->host_contents()->view()->GetNativeView();
 }
 
 RenderViewHost* ExtensionViewGtk::render_view_host() const {
@@ -30,8 +31,8 @@ RenderViewHost* ExtensionViewGtk::render_view_host() const {
 }
 
 void ExtensionViewGtk::SetBackground(const SkBitmap& background) {
-  if (render_view_host()->IsRenderViewLive()) {
-    render_widget_host_view_->SetBackground(background);
+  if (render_view_host()->IsRenderViewLive() && render_view_host()->view()) {
+    render_view_host()->view()->SetBackground(background);
   } else {
     pending_background_ = background;
   }
@@ -43,16 +44,12 @@ void ExtensionViewGtk::UpdatePreferredSize(const gfx::Size& new_size) {
 }
 
 void ExtensionViewGtk::CreateWidgetHostView() {
-  DCHECK(!render_widget_host_view_);
-  render_widget_host_view_ = new RenderWidgetHostViewGtk(render_view_host());
-  render_widget_host_view_->InitAsChild();
-
-  extension_host_->CreateRenderViewSoon(render_widget_host_view_);
+  extension_host_->CreateRenderViewSoon();
 }
 
 void ExtensionViewGtk::RenderViewCreated() {
   if (!pending_background_.empty() && render_view_host()->view()) {
-    render_widget_host_view_->SetBackground(pending_background_);
+    render_view_host()->view()->SetBackground(pending_background_);
     pending_background_.reset();
   }
 
