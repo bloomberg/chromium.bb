@@ -720,6 +720,9 @@
       ],
     }],
     ['use_aura==1', {
+      'dependencies': [
+        '../ui/aura/aura.gyp:aura',
+      ],
       'sources/': [
         ['exclude', '^browser/accessibility/browser_accessibility_manager_win.cc'],
         ['exclude', '^browser/accessibility/browser_accessibility_manager_win.h'],

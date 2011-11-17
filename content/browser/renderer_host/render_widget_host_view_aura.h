@@ -22,11 +22,12 @@ class WebTouchEvent;
 class AcceleratedSurfaceContainerLinux;
 #endif
 
-class CONTENT_EXPORT RenderWidgetHostViewAura : public RenderWidgetHostView,
+class CONTENT_EXPORT RenderWidgetHostViewAura
+    : NON_EXPORTED_BASE(public RenderWidgetHostView),
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-                                                public ui::CompositorObserver,
+      public ui::CompositorObserver,
 #endif
-                                                public aura::WindowDelegate {
+      public aura::WindowDelegate {
  public:
   explicit RenderWidgetHostViewAura(RenderWidgetHost* host);
   virtual ~RenderWidgetHostViewAura();

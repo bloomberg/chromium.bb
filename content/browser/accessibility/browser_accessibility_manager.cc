@@ -21,7 +21,7 @@ BrowserAccessibility* BrowserAccessibilityFactory::Create() {
 // static
 int32 BrowserAccessibilityManager::next_child_id_ = -1;
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if (defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(USE_AURA)
 // There's no OS-specific implementation of BrowserAccessibilityManager
 // on Unix, so just instantiate the base class.
 // static
