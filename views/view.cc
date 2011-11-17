@@ -1781,6 +1781,9 @@ void View::CreateLayer() {
 
   layer_.reset(new ui::Layer());
   layer_->set_delegate(this);
+#if !defined(NDEBUG)
+  layer_->set_name(GetClassName());
+#endif
 
   UpdateParentLayers();
   UpdateLayerVisibility();

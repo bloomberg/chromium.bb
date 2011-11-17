@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/string_util.h"
 #include "ui/aura/client/stacking_client.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
@@ -77,6 +78,18 @@ void Window::Init(ui::Layer::LayerType layer_type) {
   layer_.reset(new ui::Layer(layer_type));
   layer_->SetVisible(false);
   layer_->set_delegate(this);
+#if !defined(NDEBUG)
+  std::string layer_name(name_);
+  if (layer_name.empty())
+    layer_name.append("Unnamed Window");
+
+  if (id_ != -1) {
+    char id_buf[10];
+    base::snprintf(id_buf, sizeof(id_buf), " %d", id_);
+    layer_name.append(id_buf);
+  }
+  layer_->set_name(layer_name);
+#endif
 }
 
 void Window::SetType(WindowType type) {

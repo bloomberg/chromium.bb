@@ -6,6 +6,7 @@
 #define UI_GFX_COMPOSITOR_LAYER_H_
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -148,6 +149,9 @@ class COMPOSITOR_EXPORT Layer :
   const gfx::Rect& invalid_rect() const { return invalid_rect_; }
 
   const gfx::Rect& hole_rect() const {  return hole_rect_; }
+
+  const std::string& name() const { return name_; }
+  void set_name(const std::string& name) { name_ = name; }
 
   const ui::Texture* texture() const { return texture_.get(); }
 
@@ -318,6 +322,8 @@ class COMPOSITOR_EXPORT Layer :
   bool layer_updated_externally_;
 
   float opacity_;
+
+  std::string name_;
 
   LayerDelegate* delegate_;
 
