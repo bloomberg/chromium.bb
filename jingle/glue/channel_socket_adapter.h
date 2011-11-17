@@ -5,6 +5,7 @@
 #ifndef JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
 #define JINGLE_GLUE_CHANNEL_SOCKET_ADAPTER_H_
 
+#include "base/compiler_specific.h"
 #include "net/socket/socket.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
@@ -34,12 +35,12 @@ class TransportChannelSocketAdapter : public net::Socket,
 
   // Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::OldCompletionCallback* callback);
+                   net::OldCompletionCallback* callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::OldCompletionCallback* callback);
+                    net::OldCompletionCallback* callback) OVERRIDE;
 
-  virtual bool SetReceiveBufferSize(int32 size);
-  virtual bool SetSendBufferSize(int32 size);
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
  private:
   void OnNewPacket(cricket::TransportChannel* channel,

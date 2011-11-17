@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -13,6 +13,7 @@
 #ifndef JINGLE_NOTIFIER_PUSH_NOTIFICATIONS_LISTENER_LISTEN_TASK_H_
 #define JINGLE_NOTIFIER_PUSH_NOTIFICATIONS_LISTENER_LISTEN_TASK_H_
 
+#include "base/compiler_specific.h"
 #include "talk/xmpp/xmpptask.h"
 
 namespace buzz {
@@ -37,9 +38,9 @@ class PushNotificationsListenTask : public buzz::XmppTask {
   virtual ~PushNotificationsListenTask();
 
   // Overriden from buzz::XmppTask.
-  virtual int ProcessStart();
-  virtual int ProcessResponse();
-  virtual bool HandleStanza(const buzz::XmlElement* stanza);
+  virtual int ProcessStart() OVERRIDE;
+  virtual int ProcessResponse() OVERRIDE;
+  virtual bool HandleStanza(const buzz::XmlElement* stanza) OVERRIDE;
 
  private:
   bool IsValidNotification(const buzz::XmlElement* stanza);

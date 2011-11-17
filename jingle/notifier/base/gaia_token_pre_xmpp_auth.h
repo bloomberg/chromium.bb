@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "talk/xmpp/prexmppauth.h"
 
 namespace notifier {
@@ -29,27 +30,27 @@ class GaiaTokenPreXmppAuth : public buzz::PreXmppAuth {
   virtual void StartPreXmppAuth(const buzz::Jid& jid,
                                 const talk_base::SocketAddress& server,
                                 const talk_base::CryptString& pass,
-                                const std::string& auth_cookie);
+                                const std::string& auth_cookie) OVERRIDE;
 
-  virtual bool IsAuthDone() const;
+  virtual bool IsAuthDone() const OVERRIDE;
 
-  virtual bool IsAuthorized() const;
+  virtual bool IsAuthorized() const OVERRIDE;
 
-  virtual bool HadError() const;
+  virtual bool HadError() const OVERRIDE;
 
-  virtual int GetError() const;
+  virtual int GetError() const OVERRIDE;
 
-  virtual buzz::CaptchaChallenge GetCaptchaChallenge() const;
+  virtual buzz::CaptchaChallenge GetCaptchaChallenge() const OVERRIDE;
 
-  virtual std::string GetAuthCookie() const;
+  virtual std::string GetAuthCookie() const OVERRIDE;
 
   // buzz::SaslHandler implementation.
 
   virtual std::string ChooseBestSaslMechanism(
-      const std::vector<std::string>& mechanisms, bool encrypted);
+      const std::vector<std::string>& mechanisms, bool encrypted) OVERRIDE;
 
   virtual buzz::SaslMechanism* CreateSaslMechanism(
-      const std::string& mechanism);
+      const std::string& mechanism) OVERRIDE;
 
   static const char kDefaultAuthMechanism[];
 

@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"

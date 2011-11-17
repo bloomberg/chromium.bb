@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -8,6 +8,7 @@
 #define JINGLE_NOTIFIER_LISTENER_PUSH_NOTIFICATIONS_SEND_UPDATE_TASK_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "jingle/notifier/listener/notification_defines.h"
 #include "talk/xmpp/xmpptask.h"
@@ -26,7 +27,7 @@ class PushNotificationsSendUpdateTask : public buzz::XmppTask {
   virtual ~PushNotificationsSendUpdateTask();
 
   // Overridden from buzz::XmppTask.
-  virtual int ProcessStart();
+  virtual int ProcessStart() OVERRIDE;
 
  private:
   // Allocates and constructs an buzz::XmlElement containing the update stanza.

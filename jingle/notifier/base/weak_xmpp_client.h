@@ -11,6 +11,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "talk/xmpp/xmppclient.h"
@@ -40,7 +41,7 @@ class WeakXmppClient : public buzz::XmppClient {
   void Invalidate();
 
  protected:
-  virtual void Stop();
+  virtual void Stop() OVERRIDE;
 
  private:
   base::NonThreadSafe non_thread_safe_;

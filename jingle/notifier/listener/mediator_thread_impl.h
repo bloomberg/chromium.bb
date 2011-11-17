@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
@@ -50,20 +51,22 @@ class MediatorThreadImpl : public MediatorThread {
   explicit MediatorThreadImpl(const NotifierOptions& notifier_options);
   virtual ~MediatorThreadImpl();
 
-  virtual void AddObserver(Observer* observer);
-  virtual void RemoveObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
   // Start the thread.
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
   // These are called from outside threads, by the talk mediator object.
   // They add messages to a queue which we poll in this thread.
-  virtual void Login(const buzz::XmppClientSettings& settings);
-  virtual void Logout();
-  virtual void ListenForUpdates();
-  virtual void SubscribeForUpdates(const SubscriptionList& subscriptions);
-  virtual void SendNotification(const Notification& data);
-  virtual void UpdateXmppSettings(const buzz::XmppClientSettings& settings);
+  virtual void Login(const buzz::XmppClientSettings& settings) OVERRIDE;
+  virtual void Logout() OVERRIDE;
+  virtual void ListenForUpdates() OVERRIDE;
+  virtual void SubscribeForUpdates(
+      const SubscriptionList& subscriptions) OVERRIDE;
+  virtual void SendNotification(const Notification& data) OVERRIDE;
+  virtual void UpdateXmppSettings(
+      const buzz::XmppClientSettings& settings) OVERRIDE;
 
   // Used by unit tests.  Make sure that tests that use this have the
   // IO message loop proxy passed in via |notifier_options| pointing

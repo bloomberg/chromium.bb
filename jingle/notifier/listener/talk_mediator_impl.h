@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -39,7 +40,7 @@ class TalkMediatorImpl
   // TalkMediator implementation.
 
   // Should be called on the same thread as the constructor.
-  virtual void SetDelegate(TalkMediator::Delegate* delegate);
+  virtual void SetDelegate(TalkMediator::Delegate* delegate) OVERRIDE;
 
   // All the methods below should be called on the same thread. It may or may
   // not be same as the thread on which the object was constructed.
@@ -47,24 +48,25 @@ class TalkMediatorImpl
   // |email| must be a valid email address (e.g., foo@bar.com).
   virtual void SetAuthToken(const std::string& email,
                             const std::string& token,
-                            const std::string& token_service);
-  virtual bool Login();
+                            const std::string& token_service) OVERRIDE;
+  virtual bool Login() OVERRIDE;
   // Users must call Logout once Login is called.
-  virtual bool Logout();
+  virtual bool Logout() OVERRIDE;
 
-  virtual void SendNotification(const Notification& data);
+  virtual void SendNotification(const Notification& data) OVERRIDE;
 
-  virtual void AddSubscription(const Subscription& subscription);
+  virtual void AddSubscription(const Subscription& subscription) OVERRIDE;
 
   // MediatorThread::Delegate implementation.
 
-  virtual void OnConnectionStateChange(bool logged_in);
+  virtual void OnConnectionStateChange(bool logged_in) OVERRIDE;
 
-  virtual void OnSubscriptionStateChange(bool subscribed);
+  virtual void OnSubscriptionStateChange(bool subscribed) OVERRIDE;
 
-  virtual void OnIncomingNotification(const Notification& notification);
+  virtual void OnIncomingNotification(
+      const Notification& notification) OVERRIDE;
 
-  virtual void OnOutgoingNotification();
+  virtual void OnOutgoingNotification() OVERRIDE;
 
  private:
   struct TalkMediatorState {

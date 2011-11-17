@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -69,14 +70,14 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
   void UpdateXmppSettings(const buzz::XmppClientSettings& user_settings);
 
   // net::NetworkChangeNotifier::IPAddressObserver implementation.
-  virtual void OnIPAddressChanged();
+  virtual void OnIPAddressChanged() OVERRIDE;
 
   // SingleLoginAttempt::Delegate implementation.
   virtual void OnConnect(
-      base::WeakPtr<buzz::XmppTaskParentInterface> base_task);
-  virtual void OnNeedReconnect();
+      base::WeakPtr<buzz::XmppTaskParentInterface> base_task) OVERRIDE;
+  virtual void OnNeedReconnect() OVERRIDE;
   virtual void OnRedirect(const std::string& redirect_server,
-                          int redirect_port);
+                          int redirect_port) OVERRIDE;
 
  private:
   void OnLogoff();

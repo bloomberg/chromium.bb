@@ -4,6 +4,7 @@
 
 #include "jingle/glue/pseudotcp_adapter.h"
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/time.h"
 #include "net/base/address_list.h"

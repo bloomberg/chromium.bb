@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "jingle/notifier/base/resolving_client_socket_factory.h"
 #include "net/base/ssl_config_service.h"
@@ -35,11 +36,11 @@ class XmppClientSocketFactory : public ResolvingClientSocketFactory {
 
   // ResolvingClientSocketFactory implementation.
   virtual net::StreamSocket* CreateTransportClientSocket(
-      const net::HostPortPair& host_and_port);
+      const net::HostPortPair& host_and_port) OVERRIDE;
 
   virtual net::SSLClientSocket* CreateSSLClientSocket(
       net::ClientSocketHandle* transport_socket,
-      const net::HostPortPair& host_and_port);
+      const net::HostPortPair& host_and_port) OVERRIDE;
 
  private:
   net::ClientSocketFactory* const client_socket_factory_;

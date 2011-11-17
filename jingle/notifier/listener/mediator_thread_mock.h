@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "jingle/notifier/listener/mediator_thread.h"
 
 namespace buzz {
@@ -28,23 +29,25 @@ class MockMediatorThread : public MediatorThread {
 
   void Reset();
 
-  virtual void AddObserver(Observer* observer);
+  virtual void AddObserver(Observer* observer) OVERRIDE;
 
-  virtual void RemoveObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer) OVERRIDE;
 
   // Overridden from MediatorThread
-  virtual void Login(const buzz::XmppClientSettings& settings);
+  virtual void Login(const buzz::XmppClientSettings& settings) OVERRIDE;
 
-  virtual void Logout();
+  virtual void Logout() OVERRIDE;
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
-  virtual void SubscribeForUpdates(const SubscriptionList& subscriptions);
+  virtual void SubscribeForUpdates(
+      const SubscriptionList& subscriptions) OVERRIDE;
 
-  virtual void ListenForUpdates();
+  virtual void ListenForUpdates() OVERRIDE;
 
-  virtual void SendNotification(const Notification &);
-  virtual void UpdateXmppSettings(const buzz::XmppClientSettings& settings);
+  virtual void SendNotification(const Notification &) OVERRIDE;
+  virtual void UpdateXmppSettings(
+      const buzz::XmppClientSettings& settings) OVERRIDE;
 
 
   void ReceiveNotification(const Notification& data);
