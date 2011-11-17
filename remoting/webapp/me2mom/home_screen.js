@@ -12,15 +12,6 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
-/**
- * Cache of the latest host list and status information.
- *
- * @type {Array.<{hostName: string, hostId: string, status: string,
- *                jabberId: string, publicKey: string}>}
- *
- */
-remoting.hostList = new Array();
-
 (function() {
 
 /**
@@ -35,7 +26,7 @@ remoting.refreshHostList = function() {
         if (remoting.oauth2.needsNewAccessToken()) {
           // Failed to get access token
           console.error('refreshHostList: OAuth2 token fetch failed');
-          showHostListError_(remoting.Error.AUTHENTICATION_FAILED);
+          remoting.hostList.showError(remoting.Error.AUTHENTICATION_FAILED);
           return;
         }
         remoting.refreshHostList();
@@ -78,7 +69,7 @@ function parseHostListResponse_(xhr) {
       var parsed_response =
           /** @type {{data: {items: Array}}} */ JSON.parse(xhr.responseText);
       if (parsed_response.data && parsed_response.data.items) {
-        replaceHostList_(parsed_response.data.items);
+        remoting.hostList.update(parsed_response.data.items);
       }
     } else {
       // Some other error.  Log for now, pretty-print in future.
@@ -99,107 +90,11 @@ function parseHostListResponse_(xhr) {
       if (xhr.status == 403) {
         // The user's account is not enabled for Me2Me, so fail silently.
       } else if (xhr.status >= 400 && xhr.status <= 499) {
-        showHostListError_(remoting.Error.GENERIC);
+        remoting.hostList.showError(remoting.Error.GENERIC);
       }
     }
   } catch (er) {
     console.error('Error processing response: ', xhr);
-  }
-}
-
-/**
- * Refresh the host list display with up to date host details.
- *
- * @param {Array.<{hostName: string, hostId: string, status: string,
- *                jabberId: string, publicKey: string}>} hostList
- *     The new list of registered hosts.
- * @return {void} Nothing.
- */
-function replaceHostList_(hostList) {
-  var hostListDiv = document.getElementById('host-list-div');
-  var hostListTable = document.getElementById('host-list');
-
-  remoting.hostList = hostList;
-
-  // Clear the table before adding the host info.
-  hostListTable.innerHTML = '';
-  showHostListError_(null);
-
-  for (var i = 0; i < hostList.length; ++i) {
-    var host = hostList[i];
-    if (!host.hostName || !host.hostId || !host.status || !host.jabberId ||
-        !host.publicKey)
-      continue;
-    var hostEntry = document.createElement('tr');
-    addClass(hostEntry, 'host-list-row');
-
-    var hostIcon = document.createElement('td');
-    var hostIconImage = document.createElement('img');
-    hostIconImage.src = 'icon_host.png';
-    hostIcon.className = 'host-list-row-start';
-    hostIcon.appendChild(hostIconImage);
-    hostEntry.appendChild(hostIcon);
-
-    var hostName = document.createElement('td');
-    hostName.setAttribute('class', 'mode-select-label');
-    hostName.appendChild(document.createTextNode(host.hostName));
-    hostEntry.appendChild(hostName);
-
-    var hostStatus = document.createElement('td');
-    if (host.status == 'ONLINE') {
-      var connectButton = document.createElement('button');
-      connectButton.setAttribute('class', 'mode-select-button');
-      connectButton.setAttribute('type', 'button');
-      connectButton.setAttribute('onclick',
-                                 'remoting.connectHost("'+host.hostId+'")');
-      connectButton.innerHTML =
-          chrome.i18n.getMessage(/*i18n-content*/'CONNECT_BUTTON');
-      hostStatus.appendChild(connectButton);
-    } else {
-      addClass(hostEntry, 'host-offline');
-      hostStatus.innerHTML = chrome.i18n.getMessage(/*i18n-content*/'OFFLINE');
-    }
-    hostStatus.className = 'host-list-row-end';
-    hostEntry.appendChild(hostStatus);
-
-    hostListTable.appendChild(hostEntry);
-  }
-
-  showHostList_(hostList.length != 0);
-}
-
-/**
- * Show or hide the host list.
- * @param {boolean} show True to show the list or false to hide it.
- * @return {void}
- */
-function showHostList_(show) {
-  var hostListDiv = document.getElementById('host-list-div');
-  hostListDiv.hidden = (!show);
-  if (show) {
-    hostListDiv.style.height = hostListDiv.scrollHeight + 'px';
-    removeClass(hostListDiv, 'collapsed');
-  } else {
-    addClass(hostListDiv, 'collapsed');
-  }
-}
-
-/**
- * Show an error message in the host list portion of the UI.
- *
- * @param {remoting.Error?} errorTag The error to display, or NULL to clear any
- *     previous error.
- * @return {void} Nothing.
- */
-function showHostListError_(errorTag) {
-  var hostListTable = document.getElementById('host-list');
-  hostListTable.innerHTML = '';
-  var errorDiv = document.getElementById('host-list-error');
-  if (errorTag) {
-    l10n.localizeElementFromTag(errorDiv, /** @type {string} */ (errorTag));
-    showHostList_(true);
-  } else {
-    errorDiv.innerText = '';
   }
 }
 

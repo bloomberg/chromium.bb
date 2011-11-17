@@ -37,6 +37,9 @@ remoting.init = function() {
   remoting.debug = new remoting.DebugLog(
       document.getElementById('debug-messages'),
       document.getElementById('statistics'));
+  remoting.hostList = new remoting.HostList(
+      document.getElementById('host-list'),
+      document.getElementById('host-list-error'));
 
   refreshEmail_();
   var email = remoting.oauth2.getCachedEmail();

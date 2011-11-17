@@ -392,8 +392,9 @@ function recenterToolbar_() {
  * @return {void} Nothing.
  */
 remoting.connectHost = function(hostId) {
-  for (var i = 0; i < remoting.hostList.length; ++i) {
-    var host = remoting.hostList[i];
+  for (var i = 0; i < remoting.hostList.hosts.length; ++i) {
+    /** @type {remoting.Host} */
+    var host = remoting.hostList.hosts[i];
     if (host.hostId != hostId)
       continue;
 
