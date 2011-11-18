@@ -21,9 +21,4 @@ bool MessagePumpWayland::RunOnce(GMainContext* context, bool block) {
   return g_main_context_iteration(context, block);
 }
 
-MessagePumpObserver::EventStatus
-    MessagePumpObserver::WillProcessEvent(wayland::WaylandEvent* event) {
-  return EVENT_CONTINUE;
-}
-
 }  // namespace base
