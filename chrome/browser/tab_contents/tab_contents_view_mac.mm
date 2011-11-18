@@ -519,7 +519,7 @@ void TabContentsViewMac::CloseTab() {
 
 - (void)renderWidgetHostWasResized {
   TabContents* tabContents = [self tabContents];
-  if (tabContents->render_view_host())
+  if (tabContents && tabContents->render_view_host())
     tabContents->render_view_host()->WasResized();
 }
 
