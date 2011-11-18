@@ -111,7 +111,6 @@ readonly THIRD_PARTY_MPC="${THIRD_PARTY}/mpc/${MPC_VER}.tar.gz"
 readonly TC_SRC="${PNACL_ROOT}/src"
 readonly TC_SRC_UPSTREAM="${TC_SRC}/upstream"
 readonly TC_SRC_LLVM="${TC_SRC_UPSTREAM}/llvm"
-readonly TC_SRC_LIBSTDCPP="${TC_SRC_UPSTREAM}/llvm-gcc/libstdc++-v3"
 readonly TC_SRC_BINUTILS="${TC_SRC}/binutils"
 readonly TC_SRC_NEWLIB="${TC_SRC}/newlib"
 readonly TC_SRC_COMPILER_RT="${TC_SRC}/compiler-rt"
@@ -127,6 +126,7 @@ readonly TC_SRC_GCC="${PNACL_GIT_ROOT}/gcc"
 readonly TC_SRC_GMP="${PNACL_ROOT}/third_party/gmp"
 readonly TC_SRC_MPFR="${PNACL_ROOT}/third_party/mpfr"
 readonly TC_SRC_MPC="${PNACL_ROOT}/third_party/mpc"
+readonly TC_SRC_LIBSTDCPP="${TC_SRC_GCC}/libstdc++-v3"
 
 # Unfortunately, binutils/configure generates this untracked file
 # in the binutils source directory
@@ -646,7 +646,7 @@ hg-update-compiler-rt() {
 
 #@ hg-pull-all           - Pull all repos. (but do not update working copy)
 #@ hg-pull-REPO          - Pull repository REPO.
-#@                         (REPO can be llvm-gcc, llvm, newlib, binutils)
+#@                         (REPO can be llvm, newlib, binutils)
 hg-pull-all() {
   StepBanner "HG-PULL" "Running 'hg pull' in all repos..."
   hg-pull-upstream
@@ -821,14 +821,7 @@ libs() {
   if ${LIBMODE_NEWLIB}; then
     build-compiler-rt
     libgcc_eh-all
-    # HACK(robertm): once this has baked for a while we need to:
-    #                1) inline the code from build-libstdc++.sh
-    #                2) directly apply the patch in
-    #                   pnacl/unsupported/patch-libstdc++ to the repo
-    #                3) eliminate the old code libstdcpp code
-    #libstdcpp
-    export INSTALL_ROOT
-    unsupported/build-libstdc++.sh all
+    libstdcpp
   fi
 }
 
@@ -1758,7 +1751,7 @@ build-compiler-rt() {
 #########################################################################
 
 libstdcpp() {
-  StepBanner "LIBSTDCPP (BITCODE)"
+  StepBanner "LIBSTDCPP 4.6 (BITCODE)"
 
   if libstdcpp-needs-configure; then
     libstdcpp-clean
@@ -1800,7 +1793,7 @@ libstdcpp-configure() {
 
   local flags=""
   if ${LIBMODE_NEWLIB}; then
-    flags+="--with-newlib --disable-shared"
+    flags+="--with-newlib --disable-shared --disable-rpath"
   elif ${LIBMODE_GLIBC}; then
     # TODO(pdox): Fix right away.
     flags+="--disable-shared"
@@ -1815,13 +1808,13 @@ libstdcpp-configure() {
         "${srcdir}"/configure \
           --host="${CROSS_TARGET_ARM}" \
           --prefix="${LIBSTDCPP_INSTALL_DIR}" \
-          --enable-llvm="${LLVM_INSTALL_DIR}" \
-          ${flags} \
+          --enable-cxx-flags="-D__SIZE_MAX__=4294967295" \
+          --disable-multilib \
+          --disable-linux-futex \
+          --disable-libstdcxx-time \
+          --disable-sjlj-exceptions \
           --disable-libstdcxx-pch \
-          --enable-languages=c,c++ \
-          --target=${CROSS_TARGET_ARM} \
-          --with-arch=${ARM_ARCH} \
-          --srcdir="${srcdir}"
+          ${flags}
   spopd
 }
 
@@ -1861,6 +1854,7 @@ libstdcpp-install() {
   # install headers (=install-data)
   # for good measure make sure we do not keep any old headers
   rm -rf "${INSTALL_ROOT}/include/c++"
+  rm -rf "${LIBSTDCPP_INSTALL_DIR}"
   setup-libstdcpp-env
   RunWithLog libstdcpp.install \
     make \
