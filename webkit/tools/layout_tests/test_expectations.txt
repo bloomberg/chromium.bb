@@ -6,8 +6,3 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
-
-BUGPKASTING MAC : fast/media/mq-transform-02.html = PASS FAIL
-BUGPKASTING MAC : fast/media/mq-transform-03.html = PASS FAIL
-BUGPKASTING MAC : compositing/plugins/composited-plugin.html = PASS FAIL
-BUGPKASTING MAC : compositing/plugins/small-to-large-composited-plugin.html = PASS FAIL
