@@ -199,6 +199,52 @@ class BasePerfTest(pyauto.PyUITest):
     test_utils.GoogleAccountsLogin(self, creds['username'], creds['password'])
     self.NavigateToURL('about:blank')  # Clear the existing tab.
 
+  def _GetCPUUsage(self):
+    """Returns machine's CPU usage.
+
+    This function uses /proc/stat to identify CPU usage, and therefore works
+    only on Linux/ChromeOS.
+
+    Returns:
+      A dictionary with 'user', 'nice', 'system' and 'idle' values.
+      Sample dictionary:
+      {
+        'user': 254544,
+        'nice': 9,
+        'system': 254768,
+        'idle': 2859878,
+      }
+    """
+    try:
+      f = open('/proc/stat', 'r')
+      cpu_usage_str = f.readline().split()
+      f.close()
+    except IOError, e:
+      self.fail('Could not retrieve CPU usage: ' + str(e))
+    return {
+      'user': int(cpu_usage_str[1]),
+      'nice': int(cpu_usage_str[2]),
+      'system': int(cpu_usage_str[3]),
+      'idle': int(cpu_usage_str[4])
+    }
+
+  def _GetFractionNonIdleCPUTime(self, cpu_usage_start, cpu_usage_end):
+    """Computes the fraction of CPU time spent non-idling.
+
+    This function should be invoked using before/after values from calls to
+    _GetCPUUsage().
+    """
+    time_non_idling_end = (cpu_usage_end['user'] + cpu_usage_end['nice'] +
+                           cpu_usage_end['system'])
+    time_non_idling_start = (cpu_usage_start['user'] + cpu_usage_start['nice'] +
+                             cpu_usage_start['system'])
+    total_time_end = (cpu_usage_end['user'] + cpu_usage_end['nice'] +
+                      cpu_usage_end['system'] + cpu_usage_end['idle'])
+    total_time_start = (cpu_usage_start['user'] + cpu_usage_start['nice'] +
+                        cpu_usage_start['system'] + cpu_usage_start['idle'])
+    return ((float(time_non_idling_end) - time_non_idling_start) /
+            (total_time_end - total_time_start))
+
 
 class TabPerfTest(BasePerfTest):
   """Tests that involve opening tabs."""
@@ -498,38 +544,16 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     pyauto.PyUITest.__init__(self, methodName, **kwargs)
     YoutubeTestHelper.__init__(self, self)
 
-  def GetCPUUsage(self):
-    """Returns machine's CPU usage
-       
-    It uses /proc/stat to count CPU usage.
-    Returns:
-      A dictionary with user, nice, system and idle values.
-      Sample dictionary :
-      {
-        'user': 254544,
-        'nice': 9,
-        'system': 254768,
-        'idle': 2859878,
-      }
-    """
-    cpu = open('/proc/stat').readline().split()
-    return {
-        'user': int(cpu[1]),
-        'nice': int(cpu[2]),
-        'system': int(cpu[3]),
-        'idle': int(cpu[4])
-        }
-
-  def VerifyVideoTotalBytes(self):
-    """Returns true if video total bytes information is available"""
+  def _VerifyVideoTotalBytes(self):
+    """Returns true if video total bytes information is available."""
     return self.GetVideoTotalBytes() > 0
 
-  def VerifyVideoLoadedBytes(self):
-    """Returns true if video loaded bytes information is available"""
+  def _VerifyVideoLoadedBytes(self):
+    """Returns true if video loaded bytes information is available."""
     return self.GetVideoLoadedBytes() > 0
 
   def StartVideoForPerformance(self):
-    """Start the test video with all required buffering"""
+    """Start the test video with all required buffering."""
     self.PlayVideoAndAssert()
     self.ExecuteJavascript("""
         ytplayer.setPlaybackQuality('hd720');
@@ -537,22 +561,20 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     """)
     self.AssertPlayingState()
     self.assertTrue(
-        self.WaitUntil(self.VerifyVideoTotalBytes, expect_retval=True),
+        self.WaitUntil(self._VerifyVideoTotalBytes, expect_retval=True),
         msg='Failed to get video total bytes information.')
     self.assertTrue(
-        self.WaitUntil(self.VerifyVideoLoadedBytes, expect_retval=True), 
+        self.WaitUntil(self._VerifyVideoLoadedBytes, expect_retval=True),
         msg='Failed to get video loaded bytes information')
     loaded_video_bytes = self.GetVideoLoadedBytes()
     total_video_bytes = self.GetVideoTotalBytes()
     self.PauseVideo()
-    count = 0
+    # Wait for the video to finish loading.
     while total_video_bytes > loaded_video_bytes:
       loaded_video_bytes = self.GetVideoLoadedBytes()
       time.sleep(1)
-      count = count + 1
     self.PlayVideo()
-    # Ignoring first 10 seconds of video playing so we get smooth
-    # videoplayback.
+    # Ignore first 10 seconds of video playing so we get smooth videoplayback.
     time.sleep(10)
 
   def testYoutubeDroppedFrames(self):
@@ -571,34 +593,32 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     self._PrintSummaryResults('YoutubeDroppedFrames', dropped_fps, 'frames')
 
   def testYoutubeCPU(self):
-    """Measure the Youtube video CPU usage. Runs for 60 seconds.
+    """Measures the Youtube video CPU usage. Runs for 60 seconds.
 
-    Measures the Youtube video CPU usage (between 0 and 1) extrapolated to
+    Measures the Youtube video CPU usage (between 0 and 1), extrapolated to
     totalframes in the video by taking dropped frames into account. For smooth
     videoplayback this number should be < 0.5..1.0 on a hyperthreaded CPU.
     """
     self.StartVideoForPerformance()
     init_dropped_frames = self.GetVideoDroppedFrames()
-    cpu_usage1 = self.GetCPUUsage() 
+    cpu_usage_start = self._GetCPUUsage()
     total_shown_frames = 0
-    for _ in xrange(60):
-      total_shown_frames = total_shown_frames + self.GetVideoFrames() 
-      # Play the video for some time
+    for sec_num in xrange(60):
+      # Play the video for some time.
       time.sleep(1)
+      total_shown_frames = total_shown_frames + self.GetVideoFrames()
     total_dropped_frames = self.GetVideoDroppedFrames() - init_dropped_frames
-    cpu_usage2 = self.GetCPUUsage() 
+    cpu_usage_end = self._GetCPUUsage()
     
-    x2 = cpu_usage2['user'] + cpu_usage2['nice'] + cpu_usage2['system']
-    x1 = cpu_usage1['user'] + cpu_usage1['nice'] + cpu_usage1['system']
-    y2 = cpu_usage2['user'] + cpu_usage2['nice'] + \
-         cpu_usage2['system'] + cpu_usage2['idle']
-    y1 = cpu_usage1['user'] + cpu_usage1['nice'] + \
-         cpu_usage1['system'] + cpu_usage1['idle']
+    fraction_non_idle_time = self._GetFractionNonIdleCPUTime(
+        cpu_usage_start, cpu_usage_end)
     total_frames = total_shown_frames + total_dropped_frames
-    # Counting extrapolation for utilization to play the video
-    self._PrintSummaryResults('YoutubeCPUExtrapolation',
-        [((float(x2) - x1) / (y2 - y1)) * total_frames/total_shown_frames],
-        'extrapolation')
+    # Counting extrapolation for utilization to play the video.
+    extrapolation_value = (fraction_non_idle_time *
+                           (total_frames / total_shown_frames))
+    logging.info('Youtube CPU extrapolation: %.2f' % extrapolation_value)
+    self._OutputPerfGraphValue('extrapolation_YoutubeCPUExtrapolation',
+                               extrapolation_value)
 
 
 class WebGLTest(BasePerfTest):
