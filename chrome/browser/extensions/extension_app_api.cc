@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_app_api.h"
 
 #include "base/values.h"
+#include "base/time.h"
 #include "chrome/browser/extensions/app_notification_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -47,7 +48,7 @@ bool AppNotifyFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(details->GetString(kBodyTextKey, &body));
 
   scoped_ptr<AppNotification> item(new AppNotification(
-      true, "", id, title, body));
+      true, base::Time::Now(), "", id, title, body));
 
   if (details->HasKey(kLinkUrlKey)) {
     std::string link_url;

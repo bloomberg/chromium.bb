@@ -29,7 +29,7 @@ void AddNotifications(AppNotificationList* list,
     std::string title = prefix + "_title_" + IntToString(i);
     std::string body = prefix + "_body_" + IntToString(i);
     AppNotification* item = new AppNotification(
-        true, guid, extension_id, title, body);
+        true, base::Time::Now(), guid, extension_id, title, body);
     if (i % 2 == 0) {
       item->set_link_url(GURL("http://www.example.com/" + prefix));
       item->set_link_text(prefix + "_link_" + IntToString(i));

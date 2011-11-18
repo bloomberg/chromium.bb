@@ -4,12 +4,14 @@
 
 #include "chrome/browser/extensions/app_notification.h"
 
+#include "base/string_number_conversions.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/guid.h"
 
 namespace {
 
 const char* kIsLocalKey = "is_local";
+const char* kCreationTime= "creation_time";
 const char* kGuidKey = "guid";
 const char* kExtensionIdKey = "extension_id";
 const char* kTitleKey = "title";
@@ -20,11 +22,13 @@ const char* kLinkTextKey = "link_text";
 }  // namespace
 
 AppNotification::AppNotification(bool is_local,
+                                 const base::Time& creation_time,
                                  const std::string& guid,
                                  const std::string& extension_id,
                                  const std::string& title,
                                  const std::string& body)
     : is_local_(is_local),
+      creation_time_(creation_time),
       extension_id_(extension_id),
       title_(title),
       body_(body) {
@@ -35,7 +39,8 @@ AppNotification::~AppNotification() {}
 
 AppNotification* AppNotification::Copy() {
   AppNotification* copy = new AppNotification(
-      this->is_local(), this->guid(), this->extension_id(),
+      this->is_local(), this->creation_time(),
+      this->guid(), this->extension_id(),
       this->title(), this->body());
   copy->set_link_url(this->link_url());
   copy->set_link_text(this->link_text());
@@ -45,6 +50,9 @@ AppNotification* AppNotification::Copy() {
 void AppNotification::ToDictionaryValue(DictionaryValue* result) {
   CHECK(result);
   result->SetBoolean(kIsLocalKey, is_local_);
+  if (!creation_time_.is_null())
+      result->SetString(kCreationTime,
+                        base::Int64ToString(creation_time_.ToInternalValue()));
   if (!guid_.empty())
     result->SetString(kGuidKey, guid_);
   if (!extension_id_.empty())
@@ -62,12 +70,31 @@ void AppNotification::ToDictionaryValue(DictionaryValue* result) {
 // static
 AppNotification* AppNotification::FromDictionaryValue(
     const DictionaryValue& value) {
-  scoped_ptr<AppNotification> result(new AppNotification(true, "", "", "", ""));
+  scoped_ptr<AppNotification> result(
+      new AppNotification(true,
+                          base::Time::FromInternalValue(0), "", "", "", ""));
 
   if (value.HasKey(kIsLocalKey) && !value.GetBoolean(
       kIsLocalKey, &result->is_local_)) {
     return NULL;
   }
+  if (value.HasKey(kCreationTime)) {
+      std::string time_string;
+      if (!value.GetString(kCreationTime, &time_string))
+        return NULL;
+      int64 time_internal;
+      if (!base::StringToInt64(time_string, &time_internal)) {
+        return NULL;
+      }
+      base::Time time = base::Time::FromInternalValue(time_internal);
+      if (time.is_null()) {
+        return NULL;
+      }
+      result->set_creation_time(time);
+  } else {
+    return NULL;
+  }
+
   if (value.HasKey(kGuidKey) && !value.GetString(kGuidKey, &result->guid_))
     return NULL;
   if (value.HasKey(kExtensionIdKey) &&
@@ -96,6 +123,7 @@ AppNotification* AppNotification::FromDictionaryValue(
 
 bool AppNotification::Equals(const AppNotification& other) const {
   return (is_local_ == other.is_local_ &&
+          creation_time_ == other.creation_time_ &&
           guid_ == other.guid_ &&
           extension_id_ == other.extension_id_ &&
           title_ == other.title_ &&

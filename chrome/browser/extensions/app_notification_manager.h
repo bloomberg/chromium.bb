@@ -29,6 +29,7 @@ class AppNotificationManager
       public content::NotificationObserver,
       public SyncableService {
  public:
+  static const unsigned int kMaxNotificationPerApp;
   explicit AppNotificationManager(Profile* profile);
   virtual ~AppNotificationManager();
 
@@ -129,6 +130,9 @@ class AppNotificationManager
 
   // Sends a change to syncer to add the given notification.
   void SyncAddChange(const AppNotification& notif);
+
+  // Sends a change to syncer to remove the given notification.
+  void SyncRemoveChange(const AppNotification& notif);
 
   // Sends changes to syncer to remove all notifications in the given list.
   void SyncClearAllChange(const AppNotificationList& list);

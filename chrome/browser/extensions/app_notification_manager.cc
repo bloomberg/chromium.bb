@@ -63,8 +63,9 @@ void PopulateGuidToSyncDataMap(const SyncDataList& sync_data,
         sync_pb::app_notification).guid()] = *iter;
   }
 }
-
 }  // namespace
+
+const unsigned int AppNotificationManager::kMaxNotificationPerApp = 5;
 
 AppNotificationManager::AppNotificationManager(Profile* profile)
     : profile_(profile),
@@ -93,6 +94,11 @@ void AppNotificationManager::Init() {
           this, storage_path));
 }
 
+bool AppNotificationSortPredicate(const linked_ptr<AppNotification> a1,
+                                  const linked_ptr<AppNotification> a2) {
+  return a1.get()->creation_time() < a2.get()->creation_time();
+}
+
 bool AppNotificationManager::Add(AppNotification* item) {
   // Do this first since we own the incoming item and hence want to delete
   // it in error paths.
@@ -104,6 +110,14 @@ bool AppNotificationManager::Add(AppNotification* item) {
   list.push_back(linked_item);
 
   SyncAddChange(*linked_item);
+
+  sort(list.begin(), list.end(), AppNotificationSortPredicate);
+
+  if (list.size() > AppNotificationManager::kMaxNotificationPerApp) {
+    AppNotification* removed = list.begin()->get();
+    SyncRemoveChange(*removed);
+    list.erase(list.begin());
+  }
 
   if (storage_.get()) {
     BrowserThread::PostTask(
@@ -412,6 +426,20 @@ void AppNotificationManager::SyncAddChange(const AppNotification& notif) {
   sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
+void AppNotificationManager::SyncRemoveChange(const AppNotification& notif) {
+  // Skip if either:
+  // - Sync is not enabled by user.
+  // - Change is generated from within the manager.
+  if (notif.is_local() || !models_associated_) {
+    return;
+  }
+
+  SyncChangeList changes;
+  SyncData sync_data = CreateSyncDataFromNotification(notif);
+  changes.push_back(SyncChange(SyncChange::ACTION_DELETE, sync_data));
+  sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
+}
+
 void AppNotificationManager::SyncClearAllChange(
   const AppNotificationList& list) {
   // Skip if either:
@@ -469,12 +497,13 @@ SyncData AppNotificationManager::CreateSyncDataFromNotification(
   sync_pb::AppNotificationSpecifics* notif_specifics =
       specifics.MutableExtension(sync_pb::app_notification);
   notif_specifics->set_app_id(notification.extension_id());
+  notif_specifics->set_creation_timestamp_ms(
+      notification.creation_time().ToInternalValue());
   notif_specifics->set_body_text(notification.body());
   notif_specifics->set_guid(notification.guid());
   notif_specifics->set_link_text(notification.link_text());
   notif_specifics->set_link_url(notification.link_url().spec());
   notif_specifics->set_title(notification.title());
-
   return SyncData::CreateLocalData(
       notif_specifics->guid(), notif_specifics->app_id(), specifics);
 }
@@ -487,12 +516,14 @@ AppNotification* AppNotificationManager::CreateNotificationFromSyncData(
 
   // Check for mandatory fields.
   if (!specifics.has_app_id() || !specifics.has_guid() ||
-      !specifics.has_title() || !specifics.has_body_text()) {
+      !specifics.has_title() || !specifics.has_body_text() ||
+      !specifics.has_creation_timestamp_ms()) {
     return NULL;
   }
 
   AppNotification* notification = new AppNotification(
-      false, specifics.guid(), specifics.app_id(),
+      false, base::Time::FromInternalValue(specifics.creation_timestamp_ms()),
+      specifics.guid(), specifics.app_id(),
       specifics.title(), specifics.body_text());
   if (specifics.has_link_text())
     notification->set_link_text(specifics.link_text());

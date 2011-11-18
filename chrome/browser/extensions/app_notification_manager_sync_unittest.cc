@@ -112,14 +112,14 @@ class AppNotificationManagerSyncTest : public testing::Test {
   static AppNotification* CreateNotification(bool is_local, int suffix) {
     std::string s = base::IntToString(suffix);
     return CreateNotification(
-        is_local, "guid" + s, "ext" + s, "text" + s, "body" + s,
+        is_local, suffix, "guid" + s, "ext" + s, "text" + s, "body" + s,
         "http://www.url" + s + ".com", "link text " + s);
   }
   static AppNotification* CreateNotification(
       bool is_local, int suffix, const std::string& extension_id) {
     std::string s = base::IntToString(suffix);
     return CreateNotification(
-        is_local, "guid" + s, extension_id, "text" + s, "body" + s,
+        is_local, suffix, "guid" + s, extension_id, "text" + s, "body" + s,
         "http://www.url" + s + ".com", "link text " + s);
   }
 
@@ -131,11 +131,13 @@ class AppNotificationManagerSyncTest : public testing::Test {
   static AppNotification* CreateNotificationNoLink(bool is_local, int suffix) {
     std::string s = base::IntToString(suffix);
     return CreateNotification(
-        is_local, "guid" + s, "ext" + s, "text" + s, "body" + s, "", "");
+        is_local, suffix,
+        "guid" + s, "ext" + s, "text" + s, "body" + s, "", "");
   }
 
   // link_url and link_text are only set if the passed in values are not empty.
   static AppNotification* CreateNotification(bool is_local,
+                                             int64 time,
                                              const std::string& guid,
                                              const std::string& extension_id,
                                              const std::string& title,
@@ -143,7 +145,8 @@ class AppNotificationManagerSyncTest : public testing::Test {
                                              const std::string& link_url,
                                              const std::string& link_text) {
     AppNotification* notif = new AppNotification(
-        is_local, guid, extension_id, title, body);
+        is_local, base::Time::FromInternalValue(time),
+        guid, extension_id, title, body);
     if (!link_url.empty())
       notif->set_link_url(GURL(link_url));
     if (!link_text.empty())
@@ -412,7 +415,8 @@ TEST_F(AppNotificationManagerSyncTest, ModelAssocBothNonEmptyTitleMismatch) {
   SyncDataList initial_data;
   initial_data.push_back(CreateSyncData(1));
   scoped_ptr<AppNotification> n1_a(CreateNotification(
-      n1->is_local(), n1->guid(), n1->extension_id(),
+      n1->is_local(), n1->creation_time().ToInternalValue(),
+      n1->guid(), n1->extension_id(),
       n1->title() + "_changed", // different title
       n1->body(), n1->link_url().spec(), n1->link_text()));
   initial_data.push_back(
@@ -498,6 +502,34 @@ TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesNonEmptyModel) {
 
   EXPECT_EQ(3U, model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
   EXPECT_EQ(2, processor()->change_list_size());
+}
+
+// Process over 15 changes changes when model is not empty.
+TEST_F(AppNotificationManagerSyncTest, ProcessSyncChangesEmptyModelWithMax) {
+  const std::string& ext_id = "e1";
+  model()->MergeDataAndStartSyncing(
+      syncable::APP_NOTIFICATIONS,
+      SyncDataList(),
+      processor());
+  for (unsigned int i = 0;
+       i < AppNotificationManager::kMaxNotificationPerApp * 2; i++) {
+    SyncChangeList changes;
+    changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_ADD, CreateNotification(false, i, ext_id)));
+    model()->ProcessSyncChanges(FROM_HERE, changes);
+    if (i < AppNotificationManager::kMaxNotificationPerApp) {
+      EXPECT_EQ(i + 1,
+                model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
+    } else {
+      EXPECT_EQ(AppNotificationManager::kMaxNotificationPerApp,
+        model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
+      for (unsigned int j = i; j > i - 5; j--) {
+        EXPECT_EQ(
+            AppNotificationManager::kMaxNotificationPerApp,
+            model()->GetAllSyncData(syncable::APP_NOTIFICATIONS).size());
+      }
+    }
+  }
 }
 
 // Process sync changes should return error if model association is not done.
