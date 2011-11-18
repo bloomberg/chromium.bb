@@ -192,13 +192,13 @@ class BufferedDataSourceTest : public testing::Test {
       // Expected loaded or not.
       EXPECT_CALL(host_, SetLoaded(loaded));
 
-      if (instance_size != -1) {
+      if (instance_size != -1)
         EXPECT_CALL(host_, SetTotalBytes(instance_size));
-        if (loaded)
-          EXPECT_CALL(host_, SetBufferedBytes(instance_size));
-        else
-          EXPECT_CALL(host_, SetBufferedBytes(0));
-      }
+
+      if (loaded)
+        EXPECT_CALL(host_, SetBufferedBytes(instance_size));
+      else
+        EXPECT_CALL(host_, SetBufferedBytes(0));
 
       if (!partial_response || instance_size == -1)
         EXPECT_CALL(host_, SetStreaming(true));
