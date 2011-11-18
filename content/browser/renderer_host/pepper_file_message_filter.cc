@@ -222,16 +222,10 @@ FilePath PepperFileMessageFilter::ValidateAndConvertPepperFilePath(
   FilePath file_path;  // Empty path returned on error.
   switch(pepper_path.domain()) {
     case webkit::ppapi::PepperFilePath::DOMAIN_ABSOLUTE:
-// TODO(viettrungluu): This could be dangerous if not 100% right, so let's be
-// conservative and only enable it when requested.
-#if defined(ENABLE_FLAPPER_HACKS)
       if (pepper_path.path().IsAbsolute() &&
           ChildProcessSecurityPolicy::GetInstance()->HasPermissionsForFile(
               child_id(), pepper_path.path(), flags))
         file_path = pepper_path.path();
-#else
-      NOTIMPLEMENTED();
-#endif  // ENABLE_FLAPPER_HACKS
       break;
     case webkit::ppapi::PepperFilePath::DOMAIN_MODULE_LOCAL:
       if (!pepper_path.path().IsAbsolute() &&
