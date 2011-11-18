@@ -14,6 +14,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -1476,3 +1477,11 @@ bool RenderWidgetHost::GotResponseToLockMouseRequest(bool allowed) {
     }
   }
 }
+
+#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+void RenderWidgetHost::AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id) {
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
+  if (ui_shim)
+    ui_shim->Send(new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
+}
+#endif

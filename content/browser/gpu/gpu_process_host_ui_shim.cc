@@ -147,20 +147,6 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   return OnControlMessageReceived(message);
 }
 
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-
-void GpuProcessHostUIShim::SendToGpuHost(int host_id, IPC::Message* msg) {
-  GpuProcessHostUIShim* ui_shim = FromID(host_id);
-  if (!ui_shim) {
-    delete msg;
-    return;
-  }
-
-  ui_shim->Send(msg);
-}
-
-#endif
-
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   g_hosts_by_id.Pointer()->Remove(host_id_);

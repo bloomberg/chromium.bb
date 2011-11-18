@@ -24,24 +24,13 @@
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 #include "base/bind.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/renderer_host/accelerated_surface_container_linux.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #endif
 
 using WebKit::WebTouchEvent;
 
 namespace {
-
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id) {
-  // It's possible that gpu_host_id is no longer valid at this point (like if
-  // gpu process was restarted after a crash).  SendToGpuHost handles this.
-  GpuProcessHostUIShim::SendToGpuHost(gpu_host_id,
-      new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
-}
-#endif
 
 ui::TouchStatus DecideTouchStatus(const WebKit::WebTouchEvent& event,
                                   WebKit::WebTouchPoint* point) {
@@ -312,14 +301,16 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
   glFlush();
 
   if (!window_->layer()->GetCompositor()) {
-    // We have no compositor, so we have no way to display the surface
-    AcknowledgeSwapBuffers(route_id, gpu_host_id);  // Must still send the ACK
+    // We have no compositor, so we have no way to display the surface.
+    // Must still send the ACK.
+    host_->AcknowledgeSwapBuffers(route_id, gpu_host_id);
   } else {
     window_->layer()->ScheduleDraw();
 
     // Add sending an ACK to the list of things to do OnCompositingEnded
     on_compositing_ended_callbacks_.push_back(
-        base::Bind(AcknowledgeSwapBuffers, route_id, gpu_host_id));
+        base::Bind(&RenderWidgetHost::AcknowledgeSwapBuffers,
+                   base::Unretained(host_), route_id, gpu_host_id));
     ui::Compositor* compositor = window_->layer()->GetCompositor();
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);

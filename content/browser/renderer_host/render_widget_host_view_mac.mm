@@ -19,8 +19,6 @@
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
-#include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/mac/closure_blocks_leopard_compat.h"
 #include "content/browser/plugin_process_host.h"
 #import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
@@ -935,24 +933,8 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
     // process to the corresponding render widget in the renderer process, while
     // the latter identifies the channel from the GpuCommandBufferStub in the
     // GPU process to the corresponding command buffer client in the renderer.
-  }
-
-  // TODO(apatrick): Send the acknowledgement via the UI thread when running in
-  // single process or in process GPU mode for now. This is bad from a
-  // performance point of view but the plan is to not use AcceleratedSurface at
-  // all in these cases.
-  if (gpu_host_id == 0) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&GpuProcessHostUIShim::SendToGpuHost,
-                   gpu_host_id,
-                   new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id)));
-  } else {
-    GpuProcessHost::SendOnIO(
-        gpu_host_id,
-        content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-        new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
+    
+    render_widget_host_->AcknowledgeSwapBuffers(route_id, gpu_host_id);
   }
 }
 

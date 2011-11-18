@@ -441,6 +441,11 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // locked.
   bool GotResponseToLockMouseRequest(bool allowed);
 
+#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  // Called by the view in response to AcceleratedSurfaceBuffersSwapped.
+  void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id);
+#endif
+
  protected:
   // Internal implementation of the public Forward*Event() methods.
   void ForwardInputEvent(const WebKit::WebInputEvent& input_event,

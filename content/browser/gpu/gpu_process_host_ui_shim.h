@@ -74,13 +74,6 @@ class GpuProcessHostUIShim
   // actually received on the IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  // TODO(apatrick): Remove this when mac does not use AcceleratedSurfaces for
-  // when running the GPU thread in the browser process.
-  // This is now also used in TOUCH_UI builds.
-  static void SendToGpuHost(int host_id, IPC::Message* msg);
-#endif
-
  private:
   explicit GpuProcessHostUIShim(int host_id);
   virtual ~GpuProcessHostUIShim();
