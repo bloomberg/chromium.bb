@@ -192,16 +192,17 @@ class BufferedDataSourceTest : public testing::Test {
       // Expected loaded or not.
       EXPECT_CALL(host_, SetLoaded(loaded));
 
-      // TODO(hclam): The condition for streaming needs to be adjusted.
-      if (instance_size != -1 && (loaded || partial_response)) {
+      if (instance_size != -1) {
         EXPECT_CALL(host_, SetTotalBytes(instance_size));
         if (loaded)
           EXPECT_CALL(host_, SetBufferedBytes(instance_size));
         else
           EXPECT_CALL(host_, SetBufferedBytes(0));
-      } else {
-        EXPECT_CALL(host_, SetStreaming(true));
       }
+
+      if (!partial_response || instance_size == -1)
+        EXPECT_CALL(host_, SetStreaming(true));
+
     } else {
       expected_init_status = media::PIPELINE_ERROR_NETWORK;
       EXPECT_CALL(*loader_, Stop());

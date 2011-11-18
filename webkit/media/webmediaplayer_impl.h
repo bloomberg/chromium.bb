@@ -191,7 +191,7 @@ class WebMediaPlayerImpl
   void OnPipelineSeek(media::PipelineStatus status);
   void OnPipelineEnded(media::PipelineStatus status);
   void OnPipelineError(media::PipelineStatus error);
-  void OnNetworkEvent(bool is_downloading_data);
+  void OnNetworkEvent(media::NetworkEvent type);
   void OnDemuxerOpened();
 
  private:

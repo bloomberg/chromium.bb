@@ -9,6 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
+#include "media/base/pipeline.h"
 #include "media/filters/chunk_demuxer_client.h"
 #include "webkit/media/web_data_source.h"
 
@@ -52,7 +53,7 @@ class WebMediaPlayerProxy
   void PipelineSeekCallback(media::PipelineStatus status);
   void PipelineEndedCallback(media::PipelineStatus status);
   void PipelineErrorCallback(media::PipelineStatus error);
-  void NetworkEventCallback(bool network_activity);
+  void NetworkEventCallback(media::NetworkEvent type);
 
   // ChunkDemuxerClient implementation.
   virtual void DemuxerOpened(media::ChunkDemuxer* demuxer) OVERRIDE;
@@ -94,7 +95,7 @@ class WebMediaPlayerProxy
   void PipelineErrorTask(media::PipelineStatus error);
 
   // Notify |webmediaplayer_| that there's a network event.
-  void NetworkEventTask(bool network_activity);
+  void NetworkEventTask(media::NetworkEvent type);
 
   // The render message loop where WebKit lives.
   MessageLoop* render_loop_;

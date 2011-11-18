@@ -12,6 +12,7 @@
 #include "webkit/media/web_video_renderer.h"
 #include "webkit/media/webmediaplayer_impl.h"
 
+using media::NetworkEvent;
 using media::PipelineStatus;
 
 namespace webkit_media {
@@ -125,9 +126,9 @@ void WebMediaPlayerProxy::PipelineErrorCallback(PipelineStatus error) {
       this, &WebMediaPlayerProxy::PipelineErrorTask, error));
 }
 
-void WebMediaPlayerProxy::NetworkEventCallback(bool is_downloading_data) {
+void WebMediaPlayerProxy::NetworkEventCallback(NetworkEvent type) {
   render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &WebMediaPlayerProxy::NetworkEventTask, is_downloading_data));
+      this, &WebMediaPlayerProxy::NetworkEventTask, type));
 }
 
 void WebMediaPlayerProxy::AddDataSource(WebDataSource* data_source) {
@@ -171,10 +172,10 @@ void WebMediaPlayerProxy::PipelineErrorTask(PipelineStatus error) {
     webmediaplayer_->OnPipelineError(error);
 }
 
-void WebMediaPlayerProxy::NetworkEventTask(bool is_downloading_data) {
+void WebMediaPlayerProxy::NetworkEventTask(NetworkEvent type) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (webmediaplayer_)
-    webmediaplayer_->OnNetworkEvent(is_downloading_data);
+    webmediaplayer_->OnNetworkEvent(type);
 }
 
 void WebMediaPlayerProxy::GetCurrentFrame(

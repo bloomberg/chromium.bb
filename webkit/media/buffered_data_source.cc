@@ -606,8 +606,10 @@ void BufferedDataSource::ReadCallback(int error) {
     // fail like they would if we had known the file size at the beginning.
     total_bytes_ = loader_->instance_size();
 
-    if (host() && total_bytes_ != kPositionNotSpecified)
+    if (host() && total_bytes_ != kPositionNotSpecified) {
       host()->SetTotalBytes(total_bytes_);
+      host()->SetBufferedBytes(total_bytes_);
+    }
   }
   DoneRead_Locked(error);
 }
@@ -661,12 +663,12 @@ void BufferedDataSource::UpdateHostState_Locked() {
 
   filter_host->SetLoaded(loaded_);
 
-  if (streaming_) {
+  if (streaming_)
     filter_host->SetStreaming(true);
-  } else {
+
+  if (total_bytes_ != kPositionNotSpecified)
     filter_host->SetTotalBytes(total_bytes_);
-    filter_host->SetBufferedBytes(buffered_bytes_);
-  }
+  filter_host->SetBufferedBytes(buffered_bytes_);
 }
 
 }  // namespace webkit_media

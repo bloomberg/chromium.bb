@@ -42,6 +42,7 @@
 using WebKit::WebCanvas;
 using WebKit::WebRect;
 using WebKit::WebSize;
+using media::NetworkEvent;
 using media::PipelineStatus;
 
 namespace {
@@ -377,9 +378,8 @@ void WebMediaPlayerImpl::seek(float seconds) {
   base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
 
   // Update our paused time.
-  if (paused_) {
+  if (paused_)
     paused_time_ = seek_time;
-  }
 
   seeking_ = true;
 
@@ -500,9 +500,8 @@ float WebMediaPlayerImpl::duration() const {
 
 float WebMediaPlayerImpl::currentTime() const {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  if (paused_) {
+  if (paused_)
     return static_cast<float>(paused_time_.InSecondsF());
-  }
   return static_cast<float>(pipeline_->GetCurrentTime().InSecondsF());
 }
 
@@ -748,15 +747,11 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
                             is_accelerated_compositing_active_);
     }
 
-    if (pipeline_->IsLoaded()) {
+    if (pipeline_->IsLoaded())
       SetNetworkState(WebKit::WebMediaPlayer::Loaded);
-    }
 
-    // Since we have initialized the pipeline, say we have everything otherwise
-    // we'll remain either loading/idle.
-    // TODO(hclam): change this to report the correct status.
     SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
-    SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
+    SetReadyState(WebKit::WebMediaPlayer::HaveFutureData);
   } else {
     // TODO(hclam): should use |status| to determine the state
     // properly and reports error using MediaError.
@@ -781,20 +776,17 @@ void WebMediaPlayerImpl::OnPipelineSeek(PipelineStatus status) {
 
   if (status == media::PIPELINE_OK) {
     // Update our paused time.
-    if (paused_) {
+    if (paused_)
       paused_time_ = pipeline_->GetCurrentTime();
-    }
 
-    SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
     GetClient()->timeChanged();
   }
 }
 
 void WebMediaPlayerImpl::OnPipelineEnded(PipelineStatus status) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  if (status == media::PIPELINE_OK) {
+  if (status == media::PIPELINE_OK)
     GetClient()->timeChanged();
-  }
 }
 
 void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
@@ -838,12 +830,21 @@ void WebMediaPlayerImpl::OnPipelineError(PipelineStatus error) {
   Repaint();
 }
 
-void WebMediaPlayerImpl::OnNetworkEvent(bool is_downloading_data) {
+void WebMediaPlayerImpl::OnNetworkEvent(NetworkEvent type) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  if (is_downloading_data)
-    SetNetworkState(WebKit::WebMediaPlayer::Loading);
-  else
-    SetNetworkState(WebKit::WebMediaPlayer::Idle);
+  switch(type) {
+    case media::DOWNLOAD_CONTINUED:
+      SetNetworkState(WebKit::WebMediaPlayer::Loading);
+      break;
+    case media::DOWNLOAD_PAUSED:
+      SetNetworkState(WebKit::WebMediaPlayer::Idle);
+      break;
+    case media::CAN_PLAY_THROUGH:
+      SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void WebMediaPlayerImpl::OnDemuxerOpened() {
