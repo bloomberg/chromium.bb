@@ -21,49 +21,43 @@ class Protector;
 // Base class for setting change tracked by Protector.
 class SettingChange {
  public:
-  // IDs of changes Protector currently tracks.
-  enum Type {
-    // Default search engine has been changed.
-    kSearchEngineChanged,
-
-    // Home page has been changed.
-    kHomePageChanged,
-  };
-
-  explicit SettingChange(Type type) : type_(type) {}
+  SettingChange() {}
   virtual ~SettingChange() {}
 
-  Type type() const { return type_; }
-
-  // Returns the old setting presentation to be shown to user.
-  // Returns empty string if the old setting is unavailable.
-  virtual string16 GetOldSetting() const = 0;
-
-  // Returns the new setting presentation to be shown to user.
-  virtual string16 GetNewSetting() const = 0;
+  // Applies initial actions to the setting if needed. Must be called before
+  // any other calls are made, including text getters. Returns true if
+  // initialization was successful.
+  virtual bool Init(Protector* protector) { return true; }
 
   // Persists new setting if needed.
-  virtual void Accept(Protector* protector) {}
+  virtual void Apply(Protector* protector) {}
 
-  // Restores old setting value if needed.
-  virtual void Revert(Protector* protector) {}
+  // Restores old setting if needed.
+  virtual void Discard(Protector* protector) {}
 
-  // Called when user ignored the change.
-  virtual void DoDefault(Protector* protector) {}
+  // Returns the wrench menu item and bubble title.
+  virtual string16 GetTitle() const = 0;
+
+  // Returns the bubble message text.
+  virtual string16 GetMessage() const = 0;
+
+  // Returns text for the button to apply the change with |Apply|.
+  // Returns empty string if no apply button should be shown.
+  virtual string16 GetApplyButtonText() const = 0;
+
+  // Returns text for the button to discard the change with |Discard|.
+  virtual string16 GetDiscardButtonText() const = 0;
 
  private:
-  // Type of the change. Used for strings lookup by UI.
-  // TODO(avayvod): Refactor string selection logic via polymorphism.
-  Type type_;
-
   DISALLOW_COPY_AND_ASSIGN(SettingChange);
 };
 
-typedef std::vector<SettingChange*> SettingChangeVector;
-typedef void (SettingChange::*SettingChangeAction)(Protector*);
+// TODO(ivankr): CompositeSettingChange that incapsulates multiple
+// SettingChange instances.
 
 // Allocates and initializes SettingChange implementation for default search
-// provider setting.
+// provider setting. Both |actual| and |backup| may be NULL if corresponding
+// values are unknown or invalid.
 SettingChange* CreateDefaultSearchProviderChange(
     const TemplateURL* actual,
     const TemplateURL* backup);

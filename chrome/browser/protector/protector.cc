@@ -4,6 +4,7 @@
 
 #include "chrome/browser/protector/protector.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/protector/settings_change_global_error.h"
@@ -41,34 +42,41 @@ TemplateURLService* Protector::GetTemplateURLService() {
 
 void Protector::ShowChange(SettingChange* change) {
   DCHECK(change);
-  SettingChangeVector changes(1, change);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Protector::InitAndShowChange,
+                 base::Unretained(this), change));
+}
 
-  error_.reset(new SettingsChangeGlobalError(changes, this));
+void Protector::InitAndShowChange(SettingChange* change) {
+  VLOG(1) << "Init change";
+  if (!change->Init(this)) {
+    VLOG(1) << "Error while initializing, removing ourselves";
+    delete change;
+    OnRemovedFromProfile();
+    return;
+  }
+  error_.reset(new SettingsChangeGlobalError(change, this));
   error_->ShowForProfile(profile_);
 }
 
-void Protector::OnApplyChanges() {
-  OnChangesAction(&SettingChange::Accept);
+void Protector::OnApplyChange() {
+  VLOG(1) << "Apply change";
+  error_->mutable_change()->Apply(this);
 }
 
-void Protector::OnDiscardChanges() {
-  OnChangesAction(&SettingChange::Revert);
+void Protector::OnDiscardChange() {
+  VLOG(1) << "Discard change";
+  error_->mutable_change()->Discard(this);
 }
 
 void Protector::OnDecisionTimeout() {
-  OnChangesAction(&SettingChange::DoDefault);
+  // TODO(ivankr): Add histogram.
+  VLOG(1) << "Timeout";
 }
 
 void Protector::OnRemovedFromProfile() {
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
-}
-
-void Protector::OnChangesAction(SettingChangeAction action) {
-  DCHECK(error_.get());
-  SettingChangeVector* changes = error_->mutable_changes();
-  for (SettingChangeVector::iterator it = changes->begin();
-       it != changes->end(); ++it)
-    ((*it)->*action)(this);
 }
 
 
