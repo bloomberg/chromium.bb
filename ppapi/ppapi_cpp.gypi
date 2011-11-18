@@ -254,8 +254,6 @@
         # Private interfaces.
         'cpp/private/flash_fullscreen.cc',
         'cpp/private/flash_fullscreen.h',
-        'cpp/private/flash_tcp_socket.cc',
-        'cpp/private/flash_tcp_socket.h',
         'cpp/private/instance_private.cc',
         'cpp/private/instance_private.h',
         'cpp/private/net_address_private.cc',
