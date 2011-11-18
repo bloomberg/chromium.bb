@@ -253,4 +253,12 @@ float GetTouchForce(const base::NativeEvent& native_event) {
   return 0.0;
 }
 
+base::NativeEvent CreateNoopEvent() {
+  MSG event;
+  event.message = WM_USER;
+  event.wParam = 0;
+  event.lParam = 0;
+  return event;
+}
+
 }  // namespace ui

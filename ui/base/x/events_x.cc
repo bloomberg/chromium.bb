@@ -4,6 +4,7 @@
 
 #include "ui/base/events.h"
 
+#include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
 
 #include "base/logging.h"
@@ -352,6 +353,16 @@ float GetTouchForce(const base::NativeEvent& native_event) {
       deviceid, ui::TouchFactory::TP_PRESSURE, &force))
     force = 0.0;
   return force;
+}
+
+base::NativeEvent CreateNoopEvent() {
+  static XEvent* noop = new XEvent();
+  noop->xclient.type = ClientMessage;
+  noop->xclient.display = NULL;
+  noop->xclient.window = None;
+  noop->xclient.message_type = 0;
+  noop->xclient.format = 0;
+  return noop;
 }
 
 }  // namespace ui

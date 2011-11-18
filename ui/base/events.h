@@ -103,6 +103,9 @@ UI_EXPORT float GetTouchAngle(const base::NativeEvent& native_event);
 // Gets the force from a native_event. Normalized to be [0, 1]. Default is 0.0.
 UI_EXPORT float GetTouchForce(const base::NativeEvent& native_event);
 
+// Creates and returns no-op event.
+UI_EXPORT base::NativeEvent CreateNoopEvent();
+
 }  // namespace ui
 
 #endif  // UI_BASE_EVENTS_H_

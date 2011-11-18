@@ -240,6 +240,7 @@ class DesktopHostLinux : public DesktopHost {
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
+  virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
 
   // Returns true if there's an X window manager present... in most cases.  Some
   // window managers (notably, ion3) don't implement enough of ICCCM for us to
@@ -479,6 +480,15 @@ gfx::Point DesktopHostLinux::QueryMouseLocation() {
                 &mask_return);
   return gfx::Point(max(0, min(size_.width(), win_x_return)),
                     max(0, min(size_.height(), win_y_return)));
+}
+
+void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
+  DCHECK(xwindow_);
+  DCHECK(xdisplay_);
+  XEvent xevent = *native_event;
+  xevent.xany.display = xdisplay_;
+  xevent.xany.window = xwindow_;
+  ::XPutBackEvent(xdisplay_, &xevent);
 }
 
 bool DesktopHostLinux::IsWindowManagerPresent() {

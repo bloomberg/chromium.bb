@@ -413,6 +413,9 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
   // sets it to null.
   void SendMouseCaptureLostToActiveView();
 
+  // Set exit type.
+  void SetExitType(ExitType type);
+
   // The active instance.
   static MenuController* active_instance_;
 

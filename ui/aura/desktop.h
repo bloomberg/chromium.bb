@@ -125,6 +125,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Are any mouse buttons currently down?
   bool IsMouseButtonDown() const;
 
+  // Posts |native_event| to the platform's event queue.
+  void PostNativeEvent(const base::NativeEvent& native_event);
+
   // Capture -------------------------------------------------------------------
 
   // Sets capture to the specified window.

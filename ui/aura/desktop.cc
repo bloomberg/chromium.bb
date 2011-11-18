@@ -413,6 +413,10 @@ bool Desktop::IsMouseButtonDown() const {
   return mouse_button_flags_ != 0;
 }
 
+void Desktop::PostNativeEvent(const base::NativeEvent& native_event) {
+  host_->PostNativeEvent(native_event);
+}
+
 void Desktop::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;

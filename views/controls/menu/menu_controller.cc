@@ -24,11 +24,11 @@
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
-#if defined(USE_AURA) && !defined(OS_WIN)
+#if defined(USE_AURA)
 #include "ui/aura/desktop.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(TOOLKIT_USES_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #endif
 
@@ -348,7 +348,7 @@ MenuItemView* MenuController::Run(Widget* parent,
     *result_mouse_event_flags = result_mouse_event_flags_;
 
   if (exit_type_ == EXIT_OUTERMOST) {
-    exit_type_ = EXIT_NONE;
+    SetExitType(EXIT_NONE);
   } else {
     if (nested_menu && result) {
       // We're nested and about to return a value. The caller might enter
@@ -359,7 +359,7 @@ MenuItemView* MenuController::Run(Widget* parent,
 
       // Set exit_all_, which makes sure all nested loops exit immediately.
       if (exit_type_ != EXIT_DESTROYED)
-        exit_type_ = EXIT_ALL;
+        SetExitType(EXIT_ALL);
     }
   }
 
@@ -387,7 +387,7 @@ void MenuController::Cancel(ExitType type) {
   }
 
   MenuItemView* selected = state_.item;
-  exit_type_ = type;
+  SetExitType(type);
 
   SendMouseCaptureLostToActiveView();
 
@@ -426,7 +426,7 @@ void MenuController::OnMousePressed(SubmenuView* source,
     // We're going to close and we own the mouse capture. We need to repost the
     // mouse down, otherwise the window the user clicked on won't get the
     // event.
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
     RepostEvent(source, event);
     // NOTE: not reposting on linux seems fine.
 #endif
@@ -720,7 +720,7 @@ int MenuController::OnPerformDrop(SubmenuView* source,
 
   // Set state such that we exit.
   showing_ = false;
-  exit_type_ = EXIT_ALL;
+  SetExitType(EXIT_ALL);
 
   // If over an empty menu item, drop occurs on the parent.
   if (drop_target->id() == MenuItemView::kEmptyMenuItemViewID)
@@ -1101,9 +1101,9 @@ void MenuController::Accept(MenuItemView* item, int mouse_event_flags) {
   result_ = item;
   if (item && !menu_stack_.empty() &&
       !item->GetDelegate()->ShouldCloseAllMenusOnExecute(item->GetCommand())) {
-    exit_type_ = EXIT_OUTERMOST;
+    SetExitType(EXIT_OUTERMOST);
   } else {
-    exit_type_ = EXIT_ALL;
+    SetExitType(EXIT_ALL);
   }
   result_mouse_event_flags_ = mouse_event_flags;
 }
@@ -1782,12 +1782,7 @@ bool MenuController::SelectByChar(char16 character) {
   return false;
 }
 
-#if defined(OS_WIN)
-#if defined(USE_AURA)
-void MenuController::RepostEvent(SubmenuView* source,
-                                 const MouseEvent& event) {
-}
-#else
+#if defined(OS_WIN) && !defined(USE_AURA)
 void MenuController::RepostEvent(SubmenuView* source,
                                  const MouseEvent& event) {
   if (!state_.item) {
@@ -1854,7 +1849,6 @@ void MenuController::RepostEvent(SubmenuView* source,
     }
   }
 }
-#endif  // !defined(USE_AURA)
 #endif  // defined(OS_WIN)
 
 void MenuController::SetDropMenuItem(
@@ -1960,5 +1954,18 @@ void MenuController::SendMouseCaptureLostToActiveView() {
   active_mouse_view_ = NULL;
   active_view->OnMouseCaptureLost();
 }
+
+void MenuController::SetExitType(ExitType type) {
+  exit_type_ = type;
+#if defined(USE_AURA)
+  // On aura, closing menu may not trigger next native event, which
+  // is necessary to exit from nested loop (See Dispatch methods).
+  // Send non-op event so that Dispatch method will always be called.
+  // crbug.com/104684.
+  if (exit_type_ == EXIT_ALL || exit_type_ == EXIT_DESTROYED)
+    aura::Desktop::GetInstance()->PostNativeEvent(ui::CreateNoopEvent());
+#endif
+}
+
 
 }  // namespace views

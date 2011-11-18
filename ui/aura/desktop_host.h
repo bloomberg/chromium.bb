@@ -58,6 +58,9 @@ class DesktopHost : public MessageLoop::Dispatcher {
   // You should probably call Desktop::last_mouse_location() instead; this
   // method can be expensive.
   virtual gfx::Point QueryMouseLocation() = 0;
+
+  // Posts |native_event| to the platform's event queue.
+  virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
 };
 
 }  // namespace aura

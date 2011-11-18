@@ -225,6 +225,11 @@ gfx::Point DesktopHostWin::QueryMouseLocation() {
                     max(0, min(size.height(), static_cast<int>(pt.y))));
 }
 
+void DesktopHostWin::PostNativeEvent(const base::NativeEvent& native_event) {
+  ::PostMessage(
+      hwnd(), native_event.message, native_event.wParam, native_event.lParam);
+}
+
 void DesktopHostWin::OnClose() {
   // TODO: this obviously shouldn't be here.
   MessageLoopForUI::current()->Quit();
