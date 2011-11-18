@@ -20,13 +20,13 @@
 
 namespace views {
 
-#if (defined(TOUCH_UI) && !defined(USE_WAYLAND)) \
-    || (!defined(OS_WIN) && defined(USE_AURA))
+#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_X11) && !defined(USE_WAYLAND)
 // Dispatch an XEvent to the RootView. Return true if the event was dispatched
 // and handled, false otherwise.
 bool VIEWS_EXPORT DispatchXEvent(XEvent* xevent);
-
-#endif  // TOUCH_UI
+#endif  // USE_X11 && !USE_WAYLAND
+#endif  // TOUCH_UI || USE_AURA
 
 // This class delegates the key messages to the associated FocusManager class
 // for the window that is receiving these messages for accelerator processing.
