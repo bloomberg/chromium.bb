@@ -25,9 +25,9 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/chrome_constants.h"
+#include "content/public/browser/content_ipc_logging.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
 #include "views/controls/button/text_button.h"
@@ -352,11 +352,11 @@ void AboutIPCDialog::ButtonPressed(
     if (tracking_) {
       track_toggle_->SetText(kStartTrackingLabel);
       tracking_ = false;
-      g_browser_process->SetIPCLoggingEnabled(false);
+      content::EnableIPCLogging(false);
     } else {
       track_toggle_->SetText(kStopTrackingLabel);
       tracking_ = true;
-      g_browser_process->SetIPCLoggingEnabled(true);
+      content::EnableIPCLogging(true);
     }
     track_toggle_->SchedulePaint();
   } else if (button == clear_button_) {

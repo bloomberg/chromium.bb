@@ -5,8 +5,10 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/memory/scoped_nsobject.h"
+#include "base/message_loop.h"
 #import "chrome/browser/ui/cocoa/about_ipc_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -15,6 +17,22 @@
 namespace {
 
 class AboutIPCControllerTest : public CocoaTest {
+ public:
+  virtual void SetUp() {
+    CocoaTest::SetUp();
+    ui_message_loop_.reset(new MessageLoopForUI());
+    ui_thread_.reset(new content::TestBrowserThread(content::BrowserThread::UI,
+                                                    MessageLoop::current()));
+  }
+
+  virtual void TearDown() {
+    CocoaTest::TearDown();
+    ui_thread_.reset(NULL);
+  }
+
+ private:
+  scoped_ptr<MessageLoopForUI> ui_message_loop_;
+  scoped_ptr<content::TestBrowserThread> ui_thread_;
 };
 
 TEST_F(AboutIPCControllerTest, TestFilter) {

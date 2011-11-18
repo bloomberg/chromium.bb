@@ -68,7 +68,6 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/debugger/devtools_manager.h"
@@ -84,7 +83,6 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
-#include "ipc/ipc_logging.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -94,10 +92,6 @@
 #include "views/focus/view_storage.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
-#endif
-
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-#include "content/common/child_process_messages.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -1053,49 +1047,6 @@ void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
   bool value = local_state()->GetBoolean(prefs::kAllowCrossOriginAuthPrompt);
   resource_dispatcher_host()->set_allow_cross_origin_auth_prompt(value);
 }
-
-// The BrowserProcess object must outlive the file thread so we use traits
-// which don't do any management.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(BrowserProcessImpl);
-
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-
-void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
-  // First enable myself.
-  if (enable)
-    IPC::Logging::GetInstance()->Enable();
-  else
-    IPC::Logging::GetInstance()->Disable();
-
-  // Now tell subprocesses.  Messages to ChildProcess-derived
-  // processes must be done on the IO thread.
-  io_thread()->message_loop()->PostTask
-      (FROM_HERE,
-       NewRunnableMethod(
-           this,
-           &BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses,
-           enable));
-
-  // Finally, tell the renderers which don't derive from ChildProcess.
-  // Messages to the renderers must be done on the UI (main) thread.
-  for (content::RenderProcessHost::iterator i(
-          content::RenderProcessHost::AllHostsIterator());
-       !i.IsAtEnd(); i.Advance())
-    i.GetCurrentValue()->Send(new ChildProcessMsg_SetIPCLoggingEnabled(enable));
-}
-
-// Helper for SetIPCLoggingEnabled.
-void BrowserProcessImpl::SetIPCLoggingEnabledForChildProcesses(bool enabled) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  BrowserChildProcessHost::Iterator i;  // default constr references a singleton
-  while (!i.Done()) {
-    i->Send(new ChildProcessMsg_SetIPCLoggingEnabled(enabled));
-    ++i;
-  }
-}
-
-#endif  // IPC_MESSAGE_LOG_ENABLED
 
 // Mac is currently not supported.
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)

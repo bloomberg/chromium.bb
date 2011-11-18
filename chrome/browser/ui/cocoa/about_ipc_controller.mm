@@ -7,8 +7,8 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
-#include "chrome/browser/browser_process.h"
 #import "chrome/browser/ui/cocoa/about_ipc_controller.h"
+#include "content/public/browser/content_ipc_logging.h"
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
 
@@ -100,8 +100,7 @@ AboutIPCController* gSharedController = nil;
 - (void)dealloc {
   if (gSharedController == self)
     gSharedController = nil;
-  if (g_browser_process)
-    g_browser_process->SetIPCLoggingEnabled(false);  // just in case...
+  content::EnableIPCLogging(false);  // just in case...
   IPC::Logging::GetInstance()->SetConsumer(NULL);
   [super dealloc];
 }
@@ -130,8 +129,7 @@ AboutIPCController* gSharedController = nil;
 }
 
 - (IBAction)startStop:(id)sender {
-  g_browser_process->SetIPCLoggingEnabled(
-      !IPC::Logging::GetInstance()->Enabled());
+  content::EnableIPCLogging(!IPC::Logging::GetInstance()->Enabled());
   [self updateVisibleRunState];
 }
 

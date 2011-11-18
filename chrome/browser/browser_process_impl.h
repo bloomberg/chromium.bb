@@ -113,19 +113,10 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
 
   virtual ChromeNetLog* net_log() OVERRIDE;
-
   virtual prerender::PrerenderTracker* prerender_tracker() OVERRIDE;
-
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-  virtual void SetIPCLoggingEnabled(bool enable) OVERRIDE;
-#endif
-
   virtual MHTMLGenerationManager* mhtml_generation_manager() OVERRIDE;
-
   virtual GpuBlacklistUpdater* gpu_blacklist_updater() OVERRIDE;
-
   virtual ComponentUpdateService* component_updater() OVERRIDE;
-
   virtual CRLSetFetcher* crl_set_fetcher();
 
  private:
@@ -167,10 +158,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void ApplyDisabledSchemesPolicy();
   void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();
-
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-  void SetIPCLoggingEnabledForChildProcesses(bool enabled);
-#endif
 
   bool created_resource_dispatcher_host_;
   scoped_ptr<ResourceDispatcherHost> resource_dispatcher_host_;

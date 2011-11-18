@@ -224,13 +224,6 @@ class BrowserProcess {
 
   virtual prerender::PrerenderTracker* prerender_tracker() = 0;
 
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-  // Enable or disable IPC logging for the browser, all processes
-  // derived from ChildProcess (plugin etc), and all
-  // renderers.
-  virtual void SetIPCLoggingEnabled(bool enable) = 0;
-#endif
-
   virtual MHTMLGenerationManager* mhtml_generation_manager() = 0;
 
   virtual GpuBlacklistUpdater* gpu_blacklist_updater() = 0;
