@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/test_extension_service.h"
 #include "chrome/browser/intents/web_intents_registry.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_paths.h"
@@ -17,37 +18,10 @@
 using content::BrowserThread;
 using webkit_glue::WebIntentServiceData;
 
-class MockExtensionService: public ExtensionServiceInterface {
+class MockExtensionService: public TestExtensionService {
  public:
   virtual ~MockExtensionService() {}
   MOCK_CONST_METHOD0(extensions, const ExtensionList*());
-  MOCK_METHOD0(pending_extension_manager, PendingExtensionManager*());
-  MOCK_METHOD4(UpdateExtension, bool(const std::string& id,
-                                     const FilePath& path,
-                                     const GURL& download_url,
-                                     CrxInstaller** out_crx_installer));
-  MOCK_CONST_METHOD2(GetExtensionById,
-                     const Extension*(const std::string& id,
-                                      bool include_disabled));
-  MOCK_CONST_METHOD1(GetInstalledExtension,
-                     const Extension*(const std::string& id));
-  MOCK_CONST_METHOD1(IsExtensionEnabled,bool(const std::string& extension_id));
-  MOCK_CONST_METHOD1(IsExternalExtensionUninstalled,
-                     bool(const std::string& extension_id));
-  MOCK_METHOD1(UpdateExtensionBlacklist,
-               void(const std::vector<std::string>& blacklist));
-  MOCK_METHOD0(CheckAdminBlacklist, void());;
-  MOCK_METHOD0(CheckForUpdatesSoon,void());
-
-  MOCK_METHOD3(MergeDataAndStartSyncing,
-               SyncError(syncable::ModelType type,
-                         const SyncDataList& initial_sync_data,
-                         SyncChangeProcessor* sync_processor));
-  MOCK_METHOD1(StopSyncing, void(syncable::ModelType type));
-  MOCK_CONST_METHOD1(GetAllSyncData, SyncDataList(syncable::ModelType type));
-  MOCK_METHOD2(ProcessSyncChanges,
-               SyncError(const tracked_objects::Location& from_here,
-                         const SyncChangeList& change_list));
 };
 
 // TODO(groby): Unify loading functions with extension_manifest_unittest code.
@@ -121,8 +95,8 @@ class WebIntentsRegistryTest : public testing::Test {
     wds_ = new WebDataService();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     wds_->Init(temp_dir_.path());
-    registry_.Initialize(wds_, &extensionService_);
-    EXPECT_CALL(extensionService_, extensions()).
+    registry_.Initialize(wds_, &extension_service_);
+    EXPECT_CALL(extension_service_, extensions()).
         WillRepeatedly(testing::Return(&extensions_));
   }
 
@@ -139,7 +113,7 @@ class WebIntentsRegistryTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   scoped_refptr<WebDataService> wds_;
-  MockExtensionService extensionService_;
+  MockExtensionService extension_service_;
   ExtensionList extensions_;
   WebIntentsRegistry registry_;
   ScopedTempDir temp_dir_;

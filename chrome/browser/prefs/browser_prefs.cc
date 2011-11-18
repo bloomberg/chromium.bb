@@ -16,6 +16,7 @@
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/apps_promo.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -194,6 +195,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 #if !defined(OS_CHROMEOS)
   default_apps::RegisterUserPrefs(user_prefs);
 #endif
+  extensions::ComponentLoader::RegisterUserPrefs(user_prefs);
 }
 
 void MigrateBrowserPrefs(PrefService* user_prefs, PrefService* local_state) {

@@ -52,6 +52,14 @@ class TestExtensionService : public ExtensionServiceInterface {
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
       const SyncChangeList& change_list) OVERRIDE;
+
+  virtual bool is_ready() OVERRIDE;
+
+  virtual void AddExtension(const Extension* extension) OVERRIDE;
+
+  virtual void UnloadExtension(
+      const std::string& extension_id,
+      extension_misc::UnloadedExtensionReason reason) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_TEST_EXTENSION_SERVICE_H_

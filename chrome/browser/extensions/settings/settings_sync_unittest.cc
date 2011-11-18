@@ -194,7 +194,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   // its storage area.
   SettingsStorage* AddExtensionAndGetStorage(
       const std::string& id, Extension::Type type) {
-    profile_->GetMockExtensionService()->AddExtension(id, type);
+    profile_->GetMockExtensionService()->AddExtensionWithId(id, type);
     return GetStorage(id, frontend_.get());
   }
 

@@ -188,6 +188,10 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kUrlBlacklist },
   { Value::TYPE_LIST, kPolicyURLWhitelist,
     prefs::kUrlWhitelist },
+  { Value::TYPE_STRING, kPolicyEnterpriseWebStoreURL,
+    prefs::kEnterpriseWebStoreURL },
+  { Value::TYPE_STRING, kPolicyEnterpriseWebStoreName,
+    prefs::kEnterpriseWebStoreName },
 
 #if defined(OS_CHROMEOS)
   { Value::TYPE_BOOLEAN, kPolicyChromeOsLockOnIdleSuspend,

@@ -410,7 +410,10 @@ ExtensionService::ExtensionService(Profile* profile,
                                         update_frequency));
   }
 
-  component_loader_.reset(new extensions::ComponentLoader(this));
+  component_loader_.reset(
+      new extensions::ComponentLoader(this,
+                                      profile->GetPrefs(),
+                                      g_browser_process->local_state()));
 
   app_notification_manager_->Init();
 
@@ -1134,6 +1137,10 @@ extensions::SettingsFrontend* ExtensionService::settings_frontend() {
 ExtensionContentSettingsStore*
     ExtensionService::GetExtensionContentSettingsStore() {
   return extension_prefs()->content_settings_store();
+}
+
+bool ExtensionService::is_ready() {
+  return ready_;
 }
 
 ExtensionUpdater* ExtensionService::updater() {

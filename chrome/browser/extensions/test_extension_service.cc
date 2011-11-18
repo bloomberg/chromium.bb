@@ -89,3 +89,18 @@ SyncError TestExtensionService::ProcessSyncChanges(
   ADD_FAILURE();
   return SyncError();
 }
+
+bool TestExtensionService::is_ready() {
+  ADD_FAILURE();
+  return false;
+}
+
+void TestExtensionService::AddExtension(const Extension* extension) {
+  ADD_FAILURE();
+}
+
+void TestExtensionService::UnloadExtension(
+    const std::string& extension_id,
+    extension_misc::UnloadedExtensionReason reason) {
+  ADD_FAILURE();
+}

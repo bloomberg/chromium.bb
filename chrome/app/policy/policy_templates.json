@@ -100,7 +100,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 111
+#   For your editing convenience: highest ID currently used: 113
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -2102,6 +2102,32 @@
       If this setting is enabled or not configured, users can print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog.
 
       If this setting is disabled, users cannot print to <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> from the <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> print dialog''',
+    },
+    {
+      'name': 'EnterpriseWebStoreURL',
+      'type': 'string',
+      'supported_on': ['chrome.*:17-','chrome_os:0.17-'],
+      'features': {'dynamic_refresh': 1},
+      'future': False,
+      'example_value': 'http://company-intranet/chromeapps',
+      'id': 112,
+      'caption': '''Enterprise web store URL''',
+      'desc': '''Specifies the URL for the enterprise web store. When this setting is enabled, an app will appear on the new tab page which, when clicked, will take the user to the specified URL. Extensions and apps can be installed from this page without extra warnings being presented to the user. If this policy is set, the EnterpriseWebStoreName setting should also be set.
+
+      If this setting is disabled, no enterprise web store app will appear on the new tab page.''',
+    },
+    {
+      'name': 'EnterpriseWebStoreName',
+      'type': 'string',
+      'supported_on': ['chrome.*:17-','chrome_os:0.17-'],
+      'features': {'dynamic_refresh': 1},
+      'future': False,
+      'example_value': 'WidgCo Chrome Apps',
+      'id': 113,
+      'caption': '''Enterprise web store name''',
+      'desc': '''The name of the enterprise web store, which will appear underneath the app icon on the new tab page. This setting has no effect if EnterpriseWebStoreURL is not set.
+
+      If this setting is disabled, the enterprise web store app (if it exists) will be labeled with its URL.''',
     },
   ],
   'messages': {

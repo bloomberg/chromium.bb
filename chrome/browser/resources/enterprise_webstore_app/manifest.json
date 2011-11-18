@@ -1,0 +1,17 @@
+{
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDT/VTRfIVU2P0jPQOHFevNpKTFyKHReHOLaeYmCKK+T/GoXYJocfOOwyibhTqvwYequQPrK32Wjw4mbzkfTq5/LYYl2oXkoUL72FmJ5lMQcJsrJVGD0DfvjNpCPBEaCRkLnHPnJPw3NQlKb98aMMdmbfgiGvymBXekesKF3dg4dwIDAQAB",
+  "name": "",  // Must be specified by policy.
+  "version": "0.1",
+  "description": "Enterprise Web Store",
+  "icons": {
+  },
+  "app": {
+    "launch": {
+      "web_url": ""  // Must be specified by policy.
+    }
+  },
+  "permissions": [
+    "webstorePrivate",
+    "management"
+  ]
+}

@@ -108,13 +108,12 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
   Profile* profile = ProfileManager::GetDefaultProfile();
   ExtensionService* extension_service =
       profile->GetExtensionService();
-  std::string manifest = ResourceBundle::GetSharedInstance().
-      GetRawDataResource(IDR_CHROMEVOX_MANIFEST).as_string();
   FilePath path = FilePath(extension_misc::kAccessExtensionPath)
       .AppendASCII(extension_misc::kChromeVoxDirectoryName);
   if (enabled) { // Load ChromeVox
     const Extension* extension =
-        extension_service->component_loader()->Add(manifest, path);
+        extension_service->component_loader()->Add(IDR_CHROMEVOX_MANIFEST,
+                                                   path);
 
     if (login_web_ui) {
       RenderViewHost* render_view_host =
@@ -136,7 +135,7 @@ void EnableAccessibility(bool enabled, WebUI* login_web_ui) {
 
     LOG(INFO) << "ChromeVox was Loaded.";
   } else { // Unload ChromeVox
-    extension_service->component_loader()->Remove(manifest);
+    extension_service->component_loader()->Remove(path);
     LOG(INFO) << "ChromeVox was Unloaded.";
   }
 }

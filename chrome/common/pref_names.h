@@ -304,6 +304,9 @@ extern const char kImportHomepage[];
 extern const char kImportSearchEngine[];
 extern const char kImportSavedPasswords[];
 
+extern const char kEnterpriseWebStoreURL[];
+extern const char kEnterpriseWebStoreName[];
+
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 extern const char kLocalProfileId[];
 extern const char kPasswordsUseLocalProfileId[];

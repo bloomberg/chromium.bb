@@ -41,7 +41,7 @@ const Extension* MockExtensionService::GetExtensionById(
       NULL : maybe_extension->second.get();
 }
 
-void MockExtensionService::AddExtension(
+void MockExtensionService::AddExtensionWithId(
     const std::string& id, Extension::Type type) {
   DictionaryValue manifest;
   manifest.SetString("name", std::string("Test extension ") + id);

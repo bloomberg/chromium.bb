@@ -114,6 +114,14 @@ class ExtensionServiceInterface : public SyncableService {
   // TODO(akalin): Remove this method (and others) once we refactor
   // themes sync to not use it directly.
   virtual void CheckForUpdatesSoon() = 0;
+
+  virtual void AddExtension(const Extension* extension) = 0;
+
+  virtual void UnloadExtension(
+      const std::string& extension_id,
+      extension_misc::UnloadedExtensionReason reason) = 0;
+
+  virtual bool is_ready() = 0;
 };
 
 // Manages installed and running Chromium extensions.
@@ -312,8 +320,9 @@ class ExtensionService
   void CheckForExternalUpdates();
 
   // Unload the specified extension.
-  void UnloadExtension(const std::string& extension_id,
-                       extension_misc::UnloadedExtensionReason reason);
+  virtual void UnloadExtension(
+      const std::string& extension_id,
+      extension_misc::UnloadedExtensionReason reason);
 
   // Unload all extensions. This is currently only called on shutdown, and
   // does not send notifications.
@@ -360,7 +369,7 @@ class ExtensionService
   // Adds |extension| to this ExtensionService and notifies observers than an
   // extension has been loaded.  Called by the backend after an extension has
   // been loaded from a file and installed.
-  void AddExtension(const Extension* extension);
+  virtual void AddExtension(const Extension* extension);
 
   // Called by the backend when an extension has been installed.
   void OnExtensionInstalled(
@@ -415,7 +424,7 @@ class ExtensionService
   ExtensionContentSettingsStore* GetExtensionContentSettingsStore();
 
   // Whether the extension service is ready.
-  bool is_ready() { return ready_; }
+  virtual bool is_ready() OVERRIDE;
 
   extensions::ComponentLoader* component_loader() {
     return component_loader_.get();

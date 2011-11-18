@@ -859,6 +859,14 @@ const char kImportSearchEngine[] = "import_search_engine";
 // browser on first run.
 const char kImportSavedPasswords[] = "import_saved_passwords";
 
+// The URL of the enterprise web store, which is a site trusted by the
+// enterprise admin. Users can install apps & extensions from this site
+// without scary warnings.
+const char kEnterpriseWebStoreURL[] = "webstore.enterprise_store_url";
+
+// The name of the enterprise web store, to be shown to the user.
+const char kEnterpriseWebStoreName[] = "webstore.enterprise_store_name";
+
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)
 // The local profile id for this profile.
 const char kLocalProfileId[] = "profile.local_profile_id";

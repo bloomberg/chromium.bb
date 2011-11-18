@@ -80,7 +80,7 @@ class ExtensionSettingsFrontendTest : public testing::Test {
 
 TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   const std::string id = "ext";
-  profile_->GetMockExtensionService()->AddExtension(
+  profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
 
   SettingsStorage* storage = GetStorage(id, frontend_.get());
@@ -111,7 +111,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
 
 TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   const std::string id = "ext";
-  profile_->GetMockExtensionService()->AddExtension(
+  profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_PACKAGED_APP);
 
   SettingsStorage* storage = GetStorage(id, frontend_.get());
@@ -137,7 +137,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
 
 TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   const std::string id = "ext";
-  profile_->GetMockExtensionService()->AddExtension(
+  profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
 
   SettingsStorage* storage = GetStorage(id, frontend_.get());
@@ -169,7 +169,7 @@ TEST_F(ExtensionSettingsFrontendTest,
     LeveldbCreationFailureFailsAllOperations) {
   const StringValue bar("bar");
   const std::string id = "ext";
-  profile_->GetMockExtensionService()->AddExtension(
+  profile_->GetMockExtensionService()->AddExtensionWithId(
       id, Extension::TYPE_EXTENSION);
 
   storage_factory_->Reset(new NullSettingsStorageFactory());

@@ -1334,6 +1334,7 @@
         'browser/extensions/app_notification_test_util.cc',
         'browser/extensions/app_notify_channel_setup_unittest.cc',
         'browser/extensions/apps_promo_unittest.cc',
+        'browser/extensions/component_loader_unittest.cc',
         'browser/extensions/convert_user_script_unittest.cc',
         'browser/extensions/convert_web_app_unittest.cc',
         'browser/extensions/extension_content_settings_store_unittest.cc',
