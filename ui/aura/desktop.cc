@@ -26,7 +26,10 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
+#include "ui/gfx/compositor/screen_rotation.h"
+#include "ui/gfx/interpolated_transform.h"
 
 using std::string;
 using std::vector;
@@ -91,6 +94,50 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
     window = window->parent();
   }
 }
+
+#if !defined(NDEBUG)
+bool MaybeFullScreen(DesktopHost* host, KeyEvent* event) {
+  if (event->key_code() == ui::VKEY_F11) {
+    host->ToggleFullScreen();
+    return true;
+  }
+  return false;
+}
+
+bool MaybeRotate(Desktop* desktop, KeyEvent* event) {
+  if ((event->flags() & ui::EF_CONTROL_DOWN) &&
+      event->key_code() == ui::VKEY_HOME) {
+    static int i = 0;
+    int delta = 0;
+    switch (i) {
+      case 0: delta = 90; break;
+      case 1: delta = 90; break;
+      case 2: delta = 90; break;
+      case 3: delta = 90; break;
+      case 4: delta = -90; break;
+      case 5: delta = -90; break;
+      case 6: delta = -90; break;
+      case 7: delta = -90; break;
+      case 8: delta = -90; break;
+      case 9: delta = 180; break;
+      case 10: delta = 180; break;
+      case 11: delta = 90; break;
+      case 12: delta = 180; break;
+      case 13: delta = 180; break;
+    }
+    i = (i + 1) % 14;
+    desktop->layer()->GetAnimator()->set_preemption_strategy(
+        ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+    scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
+        new ui::LayerAnimationSequence(new ui::ScreenRotation(delta)));
+    screen_rotation->AddObserver(desktop);
+    desktop->layer()->GetAnimator()->ScheduleAnimation(
+        screen_rotation.release());
+    return true;
+  }
+  return false;
+}
+#endif
 
 }  // namespace
 
@@ -227,6 +274,14 @@ bool Desktop::DispatchMouseEvent(MouseEvent* event) {
 }
 
 bool Desktop::DispatchKeyEvent(KeyEvent* event) {
+#if !defined(NDEBUG)
+  // TODO(beng): replace this hack with global keyboard event handlers.
+  if (event->type() == ui::ET_KEY_PRESSED) {
+    if (MaybeFullScreen(host_.get(), event) || MaybeRotate(this, event))
+      return true;
+  }
+#endif
+
   if (focused_window_) {
     KeyEvent translated_event(*event);
     return ProcessKeyEvent(focused_window_, &translated_event);
@@ -395,12 +450,6 @@ void Desktop::SetTransform(const ui::Transform& transform) {
   if (!layer()->GetAnimator()->is_animating())
     OnHostResized(host_->GetSize());
 }
-
-#if !defined(NDEBUG)
-void Desktop::ToggleFullScreen() {
-  host_->ToggleFullScreen();
-}
-#endif
 
 void Desktop::HandleMouseMoved(const MouseEvent& event, Window* target) {
   if (target == mouse_moved_handler_)

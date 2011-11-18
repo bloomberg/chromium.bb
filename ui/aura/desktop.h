@@ -136,11 +136,6 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Overridden from Window:
   virtual void SetTransform(const ui::Transform& transform) OVERRIDE;
 
-#if !defined(NDEBUG)
-  // Toggles the host's full screen state.
-  void ToggleFullScreen();
-#endif
-
  private:
   // Called whenever the mouse moves, tracks the current |mouse_moved_handler_|,
   // sending exited and entered events as its value changes.

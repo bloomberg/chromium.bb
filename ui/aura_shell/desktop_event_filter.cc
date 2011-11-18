@@ -9,7 +9,6 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura_shell/shell.h"
-#include "ui/aura_shell/shell_accelerator_filter.h"
 #include "ui/aura_shell/stacking_controller.h"
 #include "ui/base/hit_test.h"
 
@@ -44,16 +43,13 @@ gfx::NativeCursor CursorForWindowComponent(int window_component) {
 // DesktopEventFilter, public:
 
 DesktopEventFilter::DesktopEventFilter()
-    : EventFilter(aura::Desktop::GetInstance()),
-      shell_accelerator_filter_(new ShellAcceleratorFilter) {
-  AddFilter(shell_accelerator_filter_.get());
+    : EventFilter(aura::Desktop::GetInstance()) {
 }
 
 DesktopEventFilter::~DesktopEventFilter() {
   // Additional filters are not owned by DesktopEventFilter and they
   // should all be removed when running here. |filters_| has
   // check_empty == true and will DCHECK failure if it is not empty.
-  RemoveFilter(shell_accelerator_filter_.get());
 }
 
 void DesktopEventFilter::AddFilter(aura::EventFilter* filter) {
