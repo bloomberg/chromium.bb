@@ -196,6 +196,9 @@ const char kEnableDeviceMotion[]            = "enable-device-motion";
 // Enable the JavaScript Full Screen API.
 const char kDisableFullScreen[]             = "disable-fullscreen";
 
+// Enable the JavaScript Pointer Lock API.
+const char kEnablePointerLock[]             = "enable-pointer-lock";
+
 // Enable the Gamepad API
 const char kEnableGamepad[]                 = "enable-gamepad";
 

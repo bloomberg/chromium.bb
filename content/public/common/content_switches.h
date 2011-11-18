@@ -71,6 +71,7 @@ CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
 CONTENT_EXPORT extern const char kEnableDNSCertProvenanceChecking[];
 CONTENT_EXPORT extern const char kEnableDeviceMotion[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];
+extern const char kEnablePointerLock[];
 extern const char kEnableGamepad[];
 extern const char kEnableGPUPlugin[];
 CONTENT_EXPORT extern const char kEnableLogging[];

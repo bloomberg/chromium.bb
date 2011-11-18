@@ -4875,6 +4875,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_AURA_WINDOWS_DESCRIPTION" desc="Description for the flag to enable fancy translucent windows.">
         Enable the "Aura" style for translucent window frames and constrained window dragging.
       </message>
+      <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_NAME" desc="Title for the flag to enable the pointer lock feature.">
+        Enable Pointer Lock
+      </message>
+      <message name="IDS_FLAGS_ENABLE_POINTER_LOCK_DESCRIPTION" desc="Description for the flag to enable the mouse lock feature.">
+        Web pages may capture the mouse pointer and remove it from the user's control. The mouse movement data is directed solely to the web application. Users can escape by pressing the 'Esc' key.
+      </message>
       <message name="IDS_FLAGS_ENABLE_PLATFORM_APPS_NAME" desc="Title for the flag to enable platform apps.">
         Enable platform apps
       </message>

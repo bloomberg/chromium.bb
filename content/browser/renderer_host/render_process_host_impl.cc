@@ -686,6 +686,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableStrictSiteIsolation,
     switches::kDisableFullScreen,
     switches::kEnablePepperTesting,
+    switches::kEnablePointerLock,
 #if defined(OS_MACOSX)
     // Allow this to be set when invoking the browser and relayed along.
     switches::kEnableSandboxLogging,

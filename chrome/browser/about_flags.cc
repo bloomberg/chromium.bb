@@ -432,6 +432,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableMediaSource)
   },
+  {
+    "enable-pointer-lock",
+    IDS_FLAGS_ENABLE_POINTER_LOCK_NAME,
+    IDS_FLAGS_ENABLE_POINTER_LOCK_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnablePointerLock)
+  },
 #if defined(USE_AURA)
   {
     "aura-windows",
