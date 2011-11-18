@@ -3166,9 +3166,15 @@ FileManager.prototype = {
     }
   };
 
-  FileManager.prototype.onUnload_ = function(event) {
+  /**
+   * Unload handler for the page.  May be called manually for the file picker
+   * dialog, because it closes by calling extension API functions that do not
+   * return.
+   */
+  FileManager.prototype.onUnload_ = function() {
     if (this.subscribedOnDirectoryChanges_) {
-      chrome.fileBrowserPrivate.removeFileWatch(event.previousDirEntry.toURL(),
+      this.subscribedOnDirectoryChanges_ = false;
+      chrome.fileBrowserPrivate.removeFileWatch(this.currentDirEntry_.toURL(),
           function(result) {
             if (!result) {
               console.log('Failed to remove file watch');
@@ -3575,13 +3581,40 @@ FileManager.prototype = {
   };
 
   /**
-   * Handle a click of the cancel button.  Closes the window.
+   * Handle a click of the cancel button.  Closes the window.  Does not return.
+   * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
    *
    * @param {Event} event The click event.
    */
   FileManager.prototype.onCancel_ = function(event) {
+    this.onUnload_();
     // Closes the window and does not return.
     chrome.fileBrowserPrivate.cancelDialog();
+  };
+
+  /**
+   * Selects a file.  Closes the window.  Does not return.
+   * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
+   *
+   * @param {string} fileUrl The filename as a URL.
+   * @param {number} filterIndex The integer file filter index.
+   */
+  FileManager.prototype.selectFile_ = function(fileUrl, filterIndex) {
+    this.onUnload_();
+    // Closes the window and does not return.
+    chrome.fileBrowserPrivate.selectFile(fileUrl, filterIndex);
+  };
+
+  /**
+   * Selects multiple files.  Closes the window.  Does not return.
+   * TODO(jamescook): Make unload handler work automatically, crbug.com/104811
+   *
+   * @param {Array.<string>} fileUrls Array of filename URLs.
+   */
+  FileManager.prototype.selectFiles_ = function(fileUrls) {
+    this.onUnload_();
+    // Closes the window and does not return.
+    chrome.fileBrowserPrivate.selectFiles(fileUrls);
   };
 
   /**
@@ -3610,9 +3643,8 @@ FileManager.prototype = {
       var self = this;
       function resolveCallback(victim) {
         if (victim instanceof FileError) {
-          // File does not exist.  (NB: selectFile Closes the window and does
-          // not return.)
-          chrome.fileBrowserPrivate.selectFile(
+          // File does not exist.  Closes the window and does not return.
+          self.selectFile_(
               currentDirUrl + encodeURIComponent(filename),
               self.getSelectedFilterIndex_(filename));
         }
@@ -3624,7 +3656,7 @@ FileManager.prototype = {
           self.confirm.show(strf('CONFIRM_OVERWRITE_FILE', filename),
                             function() {
                               // User selected Ok from the confirm dialog.
-                              chrome.fileBrowserPrivate.selectFile(
+                              self.selectFile_(
                                   currentDirUrl + encodeURIComponent(filename),
                                   self.getSelectedFilterIndex_(filename));
                             });
@@ -3659,7 +3691,7 @@ FileManager.prototype = {
     // Multi-file selection has no other restrictions.
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
       // Closes the window and does not return.
-      chrome.fileBrowserPrivate.selectFiles(ary);
+      this.selectFiles_(ary);
       return;
     }
 
@@ -3698,8 +3730,7 @@ FileManager.prototype = {
     }
 
     // Closes the window and does not return.
-    chrome.fileBrowserPrivate.selectFile(
-        ary[0], this.getSelectedFilterIndex_(ary[0]));
+    this.selectFile_(ary[0], this.getSelectedFilterIndex_(ary[0]));
   };
 
   /**
