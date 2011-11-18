@@ -6334,6 +6334,10 @@
                         "maximum": 65535
                       }
                     }
+                  },
+                  "testDataDirectory": {
+                    "type": "string",
+                    "description": "file:/// URL for the API test data directory."
                   }
                 }
               }

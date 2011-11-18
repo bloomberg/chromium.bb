@@ -116,6 +116,13 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
         process->id(), chrome::kChromeUIScheme);
   }
 
+  if (type == Extension::TYPE_EXTENSION &&
+      profile_->GetExtensionService()->extension_prefs()->AllowFileAccess(
+          extension->id())) {
+    ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+        process->id(), chrome::kFileScheme);
+  }
+
   if (type == Extension::TYPE_EXTENSION ||
       type == Extension::TYPE_USER_SCRIPT ||
       type == Extension::TYPE_PACKAGED_APP ||

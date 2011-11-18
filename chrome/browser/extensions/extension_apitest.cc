@@ -18,6 +18,7 @@
 namespace {
 
 const char kTestServerPort[] = "testServer.port";
+const char kTestDataDirectory[] = "testDataDirectory";
 
 };  // namespace
 
@@ -93,6 +94,8 @@ void ExtensionApiTest::ResultCatcher::Observe(
 void ExtensionApiTest::SetUpInProcessBrowserTestFixture() {
   DCHECK(!test_config_.get()) << "Previous test did not clear config state.";
   test_config_.reset(new DictionaryValue());
+  test_config_->SetString(kTestDataDirectory,
+                          net::FilePathToFileURL(test_data_dir_).spec());
   ExtensionTestGetConfigFunction::set_test_config_state(test_config_.get());
 }
 
@@ -233,8 +236,8 @@ bool ExtensionApiTest::StartTestServer() {
     return false;
 
   // Build a dictionary of values that tests can use to build URLs that
-  // access the test server.  Tests can see these values using the extension
-  // API function chrome.test.getConfig().
+  // access the test server and local file system.  Tests can see these values
+  // using the extension API function chrome.test.getConfig().
   test_config_->SetInteger(kTestServerPort,
                            test_server()->host_port_pair().port());
 

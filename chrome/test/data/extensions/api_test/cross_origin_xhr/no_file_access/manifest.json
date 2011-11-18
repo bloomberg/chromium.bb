@@ -1,0 +1,7 @@
+{
+  "name": "Cross origin XHR to file:/// URLs without access",
+  "version": "1.0",
+  "description": "Tests bug 104547",
+  "background_page": "test.html",
+  "permissions": [ "<all_urls>" ]
+}
