@@ -23,7 +23,7 @@ class Rect;
 namespace webkit_media {
 
 class WebMediaPlayerImpl;
-class WebVideoRenderer;
+class VideoRendererImpl;
 
 // Acts as a thread proxy between the various threads used for multimedia and
 // the render thread that WebMediaPlayerImpl is running on.
@@ -36,12 +36,11 @@ class WebMediaPlayerProxy
 
   // Methods for Filter -> WebMediaPlayerImpl communication.
   void Repaint();
-  void SetVideoRenderer(scoped_refptr<WebVideoRenderer> video_renderer);
+  void SetVideoRenderer(const scoped_refptr<VideoRendererImpl>& video_renderer);
   WebDataSourceBuildObserverHack GetBuildObserver();
 
   // Methods for WebMediaPlayerImpl -> Filter communication.
   void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect);
-  void SetSize(const gfx::Rect& rect);
   void Detach();
   void GetCurrentFrame(scoped_refptr<media::VideoFrame>* frame_out);
   void PutCurrentFrame(scoped_refptr<media::VideoFrame> frame);
@@ -105,7 +104,7 @@ class WebMediaPlayerProxy
   typedef std::list<scoped_refptr<WebDataSource> > DataSourceList;
   DataSourceList data_sources_;
 
-  scoped_refptr<WebVideoRenderer> video_renderer_;
+  scoped_refptr<VideoRendererImpl> video_renderer_;
 
   base::Lock lock_;
   int outstanding_repaints_;

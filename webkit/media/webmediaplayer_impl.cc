@@ -34,7 +34,6 @@
 #include "webkit/media/media_stream_client.h"
 #include "webkit/media/simple_data_source.h"
 #include "webkit/media/video_renderer_impl.h"
-#include "webkit/media/web_video_renderer.h"
 #include "webkit/media/webmediaplayer_delegate.h"
 #include "webkit/media/webmediaplayer_proxy.h"
 #include "webkit/media/webvideoframe_impl.h"
@@ -132,8 +131,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
 bool WebMediaPlayerImpl::Initialize(
     WebKit::WebFrame* frame,
-    bool use_simple_data_source,
-    scoped_refptr<WebVideoRenderer> web_video_renderer) {
+    bool use_simple_data_source) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
   MessageLoop* pipeline_message_loop =
       message_loop_factory_->GetMessageLoop("PipelineThread");
@@ -162,10 +160,12 @@ bool WebMediaPlayerImpl::Initialize(
   // Also we want to be notified of |main_loop_| destruction.
   main_loop_->AddDestructionObserver(this);
 
-  // Creates the proxy.
+  // Create proxy and default video renderer.
   proxy_ = new WebMediaPlayerProxy(main_loop_, this);
-  web_video_renderer->SetWebMediaPlayerProxy(proxy_);
-  proxy_->SetVideoRenderer(web_video_renderer);
+  scoped_refptr<VideoRendererImpl> video_renderer =
+      new VideoRendererImpl(proxy_);
+  filter_collection_->AddVideoRenderer(video_renderer);
+  proxy_->SetVideoRenderer(video_renderer);
 
   // Set our pipeline callbacks.
   pipeline_->Init(
@@ -560,9 +560,8 @@ unsigned long long WebMediaPlayerImpl::totalBytes() const {
 
 void WebMediaPlayerImpl::setSize(const WebSize& size) {
   DCHECK_EQ(main_loop_, MessageLoop::current());
-  DCHECK(proxy_);
 
-  proxy_->SetSize(gfx::Rect(0, 0, size.width, size.height));
+  // Don't need to do anything as we use the dimensions passed in via paint().
 }
 
 void WebMediaPlayerImpl::paint(WebCanvas* canvas,

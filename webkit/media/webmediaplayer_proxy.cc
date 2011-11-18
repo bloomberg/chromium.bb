@@ -9,7 +9,7 @@
 #include "base/message_loop.h"
 #include "media/base/pipeline_status.h"
 #include "media/filters/chunk_demuxer.h"
-#include "webkit/media/web_video_renderer.h"
+#include "webkit/media/video_renderer_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
 
 using media::NetworkEvent;
@@ -46,7 +46,7 @@ void WebMediaPlayerProxy::Repaint() {
 }
 
 void WebMediaPlayerProxy::SetVideoRenderer(
-    scoped_refptr<WebVideoRenderer> video_renderer) {
+    const scoped_refptr<VideoRendererImpl>& video_renderer) {
   video_renderer_ = video_renderer;
 }
 
@@ -58,13 +58,6 @@ void WebMediaPlayerProxy::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
   DCHECK(MessageLoop::current() == render_loop_);
   if (video_renderer_) {
     video_renderer_->Paint(canvas, dest_rect);
-  }
-}
-
-void WebMediaPlayerProxy::SetSize(const gfx::Rect& rect) {
-  DCHECK(MessageLoop::current() == render_loop_);
-  if (video_renderer_) {
-    video_renderer_->SetRect(rect);
   }
 }
 

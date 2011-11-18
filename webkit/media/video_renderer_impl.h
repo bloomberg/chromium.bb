@@ -9,25 +9,30 @@
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayer.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/media/web_video_renderer.h"
+
+class SkCanvas;
 
 namespace webkit_media {
+
+class WebMediaPlayerProxy;
 
 // The video renderer implementation to be use by the media pipeline. It lives
 // inside video renderer thread and also WebKit's main thread. We need to be
 // extra careful about members shared by two different threads, especially
 // video frame buffers.
-class VideoRendererImpl : public WebVideoRenderer {
+class VideoRendererImpl : public media::VideoRendererBase {
  public:
-  explicit VideoRendererImpl(bool pts_logging);
+  explicit VideoRendererImpl(const scoped_refptr<WebMediaPlayerProxy>& proxy);
   virtual ~VideoRendererImpl();
 
-  // WebVideoRenderer implementation.
-  virtual void SetWebMediaPlayerProxy(WebMediaPlayerProxy* proxy) OVERRIDE;
-  virtual void SetRect(const gfx::Rect& rect) OVERRIDE;
-  virtual void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) OVERRIDE;
+  // Paint the current front frame on the |canvas| stretching it to fit the
+  // |dest_rect|.
+  //
+  // Method called on the render thread.
+  void Paint(SkCanvas* canvas, const gfx::Rect& dest_rect);
 
  protected:
   // VideoRendererBase implementation.
@@ -70,9 +75,6 @@ class VideoRendererImpl : public WebVideoRenderer {
 
   // The natural size of the video.
   gfx::Size natural_size_;
-
-  // Whether we're logging video presentation timestamps (PTS).
-  bool pts_logging_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };

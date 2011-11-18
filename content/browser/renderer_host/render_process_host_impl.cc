@@ -694,7 +694,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableStatsTable,
     switches::kEnableThreadedCompositing,
     switches::kEnableVideoFullscreen,
-    switches::kEnableVideoLogging,
     switches::kEnableVideoTrack,
     switches::kFullMemoryCrashReport,
 #if !defined (GOOGLE_CHROME_BUILD)

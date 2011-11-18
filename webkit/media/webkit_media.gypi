@@ -29,7 +29,6 @@
         'web_data_source_factory.cc',
         'web_data_source_factory.h',
         'web_data_source.h',
-        'web_video_renderer.h',
         'webmediaplayer_delegate.h',
         'webmediaplayer_impl.cc',
         'webmediaplayer_impl.h',

@@ -1910,13 +1910,6 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     collection->AddAudioRenderer(new AudioRendererImpl());
   }
 
-  scoped_refptr<webkit_media::WebVideoRenderer> video_renderer;
-  bool pts_logging = cmd_line->HasSwitch(switches::kEnableVideoLogging);
-  scoped_refptr<webkit_media::VideoRendererImpl> renderer(
-      new webkit_media::VideoRendererImpl(pts_logging));
-  collection->AddVideoRenderer(renderer);
-  video_renderer = renderer;
-
   scoped_ptr<webkit_media::WebMediaPlayerImpl> result(
       new webkit_media::WebMediaPlayerImpl(client,
                                           AsWeakPtr(),
@@ -1925,8 +1918,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
                                           media_stream_impl_.get(),
                                           new RenderMediaLog()));
   if (!result->Initialize(frame,
-                          cmd_line->HasSwitch(switches::kSimpleDataSource),
-                          video_renderer)) {
+                          cmd_line->HasSwitch(switches::kSimpleDataSource))) {
     return NULL;
   }
   return result.release();

@@ -318,10 +318,6 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
 
-  scoped_refptr<webkit_media::VideoRendererImpl> video_renderer(
-      new webkit_media::VideoRendererImpl(false));
-  collection->AddVideoRenderer(video_renderer);
-
   scoped_ptr<webkit_media::WebMediaPlayerImpl> result(
       new webkit_media::WebMediaPlayerImpl(
           client,
@@ -330,7 +326,7 @@ WebKit::WebMediaPlayer* CreateMediaPlayer(WebFrame* frame,
           message_loop_factory.release(),
           NULL,
           new media::MediaLog()));
-  if (!result->Initialize(frame, false, video_renderer)) {
+  if (!result->Initialize(frame, false)) {
     return NULL;
   }
   return result.release();

@@ -14,7 +14,7 @@
 // media::PipelineImpl
 //   The media playback pipeline.
 //
-// WebVideoRenderer
+// VideoRendererImpl
 //   Video renderer object.
 //
 // WebKit::WebMediaPlayerClient
@@ -29,12 +29,12 @@
 // WebMediaPlayerImpl ---> PipelineImpl
 //    |        ^                  |
 //    |        |                  v r
-//    |        |        WebVideoRenderer
+//    |        |        VideoRendererImpl
 //    |        |          |       ^ r
 //    |   r    |          v r     |
 //    '---> WebMediaPlayerProxy --'
 //
-// Notice that WebMediaPlayerProxy and WebVideoRenderer are referencing each
+// Notice that WebMediaPlayerProxy and VideoRendererImpl are referencing each
 // other. This interdependency has to be treated carefully.
 //
 // Other issues:
@@ -72,7 +72,6 @@ namespace webkit_media {
 class MediaStreamClient;
 class WebMediaPlayerDelegate;
 class WebMediaPlayerProxy;
-class WebVideoRenderer;
 
 class WebMediaPlayerImpl
     : public WebKit::WebMediaPlayer,
@@ -110,10 +109,7 @@ class WebMediaPlayerImpl
   virtual ~WebMediaPlayerImpl();
 
   // Finalizes initialization of the object.
-  bool Initialize(
-      WebKit::WebFrame* frame,
-      bool use_simple_data_source,
-      scoped_refptr<WebVideoRenderer> web_video_renderer);
+  bool Initialize(WebKit::WebFrame* frame, bool use_simple_data_source);
 
   virtual void load(const WebKit::WebURL& url);
   virtual void cancelLoad();

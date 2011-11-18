@@ -13,9 +13,10 @@
 
 namespace webkit_media {
 
-VideoRendererImpl::VideoRendererImpl(bool pts_logging)
-    : last_converted_frame_(NULL),
-      pts_logging_(pts_logging) {
+VideoRendererImpl::VideoRendererImpl(
+    const scoped_refptr<WebMediaPlayerProxy>& proxy)
+    : proxy_(proxy),
+      last_converted_frame_(NULL) {
 }
 
 VideoRendererImpl::~VideoRendererImpl() {}
@@ -39,12 +40,6 @@ void VideoRendererImpl::OnFrameAvailable() {
   proxy_->Repaint();
 }
 
-void VideoRendererImpl::SetWebMediaPlayerProxy(WebMediaPlayerProxy* proxy) {
-  proxy_ = proxy;
-}
-
-void VideoRendererImpl::SetRect(const gfx::Rect& rect) {}
-
 // This method is always called on the renderer's thread.
 void VideoRendererImpl::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
   scoped_refptr<media::VideoFrame> video_frame;
@@ -64,13 +59,6 @@ void VideoRendererImpl::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {
     } else {
       SlowPaint(video_frame, canvas, dest_rect);
     }
-
-    // Presentation timestamp logging is primarily used to measure performance
-    // on low-end devices.  When profiled on an Intel Atom N280 @ 1.66GHz this
-    // code had a ~63 microsecond perf hit when logging to a file (not stdout),
-    // which is neglible enough for measuring playback performance.
-    if (pts_logging_)
-      VLOG(1) << "pts=" << video_frame->GetTimestamp().InMicroseconds();
   }
 
   PutCurrentFrame(video_frame);

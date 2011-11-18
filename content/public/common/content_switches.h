@@ -90,7 +90,6 @@ CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableTcpFastOpen[];
 CONTENT_EXPORT extern const char kEnableTouchEvents[];
 extern const char kEnableVideoFullscreen[];
-extern const char kEnableVideoLogging[];
 CONTENT_EXPORT extern const char kEnableVideoTrack[];
 CONTENT_EXPORT extern const char kEnableWebIntents[];
 CONTENT_EXPORT extern const char kExperimentalLocationFeatures[];
