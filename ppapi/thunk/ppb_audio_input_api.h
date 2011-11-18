@@ -12,7 +12,7 @@
 namespace ppapi {
 namespace thunk {
 
-class PPB_AudioInput_API {
+class PPAPI_THUNK_EXPORT PPB_AudioInput_API {
  public:
   virtual ~PPB_AudioInput_API() {}
 
