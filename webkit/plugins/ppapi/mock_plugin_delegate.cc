@@ -71,7 +71,14 @@ MockPluginDelegate::CreateVideoCapture(
 MockPluginDelegate::PlatformAudio* MockPluginDelegate::CreateAudio(
     uint32_t sample_rate,
     uint32_t sample_count,
-    PlatformAudio::Client* client) {
+    PlatformAudioCommonClient* client) {
+  return NULL;
+}
+
+MockPluginDelegate::PlatformAudioInput* MockPluginDelegate::CreateAudioInput(
+    uint32_t sample_rate,
+    uint32_t sample_count,
+    PlatformAudioCommonClient* client) {
   return NULL;
 }
 

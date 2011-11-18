@@ -1,0 +1,53 @@
+/* Copyright (c) 2011 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+/**
+ * This file defines the trusted audio input interface.
+ */
+
+label Chrome {
+  M17 = 0.1
+};
+
+/**
+ * This interface is to be used by proxy implementations.  All
+ * functions should be called from the main thread only.  The
+ * resource returned is an Audio input esource; most of the PPB_Audio
+ * interface is also usable on this resource.
+ */
+[version=0.1, macro="PPB_AUDIO_INPUT_TRUSTED_DEV_INTERFACE"]
+interface PPB_AudioInputTrusted_Dev {
+  /** Returns an audio input resource. */
+  PP_Resource CreateTrusted(
+      [in] PP_Instance instance);
+
+  /**
+   * Opens a paused audio interface, used by trusted side of proxy.
+   * Returns PP_ERROR_WOULD_BLOCK on success, and invokes
+   * the |create_callback| asynchronously to complete.
+   * As this function should always be invoked from the main thread,
+   * do not use the blocking variant of PP_CompletionCallback.
+   */
+  int32_t Open(
+      [in] PP_Resource audio_input,
+      [in] PP_Resource config,
+      [in] PP_CompletionCallback create_callback);
+
+  /**
+   * Get the sync socket.  Use once Open has completed.
+   * Returns PP_OK on success.
+   */
+  int32_t GetSyncSocket(
+      [in] PP_Resource audio_input,
+      [out] handle_t sync_socket);
+
+  /**
+   * Get the shared memory interface.  Use once Open has completed.
+   * Returns PP_OK on success.
+   */
+  int32_t GetSharedMemory(
+      [in] PP_Resource audio_input,
+      [out] handle_t shm_handle,
+      [out] uint32_t shm_size);
+};

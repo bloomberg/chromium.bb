@@ -198,6 +198,8 @@
         'cpp/var.h',
 
         # Dev interfaces.
+        'cpp/dev/audio_input_dev.cc',
+        'cpp/dev/audio_input_dev.h',
         'cpp/dev/buffer_dev.cc',
         'cpp/dev/buffer_dev.h',
         'cpp/dev/context_3d_dev.cc',

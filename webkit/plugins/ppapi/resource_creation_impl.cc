@@ -10,6 +10,7 @@
 #include "ppapi/shared_impl/var.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/ppb_audio_impl.h"
+#include "webkit/plugins/ppapi/ppb_audio_input_impl.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
 #include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
@@ -71,6 +72,20 @@ PP_Resource ResourceCreationImpl::CreateAudioConfig(
 PP_Resource ResourceCreationImpl::CreateAudioTrusted(
     PP_Instance instance) {
   return (new PPB_Audio_Impl(instance))->GetReference();
+}
+
+PP_Resource ResourceCreationImpl::CreateAudioInput(
+    PP_Instance instance,
+    PP_Resource config_id,
+    PPB_AudioInput_Callback audio_input_callback,
+    void* user_data) {
+  return PPB_AudioInput_Impl::Create(instance, config_id,
+      audio_input_callback, user_data);
+}
+
+PP_Resource ResourceCreationImpl::CreateAudioInputTrusted(
+    PP_Instance instance) {
+  return (new PPB_AudioInput_Impl(instance))->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {

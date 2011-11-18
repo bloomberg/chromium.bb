@@ -7,6 +7,7 @@
 
 #include "ppapi/thunk/interfaces_preamble.h"
 
+PROXIED_API(PPB_AudioInput)
 PROXIED_API(PPB_Buffer)
 PROXIED_API(PPB_Context3D)
 PROXIED_API(PPB_CursorControl)
@@ -23,6 +24,8 @@ PROXIED_API(PPB_VideoCapture)
 PROXIED_API(PPB_VideoDecoder)
 UNPROXIED_API(PPB_Widget)
 
+PROXIED_IFACE(PPB_AudioInput, PPB_AUDIO_INPUT_DEV_INTERFACE_0_1,
+              PPB_AudioInput_Dev)
 PROXIED_IFACE(NoAPIName, PPB_IME_INPUT_EVENT_DEV_INTERFACE_0_1,
               PPB_IMEInputEvent_Dev)
 PROXIED_IFACE(PPB_Buffer, PPB_BUFFER_DEV_INTERFACE_0_4, PPB_Buffer_Dev)

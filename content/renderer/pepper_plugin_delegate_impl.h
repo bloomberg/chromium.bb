@@ -213,7 +213,11 @@ class PepperPluginDelegateImpl
   virtual PlatformAudio* CreateAudio(
       uint32_t sample_rate,
       uint32_t sample_count,
-      PlatformAudio::Client* client) OVERRIDE;
+      PlatformAudioCommonClient* client) OVERRIDE;
+  virtual PlatformAudioInput* CreateAudioInput(
+      uint32_t sample_rate,
+      uint32_t sample_count,
+      PlatformAudioCommonClient* client) OVERRIDE;
   virtual PlatformImage2D* CreateImage2D(int width, int height) OVERRIDE;
   virtual PlatformContext3D* CreateContext3D() OVERRIDE;
   virtual PlatformVideoCapture* CreateVideoCapture(
