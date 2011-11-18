@@ -1349,7 +1349,7 @@ void SafeBrowsingService::RefreshState() {
     csd_service_->SetEnabledAndRefreshState(enable);
   if (download_service_.get()) {
     download_service_->SetEnabled(
-        enable && CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableImprovedDownloadProtection));
+        enable && !CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableImprovedDownloadProtection));
   }
 }

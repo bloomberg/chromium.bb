@@ -101,6 +101,11 @@ class DownloadProtectionService {
     return enabled_;
   }
 
+  // Returns the timeout that is used by CheckClientDownload().
+  int64 download_request_timeout_ms() const {
+    return download_request_timeout_ms_;
+  }
+
  protected:
   // Enum to keep track why a particular download verdict was chosen.
   // This is used to keep some stats around.
@@ -132,6 +137,8 @@ class DownloadProtectionService {
                            CheckClientDownloadSuccess);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientDownloadFetchFailed);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           TestDownloadRequestTimeout);
 
   static const char kDownloadRequestUrl[];
 
@@ -163,6 +170,8 @@ class DownloadProtectionService {
 
   // SignatureUtil object, may be overridden for testing.
   scoped_refptr<SignatureUtil> signature_util_;
+
+  int64 download_request_timeout_ms_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadProtectionService);
 };

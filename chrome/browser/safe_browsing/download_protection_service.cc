@@ -5,8 +5,10 @@
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/format_macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -26,6 +28,10 @@
 #include "net/url_request/url_request_status.h"
 
 using content::BrowserThread;
+
+namespace {
+static const int64 kDownloadRequestTimeoutMs = 3000;
+}  // namespace
 
 namespace safe_browsing {
 
@@ -144,7 +150,7 @@ DownloadProtectionService::DownloadInfo::FromDownloadItem(
   download_info.target_file = item.GetTargetFilePath();
   download_info.download_url_chain = item.url_chain();
   download_info.referrer_url = item.referrer_url();
-  // TODO(bryner): Fill in the hash (we shouldn't compute it again)
+  download_info.sha256_hash = item.hash();
   download_info.total_bytes = item.total_bytes();
   // TODO(bryner): Populate user_initiated
   return download_info;
@@ -332,7 +338,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
         service_(service),
         signature_util_(signature_util),
         sb_service_(sb_service),
-        pingback_enabled_(service_->enabled()) {
+        pingback_enabled_(service_->enabled()),
+        finished_(false),
+        ALLOW_THIS_IN_INITIALIZER_LIST(timeout_weakptr_factory_(this)) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
@@ -373,24 +381,35 @@ class DownloadProtectionService::CheckClientDownloadRequest
         BrowserThread::FILE,
         FROM_HERE,
         base::Bind(&CheckClientDownloadRequest::ExtractFileFeatures, this));
+
+    // If the request takes too long we cancel it.
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&CheckClientDownloadRequest::Cancel,
+                   timeout_weakptr_factory_.GetWeakPtr()),
+        service_->download_request_timeout_ms());
   }
 
-  // Canceling a request will cause us to always report the result as SAFE.
-  // In addition, the DownloadProtectionService will not be notified when the
-  // request finishes, so it must drop its reference after calling Cancel.
+  // Canceling a request will cause us to always report the result as SAFE
+  // unless a pending request is about to call FinishRequest.
   void Cancel() {
+    // Calling FinishRequest might delete this object if we don't keep a
+    // reference around until Cancel() is finished running.
+    scoped_refptr<CheckClientDownloadRequest> request(this);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    service_ = NULL;
+    FinishRequest(SAFE);
     if (fetcher_.get()) {
       // The DownloadProtectionService is going to release its reference, so we
       // might be destroyed before the URLFetcher completes.  Cancel the
       // fetcher so it does not try to invoke OnURLFetchComplete.
-      FinishRequest(SAFE);
       fetcher_.reset();
     }
     // Note: If there is no fetcher, then some callback is still holding a
     // reference to this object.  We'll eventually wind up in some method on
-    // the UI thread that will call FinishRequest() and run the callback.
+    // the UI thread that will call FinishRequest() again.  If FinishRequest()
+    // is called a second time, it will be a no-op.
+    service_ = NULL;
   }
 
   // From the content::URLFetcherDelegate interface.
@@ -552,6 +571,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
                                                content::URLFetcher::POST,
                                                this));
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+    fetcher_->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
     fetcher_->SetRequestContext(service_->request_context_getter_.get());
     fetcher_->SetUploadData("application/octet-stream", request_data);
     fetcher_->Start();
@@ -566,6 +586,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
   void FinishRequest(DownloadCheckResult result) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    if (finished_) {
+      return;
+    }
+    finished_ = true;
     if (service_) {
       callback_.Run(result);
       service_->RequestFinished(this);
@@ -591,6 +615,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   scoped_refptr<SafeBrowsingService> sb_service_;
   const bool pingback_enabled_;
   scoped_ptr<content::URLFetcher> fetcher_;
+  bool finished_;
+  base::WeakPtrFactory<CheckClientDownloadRequest> timeout_weakptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);
 };
@@ -601,7 +627,8 @@ DownloadProtectionService::DownloadProtectionService(
     : sb_service_(sb_service),
       request_context_getter_(request_context_getter),
       enabled_(false),
-      signature_util_(new SignatureUtil()) {}
+      signature_util_(new SignatureUtil()),
+      download_request_timeout_ms_(kDownloadRequestTimeoutMs) {}
 
 DownloadProtectionService::~DownloadProtectionService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -651,10 +678,13 @@ void DownloadProtectionService::CancelPendingRequests() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (std::set<scoped_refptr<CheckClientDownloadRequest> >::iterator it =
            download_requests_.begin();
-       it != download_requests_.end(); ++it) {
-    (*it)->Cancel();
+       it != download_requests_.end();) {
+    // We need to advance the iterator before we cancel because canceling
+    // the request will invalidate it when RequestFinished is called below.
+    scoped_refptr<CheckClientDownloadRequest> tmp = *it++;
+    tmp->Cancel();
   }
-  download_requests_.clear();
+  DCHECK(download_requests_.empty());
 }
 
 void DownloadProtectionService::RequestFinished(
