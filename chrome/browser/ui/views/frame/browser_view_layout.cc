@@ -22,7 +22,7 @@
 #include "ui/gfx/size.h"
 #include "views/controls/single_split_view.h"
 
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #endif
 
@@ -231,7 +231,7 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
       infobar_container_ = view;
       break;
     case VIEW_ID_DOWNLOAD_SHELF:
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
+#if !defined(OS_CHROMEOS)
       download_shelf_ = static_cast<DownloadShelfView*>(view);
 #else
       NOTREACHED();
@@ -514,7 +514,7 @@ int BrowserViewLayout::GetTopMarginForActiveContent() {
 }
 
 int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
-#if !defined(OS_CHROMEOS) || defined(USE_AURA)
+#if !defined(OS_CHROMEOS)
   // Re-layout the shelf either if it is visible or if it's close animation
   // is currently running.  ChromiumOS uses ActiveDownloadsUI instead of
   // DownloadShelf.
