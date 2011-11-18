@@ -23,7 +23,11 @@
 #include "ui/base/x/x11_util.h"
 
 #if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
+#if defined(USE_WAYLAND)
+#include "base/message_pump_wayland.h"
+#else
 #include "base/message_pump_x.h"
+#endif
 #endif
 
 namespace chromeos {
