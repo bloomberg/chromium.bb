@@ -384,11 +384,9 @@
               ],
               'copies': [
                 {
-                  'destination':
-                      '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
+                  # Copy FFmpeg binaries for audio/video support.
+                  'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries',
                   'files': [
-                    # TODO(ajwong): Find a way to share this path with
-                    # ffmpeg.gyp so they don't diverge. (BUG=23602)
                     '<(PRODUCT_DIR)/ffmpegsumo.so',
                   ],
                 },

@@ -309,10 +309,8 @@
             },
           ],
           'copies': [
-            # TODO(ajwong): This, and the parallel chromium stanza below
-            # really should find a way to share file paths with
-            # ffmpeg.gyp so they don't diverge. (BUG=23602)
             {
+              # Copy FFmpeg binaries for audio/video support.
               'destination': '<(PRODUCT_DIR)/TestShell.app/Contents/MacOS/',
               'files': [
                 '<(PRODUCT_DIR)/ffmpegsumo.so',
