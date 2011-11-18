@@ -211,6 +211,9 @@ class TestValidationPool(mox.MoxTestBase):
     only has a partial chain with the 3rd change having the whole chain i.e.
     1->2, 3->1->2, 4->nothing.  Since we get these in the order 1,2,3,4 the
     order we should apply is 2,1,3,4.
+
+    This test also checks the patch order to verify that Apply re-orders
+    correctly based on the chain.
     """
     patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
@@ -225,6 +228,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.url = 'fake_url/2'
     patch3.url = 'fake_url/3'
     patch4.url = 'fake_url/4'
+
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, False)
@@ -242,6 +246,9 @@ class TestValidationPool(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
+    # Check order.
+    self.assertEquals([x.revision for x in pool.changes],
+                      [y.revision for y in [patch2, patch1, patch3, patch4]])
     self.mox.VerifyAll()
 
   def testNoDepsApplyPoolIntoRepo(self):

@@ -168,9 +168,12 @@ class ValidationPool(object):
     Returns:
       True if we managed to apply some changes.
     """
+    # Sets are used for performance reasons where changes_list is used to
+    # maintain ordering when applying changes.
     changes_that_failed_to_apply_against_other_changes = set()
     changes_that_failed_to_apply_to_tot = set()
     changes_applied = set()
+    changes_list = []
 
     # Change map maps Change-Id to GerritPatch object for lookup of dependent
     # change-ids.
@@ -218,9 +221,9 @@ class ValidationPool(object):
           if change in changes_that_failed_to_apply_to_tot:
             break
 
-          # If we are running in debug mode, be more lenient.
           change.Apply(directory, trivial=not self.dryrun)
           changes_applied.add(change)
+          changes_list.append(change)
         except cros_patch.ApplyPatchException as e:
           if e.type == cros_patch.ApplyPatchException.TYPE_REBASE_TO_TOT:
             changes_that_failed_to_apply_to_tot.add(change)
@@ -235,7 +238,7 @@ class ValidationPool(object):
       logging.debug('Some changes could not be applied cleanly.')
       self.HandleApplicationFailure(changes_that_failed_to_apply_to_tot)
 
-    self.changes = changes_applied
+    self.changes = changes_list
     self.changes_that_failed_to_apply_earlier = list(
         changes_that_failed_to_apply_against_other_changes)
     return len(self.changes) > 0
