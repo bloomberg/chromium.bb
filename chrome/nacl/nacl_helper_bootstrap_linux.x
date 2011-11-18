@@ -33,11 +33,11 @@ ENTRY(_start)
 TEXT_START = 0x10000;
 
 /*
- * This is the top of the range we are trying to reserve, which is 1G
- * for x86-32 and ARM.  For an x86-64 zero-based sandbox, this really
- * needs to be 36G.
+ * The symbol RESERVE_TOP is the top of the range we are trying to reserve.
+ * This is set via --defsym on the linker command line, because the correct
+ * value differs for each machine.  It's not defined at all if we do not
+ * actually need any space reserved for this configuration.
  */
-RESERVE_TOP = 1 << 30;
 
 /*
  * We specify the program headers we want explicitly, to get the layout
@@ -109,7 +109,7 @@ SECTIONS {
   . = ALIGN(CONSTANT(COMMONPAGESIZE));
   RESERVE_START = .;
   .reserve : {
-    . = RESERVE_TOP - RESERVE_START;
+    . += DEFINED(RESERVE_TOP) ? (RESERVE_TOP - RESERVE_START) : 0;
   } :reserve
 
   /*

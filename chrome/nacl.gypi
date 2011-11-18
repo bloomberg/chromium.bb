@@ -127,6 +127,27 @@
           ],
         }],
         ['OS=="linux" and coverage==0', {
+          'conditions': [
+            ['target_arch=="x64"', {
+              'variables': {
+                # No extra reservation.
+                'nacl_reserve_top': [],
+              }
+            }],
+            ['target_arch=="ia32"', {
+              'variables': {
+                # 1G address space.
+                'nacl_reserve_top': ['--defsym', 'RESERVE_TOP=0x40000000'],
+              }
+            }],
+            ['target_arch=="arm"', {
+              'variables': {
+                # 1G address space, plus 4K guard area above because
+                # immediate offsets are 12 bits.
+                'nacl_reserve_top': ['--defsym', 'RESERVE_TOP=0x40001000'],
+              }
+            }],
+          ],
           'targets': [
             {
               'target_name': 'nacl_helper',
@@ -274,8 +295,8 @@
                     ['target_arch=="arm"', {
                       'variables': {
                         'linker_emulation': 'armelf_linux_eabi',
-                        # ARM requires linking against libc due to ABI dependencies on
-                        # memset
+                        # ARM requires linking against libc due to ABI
+                        # dependencies on memset.
                         'bootstrap_extra_lib' : "${SYSROOT}/usr/lib/libc.a",
                       }
                     }],
@@ -283,13 +304,16 @@
                   'action': ['../tools/ld_bfd/ld',
                              '-m', '<(linker_emulation)',
                              '--build-id',
-                             # This program is (almost) entirely standalone.  It
-                             # has its own startup code, so no crt1.o for it.  It is
-                             # statically linked, and on x86 it does not use
-                             # libc at all.  However, on ARM it needs a few (safe)
-                             # things from libc.
+                             # This program is (almost) entirely
+                             # standalone.  It has its own startup code, so
+                             # no crt1.o for it.  It is statically linked,
+                             # and on x86 it does not use libc at all.
+                             # However, on ARM it needs a few (safe) things
+                             # from libc.
                              '-static',
-                             # Link with custom linker script for special layout.
+                             # Link with custom linker script for special
+                             # layout.  The script uses the symbol RESERVE_TOP.
+                             '<@(nacl_reserve_top)',
                              '--script=<(linker_script)',
                              '-o', '<@(_outputs)',
                              # On x86-64, the default page size with some
