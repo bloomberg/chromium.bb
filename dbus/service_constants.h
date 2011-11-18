@@ -733,6 +733,7 @@ namespace cros_disks {
 const char kCrosDisksInterface[] = "org.chromium.CrosDisks";
 const char kCrosDisksServicePath[] = "/org/chromium/CrosDisks";
 const char kCrosDisksServiceName[] = "org.chromium.CrosDisks";
+const char kCrosDisksServiceError[] = "org.chromium.CrosDisks.Error";
 
 // Methods.
 const char kEnumerateAutoMountableDevices[] = "EnumerateAutoMountableDevices";
@@ -748,23 +749,53 @@ const char kDeviceRemoved[] = "DeviceRemoved";
 const char kDiskAdded[] = "DiskAdded";
 const char kDiskChanged[] = "DiskChanged";
 const char kDiskRemoved[] = "DiskRemoved";
+// TODO(benchan): Deprecate FormattingFinished signal (crosbug.com/22981)
 const char kFormattingFinished[] = "FormattingFinished";
+const char kFormatCompleted[] = "FormatCompleted";
 const char kMountCompleted[] = "MountCompleted";
 
 // Properties.
 const char kDeviceFile[] = "DeviceFile";
 const char kDeviceIsDrive[] = "DeviceIsDrive";
 const char kDeviceIsMediaAvailable[] = "DeviceIsMediaAvailable";
+const char kDeviceIsMounted[] = "DeviceIsMounted";
 const char kDeviceIsOnBootDevice[] = "DeviceIsOnBootDevice";
 const char kDeviceIsOpticalDisc[] = "DeviceIsOpticalDisc";
 const char kDeviceIsReadOnly[] = "DeviceIsReadOnly";
+const char kDeviceIsVirtual[] = "DeviceIsVirtual";
+const char kDeviceMediaType[] = "DeviceMediaType";
 const char kDeviceMountPaths[] = "DeviceMountPaths";
 const char kDevicePresentationHide[] = "DevicePresentationHide";
 const char kDeviceSize[] = "DeviceSize";
 const char kDriveIsRotational[] = "DriveIsRotational";
 const char kDriveModel[] = "DriveModel";
+const char kExperimentalFeaturesEnabled[] = "ExperimentalFeaturesEnabled";
 const char kIdLabel[] = "IdLabel";
+const char kIdUuid[] = "IdUuid";
 const char kNativePath[] = "NativePath";
+
+// Enum values.
+// DeviceMediaType enum values are reported through UMA.
+// All values but DEVICE_MEDIA_NUM_VALUES should not be changed or removed.
+// Additional values can be added but DEVICE_MEDIA_NUM_VALUES should be
+// adjusted accordingly.
+enum DeviceMediaType {
+  DEVICE_MEDIA_UNKNOWN = 0,
+  DEVICE_MEDIA_USB = 1,
+  DEVICE_MEDIA_SD = 2,
+  DEVICE_MEDIA_OPTICAL_DISC = 3,
+  DEVICE_MEDIA_MOBILE = 4,
+  DEVICE_MEDIA_NUM_VALUES = 5,
+};
+
+// MountSourceType enum values are solely used by Chrome/CrosDisks in
+// the MountCompleted signal, and currently not reported through UMA.
+enum MountSourceType {
+  MOUNT_SOURCE_INVALID = 0,
+  MOUNT_SOURCE_REMOVABLE_DEVICE = 1,
+  MOUNT_SOURCE_ARCHIVE = 2,
+  MOUNT_SOURCE_NETWORK_STORAGE = 3,
+};
 }  // namespace cros_disks
 
 namespace update_engine {
