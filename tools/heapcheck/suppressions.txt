@@ -1724,3 +1724,24 @@
    fun:PluginService::Init
    fun:chromeos::::GViewRequestInterceptorTest::SetUp
 }
+{
+   bug_104760
+   Heapcheck:Leak
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_datalist_id_set_data_full
+   fun:g_object_set_data
+   fun:views::NativeWidgetGtk::RegisterChildExposeHandler
+   fun:views::NativeViewHostGtk::NativeViewAttached
+   fun:views::NativeViewHost::Attach
+   fun:NativeTabContentsContainerGtk::AttachContents
+   fun:TabContentsContainer::ChangeTabContents
+   fun:ConstrainedHtmlDelegateGtk
+   fun:ConstrainedHtmlUI::CreateConstrainedHtmlDialog
+   fun:printing::PrintPreviewTabController::CreatePrintPreviewTab
+   fun:printing::PrintPreviewTabController::GetOrCreatePreviewTab
+#   fun:PrintPreviewHandlerTest_StickyMarginsCustomThenDefault_Test::TestBody
+#   fun:PrintPreviewTabControllerUnitTest_GetOrCreatePreviewTab_Test::TestBody
+#   fun:PrintPreviewTabControllerUnitTest_MultiplePreviewTabs_Test::TestBody
+#   fun:PrintPreviewTabControllerUnitTest_ClearInitiatorTabDetails_Test::TestBody
+}
