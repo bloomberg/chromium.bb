@@ -633,13 +633,7 @@ TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
   EXPECT_FALSE(host_->unhandled_keyboard_event_called());
 }
 
-// Fails on Linux Aura, see http://crbug.com/100345
-#if defined(USE_AURA) && !defined(OS_WIN)
-#define MAYBE_PreHandleRawKeyDownEvent FAILS_PreHandleRawKeyDownEvent
-#else
-#define MAYBE_PreHandleRawKeyDownEvent PreHandleRawKeyDownEvent
-#endif
-TEST_F(RenderWidgetHostTest, MAYBE_PreHandleRawKeyDownEvent) {
+TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
   // Simluate the situation that the browser handled the key down event during
   // pre-handle phrase.
   host_->set_prehandle_keyboard_event(true);
