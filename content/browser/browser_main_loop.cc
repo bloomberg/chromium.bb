@@ -158,6 +158,10 @@ BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
 }
 
 BrowserMainLoop::~BrowserMainLoop() {
+  // Release/destroy parts here, before OleUninitialize() and before other
+  // members are destroyed (in particular main_message_loop_).
+  parts_.reset();
+
 #if defined(OS_WIN)
   OleUninitialize();
 #endif

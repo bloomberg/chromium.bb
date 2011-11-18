@@ -53,6 +53,8 @@ class BrowserMainLoop {
   const CommandLine& parsed_command_line_;
   int result_code_;
 
+  scoped_ptr<BrowserMainParts> parts_;
+
   // Members initialized in |MainMessageLoopStart()| ---------------------------
   scoped_ptr<MessageLoop> main_message_loop_;
   scoped_ptr<base::SystemMonitor> system_monitor_;
@@ -61,13 +63,6 @@ class BrowserMainLoop {
 #if defined(OS_WIN)
   scoped_ptr<SystemMessageWindowWin> system_message_window_;
 #endif
-
-  // Destroy parts_ before main_message_loop_ (required) and before other
-  // classes constructed in content (but after main_thread_).
-  scoped_ptr<BrowserMainParts> parts_;
-
-  // Members initialized in |InitializeMainThread()| ---------------------------
-  // This must get destroyed before other threads that are created in parts_.
   scoped_ptr<BrowserThreadImpl> main_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
