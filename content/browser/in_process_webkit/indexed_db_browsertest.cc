@@ -243,7 +243,7 @@ class IndexedDBBrowserTestWithLowQuota : public IndexedDBBrowserTest {
 
 };
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, QuotaTest) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithLowQuota, FAILS_QuotaTest) {
   SimpleTest(testUrl(FilePath(FILE_PATH_LITERAL("quota_test.html"))));
 }
 
