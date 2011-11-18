@@ -126,13 +126,7 @@ class AccessibilityEventRouterViewsTest
   AccessibilityWindowDelegate* window_delegate_;
 };
 
-// Crashes on Linux Aura, http://crbug.com/100338
-#if defined(USE_AURA) && !defined(OS_WIN)
-#define MAYBE_TestFocusNotification DISABLED_TestFocusNotification
-#else
-#define MAYBE_TestFocusNotification TestFocusNotification
-#endif
-TEST_F(AccessibilityEventRouterViewsTest, MAYBE_TestFocusNotification) {
+TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   const char kButton1ASCII[] = "Button1";
   const char kButton2ASCII[] = "Button2";
   const char kButton3ASCII[] = "Button3";
