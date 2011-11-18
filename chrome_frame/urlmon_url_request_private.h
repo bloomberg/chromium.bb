@@ -7,6 +7,7 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+
 #include <string>
 
 #include "base/callback_old.h"
@@ -15,8 +16,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-
-class RequestData;
 
 class UrlmonUrlRequest
   : public CComObjectRootEx<CComMultiThreadModel>,

@@ -14,7 +14,6 @@
 #include "base/shared_memory.h"
 #include "ipc/ipc_channel_handle.h"
 
-class Task;
 class CommandLine;
 
 namespace base {
@@ -89,7 +88,6 @@ class ServiceProcessState {
   IPC::ChannelHandle GetServiceProcessChannel();
 
  private:
-
 #if !defined(OS_MACOSX)
   // Create the shared memory data for the service process.
   bool CreateSharedData();

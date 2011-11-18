@@ -22,22 +22,24 @@
 #include "content/public/common/page_zoom.h"
 #include "googleurl/src/gurl.h"
 
+struct AttachExternalTabParams;
+struct AutomationURLRequest;
+struct ContextMenuModel;
+struct MiniContextMenuParams;
+struct NavigationInfo;
 class Task;
-class CancelableTask;
 
 namespace base {
-class TimeDelta;
 class WaitableEvent;
-}
-
-namespace IPC {
-struct NavigationInfo;
 }
 
 namespace gfx {
 class Rect;
 }
 
+namespace net {
+class URLRequestStatus;
+}
 
 // This is the delegate/callback interface that has to be implemented
 // by the customers of ExternalTabProxy class.

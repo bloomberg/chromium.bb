@@ -20,10 +20,6 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/audio/audio_buffers_state.h"
 
-namespace base {
-class Time;
-}
-
 class CONTENT_EXPORT AudioMessageFilter
     : public IPC::ChannelProxy::MessageFilter {
  public:

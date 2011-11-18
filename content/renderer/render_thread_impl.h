@@ -31,7 +31,6 @@ class DevToolsAgentFilter;
 struct DOMStorageMsg_Event_Params;
 class GpuChannelHost;
 class IndexedDBDispatcher;
-class RendererHistogram;
 class RendererWebKitPlatformSupportImpl;
 class SkBitmap;
 class VideoCaptureImplManager;

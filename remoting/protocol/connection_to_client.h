@@ -14,10 +14,6 @@
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/video_writer.h"
 
-namespace base {
-class MessageLoopProxy;
-}  // namespace base
-
 namespace remoting {
 namespace protocol {
 
@@ -52,7 +48,7 @@ class ConnectionToClient : public base::NonThreadSafe {
 
   // Constructs a ConnectionToClient object for the |session|. Takes
   // ownership of |session|.
-  ConnectionToClient(Session* session);
+  explicit ConnectionToClient(Session* session);
   virtual ~ConnectionToClient();
 
   // Set |event_handler| for connection events. |event_handler| is

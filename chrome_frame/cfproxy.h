@@ -7,9 +7,11 @@
 #pragma once
 
 #include <windows.h>
+
 #include <map>  // for proxy factory
 #include <vector>
 #include <string>
+
 #include "base/synchronization/lock.h"
 #include "base/time.h"         // for base::TimeDelta
 #include "base/file_path.h"
@@ -20,17 +22,8 @@
 class ChromeProxyDelegate;
 class ChromeProxyFactory;
 class GURL;
-struct AttachExternalTabParams;
-struct AutomationURLRequest;
-struct ContextMenuModel;
 struct ExternalTabSettings;
-struct MiniContextMenuParams;
-struct NavigationInfo;
 struct ProxyParams;
-
-namespace net {
-class URLRequestStatus;
-}  // namespace net
 
 // Some callers of synchronous messages wants a context to be passed back
 // in order to identify the call they made. Presumably one can make

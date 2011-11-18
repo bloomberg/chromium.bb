@@ -24,8 +24,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
 #include "webkit/glue/window_open_disposition.h"
 
-class BackgroundContents;
-class BookmarkNode;
 class GURL;
 class RenderViewHost;
 class SkBitmap;

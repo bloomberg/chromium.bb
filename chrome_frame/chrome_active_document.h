@@ -30,7 +30,6 @@
 #include "third_party/active_doc/in_place_menu.h"
 #include "third_party/active_doc/ole_document_impl.h"
 
-class Thread;
 class TabProxy;
 class ChromeActiveDocument;
 
@@ -344,7 +343,7 @@ END_EXEC_COMMAND_MAP()
   bool PreProcessContextMenu(HMENU menu);
   bool HandleContextMenuCommand(UINT cmd, const MiniContextMenuParams& params);
 
- // ChromeFramePlugin overrides.
+  // ChromeFramePlugin overrides.
   virtual void OnAutomationServerReady();
 
   // IEnumPrivacyRecords

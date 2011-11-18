@@ -11,10 +11,6 @@
 #include "remoting/protocol/jingle_channel_connector.h"
 #include "remoting/protocol/session.h"
 
-namespace jingle_glue {
-class TransportChannelSocketAdapter;
-}  // namespace jingle_glue
-
 namespace remoting {
 namespace protocol {
 

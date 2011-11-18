@@ -21,8 +21,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class GURL;
-
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
 class CONTENT_EXPORT HostZoomMap
