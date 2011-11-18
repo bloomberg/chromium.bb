@@ -42,6 +42,7 @@ Launcher::Launcher(aura::Window* window_container)
 }
 
 Launcher::~Launcher() {
+  widget_->CloseNow();
   window_container_->RemoveObserver(this);
   for (WindowMap::iterator i = known_windows_.begin();
        i != known_windows_.end(); ++i) {
