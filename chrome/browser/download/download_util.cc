@@ -519,8 +519,7 @@ void UpdateAppIconDownloadProgress(int download_count,
                                    bool progress_known,
                                    float progress) {
 #if defined(USE_AURA)
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  // TODO(davemoore) Implement once UX for download is decided <104742>
 #elif defined(OS_WIN)
   // Taskbar progress bar is only supported on Win7.
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
