@@ -28,7 +28,7 @@ size_t GetConstrainedWindowCount(TabContentsWrapper* tab) {
 
 }  // namespace
 
-typedef BrowserWithTestWindowTest PrintPreviewUITest;
+typedef BrowserWithTestWindowTest PrintPreviewUIUnitTest;
 
 // Test crashs on TouchUI due to initiator tab's native view having no parent.
 // http://crbug.com/104284
@@ -38,7 +38,7 @@ typedef BrowserWithTestWindowTest PrintPreviewUITest;
 #define MAYBE_PrintPreviewData PrintPreviewData
 #endif
 // Create/Get a preview tab for initiator tab.
-TEST_F(PrintPreviewUITest, MAYBE_PrintPreviewData) {
+TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewData) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
   ASSERT_TRUE(browser());
   BrowserList::SetLastActive(browser());
@@ -104,7 +104,7 @@ TEST_F(PrintPreviewUITest, MAYBE_PrintPreviewData) {
 #define MAYBE_PrintPreviewDraftPages PrintPreviewDraftPages
 #endif
 // Set and get the individual draft pages.
-TEST_F(PrintPreviewUITest, MAYBE_PrintPreviewDraftPages) {
+TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewDraftPages) {
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
 #endif
@@ -178,7 +178,7 @@ TEST_F(PrintPreviewUITest, MAYBE_PrintPreviewDraftPages) {
 #define MAYBE_GetCurrentPrintPreviewStatus GetCurrentPrintPreviewStatus
 #endif
 // Test the browser-side print preview cancellation functionality.
-TEST_F(PrintPreviewUITest, MAYBE_GetCurrentPrintPreviewStatus) {
+TEST_F(PrintPreviewUIUnitTest, MAYBE_GetCurrentPrintPreviewStatus) {
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnablePrintPreview);
 #endif
