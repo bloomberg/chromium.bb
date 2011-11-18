@@ -729,13 +729,25 @@ void ChromeContentRendererClient::SetExtensionDispatcher(
   extension_dispatcher_.reset(extension_dispatcher);
 }
 
+const Extension* ChromeContentRendererClient::GetNonBookmarkAppExtension(
+    const ExtensionSet* extensions, const GURL& url) {
+  // Exclude bookmark apps, which do not use the app process model.
+  const Extension* extension = extensions->GetByURL(url);
+  if (extension && extension->from_bookmark())
+    extension = NULL;
+  return extension;
+}
+
 bool ChromeContentRendererClient::CrossesExtensionExtents(
     WebFrame* frame,
     const GURL& new_url,
     bool is_initial_navigation) {
   const ExtensionSet* extensions = extension_dispatcher_->extensions();
-  bool is_extension_url = !!extensions->GetByURL(new_url);
   GURL old_url(frame->top()->document().url());
+
+  // Determine if the new URL is an extension (excluding bookmark apps).
+  const Extension* new_url_extension = GetNonBookmarkAppExtension(extensions,
+                                                                  new_url);
 
   // If old_url is still empty and this is an initial navigation, then this is
   // a window.open operation.  We should look at the opener URL.
@@ -746,7 +758,7 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     GURL opener_url = frame->opener()->document().url();
     bool opener_is_extension_url = !!extensions->GetByURL(opener_url);
     WebSecurityOrigin opener = frame->opener()->document().securityOrigin();
-    if (!is_extension_url &&
+    if (!new_url_extension &&
         !opener_is_extension_url &&
         extension_dispatcher_->is_extension_process() &&
         opener.canRequest(WebURL(new_url)))
@@ -758,15 +770,21 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     old_url = frame->top()->opener()->top()->document().url();
   }
 
+  // Determine if the old URL is an extension (excluding bookmark apps).
+  const Extension* old_url_extension = GetNonBookmarkAppExtension(extensions,
+                                                                  old_url);
+
   // TODO(creis): Temporary workaround for crbug.com/59285: Only return true if
   // we would enter an extension app's extent from a non-app, or if we leave an
   // extension with no web extent.  We avoid swapping processes to exit a hosted
   // app for now, since we do not yet support postMessage calls from outside the
   // app back into it (e.g., as in Facebook OAuth 2.0).
-  bool old_url_is_hosted_app = extensions->GetByURL(old_url) &&
-       !extensions->GetByURL(old_url)->web_extent().is_empty();
-  return !extensions->InSameExtent(old_url, new_url) &&
-         !old_url_is_hosted_app;
+  bool old_url_is_hosted_app = old_url_extension &&
+      !old_url_extension->web_extent().is_empty();
+  if (old_url_is_hosted_app)
+    return false;
+
+  return old_url_extension != new_url_extension;
 }
 
 void ChromeContentRendererClient::OnPurgeMemory() {

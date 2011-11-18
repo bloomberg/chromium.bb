@@ -353,6 +353,11 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
   if (!extension)
     return url;
 
+  // Bookmark apps do not use the hosted app process model, and should be
+  // treated as normal URLs.
+  if (extension->from_bookmark())
+    return url;
+
   // If the URL is part of an extension's web extent, convert it to an
   // extension URL.
   return extension->GetResourceURL(url.path());
@@ -361,8 +366,8 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
 bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
     content::BrowserContext* browser_context, const GURL& effective_url) {
   // Non-extension URLs should generally use process-per-site-instance.
-  // Because we expect to use the effective URL, hosted apps URLs should have
-  // an extension scheme by now.
+  // Because we expect to use the effective URL, URLs for hosted apps (apart
+  // from bookmark apps) should have an extension scheme by now.
   if (!effective_url.SchemeIs(chrome::kExtensionScheme))
     return false;
 

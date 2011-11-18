@@ -133,9 +133,9 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
 }
 
 const Extension* ChromeRenderViewHostObserver::GetExtension() {
-  // Note that due to ChromeContentBrowserClient::GetEffectiveURL(), even hosted
-  // apps will have a chrome-extension:// URL for their site, so we can ignore
-  // that wrinkle here.
+  // Note that due to ChromeContentBrowserClient::GetEffectiveURL(), hosted apps
+  // (excluding bookmark apps) will have a chrome-extension:// URL for their
+  // site, so we can ignore that wrinkle here.
   SiteInstance* site_instance = render_view_host()->site_instance();
   const GURL& site = site_instance->site();
 

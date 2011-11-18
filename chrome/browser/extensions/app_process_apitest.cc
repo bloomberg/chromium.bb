@@ -251,6 +251,76 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
   LOG(INFO) << "End of test.";
 }
 
+// Tests that bookmark apps do not use the app process model and are treated
+// like normal web pages instead.  http://crbug.com/104636.
+// TODO(creis): This test is disabled until we have a way to load a bookmark
+// app in browser_tests.  See http://crbug.com/104649.
+IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_BookmarkAppGetsNormalProcess) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisablePopupBlocking);
+
+  extensions::ProcessMap* process_map =
+      browser()->profile()->GetExtensionService()->process_map();
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  // TODO(creis): We need a way to load an app in a test as a bookmark app.
+  // Until then, from_bookmark() will return false and this test will fail.
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("app_process"));
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(extension->from_bookmark());
+  GURL base_url = GetTestBaseURL("app_process");
+
+  // Test both opening a URL in a new tab, and opening a tab and then navigating
+  // it.  Either way, bookmark app tabs should be considered normal processes
+  // with no elevated privileges and no WebUI bindings.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), base_url.Resolve("path1/empty.html"), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  EXPECT_FALSE(process_map->Contains(
+      browser()->GetTabContentsAt(1)->render_view_host()->process()->GetID()));
+  EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
+
+  ui_test_utils::WindowedNotificationObserver tab_added_observer(
+      content::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  browser()->NewTab();
+  tab_added_observer.Wait();
+  ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
+  EXPECT_FALSE(process_map->Contains(
+      browser()->GetTabContentsAt(2)->render_view_host()->process()->GetID()));
+  EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
+
+  // We should have opened 2 new bookmark app tabs. Including the original blank
+  // tab, we now have 3 tabs.  Because normal pages use the
+  // process-per-site-instance model, each should be in its own process.
+  ASSERT_EQ(3, browser()->tab_count());
+  RenderViewHost* host = browser()->GetTabContentsAt(1)->render_view_host();
+  EXPECT_NE(host->process(),
+            browser()->GetTabContentsAt(2)->render_view_host()->process());
+
+  // Now let's do the same using window.open. The same should happen.
+  ASSERT_EQ(1u, BrowserList::GetBrowserCount(browser()->profile()));
+  WindowOpenHelper(browser(), host,
+                   base_url.Resolve("path1/empty.html"), true);
+  WindowOpenHelper(browser(), host,
+                   base_url.Resolve("path2/empty.html"), true);
+
+  // Now let's have a tab navigate out of and back into the app's web
+  // extent. Neither navigation should switch processes.
+  const GURL& app_url(base_url.Resolve("path1/empty.html"));
+  const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
+  RenderViewHost* host2 = browser()->GetTabContentsAt(2)->render_view_host();
+  NavigateTabHelper(browser()->GetTabContentsAt(2), non_app_url);
+  EXPECT_EQ(host2->process(),
+            browser()->GetTabContentsAt(2)->render_view_host()->process());
+  NavigateTabHelper(browser()->GetTabContentsAt(2), app_url);
+  EXPECT_EQ(host2->process(),
+            browser()->GetTabContentsAt(2)->render_view_host()->process());
+}
+
 // Tests that app process switching works properly in the following scenario:
 // 1. navigate to a page1 in the app
 // 2. page1 redirects to a page2 outside the app extent (ie, "/server-redirect")
