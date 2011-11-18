@@ -42,12 +42,13 @@ ComponentLoader::ComponentLoader(ExtensionServiceInterface* extension_service,
 }
 
 ComponentLoader::~ComponentLoader() {
+  ClearAllRegistered();
 }
 
 void ComponentLoader::LoadAll() {
   for (RegisteredComponentExtensions::iterator it =
-           component_extensions_.begin();
-       it != component_extensions_.end(); ++it) {
+          component_extensions_.begin();
+      it != component_extensions_.end(); ++it) {
     Load(*it);
   }
 }
@@ -63,6 +64,16 @@ DictionaryValue* ComponentLoader::ParseManifest(
   }
   // Transfer ownership to the caller.
   return static_cast<DictionaryValue*>(manifest.release());
+}
+
+void ComponentLoader::ClearAllRegistered() {
+  for (RegisteredComponentExtensions::iterator it =
+          component_extensions_.begin();
+      it != component_extensions_.end(); ++it) {
+      delete it->manifest;
+  }
+
+  component_extensions_.clear();
 }
 
 const Extension* ComponentLoader::Add(
@@ -135,7 +146,8 @@ void ComponentLoader::Remove(const FilePath& root_directory) {
   if (it == component_extensions_.end())
     return;
 
-  const DictionaryValue* manifest = it->manifest;
+  // The list owns the dictionary, so it must be deleted after removal.
+  scoped_ptr<const DictionaryValue> manifest(it->manifest);
 
   // Remove the extension from the list of registered extensions.
   *it = component_extensions_.back();

@@ -67,9 +67,7 @@ class ComponentLoader : public content::NotificationObserver {
   DictionaryValue* ParseManifest(const std::string& manifest_contents) const;
 
   // Clear the list of registered extensions.
-  void ClearAllRegistered() {
-    component_extensions_.clear();
-  }
+  void ClearAllRegistered();
 
  private:
   // Information about a registered component extension.
