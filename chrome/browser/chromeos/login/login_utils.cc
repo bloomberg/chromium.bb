@@ -244,7 +244,7 @@ class OAuthLoginVerifier : public base::SupportsWeakPtr<OAuthLoginVerifier>,
     if (oauth_fetcher_.HasPendingFetch() || gaia_fetcher_.HasPendingFetch())
       return;
 
-    if (CrosLibrary::Get()->EnsureLoaded()) {
+    if (CrosLibrary::Get()->libcros_loaded()) {
       // Delay the verification if the network is not connected or on a captive
       // portal.
       const Network* network =
