@@ -42,6 +42,7 @@
 #include "chrome/browser/extensions/pending_extension_info.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/plugin_prefs_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -379,9 +380,9 @@ class ExtensionTestingProfile : public TestingProfile {
 
 // Our message loop may be used in tests which require it to be an IO loop.
 ExtensionServiceTestBase::ExtensionServiceTestBase()
-    : service_(NULL),
+    : loop_(MessageLoop::TYPE_IO),
+      service_(NULL),
       total_successes_(0),
-      loop_(MessageLoop::TYPE_IO),
       ui_thread_(BrowserThread::UI, &loop_),
       db_thread_(BrowserThread::DB, &loop_),
       webkit_thread_(BrowserThread::WEBKIT, &loop_),
@@ -414,6 +415,8 @@ void ExtensionServiceTestBase::InitializeExtensionService(
   Profile::RegisterUserPrefs(prefs);
   browser::RegisterUserPrefs(prefs);
   profile->SetPrefService(prefs);
+
+  PluginPrefsFactory::GetInstance()->ForceRegisterPrefsForTest(prefs);
 
   profile_.reset(profile);
 
@@ -984,7 +987,6 @@ void PackExtensionTestClient::OnPackFailure(const std::string& error_message) {
 
 // Test loading good extensions from the profile directory.
 TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
-  base::ShadowingAtExitManager at_exit_manager;
   PluginService::GetInstance()->Init();
 
   // Initialize the test dir with a good Preferences/extensions.
@@ -1124,7 +1126,6 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
 // Test that partially deleted extensions are cleaned up during startup
 // Test loading bad extensions from the profile directory.
 TEST_F(ExtensionServiceTest, CleanupOnStartup) {
-  base::ShadowingAtExitManager at_exit_manager;
   PluginService::GetInstance()->Init();
 
   FilePath source_install_dir = data_dir_
@@ -1460,7 +1461,6 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
 // an extension contains an NPAPI plugin. Don't run this test on Chrome OS
 // since they don't support plugins.
 TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
-  base::ShadowingAtExitManager at_exit_manager;
   PluginService::GetInstance()->Init();
 
   InitializeEmptyExtensionService();

@@ -6,5 +6,3 @@ RenderViewTest.OnHandleKeyboardEvent
 ConnectionTesterTest.DeleteWhileInProgress
 # Fails on CrOS, see http://crbug.com/104030
 GViewRequestInterceptorTest.*
-# Multiple Memcheck reports. See http://crbug.com/104443.
-ExtensionServiceTest.CleanupOnStartup

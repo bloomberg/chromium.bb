@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_UNITTEST_H_
 #pragma once
 
+#include "base/at_exit.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -48,6 +49,8 @@ class ExtensionServiceTestBase : public testing::Test {
  protected:
   void InitializeExtensionServiceHelper(bool autoupdate_enabled);
 
+  MessageLoop loop_;
+  base::ShadowingAtExitManager at_exit_manager_;
   ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
   FilePath extensions_install_dir_;
@@ -55,7 +58,6 @@ class ExtensionServiceTestBase : public testing::Test {
   // Owned by |profile_|.
   ExtensionService* service_;
   size_t total_successes_;
-  MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread webkit_thread_;
