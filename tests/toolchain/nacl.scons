@@ -185,8 +185,9 @@ node = env.CommandSelLdrTestNacl('strtoll.out', strtoll_nexe)
 env.AddNodeToTestSuite(node,
                        ['toolchain_tests', 'small_tests'],
                        'run_strtoll_test',
-                       is_broken=(env.Bit('nacl_glibc') and
-                                  env.Bit('target_x86_64')))
+                       is_broken=((env.Bit('nacl_glibc') and
+                                  env.Bit('target_x86_64')) or
+                                  env.Bit('bitcode')))
 
 strtoull_nexe = env.ComponentProgram('strtoull', 'strtoull.c',
                                     EXTRA_LIBS=['${NONIRT_LIBS}'])
@@ -194,5 +195,6 @@ node = env.CommandSelLdrTestNacl('strtoull.out', strtoull_nexe)
 env.AddNodeToTestSuite(node,
                        ['toolchain_tests', 'small_tests'],
                        'run_strtoull_test',
-                       is_broken=(env.Bit('nacl_glibc') and
-                                  env.Bit('target_x86_64')))
+                       is_broken=((env.Bit('nacl_glibc') and
+                                  env.Bit('target_x86_64')) or
+                                  env.Bit('bitcode')))
