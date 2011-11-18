@@ -35,10 +35,10 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
   }
 
   // views::WidgetDelegate interface.
-  virtual bool CanResize() const OVERRIDE { return true; }
-  virtual views::View* GetContentsView() OVERRIDE {
-    return this;
+  virtual views::View* GetInitiallyFocusedView() OVERRIDE {
+    return GetFocusView();
   }
+  virtual bool CanResize() const OVERRIDE { return true; }
   virtual void WindowClosing() OVERRIDE {
     if (!closed_via_webui_)
       html_delegate_->OnDialogClosed(std::string());
@@ -49,9 +49,11 @@ class ConstrainedHtmlDelegateViews : public TabContentsContainer,
   virtual const views::Widget* GetWidget() const OVERRIDE {
     return View::GetWidget();
   }
-
   virtual string16 GetWindowTitle() const OVERRIDE {
     return html_delegate_->GetDialogTitle();
+  }
+  virtual views::View* GetContentsView() OVERRIDE {
+    return this;
   }
 
   // HtmlDialogTabContentsDelegate interface.
