@@ -11,7 +11,9 @@
 #include <string.h>
 
 int test(const char *str, int64_t want, int base) {
-  int64_t val = strtoll(str, 0, base);
+  int64_t val;
+  errno = 0; /* errno is undefined on success unless initialized */
+  val = strtoll(str, 0, base);
   if (errno != 0) {
     fprintf(stderr, "strtoll(\"%s\", 0, %d): %s\n", str, base, strerror(errno));
     return 1;
