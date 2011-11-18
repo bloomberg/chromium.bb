@@ -9,6 +9,9 @@ Import('env')
 # TODO(robertm): get rid of this if possible
 env.Append(CCFLAGS=['-fno-strict-aliasing'])
 
+# BUG= http://code.google.com/p/nativeclient/issues/detail?id=1248
+if env.Bit('bitcode') and env.Bit('nacl_glibc'):
+  env.AddBiasForPNaCl()
 
 # NOTE: keep this sync'ed with build.scons
 trusted_untrusted_shared = [

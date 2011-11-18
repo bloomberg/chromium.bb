@@ -6,6 +6,10 @@
 Import('env')
 env.Append(CCFLAGS=['-Wno-long-long'])
 
+# BUG= http://code.google.com/p/nativeclient/issues/detail?id=1248
+if env.Bit('bitcode') and env.Bit('nacl_glibc'):
+  env.AddBiasForPNaCl()
+
 platform_inputs = [
     'nacl_check.c',
     'nacl_log.c',
