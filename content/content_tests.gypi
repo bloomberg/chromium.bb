@@ -10,6 +10,7 @@
       'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         '../build/temp_gyp/googleurl.gyp:googleurl',
+        'content_browser',
         'content_common',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
