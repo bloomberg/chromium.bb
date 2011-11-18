@@ -21,19 +21,19 @@ class Protector;
 // Base class for setting change tracked by Protector.
 class SettingChange {
  public:
-  SettingChange();
-  virtual ~SettingChange();
+  SettingChange() {}
+  virtual ~SettingChange() {}
 
   // Applies initial actions to the setting if needed. Must be called before
   // any other calls are made, including text getters. Returns true if
   // initialization was successful.
-  virtual bool Init(Protector* protector);
+  virtual bool Init(Protector* protector) { return true; }
 
   // Persists new setting if needed.
-  virtual void Apply(Protector* protector);
+  virtual void Apply(Protector* protector) {}
 
   // Restores old setting if needed.
-  virtual void Discard(Protector* protector);
+  virtual void Discard(Protector* protector) {}
 
   // Returns the wrench menu item and bubble title.
   virtual string16 GetTitle() const = 0;
