@@ -2960,10 +2960,6 @@ nacl_env.PrependUnique(
     )
 
 if nacl_env.Bit('bitcode'):
-  # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
-  nacl_env.FilterOut(CCFLAGS = ['-Werror'])
-  nacl_env.Append(CFLAGS = werror_flags)
-
   # passing -O when linking requests LTO, which does additional global
   # optimizations at link time
   nacl_env.Append(LINKFLAGS=['-O3'])
