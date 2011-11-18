@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
@@ -45,19 +47,19 @@ VideoCaptureManager::VideoCaptureManager()
 }
 
 VideoCaptureManager::~VideoCaptureManager() {
-  vc_device_thread_.Stop();
   // TODO(mflodman) Remove this temporary solution when shut-down issue is
   // resolved, i.e. all code below this comment.
   // Temporary solution: close all open devices and delete them, after the
   // thread is stopped.
   DLOG_IF(ERROR, !devices_.empty()) << "VideoCaptureManager: Open devices!";
-  for (VideoCaptureDevices::iterator it = devices_.begin();
-       it != devices_.end();
-       ++it) {
-    it->second->DeAllocate();
-    delete it->second;
-  }
-  STLDeleteValues(&controllers_);
+  listener_ = NULL;
+  // The devices must be stopped on the device thread to avoid threading issues
+  // in native device code.
+  vc_device_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoCaptureManager::TerminateOnDeviceThread,
+                 base::Unretained(this)));
+  vc_device_thread_.Stop();
 }
 
 void VideoCaptureManager::Register(MediaStreamProviderListener* listener) {
@@ -500,6 +502,19 @@ media::VideoCaptureDevice* VideoCaptureManager::GetDeviceInternal(
     }
   }
   return NULL;
+}
+
+void VideoCaptureManager::TerminateOnDeviceThread() {
+  DCHECK(IsOnCaptureDeviceThread());
+
+  std::set<media::VideoCaptureDevice*> devices_to_delete;
+  for (VideoCaptureDevices::iterator it = devices_.begin();
+       it != devices_.end(); ++it) {
+    it->second->DeAllocate();
+    devices_to_delete.insert(it->second);
+  }
+  STLDeleteElements(&devices_to_delete);
+  STLDeleteValues(&controllers_);
 }
 
 }  // namespace media_stream
