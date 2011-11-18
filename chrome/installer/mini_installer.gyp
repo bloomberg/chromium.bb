@@ -22,7 +22,6 @@
         ],
         'include_dirs': [
           '../..',
-          '<(PRODUCT_DIR)',
           '<(INTERMEDIATE_DIR)',
           '<(SHARED_INTERMEDIATE_DIR)/chrome',
         ],
@@ -209,13 +208,15 @@
                 '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).7z',
                 '<(PRODUCT_DIR)/<(RULE_INPUT_NAME).packed.7z',
                 '<(PRODUCT_DIR)/setup.ex_',
-                '<(PRODUCT_DIR)/packed_files.txt',
+                '<(INTERMEDIATE_DIR)/packed_files.rc',
               ],
               'action': [
                 'python',
                 '<(create_installer_archive_py_path)',
-                '--output_dir=<(PRODUCT_DIR)',
-                '--input_file=<(RULE_INPUT_PATH)',
+                '--build_dir', '<(PRODUCT_DIR)',
+                '--staging_dir', '<(INTERMEDIATE_DIR)',
+                '--input_file', '<(RULE_INPUT_PATH)',
+                '--resource_file_path', '<(INTERMEDIATE_DIR)/packed_files.rc',
                 # TODO(sgk):  may just use environment variables
                 #'--distribution=$(CHROMIUM_BUILD)',
                 '--distribution=_google_chrome',
