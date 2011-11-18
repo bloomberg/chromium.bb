@@ -87,9 +87,31 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+  // Shutdown the upgrade detector for Chrome OS. The upgrade detector
+  // stops monitoring changes from the update engine.
+  if (UpgradeDetectorChromeos::GetInstance())
+    UpgradeDetectorChromeos::GetInstance()->Shutdown();
+
+  // Shutdown the network change notifier for Chrome OS. The network
+  // change notifier stops monitoring changes from the power manager and
+  // the network manager.
+  if (chromeos::CrosNetworkChangeNotifierFactory::GetInstance())
+    chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Shutdown();
+
   chromeos::disks::DiskMountManager::Shutdown();
 
   chromeos::BluetoothManager::Shutdown();
+
+  // We should remove observers attached to D-Bus clients before
+  // DBusThreadManager is shut down.
+  if (session_manager_observer_.get()) {
+    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
+        RemoveObserver(session_manager_observer_.get());
+  }
+  if (brightness_observer_.get()) {
+    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
+        ->RemoveObserver(brightness_observer_.get());
+  }
 
   chromeos::DBusThreadManager::Shutdown();
 
@@ -147,7 +169,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 }
 
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
-  ChromeBrowserMainPartsLinux::PostMainMessageLoopStart();
+  ChromeBrowserMainPartsPosix::PostMainMessageLoopStart();
   MessageLoopForUI* message_loop = MessageLoopForUI::current();
   message_loop->AddObserver(g_message_loop_observer.Pointer());
 
@@ -188,32 +210,5 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
       initial_browser_window_observer_.reset(
           new chromeos::InitialBrowserWindowObserver);
 #endif
-  }
-}
-
-// Shut down services before the browser process, etc are destroyed.
-void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
-  ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
-
-  // Shutdown the upgrade detector for Chrome OS. The upgrade detector
-  // stops monitoring changes from the update engine.
-  if (UpgradeDetectorChromeos::GetInstance())
-    UpgradeDetectorChromeos::GetInstance()->Shutdown();
-
-  // Shutdown the network change notifier for Chrome OS. The network
-  // change notifier stops monitoring changes from the power manager and
-  // the network manager.
-  if (chromeos::CrosNetworkChangeNotifierFactory::GetInstance())
-    chromeos::CrosNetworkChangeNotifierFactory::GetInstance()->Shutdown();
-
-  // We should remove observers attached to D-Bus clients before
-  // DBusThreadManager is shut down.
-  if (session_manager_observer_.get()) {
-    chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
-        RemoveObserver(session_manager_observer_.get());
-  }
-  if (brightness_observer_.get()) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
-        ->RemoveObserver(brightness_observer_.get());
   }
 }

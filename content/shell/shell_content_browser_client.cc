@@ -28,9 +28,10 @@ ShellContentBrowserClient::ShellContentBrowserClient()
 ShellContentBrowserClient::~ShellContentBrowserClient() {
 }
 
-BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
-    const content::MainFunctionParams& parameters) {
-  return new ShellBrowserMainParts(parameters);
+void ShellContentBrowserClient::CreateBrowserMainParts(
+    const content::MainFunctionParams& parameters,
+    std::vector<BrowserMainParts*>* parts_list) {
+  parts_list->push_back(new ShellBrowserMainParts(parameters));
 }
 
 RenderWidgetHostView* ShellContentBrowserClient::CreateViewForWidget(

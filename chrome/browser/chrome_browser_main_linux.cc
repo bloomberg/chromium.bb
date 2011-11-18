@@ -5,7 +5,7 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chrome_browser_main_extra_parts_gtk.h"
+#include "chrome/browser/chrome_browser_parts_gtk.h"
 #endif
 
 ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
@@ -18,7 +18,7 @@ void ChromeBrowserMainPartsLinux::ShowMissingLocaleMessageBox() {
   // This should never happen on Aura.
   NOTREACHED() << chrome_browser::kMissingLocaleDataMessage;
 #elif defined(TOOLKIT_USES_GTK)
-  ChromeBrowserMainExtraPartsGtk::ShowMessageBox(
+  ChromeBrowserPartsGtk::ShowMessageBox(
       chrome_browser::kMissingLocaleDataMessage);
 #else
 #error "Need MessageBox implementation for linux without Aura or Gtk"
