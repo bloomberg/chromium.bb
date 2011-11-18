@@ -5219,6 +5219,15 @@
    fun:_ZN8chromeos18LowBatteryObserver12PowerChangedERKNS_17PowerSupplyStatusE
    fun:_ZN8chromeos26PowerManagerClientStubImpl6UpdateEv
 }
+{
+   bug_104775
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base5Value18CreateIntegerValueEi
+   fun:_ZN22HostContentSettingsMap24SetDefaultContentSettingE19ContentSettingsType14ContentSetting
+   fun:_ZN14CookieSettings23SetDefaultCookieSettingE14ContentSetting
+   fun:_ZN60ExtensionSpecialStoragePolicyTest_HasSessionOnlyOrigins_Test8TestBodyEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
