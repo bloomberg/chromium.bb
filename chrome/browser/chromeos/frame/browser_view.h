@@ -46,19 +46,6 @@ class BrowserView : public ::BrowserView,
   explicit BrowserView(Browser* browser);
   virtual ~BrowserView();
 
-  // Adds a new tray icon/button to the Chrome OS Tray.
-  // Takes ownership of the button object.
-  void AddTrayButton(StatusAreaButton* button, bool bordered);
-
-  // Remove an existing tray button from the Chrome OS Tray.
-  // Pointer will become invalid after this call.
-  void RemoveTrayButton(StatusAreaButton* button);
-
-  // Check if a button is currently contained in the view.
-  bool ContainsButton(StatusAreaButton* button);
-
-  static BrowserView* GetBrowserViewForBrowser(Browser* browser);
-
   // BrowserView implementation.
   virtual void Init() OVERRIDE;
   virtual void Show() OVERRIDE;
