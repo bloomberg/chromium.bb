@@ -50,9 +50,7 @@ void WebMediaPlayerProxy::SetVideoRenderer(
 }
 
 WebDataSourceBuildObserverHack WebMediaPlayerProxy::GetBuildObserver() {
-  if (build_observer_.is_null())
-    build_observer_ = base::Bind(&WebMediaPlayerProxy::AddDataSource, this);
-  return build_observer_;
+  return base::Bind(&WebMediaPlayerProxy::AddDataSource, this);
 }
 
 void WebMediaPlayerProxy::Paint(SkCanvas* canvas, const gfx::Rect& dest_rect) {

@@ -4697,24 +4697,6 @@
    fun:_ZN25TestingAutomationProvider42NavigateToURLBlockUntilNavigationsCompleteEiRK4GURLiPN3IPC7MessageE
 }
 {
-   bug_100583
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_media18WebMediaPlayerImpl10InitializeEPN6WebKit8WebFrameEb13scoped_refptrINS_16WebVideoRendererEE
-   ...
-   fun:_ZN6WebKitL20createWebMediaPlayerEPNS_20WebMediaPlayerClientEPN7WebCore5FrameE
-   fun:_ZN6WebKit24WebMediaPlayerClientImpl12loadInternalEv
-   fun:_ZN6WebKit24WebMediaPlayerClientImpl4loadERKN3WTF6StringE
-   fun:_ZN7WebCore11MediaPlayer23loadWithNextMediaEngineEPNS_18MediaPlayerFactoryE
-   fun:_ZN7WebCore11MediaPlayer4loadERKN3WTF6StringERKNS_11ContentTypeE
-   fun:_ZN7WebCore16HTMLMediaElement12loadResourceERKNS_4KURLERNS_11ContentTypeE
-   ...
-   fun:_ZN7WebCore16HTMLMediaElement19selectMediaResourceEv
-   fun:_ZN7WebCore16HTMLMediaElement12loadInternalEv
-   fun:_ZN7WebCore16HTMLMediaElement14loadTimerFiredEPNS_5TimerIS0_EE
-   fun:_ZN7WebCore5TimerINS_16HTMLMediaElementEE5firedEv
-}
-{
    bug_100608
    Memcheck:Leak
    fun:_Znw*

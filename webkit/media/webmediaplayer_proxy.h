@@ -103,7 +103,6 @@ class WebMediaPlayerProxy
   base::Lock data_sources_lock_;
   typedef std::list<scoped_refptr<WebDataSource> > DataSourceList;
   DataSourceList data_sources_;
-  WebDataSourceBuildObserverHack build_observer_;
 
   scoped_refptr<WebVideoRenderer> video_renderer_;
 
