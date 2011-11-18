@@ -10,7 +10,7 @@
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/common/spellcheck_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
 
@@ -93,10 +93,11 @@ void SpellCheckMessageFilter::OnPlatformRequestTextCheck(
 }
 
 void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
   if (!host)
     return;  // Teardown.
-  Profile* profile = Profile::FromBrowserContext(host->browser_context());
+  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   // The renderer has requested that we initialize its spellchecker. This should
   // generally only be called once per session, as after the first call, all
   // future renderers will be passed the initialization information on startup
@@ -115,11 +116,12 @@ void SpellCheckMessageFilter::OnSpellCheckerRequestDictionary() {
 
 void SpellCheckMessageFilter::OnNotifyChecked(const string16& word,
                                               bool misspelled) {
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
   if (!host)
     return;  // Teardown.
   // Delegates to SpellCheckHost which tracks the stats of our spellchecker.
-  Profile* profile = Profile::FromBrowserContext(host->browser_context());
+  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   SpellCheckHost* spellcheck_host = profile->GetSpellCheckHost();
   if (spellcheck_host && spellcheck_host->GetMetrics())
     spellcheck_host->GetMetrics()->RecordCheckedWordStats(word, misspelled);

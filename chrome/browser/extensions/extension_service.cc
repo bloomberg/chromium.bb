@@ -87,12 +87,12 @@
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/user_metrics.h"
 #include "content/common/pepper_plugin_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/database/database_tracker.h"
@@ -916,11 +916,12 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
       content::Details<const Extension>(extension));
 
   // Tell renderers about the new extension.
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    RenderProcessHost* host = i.GetCurrentValue();
+    content::RenderProcessHost* host = i.GetCurrentValue();
     Profile* host_profile =
-        Profile::FromBrowserContext(host->browser_context());
+        Profile::FromBrowserContext(host->GetBrowserContext());
     if (host_profile->GetOriginalProfile() == profile_->GetOriginalProfile()) {
       std::vector<ExtensionMsg_Loaded_Params> loaded_extensions(
           1, ExtensionMsg_Loaded_Params(extension));
@@ -1036,11 +1037,12 @@ void ExtensionService::NotifyExtensionUnloaded(
       content::Source<Profile>(profile_),
       content::Details<UnloadedExtensionInfo>(&details));
 
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    RenderProcessHost* host = i.GetCurrentValue();
+    content::RenderProcessHost* host = i.GetCurrentValue();
     Profile* host_profile =
-        Profile::FromBrowserContext(host->browser_context());
+        Profile::FromBrowserContext(host->GetBrowserContext());
     if (host_profile->GetOriginalProfile() == profile_->GetOriginalProfile())
       host->Send(new ExtensionMsg_Unloaded(extension->id()));
   }
@@ -2316,10 +2318,10 @@ void ExtensionService::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      RenderProcessHost* process =
-          content::Source<RenderProcessHost>(source).ptr();
+      content::RenderProcessHost* process =
+          content::Source<content::RenderProcessHost>(source).ptr();
       Profile* host_profile =
-          Profile::FromBrowserContext(process->browser_context());
+          Profile::FromBrowserContext(process->GetBrowserContext());
       if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
           break;
 
@@ -2343,21 +2345,21 @@ void ExtensionService::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      RenderProcessHost* process =
-          content::Source<RenderProcessHost>(source).ptr();
+      content::RenderProcessHost* process =
+          content::Source<content::RenderProcessHost>(source).ptr();
       Profile* host_profile =
-          Profile::FromBrowserContext(process->browser_context());
+          Profile::FromBrowserContext(process->GetBrowserContext());
       if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
           break;
 
-      installed_app_hosts_.erase(process->id());
+      installed_app_hosts_.erase(process->GetID());
 
-      process_map_.Remove(process->id());
+      process_map_.Remove(process->GetID());
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::Bind(&ExtensionInfoMap::UnregisterAllExtensionsInProcess,
                      profile_->GetExtensionInfoMap(),
-                     process->id()));
+                     process->GetID()));
       break;
     }
     case chrome::NOTIFICATION_PREF_CHANGED: {

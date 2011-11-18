@@ -19,10 +19,10 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 
 #if defined(OS_MACOSX)
@@ -72,7 +72,8 @@ class BrowserActivityObserver : public content::NotificationObserver {
   // Counts the number of active RenderProcessHosts and logs them.
   void LogRenderProcessHostCount() const {
     int hosts_count = 0;
-    for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+    for (content::RenderProcessHost::iterator i(
+            content::RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance())
       ++hosts_count;
     UMA_HISTOGRAM_CUSTOM_COUNTS("MPArch.RPHCountPerLoad", hosts_count,

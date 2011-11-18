@@ -10,20 +10,21 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 
 namespace {
 
 RenderViewHost* FindFirstDevToolsHost() {
-  RenderProcessHost::iterator hosts = RenderProcessHost::AllHostsIterator();
+  content::RenderProcessHost::iterator hosts =
+      content::RenderProcessHost::AllHostsIterator();
   for (; !hosts.IsAtEnd(); hosts.Advance()) {
-    RenderProcessHost* render_process_host = hosts.GetCurrentValue();
+    content::RenderProcessHost* render_process_host = hosts.GetCurrentValue();
     DCHECK(render_process_host);
     if (!render_process_host->HasConnection())
       continue;
-    RenderProcessHost::listeners_iterator iter(
+    content::RenderProcessHost::listeners_iterator iter(
         render_process_host->ListenersIterator());
     for (; !iter.IsAtEnd(); iter.Advance()) {
       const RenderWidgetHost* widget =

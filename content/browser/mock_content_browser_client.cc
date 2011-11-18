@@ -42,8 +42,8 @@ void MockContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
 }
 
-void MockContentBrowserClient::BrowserRenderProcessHostCreated(
-    BrowserRenderProcessHost* host) {
+void MockContentBrowserClient::RenderProcessHostCreated(
+    RenderProcessHost* host) {
 }
 
 void MockContentBrowserClient::PluginProcessHostCreated(

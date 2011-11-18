@@ -30,9 +30,9 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/child_process_info.h"
+#include "content/public/browser/render_process_host.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -313,7 +313,8 @@ void ChromeRenderMessageFilter::OnGetExtensionMessageBundleOnFileThread(
 void ChromeRenderMessageFilter::OnExtensionAddListener(
     const std::string& extension_id,
     const std::string& event_name) {
-  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
+  content::RenderProcessHost* process =
+      content::RenderProcessHost::FromID(render_process_id_);
   if (!process || !profile_->GetExtensionEventRouter())
     return;
 
@@ -324,7 +325,8 @@ void ChromeRenderMessageFilter::OnExtensionAddListener(
 void ChromeRenderMessageFilter::OnExtensionRemoveListener(
     const std::string& extension_id,
     const std::string& event_name) {
-  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id_);
+  content::RenderProcessHost* process =
+      content::RenderProcessHost::FromID(render_process_id_);
   if (!process || !profile_->GetExtensionEventRouter())
     return;
 
@@ -345,7 +347,7 @@ void ChromeRenderMessageFilter::OnExtensionEventAck(
 }
 
 void ChromeRenderMessageFilter::OnExtensionCloseChannel(int port_id) {
-  if (!RenderProcessHost::FromID(render_process_id_))
+  if (!content::RenderProcessHost::FromID(render_process_id_))
     return;  // To guard against crash in browser_tests shutdown.
 
   if (profile_->GetExtensionMessageService())

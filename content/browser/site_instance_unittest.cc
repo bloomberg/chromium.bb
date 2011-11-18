@@ -9,7 +9,7 @@
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/mock_content_browser_client.h"
-#include "content/browser/renderer_host/browser_render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
@@ -68,9 +68,9 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
            url == GURL(chrome::kAboutCrashURL);
   }
 
-  virtual bool IsSuitableHost(RenderProcessHost* process_host,
+  virtual bool IsSuitableHost(content::RenderProcessHost* process_host,
                               const GURL& site_url) OVERRIDE {
-    return (privileged_process_id_ == process_host->id()) ==
+    return (privileged_process_id_ == process_host->GetID()) ==
         site_url.SchemeIs(kPrivilegedScheme);
   }
 
@@ -295,7 +295,7 @@ TEST_F(SiteInstanceTest, UpdateMaxPageID) {
 TEST_F(SiteInstanceTest, GetProcess) {
   // Ensure that GetProcess returns a process.
   scoped_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
-  scoped_ptr<RenderProcessHost> host1;
+  scoped_ptr<content::RenderProcessHost> host1;
   scoped_refptr<SiteInstance> instance(
       SiteInstance::CreateSiteInstance(browser_context.get()));
   host1.reset(instance->GetProcess());
@@ -304,7 +304,7 @@ TEST_F(SiteInstanceTest, GetProcess) {
   // Ensure that GetProcess creates a new process.
   scoped_refptr<SiteInstance> instance2(
       SiteInstance::CreateSiteInstance(browser_context.get()));
-  scoped_ptr<RenderProcessHost> host2(instance2->GetProcess());
+  scoped_ptr<content::RenderProcessHost> host2(instance2->GetProcess());
   EXPECT_TRUE(host2.get() != NULL);
   EXPECT_NE(host1.get(), host2.get());
 }
@@ -514,8 +514,8 @@ TEST_F(SiteInstanceTest, OneSiteInstancePerSiteInBrowserContext) {
   // browsing_instances will be deleted when their SiteInstances are deleted
 }
 
-static SiteInstance* CreateSiteInstance(RenderProcessHostFactory* factory,
-                                        const GURL& url) {
+static SiteInstance* CreateSiteInstance(
+    content::RenderProcessHostFactory* factory, const GURL& url) {
   SiteInstance* instance = SiteInstance::CreateSiteInstanceForURL(NULL, url);
   instance->set_render_process_host_factory(factory);
   return instance;
@@ -537,13 +537,13 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   scoped_refptr<SiteInstance> extension1_instance(
       CreateSiteInstance(&rph_factory,
       GURL(kPrivilegedScheme + std::string("://foo/bar"))));
-  SetPrivilegedProcessId(extension1_instance->GetProcess()->id());
+  SetPrivilegedProcessId(extension1_instance->GetProcess()->GetID());
 
   scoped_refptr<SiteInstance> extension2_instance(
       CreateSiteInstance(&rph_factory,
       GURL(kPrivilegedScheme + std::string("://baz/bar"))));
 
-  scoped_ptr<RenderProcessHost> extension_host(
+  scoped_ptr<content::RenderProcessHost> extension_host(
       extension1_instance->GetProcess());
   EXPECT_EQ(extension1_instance->GetProcess(),
             extension2_instance->GetProcess());
@@ -551,12 +551,13 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   // Create some WebUI instances and make sure they share a process.
   scoped_refptr<SiteInstance> webui1_instance(CreateSiteInstance(&rph_factory,
       GURL(chrome::kChromeUIScheme + std::string("://newtab"))));
-  policy->GrantWebUIBindings(webui1_instance->GetProcess()->id());
+  policy->GrantWebUIBindings(webui1_instance->GetProcess()->GetID());
 
   scoped_refptr<SiteInstance> webui2_instance( CreateSiteInstance(&rph_factory,
       GURL(chrome::kChromeUIScheme + std::string("://history"))));
 
-  scoped_ptr<RenderProcessHost> dom_host(webui1_instance->GetProcess());
+  scoped_ptr<content::RenderProcessHost> dom_host(
+      webui1_instance->GetProcess());
   EXPECT_EQ(webui1_instance->GetProcess(), webui2_instance->GetProcess());
 
   // Make sure none of differing privilege processes are mixed.

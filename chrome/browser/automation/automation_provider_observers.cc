@@ -73,12 +73,12 @@
 #include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/browser/download/save_package.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/child_process_info.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -143,8 +143,8 @@ void InitialLoadObserver::Observe(int type,
     }
   } else if (type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED) {
     base::TerminationStatus status =
-        content::Details<RenderProcessHost::RendererClosedDetails>(details)->
-            status;
+        content::Details<content::RenderProcessHost::RendererClosedDetails>(
+            details)->status;
     switch (status) {
       case base::TERMINATION_STATUS_NORMAL_TERMINATION:
         break;

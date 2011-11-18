@@ -54,7 +54,7 @@ class SpellCheckHostImpl : public SpellCheckHost,
 
   // SpellCheckHost implementation
   virtual void UnsetProfile() OVERRIDE;
-  virtual void InitForRenderer(RenderProcessHost* process) OVERRIDE;
+  virtual void InitForRenderer(content::RenderProcessHost* process) OVERRIDE;
   virtual void AddWord(const std::string& word) OVERRIDE;
   virtual const base::PlatformFile& GetDictionaryFile() const OVERRIDE;
   virtual const std::string& GetLanguage() const OVERRIDE;

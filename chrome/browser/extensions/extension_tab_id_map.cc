@@ -74,7 +74,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
           base::Bind(
               &ExtensionTabIdMap::SetTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
-              host->process()->id(), host->routing_id(),
+              host->process()->GetID(), host->routing_id(),
               tab->restore_tab_helper()->session_id().id(),
               tab->restore_tab_helper()->window_id().id()));
       break;
@@ -88,7 +88,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
           base::Bind(
               &ExtensionTabIdMap::SetTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
-              host->process()->id(), host->routing_id(),
+              host->process()->GetID(), host->routing_id(),
               tab->restore_tab_helper()->session_id().id(),
               tab->restore_tab_helper()->window_id().id()));
       break;
@@ -107,7 +107,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
           base::Bind(
               &ExtensionTabIdMap::SetTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
-              host->process()->id(), host->routing_id(),
+              host->process()->GetID(), host->routing_id(),
               tab->restore_tab_helper()->session_id().id(),
               tab->restore_tab_helper()->window_id().id()));
       break;
@@ -119,7 +119,7 @@ void ExtensionTabIdMap::TabObserver::Observe(
           base::Bind(
               &ExtensionTabIdMap::ClearTabAndWindowId,
               base::Unretained(ExtensionTabIdMap::GetInstance()),
-              host->process()->id(), host->routing_id()));
+              host->process()->GetID(), host->routing_id()));
       break;
     }
     default:

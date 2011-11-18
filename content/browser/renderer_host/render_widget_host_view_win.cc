@@ -22,7 +22,7 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_win.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
@@ -1911,8 +1911,8 @@ void RenderWidgetHostViewWin::Observe(
 
   // Get the RenderProcessHost that posted this notification, and exit
   // if it's not the one associated with this host view.
-  RenderProcessHost* render_process_host =
-      content::Source<RenderProcessHost>(source).ptr();
+  content::RenderProcessHost* render_process_host =
+      content::Source<content::RenderProcessHost>(source).ptr();
   DCHECK(render_process_host);
   if (!render_widget_host_ ||
       render_process_host != render_widget_host_->process())

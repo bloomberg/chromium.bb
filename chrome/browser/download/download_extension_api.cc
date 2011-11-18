@@ -35,9 +35,9 @@
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/download_types.h"
 #include "content/browser/download/interrupt_reasons.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 
@@ -220,7 +220,7 @@ bool DownloadsDownloadFunction::ParseArgs() {
   }
   iodata_->rdh = g_browser_process->resource_dispatcher_host();
   iodata_->resource_context = &profile()->GetResourceContext();
-  iodata_->render_process_host_id = render_view_host()->process()->id();
+  iodata_->render_process_host_id = render_view_host()->process()->GetID();
   iodata_->render_view_host_routing_id = render_view_host()->routing_id();
   return true;
 }

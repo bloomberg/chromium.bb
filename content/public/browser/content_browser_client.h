@@ -15,7 +15,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNotificationPresenter.h"
 
 class AccessTokenStore;
-class BrowserRenderProcessHost;
 class BrowserURLHandler;
 class CommandLine;
 class DevToolsManager;
@@ -24,7 +23,6 @@ class GURL;
 class MHTMLGenerationManager;
 class PluginProcessHost;
 class QuotaPermissionContext;
-class RenderProcessHost;
 class RenderViewHost;
 class RenderWidgetHost;
 class RenderWidgetHostView;
@@ -42,6 +40,7 @@ namespace content {
 class BrowserMainParts;
 struct MainFunctionParams;
 struct ShowDesktopNotificationHostMsgParams;
+class RenderProcessHost;
 }
 
 namespace crypto {
@@ -108,11 +107,11 @@ class ContentBrowserClient {
   // Notifies that a new RenderHostView has been created.
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host) = 0;
 
-  // Notifies that a BrowserRenderProcessHost has been created. This is called
-  // before the content layer adds its own BrowserMessageFilters, so that the
+  // Notifies that a RenderProcessHost has been created. This is called before
+  // the content layer adds its own BrowserMessageFilters, so that the
   // embedder's IPC filters have priority.
-  virtual void BrowserRenderProcessHostCreated(
-      BrowserRenderProcessHost* host) = 0;
+  virtual void RenderProcessHostCreated(
+      content::RenderProcessHost* host) = 0;
 
   // Notifies that a PluginProcessHost has been created. This is called
   // before the content layer adds its own message filters, so that the
@@ -138,7 +137,7 @@ class ContentBrowserClient {
 
   // Returns whether a new view for a given |site_url| can be launched in a
   // given |process_host|.
-  virtual bool IsSuitableHost(RenderProcessHost* process_host,
+  virtual bool IsSuitableHost(content::RenderProcessHost* process_host,
                               const GURL& site_url) = 0;
 
   // Called when a site instance is first associated with a process.

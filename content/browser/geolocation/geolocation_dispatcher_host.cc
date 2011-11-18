@@ -11,7 +11,7 @@
 #include "content/browser/geolocation/geolocation_permission_context.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_message_filter.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/common/geolocation_messages.h"
 #include "content/common/geoposition.h"

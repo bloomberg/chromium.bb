@@ -87,7 +87,7 @@ void ChromeRenderViewHostObserver::InitRenderViewHostForExtensions() {
     // TODO(aa): Totally lame to store this state in a global map in extension
     // service. Can we get it from EPM instead?
     profile_->GetExtensionService()->SetInstalledAppForRenderer(
-        render_view_host()->process()->id(), extension);
+        render_view_host()->process()->GetID(), extension);
   }
 }
 
@@ -96,7 +96,7 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   if (!extension)
     return;
 
-  RenderProcessHost* process = render_view_host()->process();
+  content::RenderProcessHost* process = render_view_host()->process();
 
   if (extension->is_app()) {
     Send(new ExtensionMsg_ActivateApplication(extension->id()));
@@ -105,7 +105,7 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
     // restarted (hence the re-initialization), so we need to update that
     // mapping.
     profile_->GetExtensionService()->SetInstalledAppForRenderer(
-        process->id(), extension);
+        process->GetID(), extension);
   }
 
   // Some extensions use chrome:// URLs.
@@ -113,14 +113,14 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
   if (type == Extension::TYPE_EXTENSION ||
       type == Extension::TYPE_PACKAGED_APP) {
     ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-        process->id(), chrome::kChromeUIScheme);
+        process->GetID(), chrome::kChromeUIScheme);
   }
 
   if (type == Extension::TYPE_EXTENSION &&
       profile_->GetExtensionService()->extension_prefs()->AllowFileAccess(
           extension->id())) {
     ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-        process->id(), chrome::kFileScheme);
+        process->GetID(), chrome::kFileScheme);
   }
 
   if (type == Extension::TYPE_EXTENSION ||

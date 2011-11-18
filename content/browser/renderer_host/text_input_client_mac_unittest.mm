@@ -9,7 +9,7 @@
 #include "base/threading/thread.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/common/text_input_client_messages.h"
@@ -129,7 +129,7 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
                       base::Unretained(service()), kPreviousValue));
 
   scoped_refptr<TextInputClientMessageFilter> filter(
-      new TextInputClientMessageFilter(widget()->process()->id()));
+      new TextInputClientMessageFilter(widget()->process()->GetID()));
   scoped_ptr<IPC::Message> message(
       new TextInputClientReplyMsg_GotCharacterIndexForPoint(
           widget()->routing_id(), kNotFoundValue));

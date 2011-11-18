@@ -31,12 +31,11 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/chrome_view_types.h"
 #include "content/browser/browsing_instance.h"
-#include "content/browser/renderer_host/browser_render_process_host.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "grit/browser_resources.h"
@@ -185,7 +184,7 @@ TabContents* ExtensionHost::GetAssociatedTabContents() const {
   return associated_tab_contents_;
 }
 
-RenderProcessHost* ExtensionHost::render_process_host() const {
+content::RenderProcessHost* ExtensionHost::render_process_host() const {
   return host_contents()->GetRenderProcessHost();
 }
 

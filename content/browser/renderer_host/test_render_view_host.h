@@ -19,6 +19,7 @@
 
 namespace content {
 class BrowserContext;
+class RenderProcessHostFactory;
 }
 
 namespace gfx {
@@ -262,11 +263,12 @@ class TestRenderViewHost : public RenderViewHost {
 // registered at a time, you can only have one of these objects at a time.
 class TestRenderViewHostFactory : public RenderViewHostFactory {
  public:
-  explicit TestRenderViewHostFactory(RenderProcessHostFactory* rph_factory);
+  explicit TestRenderViewHostFactory(
+      content::RenderProcessHostFactory* rph_factory);
   virtual ~TestRenderViewHostFactory();
 
   virtual void set_render_process_host_factory(
-      RenderProcessHostFactory* rph_factory);
+      content::RenderProcessHostFactory* rph_factory);
   virtual RenderViewHost* CreateRenderViewHost(
       SiteInstance* instance,
       RenderViewHostDelegate* delegate,
@@ -281,7 +283,7 @@ class TestRenderViewHostFactory : public RenderViewHostFactory {
   // Instead, we set it right before we create a new RenderViewHost, which
   // happens before the RenderProcessHost is created. This way, the instance
   // has the correct factory and creates our special RenderProcessHosts.
-  RenderProcessHostFactory* render_process_host_factory_;
+  content::RenderProcessHostFactory* render_process_host_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHostFactory);
 };

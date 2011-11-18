@@ -33,12 +33,15 @@ class BookmarkNode;
 class MetricsReportingScheduler;
 class PrefService;
 class Profile;
-class RenderProcessHost;
 class TemplateURLService;
 
 namespace base {
 class DictionaryValue;
 class MessageLoopProxy;
+}
+
+namespace content {
+class RenderProcessHost;
 }
 
 namespace prerender {
@@ -249,7 +252,7 @@ class MetricsService : public content::NotificationObserver,
   void IncrementLongPrefsValue(const char* path);
 
   // Records a renderer process crash.
-  void LogRendererCrash(RenderProcessHost* host,
+  void LogRendererCrash(content::RenderProcessHost* host,
                         base::TerminationStatus status,
                         bool was_alive);
 

@@ -18,6 +18,10 @@ class Point;
 class Canvas;
 }
 
+namespace content {
+class RenderProcessHost;
+}
+
 // A backing store that uses skia. This is a temporary backing store used by
 // RenderWidgetHostViewViews. In time, only GPU rendering will be used for
 // RWHVV, and then this backing store will be removed.
@@ -35,7 +39,7 @@ class BackingStoreSkia : public BackingStore {
   // BackingStore implementation.
   virtual size_t MemorySize() OVERRIDE;
   virtual void PaintToBackingStore(
-      RenderProcessHost* process,
+      content::RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,

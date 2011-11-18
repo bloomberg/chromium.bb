@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/eintr_wrapper.h"
 #include "base/threading/thread.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/common/view_messages.h"
@@ -194,7 +194,8 @@ void RenderWidgetHelper::OnDispatchUpdateMsg(UpdateMsgProxy* proxy) {
   OnDiscardUpdateMsg(proxy);
 
   // It is reasonable for the host to no longer exist.
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id_);
   if (host)
     host->OnMessageReceived(proxy->message);
 }

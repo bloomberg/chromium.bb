@@ -36,7 +36,7 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, ChromeInternalLoadsNTP) {
 // doesn't cause us to kill the process.  See http://crbug.com/104258.
 IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, LoadNTPInExistingProcess) {
   // Set max renderers to 1 to force running out of processes.
-  RenderProcessHost::SetMaxRendererProcessCountForTest(1);
+  content::RenderProcessHost::SetMaxRendererProcessCountForTest(1);
 
   // Start server for simple page.
   ASSERT_TRUE(test_server()->Start());

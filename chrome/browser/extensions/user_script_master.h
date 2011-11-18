@@ -26,8 +26,11 @@ namespace base {
 class StringPiece;
 }
 
-class Profile;
+namespace content {
 class RenderProcessHost;
+}
+
+class Profile;
 
 typedef std::map<std::string, ExtensionSet::ExtensionPathAndDefaultLocale>
     ExtensionsInfo;
@@ -135,7 +138,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Sends the renderer process a new set of user scripts.
-  void SendUpdate(RenderProcessHost* process,
+  void SendUpdate(content::RenderProcessHost* process,
                   base::SharedMemory* shared_memory);
 
   // Manages our notification registrations.

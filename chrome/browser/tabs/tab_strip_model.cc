@@ -25,13 +25,13 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 
 namespace {
 
@@ -1139,12 +1139,12 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& in_indices,
   if (browser_shutdown::GetShutdownType() == browser_shutdown::NOT_VALID) {
     // Construct a map of processes to the number of associated tabs that are
     // closing.
-    std::map<RenderProcessHost*, size_t> processes;
+    std::map<content::RenderProcessHost*, size_t> processes;
     for (size_t i = 0; i < indices.size(); ++i) {
       TabContentsWrapper* detached_contents = GetContentsAt(indices[i]);
-      RenderProcessHost* process =
+      content::RenderProcessHost* process =
           detached_contents->tab_contents()->GetRenderProcessHost();
-      std::map<RenderProcessHost*, size_t>::iterator iter =
+      std::map<content::RenderProcessHost*, size_t>::iterator iter =
           processes.find(process);
       if (iter == processes.end()) {
         processes[process] = 1;
@@ -1154,7 +1154,7 @@ bool TabStripModel::InternalCloseTabs(const std::vector<int>& in_indices,
     }
 
     // Try to fast shutdown the tabs that can close.
-    for (std::map<RenderProcessHost*, size_t>::iterator iter =
+    for (std::map<content::RenderProcessHost*, size_t>::iterator iter =
             processes.begin();
         iter != processes.end(); ++iter) {
       iter->first->FastShutdownForPageCount(iter->second);

@@ -265,7 +265,8 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
       virtual ~BogusClient() {}
     };
     resource.client = new BogusClient();
-    resource.render_process_host_id = contents()->GetRenderProcessHost()->id();
+    resource.render_process_host_id = contents()->GetRenderProcessHost()->
+        GetID();
     resource.render_view_id = contents()->render_view_host()->routing_id();
     csd_host_->OnSafeBrowsingHit(resource);
     delete resource.client;
@@ -412,7 +413,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   EXPECT_FALSE(resource.is_subresource);
   EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
             resource.threat_type);
-  EXPECT_EQ(contents()->GetRenderProcessHost()->id(),
+  EXPECT_EQ(contents()->GetRenderProcessHost()->GetID(),
             resource.render_process_host_id);
   EXPECT_EQ(contents()->render_view_host()->routing_id(),
             resource.render_view_id);
@@ -508,7 +509,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   EXPECT_FALSE(resource.is_subresource);
   EXPECT_EQ(SafeBrowsingService::CLIENT_SIDE_PHISHING_URL,
             resource.threat_type);
-  EXPECT_EQ(contents()->GetRenderProcessHost()->id(),
+  EXPECT_EQ(contents()->GetRenderProcessHost()->GetID(),
             resource.render_process_host_id);
   EXPECT_EQ(contents()->render_view_host()->routing_id(),
             resource.render_view_id);

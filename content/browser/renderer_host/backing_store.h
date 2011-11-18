@@ -21,6 +21,10 @@ namespace gfx {
 class Rect;
 }
 
+namespace content {
+class RenderProcessHost;
+}
+
 namespace skia {
 class PlatformCanvas;
 }
@@ -47,7 +51,7 @@ class CONTENT_EXPORT BackingStore {
   // the time it returns, in which case it will set |scheduled_callback| to
   // true and will call |callback| when completed.
   virtual void PaintToBackingStore(
-      RenderProcessHost* process,
+      content::RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,

@@ -8,8 +8,8 @@
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
 
@@ -31,7 +31,8 @@ void FieldTrialSynchronizer::NotifyAllRenderers(
   // need to be on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator it(
+          content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
     it.GetCurrentValue()->Send(
         new ChromeViewMsg_SetFieldTrialGroup(field_trial_name, group_name));

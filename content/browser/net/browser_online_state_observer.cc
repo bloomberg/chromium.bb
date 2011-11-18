@@ -4,8 +4,8 @@
 
 #include "content/browser/net/browser_online_state_observer.h"
 
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/view_messages.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "net/base/network_change_notifier.h"
 
 BrowserOnlineStateObserver::BrowserOnlineStateObserver() {
@@ -17,7 +17,8 @@ BrowserOnlineStateObserver::~BrowserOnlineStateObserver() {
 }
 
 void BrowserOnlineStateObserver::OnOnlineStateChanged(bool online) {
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator it(
+          content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
     it.GetCurrentValue()->Send(new ViewMsg_NetworkStateChanged(online));
   }

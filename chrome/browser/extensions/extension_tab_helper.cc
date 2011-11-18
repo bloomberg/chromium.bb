@@ -169,7 +169,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
       Profile::FromBrowserContext(tab_contents()->browser_context());
   ExtensionService* extension_service = profile->GetExtensionService();
   extensions::ProcessMap* process_map = extension_service->process_map();
-  RenderProcessHost* process =
+  content::RenderProcessHost* process =
       tab_contents_wrapper()->render_view_host()->process();
   const Extension* extension =
       extension_service->GetInstalledApp(requestor_url);
@@ -177,7 +177,7 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
       extension &&
       extension->HasAPIPermission(
           ExtensionAPIPermission::kExperimental) &&
-      process_map->Contains(extension->id(), process->id());
+      process_map->Contains(extension->id(), process->GetID());
   if (!allowed) {
     AppNotifyChannelSetupComplete("", "permission_error", return_route_id,
                                   callback_id);

@@ -42,11 +42,11 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/render_message_filter.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
@@ -272,7 +272,7 @@ string16 TaskManagerTabContentsResource::GetTitle() const {
       tab_contents_->profile()->GetExtensionService();
   extensions::ProcessMap* process_map = extension_service->process_map();
   bool is_app = extension_service->IsInstalledApp(url) &&
-      process_map->Contains(contents->GetRenderProcessHost()->id());
+      process_map->Contains(contents->GetRenderProcessHost()->GetID());
 
   int message_id = GetMessagePrefixID(
       is_app,
@@ -567,8 +567,8 @@ TaskManagerBackgroundContentsResourceProvider::GetResource(
 
   for (Resources::iterator i = resources_.begin(); i != resources_.end(); i++) {
     TabContents* tab = i->first->tab_contents();
-    if (tab->render_view_host()->process()->id() == render_process_host_id &&
-        tab->render_view_host()->routing_id() == routing_id) {
+    if (tab->render_view_host()->process()->GetID() == render_process_host_id
+        && tab->render_view_host()->routing_id() == routing_id) {
       return i->second;
     }
   }

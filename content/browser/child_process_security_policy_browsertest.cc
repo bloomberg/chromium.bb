@@ -11,8 +11,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

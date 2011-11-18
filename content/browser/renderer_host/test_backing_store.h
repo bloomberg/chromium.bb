@@ -16,7 +16,7 @@ class TestBackingStore : public BackingStore {
 
   // BackingStore implementation.
   virtual void PaintToBackingStore(
-      RenderProcessHost* process,
+      content::RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,

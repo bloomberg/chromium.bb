@@ -18,7 +18,7 @@
 #include "chrome/renderer/visitedlink_slave.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/browser/renderer_host/browser_render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/test/test_browser_thread.h"
@@ -495,12 +495,12 @@ class VisitCountingProfile : public TestingProfile {
   scoped_ptr<VisitedLinkMaster> visited_link_master_;
 };
 
-// Stub out as little as possible, borrowing from BrowserRenderProcessHost.
-class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
+// Stub out as little as possible, borrowing from RenderProcessHost.
+class VisitRelayingRenderProcessHost : public RenderProcessHostImpl {
  public:
   explicit VisitRelayingRenderProcessHost(
       content::BrowserContext* browser_context)
-          : BrowserRenderProcessHost(browser_context) {
+          : RenderProcessHostImpl(browser_context) {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_CREATED,
         content::Source<RenderProcessHost>(this),
@@ -509,7 +509,7 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
   virtual ~VisitRelayingRenderProcessHost() {
     content::NotificationService::current()->Notify(
         content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::Source<RenderProcessHost>(this),
+        content::Source<content::RenderProcessHost>(this),
         content::NotificationService::NoDetails());
   }
 
@@ -532,7 +532,7 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
   virtual bool Send(IPC::Message* msg) {
     VisitCountingProfile* counting_profile =
         static_cast<VisitCountingProfile*>(
-            Profile::FromBrowserContext(browser_context()));
+            Profile::FromBrowserContext(GetBrowserContext()));
 
     if (msg->type() == ChromeViewMsg_VisitedLink_Add::ID) {
       void* iter = NULL;
@@ -556,11 +556,11 @@ class VisitRelayingRenderProcessHost : public BrowserRenderProcessHost {
 };
 
 class VisitedLinkRenderProcessHostFactory
-    : public RenderProcessHostFactory {
+    : public content::RenderProcessHostFactory {
  public:
   VisitedLinkRenderProcessHostFactory()
-      : RenderProcessHostFactory() {}
-  virtual RenderProcessHost* CreateRenderProcessHost(
+      : content::RenderProcessHostFactory() {}
+  virtual content::RenderProcessHost* CreateRenderProcessHost(
       content::BrowserContext* browser_context) const OVERRIDE {
     return new VisitRelayingRenderProcessHost(browser_context);
   }

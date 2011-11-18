@@ -20,7 +20,6 @@
 
 class BackgroundContents;
 class Profile;
-class RenderProcessHost;
 class RenderViewHost;
 class RenderViewHostDelegate;
 class RenderWidgetHost;
@@ -31,6 +30,7 @@ struct ViewHostMsg_CreateWindow_Params;
 
 namespace content {
 class BrowserContext;
+class RenderProcessHost;
 }
 
 // Provides helper methods that provide common implementations of some
@@ -57,10 +57,10 @@ class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
   // GetCreatedWidget.
   RenderWidgetHostView* CreateNewWidget(int route_id,
                                         WebKit::WebPopupType popup_type,
-                                        RenderProcessHost* process);
+                                        content::RenderProcessHost* process);
 
   RenderWidgetHostView* CreateNewFullscreenWidget(
-      int route_id, RenderProcessHost* process);
+      int route_id, content::RenderProcessHost* process);
 
   // Finds the new RenderWidgetHost and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.

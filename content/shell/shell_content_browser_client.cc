@@ -56,8 +56,8 @@ void ShellContentBrowserClient::RenderViewHostCreated(
     RenderViewHost* render_view_host) {
 }
 
-void ShellContentBrowserClient::BrowserRenderProcessHostCreated(
-    BrowserRenderProcessHost* host) {
+void ShellContentBrowserClient::RenderProcessHostCreated(
+    RenderProcessHost* host) {
 }
 
 void ShellContentBrowserClient::PluginProcessHostCreated(

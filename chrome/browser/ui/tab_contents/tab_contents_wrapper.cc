@@ -589,7 +589,7 @@ void TabContentsWrapper::RenderViewCreated(RenderViewHost* render_view_host) {
 
 void TabContentsWrapper::DidBecomeSelected() {
   WebCacheManager::GetInstance()->ObserveActivity(
-      tab_contents()->GetRenderProcessHost()->id());
+      tab_contents()->GetRenderProcessHost()->GetID());
 }
 
 bool TabContentsWrapper::OnMessageReceived(const IPC::Message& message) {

@@ -4,7 +4,7 @@
 
 #include "content/browser/renderer_host/backing_store_skia.h"
 
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/canvas.h"
@@ -42,7 +42,7 @@ size_t BackingStoreSkia::MemorySize() {
 }
 
 void BackingStoreSkia::PaintToBackingStore(
-    RenderProcessHost* process,
+    content::RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,

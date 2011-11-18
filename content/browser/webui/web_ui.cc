@@ -11,7 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -72,7 +72,7 @@ void WebUI::OnWebUISend(const GURL& source_url,
                         const std::string& message,
                         const ListValue& args) {
   if (!ChildProcessSecurityPolicy::GetInstance()->
-          HasWebUIBindings(tab_contents_->GetRenderProcessHost()->id())) {
+          HasWebUIBindings(tab_contents_->GetRenderProcessHost()->GetID())) {
     NOTREACHED() << "Blocked unauthorized use of WebUIBindings.";
     return;
   }

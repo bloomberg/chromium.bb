@@ -293,7 +293,8 @@ void TranslateManager::Observe(int type,
           base::Bind(
               &TranslateManager::InitiateTranslationPosted,
               weak_method_factory_.GetWeakPtr(),
-              controller->tab_contents()->render_view_host()->process()->id(),
+              controller->tab_contents()->render_view_host()->process()->
+                  GetID(),
               controller->tab_contents()->render_view_host()->routing_id(),
               helper->language_state().original_language()));
       break;
@@ -572,7 +573,7 @@ void TranslateManager::TranslatePage(TabContents* tab_contents,
   // script.  Once it is downloaded we'll do the translate.
   RenderViewHost* rvh = tab_contents->render_view_host();
   PendingRequest request;
-  request.render_process_id = rvh->process()->id();
+  request.render_process_id = rvh->process()->GetID();
   request.render_view_id = rvh->routing_id();
   request.page_id = entry->page_id();
   request.source_lang = source_lang;

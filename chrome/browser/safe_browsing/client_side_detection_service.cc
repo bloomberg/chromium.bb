@@ -24,10 +24,10 @@
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "crypto/sha2.h"
 #include "googleurl/src/gurl.h"
@@ -214,15 +214,16 @@ void ClientSideDetectionService::Observe(
     // Model might not be ready or maybe there was an error.
     return;
   }
-  SendModelToProcess(content::Source<RenderProcessHost>(source).ptr());
+  SendModelToProcess(
+      content::Source<content::RenderProcessHost>(source).ptr());
 }
 
 void ClientSideDetectionService::SendModelToProcess(
-    RenderProcessHost* process) {
+    content::RenderProcessHost* process) {
   // The ClientSideDetectionService is enabled if _any_ active profile has
   // SafeBrowsing turned on.  Here we check the profile for each renderer
   // process and only send the model to those that have SafeBrowsing enabled.
-  Profile* profile = Profile::FromBrowserContext(process->browser_context());
+  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   std::string model;
   if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
     VLOG(2) << "Sending phishing model to RenderProcessHost @" << process;
@@ -235,7 +236,8 @@ void ClientSideDetectionService::SendModelToProcess(
 }
 
 void ClientSideDetectionService::SendModelToRenderers() {
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     SendModelToProcess(i.GetCurrentValue());
   }

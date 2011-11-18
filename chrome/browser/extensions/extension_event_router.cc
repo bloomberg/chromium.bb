@@ -22,8 +22,8 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/api/extension_api.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
 using extensions::ExtensionAPI;
@@ -43,10 +43,11 @@ void NotifyEventListenerRemovedOnIOThread(
 }  // namespace
 
 struct ExtensionEventRouter::EventListener {
-  RenderProcessHost* process;
+  content::RenderProcessHost* process;
   std::string extension_id;
 
-  EventListener(RenderProcessHost* process, const std::string& extension_id)
+  EventListener(content::RenderProcessHost* process,
+                const std::string& extension_id)
       : process(process), extension_id(extension_id) {}
 
   bool operator<(const EventListener& that) const {
@@ -109,14 +110,15 @@ ExtensionEventRouter::~ExtensionEventRouter() {}
 
 void ExtensionEventRouter::AddEventListener(
     const std::string& event_name,
-    RenderProcessHost* process,
+    content::RenderProcessHost* process,
     const std::string& extension_id) {
   EventListener listener(process, extension_id);
   DCHECK_EQ(listeners_[event_name].count(listener), 0u) << event_name;
   listeners_[event_name].insert(listener);
 
   if (extension_devtools_manager_.get())
-    extension_devtools_manager_->AddEventListener(event_name, process->id());
+    extension_devtools_manager_->AddEventListener(event_name,
+                                                  process->GetID());
 
   // We lazily tell the TaskManager to start updating when listeners to the
   // processes.onUpdated event arrive.
@@ -126,18 +128,19 @@ void ExtensionEventRouter::AddEventListener(
 
 void ExtensionEventRouter::RemoveEventListener(
     const std::string& event_name,
-    RenderProcessHost* process,
+    content::RenderProcessHost* process,
     const std::string& extension_id) {
   EventListener listener(process, extension_id);
   DCHECK_EQ(listeners_[event_name].count(listener), 1u) <<
-      " PID=" << process->id() << " extension=" << extension_id <<
+      " PID=" << process->GetID() << " extension=" << extension_id <<
       " event=" << event_name;
   listeners_[event_name].erase(listener);
   // Note: extension_id may point to data in the now-deleted listeners_ object.
   // Do not use.
 
   if (extension_devtools_manager_.get())
-    extension_devtools_manager_->RemoveEventListener(event_name, process->id());
+    extension_devtools_manager_->RemoveEventListener(event_name,
+                                                     process->GetID());
 
   // If a processes.onUpdated event listener is removed (or a process with one
   // exits), then we let the TaskManager know that it has one fewer listener.
@@ -273,14 +276,13 @@ void ExtensionEventRouter::DispatchEventImpl(
       continue;
 
     Profile* listener_profile = Profile::FromBrowserContext(
-        listener->process->browser_context());
+        listener->process->GetBrowserContext());
     extensions::ProcessMap* process_map =
         listener_profile->GetExtensionService()->process_map();
-
     // If the event is privileged, only send to extension processes. Otherwise,
     // it's OK to send to normal renderers (e.g., for content scripts).
     if (ExtensionAPI::GetInstance()->IsPrivileged(event->event_name) &&
-        !process_map->Contains(extension->id(), listener->process->id())) {
+        !process_map->Contains(extension->id(), listener->process->GetID())) {
       continue;
     }
 
@@ -366,8 +368,8 @@ void ExtensionEventRouter::Observe(
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      RenderProcessHost* renderer =
-          content::Source<RenderProcessHost>(source).ptr();
+      content::RenderProcessHost* renderer =
+          content::Source<content::RenderProcessHost>(source).ptr();
       // Remove all event listeners associated with this renderer
       for (ListenerMap::iterator it = listeners_.begin();
            it != listeners_.end(); ) {

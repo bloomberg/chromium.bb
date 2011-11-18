@@ -581,7 +581,7 @@ Browser* ExtensionFunctionDispatcher::GetCurrentBrowser(
   // we will search the incognito version only, regardless of the value of
   // |include_incognito|.
   Profile* profile = Profile::FromBrowserContext(
-      render_view_host->process()->browser_context());
+      render_view_host->process()->GetBrowserContext());
   browser = BrowserList::FindTabbedBrowser(profile, include_incognito);
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
@@ -608,7 +608,7 @@ void ExtensionFunctionDispatcher::Dispatch(
 
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params, extension,
-                              render_view_host->process()->id(),
+                              render_view_host->process()->GetID(),
                               *(service->process_map()),
                               profile(), render_view_host,
                               render_view_host->routing_id()));

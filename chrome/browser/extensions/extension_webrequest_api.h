@@ -26,11 +26,14 @@
 class ExtensionInfoMap;
 class ExtensionWebRequestTimeTracker;
 class GURL;
-class RenderProcessHost;
 
 namespace base {
 class DictionaryValue;
 class ListValue;
+}
+
+namespace content {
+class RenderProcessHost;
 }
 
 namespace net {
@@ -366,6 +369,6 @@ class WebRequestHandlerBehaviorChanged : public SyncIOThreadExtensionFunction {
 // Send updates to |host| with information about what webRequest-related
 // extensions are installed.
 // TODO(mpcomplete): remove. http://crbug.com/100411
-void SendExtensionWebRequestStatusToHost(RenderProcessHost* host);
+void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_WEBREQUEST_API_H_

@@ -58,12 +58,13 @@ void BackgroundPrintingManager::OwnPrintPreviewTab(
   //
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
-  RenderProcessHost* rph = preview_tab->render_view_host()->process();
+  content::RenderProcessHost* rph = preview_tab->render_view_host()->process();
   if (!registrar_.IsRegistered(this,
                                content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                               content::Source<RenderProcessHost>(rph))) {
+                               content::Source<content::RenderProcessHost>(
+                                  rph))) {
     registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                   content::Source<RenderProcessHost>(rph));
+                   content::Source<content::RenderProcessHost>(rph));
   }
 
   // Activate the initiator tab.
@@ -85,7 +86,8 @@ void BackgroundPrintingManager::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      OnRendererProcessClosed(content::Source<RenderProcessHost>(source).ptr());
+      OnRendererProcessClosed(
+          content::Source<content::RenderProcessHost>(source).ptr());
       break;
     }
     case chrome::NOTIFICATION_PRINT_JOB_RELEASED: {
@@ -106,7 +108,7 @@ void BackgroundPrintingManager::Observe(
 }
 
 void BackgroundPrintingManager::OnRendererProcessClosed(
-    RenderProcessHost* rph) {
+    content::RenderProcessHost* rph) {
   TabContentsWrapperSet preview_tabs_pending_deletion;
   TabContentsWrapperSet::const_iterator it;
   for (it = begin(); it != end(); ++it) {
@@ -143,9 +145,10 @@ void BackgroundPrintingManager::OnTabContentsDestroyed(
   bool shared_rph = HasSharedRenderProcessHost(printing_tabs_, preview_tab) ||
       HasSharedRenderProcessHost(printing_tabs_pending_deletion_, preview_tab);
   if (!shared_rph) {
-    RenderProcessHost* rph = preview_tab->render_view_host()->process();
+    content::RenderProcessHost* rph =
+        preview_tab->render_view_host()->process();
     registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                      content::Source<RenderProcessHost>(rph));
+                      content::Source<content::RenderProcessHost>(rph));
   }
 
   // Remove other notifications and remove the tab from its
@@ -171,7 +174,7 @@ void BackgroundPrintingManager::DeletePreviewTab(TabContentsWrapper* tab) {
 bool BackgroundPrintingManager::HasSharedRenderProcessHost(
     const TabContentsWrapperSet& set,
     TabContentsWrapper* tab) {
-  RenderProcessHost* rph = tab->render_view_host()->process();
+  content::RenderProcessHost* rph = tab->render_view_host()->process();
   for (TabContentsWrapperSet::const_iterator it = set.begin();
        it != set.end();
        ++it) {

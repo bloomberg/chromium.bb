@@ -8,7 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_factory.h"
 #include "ipc/ipc_test_sink.h"
 
 class MockRenderProcessHostFactory;
@@ -16,7 +17,7 @@ class TransportDIB;
 
 // A mock render process host that has no corresponding renderer process.  All
 // IPC messages are sent into the message sink for inspection by tests.
-class MockRenderProcessHost : public RenderProcessHost {
+class MockRenderProcessHost : public content::RenderProcessHost {
  public:
   explicit MockRenderProcessHost(content::BrowserContext* browser_context);
   virtual ~MockRenderProcessHost();
@@ -47,13 +48,34 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void WidgetHidden() OVERRIDE;
   virtual int VisibleWidgetCount() const OVERRIDE;
   virtual void AddWord(const string16& word);
-  virtual bool FastShutdownIfPossible() OVERRIDE;
-  virtual void DumpHandles() OVERRIDE;
-  virtual base::ProcessHandle GetHandle() OVERRIDE;
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
+  virtual bool FastShutdownIfPossible();
+  virtual bool FastShutdownStarted() const;
+  virtual void DumpHandles();
+  virtual base::ProcessHandle GetHandle();
+  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
   virtual void SetCompositingSurface(
       int render_widget_id,
       gfx::PluginWindowHandle compositing_surface) OVERRIDE;
+  virtual int GetID() const OVERRIDE;
+  virtual bool HasConnection() const OVERRIDE;
+  virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
+  virtual bool IgnoreInputEvents() const OVERRIDE;
+  virtual void Attach(IPC::Channel::Listener* listener,
+                      int routing_id) OVERRIDE;
+  virtual void Release(int listener_id) OVERRIDE;
+  virtual void Cleanup() OVERRIDE;
+  virtual void ReportExpectingClose(int32 listener_id) OVERRIDE;
+  virtual void AddPendingView() OVERRIDE;
+  virtual void RemovePendingView() OVERRIDE;
+  virtual void SetSuddenTerminationAllowed(bool allowed) OVERRIDE;
+  virtual bool SuddenTerminationAllowed() const OVERRIDE;
+  virtual void UpdateMaxPageID(int32 page_id) OVERRIDE;
+  virtual IPC::Channel::Listener* GetListenerByID(int routing_id) OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual IPC::ChannelProxy* GetChannel() OVERRIDE;
+  virtual listeners_iterator ListenersIterator() OVERRIDE;
+  virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
+  virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
 
   // IPC::Channel::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -74,16 +96,22 @@ class MockRenderProcessHost : public RenderProcessHost {
   TransportDIB* transport_dib_;
   int bad_msg_count_;
   const MockRenderProcessHostFactory* factory_;
+  int id_;
+  content::BrowserContext* browser_context_;
+  int32 max_page_id_;
+
+  IDMap<IPC::Channel::Listener> listeners_;
+  bool fast_shutdown_started_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };
 
-class MockRenderProcessHostFactory : public RenderProcessHostFactory {
+class MockRenderProcessHostFactory : public content::RenderProcessHostFactory {
  public:
   MockRenderProcessHostFactory();
   virtual ~MockRenderProcessHostFactory();
 
-  virtual RenderProcessHost* CreateRenderProcessHost(
+  virtual content::RenderProcessHost* CreateRenderProcessHost(
       content::BrowserContext* browser_context) const OVERRIDE;
 
   // Removes the given MockRenderProcessHost from the MockRenderProcessHost list

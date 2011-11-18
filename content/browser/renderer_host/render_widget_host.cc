@@ -16,7 +16,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/user_metrics.h"
@@ -76,7 +76,7 @@ bool ShouldCoalesceMouseWheelEvents(const WebMouseWheelEvent& last_event,
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHost
 
-RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
+RenderWidgetHost::RenderWidgetHost(content::RenderProcessHost* process,
                                    int routing_id)
     : renderer_initialized_(false),
       renderer_accessible_(false),
@@ -264,7 +264,7 @@ void RenderWidgetHost::WasHidden() {
   GpuProcessHost::SendOnIO(
       0,
       content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-      new GpuMsg_VisibilityChanged(routing_id_, process()->id(), false));
+      new GpuMsg_VisibilityChanged(routing_id_, process()->GetID(), false));
 
   // Tell the RenderProcessHost we were hidden.
   process_->WidgetHidden();
@@ -300,7 +300,7 @@ void RenderWidgetHost::WasRestored() {
   GpuProcessHost::SendOnIO(
       0,
       content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH,
-      new GpuMsg_VisibilityChanged(routing_id_, process()->id(), true));
+      new GpuMsg_VisibilityChanged(routing_id_, process()->GetID(), true));
 
   process_->WidgetRestored();
 
@@ -547,7 +547,7 @@ void RenderWidgetHost::StopHangMonitorTimeout() {
 
 void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardMouseEvent");
-  if (ignore_input_events_ || process_->ignore_input_events())
+  if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
   // Avoid spamming the renderer with mouse move events.  It is important
@@ -582,7 +582,7 @@ void RenderWidgetHost::OnMouseActivate() {
 void RenderWidgetHost::ForwardWheelEvent(
     const WebMouseWheelEvent& wheel_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardWheelEvent");
-  if (ignore_input_events_ || process_->ignore_input_events())
+  if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
   // If there's already a mouse wheel event waiting to be sent to the renderer,
@@ -617,7 +617,7 @@ void RenderWidgetHost::ForwardWheelEvent(
 void RenderWidgetHost::ForwardGestureEvent(
     const WebKit::WebGestureEvent& gesture_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardWheelEvent");
-  if (ignore_input_events_ || process_->ignore_input_events())
+  if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
   ForwardInputEvent(gesture_event, sizeof(WebGestureEvent), false);
@@ -626,7 +626,7 @@ void RenderWidgetHost::ForwardGestureEvent(
 void RenderWidgetHost::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardKeyboardEvent");
-  if (ignore_input_events_ || process_->ignore_input_events())
+  if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
   if (key_event.type == WebKeyboardEvent::Char &&
@@ -692,7 +692,7 @@ void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
   if (!process_->HasConnection())
     return;
 
-  DCHECK(!process_->ignore_input_events());
+  DCHECK(!process_->IgnoreInputEvents());
 
   IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id_);
   message->WriteData(
@@ -718,7 +718,7 @@ void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
 void RenderWidgetHost::ForwardTouchEvent(
     const WebKit::WebTouchEvent& touch_event) {
   TRACE_EVENT0("renderer_host", "RenderWidgetHost::ForwardTouchEvent");
-  if (ignore_input_events_ || process_->ignore_input_events())
+  if (ignore_input_events_ || process_->IgnoreInputEvents())
     return;
 
   if (touch_event.type == WebInputEvent::TouchMove &&

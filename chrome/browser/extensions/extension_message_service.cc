@@ -17,11 +17,11 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 
 // Since we have 2 ports for every channel, we just index channels by half the
 // port ID.
@@ -94,7 +94,7 @@ static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
           port.routing_id, target_port_id, message));
 }
 
-static RenderProcessHost* GetExtensionProcess(Profile* profile,
+static content::RenderProcessHost* GetExtensionProcess(Profile* profile,
                                               const std::string& extension_id) {
   SiteInstance* site_instance =
       profile->GetExtensionProcessManager()->GetSiteInstanceForURL(
@@ -153,10 +153,11 @@ void ExtensionMessageService::OpenChannelToExtension(
     const std::string& source_extension_id,
     const std::string& target_extension_id,
     const std::string& channel_name) {
-  RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
+  content::RenderProcessHost* source =
+      content::RenderProcessHost::FromID(source_process_id);
   if (!source)
     return;
-  Profile* profile = Profile::FromBrowserContext(source->browser_context());
+  Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
 
   // Note: we use the source's profile here. If the source is an incognito
   // process, we will use the incognito EPM to find the right extension process,
@@ -183,10 +184,11 @@ void ExtensionMessageService::OpenChannelToTab(
     int source_process_id, int source_routing_id, int receiver_port_id,
     int tab_id, const std::string& extension_id,
     const std::string& channel_name) {
-  RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
+  content::RenderProcessHost* source =
+      content::RenderProcessHost::FromID(source_process_id);
   if (!source)
     return;
-  Profile* profile = Profile::FromBrowserContext(source->browser_context());
+  Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
 
   TabContentsWrapper* contents = NULL;
   MessagePort receiver;
@@ -345,8 +347,8 @@ void ExtensionMessageService::Observe(
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED:
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      RenderProcessHost* renderer =
-          content::Source<RenderProcessHost>(source).ptr();
+      content::RenderProcessHost* renderer =
+          content::Source<content::RenderProcessHost>(source).ptr();
       OnSenderClosed(renderer);
       break;
     }

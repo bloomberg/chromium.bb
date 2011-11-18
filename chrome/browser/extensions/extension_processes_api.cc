@@ -20,9 +20,9 @@
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 
 namespace keys = extension_processes_api_constants;
 

@@ -17,9 +17,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 
 class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
@@ -72,7 +72,7 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
         GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
 
-    RenderProcessHost* extension_rph =
+    content::RenderProcessHost* extension_rph =
         extension_host->render_view_host()->process();
     base::KillProcess(extension_rph->GetHandle(), content::RESULT_CODE_KILLED,
                       false);
@@ -94,7 +94,8 @@ class ExtensionCrashRecoveryTest : public ExtensionBrowserTest {
     extensions::ProcessMap* process_map =
         browser()->profile()->GetExtensionService()->process_map();
     ASSERT_TRUE(process_map->Contains(
-        extension->id(), extension_host->render_view_host()->process()->id()));
+        extension->id(), extension_host->render_view_host()->process()->
+            GetID()));
   }
 
   void LoadTestExtension() {

@@ -2506,7 +2506,7 @@ void Browser::EnumerateDirectoryHelper(TabContents* tab, int request_id,
                                        const FilePath& path) {
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
-  if (!policy->CanReadDirectory(tab->render_view_host()->process()->id(),
+  if (!policy->CanReadDirectory(tab->render_view_host()->process()->GetID(),
                                 path)) {
     return;
   }

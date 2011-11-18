@@ -178,8 +178,8 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "webkit/plugins/webplugininfo.h"
 
@@ -525,11 +525,12 @@ void MetricsService::Observe(int type,
       break;
 
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-        RenderProcessHost::RendererClosedDetails* process_details =
-            content::Details<RenderProcessHost::RendererClosedDetails>(
-                details).ptr();
-        RenderProcessHost* host =
-            content::Source<RenderProcessHost>(source).ptr();
+        content::RenderProcessHost::RendererClosedDetails* process_details =
+            content::Details<
+                content::RenderProcessHost::RendererClosedDetails>(
+                    details).ptr();
+        content::RenderProcessHost* host =
+            content::Source<content::RenderProcessHost>(source).ptr();
         LogRendererCrash(
             host, process_details->status, process_details->was_alive);
       }
@@ -880,7 +881,8 @@ void MetricsService::StartScheduledUpload() {
   details->StartFetch();
 
   // Collect WebCore cache information to put into a histogram.
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance())
     i.GetCurrentValue()->Send(new ChromeViewMsg_GetCacheResourceStats());
 }
@@ -1239,13 +1241,13 @@ void MetricsService::LogLoadStarted() {
   // might be lost due to a crash :-(.
 }
 
-void MetricsService::LogRendererCrash(RenderProcessHost* host,
+void MetricsService::LogRendererCrash(content::RenderProcessHost* host,
                                       base::TerminationStatus status,
                                       bool was_alive) {
-  Profile* profile = Profile::FromBrowserContext(host->browser_context());
+  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   bool was_extension_process =
-      service && service->process_map()->Contains(host->id());
+      service && service->process_map()->Contains(host->GetID());
   if (status == base::TERMINATION_STATUS_PROCESS_CRASHED ||
       status == base::TERMINATION_STATUS_ABNORMAL_TERMINATION) {
     if (was_extension_process)

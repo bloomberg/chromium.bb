@@ -35,11 +35,14 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
-class RenderProcessHost;
 class SafeBrowsingService;
 
 namespace base {
 class TimeDelta;
+}
+
+namespace content {
+class RenderProcessHost;
 }
 
 namespace net {
@@ -234,7 +237,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   bool InitializePrivateNetworks();
 
   // Send the model to the given renderer.
-  void SendModelToProcess(RenderProcessHost* process);
+  void SendModelToProcess(content::RenderProcessHost* process);
 
   // Same as above but sends the model to all rendereres.
   void SendModelToRenderers();

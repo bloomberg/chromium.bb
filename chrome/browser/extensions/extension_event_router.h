@@ -21,7 +21,10 @@ class GURL;
 class Extension;
 class ExtensionDevToolsManager;
 class Profile;
+
+namespace content {
 class RenderProcessHost;
+}
 
 class ExtensionEventRouter : public content::NotificationObserver {
  public:
@@ -41,10 +44,10 @@ class ExtensionEventRouter : public content::NotificationObserver {
   // collapsing. Also, a single extension can have 2 processes if it is a split
   // mode extension.
   void AddEventListener(const std::string& event_name,
-                        RenderProcessHost* process,
+                        content::RenderProcessHost* process,
                         const std::string& extension_id);
   void RemoveEventListener(const std::string& event_name,
-                           RenderProcessHost* process,
+                           content::RenderProcessHost* process,
                            const std::string& extension_id);
 
   // Returns true if there is at least one listener for the given event.

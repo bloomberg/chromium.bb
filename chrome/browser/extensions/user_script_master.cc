@@ -24,8 +24,8 @@
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
 
@@ -320,7 +320,8 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
     // We've got scripts ready to go.
     shared_memory_.swap(handle_deleter);
 
-    for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+    for (content::RenderProcessHost::iterator i(
+            content::RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
       SendUpdate(i.GetCurrentValue(), handle);
     }
@@ -380,10 +381,10 @@ void UserScriptMaster::Observe(int type,
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      RenderProcessHost* process =
-          content::Source<RenderProcessHost>(source).ptr();
+      content::RenderProcessHost* process =
+          content::Source<content::RenderProcessHost>(source).ptr();
       Profile* profile = Profile::FromBrowserContext(
-          process->browser_context());
+          process->GetBrowserContext());
       if (!profile_->IsSameProfile(profile))
         return;
       if (ScriptsReady())
@@ -410,9 +411,9 @@ void UserScriptMaster::StartLoad() {
   script_reloader_->StartLoad(user_scripts_, extensions_info_);
 }
 
-void UserScriptMaster::SendUpdate(RenderProcessHost* process,
+void UserScriptMaster::SendUpdate(content::RenderProcessHost* process,
                                   base::SharedMemory* shared_memory) {
-  Profile* profile = Profile::FromBrowserContext(process->browser_context());
+  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   // Make sure we only send user scripts to processes in our profile.
   if (!profile_->IsSameProfile(profile))
     return;

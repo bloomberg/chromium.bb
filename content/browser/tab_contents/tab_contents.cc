@@ -22,7 +22,7 @@
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/load_from_memory_cache_details.h"
 #include "content/browser/load_notification_details.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -326,7 +326,7 @@ void TabContents::RunFileChooser(
   delegate()->RunFileChooser(this, params);
 }
 
-RenderProcessHost* TabContents::GetRenderProcessHost() const {
+content::RenderProcessHost* TabContents::GetRenderProcessHost() const {
   if (render_manager_.current_host())
     return render_manager_.current_host()->process();
   else
@@ -846,7 +846,7 @@ double TabContents::GetZoomLevel() const {
   double zoom_level;
   if (temporary_zoom_settings_) {
     zoom_level = zoom_map->GetTemporaryZoomLevel(
-        GetRenderProcessHost()->id(), render_view_host()->routing_id());
+        GetRenderProcessHost()->GetID(), render_view_host()->routing_id());
   } else {
     GURL url;
     NavigationEntry* active_entry = controller().GetActiveEntry();
@@ -914,7 +914,7 @@ void TabContents::OnDidStartProvisionalLoadForFrame(int64 frame_id,
   bool is_error_page = (url.spec() == chrome::kUnreachableWebDataURL);
   GURL validated_url(url);
   render_view_host()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
-      GetRenderProcessHost()->id(), &validated_url);
+      GetRenderProcessHost()->GetID(), &validated_url);
 
   RenderViewHost* rvh =
       render_manager_.pending_render_view_host() ?
@@ -963,7 +963,7 @@ void TabContents::OnDidFailProvisionalLoadWithError(
           << ", frame_id: " << params.frame_id;
   GURL validated_url(params.url);
   render_view_host()->FilterURL(ChildProcessSecurityPolicy::GetInstance(),
-      GetRenderProcessHost()->id(), &validated_url);
+      GetRenderProcessHost()->GetID(), &validated_url);
 
   if (net::ERR_ABORTED == params.error_code) {
     // EVIL HACK ALERT! Ignore failed loads when we're showing interstitials.
@@ -1045,7 +1045,7 @@ void TabContents::OnDidLoadResourceFromMemoryCache(
                                       &cert_id, &cert_status,
                                       &security_bits,
                                       &connection_status);
-  LoadFromMemoryCacheDetails details(url, GetRenderProcessHost()->id(),
+  LoadFromMemoryCacheDetails details(url, GetRenderProcessHost()->GetID(),
                                      cert_id, cert_status);
 
   content::NotificationService::current()->Notify(

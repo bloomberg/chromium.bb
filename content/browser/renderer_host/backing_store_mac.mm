@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "skia/ext/platform_canvas.h"
@@ -39,7 +39,7 @@ BackingStoreMac::~BackingStoreMac() {
 }
 
 void BackingStoreMac::PaintToBackingStore(
-    RenderProcessHost* process,
+    content::RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,

@@ -167,7 +167,7 @@ bool RenderViewHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
     // CrossSiteResourceHandler will already be cleaned up.)
     ViewMsg_SwapOut_Params params;
     params.new_render_process_host_id =
-        pending_render_view_host_->process()->id();
+        pending_render_view_host_->process()->GetID();
     params.new_request_id = pending_request_id;
     current_host()->process()->CrossSiteSwapOutACK(params);
   }
@@ -194,7 +194,7 @@ void RenderViewHostManager::DidNavigateMainFrame(
     // then we still need to swap out the old RVH first and run its unload
     // handler.  OK for that to happen in the background.
     if (pending_render_view_host_->GetPendingRequestId() == -1) {
-      OnCrossSiteResponse(pending_render_view_host_->process()->id(),
+      OnCrossSiteResponse(pending_render_view_host_->process()->GetID(),
                           pending_render_view_host_->routing_id());
     }
 
@@ -231,7 +231,7 @@ void RenderViewHostManager::RendererAbortedProvisionalLoad(
 }
 
 void RenderViewHostManager::RendererProcessClosing(
-    RenderProcessHost* render_process_host) {
+    content::RenderProcessHost* render_process_host) {
   // Remove any swapped out RVHs from this process, so that we don't try to
   // swap them back in while the process is exiting.  Start by finding them,
   // since there could be more than one.
@@ -320,7 +320,8 @@ void RenderViewHostManager::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSING:
-      RendererProcessClosing(content::Source<RenderProcessHost>(source).ptr());
+      RendererProcessClosing(
+          content::Source<content::RenderProcessHost>(source).ptr());
       break;
 
     default:

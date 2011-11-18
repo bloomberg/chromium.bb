@@ -15,9 +15,9 @@
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/memory_purger.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "views/controls/menu/menu_runner.h"
@@ -160,7 +160,8 @@ void MemoryMenuButton::SendCommandToRenderers(int id) {
   // Use the "is running" value for this process to determine whether to
   // start or stop profiling on the renderer processes.
   bool started = IsHeapProfilerRunning();
-  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+  for (content::RenderProcessHost::iterator it =
+          content::RenderProcessHost::AllHostsIterator();
        !it.IsAtEnd(); it.Advance()) {
     switch (id) {
       case TOGGLE_PROFILING_ITEM:
@@ -262,9 +263,9 @@ void MemoryMenuButton::Observe(int type,
                                const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      RenderProcessHost::RendererClosedDetails* process_details =
-          content::Details<RenderProcessHost::RendererClosedDetails>(details).
-              ptr();
+      content::RenderProcessHost::RendererClosedDetails* process_details =
+          content::Details<content::RenderProcessHost::RendererClosedDetails>(
+              details).ptr();
       if (process_details->status ==
           base::TERMINATION_STATUS_PROCESS_WAS_KILLED) {
         renderer_kills_++;

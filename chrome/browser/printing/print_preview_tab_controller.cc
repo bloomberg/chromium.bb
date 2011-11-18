@@ -41,7 +41,7 @@ namespace {
 void EnableInternalPDFPluginForTab(TabContentsWrapper* preview_tab) {
   // Always enable the internal PDF plugin for the print preview page.
   ChromePluginServiceFilter::GetInstance()->OverridePluginForTab(
-        preview_tab->render_view_host()->process()->id(),
+        preview_tab->render_view_host()->process()->GetID(),
         preview_tab->render_view_host()->routing_id(),
         GURL(),
         ASCIIToUTF16(chrome::ChromeContentClient::kPDFPluginName));
@@ -196,7 +196,8 @@ void PrintPreviewTabController::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
-      OnRendererProcessClosed(content::Source<RenderProcessHost>(source).ptr());
+      OnRendererProcessClosed(
+          content::Source<content::RenderProcessHost>(source).ptr());
       break;
     }
     case content::NOTIFICATION_TAB_CONTENTS_DESTROYED: {
@@ -225,7 +226,7 @@ void PrintPreviewTabController::Observe(
 }
 
 void PrintPreviewTabController::OnRendererProcessClosed(
-    RenderProcessHost* rph) {
+    content::RenderProcessHost* rph) {
   // Store tabs in a vector and deal with them after iterating through
   // |preview_tab_map_| because RemoveFooTab() can change |preview_tab_map_|.
   std::vector<TabContentsWrapper*> closed_initiator_tabs;
@@ -404,12 +405,13 @@ void PrintPreviewTabController::AddObservers(TabContentsWrapper* tab) {
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
-  RenderProcessHost* rph = tab->render_view_host()->process();
+  content::RenderProcessHost* rph = tab->render_view_host()->process();
   if (!registrar_.IsRegistered(this,
                                content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                               content::Source<RenderProcessHost>(rph))) {
+                               content::Source<content::RenderProcessHost>(
+                                  rph))) {
     registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                   content::Source<RenderProcessHost>(rph));
+                   content::Source<content::RenderProcessHost>(rph));
   }
 }
 
@@ -423,12 +425,13 @@ void PrintPreviewTabController::RemoveObservers(TabContentsWrapper* tab) {
 
   // Multiple sites may share the same RenderProcessHost, so check if this
   // notification has already been added.
-  RenderProcessHost* rph = tab->render_view_host()->process();
+  content::RenderProcessHost* rph = tab->render_view_host()->process();
   if (registrar_.IsRegistered(this,
                               content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                              content::Source<RenderProcessHost>(rph))) {
+                              content::Source<content::RenderProcessHost>(
+                                  rph))) {
     registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                      content::Source<RenderProcessHost>(rph));
+                      content::Source<content::RenderProcessHost>(rph));
   }
 }
 

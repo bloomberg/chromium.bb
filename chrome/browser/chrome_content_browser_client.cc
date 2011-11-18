@@ -63,7 +63,6 @@
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/site_instance.h"
@@ -73,6 +72,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/browser/render_process_host.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_resources.h"
 #include "net/base/cookie_monster.h"
@@ -195,13 +195,13 @@ RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
 }
 
 RenderProcessHostPrivilege GetProcessPrivilege(
-    RenderProcessHost* process_host,
+    content::RenderProcessHost* process_host,
     extensions::ProcessMap* process_map,
     ExtensionService* service) {
   // TODO(aa): It seems like hosted apps should be grouped separately from
   // extensions: crbug.com/102533.
   std::set<std::string> extension_ids =
-      process_map->GetExtensionsInProcess(process_host->id());
+      process_map->GetExtensionsInProcess(process_host->GetID());
   if (extension_ids.empty())
     return PRIV_NORMAL;
 
@@ -303,18 +303,18 @@ void ChromeContentBrowserClient::RenderViewHostCreated(
   new ExtensionMessageHandler(render_view_host);
 }
 
-void ChromeContentBrowserClient::BrowserRenderProcessHostCreated(
-    BrowserRenderProcessHost* host) {
-  int id = host->id();
-  Profile* profile = Profile::FromBrowserContext(host->browser_context());
-  host->channel()->AddFilter(new ChromeRenderMessageFilter(
+void ChromeContentBrowserClient::RenderProcessHostCreated(
+    content::RenderProcessHost* host) {
+  int id = host->GetID();
+  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
+  host->GetChannel()->AddFilter(new ChromeRenderMessageFilter(
       id, profile, profile->GetRequestContextForRenderProcess(id)));
-  host->channel()->AddFilter(new PluginInfoMessageFilter(id, profile));
-  host->channel()->AddFilter(new PrintingMessageFilter());
-  host->channel()->AddFilter(
+  host->GetChannel()->AddFilter(new PluginInfoMessageFilter(id, profile));
+  host->GetChannel()->AddFilter(new PrintingMessageFilter());
+  host->GetChannel()->AddFilter(
       new SearchProviderInstallStateMessageFilter(id, profile));
-  host->channel()->AddFilter(new SpellCheckMessageFilter(id));
-  host->channel()->AddFilter(new ChromeBenchmarkingMessageFilter(
+  host->GetChannel()->AddFilter(new SpellCheckMessageFilter(id));
+  host->GetChannel()->AddFilter(new ChromeBenchmarkingMessageFilter(
       id, profile, profile->GetRequestContextForRenderProcess(id)));
 
   host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
@@ -396,10 +396,10 @@ bool ChromeContentBrowserClient::IsURLSameAsAnySiteInstance(const GURL& url) {
 }
 
 bool ChromeContentBrowserClient::IsSuitableHost(
-    RenderProcessHost* process_host,
+    content::RenderProcessHost* process_host,
     const GURL& site_url) {
   Profile* profile =
-      Profile::FromBrowserContext(process_host->browser_context());
+      Profile::FromBrowserContext(process_host->GetBrowserContext());
   ExtensionService* service = profile->GetExtensionService();
   extensions::ProcessMap* process_map = service->process_map();
 
@@ -448,13 +448,13 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
     return;
 
   service->process_map()->Insert(
-      extension->id(), site_instance->GetProcess()->id());
+      extension->id(), site_instance->GetProcess()->GetID());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::RegisterExtensionProcess,
                  profile->GetExtensionInfoMap(),
                  extension->id(),
-                 site_instance->GetProcess()->id()));
+                 site_instance->GetProcess()->GetID()));
 }
 
 void ChromeContentBrowserClient::SiteInstanceDeleting(
@@ -476,13 +476,13 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
     return;
 
   service->process_map()->Remove(
-      extension->id(), site_instance->GetProcess()->id());
+      extension->id(), site_instance->GetProcess()->GetID());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ExtensionInfoMap::UnregisterExtensionProcess,
                  profile->GetExtensionInfoMap(),
                  extension->id(),
-                 site_instance->GetProcess()->id()));
+                 site_instance->GetProcess()->GetID()));
 }
 
 bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(
@@ -546,12 +546,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->AppendSwitchASCII(switches::kLoginProfile, login_profile);
 #endif
 
-    RenderProcessHost* process = RenderProcessHost::FromID(child_process_id);
+    content::RenderProcessHost* process =
+        content::RenderProcessHost::FromID(child_process_id);
 
-    Profile* profile = Profile::FromBrowserContext(process->browser_context());
+    Profile* profile = Profile::FromBrowserContext(
+        process->GetBrowserContext());
     extensions::ProcessMap* process_map =
         profile->GetExtensionService()->process_map();
-    if (process_map && process_map->Contains(process->id()))
+    if (process_map && process_map->Contains(process->GetID()))
       command_line->AppendSwitch(switches::kExtensionProcess);
 
     PrefService* prefs = profile->GetPrefs();
@@ -893,8 +895,8 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
     return;
   }
 
-  RenderProcessHost* process = rvh->process();
-  Profile* profile = Profile::FromBrowserContext(process->browser_context());
+  content::RenderProcessHost* process = rvh->process();
+  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
   service->RequestPermission(
@@ -935,8 +937,8 @@ void ChromeContentBrowserClient::ShowDesktopNotification(
     return;
   }
 
-  RenderProcessHost* process = rvh->process();
-  Profile* profile = Profile::FromBrowserContext(process->browser_context());
+  content::RenderProcessHost* process = rvh->process();
+  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
   service->ShowDesktopNotification(
@@ -956,8 +958,8 @@ void ChromeContentBrowserClient::CancelDesktopNotification(
     return;
   }
 
-  RenderProcessHost* process = rvh->process();
-  Profile* profile = Profile::FromBrowserContext(process->browser_context());
+  content::RenderProcessHost* process = rvh->process();
+  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   DesktopNotificationService* service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
   service->CancelDesktopNotification(
@@ -1036,12 +1038,12 @@ WebPreferences ChromeContentBrowserClient::GetWebkitPrefs(RenderViewHost* rvh) {
 void ChromeContentBrowserClient::UpdateInspectorSetting(
     RenderViewHost* rvh, const std::string& key, const std::string& value) {
   RenderViewHostDelegateHelper::UpdateInspectorSetting(
-      rvh->process()->browser_context(), key, value);
+      rvh->process()->GetBrowserContext(), key, value);
 }
 
 void ChromeContentBrowserClient::ClearInspectorSettings(RenderViewHost* rvh) {
   RenderViewHostDelegateHelper::ClearInspectorSettings(
-      rvh->process()->browser_context());
+      rvh->process()->GetBrowserContext());
 }
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(
@@ -1062,7 +1064,7 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 
 void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
   Profile* profile = Profile::FromBrowserContext(
-      rvh->site_instance()->GetProcess()->browser_context());
+      rvh->site_instance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
       base::Time());
@@ -1072,7 +1074,7 @@ void ChromeContentBrowserClient::ClearCache(RenderViewHost* rvh) {
 
 void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
   Profile* profile = Profile::FromBrowserContext(
-      rvh->site_instance()->GetProcess()->browser_context());
+      rvh->site_instance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover = new BrowsingDataRemover(profile,
       BrowsingDataRemover::EVERYTHING,
       base::Time());

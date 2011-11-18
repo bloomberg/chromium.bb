@@ -23,7 +23,7 @@
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/power_save_blocker.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -88,7 +88,8 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
 // static
 RenderViewHost* RenderViewHost::FromID(int render_process_id,
                                        int render_view_id) {
-  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
+  content::RenderProcessHost* process =
+      content::RenderProcessHost::FromID(render_process_id);
   if (!process)
     return NULL;
   RenderWidgetHost* widget = static_cast<RenderWidgetHost*>(
@@ -122,7 +123,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING) {
   if (!session_storage_namespace_) {
     session_storage_namespace_ = new SessionStorageNamespace(
-        process()->browser_context()->GetWebKitContext());
+        process()->GetBrowserContext()->GetWebKitContext());
   }
 
   DCHECK(instance_);
@@ -153,7 +154,7 @@ RenderViewHost::~RenderViewHost() {
 
   // Be sure to clean up any leftover state from cross-site requests.
   CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
-      process()->id(), routing_id(), false);
+      process()->GetID(), routing_id(), false);
 }
 
 bool RenderViewHost::CreateRenderView(const string16& frame_name) {
@@ -166,7 +167,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   if (!process()->Init(renderer_accessible()))
     return false;
   DCHECK(process()->HasConnection());
-  DCHECK(process()->browser_context());
+  DCHECK(process()->GetBrowserContext());
 
   renderer_initialized_ = true;
 
@@ -176,7 +177,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   ViewMsg_New_Params params;
   params.parent_window = GetNativeViewId();
   params.renderer_preferences =
-      delegate_->GetRendererPrefs(process()->browser_context());
+      delegate_->GetRendererPrefs(process()->GetBrowserContext());
   params.web_preferences = delegate_->GetWebkitPrefs();
   params.view_id = routing_id();
   params.session_storage_namespace_id = session_storage_namespace_->id();
@@ -202,12 +203,12 @@ bool RenderViewHost::IsRenderViewLive() const {
 void RenderViewHost::SyncRendererPrefs() {
   Send(new ViewMsg_SetRendererPrefs(routing_id(),
                                     delegate_->GetRendererPrefs(
-                                        process()->browser_context())));
+                                        process()->GetBrowserContext())));
 }
 
 void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
   ChildProcessSecurityPolicy::GetInstance()->GrantRequestURL(
-      process()->id(), params.url);
+      process()->GetID(), params.url);
 
   ViewMsg_Navigate* nav_message = new ViewMsg_Navigate(routing_id(), params);
 
@@ -330,7 +331,7 @@ void RenderViewHost::SwapOut(int new_render_process_host_id,
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
 
   ViewMsg_SwapOut_Params params;
-  params.closing_process_id = process()->id();
+  params.closing_process_id = process()->GetID();
   params.closing_route_id = routing_id();
   params.new_render_process_host_id = new_render_process_host_id;
   params.new_request_id = new_request_id;
@@ -392,7 +393,7 @@ void RenderViewHost::ClosePageIgnoringUnloadEvents() {
 void RenderViewHost::SetHasPendingCrossSiteRequest(bool has_pending_request,
                                                    int request_id) {
   CrossSiteRequestManager::GetInstance()->SetHasPendingCrossSiteRequest(
-      process()->id(), routing_id(), has_pending_request);
+      process()->GetID(), routing_id(), has_pending_request);
   pending_request_id_ = request_id;
 }
 
@@ -408,17 +409,17 @@ void RenderViewHost::DragTargetDragEnter(
   // Grant the renderer the ability to load the drop_data.
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
-  policy->GrantRequestURL(process()->id(), drop_data.url);
+  policy->GrantRequestURL(process()->GetID(), drop_data.url);
   for (std::vector<string16>::const_iterator iter(drop_data.filenames.begin());
        iter != drop_data.filenames.end(); ++iter) {
     FilePath path = FilePath::FromWStringHack(UTF16ToWideHack(*iter));
-    policy->GrantRequestURL(process()->id(),
+    policy->GrantRequestURL(process()->GetID(),
                             net::FilePathToFileURL(path));
-    policy->GrantReadFile(process()->id(), path);
+    policy->GrantReadFile(process()->GetID(), path);
 
     // Allow dragged directories to be enumerated by the child process.
     // Note that we can't tell a file from a directory at this point.
-    policy->GrantReadDirectory(process()->id(), path);
+    policy->GrantReadDirectory(process()->GetID(), path);
   }
   Send(new DragMsg_TargetDragEnter(routing_id(), drop_data, client_pt,
                                    screen_pt, operations_allowed));
@@ -521,7 +522,7 @@ Value* RenderViewHost::ExecuteJavascriptAndGetValue(const string16& frame_xpath,
 void RenderViewHost::JavaScriptDialogClosed(IPC::Message* reply_msg,
                                             bool success,
                                             const string16& user_input) {
-  process()->set_ignore_input_events(false);
+  process()->SetIgnoreInputEvents(false);
   bool is_waiting =
       is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_;
   if (is_waiting)
@@ -567,7 +568,7 @@ void RenderViewHost::DragSourceSystemDragEnded() {
 void RenderViewHost::AllowBindings(int bindings_flags) {
   if (bindings_flags & content::BINDINGS_POLICY_WEB_UI) {
     ChildProcessSecurityPolicy::GetInstance()->GrantWebUIBindings(
-        process()->id());
+        process()->GetID());
   }
 
   enabled_bindings_ |= bindings_flags;
@@ -610,7 +611,7 @@ void RenderViewHost::FilesSelectedInChooser(
   for (std::vector<FilePath>::const_iterator file = files.begin();
        file != files.end(); ++file) {
     ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-        process()->id(), *file, permissions);
+        process()->GetID(), *file, permissions);
   }
   Send(new ViewMsg_RunFileChooserResponse(routing_id(), files));
 }
@@ -622,7 +623,7 @@ void RenderViewHost::DirectoryEnumerationFinished(
   for (std::vector<FilePath>::const_iterator file = files.begin();
        file != files.end(); ++file) {
     ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
-        process()->id(), *file);
+        process()->GetID(), *file);
   }
   Send(new ViewMsg_EnumerateDirectoryResponse(routing_id(),
                                               request_id,
@@ -637,7 +638,7 @@ void RenderViewHost::LoadStateChanged(const GURL& url,
 }
 
 bool RenderViewHost::SuddenTerminationAllowed() const {
-  return sudden_termination_allowed_ || process()->sudden_termination_allowed();
+  return sudden_termination_allowed_ || process()->SuddenTerminationAllowed();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -883,7 +884,7 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
   if (is_waiting_for_unload_ack_)
     return;
 
-  const int renderer_id = process()->id();
+  const int renderer_id = process()->GetID();
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
   // Without this check, an evil renderer can trick the browser into creating
@@ -985,7 +986,7 @@ void RenderViewHost::OnMsgContextMenu(const ContextMenuParams& params) {
   // Validate the URLs in |params|.  If the renderer can't request the URLs
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);
-  int renderer_id = process()->id();
+  int renderer_id = process()->GetID();
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
 
@@ -1010,7 +1011,7 @@ void RenderViewHost::OnMsgOpenURL(const GURL& url,
                                   int64 source_frame_id) {
   GURL validated_url(url);
   FilterURL(ChildProcessSecurityPolicy::GetInstance(),
-            process()->id(), &validated_url);
+            process()->GetID(), &validated_url);
 
   delegate_->RequestOpenURL(
       validated_url, referrer, disposition, source_frame_id);
@@ -1058,7 +1059,7 @@ void RenderViewHost::OnMsgRunJavaScriptMessage(
     IPC::Message* reply_msg) {
   // While a JS message dialog is showing, tabs in the same process shouldn't
   // process input events.
-  process()->set_ignore_input_events(true);
+  process()->SetIgnoreInputEvents(true);
   StopHangMonitorTimeout();
   delegate_->RunJavaScriptMessage(this, message, default_prompt, frame_url,
                                   flags, reply_msg,
@@ -1070,7 +1071,7 @@ void RenderViewHost::OnMsgRunBeforeUnloadConfirm(const GURL& frame_url,
                                                  IPC::Message* reply_msg) {
   // While a JS before unload dialog is showing, tabs in the same process
   // shouldn't process input events.
-  process()->set_ignore_input_events(true);
+  process()->SetIgnoreInputEvents(true);
   StopHangMonitorTimeout();
   delegate_->RunBeforeUnloadConfirm(this, message, reply_msg);
 }
@@ -1092,8 +1093,8 @@ void RenderViewHost::OnMsgStartDragging(
 
   // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
   if (!drag_url.SchemeIs(chrome::kJavaScriptScheme))
-    FilterURL(policy, process()->id(), &drag_url);
-  FilterURL(policy, process()->id(), &html_base_url);
+    FilterURL(policy, process()->GetID(), &drag_url);
+  FilterURL(policy, process()->GetID(), &html_base_url);
 
   if (drag_url != drop_data.url || html_base_url != drop_data.html_base_url) {
     WebDropData drop_data_copy = drop_data;
@@ -1410,14 +1411,16 @@ void RenderViewHost::OnDidZoomURL(double zoom_level,
                                   bool remember,
                                   const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  HostZoomMap* host_zoom_map = process()->browser_context()->GetHostZoomMap();
+  HostZoomMap* host_zoom_map = process()->GetBrowserContext()->
+      GetHostZoomMap();
   if (remember) {
     host_zoom_map->SetZoomLevel(net::GetHostOrSpecFromURL(url), zoom_level);
     // Notify renderers from this browser context.
-    for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+    for (content::RenderProcessHost::iterator i(
+            content::RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
-      RenderProcessHost* render_process_host = i.GetCurrentValue();
-      if (render_process_host->browser_context()->GetHostZoomMap()->
+      content::RenderProcessHost* render_process_host = i.GetCurrentValue();
+      if (render_process_host->GetBrowserContext()->GetHostZoomMap()->
           GetOriginal() == host_zoom_map) {
         render_process_host->Send(
             new ViewMsg_SetZoomLevelForCurrentURL(url, zoom_level));
@@ -1425,7 +1428,7 @@ void RenderViewHost::OnDidZoomURL(double zoom_level,
     }
   } else {
     host_zoom_map->SetTemporaryZoomLevel(
-        process()->id(), routing_id(), zoom_level);
+        process()->GetID(), routing_id(), zoom_level);
   }
 }
 
@@ -1454,7 +1457,7 @@ void RenderViewHost::OnMediaNotification(int64 player_cookie,
 void RenderViewHost::OnRequestDesktopNotificationPermission(
     const GURL& source_origin, int callback_context) {
   content::GetContentClient()->browser()->RequestDesktopNotificationPermission(
-      source_origin, callback_context, process()->id(), routing_id());
+      source_origin, callback_context, process()->GetID(), routing_id());
 }
 
 void RenderViewHost::OnShowDesktopNotification(
@@ -1469,12 +1472,12 @@ void RenderViewHost::OnShowDesktopNotification(
   }
 
   content::GetContentClient()->browser()->ShowDesktopNotification(
-      params, process()->id(), routing_id(), false);
+      params, process()->GetID(), routing_id(), false);
 }
 
 void RenderViewHost::OnCancelDesktopNotification(int notification_id) {
   content::GetContentClient()->browser()->CancelDesktopNotification(
-      process()->id(), routing_id(), notification_id);
+      process()->GetID(), routing_id(), notification_id);
 }
 
 #if defined(OS_MACOSX)

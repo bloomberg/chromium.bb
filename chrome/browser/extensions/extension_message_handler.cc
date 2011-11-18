@@ -10,7 +10,7 @@
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/public/browser/render_process_host.h"
 
 ExtensionMessageHandler::ExtensionMessageHandler(
     RenderViewHost* render_view_host)
@@ -38,7 +38,7 @@ void ExtensionMessageHandler::RenderViewHostInitialized() {
 void ExtensionMessageHandler::OnPostMessage(int port_id,
                                             const std::string& message) {
   Profile* profile = Profile::FromBrowserContext(
-      render_view_host()->process()->browser_context());
+      render_view_host()->process()->GetBrowserContext());
   if (profile->GetExtensionMessageService()) {
     profile->GetExtensionMessageService()->PostMessageFromRenderer(
         port_id, message);

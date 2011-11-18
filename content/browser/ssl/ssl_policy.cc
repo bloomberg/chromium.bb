@@ -10,7 +10,7 @@
 #include "base/memory/singleton.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
@@ -93,7 +93,7 @@ void SSLPolicy::DidRunInsecureContent(NavigationEntry* entry,
       return;
 
   backend_->HostRanInsecureContent(GURL(security_origin).host(),
-                                   site_instance->GetProcess()->id());
+                                   site_instance->GetProcess()->GetID());
 }
 
 void SSLPolicy::OnRequestStarted(SSLRequestInfo* info) {
@@ -145,8 +145,8 @@ void SSLPolicy::UpdateEntry(NavigationEntry* entry, TabContents* tab_contents) {
   // necessarily have site instances.  Without a process, the entry can't
   // possibly have insecure content.  See bug http://crbug.com/12423.
   if (site_instance &&
-      backend_->DidHostRunInsecureContent(entry->url().host(),
-                                          site_instance->GetProcess()->id())) {
+      backend_->DidHostRunInsecureContent(
+          entry->url().host(), site_instance->GetProcess()->GetID())) {
     entry->ssl().set_security_style(
         content::SECURITY_STYLE_AUTHENTICATION_BROKEN);
     entry->ssl().set_ran_insecure_content();

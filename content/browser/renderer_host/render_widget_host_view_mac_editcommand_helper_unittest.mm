@@ -71,7 +71,7 @@ namespace {
 // Create a RenderWidget for which we can filter messages.
 class RenderWidgetHostEditCommandCounter : public RenderWidgetHost {
  public:
-  RenderWidgetHostEditCommandCounter(RenderProcessHost* process,
+  RenderWidgetHostEditCommandCounter(content::RenderProcessHost* process,
                                      int routing_id)
     : RenderWidgetHost(process, routing_id),
       edit_command_message_count_(0) {

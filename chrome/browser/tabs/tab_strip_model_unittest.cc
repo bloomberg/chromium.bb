@@ -1747,7 +1747,7 @@ TEST_F(TabStripModelTest, FastShutdown) {
     // On a mock RPH this checks whether we *attempted* fast shutdown.
     // A real RPH would reject our attempt since there is an unload handler.
     EXPECT_TRUE(contents1->tab_contents()->
-        GetRenderProcessHost()->fast_shutdown_started());
+      GetRenderProcessHost()->FastShutdownStarted());
     EXPECT_EQ(2, tabstrip.count());
 
     delegate.set_run_unload_listener(false);
@@ -1770,7 +1770,7 @@ TEST_F(TabStripModelTest, FastShutdown) {
 
     tabstrip.CloseTabContentsAt(1, TabStripModel::CLOSE_NONE);
     EXPECT_FALSE(contents1->tab_contents()->
-        GetRenderProcessHost()->fast_shutdown_started());
+        GetRenderProcessHost()->FastShutdownStarted());
     EXPECT_EQ(1, tabstrip.count());
 
     tabstrip.CloseAllTabs();

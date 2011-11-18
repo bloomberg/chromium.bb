@@ -16,9 +16,9 @@
 #include "chrome/common/render_messages.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "net/proxy/proxy_resolver.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
@@ -147,13 +147,14 @@ void MemoryPurger::PurgeRenderers() {
   // Concern: Telling a bunch of renderer processes to destroy their data may
   // cause them to page everything in to do it, which could take a lot of time/
   // cause jank.
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance())
     PurgeRendererForHost(i.GetCurrentValue());
 }
 
 // static
-void MemoryPurger::PurgeRendererForHost(RenderProcessHost* host) {
+void MemoryPurger::PurgeRendererForHost(content::RenderProcessHost* host) {
   // Direct the renderer to free everything it can.
   host->Send(new ChromeViewMsg_PurgeMemory());
 }

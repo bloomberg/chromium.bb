@@ -5,7 +5,7 @@
 // Represents the browser side of the browser <--> renderer communication
 // channel. There will be one RenderProcessHost per renderer process.
 
-#include "content/browser/renderer_host/browser_render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 
 #include <algorithm>
 #include <limits>
@@ -20,18 +20,22 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
+#include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_context.h"
+#include "content/browser/browser_main.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/device_orientation/message_filter.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -68,6 +72,7 @@
 #include "content/browser/speech/speech_input_dispatcher_host.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/browser/user_metrics.h"
+#include "content/browser/webui/web_ui_factory.h"
 #include "content/browser/worker_host/worker_message_filter.h"
 #include "content/common/child_process_info.h"
 #include "content/common/child_process_messages.h"
@@ -77,6 +82,7 @@
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/renderer/render_process_impl.h"
@@ -183,21 +189,103 @@ class RendererURLRequestContextSelector
   scoped_refptr<net::URLRequestContextGetter> media_request_context_;
 };
 
+size_t max_renderer_count_override = 0;
+
+size_t GetMaxRendererProcessCount() {
+  if (max_renderer_count_override)
+    return max_renderer_count_override;
+
+  // Defines the maximum number of renderer processes according to the
+  // amount of installed memory as reported by the OS. The table
+  // values are calculated by assuming that you want the renderers to
+  // use half of the installed ram and assuming that each tab uses
+  // ~40MB, however the curve is not linear but piecewise linear with
+  // interleaved slopes of 3 and 2.
+  // If you modify this table you need to adjust browser\browser_uitest.cc
+  // to match the expected number of processes.
+
+  static const size_t kMaxRenderersByRamTier[] = {
+    3,                        // less than 256MB
+    6,                        //  256MB
+    9,                        //  512MB
+    12,                       //  768MB
+    14,                       // 1024MB
+    18,                       // 1280MB
+    20,                       // 1536MB
+    22,                       // 1792MB
+    24,                       // 2048MB
+    26,                       // 2304MB
+    29,                       // 2560MB
+    32,                       // 2816MB
+    35,                       // 3072MB
+    38,                       // 3328MB
+    40                        // 3584MB
+  };
+
+  static size_t max_count = 0;
+  if (!max_count) {
+    size_t memory_tier = base::SysInfo::AmountOfPhysicalMemoryMB() / 256;
+    if (memory_tier >= arraysize(kMaxRenderersByRamTier))
+      max_count = content::kMaxRendererProcessCount;
+    else
+      max_count = kMaxRenderersByRamTier[memory_tier];
+  }
+  return max_count;
+}
+
+// Returns true if the given host is suitable for launching a new view
+// associated with the given browser context.
+static bool IsSuitableHost(content::RenderProcessHost* host,
+                           content::BrowserContext* browser_context,
+                           const GURL& site_url) {
+  if (host->GetBrowserContext() != browser_context)
+    return false;
+
+  if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+          host->GetID()) !=
+      content::WebUIFactory::Get()->HasWebUIScheme(site_url))
+    return false;
+
+  return content::GetContentClient()->browser()->IsSuitableHost(host, site_url);
+}
+
 }  // namespace
 
-BrowserRenderProcessHost::BrowserRenderProcessHost(
+// the global list of all renderer processes
+base::LazyInstance<
+    IDMap<content::RenderProcessHost>,
+    base::LeakyLazyInstanceTraits<IDMap<content::RenderProcessHost> > >
+        g_all_hosts = LAZY_INSTANCE_INITIALIZER;
+
+// static
+bool g_run_renderer_in_process_ = false;
+
+// static
+void content::RenderProcessHost::SetMaxRendererProcessCountForTest(
+    size_t count) {
+  max_renderer_count_override = count;
+}
+
+RenderProcessHostImpl::RenderProcessHostImpl(
     content::BrowserContext* browser_context)
-        : RenderProcessHost(browser_context),
+        : max_page_id_(-1),
+          fast_shutdown_started_(false),
+          deleting_soon_(false),
+          pending_views_(0),
           visible_widgets_(0),
           backgrounded_(true),
           ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
                 FROM_HERE, base::TimeDelta::FromSeconds(5),
-                this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
+                this, &RenderProcessHostImpl::ClearTransportDIBCache)),
           accessibility_enabled_(false),
-          is_initialized_(false) {
+          is_initialized_(false),
+          id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
+          browser_context_(browser_context),
+          sudden_termination_allowed_(true),
+          ignore_input_events_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
-  ChildProcessSecurityPolicy::GetInstance()->Add(id());
+  ChildProcessSecurityPolicy::GetInstance()->Add(GetID());
 
   // Grant most file permissions to this renderer.
   // PLATFORM_FILE_TEMPORARY, PLATFORM_FILE_HIDDEN and
@@ -205,7 +293,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(
   // requests them.
   // This is for the filesystem sandbox.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      id(), browser_context->GetPath().Append(
+      GetID(), browser_context->GetPath().Append(
           fileapi::SandboxMountPointProvider::kNewFileSystemDirectory),
       base::PLATFORM_FILE_OPEN |
       base::PLATFORM_FILE_CREATE |
@@ -222,26 +310,31 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(
   // This is so that we can read and move stuff out of the old filesystem
   // sandbox.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      id(), browser_context->GetPath().Append(
+      GetID(), browser_context->GetPath().Append(
           fileapi::SandboxMountPointProvider::kOldFileSystemDirectory),
       base::PLATFORM_FILE_READ | base::PLATFORM_FILE_WRITE |
       base::PLATFORM_FILE_WRITE_ATTRIBUTES | base::PLATFORM_FILE_ENUMERATE);
   // This is so that we can rename the old sandbox out of the way so that we
   // know we've taken care of it.
   ChildProcessSecurityPolicy::GetInstance()->GrantPermissionsForFile(
-      id(), browser_context->GetPath().Append(
+      GetID(), browser_context->GetPath().Append(
           fileapi::SandboxMountPointProvider::kRenamedOldFileSystemDirectory),
       base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_CREATE_ALWAYS |
       base::PLATFORM_FILE_WRITE);
 
-  // Note: When we create the BrowserRenderProcessHost, it's technically
+  CHECK(!content::ExitedMainMessageLoop());
+  g_all_hosts.Get().AddWithID(this, GetID());
+  g_all_hosts.Get().set_check_on_null_data(true);
+  // Initialize |child_process_activity_time_| to a reasonable value.
+  mark_child_process_activity_time();
+  // Note: When we create the RenderProcessHostImpl, it's technically
   //       backgrounded, because it has no visible listeners.  But the process
   //       doesn't actually exist yet, so we'll Background it later, after
   //       creation.
 }
 
-BrowserRenderProcessHost::~BrowserRenderProcessHost() {
-  ChildProcessSecurityPolicy::GetInstance()->Remove(id());
+RenderProcessHostImpl::~RenderProcessHostImpl() {
+  ChildProcessSecurityPolicy::GetInstance()->Remove(GetID());
 
   // We may have some unsent messages at this point, but that's OK.
   channel_.reset();
@@ -251,13 +344,15 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
   }
 
   ClearTransportDIBCache();
+  if (g_all_hosts.Get().Lookup(GetID()))
+    g_all_hosts.Get().Remove(GetID());
 }
 
-void BrowserRenderProcessHost::EnableSendQueue() {
+void RenderProcessHostImpl::EnableSendQueue() {
   is_initialized_ = false;
 }
 
-bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
+bool RenderProcessHostImpl::Init(bool is_accessibility_enabled) {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
   if (channel_.get())
@@ -295,7 +390,8 @@ bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 
   // Call the embedder first so that their IPC filters have priority.
-  content::GetContentClient()->browser()->BrowserRenderProcessHostCreated(this);
+  content::GetContentClient()->browser()->RenderProcessHostCreated(
+      this);
 
   CreateMessageFilters();
 
@@ -350,110 +446,115 @@ bool BrowserRenderProcessHost::Init(bool is_accessibility_enabled) {
   return true;
 }
 
-void BrowserRenderProcessHost::CreateMessageFilters() {
+void RenderProcessHostImpl::CreateMessageFilters() {
   scoped_refptr<RenderMessageFilter> render_message_filter(
       new RenderMessageFilter(
-          id(),
+          GetID(),
           PluginService::GetInstance(),
-          browser_context(),
-          browser_context()->GetRequestContextForRenderProcess(id()),
+          GetBrowserContext(),
+          GetBrowserContext()->GetRequestContextForRenderProcess(GetID()),
           widget_helper_));
   channel_->AddFilter(render_message_filter);
 
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
-      id(), ChildProcessInfo::RENDER_PROCESS,
-      &browser_context()->GetResourceContext(),
-      new RendererURLRequestContextSelector(browser_context(), id()),
+      GetID(), ChildProcessInfo::RENDER_PROCESS,
+      &GetBrowserContext()->GetResourceContext(),
+      new RendererURLRequestContextSelector(GetBrowserContext(), GetID()),
       content::GetContentClient()->browser()->GetResourceDispatcherHost());
 
   channel_->AddFilter(resource_message_filter);
   channel_->AddFilter(new AudioInputRendererHost(
-      &browser_context()->GetResourceContext()));
+      &GetBrowserContext()->GetResourceContext()));
   channel_->AddFilter(
-      new AudioRendererHost(&browser_context()->GetResourceContext()));
+      new AudioRendererHost(&GetBrowserContext()->GetResourceContext()));
   channel_->AddFilter(
-      new VideoCaptureHost(&browser_context()->GetResourceContext()));
+      new VideoCaptureHost(&GetBrowserContext()->GetResourceContext()));
   channel_->AddFilter(
-      new AppCacheDispatcherHost(browser_context()->GetAppCacheService(),
-                                 id()));
+      new AppCacheDispatcherHost(GetBrowserContext()->GetAppCacheService(),
+                                 GetID()));
   channel_->AddFilter(new ClipboardMessageFilter());
   channel_->AddFilter(
-      new DOMStorageMessageFilter(id(), browser_context()->GetWebKitContext()));
+      new DOMStorageMessageFilter(GetID(),
+                                  GetBrowserContext()->GetWebKitContext()));
   channel_->AddFilter(
-      new IndexedDBDispatcherHost(id(), browser_context()->GetWebKitContext()));
+      new IndexedDBDispatcherHost(GetID(),
+                                  GetBrowserContext()->GetWebKitContext()));
   channel_->AddFilter(
       GeolocationDispatcherHost::New(
-          id(), browser_context()->GetGeolocationPermissionContext()));
-  channel_->AddFilter(new GpuMessageFilter(id(), widget_helper_.get()));
+          GetID(), GetBrowserContext()->GetGeolocationPermissionContext()));
+  channel_->AddFilter(new GpuMessageFilter(GetID(), widget_helper_.get()));
   channel_->AddFilter(new media_stream::MediaStreamDispatcherHost(
-      &browser_context()->GetResourceContext(), id()));
-  channel_->AddFilter(new PepperFileMessageFilter(id(), browser_context()));
+      &GetBrowserContext()->GetResourceContext(), GetID()));
+  channel_->AddFilter(new PepperFileMessageFilter(GetID(),
+                      GetBrowserContext()));
   channel_->AddFilter(
-      new PepperMessageFilter(&browser_context()->GetResourceContext()));
+      new PepperMessageFilter(&GetBrowserContext()->GetResourceContext()));
   channel_->AddFilter(new speech_input::SpeechInputDispatcherHost(
-      id(), browser_context()->GetRequestContext(),
-      browser_context()->GetSpeechInputPreferences()));
+      GetID(), GetBrowserContext()->GetRequestContext(),
+      GetBrowserContext()->GetSpeechInputPreferences()));
   channel_->AddFilter(
-      new FileSystemDispatcherHost(browser_context()->GetRequestContext(),
-                                   browser_context()->GetFileSystemContext()));
+      new FileSystemDispatcherHost(
+          GetBrowserContext()->GetRequestContext(),
+          GetBrowserContext()->GetFileSystemContext()));
   channel_->AddFilter(new device_orientation::MessageFilter());
   channel_->AddFilter(
-      new BlobMessageFilter(id(), browser_context()->GetBlobStorageContext()));
-  channel_->AddFilter(new FileUtilitiesMessageFilter(id()));
+      new BlobMessageFilter(GetID(),
+                            GetBrowserContext()->GetBlobStorageContext()));
+  channel_->AddFilter(new FileUtilitiesMessageFilter(GetID()));
   channel_->AddFilter(new MimeRegistryMessageFilter());
   channel_->AddFilter(new DatabaseMessageFilter(
-      browser_context()->GetDatabaseTracker()));
+      GetBrowserContext()->GetDatabaseTracker()));
 #if defined(OS_MACOSX)
-  channel_->AddFilter(new TextInputClientMessageFilter(id()));
+  channel_->AddFilter(new TextInputClientMessageFilter(GetID()));
 #endif
 
   SocketStreamDispatcherHost* socket_stream_dispatcher_host =
       new SocketStreamDispatcherHost(
-          new RendererURLRequestContextSelector(browser_context(), id()),
-          &browser_context()->GetResourceContext());
+          new RendererURLRequestContextSelector(GetBrowserContext(), GetID()),
+          &GetBrowserContext()->GetResourceContext());
   channel_->AddFilter(socket_stream_dispatcher_host);
 
   channel_->AddFilter(
       new WorkerMessageFilter(
-          id(),
-          &browser_context()->GetResourceContext(),
+          GetID(),
+          &GetBrowserContext()->GetResourceContext(),
           content::GetContentClient()->browser()->GetResourceDispatcherHost(),
           base::Bind(&RenderWidgetHelper::GetNextRoutingID,
                      base::Unretained(widget_helper_.get()))));
 
 #if defined(ENABLE_P2P_APIS)
   channel_->AddFilter(new content::P2PSocketDispatcherHost(
-      &browser_context()->GetResourceContext()));
+      &GetBrowserContext()->GetResourceContext()));
 #endif
 
   channel_->AddFilter(new TraceMessageFilter());
   channel_->AddFilter(new ResolveProxyMsgHelper(
-      browser_context()->GetRequestContextForRenderProcess(id())));
+      GetBrowserContext()->GetRequestContextForRenderProcess(GetID())));
   channel_->AddFilter(new QuotaDispatcherHost(
-      id(), browser_context()->GetQuotaManager(),
+      GetID(), GetBrowserContext()->GetQuotaManager(),
       content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
 }
 
-int BrowserRenderProcessHost::GetNextRoutingID() {
+int RenderProcessHostImpl::GetNextRoutingID() {
   return widget_helper_->GetNextRoutingID();
 }
 
-void BrowserRenderProcessHost::UpdateAndSendMaxPageID(int32 page_id) {
+void RenderProcessHostImpl::UpdateAndSendMaxPageID(int32 page_id) {
   if (page_id > max_page_id_)
     Send(new ViewMsg_SetNextPageID(page_id + 1));
   UpdateMaxPageID(page_id);
 }
 
-void BrowserRenderProcessHost::CancelResourceRequests(int render_widget_id) {
+void RenderProcessHostImpl::CancelResourceRequests(int render_widget_id) {
   widget_helper_->CancelResourceRequests(render_widget_id);
 }
 
-void BrowserRenderProcessHost::CrossSiteSwapOutACK(
+void RenderProcessHostImpl::CrossSiteSwapOutACK(
     const ViewMsg_SwapOut_Params& params) {
   widget_helper_->CrossSiteSwapOutACK(params);
 }
 
-bool BrowserRenderProcessHost::WaitForUpdateMsg(
+bool RenderProcessHostImpl::WaitForUpdateMsg(
     int render_widget_id,
     const base::TimeDelta& max_delay,
     IPC::Message* msg) {
@@ -465,7 +566,7 @@ bool BrowserRenderProcessHost::WaitForUpdateMsg(
   return widget_helper_->WaitForUpdateMsg(render_widget_id, max_delay, msg);
 }
 
-void BrowserRenderProcessHost::ReceivedBadMessage() {
+void RenderProcessHostImpl::ReceivedBadMessage() {
   if (run_renderer_in_process()) {
     // In single process mode it is better if we don't suicide but just
     // crash.
@@ -476,14 +577,14 @@ void BrowserRenderProcessHost::ReceivedBadMessage() {
                     false);
 }
 
-void BrowserRenderProcessHost::WidgetRestored() {
+void RenderProcessHostImpl::WidgetRestored() {
   // Verify we were properly backgrounded.
   DCHECK_EQ(backgrounded_, (visible_widgets_ == 0));
   visible_widgets_++;
   SetBackgrounded(false);
 }
 
-void BrowserRenderProcessHost::WidgetHidden() {
+void RenderProcessHostImpl::WidgetHidden() {
   // On startup, the browser will call Hide
   if (backgrounded_)
     return;
@@ -497,11 +598,11 @@ void BrowserRenderProcessHost::WidgetHidden() {
   }
 }
 
-int BrowserRenderProcessHost::VisibleWidgetCount() const {
+int RenderProcessHostImpl::VisibleWidgetCount() const {
   return visible_widgets_;
 }
 
-void BrowserRenderProcessHost::AppendRendererCommandLine(
+void RenderProcessHostImpl::AppendRendererCommandLine(
     CommandLine* command_line) const {
   // Pass the process type first, so it shows first in process listings.
   command_line->AppendSwitchASCII(switches::kProcessType,
@@ -530,7 +631,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   }
 
   content::GetContentClient()->browser()->AppendExtraCommandLineSwitches(
-      command_line, id());
+      command_line, GetID());
 
   // Appending disable-gpu-feature switches due to software rendering list.
   GpuDataManager* gpu_data_manager = GpuDataManager::GetInstance();
@@ -538,7 +639,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   gpu_data_manager->AppendRendererCommandLine(command_line);
 }
 
-void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
+void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     const CommandLine& browser_cmd,
     CommandLine* renderer_cmd) const {
   // Propagate the following switches to the renderer command line (along
@@ -636,13 +737,13 @@ void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
                                  arraysize(kSwitchNames));
 
   // Disable databases in incognito mode.
-  if (browser_context()->IsOffTheRecord() &&
+  if (GetBrowserContext()->IsOffTheRecord() &&
       !browser_cmd.HasSwitch(switches::kDisableDatabases)) {
     renderer_cmd->AppendSwitch(switches::kDisableDatabases);
   }
 }
 
-base::ProcessHandle BrowserRenderProcessHost::GetHandle() {
+base::ProcessHandle RenderProcessHostImpl::GetHandle() {
   // child_process_launcher_ is null either because we're in single process
   // mode, we have done fast termination, or the process has crashed.
   if (run_renderer_in_process() || !child_process_launcher_.get())
@@ -654,7 +755,7 @@ base::ProcessHandle BrowserRenderProcessHost::GetHandle() {
   return child_process_launcher_->GetHandle();
 }
 
-bool BrowserRenderProcessHost::FastShutdownIfPossible() {
+bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (run_renderer_in_process())
     return false;  // Single process mode can't do fast shutdown.
 
@@ -671,7 +772,7 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   // while we're shutting down, so there's a small race here.  Given that
   // the window is small, it's unlikely that the web page has much
   // state that will be lost by not calling its unload handlers properly.
-  if (!sudden_termination_allowed())
+  if (!SuddenTerminationAllowed())
     return false;
 
   // Store the handle before it gets changed.
@@ -681,7 +782,7 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
   return true;
 }
 
-void BrowserRenderProcessHost::DumpHandles() {
+void RenderProcessHostImpl::DumpHandles() {
 #if defined(OS_WIN)
   Send(new ChildProcessMsg_DumpHandles());
   return;
@@ -691,7 +792,7 @@ void BrowserRenderProcessHost::DumpHandles() {
 }
 
 // This is a platform specific function for mapping a transport DIB given its id
-TransportDIB* BrowserRenderProcessHost::MapTransportDIB(
+TransportDIB* RenderProcessHostImpl::MapTransportDIB(
     TransportDIB::Id dib_id) {
 #if defined(OS_WIN)
   // On Windows we need to duplicate the handle from the remote process
@@ -707,7 +808,7 @@ TransportDIB* BrowserRenderProcessHost::MapTransportDIB(
 #endif  // defined(OS_POSIX)
 }
 
-TransportDIB* BrowserRenderProcessHost::GetTransportDIB(
+TransportDIB* RenderProcessHostImpl::GetTransportDIB(
     TransportDIB::Id dib_id) {
   if (!TransportDIB::is_valid_id(dib_id))
     return NULL;
@@ -745,19 +846,19 @@ TransportDIB* BrowserRenderProcessHost::GetTransportDIB(
   return dib;
 }
 
-void BrowserRenderProcessHost::ClearTransportDIBCache() {
+void RenderProcessHostImpl::ClearTransportDIBCache() {
   STLDeleteContainerPairSecondPointers(
       cached_dibs_.begin(), cached_dibs_.end());
   cached_dibs_.clear();
 }
 
-void BrowserRenderProcessHost::SetCompositingSurface(
+void RenderProcessHostImpl::SetCompositingSurface(
     int render_widget_id,
     gfx::PluginWindowHandle compositing_surface) {
   widget_helper_->SetCompositingSurface(render_widget_id, compositing_surface);
 }
 
-bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
+bool RenderProcessHostImpl::Send(IPC::Message* msg) {
   if (!channel_.get()) {
     if (!is_initialized_) {
       queued_messages_.push(msg);
@@ -776,7 +877,7 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
-bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
+bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
   // If we're about to be deleted, or have initiated the fast shutdown sequence,
   // we ignore incoming messages.
 
@@ -787,7 +888,7 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   if (msg.routing_id() == MSG_ROUTING_CONTROL) {
     // Dispatch control messages.
     bool msg_is_ok = true;
-    IPC_BEGIN_MESSAGE_MAP_EX(BrowserRenderProcessHost, msg, msg_is_ok)
+    IPC_BEGIN_MESSAGE_MAP_EX(RenderProcessHostImpl, msg, msg_is_ok)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_ShutdownRequest,
                           OnShutdownRequest)
       IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DumpHandlesDone,
@@ -826,7 +927,7 @@ bool BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   return listener->OnMessageReceived(msg);
 }
 
-void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
+void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   Send(new ChildProcessMsg_SetIPCLoggingEnabled(
       IPC::Logging::GetInstance()->Enabled()));
@@ -837,7 +938,7 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
   Send(new ChildProcessMsg_AskBeforeShutdown());
 }
 
-void BrowserRenderProcessHost::OnChannelError() {
+void RenderProcessHostImpl::OnChannelError() {
   if (!channel_.get())
     return;
 
@@ -866,7 +967,7 @@ void BrowserRenderProcessHost::OnChannelError() {
 }
 
 // Called when the renderer process handle has been signaled.
-void BrowserRenderProcessHost::OnWaitableEventSignaled(
+void RenderProcessHostImpl::OnWaitableEventSignaled(
     base::WaitableEvent* waitable_event) {
 #if defined (OS_WIN)
   base::ProcessHandle handle = GetHandle();
@@ -878,7 +979,197 @@ void BrowserRenderProcessHost::OnWaitableEventSignaled(
 #endif
 }
 
-void BrowserRenderProcessHost::ProcessDied(base::ProcessHandle handle,
+content::BrowserContext* RenderProcessHostImpl::GetBrowserContext() const {
+  return browser_context_;
+}
+
+int RenderProcessHostImpl::GetID() const {
+  return id_;
+}
+
+bool RenderProcessHostImpl::HasConnection() const {
+  return channel_.get() != NULL;
+}
+
+IPC::Channel::Listener* RenderProcessHostImpl::GetListenerByID(
+    int routing_id) {
+  return listeners_.Lookup(routing_id);
+}
+
+void RenderProcessHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
+  ignore_input_events_ = ignore_input_events;
+}
+
+bool RenderProcessHostImpl::IgnoreInputEvents() const {
+  return ignore_input_events_;
+}
+
+void RenderProcessHostImpl::Attach(IPC::Channel::Listener* listener,
+                               int routing_id) {
+  listeners_.AddWithID(listener, routing_id);
+}
+
+void RenderProcessHostImpl::Release(int listener_id) {
+  DCHECK(listeners_.Lookup(listener_id) != NULL);
+  listeners_.Remove(listener_id);
+
+  // Make sure that all associated resource requests are stopped.
+  CancelResourceRequests(listener_id);
+
+#if defined(OS_WIN)
+  // Dump the handle table if handle auditing is enabled.
+  const CommandLine& browser_command_line =
+      *CommandLine::ForCurrentProcess();
+  if (browser_command_line.HasSwitch(switches::kAuditHandles) ||
+      browser_command_line.HasSwitch(switches::kAuditAllHandles)) {
+    DumpHandles();
+
+    // We wait to close the channels until the child process has finished
+    // dumping handles and sends us ChildProcessHostMsg_DumpHandlesDone.
+    return;
+  }
+#endif
+  Cleanup();
+}
+
+void RenderProcessHostImpl::Cleanup() {
+  // When no other owners of this object, we can delete ourselves
+  if (listeners_.IsEmpty()) {
+    content::NotificationService::current()->Notify(
+        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+        content::Source<RenderProcessHost>(this),
+        content::NotificationService::NoDetails());
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    deleting_soon_ = true;
+    // It's important not to wait for the DeleteTask to delete the channel
+    // proxy. Kill it off now. That way, in case the profile is going away, the
+    // rest of the objects attached to this RenderProcessHost start going
+    // away first, since deleting the channel proxy will post a
+    // OnChannelClosed() to IPC::ChannelProxy::Context on the IO thread.
+    channel_.reset();
+
+    // Remove ourself from the list of renderer processes so that we can't be
+    // reused in between now and when the Delete task runs.
+    g_all_hosts.Get().Remove(GetID());
+  }
+}
+
+void RenderProcessHostImpl::ReportExpectingClose(int32 listener_id) {
+  listeners_expecting_close_.insert(listener_id);
+}
+
+void RenderProcessHostImpl::AddPendingView() {
+  pending_views_++;
+}
+
+void RenderProcessHostImpl::RemovePendingView() {
+  DCHECK(pending_views_);
+  pending_views_--;
+}
+
+void RenderProcessHostImpl::UpdateMaxPageID(int32 page_id) {
+  if (page_id > max_page_id_)
+    max_page_id_ = page_id;
+}
+
+void RenderProcessHostImpl::SetSuddenTerminationAllowed(bool enabled) {
+  sudden_termination_allowed_ = enabled;
+}
+
+bool RenderProcessHostImpl::SuddenTerminationAllowed() const {
+  return sudden_termination_allowed_;
+}
+
+base::TimeDelta RenderProcessHostImpl::GetChildProcessIdleTime() const {
+  return base::TimeTicks::Now() - child_process_activity_time_;
+}
+
+IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
+  return channel_.get();
+}
+
+content::RenderProcessHost::listeners_iterator
+    RenderProcessHostImpl::ListenersIterator() {
+  return listeners_iterator(&listeners_);
+}
+
+bool RenderProcessHostImpl::FastShutdownForPageCount(size_t count) {
+  if (listeners_.size() == count)
+    return FastShutdownIfPossible();
+  return false;
+}
+
+bool RenderProcessHostImpl::FastShutdownStarted() const {
+  return fast_shutdown_started_;
+}
+
+// static
+bool content::RenderProcessHost::run_renderer_in_process() {
+  return g_run_renderer_in_process_;
+}
+
+void content::RenderProcessHost::set_run_renderer_in_process(bool value) {
+  g_run_renderer_in_process_ = value;
+}
+
+content::RenderProcessHost::iterator
+    content::RenderProcessHost::AllHostsIterator() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return iterator(g_all_hosts.Pointer());
+}
+
+// static
+content::RenderProcessHost* content::RenderProcessHost::FromID(
+    int render_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return g_all_hosts.Get().Lookup(render_process_id);
+}
+
+// static
+bool content::RenderProcessHost::ShouldTryToUseExistingProcessHost() {
+  size_t renderer_process_count = g_all_hosts.Get().size();
+
+  // NOTE: Sometimes it's necessary to create more render processes than
+  //       GetMaxRendererProcessCount(), for instance when we want to create
+  //       a renderer process for a browser context that has no existing
+  //       renderers. This is OK in moderation, since the
+  //       GetMaxRendererProcessCount() is conservative.
+
+  return run_renderer_in_process() ||
+         (renderer_process_count >= GetMaxRendererProcessCount());
+}
+
+// static
+content::RenderProcessHost*
+    content::RenderProcessHost::GetExistingProcessHost(
+        content::BrowserContext* browser_context,
+    const GURL& site_url) {
+  // First figure out which existing renderers we can use.
+  std::vector<content::RenderProcessHost*> suitable_renderers;
+  suitable_renderers.reserve(g_all_hosts.Get().size());
+
+  iterator iter(AllHostsIterator());
+  while (!iter.IsAtEnd()) {
+    if (run_renderer_in_process() ||
+        IsSuitableHost(
+            iter.GetCurrentValue(),
+            browser_context, site_url))
+      suitable_renderers.push_back(iter.GetCurrentValue());
+
+    iter.Advance();
+  }
+
+  // Now pick a random suitable renderer, if we have any.
+  if (!suitable_renderers.empty()) {
+    int suitable_count = static_cast<int>(suitable_renderers.size());
+    int random_index = base::RandInt(0, suitable_count - 1);
+    return suitable_renderers[random_index];
+  }
+
+  return NULL;
+}
+
+void RenderProcessHostImpl::ProcessDied(base::ProcessHandle handle,
                                            base::TerminationStatus status,
                                            int exit_code,
                                            bool was_alive) {
@@ -912,7 +1203,7 @@ void BrowserRenderProcessHost::ProcessDied(base::ProcessHandle handle,
   // TODO(darin): clean this up
 }
 
-void BrowserRenderProcessHost::OnShutdownRequest() {
+void RenderProcessHostImpl::OnShutdownRequest() {
   // Don't shutdown if there are pending RenderViews being swapped back in.
   if (pending_views_)
     return;
@@ -927,15 +1218,15 @@ void BrowserRenderProcessHost::OnShutdownRequest() {
   Send(new ChildProcessMsg_Shutdown());
 }
 
-void BrowserRenderProcessHost::OnDumpHandlesDone() {
+void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
+  SetSuddenTerminationAllowed(enabled);
+}
+
+void RenderProcessHostImpl::OnDumpHandlesDone() {
   Cleanup();
 }
 
-void BrowserRenderProcessHost::SuddenTerminationChanged(bool enabled) {
-  set_sudden_termination_allowed(enabled);
-}
-
-void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
+void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {
   // Note: we always set the backgrounded_ value.  If the process is NULL
   // (and hence hasn't been created yet), we will set the process priority
   // later when we create the process.
@@ -957,7 +1248,7 @@ void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
   child_process_launcher_->SetProcessBackgrounded(backgrounded);
 }
 
-void BrowserRenderProcessHost::OnProcessLaunched() {
+void RenderProcessHostImpl::OnProcessLaunched() {
   // No point doing anything, since this object will be destructed soon.  We
   // especially don't want to send the RENDERER_PROCESS_CREATED notification,
   // since some clients might expect a RENDERER_PROCESS_TERMINATED afterwards to
@@ -995,18 +1286,18 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   }
 }
 
-void BrowserRenderProcessHost::OnUserMetricsRecordAction(
+void RenderProcessHostImpl::OnUserMetricsRecordAction(
     const std::string& action) {
   UserMetrics::RecordComputedAction(action);
 }
 
-void BrowserRenderProcessHost::OnRevealFolderInOS(const FilePath& path) {
+void RenderProcessHostImpl::OnRevealFolderInOS(const FilePath& path) {
   // Only honor the request if appropriate persmissions are granted.
-  if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(id(), path))
+  if (ChildProcessSecurityPolicy::GetInstance()->CanReadFile(GetID(), path))
     content::GetContentClient()->browser()->OpenItem(path);
 }
 
-void BrowserRenderProcessHost::OnSavedPageAsMHTML(int job_id, int64 data_size) {
+void RenderProcessHostImpl::OnSavedPageAsMHTML(int job_id, int64 data_size) {
   content::GetContentClient()->browser()->GetMHTMLGenerationManager()->
       MHTMLGenerated(job_id, data_size);
 }

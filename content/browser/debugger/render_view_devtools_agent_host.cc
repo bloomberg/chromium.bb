@@ -8,7 +8,7 @@
 #include "base/lazy_instance.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -64,12 +64,13 @@ void RenderViewDevToolsAgentHost::NotifyClientClosing() {
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_DEVTOOLS_WINDOW_CLOSING,
       content::Source<content::BrowserContext>(
-          render_view_host_->site_instance()->GetProcess()->browser_context()),
+          render_view_host_->site_instance()->GetProcess()->
+              GetBrowserContext()),
       content::Details<RenderViewHost>(render_view_host_));
 }
 
 int RenderViewDevToolsAgentHost::GetRenderProcessId() {
-  return render_view_host_->process()->id();
+  return render_view_host_->process()->GetID();
 }
 
 RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {

@@ -39,7 +39,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
@@ -98,7 +98,8 @@ std::wstring WindowCaptionFromPageTitle(std::wstring page_title) {
 // Returns the number of active RenderProcessHosts.
 int CountRenderProcessHosts() {
   int result = 0;
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance())
     ++result;
   return result;
@@ -371,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
   TabContents* oldtab = browser()->GetSelectedTabContents();
-  RenderProcessHost* process = oldtab->render_view_host()->process();
+  content::RenderProcessHost* process = oldtab->render_view_host()->process();
 
   // Now open a tab to a blank page, set its opener to null, and redirect it
   // cross-site.
@@ -402,7 +403,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
             newtab->controller().GetLastCommittedEntry()->url().spec());
 
   // Popup window should not be in the opener's process.
-  RenderProcessHost* popup_process = newtab->render_view_host()->process();
+  content::RenderProcessHost* popup_process =
+      newtab->render_view_host()->process();
   EXPECT_NE(process, popup_process);
 
   // Now open a tab to a blank page, set its opener to null, and use a
@@ -435,7 +437,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
             newtab2->controller().GetLastCommittedEntry()->url().spec());
 
   // This popup window should also not be in the opener's process.
-  RenderProcessHost* popup_process2 = newtab2->render_view_host()->process();
+  content::RenderProcessHost* popup_process2 =
+      newtab2->render_view_host()->process();
   EXPECT_NE(process, popup_process2);
 }
 
@@ -457,7 +460,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
   // Start with an http URL.
   ui_test_utils::NavigateToURL(browser(), http_url);
   TabContents* oldtab = browser()->GetSelectedTabContents();
-  RenderProcessHost* process = oldtab->render_view_host()->process();
+  content::RenderProcessHost* process = oldtab->render_view_host()->process();
 
   // Now open a tab to a blank page, set its opener to null, and redirect it
   // cross-site.
@@ -487,7 +490,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
             newtab->controller().GetLastCommittedEntry()->url().spec());
 
   // Popup window should still be in the opener's process.
-  RenderProcessHost* popup_process = newtab->render_view_host()->process();
+  content::RenderProcessHost* popup_process =
+      newtab->render_view_host()->process();
   EXPECT_EQ(process, popup_process);
 
   // Same thing if the current tab tries to navigate itself.
@@ -506,7 +510,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
             oldtab->controller().GetLastCommittedEntry()->url().spec());
 
   // Original window should still be in the original process.
-  RenderProcessHost* new_process = newtab->render_view_host()->process();
+  content::RenderProcessHost* new_process =
+      newtab->render_view_host()->process();
   EXPECT_EQ(process, new_process);
 }
 
@@ -517,10 +522,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
   ui_test_utils::NavigateToURL(browser(),
       ui_test_utils::GetTestUrl(FilePath(FilePath::kCurrentDirectory),
                                 FilePath(kTitle1File)));
-  RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  content::RenderProcessHost::iterator it(
+      content::RenderProcessHost::AllHostsIterator());
   for (; !it.IsAtEnd(); it.Advance()) {
     base::TimeDelta renderer_td =
-        it.GetCurrentValue()->get_child_process_idle_time();
+        it.GetCurrentValue()->GetChildProcessIdleTime();
     base::TimeDelta browser_td = base::TimeTicks::Now() - start;
     EXPECT_TRUE(browser_td >= renderer_td);
   }

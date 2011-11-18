@@ -282,7 +282,7 @@ void PrerenderContents::StartPrerendering(
   render_view_host_observer_.reset(
       new PrerenderRenderViewHostObserver(this, render_view_host_mutable()));
 
-  child_id_ = render_view_host()->process()->id();
+  child_id_ = render_view_host()->process()->GetID();
   route_id_ = render_view_host()->routing_id();
 
   // Register this with the ResourceDispatcherHost as a prerender

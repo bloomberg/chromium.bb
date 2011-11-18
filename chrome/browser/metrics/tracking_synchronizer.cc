@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/webui/tracing_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 
 using base::TimeTicks;
 using content::BrowserThread;
@@ -84,9 +84,10 @@ void TrackingSynchronizer::SetTrackingStatus(bool enable) {
   // to be on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator it(
+          content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    RenderProcessHost* render_process_host = it.GetCurrentValue();
+    content::RenderProcessHost* render_process_host = it.GetCurrentValue();
     DCHECK(render_process_host);
     // Ignore processes that don't have a connection, such as crashed tabs.
     if (!render_process_host->HasConnection())
@@ -115,7 +116,8 @@ void TrackingSynchronizer::SetTrackingStatusInProcess(int process_id) {
 
   bool enable = tracked_objects::ThreadData::tracking_status();
 
-  RenderProcessHost* process = RenderProcessHost::FromID(process_id);
+  content::RenderProcessHost* process =
+      content::RenderProcessHost::FromID(process_id);
   // Ignore processes that don't have a connection, such as crashed tabs.
   if (!process || !process->HasConnection())
     return;
@@ -173,9 +175,10 @@ int TrackingSynchronizer::RegisterAndNotifyAllProcesses(
   outstanding_requests_[sequence_number] = request;
 
   DCHECK_GT(request->processes_pending_, 0);
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator it(
+          content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
-    RenderProcessHost* render_process_host = it.GetCurrentValue();
+    content::RenderProcessHost* render_process_host = it.GetCurrentValue();
     DCHECK(render_process_host);
     // Ignore processes that don't have a connection, such as crashed tabs.
     if (!render_process_host->HasConnection())

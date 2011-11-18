@@ -290,10 +290,11 @@ void NotifyWebRequestAPIUsed(void* profile_id, const Extension* extension) {
   profile->GetExtensionService()->SetHasUsedWebRequest(extension, true);
 
   content::BrowserContext* browser_context = profile;
-  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+  for (content::RenderProcessHost::iterator it =
+          content::RenderProcessHost::AllHostsIterator();
        !it.IsAtEnd(); it.Advance()) {
-    RenderProcessHost* host = it.GetCurrentValue();
-    if (host->browser_context() == browser_context)
+    content::RenderProcessHost* host = it.GetCurrentValue();
+    if (host->GetBrowserContext() == browser_context)
       SendExtensionWebRequestStatusToHost(host);
   }
 }
@@ -1629,8 +1630,8 @@ void WebRequestHandlerBehaviorChanged::OnQuotaExceeded() {
   Run();
 }
 
-void SendExtensionWebRequestStatusToHost(RenderProcessHost* host) {
-  Profile* profile = Profile::FromBrowserContext(host->browser_context());
+void SendExtensionWebRequestStatusToHost(content::RenderProcessHost* host) {
+  Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
   if (!profile || !profile->GetExtensionService())
     return;
 

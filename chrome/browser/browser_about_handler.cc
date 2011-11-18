@@ -47,11 +47,11 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/sensors/sensors_provider.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "crypto/nss_util.h"
 #include "googleurl/src/gurl.h"
@@ -832,7 +832,8 @@ std::string AboutTcmalloc() {
   MallocExtension::instance()->GetStats(buffer, sizeof(buffer));
   std::string browser("Browser");
   AboutTcmallocOutputs::GetInstance()->SetOutput(browser, buffer);
-  RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  content::RenderProcessHost::iterator
+      it(content::RenderProcessHost::AllHostsIterator());
   while (!it.IsAtEnd()) {
     it.GetCurrentValue()->Send(new ChromeViewMsg_GetRendererTcmalloc);
     it.Advance();

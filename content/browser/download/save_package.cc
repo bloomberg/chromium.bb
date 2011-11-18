@@ -25,7 +25,7 @@
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_item.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -129,7 +129,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
       save_type_(save_type),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents->GetRenderProcessHost()->id()),
+      tab_id_(tab_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(page_url_.is_valid());
@@ -155,7 +155,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       save_type_(SAVE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents->GetRenderProcessHost()->id()),
+      tab_id_(tab_contents->GetRenderProcessHost()->GetID()),
       unique_id_(g_save_package_id++),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(page_url_.is_valid());
@@ -653,7 +653,7 @@ void SavePackage::CheckFinish() {
                  file_manager_,
                  final_names,
                  dir,
-                 tab_contents()->GetRenderProcessHost()->id(),
+                 tab_contents()->GetRenderProcessHost()->GetID(),
                  tab_contents()->render_view_host()->routing_id(),
                  id()));
 }
@@ -801,7 +801,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
     save_item->Start();
     file_manager_->SaveURL(save_item->url(),
                            save_item->referrer(),
-                           tab_contents()->GetRenderProcessHost()->id(),
+                           tab_contents()->GetRenderProcessHost()->GetID(),
                            routing_id(),
                            save_item->save_source(),
                            save_item->full_path(),

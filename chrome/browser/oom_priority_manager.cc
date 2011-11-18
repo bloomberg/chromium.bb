@@ -20,13 +20,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/zygote_host_linux.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 
 #if !defined(OS_CHROMEOS)
 #error This file only meant to be compiled on ChromeOS
@@ -193,13 +193,14 @@ void OomPriorityManager::Observe(int type,
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       handle =
-          content::Details<RenderProcessHost::RendererClosedDetails>(details)->
-              handle;
+          content::Details<content::RenderProcessHost::RendererClosedDetails>(
+              details)->handle;
       pid_to_oom_score_.erase(handle);
       break;
     }
     case content::NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      handle = content::Source<RenderProcessHost>(source)->GetHandle();
+      handle = content::Source<content::RenderProcessHost>(source)->
+          GetHandle();
       pid_to_oom_score_.erase(handle);
       break;
     }

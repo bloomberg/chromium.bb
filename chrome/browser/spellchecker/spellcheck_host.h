@@ -18,8 +18,11 @@ namespace base {
 class WaitableEvent;
 }
 
-class Profile;
+namespace content {
 class RenderProcessHost;
+}
+
+class Profile;
 class SpellCheckHostMetrics;
 class SpellCheckProfileProvider;
 
@@ -72,7 +75,7 @@ class SpellCheckHost {
 
   // Pass the renderer some basic intialization information. Note that the
   // renderer will not load Hunspell until it needs to.
-  virtual void InitForRenderer(RenderProcessHost* process) = 0;
+  virtual void InitForRenderer(content::RenderProcessHost* process) = 0;
 
   // Adds the given word to the custom words list and inform renderer of the
   // update.

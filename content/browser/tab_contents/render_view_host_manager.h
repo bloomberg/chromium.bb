@@ -237,7 +237,7 @@ class CONTENT_EXPORT RenderViewHostManager
 
   // Called when a renderer process is starting to close.  We should not
   // schedule new navigations in its swapped out RenderViewHosts after this.
-  void RendererProcessClosing(RenderProcessHost* render_process_host);
+  void RendererProcessClosing(content::RenderProcessHost* render_process_host);
 
   // Our delegate, not owned by us. Guaranteed non-NULL.
   Delegate* delegate_;

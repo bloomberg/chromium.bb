@@ -777,9 +777,9 @@ void ExtensionSettingsHandler::GetActivePagesForExtensionProcess(
       continue;
 
     GURL url = host->delegate()->GetURL();
-    RenderProcessHost* process = host->process();
+    content::RenderProcessHost* process = host->process();
     result->push_back(
-        ExtensionPage(url, process->id(), host->routing_id(),
-                      process->browser_context()->IsOffTheRecord()));
+        ExtensionPage(url, process->GetID(), host->routing_id(),
+                      process->GetBrowserContext()->IsOffTheRecord()));
   }
 }

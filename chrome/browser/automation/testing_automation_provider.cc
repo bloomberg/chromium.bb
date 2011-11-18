@@ -111,10 +111,10 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/common_param_traits.h"
 #include "net/base/cookie_store.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -1258,7 +1258,7 @@ void TestingAutomationProvider::GetTabProcessID(int handle, int* process_id) {
     *process_id = 0;
     TabContents* tab_contents =
         tab_tracker_->GetResource(handle)->tab_contents();
-    RenderProcessHost* rph = tab_contents->GetRenderProcessHost();
+    content::RenderProcessHost* rph = tab_contents->GetRenderProcessHost();
     if (rph)
       *process_id = base::GetProcId(rph->GetHandle());
   }
@@ -2881,7 +2881,7 @@ void TestingAutomationProvider::GetBrowserInfo(
       DictionaryValue* view = new DictionaryValue;
       view->SetInteger(
           "render_process_id",
-          ex_host->render_process_host()->id());
+          ex_host->render_process_host()->GetID());
       view->SetInteger(
           "render_view_id",
           ex_host->render_view_host()->routing_id());

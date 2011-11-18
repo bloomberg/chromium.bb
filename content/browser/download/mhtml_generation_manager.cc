@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/platform_file.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
@@ -36,7 +36,7 @@ void MHTMLGenerationManager::GenerateMHTML(TabContents* tab_contents,
   int job_id = id_counter++;
   Job job;
   job.file_path = file;
-  job.process_id = tab_contents->GetRenderProcessHost()->id();
+  job.process_id = tab_contents->GetRenderProcessHost()->GetID();
   job.routing_id = tab_contents->render_view_host()->routing_id();
   id_to_job_[job_id] = job;
 

@@ -29,11 +29,14 @@
 
 class Browser;
 class Extension;
-class RenderProcessHost;
 class RenderWidgetHostView;
 class TabContents;
 struct ViewHostMsg_RunFileChooser_Params;
 struct WebPreferences;
+
+namespace content {
+class RenderProcessHost;
+}
 
 // This class is the browser component of an extension component's RenderView.
 // It handles setting up the renderer process, if needed, with special
@@ -72,7 +75,7 @@ class ExtensionHost : public TabContentsDelegate,
   const std::string& extension_id() const { return extension_id_; }
   TabContents* host_contents() const { return host_contents_.get(); }
   RenderViewHost* render_view_host() const;
-  RenderProcessHost* render_process_host() const;
+  content::RenderProcessHost* render_process_host() const;
   bool did_stop_loading() const { return did_stop_loading_; }
   bool document_element_available() const {
     return document_element_available_;

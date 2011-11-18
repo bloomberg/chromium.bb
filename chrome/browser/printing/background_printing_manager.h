@@ -14,8 +14,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class RenderProcessHost;
 class TabContentsWrapper;
+
+namespace content {
+class RenderProcessHost;
+}
 
 namespace printing {
 
@@ -49,7 +52,7 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
 
  private:
   // Notifications handlers.
-  void OnRendererProcessClosed(RenderProcessHost* rph);
+  void OnRendererProcessClosed(content::RenderProcessHost* rph);
   void OnPrintJobReleased(TabContentsWrapper* preview_tab);
   void OnTabContentsDestroyed(TabContentsWrapper* preview_tab);
 

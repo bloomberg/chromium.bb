@@ -218,10 +218,11 @@ void ExtensionPermissionsManager::NotifyPermissionsUpdated(
       content::Details<UpdatedExtensionPermissionsInfo>(&info));
 
   // Send the new permissions to the renderers.
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    RenderProcessHost* host = i.GetCurrentValue();
-    Profile* profile = Profile::FromBrowserContext(host->browser_context());
+    content::RenderProcessHost* host = i.GetCurrentValue();
+    Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
     if (extension_service_->profile()->IsSameProfile(profile))
       host->Send(new ExtensionMsg_UpdatePermissions(
           static_cast<int>(reason),

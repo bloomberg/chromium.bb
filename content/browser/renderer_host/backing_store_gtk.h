@@ -19,6 +19,7 @@ class Point;
 class Rect;
 }  // namespace gfx
 
+
 typedef struct _GdkDrawable GdkDrawable;
 
 class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
@@ -58,7 +59,7 @@ class CONTENT_EXPORT BackingStoreGtk : public BackingStore {
   // BackingStore implementation.
   virtual size_t MemorySize() OVERRIDE;
   virtual void PaintToBackingStore(
-      RenderProcessHost* process,
+      content::RenderProcessHost* process,
       TransportDIB::Id bitmap,
       const gfx::Rect& bitmap_rect,
       const std::vector<gfx::Rect>& copy_rects,

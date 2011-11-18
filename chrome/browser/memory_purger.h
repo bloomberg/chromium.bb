@@ -16,7 +16,9 @@
 
 #include "base/basictypes.h"
 
+namespace content {
 class RenderProcessHost;
+}
 
 class MemoryPurger {
  public:
@@ -24,7 +26,7 @@ class MemoryPurger {
   static void PurgeAll();
   static void PurgeBrowser();
   static void PurgeRenderers();
-  static void PurgeRendererForHost(RenderProcessHost* host);
+  static void PurgeRendererForHost(content::RenderProcessHost* host);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(MemoryPurger);

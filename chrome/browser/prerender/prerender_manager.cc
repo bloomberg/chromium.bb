@@ -37,7 +37,6 @@
 #include "content/browser/cancelable_request.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
@@ -47,6 +46,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
 
@@ -401,8 +401,8 @@ bool PrerenderManager::AddPrerender(
   // true, so that case needs to be explicitly checked for.
   // TODO(tburkard): Figure out how to cancel prerendering in the opposite
   // case, when a new tab is added to a process used for prerendering.
-  if (RenderProcessHost::ShouldTryToUseExistingProcessHost() &&
-      !RenderProcessHost::run_renderer_in_process()) {
+  if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost() &&
+      !content::RenderProcessHost::run_renderer_in_process()) {
     RecordFinalStatus(origin, experiment, FINAL_STATUS_TOO_MANY_PROCESSES);
     return false;
   }
@@ -1135,15 +1135,15 @@ void PrerenderManager::RecordFinalStatus(Origin origin,
 PrerenderManager* FindPrerenderManagerUsingRenderProcessId(
     int render_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  RenderProcessHost* render_process_host =
-      RenderProcessHost::FromID(render_process_id);
+  content::RenderProcessHost* render_process_host =
+      content::RenderProcessHost::FromID(render_process_id);
   // Each render process is guaranteed to only hold RenderViews owned by the
   // same BrowserContext. This is enforced by
   // RenderProcessHost::GetExistingProcessHost.
-  if (!render_process_host || !render_process_host->browser_context())
+  if (!render_process_host || !render_process_host->GetBrowserContext())
     return NULL;
   Profile* profile = Profile::FromBrowserContext(
-      render_process_host->browser_context());
+      render_process_host->GetBrowserContext());
   if (!profile)
     return NULL;
   return PrerenderManagerFactory::GetInstance()->GetForProfile(profile);

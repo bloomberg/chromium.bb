@@ -10,10 +10,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/resource_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "webkit/plugins/npapi/plugin_group.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
@@ -142,7 +142,7 @@ void ChromePluginServiceFilter::Observe(
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED: {
       int render_process_id =
-          content::Source<RenderProcessHost>(source).ptr()->id();
+          content::Source<content::RenderProcessHost>(source).ptr()->GetID();
 
       base::AutoLock auto_lock(lock_);
       for (size_t i = 0; i < overridden_plugins_.size(); ++i) {

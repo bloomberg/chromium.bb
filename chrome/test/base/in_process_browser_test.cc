@@ -29,10 +29,10 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/renderer/mock_content_renderer_client.h"
 #include "content/test/test_browser_thread.h"
 #include "net/base/mock_host_resolver.h"
@@ -106,7 +106,7 @@ void InProcessBrowserTest::SetUp() {
   // Single-process mode is not set in BrowserMain, so process it explicitly,
   // and set up renderer.
   if (command_line->HasSwitch(switches::kSingleProcess)) {
-    RenderProcessHost::set_run_renderer_in_process(true);
+    content::RenderProcessHost::set_run_renderer_in_process(true);
     single_process_renderer_client_.reset(
         new content::MockContentRendererClient);
     content::GetContentClient()->set_renderer(

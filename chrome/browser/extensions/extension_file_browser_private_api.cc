@@ -33,10 +33,10 @@
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 #include "grit/platform_locale_settings.h"
@@ -443,7 +443,7 @@ bool RequestLocalFileSystemFunction::RunImpl() {
           &RequestLocalFileSystemFunction::RequestOnFileThread,
           this,
           source_url_,
-          render_view_host()->process()->id()));
+          render_view_host()->process()->GetID()));
   // Will finish asynchronously.
   return true;
 }
@@ -722,9 +722,9 @@ class ExecuteTasksFileBrowserFunction::ExecuteTasksFileSystemCallbackDispatcher
     SiteInstance* site_instance = manager->GetSiteInstanceForURL(extension_url);
     if (!site_instance || !site_instance->HasProcess())
       return;
-    RenderProcessHost* process = site_instance->GetProcess();
+    content::RenderProcessHost* process = site_instance->GetProcess();
 
-    target_process_id_ = process->id();
+    target_process_id_ = process->GetID();
   }
 
   // Checks legitimacy of file url and grants file RO access permissions from
@@ -882,7 +882,7 @@ void ExecuteTasksFileBrowserFunction::RequestFileEntryOnFileThread(
           new ExecuteTasksFileSystemCallbackDispatcher(
               this,
               profile(),
-              render_view_host()->process()->id(),
+              render_view_host()->process()->GetID(),
               source_url,
               GetExtension(),
               task_id,

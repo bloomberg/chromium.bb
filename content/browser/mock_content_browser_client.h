@@ -30,8 +30,8 @@ class MockContentBrowserClient : public ContentBrowserClient {
       TabContents* tab_contents) OVERRIDE;
   virtual void RenderViewHostCreated(
       RenderViewHost* render_view_host) OVERRIDE;
-  virtual void BrowserRenderProcessHostCreated(
-      BrowserRenderProcessHost* host) OVERRIDE;
+  virtual void RenderProcessHostCreated(
+      RenderProcessHost* host) OVERRIDE;
   virtual void PluginProcessHostCreated(PluginProcessHost* host) OVERRIDE;
   virtual WebUIFactory* GetWebUIFactory() OVERRIDE;
   virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,

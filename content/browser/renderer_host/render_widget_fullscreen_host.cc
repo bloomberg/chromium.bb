@@ -5,6 +5,6 @@
 #include "content/browser/renderer_host/render_widget_fullscreen_host.h"
 
 RenderWidgetFullscreenHost::RenderWidgetFullscreenHost(
-    RenderProcessHost* process, int routing_id)
+    content::RenderProcessHost* process, int routing_id)
     : RenderWidgetHost(process, routing_id) {
 }

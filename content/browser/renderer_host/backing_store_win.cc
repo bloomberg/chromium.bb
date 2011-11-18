@@ -5,7 +5,7 @@
 #include "content/browser/renderer_host/backing_store_win.h"
 
 #include "base/command_line.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/public/common/content_switches.h"
 #include "skia/ext/platform_canvas.h"
@@ -114,7 +114,7 @@ size_t BackingStoreWin::MemorySize() {
 }
 
 void BackingStoreWin::PaintToBackingStore(
-    RenderProcessHost* process,
+    content::RenderProcessHost* process,
     TransportDIB::Id bitmap,
     const gfx::Rect& bitmap_rect,
     const std::vector<gfx::Rect>& copy_rects,

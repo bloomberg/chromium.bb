@@ -18,11 +18,11 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/renderer_host/backing_store_manager.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/bindings_policy.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -130,10 +130,11 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
     ProcessMemoryInformation& process =
         chrome_browser->processes[index];
 
-    for (RenderProcessHost::iterator renderer_iter(
-         RenderProcessHost::AllHostsIterator()); !renderer_iter.IsAtEnd();
-         renderer_iter.Advance()) {
-      RenderProcessHost* render_process_host = renderer_iter.GetCurrentValue();
+    for (content::RenderProcessHost::iterator renderer_iter(
+            content::RenderProcessHost::AllHostsIterator());
+         !renderer_iter.IsAtEnd(); renderer_iter.Advance()) {
+      content::RenderProcessHost* render_process_host =
+          renderer_iter.GetCurrentValue();
       DCHECK(render_process_host);
       // Ignore processes that don't have a connection, such as crashed tabs.
       if (!render_process_host->HasConnection() ||
@@ -142,7 +143,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       }
       process.type = ChildProcessInfo::RENDER_PROCESS;
       Profile* profile =
-          Profile::FromBrowserContext(render_process_host->browser_context());
+          Profile::FromBrowserContext(
+              render_process_host->GetBrowserContext());
       ExtensionService* extension_service = profile->GetExtensionService();
       extensions::ProcessMap* extension_process_map =
           extension_service->process_map();
@@ -154,7 +156,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       // NOTE: This is a bit dangerous.  We know that for now, listeners
       //       are always RenderWidgetHosts.  But in theory, they don't
       //       have to be.
-      RenderProcessHost::listeners_iterator iter(
+      content::RenderProcessHost::listeners_iterator iter(
           render_process_host->ListenersIterator());
       for (; !iter.IsAtEnd(); iter.Advance()) {
         const RenderWidgetHost* widget =
@@ -175,12 +177,12 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
             process.renderer_type = ChildProcessInfo::RENDERER_DEVTOOLS;
           else
             process.renderer_type = ChildProcessInfo::RENDERER_CHROME;
-        } else if (extension_process_map->Contains(host->process()->id())) {
+        } else if (extension_process_map->Contains(host->process()->GetID())) {
           // For our purposes, don't count processes containing only hosted apps
           // as extension processes. See also: crbug.com/102533.
           std::set<std::string> extension_ids =
               extension_process_map->GetExtensionsInProcess(
-                  host->process()->id());
+                  host->process()->GetID());
           for (std::set<std::string>::iterator iter = extension_ids.begin();
                iter != extension_ids.end(); ++iter) {
             const Extension* extension =
@@ -193,7 +195,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         }
         TabContents* contents = host_delegate->GetAsTabContents();
         if (!contents) {
-          if (extension_process_map->Contains(host->process()->id())) {
+          if (extension_process_map->Contains(host->process()->GetID())) {
             const Extension* extension =
                 extension_service->GetExtensionByURL(url);
             if (extension) {

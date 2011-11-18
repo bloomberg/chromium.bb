@@ -48,8 +48,8 @@
 #include "chrome_frame/test/win_event_receiver.h"
 #include "chrome_frame/utils.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/notification_service_impl.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -268,7 +268,7 @@ void FakeExternalTab::Initialize() {
   DCHECK(g_browser_process);
   g_browser_process->SetApplicationLocale("en-US");
 
-  RenderProcessHost::set_run_renderer_in_process(true);
+  content::RenderProcessHost::set_run_renderer_in_process(true);
 
   browser_process_->local_state()->RegisterBooleanPref(
       prefs::kMetricsReportingEnabled, false);

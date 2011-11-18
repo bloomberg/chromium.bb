@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/common/extensions/extension_permission_set.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/public/browser/render_process_host.h"
 
 class Extension;
 class ExtensionPermissionSet;

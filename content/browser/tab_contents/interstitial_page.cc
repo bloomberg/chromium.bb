@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -141,7 +141,7 @@ InterstitialPage::InterstitialPage(TabContents* tab,
       enabled_(true),
       action_taken_(NO_ACTION),
       render_view_host_(NULL),
-      original_child_id_(tab->render_view_host()->process()->id()),
+      original_child_id_(tab->render_view_host()->process()->GetID()),
       original_rvh_id_(tab->render_view_host()->routing_id()),
       should_revert_tab_title_(false),
       tab_was_loading_(false),
@@ -285,7 +285,7 @@ void InterstitialPage::Observe(int type,
         // closed); make sure we clear the blocked requests.
         RenderViewHost* rvh = static_cast<RenderViewHost*>(
             content::Source<RenderWidgetHost>(source).ptr());
-        DCHECK(rvh->process()->id() == original_child_id_ &&
+        DCHECK(rvh->process()->GetID() == original_child_id_ &&
                rvh->routing_id() == original_rvh_id_);
         TakeActionOnResourceDispatcher(CANCEL);
       }

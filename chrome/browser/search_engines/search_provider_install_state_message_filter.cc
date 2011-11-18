@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
@@ -23,10 +23,11 @@ SearchProviderInstallStateMessageFilter(
     : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       provider_data_(profile->GetWebDataService(Profile::EXPLICIT_ACCESS),
                      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                     content::Source<RenderProcessHost>(
-                         RenderProcessHost::FromID(render_process_id))),
+                     content::Source<content::RenderProcessHost>(
+                         content::RenderProcessHost::FromID(
+                            render_process_id))),
       is_off_the_record_(profile->IsOffTheRecord()) {
-  // This is initialized by BrowserRenderProcessHost. Do not add any non-trivial
+  // This is initialized by RenderProcessHostImpl. Do not add any non-trivial
   // initialization here. Instead do it lazily when required.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }

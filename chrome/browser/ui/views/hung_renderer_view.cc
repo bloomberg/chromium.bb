@@ -12,9 +12,9 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/logging_chrome.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -61,7 +61,7 @@ class HungPagesTableModel : public views::GroupTableModel {
 
   // Returns the first RenderProcessHost, or NULL if there aren't any
   // TabContents.
-  RenderProcessHost* GetRenderProcessHost();
+  content::RenderProcessHost* GetRenderProcessHost();
 
   // Returns the first RenderViewHost, or NULL if there aren't any TabContents.
   RenderViewHost* GetRenderViewHost();
@@ -124,7 +124,7 @@ HungPagesTableModel::HungPagesTableModel(Delegate* delegate)
 HungPagesTableModel::~HungPagesTableModel() {
 }
 
-RenderProcessHost* HungPagesTableModel::GetRenderProcessHost() {
+content::RenderProcessHost* HungPagesTableModel::GetRenderProcessHost() {
   return tab_observers_.empty() ? NULL :
       tab_observers_[0]->tab_contents()->GetRenderProcessHost();
 }

@@ -9,7 +9,7 @@
 #include "base/string_piece.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -128,7 +128,7 @@ void HostZoomMap::Observe(
       int render_view_id =
           content::Source<RenderViewHost>(source)->routing_id();
       int render_process_id =
-          content::Source<RenderViewHost>(source)->process()->id();
+          content::Source<RenderViewHost>(source)->process()->GetID();
 
       for (size_t i = 0; i < temporary_zoom_levels_.size(); ++i) {
         if (temporary_zoom_levels_[i].render_process_id == render_process_id &&

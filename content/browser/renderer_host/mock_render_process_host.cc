@@ -4,24 +4,46 @@
 
 #include "content/browser/renderer_host/mock_render_process_host.h"
 
+#include "base/lazy_instance.h"
+#include "base/message_loop.h"
+#include "base/time.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/common/child_process_info.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+
+// This map is the global list of all renderer processes and is defined in
+// render_process_host_impl.cc
+// TODO(ananta)
+// Clean up this dependency in a subsequent CL.
+extern base::LazyInstance<
+    IDMap<content::RenderProcessHost>,
+    base::LeakyLazyInstanceTraits<IDMap<content::RenderProcessHost> > >
+        g_all_hosts;
 
 MockRenderProcessHost::MockRenderProcessHost(
     content::BrowserContext* browser_context)
-        : RenderProcessHost(browser_context),
-          transport_dib_(NULL),
+        : transport_dib_(NULL),
           bad_msg_count_(0),
-          factory_(NULL) {
+          factory_(NULL),
+          id_(ChildProcessInfo::GenerateChildProcessUniqueId()),
+          browser_context_(browser_context),
+          max_page_id_(-1),
+          fast_shutdown_started_(false) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
-  ChildProcessSecurityPolicy::GetInstance()->Add(id());
+  ChildProcessSecurityPolicy::GetInstance()->Add(GetID());
+  g_all_hosts.Get().AddWithID(this, GetID());
 }
 
 MockRenderProcessHost::~MockRenderProcessHost() {
-  ChildProcessSecurityPolicy::GetInstance()->Remove(id());
+  ChildProcessSecurityPolicy::GetInstance()->Remove(GetID());
   delete transport_dib_;
   if (factory_)
     factory_->Remove(this);
+  // In unit tests, Release() might not have been called.
+  if (g_all_hosts.Get().Lookup(GetID()))
+    g_all_hosts.Get().Remove(GetID());
 }
 
 void MockRenderProcessHost::EnableSendQueue() {
@@ -70,12 +92,15 @@ int MockRenderProcessHost::VisibleWidgetCount() const {
 void MockRenderProcessHost::AddWord(const string16& word) {
 }
 
-
 bool MockRenderProcessHost::FastShutdownIfPossible() {
   // We aren't actually going to do anything, but set |fast_shutdown_started_|
   // to true so that tests know we've been called.
   fast_shutdown_started_ = true;
   return true;
+}
+
+bool MockRenderProcessHost::FastShutdownStarted() const {
+  return fast_shutdown_started_;
 }
 
 void MockRenderProcessHost::DumpHandles() {
@@ -116,6 +141,92 @@ void MockRenderProcessHost::SetCompositingSurface(
     gfx::PluginWindowHandle compositing_surface) {
 }
 
+int MockRenderProcessHost::GetID() const {
+  return id_;
+}
+
+bool MockRenderProcessHost::HasConnection() const {
+  return true;
+}
+
+void MockRenderProcessHost::SetIgnoreInputEvents(bool ignore_input_events) {
+}
+
+bool MockRenderProcessHost::IgnoreInputEvents() const {
+  return false;
+}
+
+void MockRenderProcessHost::Attach(IPC::Channel::Listener* listener,
+                                   int routing_id) {
+  listeners_.AddWithID(listener, routing_id);
+}
+
+void MockRenderProcessHost::Release(int listener_id) {
+  listeners_.Remove(listener_id);
+  Cleanup();
+}
+
+void MockRenderProcessHost::Cleanup() {
+  if (listeners_.IsEmpty()) {
+    content::NotificationService::current()->Notify(
+        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+        content::Source<RenderProcessHost>(this),
+        content::NotificationService::NoDetails());
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+    g_all_hosts.Get().Remove(GetID());
+  }
+}
+
+void MockRenderProcessHost::ReportExpectingClose(int32 listener_id) {
+}
+
+void MockRenderProcessHost::AddPendingView() {
+}
+
+void MockRenderProcessHost::RemovePendingView() {
+}
+
+void MockRenderProcessHost::SetSuddenTerminationAllowed(bool allowed) {
+}
+
+bool MockRenderProcessHost::SuddenTerminationAllowed() const {
+  return true;
+}
+
+IPC::Channel::Listener* MockRenderProcessHost::GetListenerByID(
+    int routing_id) {
+  return listeners_.Lookup(routing_id);
+}
+
+void MockRenderProcessHost::UpdateMaxPageID(int32 page_id) {
+  if (page_id > max_page_id_)
+    max_page_id_ = page_id;
+}
+
+content::BrowserContext* MockRenderProcessHost::GetBrowserContext() const {
+  return browser_context_;
+}
+
+IPC::ChannelProxy* MockRenderProcessHost::GetChannel() {
+  return NULL;
+}
+
+bool MockRenderProcessHost::FastShutdownForPageCount(size_t count) {
+  if (listeners_.size() == count)
+    return FastShutdownIfPossible();
+  return false;
+}
+
+base::TimeDelta MockRenderProcessHost::GetChildProcessIdleTime() const {
+  return base::TimeDelta::FromMilliseconds(0);
+}
+
+content::RenderProcessHost::listeners_iterator
+    MockRenderProcessHost::ListenersIterator() {
+  IDMap<IPC::Channel::Listener> listeners;
+  return listeners_iterator(&listeners);
+}
+
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
@@ -134,8 +245,9 @@ MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
   }
 }
 
-RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
-    content::BrowserContext* browser_context) const {
+content::RenderProcessHost*
+    MockRenderProcessHostFactory::CreateRenderProcessHost(
+        content::BrowserContext* browser_context) const {
   MockRenderProcessHost* host = new MockRenderProcessHost(browser_context);
   if (host) {
     processes_.push_back(host);

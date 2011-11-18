@@ -13,10 +13,10 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_plugin_messages.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "webkit/plugins/npapi/default_plugin_shared.h"
 
@@ -71,7 +71,8 @@ void ChromePluginMessageFilter::OnDownloadUrlOnUIThread(
     const std::string& url,
     gfx::NativeWindow caller_window,
     int render_process_id) {
-  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id);
+  content::RenderProcessHost* host =
+      content::RenderProcessHost::FromID(render_process_id);
   if (!host) {
     return;
   }
@@ -79,7 +80,7 @@ void ChromePluginMessageFilter::OnDownloadUrlOnUIThread(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&ChromePluginMessageFilter::OnDownloadUrlOnFileThread,
                  url, caller_window,
-                 host->browser_context()->GetRequestContext()));
+                 host->GetBrowserContext()->GetRequestContext()));
 }
 
 void ChromePluginMessageFilter::OnDownloadUrlOnFileThread(

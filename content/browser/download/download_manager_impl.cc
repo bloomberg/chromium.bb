@@ -25,7 +25,6 @@
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -34,6 +33,7 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
 
@@ -730,7 +730,7 @@ void DownloadManagerImpl::DownloadUrlToFile(const GURL& url,
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BeginDownload,
           URLParams(url, referrer), save_info, resource_dispatcher_host,
-          RenderParams(tab_contents->GetRenderProcessHost()->id(),
+          RenderParams(tab_contents->GetRenderProcessHost()->GetID(),
                        tab_contents->render_view_host()->routing_id()),
           &tab_contents->browser_context()->GetResourceContext()));
 }

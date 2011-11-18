@@ -67,10 +67,10 @@ DownloadManager* DownloadRequestHandle::GetDownloadManager() const {
   RenderViewHost* rvh = RenderViewHost::FromID(child_id_, render_view_id_);
   if (rvh == NULL)
     return NULL;
-  RenderProcessHost* rph = rvh->process();
+  content::RenderProcessHost* rph = rvh->process();
   if (rph == NULL)
     return NULL;
-  content::BrowserContext* context = rph->browser_context();
+  content::BrowserContext* context = rph->GetBrowserContext();
   if (context == NULL)
     return NULL;
   return context->GetDownloadManager();

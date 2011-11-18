@@ -101,12 +101,12 @@
 #include "content/browser/file_system/browser_file_system_helper.h"
 #include "content/browser/host_zoom_map.h"
 #include "content/browser/in_process_webkit/webkit_context.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/speech/speech_input_manager.h"
 #include "content/browser/ssl/ssl_host_state.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "grit/locale_settings.h"
 #include "net/base/transport_security_state.h"
 #include "net/http/http_server_properties.h"
@@ -1195,10 +1195,10 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
           GetRequestContext());
   if (result == SpellCheckProfile::REINITIALIZE_REMOVED_HOST) {
     // The spellchecker has been disabled.
-    for (RenderProcessHost::iterator
-         i(RenderProcessHost::AllHostsIterator());
+    for (content::RenderProcessHost::iterator i(
+            content::RenderProcessHost::AllHostsIterator());
          !i.IsAtEnd(); i.Advance()) {
-      RenderProcessHost* process = i.GetCurrentValue();
+      content::RenderProcessHost* process = i.GetCurrentValue();
       process->Send(new SpellCheckMsg_Init(IPC::InvalidPlatformFileForTransit(),
                                            std::vector<std::string>(),
                                            std::string(),
@@ -1297,10 +1297,10 @@ void ProfileImpl::Observe(int type,
         ReinitializeSpellCheckHost(true);
       } else if (*pref_name_in == prefs::kEnableAutoSpellCorrect) {
         bool enabled = prefs->GetBoolean(prefs::kEnableAutoSpellCorrect);
-        for (RenderProcessHost::iterator
-             i(RenderProcessHost::AllHostsIterator());
+        for (content::RenderProcessHost::iterator i(
+                content::RenderProcessHost::AllHostsIterator());
              !i.IsAtEnd(); i.Advance()) {
-          RenderProcessHost* process = i.GetCurrentValue();
+          content::RenderProcessHost* process = i.GetCurrentValue();
           process->Send(new SpellCheckMsg_EnableAutoSpellCorrect(enabled));
         }
       } else if (*pref_name_in == prefs::kSpeechInputFilterProfanities) {

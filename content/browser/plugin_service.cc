@@ -19,7 +19,7 @@
 #include "content/browser/plugin_loader_posix.h"
 #include "content/browser/plugin_service_filter.h"
 #include "content/browser/ppapi_plugin_process_host.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/resource_context.h"
 #include "content/browser/utility_process_host.h"
@@ -573,10 +573,11 @@ void PluginService::Observe(int type,
 void PluginService::PurgePluginListCache(
     content::BrowserContext* browser_context,
     bool reload_pages) {
-  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+  for (content::RenderProcessHost::iterator it =
+          content::RenderProcessHost::AllHostsIterator();
        !it.IsAtEnd(); it.Advance()) {
-    RenderProcessHost* host = it.GetCurrentValue();
-    if (!browser_context || host->browser_context() == browser_context)
+    content::RenderProcessHost* host = it.GetCurrentValue();
+    if (!browser_context || host->GetBrowserContext() == browser_context)
       host->Send(new ViewMsg_PurgePluginListCache(reload_pages));
   }
 }

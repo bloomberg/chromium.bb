@@ -5,11 +5,12 @@
 #include "content/browser/site_instance.h"
 
 #include "content/browser/browsing_instance.h"
-#include "content/browser/renderer_host/browser_render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host_factory.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domain.h"
 
@@ -55,7 +56,7 @@ bool SiteInstance::HasProcess() const {
   return (process_ != NULL);
 }
 
-RenderProcessHost* SiteInstance::GetProcess() {
+content::RenderProcessHost* SiteInstance::GetProcess() {
   // TODO(erikkay) It would be nice to ensure that the renderer type had been
   // properly set before we get here.  The default tab creation case winds up
   // with no site set at this point, so it will default to TYPE_NORMAL.  This
@@ -66,8 +67,8 @@ RenderProcessHost* SiteInstance::GetProcess() {
   // Create a new process if ours went away or was reused.
   if (!process_) {
     // See if we should reuse an old process
-    if (RenderProcessHost::ShouldTryToUseExistingProcessHost())
-      process_ = RenderProcessHost::GetExistingProcessHost(
+    if (content::RenderProcessHost::ShouldTryToUseExistingProcessHost())
+      process_ = content::RenderProcessHost::GetExistingProcessHost(
           browsing_instance_->browser_context(), site_);
 
     // Otherwise (or if that fails), create a new one.
@@ -77,7 +78,7 @@ RenderProcessHost* SiteInstance::GetProcess() {
             browsing_instance_->browser_context());
       } else {
         process_ =
-            new BrowserRenderProcessHost(browsing_instance_->browser_context());
+            new RenderProcessHostImpl(browsing_instance_->browser_context());
       }
     }
 
@@ -224,7 +225,8 @@ void SiteInstance::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  RenderProcessHost* rph = content::Source<RenderProcessHost>(source).ptr();
+  content::RenderProcessHost* rph =
+      content::Source<content::RenderProcessHost>(source).ptr();
   if (rph == process_)
     process_ = NULL;
 }

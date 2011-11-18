@@ -10,7 +10,8 @@
 
 class CONTENT_EXPORT RenderWidgetFullscreenHost : public RenderWidgetHost {
  public:
-  RenderWidgetFullscreenHost(RenderProcessHost* process, int routing_id);
+  RenderWidgetFullscreenHost(content::RenderProcessHost* process,
+                             int routing_id);
 };
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_FULLSCREEN_HOST_H_

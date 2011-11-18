@@ -8,7 +8,7 @@
 #include <functional>
 
 #include "base/stl_util.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -154,7 +154,8 @@ void CertStore::Observe(int type,
                         const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_TERMINATED ||
          type == content::NOTIFICATION_RENDERER_PROCESS_CLOSED);
-  RenderProcessHost* rph = content::Source<RenderProcessHost>(source).ptr();
+  content::RenderProcessHost* rph =
+      content::Source<content::RenderProcessHost>(source).ptr();
   DCHECK(rph);
-  RemoveCertsForRenderProcesHost(rph->id());
+  RemoveCertsForRenderProcesHost(rph->GetID());
 }

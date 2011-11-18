@@ -41,12 +41,12 @@
 #include "chrome/test/test_navigation_observer.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -505,11 +505,11 @@ AppModalDialog* WaitForAppModalDialog() {
 }
 
 void CrashTab(TabContents* tab) {
-  RenderProcessHost* rph = tab->render_view_host()->process();
+  content::RenderProcessHost* rph = tab->render_view_host()->process();
   base::KillProcess(rph->GetHandle(), 0, false);
   TestNotificationObserver observer;
   RegisterAndWait(&observer, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                  content::Source<RenderProcessHost>(rph));
+                  content::Source<content::RenderProcessHost>(rph));
 }
 
 void WaitForFocusChange(TabContents* tab_contents) {

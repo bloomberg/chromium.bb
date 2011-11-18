@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_BROWSER_RENDER_PROCESS_HOST_H_
-#define CONTENT_BROWSER_RENDERER_HOST_BROWSER_RENDER_PROCESS_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_BROWSER_RENDER_PROCESS_HOST_IMPL_H_
+#define CONTENT_BROWSER_RENDERER_HOST_BROWSER_RENDER_PROCESS_HOST_IMPL_H_
 #pragma once
 
 #include <map>
@@ -16,7 +16,8 @@
 #include "base/timer.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/common/content_export.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/surface/transport_dib.h"
 
 class CommandLine;
@@ -41,22 +42,21 @@ class WaitableEvent;
 // keeps a list of RenderView (renderer) and TabContents (browser) which
 // are correlated with IDs. This way, the Views and the corresponding ViewHosts
 // communicate through the two process objects.
-class CONTENT_EXPORT BrowserRenderProcessHost
-    : public RenderProcessHost,
+class CONTENT_EXPORT RenderProcessHostImpl
+    : public content::RenderProcessHost,
       public ChildProcessLauncher::Client,
       public base::WaitableEventWatcher::Delegate {
  public:
-  explicit BrowserRenderProcessHost(content::BrowserContext* browser_context);
-  virtual ~BrowserRenderProcessHost();
+  explicit RenderProcessHostImpl(content::BrowserContext* browser_context);
+  virtual ~RenderProcessHostImpl();
 
   // RenderProcessHost implementation (public portion).
   virtual void EnableSendQueue() OVERRIDE;
   virtual bool Init(bool is_accessibility_enabled) OVERRIDE;
   virtual int GetNextRoutingID() OVERRIDE;
-  virtual void UpdateAndSendMaxPageID(int32 page_id) OVERRIDE;
   virtual void CancelResourceRequests(int render_widget_id) OVERRIDE;
-  virtual void CrossSiteSwapOutACK(
-      const ViewMsg_SwapOut_Params& params) OVERRIDE;
+  virtual void CrossSiteSwapOutACK(const ViewMsg_SwapOut_Params& params)
+      OVERRIDE;
   virtual bool WaitForUpdateMsg(int render_widget_id,
                                 const base::TimeDelta& max_delay,
                                 IPC::Message* msg) OVERRIDE;
@@ -71,6 +71,28 @@ class CONTENT_EXPORT BrowserRenderProcessHost
   virtual void SetCompositingSurface(
       int render_widget_id,
       gfx::PluginWindowHandle compositing_surface) OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() const OVERRIDE;
+  virtual int GetID() const OVERRIDE;
+  virtual bool HasConnection() const OVERRIDE;
+  virtual void UpdateMaxPageID(int32 page_id) OVERRIDE;
+  virtual IPC::Channel::Listener* GetListenerByID(int routing_id) OVERRIDE;
+  virtual void SetIgnoreInputEvents(bool ignore_input_events) OVERRIDE;
+  virtual bool IgnoreInputEvents() const OVERRIDE;
+  virtual void Attach(IPC::Channel::Listener* listener, int routing_id)
+      OVERRIDE;
+  virtual void Release(int listener_id) OVERRIDE;
+  virtual void Cleanup() OVERRIDE;
+  virtual void ReportExpectingClose(int32 listener_id) OVERRIDE;
+  virtual void AddPendingView() OVERRIDE;
+  virtual void RemovePendingView() OVERRIDE;
+  virtual void SetSuddenTerminationAllowed(bool enabled) OVERRIDE;
+  virtual bool SuddenTerminationAllowed() const OVERRIDE;
+  virtual IPC::ChannelProxy* GetChannel() OVERRIDE;
+  virtual listeners_iterator ListenersIterator() OVERRIDE;
+  virtual bool FastShutdownForPageCount(size_t count) OVERRIDE;
+  virtual bool FastShutdownStarted() const OVERRIDE;
+  virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
+  virtual void UpdateAndSendMaxPageID(int32 page_id) OVERRIDE;
 
   // IPC::Channel::Sender via RenderProcessHost.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -86,6 +108,35 @@ class CONTENT_EXPORT BrowserRenderProcessHost
   // base::WaitableEventWatcher::Delegate implementation.
   virtual void OnWaitableEventSignaled(
       base::WaitableEvent* waitable_event) OVERRIDE;
+
+  // Call this function when it is evident that the child process is actively
+  // performing some operation, for example if we just received an IPC message.
+  void mark_child_process_activity_time() {
+    child_process_activity_time_ = base::TimeTicks::Now();
+  }
+
+ protected:
+  // A proxy for our IPC::Channel that lives on the IO thread (see
+  // browser_process.h)
+  scoped_ptr<IPC::ChannelProxy> channel_;
+
+  // The registered listeners. When this list is empty or all NULL, we should
+  // delete ourselves
+  IDMap<IPC::Channel::Listener> listeners_;
+
+  // The maximum page ID we've ever seen from the renderer process.
+  int32 max_page_id_;
+
+  // True if fast shutdown has been performed on this RPH.
+  bool fast_shutdown_started_;
+
+  // True if we've posted a DeleteTask and will be deleted soon.
+  bool deleting_soon_;
+
+  // The count of currently swapped out but pending RenderViews.  We have
+  // started to swap these in, so the renderer process should not exit if
+  // this count is non-zero.
+  int32 pending_views_;
 
  private:
   friend class VisitRelayingRenderProcessHost;
@@ -135,6 +186,7 @@ class CONTENT_EXPORT BrowserRenderProcessHost
 
   // A map of transport DIB ids to cached TransportDIBs
   std::map<TransportDIB::Id, TransportDIB*> cached_dibs_;
+
   enum {
     // This is the maximum size of |cached_dibs_|
     MAX_MAPPED_TRANSPORT_DIBS = 3,
@@ -145,7 +197,7 @@ class CONTENT_EXPORT BrowserRenderProcessHost
 
   void ClearTransportDIBCache();
   // This is used to clear our cache five seconds after the last use.
-  base::DelayTimer<BrowserRenderProcessHost> cached_dibs_cleaner_;
+  base::DelayTimer<RenderProcessHostImpl> cached_dibs_cleaner_;
 
   // Used in single-process mode.
   scoped_ptr<RendererMainThread> in_process_renderer_;
@@ -171,7 +223,30 @@ class CONTENT_EXPORT BrowserRenderProcessHost
   base::WaitableEventWatcher child_process_watcher_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserRenderProcessHost);
+  // The globally-unique identifier for this RPH.
+  int id_;
+
+  content::BrowserContext* browser_context_;
+
+  // set of listeners that expect the renderer process to close
+  std::set<int> listeners_expecting_close_;
+
+  // True if the process can be shut down suddenly.  If this is true, then we're
+  // sure that all the RenderViews in the process can be shutdown suddenly.  If
+  // it's false, then specific RenderViews might still be allowed to be shutdown
+  // suddenly by checking their SuddenTerminationAllowed() flag.  This can occur
+  // if one tab has an unload event listener but another tab in the same process
+  // doesn't.
+  bool sudden_termination_allowed_;
+
+  // Set to true if we shouldn't send input events.  We actually do the
+  // filtering for this at the render widget level.
+  bool ignore_input_events_;
+
+  // Records the last time we regarded the child process active.
+  base::TimeTicks child_process_activity_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessHostImpl);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_BROWSER_RENDER_PROCESS_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_BROWSER_RENDER_PROCESS_HOST_IMPL_H_

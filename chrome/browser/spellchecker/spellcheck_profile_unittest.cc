@@ -18,7 +18,7 @@ namespace {
 class MockSpellCheckHost : public SpellCheckHost {
  public:
   MOCK_METHOD0(UnsetProfile, void());
-  MOCK_METHOD1(InitForRenderer, void(RenderProcessHost* process));
+  MOCK_METHOD1(InitForRenderer, void(content::RenderProcessHost* process));
   MOCK_METHOD1(AddWord, void(const std::string& word));
   MOCK_CONST_METHOD0(GetDictionaryFile, const base::PlatformFile&());
   MOCK_CONST_METHOD0(GetCustomWords,

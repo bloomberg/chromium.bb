@@ -11,11 +11,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
 
 using content::BrowserThread;
@@ -116,7 +116,7 @@ void ExtensionFunction::SendResponseImpl(base::ProcessHandle process,
 
 void ExtensionFunction::HandleBadMessage(base::ProcessHandle process) {
   LOG(ERROR) << "bad extension message " << name_ << " : terminating renderer.";
-  if (RenderProcessHost::run_renderer_in_process()) {
+  if (content::RenderProcessHost::run_renderer_in_process()) {
     // In single process mode it is better if we don't suicide but just crash.
     CHECK(false);
   } else {

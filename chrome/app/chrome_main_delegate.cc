@@ -30,9 +30,9 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "content/app/content_main.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/common/content_counters.h"
 #include "content/public/app/content_main_delegate.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
@@ -570,7 +570,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
   // don't enable it for official Chrome builds.
 #if !defined(GOOGLE_CHROME_BUILD)
   if (command_line.HasSwitch(switches::kSingleProcess)) {
-    RenderProcessHost::set_run_renderer_in_process(true);
+    content::RenderProcessHost::set_run_renderer_in_process(true);
 #if defined(OS_MACOSX)
     // TODO(port-mac): This is from renderer_main_platform_delegate.cc.
     // shess tried to refactor things appropriately, but it sprawled out

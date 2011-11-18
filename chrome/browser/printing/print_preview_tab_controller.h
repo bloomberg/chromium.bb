@@ -21,11 +21,11 @@
 #include "content/public/browser/notification_registrar.h"
 
 class GURL;
-class RenderProcessHost;
 class TabContentsWrapper;
 
 namespace content {
 struct LoadCommittedDetails;
+class RenderProcessHost;
 }
 
 namespace printing {
@@ -83,7 +83,7 @@ class PrintPreviewTabController
 
   // Handler for the RENDERER_PROCESS_CLOSED notification. This is observed when
   // the initiator renderer crashed.
-  void OnRendererProcessClosed(RenderProcessHost* rph);
+  void OnRendererProcessClosed(content::RenderProcessHost* rph);
 
   // Handler for the TAB_CONTENTS_DESTROYED notification. This is observed when
   // either tab is closed.

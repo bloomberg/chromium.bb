@@ -95,10 +95,12 @@ class GeolocationPermissionContextTests : public TabContentsWrapperTestHarness {
  protected:
   virtual ~GeolocationPermissionContextTests();
 
-  int process_id() { return contents()->render_view_host()->process()->id(); }
+  int process_id() {
+    return contents()->render_view_host()->process()->GetID();
+  }
   int process_id_for_tab(int tab) {
     return extra_tabs_[tab]->tab_contents()->render_view_host()->process()->
-        id();
+        GetID();
   }
   int render_id() { return contents()->render_view_host()->routing_id(); }
   int render_id_for_tab(int tab) {

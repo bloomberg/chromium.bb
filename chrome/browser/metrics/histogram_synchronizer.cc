@@ -9,8 +9,8 @@
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -134,13 +134,15 @@ int HistogramSynchronizer::NotifyAllRenderers(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   int notification_count = 0;
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator it(
+          content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance())
      ++notification_count;
 
   int sequence_number = GetNextAvailableSequenceNumber(requester,
                                                        notification_count);
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator it(
+          content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
     if (!it.GetCurrentValue()->Send(
         new ChromeViewMsg_GetRendererHistograms(sequence_number)))

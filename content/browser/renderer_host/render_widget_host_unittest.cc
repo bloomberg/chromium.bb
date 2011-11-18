@@ -145,7 +145,7 @@ class TestView : public TestRenderWidgetHostView {
 
 class MockRenderWidgetHost : public RenderWidgetHost {
  public:
-  MockRenderWidgetHost(RenderProcessHost* process, int routing_id)
+  MockRenderWidgetHost(content::RenderProcessHost* process, int routing_id)
       : RenderWidgetHost(process, routing_id),
         prehandle_keyboard_event_(false),
         prehandle_keyboard_event_called_(false),

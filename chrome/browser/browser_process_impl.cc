@@ -79,10 +79,10 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "ipc/ipc_logging.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -1082,7 +1082,8 @@ void BrowserProcessImpl::SetIPCLoggingEnabled(bool enable) {
 
   // Finally, tell the renderers which don't derive from ChildProcess.
   // Messages to the renderers must be done on the UI (main) thread.
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance())
     i.GetCurrentValue()->Send(new ChildProcessMsg_SetIPCLoggingEnabled(enable));
 }

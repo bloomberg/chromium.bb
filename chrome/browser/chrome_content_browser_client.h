@@ -23,8 +23,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual TabContentsView* CreateTabContentsView(
       TabContents* tab_contents) OVERRIDE;
   virtual void RenderViewHostCreated(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void BrowserRenderProcessHostCreated(
-      BrowserRenderProcessHost* host) OVERRIDE;
+  virtual void RenderProcessHostCreated(
+      content::RenderProcessHost* host) OVERRIDE;
   virtual void PluginProcessHostCreated(PluginProcessHost* host) OVERRIDE;
   virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE;
   virtual bool ShouldUseProcessPerSite(content::BrowserContext* browser_context,
@@ -32,7 +32,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
                                const GURL& url) OVERRIDE;
   virtual bool IsURLSameAsAnySiteInstance(const GURL& url) OVERRIDE;
-  virtual bool IsSuitableHost(RenderProcessHost* process_host,
+  virtual bool IsSuitableHost(content::RenderProcessHost* process_host,
                               const GURL& url) OVERRIDE;
   virtual void SiteInstanceGotProcess(SiteInstance* site_instance) OVERRIDE;
   virtual void SiteInstanceDeleting(SiteInstance* site_instance) OVERRIDE;

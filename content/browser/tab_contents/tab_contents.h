@@ -111,7 +111,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
 
   // Return the currently active RenderProcessHost and RenderViewHost. Each of
   // these may change over time.
-  RenderProcessHost* GetRenderProcessHost() const;
+  content::RenderProcessHost* GetRenderProcessHost() const;
   RenderViewHost* render_view_host() const {
     return render_manager_.current_host();
   }

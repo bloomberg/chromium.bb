@@ -626,7 +626,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   bool do_open = force_open;
   if (!window) {
     Profile* profile = Profile::FromBrowserContext(
-        inspected_rvh->process()->browser_context());
+        inspected_rvh->process()->GetBrowserContext());
     bool docked = profile->GetPrefs()->GetBoolean(prefs::kDevToolsOpenDocked);
     window = Create(profile, inspected_rvh, docked, false);
     manager->RegisterDevToolsClientHostFor(inspected_rvh, window);

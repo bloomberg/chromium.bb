@@ -124,7 +124,7 @@ void SavePageAsMHTMLFunction::ReturnFailure(const std::string& error) {
 void SavePageAsMHTMLFunction::ReturnSuccess(int64 file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  int child_id = render_view_host()->process()->id();
+  int child_id = render_view_host()->process()->GetID();
   ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
       child_id, mhtml_path_);
 

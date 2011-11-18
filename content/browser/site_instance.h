@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_SITE_INSTANCE_H_
 #pragma once
 
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -16,6 +16,7 @@ class BrowsingInstance;
 
 namespace content {
 class BrowserContext;
+class RenderProcessHostFactory;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,7 +68,8 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
   // The factory must outlive the SiteInstance; ownership is not transferred. It
   // may be NULL, in which case the default BrowserRenderProcessHost will be
   // created (this is the behavior if you don't call this function).
-  void set_render_process_host_factory(RenderProcessHostFactory* rph_factory) {
+  void set_render_process_host_factory(
+      content::RenderProcessHostFactory* rph_factory) {
     render_process_host_factory_ = rph_factory;
   }
 
@@ -84,7 +86,7 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
   // Returns the current process being used to render pages in this
   // SiteInstance.  If the process has crashed or otherwise gone away, then
   // this method will create a new process and update our host ID accordingly.
-  RenderProcessHost* GetProcess();
+  content::RenderProcessHost* GetProcess();
 
   // Set / Get the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
@@ -183,13 +185,13 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
 
   // Factory for new RenderProcessHosts, not owned by this class. NULL indiactes
   // that the default BrowserRenderProcessHost should be created.
-  const RenderProcessHostFactory* render_process_host_factory_;
+  const content::RenderProcessHostFactory* render_process_host_factory_;
 
   // Current RenderProcessHost that is rendering pages for this SiteInstance.
   // This pointer will only change once the RenderProcessHost is destructed.  It
   // will still remain the same even if the process crashes, since in that
   // scenario the RenderProcessHost remains the same.
-  RenderProcessHost* process_;
+  content::RenderProcessHost* process_;
 
   // The current max_page_id in the SiteInstance's RenderProcessHost.  If the
   // rendering process dies, its replacement should start issuing page IDs that

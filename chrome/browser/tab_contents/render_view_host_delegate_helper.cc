@@ -31,7 +31,6 @@
 #include "content/browser/gpu/gpu_data_manager.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_widget_fullscreen_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
@@ -42,6 +41,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/common/view_messages.h"
 #include "net/base/network_change_notifier.h"
 
@@ -118,7 +118,7 @@ RenderViewHostDelegateViewHelper::MaybeCreateBackgroundContents(
   // Ensure that we're trying to open this from the extension's process.
   extensions::ProcessMap* process_map = extensions_service->process_map();
   if (!site->GetProcess() ||
-      !process_map->Contains(extension->id(), site->GetProcess()->id())) {
+      !process_map->Contains(extension->id(), site->GetProcess()->GetID())) {
     return NULL;
   }
 
@@ -189,7 +189,8 @@ TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
 }
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
-    int route_id, WebKit::WebPopupType popup_type, RenderProcessHost* process) {
+    int route_id, WebKit::WebPopupType popup_type,
+    content::RenderProcessHost* process) {
   RenderWidgetHost* widget_host =
       new RenderWidgetHost(process, route_id);
   RenderWidgetHostView* widget_view =
@@ -203,7 +204,7 @@ RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
 
 RenderWidgetHostView*
 RenderViewHostDelegateViewHelper::CreateNewFullscreenWidget(
-    int route_id, RenderProcessHost* process) {
+    int route_id, content::RenderProcessHost* process) {
   RenderWidgetFullscreenHost* fullscreen_widget_host =
       new RenderWidgetFullscreenHost(process, route_id);
   RenderWidgetHostView* widget_view =
@@ -334,7 +335,7 @@ RenderWidgetHostView*
 WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     RenderViewHost* rvh) {
   Profile* profile = Profile::FromBrowserContext(
-      rvh->process()->browser_context());
+      rvh->process()->GetBrowserContext());
   PrefService* prefs = profile->GetPrefs();
   WebPreferences web_prefs;
 
@@ -538,7 +539,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
   DCHECK(!web_prefs.default_encoding.empty());
 
   if (ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
-          rvh->process()->id())) {
+          rvh->process()->GetID())) {
     web_prefs.loads_images_automatically = true;
     web_prefs.javascript_enabled = true;
   }

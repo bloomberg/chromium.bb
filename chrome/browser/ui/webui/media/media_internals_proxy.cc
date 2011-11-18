@@ -10,8 +10,8 @@
 #include "chrome/browser/media/media_internals.h"
 #include "chrome/browser/ui/webui/media/media_internals_handler.h"
 #include "content/public/browser/notification_service.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 
 using content::BrowserThread;
 
@@ -37,9 +37,10 @@ void MediaInternalsProxy::Observe(int type,
                                   const content::NotificationDetails& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(type, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  RenderProcessHost* process = content::Source<RenderProcessHost>(source).ptr();
+  content::RenderProcessHost* process =
+      content::Source<content::RenderProcessHost>(source).ptr();
   CallJavaScriptFunctionOnUIThread("media.onRendererTerminated",
-      base::Value::CreateIntegerValue(process->id()));
+      base::Value::CreateIntegerValue(process->GetID()));
 }
 
 void MediaInternalsProxy::Attach(MediaInternalsMessageHandler* handler) {

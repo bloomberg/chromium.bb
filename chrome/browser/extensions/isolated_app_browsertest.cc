@@ -12,10 +12,10 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/browser_render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/common/test_url_constants.h"
+#include "content/public/browser/render_process_host.h"
 #include "net/base/mock_host_resolver.h"
 
 namespace {
@@ -37,7 +37,7 @@ class IsolatedAppTest : public ExtensionBrowserTest {
     ExtensionService* service = profile->GetExtensionService();
     if (service) {
       installed_app = service->GetInstalledAppForRenderer(
-          contents->render_view_host()->process()->id());
+          contents->render_view_host()->process()->GetID());
     }
     return installed_app;
   }
@@ -169,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, NoCookieIsolationWithoutApp) {
 // RenderProcessHosts even if we hit the process limit.
 IN_PROC_BROWSER_TEST_F(IsolatedAppTest, ProcessOverflow) {
   // Set max renderers to 1 to force running out of processes.
-  RenderProcessHost::SetMaxRendererProcessCountForTest(1);
+  content::RenderProcessHost::SetMaxRendererProcessCountForTest(1);
 
   host_resolver()->AddRule("*", "127.0.0.1");
   ASSERT_TRUE(test_server()->Start());
@@ -205,15 +205,15 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, ProcessOverflow) {
       NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
 
   ASSERT_EQ(5, browser()->tab_count());
-  RenderProcessHost* isolated1_host =
+  content::RenderProcessHost* isolated1_host =
       browser()->GetTabContentsAt(0)->GetRenderProcessHost();
-  RenderProcessHost* ntp_host =
+  content::RenderProcessHost* ntp_host =
       browser()->GetTabContentsAt(1)->GetRenderProcessHost();
-  RenderProcessHost* normal_extension_host =
+  content::RenderProcessHost* normal_extension_host =
       browser()->GetTabContentsAt(2)->GetRenderProcessHost();
-  RenderProcessHost* web_host =
+  content::RenderProcessHost* web_host =
       browser()->GetTabContentsAt(3)->GetRenderProcessHost();
-  RenderProcessHost* isolated2_host =
+  content::RenderProcessHost* isolated2_host =
       browser()->GetTabContentsAt(4)->GetRenderProcessHost();
 
   // Isolated apps shared with each other, but no one else.  They're clannish

@@ -31,7 +31,6 @@
 
 class BackingStore;
 struct EditCommand;
-class RenderProcessHost;
 class RenderWidgetHostView;
 class TransportDIB;
 struct ViewHostMsg_UpdateRect_Params;
@@ -39,6 +38,10 @@ class WebCursor;
 
 namespace base {
 class TimeTicks;
+}
+
+namespace content {
+class RenderProcessHost;
 }
 
 namespace gfx {
@@ -144,7 +147,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
 
   // routing_id can be MSG_ROUTING_NONE, in which case the next available
   // routing id is taken from the RenderProcessHost.
-  RenderWidgetHost(RenderProcessHost* process, int routing_id);
+  RenderWidgetHost(content::RenderProcessHost* process, int routing_id);
   virtual ~RenderWidgetHost();
 
   // Gets/Sets the View of this RenderWidgetHost. Can be NULL, e.g. if the
@@ -154,7 +157,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   void SetView(RenderWidgetHostView* view);
   RenderWidgetHostView* view() const { return view_; }
 
-  RenderProcessHost* process() const { return process_; }
+  content::RenderProcessHost* process() const { return process_; }
   int routing_id() const { return routing_id_; }
   bool renderer_accessible() { return renderer_accessible_; }
 
@@ -620,7 +623,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // Created during construction but initialized during Init*(). Therefore, it
   // is guaranteed never to be NULL, but its channel may be NULL if the
   // renderer crashed, so you must always check that.
-  RenderProcessHost* process_;
+  content::RenderProcessHost* process_;
 
   // Stores random bits of data for others to associate with this object.
   PropertyBag property_bag_;

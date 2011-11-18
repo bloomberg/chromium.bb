@@ -21,7 +21,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
@@ -33,6 +32,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
@@ -343,7 +343,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
   // either a malware or phishing hit.  In this case we store the unique page
   // ID for later.
   if (tab_contents() &&
-      tab_contents()->GetRenderProcessHost()->id() ==
+      tab_contents()->GetRenderProcessHost()->GetID() ==
           resource.render_process_host_id &&
       tab_contents()->render_view_host()->routing_id() ==
           resource.render_view_id &&
@@ -421,7 +421,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       resource.is_subresource = false;
       resource.threat_type = SafeBrowsingService::CLIENT_SIDE_PHISHING_URL;
       resource.render_process_host_id =
-          tab_contents()->GetRenderProcessHost()->id();
+          tab_contents()->GetRenderProcessHost()->GetID();
       resource.render_view_id =
           tab_contents()->render_view_host()->routing_id();
       if (!sb_service_->IsWhitelisted(resource)) {

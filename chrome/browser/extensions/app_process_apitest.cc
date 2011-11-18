@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
       browser(), base_url.Resolve("path1/empty.html"), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_TRUE(process_map->Contains(
-      browser()->GetTabContentsAt(1)->render_view_host()->process()->id()));
+      browser()->GetTabContentsAt(1)->render_view_host()->process()->GetID()));
   EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
   LOG(INFO) << "Nav 1.";
 
@@ -113,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
       browser(), base_url.Resolve("path2/empty.html"), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   EXPECT_TRUE(process_map->Contains(
-      browser()->GetTabContentsAt(2)->render_view_host()->process()->id()));
+      browser()->GetTabContentsAt(2)->render_view_host()->process()->GetID()));
   EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
   LOG(INFO) << "Nav 2.";
 
@@ -126,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcess) {
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path3/empty.html"));
   LOG(INFO) << "Nav 3.";
   EXPECT_FALSE(process_map->Contains(
-      browser()->GetTabContentsAt(3)->render_view_host()->process()->id()));
+      browser()->GetTabContentsAt(3)->render_view_host()->process()->GetID()));
   EXPECT_FALSE(browser()->GetTabContentsAt(3)->web_ui());
 
   // We should have opened 3 new extension tabs. Including the original blank
@@ -217,7 +217,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   LOG(INFO) << "Nav 1.";
   EXPECT_TRUE(process_map->Contains(
-      browser()->GetTabContentsAt(1)->render_view_host()->process()->id()));
+      browser()->GetTabContentsAt(1)->render_view_host()->process()->GetID()));
   EXPECT_FALSE(browser()->GetTabContentsAt(1)->web_ui());
 
   ui_test_utils::WindowedNotificationObserver tab_added_observer(
@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessInstances) {
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path2/empty.html"));
   LOG(INFO) << "Nav 2.";
   EXPECT_TRUE(process_map->Contains(
-      browser()->GetTabContentsAt(2)->render_view_host()->process()->id()));
+      browser()->GetTabContentsAt(2)->render_view_host()->process()->GetID()));
   EXPECT_FALSE(browser()->GetTabContentsAt(2)->web_ui());
 
   // We should have opened 2 new extension tabs. Including the original blank
@@ -308,7 +308,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   TabContents* contents = browser()->GetTabContentsAt(0);
   EXPECT_FALSE(process_map->Contains(
-      contents->render_view_host()->process()->id()));
+      contents->render_view_host()->process()->GetID()));
 
   // Load app and navigate to the page.
   const Extension* app =
@@ -316,13 +316,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   ASSERT_TRUE(app);
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   EXPECT_TRUE(process_map->Contains(
-      contents->render_view_host()->process()->id()));
+      contents->render_view_host()->process()->GetID()));
 
   // Disable app and navigate to the page.
   DisableExtension(app->id());
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   EXPECT_FALSE(process_map->Contains(
-      contents->render_view_host()->process()->id()));
+      contents->render_view_host()->process()->GetID()));
 
   // Enable app and reload the page.
   EnableExtension(app->id());
@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   browser()->Reload(CURRENT_TAB);
   reload_observer.Wait();
   EXPECT_TRUE(process_map->Contains(
-      contents->render_view_host()->process()->id()));
+      contents->render_view_host()->process()->GetID()));
 
   // Disable app and reload the page.
   DisableExtension(app->id());
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
   browser()->Reload(CURRENT_TAB);
   reload_observer2.Wait();
   EXPECT_FALSE(process_map->Contains(
-      contents->render_view_host()->process()->id()));
+      contents->render_view_host()->process()->GetID()));
 
   // Enable app and reload via JavaScript.
   EnableExtension(app->id());
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
                                                L"", L"location.reload();"));
   js_reload_observer.Wait();
   EXPECT_TRUE(process_map->Contains(
-      contents->render_view_host()->process()->id()));
+      contents->render_view_host()->process()->GetID()));
 
   // Disable app and reload via JavaScript.
   DisableExtension(app->id());
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_ReloadIntoAppProcess) {
                                                L"", L"location.reload();"));
   js_reload_observer2.Wait();
   EXPECT_FALSE(process_map->Contains(
-      contents->render_view_host()->process()->id()));
+      contents->render_view_host()->process()->GetID()));
 }
 
 // Tests that if we have a non-app process (path3/container.html) that has an
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
   EXPECT_FALSE(process_map->Contains(
-      browser()->GetTabContentsAt(0)->render_view_host()->process()->id()));
+      browser()->GetTabContentsAt(0)->render_view_host()->process()->GetID()));
 
   // Wait for popup window to appear.
   GURL app_url = base_url.Resolve("path1/empty.html");
@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenAppFromIframe) {
   // Popup window should be in the app's process.
   EXPECT_TRUE(process_map->Contains(
       last_active_browser->GetTabContentsAt(0)->render_view_host()->process()->
-          id()));
+          GetID()));
 }
 
 // Tests that if we have an app process (path1/container.html) with a non-app
@@ -457,9 +457,9 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
       CURRENT_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
-  RenderProcessHost* process =
+  content::RenderProcessHost* process =
       browser()->GetTabContentsAt(0)->render_view_host()->process();
-  EXPECT_TRUE(process_map->Contains(process->id()));
+  EXPECT_TRUE(process_map->Contains(process->GetID()));
 
   // Wait for popup window to appear.  The new Browser may not have been
   // added with SetLastActive, in which case we need to show it first.
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, OpenWebPopupFromWebIframe) {
   observer.Wait();
 
   // Popup window should be in the app's process.
-  RenderProcessHost* popup_process =
+  content::RenderProcessHost* popup_process =
       last_active_browser->GetTabContentsAt(0)->render_view_host()->process();
   EXPECT_EQ(process, popup_process);
 }
@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, ReloadAppAfterCrash) {
   ui_test_utils::NavigateToURL(browser(), base_url.Resolve("path1/empty.html"));
   TabContents* contents = browser()->GetTabContentsAt(0);
   EXPECT_TRUE(process_map->Contains(
-      contents->render_view_host()->process()->id()));
+      contents->render_view_host()->process()->GetID()));
   bool is_installed = false;
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       contents->render_view_host(), L"",

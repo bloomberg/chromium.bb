@@ -27,11 +27,14 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 class BackingStore;
-class RenderProcessHost;
 class RenderWidgetHost;
 class WebCursor;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_AccessibilityNotification_Params;
+
+namespace content {
+class RenderProcessHost;
+}
 
 namespace gfx {
 class Rect;

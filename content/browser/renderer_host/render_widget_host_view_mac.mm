@@ -25,7 +25,7 @@
 #include "content/browser/plugin_process_host.h"
 #import "content/browser/renderer_host/accelerated_plugin_view_mac.h"
 #include "content/browser/renderer_host/backing_store_mac.h"
-#include "content/browser/renderer_host/render_process_host.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_delegate.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
@@ -929,7 +929,7 @@ void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
   // because |GpuProcessHost::Get()| can only be called there.
   // Currently, this is never called for plugins.
   if (render_widget_host_) {
-    DCHECK_EQ(render_widget_host_->process()->id(), renderer_id);
+    DCHECK_EQ(render_widget_host_->process()->GetID(), renderer_id);
     // |render_widget_host_->routing_id()| and |route_id| are usually not
     // equal: The former identifies the channel from the RWH in the browser
     // process to the corresponding render widget in the renderer process, while

@@ -23,9 +23,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -162,12 +162,12 @@ void SpellCheckHostImpl::UnsetProfile() {
   registrar_.RemoveAll();
 }
 
-void SpellCheckHostImpl::InitForRenderer(RenderProcessHost* process) {
+void SpellCheckHostImpl::InitForRenderer(content::RenderProcessHost* process) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Bug 103693: SpellCheckHostImpl and SpellCheckProfile should not
   // depend on Profile interface.
-  Profile* profile = Profile::FromBrowserContext(process->browser_context());
+  Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   if (profile->GetSpellCheckHost() != this)
     return;
 
@@ -290,9 +290,10 @@ void SpellCheckHostImpl::InformProfileOfInitializationWithCustomWords(
   if (profile_)
     profile_->SpellCheckHostInitialized(custom_words);
 
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
-    RenderProcessHost* process = i.GetCurrentValue();
+    content::RenderProcessHost* process = i.GetCurrentValue();
     if (process)
       InitForRenderer(process);
   }
@@ -384,7 +385,8 @@ void SpellCheckHostImpl::Observe(int type,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
   DCHECK(type == content::NOTIFICATION_RENDERER_PROCESS_CREATED);
-  RenderProcessHost* process = content::Source<RenderProcessHost>(source).ptr();
+  content::RenderProcessHost* process =
+      content::Source<content::RenderProcessHost>(source).ptr();
   InitForRenderer(process);
 }
 
@@ -478,7 +480,8 @@ bool SpellCheckHostImpl::IsUsingPlatformChecker() const {
 void SpellCheckHostImpl::AddWordComplete(const std::string& word) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     i.GetCurrentValue()->Send(new SpellCheckMsg_WordAdded(word));
   }

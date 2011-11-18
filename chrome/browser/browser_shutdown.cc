@@ -35,10 +35,10 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
 #include "content/browser/plugin_process_host.h"
-#include "content/browser/renderer_host/render_process_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN)
@@ -99,7 +99,8 @@ void OnShutdownStarting(ShutdownType type) {
   // shutdown path for the ones that didn't exit here.
   shutdown_num_processes_ = 0;
   shutdown_num_processes_slow_ = 0;
-  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+  for (content::RenderProcessHost::iterator i(
+          content::RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     ++shutdown_num_processes_;
     if (!i.GetCurrentValue()->FastShutdownIfPossible())
