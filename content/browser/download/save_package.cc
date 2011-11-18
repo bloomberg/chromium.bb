@@ -1154,7 +1154,8 @@ void SavePackage::GetSaveInfo() {
       tab_contents(), &website_save_dir, &download_save_dir);
   std::string mime_type = tab_contents()->contents_mime_type();
   std::string accept_languages =
-      content::GetContentClient()->browser()->GetAcceptLangs(tab_contents());
+      content::GetContentClient()->browser()->GetAcceptLangs(
+          tab_contents()->browser_context());
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,

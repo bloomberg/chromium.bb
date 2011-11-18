@@ -102,7 +102,8 @@ std::string MockContentBrowserClient::GetApplicationLocale() {
   return std::string();
 }
 
-std::string MockContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
+std::string MockContentBrowserClient::GetAcceptLangs(
+    content::BrowserContext* context) {
   return std::string();
 }
 

@@ -165,7 +165,8 @@ class ContentBrowserClient {
 
   // Returns the languages used in the Accept-Languages HTTP header.
   // (Not called GetAcceptLanguages so it doesn't clash with win32).
-  virtual std::string GetAcceptLangs(const TabContents* tab) = 0;
+  virtual std::string GetAcceptLangs(
+      content::BrowserContext* context) = 0;
 
   // Returns the default favicon.  The callee doesn't own the given bitmap.
   virtual SkBitmap* GetDefaultFavicon() = 0;

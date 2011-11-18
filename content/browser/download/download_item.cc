@@ -6,8 +6,8 @@
 
 #include <vector>
 
-#include "base/bind.h"
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/i18n/case_conversion.h"
@@ -25,6 +25,7 @@
 #include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/interrupt_reasons.h"
+#include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -630,8 +631,10 @@ bool DownloadItem::MatchesQuery(const string16& query) const {
   //   "/%E4%BD%A0%E5%A5%BD%E4%BD%A0%E5%A5%BD"
   std::string languages;
   TabContents* tab = GetTabContents();
-  if (tab)
-    languages = content::GetContentClient()->browser()->GetAcceptLangs(tab);
+  if (tab) {
+    languages = content::GetContentClient()->browser()->GetAcceptLangs(
+        tab->browser_context());
+  }
   string16 url_formatted(net::FormatUrl(GetURL(), languages));
   if (base::i18n::StringSearchIgnoringCaseAndAccents(query, url_formatted))
     return true;

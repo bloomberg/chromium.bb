@@ -42,7 +42,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual void AppendExtraCommandLineSwitches(CommandLine* command_line,
                                               int child_process_id) OVERRIDE;
   virtual std::string GetApplicationLocale() OVERRIDE;
-  virtual std::string GetAcceptLangs(const TabContents* tab) OVERRIDE;
+  virtual std::string GetAcceptLangs(
+      content::BrowserContext* context) OVERRIDE;
   virtual SkBitmap* GetDefaultFavicon() OVERRIDE;
   virtual bool AllowAppCache(const GURL& manifest_url,
                              const GURL& first_party,

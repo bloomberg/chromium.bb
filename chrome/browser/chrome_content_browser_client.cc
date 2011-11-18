@@ -651,8 +651,9 @@ std::string ChromeContentBrowserClient::GetApplicationLocale() {
   return g_browser_process->GetApplicationLocale();
 }
 
-std::string ChromeContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
-  Profile* profile = Profile::FromBrowserContext(tab->browser_context());
+std::string ChromeContentBrowserClient::GetAcceptLangs(
+    content::BrowserContext* context) {
+  Profile* profile = Profile::FromBrowserContext(context);
   return profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
 }
 

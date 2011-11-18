@@ -344,7 +344,8 @@ const string16& TabContents::GetTitle() const {
   // that are shown on top of existing pages.
   NavigationEntry* entry = controller_.GetTransientEntry();
   std::string accept_languages =
-      content::GetContentClient()->browser()->GetAcceptLangs(this);
+      content::GetContentClient()->browser()->GetAcceptLangs(
+          this->browser_context());
   if (entry) {
     return entry->GetTitleForDisplay(accept_languages);
   }
@@ -1780,7 +1781,8 @@ void TabContents::RunJavaScriptMessage(
       title_type = content::JavaScriptDialogCreator::DIALOG_TITLE_FORMATTED_URL;
       title = net::FormatUrl(
           frame_url.GetOrigin(),
-          content::GetContentClient()->browser()->GetAcceptLangs(this));
+          content::GetContentClient()->browser()->GetAcceptLangs(
+              this->browser_context()));
     }
 
     dialog_creator_ = delegate_->GetJavaScriptDialogCreator();
@@ -1916,7 +1918,8 @@ void TabContents::LoadStateChanged(const GURL& url,
   upload_position_ = upload_position;
   upload_size_ = upload_size;
   load_state_host_ = net::IDNToUnicode(url.host(),
-      content::GetContentClient()->browser()->GetAcceptLangs(this));
+      content::GetContentClient()->browser()->GetAcceptLangs(
+          this->browser_context()));
   if (load_state_.state == net::LOAD_STATE_READING_RESPONSE)
     SetNotWaitingForResponse();
   if (IsLoading())

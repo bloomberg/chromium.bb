@@ -115,7 +115,8 @@ std::string ShellContentBrowserClient::GetApplicationLocale() {
   return std::string();
 }
 
-std::string ShellContentBrowserClient::GetAcceptLangs(const TabContents* tab) {
+std::string ShellContentBrowserClient::GetAcceptLangs(
+    content::BrowserContext* context) {
   return std::string();
 }
 
