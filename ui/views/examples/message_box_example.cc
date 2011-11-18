@@ -5,8 +5,8 @@
 #include "ui/views/examples/message_box_example.h"
 
 #include "base/utf_string_conversions.h"
+#include "ui/views/layout/grid_layout.h"
 #include "views/controls/message_box_view.h"
-#include "views/layout/grid_layout.h"
 #include "views/view.h"
 
 namespace examples {

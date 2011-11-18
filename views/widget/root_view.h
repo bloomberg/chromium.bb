@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "views/focus/focus_manager.h"
-#include "views/focus/focus_search.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/focus/focus_search.h"
 #include "views/view.h"
 
 namespace ui {

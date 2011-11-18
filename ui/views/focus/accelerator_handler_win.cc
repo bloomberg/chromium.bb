@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/focus/accelerator_handler.h"
+#include "ui/views/focus/accelerator_handler.h"
 
-#include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
-#include "views/events/event.h"
-#include "views/focus/focus_manager.h"
+#include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/views/events/event.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
 namespace views {

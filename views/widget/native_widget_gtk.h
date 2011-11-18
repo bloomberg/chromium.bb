@@ -15,7 +15,7 @@
 #include "ui/base/x/active_window_watcher_x.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/size.h"
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/widget/native_widget_private.h"
 #include "views/widget/widget.h"
 

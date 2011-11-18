@@ -10,7 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "views/widget/widget.h"
 
 class SkBitmap;

@@ -10,7 +10,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 
 // Extra number of chars before and after selection (or composition) range which
 // is returned to IME for improving conversion accuracy.

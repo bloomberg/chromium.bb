@@ -14,7 +14,7 @@
 #include "grit/locale_settings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/layout/layout_constants.h"
+#include "ui/views/layout/layout_constants.h"
 
 namespace chromeos {
 

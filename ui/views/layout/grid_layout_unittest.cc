@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "views/layout/grid_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "views/view.h"
 
 using views::ColumnSet;

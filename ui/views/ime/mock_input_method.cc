@@ -8,7 +8,7 @@
 #include "base/logging.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 #include "views/widget/widget.h"
 
 namespace views {

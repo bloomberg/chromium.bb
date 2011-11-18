@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/widget/native_widget_gtk.h"
 

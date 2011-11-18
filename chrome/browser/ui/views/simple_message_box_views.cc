@@ -15,7 +15,7 @@
 #include "views/widget/widget.h"
 
 #if defined(TOUCH_UI) || defined(USE_AURA)
-#include "views/focus/accelerator_handler.h"
+#include "ui/views/focus/accelerator_handler.h"
 #endif
 
 namespace browser {

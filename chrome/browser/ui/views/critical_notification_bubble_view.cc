@@ -19,11 +19,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/accelerator.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/layout/grid_layout.h"
-#include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 
 namespace {

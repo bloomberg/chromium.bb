@@ -15,7 +15,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/screen.h"
-#include "views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 #include "views/widget/widget.h"

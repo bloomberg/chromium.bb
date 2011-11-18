@@ -5,8 +5,8 @@
 #include "views/accessible_pane_view.h"
 
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "views/focus/focus_search.h"
-#include "views/focus/view_storage.h"
+#include "ui/views/focus/focus_search.h"
+#include "ui/views/focus/view_storage.h"
 #include "views/widget/widget.h"
 
 namespace views {

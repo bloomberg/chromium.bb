@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_border.h"
 
 #include <algorithm>  // for std::max
 

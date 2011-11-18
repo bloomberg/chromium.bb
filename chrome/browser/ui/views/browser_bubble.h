@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_BUBBLE_H_
 #pragma once
 
-#include "views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 

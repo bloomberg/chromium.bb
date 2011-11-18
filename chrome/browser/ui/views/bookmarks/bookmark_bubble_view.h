@@ -9,7 +9,7 @@
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 #include "googleurl/src/gurl.h"
-#include "views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/link_listener.h"

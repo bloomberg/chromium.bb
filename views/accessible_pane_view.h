@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/models/accelerator.h"
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/view.h"
 
 namespace views {

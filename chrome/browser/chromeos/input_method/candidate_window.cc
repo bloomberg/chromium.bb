@@ -23,12 +23,12 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/events/event.h"
+#include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/grid_layout.h"
 #include "ui/views/window/non_client_view.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/events/event.h"
-#include "views/layout/fill_layout.h"
-#include "views/layout/grid_layout.h"
 #include "views/widget/widget.h"
 
 namespace chromeos {

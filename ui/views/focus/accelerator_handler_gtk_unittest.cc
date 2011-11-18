@@ -5,10 +5,10 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/rect.h"
 #include "ui/base/models/accelerator.h"
-#include "views/focus/accelerator_handler.h"
-#include "views/focus/focus_manager.h"
+#include "ui/gfx/rect.h"
+#include "ui/views/focus/accelerator_handler.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"

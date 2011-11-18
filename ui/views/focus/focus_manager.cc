@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 
 #include <algorithm>
 
@@ -12,9 +12,9 @@
 #include "ui/base/accelerator_manager.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/accelerator.h"
-#include "views/focus/focus_search.h"
-#include "views/focus/view_storage.h"
-#include "views/focus/widget_focus_manager.h"
+#include "ui/views/focus/focus_search.h"
+#include "ui/views/focus/view_storage.h"
+#include "ui/views/focus/widget_focus_manager.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"

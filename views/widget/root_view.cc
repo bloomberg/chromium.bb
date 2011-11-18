@@ -13,9 +13,9 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/views/focus/view_storage.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/touchui/gesture_manager.h"
-#include "views/focus/view_storage.h"
-#include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
 
 namespace views {

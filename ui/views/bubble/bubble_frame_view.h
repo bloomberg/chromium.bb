@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/window/non_client_view.h"
-#include "views/bubble/bubble_border.h"
 
 namespace views {
 

@@ -8,8 +8,8 @@
 
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/focus/focus_manager.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"

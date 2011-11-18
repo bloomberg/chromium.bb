@@ -13,8 +13,8 @@
 #include "ui/base/models/combobox_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/examples/example_combobox_model.h"
+#include "ui/views/layout/grid_layout.h"
 #include "views/controls/label.h"
-#include "views/layout/grid_layout.h"
 #include "views/native_theme_painter.h"
 
 namespace {

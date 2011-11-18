@@ -11,9 +11,9 @@
 #include "ui/aura/event.h"
 #include "ui/aura_shell/desktop_event_filter.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
-#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "views/events/event.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/views/events/event.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 

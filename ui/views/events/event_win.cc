@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 
 #include "base/logging.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"

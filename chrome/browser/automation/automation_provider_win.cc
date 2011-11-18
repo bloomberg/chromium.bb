@@ -26,7 +26,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/common/page_zoom.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/focus/accelerator_handler.h"
+#include "ui/views/focus/accelerator_handler.h"
 #include "views/widget/root_view.h"
 
 // This task just adds another task to the event queue.  This is useful if

@@ -89,7 +89,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
-#include "views/focus/view_storage.h"
+#include "ui/views/focus/view_storage.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
 #endif

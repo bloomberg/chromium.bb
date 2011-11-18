@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/bubble/bubble_frame_view.h"
+#include "ui/views/bubble/bubble_frame_view.h"
 
 #include <algorithm>
 
+#include "ui/views/bubble/border_contents_view.h"
+#include "ui/views/bubble/bubble_border.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/window/client_view.h"
-#include "views/bubble/border_contents_view.h"
-#include "views/bubble/bubble_border.h"
-#include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
 
 namespace views {

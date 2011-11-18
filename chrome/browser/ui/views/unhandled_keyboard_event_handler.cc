@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 
 #include "base/logging.h"
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 
 UnhandledKeyboardEventHandler::UnhandledKeyboardEventHandler() {
   ignore_next_char_event_ = false;

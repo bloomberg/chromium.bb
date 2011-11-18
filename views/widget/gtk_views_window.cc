@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include <gtk/gtk.h>
-#include "views/events/event.h"
-#include "views/focus/focus_manager.h"
+
+#include "ui/views/events/event.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/widget/gtk_views_window.h"
 #include "views/widget/widget.h"
 

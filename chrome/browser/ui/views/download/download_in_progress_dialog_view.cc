@@ -19,9 +19,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
+#include "ui/views/layout/grid_layout.h"
 #include "views/border.h"
 #include "views/controls/label.h"
-#include "views/layout/grid_layout.h"
 #include "views/widget/widget.h"
 
 DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)

@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/ime/input_method_delegate.h"
-#include "views/focus/focus_manager.h"
 
 namespace gfx {
 class Rect;

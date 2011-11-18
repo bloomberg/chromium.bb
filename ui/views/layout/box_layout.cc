@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/layout/box_layout.h"
+#include "ui/views/layout/box_layout.h"
 
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"

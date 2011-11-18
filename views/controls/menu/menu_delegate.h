@@ -13,8 +13,8 @@
 #include "base/string16.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/views/events/event.h"
 #include "views/controls/menu/menu_item_view.h"
-#include "views/events/event.h"
 
 using ui::OSExchangeData;
 

@@ -48,8 +48,8 @@
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
+#include "ui/views/events/event.h"
 #include "views/controls/textfield/native_textfield_views.h"
-#include "views/events/event.h"
 #else
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"

@@ -34,11 +34,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/layout/grid_layout.h"
-#include "views/layout/layout_constants.h"
 #include "views/widget/widget.h"
 
 namespace {

@@ -25,7 +25,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 #include "views/widget/widget.h"
 
 #if defined(USE_AURA) || defined(TOUCH_UI)

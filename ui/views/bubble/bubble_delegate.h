@@ -8,7 +8,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_delegate.h"
 

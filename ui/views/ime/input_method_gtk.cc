@@ -19,7 +19,7 @@
 #include "ui/base/gtk/gtk_im_context_util.h"
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 #include "views/widget/widget.h"
 
 namespace views {

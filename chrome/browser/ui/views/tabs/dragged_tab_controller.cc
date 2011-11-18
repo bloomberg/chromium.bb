@@ -35,7 +35,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/screen.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 #include "views/widget/widget.h"
 
 #if defined(TOOLKIT_USES_GTK)

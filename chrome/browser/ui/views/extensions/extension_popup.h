@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/extensions/extension_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "googleurl/src/gurl.h"
-#include "views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_border.h"
 
 
 class Browser;

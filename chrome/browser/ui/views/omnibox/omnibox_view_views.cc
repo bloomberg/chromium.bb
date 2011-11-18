@@ -26,10 +26,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/events/event.h"
+#include "ui/views/layout/fill_layout.h"
 #include "views/border.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/events/event.h"
-#include "views/layout/fill_layout.h"
 
 #if defined(TOUCH_UI)
 #include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"

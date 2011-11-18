@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 #endif
 
 namespace ui_test_utils {

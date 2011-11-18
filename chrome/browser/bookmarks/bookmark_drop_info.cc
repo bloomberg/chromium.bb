@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,7 +9,7 @@
 #endif
 
 #include "base/basictypes.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 #include "views/view_constants.h"
 
 BookmarkDropInfo::BookmarkDropInfo(gfx::NativeWindow wnd, int top_margin)

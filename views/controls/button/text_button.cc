@@ -11,8 +11,8 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/views/events/event.h"
 #include "views/controls/button/button.h"
-#include "views/events/event.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)

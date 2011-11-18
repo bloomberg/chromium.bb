@@ -33,7 +33,7 @@
 #endif
 
 #if defined(TOUCH_UI)
-#include "views/focus/accelerator_handler.h"
+#include "ui/views/focus/accelerator_handler.h"
 #endif
 
 using base::Time;

@@ -17,10 +17,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
+#include "ui/views/layout/grid_layout.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
-#include "views/layout/grid_layout.h"
 
 static const int kPadding = 20;
 static const float kMessageSize = 0.65f;

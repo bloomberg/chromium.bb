@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_GLOBAL_ERROR_BUBBLE_VIEW_H_
 #pragma once
 
-#include "views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "views/controls/button/button.h"
 
 class Browser;

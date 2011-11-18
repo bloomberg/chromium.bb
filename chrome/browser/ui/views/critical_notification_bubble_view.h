@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/timer.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "views/controls/button/button.h"
-#include "views/bubble/bubble_delegate.h"
 
 namespace ui {
 class Accelerator;

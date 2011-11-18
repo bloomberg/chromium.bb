@@ -10,11 +10,11 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/layout/grid_layout.h"
-#include "views/layout/layout_constants.h"
 
 namespace {
 

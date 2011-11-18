@@ -55,7 +55,7 @@
 #include "ui/gfx/size.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/focus/accelerator_handler.h"
+#include "ui/views/focus/accelerator_handler.h"
 #endif
 
 #if defined(USE_AURA)

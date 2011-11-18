@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/focus/focus_manager_factory.h"
+#include "ui/views/focus/focus_manager_factory.h"
 
 #include "base/compiler_specific.h"
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 
 namespace {
 

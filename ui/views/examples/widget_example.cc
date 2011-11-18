@@ -5,9 +5,9 @@
 #include "ui/views/examples/widget_example.h"
 
 #include "base/utf_string_conversions.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_manager.h"
 #include "views/controls/button/text_button.h"
-#include "views/layout/box_layout.h"
-#include "views/layout/layout_manager.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 

@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/intents/web_intent_picker.h"
+#include "chrome/browser/ui/intents/web_intent_picker_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -21,10 +21,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/layout/box_layout.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/layout/box_layout.h"
 
 namespace {
 

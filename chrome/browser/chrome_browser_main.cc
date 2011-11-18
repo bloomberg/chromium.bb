@@ -183,7 +183,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/focus/accelerator_handler.h"
+#include "ui/views/focus/accelerator_handler.h"
 #endif
 
 #if defined(TOOLKIT_USES_GTK)

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "views/layout/box_layout.h"
+#include "ui/views/layout/box_layout.h"
 #include "views/view.h"
 
 class StaticSizedView : public views::View {

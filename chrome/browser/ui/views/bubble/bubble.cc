@@ -11,8 +11,8 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/window/client_view.h"
-#include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)

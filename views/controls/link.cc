@@ -16,8 +16,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
+#include "ui/views/events/event.h"
 #include "views/controls/link_listener.h"
-#include "views/events/event.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"

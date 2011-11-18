@@ -8,8 +8,8 @@
 #include "base/format_macros.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,19 +19,19 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/interstitial_page.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/public/browser/notification_service.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/notification_service.h"
 #include "net/test/test_server.h"
 
 #if defined(TOOLKIT_VIEWS) || defined(OS_WIN)
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/view.h"
 #endif
 

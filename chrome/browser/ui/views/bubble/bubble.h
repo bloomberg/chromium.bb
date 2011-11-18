@@ -7,9 +7,9 @@
 #pragma once
 
 #include "base/observer_list.h"
-#include "views/bubble/bubble_border.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/models/accelerator.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "views/view.h"
 
 #if defined(USE_AURA)

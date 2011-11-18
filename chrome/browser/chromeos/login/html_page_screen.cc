@@ -16,7 +16,7 @@
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 
 namespace chromeos {
 

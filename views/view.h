@@ -22,9 +22,9 @@
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/events/event.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/events/event.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_comptr.h"

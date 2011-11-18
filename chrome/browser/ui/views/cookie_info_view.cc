@@ -17,12 +17,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
 #include "views/border.h"
 #include "views/controls/label.h"
-#include "views/controls/tree/tree_view.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/layout/grid_layout.h"
-#include "views/layout/layout_constants.h"
+#include "views/controls/tree/tree_view.h"
 
 static const int kCookieInfoViewBorderSize = 1;
 static const int kCookieInfoViewInsetSize = 3;

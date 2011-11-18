@@ -8,7 +8,7 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/widget/native_widget_views.h"
 
 // static

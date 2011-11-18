@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/window.h"
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 
 namespace ui_test_utils {
 

@@ -5,7 +5,7 @@
 #include "views/widget/window_manager.h"
 
 #include "base/compiler_specific.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 #include "views/widget/widget.h"
 
 namespace {

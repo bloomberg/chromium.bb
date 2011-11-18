@@ -20,8 +20,8 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/public/browser/render_process_host.h"
 #include "ui/gfx/screen.h"
-#include "views/focus/focus_manager.h"
-#include "views/focus/view_storage.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/focus/view_storage.h"
 #include "views/widget/native_widget.h"
 #include "views/widget/widget.h"
 

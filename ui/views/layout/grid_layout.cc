@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/layout/grid_layout.h"
+#include "ui/views/layout/grid_layout.h"
 
 #include <algorithm>
 
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/gfx/insets.h"
-#include "views/layout/layout_constants.h"
+#include "ui/views/layout/layout_constants.h"
 #include "views/view.h"
 
 namespace views {

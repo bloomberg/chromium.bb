@@ -9,7 +9,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/webui/web_ui.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
@@ -20,11 +19,12 @@
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/webui/web_ui.h"
+#include "content/browser/webui/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
-#include "views/layout/fill_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "views/widget/widget.h"
 
 #if defined(TOOLKIT_USES_GTK)

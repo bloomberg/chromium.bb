@@ -16,10 +16,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/compositor/layer.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/layout/layout_constants.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 

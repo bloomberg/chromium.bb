@@ -23,8 +23,8 @@
 #include "base/win/win_util.h"
 #include "ui/base/win/window_impl.h"
 #include "ui/gfx/compositor/compositor.h"
-#include "views/focus/focus_manager.h"
-#include "views/layout/layout_manager.h"
+#include "ui/views/focus/focus_manager.h"
+#include "ui/views/layout/layout_manager.h"
 #include "views/widget/native_widget_private.h"
 
 namespace ui {

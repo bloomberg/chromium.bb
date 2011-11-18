@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
 
-#include "views/controls/label.h"
-#include "views/layout/box_layout.h"
-#include "views/layout/fill_layout.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
+#include "views/controls/label.h"
 
 namespace chromeos {
 

@@ -11,7 +11,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/views/desktop/desktop_views_delegate.h"
 #include "ui/views/desktop/desktop_window_view.h"
-#include "views/focus/accelerator_handler.h"
+#include "ui/views/focus/accelerator_handler.h"
 #include "views/widget/widget.h"
 
 #if defined(OS_WIN)

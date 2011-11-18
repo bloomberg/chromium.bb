@@ -5,11 +5,11 @@
 #include "ui/views/examples/bubble_example.h"
 
 #include "base/utf_string_conversions.h"
-#include "views/bubble/bubble_delegate.h"
+#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
-#include "views/layout/box_layout.h"
-#include "views/layout/fill_layout.h"
 #include "views/widget/widget.h"
 
 namespace examples {

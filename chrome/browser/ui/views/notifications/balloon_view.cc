@@ -32,7 +32,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
-#include "views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/text_button.h"

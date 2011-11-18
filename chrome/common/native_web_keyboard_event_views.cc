@@ -9,7 +9,7 @@
 #endif
 
 #include "base/logging.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 
 namespace {
 

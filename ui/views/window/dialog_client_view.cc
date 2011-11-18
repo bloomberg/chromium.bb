@@ -24,9 +24,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/button/text_button.h"
-#include "views/layout/layout_constants.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 

@@ -30,7 +30,7 @@
 #include "content/public/browser/notification_service.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/view.h"
 #include "views/widget/widget.h"
 #endif

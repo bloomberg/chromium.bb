@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "views/layout/layout_manager.h"
+#include "ui/views/layout/layout_manager.h"
 
 namespace gfx {
 class Size;

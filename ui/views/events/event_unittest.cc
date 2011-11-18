@@ -5,7 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "base/basictypes.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 
 // Bug 99129.
 #if defined(USE_AURA)

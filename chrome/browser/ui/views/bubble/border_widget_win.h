@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BUBBLE_BORDER_WIDGET_WIN_H_
 #pragma once
 
-#include "views/bubble/bubble_border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "views/widget/native_widget_win.h"
 
 class BorderContents;

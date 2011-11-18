@@ -30,11 +30,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/views/focus/accelerator_handler.h"
+#include "ui/views/layout/layout_constants.h"
 #include "views/controls/button/button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/focus/accelerator_handler.h"
-#include "views/layout/layout_constants.h"
 #include "views/view_text_utils.h"
 #include "views/widget/widget.h"
 

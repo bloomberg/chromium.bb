@@ -8,8 +8,8 @@
 
 #include "chrome/browser/chromeos/login/background_view.h"
 #include "chrome/browser/chromeos/login/base_login_display_host.h"
-#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/setting_level_bubble_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "ui/gfx/screen.h"
-#include "views/bubble/bubble_delegate.h"
-#include "views/layout/fill_layout.h"
+#include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/layout/fill_layout.h"
 #include "views/widget/root_view.h"
 
 #if !defined(USE_AURA)

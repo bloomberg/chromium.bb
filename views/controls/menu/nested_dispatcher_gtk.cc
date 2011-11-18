@@ -5,7 +5,7 @@
 #include "views/controls/menu/nested_dispatcher_gtk.h"
 
 #if defined(TOUCH_UI)
-#include "views/focus/accelerator_handler.h"
+#include "ui/views/focus/accelerator_handler.h"
 #endif
 
 namespace views {

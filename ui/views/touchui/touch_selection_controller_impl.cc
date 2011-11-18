@@ -17,13 +17,13 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/layout/box_layout.h"
 #include "views/background.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/custom_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_config.h"
-#include "views/layout/box_layout.h"
 #include "views/widget/widget.h"
 
 namespace {

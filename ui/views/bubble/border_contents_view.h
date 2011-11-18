@@ -6,8 +6,8 @@
 #define UI_VIEWS_BUBBLE_BORDER_CONTENTS_VIEW_H_
 #pragma once
 
-#include "views/bubble/bubble_border.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "views/view.h"
 
 namespace views {

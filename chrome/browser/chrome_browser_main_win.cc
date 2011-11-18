@@ -40,7 +40,7 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
-#include "views/focus/accelerator_handler.h"
+#include "ui/views/focus/accelerator_handler.h"
 #include "views/widget/widget.h"
 
 namespace {

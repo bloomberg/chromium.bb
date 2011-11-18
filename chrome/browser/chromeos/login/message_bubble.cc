@@ -12,11 +12,11 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/layout/grid_layout.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
-#include "views/layout/grid_layout.h"
 #include "views/widget/widget.h"
 
 namespace chromeos {

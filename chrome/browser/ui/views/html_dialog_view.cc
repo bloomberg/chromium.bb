@@ -16,7 +16,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BUBBLE_BORDER_CONTENTS_H_
 #pragma once
 
-#include "views/bubble/border_contents_view.h"
+#include "ui/views/bubble/border_contents_view.h"
 
 // This is used to paint the border of the Bubble. Windows uses this via
 // BorderWidgetWin, while others can use it directly in the bubble.

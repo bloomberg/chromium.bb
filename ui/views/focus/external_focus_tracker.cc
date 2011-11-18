@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/focus/external_focus_tracker.h"
+#include "ui/views/focus/external_focus_tracker.h"
 
 #include "base/logging.h"
+#include "ui/views/focus/view_storage.h"
 #include "views/view.h"
-#include "views/focus/view_storage.h"
 
 namespace views {
 

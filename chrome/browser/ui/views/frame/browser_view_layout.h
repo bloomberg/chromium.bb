@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "ui/gfx/rect.h"
-#include "views/layout/layout_manager.h"
+#include "ui/views/layout/layout_manager.h"
 
 class AbstractTabStripView;
 class BookmarkBarView;

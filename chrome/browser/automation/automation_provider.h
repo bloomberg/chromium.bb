@@ -35,7 +35,7 @@
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "ui/gfx/native_widget_types.h"
-#include "views/events/event.h"
+#include "ui/views/events/event.h"
 #endif  // defined(OS_WIN) && !defined(USE_AURA)
 
 class TabContents;

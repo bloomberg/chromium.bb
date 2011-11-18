@@ -17,8 +17,8 @@
 #include "ui/base/ime/character_composer.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/views/events/event.h"
 #include "ui/views/ime/input_method_base.h"
-#include "views/events/event.h"
 #include "views/view.h"
 
 // Forward declarations, so that we don't need to include ibus.h in this file.

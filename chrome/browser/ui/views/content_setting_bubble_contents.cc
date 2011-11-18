@@ -25,14 +25,14 @@
 #include "content/public/browser/notification_types.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_constants.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/separator.h"
-#include "views/layout/grid_layout.h"
-#include "views/layout/layout_constants.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"

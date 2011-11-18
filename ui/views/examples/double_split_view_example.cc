@@ -4,8 +4,8 @@
 
 #include "ui/views/examples/double_split_view_example.h"
 
+#include "ui/views/layout/grid_layout.h"
 #include "views/controls/single_split_view.h"
-#include "views/layout/grid_layout.h"
 
 namespace {
 

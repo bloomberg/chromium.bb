@@ -23,7 +23,7 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/point.h"
-#include "views/focus/focus_manager.h"
+#include "ui/views/focus/focus_manager.h"
 #include "views/widget/widget.h"
 
 using ui::TreeModel;

@@ -14,8 +14,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/scrollbar_size.h"
-#include "views/focus/external_focus_tracker.h"
-#include "views/focus/view_storage.h"
+#include "ui/views/focus/external_focus_tracker.h"
+#include "ui/views/focus/view_storage.h"
 #include "views/widget/widget.h"
 
 #if defined(USE_AURA)

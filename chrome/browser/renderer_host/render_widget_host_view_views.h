@@ -22,9 +22,9 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/events/event.h"
 #include "ui/views/touchui/touch_selection_controller.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/events/event.h"
 #include "views/view.h"
 #include "webkit/glue/webcursor.h"
 

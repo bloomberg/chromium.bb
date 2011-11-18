@@ -6,8 +6,8 @@
 
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/window/client_view.h"
-#include "views/bubble/bubble_delegate.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 #include "views/widget/widget.h"
