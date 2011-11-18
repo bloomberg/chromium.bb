@@ -913,10 +913,12 @@
           'features': {'dynamic_refresh': 0},
           'example_value': 'foobar.example.com',
           'id': 30,
-          'caption': '''Kerberos delegation server whitelist
+          'caption': '''Kerberos delegation server whitelist''',
+          'desc': '''Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.
+
+          Separate multiple server names with commas. Wildcards (*) are allowed.
 
           If you leave this policy not set any server will be accepted for integrated authentication.''',
-          'desc': '''Servers that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may delegate to.''',
         },
         {
           'name': 'GSSAPILibraryName',
