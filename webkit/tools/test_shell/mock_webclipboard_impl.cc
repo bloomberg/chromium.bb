@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCommon.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "webkit/glue/webclipboard_impl.h"
@@ -157,4 +158,11 @@ void MockWebClipboardImpl::writeImage(const WebKit::WebImage& image,
     m_image = image;
     m_writeSmartPaste = false;
   }
+}
+
+void MockWebClipboardImpl::writeDataObject(const WebKit::WebDragData& data) {
+  m_htmlText = data.htmlText();
+  m_plainText = data.plainText();
+  m_image.reset();
+  m_writeSmartPaste = false;
 }

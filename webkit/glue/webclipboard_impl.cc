@@ -11,6 +11,7 @@
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebDragData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
@@ -26,6 +27,7 @@
 
 using WebKit::WebClipboard;
 using WebKit::WebData;
+using WebKit::WebDragData;
 using WebKit::WebImage;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -218,6 +220,17 @@ void WebClipboardImpl::writeImage(
     scw.WriteHTML(UTF8ToUTF16(URLToImageMarkup(url, title)), "");
 #endif
   }
+}
+
+void WebClipboardImpl::writeDataObject(const WebDragData& data) {
+  // TODO(dcheng): This actually results in a double clear of the clipboard.
+  // Once in WebKit, and once here when the clipboard writer goes out of scope.
+  // The same is true of the other WebClipboard::write* methods.
+  ScopedClipboardWriterGlue scw(ClipboardGetClipboard());
+
+  // TODO(dcheng): Properly support text/uri-list here.
+  scw.WriteText(data.plainText());
+  scw.WriteHTML(data.htmlText(), "");
 }
 
 bool WebClipboardImpl::ConvertBufferType(Buffer buffer,

@@ -47,6 +47,7 @@ class WebClipboardImpl : public WebKit::WebClipboard {
       const WebKit::WebImage& image,
       const WebKit::WebURL& source_url,
       const WebKit::WebString& title);
+  virtual void writeDataObject(const WebKit::WebDragData& data);
 
  private:
   bool ConvertBufferType(Buffer, ui::Clipboard::Buffer*);

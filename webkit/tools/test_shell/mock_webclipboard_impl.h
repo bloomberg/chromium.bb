@@ -18,28 +18,28 @@ class MockWebClipboardImpl : public WebKit::WebClipboard {
   MockWebClipboardImpl();
   ~MockWebClipboardImpl();
 
-  virtual bool isFormatAvailable(WebKit::WebClipboard::Format,
-                                 WebKit::WebClipboard::Buffer);
+  virtual bool isFormatAvailable(WebKit::WebClipboard::Format format,
+                                 WebKit::WebClipboard::Buffer buffer);
   virtual WebKit::WebVector<WebKit::WebString> readAvailableTypes(
-      WebKit::WebClipboard::Buffer, bool* containsFilenames);
+      WebKit::WebClipboard::Buffer buffer, bool* containsFilenames);
 
-  virtual WebKit::WebString readPlainText(WebKit::WebClipboard::Buffer);
-  virtual WebKit::WebString readHTML(WebKit::WebClipboard::Buffer,
-                                     WebKit::WebURL*,
+  virtual WebKit::WebString readPlainText(WebKit::WebClipboard::Buffer buffer);
+  virtual WebKit::WebString readHTML(WebKit::WebClipboard::Buffer buffer,
+                                     WebKit::WebURL* url,
                                      unsigned* fragmentStart,
                                      unsigned* fragmentEnd);
   virtual WebKit::WebData readImage(WebKit::WebClipboard::Buffer);
 
   virtual void writePlainText(const WebKit::WebString& plain_text);
   virtual void writeHTML(
-      const WebKit::WebString& htmlText, const WebKit::WebURL&,
+      const WebKit::WebString& htmlText, const WebKit::WebURL& url,
       const WebKit::WebString& plainText, bool writeSmartPaste);
   virtual void writeURL(
-      const WebKit::WebURL&, const WebKit::WebString& title);
+      const WebKit::WebURL& url, const WebKit::WebString& title);
   virtual void writeImage(
-      const WebKit::WebImage&, const WebKit::WebURL&,
+      const WebKit::WebImage& image, const WebKit::WebURL& url,
       const WebKit::WebString& title);
-
+  virtual void writeDataObject(const WebKit::WebDragData& data);
 
  private:
   WebKit::WebString m_plainText;
