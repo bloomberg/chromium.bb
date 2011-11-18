@@ -190,9 +190,14 @@ class TimedMsgLoop {
     loop_.MessageLoop::Run();
   }
 
-  void PostDelayedTask(
-    const tracked_objects::Location& from_here, Task* task, int64 delay_ms) {
-      loop_.PostDelayedTask(from_here, task, delay_ms);
+  void PostTask(const tracked_objects::Location& from_here,
+                const base::Closure& task) {
+    loop_.PostTask(from_here, task);
+  }
+
+  void PostDelayedTask(const tracked_objects::Location& from_here,
+                       const base::Closure& task, int64 delay_ms) {
+    loop_.PostDelayedTask(from_here, task, delay_ms);
   }
 
   void Quit() {
@@ -201,7 +206,8 @@ class TimedMsgLoop {
 
   void QuitAfter(int seconds) {
     quit_loop_invoked_ = true;
-    loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, 1000 * seconds);
+    loop_.PostDelayedTask(
+        FROM_HERE, MessageLoop::QuitClosure(), 1000 * seconds);
   }
 
   bool WasTimedOut() const {

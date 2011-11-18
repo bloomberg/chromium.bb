@@ -4,6 +4,8 @@
 
 #include "chrome_frame/chrome_frame_automation.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
@@ -196,8 +198,6 @@ struct LaunchTimeStats {
 #endif
 };
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(AutomationProxyCacheEntry);
-
 AutomationProxyCacheEntry::AutomationProxyCacheEntry(
     ChromeFrameLaunchParams* params, LaunchDelegate* delegate)
     : profile_name(params->profile_name()),
@@ -208,8 +208,9 @@ AutomationProxyCacheEntry::AutomationProxyCacheEntry(
   // Use scoped_refptr so that the params will get released when the task
   // has been run.
   scoped_refptr<ChromeFrameLaunchParams> ref_params(params);
-  thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &AutomationProxyCacheEntry::CreateProxy, ref_params, delegate));
+  thread_->message_loop()->PostTask(
+      FROM_HERE, base::Bind(&AutomationProxyCacheEntry::CreateProxy,
+                            base::Unretained(this), ref_params, delegate));
 }
 
 AutomationProxyCacheEntry::~AutomationProxyCacheEntry() {
@@ -409,8 +410,6 @@ void AutomationProxyCacheEntry::OnChannelError() {
   }
 }
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ProxyFactory);
-
 ProxyFactory::ProxyFactory() {
 }
 
@@ -445,8 +444,9 @@ void ProxyFactory::GetAutomationServer(
   } else if (delegate) {
     // Notify the new delegate of the launch status from the worker thread
     // and add it to the list of delegates.
-    entry->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(entry.get(),
-        &AutomationProxyCacheEntry::AddDelegate, delegate));
+    entry->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&AutomationProxyCacheEntry::AddDelegate,
+                              base::Unretained(entry.get()), delegate));
   }
 
   DCHECK(automation_server_id != NULL);
@@ -483,9 +483,10 @@ bool ProxyFactory::ReleaseAutomationServer(void* server_id,
   bool last_delegate = false;
   if (delegate) {
     base::WaitableEvent done(true, false);
-    entry->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(entry,
-        &AutomationProxyCacheEntry::RemoveDelegate, delegate, &done,
-        &last_delegate));
+    entry->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&AutomationProxyCacheEntry::RemoveDelegate,
+                   base::Unretained(entry), delegate, &done, &last_delegate));
     done.Wait();
   }
 
@@ -882,19 +883,21 @@ void ChromeFrameAutomationClient::LaunchComplete(
     }
   } else {
     // Launch failed. Note, we cannot delete proxy here.
-    PostTask(FROM_HERE, NewRunnableMethod(this,
-        &ChromeFrameAutomationClient::InitializeComplete, result));
+    PostTask(FROM_HERE,
+             base::Bind(&ChromeFrameAutomationClient::InitializeComplete,
+                        base::Unretained(this), result));
   }
 }
 
 void ChromeFrameAutomationClient::AutomationServerDied() {
   // Make sure we notify our delegate.
-  PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ChromeFrameAutomationClient::InitializeComplete,
-      AUTOMATION_SERVER_CRASHED));
+  PostTask(
+      FROM_HERE, base::Bind(&ChromeFrameAutomationClient::InitializeComplete,
+                            base::Unretained(this), AUTOMATION_SERVER_CRASHED));
   // Then uninitialize.
-  PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ChromeFrameAutomationClient::Uninitialize));
+  PostTask(
+      FROM_HERE, base::Bind(&ChromeFrameAutomationClient::Uninitialize,
+                            base::Unretained(this)));
 }
 
 void ChromeFrameAutomationClient::InitializeComplete(
@@ -994,8 +997,10 @@ bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
       break;
   }
 
-  PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ChromeFrameAutomationClient::ProcessUrlRequestMessage, tab, msg, true));
+  PostTask(
+      FROM_HERE, base::IgnoreReturn<bool>(base::Bind(
+          &ChromeFrameAutomationClient::ProcessUrlRequestMessage,
+          base::Unretained(this), tab, msg, true)));
   return true;
 }
 
@@ -1014,8 +1019,9 @@ bool ChromeFrameAutomationClient::OnMessageReceived(TabProxy* tab,
   if (chrome_frame_delegate_ == NULL)
     return false;
 
-  PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ChromeFrameAutomationClient::OnMessageReceivedUIThread, msg));
+  PostTask(FROM_HERE,
+           base::Bind(&ChromeFrameAutomationClient::OnMessageReceivedUIThread,
+                      base::Unretained(this), msg));
   return true;
 }
 
@@ -1025,8 +1031,10 @@ void ChromeFrameAutomationClient::OnChannelError(TabProxy* tab) {
   if (chrome_frame_delegate_ == NULL)
     return;
 
-  PostTask(FROM_HERE, NewRunnableMethod(this,
-      &ChromeFrameAutomationClient::OnChannelErrorUIThread));
+  PostTask(
+      FROM_HERE,
+      base::Bind(&ChromeFrameAutomationClient::OnChannelErrorUIThread,
+                 base::Unretained(this)));
 }
 
 void ChromeFrameAutomationClient::OnMessageReceivedUIThread(
@@ -1058,9 +1066,9 @@ void ChromeFrameAutomationClient::ReportNavigationError(
   if (ui_thread_id_ == base::PlatformThread::CurrentId()) {
     chrome_frame_delegate_->OnLoadFailed(error_code, url);
   } else {
-    PostTask(FROM_HERE, NewRunnableMethod(this,
-        &ChromeFrameAutomationClient::ReportNavigationError,
-        error_code, url));
+    PostTask(FROM_HERE,
+             base::Bind(&ChromeFrameAutomationClient::ReportNavigationError,
+                        base::Unretained(this), error_code, url));
   }
 }
 

@@ -83,13 +83,6 @@ class UrlmonUrlRequestManager
 
  private:
   friend class MessageLoop;
-  friend struct RunnableMethodTraits<UrlmonUrlRequestManager>;
-
-  // This method is needed to support PostTask on this object.
-  static bool ImplementsThreadSafeReferenceCounting() { return true; }
-
-  void AddRef() {}
-  void Release() {}
 
   // PluginUrlRequestManager implementation.
   virtual PluginUrlRequestManager::ThreadSafeFlags GetThreadSafeFlags();

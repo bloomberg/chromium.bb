@@ -17,6 +17,7 @@ TaskMarshallerThroughMessageQueue::~TaskMarshallerThroughMessageQueue() {
 void TaskMarshallerThroughMessageQueue::PostTask(
     const tracked_objects::Location& from_here, const base::Closure& task) {
   DCHECK(wnd_ != NULL);
+
   lock_.Acquire();
   bool has_work = !pending_tasks_.empty();
   pending_tasks_.push(task);

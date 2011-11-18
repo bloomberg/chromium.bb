@@ -5,6 +5,8 @@
 #include <atlbase.h>
 #include <atlcom.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
@@ -50,13 +52,12 @@ class MockUrlDelegate : public PluginUrlRequestDelegate {
   static bool ImplementsThreadSafeReferenceCounting() {
     return false;
   }
-  void AddRef() {}
-  void Release() {}
 
   void PostponeReadRequest(chrome_frame_test::TimedMsgLoop* loop,
                    UrlmonUrlRequest* request, int bytes_to_read) {
-    loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(this,
-        &MockUrlDelegate::RequestRead, request, bytes_to_read), 0);
+    loop->PostTask(FROM_HERE,
+                   base::Bind(&MockUrlDelegate::RequestRead,
+                              base::Unretained(this), request, bytes_to_read));
   }
 
  private:
@@ -243,14 +244,14 @@ TEST(UrlmonUrlRequestTest, ZeroLengthResponse) {
 }
 
 ACTION_P4(ManagerRead, loop, mgr, request_id, bytes_to_read) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mgr,
-      &UrlmonUrlRequestManager::ReadUrlRequest, request_id,
-      bytes_to_read), 0);
+  loop->PostTask(FROM_HERE,
+                 base::Bind(&UrlmonUrlRequestManager::ReadUrlRequest,
+                            base::Unretained(mgr), request_id, bytes_to_read));
 }
 ACTION_P3(ManagerEndRequest, loop, mgr, request_id) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mgr,
-      &UrlmonUrlRequestManager::EndUrlRequest, request_id,
-      net::URLRequestStatus()), 0);
+  loop->PostTask(FROM_HERE, base::Bind(&UrlmonUrlRequestManager::EndUrlRequest,
+                                       base::Unretained(mgr), request_id,
+                                       net::URLRequestStatus()));
 }
 
 // Simplest test - retrieve file from local web server.

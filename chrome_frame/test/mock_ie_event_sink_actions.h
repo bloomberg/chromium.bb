@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/common/chrome_switches.h"
@@ -38,8 +39,8 @@ ACTION_P2(Navigate, mock, navigate_url) {
 }
 
 ACTION_P3(DelayNavigateToCurrentUrl, mock, loop, delay) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(&NavigateToCurrentUrl,
-      mock), delay);
+  loop->PostDelayedTask(FROM_HERE,
+                        base::Bind(&NavigateToCurrentUrl, mock), delay);
 }
 
 ACTION_P(CloseBrowserMock, mock) {
@@ -47,8 +48,11 @@ ACTION_P(CloseBrowserMock, mock) {
 }
 
 ACTION_P3(DelayCloseBrowserMock, loop, delay, mock) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mock->event_sink(),
-      &IEEventSink::CloseWebBrowser), delay);
+  loop->PostDelayedTask(
+      FROM_HERE,
+      base::IgnoreReturn<HRESULT>(
+          base::Bind(&IEEventSink::CloseWebBrowser, mock->event_sink())),
+      delay);
 }
 
 ACTION_P2(ConnectDocPropNotifySink, mock, sink) {
@@ -66,24 +70,27 @@ ACTION_P(DisconnectDocPropNotifySink, sink) {
 
 ACTION_P8(DelayExecCommand, mock, loop, delay, cmd_group_guid, cmd_id,
           cmd_exec_opt, in_args, out_args) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mock->event_sink(),
-      &IEEventSink::Exec, cmd_group_guid, cmd_id, cmd_exec_opt, in_args,
-          out_args), delay);
+  loop->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&IEEventSink::Exec, mock->event_sink(), cmd_group_guid, cmd_id,
+                 cmd_exec_opt, in_args, out_args),
+      delay);
 }
 
 ACTION_P3(DelayGoBack, mock, loop, delay) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mock->event_sink(),
-      &IEEventSink::GoBack), delay);
+  loop->PostDelayedTask(
+      FROM_HERE, base::Bind(&IEEventSink::GoBack, mock->event_sink()), delay);
 }
 
 ACTION_P3(DelayGoForward, mock, loop, delay) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mock->event_sink(),
-      &IEEventSink::GoForward), delay);
+  loop->PostDelayedTask(
+      FROM_HERE, base::Bind(&IEEventSink::GoForward, mock->event_sink()),
+      delay);
 }
 
 ACTION_P3(DelayRefresh, mock, loop, delay) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(mock->event_sink(),
-      &IEEventSink::Refresh), delay);
+  loop->PostDelayedTask(
+      FROM_HERE, base::Bind(&IEEventSink::Refresh, mock->event_sink()), delay);
 }
 
 ACTION_P2(PostMessageToCF, mock, message) {
@@ -269,9 +276,7 @@ ACTION(DoCloseWindow) {
 ACTION_P(DelayDoCloseWindow, delay) {
   DCHECK(MessageLoop::current());
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableFunction(DoCloseWindowNow, arg0),
-      delay);
+      FROM_HERE, base::Bind(DoCloseWindowNow, arg0), delay);
 }
 
 ACTION(KillChromeFrameProcesses) {
@@ -375,31 +380,32 @@ ACTION_P(SetFocusToRenderer, mock) {
 }
 
 ACTION_P4(DelaySendChar, loop, delay, c, mod) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-      simulate_input::SendCharA, c, mod), delay);
+  loop->PostDelayedTask(
+      FROM_HERE, base::Bind(simulate_input::SendCharA, c, mod), delay);
 }
 
 ACTION_P4(DelaySendScanCode, loop, delay, c, mod) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-        simulate_input::SendScanCode, c, mod), delay);
+  loop->PostDelayedTask(
+      FROM_HERE, base::Bind(simulate_input::SendScanCode, c, mod), delay);
 }
 
 // This function selects the address bar via the Alt+d shortcut.
 ACTION_P3(TypeUrlInAddressBar, loop, url, delay) {
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-      simulate_input::SendCharA, 'd', simulate_input::ALT),
-      delay);
+  loop->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(simulate_input::SendCharA, 'd', simulate_input::ALT), delay);
 
   const unsigned int kInterval = 500;
   int next_delay = delay + kInterval;
 
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-      simulate_input::SendStringW, url), next_delay);
+  loop->PostDelayedTask(
+      FROM_HERE, base::Bind(simulate_input::SendStringW, url), next_delay);
 
   next_delay = next_delay + kInterval;
 
-  loop->PostDelayedTask(FROM_HERE, NewRunnableFunction(
-      simulate_input::SendCharA, VK_RETURN, simulate_input::NONE),
+  loop->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(simulate_input::SendCharA, VK_RETURN, simulate_input::NONE),
       next_delay);
 }
 

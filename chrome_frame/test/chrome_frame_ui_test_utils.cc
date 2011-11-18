@@ -9,6 +9,7 @@
 #include <sstream>
 #include <stack>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -658,9 +659,9 @@ void AccEventObserver::OnEventReceived(DWORD event,
                                        LONG child_id) {
   // Process events in a separate task to stop reentrancy problems.
   DCHECK(MessageLoop::current());
-  MessageLoop::current()->PostTask(FROM_HERE,
-      NewRunnableMethod(event_handler_.get(), &EventHandler::Handle,
-                        event, hwnd, object_id, child_id));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,  base::Bind(&EventHandler::Handle, event_handler_.get(), event,
+                             hwnd, object_id, child_id));
 }
 
 // AccEventObserver::EventHandler methods

@@ -17,8 +17,9 @@
 #include "base/time.h"
 
 class Task;
+
 namespace tracked_objects {
-  class Location;
+class Location;
 }
 
 // TaskMarshallerThroughMessageQueue is similar to base::MessageLoopForUI

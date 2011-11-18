@@ -6,6 +6,8 @@
 #define CHROME_FRAME_CUSTOM_SYNC_CALL_CONTEXT_H_
 
 #include <vector>
+
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome_frame/sync_msg_reply_dispatcher.h"
@@ -30,11 +32,9 @@ class CreateExternalTabContext
     AutomationLaunchResult launch_result =
         client_->CreateExternalTabComplete(chrome_window, tab_window,
                                            tab_handle, session_id);
-    client_->PostTask(FROM_HERE,
-                      NewRunnableMethod(
-                          client_.get(),
-                          &ChromeFrameAutomationClient::InitializeComplete,
-                          launch_result));
+    client_->PostTask(
+        FROM_HERE, base::Bind(&ChromeFrameAutomationClient::InitializeComplete,
+                              client_.get(), launch_result));
   }
 
  private:

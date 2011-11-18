@@ -7,7 +7,8 @@
 #include <urlmon.h>
 #include <wininet.h>
 
-#include "base/callback_old.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -162,21 +163,20 @@ HRESULT UrlmonUrlRequest::InitPending(const GURL& url, IMoniker* moniker,
   return S_OK;
 }
 
-void UrlmonUrlRequest::TerminateBind(TerminateBindCallback* callback) {
+void UrlmonUrlRequest::TerminateBind(const TerminateBindCallback& callback) {
   DCHECK_EQ(thread_, base::PlatformThread::CurrentId());
   DVLOG(1) << __FUNCTION__ << me();
   cleanup_transaction_ = false;
   if (status_.get_state() == Status::DONE) {
     // Binding is stopped. Note result could be an error.
-    callback->Run(moniker_, bind_context_, upload_data_,
-                  request_headers_.c_str());
-    delete callback;
+    callback.Run(moniker_, bind_context_, upload_data_,
+                 request_headers_.c_str());
   } else {
     // WORKING (ABORTING?). Save the callback.
     // Now we will return INET_TERMINATE_BIND from ::OnDataAvailable() and in
     // ::OnStopBinding will invoke the callback passing our moniker and
     // bind context.
-    terminate_bind_callback_.reset(callback);
+    terminate_bind_callback_ = callback;
     if (pending_data_) {
       // For downloads to work correctly, we must induce a call to
       // OnDataAvailable so that we can download INET_E_TERMINATED_BIND and
@@ -369,8 +369,8 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
 
   if (result == INET_E_TERMINATED_BIND) {
     if (terminate_requested()) {
-      terminate_bind_callback_->Run(moniker_, bind_context_, upload_data_,
-                                    request_headers_.c_str());
+      terminate_bind_callback_.Run(moniker_, bind_context_, upload_data_,
+                                   request_headers_.c_str());
     } else {
       cleanup_transaction_ = true;
     }
@@ -1020,9 +1020,9 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
                << " on background thread";
     background_thread_->message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this, &UrlmonUrlRequestManager::StartRequestHelper,
-                          request_id, request_info, &background_request_map_,
-                          &background_resource_map_lock_));
+        base::Bind(&UrlmonUrlRequestManager::StartRequestHelper,
+                   base::Unretained(this), request_id, request_info,
+                   &background_request_map_, &background_resource_map_lock_));
     return;
   }
   StartRequestHelper(request_id, request_info, &request_map_, NULL);
@@ -1106,9 +1106,8 @@ void UrlmonUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
     request = LookupRequest(request_id, &background_request_map_);
     if (request) {
       background_thread_->message_loop()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(request.get(),
-                            &UrlmonUrlRequest::Read, bytes_to_read));
+          FROM_HERE, base::IgnoreReturn<bool>(base::Bind(
+              &UrlmonUrlRequest::Read, request.get(), bytes_to_read)));
     }
   }
   if (!request)
@@ -1133,10 +1132,8 @@ void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
     if (request) {
       background_thread_->message_loop()->PostTask(
           FROM_HERE,
-          NewRunnableMethod(
-              this,
-              &UrlmonUrlRequestManager::DownloadRequestInHostHelper,
-              request.get()));
+          base::Bind(&UrlmonUrlRequestManager::DownloadRequestInHostHelper,
+                     base::Unretained(this), request.get()));
     }
   }
   if (!request)
@@ -1146,8 +1143,9 @@ void UrlmonUrlRequestManager::DownloadRequestInHost(int request_id) {
 void UrlmonUrlRequestManager::DownloadRequestInHostHelper(
     UrlmonUrlRequest* request) {
   DCHECK(request);
-  UrlmonUrlRequest::TerminateBindCallback* callback = NewCallback(this,
-      &UrlmonUrlRequestManager::BindTerminated);
+  UrlmonUrlRequest::TerminateBindCallback callback =
+      base::Bind(&UrlmonUrlRequestManager::BindTerminated,
+                 base::Unretained(this));
   request->TerminateBind(callback);
 }
 
@@ -1233,8 +1231,7 @@ void UrlmonUrlRequestManager::EndRequest(int request_id) {
     if (request) {
       background_request_map_.erase(request_id);
       background_thread_->message_loop()->PostTask(
-          FROM_HERE,
-          NewRunnableMethod(request.get(), &UrlmonUrlRequest::Stop));
+          FROM_HERE, base::Bind(&UrlmonUrlRequest::Stop, request.get()));
     }
   }
   if (!request)
@@ -1256,10 +1253,9 @@ void UrlmonUrlRequestManager::StopAll() {
   if (background_worker_thread_enabled_) {
     DCHECK(background_thread_.get());
     background_thread_->message_loop()->PostTask(
-        FROM_HERE,
-        NewRunnableMethod(
-            this, &UrlmonUrlRequestManager::StopAllRequestsHelper,
-            &background_request_map_, &background_resource_map_lock_));
+        FROM_HERE, base::Bind(&UrlmonUrlRequestManager::StopAllRequestsHelper,
+                              base::Unretained(this), &background_request_map_,
+                              &background_resource_map_lock_));
     background_thread_->Stop();
     background_thread_.reset();
   }

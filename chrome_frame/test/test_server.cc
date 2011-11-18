@@ -6,6 +6,7 @@
 #include <objbase.h>
 #include <urlmon.h>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
@@ -324,8 +325,9 @@ void ConfigurableConnection::SendChunk() {
 
   cur_pos_ += bytes_to_send;
   if (cur_pos_ < size) {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(this,
-        &ConfigurableConnection::SendChunk), options_.timeout_);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&ConfigurableConnection::SendChunk, this),
+        options_.timeout_);
   } else {
     socket_ = 0;  // close the connection.
   }
@@ -371,9 +373,9 @@ void ConfigurableConnection::SendWithOptions(const std::string& headers,
     data_.append("\r\n");
   }
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      NewRunnableMethod(this, &ConfigurableConnection::SendChunk),
-                        options.timeout_);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ConfigurableConnection::SendChunk, this),
+      options.timeout_);
 }
 
 }  // namespace test_server

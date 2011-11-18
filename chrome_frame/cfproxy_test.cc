@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include <string>
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
@@ -101,20 +104,28 @@ struct MockCFProxyTraits : public CFProxyTraits {
   // You may find API_FIRE_XXXX macros (see below) handy instead.
   void FireConnect(base::TimeDelta t) {
     ASSERT_TRUE(ipc_loop != NULL);
-    ipc_loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(listener,
-        &IPC::Channel::Listener::OnChannelConnected, 0), t.InMilliseconds());
+    ipc_loop->PostDelayedTask(
+        FROM_HERE, base::Bind(&IPC::Channel::Listener::OnChannelConnected,
+                              base::Unretained(listener), 0),
+        t.InMilliseconds());
   }
 
   void FireError(base::TimeDelta t) {
     ASSERT_TRUE(ipc_loop != NULL);
-    ipc_loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(listener,
-        &IPC::Channel::Listener::OnChannelError), t.InMilliseconds());
+    ipc_loop->PostDelayedTask(
+        FROM_HERE, base::Bind(&IPC::Channel::Listener::OnChannelError,
+                              base::Unretained(listener)),
+        t.InMilliseconds());
   }
 
   void FireMessage(const IPC::Message& m, base::TimeDelta t) {
     ASSERT_TRUE(ipc_loop != NULL);
-    ipc_loop->PostDelayedTask(FROM_HERE, NewRunnableMethod(listener,
-        &IPC::Channel::Listener::OnMessageReceived, m), t.InMilliseconds());
+    ipc_loop->PostDelayedTask(
+        FROM_HERE,
+        base::IgnoreReturn<bool>(
+            base::Bind(&IPC::Channel::Listener::OnMessageReceived,
+                       base::Unretained(listener), m)),
+        t.InMilliseconds());
   }
 
   MockCFProxyTraits() : ipc_loop(NULL) {}
@@ -124,14 +135,13 @@ struct MockCFProxyTraits : public CFProxyTraits {
   IPC::Channel::Listener* listener;
 };
 
-// Handy macros when we want so similate something on the IPC thread.
+// Handy macros when we want so simulate something on the IPC thread.
 #define API_FIRE_CONNECT(api, t)  InvokeWithoutArgs(CreateFunctor(&api, \
                                        &MockCFProxyTraits::FireConnect, t))
 #define API_FIRE_ERROR(api, t) InvokeWithoutArgs(CreateFunctor(&api, \
                                        &MockCFProxyTraits::FireError, t))
 #define API_FIRE_MESSAGE(api, t) InvokeWithoutArgs(CreateFunctor(&api, \
                                        &MockCFProxyTraits::FireMessage, t))
-DISABLE_RUNNABLE_METHOD_REFCOUNT(IPC::Channel::Listener);
 
 TEST(ChromeProxy, DelegateAddRemove) {
   StrictMock<MockCFProxyTraits> api;
@@ -323,7 +333,6 @@ inline IPC::Message* CreateReply(M* m, const A& a, const B& b, const C& c,
   return r;
 }}  // namespace
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(SyncMsgSender);
 TEST(SyncMsgSender, Deserialize) {
   // Note the ipc thread is not actually needed, but we try to be close
   // to real-world conditions - that SyncMsgSender works from multiple threads.
@@ -349,8 +358,10 @@ TEST(SyncMsgSender, Deserialize) {
                                       kSessionId));
 
   // Execute replies in a worker thread.
-  ipc.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(&queue,
-      &SyncMsgSender::OnReplyReceived, r.get()));
+  ipc.message_loop()->PostTask(
+      FROM_HERE,
+      base::IgnoreReturn<bool>(base::Bind(&SyncMsgSender::OnReplyReceived,
+                                          base::Unretained(&queue), r.get())));
   ipc.Stop();
 
   // Expect that tab 6 has been associated with the delegate.

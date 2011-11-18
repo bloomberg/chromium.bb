@@ -8,6 +8,8 @@
 #include <atlmisc.h>
 #include <atlwin.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string_number_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,9 +19,6 @@
 #include "chrome_frame/infobars/internal/infobar_window.h"
 #include "chrome_frame/infobars/internal/subclassing_window_with_delegate.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
-
-DISABLE_RUNNABLE_METHOD_REFCOUNT(InfobarContent::Frame);
-DISABLE_RUNNABLE_METHOD_REFCOUNT(InfobarManager);
 
 namespace {
 
@@ -404,17 +403,13 @@ ACTION_P(ResetFlag, flag) {
 }
 
 ACTION_P2(AsynchronousCloseOnFrame, loop, frame) {
-  loop->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableMethod(*frame, &InfobarContent::Frame::CloseInfobar),
-      0);
+  loop->PostTask(FROM_HERE, base::Bind(&InfobarContent::Frame::CloseInfobar,
+                                       base::Unretained(*frame)));
 }
 
 ACTION_P2(AsynchronousHideOnManager, loop, manager) {
-  loop->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableMethod(manager, &InfobarManager::Hide, TOP_INFOBAR),
-      0);
+  loop->PostTask(FROM_HERE, base::Bind(&InfobarManager::Hide,
+                                       base::Unretained(manager), TOP_INFOBAR));
 }
 
 };  // namespace

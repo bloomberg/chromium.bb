@@ -38,9 +38,9 @@ class UrlmonUrlRequest
   // Used from "DownloadRequestInHost".
   // Callback will be invoked either right away (if operation is finished) or
   // from inside ::OnStopBinding() when it is safe to reuse the bind_context.
-  typedef Callback4<IMoniker*, IBindCtx*, IStream*, const char*>::Type
+  typedef base::Callback<void(IMoniker*, IBindCtx*, IStream*, const char*)>
       TerminateBindCallback;
-  void TerminateBind(TerminateBindCallback* callback);
+  void TerminateBind(const TerminateBindCallback& callback);
 
   // Parent Window for UrlMon error dialogs
   void set_parent_window(HWND parent_window) {
@@ -118,7 +118,7 @@ class UrlmonUrlRequest
   }
 
   bool terminate_requested() const {
-    return terminate_bind_callback_.get() != NULL;
+    return !terminate_bind_callback_.is_null();
   }
 
   std::string response_headers() {
@@ -245,7 +245,7 @@ class UrlmonUrlRequest
   // Set to true if the ChromeFrame instance is running in privileged mode.
   bool privileged_mode_;
   bool pending_;
-  scoped_ptr<TerminateBindCallback> terminate_bind_callback_;
+  TerminateBindCallback terminate_bind_callback_;
   std::string response_headers_;
   // Defaults to true and indicates whether we want to keep the original
   // transaction alive when we receive the last data notification from

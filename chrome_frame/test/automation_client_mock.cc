@@ -4,7 +4,8 @@
 
 #include "chrome_frame/test/automation_client_mock.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "chrome/common/automation_messages.h"
 #include "chrome_frame/custom_sync_call_context.h"
 #include "chrome_frame/navigation_constraints.h"
@@ -18,10 +19,6 @@ using testing::_;
 using testing::CreateFunctor;
 using testing::Return;
 
-DISABLE_RUNNABLE_METHOD_REFCOUNT(LaunchDelegate);
-DISABLE_RUNNABLE_METHOD_REFCOUNT(ChromeFrameAutomationClient);
-DISABLE_RUNNABLE_METHOD_REFCOUNT(chrome_frame_test::TimedMsgLoop);
-
 MATCHER_P(LaunchParamProfileEq, profile_name, "Check for profile name") {
   return arg->profile_name().compare(profile_name) == 0;
 }
@@ -33,9 +30,9 @@ void MockProxyFactory::GetServerImpl(ChromeFrameAutomationProxy* pxy,
                                      ChromeFrameLaunchParams* params,
                                      void** automation_server_id) {
   *automation_server_id = proxy_id;
-  Task* task = NewRunnableMethod(d,
-      &LaunchDelegate::LaunchComplete, pxy, result);
-  loop_->PostDelayedTask(FROM_HERE, task,
+  loop_->PostDelayedTask(FROM_HERE,
+                         base::Bind(&LaunchDelegate::LaunchComplete,
+                                    base::Unretained(d), pxy, result),
                          params->launch_timeout() / 2);
 }
 
