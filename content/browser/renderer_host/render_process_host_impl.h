@@ -115,6 +115,11 @@ class CONTENT_EXPORT RenderProcessHostImpl
     child_process_activity_time_ = base::TimeTicks::Now();
   }
 
+  // Register/unregister the host identified by the host id in the global host
+  // list.
+  static void RegisterHost(int host_id, content::RenderProcessHost* host);
+  static void UnregisterHost(int host_id);
+
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see
   // browser_process.h)

@@ -8,18 +8,10 @@
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "content/browser/child_process_security_policy.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-
-// This map is the global list of all renderer processes and is defined in
-// render_process_host_impl.cc
-// TODO(ananta)
-// Clean up this dependency in a subsequent CL.
-extern base::LazyInstance<
-    IDMap<content::RenderProcessHost>,
-    base::LeakyLazyInstanceTraits<IDMap<content::RenderProcessHost> > >
-        g_all_hosts;
 
 MockRenderProcessHost::MockRenderProcessHost(
     content::BrowserContext* browser_context)
@@ -33,7 +25,8 @@ MockRenderProcessHost::MockRenderProcessHost(
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicy::GetInstance()->Add(GetID());
-  g_all_hosts.Get().AddWithID(this, GetID());
+
+  RenderProcessHostImpl::RegisterHost(GetID(), this);
 }
 
 MockRenderProcessHost::~MockRenderProcessHost() {
@@ -42,8 +35,7 @@ MockRenderProcessHost::~MockRenderProcessHost() {
   if (factory_)
     factory_->Remove(this);
   // In unit tests, Release() might not have been called.
-  if (g_all_hosts.Get().Lookup(GetID()))
-    g_all_hosts.Get().Remove(GetID());
+  RenderProcessHostImpl::UnregisterHost(GetID());
 }
 
 void MockRenderProcessHost::EnableSendQueue() {
@@ -173,7 +165,7 @@ void MockRenderProcessHost::Cleanup() {
         content::Source<RenderProcessHost>(this),
         content::NotificationService::NoDetails());
     MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-    g_all_hosts.Get().Remove(GetID());
+    RenderProcessHostImpl::UnregisterHost(GetID());
   }
 }
 

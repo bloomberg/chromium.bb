@@ -249,13 +249,13 @@ static bool IsSuitableHost(content::RenderProcessHost* host,
   return content::GetContentClient()->browser()->IsSuitableHost(host, site_url);
 }
 
-}  // namespace
-
 // the global list of all renderer processes
 base::LazyInstance<
     IDMap<content::RenderProcessHost>,
     base::LeakyLazyInstanceTraits<IDMap<content::RenderProcessHost> > >
         g_all_hosts = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 // static
 bool g_run_renderer_in_process_ = false;
@@ -323,7 +323,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       base::PLATFORM_FILE_WRITE);
 
   CHECK(!content::ExitedMainMessageLoop());
-  g_all_hosts.Get().AddWithID(this, GetID());
+  RegisterHost(GetID(), this);
   g_all_hosts.Get().set_check_on_null_data(true);
   // Initialize |child_process_activity_time_| to a reasonable value.
   mark_child_process_activity_time();
@@ -344,8 +344,7 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   }
 
   ClearTransportDIBCache();
-  if (g_all_hosts.Get().Lookup(GetID()))
-    g_all_hosts.Get().Remove(GetID());
+  UnregisterHost(GetID());
 }
 
 void RenderProcessHostImpl::EnableSendQueue() {
@@ -1102,6 +1101,18 @@ bool RenderProcessHostImpl::FastShutdownForPageCount(size_t count) {
 
 bool RenderProcessHostImpl::FastShutdownStarted() const {
   return fast_shutdown_started_;
+}
+
+// static
+void RenderProcessHostImpl::RegisterHost(int host_id,
+                                         content::RenderProcessHost* host) {
+  g_all_hosts.Get().AddWithID(host, host_id);
+}
+
+// static
+void RenderProcessHostImpl::UnregisterHost(int host_id) {
+  if (g_all_hosts.Get().Lookup(host_id))
+    g_all_hosts.Get().Remove(host_id);
 }
 
 // static
