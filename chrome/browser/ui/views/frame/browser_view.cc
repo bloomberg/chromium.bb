@@ -128,7 +128,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/keyboard_overlay_dialog_view.h"
 #include "chrome/browser/ui/webui/chromeos/mobile_setup_dialog.h"
-#else
+#endif
+
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #endif
 
@@ -357,7 +359,7 @@ BrowserView::~BrowserView() {
   }
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
   // We destroy the download shelf before |browser_| to remove its child
   // download views from the set of download observers (since the observed
   // downloads can be destroyed along with |browser_| and the observer
@@ -1086,7 +1088,7 @@ void BrowserView::SetDownloadShelfVisible(bool visible) {
 }
 
 bool BrowserView::IsDownloadShelfVisible() const {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
   return false;
 #else
   return download_shelf_.get() && download_shelf_->IsShowing();
@@ -1094,7 +1096,7 @@ bool BrowserView::IsDownloadShelfVisible() const {
 }
 
 DownloadShelf* BrowserView::GetDownloadShelf() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
   NOTREACHED();
   return NULL;
 #else
@@ -1742,7 +1744,7 @@ void BrowserView::GetAccessiblePanes(
     panes->push_back(bookmark_bar_view_.get());
   if (infobar_container_)
     panes->push_back(infobar_container_);
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
   if (download_shelf_.get())
     panes->push_back(download_shelf_.get());
 #endif

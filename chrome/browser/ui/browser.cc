@@ -184,7 +184,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/ui/webui/active_downloads_ui.h"
-#else
+#endif
+
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
 #include "chrome/browser/download/download_shelf.h"
 #endif
 
@@ -1437,11 +1439,11 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
 
   unsigned int features = FEATURE_INFOBAR | FEATURE_SIDEBAR;
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
   // Chrome OS opens a FileBrowse pop up instead of using download shelf.
   // So FEATURE_DOWNLOADSHELF is only added for non-chromeos platforms.
   features |= FEATURE_DOWNLOADSHELF;
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS) || defined(USE_AURA)
 
   if (is_type_tabbed())
     features |= FEATURE_BOOKMARKBAR;
@@ -3724,7 +3726,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
     return;
 
   if (DisplayOldDownloadsUI()) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
     // Don't show content browser for extension/theme downloads from gallery.
     ExtensionService* service = profile_->GetExtensionService();
     if (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||
@@ -3734,7 +3736,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
       // Open the Active Downloads ui for chromeos.
       ActiveDownloadsUI::OpenPopup(profile_);
     }
-#elif !defined(USE_AURA)
+#else
     // GetDownloadShelf creates the download shelf if it was not yet created.
     DownloadShelf* shelf = window()->GetDownloadShelf();
     shelf->AddDownload(new DownloadItemModel(download));
@@ -3752,6 +3754,9 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
         ui::Animation::ShouldRenderRichAnimation()) {
       DownloadStartedAnimation::Show(shelf_tab);
     }
+#else
+    // TODO(jamescook): Downloads UI for non-ChromeOS Aura, crbug.com/103488
+    NOTIMPLEMENTED();
 #endif
   }
 

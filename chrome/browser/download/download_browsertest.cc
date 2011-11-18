@@ -579,7 +579,7 @@ class DownloadTest : public InProcessBrowserTest {
   // is present in the UI (currently only on chromeos).
   void CheckDownloadUI(Browser* browser, bool expected_non_cros,
       bool expected_cros, const FilePath& filename) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
 #if defined(TOUCH_UI)
     TabContents* download_contents = ActiveDownloadsUI::GetPopup(NULL);
     EXPECT_EQ(expected_cros, download_contents != NULL);
@@ -618,7 +618,7 @@ class DownloadTest : public InProcessBrowserTest {
 #endif
   }
   static void ExpectWindowCountAfterDownload(size_t expected) {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
     // On ChromeOS, a download panel is created to display
     // download information, and this counts as a window.
     expected++;
@@ -784,7 +784,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, ContentDisposition) {
   CheckDownloadUI(browser(), true, true, download_file);
 }
 
-#if !defined(OS_CHROMEOS)  // Download shelf is not per-window on ChromeOS.
+#if !defined(OS_CHROMEOS) || defined(USE_AURA)
+// Download shelf is not per-window on ChromeOS.
 // Test that the download shelf is per-window by starting a download in one
 // tab, opening a second tab, closing the shelf, going back to the first tab,
 // and checking that the shelf is closed.
@@ -851,7 +852,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, KnownSize) {
 // Incognito window.
 IN_PROC_BROWSER_TEST_F(DownloadTest, IncognitoDownload) {
   ASSERT_TRUE(InitialSetup(false));
-
   // Open an Incognito window.
   Browser* incognito = CreateIncognitoBrowser();  // Waits.
   ASSERT_TRUE(incognito);

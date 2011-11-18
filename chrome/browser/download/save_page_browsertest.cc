@@ -109,6 +109,8 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 #endif
 
   void CheckDownloadUI(const FilePath& download_path) const {
+    // Expectations must be in sync with the implementation in
+    // Browser::OnStartDownload().
 #if defined(OS_CHROMEOS)
     const ActiveDownloadsUI::DownloadList& downloads = GetDownloads();
     EXPECT_EQ(downloads.size(), 1U);
@@ -121,8 +123,11 @@ class SavePageBrowserTest : public InProcessBrowserTest {
       }
     }
     EXPECT_TRUE(found);
-#else
+#elif !defined(USE_AURA)
     EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+#else
+    // TODO(jamescook): Downloads UI for non-ChromeOS Aura, crbug.com/103488
+    NOTIMPLEMENTED();
 #endif
   }
 
