@@ -151,7 +151,6 @@ PPAPITest.URLUtil
 PPAPITest.VarDeprecated
 PPAPITest.VideoDecoder
 PreferenceServiceTest.PreservedWindowPlacementIsLoaded
-PrintPreviewUITest.LoadPrintPreviewByURL
 RedirectTest.Server
 RedirectTest.ServerReference
 RepostFormWarningTest.TestDoubleReload
@@ -172,7 +171,6 @@ WorkerFileSystemTest.FileFromFileEntrySync
 WorkerFileSystemTest.FileWriterSyncTruncateExtend
 WorkerFileSystemTest.FileWriterTruncateExtend
 WorkerFileSystemTest.Temporary
-PrintPreviewUITest.AdvancedPrintCommandEnabled
 
 # Valgrind dies on bszB assertion, see http://crbug.com/58145
 AutomatedUITestBase.Home
@@ -278,9 +276,6 @@ PPAPITest.Var
 
 # http://crbug.com/87766
 PPAPITest.URLLoader
-
-# http://crbug.com/87992
-PrintPreviewUITest.PrintCommandDisabled
 
 # http://crbug.com/88068
 LocaleTestsHe.TestStart
