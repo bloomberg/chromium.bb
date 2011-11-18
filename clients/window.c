@@ -316,7 +316,6 @@ display_create_egl_image_surface(struct display *display,
 	struct egl_image_surface_data *data;
 	EGLDisplay dpy = display->dpy;
 	cairo_surface_t *surface;
-	EGLConfig config;
 	cairo_content_t content;
 
 	data = malloc(sizeof *data);
@@ -334,11 +333,9 @@ display_create_egl_image_surface(struct display *display,
 
 	if (flags & SURFACE_OPAQUE) {
 		data->device = display->rgb_device;
-		config = display->rgb_config;
 		content = CAIRO_CONTENT_COLOR;
 	} else {
 		data->device = display->argb_device;
-		config = display->premultiplied_argb_config;
 		content = CAIRO_CONTENT_COLOR_ALPHA;
 	}
 
