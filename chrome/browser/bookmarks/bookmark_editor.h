@@ -15,6 +15,7 @@
 class BookmarkNode;
 class GURL;
 class Profile;
+class Browser;
 
 // Small, cross platform interface that shows the correct platform specific
 // bookmark editor dialog.
@@ -92,6 +93,15 @@ class BookmarkEditor {
                    Profile* profile,
                    const EditDetails& details,
                    Configuration configuration);
+
+  // Shows the bookmark all tabs dialog.
+  static void ShowBookmarkAllTabsDialog(Browser* browser);
+
+#if !defined(USE_AURA)
+  // Shows the native bookmark all tabs dialog. This is delegated from
+  // ShowBookmarkAllTabsDialog() when use_aura is not set.
+  static void ShowNativeBookmarkAllTabsDialog(Browser* browser);
+#endif  // !defined(USE_AURA)
 
  private:
   // Shows the native bookmark editor.

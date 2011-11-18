@@ -45,46 +45,6 @@ chrome.experimental.bookmarkManager.getStrings(function(data) {
  */
 const ROOT_ID = '0';
 
-var bookmarkCache = {
-  /**
-   * Removes the cached item from both the list and tree lookups.
-   */
-  remove: function(id) {
-    var treeItem = bmm.treeLookup[id];
-    if (treeItem) {
-      var items = treeItem.items;  // is an HTMLCollection
-      for (var i = 0, item; item = items[i]; i++) {
-        var bookmarkNode = item.bookmarkNode;
-        delete bmm.treeLookup[bookmarkNode.id];
-      }
-      delete bmm.treeLookup[id];
-    }
-  },
-
-  /**
-   * Updates the underlying bookmark node for the tree items and list items by
-   * querying the bookmark backend.
-   * @param {string} id The id of the node to update the children for.
-   * @param {Function=} opt_f A funciton to call when done.
-   */
-  updateChildren: function(id, opt_f) {
-    function updateItem(bookmarkNode) {
-      var treeItem = bmm.treeLookup[bookmarkNode.id];
-      if (treeItem) {
-        treeItem.bookmarkNode = bookmarkNode;
-      }
-    }
-
-    chrome.bookmarks.getChildren(id, function(children) {
-      if (children)
-        children.forEach(updateItem);
-
-      if (opt_f)
-        opt_f(children);
-    });
-  }
-};
-
 var splitter = document.querySelector('.main > .splitter');
 cr.ui.Splitter.decorate(splitter);
 
@@ -296,97 +256,6 @@ document.querySelector('button.logo').onclick = function(e) {
 };
 
 /**
- * Called when the title of a bookmark changes.
- * @param {string} id
- * @param {!Object} changeInfo
- */
-function handleBookmarkChanged(id, changeInfo) {
-  list.handleBookmarkChanged(id, changeInfo);
-  tree.handleBookmarkChanged(id, changeInfo);
-}
-
-/**
- * Callback for when the user reorders by title.
- * @param {string} id The id of the bookmark folder that was reordered.
- * @param {!Object} reorderInfo The information about how the items where
- *     reordered.
- */
-function handleChildrenReordered(id, reorderInfo) {
-  list.handleChildrenReordered(id, reorderInfo);
-  tree.handleChildrenReordered(id, reorderInfo);
-  bookmarkCache.updateChildren(id);
-}
-
-/**
- * Callback for when a bookmark node is created.
- * @param {string} id The id of the newly created bookmark node.
- * @param {!Object} bookmarkNode The new bookmark node.
- */
-function handleCreated(id, bookmarkNode) {
-  list.handleCreated(id, bookmarkNode);
-  tree.handleCreated(id, bookmarkNode);
-  bookmarkCache.updateChildren(bookmarkNode.parentId);
-}
-
-function handleMoved(id, moveInfo) {
-  list.handleMoved(id, moveInfo);
-  tree.handleMoved(id, moveInfo);
-
-  bookmarkCache.updateChildren(moveInfo.parentId);
-  if (moveInfo.parentId != moveInfo.oldParentId)
-    bookmarkCache.updateChildren(moveInfo.oldParentId);
-}
-
-function handleRemoved(id, removeInfo) {
-  list.handleRemoved(id, removeInfo);
-  tree.handleRemoved(id, removeInfo);
-
-  bookmarkCache.updateChildren(removeInfo.parentId);
-  bookmarkCache.remove(id);
-}
-
-function handleImportBegan() {
-  chrome.bookmarks.onCreated.removeListener(handleCreated);
-  chrome.bookmarks.onChanged.removeListener(handleBookmarkChanged);
-}
-
-function handleImportEnded() {
-  // When importing is done we reload the tree and the list.
-
-  function f() {
-    tree.removeEventListener('load', f);
-
-    chrome.bookmarks.onCreated.addListener(handleCreated);
-    chrome.bookmarks.onChanged.addListener(handleBookmarkChanged);
-
-    if (list.selectImportedFolder) {
-      var otherBookmarks = tree.items[1].items;
-      var importedFolder = otherBookmarks[otherBookmarks.length - 1];
-      navigateTo(importedFolder.bookmarkId)
-      list.selectImportedFolder = false
-    } else {
-      list.reload();
-    }
-  }
-
-  tree.addEventListener('load', f);
-  tree.reload();
-}
-
-/**
- * Adds the listeners for the bookmark model change events.
- */
-function addBookmarkModelListeners() {
-  chrome.bookmarks.onChanged.addListener(handleBookmarkChanged);
-  chrome.bookmarks.onChildrenReordered.addListener(handleChildrenReordered);
-  chrome.bookmarks.onCreated.addListener(handleCreated);
-  chrome.bookmarks.onMoved.addListener(handleMoved);
-  chrome.bookmarks.onRemoved.addListener(handleRemoved);
-  chrome.bookmarks.onImportBegan.addListener(handleImportBegan);
-  chrome.bookmarks.onImportEnded.addListener(handleImportEnded);
-}
-
-/**
  * This returns the user visible path to the folder where the bookmark is
  * located.
  * @param {number} parentId The ID of the parent folder.
@@ -410,7 +279,7 @@ tree.addEventListener('load', function(e) {
 });
 
 tree.reload();
-addBookmarkModelListeners();
+bmm.addBookmarkModelListeners();
 
 var dnd = {
   dragData: null,

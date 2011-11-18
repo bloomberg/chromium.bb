@@ -64,6 +64,7 @@ ExtensionDialog* ExtensionDialog::Show(
     TabContents* tab_contents,
     int width,
     int height,
+    const string16& title,
     ExtensionDialogObserver* observer) {
   CHECK(browser);
   ExtensionHost* host = CreateExtensionHost(url, browser);
@@ -72,6 +73,7 @@ ExtensionDialog* ExtensionDialog::Show(
   host->set_associated_tab_contents(tab_contents);
 
   ExtensionDialog* dialog = new ExtensionDialog(host, observer);
+  dialog->set_title(title);
   dialog->InitWindow(browser, width, height);
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
   host->host_contents()->Focus();
@@ -130,7 +132,11 @@ bool ExtensionDialog::IsModal() const {
 }
 
 bool ExtensionDialog::ShouldShowWindowTitle() const {
-  return false;
+  return !window_title_.empty();
+}
+
+string16 ExtensionDialog::GetWindowTitle() const {
+  return window_title_;
 }
 
 void ExtensionDialog::DeleteDelegate() {

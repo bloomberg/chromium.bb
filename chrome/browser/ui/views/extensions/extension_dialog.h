@@ -39,6 +39,7 @@ class ExtensionDialog : public views::WidgetDelegate,
                                TabContents* tab_contents,
                                int width,
                                int height,
+                               const string16& title,
                                ExtensionDialogObserver* observer);
 
   // Notifies the dialog that the observer has been destroyed and should not
@@ -48,12 +49,16 @@ class ExtensionDialog : public views::WidgetDelegate,
   // Closes the ExtensionDialog.
   void Close();
 
+  // Sets the window title.
+  void set_title(const string16& title) { window_title_ = title; }
+
   ExtensionHost* host() const { return extension_host_.get(); }
 
   // views::WidgetDelegate overrides.
   virtual bool CanResize() const OVERRIDE;
   virtual bool IsModal() const OVERRIDE;
   virtual bool ShouldShowWindowTitle() const OVERRIDE;
+  virtual string16 GetWindowTitle() const OVERRIDE;
   virtual void DeleteDelegate() OVERRIDE;
   virtual views::Widget* GetWidget() OVERRIDE;
   virtual const views::Widget* GetWidget() const OVERRIDE;
@@ -75,6 +80,9 @@ class ExtensionDialog : public views::WidgetDelegate,
 
   // Window that holds the extension host view.
   views::Widget* window_;
+
+  // Window Title
+  string16 window_title_;
 
   // The contained host for the view.
   scoped_ptr<ExtensionHost> extension_host_;

@@ -229,7 +229,7 @@ void SelectFileDialogExtension::SelectFileImpl(
 
   ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
       owner_browser, tab->tab_contents(),
-      kFileManagerWidth, kFileManagerHeight,
+      kFileManagerWidth, kFileManagerHeight, string16(),
       this /* ExtensionDialog::Observer */);
   if (!dialog) {
     LOG(ERROR) << "Unable to create extension dialog";

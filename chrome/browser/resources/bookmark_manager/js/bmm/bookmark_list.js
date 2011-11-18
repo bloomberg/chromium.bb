@@ -11,6 +11,8 @@ cr.define('bmm', function() {
   const ArrayDataModel = cr.ui.ArrayDataModel;
   const ContextMenuButton = cr.ui.ContextMenuButton;
 
+  var list;
+
   /**
    * Basic array data model for use with bookmarks.
    * @param {!Array.<!BookmarkTreeNode>} items The bookmark items.
@@ -76,6 +78,8 @@ cr.define('bmm', function() {
       // We could add the ContextMenuButton in the BookmarkListItem but it slows
       // down redraws a lot so we do this on mouseovers instead.
       this.addEventListener('mouseover', this.handleMouseOver_.bind(this));
+
+      bmm.list = this;
     },
 
     createItem: function(bookmarkNode) {
@@ -567,6 +571,7 @@ cr.define('bmm', function() {
   };
 
   return {
-    BookmarkList: BookmarkList
+    BookmarkList: BookmarkList,
+    list: list
   };
 });

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@ cr.define('bmm', function() {
   const TreeItem = cr.ui.TreeItem;
 
   var treeLookup = {};
+  var tree;
 
   // Manager for persisting the expanded state.
   var expandedManager = {
@@ -167,6 +168,7 @@ cr.define('bmm', function() {
       Tree.prototype.decorate.call(this);
       this.addEventListener('expand', expandedManager);
       this.addEventListener('collapse', expandedManager);
+      bmm.tree = this;
     },
 
     handleBookmarkChanged: function(id, changeInfo) {
@@ -300,6 +302,7 @@ cr.define('bmm', function() {
   return {
     BookmarkTree: BookmarkTree,
     BookmarkTreeItem: BookmarkTreeItem,
-    treeLookup: treeLookup
+    treeLookup: treeLookup,
+    tree: tree
   };
 });

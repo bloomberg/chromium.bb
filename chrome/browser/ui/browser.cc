@@ -3181,16 +3181,7 @@ bool Browser::CanBookmarkAllTabs() const {
 }
 
 void Browser::BookmarkAllTabs() {
-  BookmarkModel* model = profile()->GetBookmarkModel();
-  DCHECK(model && model->IsLoaded());
-
-  BookmarkEditor::EditDetails details =
-      BookmarkEditor::EditDetails::AddFolder(model->GetParentForNewNodes(), -1);
-  bookmark_utils::GetURLsForOpenTabs(this, &(details.urls));
-  DCHECK(!details.urls.empty());
-
-  BookmarkEditor::Show(window()->GetNativeHandle(), profile_, details,
-                       BookmarkEditor::SHOW_TREE);
+  BookmarkEditor::ShowBookmarkAllTabsDialog(this);
 }
 
 bool Browser::CanCloseTab() const {

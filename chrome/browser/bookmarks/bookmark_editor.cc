@@ -5,7 +5,12 @@
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_input_window_dialog_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
+#include "chrome/browser/ui/webui/bookmark_all_tabs_dialog.h"
 
 BookmarkEditor::EditDetails::EditDetails(Type node_type)
     : type(node_type), existing_node(NULL), parent_node(NULL) {
@@ -69,3 +74,34 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
       configuration);
 #endif
 }
+
+void BookmarkEditor::ShowBookmarkAllTabsDialog(Browser* browser) {
+#if defined(USE_AURA)
+  Profile* profile = browser->profile();
+  browser::ShowBookmarkAllTabsDialog(profile);
+#elif defined(TOOLKIT_VIEWS) || defined(OS_WIN)
+  Profile* profile = browser->profile();
+  if (ChromeWebUI::IsMoreWebUI())
+    browser::ShowBookmarkAllTabsDialog(profile);
+  else
+    BookmarkEditor::ShowNativeBookmarkAllTabsDialog(browser);
+#else
+  BookmarkEditor::ShowNativeBookmarkAllTabsDialog(browser);
+#endif
+}
+
+#if !defined(USE_AURA)
+void BookmarkEditor::ShowNativeBookmarkAllTabsDialog(Browser* browser) {
+  Profile* profile = browser->profile();
+  BookmarkModel* model = profile->GetBookmarkModel();
+  DCHECK(model && model->IsLoaded());
+
+  BookmarkEditor::EditDetails details =
+      BookmarkEditor::EditDetails::AddFolder(model->GetParentForNewNodes(), -1);
+  bookmark_utils::GetURLsForOpenTabs(browser, &(details.urls));
+  DCHECK(!details.urls.empty());
+
+  BookmarkEditor::Show(browser->window()->GetNativeHandle(),
+                       profile, details, BookmarkEditor::SHOW_TREE);
+}
+#endif

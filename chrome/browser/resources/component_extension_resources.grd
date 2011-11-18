@@ -15,7 +15,9 @@
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_RECENT" file="bookmark_manager/images/bookmark_manager_recent.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MANAGER_SEARCH" file="bookmark_manager/images/bookmark_manager_search.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_MAIN" file="bookmark_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_ALL_TABS" file="bookmark_manager/bookmark_all_tabs.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_MAIN_JS" file="bookmark_manager/js/main.js" type="BINDATA" />
+      <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_ALL_TABS_JS" file="bookmark_manager/js/bookmark_all_tabs.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_LIST_JS" file="bookmark_manager/js/bmm/bookmark_list.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_TREE_JS" file="bookmark_manager/js/bmm/bookmark_tree.js" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_BOOKMARK_BMM_JS" file="bookmark_manager/js/bmm.js" type="BINDATA" />

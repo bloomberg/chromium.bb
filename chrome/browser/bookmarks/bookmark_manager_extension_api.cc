@@ -354,6 +354,12 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_RECENT));
   localized_strings->SetString("search",
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_SEARCH));
+  localized_strings->SetString("bookmark_all_tabs",
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_BOOKMARK_ALL_TABS));
+  localized_strings->SetString("save",
+      l10n_util::GetStringUTF16(IDS_SAVE));
+  localized_strings->SetString("cancel",
+      l10n_util::GetStringUTF16(IDS_CANCEL));
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 
