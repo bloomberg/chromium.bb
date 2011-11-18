@@ -153,7 +153,7 @@ def PushChange(stable_branch, tracking_branch, dryrun):
   if not merge_branch.Exists():
     cros_build_lib.Die('Unable to create merge branch.')
   _SimpleRunCommand('git merge --squash %s' % stable_branch)
-  _SimpleRunCommand('git commit -m "%s"' % description)
+  cros_build_lib.RunCommand(['git', 'commit', '-m', description])
   _SimpleRunCommand('git config push.default tracking')
   cros_build_lib.GitPushWithRetry(constants.MERGE_BRANCH, cwd='.',
                                   dryrun=dryrun)

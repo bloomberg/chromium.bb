@@ -28,6 +28,7 @@ class NonClassTests(mox.MoxTestBase):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self._branch = 'test_branch'
     self._tracking_branch = 'cros/master'
 
@@ -49,8 +50,7 @@ class NonClassTests(mox.MoxTestBase):
     cros_mark_as_stable._SimpleRunCommand('repo sync .')
     cros_mark_as_stable._SimpleRunCommand('git merge --squash %s' %
                                           self._branch)
-    cros_mark_as_stable._SimpleRunCommand('git commit -m "%s"' %
-                                          fake_description)
+    cros_build_lib.RunCommand(['git', 'commit', '-m', fake_description])
     cros_mark_as_stable._SimpleRunCommand('git config push.default tracking')
     cros_build_lib.GitPushWithRetry('merge_branch', cwd='.', dryrun=False)
     self.mox.ReplayAll()
