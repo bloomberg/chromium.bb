@@ -91,7 +91,10 @@ cr.define('options.personal_options', function() {
 
     /** @inheritDoc */
     activateItemAtIndex: function(index) {
-      ManageProfileOverlay.showManageDialog(this.dataModel.item(index));
+      // Don't allow the user to edit a profile that is not current.
+      var profileInfo = this.dataModel.item(index);
+      if (profileInfo.isCurrentProfile)
+        ManageProfileOverlay.showManageDialog(profileInfo);
     },
   };
 
