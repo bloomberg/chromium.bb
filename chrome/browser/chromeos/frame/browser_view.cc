@@ -329,26 +329,6 @@ BrowserView::~BrowserView() {
   BrowserList::RemoveObserver(this);
 }
 
-void BrowserView::AddTrayButton(StatusAreaButton* button, bool bordered) {
-  status_area_->AddButton(button, bordered);
-}
-
-void BrowserView::RemoveTrayButton(StatusAreaButton* button) {
-  status_area_->RemoveButton(button);
-}
-
-bool BrowserView::ContainsButton(StatusAreaButton* button) {
-  return status_area_->Contains(button);
-}
-
-chromeos::BrowserView* BrowserView::GetBrowserViewForBrowser(Browser* browser) {
-  // This calls the static method BrowserView::GetBrowserViewForBrowser in the
-  // global namespace. Check the chrome/browser/ui/views/frame/browser_view.h
-  // file for details.
-  return static_cast<chromeos::BrowserView*>(
-      ::BrowserView::GetBrowserViewForBrowser(browser));
-}
-
 // BrowserView, ::BrowserView overrides:
 
 void BrowserView::Init() {
