@@ -77,6 +77,7 @@ class GpuChannelManager : public IPC::Channel::Listener,
       int32 render_view_id,
       int32 renderer_id,
       const GPUCreateCommandBufferConfig& init_params);
+  void OnResizeViewACK(int32 renderer_id, int32 command_buffer_route_id);
 
   void OnLoseAllContexts();
 

@@ -209,6 +209,14 @@ void GpuChannel::CreateViewCommandBuffer(
 #endif  // ENABLE_GPU
 }
 
+void GpuChannel::ViewResized(int32 command_buffer_route_id) {
+  GpuCommandBufferStub* stub = stubs_.Lookup(command_buffer_route_id);
+  if (stub == NULL)
+    return;
+
+  stub->ViewResized();
+}
+
 GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32 route_id) {
   return stubs_.Lookup(route_id);
 }

@@ -1144,20 +1144,19 @@ void RenderWidgetHostViewViews::AcceleratedSurfaceRelease(uint64 surface_id) {
 }
 
 void RenderWidgetHostViewViews::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+    uint64 surface_id,
+    int32 route_id,
     int gpu_host_id) {
-  SetExternalTexture(
-      accelerated_surface_containers_[params.surface_id]->GetTexture());
+  SetExternalTexture(accelerated_surface_containers_[surface_id]->GetTexture());
   glFlush();
 
   if (!GetWidget() || !GetWidget()->GetCompositor()) {
     // We have no compositor, so we have no way to display the surface
-    // Must still send the ACK
-    AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
+    AcknowledgeSwapBuffers(route_id, gpu_host_id);  // Must still send the ACK
   } else {
     // Add sending an ACK to the list of things to do OnCompositingEnded
     on_compositing_ended_callbacks_.push_back(
-        base::Bind(AcknowledgeSwapBuffers, params.route_id, gpu_host_id));
+        base::Bind(AcknowledgeSwapBuffers, route_id, gpu_host_id));
     ui::Compositor *compositor = GetWidget()->GetCompositor();
     if (!compositor->HasObserver(this))
       compositor->AddObserver(this);
@@ -1172,14 +1171,6 @@ void RenderWidgetHostViewViews::OnCompositingEnded(ui::Compositor* compositor) {
   }
   on_compositing_ended_callbacks_.clear();
   compositor->RemoveObserver(this);
-}
-
-#else
-
-void RenderWidgetHostViewViews::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
-    int gpu_host_id) {
-  NOTREACHED();
 }
 
 #endif

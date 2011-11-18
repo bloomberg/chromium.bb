@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
@@ -20,14 +19,11 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
-#include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/backing_store_win.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/common/plugin_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -57,8 +53,6 @@
 #include "webkit/plugins/npapi/plugin_constants_win.h"
 #include "webkit/plugins/npapi/webplugin.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
-
-#pragma comment(lib, "d3d9.lib")
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -209,21 +203,6 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
   return ::DefWindowProc(window, message, wparam, lparam);
 }
 
-void SendToGpuProcessHost(int gpu_host_id, IPC::Message* message) {
-  GpuProcessHost* gpu_process_host = GpuProcessHost::FromID(gpu_host_id);
-  if (!gpu_process_host) {
-    delete message;
-    return;
-  }
-
-  gpu_process_host->Send(message);
-}
-
-void PostTaskOnIOThread(const tracked_objects::Location& from_here,
-                        base::Closure task) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, task);
-}
-
 bool DecodeZoomGesture(HWND hwnd, const GESTUREINFO& gi,
                        content::PageZoom* zoom,
                        POINT* zoom_center) {
@@ -359,9 +338,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
 RenderWidgetHostViewWin::~RenderWidgetHostViewWin() {
   UnlockMouse();
   ResetTooltip();
-
-  if (accelerated_surface_)
-    accelerated_surface_->Destroy();
 }
 
 void RenderWidgetHostViewWin::CreateWnd(HWND parent) {
@@ -1980,14 +1956,8 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
 }
 
 void RenderWidgetHostViewWin::ScheduleComposite() {
-  // If we have a previous frame then present it immediately. Otherwise request
-  // a new frame be composited.
-  if (accelerated_surface_.get()) {
-    accelerated_surface_->Present();
-  } else {
-    if (render_widget_host_)
-      render_widget_host_->ScheduleComposite();
-  }
+  if (render_widget_host_)
+    render_widget_host_->ScheduleComposite();
 }
 
 // Creates a HWND within the RenderWidgetHostView that will serve as a host
@@ -2081,27 +2051,6 @@ void RenderWidgetHostViewWin::OnAcceleratedCompositingStateChange() {
   } else {
     hide_compositor_window_at_next_paint_ = true;
   }
-}
-
-void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
-    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
-    int gpu_host_id) {
-  if (!accelerated_surface_.get() && compositor_host_window_) {
-    accelerated_surface_ = new AcceleratedSurface(compositor_host_window_);
-    accelerated_surface_->Initialize();
-  }
-
-  base::Closure acknowledge_task =
-      base::Bind(SendToGpuProcessHost,
-                 gpu_host_id,
-                 new AcceleratedSurfaceMsg_BuffersSwappedACK(params.route_id));
-
-  accelerated_surface_->AsyncPresentAndAcknowledge(
-      params.size,
-      params.surface_id,
-      base::Bind(PostTaskOnIOThread,
-                 FROM_HERE,
-                 acknowledge_task));
 }
 
 void RenderWidgetHostViewWin::SetAccessibilityFocus(int acc_obj_id) {

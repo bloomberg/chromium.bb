@@ -53,15 +53,6 @@
             ['exclude', 'accelerated_surface_win.h'],
           ],
         }],
-        ['OS=="win"', {
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'DelayLoadDLLs': [
-                'd3d9.dll',
-              ],
-            },
-          },
-        }],
       ],
     },
   ],

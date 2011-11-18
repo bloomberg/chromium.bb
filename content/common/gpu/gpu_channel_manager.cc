@@ -62,6 +62,9 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
                         OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_VisibilityChanged, OnVisibilityChanged)
+#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(GpuMsg_ResizeViewACK, OnResizeViewACK);
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -124,7 +127,6 @@ void GpuChannelManager::OnCreateViewCommandBuffer(
     int32 render_view_id,
     int32 renderer_id,
     const GPUCreateCommandBufferConfig& init_params) {
-  DCHECK(render_view_id);
   int32 route_id = MSG_ROUTING_NONE;
 
   GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
@@ -134,6 +136,16 @@ void GpuChannelManager::OnCreateViewCommandBuffer(
   }
 
   Send(new GpuHostMsg_CommandBufferCreated(route_id));
+}
+
+void GpuChannelManager::OnResizeViewACK(int32 renderer_id,
+                                        int32 command_buffer_route_id) {
+  GpuChannelMap::const_iterator iter = gpu_channels_.find(renderer_id);
+  if (iter == gpu_channels_.end())
+    return;
+  scoped_refptr<GpuChannel> channel = iter->second;
+
+  channel->ViewResized(command_buffer_route_id);
 }
 
 void GpuChannelManager::LoseAllContexts() {
