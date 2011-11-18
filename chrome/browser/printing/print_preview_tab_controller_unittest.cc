@@ -41,8 +41,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
   TabContentsWrapper* initiator_tab =
       browser()->GetSelectedTabContentsWrapper();
 
-  scoped_refptr<printing::PrintPreviewTabController>
-      tab_controller(new printing::PrintPreviewTabController());
+  printing::PrintPreviewTabController* tab_controller =
+      printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
@@ -93,8 +93,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
   ASSERT_TRUE(tab_contents_2);
   EXPECT_EQ(2, browser()->tab_count());
 
-  scoped_refptr<printing::PrintPreviewTabController>
-      tab_controller(new printing::PrintPreviewTabController());
+  printing::PrintPreviewTabController* tab_controller =
+      printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(tab_controller);
 
   // Create preview tab for |tab_contents_1|
@@ -153,8 +153,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
   TabContentsWrapper* initiator_tab =
       browser()->GetSelectedTabContentsWrapper();
 
-  scoped_refptr<printing::PrintPreviewTabController>
-      tab_controller(new printing::PrintPreviewTabController());
+  printing::PrintPreviewTabController* tab_controller =
+      printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.

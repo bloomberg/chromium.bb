@@ -11,6 +11,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/printing/background_printing_manager.h"
+#include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/browser/debugger/devtools_manager.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -197,7 +198,9 @@ printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
 
 printing::PrintPreviewTabController*
 TestingBrowserProcess::print_preview_tab_controller() {
-  return NULL;
+  if (!print_preview_tab_controller_.get())
+    print_preview_tab_controller_ = new printing::PrintPreviewTabController();
+  return print_preview_tab_controller_.get();
 }
 
 printing::BackgroundPrintingManager*

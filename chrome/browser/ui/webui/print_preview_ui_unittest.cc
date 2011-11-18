@@ -50,8 +50,8 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewData) {
   ASSERT_TRUE(initiator_tab);
   EXPECT_EQ(0U, GetConstrainedWindowCount(initiator_tab));
 
-  scoped_refptr<printing::PrintPreviewTabController>
-      controller(new printing::PrintPreviewTabController());
+  printing::PrintPreviewTabController* controller =
+      printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(controller);
 
   TabContentsWrapper* preview_tab =

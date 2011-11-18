@@ -59,9 +59,9 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
         browser()->GetSelectedTabContentsWrapper();
     ASSERT_TRUE(initiator_tab);
 
-    scoped_refptr<printing::PrintPreviewTabController>
-        controller(new printing::PrintPreviewTabController());
-    ASSERT_TRUE(controller.get());
+    printing::PrintPreviewTabController* controller =
+        printing::PrintPreviewTabController::GetInstance();
+    ASSERT_TRUE(controller);
 
     preview_tab_ = controller->GetOrCreatePreviewTab(initiator_tab);
     ASSERT_TRUE(preview_tab_);

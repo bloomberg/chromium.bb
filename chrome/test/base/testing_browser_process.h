@@ -121,7 +121,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetGoogleURLTracker(GoogleURLTracker* google_url_tracker);
   void SetProfileManager(ProfileManager* profile_manager);
   void SetIOThread(IOThread* io_thread);
-  void SetDevToolsManager(DevToolsManager*);
+  void SetDevToolsManager(DevToolsManager* manager);
   void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
 
  private:
@@ -137,6 +137,8 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<ProfileManager> profile_manager_;
   scoped_ptr<NotificationUIManager> notification_ui_manager_;
   scoped_ptr<printing::BackgroundPrintingManager> background_printing_manager_;
+  scoped_refptr<printing::PrintPreviewTabController>
+      print_preview_tab_controller_;
   scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
   IOThread* io_thread_;
   scoped_ptr<DevToolsManager> devtools_manager_;
