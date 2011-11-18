@@ -238,7 +238,7 @@ class Operation:
 
       self._cur_stream = stream
 
-  def _Out(self, stream, text, display, newline=False):
+  def _Out(self, stream, text, display, newline=False, do_output_filter=True):
     """Output some text received from a child, or generated internally.
 
     This method is the guts of the Operation class since it understands how to
@@ -268,6 +268,7 @@ class Operation:
       display: True to display it on terms, False to suppress it
       newline: True to start a new line after this text, False to put the next
         lot of output immediately after this.
+      do_output_filter: True to look through output for errors and progress.
     """
     self._CheckStreamAndColor(stream, display)
 
@@ -284,8 +285,9 @@ class Operation:
 
     # If we now have a whole line, check it for errors and progress.
     if newline:
-      self._FilterOutputForErrors(self._line, print_error=not display)
-      self._FilterOutputForProgress(self._line)
+      if do_output_filter:
+        self._FilterOutputForErrors(self._line, print_error=not display)
+        self._FilterOutputForProgress(self._line)
       self._line = ''
 
   def Output(self, stream, data):
@@ -341,7 +343,17 @@ class Operation:
       line: text to output (without \n on the end)
     """
     self._Out(None, self._color.Color(self._color.BLUE, line),
-        display=self.verbose, newline=True)
+        display=self.verbose, newline=True, do_output_filter=False)
+    self._FinishLine(display=True)
+
+  def Notice(self, line):
+    """Output a line of notification text to the display.
+
+    Args:
+      line: text to output (without \n on the end)
+    """
+    self._Out(None, self._color.Color(self._color.GREEN, line),
+        display=True, newline=True, do_output_filter=False)
     self._FinishLine(display=True)
 
   def Warning(self, line):
@@ -351,7 +363,7 @@ class Operation:
       line: text to output (without \n on the end)
     """
     self._Out(None, self._color.Color(self._color.YELLOW, line),
-        display=True, newline=True)
+        display=True, newline=True, do_output_filter=False)
     self._FinishLine(display=True)
 
   def Error(self, line):
@@ -361,7 +373,7 @@ class Operation:
       line: text to output (without \n on the end)
     """
     self._Out(None, self._color.Color(self._color.RED, line),
-        display=True, newline=True)
+        display=True, newline=True, do_output_filter=False)
     self._FinishLine(display=True)
 
   def Die(self, line):

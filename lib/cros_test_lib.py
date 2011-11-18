@@ -18,7 +18,6 @@ import mox
 
 # pylint: disable=W0212,R0904
 
-
 def tempdir_decorator(func):
   """Populates self.tempdir with path to a temporary writeable directory."""
   def f(self, *args, **kwargs):
@@ -45,6 +44,37 @@ def tempfile_decorator(func):
   f.__name__ = func.__name__
   return tempdir_decorator(f)
 
+class EasyAttr(dict):
+  """Convenient class for simulating objects with attributes in tests.
+
+  An EasyAttr object can be created with any attributes initialized very
+  easily.  Examples:
+
+  1) An object with .id=45 and .name="Joe":
+  testobj = EasyAttr(id=45, name="Joe")
+  2) An object with .title.text="Big" and .owner.text="Joe":
+  testobj = EasyAttr(title=EasyAttr(text="Big"), owner=EasyAttr(text="Joe"))
+  """
+
+  __slots__ = ()
+
+  def __getattr__(self, attr):
+    try:
+      return self[attr]
+    except KeyError:
+      return AttributeError(attr)
+
+  def __delattr__(self, attr):
+    try:
+      self.pop(attr)
+    except KeyError:
+      raise AttributeError(attr)
+
+  def __setattr__(self, attr, value):
+    self[attr] = value
+
+  def __dir__(self):
+    return self.keys()
 
 class TestCase(unittest.TestCase):
   """Base class for cros unit tests with utility methods."""
@@ -99,8 +129,8 @@ class TestCase(unittest.TestCase):
     """Return True if |output| ends with an error message."""
     lastline = [ln for ln in output.split('\n') if ln][-1]
     self.assertTrue(self._IsErrorLine(lastline),
-                    msg="expected output to end in error line, but "
-                    "_IsErrorLine says this line is not an error:\n%s" %
+                    msg='expected output to end in error line, but '
+                    '_IsErrorLine says this line is not an error:\n%s' %
                     lastline)
 
 class MoxTestCase(TestCase, mox.MoxTestBase):
