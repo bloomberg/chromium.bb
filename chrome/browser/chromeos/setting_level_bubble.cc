@@ -59,46 +59,6 @@ double LimitPercent(double percent) {
 
 namespace chromeos {
 
-// Temporary helper routine. Tries to first return the widget from the
-// most-recently-focused normal browser window, then from a login
-// background, and finally NULL if both of those fail.
-// TODO(glotov): remove this in favor of enabling Bubble class act
-// without |parent| specified. crosbug.com/4025
-static views::Widget* GetToplevelWidget() {
-  gfx::NativeWindow window = NULL;
-
-  // We just use the default profile here -- this gets overridden as needed
-  // in Chrome OS depending on whether the user is logged in or not.
-  Browser* browser =
-      BrowserList::FindTabbedBrowser(
-          ProfileManager::GetDefaultProfile(),
-          true);  // match_incognito
-  if (browser) {
-    window = browser->window()->GetNativeHandle();
-  } else {
-#if defined(USE_AURA)
-    // TODO(saintlou): Unsure what to do for the Aura background.
-#else
-    // Otherwise, see if there's a background window that we can use.
-    BackgroundView* background = LoginUtils::Get()->GetBackgroundView();
-    if (background) {
-      window = GTK_WINDOW(background->GetNativeWindow());
-    } else {
-      LoginDisplayHost* host = BaseLoginDisplayHost::default_host();
-      if (host)
-        window = host->GetNativeWindow();
-    }
-#endif
-  }
-
-  if (window) {
-    return views::Widget::GetWidgetForNativeWindow(window);
-  } else {
-    NOTREACHED();
-    return NULL;
-  }
-}
-
 // SettingLevelBubbleDelegateView ----------------------------------------------
 class SettingLevelBubbleDelegateView : public views::BubbleDelegateView {
  public:
@@ -106,7 +66,7 @@ class SettingLevelBubbleDelegateView : public views::BubbleDelegateView {
   virtual gfx::Point GetAnchorPoint() OVERRIDE;
 
   // Create the bubble delegate view.
-  explicit SettingLevelBubbleDelegateView(views::Widget* parent);
+  SettingLevelBubbleDelegateView();
   virtual ~SettingLevelBubbleDelegateView();
 
   SettingLevelBubbleView* view() { return view_; }
@@ -116,8 +76,6 @@ class SettingLevelBubbleDelegateView : public views::BubbleDelegateView {
   virtual void Init() OVERRIDE;
 
  private:
-  views::Widget* parent_;
-
   SettingLevelBubbleView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingLevelBubbleDelegateView);
@@ -128,18 +86,14 @@ gfx::Point SettingLevelBubbleDelegateView::GetAnchorPoint() {
   // Calculate the position in screen coordinates that the bubble should
   // "point" at (since we use BubbleBorder::FLOAT, this position actually
   // specifies the center of the bubble).
-  gfx::Rect monitor_area =
-      gfx::Screen::GetMonitorAreaNearestWindow(
-          parent_->GetNativeView());
+  gfx::Rect monitor_area = gfx::Screen::GetMonitorAreaNearestWindow(NULL);
   return (gfx::Point(
       monitor_area.x() + kBubbleXRatio * monitor_area.width(),
       monitor_area.bottom() - view_size.height() / 2 - kBubbleBottomGap));
 }
 
-SettingLevelBubbleDelegateView::SettingLevelBubbleDelegateView(
-    views::Widget* parent)
+SettingLevelBubbleDelegateView::SettingLevelBubbleDelegateView()
     : BubbleDelegateView(NULL, views::BubbleBorder::FLOAT, SK_ColorWHITE),
-      parent_(parent),
       view_(NULL) {
   set_close_on_esc(false);
   set_use_focusless(true);
@@ -233,16 +187,12 @@ void SettingLevelBubble::OnWidgetClosing(views::Widget* widget) {
 }
 
 SettingLevelBubbleView* SettingLevelBubble::CreateView() {
-  views::Widget* parent = GetToplevelWidget();
-  SettingLevelBubbleDelegateView* delegate =
-      new SettingLevelBubbleDelegateView(parent);
+  SettingLevelBubbleDelegateView* delegate = new SettingLevelBubbleDelegateView;
   views::Widget* widget = views::BubbleDelegateView::CreateBubble(delegate);
   widget->AddObserver(this);
 
 #if !defined(USE_AURA)
   {
-    // TODO(alicet): Move this code to bubble_delegate_view.cc
-    // and add description on what this code does.
     std::vector<int> params;
     params.push_back(1);  // show_while_screen_is_locked_
     chromeos::WmIpc::instance()->SetWindowType(
