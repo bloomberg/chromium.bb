@@ -192,6 +192,8 @@ class PolicyPrefsUITest(pyauto.PyUITest):
     'HideWebStorePromo': (True, []),
     'URLBlacklist': ([ 'google.com' ], []),
     'URLWhitelist': ([ 'google.com' ], []),
+    'EnterpriseWebStoreURL': ('', []),
+    'EnterpriseWebStoreName': ('', []),
 
     # ChromeOS-only policies:
     'ChromeOsLockOnIdleSuspend': (True, [ PERSONAL ], [ 'chromeos' ]),
