@@ -174,13 +174,13 @@ class CrosDisksClientImpl : public CrosDisksClient {
       MountEventHandler mount_event_handler,
       MountCompletedHandler mount_completed_handler) OVERRIDE {
     static const SignalEventTuple kSignalEventTuples[] = {
-      { "DeviceAdded", DEVICE_ADDED },
-      { "DeviceScanned", DEVICE_SCANNED },
-      { "DeviceRemoved", DEVICE_REMOVED },
-      { "DiskAdded", DISK_ADDED },
-      { "DiskChanged", DISK_CHANGED },
-      { "DiskRemoved", DISK_REMOVED },
-      { "FormattingFinished", FORMATTING_FINISHED },
+      { cros_disks::kDeviceAdded, DEVICE_ADDED },
+      { cros_disks::kDeviceScanned, DEVICE_SCANNED },
+      { cros_disks::kDeviceRemoved, DEVICE_REMOVED },
+      { cros_disks::kDiskAdded, DISK_ADDED },
+      { cros_disks::kDiskChanged, DISK_CHANGED },
+      { cros_disks::kDiskRemoved, DISK_REMOVED },
+      { cros_disks::kFormattingFinished, FORMATTING_FINISHED },
     };
     const size_t kNumSignalEventTuples = arraysize(kSignalEventTuples);
 
@@ -197,7 +197,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
     }
     proxy_->ConnectToSignal(
         cros_disks::kCrosDisksInterface,
-        "MountCompleted",
+        cros_disks::kMountCompleted,
         base::Bind(&CrosDisksClientImpl::OnMountCompleted,
                    weak_ptr_factory_.GetWeakPtr(),
                    mount_completed_handler ),
