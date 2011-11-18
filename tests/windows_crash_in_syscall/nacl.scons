@@ -43,6 +43,7 @@ runner = trusted_env.ComponentProgram(
                 'platform',
                 'platform_qual_lib',
                 'gio',
+                'dbghelp.lib', # Windows library
                 ] + VALIDATOR_LIBS + DEBUG_LIBS)
 
 if env.Bit('bitcode'):
