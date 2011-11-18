@@ -31,6 +31,13 @@ remoting.DebugLog = function(logElement, statsElement) {
 remoting.DebugLog.prototype.MAX_DEBUG_LOG_SIZE = 1000;
 
 /**
+ * JID for the remoting bot which is used to bridge communication between
+ * the Talk network and the Remoting directory service.
+ */
+remoting.DebugLog.prototype.REMOTING_DIRECTORY_SERVICE_BOT =
+    'remoting@bot.talk.google.com';
+
+/**
  * Add the given message to the debug log.
  *
  * @param {number} indentLevel The indention level for this message.
@@ -123,6 +130,30 @@ remoting.DebugLog.onKeydown = function(event) {
 };
 
 /**
+ * Verify that the only attributes on the given |node| are those specified
+ * in the |attrs| string.
+ *
+ * @param {Node} node The node to verify.
+ * @param {string} validAttrs Comma-separated list of valid attributes.
+ *
+ * @return {boolean} True if the node contains only valid attributes.
+ */
+remoting.DebugLog.prototype.verifyAttributes = function(node, validAttrs) {
+  var attrs = ',' + validAttrs + ',';
+  var len = node.attributes.length;
+  for (var i = 0; i < len; i++) {
+    /** @type {Node} */
+    var attrNode = node.attributes[i];
+    var attr = attrNode.nodeName;
+    if (attrs.indexOf(',' + attr + ',') == -1) {
+      console.log("invalid attr: " + attr);
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
  * Record the client and host JIDs so that we can check them against the
  * params in the IQ packets.
  *
@@ -140,9 +171,12 @@ remoting.DebugLog.prototype.setJids = function(clientJid, hostJid) {
  *
  * @param {Node} server Xml node with server info.
  *
- * @return {string} Prettified-version of |server| node.
+ * @return {Array} Array of boolean result and pretty-version of |server| node.
  */
 remoting.DebugLog.prototype.calcServerString = function(server) {
+  if (!this.verifyAttributes(server, 'host,udp,tcp,tcpssl')) {
+    return [false, ''];
+  }
   var host = server.getAttribute('host');
   var udp = server.getAttribute('udp');
   var tcp = server.getAttribute('tcp');
@@ -157,7 +191,7 @@ remoting.DebugLog.prototype.calcServerString = function(server) {
     str = str + ' tcpssl:' + tcpssl;
 
   str = str + '; ';
-  return str;
+  return [true, str];
 };
 
 /**
@@ -165,17 +199,20 @@ remoting.DebugLog.prototype.calcServerString = function(server) {
  *
  * @param {Node} channel Xml node with channel info.
  *
- * @return {string} Prettified-version of |channel| node.
+ * @return {Array} Array of result and pretty-version of |channel| node.
  */
 remoting.DebugLog.prototype.calcChannelString = function(channel) {
   var name = channel.nodeName;
+  if (!this.verifyAttributes(channel, 'transport,version,codec')) {
+    return [false, ''];
+  }
   var transport = channel.getAttribute('transport');
   var version = channel.getAttribute('version');
   var desc = name + ' ' + transport + ' v' + version;
   if (name == 'video') {
     desc = desc + ' codec=' + channel.getAttribute('codec');
   }
-  return desc + '; ';
+  return [true, desc + '; '];
 }
 
 /**
@@ -200,7 +237,15 @@ remoting.DebugLog.prototype.prettyJingleinfo = function(query) {
         var stun_node = stun_nodes[s];
         var sname = stun_node.nodeName;
         if (sname == 'server') {
-          sserver = sserver + this.calcServerString(stun_node);
+          var stun_sinfo = this.calcServerString(stun_node);
+          /** @type {boolean} */
+          var stun_success = stun_sinfo[0];
+          /** @type {string} */
+          var stun_sstring = stun_sinfo[1];
+          if (!stun_success) {
+            return false;
+          }
+          sserver = sserver + stun_sstring;
         }
       }
       this.logIndent(1, 'stun ' + sserver);
@@ -216,7 +261,15 @@ remoting.DebugLog.prototype.prettyJingleinfo = function(query) {
           token = token + relay_node.textContent;
         }
         if (rname == 'server') {
-          rserver = rserver + this.calcServerString(relay_node);
+          var relay_sinfo = this.calcServerString(relay_node);
+          /** @type {boolean} */
+          var relay_success = relay_sinfo[0];
+          /** @type {string} */
+          var relay_sstring = relay_sinfo[1];
+          if (!relay_success) {
+            return false;
+          }
+          rserver = rserver + relay_sstring;
         }
       }
       this.logIndent(1, 'relay ' + rserver + token);
@@ -260,7 +313,15 @@ remoting.DebugLog.prototype.prettySessionInitiateAccept = function(jingle) {
         var desc = desc_children[d];
         var dname = desc.nodeName;
         if (dname == 'control' || dname == 'event' || dname == 'video') {
-          channels = channels + this.calcChannelString(desc);
+          var cinfo = this.calcChannelString(desc);
+          /** @type {boolean} */
+          var success = cinfo[0];
+          /** @type {string} */
+          var cstring = cinfo[1];
+          if (!success) {
+            return false;
+          }
+          channels = channels + cstring;
         } else if (dname == 'initial-resolution') {
           resolution = desc.getAttribute('width') + 'x' +
               desc.getAttribute('height');
@@ -351,6 +412,11 @@ remoting.DebugLog.prototype.prettyTransportInfo = function(jingle) {
     if (candidate.nodeName != 'candidate') {
       return false;
     }
+    if (!this.verifyAttributes(candidate, 'name,address,port,preference,' +
+                               'username,protocol,generation,password,type,' +
+                               'network')) {
+      return false;
+    }
     var name = candidate.getAttribute('name');
     var address = candidate.getAttribute('address');
     var port = candidate.getAttribute('port');
@@ -403,6 +469,10 @@ remoting.DebugLog.prototype.prettyJingleAction = function(jingle, action) {
  * @return {boolean} True if we were able to pretty-print the information.
  */
 remoting.DebugLog.prototype.prettyError = function(error) {
+  if (!this.verifyAttributes(error, 'xmlns:err,code,type,err:hostname,' +
+                             'err:bnsname,err:stacktrace')) {
+    return false;
+  }
   var code = error.getAttribute('code');
   var type = error.getAttribute('type');
   var hostname = error.getAttribute('err:hostname');
@@ -431,14 +501,13 @@ remoting.DebugLog.prototype.prettyError = function(error) {
 /**
  * Print out the heading line for an iq node.
  *
- * @param {boolean} send True if we're sending this stanza; false for receiving.
+ * @param {string} action String describing action (send/receive).
  * @param {string} id Packet id.
  * @param {string} desc Description of iq action for this node.
  * @param {string|null} sid Session id.
  */
-remoting.DebugLog.prototype.prettyIqHeading = function(send, id, desc, sid) {
-  var dir = (send ? 'send' : 'receive');
-  var message = 'iq ' + dir + ' id=' + id;
+remoting.DebugLog.prototype.prettyIqHeading = function(action, id, desc, sid) {
+  var message = 'iq ' + action + ' id=' + id;
   if (desc) {
     message = message + ' ' + desc;
   }
@@ -451,30 +520,39 @@ remoting.DebugLog.prototype.prettyIqHeading = function(send, id, desc, sid) {
 /**
  * Print out an iq 'result'-type node.
  *
- * @param {boolean} send True if we're sending this stanza; false for receiving.
+ * @param {string} action String describing action (send/receive).
  * @param {NodeList} iq_list Node list containing the 'result' xml.
  *
  * @return {boolean} True if the data was logged successfully.
  */
-remoting.DebugLog.prototype.prettyIqResult = function(send, iq_list) {
+remoting.DebugLog.prototype.prettyIqResult = function(action, iq_list) {
   /** @type {Node} */
   var iq = iq_list[0];
   var id = iq.getAttribute('id');
   var iq_children = iq.childNodes;
 
   if (iq_children.length == 0) {
-    this.prettyIqHeading(send, id, 'result (empty)', null);
+    this.prettyIqHeading(action, id, 'result (empty)', null);
     return true;
   } else if (iq_children.length == 1) {
     /** @type {Node} */
-    var query = iq_children[0];
-    if (query.nodeName != 'query') {
-      return false;
-    }
-    var xmlns = query.getAttribute('xmlns');
-    if (xmlns == 'google:jingleinfo') {
-      this.prettyIqHeading(send, id, 'result ' + xmlns, null);
-      return this.prettyJingleinfo(query);
+    var child = iq_children[0];
+    if (child.nodeName == 'query') {
+      if (!this.verifyAttributes(child, 'xmlns')) {
+        return false;
+      }
+      var xmlns = child.getAttribute('xmlns');
+      if (xmlns == 'google:jingleinfo') {
+        this.prettyIqHeading(action, id, 'result ' + xmlns, null);
+        return this.prettyJingleinfo(child);
+      }
+      return true;
+    } else if (child.nodeName == 'rem:log-result') {
+      if (!this.verifyAttributes(child, 'xmlns:rem')) {
+        return false;
+      }
+      this.prettyIqHeading(action, id, 'result (log-result)', null);
+      return true;
     }
   }
   return false;
@@ -483,12 +561,12 @@ remoting.DebugLog.prototype.prettyIqResult = function(send, iq_list) {
 /**
  * Print out an iq 'get'-type node.
  *
- * @param {boolean} send True if we're sending this stanza; false for receiving.
+ * @param {string} action String describing action (send/receive).
  * @param {NodeList} iq_list Node containing the 'get' xml.
  *
  * @return {boolean} True if the data was logged successfully.
  */
-remoting.DebugLog.prototype.prettyIqGet = function(send, iq_list) {
+remoting.DebugLog.prototype.prettyIqGet = function(action, iq_list) {
   /** @type {Node} */
   var iq = iq_list[0];
   var id = iq.getAttribute('id');
@@ -497,25 +575,29 @@ remoting.DebugLog.prototype.prettyIqGet = function(send, iq_list) {
   if (iq_children.length != 1) {
     return false;
   }
+
   /** @type {Node} */
   var query = iq_children[0];
   if (query.nodeName != 'query') {
     return false;
   }
+  if (!this.verifyAttributes(query, 'xmlns')) {
+    return false;
+  }
   var xmlns = query.getAttribute('xmlns');
-  this.prettyIqHeading(send, id, 'get ' + xmlns, null);
+  this.prettyIqHeading(action, id, 'get ' + xmlns, null);
   return true;
 }
 
 /**
  * Print out an iq 'set'-type node.
  *
- * @param {boolean} send True if we're sending this stanza; false for receiving.
+ * @param {string} action String describing action (send/receive).
  * @param {NodeList} iq_list Node containing the 'set' xml.
  *
  * @return {boolean} True if the data was logged successfully.
  */
-remoting.DebugLog.prototype.prettyIqSet = function(send, iq_list) {
+remoting.DebugLog.prototype.prettyIqSet = function(action, iq_list) {
   /** @type {Node} */
   var iq = iq_list[0];
   var id = iq.getAttribute('id');
@@ -524,45 +606,82 @@ remoting.DebugLog.prototype.prettyIqSet = function(send, iq_list) {
   var children = iq_children.length;
   if (children >= 1) {
     /** @type {Node} */
-    var jingle = iq_children[0];
-    if (jingle.nodeName != 'jingle') {
-      return false;
-    }
-    var action = jingle.getAttribute('action');
-    var sid = jingle.getAttribute('sid');
-
-    if (children == 1) {
-      this.prettyIqHeading(send, id, 'set ' + action, sid);
-      return this.prettyJingleAction(jingle, action);
-
-    } else if (children == 2) {
-      if (action == 'session-initiate') {
-        var sid = jingle.getAttribute('sid');
-        this.prettyIqHeading(send, id, 'set ' + action, sid);
-        if (!this.prettySessionInitiateAccept(jingle)) {
-          return false;
-        }
-
-        // When there are two child nodes for a 'session-initiate' node,
-        // the second is a duplicate  copy of the 'session' info added by
-        // libjingle for backward compatability with an older version of
-        // Jingle (called Gingle).
-        // Since M16 we no longer use libjingle on the client side and thus
-        // we no longer generate this duplicate node.
-
-        // Require that second child is 'session' with type='initiate'.
-        /** @type {Node} */
-        var session = iq_children[1];
-        if (session.nodeName != 'session') {
-          return false;
-        }
-        var type = session.getAttribute('type');
-        if (type != 'initiate') {
-          return false;
-        }
-        // Silently ignore contents of 'session' node.
-        return true;
+    var child = iq_children[0];
+    if (child.nodeName == 'jingle') {
+      var jingle = child;
+      if (!this.verifyAttributes(jingle, 'xmlns,action,sid,initiator')) {
+        return false;
       }
+
+      var jingle_action = jingle.getAttribute('action');
+      var sid = jingle.getAttribute('sid');
+
+      if (children == 1) {
+        this.prettyIqHeading(action, id, 'set ' + jingle_action, sid);
+        return this.prettyJingleAction(jingle, jingle_action);
+
+      } else if (children == 2) {
+        if (jingle_action == 'session-initiate') {
+          this.prettyIqHeading(action, id, 'set ' + jingle_action, sid);
+          if (!this.prettySessionInitiateAccept(jingle)) {
+            return false;
+          }
+
+          // When there are two child nodes for a 'session-initiate' node,
+          // the second is a duplicate  copy of the 'session' info added by
+          // libjingle for backward compatability with an older version of
+          // Jingle (called Gingle).
+          // Since M16 we no longer use libjingle on the client side and thus
+          // we no longer generate this duplicate node.
+
+          // Require that second child is 'session' with type='initiate'.
+          /** @type {Node} */
+          var session = iq_children[1];
+          if (session.nodeName != 'session') {
+            return false;
+          }
+          var type = session.getAttribute('type');
+          if (type != 'initiate') {
+            return false;
+          }
+          // Silently ignore contents of 'session' node.
+          return true;
+        }
+      }
+    } else if (child.nodeName == 'gr:log') {
+      var log = child;
+      if (log.childNodes.length != 1) {
+        return false;
+      }
+      if (!this.verifyAttributes(log, 'xmlns:gr')) {
+        return false;
+      }
+
+      /** @type {Node} */
+      var entry = log.childNodes[0];
+      if (!this.verifyAttributes(entry, 'role,event-name,session-state,cpu,' +
+                                 'os-name,browser-version,webapp-version')) {
+        return false;
+      }
+      var role = entry.getAttribute('role');
+      if (role != 'client') {
+        return false;
+      }
+      var event_name = entry.getAttribute('event-name');
+      if (event_name != 'session-state') {
+        return false;
+      }
+      var session_state = entry.getAttribute('session-state');
+      this.prettyIqHeading(action, '?', 'set session-state ' + session_state,
+                           null);
+
+      var os_name = entry.getAttribute('os-name');
+      var cpu = entry.getAttribute('cpu');
+      var browser_version = entry.getAttribute('browser-version');
+      var webapp_version = entry.getAttribute('webapp-version');
+      this.logIndent(1, os_name + ' ' + cpu + ' Chromium_v' + browser_version +
+                     ' Chromoting_v' + webapp_version);
+      return true;
     }
   }
   return false;
@@ -571,12 +690,12 @@ remoting.DebugLog.prototype.prettyIqSet = function(send, iq_list) {
 /**
  * Print out an iq 'error'-type node.
  *
- * @param {boolean} send True if we're sending this stanza; false for receiving.
+ * @param {string} action String describing action (send/receive).
  * @param {NodeList} iq_list Node containing the 'error' xml.
  *
  * @return {boolean} True if the data was logged successfully.
  */
-remoting.DebugLog.prototype.prettyIqError = function(send, iq_list) {
+remoting.DebugLog.prototype.prettyIqError = function(action, iq_list) {
   /** @type {Node} */
   var iq = iq_list[0];
   var id = iq.getAttribute('id');
@@ -592,12 +711,16 @@ remoting.DebugLog.prototype.prettyIqError = function(send, iq_list) {
   if (jingle.nodeName != 'jingle') {
     return false;
   }
-  var action = jingle.getAttribute('action');
-  var sid = jingle.getAttribute('sid');
-  this.prettyIqHeading(send, id, 'error from ' + action, sid);
-  if (!this.prettyJingleAction(jingle, action)) {
+  if (!this.verifyAttributes(jingle, 'xmlns,action,sid')) {
     return false;
   }
+  var jingle_action = jingle.getAttribute('action');
+  var sid = jingle.getAttribute('sid');
+  this.prettyIqHeading(action, id, 'error from ' + jingle_action, sid);
+  if (!this.prettyJingleAction(jingle, jingle_action)) {
+    return false;
+  }
+
   /** @type {Node} */
   var error = iq_children[1];
   if (error.nodeName != 'cli:error') {
@@ -624,30 +747,53 @@ remoting.DebugLog.prototype.prettyIq = function(send, message) {
   if (iq_list && iq_list.length > 0) {
     /** @type {Node} */
     var iq = iq_list[0];
+    if (!this.verifyAttributes(iq, 'xmlns,xmlns:cli,id,to,from,type'))
+      return false;
+
     // Verify that the to/from fields match the expected sender/receiver.
     var to = iq.getAttribute('to');
     var from = iq.getAttribute('from');
+    var action = '';
+    var bot = remoting.DebugLog.prototype.REMOTING_DIRECTORY_SERVICE_BOT;
     if (send) {
-      if (to && to != this.hostJid)
+      if (to && to != this.hostJid && to != bot) {
+        this.log('bad to: ' + to);
         return false;
-      if (from && from != this.clientJid)
+      }
+      if (from && from != this.clientJid) {
+        this.log('bad from: ' + from);
         return false;
+      }
+
+      action = "send";
+      if (to == bot) {
+        action = action + " (to bot)";
+      }
     } else {
-      if (to && to != this.clientJid)
+      if (to && to != this.clientJid) {
+        this.log('bad to: ' + to);
         return false;
-      if (from && from != this.hostJid)
+      }
+      if (from && from != this.hostJid && from != bot) {
+        this.log('bad from: ' + from);
         return false;
+      }
+
+      action = "receive";
+      if (from == bot) {
+        action = action + " (from bot)";
+      }
     }
 
     var type = iq.getAttribute('type');
     if (type == 'result') {
-      return this.prettyIqResult(send, iq_list);
+      return this.prettyIqResult(action, iq_list);
     } else if (type == 'get') {
-      return this.prettyIqGet(send, iq_list);
+      return this.prettyIqGet(action, iq_list);
     } else if (type == 'set') {
-      return this.prettyIqSet(send, iq_list);
+      return this.prettyIqSet(action, iq_list);
     } else  if (type == 'error') {
-      return this.prettyIqError(send, iq_list);
+      return this.prettyIqError(action, iq_list);
     }
   }
 
