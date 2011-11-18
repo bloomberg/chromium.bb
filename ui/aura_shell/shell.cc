@@ -20,6 +20,7 @@
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/modal_container_layout_manager.h"
 #include "ui/aura_shell/shelf_layout_controller.h"
+#include "ui/aura_shell/shell_accelerator_controller.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
@@ -98,6 +99,7 @@ Shell* Shell::instance_ = NULL;
 
 Shell::Shell(ShellDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      accelerator_controller_(new ShellAcceleratorController),
       delegate_(delegate) {
   aura::Desktop::GetInstance()->SetEventFilter(
       new internal::DesktopEventFilter);

@@ -7,12 +7,15 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/event_filter.h"
 #include "ui/aura_shell/aura_shell_export.h"
 
 namespace aura_shell {
 namespace internal {
+
+class ShellAcceleratorFilter;
 
 // DesktopEventFilter gets all desktop events first and can provide actions to
 // those events. It implements desktop features such as click to activate a
@@ -55,6 +58,9 @@ class AURA_SHELL_EXPORT DesktopEventFilter : public aura::EventFilter {
 
   // Additional event filters that pre-handles events.
   ObserverList<aura::EventFilter, true> filters_;
+
+  // An event filter that pre-handles global accelerators.
+  scoped_ptr<ShellAcceleratorFilter> shell_accelerator_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopEventFilter);
 };

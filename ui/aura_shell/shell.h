@@ -27,6 +27,7 @@ class Rect;
 namespace aura_shell {
 
 class Launcher;
+class ShellAcceleratorController;
 class ShellDelegate;
 
 namespace internal {
@@ -61,6 +62,9 @@ class AURA_SHELL_EXPORT Shell {
   // Toggles between overview mode and normal mode.
   void ToggleOverview();
 
+  ShellAcceleratorController* accelerator_controller() {
+    return accelerator_controller_.get();
+  }
   ShellDelegate* delegate() { return delegate_.get(); }
   Launcher* launcher() { return launcher_.get(); }
 
@@ -80,6 +84,8 @@ class AURA_SHELL_EXPORT Shell {
   std::vector<WindowAndBoundsPair> to_restore_;
 
   base::WeakPtrFactory<Shell> method_factory_;
+
+  scoped_ptr<ShellAcceleratorController> accelerator_controller_;
 
   scoped_ptr<ShellDelegate> delegate_;
 
