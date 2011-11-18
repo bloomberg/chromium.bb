@@ -35,3 +35,6 @@ X509CertificateTest.TestKnownRoot
 
 # See http://crbug.com/102330
 SSLClientSocketTest.*
+
+# See http://crbug.com/104805
+HostResolverImplTest.OnlyAbortExistingRequestsOnIPAddressChange
