@@ -182,14 +182,21 @@ void CompositorCC::DrawTree() {
   host_.composite();
 }
 
-bool CompositorCC::ReadPixels(SkBitmap* bitmap) {
+bool CompositorCC::ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) {
+  if (bounds.right() > size().width() || bounds.bottom() > size().height())
+    return false;
+  // Convert to OpenGL coordinates.
+  gfx::Point new_origin(bounds.x(),
+                        size().height() - bounds.height() - bounds.y());
+
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    size().width(), size().height());
+                    bounds.width(), bounds.height());
   bitmap->allocPixels();
   SkAutoLockPixels lock_image(*bitmap);
   unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
-  if (host_.compositeAndReadback(pixels, gfx::Rect(size()))) {
-    SwizzleRGBAToBGRAAndFlip(pixels, size());
+  if (host_.compositeAndReadback(pixels,
+                                 gfx::Rect(new_origin, bounds.size()))) {
+    SwizzleRGBAToBGRAAndFlip(pixels, bounds.size());
     return true;
   }
   return false;

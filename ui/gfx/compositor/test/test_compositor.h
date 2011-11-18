@@ -27,7 +27,7 @@ class TestCompositor : public ui::Compositor {
   virtual void OnNotifyEnd() OVERRIDE;
   virtual void Blur(const gfx::Rect& bounds) OVERRIDE;
   virtual void DrawTree() OVERRIDE;
-  virtual bool ReadPixels(SkBitmap* bitmap) OVERRIDE;
+  virtual bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) OVERRIDE;
 
   // A simple factory that creates a test compositor with a given delegate
   static ui::Compositor* Create(ui::CompositorDelegate* owner);

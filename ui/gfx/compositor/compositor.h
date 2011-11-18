@@ -136,9 +136,10 @@ class COMPOSITOR_EXPORT Compositor : public base::RefCounted<Compositor> {
   // compositing.
   void Draw(bool force_clear);
 
-  // Reads the contents of the last rendered frame into the given bitmap.
+  // Reads the region |bounds| of the contents of the last rendered frame
+  // into the given bitmap.
   // Returns false if the pixels could not be read.
-  virtual bool ReadPixels(SkBitmap* bitmap) = 0;
+  virtual bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) = 0;
 
   // Notifies the compositor that the size of the widget that it is
   // drawing to has changed.
