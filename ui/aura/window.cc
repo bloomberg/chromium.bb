@@ -429,21 +429,27 @@ void Window::WindowDetachedFromDesktop(aura::Window* window) {
 }
 
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
+  gfx::Rect actual_new_bounds(new_bounds);
+
+  // Gives delegate a change to examine and change the new bounds.
+  if (delegate_)
+    delegate_->OnBoundsChanging(&actual_new_bounds);
+
   const gfx::Rect old_bounds = layer_->GetTargetBounds();
 
   // Always need to set the layer's bounds -- even if it is to the same thing.
   // This may cause important side effects such as stopping animation.
-  layer_->SetBounds(new_bounds);
+  layer_->SetBounds(actual_new_bounds);
 
   // If we're not changing the effective bounds, then we can bail early and skip
   // notifying our listeners.
-  if (old_bounds == new_bounds)
+  if (old_bounds == actual_new_bounds)
     return;
 
   if (layout_manager_.get())
     layout_manager_->OnWindowResized();
   if (delegate_)
-    delegate_->OnBoundsChanged(old_bounds, new_bounds);
+    delegate_->OnBoundsChanged(old_bounds, actual_new_bounds);
 }
 
 void Window::SetVisible(bool visible) {

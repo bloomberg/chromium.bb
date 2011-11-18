@@ -29,16 +29,28 @@ namespace test {
 namespace {
 
 // A simple window delegate that returns the specified hit-test code when
-// requested.
-class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
+// requested and applies a minimum size constraint if there is one.
+class TestWindowDelegate : public aura::test::TestWindowDelegate {
  public:
-  explicit HitTestWindowDelegate(int hittest_code)
+  explicit TestWindowDelegate(int hittest_code)
       : hittest_code_(hittest_code) {
   }
-  virtual ~HitTestWindowDelegate() {}
+  virtual ~TestWindowDelegate() {}
+
+  void set_min_size(const gfx::Size& size) {
+    min_size_ = size;
+  }
 
  private:
-  // Overridden from TestWindowDelegate:
+  // Overridden from aura::Test::TestWindowDelegate:
+  virtual void OnBoundsChanging(gfx::Rect* new_bounds) OVERRIDE {
+    if (!min_size_.IsEmpty()) {
+      new_bounds->set_width(std::max(min_size_.width(),
+                                     new_bounds->width()));
+      new_bounds->set_height(std::max(min_size_.height(),
+                                      new_bounds->height()));
+    }
+  }
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return hittest_code_;
   }
@@ -47,8 +59,9 @@ class HitTestWindowDelegate : public aura::test::TestWindowDelegate {
   }
 
   int hittest_code_;
+  gfx::Size min_size_;
 
-  DISALLOW_COPY_AND_ASSIGN(HitTestWindowDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
 
 class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
@@ -68,7 +81,7 @@ class ToplevelWindowEventFilterTest : public aura::test::AuraTestBase {
 
  protected:
   aura::Window* CreateWindow(int hittest_code) {
-    HitTestWindowDelegate* d1 = new HitTestWindowDelegate(hittest_code);
+    TestWindowDelegate* d1 = new TestWindowDelegate(hittest_code);
     aura::Window* w1 = new aura::Window(d1);
     w1->set_id(1);
     w1->Init(ui::Layer::LAYER_HAS_TEXTURE);
@@ -111,8 +124,11 @@ TEST_F(ToplevelWindowEventFilterTest, BottomRight) {
 
 TEST_F(ToplevelWindowEventFilterTest, GrowBox) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTGROWBOX));
+  TestWindowDelegate* window_delegate =
+    static_cast<TestWindowDelegate*>(w1->delegate());
+  window_delegate->set_min_size(gfx::Size(50, 50));
+
   gfx::Point position = w1->bounds().origin();
-  w1->set_minimum_size(gfx::Size(50, 50));
   aura::test::EventGenerator generator;
   generator.MoveMouseToCenterOf(w1.get());
   generator.DragMouseBy(100, 100);

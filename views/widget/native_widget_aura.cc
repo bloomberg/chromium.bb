@@ -137,7 +137,6 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   window_->layer()->SetFillsBoundsOpaquely(!params.transparent);
   delegate_->OnNativeWidgetCreated();
-  window_->set_minimum_size(delegate_->GetMinimumSize());
   window_->SetBounds(params.bounds);
   if (window_type == Widget::InitParams::TYPE_CONTROL) {
     window_->SetParent(params.GetParent());
@@ -292,8 +291,9 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
 
 void NativeWidgetAura::GetWindowPlacement(
     gfx::Rect* bounds,
-    ui::WindowShowState* maximized) const {
-  *maximized = static_cast<ui::WindowShowState>(
+    ui::WindowShowState* show_state) const {
+  *bounds = window_->GetTargetBounds();
+  *show_state = static_cast<ui::WindowShowState>(
       window_->GetIntProperty(aura::kShowStateKey));
 }
 
@@ -543,6 +543,13 @@ void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::WindowDelegate implementation:
+
+void NativeWidgetAura::OnBoundsChanging(gfx::Rect* new_bounds) {
+  // Enforces a minimum size.
+  const gfx::Size& min_size = delegate_->GetMinimumSize();
+  new_bounds->set_width(std::max(min_size.width(), new_bounds->width()));
+  new_bounds->set_height(std::max(min_size.height(), new_bounds->height()));
+}
 
 void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {

@@ -261,10 +261,7 @@ gfx::Size ToplevelWindowEventFilter::GetSizeForDrag(
         (size_change_direction & kBoundsChangeDirection_Vertical ?
          y_multiplier * (first_y - second_y) : 0);
 
-    // Enforce minimum window size.
-    const gfx::Size min_size = target->minimum_size();
-    size.SetSize(std::max(width, min_size.width()),
-                 std::max(height, min_size.height()));
+    size.SetSize(width, height);
   }
   return size;
 }

@@ -26,6 +26,10 @@ class TouchEvent;
 // Delegate interface for aura::Window.
 class AURA_EXPORT WindowDelegate {
  public:
+  // Called before the Window's position and/or size changes and deleage could
+  // take this opportunity to examine and change the new bounds.
+  virtual void OnBoundsChanging(gfx::Rect* new_bounds) = 0;
+
   // Called when the Window's position and/or size changes.
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) = 0;

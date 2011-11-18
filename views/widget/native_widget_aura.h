@@ -124,6 +124,7 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;
 
   // Overridden from aura::WindowDelegate:
+  virtual void OnBoundsChanging(gfx::Rect* new_bounds) OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnFocus() OVERRIDE;

@@ -166,7 +166,6 @@ Widget::Widget()
       disable_inactive_rendering_(false),
       widget_closed_(false),
       saved_show_state_(ui::SHOW_STATE_DEFAULT),
-      minimum_size_(100, 100),
       focus_on_creation_(true),
       is_top_level_(false),
       native_widget_initialized_(false),
@@ -918,7 +917,7 @@ void Widget::OnNativeWidgetDestroyed() {
 }
 
 gfx::Size Widget::GetMinimumSize() {
-  return non_client_view_ ? non_client_view_->GetMinimumSize() : minimum_size_;
+  return non_client_view_ ? non_client_view_->GetMinimumSize() : gfx::Size();
 }
 
 void Widget::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {

@@ -118,13 +118,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // not animating, it simply returns the current bounds.
   gfx::Rect GetTargetBounds() const;
 
-  // Sets the minimum size of the window that a user can resize it to.
-  // A smaller size can still be set using SetBounds().
-  void set_minimum_size(const gfx::Size& minimum_size) {
-    minimum_size_ = minimum_size;
-  }
-  const gfx::Size& minimum_size() const { return minimum_size_; }
-
   // Marks the a portion of window as needing to be painted.
   void SchedulePaintInRect(const gfx::Rect& rect);
 
@@ -301,9 +294,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   WindowType type_;
 
   WindowDelegate* delegate_;
-
-  // The minimum size of the window a user can resize to.
-  gfx::Size minimum_size_;
 
   scoped_ptr<ui::Layer> layer_;
 

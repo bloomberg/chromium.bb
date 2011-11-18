@@ -22,6 +22,9 @@ TestWindowDelegate::TestWindowDelegate() {
 TestWindowDelegate::~TestWindowDelegate() {
 }
 
+void TestWindowDelegate::OnBoundsChanging(gfx::Rect* new_bounds) {
+}
+
 void TestWindowDelegate::OnBoundsChanged(const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds) {
 }

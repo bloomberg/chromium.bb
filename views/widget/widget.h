@@ -714,9 +714,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // |saved_show_state_| is maximized.
   gfx::Rect initial_restored_bounds_;
 
-  // The smallest size the user can resize the window.
-  gfx::Size minimum_size_;
-
   // Focus is automatically set to the view provided by the delegate
   // when the widget is shown. Set this value to false to override
   // initial focus for the widget.
