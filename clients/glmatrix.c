@@ -175,14 +175,14 @@ typedef struct {
 
 static matrix_configuration *mps = NULL;
 
-static GLfloat speed;
-static GLfloat density;
+static GLfloat speed = 1.0;
+static GLfloat density = 20.0;
 static Bool do_clock;
 static char *timefmt;
-static Bool do_fog;
+static Bool do_fog = 1;
 static Bool do_waves;
-static Bool do_rotate;
-static Bool do_texture;
+static Bool do_rotate = 1;
+static Bool do_texture = 1;
 static char *mode_str;
 
 #if 0
@@ -582,8 +582,6 @@ reshape_matrix (ModeInfo *mi, int width, int height)
   gluLookAt( 0.0, 0.0, 25.0,
              0.0, 0.0, 0.0,
              0.0, 1.0, 0.0);
-
-  glClear(GL_COLOR_BUFFER_BIT);
 }
 
 
