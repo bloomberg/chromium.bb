@@ -1,7 +1,7 @@
 {
-  "name": "chrome.experimental.input",
+  "name": "chrome.experimental.input.virtualKeyboard",
   "version": "0.1",
-  "description": "end-to-end browser test for chrome.experimental.input API",
+  "description": "end-to-end browser test for chrome.experimental.input.virtualKeyboard API",
   "background_page": "test.html",
   "permissions": ["experimental"]
 }

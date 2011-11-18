@@ -1,6 +1,6 @@
 <script>
   function setMenuItemsTest() {
-    chrome.experimental.input.setMenuItems({
+    chrome.experimental.input.ime.setMenuItems({
       "engineID": "test",
       "items": [{
         "id": "Menu 1",
@@ -22,7 +22,7 @@
   }
 
   function updateMenuItemsTest() {
-    chrome.experimental.input.updateMenuItems({
+    chrome.experimental.input.ime.updateMenuItems({
       "engineID": "test",
       "items": [{
         "id": "Menu 1",

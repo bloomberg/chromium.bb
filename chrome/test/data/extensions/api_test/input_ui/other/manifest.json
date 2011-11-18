@@ -1,7 +1,7 @@
 {
-  "name": "chrome.experimental.inputUI",
+  "name": "chrome.experimental.input.ui",
   "version": "0.1",
-  "description": "end-to-end browser test for chrome.experimental.inputUI API",
+  "description": "end-to-end browser test for chrome.experimental.input.ui API",
   "background_page": "test.html",
   "permissions": ["experimental"]
 }

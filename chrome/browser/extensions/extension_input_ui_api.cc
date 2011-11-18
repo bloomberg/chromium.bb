@@ -19,9 +19,9 @@
 namespace events {
 
 const char kOnUpdateAuxiliaryText[] =
-    "experimental.inputUI.onUpdateAuxiliaryText";
-const char kOnUpdateLookupTable[] = "experimental.inputUI.onUpdateLookupTable";
-const char kOnSetCursorLocation[] = "experimental.inputUI.onSetCursorLocation";
+    "experimental.input.ui.onUpdateAuxiliaryText";
+const char kOnUpdateLookupTable[] = "experimental.input.ui.onUpdateLookupTable";
+const char kOnSetCursorLocation[] = "experimental.input.ui.onSetCursorLocation";
 
 }  // namespace events
 

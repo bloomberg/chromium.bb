@@ -3183,33 +3183,9 @@
     "events": []
   },
   {
-    "namespace": "experimental.input",
+    "namespace": "experimental.input.virtualKeyboard",
     "nodoc": true,
-    "types": [
-      {
-        "id": "KeyboardEvent",
-        "type": "object",
-        "description": "See http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent",
-        "properties": {
-          "type": {"type": "string", "description": "One of keyup or keydown.", "enum": ["keyup", "keydown"]},
-          "requestId": {"type": "string", "description": "The ID of the request."},
-          "key": {"type": "string", "description": "Value of the key being pressed"},
-          "keyCode": {"type": "string", "description": "Value of the key being press, unmodified by control keys."},
-          "altKey": {"type": "boolean", "optional": true, "description": "Whether or not the ALT key is pressed."},
-          "ctrlKey": {"type": "boolean", "optional": true, "description": "Whether or not the CTRL key is pressed."},
-          "shiftKey": {"type": "boolean", "optional": true, "description": "Whether or not the SHIFT key is pressed."}
-        }
-      },
-      {
-        "id": "InputContext",
-        "type": "object",
-        "description": "Describes an input Context",
-        "properties": {
-          "contextID": {"type": "integer", "description": "This is used to specify targets of text field operations.  This ID becomes invalid as soon as onBlur is called."},
-          "type": {"type": "string", "description": "Type of value this text field edits, (Text, Number, Password, etc)", "enum": ["text", "number", "password"]}
-        }
-      }
-    ],
+    "types": [],
     "functions": [
       {
         "name": "sendKeyboardEvent",
@@ -3290,6 +3266,84 @@
           }
         ]
       },
+      {
+        "name": "sendHandwritingStroke",
+        "type": "function",
+        "description": "Sends a handwriting event to Chrome.",
+        "parameters": [
+          {
+            "name": "stroke",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {"type": "number", "minimum": 0, "maximum": 1},
+                "y": {"type": "number", "minimum": 0, "maximum": 1}
+              }
+            }
+          }
+        ]
+      },
+      {
+        "name": "cancelHandwritingStrokes",
+        "type": "function",
+        "description": "Clears last N handwriting strokes.",
+        "parameters": [
+          {
+            "name": "strokeCount",
+            "optional": true,
+            "description": "The number of strokes to be removed. Pass 0 to remove all strokes. If omitted, removes all.",
+            "type": "integer",
+            "minimum": 0
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onTextInputTypeChanged",
+        "type": "function",
+        "description": "This event is sent to the virtual keyboard when the text input type is changed.",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "type",
+            "enum": ["none", "text", "password", "search", "email", "number", "tel", "url"],
+            "description": "Type of the current focused input field."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "namespace": "experimental.input.ime",
+    "nodoc": true,
+    "types": [
+      {
+        "id": "KeyboardEvent",
+        "type": "object",
+        "description": "See http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent",
+        "properties": {
+          "type": {"type": "string", "description": "One of keyup or keydown.", "enum": ["keyup", "keydown"]},
+          "requestId": {"type": "string", "description": "The ID of the request."},
+          "key": {"type": "string", "description": "Value of the key being pressed"},
+          "keyCode": {"type": "string", "description": "Value of the key being press, unmodified by control keys."},
+          "altKey": {"type": "boolean", "optional": true, "description": "Whether or not the ALT key is pressed."},
+          "ctrlKey": {"type": "boolean", "optional": true, "description": "Whether or not the CTRL key is pressed."},
+          "shiftKey": {"type": "boolean", "optional": true, "description": "Whether or not the SHIFT key is pressed."}
+        }
+      },
+      {
+        "id": "InputContext",
+        "type": "object",
+        "description": "Describes an input Context",
+        "properties": {
+          "contextID": {"type": "integer", "description": "This is used to specify targets of text field operations.  This ID becomes invalid as soon as onBlur is called."},
+          "type": {"type": "string", "description": "Type of value this text field edits, (Text, Number, Password, etc)", "enum": ["text", "number", "password"]}
+        }
+      }
+    ],
+    "functions": [
       {
         "name": "setComposition",
         "type": "function",
@@ -3663,38 +3717,6 @@
         ]
       },
       {
-        "name": "sendHandwritingStroke",
-        "type": "function",
-        "description": "Sends a handwriting event to Chrome.",
-        "parameters": [
-          {
-            "name": "stroke",
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "x": {"type": "number", "minimum": 0, "maximum": 1},
-                "y": {"type": "number", "minimum": 0, "maximum": 1}
-              }
-            }
-          }
-        ]
-      },
-      {
-        "name": "cancelHandwritingStrokes",
-        "type": "function",
-        "description": "Clears last N handwriting strokes.",
-        "parameters": [
-          {
-            "name": "strokeCount",
-            "optional": true,
-            "description": "The number of strokes to be removed. Pass 0 to remove all strokes. If omitted, removes all.",
-            "type": "integer",
-            "minimum": 0
-          }
-        ]
-      },
-      {
         "name": "eventHandled",
         "nodoc": true,
         "type": "function",
@@ -3826,19 +3848,6 @@
             "description": "Name of the MenuItem which was activated"
           }
         ]
-      },
-      {
-        "name": "onTextInputTypeChanged",
-        "type": "function",
-        "description": "This event is sent to the virtual keyboard when the text input type is changed.",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "type",
-            "enum": ["none", "text", "password", "search", "email", "number", "tel", "url"],
-            "description": "Type of the current focused input field."
-          }
-        ]
       }
     ]
   },
@@ -3885,7 +3894,7 @@
     ]
   },
   {
-    "namespace": "experimental.inputUI",
+    "namespace": "experimental.input.ui",
     "nodoc": true,
     "platforms": ["chromeos touch"],
     "types": [],

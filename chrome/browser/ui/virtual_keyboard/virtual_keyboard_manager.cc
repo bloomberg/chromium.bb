@@ -48,7 +48,7 @@ namespace {
 const int kDefaultKeyboardHeight = 300;
 const int kKeyboardSlideDuration = 300;  // In milliseconds
 const char kOnTextInputTypeChanged[] =
-    "experimental.input.onTextInputTypeChanged";
+    "experimental.input.virtualKeyboard.onTextInputTypeChanged";
 
 // The default position of the keyboard widget should be at the bottom,
 // spanning the entire width of the desktop.

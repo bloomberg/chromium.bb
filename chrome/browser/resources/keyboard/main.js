@@ -188,7 +188,8 @@ window.onload = function() {
 
   window.onhashchange();
 
-  chrome.experimental.input.onTextInputTypeChanged.addListener(function(type) {
+  chrome.experimental.input.virtualKeyboard.onTextInputTypeChanged.addListener(
+      function(type) {
     var newMode = SHIFT_MODE;
     switch(type) {
       case "text":

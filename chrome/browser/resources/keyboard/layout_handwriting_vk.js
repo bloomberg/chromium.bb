@@ -96,7 +96,8 @@ HandwritingCanvas.prototype = {
         context.stroke();
         canvas.addStroke(coords.x, coords.y);
         if (chrome.experimental) {
-          chrome.experimental.input.sendHandwritingStroke(canvas.stroke_);
+          chrome.experimental.input.virtualKeyboard.sendHandwritingStroke(
+              canvas.stroke_);
         }
         canvas.stroke_ = [];
       }
@@ -110,8 +111,8 @@ HandwritingCanvas.prototype = {
     canvas.ontouchcancel = canvas.onmouseup;
 
     // Clear the canvas when an IME hides the lookup table.
-    if (chrome.experimental && chrome.experimental.inputUI) {
-      chrome.experimental.inputUI.onUpdateLookupTable.addListener(
+    if (chrome.experimental && chrome.experimental.input.ui) {
+      chrome.experimental.input.ui.onUpdateLookupTable.addListener(
           function(table) {
             if (!table.visible) {
               canvas.clear();
@@ -186,7 +187,7 @@ HandwritingCanvas.prototype = {
     var context = this.getContext('2d');
     context.clearRect(0, 0, this.width, this.height);
     if (chrome.experimental) {
-      chrome.experimental.input.cancelHandwritingStrokes();
+      chrome.experimental.input.virtualKeyboard.cancelHandwritingStrokes();
     }
   },
 

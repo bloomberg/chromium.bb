@@ -139,9 +139,9 @@ function sendKey(key) {
   // immediately following the keydown event.
   if (chrome.experimental) {
     keyEvent.type = 'keydown';
-    chrome.experimental.input.sendKeyboardEvent(keyEvent);
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(keyEvent);
     keyEvent.type = 'keyup';
-    chrome.experimental.input.sendKeyboardEvent(keyEvent);
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(keyEvent);
   }
   // Exit shift mode after pressing any key but space.
   if (currentMode == SHIFT_MODE && key != 'Spacebar') {
@@ -895,7 +895,7 @@ HideKeyboardKey.prototype = {
     setupKeyEventHandlers(this, this.modeElements_[mode],
         { 'down': function() {
           if (chrome.experimental) {
-            chrome.experimental.input.hideKeyboard();
+            chrome.experimental.input.virtualKeyboard.hideKeyboard();
           }
         }});
 

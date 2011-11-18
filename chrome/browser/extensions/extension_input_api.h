@@ -17,20 +17,23 @@
 class SendKeyboardEventInputFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.sendKeyboardEvent");
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.input.virtualKeyboard.sendKeyboardEvent");
 };
 
 #if defined(USE_VIRTUAL_KEYBOARD)
 class HideKeyboardFunction : public AsyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.hideKeyboard");
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.input.virtualKeyboard.hideKeyboard");
 };
 
 class SetKeyboardHeightFunction : public AsyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.setKeyboardHeight");
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.input.virtualKeyboard.setKeyboardHeight");
 };
 #endif
 
@@ -44,14 +47,15 @@ class SetKeyboardHeightFunction : public AsyncExtensionFunction {
 class SendHandwritingStrokeFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.sendHandwritingStroke");
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.input.virtualKeyboard.sendHandwritingStroke");
 };
 
 class CancelHandwritingStrokesFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.input.cancelHandwritingStrokes");
+      "experimental.input.virtualKeyboard.cancelHandwritingStrokes");
 };
 #endif
 

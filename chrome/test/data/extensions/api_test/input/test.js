@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// experimental.input API test for Chrome
+// experimental.input.virtualKeyboard API test for Chrome
 // browser_tests --gtest_filter=ExtensionApiTest.Input
 
 chrome.test.runTests([
   function sendKeyboardEvent() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'A' };
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (chrome.extension.lastError) {
         // this is expected for now: no one is handling keys yet
         // chrome.test.fail();
@@ -21,7 +21,7 @@ chrome.test.runTests([
 
   function badKeyIdentifier() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'BogusId' };
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (!chrome.extension.lastError) {
         chrome.test.fail();
       }
@@ -31,7 +31,7 @@ chrome.test.runTests([
 
   function badEventType() {
     var e = { 'type': 'BAD', 'keyIdentifier': 'A' };
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (!chrome.extension.lastError) {
         chrome.test.fail();
       }
@@ -41,7 +41,7 @@ chrome.test.runTests([
 
   function unmappedKeyIdentifier() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'Again' };
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (!chrome.extension.lastError) {
         chrome.test.fail();
       }
@@ -52,7 +52,7 @@ chrome.test.runTests([
   function sendKeyboardEventUnicode1() {
     // U+00E1: LATIN SMALL LATTER A WITH ACUTE.
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+00E1' };
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (chrome.extension.lastError) {
         // this is expected for now. See sendKeyboardEvent().
         // chrome.test.fail();
@@ -65,7 +65,7 @@ chrome.test.runTests([
     // U+043A: CYRILLIC SMALL LETTER KA
     var e = { 'type': 'keydown',
               'keyIdentifier': 'U+043a' };  // lower case is also ok.
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (chrome.extension.lastError) {
         // this is expected for now. See sendKeyboardEvent().
         // chrome.test.fail();
@@ -76,7 +76,7 @@ chrome.test.runTests([
 
   function sendKeyboardEventBadUnicode1() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+' };
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (!chrome.extension.lastError) {
         chrome.test.fail();
       }
@@ -86,7 +86,7 @@ chrome.test.runTests([
 
   function sendKeyboardEventBadUnicode2() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+1' };
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (!chrome.extension.lastError) {
         chrome.test.fail();
       }
@@ -96,7 +96,7 @@ chrome.test.runTests([
 
   function sendKeyboardEventBadUnicode3() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+111g' };
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (!chrome.extension.lastError) {
         chrome.test.fail();
       }
@@ -106,7 +106,7 @@ chrome.test.runTests([
 
   function sendKeyboardEventBadUnicode4() {
     var e = { 'type': 'keydown', 'keyIdentifier': 'U+11111' };
-    chrome.experimental.input.sendKeyboardEvent(e, function() {
+    chrome.experimental.input.virtualKeyboard.sendKeyboardEvent(e, function() {
       if (!chrome.extension.lastError) {
         chrome.test.fail();
       }

@@ -69,37 +69,37 @@ class ExtensionInputUiEventRouter
 class RegisterInputUiFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.inputUI.register");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.register");
 };
 
 class CandidateClickedInputUiFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.inputUI.candidateClicked");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.candidateClicked");
 };
 
 class CursorUpInputUiFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.inputUI.cursorUp");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.cursorUp");
 };
 
 class CursorDownInputUiFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.inputUI.cursorDown");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.cursorDown");
 };
 
 class PageUpInputUiFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.inputUI.pageUp");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.pageUp");
 };
 
 class PageDownInputUiFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.inputUI.pageDown");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.pageDown");
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INPUT_UI_API_H_

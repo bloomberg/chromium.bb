@@ -168,14 +168,16 @@ bool ReadMenuItems(
 
 namespace events {
 
-const char kOnActivate[] = "experimental.input.onActivate";
-const char kOnDeactivated[] = "experimental.input.onDeactivated";
-const char kOnFocus[] = "experimental.input.onFocus";
-const char kOnBlur[] = "experimental.input.onBlur";
-const char kOnInputContextUpdate[] = "experimental.input.onInputContextUpdate";
-const char kOnKeyEvent[] = "experimental.input.onKeyEvent";
-const char kOnCandidateClicked[] = "experimental.input.onCandidateClicked";
-const char kOnMenuItemActivated[] = "experimental.input.onMenuItemActivated";
+const char kOnActivate[] = "experimental.input.ime.onActivate";
+const char kOnDeactivated[] = "experimental.input.ime.onDeactivated";
+const char kOnFocus[] = "experimental.input.ime.onFocus";
+const char kOnBlur[] = "experimental.input.ime.onBlur";
+const char kOnInputContextUpdate[] =
+    "experimental.input.ime.onInputContextUpdate";
+const char kOnKeyEvent[] = "experimental.input.ime.onKeyEvent";
+const char kOnCandidateClicked[] = "experimental.input.ime.onCandidateClicked";
+const char kOnMenuItemActivated[] =
+    "experimental.input.ime.onMenuItemActivated";
 
 }  // namespace events
 
