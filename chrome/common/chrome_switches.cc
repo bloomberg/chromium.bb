@@ -315,6 +315,9 @@ const char kDisableSync[]                   = "disable-sync";
 // Disables syncing of apps.
 const char kDisableSyncApps[]               = "disable-sync-apps";
 
+// Disable syncing app notifications.
+const char kDisableSyncAppNotifications[]    = "disable-sync-app-notifications";
+
 // Disables syncing of autofill.
 const char kDisableSyncAutofill[]           = "disable-sync-autofill";
 
@@ -555,9 +558,6 @@ const char kEnableSyncTabs[]                = "enable-sync-tabs";
 // Enables syncing browser sessions for other synced clients.
 const char kEnableSyncTabsForOtherClients[] =
     "enable-sync-tabs-for-other-clients";
-
-// Enable syncing app notifications.
-const char kEnableSyncAppNotifications[]    = "enable-sync-app-notifications";
 
 // Enables context menu for selecting groups of tabs.
 const char kEnableTabGroupsContextMenu[]    = "enable-tab-groups-context-menu";

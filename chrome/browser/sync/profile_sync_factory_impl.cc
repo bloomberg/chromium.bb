@@ -183,9 +183,9 @@ void ProfileSyncFactoryImpl::RegisterDataTypes(ProfileSyncService* pss) {
         new AutofillProfileDataTypeController(this, profile_));
   }
 
-  // App notifications sync is disabled by default.  Register only if
-  // explicitly enabled.
-  if (command_line_->HasSwitch(switches::kEnableSyncAppNotifications)) {
+  // App notifications sync is enabled by default.  Register only if
+  // explicitly disabled.
+  if (!command_line_->HasSwitch(switches::kDisableSyncAppNotifications)) {
     pss->RegisterDataTypeController(
         new AppNotificationDataTypeController(this, profile_, pss));
   }

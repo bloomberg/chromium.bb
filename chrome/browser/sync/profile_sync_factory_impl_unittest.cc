@@ -41,6 +41,7 @@ class ProfileSyncFactoryImplTest : public testing::Test {
     datatypes.push_back(syncable::THEMES);
     datatypes.push_back(syncable::EXTENSIONS);
     datatypes.push_back(syncable::APPS);
+    datatypes.push_back(syncable::APP_NOTIFICATIONS);
     datatypes.push_back(syncable::AUTOFILL_PROFILE);
     datatypes.push_back(syncable::PASSWORDS);
     datatypes.push_back(syncable::TYPED_URLS);
