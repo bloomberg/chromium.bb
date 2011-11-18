@@ -8,6 +8,7 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
+
 _EXCLUDED_PATHS = (
     r"^breakpad[\\\/].*",
     r"^net/tools/spdyshark/[\\\/].*",
@@ -15,6 +16,15 @@ _EXCLUDED_PATHS = (
     r"^v8[\\\/].*",
     r".*MakeFile$",
 )
+
+
+_TEST_ONLY_WARNING = (
+    'You might be calling functions intended only for testing from\n'
+    'production code.  It is OK to ignore this warning if you know what\n'
+    'you are doing, as the heuristics used to detect the situation are\n'
+    'not perfect.  The commit queue will not block on this warning.\n'
+    'Email joi@chromium.org if you have questions.')
+
 
 
 def _CheckNoInterfacesInBase(input_api, output_api):
@@ -87,11 +97,11 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
       line_number += 1
 
   if problems:
-    return [output_api.PresubmitPromptWarning(
-        'You might be calling functions intended only for testing from\n'
-        'production code. Please verify that the following usages are OK,\n'
-        'and email joi@chromium.org if you are seeing false positives:',
-        problems)]
+    if not input_api.is_committing:
+      return [output_api.PresubmitPromptWarning(_TEST_ONLY_WARNING, problems)]
+    else:
+      # We don't warn on commit, to avoid stopping commits going through CQ.
+      return [output_api.PresubmitNotifyResult(_TEST_ONLY_WARNING, problems)]
   else:
     return []
 
