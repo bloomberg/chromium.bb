@@ -173,13 +173,14 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
                         OnLogMessage)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
+                        OnAcceleratedSurfaceBuffersSwapped)
+
 #if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #endif
 
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
-                        OnAcceleratedSurfaceBuffersSwapped)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceNew,
                         OnAcceleratedSurfaceNew)
 #endif
@@ -188,6 +189,7 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceRelease,
                         OnAcceleratedSurfaceRelease)
 #endif
+
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
@@ -209,15 +211,14 @@ void GpuProcessHostUIShim::OnLogMessage(
 
 void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
                                         int32 render_view_id,
-                                        int32 command_buffer_route_id,
+                                        int32 route_id,
                                         gfx::Size size) {
   // Always respond even if the window no longer exists. The GPU process cannot
   // make progress on the resizing command buffer until it receives the
   // response.
   ScopedSendOnIOThread delayed_send(
       host_id_,
-      new GpuMsg_ResizeViewACK(renderer_id,
-                               command_buffer_route_id));
+      new AcceleratedSurfaceMsg_ResizeViewACK(route_id));
 
   RenderViewHost* host = RenderViewHost::FromID(renderer_id, render_view_id);
   if (!host)
@@ -314,6 +315,8 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceNew(
       params.route_id, surface_id, surface_handle));
 }
 
+#endif
+
 void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params) {
   TRACE_EVENT0("renderer",
@@ -334,23 +337,9 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 
   delayed_send.Cancel();
 
-#if defined (OS_MACOSX)
-  view->AcceleratedSurfaceBuffersSwapped(
-      // Parameters needed to swap the IOSurface.
-      params.window,
-      params.surface_id,
-      // Parameters needed to formulate an acknowledgment.
-      params.renderer_id,
-      params.route_id,
-      host_id_);
-#else  // defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  // view must send ACK message after next composite
-  view->AcceleratedSurfaceBuffersSwapped(
-      params.surface_id, params.route_id, host_id_);
-#endif
+  // View must send ACK message after next composite.
+  view->AcceleratedSurfaceBuffersSwapped(params, host_id_);
 }
-
-#endif
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 

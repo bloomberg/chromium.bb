@@ -26,6 +26,8 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/surface/transport_dib.h"
 
+struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+
 class BackingStore;
 class RenderWidgetHost;
 class WebCursor;
@@ -187,6 +189,14 @@ class RenderWidgetHostView {
 
   // Called when accelerated compositing state changes.
   virtual void OnAcceleratedCompositingStateChange() = 0;
+  // |params.window| and |params.surface_id| indicate which accelerated
+  // surface's buffers swapped. |params.renderer_id| and |params.route_id|
+  // are used to formulate a reply to the GPU process to prevent it from getting
+  // too far ahead. They may all be zero, in which case no flow control is
+  // enforced; this case is currently used for accelerated plugins.
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+      int gpu_host_id) = 0;
 
 #if defined(OS_MACOSX)
   // Tells the view whether or not to accept first responder status.  If |flag|
@@ -243,17 +253,6 @@ class RenderWidgetHostView {
       int32 width,
       int32 height,
       TransportDIB::Handle transport_dib) = 0;
-  // |window| and |surface_id| indicate which accelerated surface's
-  // buffers swapped. |renderer_id| and |route_id| are used to formulate
-  // a reply to the GPU process to prevent it from getting too far ahead.
-  // They may all be zero, in which case no flow control is enforced;
-  // this case is currently used for accelerated plugins.
-  virtual void AcceleratedSurfaceBuffersSwapped(
-      gfx::PluginWindowHandle window,
-      uint64 surface_id,
-      int renderer_id,
-      int32 route_id,
-      int gpu_host_id) = 0;
 #endif
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
@@ -262,10 +261,6 @@ class RenderWidgetHostView {
       int32 height,
       uint64* surface_id,
       TransportDIB::Handle* surface_handle) = 0;
-  virtual void AcceleratedSurfaceBuffersSwapped(
-      uint64 surface_id,
-      int32 route_id,
-      int gpu_host_id) = 0;
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) = 0;
 #endif
 

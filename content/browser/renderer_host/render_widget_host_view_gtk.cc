@@ -1005,6 +1005,12 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
                              gtk_widget_get_visual(view_.get())->depth);
 }
 
+void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(
+    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+    int gpu_host_id) {
+  NOTREACHED();
+}
+
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));

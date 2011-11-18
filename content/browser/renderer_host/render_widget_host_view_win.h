@@ -27,6 +27,7 @@
 #include "ui/base/win/ime_input.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/surface/accelerated_surface_win.h"
 #include "webkit/glue/webcursor.h"
 
 class BackingStore;
@@ -201,6 +202,9 @@ class RenderWidgetHostViewWin
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
+  virtual void AcceleratedSurfaceBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+      int gpu_host_id) OVERRIDE;
   virtual void OnAccessibilityNotifications(
       const std::vector<ViewHostMsg_AccessibilityNotification_Params>& params
       ) OVERRIDE;
@@ -342,6 +346,10 @@ class RenderWidgetHostViewWin
 
   // When we are doing accelerated compositing
   HWND compositor_host_window_;
+
+  // Presents a texture received from another process to the compositing
+  // window.
+  scoped_refptr<AcceleratedSurface> accelerated_surface_;
 
   // true if the compositor host window must be hidden after the
   // software renderered view is updated.
