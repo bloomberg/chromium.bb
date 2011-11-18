@@ -783,9 +783,6 @@
             'ext/SkFontHost_fontconfig.cpp',
             'ext/SkFontHost_fontconfig_direct.cpp',
           ],
-          'defines': [
-            'SK_MAX_SIZE_FOR_LCDTEXT=256',
-          ],
         }, {  # use_glib == 0
           'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
           'sources!': [
