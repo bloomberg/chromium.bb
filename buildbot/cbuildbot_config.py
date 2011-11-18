@@ -547,6 +547,11 @@ add_config('arm-tegra2_kaen-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_kaen',
 }])
 
+add_config('arm-tegra2_kaen-aura-private-bin', [internal, arm, binary, {
+  'board' : 'tegra2_kaen',
+  'profile' : 'aura',
+}])
+
 add_config('arm-tegra2_aebl-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_aebl',
 }])
@@ -693,6 +698,12 @@ add_config('arm-tegra2_asymptote-release', [
 add_config('arm-tegra2_kaen-release', [
     internal, arm, full, official, release, {
   'board' : 'tegra2_kaen',
+}])
+
+add_config('arm-tegra2_kaen-aura-release', [
+    internal, arm, full, official, release, {
+  'board' : 'tegra2_kaen',
+  'profile' : 'aura',
 }])
 
 add_config('aura-tot-chrome-pfq-informational', [chrome_pfq_info, {
