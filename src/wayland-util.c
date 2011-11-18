@@ -1,5 +1,6 @@
 /*
- * Copyright © 2008 Kristian Høgsberg
+ * Copyright © 2008-2011 Kristian Høgsberg
+ * Copyright © 2011 Intel Corporation
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -192,11 +193,8 @@ WL_EXPORT void
 wl_map_remove(struct wl_map *map, uint32_t i)
 {
 	union map_entry *start;
-	uint32_t count;
 
 	start = map->entries.data;
-	count = map->entries.size / sizeof *start;
-
 	start[i].next = map->free_list;
 	map->free_list = (i << 1) | 1;
 }
