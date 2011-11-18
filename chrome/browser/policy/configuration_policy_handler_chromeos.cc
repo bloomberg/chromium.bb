@@ -93,8 +93,9 @@ Value* NetworkConfigurationPolicyHandler::SanitizeNetworkConfig(
   }
 
   // Convert back to a string, pretty printing the contents.
-  base::JSONWriter::WriteWithOptionalEscape(config_dict, true, false,
-                                            &json_string);
+  base::JSONWriter::WriteWithOptions(config_dict, true,
+                                     base::JSONWriter::OPTIONS_DO_NOT_ESCAPE,
+                                     &json_string);
   return Value::CreateStringValue(json_string);
 }
 

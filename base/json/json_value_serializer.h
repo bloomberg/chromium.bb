@@ -41,6 +41,10 @@ class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
   // into the string passed into the constructor.
   virtual bool Serialize(const Value& root) OVERRIDE;
 
+  // Equivalent to Serialize(root) except binary values are omitted from the
+  // output.
+  bool SerializeAndOmitBinaryValues(const Value& root);
+
   // Attempt to deserialize the data structure encoded in the string passed
   // in to the constructor into a structure of Value objects.  If the return
   // value is NULL, and if |error_code| is non-null, |error_code| will
@@ -59,6 +63,8 @@ class BASE_EXPORT JSONStringValueSerializer : public base::ValueSerializer {
   }
 
  private:
+  bool SerializeInternal(const Value& root, bool omit_binary_values);
+
   std::string* json_string_;
   bool initialized_with_const_string_;
   bool pretty_print_;  // If true, serialization will span multiple lines.
@@ -89,6 +95,10 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   // JSON.  If the return value is true, the result will have been written
   // into the file whose name was passed into the constructor.
   virtual bool Serialize(const Value& root) OVERRIDE;
+
+  // Equivalent to Serialize(root) except binary values are omitted from the
+  // output.
+  bool SerializeAndOmitBinaryValues(const Value& root);
 
   // Attempt to deserialize the data structure encoded in the file passed
   // in to the constructor into a structure of Value objects.  If the return
@@ -124,6 +134,8 @@ class BASE_EXPORT JSONFileValueSerializer : public base::ValueSerializer {
   }
 
  private:
+  bool SerializeInternal(const Value& root, bool omit_binary_values);
+
   FilePath json_file_path_;
   bool allow_trailing_comma_;
 
