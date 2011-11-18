@@ -692,3 +692,11 @@
    fun:MessageLoop::RunHandler
    fun:MessageLoop::Run
 }
+{
+   bug_104776
+   ThreadSanitizer:Race
+   fun:base::StatisticsRecorder::FindHistogram
+   fun:base::LinearHistogram::FactoryGet
+   fun:dbus::ObjectProxy::RunResponseCallback
+   fun:base::internal::Invoker4::DoInvoke
+}
