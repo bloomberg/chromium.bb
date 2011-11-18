@@ -661,8 +661,6 @@ TEST_F(DownloadProtectionServiceTest, TestDownloadRequestTimeout) {
       info,
       base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                  base::Unretained(this)));
-  // Run the message loop(s) until SendRequest is called.
-  FlushThreadMessageLoops();
 
   // The request should time out because the HTTP request hasn't returned
   // anything yet.
