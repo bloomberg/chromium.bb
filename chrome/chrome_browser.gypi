@@ -1972,6 +1972,7 @@
         'browser/protector/keys.h',
         'browser/protector/protector.cc',
         'browser/protector/protector.h',
+        'browser/protector/setting_change.cc',
         'browser/protector/setting_change.h',
         'browser/protector/settings_change_global_error.cc',
         'browser/protector/settings_change_global_error.h',
