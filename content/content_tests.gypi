@@ -116,6 +116,11 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
+        ['use_glib == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:glib',
+          ],
+        }],
       ],
     },
     {
