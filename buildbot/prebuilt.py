@@ -103,7 +103,7 @@ def UpdateLocalFile(filename, value, key='PORTAGE_BINHOST'):
     file_var, file_val = line.split('=')
     if file_var == key:
       found = True
-      print 'Updating %s=%s to %s=%s' % (file_var, file_val, key, value)
+      print 'Updating %s=%s to %s="%s"' % (file_var, file_val, key, value)
       value = '"%s"' % value
       file_lines.append(keyval_str % {'key': key, 'value': value})
     else:
@@ -348,7 +348,7 @@ def UpdateBinhostConfFile(path, key, value):
     config_file.close()
   UpdateLocalFile(path, value, key)
   cros_build_lib.RunCommand(['git', 'add', filename], cwd=cwd)
-  description = 'Update %s=%s in %s' % (key, value, filename)
+  description = 'Update %s="%s" in %s' % (key, value, filename)
   cros_build_lib.RunCommand(['git', 'commit', '-m', description], cwd=cwd)
 
 
@@ -536,7 +536,7 @@ class PrebuiltUploader(object):
       binhost_urls.append('%s/%s/' % (self._binhost_base_url.rstrip('/'),
                                       packages_url_suffix.rstrip('/')))
 
-    binhost = '"%s"' % ' '.join(binhost_urls)
+    binhost = ' '.join(binhost_urls)
     if git_sync:
       git_file = os.path.join(self._build_path,
           _PREBUILT_MAKE_CONF[_HOST_TARGET])

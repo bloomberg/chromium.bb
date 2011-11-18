@@ -415,7 +415,7 @@ class TestSyncPrebuilts(unittest.TestCase):
     url_value = '%s/%s/' % (self.binhost.rstrip('/'),
                             packages_url_suffix.rstrip('/'))
     urls = [url_value.replace('foo', 'bar'), url_value]
-    binhost = '"%s"' % ' '.join(urls)
+    binhost = ' '.join(urls)
     prebuilt.RevGitFile(mox.IgnoreArg(), binhost, key=self.key, dryrun=False)
     prebuilt.UpdateBinhostConfFile(mox.IgnoreArg(), self.key, binhost)
     self.mox.ReplayAll()
