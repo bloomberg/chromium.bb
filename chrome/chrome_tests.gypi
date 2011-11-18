@@ -2659,6 +2659,7 @@
         'browser/ui/views/dom_view_browsertest.cc',
         'browser/ui/views/html_dialog_view_browsertest.cc',
         'browser/ui/views/select_file_dialog_extension_browsertest.cc',
+        'browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc',
         'browser/ui/webui/chrome_url_data_manager_browsertest.cc',
         'browser/ui/webui/ntp/most_visited_browsertest.cc',
         'browser/ui/webui/test_chrome_web_ui_factory_browsertest.cc',
@@ -2784,6 +2785,7 @@
             'browser/extensions/extension_input_method_apitest.cc',
             'browser/oom_priority_manager_browsertest.cc',
             'browser/policy/enterprise_metrics_enrollment_browsertest.cc',
+            'browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc',
           ],
         }, { #else: OS == "chromeos"
           'sources!': [
@@ -2800,6 +2802,7 @@
                 ['exclude', '^browser/chromeos/login/screen_locker_browsertest.cc'],
                 ['exclude', '^browser/chromeos/login/screen_locker_tester.cc'],
                 ['exclude', '^browser/chromeos/notifications/'],
+                ['exclude', '^browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc'],
               ],
             }],
           ],

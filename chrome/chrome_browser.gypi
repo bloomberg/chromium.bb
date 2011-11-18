@@ -3539,8 +3539,12 @@
         'browser/ui/views/ssl_client_certificate_selector.h',
         'browser/ui/views/status_bubble_views.cc',
         'browser/ui/views/status_bubble_views.h',
+        'browser/ui/views/status_icons/status_icon_chromeos.cc',
+        'browser/ui/views/status_icons/status_icon_chromeos.h',
         'browser/ui/views/status_icons/status_icon_win.cc',
         'browser/ui/views/status_icons/status_icon_win.h',
+        'browser/ui/views/status_icons/status_tray_chromeos.cc',
+        'browser/ui/views/status_icons/status_tray_chromeos.h',
         'browser/ui/views/status_icons/status_tray_linux.cc',
         'browser/ui/views/status_icons/status_tray_win.cc',
         'browser/ui/views/status_icons/status_tray_win.h',
@@ -4064,6 +4068,10 @@
             ['exclude', 'browser/renderer_host/offline_resource_handler.cc'],
             ['exclude', 'browser/renderer_host/offline_resource_handler.h'],
             ['exclude', 'browser/ui/toolbar/wrench_menu_model_chromeos.cc'],
+            ['exclude', 'browser/ui/views/status_icons/status_tray_chromeos.cc'],
+            ['exclude', 'browser/ui/views/status_icons/status_tray_chromeos.h'],
+            ['exclude', 'browser/ui/views/status_icons/status_icon_chromeos.cc'],
+            ['exclude', 'browser/ui/views/status_icons/status_icon_chromeos.h'],
             ['exclude', 'browser/ui/webui/active_downloads_ui.cc'],
             ['exclude', 'browser/ui/webui/fileicon_source_chromeos.cc'],
             ['exclude', 'browser/ui/webui/fileicon_source_chromeos.h'],
@@ -4992,6 +5000,16 @@
               'sources/': [
                 ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
                 ['exclude', '^browser/extensions/extension_input_ui_api.h'],
+              ],
+            }],
+            # Include the chromeos status tray/icon only for non-aura builds.
+            ['OS=="linux" and toolkit_views==1 and chromeos==1 and use_aura==0', {
+              'sources/': [
+                ['include', '^browser/ui/views/status_icons/status_icon_chromeos.cc'],
+                ['include', '^browser/ui/views/status_icons/status_icon_chromeos.h'],
+                ['include', '^browser/ui/views/status_icons/status_tray_chromeos.cc'],
+                ['include', '^browser/ui/views/status_icons/status_tray_chromeos.h'],
+                ['exclude', '^browser/ui/views/status_icons/status_tray_linux.cc'],
               ],
             }],
             # Exclude file manager files again
