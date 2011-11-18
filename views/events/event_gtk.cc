@@ -121,14 +121,6 @@ ui::KeyboardCode KeyboardCodeFromNative(GdkEvent* gdk_event) {
   return ui::KeyboardCodeFromGdkEventKey(&gdk_event->key);
 }
 
-bool IsMouseEvent(GdkEvent* gdk_event) {
-  return gdk_event->type == GDK_MOTION_NOTIFY ||
-         gdk_event->type == GDK_BUTTON_PRESS ||
-         gdk_event->type == GDK_2BUTTON_PRESS ||
-         gdk_event->type == GDK_3BUTTON_PRESS ||
-         gdk_event->type == GDK_BUTTON_RELEASE;
-}
-
 int GetMouseWheelOffset(GdkEvent* gdk_event) {
   DCHECK(gdk_event->type == GDK_SCROLL);
   int offset = (gdk_event->scroll.direction == GDK_SCROLL_UP ||
