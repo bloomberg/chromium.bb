@@ -354,7 +354,7 @@ cr.define('cr.ui', function() {
       this.addEventListener('keydown', this.handleKeyDown);
       this.addEventListener('focus', this.handleElementFocus_, true);
       this.addEventListener('blur', this.handleElementBlur_, true);
-      this.addEventListener('scroll', this.redraw.bind(this));
+      this.addEventListener('scroll', this.handleScroll.bind(this));
       this.setAttribute('role', 'listbox');
 
       // Make list focusable
@@ -502,6 +502,20 @@ cr.define('cr.ui', function() {
       return this.selectionController_.handleKeyDown(e);
     },
 
+    scrollTopBefore_: 0,
+
+    /**
+     * Handle a scroll event.
+     * @param {Event} e The scroll event.
+     */
+    handleScroll: function(e) {
+      var scrollTop = this.scrollTop;
+      if (scrollTop != this.scrollTopBefore_) {
+        this.scrollTopBefore_ = scrollTop;
+        this.redraw();
+      }
+    },
+
     /**
      * Callback from the selection model. We dispatch {@code change} events
      * when the selection changes.
@@ -533,21 +547,23 @@ cr.define('cr.ui', function() {
       if (pe.newValue != -1) {
         if ((element = this.getListItemByIndex(pe.newValue)))
           element.lead = true;
-        this.scrollIndexIntoView(pe.newValue);
-        // If the lead item has a different height than other items, then we
-        // may run into a problem that requires a second attempt to scroll
-        // it into view. The first scroll attempt will trigger a redraw,
-        // which will clear out the list and repopulate it with new items.
-        // During the redraw, the list may shrink temporarily, which if the
-        // lead item is the last item, will move the scrollTop up since it
-        // cannot extend beyond the end of the list. (Sadly, being scrolled to
-        // the bottom of the list is not "sticky.") So, we set a timeout to
-        // rescroll the list after this all gets sorted out. This is perhaps
-        // not the most elegant solution, but no others seem obvious.
-        var self = this;
-        window.setTimeout(function() {
-          self.scrollIndexIntoView(pe.newValue);
-        });
+        if (pe.oldValue != pe.newValue) {
+          this.scrollIndexIntoView(pe.newValue);
+          // If the lead item has a different height than other items, then we
+          // may run into a problem that requires a second attempt to scroll
+          // it into view. The first scroll attempt will trigger a redraw,
+          // which will clear out the list and repopulate it with new items.
+          // During the redraw, the list may shrink temporarily, which if the
+          // lead item is the last item, will move the scrollTop up since it
+          // cannot extend beyond the end of the list. (Sadly, being scrolled to
+          // the bottom of the list is not "sticky.") So, we set a timeout to
+          // rescroll the list after this all gets sorted out. This is perhaps
+          // not the most elegant solution, but no others seem obvious.
+          var self = this;
+          window.setTimeout(function() {
+            self.scrollIndexIntoView(pe.newValue);
+          });
+        }
       }
     },
 
@@ -905,6 +921,8 @@ cr.define('cr.ui', function() {
         else if (y != leadIndex)
           listItem = newCachedItems[y];
       }
+
+      this.scrollTop = scrollTop;
 
       this.firstIndex_ = firstIndex;
       this.lastIndex_ = lastIndex;
