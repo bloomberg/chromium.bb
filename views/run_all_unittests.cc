@@ -5,7 +5,7 @@
 #include "base/test/test_suite.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/compositor/compositor_test_support.h"
+#include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/gfx/test/gfx_test_utils.h"
 #include "views/view.h"
 

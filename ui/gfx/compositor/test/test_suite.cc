@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/compositor/test_suite.h"
+#include "ui/gfx/compositor/test/test_suite.h"
 
 #include "base/message_loop.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/compositor/compositor_test_support.h"
+#include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/gfx/gfx_paths.h"
 #include "ui/gfx/gl/gl_implementation.h"
 

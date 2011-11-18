@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_COMPOSITOR_TEST_COMPOSITOR_H_
-#define UI_GFX_COMPOSITOR_TEST_COMPOSITOR_H_
+#ifndef UI_GFX_COMPOSITOR_TEST_TEST_COMPOSITOR_H_
+#define UI_GFX_COMPOSITOR_TEST_TEST_COMPOSITOR_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -43,4 +43,4 @@ class TestCompositor : public ui::Compositor {
 
 }  // namespace ui
 
-#endif  // UI_GFX_COMPOSITOR_TEST_COMPOSITOR_H_
+#endif  // UI_GFX_COMPOSITOR_TEST_TEST_COMPOSITOR_H_

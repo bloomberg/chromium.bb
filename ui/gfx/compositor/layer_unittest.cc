@@ -15,12 +15,81 @@
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
-#include "ui/gfx/compositor/test_compositor.h"
-#include "ui/gfx/compositor/test_compositor_host.h"
+#include "ui/gfx/compositor/test/test_compositor.h"
+#include "ui/gfx/compositor/test/test_compositor_host.h"
+#include "ui/gfx/gfx_paths.h"
 
 namespace ui {
 
 namespace {
+
+// Encodes a bitmap into a PNG and write to disk. Returns true on success. The
+// parent directory does not have to exist.
+bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
+  std::vector<unsigned char> png_data;
+  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data) &&
+      file_util::CreateDirectory(file_path.DirName())) {
+    char* data = reinterpret_cast<char*>(&png_data[0]);
+    int size = static_cast<int>(png_data.size());
+    return file_util::WriteFile(file_path, data, size) == size;
+  }
+  return false;
+}
+
+// Reads and decodes a PNG image to a bitmap. Returns true on success. The PNG
+// should have been encoded using |gfx::PNGCodec::Encode|.
+bool ReadPNGFile(const FilePath& file_path, SkBitmap* bitmap) {
+  DCHECK(bitmap);
+  std::string png_data;
+  return file_util::ReadFileToString(file_path, &png_data) &&
+         gfx::PNGCodec::Decode(reinterpret_cast<unsigned char*>(&png_data[0]),
+                               png_data.length(),
+                               bitmap);
+}
+
+// Compares with a PNG file on disk, and returns true if it is the same as
+// the given image. |ref_img_path| is absolute.
+bool IsSameAsPNGFile(const SkBitmap& gen_bmp, FilePath ref_img_path) {
+  SkBitmap ref_bmp;
+  if (!ReadPNGFile(ref_img_path, &ref_bmp)) {
+    LOG(ERROR) << "Cannot read reference image: " << ref_img_path.value();
+    return false;
+  }
+
+  if (ref_bmp.width() != gen_bmp.width() ||
+      ref_bmp.height() != gen_bmp.height()) {
+    LOG(ERROR)
+        << "Dimensions do not match (Expected) vs (Actual):"
+        << "(" << ref_bmp.width() << "x" << ref_bmp.height()
+            << ") vs. "
+        << "(" << gen_bmp.width() << "x" << gen_bmp.height() << ")";
+    return false;
+  }
+
+  // Compare pixels and create a simple diff image.
+  int diff_pixels_count = 0;
+  SkAutoLockPixels lock_bmp(gen_bmp);
+  SkAutoLockPixels lock_ref_bmp(ref_bmp);
+  // The reference images were saved with no alpha channel. Use the mask to
+  // set alpha to 0.
+  uint32_t kAlphaMask = 0x00FFFFFF;
+  for (int x = 0; x < gen_bmp.width(); ++x) {
+    for (int y = 0; y < gen_bmp.height(); ++y) {
+      if ((*gen_bmp.getAddr32(x, y) & kAlphaMask) !=
+          (*ref_bmp.getAddr32(x, y) & kAlphaMask)) {
+        ++diff_pixels_count;
+      }
+    }
+  }
+
+  if (diff_pixels_count != 0) {
+    LOG(ERROR) << "Images differ by pixel count: " << diff_pixels_count;
+    return false;
+  }
+
+  return true;
+}
+
 
 // There are three test classes in here that configure the Compositor and
 // Layer's slightly differently:
@@ -53,7 +122,13 @@ class ColoredLayer : public Layer, public LayerDelegate {
 
 class LayerWithRealCompositorTest : public testing::Test {
  public:
-  LayerWithRealCompositorTest() {}
+  LayerWithRealCompositorTest() {
+    if (PathService::Get(gfx::DIR_TEST_DATA, &test_data_directory_)) {
+      test_data_directory_ = test_data_directory_.AppendASCII("compositor");
+    } else {
+      LOG(ERROR) << "Could not open test data directory.";
+    }
+  }
   virtual ~LayerWithRealCompositorTest() {}
 
   // Overridden from testing::Test:
@@ -105,8 +180,13 @@ class LayerWithRealCompositorTest : public testing::Test {
         gfx::Rect(0, 0, layer->bounds().width(), layer->bounds().height()));
   }
 
+  const FilePath& test_data_directory() const { return test_data_directory_; }
+
  private:
   scoped_ptr<TestCompositorHost> window_;
+
+  // The root directory for test files.
+  FilePath test_data_directory_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerWithRealCompositorTest);
 };
@@ -178,20 +258,6 @@ class NullLayerDelegate : public LayerDelegate {
   DISALLOW_COPY_AND_ASSIGN(NullLayerDelegate);
 };
 
-// Encodes a bitmap into a PNG and write to disk. Returns true on success. The
-// parent directory does not have to exist.
-bool WritePNGFile(const SkBitmap& bitmap, const FilePath& file_path) {
-  std::vector<unsigned char> png_data;
-  if (gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, true, &png_data) &&
-      file_util::CreateDirectory(file_path.DirName())) {
-    int bytes_written = file_util::WriteFile(
-        file_path, reinterpret_cast<char*>(&png_data[0]), png_data.size());
-    if (bytes_written == static_cast<int>(png_data.size()))
-      return true;
-  }
-  return false;
-}
-
 // Remembers if it has been notified.
 class TestCompositorObserver : public CompositorObserver {
  public:
@@ -224,6 +290,8 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_DrawPixels DISABLED_DrawPixels
 #define MAYBE_SetRootLayer DISABLED_SetRootLayer
 #define MAYBE_CompositorObservers DISABLED_CompositorObservers
+#define MAYBE_ModifyHierarchy DISABLED_ModifyHierarchy
+#define MAYBE_Opacity DISABLED_Opacity
 #else
 #define MAYBE_Delegate Delegate
 #define MAYBE_Draw Draw
@@ -233,6 +301,8 @@ class TestCompositorObserver : public CompositorObserver {
 #define MAYBE_DrawPixels DrawPixels
 #define MAYBE_SetRootLayer SetRootLayer
 #define MAYBE_CompositorObservers CompositorObservers
+#define MAYBE_ModifyHierarchy ModifyHierarchy
+#define MAYBE_Opacity Opacity
 #endif
 
 TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
@@ -1126,6 +1196,89 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
   l2->SetOpacity(0.5f);
   RunPendingMessages();
   EXPECT_FALSE(observer.notified());
+}
+
+// Checks that modifying the hierarchy correctly affects final composite.
+TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
+  GetCompositor()->WidgetSizeChanged(gfx::Size(50, 50));
+
+  // l0
+  //  +-l11
+  //  | +-l21
+  //  +-l12
+  scoped_ptr<Layer> l0(CreateColorLayer(SK_ColorRED,
+                                        gfx::Rect(0, 0, 50, 50)));
+  scoped_ptr<Layer> l11(CreateColorLayer(SK_ColorGREEN,
+                                         gfx::Rect(0, 0, 25, 25)));
+  scoped_ptr<Layer> l21(CreateColorLayer(SK_ColorMAGENTA,
+                                         gfx::Rect(0, 0, 15, 15)));
+  scoped_ptr<Layer> l12(CreateColorLayer(SK_ColorBLUE,
+                                         gfx::Rect(10, 10, 25, 25)));
+
+  FilePath ref_img1 = test_data_directory().AppendASCII("ModifyHierarchy1.png");
+  FilePath ref_img2 = test_data_directory().AppendASCII("ModifyHierarchy2.png");
+  SkBitmap bitmap;
+
+  l0->Add(l11.get());
+  l11->Add(l21.get());
+  l0->Add(l12.get());
+  DrawTree(l0.get());
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
+  ASSERT_FALSE(bitmap.empty());
+  // WritePNGFile(bitmap, ref_img1);
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img1));
+
+  l0->MoveToFront(l11.get());
+  DrawTree(l0.get());
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
+  ASSERT_FALSE(bitmap.empty());
+  // WritePNGFile(bitmap, ref_img2);
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
+
+  // l11 is already at the front, should have no effect.
+  l0->MoveToFront(l11.get());
+  DrawTree(l0.get());
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
+  ASSERT_FALSE(bitmap.empty());
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
+
+  // l11 is already at the front, should have no effect.
+  l0->MoveAbove(l11.get(), l12.get());
+  DrawTree(l0.get());
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
+  ASSERT_FALSE(bitmap.empty());
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
+
+  // should restore to original configuration
+  l0->MoveAbove(l12.get(), l11.get());
+  DrawTree(l0.get());
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
+  ASSERT_FALSE(bitmap.empty());
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img1));
+}
+
+// Opacity is rendered correctly.
+// Checks that modifying the hierarchy correctly affects final composite.
+TEST_F(LayerWithRealCompositorTest, MAYBE_Opacity) {
+  GetCompositor()->WidgetSizeChanged(gfx::Size(50, 50));
+
+  // l0
+  //  +-l11
+  scoped_ptr<Layer> l0(CreateColorLayer(SK_ColorRED,
+                                        gfx::Rect(0, 0, 50, 50)));
+  scoped_ptr<Layer> l11(CreateColorLayer(SK_ColorGREEN,
+                                         gfx::Rect(0, 0, 25, 25)));
+
+  FilePath ref_img = test_data_directory().AppendASCII("Opacity.png");
+
+  l11->SetOpacity(0.75);
+  l0->Add(l11.get());
+  DrawTree(l0.get());
+  SkBitmap bitmap;
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
+  ASSERT_FALSE(bitmap.empty());
+  // WritePNGFile(bitmap, ref_img);
+  EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img));
 }
 
 } // namespace ui

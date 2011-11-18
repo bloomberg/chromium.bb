@@ -7,7 +7,7 @@
 #if defined(VIEWS_COMPOSITOR)
 #include "base/command_line.h"
 #include "ui/gfx/compositor/compositor.h"
-#include "ui/gfx/compositor/test_compositor.h"
+#include "ui/gfx/compositor/test/test_compositor.h"
 #endif
 
 #if defined(VIEWS_COMPOSITOR)

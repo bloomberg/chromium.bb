@@ -15,7 +15,7 @@
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/compositor/compositor_test_support.h"
+#include "ui/gfx/compositor/test/compositor_test_support.h"
 
 namespace {
 

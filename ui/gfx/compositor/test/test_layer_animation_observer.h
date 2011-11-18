@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_COMPOSITOR_TEST_LAYER_ANIMATION_OBSERVER_
-#define UI_GFX_COMPOSITOR_TEST_LAYER_ANIMATION_OBSERVER_
+#ifndef UI_GFX_COMPOSITOR_TEST_TEST_LAYER_ANIMATION_OBSERVER_
+#define UI_GFX_COMPOSITOR_TEST_TEST_LAYER_ANIMATION_OBSERVER_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -52,4 +52,4 @@ class TestLayerAnimationObserver : public LayerAnimationObserver {
 
 }  // namespace ui
 
-#endif  // UI_GFX_COMPOSITOR_TEST_LAYER_ANIMATION_OBSERVER_
+#endif  // UI_GFX_COMPOSITOR_TEST_TEST_LAYER_ANIMATION_OBSERVER_

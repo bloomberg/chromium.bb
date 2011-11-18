@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/compositor/compositor_test_support.h"
+#include "ui/gfx/compositor/test/compositor_test_support.h"
 
 #if defined(USE_WEBKIT_COMPOSITOR)
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"

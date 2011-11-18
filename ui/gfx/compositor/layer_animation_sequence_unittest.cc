@@ -13,9 +13,9 @@
 #include "ui/gfx/transform.h"
 #include "ui/gfx/compositor/layer_animation_delegate.h"
 #include "ui/gfx/compositor/layer_animation_element.h"
-#include "ui/gfx/compositor/test_layer_animation_delegate.h"
-#include "ui/gfx/compositor/test_layer_animation_observer.h"
-#include "ui/gfx/compositor/test_utils.h"
+#include "ui/gfx/compositor/test/test_layer_animation_delegate.h"
+#include "ui/gfx/compositor/test/test_layer_animation_observer.h"
+#include "ui/gfx/compositor/test/test_utils.h"
 
 namespace ui {
 
