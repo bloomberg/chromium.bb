@@ -16,6 +16,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -197,8 +198,14 @@ views::MenuButton* NetworkMenuButton::GetMenuButton() {
 }
 
 gfx::NativeWindow NetworkMenuButton::GetNativeWindow() const {
-  // This must always have a parent, which must have a widget ancestor.
-  return parent()->GetWidget()->GetNativeWindow();
+  if (BaseLoginDisplayHost::default_host()) {
+    // When not in browser mode i.e. login screen, status area is hosted in
+    // a separate widget.
+    return BaseLoginDisplayHost::default_host()->GetNativeWindow();
+  } else {
+    // This must always have a parent, which must have a widget ancestor.
+    return parent()->GetWidget()->GetNativeWindow();
+  }
 }
 
 void NetworkMenuButton::OpenButtonOptions() {
