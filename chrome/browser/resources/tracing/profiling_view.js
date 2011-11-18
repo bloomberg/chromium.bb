@@ -46,10 +46,8 @@ cr.define('tracing', function() {
       this.timelineView_ = new TimelineView();
 
       this.controlDiv_.appendChild(this.recordBn_);
-      if (!browserBridge.debugMode) {
-        this.controlDiv_.appendChild(this.loadBn_);
-        this.controlDiv_.appendChild(this.saveBn_);
-      }
+      this.controlDiv_.appendChild(this.loadBn_);
+      this.controlDiv_.appendChild(this.saveBn_);
 
       this.container_.appendChild(this.timelineView_);
       this.appendChild(this.container_);

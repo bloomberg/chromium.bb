@@ -21,18 +21,17 @@ found in the LICENSE file.
   border-top: 1px solid #D0D0D0;
 }
 
-.timeline-slice-track {
+.timeline-canvas-based-track {
   -webkit-box-orient: horizontal;
   -webkit-box-align: stretch;
   background-color: white;
   display: -webkit-box;
-  height: 18px;
   margin: 0;
   padding: 0;
   padding-right: 5px;
 }
 
-.timeline-slice-track-title {
+.timeline-canvas-based-track-title {
   overflow: hidden;
   padding-right: 5px;
   text-align: right;
@@ -40,13 +39,21 @@ found in the LICENSE file.
   white-space: nowrap;
 }
 
-.timeline-slice-track-canvas-container {
+.timeline-canvas-based-track-canvas-container {
   -webkit-box-flex: 1;
   width: 100%;
 }
 
-.timeline-slice-track-canvas {
+.timeline-canvas-based-track-canvas {
   -webkit-box-flex: 1;
   height: 100%;
   width: 100%;
+}
+
+.timeline-slice-track {
+  height: 18px;
+}
+
+.timeline-counter-track {
+  height: 30px;
 }

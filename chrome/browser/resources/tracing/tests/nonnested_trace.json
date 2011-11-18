@@ -1,0 +1,23 @@
+[
+  {"cat": "PERF", "pid": 22630, "tid": 22630, "ts": 826, "ph": "B",
+      "name": "A", "args": {}},
+  {"cat": "PERF", "pid": 22630, "tid": 22630, "ts": 827, "ph": "B",
+      "name": "Asub", "args": {}},
+  {"cat": "PERF", "pid": 22630, "tid": 22630, "ts": 829, "ph": "B",
+      "name": "NonNest", "args": {"id": "1", "ui-nest": "0"}},
+  {"cat": "PERF", "pid": 22630, "tid": 22630, "ts": 830, "ph": "B",
+      "name": "NonNest", "args": {"id": "2", "ui-nest": "0"}},
+  {"cat": "PERF", "pid": 22630, "tid": 22630, "ts": 831, "ph": "E",
+      "name": "Asub", "args": {}},
+  {"cat": "PERF", "pid": 22630, "tid": 22630, "ts": 832, "ph": "E",
+      "name": "NonNest", "args": {"id": "1", "ui-nest": "0"}},
+  {"cat": "PERF", "pid": 22630, "tid": 22630, "ts": 833, "ph": "E",
+      "name": "NonNest", "args": {"id": "2", "ui-nest": "0"}},
+  {"cat": "PERF", "pid": 22630, "tid": 22630, "ts": 834, "ph": "E",
+      "name": "A", "args": {}},
+
+  {"cat": "PERF", "pid": 22630, "tid": 22631, "ts": 827, "ph": "B",
+      "name": "A", "args": {}},
+  {"cat": "PERF", "pid": 22630, "tid": 22631, "ts": 854, "ph": "E",
+      "name": "A", "args": {}}
+]

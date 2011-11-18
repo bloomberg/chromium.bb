@@ -30,13 +30,15 @@ cr.define('tracing', function() {
    * All time units are stored in milliseconds.
    * @constructor
    */
-  function TimelineSlice(title, colorId, start, args) {
+  function TimelineSlice(title, colorId, start, args, opt_duration) {
     this.title = title;
     this.start = start;
     this.colorId = colorId;
     this.args = args;
     this.didNotFinish = false;
     this.subSlices = [];
+    if (opt_duration !== undefined)
+      this.duration = opt_duration;
   }
 
   TimelineSlice.prototype = {
@@ -112,6 +114,23 @@ cr.define('tracing', function() {
         this.minTimestamp = undefined;
         this.maxTimestamp = undefined;
       }
+    },
+
+    /**
+     * @return {String} A user-friendly name for this thread.
+     */
+    get userFriendlyName() {
+      var tname = this.name || this.tid;
+      return this.parent.pid + ': ' + tname;
+    },
+
+    /**
+     * @return {String} User friendly details about this thread.
+     */
+    get userFriendlyDetials() {
+      return 'pid: ' + this.parent.pid +
+          ', tid: ' + this.tid +
+          (this.name ? ', name: ' + this.name : '');
     }
 
   };
@@ -122,7 +141,7 @@ cr.define('tracing', function() {
    */
   TimelineThread.compare = function(x, y) {
     if (x.parent.pid != y.parent.pid) {
-      return x.parent.pid - y.parent.pid;
+      return TimelineProcess.compare(x.parent, y.parent.pid);
     }
 
     if (x.name && y.name) {
@@ -139,6 +158,78 @@ cr.define('tracing', function() {
     }
   };
 
+  /**
+   * Stores all the samples for a given counter.
+   * @constructor
+   */
+  function TimelineCounter(parent, id, name) {
+    this.parent = parent;
+    this.id = id;
+    this.name = name;
+    this.seriesNames = [];
+    this.seriesColors = [];
+    this.timestamps = [];
+    this.samples = [];
+  }
+
+  TimelineCounter.prototype = {
+    __proto__: Object.prototype,
+
+    get numSeries() {
+      return this.seriesNames.length;
+    },
+
+    get numSamples() {
+      return this.timestamps.length;
+    },
+
+    /**
+     * Updates the bounds for this counter based on the samples it contains.
+     */
+    updateBounds: function() {
+      if (this.seriesNames.length != this.seriesColors.length)
+        throw 'seriesNames.length must match seriesColors.length';
+      if (this.numSeries * this.numSamples != this.samples.length)
+        throw 'samples.length must be a multiple of numSamples.';
+
+      this.totals = [];
+      if (this.samples.length == 0) {
+        this.minTimestamp = undefined;
+        this.maxTimestamp = undefined;
+        this.maxTotal = 0;
+        return;
+      }
+      this.minTimestamp = this.timestamps[0];
+      this.maxTimestamp = this.timestamps[this.timestamps.length - 1];
+
+      var numSeries = this.numSeries;
+      var maxTotal = -Infinity;
+      for (var i = 0; i < this.timestamps.length; i++) {
+        var total = 0;
+        for (var j = 0; j < numSeries; j++) {
+          total += this.samples[i * numSeries + j];
+          this.totals.push(total);
+        }
+        if (total > maxTotal)
+          maxTotal = total;
+      }
+      this.maxTotal = maxTotal;
+    }
+
+  };
+
+  /**
+   * Comparison between counters that orders by pid, then name.
+   */
+  TimelineCounter.compare = function(x, y) {
+    if (x.parent.pid != y.parent.pid) {
+      return TimelineProcess.compare(x.parent, y.parent.pid);
+    }
+    var tmp = x.name.localeCompare(y.name);
+    if (tmp == 0)
+      return x.tid - y.tid;
+    return tmp;
+  };
 
   /**
    * The TimelineProcess represents a single process in the
@@ -149,6 +240,7 @@ cr.define('tracing', function() {
   function TimelineProcess(pid) {
     this.pid = pid;
     this.threads = {};
+    this.counters = {};
   };
 
   TimelineProcess.prototype = {
@@ -160,11 +252,33 @@ cr.define('tracing', function() {
       return n;
     },
 
+    /**
+     * @return {TimlineThread} The thread identified by tid on this process,
+     * creating it if it doesn't exist.
+     */
     getOrCreateThread: function(tid) {
       if (!this.threads[tid])
         this.threads[tid] = new TimelineThread(this, tid);
       return this.threads[tid];
+    },
+
+    /**
+     * @return {TimlineCounter} The counter on this process named 'name',
+     * creating it if it doesn't exist.
+     */
+    getOrCreateCounter: function(cat, name) {
+      var id = cat + '.' + name;
+      if (!this.counters[id])
+        this.counters[id] = new TimelineCounter(this, id, name);
+      return this.counters[id];
     }
+  };
+
+  /**
+   * Comparison between processes that orders by pid.
+   */
+  TimelineProcess.compare = function(x, y) {
+    return x.pid - y.pid;
   };
 
   /**
@@ -177,6 +291,20 @@ cr.define('tracing', function() {
     for (var i = 0; i < name.length; ++i)
       hash = (hash + 37 * hash + 11 * name.charCodeAt(i)) % 0xFFFFFFFF;
     return hash;
+  }
+
+  /**
+   * The number of color IDs that getStringColorId can choose from.
+   */
+  const numColorIds = 30;
+
+  /**
+   * @return {Number} A color ID that is stably associated to the provided via
+   * the getStringHash method.
+   */
+  function getStringColorId(string) {
+    var hash = getStringHash(string);
+    return hash % numColorIds;
   }
 
   /**
@@ -218,8 +346,7 @@ cr.define('tracing', function() {
       // The ptid is a unique key for a thread in the trace.
       this.importErrors = [];
 
-      // Threadstate
-      const numColorIds = 30;
+      // Threadstate.
       function ThreadState(tid) {
         this.openSlices = [];
         this.openNonNestedSlices = {};
@@ -229,8 +356,7 @@ cr.define('tracing', function() {
       var nameToColorMap = {};
       function getColor(name) {
         if (!(name in nameToColorMap)) {
-          var hash = getStringHash(name);
-          nameToColorMap[name] = hash % numColorIds;
+          nameToColorMap[name] = getStringColorId(name);
         }
         return nameToColorMap[name];
       }
@@ -328,6 +454,42 @@ cr.define('tracing', function() {
           // TimelineSliceTrack's redraw() knows how to handle this.
           processBegin(state, event);
           processEnd(state, event);
+        } else if (event.ph == 'C') {
+          var ctr_name;
+          if (event.id !== undefined)
+            ctr_name = event.name + '[' + event.id + ']';
+          else
+            ctr_name = event.name;
+
+          var ctr = this.getOrCreateProcess(event.pid)
+              .getOrCreateCounter(event.cat, ctr_name);
+          // Initialize the counter's series fields if needed.
+          if (ctr.numSeries == 0) {
+            for (var seriesName in event.args) {
+              ctr.seriesNames.push(seriesName);
+              ctr.seriesColors.push(
+                  getStringColorId(ctr.name + '.' + seriesName));
+            }
+            if (ctr.numSeries == 0) {
+              this.importErrors.push('Expected counter ' + event.name +
+                  ' to have at least one argument to use as a value.');
+              // Drop the counter.
+              delete ctr.parent.counters[ctr.name];
+              continue;
+            }
+          }
+
+          // Add the sample values.
+          ctr.timestamps.push(event.ts);
+          for (var i = 0; i < ctr.numSeries; i++) {
+            var seriesName = ctr.seriesNames[i];
+            if (event.args[seriesName] === undefined) {
+              ctr.samples.push(0);
+              continue;
+            }
+            ctr.samples.push(event.args[seriesName]);
+          }
+
         } else if (event.ph == 'M') {
           if (event.name == 'thread_name') {
             var thread = this.getOrCreateProcess(event.pid)
@@ -405,6 +567,16 @@ cr.define('tracing', function() {
           wmax = Math.max(wmax, thread.maxTimestamp);
         }
       }
+      var counters = this.getAllCounters();
+      for (var tI = 0; tI < counters.length; tI++) {
+        var counter = counters[tI];
+        counter.updateBounds();
+        if (counter.minTimestamp != undefined &&
+            counter.maxTimestamp != undefined) {
+          wmin = Math.min(wmin, counter.minTimestamp);
+          wmax = Math.max(wmax, counter.maxTimestamp);
+        }
+      }
       this.minTimestamp = wmin;
       this.maxTimestamp = wmax;
     },
@@ -432,7 +604,12 @@ cr.define('tracing', function() {
           shiftSubRow(thread.nonNestedSubRows[tSR]);
         }
       }
-
+      var counters = this.getAllCounters();
+      for (var tI = 0; tI < counters.length; tI++) {
+        var counter = counters[tI];
+        for (var sI = 0; sI < counter.timestamps.length; sI++)
+          counter.timestamps[sI] = (counter.timestamps[sI] - timeBase) / 1000;
+      }
       this.updateBounds();
     },
 
@@ -445,14 +622,30 @@ cr.define('tracing', function() {
         }
       }
       return threads;
+    },
+
+    /**
+     * @return {Array} An array of all the counters in the model.
+     */
+    getAllCounters: function() {
+      var counters = [];
+      for (var pid in this.processes) {
+        var process = this.processes[pid];
+        for (var tid in process.counters) {
+          counters.push(process.counters[tid]);
+        }
+      }
+      return counters;
     }
 
   };
 
   return {
     getStringHash: getStringHash,
+    getStringColorId: getStringColorId,
     TimelineSlice: TimelineSlice,
     TimelineThread: TimelineThread,
+    TimelineCounter: TimelineCounter,
     TimelineProcess: TimelineProcess,
     TimelineModel: TimelineModel
   };

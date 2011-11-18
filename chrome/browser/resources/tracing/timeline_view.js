@@ -75,6 +75,7 @@ cr.define('tracing', function() {
           this.timeline_.detach();
         this.timeline_ = new tracing.Timeline();
         this.timeline_.model = this.timelineModel_;
+        this.timeline_.focusElement = this.parentElement;
         this.timelineContainer_.appendChild(this.timeline_);
         this.timeline_.addEventListener('selectionChange',
                                         this.onSelectionChangedBoundToThis_);

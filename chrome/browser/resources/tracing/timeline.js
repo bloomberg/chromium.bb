@@ -30,16 +30,98 @@ cr.define('tracing', function() {
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function TimelineViewport() {
+  function TimelineViewport(parentEl) {
+    this.parentEl_ = parentEl;
     this.scaleX_ = 1;
     this.panX_ = 0;
     this.gridTimebase_ = 0;
     this.gridStep_ = 1000 / 60;
     this.gridEnabled_ = false;
+    this.hasCalledSetupFunction_ = false;
+
+    this.onResizeBoundToThis_ = this.onResize_.bind(this);
+
+    // The following code uses an interval to detect when the parent element
+    // is attached to the document. That is a trigger to run the setup function
+    // and install a resize listener.
+    this.checkForAttachInterval_ = setInterval(
+        this.checkForAttach_.bind(this), 250);
   }
 
   TimelineViewport.prototype = {
     __proto__: cr.EventTarget.prototype,
+
+    /**
+     * Allows initialization of the viewport when the viewport's parent element
+     * has been attached to the document and given a size.
+     * @param {Function} fn Function to call when the viewport can be safely
+     * initialized.
+     */
+    setWhenPossible: function(fn) {
+      this.pendingSetFunction_ = fn;
+    },
+
+    /**
+     * @return {boolean} Whether the current timeline is attached to the
+     * document.
+     */
+    get isAttachedToDocument_() {
+      var cur = this.parentEl_;
+      while (cur.parentNode)
+        cur = cur.parentNode;
+      return cur == this.parentEl_.ownerDocument;
+    },
+
+    onResize_: function() {
+      this.dispatchChangeEvent();
+    },
+
+    /**
+     * Checks whether the parentNode is attached to the document.
+     * When it is, it installs the iframe-based resize detection hook
+     * and then runs the pendingSetFunction_, if present.
+     */
+    checkForAttach_: function() {
+      if (!this.isAttachedToDocument_ || this.clientWidth == 0)
+        return;
+
+      if (!this.iframe_) {
+        this.iframe_ = document.createElement('iframe');
+        this.iframe_.style.cssText =
+            'position:absolute;width:100%;height:0;border:0;visibility:hidden;';
+        this.parentEl_.appendChild(this.iframe_);
+
+        this.iframe_.contentWindow.addEventListener('resize',
+                                                    this.onResizeBoundToThis_);
+      }
+
+      var curSize = this.clientWidth + 'x' + this.clientHeight;
+      if (this.pendingSetFunction_) {
+        this.lastSize_ = curSize;
+        this.pendingSetFunction_();
+        this.pendingSetFunction_ = undefined;
+      }
+
+      window.clearInterval(this.checkForAttachInterval_);
+      this.checkForAttachInterval_ = undefined;
+    },
+
+    /**
+     * Fires the change event on this viewport. Used to notify listeners
+     * to redraw when the underlying model has been mutated.
+     */
+    dispatchChangeEvent: function() {
+      cr.dispatchSimpleEvent(this, 'change');
+    },
+
+    detach: function() {
+      if (this.checkForAttachInterval_) {
+        window.clearInterval(this.checkForAttachInterval_);
+        this.checkForAttachInterval_ = undefined;
+      }
+      this.iframe_.removeListener('resize', this.onResizeBoundToThis_);
+      this.parentEl_.removeChild(this.iframe_);
+    },
 
     get scaleX() {
       return this.scaleX_;
@@ -48,7 +130,7 @@ cr.define('tracing', function() {
       var changed = this.scaleX_ != s;
       if (changed) {
         this.scaleX_ = s;
-        cr.dispatchSimpleEvent(this, 'change');
+        this.dispatchChangeEvent();
       }
     },
 
@@ -59,7 +141,7 @@ cr.define('tracing', function() {
       var changed = this.panX_ != p;
       if (changed) {
         this.panX_ = p;
-        cr.dispatchSimpleEvent(this, 'change');
+        this.dispatchChangeEvent();
       }
     },
 
@@ -68,7 +150,7 @@ cr.define('tracing', function() {
       if (changed) {
         this.scaleX_ = s;
         this.panX_ = p;
-        cr.dispatchSimpleEvent(this, 'change');
+        this.dispatchChangeEvent();
       }
     },
 
@@ -111,7 +193,7 @@ cr.define('tracing', function() {
       if (this.gridEnabled_ == enabled)
         return;
       this.gridEnabled_ = enabled && true;
-      cr.dispatchSimpleEvent(this, 'change');
+      this.dispatchChangeEvent();
     },
 
     get gridTimebase() {
@@ -152,38 +234,16 @@ cr.define('tracing', function() {
 
     decorate: function() {
       this.classList.add('timeline');
-      this.needsViewportReset_ = false;
 
-      this.viewport_ = new TimelineViewport();
-      this.viewport_.addEventListener('change',
-                                      this.viewportChange_.bind(this));
-
-      this.invalidatePending_ = false;
+      this.viewport_ = new TimelineViewport(this);
 
       this.tracks_ = this.ownerDocument.createElement('div');
-      this.tracks_.invalidate = this.invalidate.bind(this);
       this.appendChild(this.tracks_);
 
       this.dragBox_ = this.ownerDocument.createElement('div');
       this.dragBox_.className = 'timeline-drag-box';
       this.appendChild(this.dragBox_);
       this.hideDragBox_();
-
-      // The following code uses a setInterval to monitor the timeline control
-      // for size changes. This is so that we can keep the canvas' bitmap size
-      // correctly synchronized with its presentation size.
-      // TODO(nduca): detect this in a more efficient way, e.g. iframe hack.
-      this.lastSize_ = this.clientWidth + 'x' + this.clientHeight;
-      this.checkForResizeInterval_ =
-          this.ownerDocument.defaultView.setInterval(function() {
-        if (!this.isAttachedToDocument_)
-          return;
-        var curSize = this.clientWidth + 'x' + this.clientHeight;
-        if (this.clientWidth && curSize != this.lastSize_) {
-          this.lastSize_ = curSize;
-          this.onResize();
-        }
-      }.bind(this), 250);
 
       this.bindEventListener_(document, 'keypress', this.onKeypress_, this);
       this.bindEventListener_(document, 'keydown', this.onKeydown_, this);
@@ -213,13 +273,19 @@ cr.define('tracing', function() {
     },
 
     detach: function() {
+      for (var i = 0; i < this.tracks_.children.length; i++)
+        this.tracks_.children[i].detach();
+
       for (var i = 0; i < this.boundListeners_.length; i++) {
         var binding = this.boundListeners_[i];
         binding.object.removeEventListener(binding.event, binding.boundFunc);
       }
       this.boundListeners_ = undefined;
-      window.clearInterval(this.checkForResizeInterval_);
-      this.checkForResizeInterval_ = undefined;
+      this.viewport_.detach();
+    },
+
+    get viewport() {
+      return this.viewport_;
     },
 
     get model() {
@@ -234,113 +300,114 @@ cr.define('tracing', function() {
       }
       this.model_ = model;
 
-      // Create tracks and measure their heading size.
-      var threads = model.getAllThreads();
+      // Figure out all the headings.
+      var allHeadings = [];
+      model.getAllThreads().forEach(function(t) {
+        allHeadings.push(t.userFriendlyName);
+      });
+      model.getAllCounters().forEach(function(c) {
+        allHeadings.push(c.name);
+      });
+
+      // Figure out the maximum heading size.
       var maxHeadingWidth = 0;
-      var tracks = [];
       var measuringStick = new tracing.MeasuringStick();
       var headingEl = document.createElement('div');
       headingEl.style.position = 'fixed';
-      headingEl.className = 'timeline-slice-track-title';
-      for (var tI = 0; tI < threads.length; tI++) {
-        var thread = threads[tI];
-        var track = new TimelineThreadTrack();
-        track.thread = thread;
-        track.viewport = this.viewport_;
-        tracks.push(track);
-        headingEl.textContent = track.heading;
+      headingEl.className = 'timeline-canvas-based-track-title';
+      allHeadings.forEach(function(text) {
+        headingEl.textContent = text + ':__';
         var w = measuringStick.measure(headingEl).width;
         // Limit heading width to 300px.
         if (w > 300)
           w = 300;
         if (w > maxHeadingWidth)
           maxHeadingWidth = w;
-      }
-      var extraHeadingPadding = 4;
-      maxHeadingWidth += maxHeadingWidth + extraHeadingPadding;
+      });
+      maxHeadingWidth = maxHeadingWidth + 'px';
 
-      // Attach tracks and set width.
+      // Reset old tracks.
+      for (var i = 0; i < this.tracks_.children.length; i++)
+        this.tracks_.children[i].detach();
       this.tracks_.textContent = '';
-      threads.sort(tracing.TimelineThread.compare);
-      for (var tI = 0; tI < tracks.length; tI++) {
-        var track = tracks[tI];
-        track.headingWidth = maxHeadingWidth + 'px';
-        this.tracks_.appendChild(track);
-      }
 
-      if (this.isAttachedToDocument_)
-        this.onResize();
-      else
-        this.needsViewportReset_ = true;
-    },
+      // Get a sorted list of processes.
+      var processes = [];
+      for (var pid in model.processes)
+        processes.push(model.processes[pid]);
+      processes.sort(tracing.TimelineProcess.compare);
 
-    viewportChange_: function() {
-      this.invalidate();
-    },
+      // Create tracks for each process.
+      processes.forEach(function(process) {
+        // Add counter tracks for this process.
+        var counters = [];
+        for (var tid in process.counters)
+          counters.push(process.counters[tid]);
+        counters.sort(tracing.TimelineCounter.compare);
 
-    invalidate: function() {
-      if (this.invalidatePending_)
-        return;
-      this.invalidatePending_ = true;
-      if (this.isAttachedToDocument_)
-        window.setTimeout(function() {
-          this.invalidatePending_ = false;
-          this.redrawAllTracks_();
-        }.bind(this), 0);
-    },
+        // Create the counters for this process.
+        counters.forEach(function(counter) {
+          var track = new tracing.TimelineCounterTrack();
+          track.heading = counter.name + ':';
+          track.headingWidth = maxHeadingWidth;
+          track.viewport = this.viewport_;
+          track.counter = counter;
+          this.tracks_.appendChild(track);
+        }.bind(this));
 
-    /**
-     * @return {boolean} Whether the current timeline is attached to the
-     * document.
-     */
-    get isAttachedToDocument_() {
-      var cur = this;
-      while (cur.parentNode)
-        cur = cur.parentNode;
-      return cur == this.ownerDocument;
-    },
+        // Get a sorted list of threads.
+        var threads = [];
+        for (var tid in process.threads)
+          threads.push(process.threads[tid]);
+        threads.sort(tracing.TimelineThread.compare);
 
-    onResize: function() {
-      if (!this.isAttachedToDocument_)
-        throw 'Not attached to document!';
-      for (var i = 0; i < this.tracks_.children.length; i++) {
-        var track = this.tracks_.children[i];
-        track.onResize();
-      }
-      if (this.invalidatePending_) {
-        this.invalidatePending_ = false;
-        this.redrawAllTracks_();
-      }
-    },
+        // Create the threads.
+        threads.forEach(function(thread) {
+          var track = new tracing.TimelineThreadTrack();
+          track.heading = thread.userFriendlyName + ':';
+          track.tooltip = thread.userFriendlyDetials;
+          track.headingWidth = maxHeadingWidth;
+          track.viewport = this.viewport_;
+          track.thread = thread;
+          this.tracks_.appendChild(track);
+        }.bind(this));
+      }.bind(this));
 
-    redrawAllTracks_: function() {
-      if (this.needsViewportReset_ && this.clientWidth != 0) {
-        if (!this.isAttachedToDocument_)
-          throw 'Not attached to document!';
-        this.needsViewportReset_ = false;
-        /* update viewport */
+      // Set up a reasonable viewport.
+      this.viewport_.setWhenPossible(function() {
         var rangeTimestamp = this.model_.maxTimestamp -
             this.model_.minTimestamp;
         var w = this.firstCanvas.width;
         var scaleX = w / rangeTimestamp;
         var panX = -this.model_.minTimestamp;
         this.viewport_.setPanAndScale(panX, scaleX);
-      }
-      for (var i = 0; i < this.tracks_.children.length; i++) {
-        this.tracks_.children[i].redraw();
-      }
+      }.bind(this));
     },
 
-    updateChildViewports_: function() {
-      for (var cI = 0; cI < this.tracks_.children.length; cI++) {
-        var child = this.tracks_.children[cI];
-        child.setViewport(this.panX, this.scaleX);
-      }
+    /**
+     * @return {Element} The element whose focused state determines
+     * whether to respond to keyboard inputs.
+     * Defaults to the parent element.
+     */
+    get focusElement() {
+      if (this.focusElement_)
+        return this.focusElement_;
+      return this.parentElement;
+    },
+
+    /**
+     * Sets the element whose focus state will determine whether
+     * to respond to keybaord input.
+     */
+    set focusElement(value) {
+      this.focusElement_ = value;
     },
 
     get listenToKeys_() {
-      if (this.parentElement.parentElement.tabIndex >= 0)
-        return document.activeElement == this.parentElement.parentElement;
+      if (!this.focusElement_)
+        return true;
+      if (this.focusElement.tabIndex >= 0)
+        return document.activeElement == this.focusElement;
       return true;
     },
 
@@ -408,7 +475,7 @@ cr.define('tracing', function() {
           e.preventDefault();
           break;
         case 9:    // TAB
-          if (this.parentElement.parentElement.tabIndex == -1) {
+          if (this.focusElement.tabIndex == -1) {
             if (e.shiftKey)
               this.selectPrevious_(e);
             else
@@ -468,12 +535,7 @@ cr.define('tracing', function() {
         if (adjoining != undefined)
           selection.push({track: track, slice: adjoining});
       }
-      // Activate the new selection.
-      this.selection_ = selection;
-      for (i = 0; i < this.selection_.length; i++)
-        this.selection_[i].slice.selected = true;
-      cr.dispatchSimpleEvent(this, 'selectionChange');
-      this.invalidate();  // Cause tracks to redraw.
+      this.selection = selection;
       e.preventDefault();
     },
 
@@ -484,14 +546,13 @@ cr.define('tracing', function() {
           ' e       : Center on mouse\n' +
           ' g/G     : Shows grid at the start/end of the selected task\n';
 
-      if (this.parentElement.parentElement.tabIndex) {
+      if (this.focusElement.tabIndex) {
         help += ' <-      : Select previous event on current timeline\n' +
             ' ->      : Select next event on current timeline\n';
       } else {
         help += ' <-,^TAB : Select previous event on current timeline\n' +
             ' ->, TAB : Select next event on current timeline\n';
       }
-
       help +=
           '\n' +
           'Dbl-click to zoom in; Shift dbl-click to zoom out\n';
@@ -512,7 +573,7 @@ cr.define('tracing', function() {
       cr.dispatchSimpleEvent(this, 'selectionChange');
       for (i = 0; i < this.selection_.length; i++)
         this.selection_[i].slice.selected = true;
-      this.invalidate();  // Cause tracks to redraw.
+      this.viewport_.dispatchChangeEvent(); // Triggers a redraw.
     },
 
     get firstCanvas() {
@@ -569,10 +630,12 @@ cr.define('tracing', function() {
     },
 
     onMouseDown_: function(e) {
-      if (e.clientX < this.offsetLeft ||
-          e.clientX >= this.offsetLeft + this.offsetWidth ||
-          e.clientY < this.offsetTop ||
-          e.clientY >= this.offsetTop + this.offsetHeight)
+      rect = this.getClientRects()[0];
+      if (!rect ||
+          e.clientX < rect.left ||
+          e.clientX >= rect.right ||
+          e.clientY < rect.top ||
+          e.clientY >= rect.bottom)
         return;
 
       var canv = this.firstCanvas;
@@ -585,8 +648,8 @@ cr.define('tracing', function() {
 
       this.dragBeginEvent_ = e;
       e.preventDefault();
-      if (this.parentElement.parentElement.tabIndex)
-        this.parentElement.parentElement.focus();
+      if (this.focusElement.tabIndex >= 0)
+        this.focusElement.focus();
     },
 
     onMouseMove_: function(e) {
@@ -653,7 +716,7 @@ cr.define('tracing', function() {
         scale = 1 / scale;
       this.zoomBy_(scale);
       e.preventDefault();
-    },
+    }
   };
 
   /**
@@ -663,6 +726,7 @@ cr.define('tracing', function() {
   cr.defineProperty(Timeline, 'model', cr.PropertyKind.JS);
 
   return {
-    Timeline: Timeline
+    Timeline: Timeline,
+    TimelineViewport: TimelineViewport
   };
 });

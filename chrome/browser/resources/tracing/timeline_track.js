@@ -66,94 +66,38 @@ cr.define('tracing', function() {
     return w;
   }
 
-  function addTrack(thisTrack, slices) {
-    var track = new TimelineSliceTrack();
-
-    track.heading = '';
-    track.slices = slices;
-    track.viewport = thisTrack.viewport_;
-
-    thisTrack.tracks_.push(track);
-    thisTrack.appendChild(track);
-  }
-
   /**
-   * Generic base class for timeline tracks
+   * A generic track that contains other tracks as its children.
+   * @constructor
    */
-  TimelineThreadTrack = cr.ui.define('div');
-  TimelineThreadTrack.prototype = {
+  var TimelineContainerTrack = cr.ui.define('div');
+  TimelineContainerTrack.prototype = {
     __proto__: HTMLDivElement.prototype,
 
     decorate: function() {
-      this.className = 'timeline-thread-track';
+      this.tracks_ = [];
     },
 
-    set thread(thread) {
-      this.thread_ = thread;
-      this.updateChildTracks_();
-    },
-
-    /**
-     * @return {string} A human-readable name for the track.
-     */
-    get heading() {
-      if (!this.thread_)
-        return '';
-      var tname = this.thread_.name || this.thread_.tid;
-      return this.thread_.parent.pid + ': ' +
-          tname + ':';
-    },
-
-    set headingWidth(width) {
+    detach: function() {
       for (var i = 0; i < this.tracks_.length; i++)
-        this.tracks_[i].headingWidth = width;
+        this.tracks_[i].detach();
+    },
+
+    get viewport() {
+      return this.viewport_;
     },
 
     set viewport(v) {
       this.viewport_ = v;
       for (var i = 0; i < this.tracks_.length; i++)
         this.tracks_[i].viewport = v;
-      this.invalidate();
-    },
-
-    invalidate: function() {
-      if (this.parentNode)
-        this.parentNode.invalidate();
-    },
-
-    onResize: function() {
-      for (var i = 0; i < this.tracks_.length; i++)
-        this.tracks_[i].onResize();
+      this.updateChildTracks_();
     },
 
     get firstCanvas() {
       if (this.tracks_.length)
         return this.tracks_[0].firstCanvas;
       return undefined;
-    },
-
-    redraw: function() {
-      for (var i = 0; i < this.tracks_.length; i++)
-        this.tracks_[i].redraw();
-    },
-
-    updateChildTracks_: function() {
-      this.textContent = '';
-      this.tracks_ = [];
-      if (this.thread_) {
-        for (var srI = 0; srI < this.thread_.nonNestedSubRows.length; ++srI) {
-          addTrack(this, this.thread_.nonNestedSubRows[srI]);
-        }
-        for (var srI = 0; srI < this.thread_.subRows.length; ++srI) {
-          addTrack(this, this.thread_.subRows[srI]);
-        }
-        if (this.tracks_.length > 0) {
-          this.tracks_[0].heading = this.heading;
-          this.tracks_[0].tooltip = 'pid: ' + this.thread_.parent.pid +
-              ', tid: ' + this.thread_.tid +
-              (this.thread_.name ? ', name: ' + this.thread_.name : '');
-        }
-      }
     },
 
     /**
@@ -199,31 +143,118 @@ cr.define('tracing', function() {
   };
 
   /**
-   * Creates a new timeline track div element
+   * Visualizes a TimelineThread using a series of of TimelineSliceTracks.
+   * @constructor
+   */
+  var TimelineThreadTrack = cr.ui.define(TimelineContainerTrack);
+  TimelineThreadTrack.prototype = {
+    __proto__: TimelineContainerTrack.prototype,
+
+    decorate: function() {
+      this.classList.add('timeline-thread-track');
+    },
+
+    get thread(thread) {
+      return this.thread_;
+    },
+
+    set thread(thread) {
+      this.thread_ = thread;
+      this.updateChildTracks_();
+    },
+
+    get tooltip() {
+      return this.tooltip_;
+    },
+
+    set tooltip(value) {
+      this.tooltip_ = value;
+      this.updateChildTracks_();
+    },
+
+    get heading() {
+      return this.heading_;
+    },
+
+    set heading(h) {
+      this.heading_ = h;
+      this.updateChildTracks_();
+    },
+
+    get headingWidth() {
+      return this.headingWidth_;
+    },
+
+    set headingWidth(width) {
+      this.headingWidth_ = width;
+      this.updateChildTracks_();
+    },
+
+    addTrack_: function(slices) {
+      var track = new TimelineSliceTrack();
+      track.heading = '';
+      track.slices = slices;
+      track.headingWidth = this.headingWidth_;
+      track.viewport = this.viewport_;
+
+      this.tracks_.push(track);
+      this.appendChild(track);
+    },
+
+    updateChildTracks_: function() {
+      this.detach();
+      this.textContent = '';
+      this.tracks_ = [];
+      if (this.thread_) {
+        for (var srI = 0; srI < this.thread_.nonNestedSubRows.length; ++srI) {
+          this.addTrack_(this.thread_.nonNestedSubRows[srI]);
+        }
+        for (var srI = 0; srI < this.thread_.subRows.length; ++srI) {
+          this.addTrack_(this.thread_.subRows[srI]);
+        }
+        if (this.tracks_.length > 0) {
+          this.tracks_[0].heading = this.heading_;
+          this.tracks_[0].tooltip = this.tooltip_;
+        }
+      }
+    }
+  };
+
+  /**
+   * A canvas-based track constructed. Provides the basic heading and
+   * invalidation-managment infrastructure. Subclasses must implement drawing
+   * and picking code.
    * @constructor
    * @extends {HTMLDivElement}
    */
-  TimelineSliceTrack = cr.ui.define('div');
+  var CanvasBasedTrack = cr.ui.define('div');
 
-  TimelineSliceTrack.prototype = {
+  CanvasBasedTrack.prototype = {
     __proto__: HTMLDivElement.prototype,
 
     decorate: function() {
-      this.className = 'timeline-slice-track';
+      this.className = 'timeline-canvas-based-track';
       this.slices_ = null;
 
       this.headingDiv_ = document.createElement('div');
-      this.headingDiv_.className = 'timeline-slice-track-title';
+      this.headingDiv_.className = 'timeline-canvas-based-track-title';
       this.appendChild(this.headingDiv_);
 
       this.canvasContainer_ = document.createElement('div');
-      this.canvasContainer_.className = 'timeline-slice-track-canvas-container';
+      this.canvasContainer_.className =
+          'timeline-canvas-based-track-canvas-container';
       this.appendChild(this.canvasContainer_);
       this.canvas_ = document.createElement('canvas');
-      this.canvas_.className = 'timeline-slice-track-canvas';
+      this.canvas_.className = 'timeline-canvas-based-track-canvas';
       this.canvasContainer_.appendChild(this.canvas_);
 
       this.ctx_ = this.canvas_.getContext('2d');
+    },
+
+    detach: function() {
+      if (this.viewport_)
+        this.viewport_.removeEventListener('change',
+                                           this.viewportChangeBoundToThis_);
     },
 
     set headingWidth(width) {
@@ -242,41 +273,85 @@ cr.define('tracing', function() {
       this.headingDiv_.title = text;
     },
 
+    get viewport() {
+      return this.viewport_;
+    },
+
+    set viewport(v) {
+      this.viewport_ = v;
+      if (this.viewport_)
+        this.viewport_.removeEventListener('change',
+                                           this.viewportChangeBoundToThis_);
+      this.viewport_ = v;
+      if (this.viewport_) {
+        this.viewportChangeBoundToThis_ = this.viewportChange_.bind(this);
+        this.viewport_.addEventListener('change',
+                                        this.viewportChangeBoundToThis_);
+      }
+      this.invalidate();
+    },
+
+    viewportChange_: function() {
+      this.invalidate();
+    },
+
+    invalidate: function() {
+      if (this.rafPending_)
+        return;
+      webkitRequestAnimationFrame(function() {
+        this.rafPending_ = false;
+        if (!this.viewport_)
+          return;
+
+        if (this.canvas_.width != this.canvasContainer_.clientWidth)
+          this.canvas_.width = this.canvasContainer_.clientWidth;
+        if (this.canvas_.height != this.canvasContainer_.clientHeight)
+          this.canvas_.height = this.canvasContainer_.clientHeight;
+
+        this.redraw();
+      }.bind(this), this);
+      this.rafPending_ = true;
+    },
+
+    get firstCanvas() {
+      return this.canvas_;
+    }
+
+  };
+
+  /**
+   * A track that displays an array of TimelineSlice objects.
+   * @constructor
+   * @extends {CanvasBasedTrack}
+   */
+
+  var TimelineSliceTrack = cr.ui.define(CanvasBasedTrack);
+
+  TimelineSliceTrack.prototype = {
+
+    __proto__: CanvasBasedTrack.prototype,
+
+    decorate: function() {
+      this.classList.add('timeline-slice-track');
+    },
+
+    get slices() {
+      return this.slices_;
+    },
+
     set slices(slices) {
       this.slices_ = slices;
       this.invalidate();
     },
 
-    set viewport(v) {
-      this.viewport_ = v;
-      this.invalidate();
-    },
-
-    invalidate: function() {
-      if (this.parentNode)
-        this.parentNode.invalidate();
-    },
-
-    get firstCanvas() {
-      return this.canvas_;
-    },
-
-    onResize: function() {
-      this.canvas_.width = this.canvasContainer_.clientWidth;
-      this.canvas_.height = this.canvasContainer_.clientHeight;
-      this.invalidate();
-    },
-
     redraw: function() {
-      if (!this.viewport_)
-        return;
       var ctx = this.ctx_;
       var canvasW = this.canvas_.width;
       var canvasH = this.canvas_.height;
 
       ctx.clearRect(0, 0, canvasW, canvasH);
 
-      // culling...
+      // Culling parameters.
       var vp = this.viewport_;
       var pixWidth = vp.xViewVectorToWorld(1);
       var viewLWorld = vp.xViewToWorld(0);
@@ -301,11 +376,11 @@ cr.define('tracing', function() {
         ctx.stroke();
       }
 
-      // begin rendering in world space
+      // Begin rendering in world space.
       ctx.save();
       vp.applyTransformToCanavs(ctx);
 
-      // tracks
+      // Slices.
       var tr = new tracing.FastRectRenderer(ctx, viewLWorld, 2 * pixWidth,
                                             2 * pixWidth, viewRWorld, pallette);
       tr.setYandH(0, canvasH);
@@ -343,7 +418,7 @@ cr.define('tracing', function() {
       tr.flush();
       ctx.restore();
 
-      // labels
+      // Labels.
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.font = '10px sans-serif';
@@ -362,7 +437,7 @@ cr.define('tracing', function() {
 
           if (labelWidthWorld < slice.duration) {
             var cX = vp.xWorldToView(slice.start + 0.5 * slice.duration);
-            ctx.fillText(title, cX, 2.5, labelWidthWorld);
+            ctx.fillText(title, cX, 2.5, labelWidth);
           }
         }
       }
@@ -473,7 +548,153 @@ cr.define('tracing', function() {
 
   };
 
+  /**
+   * A track that displays a TimelineCounter object.
+   * @constructor
+   * @extends {CanvasBasedTrack}
+   */
+
+  var TimelineCounterTrack = cr.ui.define(CanvasBasedTrack);
+
+  TimelineCounterTrack.prototype = {
+
+    __proto__: CanvasBasedTrack.prototype,
+
+    decorate: function() {
+      this.classList.add('timeline-counter-track');
+    },
+
+    get counter() {
+      return this.counter_;
+    },
+
+    set counter(counter) {
+      this.counter_ = counter;
+      this.invalidate();
+    },
+
+    redraw: function() {
+      var ctr = this.counter_;
+      var ctx = this.ctx_;
+      var canvasW = this.canvas_.width;
+      var canvasH = this.canvas_.height;
+
+      ctx.clearRect(0, 0, canvasW, canvasH);
+
+      // Culling parametrs.
+      var vp = this.viewport_;
+      var pixWidth = vp.xViewVectorToWorld(1);
+      var viewLWorld = vp.xViewToWorld(0);
+      var viewRWorld = vp.xViewToWorld(canvasW);
+
+      // Drop sampels that are less than skipDistancePix apart.
+      var skipDistancePix = 16;
+      var skipDistanceWorld = vp.xViewVectorToWorld(skipDistancePix);
+
+      // Begin rendering in world space.
+      ctx.save();
+      vp.applyTransformToCanavs(ctx);
+
+      // Figure out where drawing should begin.
+      var numSeries = ctr.numSeries;
+      var numSamples = ctr.numSamples;
+      var startIndex = tracing.findLowIndexInSortedArray(ctr.timestamps,
+                                                         function() {
+                                                         },
+                                                         viewLWorld);
+
+      // Draw indices one by one until we fall off the viewRWorld.
+      var yScale = canvasH / ctr.maxTotal;
+      for (var seriesIndex = ctr.numSeries - 1;
+           seriesIndex >= 0; seriesIndex--) {
+        var colorId = ctr.seriesColors[seriesIndex];
+        ctx.fillStyle = pallette[colorId];
+        ctx.beginPath();
+
+        // Set iLast and xLast such that the first sample we draw is the
+        // startIndex sample.
+        var iLast = startIndex - 1;
+        var xLast = iLast >= 0 ? ctr.timestamps[iLast] - skipDistanceWorld : -1;
+        var yLastView = canvasH;
+
+        // Iterate over samples from iLast onward until we either fall off the
+        // viewRWorld or we run out of samples. To avoid drawing too much, after
+        // drawing a sample at xLast, skip subsequent samples that are less than
+        // skipDistanceWorld from xLast.
+        var hasMoved = false;
+        while (true) {
+          var i = iLast + 1;
+          if (i >= numSamples) {
+            ctx.lineTo(xLast, yLastView);
+            ctx.lineTo(xLast + 8 * pixWidth, yLastView);
+            ctx.lineTo(xLast + 8 * pixWidth, canvasH);
+            break;
+          }
+
+          var x = ctr.timestamps[i];
+
+          var y = ctr.totals[i * numSeries + seriesIndex];
+          var yView = canvasH - (yScale * y);
+
+          if (x > viewRWorld) {
+            ctx.lineTo(x, yLastView);
+            ctx.lineTo(x, canvasH);
+            break;
+          }
+
+          if (x - xLast < skipDistanceWorld) {
+            iLast = i;
+            continue;
+          }
+
+          if (!hasMoved) {
+            ctx.moveTo(viewLWorld, canvasH);
+            hasMoved = true;
+          }
+          ctx.lineTo(x, yLastView);
+          ctx.lineTo(x, yView);
+          iLast = i;
+          xLast = x;
+          yLastView = yView;
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.restore();
+    },
+
+    /**
+     * Picks a slice, if any, at a given location.
+     * @param {number} wX X location to search at, in worldspace.
+     * @param {number} wY Y location to search at, in offset space.
+     *     offset space.
+     * @param {function():*} onHitCallback Callback to call with the slice,
+     *     if one is found.
+     * @return {boolean} true if a slice was found, otherwise false.
+     */
+    pick: function(wX, wY, onHitCallback) {
+    },
+
+    /**
+     * Finds slices intersecting the given interval.
+     * @param {number} loWX Lower X bound of the interval to search, in
+     *     worldspace.
+     * @param {number} hiWX Upper X bound of the interval to search, in
+     *     worldspace.
+     * @param {number} loY Lower Y bound of the interval to search, in
+     *     offset space.
+     * @param {number} hiY Upper Y bound of the interval to search, in
+     *     offset space.
+     * @param {function():*} onHitCallback Function to call for each slice
+     *     intersecting the interval.
+     */
+    pickRange: function(loWX, hiWX, loY, hiY, onHitCallback) {
+    }
+
+  };
+
   return {
+    TimelineCounterTrack: TimelineCounterTrack,
     TimelineSliceTrack: TimelineSliceTrack,
     TimelineThreadTrack: TimelineThreadTrack
   };

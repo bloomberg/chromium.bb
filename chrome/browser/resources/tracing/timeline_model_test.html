@@ -6,7 +6,7 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 <head>
-<title></title>
+<title>TimelineModel tests</title>
 <script src="http://closure-library.googlecode.com/svn/trunk/closure/goog/base.js"></script>
 <script src="../shared/js/cr.js"></script>
 <script src="../shared/js/cr/event_target.js"></script>
@@ -55,7 +55,7 @@ function testNestedParsing() {
     {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
     {name: 'b', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 1, ph: 'B'},
     {name: 'b', args: {}, pid: 1, ts: 3, cat: 'foo', tid: 1, ph: 'E'},
-    {name: 'a', args: {}, pid: 1, ts: 4, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'a', args: {}, pid: 1, ts: 4, cat: 'foo', tid: 1, ph: 'E'}
   ];
   var m = new tracing.TimelineModel(events);
   var p = m.processes[1];
@@ -81,12 +81,12 @@ function testNestedParsing() {
 
 function testAutoclosing() {
   var events = [
-    // Slice that doesn't finish
+    // Slice that doesn't finish.
     {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
 
-    // Slice that does finish to give an 'end time' to make autoclosing work
+    // Slice that does finish to give an 'end time' to make autoclosing work.
     {name: 'b', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 2, ph: 'B'},
-    {name: 'b', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 2, ph: 'E'},
+    {name: 'b', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 2, ph: 'E'}
   ];
   var m = new tracing.TimelineModel(events);
   var p = m.processes[1];
@@ -102,13 +102,13 @@ function testAutoclosing() {
 
 function testNestedAutoclosing() {
   var events = [
-    // Tasks that dont finish
+    // Tasks that dont finish.
     {name: 'a1', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
     {name: 'a2', args: {}, pid: 1, ts: 1.5, cat: 'foo', tid: 1, ph: 'B'},
 
-    // Slice that does finish to give an 'end time' to make autoclosing work
+    // Slice that does finish to give an 'end time' to make autoclosing work.
     {name: 'b', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 2, ph: 'B'},
-    {name: 'b', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 2, ph: 'E'},
+    {name: 'b', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 2, ph: 'E'}
   ];
   var m = new tracing.TimelineModel(events);
   var p = m.processes[1];
@@ -138,7 +138,7 @@ function testTaskColoring() {
     {name: 'b', args: {}, pid: 1, ts: 3, cat: 'foo', tid: 1, ph: 'B'},
     {name: 'b', args: {}, pid: 1, ts: 4, cat: 'foo', tid: 1, ph: 'E'},
     {name: 'a', args: {}, pid: 1, ts: 5, cat: 'foo', tid: 1, ph: 'B'},
-    {name: 'a', args: {}, pid: 1, ts: 6, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'a', args: {}, pid: 1, ts: 6, cat: 'foo', tid: 1, ph: 'E'}
   ];
   var m = new tracing.TimelineModel(events);
   var p = m.processes[1];
@@ -168,7 +168,7 @@ function testMultipleThreadParsing() {
 
   assertEquals(2, p.numThreads);
 
-  // Check thread 1
+  // Check thread 1.
   var t = p.threads[1];
   assertNotUndefined(t);
   assertEquals(1, t.subRows.length);
@@ -182,7 +182,7 @@ function testMultipleThreadParsing() {
   assertEquals((2 - 1) / 1000, slice.duration);
   assertEquals(0, slice.subSlices.length);
 
-  // Check thread 2
+  // Check thread 2.
   var t = p.threads[2];
   assertNotUndefined(t);
   assertEquals(1, t.subRows.length);
@@ -211,7 +211,7 @@ function testMultiplePidParsing() {
 
   assertEquals(1, p.numThreads);
 
-  // Check process 1 thread 1
+  // Check process 1 thread 1.
   var t = p.threads[1];
   assertNotUndefined(t);
   assertEquals(1, t.subRows.length);
@@ -225,7 +225,7 @@ function testMultiplePidParsing() {
   assertEquals((2 - 1) / 1000, slice.duration);
   assertEquals(0, slice.subSlices.length);
 
-  // Check process 2 thread 2
+  // Check process 2 thread 2.
   var p = m.processes[2];
   assertNotUndefined(p);
   assertEquals(1, p.numThreads);
@@ -244,34 +244,34 @@ function testMultiplePidParsing() {
 
   // Check getAllThreads.
   assertArrayEquals([m.processes[1].threads[1], m.processes[2].threads[2]],
-                    m.getAllThreads())
+                    m.getAllThreads());
 }
 
-// Thread names
+// Thread names.
 function testThreadNames() {
   var events = [
     {name: 'thread_name', args: {name: 'Thread 1'},
-      pid: 1, ts: 0, tid: 1, ph:  'M'},
+      pid: 1, ts: 0, tid: 1, ph: 'M'},
     {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
     {name: 'a', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 1, ph: 'E'},
     {name: 'b', args: {}, pid: 2, ts: 3, cat: 'foo', tid: 2, ph: 'B'},
     {name: 'b', args: {}, pid: 2, ts: 4, cat: 'foo', tid: 2, ph: 'E'},
     {name: 'thread_name', args: {name: 'Thread 2'},
-      pid: 2, ts: 0, tid: 2, ph:  'M'},
+      pid: 2, ts: 0, tid: 2, ph: 'M'}
   ];
   var m = new tracing.TimelineModel(events);
   assertEquals('Thread 1', m.processes[1].threads[1].name);
   assertEquals('Thread 2', m.processes[2].threads[2].name);
 }
 
-// User time
+// User time.
 function testUserTime() {
   var events = [
     {name: 'thread_name', args: {name: 'Thread 1'},
-      pid: 1, ts: 0, tid: 1, ph:  'M'},
+      pid: 1, ts: 0, tid: 1, ph: 'M'},
     {name: 'a', args: {}, pid: 1, ts: 1, uts: 70, cat: 'foo', tid: 1, ph: 'B'},
     {name: 'a', args: {}, pid: 1, ts: 2, uts: 77, cat: 'foo', tid: 1, ph: 'E'},
-    {name: 'a', args: {}, pid: 1, ts: 2 , uts: 80, cat: 'foo', tid: 1, ph: 'I'},
+    {name: 'a', args: {}, pid: 1, ts: 2 , uts: 80, cat: 'foo', tid: 1, ph: 'I'}
   ];
   var m = new tracing.TimelineModel(events);
   var subRow = m.processes[1].threads[1].subRows[0];
@@ -288,7 +288,7 @@ function testImmediateParsing() {
     // recentering/zeroing doesn't clobber their timestamp.
     {name: 'a', args: {}, pid: 1, ts: 1, cat: 'foo', tid: 1, ph: 'B'},
     {name: 'immediate', args: {}, pid: 1, ts: 2, cat: 'foo', tid: 1, ph: 'I'},
-    {name: 'a', args: {}, pid: 1, ts: 4, cat: 'foo', tid: 1, ph: 'E'},
+    {name: 'a', args: {}, pid: 1, ts: 4, cat: 'foo', tid: 1, ph: 'E'}
   ];
   var m = new tracing.TimelineModel(events);
   var p = m.processes[1];
@@ -310,6 +310,124 @@ function testImmediateParsing() {
   subRow = t.subRows[1];
   assertEquals(immed, subRow[0]);
 }
+
+function testSimpleCounter() {
+  var events = [
+    {name: 'ctr', args: {'value': 0}, pid: 1, ts: 0, cat: 'foo', tid: 1,
+     ph: 'C'},
+    {name: 'ctr', args: {'value': 10}, pid: 1, ts: 10, cat: 'foo', tid: 1,
+     ph: 'C'},
+    {name: 'ctr', args: {'value': 0}, pid: 1, ts: 20, cat: 'foo', tid: 1,
+     ph: 'C'}
+
+  ];
+  var m = new tracing.TimelineModel(events);
+  var p = m.processes[1];
+  var ctr = m.processes[1].counters['foo.ctr'];
+
+  assertEquals('ctr', ctr.name);
+  assertEquals(3, ctr.numSamples);
+  assertEquals(1, ctr.numSeries);
+
+  assertArrayEquals(['value'], ctr.seriesNames);
+  assertArrayEquals([tracing.getStringColorId('ctr.value')], ctr.seriesColors);
+  assertArrayEquals([0, 0.01, 0.02], ctr.timestamps);
+  assertArrayEquals([0, 10, 0], ctr.samples);
+  assertArrayEquals([0, 10, 0], ctr.totals);
+  assertEquals(10, ctr.maxTotal);
+}
+
+function testInstanceCounter() {
+  var events = [
+    {name: 'ctr', args: {'value': 0}, pid: 1, ts: 0, cat: 'foo', tid: 1,
+     ph: 'C', id: 0},
+    {name: 'ctr', args: {'value': 10}, pid: 1, ts: 10, cat: 'foo', tid: 1,
+     ph: 'C', id: 0},
+    {name: 'ctr', args: {'value': 10}, pid: 1, ts: 10, cat: 'foo', tid: 1,
+     ph: 'C', id: 1},
+    {name: 'ctr', args: {'value': 20}, pid: 1, ts: 15, cat: 'foo', tid: 1,
+     ph: 'C', id: 1},
+    {name: 'ctr', args: {'value': 30}, pid: 1, ts: 18, cat: 'foo', tid: 1,
+     ph: 'C', id: 1}
+  ];
+  var m = new tracing.TimelineModel(events);
+  var p = m.processes[1];
+  var ctr = m.processes[1].counters['foo.ctr[0]'];
+  assertEquals('ctr[0]', ctr.name);
+  assertEquals(2, ctr.numSamples);
+  assertEquals(1, ctr.numSeries);
+  assertArrayEquals([0, 0.01], ctr.timestamps);
+  assertArrayEquals([0, 10], ctr.samples);
+
+  var ctr = m.processes[1].counters['foo.ctr[1]'];
+  assertEquals('ctr[1]', ctr.name);
+  assertEquals(3, ctr.numSamples);
+  assertEquals(1, ctr.numSeries);
+  assertArrayEquals([0.01, 0.015, 0.018], ctr.timestamps);
+  assertArrayEquals([10, 20, 30], ctr.samples);
+}
+
+function testMultiCounterUpdateBounds() {
+  var ctr = new tracing.TimelineCounter(undefined, 'testBasicCounter',
+'testBasicCounter');
+  ctr.numSeries = 1;
+  ctr.seriesNames = ['value1', 'value2'];
+  ctr.seriesColors = ['testBasicCounter.value1', 'testBasicCounter.value2'];
+  ctr.timestamps = [0, 1, 2, 3, 4, 5, 6, 7];
+  ctr.samples = [0, 0,
+                 1, 0,
+                 1, 1,
+                 2, 1.1,
+                 3, 0,
+                 1, 7,
+                 3, 0,
+                 3.1, 0.5];
+  ctr.updateBounds();
+  assertEquals(0, ctr.minTimestamp);
+  assertEquals(7, ctr.maxTimestamp);
+  assertEquals(8, ctr.maxTotal);
+  assertArrayEquals([0, 0,
+                     1, 1,
+                     1, 2,
+                     2, 3.1,
+                     3, 3,
+                     1, 8,
+                     3, 3,
+                     3.1, 3.6], ctr.totals);
+}
+
+function testMultiCounter() {
+  var events = [
+    {name: 'ctr', args: {'value1': 0, 'value2': 7}, pid: 1, ts: 0, cat: 'foo',
+     tid: 1, ph: 'C'},
+    {name: 'ctr', args: {'value1': 10, 'value2': 4}, pid: 1, ts: 10, cat: 'foo',
+     tid: 1, ph: 'C'},
+    {name: 'ctr', args: {'value1': 0, 'value2': 1 }, pid: 1, ts: 20, cat: 'foo',
+     tid: 1, ph: 'C'}
+  ];
+  var m = new tracing.TimelineModel(events);
+  var p = m.processes[1];
+  var ctr = m.processes[1].counters['foo.ctr'];
+  assertEquals('ctr', ctr.name);
+
+  assertEquals('ctr', ctr.name);
+  assertEquals(3, ctr.numSamples);
+  assertEquals(2, ctr.numSeries);
+
+  assertArrayEquals(['value1', 'value2'], ctr.seriesNames);
+  assertArrayEquals([tracing.getStringColorId('ctr.value1'),
+                     tracing.getStringColorId('ctr.value2')],
+                    ctr.seriesColors);
+  assertArrayEquals([0, 0.01, 0.02], ctr.timestamps);
+  assertArrayEquals([0, 7,
+                     10, 4,
+                     0, 1], ctr.samples);
+  assertArrayEquals([0, 7,
+                     10, 14,
+                     0, 1], ctr.totals);
+  assertEquals(14, ctr.maxTotal);
+}
+
 </script>
 </body>
 </html>

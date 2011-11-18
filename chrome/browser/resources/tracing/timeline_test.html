@@ -1,0 +1,100 @@
+<!DOCTYPE HTML>
+<html>
+<!--
+Copyright (c) 2011 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head i18n-values="dir:textdirection;">
+<title>Interactive Timeline Tests</title>
+<link rel="stylesheet" href="timeline.css">
+<script src="../shared/js/cr.js"></script>
+<script src="../shared/js/cr/event_target.js"></script>
+<script src="../shared/js/cr/ui.js"></script>
+<script src="../shared/js/util.js"></script>
+<script src="timeline_model.js"></script>
+<script src="sorted_array_utils.js"></script>
+<script src="measuring_stick.js"></script>
+<script src="timeline.js"></script>
+<script src="timeline_track.js"></script>
+<script src="fast_rect_renderer.js"></script>
+<script src="test_utils.js"></script>
+</head>
+<body>
+  <div class="timeline-test" src="./tests/trivial_trace.json" create-detached=1>
+  </div>
+
+  <div class="timeline-test" src="./tests/trivial_trace.json">
+  </div>
+
+  <div class="timeline-test" src="./tests/simple_trace.json">
+  </div>
+
+  <div class="timeline-test" src="./tests/instance_counters.json">
+  </div>
+
+  <div class="timeline-test" src="./tests/nonnested_trace.json">
+  </div>
+
+  <div class="timeline-test" src="./tests/tall_trace.json">
+  </div>
+
+  <div class="timeline-test" src="./tests/big_trace.json">
+  </div>
+
+  <div class="timeline-test" src="./tests/huge_trace.json">
+  </div>
+
+  <script>
+  function load(parentEl) {
+    var src = parentEl.getAttribute('src');
+    if (document.location.hash && document.location.hash.substring(1) != src) {
+      parentEl.hidden = true;
+      return;
+    }
+    parentEl.hidden = false;
+    parentEl.textContent = '';
+    var titleEl = document.createElement('h3');
+    var linkEl = document.createElement('a');
+    linkEl.textContent = src;
+    linkEl.href = '#' + src;
+    titleEl.appendChild(linkEl);
+
+    var containerEl = document.createElement('div');
+    containerEl.tabIndex = 0;
+    containerEl.style.border = '1px solid red';
+
+    var timelineEl = document.createElement('div');
+    cr.ui.decorate(timelineEl, tracing.Timeline);
+    timelineEl.focusElement = containerEl;
+
+    parentEl.appendChild(titleEl);
+    parentEl.appendChild(containerEl);
+
+    // Creating attached vs detached stress tests the canvas- and viewport-
+    // setup code.
+    var create_detached = parentEl.getAttribute('create-attached') == 1;
+    if (create_detached) {
+      containerEl.appendChild(timelineEl);
+      test_utils.getJSON(src, function(events) {
+        var model = new tracing.TimelineModel(events);
+        timelineEl.model = model;
+      });
+    } else {
+      test_utils.getJSON(src, function(events) {
+        var model = new tracing.TimelineModel(events);
+        timelineEl.model = model;
+        containerEl.appendChild(timelineEl);
+      });
+    }
+  }
+  function onLoad() {
+    Array.prototype.forEach.call(document.querySelectorAll('.timeline-test'),
+                                 load);
+  }
+
+  document.addEventListener('DOMContentLoaded', onLoad);
+  window.addEventListener('hashchange', onLoad);
+  </script>
+</body>
+</html>

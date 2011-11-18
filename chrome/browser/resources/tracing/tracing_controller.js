@@ -27,13 +27,6 @@ cr.define('tracing', function() {
 
     this.traceEvents_ = [];
 
-    if (browserBridge.debugMode) {
-      var tracingControllerTests = document.createElement('script');
-      tracingControllerTests.src =
-          './tracing/tracing_controller_tests.js';
-      document.body.appendChild(tracingControllerTests);
-    }
-
     this.onKeydownBoundToThis_ = this.onKeydown_.bind(this);
     this.onKeypressBoundToThis_ = this.onKeypress_.bind(this);
 
@@ -81,12 +74,8 @@ cr.define('tracing', function() {
       this.statusDiv_.textContent = 'Tracing active.';
 
       this.traceEvents_ = [];
-      if (!browserBridge.debugMode) {
-        chrome.send('beginTracing');
-        this.beginRequestBufferPercentFull_();
-      } else {
-        tracing.tracingControllerTestHarness.beginTracing();
-      }
+      chrome.send('beginTracing');
+      this.beginRequestBufferPercentFull_();
 
       this.tracingEnabled_ = true;
 
@@ -166,11 +155,7 @@ cr.define('tracing', function() {
       // delay sending endTracingAsync until we get a chance to
       // update the screen...
       window.setTimeout(function() {
-        if (!browserBridge.debugMode) {
-          chrome.send('endTracingAsync');
-        } else {
-          tracing.tracingControllerTestHarness.endTracing();
-        }
+        chrome.send('endTracingAsync');
       }, 100);
     },
 
