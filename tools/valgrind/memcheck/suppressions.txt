@@ -5222,6 +5222,30 @@
    fun:_ZN16ProcessSingletonC1ERK8FilePath
    fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
 }
+{
+   bug_104690
+   Memcheck:Leak
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:g_type_create_instance
+   fun:g_object_constructor
+   fun:g_object_newv
+   fun:g_object_new
+   fun:gtk_views_fixed_new
+   fun:_ZN5views15NativeWidgetGtk15CreateGtkWidgetERKNS_6Widget10InitParamsE
+   fun:_ZN5views15NativeWidgetGtk16InitNativeWidgetERKNS_6Widget10InitParamsE
+   fun:_ZN5views6Widget4InitERKNS0_10InitParamsE
+   fun:_ZN8chromeos17NotificationPanel4ShowEv
+   fun:_ZN8chromeos17NotificationPanel3AddEP7Balloon
+   fun:_ZN8chromeos21BalloonCollectionImpl21AddSystemNotificationERK12NotificationP7Profilebb
+   fun:_ZN8chromeos18SystemNotification4ShowERKSbItN4base20string16_char_traitsESaItEES6_RKNS1_8CallbackIFvPKNS1_9ListValueEEEEbb
+   fun:_ZN8chromeos18SystemNotification4ShowERKSbItN4base20string16_char_traitsESaItEEbb
+   fun:_ZN8chromeos18LowBatteryObserver4ShowEN4base9TimeDeltaEb
+   fun:_ZN8chromeos18LowBatteryObserver12PowerChangedERKNS_17PowerSupplyStatusE
+   fun:_ZN8chromeos26PowerManagerClientStubImpl6UpdateEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
