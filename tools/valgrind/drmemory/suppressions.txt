@@ -714,6 +714,16 @@ name=NPAPITesterBase.NoHangIfInitCrashes deliberate crash
 # TODO(bruening): switch to annotation once have support for that
 npapi_test_plugin.dll!NPAPIClient::PluginClient::Initialize
 
+# This test intentionally leaks an object and checks that it's never deleted
+LEAK
+...
+*!BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
+
+# This test has a death test at the end that derefences a NULL pointer.
+UNADDRESSABLE ACCESS
+...
+unit_tests.exe!BrowserAboutHandlerTest_WillHandleBrowserAboutURL_Test::TestBody
+
 ############################
 # Benign issues in Chromium
 
@@ -757,11 +767,6 @@ LEAK
 *!TestURLRequestContext::TestURLRequestContext
 *!TestURLRequestContextGetter::GetURLRequestContext
 *!URLFetcher::Core::StartURLRequest
-
-# This test intentionally leaks an object and checks that it's never deleted
-LEAK
-...
-*!BrowserThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody
 
 WARNING
 # http://code.google.com/p/chromium/issues/detail?id=72463
