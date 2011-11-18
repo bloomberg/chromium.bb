@@ -170,11 +170,6 @@ class LayerWithRealCompositorTest : public testing::Test {
     GetCompositor()->Draw(false);
   }
 
-  bool ReadPixels(SkBitmap* bitmap) {
-    return GetCompositor()->ReadPixels(bitmap,
-                                       gfx::Rect(GetCompositor()->size()));
-  }
-
   void RunPendingMessages() {
     MessageLoopForUI::current()->RunAllPending();
   }
@@ -1093,24 +1088,16 @@ TEST_F(LayerWithNullDelegateTest, SetBoundsSchedulesPaint) {
 TEST_F(LayerWithRealCompositorTest, MAYBE_DrawPixels) {
   scoped_ptr<Layer> layer(CreateColorLayer(SK_ColorRED,
                                            gfx::Rect(0, 0, 500, 500)));
-  scoped_ptr<Layer> layer2(CreateColorLayer(SK_ColorBLUE,
-                                            gfx::Rect(0, 0, 500, 10)));
-
-  layer->Add(layer2.get());
-
   DrawTree(layer.get());
 
   SkBitmap bitmap;
-  gfx::Size size = GetCompositor()->size();
-  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap,
-                                          gfx::Rect(0, 10,
-                                          size.width(), size.height() - 10)));
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
 
   SkAutoLockPixels lock(bitmap);
   bool is_all_red = true;
   for (int x = 0; is_all_red && x < 500; x++)
-    for (int y = 0; is_all_red && y < 490; y++)
+    for (int y = 0; is_all_red && y < 500; y++)
       is_all_red = is_all_red && (bitmap.getColor(x, y) == SK_ColorRED);
 
   EXPECT_TRUE(is_all_red);
@@ -1236,14 +1223,14 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
   l11->Add(l21.get());
   l0->Add(l12.get());
   DrawTree(l0.get());
-  ASSERT_TRUE(ReadPixels(&bitmap));
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img1);
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img1));
 
   l0->MoveToFront(l11.get());
   DrawTree(l0.get());
-  ASSERT_TRUE(ReadPixels(&bitmap));
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img2);
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
@@ -1251,21 +1238,21 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
   // l11 is already at the front, should have no effect.
   l0->MoveToFront(l11.get());
   DrawTree(l0.get());
-  ASSERT_TRUE(ReadPixels(&bitmap));
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
 
   // l11 is already at the front, should have no effect.
   l0->MoveAbove(l11.get(), l12.get());
   DrawTree(l0.get());
-  ASSERT_TRUE(ReadPixels(&bitmap));
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
 
   // should restore to original configuration
   l0->MoveAbove(l12.get(), l11.get());
   DrawTree(l0.get());
-  ASSERT_TRUE(ReadPixels(&bitmap));
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img1));
 }
@@ -1288,7 +1275,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_Opacity) {
   l0->Add(l11.get());
   DrawTree(l0.get());
   SkBitmap bitmap;
-  ASSERT_TRUE(ReadPixels(&bitmap));
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   // WritePNGFile(bitmap, ref_img);
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img));

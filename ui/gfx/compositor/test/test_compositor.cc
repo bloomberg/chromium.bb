@@ -48,7 +48,7 @@ void TestCompositor::DrawTree() {
 #endif
 }
 
-bool TestCompositor::ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) {
+bool TestCompositor::ReadPixels(SkBitmap* bitmap) {
   return false;
 }
 

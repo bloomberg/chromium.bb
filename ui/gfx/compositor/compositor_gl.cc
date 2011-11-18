@@ -558,15 +558,12 @@ CompositorGL::~CompositorGL() {
   gl_context_ = NULL;
 }
 
-bool CompositorGL::ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) {
+bool CompositorGL::ReadPixels(SkBitmap* bitmap) {
   MakeCurrent();
 
-  if (bounds.right() > size().width() || bounds.bottom() > size().height())
-    return false;
-
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
-                    bounds.width(),
-                    bounds.height());
+                    size().width(),
+                    size().height());
   bitmap->allocPixels();
   SkAutoLockPixels lock(*bitmap);
   unsigned char* pixels = static_cast<unsigned char*>(bitmap->getPixels());
@@ -578,18 +575,16 @@ bool CompositorGL::ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) {
   GLint current_alignment = 0;
   glGetIntegerv(GL_PACK_ALIGNMENT, &current_alignment);
   glPixelStorei(GL_PACK_ALIGNMENT, 4);
-
-  // Flip vertically to convert to OpenGL coordinates.
-  glReadPixels(bounds.x(),
-               size().height() - bounds.y() - bounds.height(),
-               bounds.width(),
-               bounds.height(),
+  glReadPixels(0,
+               0,
+               size().width(),
+               size().height(),
                GL_RGBA,
                GL_UNSIGNED_BYTE,
                pixels);
   glPixelStorei(GL_PACK_ALIGNMENT, current_alignment);
 
-  SwizzleRGBAToBGRAAndFlip(pixels, bounds.size());
+  SwizzleRGBAToBGRAAndFlip(pixels, size());
   return true;
 }
 
