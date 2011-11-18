@@ -504,7 +504,6 @@ UserManager::UserManager()
       guest_user_(kGuestUser),
       stub_user_(kStubUser),
       logged_in_user_(NULL),
-      offline_login_(false),
       current_user_is_owner_(false),
       current_user_is_new_(false),
       user_is_logged_in_(false),

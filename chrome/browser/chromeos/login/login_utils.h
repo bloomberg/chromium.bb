@@ -93,12 +93,6 @@ class LoginUtils {
   virtual void RestoreAuthenticationSession(const std::string& user_name,
                                             Profile* profile) = 0;
 
-  // Given the credentials try to exchange them for
-  // full-fledged Google authentication cookies.
-  virtual void FetchCookies(
-      Profile* profile,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) = 0;
-
   // Starts process of fetching OAuth2 tokens (based on OAuth1 tokens found
   // in |user_profile|) and kicks off internal services that depend on them.
   virtual void StartTokenServices(Profile* user_profile) = 0;

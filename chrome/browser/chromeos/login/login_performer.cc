@@ -54,8 +54,6 @@ LoginPerformer::LoginPerformer(Delegate* delegate)
       initial_online_auth_pending_(false),
       auth_mode_(AUTH_MODE_INTERNAL),
       using_oauth_(
-          CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kWebUILogin) &&
           !CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSkipOAuthLogin)),
       weak_factory_(this) {
@@ -176,14 +174,9 @@ void LoginPerformer::OnProfileCreated(Profile* profile, Status status) {
       return;
   }
 
-  if (!using_oauth_) {
-    // Fetch cookies, tokens for the loaded profile only if authentication
-    // was performed via ClientLogin. We don't need this in the case when
-    // we use extension + OAuth1 access token check flow.
-    LoginUtils::Get()->FetchCookies(profile, credentials_);
-  } else {
+  if (using_oauth_)
     LoginUtils::Get()->StartTokenServices(profile);
-  }
+
   LoginUtils::Get()->StartSync(profile, credentials_);
   credentials_ = GaiaAuthConsumer::ClientLoginResult();
 
