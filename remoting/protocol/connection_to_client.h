@@ -21,11 +21,11 @@ class MessageLoopProxy;
 namespace remoting {
 namespace protocol {
 
-class ClientControlSender;
 class ClientStub;
 class HostStub;
 class InputStub;
-class HostMessageDispatcher;
+class HostControlDispatcher;
+class HostEventDispatcher;
 
 // This class represents a remote viewer connection to the chromoting
 // host. It sets up all protocol channels and connects them to the
@@ -104,12 +104,9 @@ class ConnectionToClient : public base::NonThreadSafe {
   // The libjingle channel used to send and receive data from the remote client.
   scoped_ptr<Session> session_;
 
-  // Writers for outgoing channels.
   scoped_ptr<VideoWriter> video_writer_;
-  scoped_ptr<ClientControlSender> client_control_sender_;
-
-  // Dispatcher for incoming messages.
-  scoped_ptr<HostMessageDispatcher> dispatcher_;
+  scoped_ptr<HostControlDispatcher> control_dispatcher_;
+  scoped_ptr<HostEventDispatcher> input_dispatcher_;
 
   // State of the channels.
   bool control_connected_;

@@ -9,8 +9,8 @@
 #include "base/message_loop_proxy.h"
 #include "google/protobuf/message.h"
 #include "net/base/io_buffer.h"
-#include "remoting/protocol/client_control_sender.h"
-#include "remoting/protocol/host_message_dispatcher.h"
+#include "remoting/protocol/host_control_dispatcher.h"
+#include "remoting/protocol/host_event_dispatcher.h"
 #include "remoting/protocol/host_stub.h"
 #include "remoting/protocol/input_stub.h"
 
@@ -78,7 +78,7 @@ VideoStub* ConnectionToClient::video_stub() {
 // Return pointer to ClientStub.
 ClientStub* ConnectionToClient::client_stub() {
   DCHECK(CalledOnValidThread());
-  return client_control_sender_.get();
+  return control_dispatcher_.get();
 }
 
 void ConnectionToClient::set_host_stub(protocol::HostStub* host_stub) {
@@ -110,11 +110,14 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
       break;
 
     case protocol::Session::CONNECTED_CHANNELS:
-      client_control_sender_.reset(
-          new ClientControlSender(base::MessageLoopProxy::current(),
-                                  session_->control_channel()));
-      dispatcher_.reset(new HostMessageDispatcher());
-      dispatcher_->Initialize(this, host_stub_, input_stub_);
+      control_dispatcher_.reset(new HostControlDispatcher());
+      control_dispatcher_->Init(session_.get());
+      control_dispatcher_->set_host_stub(host_stub_);
+      input_dispatcher_.reset(new HostEventDispatcher());
+      input_dispatcher_->Init(session_.get());
+      input_dispatcher_->set_input_stub(input_stub_);
+      input_dispatcher_->set_sequence_number_callback(base::Bind(
+          &ConnectionToClient::UpdateSequenceNumber, base::Unretained(this)));
 
       control_connected_ = true;
       input_connected_ = true;
@@ -162,9 +165,9 @@ void ConnectionToClient::CloseOnError() {
 }
 
 void ConnectionToClient::CloseChannels() {
+  control_dispatcher_.reset();
+  input_dispatcher_.reset();
   video_writer_.reset();
-  client_control_sender_.reset();
-  dispatcher_.reset();
 }
 
 }  // namespace protocol

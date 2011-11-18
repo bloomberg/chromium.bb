@@ -14,8 +14,7 @@ package remoting.protocol;
 // starts. Legacy clients expect to receive this message at the
 // beginning of each session. Current clients ignore it.
 //
-// TODO(sergeyu): Remove it once all clients are upgraded to the new
-// version.
+// TODO(sergeyu): Remove this message. See http://crbug.com/104670 .
 message LocalLoginStatusDeprecated {
   optional bool success = 1;
 }

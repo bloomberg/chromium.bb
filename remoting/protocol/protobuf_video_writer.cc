@@ -9,7 +9,6 @@
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
-#include "remoting/protocol/rtp_writer.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/util.h"
 
