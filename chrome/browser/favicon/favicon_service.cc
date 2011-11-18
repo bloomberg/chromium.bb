@@ -72,6 +72,13 @@ void FaviconService::SetFaviconOutOfDateForPage(const GURL& page_url) {
     hs->SetFaviconOutOfDateForPage(page_url);
 }
 
+void FaviconService::CloneFavicon(const GURL& old_page_url,
+                                  const GURL& new_page_url) {
+  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
+  if (hs)
+    hs->CloneFavicon(old_page_url, new_page_url);
+}
+
 void FaviconService::SetImportedFavicons(
     const std::vector<history::ImportedFaviconUsage>& favicon_usage) {
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);

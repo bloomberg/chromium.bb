@@ -165,6 +165,10 @@ class ThumbnailDatabase {
   // Checks whether a favicon is used by any URLs in the database.
   bool HasMappingFor(FaviconID id);
 
+  // Clones the existing mappings from |old_page_url| if |new_page_url| has no
+  // mappings. Otherwise, will leave mappings alone.
+  bool CloneIconMapping(const GURL& old_page_url, const GURL& new_page_url);
+
   // Temporary IconMapping -----------------------------------------------------
   //
   // Creates a temporary table to store icon mapping. Icon mapping will be

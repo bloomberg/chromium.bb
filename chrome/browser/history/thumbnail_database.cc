@@ -545,6 +545,32 @@ bool ThumbnailDatabase::HasMappingFor(FaviconID id) {
   return statement.Step();
 }
 
+bool ThumbnailDatabase::CloneIconMapping(const GURL& old_page_url,
+                                         const GURL& new_page_url) {
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+      "SELECT icon_id FROM icon_mapping "
+      "WHERE page_url=?"));
+  if (!statement)
+    return false;
+
+  // Do nothing if there are existing bindings
+  statement.BindString(0, URLDatabase::GURLToDatabaseURL(new_page_url));
+  if (statement.Step())
+    return true;
+
+  statement.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
+      "INSERT INTO icon_mapping (page_url, icon_id) "
+        "SELECT ?, icon_id FROM icon_mapping "
+        "WHERE page_url = ?"));
+  if (!statement)
+    return false;
+
+  statement.BindString(0, URLDatabase::GURLToDatabaseURL(new_page_url));
+  statement.BindString(1, URLDatabase::GURLToDatabaseURL(old_page_url));
+  return statement.Run();
+}
+
+
 bool ThumbnailDatabase::MigrateIconMappingData(URLDatabase* url_db) {
   URLDatabase::IconMappingEnumerator e;
   if (!url_db->InitIconMappingEnumeratorForEverything(&e))

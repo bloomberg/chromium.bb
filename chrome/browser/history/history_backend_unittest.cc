@@ -1134,4 +1134,35 @@ TEST_F(HistoryBackendTest, GetFaviconForURL) {
   EXPECT_EQ(icon_url, favicon.icon_url);
   EXPECT_EQ(blob_data, touchicon_data);
 }
+
+TEST_F(HistoryBackendTest, CloneFaviconIsRestrictedToSameDomain) {
+  const GURL url("http://www.google.com/");
+  const GURL icon_url("http://www.google.com/icon");
+  const GURL same_domain_url("http://www.google.com/subdir/index.html");
+  const GURL foreign_domain_url("http://www.not-google.com/");
+
+  // Add a favicon
+  std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
+  scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes(data));
+  backend_->SetFavicon(
+      url, icon_url, bytes.get(), FAVICON);
+  EXPECT_TRUE(backend_->thumbnail_db_->GetIconMappingForPageURL(
+      url, FAVICON, NULL));
+
+  // Validate starting state.
+  FaviconData favicon;
+  EXPECT_TRUE(backend_->GetFaviconFromDB(url, FAVICON, &favicon));
+  EXPECT_FALSE(backend_->GetFaviconFromDB(same_domain_url, FAVICON, &favicon));
+  EXPECT_FALSE(backend_->GetFaviconFromDB(foreign_domain_url,
+                                          FAVICON, &favicon));
+
+  // Same-domain cloning should work.
+  backend_->CloneFavicon(url, same_domain_url);
+  EXPECT_TRUE(backend_->GetFaviconFromDB(same_domain_url, FAVICON, &favicon));
+
+  // Foreign-domain cloning is forbidden.
+  backend_->CloneFavicon(url, foreign_domain_url);
+  EXPECT_FALSE(backend_->GetFaviconFromDB(foreign_domain_url,
+                                          FAVICON, &favicon));
+}
 }  // namespace history

@@ -70,7 +70,7 @@ TEST_F(RegisterIntentHandlerInfoBarDelegateTest, Accept) {
   RegisterIntentHandlerInfoBarDelegate delegate(
       contents_wrapper()->infobar_tab_helper(),
       WebIntentsRegistryFactory::GetForProfile(profile()),
-      service);
+      service, NULL, GURL());
 
   EXPECT_CALL(*web_intents_registry_, RegisterIntentProvider(service));
   delegate.Accept();

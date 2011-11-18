@@ -2576,14 +2576,18 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
                                           const string16& href,
                                           const string16& title,
                                           const string16& disposition) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
+    return;
+
   TabContentsWrapper* tcw = TabContentsWrapper::GetCurrentWrapperForContents(
       tab);
   if (!tcw || tcw->profile()->IsOffTheRecord())
     return;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableWebIntents))
-    return;
+  FaviconService* favicon_service =
+      tcw->profile()->GetFaviconService(Profile::EXPLICIT_ACCESS);
 
+  // |href| can be relative to originating URL. Resolve if necessary.
   GURL service_url(href);
   if (!service_url.is_valid()) {
     const GURL& url = tab->GetURL();
@@ -2600,7 +2604,9 @@ void Browser::RegisterIntentHandlerHelper(TabContents* tab,
   RegisterIntentHandlerInfoBarDelegate::MaybeShowIntentInfoBar(
       tcw->infobar_tab_helper(),
       WebIntentsRegistryFactory::GetForProfile(tcw->profile()),
-      service);
+      service,
+      favicon_service,
+      tab->GetURL());
 }
 
 // static
