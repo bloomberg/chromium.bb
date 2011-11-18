@@ -17,13 +17,9 @@ nacl_thread_create_joinable_test_exe = env.ComponentProgram(
 node = env.CommandTest(
     'nacl_thread_create_joinable_test.out',
     command=[nacl_thread_create_joinable_test_exe])
-
-# NOTE: the arm emulator does not handle atomic ops properly
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
-env.AddNodeToTestSuite(node, ['small_tests'],
-                       'run_nacl_thread_create_joinable_test',
-                       is_broken=env.Bit('target_arm') and env.UsingEmulator())
-
+env.AddNodeToTestSuite(node,
+                       ['small_tests'],
+                       'run_nacl_thread_create_joinable_test')
 
 atomic_ops_test_exe = env.ComponentProgram(
     'atomic_ops_test',

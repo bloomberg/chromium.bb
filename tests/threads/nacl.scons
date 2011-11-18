@@ -12,7 +12,8 @@ EXTRA_ARGS = ['100']
 # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
 # NOTE(jasonwkim): [2010/08/31 13:49:46 PDT (Tuesday)]
 # small_thread_test has problem with arm/qemu (also fails on x86-32-pnacl)
-is_broken = env.Bit('target_arm') and env.UsingEmulator()
+arm_qemu = env.Bit('target_arm') and env.UsingEmulator()
+
 
 if env.IsRunningUnderValgrind():
   EXTRA_ARGS = ['20']
@@ -49,7 +50,7 @@ node = env.CommandSelLdrTestNacl(
 # NOTE: this should be a pretty slow test, but its been sped up
 # to not tickle bug 853
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_test',
-                       is_broken=is_broken or
+                       is_broken=arm_qemu or
 # TODO(khim): reenable it when cause of failure on 32bit Windows glibc
 # will be found.
 # See: http://code.google.com/p/nativeclient/issues/detail?id=1690
@@ -69,8 +70,7 @@ node = env.CommandSelLdrTestNacl(
     simple_thread_test_nexe,
     size='small',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_thread_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_thread_test')
 
 race_test_nexe = env.ComponentProgram(
     'race_test',
@@ -82,8 +82,7 @@ node = env.CommandSelLdrTestNacl(
     race_test_nexe,
     size='small',
     )
-env.AddNodeToTestSuite(node, ['small_tests', 'tsan_bot_tests'], 'run_race_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests', 'tsan_bot_tests'], 'run_race_test')
 
 main_thread_pthread_exit_test_nexe = env.ComponentProgram(
     'main_thread_pthread_exit_test',
@@ -113,13 +112,13 @@ node2 = env.CommandSelLdrTestNacl(
 # This is a bug in upstream glibc:
 # see http://sourceware.org/bugzilla/show_bug.cgi?id=12310
 if not (env.Bit('nacl_glibc') and env.Bit('nacl_static_link')):
-  env.AddNodeToTestSuite(node, ['small_tests'],
-                         'run_main_thread_pthread_exit_test',
-                         is_broken=is_broken)
+  env.AddNodeToTestSuite(node,
+                         ['small_tests'],
+                         'run_main_thread_pthread_exit_test',)
 # This test additionally doesn't work with newlib.
   env.AddNodeToTestSuite(node2, ['small_tests'],
                          'run_main_thread_pthread_exit_test2',
-                         is_broken=is_broken or not env.Bit('nacl_glibc'))
+                         is_broken=not env.Bit('nacl_glibc'))
 
 exit_with_thread_nexe = env.ComponentProgram(
     'exit_with_thread',
@@ -128,8 +127,7 @@ exit_with_thread_nexe = env.ComponentProgram(
 
 node = env.CommandSelLdrTestNacl('exit_with_thread.out',
                                  exit_with_thread_nexe)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_exit_with_thread_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_exit_with_thread_test')
 
 cond_wait_test_nexe = env.ComponentProgram(
     'cond_wait_test',
@@ -141,8 +139,7 @@ node = env.CommandSelLdrTestNacl(
     cond_wait_test_nexe,
     size='small',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_cond_wait_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_cond_wait_test')
 
 thread_stack_test_nexe = env.ComponentProgram('thread_stack_test',
                                               'thread_stack_test.c',
@@ -154,8 +151,7 @@ node = env.CommandSelLdrTestNacl(
     thread_stack_test_nexe,
     size='small',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_stack_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_thread_stack_test')
 
 if not env.Bit('tests_use_irt'):
   second_tls_test_nexe = env.ComponentProgram(
@@ -165,8 +161,7 @@ if not env.Bit('tests_use_irt'):
 
   node = env.CommandSelLdrTestNacl('second_tls_test.out',
                                    second_tls_test_nexe)
-  env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test',
-                         is_broken=is_broken)
+  env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_test')
 
 many_threads_sequential_nexe = env.ComponentProgram(
     'many_threads_sequential',
@@ -179,8 +174,7 @@ second_tls_create_test_nexe = env.ComponentProgram(
 
 node = env.CommandSelLdrTestNacl('second_tls_create_test.out',
                                  second_tls_create_test_nexe)
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_create_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_create_test')
 
 # This test should, in principle, be flaky, because of race conditions
 # in NaCl's thread exit/join.  See:
@@ -191,6 +185,7 @@ env.AddNodeToTestSuite(node, ['small_tests'], 'run_second_tls_create_test',
 # the races are fixed.
 node = env.CommandSelLdrTestNacl('many_threads_sequential_test.out',
                                  [many_threads_sequential_nexe])
-env.AddNodeToTestSuite(node, ['small_tests'],
+env.AddNodeToTestSuite(node,
+                       ['small_tests'],
                        'run_many_threads_sequential_test',
-                       is_broken=is_broken)
+                       is_broken=arm_qemu)

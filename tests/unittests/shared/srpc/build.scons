@@ -5,10 +5,6 @@
 
 Import('env')
 
-# NOTE: the arm emulator does not handle atomic ops properly
-# BUG: http://code.google.com/p/nativeclient/issues/detail?id=2437
-is_broken = env.Bit('target_arm') and env.UsingEmulator()
-
 simple_srpc_test_exe = env.ComponentProgram(
     'simple_srpc_test',
     'simple_srpc_test.c',
@@ -21,8 +17,8 @@ simple_srpc_test_exe = env.ComponentProgram(
 node = env.CommandTest(
     'simple_srpc_test.out',
     command=[simple_srpc_test_exe])
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_srpc_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_simple_srpc_test')
+
 
 types_srpc_test_exe = env.ComponentProgram(
     'types_srpc_test',
@@ -36,5 +32,4 @@ types_srpc_test_exe = env.ComponentProgram(
 node = env.CommandTest(
     'types_srpc_test.out',
     command=[types_srpc_test_exe])
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_types_srpc_test',
-                       is_broken=is_broken)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_types_srpc_test')
