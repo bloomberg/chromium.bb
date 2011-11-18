@@ -1,0 +1,16 @@
+{
+  "name": "Speech Recognizer",
+  "version": "1.0",
+  "description": "Recognizes your speech and tells you the most likely result.",
+
+  "browser_action": {
+    "default_title": "Speech Recognizer",
+    "default_icon": "start.png"
+  },
+
+  "background_page": "background.html",
+
+  "permissions": [
+    "experimental"
+  ]
+}

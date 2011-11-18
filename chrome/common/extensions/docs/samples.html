@@ -384,6 +384,7 @@
   "38f6e1e17756ede38b1364c7114a738ca717dcbb": "SANDWICHBAR SHOWS AN INFOBAR ON PAGES WHICH CONTAIN THE WORD SANDWICH BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.INFOBARS.SHOW CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST",
   "fc89b35755483af30b66cd72cefa34a43a3e8312": "SHOW TABS IN PROCESS ADDS A BROWSER ACTION SHOWING WHICH TABS SHARE THE CURRENT TABS PROCESS. BROWSER_ACTION EXPERIMENTAL POPUP TABS CHROME.TABS.GET CHROME.TABS.GETSELECTED CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.UPDATE",
   "a491a2faa1fe79cb49b2fe9ed2720f4723c14184": "SPEAK SELECTION SPEAKS THE CURRENT SELECTION OUT LOUD. <ALL_URLS> BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS TTS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.GETURL CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.SENDREQUEST CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL",
+  "a942b7626644674b7a56678930d054497b244ee7": "SPEECH RECOGNIZER RECOGNIZES YOUR SPEECH AND TELLS YOU THE MOST LIKELY RESULT. BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXPERIMENTAL.SPEECHINPUT.ISRECORDING CHROME.EXPERIMENTAL.SPEECHINPUT.ONERROR CHROME.EXPERIMENTAL.SPEECHINPUT.ONRESULT CHROME.EXPERIMENTAL.SPEECHINPUT.START CHROME.EXPERIMENTAL.SPEECHINPUT.STOP",
   "230463f2d5c3d4d0ca13c230e1f00f2aae0a8a64": "TAB INSPECTOR UTILITY FOR WORKING WITH THE EXTENSION TABS API BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.TABS.CREATE CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.GETSELECTED CHROME.TABS.MOVE CHROME.TABS.ONATTACHED CHROME.TABS.ONCREATED CHROME.TABS.ONDETACHED CHROME.TABS.ONMOVED CHROME.TABS.ONREMOVED CHROME.TABS.ONSELECTIONCHANGED CHROME.TABS.ONUPDATED CHROME.TABS.REMOVE CHROME.TABS.UPDATE CHROME.WINDOWS.CREATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETALL CHROME.WINDOWS.GETCURRENT CHROME.WINDOWS.GETLASTFOCUSED CHROME.WINDOWS.ONCREATED CHROME.WINDOWS.ONFOCUSCHANGED CHROME.WINDOWS.ONREMOVED CHROME.WINDOWS.REMOVE CHROME.WINDOWS.UPDATE",
   "04f5d2ddea95746b0200be1ea223ccb7a748a771": "TALKING ALARM CLOCK A CLOCK WITH TWO CONFIGURABLE ALARMS THAT WILL PLAY A SOUND AND SPEAK A PHRASE OF YOUR CHOICE. BACKGROUND BACKGROUND_PAGE BROWSER_ACTION TTS CHROME.BROWSERACTION.SETICON CHROME.EXTENSION.CONNECT CHROME.EXTENSION.ONCONNECT CHROME.TTS.GETVOICES CHROME.TTS.SPEAK CHROME.TTS.STOP",
   "e1697cacebad05218798bf3e8a0f724517f0e8c3": "TEST SCREENSHOT EXTENSION DEMONSTRATE SCREENSHOT FUNCTIONALITY IN THE CHROME.TABS API. NOTE: ONLY WORKS FOR CODE.GOOGLE.COM BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.EXTENSION.GETURL CHROME.EXTENSION.GETVIEWS CHROME.TABS.CAPTUREVISIBLETAB CHROME.TABS.CREATE CHROME.TABS.ONUPDATED",
@@ -3787,6 +3788,62 @@
   <div>
     <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/speak_selection/">Browse source</a>
     - <a href="examples/extensions/speak_selection.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span style="display: none; ">
+    - <a>Install extension</a>
+    </span>
+  </div>
+</div><div class="sample" id="a942b7626644674b7a56678930d054497b244ee7">
+  <img class="icon" style="display: none; ">
+  <img class="icon" src="images/sample-default-icon.png">
+  <h2 class="name">
+    <a href="#a942b7626644674b7a56678930d054497b244ee7">Speech Recognizer</a>
+    <span style="display: none; ">(packaged app)</span>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>background_page</strong><span>, </span>
+      <span style="display: none; "> and</span>
+    </span><span>
+      <strong>browser_action</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>experimental</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Recognizes your speech and tells you the most likely result.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="browserAction.html#event-onClicked">chrome.browserAction.onClicked</a></code>
+      </li><li>
+        <code><a href="browserAction.html#method-setIcon">chrome.browserAction.setIcon</a></code>
+      </li><li>
+        <code><a href="experimental.speechInput.html#method-isRecording">chrome.experimental.speechInput.isRecording</a></code>
+      </li><li>
+        <code><a href="experimental.speechInput.html#event-onError">chrome.experimental.speechInput.onError</a></code>
+      </li><li>
+        <code><a href="experimental.speechInput.html#event-onResult">chrome.experimental.speechInput.onResult</a></code>
+      </li><li>
+        <code><a href="experimental.speechInput.html#method-start">chrome.experimental.speechInput.start</a></code>
+      </li><li>
+        <code><a href="experimental.speechInput.html#method-stop">chrome.experimental.speechInput.stop</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/speechInput/basic/background.html?content-type=text/plain">background.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/speechInput/basic/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/speechInput/basic/">Browse source</a>
+    - <a href="examples/api/speechInput/basic.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
     <span style="display: none; ">
     - <a>Install extension</a>

@@ -2095,6 +2095,37 @@
     {
       "api_calls": [
         "chrome.browserAction.onClicked",
+        "chrome.browserAction.setIcon",
+        "chrome.experimental.speechInput.isRecording",
+        "chrome.experimental.speechInput.onError",
+        "chrome.experimental.speechInput.onResult",
+        "chrome.experimental.speechInput.start",
+        "chrome.experimental.speechInput.stop"
+      ],
+      "crx_path": null,
+      "description": "Recognizes your speech and tells you the most likely result.",
+      "features": [
+        "background_page",
+        "browser_action",
+        "experimental"
+      ],
+      "icon": null,
+      "id": "a942b7626644674b7a56678930d054497b244ee7",
+      "name": "Speech Recognizer",
+      "packaged_app": false,
+      "path": "examples\/api\/speechInput\/basic\/",
+      "protocols": [],
+      "search_string": "SPEECH RECOGNIZER RECOGNIZES YOUR SPEECH AND TELLS YOU THE MOST LIKELY RESULT. BACKGROUND_PAGE BROWSER_ACTION EXPERIMENTAL CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETICON CHROME.EXPERIMENTAL.SPEECHINPUT.ISRECORDING CHROME.EXPERIMENTAL.SPEECHINPUT.ONERROR CHROME.EXPERIMENTAL.SPEECHINPUT.ONRESULT CHROME.EXPERIMENTAL.SPEECHINPUT.START CHROME.EXPERIMENTAL.SPEECHINPUT.STOP",
+      "source_files": [
+        "background.html",
+        "manifest.json"
+      ],
+      "source_hash": "b092b58c922e769c003eb83e6ef4a63557ddc7f2",
+      "zip_path": "examples\/api\/speechInput\/basic.zip"
+    },
+    {
+      "api_calls": [
+        "chrome.browserAction.onClicked",
         "chrome.extension.getURL",
         "chrome.tabs.create",
         "chrome.tabs.get",

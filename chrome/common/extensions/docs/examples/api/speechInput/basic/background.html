@@ -1,0 +1,40 @@
+<html>
+<script>
+function setStartIcon() {
+  chrome.browserAction.setIcon({ path: "start.png" });
+}
+
+function setStopIcon() {
+  chrome.browserAction.setIcon({ path: "stop.png" });
+}
+
+chrome.browserAction.onClicked.addListener(function(tab) {
+  chrome.experimental.speechInput.isRecording(function(recording) {
+    if (!recording) {
+      chrome.experimental.speechInput.start({}, function() {
+        if (chrome.extension.lastError) {
+          alert("Couldn't start speech input: " + chrome.extension.lastError.message);
+          setStartIcon();
+        } else {
+          setStopIcon();
+        }
+      });
+    } else {
+      chrome.experimental.speechInput.stop(function() {
+        setStartIcon();
+      });
+    }
+  });
+});
+
+chrome.experimental.speechInput.onError.addListener(function(error) {
+  alert("Speech input failed: " + error.code);
+  setStartIcon();
+});
+
+chrome.experimental.speechInput.onResult.addListener(function(result) {
+  alert(result.hypotheses[0].utterance);
+  setStartIcon();
+});
+</script>
+</html>
