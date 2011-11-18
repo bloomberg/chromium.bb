@@ -44,8 +44,6 @@ extern "C" {
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
-#define WL_ZOMBIE_OBJECT ((void *) 2)
-
 struct wl_message {
 	const char *name;
 	const char *signature;
@@ -151,19 +149,6 @@ void wl_array_init(struct wl_array *array);
 void wl_array_release(struct wl_array *array);
 void *wl_array_add(struct wl_array *array, int size);
 void wl_array_copy(struct wl_array *array, struct wl_array *source);
-
-struct wl_map {
-	struct wl_array entries;
-	uint32_t free_list;
-};
-
-void wl_map_init(struct wl_map *map);
-void wl_map_release(struct wl_map *map);
-uint32_t wl_map_insert_new(struct wl_map *map, void *data);
-int wl_map_insert_at(struct wl_map *map, uint32_t i, void *data);
-void wl_map_remove(struct wl_map *map, uint32_t i);
-void *wl_map_lookup(struct wl_map *map, uint32_t i);
-void wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data);
 
 #ifdef  __cplusplus
 }

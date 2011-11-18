@@ -37,7 +37,7 @@
 #include <time.h>
 
 #include "wayland-util.h"
-#include "connection.h"
+#include "wayland-private.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 

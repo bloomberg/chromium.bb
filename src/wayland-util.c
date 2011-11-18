@@ -24,7 +24,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+
 #include "wayland-util.h"
+#include "wayland-private.h"
 
 WL_EXPORT void
 wl_list_init(struct wl_list *list)

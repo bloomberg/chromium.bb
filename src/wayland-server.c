@@ -41,9 +41,9 @@
 #include <sys/stat.h>
 #include <ffi.h>
 
+#include "wayland-private.h"
 #include "wayland-server.h"
 #include "wayland-server-protocol.h"
-#include "connection.h"
 
 struct wl_socket {
 	int fd;

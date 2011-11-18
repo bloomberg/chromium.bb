@@ -35,9 +35,9 @@
 #include <fcntl.h>
 #include <sys/poll.h>
 
-#include "connection.h"
 #include "wayland-util.h"
 #include "wayland-client.h"
+#include "wayland-private.h"
 
 struct wl_global_listener {
 	wl_display_global_func_t handler;
