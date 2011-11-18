@@ -112,6 +112,7 @@
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/launcher/launcher_model.h"
 #include "ui/aura_shell/shell.h"
+#include "ui/gfx/screen.h"
 #elif defined(OS_WIN)
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
@@ -1292,6 +1293,19 @@ gfx::Rect BrowserView::GetInstantBounds() {
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
     const gfx::Rect& bounds) {
+#if defined(USE_AURA) && defined(OS_CHROMEOS)
+  // If a popup is larger than a given fraction of the screen, turn it into
+  // a foreground tab. Also check for width or height == 0, which would
+  // indicate a tab sized popup window.
+  gfx::Size size = gfx::Screen::GetMonitorAreaNearestWindow(
+      GetWidget()->GetNativeView()).size();
+  if (bounds.width() > size.width() ||
+      bounds.width() == 0 ||
+      bounds.height() > size.height() ||
+      bounds.height() == 0) {
+    return NEW_FOREGROUND_TAB;
+  }
+#endif
   return NEW_POPUP;
 }
 
