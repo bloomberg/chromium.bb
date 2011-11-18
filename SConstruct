@@ -14,7 +14,9 @@ import sys
 import zlib
 sys.path.append("./common")
 sys.path.append('../third_party')
-try
+# BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
+# simplejson is not available in CrOS chroot due to gclient issues
+try:
   import json
 except Exception:
   import simplejson as json
