@@ -515,9 +515,24 @@ public:
     int GetCount() const;
     const Entry* GetEntry(int idx) const;
 
+    struct VoidElement
+    {
+        //absolute pos of Void ID
+        long long element_start;
+
+        //ID size + size size + payload size
+        long long element_size;
+    };
+
+    int GetVoidElementCount() const;
+    const VoidElement* GetVoidElement(int idx) const;
+
 private:
     Entry* m_entries;
-    int m_count;
+    int m_entry_count;
+
+    VoidElement* m_void_elements;
+    int m_void_element_count;
 
     static void ParseEntry(
         IMkvReader*,

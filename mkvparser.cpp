@@ -2476,7 +2476,9 @@ SeekHead::SeekHead(
     m_element_start(element_start),
     m_element_size(element_size),
     m_entries(0),
-    m_count(0)
+    m_entry_count(0),
+    m_void_elements(0),
+    m_void_element_count(0)
 {
     long long pos = start;
     const long long stop = start + size_;
@@ -2485,7 +2487,8 @@ SeekHead::SeekHead(
 
     //first count the seek head entries
 
-    int count = 0;
+    int entry_count = 0;
+    int void_element_count = 0;
 
     while (pos < stop)
     {
@@ -2505,7 +2508,9 @@ SeekHead::SeekHead(
         assert((pos + size) <= stop);
 
         if (id == 0x0DBB)  //SeekEntry ID
-            ++count;
+            ++entry_count;
+        else if (id == 0x6C)  //Void ID
+            ++void_element_count;
 
         pos += size;  //consume payload
         assert(pos <= stop);
@@ -2513,21 +2518,24 @@ SeekHead::SeekHead(
 
     assert(pos == stop);
 
-    if (count <= 0)
-        return;  //nothing else for us to do
-
-    m_entries = new (std::nothrow) Entry[count];
+    m_entries = new (std::nothrow) Entry[entry_count];
     assert(m_entries);  //TODO
 
-    //now parse the entries
+    m_void_elements = new (std::nothrow) VoidElement[void_element_count];
+    assert(m_void_elements);  //TODO
+
+    //now parse the entries and void elements
 
     Entry* pEntry = m_entries;
+    VoidElement* pVoidElement = m_void_elements;
+
     pos = start;
 
     while (pos < stop)
     {
         long len;
 
+        const long long idpos = pos;
         const long long id = ReadUInt(pReader, pos, len);
         assert(id >= 0);  //TODO
         assert((pos + len) <= stop);
@@ -2543,6 +2551,13 @@ SeekHead::SeekHead(
 
         if (id == 0x0DBB)  //SeekEntry ID
             ParseEntry(pReader, pos, size, pEntry);
+        else if (id == 0x6C)  //Void ID
+        {
+            VoidElement& e = *pVoidElement++;
+
+            e.element_start = idpos;
+            e.element_size = (pos + size) - idpos;
+        }
 
         pos += size;  //consume payload
         assert(pos <= stop);
@@ -2550,21 +2565,28 @@ SeekHead::SeekHead(
 
     assert(pos == stop);
 
-    const ptrdiff_t count_ = ptrdiff_t(pEntry - m_entries);
+    ptrdiff_t count_ = ptrdiff_t(pEntry - m_entries);
     assert(count_ >= 0);
-    assert(count_ <= count);
+    assert(count_ <= entry_count);
 
-    m_count = static_cast<int>(count_);
+    m_entry_count = static_cast<int>(count_);
+
+    count_ = ptrdiff_t(pVoidElement - m_void_elements);
+    assert(count_ >= 0);
+    assert(count_ <= void_element_count);
+
+    m_void_element_count = static_cast<int>(count_);
 }
 
 SeekHead::~SeekHead()
 {
     delete[] m_entries;
+    delete[] m_void_elements;
 }
 
 int SeekHead::GetCount() const
 {
-    return m_count;
+    return m_entry_count;
 }
 
 const SeekHead::Entry* SeekHead::GetEntry(int idx) const
@@ -2572,10 +2594,26 @@ const SeekHead::Entry* SeekHead::GetEntry(int idx) const
     if (idx < 0)
         return 0;
 
-    if (idx >= m_count)
+    if (idx >= m_entry_count)
         return 0;
 
     return m_entries + idx;
+}
+
+int SeekHead::GetVoidElementCount() const
+{
+    return m_void_element_count;
+}
+
+const SeekHead::VoidElement* SeekHead::GetVoidElement(int idx) const
+{
+    if (idx < 0)
+        return 0;
+
+    if (idx >= m_void_element_count)
+        return 0;
+
+    return m_void_elements + idx;
 }
 #endif
 
