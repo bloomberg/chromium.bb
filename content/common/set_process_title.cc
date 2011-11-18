@@ -4,27 +4,29 @@
 
 #include "content/common/set_process_title.h"
 
-#include "base/command_line.h"
-#include "base/file_path.h"
-#include "base/file_util.h"
-#include "base/string_util.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS)
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
-#endif
+
+#include <string>
+
+#include "base/command_line.h"
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS)
 
 #if defined(OS_LINUX)
 #include <sys/prctl.h>
 
+#include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/string_util.h"
 // Linux/glibc doesn't natively have setproctitle().
 #include "content/common/set_process_title_linux.h"
-#endif
+#endif  // defined(OS_LINUX)
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS) && \
-    defined(OS_OPENBSD)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS)
 
 void SetProcessTitleFromCommandLine(const char** main_argv) {
   // Build a single string which consists of all the arguments separated
@@ -57,9 +59,9 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
     // available, this lets us set the short process name that shows when the
     // full command line is not being displayed in most process listings.
     prctl(PR_SET_NAME, FilePath(title).BaseName().value().c_str());
-#endif
+#endif  // defined(PR_SET_NAME)
   }
-#endif
+#endif  // defined(OS_LINUX)
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   for (size_t i = 1; i < command_line->argv().size(); ++i) {
@@ -79,4 +81,3 @@ void SetProcessTitleFromCommandLine(const char** /* main_argv */) {
 }
 
 #endif
-
