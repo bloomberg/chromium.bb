@@ -46,31 +46,21 @@ void Problem(const char* format, ...) {
   exit(1);
 }
 
-std::string ReadOrFail(const std::wstring& file_name, const char* kind) {
-#if defined(OS_WIN)
-  FilePath file_path(file_name);
-#else
-  FilePath file_path(WideToASCII(file_name));
-#endif
+std::string ReadOrFail(const FilePath& file_name, const char* kind) {
   int64 file_size = 0;
-  if (!file_util::GetFileSize(file_path, &file_size))
+  if (!file_util::GetFileSize(file_name, &file_size))
     Problem("Can't read %s file.", kind);
   std::string buffer;
   buffer.reserve(static_cast<size_t>(file_size));
-  if (!file_util::ReadFileToString(file_path, &buffer))
+  if (!file_util::ReadFileToString(file_name, &buffer))
     Problem("Can't read %s file.", kind);
   return buffer;
 }
 
 void WriteSinkToFile(const courgette::SinkStream *sink,
-                     const std::wstring& output_file) {
-#if defined(OS_WIN)
-  FilePath output_path(output_file);
-#else
-  FilePath output_path(WideToASCII(output_file));
-#endif
+                     const FilePath& output_file) {
   int count =
-      file_util::WriteFile(output_path,
+      file_util::WriteFile(output_file,
                            reinterpret_cast<const char*>(sink->Buffer()),
                            static_cast<int>(sink->Length()));
   if (count == -1)
@@ -79,8 +69,8 @@ void WriteSinkToFile(const courgette::SinkStream *sink,
     Problem("Incomplete write.");
 }
 
-void Disassemble(const std::wstring& input_file,
-                 const std::wstring& output_file) {
+void Disassemble(const FilePath& input_file,
+                 const FilePath& output_file) {
   std::string buffer = ReadOrFail(input_file, "input");
 
   courgette::AssemblyProgram* program = NULL;
@@ -115,9 +105,9 @@ void Disassemble(const std::wstring& input_file,
   WriteSinkToFile(&sink, output_file);
 }
 
-void DisassembleAndAdjust(const std::wstring& program_file,
-                          const std::wstring& model_file,
-                          const std::wstring& output_file) {
+void DisassembleAndAdjust(const FilePath& program_file,
+                          const FilePath& model_file,
+                          const FilePath& output_file) {
   std::string program_buffer = ReadOrFail(program_file, "program");
   std::string model_buffer = ReadOrFail(model_file, "reference");
 
@@ -170,9 +160,9 @@ void DisassembleAndAdjust(const std::wstring& program_file,
 // original file's stream and the new file's stream.  This is completely
 // uninteresting to users, but it is handy for seeing how much each which
 // streams are contributing to the final file size.  Adjustment is optional.
-void DisassembleAdjustDiff(const std::wstring& model_file,
-                           const std::wstring& program_file,
-                           const std::wstring& output_file_root,
+void DisassembleAdjustDiff(const FilePath& model_file,
+                           const FilePath& program_file,
+                           const FilePath& output_file_root,
                            bool adjust) {
   std::string model_buffer = ReadOrFail(model_file, "'old'");
   std::string program_buffer = ReadOrFail(program_file, "'new'");
@@ -242,13 +232,15 @@ void DisassembleAdjustDiff(const std::wstring& model_file,
         courgette::CreateBinaryPatch(&old_source, &new_source, &patch_stream);
     if (status != courgette::OK) Problem("-xxx failed.");
 
+    std::string append = std::string("-") + base::IntToString(i);
+
     WriteSinkToFile(&patch_stream,
-                    output_file_root + L"-" + UTF8ToWide(base::IntToString(i)));
+                    output_file_root.InsertBeforeExtensionASCII(append));
   }
 }
 
-void Assemble(const std::wstring& input_file,
-              const std::wstring& output_file) {
+void Assemble(const FilePath& input_file,
+              const FilePath& output_file) {
   std::string buffer = ReadOrFail(input_file, "input");
 
   courgette::SourceStreamSet sources;
@@ -269,9 +261,9 @@ void Assemble(const std::wstring& input_file,
   WriteSinkToFile(&sink, output_file);
 }
 
-void GenerateEnsemblePatch(const std::wstring& old_file,
-                           const std::wstring& new_file,
-                           const std::wstring& patch_file) {
+void GenerateEnsemblePatch(const FilePath& old_file,
+                           const FilePath& new_file,
+                           const FilePath& patch_file) {
   std::string old_buffer = ReadOrFail(old_file, "'old' input");
   std::string new_buffer = ReadOrFail(new_file, "'new' input");
 
@@ -289,26 +281,17 @@ void GenerateEnsemblePatch(const std::wstring& old_file,
   WriteSinkToFile(&patch_stream, patch_file);
 }
 
-void ApplyEnsemblePatch(const std::wstring& old_file,
-                        const std::wstring& patch_file,
-                        const std::wstring& new_file) {
+void ApplyEnsemblePatch(const FilePath& old_file,
+                        const FilePath& patch_file,
+                        const FilePath& new_file) {
   // We do things a little differently here in order to call the same Courgette
   // entry point as the installer.  That entry point point takes file names and
   // returns an status code but does not output any diagnostics.
-#if defined(OS_WIN)
-  FilePath old_path(old_file);
-  FilePath patch_path(patch_file);
-  FilePath new_path(new_file);
-#else
-  FilePath old_path(WideToASCII(old_file));
-  FilePath patch_path(WideToASCII(patch_file));
-  FilePath new_path(WideToASCII(new_file));
-#endif
 
   courgette::Status status =
-      courgette::ApplyEnsemblePatch(old_path.value().c_str(),
-                                    patch_path.value().c_str(),
-                                    new_path.value().c_str());
+      courgette::ApplyEnsemblePatch(old_file.value().c_str(),
+                                    patch_file.value().c_str(),
+                                    new_file.value().c_str());
 
   if (status == courgette::C_OK)
     return;
@@ -355,9 +338,9 @@ void ApplyEnsemblePatch(const std::wstring& old_file,
   Problem("-apply failed.");
 }
 
-void GenerateBSDiffPatch(const std::wstring& old_file,
-                         const std::wstring& new_file,
-                         const std::wstring& patch_file) {
+void GenerateBSDiffPatch(const FilePath& old_file,
+                         const FilePath& new_file,
+                         const FilePath& patch_file) {
   std::string old_buffer = ReadOrFail(old_file, "'old' input");
   std::string new_buffer = ReadOrFail(new_file, "'new' input");
 
@@ -375,9 +358,9 @@ void GenerateBSDiffPatch(const std::wstring& old_file,
   WriteSinkToFile(&patch_stream, patch_file);
 }
 
-void ApplyBSDiffPatch(const std::wstring& old_file,
-                      const std::wstring& patch_file,
-                      const std::wstring& new_file) {
+void ApplyBSDiffPatch(const FilePath& old_file,
+                      const FilePath& patch_file,
+                      const FilePath& new_file) {
   std::string old_buffer = ReadOrFail(old_file, "'old' input");
   std::string patch_buffer = ReadOrFail(patch_file, "'patch' input");
 
@@ -418,15 +401,10 @@ int main(int argc, const char* argv[]) {
   bool cmd_spread_1_adjusted = command_line.HasSwitch("gen1a");
   bool cmd_spread_1_unadjusted = command_line.HasSwitch("gen1u");
 
-  // TODO(evanm): this whole file should use FilePaths instead of wstrings.
-  std::vector<std::wstring> values;
+  std::vector<FilePath> values;
   const CommandLine::StringVector& args = command_line.GetArgs();
   for (size_t i = 0; i < args.size(); ++i) {
-#if defined(OS_WIN)
-    values.push_back(args[i]);
-#else
-    values.push_back(ASCIIToWide(args[i]));
-#endif
+    values.push_back(FilePath(args[i]));
   }
 
   // '-repeat=N' is for debugging.  Running many iterations can reveal leaks and
