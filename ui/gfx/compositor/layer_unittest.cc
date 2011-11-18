@@ -604,7 +604,8 @@ TEST_F(LayerWithNullDelegateTest,
 }
 
 // Verifies that when there are many potential holes, the largest one is picked.
-TEST_F(LayerWithNullDelegateTest, LargestHole) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(LargestHole)) {
   scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
 
   scoped_ptr<Layer> child1(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
@@ -619,7 +620,8 @@ TEST_F(LayerWithNullDelegateTest, LargestHole) {
 }
 
 // Verifies that the largest hole in the draw order is picked
-TEST_F(LayerWithNullDelegateTest, HoleGeneratedFromLeaf) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(HoleGeneratedFromLeaf)) {
   // Layer tree looks like:
   // node 1
   // |_ node 11
@@ -649,7 +651,8 @@ TEST_F(LayerWithNullDelegateTest, HoleGeneratedFromLeaf) {
 }
 
 // Verifies that a hole can only punched into a layer with opacity = 1.0f.
-TEST_F(LayerWithNullDelegateTest, NoHoleWhenPartialOpacity) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(NoHoleWhenPartialOpacity)) {
   // Layer tree looks like:
   // node 1
   // |_ node 11
@@ -675,7 +678,8 @@ TEST_F(LayerWithNullDelegateTest, NoHoleWhenPartialOpacity) {
 }
 
 // Verifies that a non visible layer or any of its children is not a hole.
-TEST_F(LayerWithNullDelegateTest, NonVisibleLayerCannotBeHole) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(NonVisibleLayerCannotBeHole)) {
   // Layer tree looks like:
   // node 1
   // |_ node 11
@@ -702,7 +706,9 @@ TEST_F(LayerWithNullDelegateTest, NonVisibleLayerCannotBeHole) {
 
 // Verifies that a layer which doesn't fill its bounds opaquely cannot punch a
 // hole. However its children should still be able to punch a hole.
-TEST_F(LayerWithNullDelegateTest, LayerNotFillingBoundsOpaquelyCannotBeHole) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(
+           LayerNotFillingBoundsOpaquelyCannotBeHole)) {
   // Layer tree looks like:
   // node 1
   // |_ node 11
@@ -728,7 +734,8 @@ TEST_F(LayerWithNullDelegateTest, LayerNotFillingBoundsOpaquelyCannotBeHole) {
 }
 
 // Verifies that the hole is with respect to the local bounds of its parent.
-TEST_F(LayerWithNullDelegateTest, HoleLocalBounds) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(HoleLocalBounds)) {
   scoped_ptr<Layer> parent(CreateTextureRootLayer(
       gfx::Rect(100, 100, 150, 150)));
 
@@ -742,7 +749,8 @@ TEST_F(LayerWithNullDelegateTest, HoleLocalBounds) {
 
 // Verifies that there is no hole present when one of the child layers has a
 // transform.
-TEST_F(LayerWithNullDelegateTest, NoHoleWithTransform) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(NoHoleWithTransform)) {
   scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
   scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 100, 100)));
   parent->Add(child.get());
@@ -764,7 +772,8 @@ TEST_F(LayerWithNullDelegateTest, NoHoleWithTransform) {
 
 // Verifies that if the child layer is rotated by a multiple of ninety degrees
 // we punch a hole
-TEST_F(LayerWithNullDelegateTest, HoleWithNinetyDegreeTransforms) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(HoleWithNinetyDegreeTransforms)) {
   scoped_ptr<Layer> parent(CreateTextureRootLayer(gfx::Rect(0, 0, 400, 400)));
   scoped_ptr<Layer> child(CreateTextureLayer(gfx::Rect(50, 50, 50, 50)));
   parent->Add(child.get());
@@ -795,7 +804,9 @@ TEST_F(LayerWithNullDelegateTest, HoleWithNinetyDegreeTransforms) {
 
 // Verifies that a layer which doesn't have a texture cannot punch a
 // hole. However its children should still be able to punch a hole.
-TEST_F(LayerWithNullDelegateTest, HoleWithRelativeNinetyDegreeTransforms) {
+TEST_F(LayerWithNullDelegateTest,
+       NOT_APPLICABLE_TO_WEBKIT_COMPOSITOR(
+           HoleWithRelativeNinetyDegreeTransforms)) {
   // Layer tree looks like:
   // node 1
   // |_ node 11
