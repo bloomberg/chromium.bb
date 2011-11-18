@@ -164,6 +164,37 @@ evdev_process_relative_motion(struct input_event *e, int *dx, int *dy)
 }
 
 static int
+is_motion_event(struct input_event *e)
+{
+	switch (e->type) {
+	case EV_REL:
+		switch (e->code) {
+		case REL_X:
+		case REL_Y:
+			return 1;
+		}
+	case EV_ABS:
+		switch (e->code) {
+		case ABS_X:
+		case ABS_Y:
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+static void
+evdev_flush_motion(struct wl_input_device *device, uint32_t time, int x, int y,
+		   int dx, int dy, int absolute_event)
+{
+	if (dx != 0 || dy != 0)
+		notify_motion(device, time, x + dx, y + dy);
+	if (absolute_event)
+		notify_motion(device, time, x, y);
+}
+
+static int
 evdev_input_device_data(int fd, uint32_t mask, void *data)
 {
 	struct wlsc_compositor *ec;
@@ -195,6 +226,12 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	for (e = ev; e < end; e++) {
 		time = e->time.tv_sec * 1000 + e->time.tv_usec / 1000;
 
+		/* we try to minimize the amount of notifications to be
+		 * forwarded to the compositor, so we accumulate motion
+		 * events and send as a bunch */
+		if (!is_motion_event(e))
+			evdev_flush_motion(&device->master->base.input_device,
+					   time, x, y, dx, dy, absolute_event);
 		switch (e->type) {
 		case EV_REL:
 			evdev_process_relative_motion(e, &dx, &dy);
@@ -213,11 +250,8 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		}
 	}
 
-	if (dx != 0 || dy != 0)
-		notify_motion(&device->master->base.input_device,
-			      time, x + dx, y + dy);
-	if (absolute_event)
-		notify_motion(&device->master->base.input_device, time, x, y);
+	evdev_flush_motion(&device->master->base.input_device, time, x, y, dx,
+			   dy, absolute_event);
 
 	return 1;
 }
