@@ -1876,6 +1876,12 @@ libstdcpp-install() {
 
 #+ misc-tools            - Build and install sel_ldr and validator for ARM.
 misc-tools() {
+  if ${PNACL_IN_CROS_CHROOT}; then
+    Banner "In CrOS chroot. Not building misc-tools"
+    return
+  fi
+
+
   if ${PNACL_BUILD_ARM} ; then
     StepBanner "MISC-ARM" "Building sel_ldr (ARM)"
 
