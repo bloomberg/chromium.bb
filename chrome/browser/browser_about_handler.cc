@@ -136,6 +136,7 @@ const char* const kChromePaths[] = {
   chrome::kChromeUINewTabHost,
   chrome::kChromeUIPluginsHost,
   chrome::kChromeUIPrintHost,
+  chrome::kChromeUIProfilerHost,
   chrome::kChromeUIQuotaInternalsHost,
   chrome::kChromeUISessionsHost,
   chrome::kChromeUISettingsHost,
