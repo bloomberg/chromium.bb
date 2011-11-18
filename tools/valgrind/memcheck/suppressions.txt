@@ -3770,15 +3770,6 @@
    fun:*RunNamedProcessTypeMainERKSsRK18MainFunctionParams
 }
 {
-   bug_87245
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z17NewRunnableMethodIN11webkit_glue18WebMediaPlayerImpl5ProxyEMS2_FvvEEP14CancelableTaskPT_T0_
-   fun:_ZN11webkit_glue18WebMediaPlayerImpl5Proxy7RepaintEv
-   fun:_ZN11webkit_glue17VideoRendererImpl16OnFrameAvailableEv
-   fun:_ZN5media17VideoRendererBase10ThreadMainEv
-}
-{
    bug_87408
    Memcheck:Addr4
    fun:sqlite3MemSize
