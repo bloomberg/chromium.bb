@@ -790,6 +790,27 @@
         '../content/worker/test/worker_uitest.cc',
       ],
       'conditions': [
+        ['disable_nacl!=1', {
+          'dependencies': [
+            '../ppapi/ppapi_internal.gyp:ppapi_nacl_tests',
+          ],
+          'copies': [
+            {
+              'destination': '<(PRODUCT_DIR)',
+              'files': [
+                '../ppapi/tests/test_case.html',
+                '../ppapi/tests/test_page.css',
+                '../ppapi/native_client/tests/ppapi_tests/test_case.nmf',
+              ],
+            },
+            {
+              'destination': '<(PRODUCT_DIR)/test_url_loader_data',
+              'files': [
+                '../ppapi/tests/test_url_loader_data/hello.txt',
+              ],
+            },
+          ],
+        }],
         ['target_arch!="arm"', {
           'dependencies': [
             '../webkit/webkit.gyp:copy_npapi_test_plugin',
