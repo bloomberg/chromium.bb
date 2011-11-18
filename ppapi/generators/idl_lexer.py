@@ -97,7 +97,7 @@ class IDLLexer(object):
 
   # Constant values
   t_FLOAT = r'-?(\d+\.\d*|\d*\.\d+)([Ee][+-]?\d+)?|-?\d+[Ee][+-]?\d+'
-  t_INT = r'-?[0-9]+'
+  t_INT = r'-?[0-9]+[uU]?'
   t_OCT = r'-?0[0-7]+'
   t_HEX = r'-?0[Xx][0-9A-Fa-f]+'
   t_LSHIFT = r'<<'
@@ -330,4 +330,3 @@ def Main(args):
 
 if __name__ == '__main__':
   sys.exit(Main(sys.argv[1:]))
-

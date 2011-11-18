@@ -3,34 +3,17 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_testing_dev.idl modified Thu Nov 17 13:50:20 2011. */
-
-#ifndef PPAPI_C_DEV_PPB_TESTING_DEV_H_
-#define PPAPI_C_DEV_PPB_TESTING_DEV_H_
-
-#include "ppapi/c/pp_bool.h"
-#include "ppapi/c/pp_instance.h"
-#include "ppapi/c/pp_macros.h"
-#include "ppapi/c/pp_point.h"
-#include "ppapi/c/pp_resource.h"
-#include "ppapi/c/pp_stdint.h"
-
-#define PPB_TESTING_DEV_INTERFACE_0_7 "PPB_Testing(Dev);0.7"
-#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_7
-
 /**
- * @file
  * This file contains interface functions used for unit testing. Do not use in
  * production code. They are not guaranteed to be available in normal plugin
  * environments so you should not depend on them.
  */
 
+label Chrome {
+  M14 = 0.7
+};
 
-/**
- * @addtogroup Interfaces
- * @{
- */
-struct PPB_Testing_Dev {
+interface PPB_Testing_Dev {
   /**
    * Reads the bitmap data out of the backing store for the given
    * DeviceContext2D and into the given image. If the data was successfully
@@ -60,9 +43,10 @@ struct PPB_Testing_Dev {
    * the backing store (and hence ReadImageData) until after a Flush()
    * operation has completed.
    */
-  PP_Bool (*ReadImageData)(PP_Resource device_context_2d,
-                           PP_Resource image,
-                           const struct PP_Point* top_left);
+  PP_Bool ReadImageData([in] PP_Resource device_context_2d,
+                        [in] PP_Resource image,
+                        [in] PP_Point top_left);
+
   /**
    * Runs a nested message loop. The plugin will be reentered from this call.
    * This function is used for unit testing the API. The normal pattern is to
@@ -73,27 +57,24 @@ struct PPB_Testing_Dev {
    * pop back up and continue with the test. This avoids having to write a
    * complicated state machine for simple tests for asynchronous APIs.
    */
-  void (*RunMessageLoop)(PP_Instance instance);
+  void RunMessageLoop([in] PP_Instance instance);
+
   /**
    * Posts a quit message for the outermost nested message loop. Use this to
    * exit and return back to the caller after you call RunMessageLoop.
    */
-  void (*QuitMessageLoop)(PP_Instance instance);
+  void QuitMessageLoop([in] PP_Instance instance);
+
   /**
    * Returns the number of live objects (resources + strings + objects)
    * associated with this plugin instance. Used for detecting leaks. Returns
    * (uint32_t)-1 on failure.
    */
-  uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
+  uint32_t GetLiveObjectsForInstance([in] PP_Instance instance);
+
   /**
    * Returns PP_TRUE if the plugin is running out-of-process, PP_FALSE
    * otherwise.
    */
-  PP_Bool (*IsOutOfProcess)();
+  PP_Bool IsOutOfProcess();
 };
-/**
- * @}
- */
-
-#endif  /* PPAPI_C_DEV_PPB_TESTING_DEV_H_ */
-

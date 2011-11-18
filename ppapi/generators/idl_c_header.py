@@ -90,6 +90,11 @@ def GenerateHeader(out, filenode, releases):
       name = '%s%s' % (pref, node.GetName())
       if node.IsA('Struct'):
         form = 'PP_COMPILE_ASSERT_STRUCT_SIZE_IN_BYTES(%s, %s);\n'
+      elif node.IsA('Enum'):
+        if node.GetProperty('notypedef'):
+          form = 'PP_COMPILE_ASSERT_ENUM_SIZE_IN_BYTES(%s, %s);\n'
+        else:
+          form = 'PP_COMPILE_ASSERT_SIZE_IN_BYTES(%s, %s);\n'
       else:
         form = 'PP_COMPILE_ASSERT_SIZE_IN_BYTES(%s, %s);\n'
       item += form % (name, asize[0])
@@ -219,4 +224,3 @@ def Main(args):
 if __name__ == '__main__':
   retval = Main(sys.argv[1:])
   sys.exit(retval)
-

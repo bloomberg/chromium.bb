@@ -254,7 +254,11 @@ class CGen(object):
 
     # If it's an enum, or typedef then return the Enum's name
     elif typeref.IsA('Enum', 'Typedef'):
-      name = '%s%s' % (prefix, typeref.GetName())
+      # The enum may have skipped having a typedef, we need prefix with 'enum'.
+      if typeref.GetProperty('notypedef'):
+        name = 'enum %s%s' % (prefix, typeref.GetName())
+      else:
+        name = '%s%s' % (prefix, typeref.GetName())
 
     else:
       raise RuntimeError('Getting name of non-type %s.' % node)
@@ -413,12 +417,15 @@ class CGen(object):
   def DefineEnum(self, node, releases, prefix='', comment=False):
     __pychecker__ = 'unusednames=comment,releases'
     self.LogEnter('DefineEnum %s' % node)
-    unnamed =  node.GetProperty('unnamed')
+    name = '%s%s' % (prefix, node.GetName())
+    notypedef = node.GetProperty('notypedef')
+    unnamed = node.GetProperty('unnamed')
     if unnamed:
       out = 'enum {'
+    elif notypedef:
+      out = 'enum %s {' % name
     else:
       out = 'typedef enum {'
-    name = '%s%s' % (prefix, node.GetName())
     enumlist = []
     for child in node.GetListOf('EnumItem'):
       value = child.GetProperty('VALUE')
@@ -430,7 +437,7 @@ class CGen(object):
       enumlist.append('%s  %s' % (comment_txt, item_txt))
     self.LogExit('Exit DefineEnum')
 
-    if unnamed:
+    if unnamed or notypedef:
       out = '%s\n%s\n};\n' % (out, ',\n'.join(enumlist))
     else:
       out = '%s\n%s\n} %s;\n' % (out, ',\n'.join(enumlist), name)
