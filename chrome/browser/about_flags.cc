@@ -250,13 +250,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableTabGroupsContextMenu)
   },
   {
-    "ppapi-flash-in-process",
-    IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_NAME,
-    IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kPpapiFlashInProcess)
-  },
-  {
     "preload-instant-search",
     IDS_FLAGS_PRELOAD_INSTANT_SEARCH_NAME,
     IDS_FLAGS_PRELOAD_INSTANT_SEARCH_DESCRIPTION,

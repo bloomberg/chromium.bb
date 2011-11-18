@@ -4718,12 +4718,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_DESCRIPTION" desc="Description of the context menu for enabling tab grouping in the context menu lab.">
         Adds items to the tab context menu for grouping tabs.
       </message>
-      <message name="IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_NAME" desc="Title for the flag to run the custom flash in-process">
-        Run PPAPI Flash in the renderer process
-      </message>
-      <message name="IDS_FLAGS_PPAPI_FLASH_IN_PROCESS_DESCRIPTION" desc="Description for the flag to run the custom flash in-process">
-        If the PPAPI version of Flash is in use, run it in each renderer process rather than in a dedicated plugin process.
-      </message>
       <message name="IDS_FLAGS_ENABLE_VPN_NAME" desc="Title for the flag to enable VPN support">
         VPN support
       </message>
