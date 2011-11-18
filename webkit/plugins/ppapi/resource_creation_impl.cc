@@ -33,6 +33,7 @@
 #include "webkit/plugins/ppapi/ppb_video_capture_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_decoder_impl.h"
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
+#include "webkit/plugins/ppapi/ppb_websocket_impl.h"
 
 using ppapi::InputEventData;
 using ppapi::InputEventImpl;
@@ -305,6 +306,10 @@ PP_Resource ResourceCreationImpl::CreateVideoDecoder(
 PP_Resource ResourceCreationImpl::CreateVideoLayer(PP_Instance instance,
                                                    PP_VideoLayerMode_Dev mode) {
   return PPB_VideoLayer_Impl::Create(instance, mode);
+}
+
+PP_Resource ResourceCreationImpl::CreateWebSocket(PP_Instance instance) {
+  return PPB_WebSocket_Impl::Create(instance);
 }
 
 PP_Resource ResourceCreationImpl::CreateWheelInputEvent(

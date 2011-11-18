@@ -307,6 +307,8 @@
         '../plugins/ppapi/ppb_video_layer_impl.h',
         '../plugins/ppapi/ppb_video_layer_software.cc',
         '../plugins/ppapi/ppb_video_layer_software.h',
+        '../plugins/ppapi/ppb_websocket_impl.cc',
+        '../plugins/ppapi/ppb_websocket_impl.h',
         '../plugins/ppapi/ppb_widget_impl.cc',
         '../plugins/ppapi/ppb_widget_impl.h',
         '../plugins/ppapi/quota_file_io.cc',

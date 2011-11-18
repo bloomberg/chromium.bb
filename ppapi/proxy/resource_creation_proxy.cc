@@ -346,6 +346,11 @@ PP_Resource ResourceCreationProxy::CreateVideoLayer(
   return 0;
 }
 
+PP_Resource ResourceCreationProxy::CreateWebSocket(PP_Instance instance) {
+  NOTIMPLEMENTED();
+  return 0;
+}
+
 PP_Resource ResourceCreationProxy::CreateWheelInputEvent(
     PP_Instance instance,
     PP_TimeTicks time_stamp,

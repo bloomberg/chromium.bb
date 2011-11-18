@@ -129,6 +129,7 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_VideoDecoder_Profile profile) OVERRIDE;
   virtual PP_Resource CreateVideoLayer(PP_Instance instance,
                                        PP_VideoLayerMode_Dev mode) OVERRIDE;
+  virtual PP_Resource CreateWebSocket(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateWheelInputEvent(
       PP_Instance instance,
       PP_TimeTicks time_stamp,

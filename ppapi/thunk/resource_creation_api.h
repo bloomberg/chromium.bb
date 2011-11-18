@@ -19,6 +19,7 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
+#include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/shared_impl/api_id.h"
 
 struct PP_Flash_Menu;
@@ -131,6 +132,7 @@ class ResourceCreationAPI {
       PP_VideoDecoder_Profile profile) = 0;
   virtual PP_Resource CreateVideoLayer(PP_Instance instance,
                                        PP_VideoLayerMode_Dev mode) = 0;
+  virtual PP_Resource CreateWebSocket(PP_Instance instance) = 0;
   virtual PP_Resource CreateWheelInputEvent(
       PP_Instance instance,
       PP_TimeTicks time_stamp,

@@ -22,6 +22,7 @@ PROXIED_API(PPB_TextInput)
 UNPROXIED_API(PPB_Transport)
 PROXIED_API(PPB_VideoCapture)
 PROXIED_API(PPB_VideoDecoder)
+UNPROXIED_API(PPB_WebSocket)
 UNPROXIED_API(PPB_Widget)
 
 PROXIED_IFACE(PPB_AudioInput, PPB_AUDIO_INPUT_DEV_INTERFACE_0_1,
@@ -63,6 +64,8 @@ PROXIED_IFACE(PPB_VideoDecoder, PPB_VIDEODECODER_DEV_INTERFACE_0_16,
               PPB_VideoDecoder_Dev)
 UNPROXIED_IFACE(PPB_VideoLayer, PPB_VIDEOLAYER_DEV_INTERFACE,
                 PPB_VideoLayer_Dev)
+UNPROXIED_IFACE(PPB_WebSocket, PPB_WEBSOCKET_DEV_INTERFACE_0_1,
+                PPB_WebSocket_Dev)
 UNPROXIED_IFACE(PPB_Widget, PPB_WIDGET_DEV_INTERFACE_0_3, PPB_Widget_Dev)
 
 #include "ppapi/thunk/interfaces_postamble.h"

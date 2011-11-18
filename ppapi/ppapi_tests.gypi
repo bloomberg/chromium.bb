@@ -137,6 +137,8 @@
         'tests/test_var.h',
         'tests/test_video_decoder.cc',
         'tests/test_video_decoder.h',
+        'tests/test_websocket.cc',
+        'tests/test_websocket.h',
 
         # Deprecated test cases.
         'tests/test_instance_deprecated.cc',

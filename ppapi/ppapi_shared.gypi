@@ -182,6 +182,8 @@
         'thunk/ppb_video_decoder_thunk.cc',
         'thunk/ppb_video_layer_api.h',
         'thunk/ppb_video_layer_thunk.cc',
+        'thunk/ppb_websocket_api.h',
+        'thunk/ppb_websocket_thunk.cc',
         'thunk/ppb_widget_api.h',
         'thunk/ppb_widget_thunk.cc',
         'thunk/ppb_zoom_thunk.cc',
