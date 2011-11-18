@@ -1958,3 +1958,13 @@
    fun:_ZN2ui33PopulateURLAndTitleFromPasteboardEP4GURLPSbItN4base20string16_char_traitsESaItEEP12NSPasteboarda
    fun:_ZN24WebDragDestTest_URL_Test8TestBodyEv
 }
+{
+   bug_104756
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3IPC11SyncMessage13GenerateReplyEPKNS_7MessageE
+   fun:_ZN3IPC17SyncMessageSchemaI6Tuple1IbES1_IRSt6vectorIN6webkit13WebPluginInfoESaIS5_EEEE32DispatchDelayReplyWithSendParamsI19RenderMessageFilterMSC_FvbPNS_7MessageEEEEbbRKS2_PKSD_PT_T0_
+   fun:_ZN22ViewHostMsg_GetPlugins18DispatchDelayReplyI19RenderMessageFilterMS1_FvbPN3IPC7MessageEEEEbPKS3_PT_T0_
+   fun:_ZN19RenderMessageFilter17OnMessageReceivedERKN3IPC7MessageEPb
+   fun:_ZN20BrowserMessageFilter15DispatchMessageERKN3IPC7MessageE
+}
