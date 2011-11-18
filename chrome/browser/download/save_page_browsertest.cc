@@ -109,7 +109,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 #endif
 
   void CheckDownloadUI(const FilePath& download_path) const {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
     const ActiveDownloadsUI::DownloadList& downloads = GetDownloads();
     EXPECT_EQ(downloads.size(), 1U);
 
