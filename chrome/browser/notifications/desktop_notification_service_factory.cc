@@ -35,8 +35,9 @@ DesktopNotificationServiceFactory::~DesktopNotificationServiceFactory() {
 
 ProfileKeyedService* DesktopNotificationServiceFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  DesktopNotificationService* service =
-      new DesktopNotificationService(profile, NULL);
+  DesktopNotificationService* service = new DesktopNotificationService(profile,
+      g_browser_process->notification_ui_manager());
+
   return service;
 }
 

@@ -93,24 +93,24 @@
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
-#include "chrome/browser/chrome_browser_parts_gtk.h"
+#include "chrome/browser/chrome_browser_main_extra_parts_gtk.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/chrome_browser_parts_views.h"
+#include "chrome/browser/chrome_browser_main_extra_parts_views.h"
 #endif
 
 #if defined(USE_AURA)
-#include "chrome/browser/chrome_browser_parts_aura.h"
+#include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
+#endif
+
+#if defined(TOUCH_UI)
+#include "chrome/browser/chrome_browser_main_extra_parts_touch.h"
 #endif
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
-#endif
-
-#if defined(TOUCH_UI)
-#include "chrome/browser/chrome_browser_parts_touch.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -219,43 +219,44 @@ RenderProcessHostPrivilege GetProcessPrivilege(
 
 namespace chrome {
 
-void ChromeContentBrowserClient::CreateBrowserMainParts(
-    const content::MainFunctionParams& parameters,
-    std::vector<content::BrowserMainParts*>* parts_list) {
+content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
+    const content::MainFunctionParams& parameters) {
+  ChromeBrowserMainParts* main_parts;
   // Construct the Main browser parts based on the OS type.
 #if defined(OS_WIN)
-  parts_list->push_back(new ChromeBrowserMainPartsWin(parameters));
+  main_parts = new ChromeBrowserMainPartsWin(parameters);
 #elif defined(OS_MACOSX)
-  parts_list->push_back(new ChromeBrowserMainPartsMac(parameters));
+  main_parts = new ChromeBrowserMainPartsMac(parameters);
 #elif defined(OS_CHROMEOS)
-  parts_list->push_back(new ChromeBrowserMainPartsChromeos(parameters));
+  main_parts = new ChromeBrowserMainPartsChromeos(parameters);
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
-  parts_list->push_back(new ChromeBrowserMainPartsLinux(parameters));
+  main_parts = new ChromeBrowserMainPartsLinux(parameters);
 #elif defined(OS_POSIX)
-  parts_list->push_back(new ChromeBrowserMainPartsPosix(parameters));
+  main_parts = new ChromeBrowserMainPartsPosix(parameters);
 #else
   NOTREACHED();
-  parts_list->push_back(new ChromeBrowserMainParts(parameters));
+  main_parts = new ChromeBrowserMainParts(parameters);
 #endif
 
   // Construct additional browser parts. Stages are called in the order in
   // which they are added.
 #if defined(TOOLKIT_USES_GTK)
-  parts_list->push_back(new ChromeBrowserPartsGtk());
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsGtk());
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-  parts_list->push_back(new ChromeBrowserPartsViews());
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
 #endif
 
 #if defined(USE_AURA)
-  parts_list->push_back(new ChromeBrowserPartsAura());
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
 #endif
 
 #if defined(TOUCH_UI)
-  parts_list->push_back(new ChromeBrowserPartsTouch());
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsTouch());
 #endif
 
+  return main_parts;
 }
 
 RenderWidgetHostView* ChromeContentBrowserClient::CreateViewForWidget(

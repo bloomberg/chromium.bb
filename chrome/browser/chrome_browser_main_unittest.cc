@@ -30,12 +30,9 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket) {
 
   scoped_ptr<content::MainFunctionParams> params(
       new content::MainFunctionParams(command_line_));
-  ScopedVector<content::BrowserMainParts> bwv;
-  content::GetContentClient()->browser()->CreateBrowserMainParts(
-      *params, &(bwv.get()));
-  ChromeBrowserMainParts* cbw = NULL;
-  if (bwv.size() >= 1)
-    cbw = static_cast<ChromeBrowserMainParts*>(bwv[0]);
+  scoped_ptr<content::BrowserMainParts> bw(
+      content::GetContentClient()->browser()->CreateBrowserMainParts(*params));
+  ChromeBrowserMainParts* cbw = static_cast<ChromeBrowserMainParts*>(bw.get());
   EXPECT_TRUE(cbw);
   if (cbw) {
     cbw->WarmConnectionFieldTrial();
@@ -46,12 +43,9 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket) {
 TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Random) {
   scoped_ptr<content::MainFunctionParams> params(
       new content::MainFunctionParams(command_line_));
-  ScopedVector<content::BrowserMainParts> bwv;
-  content::GetContentClient()->browser()->CreateBrowserMainParts(
-      *params, &(bwv.get()));
-  ChromeBrowserMainParts* cbw = NULL;
-  if (bwv.size() >= 1)
-    cbw = static_cast<ChromeBrowserMainParts*>(bwv[0]);
+  scoped_ptr<content::BrowserMainParts> bw(
+      content::GetContentClient()->browser()->CreateBrowserMainParts(*params));
+  ChromeBrowserMainParts* cbw = static_cast<ChromeBrowserMainParts*>(bw.get());
   EXPECT_TRUE(cbw);
   if (cbw) {
     const int kNumRuns = 1000;
@@ -71,17 +65,15 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Invalid) {
       new content::MainFunctionParams(command_line_));
   // This test ends up launching a new process, and that doesn't initialize the
   // ContentClient interfaces.
-  ScopedVector<content::BrowserMainParts> bwv;
+  scoped_ptr<content::BrowserMainParts> bw;
   if (content::GetContentClient()) {
-    content::GetContentClient()->browser()->CreateBrowserMainParts(
-        *params, &(bwv.get()));
+    bw.reset(content::GetContentClient()->browser()->CreateBrowserMainParts(
+        *params));
   } else {
     chrome::ChromeContentBrowserClient ccbc;
-    ccbc.CreateBrowserMainParts(*params, &(bwv.get()));
+    bw.reset(ccbc.CreateBrowserMainParts(*params));
   }
-  ChromeBrowserMainParts* cbw = NULL;
-  if (bwv.size() >= 1)
-    cbw = static_cast<ChromeBrowserMainParts*>(bwv[0]);
+  ChromeBrowserMainParts* cbw = static_cast<ChromeBrowserMainParts*>(bw.get());
   EXPECT_TRUE(cbw);
   if (cbw) {
 #if defined(NDEBUG) && defined(DCHECK_ALWAYS_ON)

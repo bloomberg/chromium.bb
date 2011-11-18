@@ -21,9 +21,8 @@ class MockContentBrowserClient : public ContentBrowserClient {
   MockContentBrowserClient();
   virtual ~MockContentBrowserClient();
 
-  virtual void CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters,
-      std::vector<BrowserMainParts*>* parts_list) OVERRIDE;
+  virtual BrowserMainParts* CreateBrowserMainParts(
+      const content::MainFunctionParams& parameters) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForWidget(
       RenderWidgetHost* widget) OVERRIDE;
   virtual TabContentsView* CreateTabContentsView(

@@ -85,9 +85,8 @@ class ContentBrowserClient {
   // Allows the embedder to set any number of custom BrowserMainParts
   // implementations for the browser startup code. See comments in
   // browser_main_parts.h.
-  virtual void CreateBrowserMainParts(
-      const content::MainFunctionParams& parameters,
-      std::vector<BrowserMainParts*>* parts_list) = 0;
+  virtual BrowserMainParts* CreateBrowserMainParts(
+      const content::MainFunctionParams& parameters) = 0;
 
   // Platform-specific creator. Use this to construct new RenderWidgetHostViews
   // rather than using RenderWidgetHostViewWin & friends.
