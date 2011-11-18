@@ -33,59 +33,41 @@ typedef HANDLE NaClHandle;
 typedef int NaClHandle;
 #endif  // NaClHandle
 
-#if defined(OS_POSIX)
+#if defined(OS_MACOSX)
 namespace {
 
-// On Mac OS X, shm_open() works in the sandbox but does not give us an FD
-// that we can map as PROT_EXEC.  On Linux, shm_open() can only be used
-// outside the sandbox anyway.  Rather than doing an IPC to get an
-// executable SHM region when CreateMemoryObject() is called, we
-// preallocate one on startup, since NaCl's sel_ldr only needs one of them.
-// This saves a round trip.
-
-bool SetShmFdSize(int fd, size_t size) {
-#if defined(OS_MACOSX)
-  // ftruncate() is disallowed by the Mac OS X sandbox and returns EPERM.
-  // Luckily, we can get the same effect with lseek() + write().
-  if (lseek(fd, size - 1, SEEK_SET) == -1) {
-    LOG(ERROR) << "lseek() failed: " << errno;
-    close(fd);
-    return false;
-  }
-  if (write(fd, "", 1) != 1) {
-    LOG(ERROR) << "write() failed: " << errno;
-    close(fd);
-    return -1;
-  }
-#else
-  if (ftruncate(fd, size) < 0) {
-    LOG(ERROR) << "ftruncate() failed: " << errno;
-    close(fd);
-    return false;
-  }
-#endif  // defined(OS_MACOSX)
-  return true;
-}
+// On Mac OS X, shm_open() works in the sandbox but does not give us
+// an FD that we can map as PROT_EXEC.  Rather than doing an IPC to
+// get an executable SHM region when CreateMemoryObject() is called,
+// we preallocate one on startup, since NaCl's sel_ldr only needs one
+// of them.  This saves a round trip.
 
 base::subtle::Atomic32 g_shm_fd = -1;
 
 int CreateMemoryObject(size_t size, bool executable) {
   if (executable && size > 0) {
     int result_fd = base::subtle::NoBarrier_AtomicExchange(&g_shm_fd, -1);
-    if (result_fd != -1 && SetShmFdSize(result_fd, size))
+    if (result_fd != -1) {
+      // ftruncate() is disallowed by the Mac OS X sandbox and
+      // returns EPERM.  Luckily, we can get the same effect with
+      // lseek() + write().
+      if (lseek(result_fd, size - 1, SEEK_SET) == -1) {
+        LOG(ERROR) << "lseek() failed: " << errno;
+        return -1;
+      }
+      if (write(result_fd, "", 1) != 1) {
+        LOG(ERROR) << "write() failed: " << errno;
+        return -1;
+      }
       return result_fd;
+    }
   }
-#if defined(OS_LINUX)
-  // Use the proxied implementation.  It doesn't really support executability.
-  CHECK(!executable);
-  return content::MakeSharedMemorySegmentViaIPC(size, executable);
-#endif
   // Fall back to NaCl's default implementation.
   return -1;
 }
 
 }  // namespace
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_MACOSX)
 
 extern "C" void NaClMainForChromium(int handle_count,
                                     const NaClHandle* handles,
@@ -115,15 +97,17 @@ bool NaClListener::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void NaClListener::OnStartSelLdr(std::vector<nacl::FileDescriptor> handles) {
-#if defined(OS_POSIX)
+#if defined(OS_LINUX)
+  nacl::SetCreateMemoryObjectFunc(content::MakeSharedMemorySegmentViaIPC);
+#elif defined(OS_MACOSX)
   nacl::SetCreateMemoryObjectFunc(CreateMemoryObject);
-  CHECK(!handles.empty());
-  g_shm_fd = nacl::ToNativeHandle(handles.back());
+  CHECK(handles.size() >= 1);
+  g_shm_fd = nacl::ToNativeHandle(handles[handles.size() - 1]);
   handles.pop_back();
 #endif
 
-  CHECK(!handles.empty());
-  NaClHandle irt_handle = nacl::ToNativeHandle(handles.back());
+  CHECK(handles.size() >= 1);
+  NaClHandle irt_handle = nacl::ToNativeHandle(handles[handles.size() - 1]);
   handles.pop_back();
 
 #if defined(OS_WIN)
