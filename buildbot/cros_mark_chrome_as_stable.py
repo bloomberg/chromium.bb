@@ -28,7 +28,7 @@ if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
 from chromite.buildbot import cros_mark_as_stable
-from chromite.buildbot import ebuild_manager
+from chromite.buildbot import portage_utilities
 from chromite.lib.cros_build_lib import RunCommand, Info, Warning
 
 BASE_CHROME_SVN_URL = 'http://src.chromium.org/svn'
@@ -180,17 +180,17 @@ def _GetStickyEBuild(stable_ebuilds):
   elif len(sticky_ebuilds) > 1:
     Warning('More than one sticky ebuild found')
 
-  return ebuild_manager.BestEBuild(sticky_ebuilds)
+  return portage_utilities.BestEBuild(sticky_ebuilds)
 
 
-class ChromeEBuild(ebuild_manager.EBuild):
+class ChromeEBuild(portage_utilities.EBuild):
   """Thin sub-class of EBuild that adds a chrome_version field."""
   chrome_version_re = re.compile('.*chromeos-chrome-(%s|9999).*' % (
       _CHROME_VERSION_REGEX))
   chrome_version = ''
 
   def __init__(self, path):
-    ebuild_manager.EBuild.__init__(self, path)
+    portage_utilities.EBuild.__init__(self, path)
     re_match = self.chrome_version_re.match(self.ebuild_path_no_revision)
     if re_match:
       self.chrome_version = re_match.group(1)
@@ -238,7 +238,7 @@ def FindChromeCandidates(overlay_dir):
   if not stable_ebuilds:
     Warning('Missing stable ebuild for %s' % overlay_dir)
 
-  return ebuild_manager.BestEBuild(unstable_ebuilds), stable_ebuilds
+  return portage_utilities.BestEBuild(unstable_ebuilds), stable_ebuilds
 
 
 def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
@@ -280,7 +280,7 @@ def FindChromeUprevCandidate(stable_ebuilds, chrome_rev, sticky_branch):
         candidates.append(ebuild)
 
   if candidates:
-    return ebuild_manager.BestEBuild(candidates)
+    return portage_utilities.BestEBuild(candidates)
   else:
     return None
 

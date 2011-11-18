@@ -18,7 +18,7 @@ import constants
 if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
-from chromite.buildbot import ebuild_manager
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 
 
@@ -338,7 +338,7 @@ def main():
 
   global VERBOSE
   VERBOSE = options.verbose
-  ebuild_manager.EBuild.verbose = options.verbose
+  portage_utilities.EBuild.verbose = options.verbose
 
   if len(args) != 1:
     _PrintUsageAndDie('Must specify a valid command [commit, push]')
@@ -363,7 +363,7 @@ def main():
     }
 
   if command == 'commit':
-    ebuild_manager.BuildEBuildDictionary(
+    portage_utilities.BuildEBuildDictionary(
       overlays, options.all, package_list)
 
   tracking_branch = cros_build_lib.GetManifestDefaultBranch(options.srcroot)

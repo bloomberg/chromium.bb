@@ -147,12 +147,13 @@ class ManifestVersionedSyncStage(SyncStage):
     increment = 'build' if self._tracking_branch == 'master' else 'branch'
 
     dry_run = self._options.debug
+    source_repo = repository.RepoRepository(
+        self._build_config['git_url'], self._build_root,
+        branch=self._tracking_branch)
     ManifestVersionedSyncStage.manifest_manager = \
         manifest_version.BuildSpecsManager(
-            source_dir=self._build_root,
-            checkout_repo=self._build_config['git_url'],
+            source_repo=source_repo,
             manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
-            branch=self._tracking_branch,
             build_name=self._bot_id,
             incr_type=increment,
             dry_run=dry_run)
@@ -196,11 +197,12 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
   def InitializeManifestManager(self):
     """Override: Creates an LKGMManager rather than a ManifestManager."""
     dry_run = self._options.debug
+    source_repo = repository.RepoRepository(
+        self._build_config['git_url'], self._build_root,
+        branch=self._tracking_branch);
     ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
-        source_dir=self._build_root,
-        checkout_repo=self._build_config['git_url'],
+        source_repo=source_repo,
         manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
-        branch=self._tracking_branch,
         build_name=self._bot_id,
         build_type=self._build_config['build_type'],
         dry_run=dry_run)

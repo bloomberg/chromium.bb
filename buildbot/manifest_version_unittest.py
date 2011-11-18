@@ -226,9 +226,10 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.tmpmandir = tempfile.mkdtemp()
     manifest_version.BuildSpecsManager._TMP_MANIFEST_DIR = self.tmpmandir
 
+    repo = repository.RepoRepository(
+      self.source_repo, self.tmpdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
-      self.tmpdir, self.source_repo, self.manifest_repo, self.branch,
-      self.build_name, self.incr_type, dry_run=True)
+      repo, self.manifest_repo, self.build_name, self.incr_type, dry_run=True)
 
   def testLoadSpecs(self):
     """Tests whether we can load specs correctly."""

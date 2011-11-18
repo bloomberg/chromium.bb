@@ -22,6 +22,7 @@ if __name__ == '__main__':
 
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
+from chromite.buildbot import repository
 from chromite.buildbot import manifest_version_unittest
 from chromite.buildbot import patch
 from chromite.lib import cros_build_lib as cros_lib
@@ -105,9 +106,10 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.tmpmandir = tempfile.mkdtemp()
     manifest_version.BuildSpecsManager._TMP_MANIFEST_DIR = self.tmpmandir
 
+    repo = repository.RepoRepository(
+      self.source_repo, self.tmpdir, self.branch)
     self.manager = lkgm_manager.LKGMManager(
-      self.tmpdir, self.source_repo, self.manifest_repo, self.branch,
-      self.build_name, 'binary', dry_run=True)
+      repo, self.manifest_repo, self.build_name, 'binary', dry_run=True)
 
     self.manager.all_specs_dir = '/LKGM/path'
     self.manager.specs_for_builder = os.path.join(self.manager.GetManifestDir(),

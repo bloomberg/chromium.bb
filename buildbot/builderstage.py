@@ -11,10 +11,8 @@ import time
 import traceback
 
 from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib as cros_lib
-
-PUBLIC_OVERLAY = '%(buildroot)s/src/third_party/chromiumos-overlay'
-OVERLAY_LIST_CMD = '%(buildroot)s/src/platform/dev/host/cros_overlay_list'
 
 class NonBacktraceBuildException(Exception):
   pass
@@ -59,8 +57,10 @@ class BuilderStage(object):
 
   def _ExtractOverlays(self):
     """Extracts list of overlays into class."""
-    overlays = self._ResolveOverlays(self._build_config['overlays'])
-    push_overlays = self._ResolveOverlays(self._build_config['push_overlays'])
+    overlays = portage_utilities.FindOverlays(
+        self._build_root, self._build_config['overlays'])
+    push_overlays = portage_utilities.FindOverlays(
+        self._build_root, self._build_config['push_overlays'])
 
     # Sanity checks.
     # We cannot push to overlays that we don't rev.
@@ -80,43 +80,6 @@ class BuilderStage(object):
 
     assert isinstance(boards, list), 'Board was neither an array or a string.'
     return boards
-
-  def _ResolveOverlays(self, overlays):
-    """Return the list of overlays to use for a given buildbot.
-
-    Args:
-      overlays: A string describing which overlays you want.
-                'private': Just the private overlay.
-                'public': Just the public overlay.
-                'both': Both the public and private overlays.
-    """
-    cmd = OVERLAY_LIST_CMD % {'buildroot': self._build_root}
-    # Check in case we haven't checked out the source yet.
-    if not os.path.exists(cmd):
-      return []
-
-    public_overlays = cros_lib.RunCommand([cmd, '--all_boards', '--noprivate'],
-                                          redirect_stdout=True,
-                                          print_cmd=False).output.split()
-    private_overlays = cros_lib.RunCommand([cmd, '--all_boards', '--nopublic'],
-                                           redirect_stdout=True,
-                                           print_cmd=False).output.split()
-
-    # TODO(davidjames): cros_overlay_list should include chromiumos-overlay in
-    #                   its list of public overlays. But it doesn't yet...
-    public_overlays.append(PUBLIC_OVERLAY % {'buildroot': self._build_root})
-
-    if overlays == 'private':
-      paths = private_overlays
-    elif overlays == 'public':
-      paths = public_overlays
-    elif overlays == 'both':
-      paths = public_overlays + private_overlays
-    else:
-      cros_lib.Info('No overlays found.')
-      paths = []
-
-    return paths
 
   def _PrintLoudly(self, msg):
     """Prints a msg with loudly."""

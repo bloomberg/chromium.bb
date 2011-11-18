@@ -25,6 +25,8 @@ from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.buildbot import cbuildbot_stages as stages
 from chromite.buildbot import lkgm_manager
 from chromite.buildbot import manifest_version
+from chromite.buildbot import repository
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib as cros_lib
 
 
@@ -68,6 +70,7 @@ class AbstractStageTest(mox.MoxTestBase):
                                 'src/third_party/chromiumos-overlay')
 
     bs.BuilderStage.SetTrackingBranch(self.TRACKING_BRANCH)
+    portage_utilities._OVERLAY_LIST_CMD = '/bin/true'
 
     self.mox.StubOutWithMock(os.path, 'isdir')
 
@@ -110,31 +113,6 @@ class BuilderStageTest(AbstractStageTest):
     self.mox.VerifyAll()
     self.assertEqual(result, 'RESULT')
 
-  def testResolveOverlays(self):
-    self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    for _ in range(3):
-      output_obj = cros_lib.CommandResult()
-      output_obj.output = 'public1 public2\n'
-      cros_lib.RunCommand(
-          mox.And(mox.IsA(list), mox.In('--noprivate')),
-          print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
-      output_obj = cros_lib.CommandResult()
-      output_obj.output = 'private1 private2\n'
-      cros_lib.RunCommand(
-          mox.And(mox.IsA(list), mox.In('--nopublic')),
-          print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
-    self.mox.ReplayAll()
-    bs.OVERLAY_LIST_CMD = '/bin/true'
-    stage = self.ConstructStage()
-    public_overlays = ['public1', 'public2', self.overlay]
-    private_overlays = ['private1', 'private2']
-
-    self.assertEqual(stage._ResolveOverlays('public'), public_overlays)
-    self.assertEqual(stage._ResolveOverlays('private'), private_overlays)
-    self.assertEqual(stage._ResolveOverlays('both'),
-                     public_overlays + private_overlays)
-    self.mox.VerifyAll()
-
 
 class ManifestVersionedSyncStageTest(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
@@ -155,9 +133,11 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.build_config['manifest_version'] = self.manifest_version_url
     self.next_version = 'next_version'
 
+    repo = repository.RepoRepository(
+      self.source_repo, self.tmpdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
-      self.tmpdir, self.source_repo, self.manifest_version_url, self.branch,
-      self.build_name, self.incr_type, dry_run=True)
+      repo, self.manifest_version_url, self.build_name,
+      self.incr_type, dry_run=True)
 
     stages.ManifestVersionedSyncStage.manifest_manager = self.manager
 
@@ -255,9 +235,11 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
     self.build_config['manifest_version'] = True
     self.build_config['build_type'] = self.build_type
 
+    repo = repository.RepoRepository(
+      self.source_repo, self.tmpdir, self.branch)
     self.manager = lkgm_manager.LKGMManager(
-      self.tmpdir, self.source_repo, self.manifest_version_url, self.branch,
-      self.build_name, self.build_type, dry_run=True)
+      repo, self.manifest_version_url, self.build_name,
+      self.build_type, dry_run=True)
 
   def ConstructStage(self):
     return stages.LKGMCandidateSyncCompletionStage(self.bot_id, self.options,

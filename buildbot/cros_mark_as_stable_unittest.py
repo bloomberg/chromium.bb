@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
 from chromite.lib import cros_build_lib
 from chromite.buildbot import cros_mark_as_stable
-from chromite.buildbot import ebuild_manager
+from chromite.buildbot import portage_utilities
 
 
 # pylint: disable=W0212,R0904
@@ -116,7 +116,7 @@ class EBuildStableMarkerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(cros_mark_as_stable, '_SimpleRunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(os, 'unlink')
-    self.m_ebuild = self.mox.CreateMock(ebuild_manager.EBuild)
+    self.m_ebuild = self.mox.CreateMock(portage_utilities.EBuild)
     self.m_ebuild.is_stable = True
     self.m_ebuild.package = 'test_package/test_package'
     self.m_ebuild.version_no_rev = '0.0.1'

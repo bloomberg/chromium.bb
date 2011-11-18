@@ -370,22 +370,18 @@ class BuildSpecsManager(object):
     """Get the directory where specs are checked out to."""
     return cls._TMP_MANIFEST_DIR
 
-  def __init__(self, source_dir, checkout_repo, manifest_repo, branch,
-               build_name, incr_type, dry_run=True):
+  def __init__(self, source_repo, manifest_repo, build_name,
+               incr_type, dry_run=True):
     """Initializes a build specs manager.
     Args:
-      source_dir: Directory to which we checkout out source code.
-      checkout_repo:  Checkout repository for cros.
+      source_repo: Repository object for the source code.
       manifest_repo:  Manifest repository for manifest versions / buildspecs.
-        branch: The branch.
       build_name: Identifier for the build.  Must match cbuildbot_config.
       incr_type: part of the version to increment. 'patch or branch'
       dry_run: Whether we actually commit changes we make or not.
     """
-    self.cros_source = repository.RepoRepository(
-        checkout_repo, source_dir, branch=branch)
+    self.cros_source = source_repo
     self.manifest_repo = manifest_repo
-    self.branch = branch
     self.build_name = build_name
     self.incr_type = incr_type
     self.dry_run = dry_run

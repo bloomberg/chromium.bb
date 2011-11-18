@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unit tests for ebuild_manager.py."""
+"""Unit tests for portage_utilities.py."""
 
 import fileinput
 import mox
@@ -19,7 +19,7 @@ if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
 from chromite.lib import cros_build_lib
-from chromite.buildbot import ebuild_manager
+from chromite.buildbot import portage_utilities
 
 
 class _Package(object):
@@ -47,7 +47,7 @@ class EBuildTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(fileinput, 'input')
     fileinput.input(fake_ebuild_path).AndReturn('')
     self.mox.ReplayAll()
-    fake_ebuild = ebuild_manager.EBuild(fake_ebuild_path)
+    fake_ebuild = portage_utilities.EBuild(fake_ebuild_path)
     self.mox.VerifyAll()
     return fake_ebuild
 
@@ -91,14 +91,14 @@ class EBuildTest(mox.MoxTestBase):
 
     # We expect Die() will not be called; mock it out so that if
     # we're wrong, it won't just terminate the test.
-    self.mox.StubOutWithMock(ebuild_manager.cros_build_lib, 'Die')
-    self.mox.StubOutWithMock(ebuild_manager.os.path, 'isdir')
+    self.mox.StubOutWithMock(portage_utilities.cros_build_lib, 'Die')
+    self.mox.StubOutWithMock(portage_utilities.os.path, 'isdir')
     self.mox.StubOutWithMock(
-        ebuild_manager.cros_build_lib, 'RunCommand')
+        portage_utilities.cros_build_lib, 'RunCommand')
 
     # The first RunCommand does 'grep' magic on the ebuild.
     result1 = _DummyCommandResult(' '.join([fake_project, fake_subdir]))
-    ebuild_manager.cros_build_lib.RunCommand(
+    portage_utilities.cros_build_lib.RunCommand(
         mox.IgnoreArg(),
         print_cmd=fake_ebuild.verbose,
         redirect_stdout=True,
@@ -106,12 +106,12 @@ class EBuildTest(mox.MoxTestBase):
 
     # ... the result is used to construct a path, which the EBuild
     # code expects to be a directory.
-    ebuild_manager.os.path.isdir(
+    portage_utilities.os.path.isdir(
       os.path.join(fake_sources, 'third_party', fake_subdir)).AndReturn(True)
 
     # ... the next RunCommand does 'git config --get ...'
     result2 = _DummyCommandResult(fake_project)
-    ebuild_manager.cros_build_lib.RunCommand(
+    portage_utilities.cros_build_lib.RunCommand(
         mox.IgnoreArg(),
         print_cmd=fake_ebuild.verbose,
         redirect_stdout=True,
@@ -119,7 +119,7 @@ class EBuildTest(mox.MoxTestBase):
 
     # ... and the final RunCommand does 'git rev-parse HEAD'
     result3 = _DummyCommandResult(fake_hash)
-    ebuild_manager.cros_build_lib.RunCommand(
+    portage_utilities.cros_build_lib.RunCommand(
         mox.IgnoreArg(),
         print_cmd=fake_ebuild.verbose,
         redirect_stdout=True,
@@ -131,26 +131,74 @@ class EBuildTest(mox.MoxTestBase):
     self.assertEquals(test_hash, fake_hash)
 
 
+class FindOverlaysTest(mox.MoxTestBase):
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    self.build_root = '/fake_root'
+    self.overlay = os.path.join(self.build_root,
+                                'src/third_party/chromiumos-overlay')
+
+  def testFindOverlays(self):
+    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
+    stub_list_cmd = '/bin/true'
+    public_output = 'public1\npublic2\n'
+    private_output = 'private1\nprivate2\n'
+
+    output_obj = cros_build_lib.CommandResult()
+    output_obj.output = public_output
+    cros_build_lib.RunCommand(
+        [stub_list_cmd, '--all_boards', '--noprivate'],
+        print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
+
+    output_obj = cros_build_lib.CommandResult()
+    output_obj.output = private_output
+    cros_build_lib.RunCommand(
+        [stub_list_cmd, '--all_boards', '--nopublic'],
+        print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
+
+    output_obj = cros_build_lib.CommandResult()
+    output_obj.output = private_output + public_output
+    cros_build_lib.RunCommand(
+        [stub_list_cmd, '--all_boards'],
+        print_cmd=False, redirect_stdout=True).AndReturn(output_obj)
+
+    self.mox.ReplayAll()
+    portage_utilities._OVERLAY_LIST_CMD = stub_list_cmd
+    public_overlays = ['public1', 'public2', self.overlay]
+    private_overlays = ['private1', 'private2']
+
+    self.assertEqual(portage_utilities.FindOverlays(self.build_root, 'public'),
+                     public_overlays)
+    self.assertEqual(portage_utilities.FindOverlays(self.build_root, 'private'),
+                     private_overlays)
+    self.assertEqual(portage_utilities.FindOverlays(self.build_root, 'both'),
+                     private_overlays + public_overlays)
+    self.mox.VerifyAll()
+
+
 class BuildEBuildDictionaryTest(mox.MoxTestBase):
 
   def setUp(self):
     mox.MoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(ebuild_manager.os, 'walk')
+    self.mox.StubOutWithMock(portage_utilities.os, 'walk')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.package = 'chromeos-base/test_package'
     self.root = '/overlay/chromeos-base/test_package'
     self.package_path = self.root + '/test_package-0.0.1.ebuild'
     paths = [[self.root, [], []]]
-    ebuild_manager.os.walk("/overlay").AndReturn(paths)
-    self.mox.StubOutWithMock(ebuild_manager, '_FindUprevCandidates')
+    portage_utilities.os.walk("/overlay").AndReturn(paths)
+    self.mox.StubOutWithMock(portage_utilities, '_FindUprevCandidates')
 
 
   def testWantedPackage(self):
     overlays = {"/overlay": []}
     package = _Package(self.package)
-    ebuild_manager._FindUprevCandidates([], mox.IgnoreArg()).AndReturn(package)
+    portage_utilities._FindUprevCandidates(
+        [], mox.IgnoreArg()).AndReturn(package)
     self.mox.ReplayAll()
-    ebuild_manager.BuildEBuildDictionary(overlays, False, [self.package])
+    portage_utilities.BuildEBuildDictionary(
+        overlays, False, [self.package])
     self.mox.VerifyAll()
     self.assertEquals(len(overlays), 1)
     self.assertEquals(overlays["/overlay"], [package])
@@ -158,9 +206,10 @@ class BuildEBuildDictionaryTest(mox.MoxTestBase):
   def testUnwantedPackage(self):
     overlays = {"/overlay": []}
     package = _Package(self.package)
-    ebuild_manager._FindUprevCandidates([], mox.IgnoreArg()).AndReturn(package)
+    portage_utilities._FindUprevCandidates(
+        [], mox.IgnoreArg()).AndReturn(package)
     self.mox.ReplayAll()
-    ebuild_manager.BuildEBuildDictionary(overlays, False, [])
+    portage_utilities.BuildEBuildDictionary(overlays, False, [])
     self.assertEquals(len(overlays), 1)
     self.assertEquals(overlays["/overlay"], [])
     self.mox.VerifyAll()
@@ -182,26 +231,26 @@ class BlacklistManagerTest(mox.MoxTestBase):
     file_path = tempfile.mktemp()
     with open(file_path, 'w+') as fh:
       fh.write(self.FAKE_BLACKLIST)
-    saved_black_list_file = ebuild_manager._BlackListManager.BLACK_LIST_FILE
+    saved_black_list = portage_utilities._BlackListManager.BLACK_LIST_FILE
     try:
-      ebuild_manager._BlackListManager.BLACK_LIST_FILE = file_path
-      black_list_manager = ebuild_manager._BlackListManager()
+      portage_utilities._BlackListManager.BLACK_LIST_FILE = file_path
+      black_list_manager = portage_utilities._BlackListManager()
       self.assertTrue(black_list_manager.IsPackageBlackListed(
           '/some/crazy/path/'
           'chromeos-base/fake-package/fake-package-0.0.5.ebuild'))
       self.assertEqual(len(black_list_manager.black_list_re_array), 1)
     finally:
       os.remove(file_path)
-      ebuild_manager._BlackListManager.BLACK_LIST_FILE = saved_black_list_file
+      portage_utilities._BlackListManager.BLACK_LIST_FILE = saved_black_list
 
   def testIsPackageBlackListed(self):
     """Tests if we can correctly check if a package is blacklisted."""
-    self.mox.StubOutWithMock(ebuild_manager._BlackListManager,
+    self.mox.StubOutWithMock(portage_utilities._BlackListManager,
                              '_Initialize')
-    ebuild_manager._BlackListManager._Initialize()
+    portage_utilities._BlackListManager._Initialize()
 
     self.mox.ReplayAll()
-    black_list_manager = ebuild_manager._BlackListManager()
+    black_list_manager = portage_utilities._BlackListManager()
     black_list_manager.black_list_re_array = [
         re.compile('.*/fake/pkg/pkg-.*\.ebuild') ]
     self.assertTrue(black_list_manager.IsPackageBlackListed(

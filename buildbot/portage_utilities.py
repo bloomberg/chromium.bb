@@ -2,11 +2,50 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Routines and classes for working with Portage overlays and ebuilds."""
+
 import fileinput
 import os
 import re
 
 from chromite.lib import cros_build_lib
+
+_PUBLIC_OVERLAY = '%(build_root)s/src/third_party/chromiumos-overlay'
+_OVERLAY_LIST_CMD = '%(build_root)s/src/platform/dev/host/cros_overlay_list'
+
+
+def FindOverlays(srcroot, overlay_type):
+  """Return the list of overlays to use for a given buildbot.
+
+  Args:
+    overlay_type: A string describing which overlays you want.
+              'private': Just the private overlay.
+              'public': Just the public overlay.
+              'both': Both the public and private overlays.
+  """
+  # we use a dictionary to allow tests to override _OVERLAY_LIST_CMD;
+  # see the cbuildbot_stages and portage_utilities unit tests.
+  format_args = { 'build_root' : srcroot }
+  cmd = _OVERLAY_LIST_CMD % format_args
+  # Check in case we haven't checked out the source yet.
+  if not os.path.exists(cmd):
+    return []
+
+  cmd_argv = [cmd, '--all_boards']
+  if overlay_type == 'private':
+    cmd_argv.append('--nopublic')
+  elif overlay_type == 'public':
+    cmd_argv.append('--noprivate')
+  elif overlay_type != 'both':
+    return []
+
+  overlays = cros_build_lib.RunCommand(
+      cmd_argv, redirect_stdout=True, print_cmd=False).output.split()
+  if overlay_type != 'private':
+    # TODO(davidjames): cros_overlay_list should include chromiumos-overlay in
+    #                   its list of public overlays. But it doesn't yet...
+    overlays.append(_PUBLIC_OVERLAY % format_args)
+  return overlays
 
 
 class _BlackListManager(object):
