@@ -6,31 +6,7 @@
 #define VIEWS_LAYOUT_FILL_LAYOUT_H_
 #pragma once
 
-#include "views/layout/layout_manager.h"
-#include "views/view.h"
-
-namespace views {
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// FillLayout
-//  A simple LayoutManager that causes the associated view's one child to be
-//  sized to match the bounds of its parent.
-//
-///////////////////////////////////////////////////////////////////////////////
-class VIEWS_EXPORT FillLayout : public LayoutManager {
- public:
-  FillLayout();
-  virtual ~FillLayout();
-
-  // Overridden from LayoutManager:
-  virtual void Layout(View* host);
-  virtual gfx::Size GetPreferredSize(View* host);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FillLayout);
-};
-
-}  // namespace views
+#include "ui/views/layout/fill_layout.h"
+// TODO(tfarina): remove this file once all includes have been updated.
 
 #endif  // VIEWS_LAYOUT_FILL_LAYOUT_H_

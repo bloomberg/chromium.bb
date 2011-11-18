@@ -6,36 +6,7 @@
 #define VIEWS_FOCUS_FOCUS_MANAGER_FACTORY_H_
 #pragma once
 
-#include "base/basictypes.h"
-#include "views/views_export.h"
-
-namespace views {
-
-class FocusManager;
-class Widget;
-
-// A factory to create FocusManager. This is used in unit tests
-// to inject a custom factory.
-class VIEWS_EXPORT FocusManagerFactory {
- public:
-  // Create a FocusManager for the given |widget| using installe Factory.
-  static FocusManager* Create(Widget* widget);
-
-  // Installs FocusManagerFactory. If |factory| is NULL, it resets
-  // to the default factory which creates plain FocusManager.
-  static void Install(FocusManagerFactory* factory);
-
- protected:
-  FocusManagerFactory();
-  virtual ~FocusManagerFactory();
-
-  // Create a FocusManager for the given |widget|.
-  virtual FocusManager* CreateFocusManager(Widget* widget) = 0;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FocusManagerFactory);
-};
-
-}  // namespace views
+#include "ui/views/focus/focus_manager_factory.h"
+// TODO(tfarina): remove this file once all includes have been updated.
 
 #endif  // VIEWS_FOCUS_FOCUS_MANAGER_FACTORY_H_

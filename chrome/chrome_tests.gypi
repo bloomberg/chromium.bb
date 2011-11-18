@@ -2205,7 +2205,7 @@
           'sources!': [
             'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
-            '../views/focus/accelerator_handler_gtk_unittest.cc',
+            '../ui/views/focus/accelerator_handler_gtk_unittest.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {

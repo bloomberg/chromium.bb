@@ -1035,7 +1035,7 @@ bool LocationBarView::SkipDefaultKeyEventProcessing(
   return false;
 #else
   // This method is not used for Linux ports. See FocusManager::OnKeyEvent() in
-  // src/views/focus/focus_manager.cc for details.
+  // src/ui/views/focus/focus_manager.cc for details.
   return false;
 #endif
 }
