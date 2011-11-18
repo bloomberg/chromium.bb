@@ -82,10 +82,12 @@ cr.define('options.contentSettings', function() {
         select.appendChild(optionSession);
       }
 
-      var optionBlock = cr.doc.createElement('option');
-      optionBlock.textContent = templateData.blockException;
-      optionBlock.value = 'block';
-      select.appendChild(optionBlock);
+      if (this.contentType != 'fullscreen') {
+        var optionBlock = cr.doc.createElement('option');
+        optionBlock.textContent = templateData.blockException;
+        optionBlock.value = 'block';
+        select.appendChild(optionBlock);
+      }
 
       this.contentElement.appendChild(select);
       select.className = 'exception-setting';
@@ -428,7 +430,8 @@ cr.define('options.contentSettings', function() {
     isEditable: function() {
       // Editing notifications and geolocation is disabled for now.
       return !(this.contentType == 'notifications' ||
-               this.contentType == 'location');
+               this.contentType == 'location' ||
+               this.contentType == 'fullscreen');
     },
 
     /**

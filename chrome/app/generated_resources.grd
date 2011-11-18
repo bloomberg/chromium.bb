@@ -6088,6 +6088,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_INTENTS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure web-intents per-site.">
         Ask me when a site wants to register intents (recommended)
       </message>
+      <message name="IDS_FULLSCREEN_TAB_LABEL" desc="Label for Fullscreen tab on Content Settings dialog">
+        Fullscreen
+      </message>
+      <message name="IDS_FULLSCREEN_HEADER" desc="Header for fullscreen exception management page on Content Settings dialog">
+        Fullscreen Exceptions
+      </message>
       <message name="IDS_EXCEPTIONS_HOSTNAME_HEADER" desc="A column header for the hostname column of the cookie/image/javascript/plugins exceptions dialog">
         Site
       </message>

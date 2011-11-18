@@ -307,6 +307,12 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
           switches::kEnableWebIntents))
     return false;
 
+  // BLOCK semantics are not implemented for fullscreen.
+  if (content_type == CONTENT_SETTINGS_TYPE_FULLSCREEN &&
+      setting == CONTENT_SETTING_BLOCK) {
+    return false;
+  }
+
   // DEFAULT, ALLOW and BLOCK are always allowed.
   if (setting == CONTENT_SETTING_DEFAULT ||
       setting == CONTENT_SETTING_ALLOW ||
@@ -315,15 +321,15 @@ bool HostContentSettingsMap::IsSettingAllowedForType(
   }
   switch (content_type) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
-      return (setting == CONTENT_SETTING_SESSION_ONLY);
+      return setting == CONTENT_SETTING_SESSION_ONLY;
     case CONTENT_SETTINGS_TYPE_PLUGINS:
-      return (setting == CONTENT_SETTING_ASK &&
-              CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kEnableClickToPlay));
+      return setting == CONTENT_SETTING_ASK &&
+             CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kEnableClickToPlay);
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
     case CONTENT_SETTINGS_TYPE_INTENTS:
-      return (setting == CONTENT_SETTING_ASK);
+      return setting == CONTENT_SETTING_ASK;
     default:
       return false;
   }

@@ -263,6 +263,9 @@ void ContentSettingsHandler::GetLocalizedValues(
     { "intentsAsk", IDS_INTENTS_ASK_RADIO },
     { "intentsBlock", IDS_INTENTS_BLOCK_RADIO },
     { "intents_header", IDS_INTENTS_HEADER },
+    // Fullscreen filter.
+    { "fullscreen_tab_label", IDS_FULLSCREEN_TAB_LABEL },
+    { "fullscreen_header", IDS_FULLSCREEN_HEADER },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -412,9 +415,6 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
     // is supposed to be set by policy only. Hence there is no user facing UI
     // for this content type and we skip it here.
     if (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE)
-      continue;
-    // TODO(koz): Implement fullscreen content settings UI.
-    if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN)
       continue;
     // TODO(scheib): Mouse lock content settings UI. http://crbug.com/97768
     if (type == CONTENT_SETTINGS_TYPE_MOUSELOCK)
@@ -601,6 +601,11 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
                                   exceptions);
 
   UpdateExceptionsViewFromOTRHostContentSettingsMap(type);
+
+  // TODO(koz): The default for fullscreen is always 'ask'.
+  // http://crbug.com/104683
+  if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN)
+    return;
 
   // The default may also have changed (we won't get a separate notification).
   // If it hasn't changed, this call will be harmless.
