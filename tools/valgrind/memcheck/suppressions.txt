@@ -4422,7 +4422,7 @@
    fun:_ZN14RenderViewHost19OnMsgDidStopLoadingEv
    fun:_ZN3IPC7Message8DispatchI14RenderViewHostS2_EEbPKS0_PT_PT0_MS5_FvvE
    fun:_ZN14RenderViewHost17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN24BrowserRenderProcessHost17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN21RenderProcessHostImpl17OnMessageReceivedERKN3IPC7MessageE
 }
 {
    bug_96367
