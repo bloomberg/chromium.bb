@@ -1354,25 +1354,27 @@ TEST_F(NativeTextfieldViewsTest, HitInsideTextAreaTest) {
   sel = gfx::SelectionModel(1, 0, gfx::SelectionModel::TRAILING);
   gfx::Rect bound = GetCursorBounds(sel);
   sel = gfx::SelectionModel(1, 1, gfx::SelectionModel::LEADING);
-  EXPECT_EQ(bound, GetCursorBounds(sel));
+  EXPECT_EQ(bound.x(), GetCursorBounds(sel).x());
   cursor_bounds.push_back(bound);
 
+  // Check that a cursor at the end of the Latin portion of the text is at the
+  // same position as a cursor placed at the end of the RTL Hebrew portion.
   sel = gfx::SelectionModel(2, 1, gfx::SelectionModel::TRAILING);
   bound = GetCursorBounds(sel);
   sel = gfx::SelectionModel(4, 3, gfx::SelectionModel::TRAILING);
-  EXPECT_EQ(bound, GetCursorBounds(sel));
+  EXPECT_EQ(bound.x(), GetCursorBounds(sel).x());
   cursor_bounds.push_back(bound);
 
   sel = gfx::SelectionModel(3, 2, gfx::SelectionModel::TRAILING);
   bound = GetCursorBounds(sel);
   sel = gfx::SelectionModel(3, 3, gfx::SelectionModel::LEADING);
-  EXPECT_EQ(bound, GetCursorBounds(sel));
+  EXPECT_EQ(bound.x(), GetCursorBounds(sel).x());
   cursor_bounds.push_back(bound);
 
   sel = gfx::SelectionModel(2, 2, gfx::SelectionModel::LEADING);
   bound = GetCursorBounds(sel);
   sel = gfx::SelectionModel(4, 2, gfx::SelectionModel::LEADING);
-  EXPECT_EQ(bound, GetCursorBounds(sel));
+  EXPECT_EQ(bound.x(), GetCursorBounds(sel).x());
   cursor_bounds.push_back(bound);
 
   // Expected cursor position when clicking left and right of each character.

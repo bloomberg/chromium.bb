@@ -19,6 +19,7 @@ namespace internal {
 
 struct TextRun {
   TextRun();
+  ~TextRun();
 
   ui::Range range;
   Font font;
@@ -43,6 +44,7 @@ struct TextRun {
   scoped_array<int> advance_widths;
   scoped_array<GOFFSET> offsets;
   ABC abc_widths;
+  SCRIPT_CACHE script_cache;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextRun);
@@ -89,8 +91,8 @@ class RenderTextWin : public RenderText {
   // Given a |run|, returns the SelectionModel that contains the logical first
   // or last caret position inside (not at a boundary of) the run.
   // The returned value represents a cursor/caret position without a selection.
-  SelectionModel FirstSelectionModelInsideRun(internal::TextRun*);
-  SelectionModel LastSelectionModelInsideRun(internal::TextRun*);
+  SelectionModel FirstSelectionModelInsideRun(internal::TextRun* run);
+  SelectionModel LastSelectionModelInsideRun(internal::TextRun* run);
 
   // Get the selection model visually left/right of |selection| by one grapheme.
   // The returned value represents a cursor/caret position without a selection.
@@ -102,16 +104,11 @@ class RenderTextWin : public RenderText {
   void DrawVisualText(Canvas* canvas);
   void DrawCursor(Canvas* canvas);
 
-  bool text_is_dirty_;
-  bool style_is_dirty_;
-
   // National Language Support native digit and digit substitution settings.
   SCRIPT_DIGITSUBSTITUTE digit_substitute_;
 
   SCRIPT_CONTROL script_control_;
   SCRIPT_STATE script_state_;
-
-  SCRIPT_CACHE script_cache_;
 
   std::vector<internal::TextRun*> runs_;
   int string_width_;
