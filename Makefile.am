@@ -69,7 +69,7 @@ src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/minidump_writer/minidump_writer.cc \
 	src/client/minidump_file_writer.cc \
 	src/common/convert_UTF.c \
-	src/common/md5.c \
+	src/common/md5.cc \
 	src/common/string_conversion.cc \
 	src/common/linux/file_id.cc \
 	src/common/linux/guid_creator.cc
@@ -870,7 +870,7 @@ EXTRA_DIST = \
 	src/common/mac/macho_walker.h \
 	src/common/mac/string_utilities.cc \
 	src/common/mac/string_utilities.h \
-	src/common/md5.c \
+	src/common/md5.cc \
 	src/common/md5.h \
 	src/common/solaris/dump_symbols.cc \
 	src/common/solaris/dump_symbols.h \

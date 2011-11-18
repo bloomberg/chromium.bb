@@ -24,7 +24,7 @@
 		4D2C725D126F9C9200B43EAF /* x86_insn.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D2C725C126F9C9200B43EAF /* x86_insn.c */; };
 		4D2C7264126F9CBB00B43EAF /* ia32_modrm.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D2C7261126F9CBB00B43EAF /* ia32_modrm.c */; };
 		4D2C726D126F9CDC00B43EAF /* x86_imm.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D2C7263126F9CBB00B43EAF /* x86_imm.c */; };
-		4D72CA5713DFBA84006CABE3 /* md5.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D72CA5613DFBA84006CABE3 /* md5.c */; };
+		4D72CA5713DFBA84006CABE3 /* md5.cc in Sources */ = {isa = PBXBuildFile; fileRef = 4D72CA5613DFBA84006CABE3 /* md5.cc */; };
 		557800400BE1F28500EC23E0 /* macho_utilities.cc in Sources */ = {isa = PBXBuildFile; fileRef = 5578003E0BE1F28500EC23E0 /* macho_utilities.cc */; };
 		8B31FF2A11F0C62700FCF3E4 /* dwarf_cfi_to_module.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8B31FF2411F0C62700FCF3E4 /* dwarf_cfi_to_module.cc */; };
 		8B31FF2B11F0C62700FCF3E4 /* dwarf_cu_to_module.cc in Sources */ = {isa = PBXBuildFile; fileRef = 8B31FF2611F0C62700FCF3E4 /* dwarf_cu_to_module.cc */; };
@@ -83,7 +83,7 @@
 		4D2C725C126F9C9200B43EAF /* x86_insn.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = x86_insn.c; path = ../../../third_party/libdisasm/x86_insn.c; sourceTree = SOURCE_ROOT; };
 		4D2C7261126F9CBB00B43EAF /* ia32_modrm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ia32_modrm.c; path = ../../../third_party/libdisasm/ia32_modrm.c; sourceTree = SOURCE_ROOT; };
 		4D2C7263126F9CBB00B43EAF /* x86_imm.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = x86_imm.c; path = ../../../third_party/libdisasm/x86_imm.c; sourceTree = SOURCE_ROOT; };
-		4D72CA5613DFBA84006CABE3 /* md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md5.c; path = ../../../common/md5.c; sourceTree = SOURCE_ROOT; };
+		4D72CA5613DFBA84006CABE3 /* md5.cc */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = md5.cc; path = ../../../common/md5.cc; sourceTree = SOURCE_ROOT; };
 		5578003E0BE1F28500EC23E0 /* macho_utilities.cc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = macho_utilities.cc; path = ../../../common/mac/macho_utilities.cc; sourceTree = SOURCE_ROOT; };
 		5578003F0BE1F28500EC23E0 /* macho_utilities.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = macho_utilities.h; path = ../../../common/mac/macho_utilities.h; sourceTree = SOURCE_ROOT; };
 		8B31025311F0D2D400FCF3E4 /* Breakpad.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Breakpad.xcconfig; path = ../../../common/mac/Breakpad.xcconfig; sourceTree = SOURCE_ROOT; };
@@ -204,7 +204,7 @@
 				8B31FF4011F0C64400FCF3E4 /* stabs_to_module.h */,
 				8B31FF8411F0C6FB00FCF3E4 /* language.cc */,
 				8B31FF8511F0C6FB00FCF3E4 /* language.h */,
-				4D72CA5613DFBA84006CABE3 /* md5.c */,
+				4D72CA5613DFBA84006CABE3 /* md5.cc */,
 				8B31FF8611F0C6FB00FCF3E4 /* module.cc */,
 				8B31FF8711F0C6FB00FCF3E4 /* module.h */,
 				08FB7795FE84155DC02AAC07 /* breakpad */,
@@ -389,7 +389,6 @@
 			isa = PBXProject;
 			buildConfigurationList = 1DEB927808733DD40010E9CD /* Build configuration list for PBXProject "crash_report" */;
 			compatibilityVersion = "Xcode 3.1";
-			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
@@ -463,7 +462,7 @@
 				4D2C725D126F9C9200B43EAF /* x86_insn.c in Sources */,
 				4D2C7264126F9CBB00B43EAF /* ia32_modrm.c in Sources */,
 				4D2C726D126F9CDC00B43EAF /* x86_imm.c in Sources */,
-				4D72CA5713DFBA84006CABE3 /* md5.c in Sources */,
+				4D72CA5713DFBA84006CABE3 /* md5.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -491,6 +490,7 @@
 			baseConfigurationReference = 8B3102DA11F0D65600FCF3E4 /* BreakpadDebug.xcconfig */;
 			buildSettings = {
 				GCC_PREPROCESSOR_DEFINITIONS = HAVE_MACH_O_NLIST_H;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 			};
 			name = Debug;
 		};

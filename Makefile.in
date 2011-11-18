@@ -172,7 +172,7 @@ am__src_client_linux_libbreakpad_client_a_SOURCES_DIST =  \
 	src/client/linux/minidump_writer/linux_dumper.cc \
 	src/client/linux/minidump_writer/minidump_writer.cc \
 	src/client/minidump_file_writer.cc src/common/convert_UTF.c \
-	src/common/md5.c src/common/string_conversion.cc \
+	src/common/md5.cc src/common/string_conversion.cc \
 	src/common/linux/file_id.cc src/common/linux/guid_creator.cc
 am__dirstamp = $(am__leading_dot)dirstamp
 @LINUX_HOST_TRUE@am_src_client_linux_libbreakpad_client_a_OBJECTS = src/client/linux/crash_generation/crash_generation_client.$(OBJEXT) \
@@ -1157,7 +1157,7 @@ lib_LIBRARIES = $(am__append_1) $(am__append_3)
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.cc \
 @LINUX_HOST_TRUE@	src/client/minidump_file_writer.cc \
 @LINUX_HOST_TRUE@	src/common/convert_UTF.c \
-@LINUX_HOST_TRUE@	src/common/md5.c \
+@LINUX_HOST_TRUE@	src/common/md5.cc \
 @LINUX_HOST_TRUE@	src/common/string_conversion.cc \
 @LINUX_HOST_TRUE@	src/common/linux/file_id.cc \
 @LINUX_HOST_TRUE@	src/common/linux/guid_creator.cc
@@ -1915,7 +1915,7 @@ EXTRA_DIST = \
 	src/common/mac/macho_walker.h \
 	src/common/mac/string_utilities.cc \
 	src/common/mac/string_utilities.h \
-	src/common/md5.c \
+	src/common/md5.cc \
 	src/common/md5.h \
 	src/common/solaris/dump_symbols.cc \
 	src/common/solaris/dump_symbols.h \
