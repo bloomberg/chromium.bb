@@ -206,8 +206,15 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, DestroyListener) {
 // TODO(jamescook): Add a test for selecting a file for an <input type='file'/>
 // page element, as that uses different memory management pathways.
 // crbug.com/98791
+
+// TODO(jamescook): Make dialog work on non-ChromeOS platforms. crbug.com/97424
+#if !defined(OS_CHROMEOS)
+#define MAYBE_SelectFileAndCancel DISABLED_SelectFileAndCancel
+#else
+#define MAYBE_SelectFileAndCancel SelectFileAndCancel
+#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       SelectFileAndCancel) {
+                       MAYBE_SelectFileAndCancel) {
   // Add tmp mount point even though this test won't use it directly.
   // We need this to make sure that at least one top-level directory exists
   // in the file browser.
@@ -228,8 +235,14 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_EQ(this, listener_->params());
 }
 
+// TODO(jamescook): Make dialog work on non-ChromeOS platforms. crbug.com/97424
+#if !defined(OS_CHROMEOS)
+#define MAYBE_SelectFileAndOpen DISABLED_SelectFileAndOpen
+#else
+#define MAYBE_SelectFileAndOpen SelectFileAndOpen
+#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       SelectFileAndOpen) {
+                       MAYBE_SelectFileAndOpen) {
   // Allow the tmp directory to be mounted.  We explicitly use /tmp because
   // it it whitelisted for file system access on Chrome OS.
   FilePath tmp_dir("/tmp");
@@ -267,8 +280,14 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_EQ(this, listener_->params());
 }
 
+// TODO(jamescook): Make dialog work on non-ChromeOS platforms. crbug.com/97424
+#if !defined(OS_CHROMEOS)
+#define MAYBE_SelectFileAndSave DISABLED_SelectFileAndSave
+#else
+#define MAYBE_SelectFileAndSave SelectFileAndSave
+#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       SelectFileAndSave) {
+                       MAYBE_SelectFileAndSave) {
   // Allow the tmp directory to be mounted.  We explicitly use /tmp because
   // it it whitelisted for file system access on Chrome OS.
   FilePath tmp_dir("/tmp");
@@ -301,8 +320,14 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_EQ(this, listener_->params());
 }
 
+// TODO(jamescook): Make dialog work on non-ChromeOS platforms. crbug.com/97424
+#if !defined(OS_CHROMEOS)
+#define MAYBE_OpenSingletonTabAndCancel DISABLED_OpenSingletonTabAndCancel
+#else
+#define MAYBE_OpenSingletonTabAndCancel OpenSingletonTabAndCancel
+#endif
 IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
-                       OpenSingletonTabAndCancel) {
+                       MAYBE_OpenSingletonTabAndCancel) {
   // Add tmp mount point even though this test won't use it directly.
   // We need this to make sure that at least one top-level directory exists
   // in the file browser.
@@ -329,7 +354,14 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   ASSERT_EQ(this, listener_->params());
 }
 
-IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest, OpenTwoDialogs) {
+// TODO(jamescook): Make dialog work on non-ChromeOS platforms. crbug.com/97424
+#if !defined(OS_CHROMEOS)
+#define MAYBE_OpenTwoDialogs DISABLED_OpenTwoDialogs
+#else
+#define MAYBE_OpenTwoDialogs OpenTwoDialogs
+#endif
+IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
+                       MAYBE_OpenTwoDialogs) {
   // Add tmp mount point even though this test won't use it directly.
   // We need this to make sure that at least one top-level directory exists
   // in the file browser.

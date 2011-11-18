@@ -384,6 +384,8 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetChromeosInfoFunction>();
 
   // FileBrowserPrivate functions.
+  // TODO(jamescook): Expose these on non-ChromeOS platforms so we can use
+  // the extension-based file picker on Aura. crbug.com/97424
   RegisterFunction<CancelFileDialogFunction>();
   RegisterFunction<ExecuteTasksFileBrowserFunction>();
   RegisterFunction<FileDialogStringsFunction>();
