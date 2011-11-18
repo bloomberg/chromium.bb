@@ -49,6 +49,7 @@ enum PanelDragState {
   ScopedCrTrackingArea closeButtonTrackingArea_;
   PanelDragState dragState_;
   BOOL isDrawingAttention_;
+  NSPoint dragStartLocation_;
 }
 
   // Callback from Close button.

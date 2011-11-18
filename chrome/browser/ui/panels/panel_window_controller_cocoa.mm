@@ -40,7 +40,8 @@
 #include "ui/gfx/mac/nsimage_cache.h"
 
 const int kMinimumWindowSize = 1;
-const double kBoundsChangeAnimationDuration = 0.18;  // Seconds.
+const double kBoundsAnimationSpeedPixelsPerSecond = 1000;
+const double kBoundsAnimationMaxDurationSeconds = 0.18;
 
 // Replicate specific 10.6 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_6) || \
@@ -111,12 +112,7 @@ enum {
   DCHECK(titlebar_view_);
   DCHECK_EQ(self, [window delegate]);
 
-  // Using NSModalPanelWindowLevel (8) rather then NSStatusWindowLevel (25)
-  // ensures notification balloons on top of regular windows, but below
-  // popup menus which are at NSPopUpMenuWindowLevel (101) and Spotlight
-  // drop-out, which is at NSStatusWindowLevel-2 (23) for OSX 10.6/7.
-  // See http://crbug.com/59878.
-  [window setLevel:NSModalPanelWindowLevel];
+  [window setLevel:NSStatusWindowLevel];
 
   if (base::mac::IsOSSnowLeopardOrLater()) {
     [window setCollectionBehavior:
@@ -443,7 +439,20 @@ enum {
   [boundsAnimation_ setDelegate:self];
 
   [boundsAnimation_ setAnimationBlockingMode: NSAnimationNonblocking];
-  [boundsAnimation_ setDuration: kBoundsChangeAnimationDuration];
+
+  NSRect currentFrame = [[self window] frame];
+  // Compute duration. We use constant speed of animation, however if the change
+  // is too large, we clip the duration (effectively increasing speed) to
+  // limit total duration of animation. This makes 'small' transitions fast.
+  // 'distance' is the max travel between 4 potentially traveling corners.
+  double distanceX = std::max(abs(NSMinX(currentFrame) - NSMinX(frame)),
+                              abs(NSMaxX(currentFrame) - NSMaxX(frame)));
+  double distanceY = std::max(abs(NSMinY(currentFrame) - NSMinY(frame)),
+                              abs(NSMaxY(currentFrame) - NSMaxY(frame)));
+  double distance = std::max(distanceX, distanceY);
+  double duration = std::min(distance / kBoundsAnimationSpeedPixelsPerSecond,
+                             kBoundsAnimationMaxDurationSeconds);
+  [boundsAnimation_ setDuration: duration];
   [boundsAnimation_ startAnimation];
 }
 

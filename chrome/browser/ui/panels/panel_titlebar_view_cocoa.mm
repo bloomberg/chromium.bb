@@ -24,6 +24,11 @@ const int kRoundedCornerSize = 3;
 const int kButtonPadding = 8;
 const int kIconAndTextPadding = 5;
 
+// Distance that user needs to move the mouse in order to start the drag.
+// Threshold is needed to differentiate drags from attempts to click the
+// titlebar with a twitch of the mouse pointer.
+const int kDragThreshold = 3;
+
 // Used to implement TestingAPI
 static NSEvent* MakeMouseEvent(NSEventType type,
                                NSPoint point,
@@ -317,6 +322,7 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
 - (void)mouseDown:(NSEvent*)event {
   dragState_ = PANEL_DRAG_CAN_START;
+  dragStartLocation_ = [event locationInWindow];
 }
 
 - (void)mouseUp:(NSEvent*)event {
@@ -324,6 +330,12 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
   if ([event clickCount] == 1)
     [controller_ onTitlebarMouseClicked];
+}
+
+- (BOOL)exceedsDragThreshold:(NSPoint)mouseLocation {
+  float deltaX = dragStartLocation_.x - mouseLocation.x;
+  float deltaY = dragStartLocation_.y - mouseLocation.y;
+  return deltaX > kDragThreshold || deltaY > kDragThreshold;
 }
 
 - (void)mouseDragged:(NSEvent*)event {
@@ -345,8 +357,11 @@ static NSEvent* MakeMouseEvent(NSEventType type,
 
     switch ([event type]) {
       case NSLeftMouseDragged:
-        if (dragState_ == PANEL_DRAG_CAN_START)
+        if (dragState_ == PANEL_DRAG_CAN_START) {
+          if (![self exceedsDragThreshold:[event locationInWindow]])
+            return;  // Don't start real drag yet.
           [self startDrag];
+        }
         [self dragWithDeltaX:[event deltaX]];
         break;
 
@@ -358,7 +373,10 @@ static NSEvent* MakeMouseEvent(NSEventType type,
         break;
 
       case NSLeftMouseUp:
-        [self endDrag:NO];
+        if (dragState_ == PANEL_DRAG_CAN_START)
+          [self mouseUp:event];  // Drag didn't really start, minimize instead.
+        else
+          [self endDrag:NO];
         keepGoing = NO;
         break;
 

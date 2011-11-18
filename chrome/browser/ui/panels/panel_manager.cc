@@ -42,9 +42,7 @@ const double kPanelMaxHeightFactor = 0.5;
 const int kMaxMillisecondsWaitForBottomBarVisibilityChange = 1000;
 
 // See usage below.
-#if defined(OS_MACOSX)
-const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 3000;
-#elif defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK)
 const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 2000;
 #else
 const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 0;
@@ -81,7 +79,14 @@ PanelManager::~PanelManager() {
 void PanelManager::OnDisplayChanged() {
   scoped_ptr<WindowSizer::MonitorInfoProvider> info_provider(
       WindowSizer::CreateDefaultMonitorInfoProvider());
-  SetWorkArea(info_provider->GetPrimaryMonitorWorkArea());
+#if defined(OS_MACOSX)
+  // On OSX, panels should be dropped all the way to the bottom edge of the
+  // screen (and overlap Dock).
+  gfx::Rect work_area = info_provider->GetPrimaryMonitorBounds();
+#else
+  gfx::Rect work_area = info_provider->GetPrimaryMonitorWorkArea();
+#endif
+  SetWorkArea(work_area);
 }
 
 void PanelManager::SetWorkArea(const gfx::Rect& work_area) {
@@ -539,9 +544,9 @@ void PanelManager::AdjustWorkAreaForAutoHidingDesktopBars() {
 
 int PanelManager::GetBottomPositionForExpansionState(
     Panel::ExpansionState expansion_state) const {
+  int bottom = adjusted_work_area_.bottom();
   // If there is an auto-hiding desktop bar aligned to the bottom edge, we need
   // to move the minimize panel down to the bottom edge.
-  int bottom = adjusted_work_area_.bottom();
   if (expansion_state == Panel::MINIMIZED &&
       auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM)) {
     bottom += auto_hiding_desktop_bar_->GetThickness(
