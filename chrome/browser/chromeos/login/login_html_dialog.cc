@@ -61,7 +61,7 @@ void LoginHtmlDialog::Show() {
 #else
   if (style_ & STYLE_BUBBLE) {
     views::Widget* bubble_window = BubbleWindow::Create(parent_window_,
-        static_cast<BubbleWindowStyle>(STYLE_XBAR | STYLE_THROBBER),
+        static_cast<DialogStyle>(STYLE_XBAR | STYLE_THROBBER),
         html_view);
     bubble_frame_view_ = static_cast<BubbleFrameView*>(
         bubble_window->non_client_view()->frame_view());

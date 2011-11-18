@@ -34,7 +34,7 @@ views::Widget* CreateWindow(gfx::NativeWindow parent,
   // On Chrome OS we need to override the style to suppress padding around
   // the borders.
   return chromeos::BubbleWindow::Create(parent,
-      chromeos::STYLE_FLUSH, delegate);
+      STYLE_FLUSH, delegate);
 #else
   return browser::CreateViewsWindow(parent, delegate);
 #endif

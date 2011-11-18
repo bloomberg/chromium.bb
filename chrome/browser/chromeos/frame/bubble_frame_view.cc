@@ -44,7 +44,7 @@ namespace chromeos {
 
 BubbleFrameView::BubbleFrameView(views::Widget* frame,
                                  views::WidgetDelegate* widget_delegate,
-                                 BubbleWindowStyle style)
+                                 DialogStyle style)
     : frame_(frame),
       style_(style),
       title_(NULL),

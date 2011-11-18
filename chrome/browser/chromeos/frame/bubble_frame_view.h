@@ -33,7 +33,7 @@ class BubbleFrameView : public views::NonClientFrameView,
  public:
   BubbleFrameView(views::Widget* frame,
                   views::WidgetDelegate* widget_delegate,
-                  BubbleWindowStyle style);
+                  DialogStyle style);
   virtual ~BubbleFrameView();
 
   // Overridden from views::NonClientFrameView:
@@ -65,7 +65,7 @@ class BubbleFrameView : public views::NonClientFrameView,
   views::Widget* frame_;
 
   // Allows to tweak appearance of the view.
-  BubbleWindowStyle style_;
+  DialogStyle style_;
 
   // Title label
   views::Label* title_;
@@ -85,4 +85,3 @@ class BubbleFrameView : public views::NonClientFrameView,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_FRAME_BUBBLE_FRAME_VIEW_H_
-

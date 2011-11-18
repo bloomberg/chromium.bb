@@ -18,7 +18,7 @@ views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
   // TODO(msw): revert to BubbleWindow for all ChromeOS cases when CL
   // for crbug.com/98322 is landed.
   return chromeos::BubbleWindow::Create(parent,
-      chromeos::STYLE_GENERIC, delegate);
+      STYLE_GENERIC, delegate);
 #else
   return views::Widget::CreateWindowWithParent(delegate, parent);
 #endif

@@ -13,7 +13,7 @@
 namespace chromeos {
 
 BubbleWindow::BubbleWindow(views::Widget* window,
-    BubbleWindowStyle style)
+    DialogStyle style)
     : views::NativeWidgetGtk(window),
       style_(style) {
 }
@@ -47,7 +47,7 @@ views::NonClientFrameView* BubbleWindow::CreateNonClientFrameView() {
 
 views::Widget* BubbleWindow::Create(
     gfx::NativeWindow parent,
-    BubbleWindowStyle style,
+    DialogStyle style,
     views::WidgetDelegate* widget_delegate) {
   views::Widget* window = new views::Widget;
   BubbleWindow* bubble_window = new BubbleWindow(window, style);
