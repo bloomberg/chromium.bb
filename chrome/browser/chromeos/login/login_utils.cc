@@ -37,7 +37,6 @@
 #include "chrome/browser/chromeos/login/parallel_authenticator.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -641,12 +640,10 @@ void LoginUtilsImpl::PrepareProfile(
 
   VLOG(1) << "Completing login for " << username;
 
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
-    btl->AddLoginTimeMarker("StartSession-Start", false);
-    DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
-        username);
-    btl->AddLoginTimeMarker("StartSession-End", false);
-  }
+  btl->AddLoginTimeMarker("StartSession-Start", false);
+  DBusThreadManager::Get()->GetSessionManagerClient()->StartSession(
+      username);
+  btl->AddLoginTimeMarker("StartSession-End", false);
 
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   UserManager::Get()->UserLoggedIn(username);
@@ -806,18 +803,16 @@ void LoginUtilsImpl::OnProfileCreated(Profile* user_profile, Status status) {
 
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
-    CryptohomeLibrary* cryptohome = CrosLibrary::Get()->GetCryptohomeLibrary();
-    btl->AddLoginTimeMarker("TPMOwn-Start", false);
-    if (cryptohome->TpmIsEnabled() && !cryptohome->TpmIsBeingOwned()) {
-      if (cryptohome->TpmIsOwned()) {
-        cryptohome->TpmClearStoredPassword();
-      } else {
-        cryptohome->TpmCanAttemptOwnership();
-      }
+  CryptohomeLibrary* cryptohome = CrosLibrary::Get()->GetCryptohomeLibrary();
+  btl->AddLoginTimeMarker("TPMOwn-Start", false);
+  if (cryptohome->TpmIsEnabled() && !cryptohome->TpmIsBeingOwned()) {
+    if (cryptohome->TpmIsOwned()) {
+      cryptohome->TpmClearStoredPassword();
+    } else {
+      cryptohome->TpmCanAttemptOwnership();
     }
-    btl->AddLoginTimeMarker("TPMOwn-End", false);
   }
+  btl->AddLoginTimeMarker("TPMOwn-End", false);
 
   user_profile->OnLogin();
 
@@ -924,27 +919,25 @@ void LoginUtilsImpl::CompleteOffTheRecordLogin(const GURL& start_url) {
 
   UserManager::Get()->GuestUserLoggedIn();
 
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
-    // Session Manager may kill the chrome anytime after this point.
-    // Write exit_cleanly and other stuff to the disk here.
-    g_browser_process->EndSession();
+  // Session Manager may kill the chrome anytime after this point.
+  // Write exit_cleanly and other stuff to the disk here.
+  g_browser_process->EndSession();
 
-    // For guest session we ask session manager to restart Chrome with --bwsi
-    // flag. We keep only some of the arguments of this process.
-    const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-    CommandLine command_line(browser_command_line.GetProgram());
-    std::string cmd_line_str =
-        GetOffTheRecordCommandLine(start_url,
-                                   browser_command_line,
-                                   &command_line);
+  // For guest session we ask session manager to restart Chrome with --bwsi
+  // flag. We keep only some of the arguments of this process.
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
+  CommandLine command_line(browser_command_line.GetProgram());
+  std::string cmd_line_str =
+      GetOffTheRecordCommandLine(start_url,
+                                 browser_command_line,
+                                 &command_line);
 
-    if (job_restart_request_) {
-      NOTREACHED();
-    }
-    VLOG(1) << "Requesting a restart with PID " << getpid()
-            << " and command line: " << cmd_line_str;
-    job_restart_request_ = new JobRestartRequest(getpid(), cmd_line_str);
+  if (job_restart_request_) {
+    NOTREACHED();
   }
+  VLOG(1) << "Requesting a restart with PID " << getpid()
+          << " and command line: " << cmd_line_str;
+  job_restart_request_ = new JobRestartRequest(getpid(), cmd_line_str);
 }
 
 std::string LoginUtilsImpl::GetOffTheRecordCommandLine(
@@ -1099,17 +1092,15 @@ class WarmingObserver : public NetworkLibrary::NetworkManagerObserver {
 };
 
 void LoginUtilsImpl::PrewarmAuthentication() {
-  if (system::runtime_environment::IsRunningOnChromeOS()) {
-    NetworkLibrary *network = CrosLibrary::Get()->GetNetworkLibrary();
-    if (network->Connected()) {
-      const int kConnectionsNeeded = 1;
-      chrome_browser_net::PreconnectOnUIThread(
-          GURL(GaiaUrls::GetInstance()->client_login_url()),
-          chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
-          kConnectionsNeeded);
-    } else {
-      new WarmingObserver();
-    }
+  NetworkLibrary *network = CrosLibrary::Get()->GetNetworkLibrary();
+  if (network->Connected()) {
+    const int kConnectionsNeeded = 1;
+    chrome_browser_net::PreconnectOnUIThread(
+        GURL(GaiaUrls::GetInstance()->client_login_url()),
+        chrome_browser_net::UrlInfo::EARLY_LOAD_MOTIVATED,
+        kConnectionsNeeded);
+  } else {
+    new WarmingObserver();
   }
 }
 
