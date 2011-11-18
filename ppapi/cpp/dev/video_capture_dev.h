@@ -18,6 +18,9 @@ class VideoCapture_Dev : public Resource {
   VideoCapture_Dev(PP_Resource resource);
   VideoCapture_Dev(const VideoCapture_Dev& other);
 
+  // Returns true if the required interface is available.
+  static bool IsAvailable();
+
   int32_t StartCapture(const PP_VideoCaptureDeviceInfo_Dev& requested_info,
                        uint32_t buffer_count);
   int32_t ReuseBuffer(uint32_t buffer);

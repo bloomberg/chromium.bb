@@ -34,6 +34,11 @@ VideoCapture_Dev::VideoCapture_Dev(const VideoCapture_Dev& other)
     : Resource(other) {
 }
 
+// static
+bool VideoCapture_Dev::IsAvailable() {
+  return has_interface<PPB_VideoCapture_Dev>();
+}
+
 int32_t VideoCapture_Dev::StartCapture(
     const PP_VideoCaptureDeviceInfo_Dev& requested_info,
     uint32_t buffer_count) {

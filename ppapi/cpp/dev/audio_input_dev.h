@@ -23,6 +23,12 @@ class AudioInput_Dev : public Resource {
                  PPB_AudioInput_Callback callback,
                  void* user_data);
 
+  /// Static function for determining whether the browser supports the required
+  /// AudioInput interface.
+  ///
+  /// @return true if the interface is available, false otherwise.
+  static bool IsAvailable();
+
   /// Getter function for returning the internal <code>PPB_AudioConfig</code>
   /// struct.
   ///

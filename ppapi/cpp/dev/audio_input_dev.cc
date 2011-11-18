@@ -31,6 +31,11 @@ AudioInput_Dev::AudioInput_Dev(Instance* instance,
   }
 }
 
+// static
+bool AudioInput_Dev::IsAvailable() {
+  return has_interface<PPB_AudioInput_Dev>();
+}
+
 bool AudioInput_Dev::StartCapture() {
   return has_interface<PPB_AudioInput_Dev>() &&
       get_interface<PPB_AudioInput_Dev>()->StartCapture(pp_resource());
