@@ -31,11 +31,10 @@ class VideoPacket;
 
 namespace protocol {
 
-class ClientMessageDispatcher;
+class ClientControlDispatcher;
+class ClientEventDispatcher;
 class ClientStub;
-class HostControlSender;
 class HostStub;
-class InputSender;
 class InputStub;
 class SessionConfig;
 class VideoReader;
@@ -152,13 +151,9 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   scoped_ptr<SessionManager> session_manager_;
   scoped_ptr<Session> session_;
 
-  // Handlers for incoming messages.
   scoped_ptr<VideoReader> video_reader_;
-  scoped_ptr<ClientMessageDispatcher> dispatcher_;
-
-  // Senders for outgoing messages.
-  scoped_ptr<InputSender> input_sender_;
-  scoped_ptr<HostControlSender> host_control_sender_;
+  scoped_ptr<ClientControlDispatcher> control_dispatcher_;
+  scoped_ptr<ClientEventDispatcher> input_dispatcher_;
 
   // Internal state of the connection.
   State state_;

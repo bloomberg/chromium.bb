@@ -12,10 +12,9 @@
 #include "remoting/jingle_glue/javascript_signal_strategy.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/auth_token_utils.h"
-#include "remoting/protocol/client_message_dispatcher.h"
+#include "remoting/protocol/client_control_dispatcher.h"
+#include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"
-#include "remoting/protocol/host_control_sender.h"
-#include "remoting/protocol/input_sender.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/pepper_session_manager.h"
 #include "remoting/protocol/video_reader.h"
@@ -46,11 +45,11 @@ ConnectionToHost::~ConnectionToHost() {
 }
 
 InputStub* ConnectionToHost::input_stub() {
-  return input_sender_.get();
+  return input_dispatcher_.get();
 }
 
 HostStub* ConnectionToHost::host_stub() {
-  return host_control_sender_.get();
+  return control_dispatcher_.get();
 }
 
 void ConnectionToHost::Connect(scoped_refptr<XmppProxy> xmpp_proxy,
@@ -200,12 +199,11 @@ void ConnectionToHost::OnSessionStateChange(
       break;
 
     case Session::CONNECTED_CHANNELS:
-      host_control_sender_.reset(
-          new HostControlSender(message_loop_, session_->control_channel()));
-      input_sender_.reset(
-          new InputSender(message_loop_, session_->event_channel()));
-      dispatcher_.reset(new ClientMessageDispatcher());
-      dispatcher_->Initialize(session_.get(), client_stub_);
+      control_dispatcher_.reset(new ClientControlDispatcher());
+      control_dispatcher_->Init(session_.get());
+      control_dispatcher_->set_client_stub(client_stub_);
+      input_dispatcher_.reset(new ClientEventDispatcher());
+      input_dispatcher_->Init(session_.get());
 
       control_connected_ = true;
       input_connected_ = true;
@@ -243,12 +241,8 @@ void ConnectionToHost::CloseOnError(Error error) {
 }
 
 void ConnectionToHost::CloseChannels() {
-  if (input_sender_.get())
-    input_sender_->Close();
-
-  if (host_control_sender_.get())
-    host_control_sender_->Close();
-
+  control_dispatcher_.reset();
+  input_dispatcher_.reset();
   video_reader_.reset();
 }
 
