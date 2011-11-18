@@ -682,3 +682,13 @@
   ThreadSanitizer:Race
   fun:WebRTCAudioDeviceTest::SetUp
 }
+{
+   bug_104769
+   ThreadSanitizer:Race
+   fun:timeout_correct
+   fun:event_base_loop
+   fun:base::MessagePumpLibevent::Run
+   fun:MessageLoop::RunInternal
+   fun:MessageLoop::RunHandler
+   fun:MessageLoop::Run
+}
