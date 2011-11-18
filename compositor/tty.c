@@ -103,7 +103,7 @@ tty_create(struct wlsc_compositor *compositor, tty_vt_func_t vt_func,
 	if (tty == NULL)
 		return NULL;
 
-	snprintf(filename, sizeof filename, "/dev/tty%d", tty_nr);
+	snprintf(filename, sizeof filename, "/dev/tty0");
 	fprintf(stderr, "compositor: using %s\n", filename);
 
 	memset(tty, 0, sizeof *tty);

@@ -229,9 +229,14 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		/* we try to minimize the amount of notifications to be
 		 * forwarded to the compositor, so we accumulate motion
 		 * events and send as a bunch */
-		if (!is_motion_event(e))
+		if (!is_motion_event(e)) {
 			evdev_flush_motion(&device->master->base.input_device,
 					   time, x, y, dx, dy, absolute_event);
+			dx = 0;
+			dy = 0;
+			absolute_event = 0;
+		}
+			
 		switch (e->type) {
 		case EV_REL:
 			evdev_process_relative_motion(e, &dx, &dy);
