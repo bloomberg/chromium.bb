@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/global_error_bubble_view.h"
 
-#include "base/logging.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/global_error.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
@@ -23,19 +23,26 @@ enum {
   TAG_CANCEL_BUTTON,
 };
 
-const int kBubbleViewWidth = 262;
+const int kMaxBubbleViewWidth = 262;
 
 // The horizontal padding between the title and the icon.
 const int kTitleHorizontalPadding = 3;
 
 // The vertical offset of the wrench bubble from the wrench menu button.
-const int kWrenchBubblePointOffsetY = 6;
+const int kWrenchBubblePointOffsetY = -6;
+
+const int kLayoutBottomPadding = 2;
 
 }  // namespace
 
-GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
-                                             GlobalError* error)
-    : browser_(browser),
+GlobalErrorBubbleView::GlobalErrorBubbleView(
+    views::View* anchor_view,
+    views::BubbleBorder::ArrowLocation location,
+    const SkColor& color,
+    Browser* browser,
+    GlobalError* error)
+    : BubbleDelegateView(anchor_view, location, color),
+      browser_(browser),
       error_(error) {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int resource_id = error_->GetBubbleViewIconResourceID();
@@ -49,9 +56,10 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   title_label->SetFont(title_label->font().DeriveFont(1));
 
   string16 message_string(error_->GetBubbleViewMessage());
-  message_label_ = new views::Label(message_string);
-  message_label_->SetMultiLine(true);
-  message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  views::Label* message_label = new views::Label(message_string);
+  message_label->SetMultiLine(true);
+  message_label->SizeToFit(kMaxBubbleViewWidth);
+  message_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
 
   string16 accept_string(error_->GetBubbleViewAcceptButtonLabel());
   scoped_ptr<views::TextButton> accept_button(
@@ -68,6 +76,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
 
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
+  layout->SetInsets(0, 0, kLayoutBottomPadding, 0);
 
   // Top row, icon and title.
   views::ColumnSet* cs = layout->AddColumnSet(0);
@@ -87,9 +96,11 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   cs->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
   cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
                 0, views::GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
-  cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
-                0, views::GridLayout::USE_PREF, 0, 0);
+  if (cancel_button.get()) {
+    cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+    cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
+                  0, views::GridLayout::USE_PREF, 0, 0);
+  }
 
   layout->StartRow(1, 0);
   layout->AddView(image_view.release());
@@ -97,80 +108,50 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(Browser* browser,
   layout->AddPaddingRow(0, views::kRelatedControlSmallVerticalSpacing);
 
   layout->StartRow(1, 1);
-  layout->AddView(message_label_);
+  layout->AddView(message_label);
   layout->AddPaddingRow(0, views::kLabelToControlVerticalSpacing);
 
   layout->StartRow(0, 2);
   layout->AddView(accept_button.release());
   if (cancel_button.get())
     layout->AddView(cancel_button.release());
-  else
-    layout->SkipColumns(1);
+
+  // Adjust the message label size in case buttons are too long.
+  message_label->SizeToFit(layout->GetPreferredSize(this).width());
 }
 
 GlobalErrorBubbleView::~GlobalErrorBubbleView() {
 }
 
-gfx::Size GlobalErrorBubbleView::GetPreferredSize() {
-  views::GridLayout* layout =
-      static_cast<views::GridLayout*>(GetLayoutManager());
-  // Buttons row may require bigger width than |kBubbleViewWidth|. To support
-  // this case, we first set the message label to fit our preferred width.
-  // Then, get the desired width from GridLayout (it may be bigger than
-  // |kBubbleViewWidth| if button text is long enough). This width is used as
-  // the final width for our view, so message label's preferred width is reset
-  // back to 0.
-  message_label_->SizeToFit(kBubbleViewWidth);
-  int width = std::max(layout->GetPreferredSize(this).width(),
-                       kBubbleViewWidth);
-  message_label_->SizeToFit(0);
-  int height = layout->GetPreferredHeightForWidth(this, width);
-  return gfx::Size(width, height);
+gfx::Point GlobalErrorBubbleView::GetAnchorPoint() {
+  return (views::BubbleDelegateView::GetAnchorPoint().Add(
+      gfx::Point(0, anchor_view() ? kWrenchBubblePointOffsetY : 0)));
 }
 
 void GlobalErrorBubbleView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
-  DCHECK(bubble_);
   if (sender->tag() == TAG_ACCEPT_BUTTON)
     error_->BubbleViewAcceptButtonPressed();
   else if (sender->tag() == TAG_CANCEL_BUTTON)
     error_->BubbleViewCancelButtonPressed();
   else
     NOTREACHED();
-  bubble_->Close();
+  GetWidget()->Close();
 }
 
-void GlobalErrorBubbleView::BubbleClosing(Bubble* bubble,
-                                          bool closed_by_escape) {
+void GlobalErrorBubbleView::WindowClosing() {
   error_->BubbleViewDidClose();
-}
-
-bool GlobalErrorBubbleView::CloseOnEscape() {
-  return true;
-}
-
-bool GlobalErrorBubbleView::FadeInOnShow() {
-  // TODO(sail): Enabling fade causes the window to be disabled for some
-  // reason. Until this is fixed we need to disable fade.
-  return false;
 }
 
 void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* wrench_button = browser_view->toolbar()->app_menu();
-
-  gfx::Point origin;
-  views::View::ConvertPointToScreen(wrench_button, &origin);
-  gfx::Rect bounds(origin.x(), origin.y(), wrench_button->width(),
-                   wrench_button->height());
-  bounds.Inset(0, kWrenchBubblePointOffsetY);
-
   GlobalErrorBubbleView* bubble_view =
-      new GlobalErrorBubbleView(browser, error);
-  // Bubble::Show() takes ownership of the view.
-  Bubble* bubble = Bubble::Show(
-      browser_view->GetWidget(), bounds, views::BubbleBorder::TOP_RIGHT,
-      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,  bubble_view,
-      bubble_view);
-  bubble_view->set_bubble(bubble);
+      new GlobalErrorBubbleView(wrench_button,
+                                views::BubbleBorder::TOP_RIGHT,
+                                SK_ColorWHITE,
+                                browser,
+                                error);
+  views::BubbleDelegateView::CreateBubble(bubble_view);
+  bubble_view->StartFade(true);
 }
