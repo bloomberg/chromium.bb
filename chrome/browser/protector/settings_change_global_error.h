@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/protector/setting_change.h"
 #include "chrome/browser/ui/global_error.h"
@@ -23,10 +22,12 @@ class SettingsChangeGlobalErrorDelegate;
 // Global error about unwanted settings changes.
 class SettingsChangeGlobalError : public GlobalError {
  public:
-  // Creates new global error about setting changes |change| and takes
-  // ownership over it. Uses |delegate| to notify about user decision.
-  SettingsChangeGlobalError(SettingChange* change,
-                            SettingsChangeGlobalErrorDelegate* delegate);
+  // Creates new global error about settings changes |changes|. Takes
+  // ownership over |changes| contents.
+  // Uses |delegate| to notify about user decision.
+  SettingsChangeGlobalError(
+      const SettingChangeVector& changes,
+      SettingsChangeGlobalErrorDelegate* delegate);
   virtual ~SettingsChangeGlobalError();
 
   // Displays a global error bubble for the given browser profile.
@@ -36,7 +37,7 @@ class SettingsChangeGlobalError : public GlobalError {
   // Browser that the bubble has been last time shown for.
   Browser* browser() const { return browser_; }
 
-  SettingChange* mutable_change() { return change_.get(); }
+  SettingChangeVector* mutable_changes() { return &changes_; }
 
   // GlobalError implementation.
   virtual bool HasBadge() OVERRIDE;
@@ -64,8 +65,8 @@ class SettingsChangeGlobalError : public GlobalError {
   // Removes global error from its profile and deletes |this| later.
   void RemoveFromProfile();
 
-  // Change to show.
-  scoped_ptr<SettingChange> change_;
+  // List of changes to show.
+  SettingChangeVector changes_;
 
   // Delegate to notify about user actions.
   SettingsChangeGlobalErrorDelegate* delegate_;
