@@ -106,7 +106,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   DCHECK(download_);
   download_->AddObserver(this);
 
-  ResourceBundle &rb = ResourceBundle::GetSharedInstance();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   BodyImageSet normal_body_image_set = {
     rb.GetBitmapNamed(IDR_DOWNLOAD_BUTTON_LEFT_TOP),
@@ -211,81 +211,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   body_hover_animation_.reset(new ui::SlideAnimation(this));
   drop_hover_animation_.reset(new ui::SlideAnimation(this));
 
-  if (download->safety_state() == DownloadItem::DANGEROUS) {
-    tooltip_text_.clear();
-    body_state_ = DANGEROUS;
-    drop_down_state_ = DANGEROUS;
-    save_button_ = new views::NativeTextButton(this,
-        l10n_util::GetStringUTF16(
-            ChromeDownloadManagerDelegate::IsExtensionDownload(download) ?
-                IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_CONFIRM_DOWNLOAD));
-    save_button_->set_ignore_minimum_size(true);
-    discard_button_ = new views::NativeTextButton(
-        this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-    discard_button_->set_ignore_minimum_size(true);
-    AddChildView(save_button_);
-    AddChildView(discard_button_);
-
-    // Ensure the file name is not too long.
-
-    // Extract the file extension (if any).
-    FilePath filename(download->target_name());
-#if defined(OS_POSIX)
-    string16 extension = WideToUTF16(base::SysNativeMBToWide(
-        filename.Extension()));
-#else
-    string16 extension = filename.Extension();
-#endif
-
-    // Remove leading '.'
-    if (extension.length() > 0)
-      extension = extension.substr(1);
-#if defined(OS_POSIX)
-    string16 rootname = WideToUTF16(base::SysNativeMBToWide(
-        filename.RemoveExtension().value()));
-#else
-    string16 rootname = filename.RemoveExtension().value();
-#endif
-
-    // Elide giant extensions (this shouldn't currently be hit, but might
-    // in future, should we ever notice unsafe giant extensions).
-    if (extension.length() > kFileNameMaxLength / 2)
-      ui::ElideString(extension, kFileNameMaxLength / 2, &extension);
-
-    // The dangerous download label text and icon are different
-    // under different cases.
-    string16 dangerous_label;
-    if (download->GetDangerType() == DownloadStateInfo::DANGEROUS_URL) {
-      // Safebrowsing shows the download URL leads to malicious file.
-      warning_icon_ = rb.GetBitmapNamed(IDR_SAFEBROWSING_WARNING);
-      dangerous_label =
-          l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
-    } else {
-      // The download file has dangerous file type (e.g.: an executable).
-      DCHECK(download->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE);
-      warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
-      if (ChromeDownloadManagerDelegate::IsExtensionDownload(download)) {
-        dangerous_label =
-            l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
-      } else {
-        ui::ElideString(rootname,
-                        kFileNameMaxLength - extension.length(),
-                        &rootname);
-        string16 filename = rootname + ASCIIToUTF16(".") + extension;
-        filename = base::i18n::GetDisplayStringInLTRDirectionality(filename);
-        dangerous_label =
-            l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename);
-      }
-    }
-
-    dangerous_download_label_ = new views::Label(dangerous_label);
-    dangerous_download_label_->SetMultiLine(true);
-    dangerous_download_label_->SetHorizontalAlignment(
-        views::Label::ALIGN_LEFT);
-    dangerous_download_label_->SetAutoColorReadabilityEnabled(false);
-    AddChildView(dangerous_download_label_);
-    SizeLabelToMinWidth();
-  }
+  if (download->safety_state() == DownloadItem::DANGEROUS)
+    EnterDangerousMode();
 
   UpdateAccessibleName();
   set_accessibility_focusable(true);
@@ -340,48 +267,54 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
       download->safety_state() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
     // We have been approved.
     ClearDangerousMode();
-  }
-
-  string16 status_text = model_->GetStatusText();
-  switch (download_->state()) {
-    case DownloadItem::IN_PROGRESS:
-      download_->is_paused() ? StopDownloadProgress() : StartDownloadProgress();
-      LoadIconIfItemPathChanged();
-      break;
-    case DownloadItem::INTERRUPTED:
-      StopDownloadProgress();
-      complete_animation_.reset(new ui::SlideAnimation(this));
-      complete_animation_->SetSlideDuration(kInterruptedAnimationDurationMs);
-      complete_animation_->SetTweenType(ui::Tween::LINEAR);
-      complete_animation_->Show();
-      SchedulePaint();
-      LoadIcon();
-      break;
-    case DownloadItem::COMPLETE:
-      if (download_->auto_opened()) {
+  } else if (body_state_ != DANGEROUS &&
+      download->safety_state() == DownloadItem::DANGEROUS) {
+    EnterDangerousMode();
+    // Force the shelf to layout again as our size has changed.
+    parent_->Layout();
+    SchedulePaint();
+  } else {
+    string16 status_text = model_->GetStatusText();
+    switch (download_->state()) {
+      case DownloadItem::IN_PROGRESS:
+        download_->is_paused() ?
+            StopDownloadProgress() : StartDownloadProgress();
+        LoadIconIfItemPathChanged();
+        break;
+      case DownloadItem::INTERRUPTED:
+        StopDownloadProgress();
+        complete_animation_.reset(new ui::SlideAnimation(this));
+        complete_animation_->SetSlideDuration(kInterruptedAnimationDurationMs);
+        complete_animation_->SetTweenType(ui::Tween::LINEAR);
+        complete_animation_->Show();
+        SchedulePaint();
+        LoadIcon();
+        break;
+      case DownloadItem::COMPLETE:
+        if (download_->auto_opened()) {
+          parent_->RemoveDownloadView(this);  // This will delete us!
+          return;
+        }
+        StopDownloadProgress();
+        complete_animation_.reset(new ui::SlideAnimation(this));
+        complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
+        complete_animation_->SetTweenType(ui::Tween::LINEAR);
+        complete_animation_->Show();
+        SchedulePaint();
+        LoadIcon();
+        break;
+      case DownloadItem::CANCELLED:
+        StopDownloadProgress();
+        LoadIcon();
+        break;
+      case DownloadItem::REMOVING:
         parent_->RemoveDownloadView(this);  // This will delete us!
         return;
-      }
-      StopDownloadProgress();
-      complete_animation_.reset(new ui::SlideAnimation(this));
-      complete_animation_->SetSlideDuration(kCompleteAnimationDurationMs);
-      complete_animation_->SetTweenType(ui::Tween::LINEAR);
-      complete_animation_->Show();
-      SchedulePaint();
-      LoadIcon();
-      break;
-    case DownloadItem::CANCELLED:
-      StopDownloadProgress();
-      LoadIcon();
-      break;
-    case DownloadItem::REMOVING:
-      parent_->RemoveDownloadView(this);  // This will delete us!
-      return;
-    default:
-      NOTREACHED();
+      default:
+        NOTREACHED();
+    }
+    status_text_ = status_text;
   }
-
-  status_text_ = status_text;
   UpdateAccessibleName();
 
   // We use the parent's (DownloadShelfView's) SchedulePaint, since there
@@ -983,6 +916,7 @@ void DownloadItemView::ClearDangerousMode() {
   RemoveChildView(dangerous_download_label_);
   delete dangerous_download_label_;
   dangerous_download_label_ = NULL;
+  dangerous_download_label_sized_ = false;
 
   // Set the accessible name back to the status and filename instead of the
   // download warning.
@@ -995,6 +929,87 @@ void DownloadItemView::ClearDangerousMode() {
   // Force the shelf to layout again as our size has changed.
   parent_->Layout();
   parent_->SchedulePaint();
+}
+
+void DownloadItemView::EnterDangerousMode() {
+  DCHECK(body_state_ != DANGEROUS && drop_down_state_ != DANGEROUS);
+  tooltip_text_.clear();
+  body_state_ = DANGEROUS;
+  drop_down_state_ = DANGEROUS;
+  save_button_ = new views::NativeTextButton(this,
+      l10n_util::GetStringUTF16(
+           ChromeDownloadManagerDelegate::IsExtensionDownload(download_) ?
+              IDS_CONTINUE_EXTENSION_DOWNLOAD : IDS_CONFIRM_DOWNLOAD));
+  save_button_->set_ignore_minimum_size(true);
+  discard_button_ = new views::NativeTextButton(
+      this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
+  discard_button_->set_ignore_minimum_size(true);
+  AddChildView(save_button_);
+  AddChildView(discard_button_);
+
+  // Ensure the file name is not too long.
+
+  // Extract the file extension (if any).
+  FilePath filename(download_->target_name());
+#if defined(OS_POSIX)
+  string16 extension = WideToUTF16(base::SysNativeMBToWide(
+      filename.Extension()));
+#else
+  string16 extension = filename.Extension();
+#endif
+
+  // Remove leading '.'
+  if (extension.length() > 0)
+    extension = extension.substr(1);
+#if defined(OS_POSIX)
+  string16 rootname = WideToUTF16(base::SysNativeMBToWide(
+      filename.RemoveExtension().value()));
+#else
+  string16 rootname = filename.RemoveExtension().value();
+#endif
+
+  // Elide giant extensions (this shouldn't currently be hit, but might
+  // in future, should we ever notice unsafe giant extensions).
+  if (extension.length() > kFileNameMaxLength / 2)
+    ui::ElideString(extension, kFileNameMaxLength / 2, &extension);
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  // The dangerous download label text and icon are different
+  // under different cases.
+  string16 dangerous_label;
+  if (download_->GetDangerType() == DownloadStateInfo::DANGEROUS_URL ||
+    download_->GetDangerType() == DownloadStateInfo::DANGEROUS_CONTENT) {
+    // TODO(noelutz): add the target filename to the warning message in the
+    // case of a dangerous content warning.
+    // Safebrowsing shows the download URL or content leads to malicious file.
+    warning_icon_ = rb.GetBitmapNamed(IDR_SAFEBROWSING_WARNING);
+    dangerous_label =
+        l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
+  } else {
+    // The download file has dangerous file type (e.g.: an executable).
+    DCHECK(download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE);
+    warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
+    if (ChromeDownloadManagerDelegate::IsExtensionDownload(download_)) {
+      dangerous_label =
+          l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
+    } else {
+      ui::ElideString(rootname,
+                      kFileNameMaxLength - extension.length(),
+                      &rootname);
+      string16 filename = rootname + ASCIIToUTF16(".") + extension;
+      filename = base::i18n::GetDisplayStringInLTRDirectionality(filename);
+      dangerous_label =
+          l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename);
+    }
+  }
+
+  dangerous_download_label_ = new views::Label(dangerous_label);
+  dangerous_download_label_->SetMultiLine(true);
+  dangerous_download_label_->SetHorizontalAlignment(
+      views::Label::ALIGN_LEFT);
+  dangerous_download_label_->SetAutoColorReadabilityEnabled(false);
+  AddChildView(dangerous_download_label_);
+  SizeLabelToMinWidth();
 }
 
 gfx::Size DownloadItemView::GetButtonSize() {

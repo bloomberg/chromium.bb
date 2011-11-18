@@ -158,6 +158,9 @@ class DownloadItemView : public views::ButtonListener,
   // Reverts from dangerous mode to normal download mode.
   void ClearDangerousMode();
 
+  // Start displaying the dangerous download warning.
+  void EnterDangerousMode();
+
   // Sets |size| with the size of the Save and Discard buttons (they have the
   // same size).
   gfx::Size GetButtonSize();

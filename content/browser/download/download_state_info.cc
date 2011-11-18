@@ -42,11 +42,13 @@ DownloadStateInfo::DownloadStateInfo(
 }
 
 bool DownloadStateInfo::IsDangerous() const {
-  // TODO(noelutz): At this point we can't mark the download as dangerous
-  // if it's content is dangerous because the UI doesn't yet support it.
-  // Once the UI has been changed we should return true when the danger
-  // type is set to DANGEROUS_CONTENT.
-  // |dangerous_content| is true.
+  // TODO(noelutz): At this point only the windows views UI supports
+  // warnings based on dangerous content.
+#ifdef OS_WIN
   return (danger == DANGEROUS_FILE ||
-          danger == DANGEROUS_URL);
+          danger == DANGEROUS_URL ||
+          danger == DANGEROUS_CONTENT);
+#else
+  return (danger == DANGEROUS_FILE || danger == DANGEROUS_URL);
+#endif
 }
