@@ -66,7 +66,9 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                                                   bool* message_was_ok) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(ChromeRenderMessageFilter, message, *message_was_ok)
+#if !defined(DISABLE_NACL)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_LaunchNaCl, OnLaunchNaCl)
+#endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RendererHistograms,
                         OnRendererHistograms)
@@ -146,11 +148,13 @@ void ChromeRenderMessageFilter::OverrideThreadForMessage(
   }
 }
 
+#if !defined(DISABLE_NACL)
 void ChromeRenderMessageFilter::OnLaunchNaCl(
     const std::wstring& url, int socket_count, IPC::Message* reply_msg) {
   NaClProcessHost* host = new NaClProcessHost(url);
   host->Launch(this, socket_count, reply_msg);
 }
+#endif
 
 void ChromeRenderMessageFilter::OnDnsPrefetch(
     const std::vector<std::string>& hostnames) {

@@ -25,11 +25,11 @@ using content::RenderThread;
 
 namespace chrome {
 
+#if !defined(DISABLE_NACL)
 // Launch NaCl's sel_ldr process.
 bool LaunchSelLdr(const char* alleged_url, int socket_count,
                   void* imc_handles, void* nacl_process_handle,
                   int* nacl_process_id) {
-#if !defined(DISABLE_NACL)
   std::vector<nacl::FileDescriptor> sockets;
   base::ProcessHandle nacl_process;
   if (!RenderThread::Get()->Send(
@@ -48,9 +48,6 @@ bool LaunchSelLdr(const char* alleged_url, int socket_count,
   }
   *static_cast<nacl::Handle*>(nacl_process_handle) = nacl_process;
   return true;
-#else
-  return false;
-#endif
 }
 
 int UrandomFD(void) {
@@ -79,10 +76,13 @@ class PPB_NaCl_Impl {
     return &ppb_nacl;
   }
 };
+#endif  // DISABLE_NACL
 
 const void* ChromePPAPIInterfaceFactory(const std::string& interface_name) {
+#if !defined(DISABLE_NACL)
   if (interface_name == PPB_NACL_PRIVATE_INTERFACE)
     return chrome::PPB_NaCl_Impl::GetInterface();
+#endif  // DISABLE_NACL
   if (interface_name == PPB_PDF_INTERFACE)
     return chrome::PPB_PDF_Impl::GetInterface();
   return NULL;

@@ -46,9 +46,11 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
 
   virtual ~ChromeRenderMessageFilter();
 
+#if !defined(DISABLE_NACL)
   void OnLaunchNaCl(const std::wstring& url,
                     int socket_count,
                     IPC::Message* reply_msg);
+#endif
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
   void OnRendererHistograms(int sequence_number,
                             const std::vector<std::string>& histogram_info);

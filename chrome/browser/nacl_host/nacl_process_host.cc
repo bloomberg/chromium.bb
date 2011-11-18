@@ -36,7 +36,6 @@ using content::BrowserThread;
 
 namespace {
 
-#if !defined(DISABLE_NACL)
 void SetCloseOnExec(nacl::Handle fd) {
 #if defined(OS_POSIX)
   int flags = fcntl(fd, F_GETFD);
@@ -45,7 +44,6 @@ void SetCloseOnExec(nacl::Handle fd) {
   CHECK_EQ(rc, 0);
 #endif
 }
-#endif
 
 // Represents shared state for all NaClProcessHost objects in the browser.
 // Currently this just handles holding onto the file descriptor for the IRT.
@@ -118,10 +116,6 @@ NaClProcessHost::NaClProcessHost(const std::wstring& url)
 }
 
 NaClProcessHost::~NaClProcessHost() {
-  // nacl::Close() is not available at link time if DISABLE_NACL is
-  // defined, but we still compile a bunch of other code from this
-  // file anyway.  TODO(mseaborn): Make this less messy.
-#ifndef DISABLE_NACL
   for (size_t i = 0; i < internal_->sockets_for_renderer.size(); i++) {
     if (nacl::Close(internal_->sockets_for_renderer[i]) != 0) {
       LOG(ERROR) << "nacl::Close() failed";
@@ -132,7 +126,6 @@ NaClProcessHost::~NaClProcessHost() {
       LOG(ERROR) << "nacl::Close() failed";
     }
   }
-#endif
 
   if (reply_msg_) {
     // The process failed to launch for some reason.
@@ -174,10 +167,6 @@ bool NaClProcessHost::Launch(
     ChromeRenderMessageFilter* chrome_render_message_filter,
     int socket_count,
     IPC::Message* reply_msg) {
-#ifdef DISABLE_NACL
-  NOTIMPLEMENTED() << "Native Client disabled at build time";
-  return false;
-#else
   // Place an arbitrary limit on the number of sockets to limit
   // exposure in case the renderer is compromised.  We can increase
   // this if necessary.
@@ -220,7 +209,6 @@ bool NaClProcessHost::Launch(
   reply_msg_ = reply_msg;
 
   return true;
-#endif  // DISABLE_NACL
 }
 
 bool NaClProcessHost::LaunchSelLdr() {
