@@ -2452,6 +2452,17 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled,
                              true,
                              PrefService::UNSYNCABLE_PREF);
+
+  // Initialize the disk cache prefs.
+  prefs->RegisterFilePathPref(prefs::kDiskCacheDir,
+                              FilePath(),
+                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kDiskCacheSize,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kMediaCacheSize,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
 // static

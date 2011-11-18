@@ -936,10 +936,6 @@ void BrowserProcessImpl::CreateLocalState() {
                                    local_state_.get(), NULL);
   plugin_finder_disabled_pref_.MoveToThread(BrowserThread::IO);
 
-  // Initialize the disk cache location policy. This policy is not hot update-
-  // able so we need to have it when initializing the profiles.
-  local_state_->RegisterFilePathPref(prefs::kDiskCacheDir, FilePath());
-
   // Another policy that needs to be defined before the net subsystem is
   // initialized is MaxConnectionsPerProxy so we do it here.
   local_state_->RegisterIntegerPref(prefs::kMaxConnectionsPerProxy,

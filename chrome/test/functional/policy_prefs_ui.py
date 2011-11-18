@@ -106,6 +106,8 @@ class PolicyPrefsUITest(pyauto.PyUITest):
     'SyncDisabled': (True, []),
     'UserDataDir': ('${users}/${user_name}/chrome-test', [], [ 'win', 'mac' ]),
     'DiskCacheDir': ('${user_home}/test-cache', [], [ 'win', 'mac', 'linux' ]),
+    'DiskCacheSize': (100, [], [ 'win', 'mac', 'linux' ]),
+    'MediaCacheSize': (200, [], [ 'win', 'mac', 'linux' ]),
     'DownloadDirectory': ('${user_home}/test-downloads', [ ADVANCED ],
                           [ 'win', 'mac', 'linux' ]),
     'ClearSiteDataOnExit': (True, [ CONTENT ]),

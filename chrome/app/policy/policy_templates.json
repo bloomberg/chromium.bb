@@ -100,7 +100,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 109
+#   For your editing convenience: highest ID currently used: 111
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -640,6 +640,40 @@
 
       If this policy is left not set the default cache directory will be used and the user will be able to override it with the '--disk-cache-dir' command line flag.''',
       'label': '''Set disk cache directory''',
+    },
+    {
+      'name': 'DiskCacheSize',
+      'type': 'int',
+      'supported_on': ['chrome.*:17-'],
+      'features': {'dynamic_refresh': 0},
+      'example_value': 100,
+      'id': 110,
+      'caption': '''Set disk cache size in megabytes''',
+      'desc': '''Configures the cache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached files on the disk.
+
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--disk-cache-size' flag or not.
+
+      If the value of this policy is 0, the default cache size will be used but the user will not be able to change it.
+
+      If this policy is not set the default size will be used and the user will be able to override it with the --disk-cache-size flag.''',
+      'label': '''Set disk cache size''',
+    },
+    {
+      'name': 'MediaCacheSize',
+      'type': 'int',
+      'supported_on': ['chrome.*:17-'],
+      'features': {'dynamic_refresh': 0},
+      'example_value': 250,
+      'id': 111,
+      'caption': '''Set media disk cache size''',
+      'desc': '''Configures the chache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached media files on the disk.
+
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--media-cache-size' flag or not.
+
+      If the value of this policy is 0, the default cache size will be used but the user will not be able to change it.
+
+      If this policy is not set the default size will be used and the user will be able to override it with the --media-cache-size flag.''',
+      'label': '''Set media disk cache size''',
     },
     {
       'name': 'DownloadDirectory',

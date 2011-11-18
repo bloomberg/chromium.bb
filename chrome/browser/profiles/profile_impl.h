@@ -189,6 +189,10 @@ class ProfileImpl : public Profile,
 
   void UpdateProfileUserNameCache();
 
+  void GetCacheParameters(bool is_media_context,
+                          FilePath* cache_path,
+                          int* max_size);
+
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 

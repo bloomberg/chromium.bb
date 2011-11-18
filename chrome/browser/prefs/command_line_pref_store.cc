@@ -5,6 +5,7 @@
 #include "chrome/browser/prefs/command_line_pref_store.h"
 
 #include "base/logging.h"
+#include "base/string_number_conversions.h"
 #include "base/string_split.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
@@ -20,6 +21,7 @@ const CommandLinePrefStore::StringSwitchToPreferenceMapEntry
       { switches::kAuthNegotiateDelegateWhitelist,
           prefs::kAuthNegotiateDelegateWhitelist },
       { switches::kGSSAPILibraryName, prefs::kGSSAPILibraryName },
+      { switches::kDiskCacheDir, prefs::kDiskCacheDir },
 };
 
 const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
@@ -46,6 +48,12 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
       { switches::kDisableTLS1, prefs::kTLS1Enabled, false },
 };
 
+const CommandLinePrefStore::IntegerSwitchToPreferenceMapEntry
+    CommandLinePrefStore::integer_switch_map_[] = {
+      { switches::kDiskCacheSize, prefs::kDiskCacheSize },
+      { switches::kMediaCacheSize, prefs::kMediaCacheSize },
+    };
+
 CommandLinePrefStore::CommandLinePrefStore(const CommandLine* command_line)
     : command_line_(command_line) {
   ApplySimpleSwitches();
@@ -63,6 +71,22 @@ void CommandLinePrefStore::ApplySimpleSwitches() {
       Value* value = Value::CreateStringValue(command_line_->
           GetSwitchValueASCII(string_switch_map_[i].switch_name));
       SetValue(string_switch_map_[i].preference_path, value);
+    }
+  }
+
+  for (size_t i = 0; i < arraysize(integer_switch_map_); ++i) {
+    if (command_line_->HasSwitch(integer_switch_map_[i].switch_name)) {
+      std::string str_value = command_line_->GetSwitchValueASCII(
+          integer_switch_map_[i].switch_name);
+      int int_value = 0;
+      if (!base::StringToInt(str_value, &int_value)) {
+        LOG(ERROR) << "The value " << str_value << " of "
+                   << integer_switch_map_[i].switch_name
+                   << " can not be converted to integer, ignoring!";
+        continue;
+      }
+      Value* value = Value::CreateIntegerValue(int_value);
+      SetValue(integer_switch_map_[i].preference_path, value);
     }
   }
 

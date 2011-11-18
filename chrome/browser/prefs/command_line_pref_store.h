@@ -30,6 +30,11 @@ class CommandLinePrefStore : public ValueMapPrefStore {
     const char* preference_path;
   };
 
+  struct IntegerSwitchToPreferenceMapEntry {
+    const char* switch_name;
+    const char* preference_path;
+  };
+
   // |set_value| indicates what the preference should be set to if the switch
   // is present.
   struct BooleanSwitchToPreferenceMapEntry {
@@ -37,7 +42,6 @@ class CommandLinePrefStore : public ValueMapPrefStore {
     const char* preference_path;
     bool set_value;
   };
-  static const BooleanSwitchToPreferenceMapEntry boolean_switch_map_[];
 
   // Using the string and boolean maps, apply command-line switches to their
   // corresponding preferences in this pref store.
@@ -52,7 +56,10 @@ class CommandLinePrefStore : public ValueMapPrefStore {
   // Weak reference.
   const CommandLine* command_line_;
 
+  // Mappings of command line switches to prefs.
+  static const BooleanSwitchToPreferenceMapEntry boolean_switch_map_[];
   static const StringSwitchToPreferenceMapEntry string_switch_map_[];
+  static const IntegerSwitchToPreferenceMapEntry integer_switch_map_[];
 
   DISALLOW_COPY_AND_ASSIGN(CommandLinePrefStore);
 };

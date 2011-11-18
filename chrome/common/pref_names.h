@@ -587,6 +587,8 @@ extern const char kCarrierDealPromoShown[];
 
 extern const char kClearPluginLSODataEnabled[];
 extern const char kDiskCacheDir[];
+extern const char kDiskCacheSize[];
+extern const char kMediaCacheSize[];
 
 extern const char kChromeOsReleaseChannel[];
 

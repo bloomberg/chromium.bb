@@ -12,7 +12,6 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
@@ -153,51 +152,11 @@ static const int kCreateSessionServiceDelayMS = 500;
 static const int kMockKeychainSize = 1000;
 #endif
 
-enum ContextType {
-  kNormalContext,
-  kMediaContext
-};
-
 // Helper method needed because PostTask cannot currently take a Callback
 // function with non-void return type.
 // TODO(jhawkins): Remove once IgnoreReturn is fixed.
 void CreateDirectoryNoResult(const FilePath& path) {
   file_util::CreateDirectory(path);
-}
-
-// Gets the cache parameters from the command line. |type| is the type of
-// request context that we need, |cache_path| will be set to the user provided
-// path, or will not be touched if there is not an argument. |max_size| will
-// be the user provided value or zero by default.
-void GetCacheParameters(ContextType type, FilePath* cache_path,
-                        int* max_size) {
-  DCHECK(cache_path);
-  DCHECK(max_size);
-
-  // Override the cache location if specified by the user.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDiskCacheDir)) {
-    *cache_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-        switches::kDiskCacheDir);
-  }
-#if !defined(OS_CHROMEOS)
-  // And if a policy is set this should have even higher precedence.
-  PrefService* prefs = g_browser_process->local_state();
-  if (prefs && prefs->IsManagedPreference(prefs::kDiskCacheDir))
-    *cache_path = prefs->GetFilePath(prefs::kDiskCacheDir);
-#endif
-
-  const char* arg = kNormalContext == type ? switches::kDiskCacheSize :
-                                             switches::kMediaCacheSize;
-  std::string value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(arg);
-
-  // By default we let the cache determine the right size.
-  *max_size = 0;
-  if (!base::StringToInt(value, max_size)) {
-    *max_size = 0;
-  } else if (*max_size < 0) {
-    *max_size = 0;
-  }
 }
 
 FilePath GetCachePath(const FilePath& base) {
@@ -384,12 +343,12 @@ void ProfileImpl::DoFinalInit() {
       origin_bound_cert_path.Append(chrome::kOBCertFilename);
   FilePath cache_path = base_cache_path_;
   int cache_max_size;
-  GetCacheParameters(kNormalContext, &cache_path, &cache_max_size);
+  GetCacheParameters(false, &cache_path, &cache_max_size);
   cache_path = GetCachePath(cache_path);
 
   FilePath media_cache_path = base_cache_path_;
   int media_cache_max_size;
-  GetCacheParameters(kMediaContext, &media_cache_path, &media_cache_max_size);
+  GetCacheParameters(true, &media_cache_path, &media_cache_max_size);
   media_cache_path = GetMediaCachePath(media_cache_path);
 
   FilePath extensions_cookie_path = GetPath();
@@ -1606,4 +1565,21 @@ void ProfileImpl::UpdateProfileUserNameCache() {
         GetPrefs()->GetString(prefs::kGoogleServicesUsername);
     cache.SetUserNameOfProfileAtIndex(index, UTF8ToUTF16(user_name));
   }
+}
+
+// Gets the cache parameters from the command line. If |is_media_context| is
+// set to true then settings for the media context type is what we need,
+// |cache_path| will be set to the user provided path, or will not be touched if
+// there is not an argument. |max_size| will be the user provided value or zero
+// by default.
+void ProfileImpl::GetCacheParameters(bool is_media_context,
+                                     FilePath* cache_path,
+                                     int* max_size) {
+  DCHECK(cache_path);
+  DCHECK(max_size);
+  FilePath path(prefs_->GetFilePath(prefs::kDiskCacheDir));
+  if (!path.empty())
+    *cache_path = path;
+  *max_size = is_media_context ? prefs_->GetInteger(prefs::kMediaCacheSize) :
+                                 prefs_->GetInteger(prefs::kDiskCacheSize);
 }
