@@ -15,6 +15,7 @@
 #include "third_party/webrtc/voice_engine/main/interface/voe_network.h"
 
 using testing::_;
+using testing::AnyNumber;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::StrEq;
@@ -117,7 +118,7 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
 // WebRtcAudioDeviceImpl.
 TEST_F(WebRTCAudioDeviceTest, Construct) {
   AudioUtilNoHardware audio_util(48000.0, 48000.0);
-  set_audio_util_callback(&audio_util);
+  SetAudioUtilCallback(&audio_util);
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());
   audio_device->SetSessionId(1);
@@ -142,7 +143,7 @@ TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
     return;
 
   AudioUtil audio_util;
-  set_audio_util_callback(&audio_util);
+  SetAudioUtilCallback(&audio_util);
 
   EXPECT_CALL(media_observer(),
       OnSetAudioStreamStatus(_, 1, StrEq("created"))).Times(1);
@@ -151,7 +152,7 @@ TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
   EXPECT_CALL(media_observer(),
       OnSetAudioStreamStatus(_, 1, StrEq("closed"))).Times(1);
   EXPECT_CALL(media_observer(),
-      OnDeleteAudioStream(_, 1)).Times(1);
+      OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());
@@ -211,7 +212,7 @@ TEST_F(WebRTCAudioDeviceTest, StartRecording) {
     return;
 
   AudioUtil audio_util;
-  set_audio_util_callback(&audio_util);
+  SetAudioUtilCallback(&audio_util);
 
   // TODO(tommi): extend MediaObserver and MockMediaObserver with support
   // for new interfaces, like OnSetAudioStreamRecording(). When done, add
@@ -278,7 +279,7 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
       GetTestDataPath(FILE_PATH_LITERAL("speechmusic_mono_16kHz.pcm")));
 
   AudioUtil audio_util;
-  set_audio_util_callback(&audio_util);
+  SetAudioUtilCallback(&audio_util);
 
   EXPECT_CALL(media_observer(),
       OnSetAudioStreamStatus(_, 1, StrEq("created"))).Times(1);
@@ -287,7 +288,7 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
   EXPECT_CALL(media_observer(),
       OnSetAudioStreamStatus(_, 1, StrEq("closed"))).Times(1);
   EXPECT_CALL(media_observer(),
-      OnDeleteAudioStream(_, 1)).Times(1);
+      OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());
@@ -334,8 +335,15 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudio) {
   if (IsRunningHeadless())
     return;
 
+  EXPECT_CALL(media_observer(),
+      OnSetAudioStreamStatus(_, 1, StrEq("created")));
+  EXPECT_CALL(media_observer(),
+      OnSetAudioStreamPlaying(_, 1, true));
+  EXPECT_CALL(media_observer(),
+      OnSetAudioStreamStatus(_, 1, StrEq("closed")));
+
   AudioUtil audio_util;
-  set_audio_util_callback(&audio_util);
+  SetAudioUtilCallback(&audio_util);
 
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());

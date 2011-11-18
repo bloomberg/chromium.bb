@@ -140,9 +140,7 @@ class WebRTCAudioDeviceTest
   // Sends an IPC message to the IO thread channel.
   bool Send(IPC::Message* message);
 
-  void set_audio_util_callback(AudioUtilInterface* callback) {
-    audio_util_callback_ = callback;
-  }
+  void SetAudioUtilCallback(AudioUtilInterface* callback);
 
  protected:
   void InitializeIOThread(const char* thread_name);

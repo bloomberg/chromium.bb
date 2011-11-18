@@ -19,6 +19,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_paths.h"
+#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -125,15 +126,25 @@ void WebRTCAudioDeviceTest::SetUp() {
 }
 
 void WebRTCAudioDeviceTest::TearDown() {
+  SetAudioUtilCallback(NULL);
+
   ChildProcess::current()->io_message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SetupTask::UninitializeIOThread, new SetupTask(this)));
-  WaitForIOThreadCompletion();
+  EXPECT_TRUE(event_.TimedWait(
+      base::TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms())));
   mock_process_.reset();
 }
 
 bool WebRTCAudioDeviceTest::Send(IPC::Message* message) {
   return channel_->Send(message);
+}
+
+void WebRTCAudioDeviceTest::SetAudioUtilCallback(AudioUtilInterface* callback) {
+  // Invalidate any potentially cached values since the new callback should
+  // be used for those queries.
+  audio_hardware::ResetCache();
+  audio_util_callback_ = callback;
 }
 
 void WebRTCAudioDeviceTest::InitializeIOThread(const char* thread_name) {
@@ -160,6 +171,7 @@ void WebRTCAudioDeviceTest::UninitializeIOThread() {
   media_stream_manager_.reset();
   test_request_context_ = NULL;
   initialize_com_.reset();
+  event_.Signal();
 }
 
 void WebRTCAudioDeviceTest::CreateChannel(
@@ -182,7 +194,9 @@ void WebRTCAudioDeviceTest::CreateChannel(
 void WebRTCAudioDeviceTest::DestroyChannel() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   audio_render_host_->OnChannelClosing();
+  audio_render_host_->OnFilterRemoved();
   audio_input_renderer_host_->OnChannelClosing();
+  audio_input_renderer_host_->OnFilterRemoved();
   channel_.reset();
   audio_render_host_ = NULL;
   audio_input_renderer_host_ = NULL;
@@ -236,10 +250,6 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP_EX()
 
   EXPECT_TRUE(message_is_ok);
-
-  // We leave a DLOG as a hint to the developer in case important IPC messages
-  // are being dropped.
-  DLOG_IF(WARNING, !handled) << "Unhandled IPC message";
 
   return true;
 }

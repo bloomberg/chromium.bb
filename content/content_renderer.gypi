@@ -81,6 +81,8 @@
     'renderer/load_progress_tracker.h',
     'renderer/media/audio_device.cc',
     'renderer/media/audio_device.h',
+    'renderer/media/audio_hardware.cc',
+    'renderer/media/audio_hardware.h',
     'renderer/media/audio_input_device.cc',
     'renderer/media/audio_input_device.h',
     'renderer/media/audio_input_message_filter.cc',

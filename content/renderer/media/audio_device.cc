@@ -233,25 +233,3 @@ void AudioDevice::FireRenderCallback() {
                                   buffer_size_);
   }
 }
-
-double AudioDevice::GetAudioHardwareSampleRate() {
-  // Uses cached value if possible.
-  static double hardware_sample_rate = 0;
-  if (!hardware_sample_rate) {
-    RenderThreadImpl::current()->Send(
-        new ViewHostMsg_GetHardwareSampleRate(&hardware_sample_rate));
-  }
-  return hardware_sample_rate;
-}
-
-size_t AudioDevice::GetAudioHardwareBufferSize() {
-  // Uses cached value if possible.
-  static uint32 buffer_size = 0;
-
-  if (!buffer_size) {
-    RenderThreadImpl::current()->Send(
-        new ViewHostMsg_GetHardwareBufferSize(&buffer_size));
-  }
-
-  return static_cast<size_t>(buffer_size);
-}

@@ -7,21 +7,12 @@
 #include "base/bind.h"
 #include "base/string_util.h"
 #include "base/win/windows_version.h"
-#include "content/common/view_messages.h"
+#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/audio/audio_util.h"
 
 static const int64 kMillisecondsBetweenProcessCalls = 5000;
 static const char kVersion[] = "WebRTC AudioDevice 1.0.0.Chrome";
-
-static int GetAudioInputHardwareSampleRate() {
-  static double input_sample_rate = 0;
-  if (!input_sample_rate) {
-    RenderThreadImpl::current()->Send(
-        new ViewHostMsg_GetHardwareInputSampleRate(&input_sample_rate));
-  }
-  return static_cast<int>(input_sample_rate);
-}
 
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
     : ref_count_(0),
@@ -290,12 +281,13 @@ int32_t WebRtcAudioDeviceImpl::Init() {
   // Ask the browser for the default audio output hardware sample-rate.
   // This request is based on a synchronous IPC message.
   int output_sample_rate =
-      static_cast<int>(AudioDevice::GetAudioHardwareSampleRate());
+      static_cast<int>(audio_hardware::GetOutputSampleRate());
   DVLOG(1) << "Audio output hardware sample rate: " << output_sample_rate;
 
   // Ask the browser for the default audio input hardware sample-rate.
   // This request is based on a synchronous IPC message.
-  int input_sample_rate = GetAudioInputHardwareSampleRate();
+  int input_sample_rate =
+      static_cast<int>(audio_hardware::GetInputSampleRate());
   DVLOG(1) << "Audio input hardware sample rate: " << input_sample_rate;
 
   int input_channels = 0;
