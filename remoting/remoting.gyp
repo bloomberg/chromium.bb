@@ -850,21 +850,6 @@
       ],
     }, # end of target differ_block_sse2
 
-    {
-      'target_name': 'chromotocol_test_client',
-      'type': 'executable',
-      'variables': { 'enable_wexit_time_destructors': 1, },
-      'dependencies': [
-        'remoting_base',
-        'remoting_protocol',
-      ],
-      'sources': [
-        'protocol/protocol_test_client.cc',
-        '../base/test/mock_chrome_application_mac.mm',
-        '../base/test/mock_chrome_application_mac.h',
-      ],
-    },  # end of target 'chromotocol_test_client'
-
     # Remoting unit tests
     {
       'target_name': 'remoting_unittests',
