@@ -2949,54 +2949,6 @@ TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
   EXPECT_TRUE(v2->layer()->IsDrawn());
 }
 
-// TODO(sky): reenable once focus issues are straightened out so that this
-// doesn't crash.
-TEST_F(ViewLayerTest, DISABLED_NativeWidgetView) {
-  View* content_view = new View;
-  widget()->SetContentsView(content_view);
-  View* view = new View;
-  content_view->AddChildView(view);
-  view->SetBounds(10, 20, 300, 400);
-
-  views_delegate().set_default_parent_view(view);
-  Widget::SetPureViews(true);
-  scoped_ptr<Widget> child_widget(new Widget);
-  Widget::InitParams params(Widget::InitParams::TYPE_WINDOW);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(1, 2, 100, 200);
-  child_widget->Init(params);
-
-  // NativeWidgetView should have been added to view.
-  ASSERT_EQ(1, view->child_count());
-  View* widget_view_host = view->child_at(0);
-  ASSERT_TRUE(widget_view_host->layer() != NULL);
-  EXPECT_EQ(gfx::Rect(11, 22, 100, 200), widget_view_host->layer()->bounds());
-
-  View* widget_content_view = new View;
-  child_widget->SetContentsView(widget_content_view);
-  View* child_view = new View;
-  child_view->SetPaintToLayer(true);
-  child_view->SetBounds(5, 6, 10, 11);
-  widget_content_view->AddChildView(child_view);
-
-  ASSERT_TRUE(child_view->layer() != NULL);
-  EXPECT_EQ(gfx::Rect(5, 6, 10, 11), child_view->layer()->bounds());
-
-  widget_view_host->SetPaintToLayer(false);
-  EXPECT_TRUE(widget_view_host->layer() == NULL);
-
-  ASSERT_TRUE(child_view->layer() != NULL);
-  EXPECT_EQ(gfx::Rect(16, 28, 10, 11), child_view->layer()->bounds());
-
-  widget_view_host->SetPaintToLayer(true);
-  ASSERT_TRUE(widget_view_host->layer() != NULL);
-  EXPECT_EQ(gfx::Rect(11, 22, 100, 200), widget_view_host->layer()->bounds());
-  ASSERT_TRUE(child_view->layer() != NULL);
-  EXPECT_EQ(gfx::Rect(5, 6, 10, 11), child_view->layer()->bounds());
-
-  child_widget->CloseNow();
-}
-
 class PaintTrackingView : public View {
  public:
   PaintTrackingView() : painted_(false) {

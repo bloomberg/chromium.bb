@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_aura.h"
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
-#include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_views.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"

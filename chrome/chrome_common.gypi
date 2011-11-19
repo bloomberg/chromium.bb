@@ -262,12 +262,6 @@
             ],
           },
         },],
-        ['toolkit_views==1', {
-          'sources': [
-            'common/native_web_keyboard_event_views.cc',
-            'common/native_web_keyboard_event_views.h',
-          ],
-        }],
         ['use_aura==1', {
           'dependencies!': [
            'default_plugin/default_plugin.gyp:default_plugin',

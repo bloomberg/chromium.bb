@@ -128,10 +128,7 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
-#elif defined(TOUCH_UI)
-#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #elif defined(OS_WIN)
-#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "content/browser/renderer_host/render_widget_host_view_gtk.h"
@@ -262,11 +259,7 @@ RenderWidgetHostView* ChromeContentBrowserClient::CreateViewForWidget(
     RenderWidgetHost* widget) {
 #if defined(USE_AURA)
   return new RenderWidgetHostViewAura(widget);
-#elif defined(TOUCH_UI)
-  return new RenderWidgetHostViewViews(widget);
 #elif defined(OS_WIN)
-  if (views::Widget::IsPureViews())
-    return new RenderWidgetHostViewViews(widget);
   return new RenderWidgetHostViewWin(widget);
 #elif defined(TOOLKIT_USES_GTK)
   return new RenderWidgetHostViewGtk(widget);

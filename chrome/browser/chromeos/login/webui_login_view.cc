@@ -24,7 +24,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "ui/views/desktop/desktop_window_view.h"
 #include "views/widget/widget.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -302,14 +301,11 @@ void WebUILoginView::OnTabMainFrameFirstRender() {
 
   bool emit_login_visible = false;
 
-  // In aura or views-desktop environment, there will be no window-manager. So
-  // chrome needs to emit the 'login-prompt-visible' signal. This needs to
-  // happen here, after the page has completed rendering itself.
+  // In aura, there will be no window-manager. So chrome needs to emit the
+  // 'login-prompt-visible' signal. This needs to happen here, after the page
+  // has completed rendering itself.
 #if defined(USE_AURA)
   emit_login_visible = true;
-#else
-  if (views::desktop::DesktopWindowView::desktop_window_view)
-    emit_login_visible = true;
 #endif
   if (emit_login_visible)
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()

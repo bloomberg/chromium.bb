@@ -9,8 +9,7 @@
 
 namespace views {
 
-TestViewsDelegate::TestViewsDelegate()
-    : default_parent_view_(NULL) {
+TestViewsDelegate::TestViewsDelegate() {
   DCHECK(!ViewsDelegate::views_delegate);
   ViewsDelegate::views_delegate = this;
 }
@@ -25,10 +24,6 @@ ui::Clipboard* TestViewsDelegate::GetClipboard() const {
     clipboard_.reset(new ui::Clipboard);
   }
   return clipboard_.get();
-}
-
-View* TestViewsDelegate::GetDefaultParentView() {
-  return default_parent_view_;
 }
 
 void TestViewsDelegate::SaveWindowPlacement(const Widget* window,

@@ -74,13 +74,6 @@ uint16 UnicodeIdentifierStringToInt(const std::string& key_identifier) {
 }
 
 views::Widget* GetTopLevelWidget(Browser* browser) {
-  if (views::ViewsDelegate::views_delegate) {
-    views::View* view = views::ViewsDelegate::views_delegate->
-                        GetDefaultParentView();
-    if (view)
-      return view->GetWidget();
-  }
-
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
   chromeos::LoginDisplayHost* host =
       chromeos::BaseLoginDisplayHost::default_host();

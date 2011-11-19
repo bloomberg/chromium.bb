@@ -7,20 +7,19 @@
 #pragma once
 
 #include "views/views_export.h"
+#include "ui/base/events.h"
 
 namespace gfx {
 class Canvas;
+class Point;
 class Size;
 }
 
-#if defined(TOUCH_UI)
-namespace ui {
-enum TouchStatus;
-}
-#endif
-
 namespace views {
 class InputMethod;
+class KeyEvent;
+class MouseEvent;
+class TouchEvent;
 
 namespace internal {
 

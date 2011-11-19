@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container_aura.h"
 
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/tab_contents/native_tab_contents_container_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "content/browser/tab_contents/interstitial_page.h"

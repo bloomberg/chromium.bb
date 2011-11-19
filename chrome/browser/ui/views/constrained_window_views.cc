@@ -607,20 +607,8 @@ ConstrainedWindowViews::ConstrainedWindowViews(
   views::Widget::InitParams params;
   params.delegate = widget_delegate;
   params.native_widget = native_constrained_window_->AsNativeWidget();
-
-  if (views::Widget::IsPureViews() &&
-      views::ViewsDelegate::views_delegate &&
-      views::ViewsDelegate::views_delegate->GetDefaultParentView()) {
-    // Don't set parent so that constrained window is attached to
-    // desktop. This is necessary for key events to work under views desktop
-    // because key events need to be sent to toplevel window
-    // which has an inputmethod object that knows where to forward
-    // event.
-  } else {
-    params.child = true;
-    params.parent = wrapper->tab_contents()->GetNativeView();
-  }
-
+  params.child = true;
+  params.parent = wrapper->tab_contents()->GetNativeView();
   Init(params);
 
   wrapper_->constrained_window_tab_helper()->AddConstrainedDialog(this);

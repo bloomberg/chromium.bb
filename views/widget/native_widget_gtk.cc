@@ -40,7 +40,6 @@
 #include "views/widget/drop_target_gtk.h"
 #include "views/widget/gtk_views_fixed.h"
 #include "views/widget/gtk_views_window.h"
-#include "views/widget/native_widget_views.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
 
@@ -992,8 +991,7 @@ InputMethod* NativeWidgetGtk::CreateInputMethod() {
   // Create input method when pure views is enabled but not on views desktop.
   // TODO(suzhe): Always enable input method when we start to use
   // RenderWidgetHostViewViews in normal ChromeOS.
-  if (views::Widget::IsPureViews() &&
-      !ViewsDelegate::views_delegate->GetDefaultParentView()) {
+  if (views::Widget::IsPureViews()) {
 #if defined(HAVE_IBUS)
     InputMethod* input_method =
         InputMethodIBus::IsInputMethodIBusEnabled() ?
@@ -1005,7 +1003,7 @@ InputMethod* NativeWidgetGtk::CreateInputMethod() {
     input_method->Init(GetWidget());
     return input_method;
   }
-  // GTK's textfield or InputMethod in NativeWidgetViews will handle IME.
+  // GTK's textfield will handle IME.
   return NULL;
 }
 
@@ -1356,14 +1354,7 @@ bool NativeWidgetGtk::ConvertPointFromAncestor(
 }
 
 gfx::Rect NativeWidgetGtk::GetWorkAreaBoundsInScreen() const {
-  ViewsDelegate *delegate = ViewsDelegate::views_delegate;
-  if (delegate && delegate->GetDefaultParentView()) {
-    // For views-desktop, the work area is the entire space inside this
-    // containter window.
-    return gfx::Rect(gfx::Point(0, 0),
-                     delegate->GetDefaultParentView()->size());
-  } else
-    return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
+  return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
 }
 
 void NativeWidgetGtk::SetInactiveRenderingDisabled(bool value) {
@@ -2215,10 +2206,6 @@ namespace internal {
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
     NativeWidgetDelegate* delegate) {
-  if (Widget::IsPureViews() && ViewsDelegate::views_delegate &&
-      ViewsDelegate::views_delegate->GetDefaultParentView()) {
-    return new NativeWidgetViews(delegate);
-  }
   return new NativeWidgetGtk(delegate);
 }
 

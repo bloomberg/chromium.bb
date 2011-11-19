@@ -6,7 +6,6 @@
 
 #include "chrome/browser/tab_contents/web_drop_target_win.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
-#include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_views.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_drag_win.h"
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -342,7 +341,5 @@ bool NativeTabContentsViewWin::ScrollZoom(int scroll_type) {
 // static
 NativeTabContentsView* NativeTabContentsView::CreateNativeTabContentsView(
     internal::NativeTabContentsViewDelegate* delegate) {
-  if (views::Widget::IsPureViews())
-    return new NativeTabContentsViewViews(delegate);
   return new NativeTabContentsViewWin(delegate);
 }

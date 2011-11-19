@@ -150,6 +150,9 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnDragExited() OVERRIDE;
   virtual int OnPerformDrop(const aura::DropTargetEvent& event) OVERRIDE;
 
+ protected:
+  internal::NativeWidgetDelegate* delegate() { return delegate_; }
+
  private:
   class DesktopObserverImpl;
 

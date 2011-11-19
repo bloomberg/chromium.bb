@@ -25,13 +25,8 @@ class TestViewsDelegate : public ViewsDelegate {
   TestViewsDelegate();
   virtual ~TestViewsDelegate();
 
-  void set_default_parent_view(View* view) {
-    default_parent_view_ = view;
-  }
-
   // Overridden from ViewsDelegate:
   virtual ui::Clipboard* GetClipboard() const OVERRIDE;
-  virtual View* GetDefaultParentView() OVERRIDE;
   virtual void SaveWindowPlacement(const Widget* window,
                                    const std::string& window_name,
                                    const gfx::Rect& bounds,
@@ -61,7 +56,6 @@ class TestViewsDelegate : public ViewsDelegate {
   virtual int GetDispositionForEvent(int event_flags) OVERRIDE;
 
  private:
-  View* default_parent_view_;
   mutable scoped_ptr<ui::Clipboard> clipboard_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);

@@ -340,15 +340,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE("")
 #endif
   },
-#if defined(TOUCH_UI)
-  {
-    "touchui-views-desktop",
-    IDS_FLAGS_DISABLE_VIEWS_DESKTOP_NAME,
-    IDS_FLAGS_DISABLE_VIEWS_DESKTOP_DESCRIPTION,
-    kOsCrOS,
-    SINGLE_VALUE_TYPE_AND_VALUE(switches::kViewsDesktop, "disabled")
-  },
-#endif
   {
     "downloads-new-ui",  // FLAGS:RECORD_UMA
     IDS_FLAGS_DOWNLOADS_NEW_UI_NAME,

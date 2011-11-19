@@ -16,8 +16,6 @@
 #include "views/widget/native_widget_aura.h"
 #elif defined(OS_WIN)
 #include "views/widget/native_widget_win.h"
-#elif defined(TOUCH_UI)
-#include "views/widget/native_widget_views.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "views/widget/native_widget_gtk.h"
 #endif
@@ -78,8 +76,6 @@ class Bubble
     : public views::NativeWidgetAura,
 #elif defined(OS_WIN)
     : public views::NativeWidgetWin,
-#elif defined(TOUCH_UI)
-    : public views::NativeWidgetViews,
 #elif defined(TOOLKIT_USES_GTK)
     : public views::NativeWidgetGtk,
 #endif
@@ -193,9 +189,6 @@ class Bubble
 #elif defined(OS_WIN)
   // Overridden from NativeWidgetWin:
   virtual void OnActivate(UINT action, BOOL minimized, HWND window);
-#elif defined(TOUCH_UI)
-  // Overridden from NativeWidgetViews::
-  virtual void Deactivate() OVERRIDE;
 #elif defined(TOOLKIT_USES_GTK)
   // Overridden from NativeWidgetGtk:
   virtual void OnActiveChanged() OVERRIDE;

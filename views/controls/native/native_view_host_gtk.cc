@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/controls/native/native_view_host_views.h"
 #include "ui/views/focus/focus_manager.h"
 #include "views/views_delegate.h"
 #include "views/widget/gtk_views_fixed.h"
@@ -405,9 +404,6 @@ gboolean NativeViewHostGtk::CallFocusIn(GtkWidget* gtk_widget,
 // static
 NativeViewHostWrapper* NativeViewHostWrapper::CreateWrapper(
     NativeViewHost* host) {
-  if (Widget::IsPureViews() &&
-      views::ViewsDelegate::views_delegate->GetDefaultParentView())
-    return new NativeViewHostViews(host);
   return new NativeViewHostGtk(host);
 }
 

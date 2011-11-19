@@ -1344,15 +1344,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif
 
-#if defined(TOUCH_UI)
-  // Always add the --views-desktop flag, if not already set.
-  // If the user disabled the flag from about:flags, it will get unset by the
-  // call to ConvertFlagsToSwitches in the following line.
-  if (!parsed_command_line().HasSwitch(switches::kViewsDesktop))
-    CommandLine::ForCurrentProcess()->AppendSwitchASCII(switches::kViewsDesktop,
-                                                        "other");
-#endif
-
   // Convert active labs into switches. Modifies the current command line.
   about_flags::ConvertFlagsToSwitches(local_state,
                                       CommandLine::ForCurrentProcess());

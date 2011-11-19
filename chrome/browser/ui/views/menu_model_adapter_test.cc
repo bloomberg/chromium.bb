@@ -38,10 +38,6 @@ class TestViewsDelegate : public views::ViewsDelegate {
     return NULL;
   }
 
-  virtual views::View* GetDefaultParentView() OVERRIDE {
-    return NULL;
-  }
-
   virtual void SaveWindowPlacement(const views::Widget* widget,
                                    const std::string& window_name,
                                    const gfx::Rect& bounds,

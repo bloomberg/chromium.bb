@@ -38,9 +38,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // added to a View hierarchy hosted within a valid Widget.
   void Attach(gfx::NativeView native_view);
 
-  // Attach a views::View instead of a native view to this host.
-  void AttachToView(View* view);
-
   // Detach the attached native view. Its bounds and visibility will no
   // longer be manipulated by this View. The native view may be destroyed and
   // detached before calling this function, and this has no effect in that case.
@@ -76,9 +73,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // Accessor for |native_view_|.
   gfx::NativeView native_view() const { return native_view_; }
 
-  // Accessor for |views_view_|.
-  View* views_view() const { return views_view_; }
-
   void NativeViewDestroyed();
 
   // Overridden from View:
@@ -103,11 +97,6 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // The attached native view. There is exactly one native_view_ or views_view_
   // attached.
   gfx::NativeView native_view_;
-
-  // The attached view. There is exactly one native_view_ or views_view_
-  // attached.
-  // TODO(oshima): Delete views_view_ once TOUCH_UI migrates to aura.
-  View* views_view_;
 
   // A platform-specific wrapper that does the OS-level manipulation of the
   // attached gfx::NativeView.

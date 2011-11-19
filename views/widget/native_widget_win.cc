@@ -45,7 +45,6 @@
 #include "views/widget/drop_target_win.h"
 #include "views/widget/monitor_win.h"
 #include "views/widget/native_widget_delegate.h"
-#include "views/widget/native_widget_views.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_delegate.h"
 
@@ -2412,10 +2411,6 @@ namespace internal {
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
-  if (Widget::IsPureViews() &&
-      ViewsDelegate::views_delegate->GetDefaultParentView()) {
-    return new NativeWidgetViews(delegate);
-  }
   return new NativeWidgetWin(delegate);
 }
 

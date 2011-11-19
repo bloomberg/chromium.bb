@@ -24,11 +24,6 @@
                       ['exclude', '_x\\.(h|cc)$'] ],
         'dependencies': [ '../ui/aura/aura.gyp:aura', ],
       }],
-      ['use_wayland == 1', {
-        'dependencies': [
-          '../build/linux/system.gyp:wayland',
-        ],
-      }],
     ],
   },
   'targets': [
@@ -84,7 +79,6 @@
         'controls/combobox/native_combobox_gtk.h',
         'controls/combobox/native_combobox_views.cc',
         'controls/combobox/native_combobox_views.h',
-        'controls/combobox/native_combobox_wayland.cc',
         'controls/combobox/native_combobox_win.cc',
         'controls/combobox/native_combobox_win.h',
         'controls/combobox/native_combobox_wrapper.h',
@@ -167,10 +161,6 @@
         'controls/native/native_view_host_gtk.h',
         'controls/native/native_view_host_win.cc',
         'controls/native/native_view_host_win.h',
-        'controls/native/native_view_host_views.cc',
-        'controls/native/native_view_host_views.h',
-        'controls/native/native_view_host_wayland.cc',
-        'controls/native/native_view_host_wrapper.h',
         'controls/progress_bar.h',
         'controls/progress_bar.cc',
         'controls/resize_area.cc',
@@ -233,7 +223,6 @@
         'controls/textfield/textfield_views_model.h',
         'controls/textfield/native_textfield_gtk.cc',
         'controls/textfield/native_textfield_gtk.h',
-        'controls/textfield/native_textfield_wayland.cc',
         'controls/textfield/native_textfield_win.cc',
         'controls/textfield/native_textfield_win.h',
         'controls/textfield/native_textfield_wrapper.h',
@@ -255,7 +244,6 @@
         'metrics.h',
         'metrics_aura.cc',
         'metrics_gtk.cc',
-        'metrics_wayland.cc',
         'metrics_win.cc',
         'mouse_watcher.cc',
         'mouse_watcher.h',
@@ -276,7 +264,6 @@
         'view_gtk.cc',
         'view_text_utils.cc',
         'view_text_utils.h',
-        'view_wayland.cc',
         'view_win.cc',
         'views_delegate.h',
         'widget/aero_tooltip_manager.cc',
@@ -314,12 +301,6 @@
         'widget/native_widget_private.h',
         'widget/native_widget_gtk.cc',
         'widget/native_widget_gtk.h',
-        'widget/native_widget_wayland.cc',
-        'widget/native_widget_wayland.h',
-        'widget/native_widget_view.cc',
-        'widget/native_widget_view.h',
-        'widget/native_widget_views.cc',
-        'widget/native_widget_views.h',
         'widget/native_widget_win.cc',
         'widget/native_widget_win.h',
         'widget/widget.cc',
@@ -344,14 +325,11 @@
         '../ui/views/events/event.h',
         '../ui/views/events/event_aura.cc',
         '../ui/views/events/event_gtk.cc',
-        '../ui/views/events/event_wayland.cc',
         '../ui/views/events/event_win.cc',
         '../ui/views/events/event_x.cc',
         '../ui/views/focus/accelerator_handler.h',
         '../ui/views/focus/accelerator_handler_aura.cc',
         '../ui/views/focus/accelerator_handler_gtk.cc',
-        '../ui/views/focus/accelerator_handler_touch.cc',
-        '../ui/views/focus/accelerator_handler_wayland.cc',
         '../ui/views/focus/accelerator_handler_win.cc',
         '../ui/views/focus/external_focus_tracker.cc',
         '../ui/views/focus/external_focus_tracker.h',
@@ -373,8 +351,6 @@
         '../ui/views/ime/input_method.h',
         '../ui/views/ime/input_method_ibus.cc',
         '../ui/views/ime/input_method_ibus.h',
-        '../ui/views/ime/input_method_wayland.cc',
-        '../ui/views/ime/input_method_wayland.h',
         '../ui/views/ime/input_method_win.cc',
         '../ui/views/ime/input_method_win.h',
         '../ui/views/ime/mock_input_method.cc',
@@ -416,20 +392,6 @@
         '../third_party/wtl/include',
       ],
       'conditions': [
-        ['use_wayland == 1', {
-          'dependencies': [
-            '../ui/wayland/wayland.gyp:wayland',
-          ],
-          'sources/': [
-            ['exclude', '_(gtk|x)\\.cc$'],
-            ['exclude', '/(gtk|x)_[^/]*\\.cc$'],
-            ['exclude', '../ui/views/focus/accelerator_handler_touch.cc'],
-            ['include', 'controls/menu/native_menu_views.cc'],
-            ['include', 'controls/menu/native_menu_views.h'],
-            ['include', 'drag_utils_gtk.cc'],
-            ['include', 'widget/tooltip_manager_views.cc'],
-          ],
-        }],
         ['use_aura==1', {
           'sources/': [
             ['exclude', '_(gtk|x)\\.cc$'],
@@ -437,7 +399,6 @@
             ['exclude', 'controls/menu/menu_2.*'],
           ],
           'sources!': [
-            '../ui/views/focus/accelerator_handler_touch.cc',
             'controls/menu/menu_config_linux.cc',
             'controls/menu/menu_item_view_linux.cc',
             'controls/menu/menu_separator_linux.cc',
@@ -702,8 +663,6 @@
         '../ui/views/examples/native_theme_button_example.h',
         '../ui/views/examples/native_theme_checkbox_example.cc',
         '../ui/views/examples/native_theme_checkbox_example.h',
-        '../ui/views/examples/native_widget_views_example.cc',
-        '../ui/views/examples/native_widget_views_example.h',
         '../ui/views/examples/progress_bar_example.cc',
         '../ui/views/examples/progress_bar_example.h',
         '../ui/views/examples/radio_button_example.cc',
@@ -766,165 +725,5 @@
         }],
       ],
     },
-    {
-      'target_name': 'views_desktop_lib',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../chrome/chrome_resources.gyp:packed_resources',
-        '../skia/skia.gyp:skia',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
-        '../ui/gfx/compositor/compositor.gyp:compositor',
-        '../ui/ui.gyp:gfx_resources',
-        '../ui/ui.gyp:ui',
-        '../ui/ui.gyp:ui_resources',
-        'views',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        '../ui/views/desktop/desktop_background.cc',
-        '../ui/views/desktop/desktop_background.h',
-        '../ui/views/desktop/desktop_window_manager.cc',
-        '../ui/views/desktop/desktop_window_manager.h',
-        '../ui/views/desktop/desktop_window_view.cc',
-        '../ui/views/desktop/desktop_window_view.h',
-      ],
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-               'dependencies': [
-                 '../base/allocator/allocator.gyp:allocator',
-               ],
-            }],
-          ],
-        },
-        ],
-        ['OS=="win"', {
-          'link_settings': {
-            'libraries': [
-              '-limm32.lib',
-              '-loleacc.lib',
-            ]
-          },
-          'include_dirs': [
-            '../third_party/wtl/include',
-          ],
-        }],
-      ],
-    },
-    {
-      'target_name': 'views_desktop',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../base/base.gyp:base_i18n',
-        '../chrome/chrome_resources.gyp:packed_resources',
-        '../skia/skia.gyp:skia',
-        '../third_party/icu/icu.gyp:icui18n',
-        '../third_party/icu/icu.gyp:icuuc',
-        '../ui/ui.gyp:gfx_resources',
-        '../ui/ui.gyp:ui',
-        '../ui/ui.gyp:ui_resources',
-        '../ui/ui.gyp:ui_resources_standard',
-        '../ui/gfx/compositor/compositor.gyp:compositor',
-        'views',
-        'views_desktop_lib',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        '../ui/views/desktop/desktop_main.cc',
-        '../ui/views/desktop/desktop_views_delegate.cc',
-        '../ui/views/desktop/desktop_views_delegate.h',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
-      ],
-      'conditions': [
-        ['toolkit_uses_gtk == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:gtk',
-          ],
-        },
-        ],
-        ['use_glib == 1', {
-          'dependencies': [
-            '../build/linux/system.gyp:glib',
-          ],
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-               'dependencies': [
-                 '../base/allocator/allocator.gyp:allocator',
-               ],
-            }],
-          ],
-        }],
-        ['OS=="win"', {
-          'link_settings': {
-            'libraries': [
-              '-limm32.lib',
-              '-loleacc.lib',
-            ]
-          },
-          'include_dirs': [
-            '../third_party/wtl/include',
-          ],
-        }],
-      ],
-    },
-  ],
-  'conditions': [
-    ['use_aura==1', {
-      'targets': [
-        {
-          'target_name': 'views_aura_desktop',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../chrome/chrome_resources.gyp:packed_resources',
-            '../skia/skia.gyp:skia',
-            '../third_party/icu/icu.gyp:icui18n',
-            '../third_party/icu/icu.gyp:icuuc',
-            '../ui/aura/aura.gyp:aura',
-            '../ui/ui.gyp:gfx_resources',
-            '../ui/ui.gyp:ui',
-            '../ui/ui.gyp:ui_resources',
-            '../ui/ui.gyp:ui_resources_standard',
-            'views',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            '../ui/views/aura_desktop/aura_desktop_main.cc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.rc',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'link_settings': {
-                'libraries': [
-                  '-limm32.lib',
-                  '-loleacc.lib',
-                ]
-              },
-              'include_dirs': [
-                '../third_party/wtl/include',
-              ],
-            }],
-          ],
-        },
-      ],
-    }],
   ],
 }

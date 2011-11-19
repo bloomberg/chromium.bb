@@ -133,8 +133,6 @@ Bubble::Bubble()
       views::NativeWidgetAura(new views::Widget),
 #elif defined(OS_WIN)
       views::NativeWidgetWin(new views::Widget),
-#elif defined(TOUCH_UI)
-      views::NativeWidgetViews(new views::Widget),
 #elif defined(TOOLKIT_USES_GTK)
       views::NativeWidgetGtk(new views::Widget),
 #endif
@@ -163,8 +161,6 @@ Bubble::Bubble(views::Widget::InitParams::Type type,
                bool show_while_screen_is_locked)
 #if defined(USE_AURA)
     : views::NativeWidgetAura(new views::Widget),
-#elif defined(TOUCH_UI)
-    : views::NativeWidgetViews(new views::Widget),
 #else
     : views::NativeWidgetGtk(new views::Widget),
 #endif
@@ -404,8 +400,6 @@ void Bubble::DoClose(bool closed_by_escape) {
   NativeWidgetAura::Close();
 #elif defined(OS_WIN)
   NativeWidgetWin::Close();
-#elif defined(TOUCH_UI)
-  NativeWidgetViews::Close();
 #elif defined(TOOLKIT_USES_GTK)
   NativeWidgetGtk::Close();
 #endif

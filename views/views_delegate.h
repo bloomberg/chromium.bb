@@ -46,12 +46,6 @@ class VIEWS_EXPORT ViewsDelegate {
   // Gets the clipboard.
   virtual ui::Clipboard* GetClipboard() const = 0;
 
-  // Returns the View that all synthetic widgets created without a specified
-  // parent will be parented to if they do not specify a parent in their
-  // InitParams, or NULL if they should have no parent.
-  // TODO(beng): perhaps this should be a Widget.
-  virtual View* GetDefaultParentView() = 0;
-
   // Saves the position, size and "show" state for the window with the
   // specified name.
   virtual void SaveWindowPlacement(const Widget* widget,

@@ -21,7 +21,6 @@
 #include "ui/views/examples/message_box_example.h"
 #include "ui/views/examples/native_theme_button_example.h"
 #include "ui/views/examples/native_theme_checkbox_example.h"
-#include "ui/views/examples/native_widget_views_example.h"
 #include "ui/views/examples/progress_bar_example.h"
 #include "ui/views/examples/radio_button_example.h"
 #include "ui/views/examples/scroll_view_example.h"
@@ -93,7 +92,6 @@ void ExamplesMain::Init() {
   examples_.push_back(new MessageBoxExample(this));
   examples_.push_back(new NativeThemeButtonExample(this));
   examples_.push_back(new NativeThemeCheckboxExample(this));
-  examples_.push_back(new NativeWidgetViewsExample(this));
   examples_.push_back(new ProgressBarExample(this));
   examples_.push_back(new RadioButtonExample(this));
   examples_.push_back(new ScrollViewExample(this));

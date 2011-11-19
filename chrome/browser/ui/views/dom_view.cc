@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/views/focus/focus_manager.h"
-#include "views/widget/native_widget_views.h"
 
 // static
 const char DOMView::kViewClassName[] =
@@ -80,17 +79,5 @@ void DOMView::ViewHierarchyChanged(bool is_add, views::View* parent,
 }
 
 void DOMView::AttachTabContents() {
-#if !defined(USE_AURA)
-  if (views::Widget::IsPureViews()) {
-    TabContentsViewViews* widget = static_cast<TabContentsViewViews*>(
-        dom_contents_->tab_contents()->view());
-    views::NativeWidgetViews* nwv =
-        static_cast<views::NativeWidgetViews*>(widget->native_widget());
-    AttachToView(nwv->GetView());
-  } else {
-#endif
-    Attach(dom_contents_->tab_contents()->GetNativeView());
-#if !defined(USE_AURA)
-  }
-#endif
+  Attach(dom_contents_->tab_contents()->GetNativeView());
 }
