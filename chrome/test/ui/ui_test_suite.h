@@ -18,8 +18,8 @@ class UITestSuite : public ChromeTestSuite {
   UITestSuite(int argc, char** argv);
 
  protected:
-  virtual void Initialize();
-  virtual void Shutdown();
+  virtual void Initialize() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 
  private:
 #if defined(OS_WIN)

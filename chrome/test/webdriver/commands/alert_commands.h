@@ -25,10 +25,10 @@ class AlertTextCommand : public WebDriverCommand {
                    base::DictionaryValue* parameters);
   virtual ~AlertTextCommand();
 
-  virtual bool DoesGet();
-  virtual bool DoesPost();
-  virtual void ExecuteGet(Response* const response);
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AlertTextCommand);
@@ -40,8 +40,8 @@ class AcceptAlertCommand : public WebDriverCommand {
                      base::DictionaryValue* parameters);
   virtual ~AcceptAlertCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AcceptAlertCommand);
@@ -53,8 +53,8 @@ class DismissAlertCommand : public WebDriverCommand {
                       base::DictionaryValue* parameters);
   virtual ~DismissAlertCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DismissAlertCommand);

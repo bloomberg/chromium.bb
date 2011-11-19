@@ -44,7 +44,7 @@ class BrowserWithTestWindowTest : public testing::Test {
   BrowserWithTestWindowTest();
   virtual ~BrowserWithTestWindowTest();
 
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 
   // Returns the current RenderViewHost for the current tab as a
   // TestRenderViewHost.

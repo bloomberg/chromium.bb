@@ -27,8 +27,8 @@ class WindowHandleCommand : public WebDriverCommand {
                       base::DictionaryValue* parameters);
   virtual ~WindowHandleCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowHandleCommand);
@@ -42,8 +42,8 @@ class WindowHandlesCommand : public WebDriverCommand {
                        base::DictionaryValue* parameters);
   virtual ~WindowHandlesCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowHandlesCommand);
@@ -58,10 +58,10 @@ class WindowCommand : public WebDriverCommand {
                 base::DictionaryValue* parameters);
   virtual ~WindowCommand();
 
-  virtual bool DoesPost();
-  virtual bool DoesDelete();
-  virtual void ExecutePost(Response* const response);
-  virtual void ExecuteDelete(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual bool DoesDelete() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
+  virtual void ExecuteDelete(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WindowCommand);
@@ -75,8 +75,8 @@ class SwitchFrameCommand : public WebDriverCommand {
                      base::DictionaryValue* parameters);
   virtual ~SwitchFrameCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   bool GetWebElementParameter(const std::string& key, ElementId* out) const;
@@ -91,8 +91,8 @@ class ActiveElementCommand : public WebDriverCommand {
                        base::DictionaryValue* parameters);
   virtual ~ActiveElementCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActiveElementCommand);

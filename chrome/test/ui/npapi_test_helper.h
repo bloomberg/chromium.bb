@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ extern const char kTestCompleteSuccess[];
 class NPAPITesterBase : public UITest {
  protected:
   explicit NPAPITesterBase();
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 
   FilePath GetPluginsDirectory();
 };
@@ -27,13 +27,13 @@ class NPAPITesterBase : public UITest {
 // to be visible.
 class NPAPIVisiblePluginTester : public NPAPITesterBase {
  protected:
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 };
 
 // Helper class for NPAPI plugin UI tests which use incognito mode.
 class NPAPIIncognitoTester : public NPAPITesterBase {
  protected:
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 };
 
 #endif  // CHROME_TEST_UI_NPAPI_TEST_HELPER_H_

@@ -367,10 +367,10 @@ class UITest : public UITestBase, public PlatformTest {
     : UITestBase(), PlatformTest(), message_loop_(msg_loop_type) {
   }
 
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
-  virtual ProxyLauncher* CreateProxyLauncher();
+  virtual ProxyLauncher* CreateProxyLauncher() OVERRIDE;
 
   // Count the number of active browser processes launched by this test.
   // The count includes browser sub-processes.

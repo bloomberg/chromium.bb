@@ -352,7 +352,7 @@ class TestNotificationObserver : public content::NotificationObserver {
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationSource source_;
@@ -536,7 +536,7 @@ class DOMMessageQueue : public content::NotificationObserver {
   // Overridden content::NotificationObserver methods.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   content::NotificationRegistrar registrar_;

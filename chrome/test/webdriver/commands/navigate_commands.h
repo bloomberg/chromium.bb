@@ -22,8 +22,8 @@ class ForwardCommand : public WebDriverCommand {
                  const DictionaryValue* const parameters);
   virtual ~ForwardCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ForwardCommand);
@@ -37,8 +37,8 @@ class BackCommand : public WebDriverCommand {
               const DictionaryValue* const parameters);
   virtual ~BackCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BackCommand);
@@ -52,8 +52,8 @@ class RefreshCommand : public WebDriverCommand {
                  const DictionaryValue* const parameters);
   virtual ~RefreshCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RefreshCommand);

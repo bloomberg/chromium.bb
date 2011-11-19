@@ -22,8 +22,8 @@ class TitleCommand : public WebDriverCommand {
                const DictionaryValue* const parameters);
   virtual ~TitleCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TitleCommand);

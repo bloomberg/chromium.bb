@@ -27,8 +27,8 @@ class ChromeRenderViewTest : public content::RenderViewTest {
 
  protected:
   // testing::Test
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   chrome::ChromeContentRendererClient chrome_content_renderer_client_;
   ExtensionDispatcher* extension_dispatcher_;

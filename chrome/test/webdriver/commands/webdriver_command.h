@@ -32,9 +32,9 @@ class WebDriverCommand : public Command {
   virtual ~WebDriverCommand();
 
   // Initializes this webdriver command by fetching the command session.
-  virtual bool Init(Response* const response);
+  virtual bool Init(Response* const response) OVERRIDE;
 
-  virtual void Finish();
+  virtual void Finish() OVERRIDE;
 
  protected:
   Session* session_;

@@ -26,8 +26,8 @@ class SourceCommand : public WebDriverCommand {
                 const base::DictionaryValue* const parameters);
   virtual ~SourceCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SourceCommand);

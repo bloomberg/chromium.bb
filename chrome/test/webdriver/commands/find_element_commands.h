@@ -23,8 +23,8 @@ class FindElementCommand : public WebDriverCommand {
                       const bool find_one_element);
   virtual ~FindElementCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   const bool find_one_element_;

@@ -27,10 +27,10 @@ class BrowserConnectionCommand : public WebDriverCommand {
                            const base::DictionaryValue* const parameters);
   virtual ~BrowserConnectionCommand();
 
-  virtual bool DoesGet();
+  virtual bool DoesGet() OVERRIDE;
 
   // A call with HTTP GET will return the browser connection state.
-  virtual void ExecuteGet(Response* const response);
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserConnectionCommand);

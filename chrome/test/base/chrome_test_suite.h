@@ -23,8 +23,8 @@ class ChromeTestSuite : public base::TestSuite {
   virtual ~ChromeTestSuite();
 
  protected:
-  virtual void Initialize();
-  virtual void Shutdown();
+  virtual void Initialize() OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 
   void SetBrowserDirectory(const FilePath& browser_dir) {
     browser_dir_ = browser_dir;

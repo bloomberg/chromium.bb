@@ -17,7 +17,7 @@ class AutomatedUITestBase : public UITest {
   AutomatedUITestBase();
   virtual ~AutomatedUITestBase();
 
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 
   virtual void LogErrorMessage(const std::string &error);
   virtual void LogWarningMessage(const std::string &warning);

@@ -24,15 +24,17 @@ class MenuModelTest {
    public:
     Delegate() : execute_count_(0), enable_count_(0) { }
 
-    virtual bool IsCommandIdChecked(int command_id) const { return false; }
-    virtual bool IsCommandIdEnabled(int command_id) const {
+    virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+      return false;
+    }
+    virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
       ++enable_count_;
       return true;
     }
     virtual bool GetAcceleratorForCommandId(
         int command_id,
-        ui::Accelerator* accelerator) { return false; }
-    virtual void ExecuteCommand(int command_id) { ++execute_count_; }
+        ui::Accelerator* accelerator) OVERRIDE { return false; }
+    virtual void ExecuteCommand(int command_id) OVERRIDE { ++execute_count_; }
 
     int execute_count_;
     mutable int enable_count_;

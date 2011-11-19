@@ -28,11 +28,11 @@ class SessionWithID : public WebDriverCommand {
                 const DictionaryValue* const parameters);
   virtual ~SessionWithID();
 
-  virtual bool DoesGet();
-  virtual bool DoesDelete();
+  virtual bool DoesGet() OVERRIDE;
+  virtual bool DoesDelete() OVERRIDE;
 
-  virtual void ExecuteGet(Response* const response);
-  virtual void ExecuteDelete(Response* const response);
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
+  virtual void ExecuteDelete(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionWithID);

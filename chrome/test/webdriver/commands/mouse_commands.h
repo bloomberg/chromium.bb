@@ -27,8 +27,8 @@ class MoveAndClickCommand : public WebElementCommand {
                       const base::DictionaryValue* const parameters);
   virtual ~MoveAndClickCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MoveAndClickCommand);
@@ -42,8 +42,8 @@ class HoverCommand : public WebElementCommand {
                const base::DictionaryValue* const parameters);
   virtual ~HoverCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HoverCommand);
@@ -58,9 +58,9 @@ class DragCommand : public WebElementCommand {
               const base::DictionaryValue* const parameters);
   virtual ~DragCommand();
 
-  virtual bool Init(Response* const response);
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool Init(Response* const response) OVERRIDE;
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   int drag_x_, drag_y_;
@@ -80,7 +80,7 @@ class AdvancedMouseCommand : public WebDriverCommand {
                        const base::DictionaryValue* const parameters);
   virtual ~AdvancedMouseCommand();
 
-  virtual bool DoesPost();
+  virtual bool DoesPost() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AdvancedMouseCommand);
@@ -97,8 +97,8 @@ class MoveToCommand : public AdvancedMouseCommand {
                 const base::DictionaryValue* const parameters);
   virtual ~MoveToCommand();
 
-  virtual bool Init(Response* const response);
-  virtual void ExecutePost(Response* const response);
+  virtual bool Init(Response* const response) OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   bool has_element_;
@@ -121,8 +121,8 @@ class ClickCommand : public AdvancedMouseCommand {
                const base::DictionaryValue* const parameters);
   virtual ~ClickCommand();
 
-  virtual bool Init(Response* const response);
-  virtual void ExecutePost(Response* const response);
+  virtual bool Init(Response* const response) OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   int button_;
@@ -141,7 +141,7 @@ class ButtonDownCommand : public AdvancedMouseCommand {
                     const base::DictionaryValue* const parameters);
   virtual ~ButtonDownCommand();
 
-  virtual void ExecutePost(Response* const response);
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ButtonDownCommand);
@@ -157,7 +157,7 @@ class ButtonUpCommand : public AdvancedMouseCommand {
                   const base::DictionaryValue* const parameters);
   virtual ~ButtonUpCommand();
 
-  virtual void ExecutePost(Response* const response);
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ButtonUpCommand);
@@ -171,7 +171,7 @@ class DoubleClickCommand : public AdvancedMouseCommand {
                      const base::DictionaryValue* const parameters);
   virtual ~DoubleClickCommand();
 
-  virtual void ExecutePost(Response* const response);
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DoubleClickCommand);

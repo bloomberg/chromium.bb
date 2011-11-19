@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -353,20 +353,20 @@ class AutomatedUITest : public AutomatedUITestBase {
   bool DidCrash(bool update_total_crashes);
 
   // Override the message logging in AutomatedUITestBase.
-  virtual void LogErrorMessage(const std::string& error);
-  virtual void LogWarningMessage(const std::string& warning);
-  virtual void LogInfoMessage(const std::string& info);
+  virtual void LogErrorMessage(const std::string& error) OVERRIDE;
+  virtual void LogWarningMessage(const std::string& warning) OVERRIDE;
+  virtual void LogInfoMessage(const std::string& info) OVERRIDE;
 
   // Overridden so that UI Test doesn't set up when the tests start.
   // We use DoAction("SetUp") to set up, because it logs it and makes
   // it easier to check for crashes when we start the browser.
-  virtual void SetUp() {}
+  virtual void SetUp() OVERRIDE {}
 
   // Overridden so that UI Test doesn't close the browser (which is already
   // closed) at the end of the test.
   // We use DoAction("TearDown") to tear down, because it logs it and makes
   // it easier to check for crashes when we close the browser.
-  virtual void TearDown() {}
+  virtual void TearDown() OVERRIDE {}
 
  private:
   // Parses the init file.

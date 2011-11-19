@@ -32,7 +32,7 @@ class WebElementCommand : public WebDriverCommand {
                     const base::DictionaryValue* const parameters);
   virtual ~WebElementCommand();
 
-  virtual bool Init(Response* const response);
+  virtual bool Init(Response* const response) OVERRIDE;
 
  protected:
   const std::vector<std::string>& path_segments_;
@@ -50,8 +50,8 @@ class ElementAttributeCommand : public WebElementCommand {
                           base::DictionaryValue* parameters);
   virtual ~ElementAttributeCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementAttributeCommand);
@@ -65,8 +65,8 @@ class ElementClearCommand : public WebElementCommand {
                       base::DictionaryValue* parameters);
   virtual ~ElementClearCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementClearCommand);
@@ -80,8 +80,8 @@ class ElementCssCommand : public WebElementCommand {
                     base::DictionaryValue* parameters);
   virtual ~ElementCssCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementCssCommand);
@@ -95,8 +95,8 @@ class ElementDisplayedCommand : public WebElementCommand {
                           base::DictionaryValue* parameters);
   virtual ~ElementDisplayedCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementDisplayedCommand);
@@ -110,8 +110,8 @@ class ElementEnabledCommand : public WebElementCommand {
                         base::DictionaryValue* parameters);
   virtual ~ElementEnabledCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementEnabledCommand);
@@ -125,8 +125,8 @@ class ElementEqualsCommand : public WebElementCommand {
                        base::DictionaryValue* parameters);
   virtual ~ElementEqualsCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementEqualsCommand);
@@ -140,8 +140,8 @@ class ElementLocationCommand : public WebElementCommand {
                          base::DictionaryValue* parameters);
   virtual ~ElementLocationCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementLocationCommand);
@@ -156,8 +156,8 @@ class ElementLocationInViewCommand : public WebElementCommand {
                                base::DictionaryValue* parameters);
   virtual ~ElementLocationInViewCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementLocationInViewCommand);
@@ -171,8 +171,8 @@ class ElementNameCommand : public WebElementCommand {
                      base::DictionaryValue* parameters);
   virtual ~ElementNameCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementNameCommand);
@@ -187,10 +187,10 @@ class ElementSelectedCommand : public WebElementCommand {
                          base::DictionaryValue* parameters);
   virtual ~ElementSelectedCommand();
 
-  virtual bool DoesGet();
-  virtual bool DoesPost();
-  virtual void ExecuteGet(Response* const response);
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementSelectedCommand);
@@ -204,8 +204,8 @@ class ElementSizeCommand : public WebElementCommand {
                      base::DictionaryValue* parameters);
   virtual ~ElementSizeCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementSizeCommand);
@@ -219,8 +219,8 @@ class ElementSubmitCommand : public WebElementCommand {
                        base::DictionaryValue* parameters);
   virtual ~ElementSubmitCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementSubmitCommand);
@@ -234,8 +234,8 @@ class ElementToggleCommand : public WebElementCommand {
                        base::DictionaryValue* parameters);
   virtual ~ElementToggleCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementToggleCommand);
@@ -250,10 +250,10 @@ class ElementValueCommand : public WebElementCommand {
                       base::DictionaryValue* parameters);
   virtual ~ElementValueCommand();
 
-  virtual bool DoesGet();
-  virtual bool DoesPost();
-  virtual void ExecuteGet(Response* const response);
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   // Returns whether the element has a given attribute pair.
@@ -274,8 +274,8 @@ class ElementTextCommand : public WebElementCommand {
                      base::DictionaryValue* parameters);
   virtual ~ElementTextCommand();
 
-  virtual bool DoesGet();
-  virtual void ExecuteGet(Response* const response);
+  virtual bool DoesGet() OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ElementTextCommand);

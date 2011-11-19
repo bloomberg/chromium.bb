@@ -30,13 +30,13 @@ class CookieCommand : public WebDriverCommand {
                 const base::DictionaryValue* const parameters);
   virtual ~CookieCommand();
 
-  virtual bool DoesDelete();
-  virtual bool DoesGet();
-  virtual bool DoesPost();
+  virtual bool DoesDelete() OVERRIDE;
+  virtual bool DoesGet() OVERRIDE;
+  virtual bool DoesPost() OVERRIDE;
 
-  virtual void ExecuteDelete(Response* const response);
-  virtual void ExecuteGet(Response* const response);
-  virtual void ExecutePost(Response* const response);
+  virtual void ExecuteDelete(Response* const response) OVERRIDE;
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CookieCommand);
@@ -51,11 +51,11 @@ class NamedCookieCommand : public WebDriverCommand {
                      const base::DictionaryValue* const parameters);
   virtual ~NamedCookieCommand();
 
-  virtual bool Init(Response* const response);
+  virtual bool Init(Response* const response) OVERRIDE;
 
-  virtual bool DoesDelete();
+  virtual bool DoesDelete() OVERRIDE;
 
-  virtual void ExecuteDelete(Response* const response);
+  virtual void ExecuteDelete(Response* const response) OVERRIDE;
 
  private:
   std::string cookie_name_;

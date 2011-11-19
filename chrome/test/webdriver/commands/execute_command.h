@@ -26,8 +26,8 @@ class ExecuteCommand : public WebDriverCommand {
                  const DictionaryValue* const parameters);
   virtual ~ExecuteCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExecuteCommand);

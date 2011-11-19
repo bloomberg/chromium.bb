@@ -24,8 +24,8 @@ class SetTimeoutCommand : public WebDriverCommand {
                     const base::DictionaryValue* const parameters);
   virtual ~SetTimeoutCommand();
 
-  virtual bool DoesPost();
-  virtual void ExecutePost(Response* const response);
+  virtual bool DoesPost() OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
   virtual void SetTimeout(int timeout_ms) = 0;
 
  private:
@@ -38,7 +38,7 @@ class SetAsyncScriptTimeoutCommand : public SetTimeoutCommand {
   SetAsyncScriptTimeoutCommand(const std::vector<std::string>& path_segments,
                                const base::DictionaryValue* const parameters);
   virtual ~SetAsyncScriptTimeoutCommand();
-  virtual void SetTimeout(int timeout_ms);
+  virtual void SetTimeout(int timeout_ms) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SetAsyncScriptTimeoutCommand);
@@ -50,7 +50,7 @@ class ImplicitWaitCommand : public SetTimeoutCommand {
   ImplicitWaitCommand(const std::vector<std::string>& path_segments,
                       const base::DictionaryValue* const parameters);
   virtual ~ImplicitWaitCommand();
-  virtual void SetTimeout(int timeout_ms);
+  virtual void SetTimeout(int timeout_ms) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImplicitWaitCommand);
