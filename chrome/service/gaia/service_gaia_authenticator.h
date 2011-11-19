@@ -36,9 +36,11 @@ class ServiceGaiaAuthenticator
 
  protected:
   // GaiaAuthenticator overrides.
-  virtual bool Post(const GURL& url, const std::string& post_body,
-                    unsigned long* response_code, std::string* response_body);
-  virtual int GetBackoffDelaySeconds(int current_backoff_delay);
+  virtual bool Post(const GURL& url,
+                    const std::string& post_body,
+                    unsigned long* response_code,
+                    std::string* response_body) OVERRIDE;
+  virtual int GetBackoffDelaySeconds(int current_backoff_delay) OVERRIDE;
 
  private:
   void DoPost(const GURL& post_url, const std::string& post_body);

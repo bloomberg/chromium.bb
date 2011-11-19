@@ -67,20 +67,20 @@ class CloudPrintAuth
   // gaia::GaiaOAuthClient::Delegate implementation.
   virtual void OnGetTokensResponse(const std::string& refresh_token,
                                    const std::string& access_token,
-                                   int expires_in_seconds);
+                                   int expires_in_seconds) OVERRIDE;
   virtual void OnRefreshTokenResponse(const std::string& access_token,
-                                      int expires_in_seconds);
-  virtual void OnOAuthError();
-  virtual void OnNetworkError(int response_code);
+                                      int expires_in_seconds) OVERRIDE;
+  virtual void OnOAuthError() OVERRIDE;
+  virtual void OnNetworkError(int response_code) OVERRIDE;
 
   // CloudPrintURLFetcher::Delegate implementation.
   virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const content::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
-      bool succeeded);
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError();
-  virtual std::string GetAuthHeader();
+      bool succeeded) OVERRIDE;
+  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() OVERRIDE;
+  virtual std::string GetAuthHeader() OVERRIDE;
 
  private:
   Client* client_;

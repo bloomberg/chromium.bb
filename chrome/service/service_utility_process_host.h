@@ -106,8 +106,8 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   virtual FilePath GetUtilityProcessCmd();
 
   // Overriden from ChildProcessHost.
-  virtual bool CanShutdown();
-  virtual void OnChildDied();
+  virtual bool CanShutdown() OVERRIDE;
+  virtual void OnChildDied() OVERRIDE;
 
  private:
   // Starts a process.  Returns true iff it succeeded. |exposed_dir| is the
@@ -116,7 +116,7 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   bool StartProcess(bool no_sandbox, const FilePath& exposed_dir);
 
   // IPC messages:
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   // Called when at least one page in the specified PDF has been rendered
   // successfully into metafile_path_;
   void OnRenderPDFPagesToMetafileSucceeded(int highest_rendered_page_number);

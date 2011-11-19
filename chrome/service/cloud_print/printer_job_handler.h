@@ -129,33 +129,34 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
       const net::URLRequestStatus& status,
       int response_code,
       const net::ResponseCookies& cookies,
-      const std::string& data);
+      const std::string& data) OVERRIDE;
   virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
       const content::URLFetcher* source,
       const GURL& url,
-      const std::string& data);
+      const std::string& data) OVERRIDE;
   virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const content::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
-      bool succeeded);
-  virtual void OnRequestGiveUp();
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError();
-  virtual std::string GetAuthHeader();
+      bool succeeded) OVERRIDE;
+  virtual void OnRequestGiveUp() OVERRIDE;
+  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() OVERRIDE;
+  virtual std::string GetAuthHeader() OVERRIDE;
 
   // JobStatusUpdater::Delegate implementation
-  virtual bool OnJobCompleted(JobStatusUpdater* updater);
-  virtual void OnAuthError();
+  virtual bool OnJobCompleted(JobStatusUpdater* updater) OVERRIDE;
+  virtual void OnAuthError() OVERRIDE;
 
   // cloud_print::PrinterWatcherDelegate implementation
-  virtual void OnPrinterDeleted();
-  virtual void OnPrinterChanged();
-  virtual void OnJobChanged();
+  virtual void OnPrinterDeleted() OVERRIDE;
+  virtual void OnPrinterChanged() OVERRIDE;
+  virtual void OnJobChanged() OVERRIDE;
 
   // cloud_print::JobSpoolerDelegate implementation.
   // Called on print_thread_.
-  virtual void OnJobSpoolSucceeded(const cloud_print::PlatformJobId& job_id);
-  virtual void OnJobSpoolFailed();
+  virtual void OnJobSpoolSucceeded(
+      const cloud_print::PlatformJobId& job_id) OVERRIDE;
+  virtual void OnJobSpoolFailed() OVERRIDE;
 
   // End Delegate implementations
 

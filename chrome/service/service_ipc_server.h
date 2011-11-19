@@ -23,7 +23,7 @@ class ServiceIPCServer : public IPC::Channel::Listener,
   bool Init();
 
   // IPC::Message::Sender implementation.
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 

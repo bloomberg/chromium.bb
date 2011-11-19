@@ -49,9 +49,9 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
       const content::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
-      bool succeeded);
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError();
-  virtual std::string GetAuthHeader();
+      bool succeeded) OVERRIDE;
+  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() OVERRIDE;
+  virtual std::string GetAuthHeader() OVERRIDE;
 
  private:
   std::string printer_name_;

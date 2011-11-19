@@ -41,7 +41,7 @@ class ServiceURLRequestContext : public net::URLRequestContext {
       net::ProxyConfigService* net_proxy_config_service);
 
   // Overridden from net::URLRequestContext:
-  virtual const std::string& GetUserAgent(const GURL& url) const;
+  virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
 
  protected:
   virtual ~ServiceURLRequestContext();
@@ -53,8 +53,9 @@ class ServiceURLRequestContext : public net::URLRequestContext {
 
 class ServiceURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
-  virtual net::URLRequestContext* GetURLRequestContext();
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy>
+      GetIOMessageLoopProxy() const OVERRIDE;
 
   void set_user_agent(const std::string& ua) {
     user_agent_ = ua;

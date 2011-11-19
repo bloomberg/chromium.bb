@@ -53,24 +53,24 @@ class CloudPrintConnector
   void CheckForJobs(const std::string& reason, const std::string& printer_id);
 
   // cloud_print::PrintServerWatcherDelegate implementation
-  virtual void OnPrinterAdded();
+  virtual void OnPrinterAdded() OVERRIDE;
   // PrinterJobHandler::Delegate implementation
-  virtual void OnPrinterDeleted(const std::string& printer_name);
-  virtual void OnAuthError();
+  virtual void OnPrinterDeleted(const std::string& printer_name) OVERRIDE;
+  virtual void OnAuthError() OVERRIDE;
 
   // CloudPrintURLFetcher::Delegate implementation.
   virtual CloudPrintURLFetcher::ResponseAction HandleRawData(
       const content::URLFetcher* source,
       const GURL& url,
-      const std::string& data);
+      const std::string& data) OVERRIDE;
 
   virtual CloudPrintURLFetcher::ResponseAction HandleJSONData(
       const content::URLFetcher* source,
       const GURL& url,
       base::DictionaryValue* json_data,
-      bool succeeded);
-  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError();
-  virtual std::string GetAuthHeader();
+      bool succeeded) OVERRIDE;
+  virtual CloudPrintURLFetcher::ResponseAction OnRequestAuthError() OVERRIDE;
+  virtual std::string GetAuthHeader() OVERRIDE;
 
  private:
   // Prototype for a response handler.
