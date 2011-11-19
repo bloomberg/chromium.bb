@@ -22,7 +22,7 @@ AltErrorPageResourceFetcher::AltErrorPageResourceFetcher(
     const GURL& url,
     WebFrame* frame,
     const WebURLError& original_error,
-    Callback* callback)
+    const Callback& callback)
     : frame_(frame),
       callback_(callback),
       original_error_(original_error) {
@@ -43,9 +43,9 @@ void AltErrorPageResourceFetcher::OnURLFetchComplete(
     const std::string& data) {
   // A null response indicates a network error.
   if (!response.isNull() && response.httpStatusCode() == 200) {
-    callback_->Run(frame_, original_error_, data);
+    callback_.Run(frame_, original_error_, data);
   } else {
-    callback_->Run(frame_, original_error_, std::string());
+    callback_.Run(frame_, original_error_, std::string());
   }
 }
 

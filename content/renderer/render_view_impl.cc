@@ -9,7 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_old.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_value_serializer.h"
@@ -2759,7 +2760,8 @@ void RenderViewImpl::didFinishResourceLoad(
       document_state->set_alt_error_page_fetcher(
           new AltErrorPageResourceFetcher(
               error_page_url, frame, original_error,
-              NewCallback(this, &RenderViewImpl::AltErrorPageFinished)));
+              base::Bind(&RenderViewImpl::AltErrorPageFinished,
+                         base::Unretained(this))));
       return;
     }
   }
@@ -4020,7 +4022,8 @@ bool RenderViewImpl::MaybeLoadAlternateErrorPage(WebFrame* frame,
   document_state->set_alt_error_page_fetcher(
       new AltErrorPageResourceFetcher(
           error_page_url, frame, error,
-          NewCallback(this, &RenderViewImpl::AltErrorPageFinished)));
+          base::Bind(&RenderViewImpl::AltErrorPageFinished,
+                     base::Unretained(this))));
   return true;
 }
 
