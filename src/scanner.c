@@ -231,10 +231,8 @@ start_element(void *data, const char *element_name, const char **atts)
 			arg->type = FD;
 		else if (strcmp(type, "new_id") == 0) {
 			arg->type = NEW_ID;
-			arg->interface_name = strdup(interface_name);
 		} else if (strcmp(type, "object") == 0) {
 			arg->type = OBJECT;
-			arg->interface_name = strdup(interface_name);
 		} else {
 			fail(ctx, "unknown type");
 		}
@@ -244,6 +242,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		case OBJECT:
 			if (interface_name == NULL)
 				fail(ctx, "no interface name given");
+			arg->interface_name = strdup(interface_name);
 			break;
 		default:
 			if (interface_name != NULL)
