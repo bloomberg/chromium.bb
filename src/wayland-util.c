@@ -148,26 +148,37 @@ wl_map_init(struct wl_map *map)
 WL_EXPORT void
 wl_map_release(struct wl_map *map)
 {
-	wl_array_release(&map->entries);
+	wl_array_release(&map->client_entries);
+	wl_array_release(&map->server_entries);
 }
 
 WL_EXPORT uint32_t
-wl_map_insert_new(struct wl_map *map, void *data)
+wl_map_insert_new(struct wl_map *map, uint32_t side, void *data)
 {
 	union map_entry *start, *entry;
+	struct wl_array *entries;
+	uint32_t base;
+
+	if (side == WL_MAP_CLIENT_SIDE) {
+		entries = &map->client_entries;
+		base = 0;
+	} else {
+		entries = &map->server_entries;
+		base = WL_SERVER_ID_START;
+	}
 
 	if (map->free_list) {
-		start = map->entries.data;
+		start = entries->data;
 		entry = &start[map->free_list >> 1];
 		map->free_list = entry->next;
 	} else {
-		entry = wl_array_add(&map->entries, sizeof *entry);
-		start = map->entries.data;
+		entry = wl_array_add(entries, sizeof *entry);
+		start = entries->data;
 	}
 
 	entry->data = data;
 
-	return entry - start;
+	return (entry - start) + base;
 }
 
 WL_EXPORT int
@@ -175,17 +186,23 @@ wl_map_insert_at(struct wl_map *map, uint32_t i, void *data)
 {
 	union map_entry *start;
 	uint32_t count;
+	struct wl_array *entries;
 
-	/* assert(map->free_list == NULL */
-	count = map->entries.size / sizeof *start;
+	if (i < WL_SERVER_ID_START) {
+		entries = &map->client_entries;
+	} else {
+		entries = &map->server_entries;
+		i -= WL_SERVER_ID_START;
+	}
 
+	count = entries->size / sizeof *start;
 	if (count < i)
 		return -1;
 
 	if (count == i)
-		wl_array_add(&map->entries, sizeof *start);
+		wl_array_add(entries, sizeof *start);
 
-	start = map->entries.data;
+	start = entries->data;
 	start[i].data = data;
 
 	return 0;
@@ -195,8 +212,16 @@ WL_EXPORT void
 wl_map_remove(struct wl_map *map, uint32_t i)
 {
 	union map_entry *start;
+	struct wl_array *entries;
 
-	start = map->entries.data;
+	if (i < WL_SERVER_ID_START) {
+		entries = &map->client_entries;
+	} else {
+		entries = &map->server_entries;
+		i -= WL_SERVER_ID_START;
+	}
+
+	start = entries->data;
 	start[i].next = map->free_list;
 	map->free_list = (i << 1) | 1;
 }
@@ -206,9 +231,17 @@ wl_map_lookup(struct wl_map *map, uint32_t i)
 {
 	union map_entry *start;
 	uint32_t count;
+	struct wl_array *entries;
 
-	start = map->entries.data;
-	count = map->entries.size / sizeof *start;
+	if (i < WL_SERVER_ID_START) {
+		entries = &map->client_entries;
+	} else {
+		entries = &map->server_entries;
+		i -= WL_SERVER_ID_START;
+	}
+
+	start = entries->data;
+	count = entries->size / sizeof *start;
 
 	if (i < count && !(start[i].next & 1))
 		return start[i].data;
@@ -216,15 +249,22 @@ wl_map_lookup(struct wl_map *map, uint32_t i)
 	return NULL;
 }
 
-WL_EXPORT void
-wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data)
+static void
+for_each_helper(struct wl_array *entries, wl_iterator_func_t func, void *data)
 {
 	union map_entry *start, *end, *p;
 
-	start = map->entries.data;
-	end = (union map_entry *) ((char *) map->entries.data + map->entries.size);
+	start = entries->data;
+	end = (union map_entry *) ((char *) entries->data + entries->size);
 
 	for (p = start; p < end; p++)
 		if (p->data && !(p->next & 1))
 			func(p->data, data);
+}
+
+WL_EXPORT void
+wl_map_for_each(struct wl_map *map, wl_iterator_func_t func, void *data)
+{
+	for_each_helper(&map->client_entries, func, data);
+	for_each_helper(&map->server_entries, func, data);
 }

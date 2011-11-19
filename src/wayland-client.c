@@ -132,7 +132,27 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 
 	proxy->object.interface = interface;
 	proxy->object.implementation = NULL;
-	proxy->object.id = wl_map_insert_new(&display->objects, proxy);
+	proxy->object.id = wl_map_insert_new(&display->objects,
+					     WL_MAP_CLIENT_SIDE, proxy);
+	proxy->display = display;
+
+	return proxy;
+}
+
+WL_EXPORT struct wl_proxy *
+wl_proxy_create_for_id(struct wl_proxy *factory,
+		       uint32_t id, const struct wl_interface *interface)
+{
+	struct wl_proxy *proxy;
+	struct wl_display *display = factory->display;
+
+	proxy = malloc(sizeof *proxy);
+	if (proxy == NULL)
+		return NULL;
+
+	proxy->object.interface = interface;
+	proxy->object.implementation = NULL;
+	proxy->object.id = wl_map_insert_at(&display->objects, id, proxy);
 	proxy->display = display;
 
 	return proxy;
@@ -141,8 +161,12 @@ wl_proxy_create(struct wl_proxy *factory, const struct wl_interface *interface)
 WL_EXPORT void
 wl_proxy_destroy(struct wl_proxy *proxy)
 {
-	wl_map_insert_at(&proxy->display->objects,
-			 proxy->object.id, WL_ZOMBIE_OBJECT);
+	if (proxy->object.id < WL_SERVER_ID_START)
+		wl_map_insert_at(&proxy->display->objects,
+				 proxy->object.id, WL_ZOMBIE_OBJECT);
+	else
+		wl_map_insert_at(&proxy->display->objects,
+				 proxy->object.id, NULL);
 	free(proxy);
 }
 
@@ -336,10 +360,12 @@ wl_display_connect(const char *name)
 	wl_list_init(&display->global_listener_list);
 	wl_list_init(&display->global_list);
 
-	wl_map_insert_new(&display->objects, NULL);
+	wl_map_insert_new(&display->objects, WL_MAP_CLIENT_SIDE, NULL);
 
 	display->proxy.object.interface = &wl_display_interface;
-	display->proxy.object.id = wl_map_insert_new(&display->objects, display);
+	display->proxy.object.id =
+		wl_map_insert_new(&display->objects,
+				  WL_MAP_CLIENT_SIDE, display);
 	display->proxy.display = display;
 	display->proxy.object.implementation = (void(**)(void)) &display_listener;
 	display->proxy.user_data = display;

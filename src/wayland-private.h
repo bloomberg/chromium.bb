@@ -29,14 +29,19 @@
 
 #define WL_ZOMBIE_OBJECT ((void *) 2)
 
+#define WL_MAP_SERVER_SIDE 0
+#define WL_MAP_CLIENT_SIDE 1
+#define WL_SERVER_ID_START 0xff000000
+
 struct wl_map {
-	struct wl_array entries;
+	struct wl_array client_entries;
+	struct wl_array server_entries;
 	uint32_t free_list;
 };
 
 void wl_map_init(struct wl_map *map);
 void wl_map_release(struct wl_map *map);
-uint32_t wl_map_insert_new(struct wl_map *map, void *data);
+uint32_t wl_map_insert_new(struct wl_map *map, uint32_t side, void *data);
 int wl_map_insert_at(struct wl_map *map, uint32_t i, void *data);
 void wl_map_remove(struct wl_map *map, uint32_t i);
 void *wl_map_lookup(struct wl_map *map, uint32_t i);
