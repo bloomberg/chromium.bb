@@ -55,9 +55,9 @@ EXTRA_ENV = {
 
   'LD_FLAGS'       : '-nostdlib ${@AddPrefix:-L:SEARCH_DIRS} ' +
                      '${SHARED ? -shared} ${STATIC ? -static} ' +
-                     '${RELOCATABLE ? -relocatable} ${LD_FLAGS_NATIVE}',
+                     '${RELOCATABLE ? -relocatable}',
 
-  # Flags that affect native linking
+  # Flags for native linking.
   # Only allowed if ALLOW_NATIVE is true.
   'LD_FLAGS_NATIVE': '',
 
@@ -96,16 +96,20 @@ EXTRA_ENV = {
   'BCLD'      : '${LD_GOLD}',
   'BCLD_FLAGS': '--native-client --oformat ${LD_GOLD_OFORMAT} -Ttext=0x20000 ' +
                 '${!SHARED && !RELOCATABLE ? --undef-sym-check} ' +
-                '${GOLD_PLUGIN_ARGS} ${LD_FLAGS_NATIVE} ${LD_FLAGS}',
+                '${GOLD_PLUGIN_ARGS} ${LD_FLAGS}',
   'RUN_BCLD': ('${BCLD} ${BCLD_FLAGS} ${inputs} '
                '-o "${output}"'),
 }
 env.update(EXTRA_ENV)
 
-def AddBCLinkFlags(*args):
+def AddToBCLinkFlags(*args):
   env.append('LD_FLAGS', *args)
 
-def AddNativeFlags(*args):
+def AddToNativeFlags(*args):
+  env.append('LD_FLAGS_NATIVE', *args)
+
+def AddToBothFlags(*args):
+  env.append('LD_FLAGS', *args)
   env.append('LD_FLAGS_NATIVE', *args)
 
 LDPatterns = [
@@ -145,24 +149,24 @@ LDPatterns = [
   ( ('(-rpath-link)=(.*)'),
     "env.append('PNACL_TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
 
-  ( ('(-Ttext)','(.*)'), AddNativeFlags),
-  ( ('(-Ttext=.*)'),     AddNativeFlags),
+  ( ('(-Ttext)','(.*)'), AddToNativeFlags),
+  ( ('(-Ttext=.*)'),     AddToNativeFlags),
 
   # This overrides the builtin linker script.
-  ( ('(-T)', '(.*)'),    AddNativeFlags),
+  ( ('(-T)', '(.*)'),    AddToNativeFlags),
 
-  # TODO(pdox): Allow settinge an alternative _start symbol in bitcode
-  ( ('(-e)','(.*)'),     AddNativeFlags),
+  # TODO(pdox): Allow setting an alternative _start symbol in bitcode
+  ( ('(-e)','(.*)'),     AddToBothFlags),
 
-  ( ('(--section-start)','(.*)'), AddNativeFlags),
+  ( ('(--section-start)','(.*)'), AddToNativeFlags),
 
-  ( '(-?-soname=.*)',             AddBCLinkFlags),
-  ( ('(-?-soname)', '(.*)'),      AddBCLinkFlags),
+  ( '(-?-soname=.*)',             AddToBCLinkFlags),
+  ( ('(-?-soname)', '(.*)'),      AddToBCLinkFlags),
 
-  ( '(-M)',                       AddBCLinkFlags),
-  ( '(-t)',                       AddBCLinkFlags),
-  ( ('(-y)','(.*)'),              AddBCLinkFlags),
-  ( ('(-defsym)','(.*)'),         AddBCLinkFlags),
+  ( '(-M)',                       AddToBCLinkFlags),
+  ( '(-t)',                       AddToBCLinkFlags),
+  ( ('(-y)','(.*)'),              AddToBCLinkFlags),
+  ( ('(-defsym)','(.*)'),         AddToBCLinkFlags),
 
   ( '-melf_nacl',          "env.set('ARCH', 'X8632')"),
   ( ('-m','elf_nacl'),     "env.set('ARCH', 'X8632')"),

@@ -137,12 +137,13 @@ ad-hoc-shared-lib-tests() {
   # TODO(robertm): make this accessible by the utman script so that this get
   # http://code.google.com/p/nativeclient/issues/detail?id=1647
   echo "@@@BUILD_STEP fake_shared_libs@@@"
-  pushd  tests/pnacl_ld_example/
-  make -f Makefile.pnacl clean
-  make -f Makefile.pnacl preparation.${platform}
-  make -f Makefile.pnacl run.${platform}
-  make -f Makefile.pnacl run2.${platform}
-  popd
+  { pushd  tests/pnacl_ld_example/ &&
+    make -f Makefile.pnacl clean &&
+    make -f Makefile.pnacl preparation.${platform} &&
+    make -f Makefile.pnacl run.${platform} &&
+    make -f Makefile.pnacl run2.${platform} &&
+    popd
+  } || handle-error
 }
 
 build-sbtc-prerequisites() {

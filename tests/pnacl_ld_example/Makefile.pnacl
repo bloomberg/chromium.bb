@@ -43,7 +43,7 @@ fortytwo2.bc:  fortytwo2.c
 	$(PNACL_CC)  -c -fPIC -I../../.. $(DEBUG_FLAGS) -o $@ $^
 
 ######################################################################
-LD_ARM_ARGS= -T ld_script_arm_shared
+LD_ARM_ARGS= -T ld_script_arm_shared --pnacl-allow-native
 LLC_ARM_ARGS= --add-translate-option=-sfi-zero-mask
 ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 
@@ -52,13 +52,13 @@ ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 #       of the elf header to make it compatible with the ubuntu trusted
 #       TC. We used to have a tool for this but it is gone.
 libsimple1.arm.so: hello.bc fortytwo.bc
-	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@.raw $^
+	$(PNACL_LD) -nostdlib -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@.raw $^
 	$(NCVAL_ARM) --zero-masks $@.raw
 	(head --bytes=7 $@.raw; printf '\x00\x00'; tail --bytes=+10 $@.raw) >$@
 
 # mostly sandboxed
 libsimple2.arm.so: hello2.bc fortytwo2.bc
-	$(PNACL_LD) -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@.raw $^
+	$(PNACL_LD) -nostdlib -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@.raw $^
 	(head --bytes=7 $@.raw; printf '\x00\x00'; tail --bytes=+10 $@.raw) >$@
 	# plt does not validate yet
 	# http://code.google.com/p/nativeclient/issues/detail?id=1816

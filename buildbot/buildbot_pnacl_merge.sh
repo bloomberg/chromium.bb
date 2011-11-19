@@ -142,7 +142,7 @@ fi
 "$@"
 
 if [[ ${RETCODE} -ne 0 ]] ; then
-  echo "@@BUILD_STEP summary@@@"
+  echo "@@@BUILD_STEP summary@@@"
   echo "There were failed stages."
 fi
 
