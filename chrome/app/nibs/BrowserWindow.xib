@@ -285,7 +285,7 @@
 					<object class="NSAffineTransform">
 						<bytes key="NSTransformStruct">P4AAAL+AAABDk4AAwcgAAA</bytes>
 					</object>
-					<string>ImageButtonCell</string>
+					<string>NewTabButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>

@@ -1,14 +1,31 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/ui/cocoa/new_tab_button.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 
+// A simple override of the ImageButtonCell to disable handling of
+// -mouseEntered.
+@interface NewTabButtonCell : ImageButtonCell
+
+- (void)mouseEntered:(NSEvent*)theEvent;
+
+@end
+
+@implementation NewTabButtonCell
+
+- (void)mouseEntered:(NSEvent*)theEvent {
+  // Ignore this since the NTB enter is handled by the TabStripController.
+}
+
+@end
+
+
 @implementation NewTabButton
 
 + (Class)cellClass {
-  return [ImageButtonCell class];
+  return [NewTabButtonCell class];
 }
 
 // Approximate the shape. It doesn't need to be perfect. This will need to be
