@@ -15,10 +15,19 @@
 
 namespace browser_sync {
 
-JsMutationEventObserver::JsMutationEventObserver() {}
+JsMutationEventObserver::JsMutationEventObserver()
+    : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
 
 JsMutationEventObserver::~JsMutationEventObserver() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
+}
+
+base::WeakPtr<JsMutationEventObserver> JsMutationEventObserver::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
+void JsMutationEventObserver::InvalidateWeakPtrs() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void JsMutationEventObserver::SetJsEventHandler(

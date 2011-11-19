@@ -24,7 +24,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -35,6 +34,7 @@
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/immutable.h"
 #include "chrome/browser/sync/util/time.h"
+#include "chrome/browser/sync/util/weak_handle.h"
 
 namespace base {
 class DictionaryValue;
@@ -821,11 +821,14 @@ class Directory {
   // Does not take ownership of |delegate|, which must not be NULL.
   // Starts sending events to |delegate| if the returned result is
   // OPENED.  Note that events to |delegate| may be sent from *any*
-  // thread.
+  // thread.  |transaction_observer| must be initialized.
   DirOpenResult Open(const FilePath& file_path, const std::string& name,
-                     DirectoryChangeDelegate* delegate);
+                     DirectoryChangeDelegate* delegate,
+                     const browser_sync::WeakHandle<TransactionObserver>&
+                         transaction_observer);
 
-  // Stops sending events to the delegate.
+  // Stops sending events to the delegate and the transaction
+  // observer.
   void Close();
 
   int64 NextMetahandle();
@@ -866,12 +869,6 @@ class Directory {
   // Unique to each account / client pair.
   std::string cache_guid() const;
 
-  // These are backed by a thread-safe observer list, and so can be
-  // called on any thread, and events will be sent to the observer on
-  // the same thread that it was added on.
-  void AddTransactionObserver(TransactionObserver* observer);
-  void RemoveTransactionObserver(TransactionObserver* observer);
-
  protected:  // for friends, mainly used by Entry constructors
   virtual EntryKernel* GetEntryByHandle(int64 handle);
   virtual EntryKernel* GetEntryByHandle(int64 metahandle,
@@ -900,8 +897,11 @@ class Directory {
   // before calling.
   EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
 
-  DirOpenResult OpenImpl(const FilePath& file_path, const std::string& name,
-                         DirectoryChangeDelegate* delegate);
+  DirOpenResult OpenImpl(
+      const FilePath& file_path, const std::string& name,
+      DirectoryChangeDelegate* delegate,
+      const browser_sync::WeakHandle<TransactionObserver>&
+          transaction_observer);
 
   template <class T> void TestAndSet(T* kernel_data, const T* data_to_set);
 
@@ -1049,14 +1049,22 @@ class Directory {
   typedef Index<ClientTagIndexer>::Set ClientTagIndex;
 
  protected:
-  // Used by tests.
-  void InitKernel(const std::string& name, DirectoryChangeDelegate* delegate);
+  // Used by tests. |delegate| must not be NULL.
+  // |transaction_observer| must be initialized.
+  void InitKernelForTest(
+      const std::string& name,
+      DirectoryChangeDelegate* delegate,
+      const browser_sync::WeakHandle<TransactionObserver>&
+          transaction_observer);
 
  private:
   struct Kernel {
-    // |delegate| can be NULL.
+    // |delegate| must not be NULL.  |transaction_observer| must be
+    // initialized.
     Kernel(const FilePath& db_path, const std::string& name,
-           const KernelLoadInfo& info, DirectoryChangeDelegate* delegate);
+           const KernelLoadInfo& info, DirectoryChangeDelegate* delegate,
+           const browser_sync::WeakHandle<TransactionObserver>&
+               transaction_observer);
 
     ~Kernel();
 
@@ -1125,11 +1133,11 @@ class Directory {
     // The next metahandle is protected by kernel mutex.
     int64 next_metahandle;
 
-    // The delegate for directory change events.  Can be NULL.
+    // The delegate for directory change events.  Must not be NULL.
     DirectoryChangeDelegate* const delegate;
 
-    // The transaction observers.
-    scoped_refptr<ObserverListThreadSafe<TransactionObserver> > observers;
+    // The transaction observer.
+    const browser_sync::WeakHandle<TransactionObserver> transaction_observer;
   };
 
   // Helper method used to do searches on |parent_id_child_index|.

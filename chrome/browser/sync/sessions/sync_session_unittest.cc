@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
@@ -101,6 +102,7 @@ class SyncSessionTest : public testing::Test,
     return request_params;
   }
 
+  MessageLoop message_loop_;
   bool controller_invocations_allowed_;
   scoped_ptr<SyncSession> session_;
   scoped_ptr<SyncSessionContext> context_;

@@ -356,6 +356,8 @@
         'browser/sync/js/js_test_util.h',
         'browser/sync/test/null_directory_change_delegate.cc',
         'browser/sync/test/null_directory_change_delegate.h',
+        'browser/sync/test/null_transaction_observer.cc',
+        'browser/sync/test/null_transaction_observer.h',
         'browser/sync/test/engine/test_directory_setter_upper.cc',
         'browser/sync/test/engine/test_directory_setter_upper.h',
       ],

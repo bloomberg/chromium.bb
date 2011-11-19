@@ -12,7 +12,6 @@
 #include "base/json/json_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
-#include "base/observer_list_threadsafe.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sync/engine/all_status.h"
@@ -131,8 +130,6 @@ class SyncManager::SyncInternal
   explicit SyncInternal(const std::string& name)
       : name_(name),
         weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
-        change_observers_(
-            new ObserverListThreadSafe<SyncManager::ChangeObserver>()),
         registrar_(NULL),
         change_delegate_(NULL),
         initialized_(false),
@@ -276,9 +273,6 @@ class SyncManager::SyncInternal
       const syncable::ModelTypePayloadMap& type_payloads) OVERRIDE;
 
   virtual void StoreState(const std::string& cookie) OVERRIDE;
-
-  void AddChangeObserver(SyncManager::ChangeObserver* observer);
-  void RemoveChangeObserver(SyncManager::ChangeObserver* observer);
 
   void AddObserver(SyncManager::Observer* observer);
   void RemoveObserver(SyncManager::Observer* observer);
@@ -495,11 +489,9 @@ class SyncManager::SyncInternal
   // constructing any transaction type.
   UserShare share_;
 
-  // Even though observers are always added/removed from the sync
-  // thread, we still need to use a thread-safe observer list as we
-  // can notify from any thread.
-  scoped_refptr<ObserverListThreadSafe<SyncManager::ChangeObserver> >
-      change_observers_;
+  // This can be called from any thread, but only between calls to
+  // OpenDirectory() and ShutdownOnSyncThread().
+  browser_sync::WeakHandle<SyncManager::ChangeObserver> change_observer_;
 
   ObserverList<SyncManager::Observer> observers_;
 
@@ -893,7 +885,16 @@ void SyncManager::SyncInternal::StartSyncingNormally() {
 bool SyncManager::SyncInternal::OpenDirectory() {
   DCHECK(!initialized_) << "Should only happen once";
 
-  bool share_opened = dir_manager()->Open(username_for_share(), this);
+  // Set before Open().
+  change_observer_ =
+      browser_sync::MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr());
+
+  bool share_opened =
+      dir_manager()->Open(
+          username_for_share(),
+          this,
+          browser_sync::MakeWeakHandle(
+              js_mutation_event_observer_.AsWeakPtr()));
   if (!share_opened) {
     LOG(ERROR) << "Could not open share for:" << username_for_share();
     return false;
@@ -907,8 +908,6 @@ bool SyncManager::SyncInternal::OpenDirectory() {
   }
 
   connection_manager()->set_client_id(lookup->cache_guid());
-  lookup->AddTransactionObserver(&js_mutation_event_observer_);
-  AddChangeObserver(&js_mutation_event_observer_);
   return true;
 }
 
@@ -1223,16 +1222,6 @@ SyncManager::~SyncManager() {
   delete data_;
 }
 
-void SyncManager::AddChangeObserver(ChangeObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  data_->AddChangeObserver(observer);
-}
-
-void SyncManager::RemoveChangeObserver(ChangeObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  data_->RemoveChangeObserver(observer);
-}
-
 void SyncManager::AddObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   data_->AddObserver(observer);
@@ -1268,8 +1257,9 @@ void SyncManager::SyncInternal::ShutdownOnSyncThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Prevent any in-flight method calls from running.  Also
-  // invalidates |weak_handle_this_|.
+  // invalidates |weak_handle_this_| and |change_observer_|.
   weak_ptr_factory_.InvalidateWeakPtrs();
+  js_mutation_event_observer_.InvalidateWeakPtrs();
 
   scheduler_.reset();
 
@@ -1297,9 +1287,6 @@ void SyncManager::SyncInternal::ShutdownOnSyncThread() {
       // transaction.
       ReadTransaction trans(FROM_HERE, GetUserShare());
       trans.GetCryptographer()->RemoveObserver(this);
-      trans.GetLookup()->
-          RemoveTransactionObserver(&js_mutation_event_observer_);
-      RemoveChangeObserver(&js_mutation_event_observer_);
     }
     dir_manager()->FinalSaveChangesForAll();
     dir_manager()->Close(username_for_share());
@@ -1315,8 +1302,9 @@ void SyncManager::SyncInternal::ShutdownOnSyncThread() {
 
   initialized_ = false;
 
-  // We reset this here, since only now we know it will not be
+  // We reset these here, since only now we know they will not be
   // accessed from other threads (since we shut down everything).
+  change_observer_.Reset();
   weak_handle_this_.Reset();
 }
 
@@ -1382,7 +1370,7 @@ void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
     const syncable::ModelType type = syncable::ModelTypeFromInt(i);
     if (models_with_changes.test(type)) {
       change_delegate_->OnChangesComplete(type);
-      change_observers_->Notify(
+      change_observer_.Call(FROM_HERE,
           &SyncManager::ChangeObserver::OnChangesComplete, type);
     }
   }
@@ -1418,7 +1406,7 @@ ModelTypeBitSet SyncManager::SyncInternal::HandleTransactionEndingChangeEvent(
     if (!ordered_changes.Get().empty()) {
       change_delegate_->
           OnChangesApplied(type, &read_trans, ordered_changes);
-      change_observers_->Notify(
+      change_observer_.Call(FROM_HERE,
           &SyncManager::ChangeObserver::OnChangesApplied,
           type, write_transaction_info.Get().id, ordered_changes);
       models_with_changes.set(i, true);
@@ -1960,16 +1948,6 @@ void SyncManager::SyncInternal::StoreState(
   }
   lookup->SetNotificationState(state);
   lookup->SaveChanges();
-}
-
-void SyncManager::SyncInternal::AddChangeObserver(
-    SyncManager::ChangeObserver* observer) {
-  change_observers_->AddObserver(observer);
-}
-
-void SyncManager::SyncInternal::RemoveChangeObserver(
-    SyncManager::ChangeObserver* observer) {
-  change_observers_->RemoveObserver(observer);
 }
 
 void SyncManager::SyncInternal::AddObserver(

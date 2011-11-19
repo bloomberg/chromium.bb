@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/sessions/debug_info_getter.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
@@ -157,6 +158,7 @@ class SyncerCommandTestWithParam : public testing::TestWithParam<T>,
   }
 
  private:
+  MessageLoop message_loop_;
   scoped_ptr<TestDirectorySetterUpper> syncdb_;
   scoped_ptr<sessions::SyncSessionContext> context_;
   scoped_ptr<MockConnectionManager> mock_server_;

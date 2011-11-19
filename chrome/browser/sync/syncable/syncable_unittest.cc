@@ -4,21 +4,7 @@
 
 #include "chrome/browser/sync/syncable/syncable.h"
 
-#include "build/build_config.h"
-
-#include <sys/types.h>
-
-#include <limits>
 #include <string>
-
-#if !defined(OS_WIN)
-#define MAX_PATH PATH_MAX
-#include <ostream>
-#include <stdio.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <sys/times.h>
-#endif  // !defined(OS_WIN)
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
@@ -26,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
@@ -39,6 +26,7 @@
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "chrome/browser/sync/test/engine/test_syncable_utils.h"
 #include "chrome/browser/sync/test/null_directory_change_delegate.h"
+#include "chrome/browser/sync/test/null_transaction_observer.h"
 #include "chrome/test/base/values_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -103,6 +91,7 @@ class SyncableGeneralTest : public testing::Test {
   virtual void TearDown() {
   }
  protected:
+  MessageLoop message_loop_;
   ScopedTempDir temp_dir_;
   NullDirectoryChangeDelegate delegate_;
   FilePath db_path_;
@@ -110,7 +99,7 @@ class SyncableGeneralTest : public testing::Test {
 
 TEST_F(SyncableGeneralTest, General) {
   Directory dir;
-  dir.Open(db_path_, "SimpleTest", &delegate_);
+  dir.Open(db_path_, "SimpleTest", &delegate_, NullTransactionObserver());
 
   int64 root_metahandle;
   {
@@ -209,7 +198,7 @@ TEST_F(SyncableGeneralTest, General) {
 
 TEST_F(SyncableGeneralTest, ChildrenOps) {
   Directory dir;
-  dir.Open(db_path_, "SimpleTest", &delegate_);
+  dir.Open(db_path_, "SimpleTest", &delegate_, NullTransactionObserver());
 
   int64 root_metahandle;
   {
@@ -289,7 +278,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
   // Test creating a new meta entry.
   {
     Directory dir;
-    dir.Open(db_path_, "IndexTest", &delegate_);
+    dir.Open(db_path_, "IndexTest", &delegate_, NullTransactionObserver());
     {
       WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
       MutableEntry me(&wtrans, CREATE, wtrans.root_id(), name);
@@ -305,7 +294,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
   // The DB was closed. Now reopen it. This will cause index regeneration.
   {
     Directory dir;
-    dir.Open(db_path_, "IndexTest", &delegate_);
+    dir.Open(db_path_, "IndexTest", &delegate_, NullTransactionObserver());
 
     ReadTransaction trans(FROM_HERE, &dir);
     Entry me(&trans, GET_BY_CLIENT_TAG, tag);
@@ -325,7 +314,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
   // Test creating a deleted, unsynced, server meta entry.
   {
     Directory dir;
-    dir.Open(db_path_, "IndexTest", &delegate_);
+    dir.Open(db_path_, "IndexTest", &delegate_, NullTransactionObserver());
     {
       WriteTransaction wtrans(FROM_HERE, UNITTEST, &dir);
       MutableEntry me(&wtrans, CREATE, wtrans.root_id(), "deleted");
@@ -343,7 +332,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
   // Should still be present and valid in the client tag index.
   {
     Directory dir;
-    dir.Open(db_path_, "IndexTest", &delegate_);
+    dir.Open(db_path_, "IndexTest", &delegate_, NullTransactionObserver());
 
     ReadTransaction trans(FROM_HERE, &dir);
     Entry me(&trans, GET_BY_CLIENT_TAG, tag);
@@ -357,7 +346,7 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
 
 TEST_F(SyncableGeneralTest, ToValue) {
   Directory dir;
-  dir.Open(db_path_, "SimpleTest", &delegate_);
+  dir.Open(db_path_, "SimpleTest", &delegate_, NullTransactionObserver());
 
   const Id id = TestIdFactory::FromNumber(99);
   {
@@ -412,6 +401,7 @@ class TestUnsaveableDirectory : public Directory {
 // Test suite for syncable::Directory.
 class SyncableDirectoryTest : public testing::Test {
  protected:
+  MessageLoop message_loop_;
   ScopedTempDir temp_dir_;
   static const char kName[];
   static const Id kId;
@@ -425,7 +415,8 @@ class SyncableDirectoryTest : public testing::Test {
     file_util::Delete(file_path_, true);
     dir_.reset(new Directory());
     ASSERT_TRUE(dir_.get());
-    ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName, &delegate_));
+    ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
+                                 &delegate_, NullTransactionObserver()));
     ASSERT_TRUE(dir_->good());
   }
 
@@ -439,7 +430,8 @@ class SyncableDirectoryTest : public testing::Test {
   void ReloadDir() {
     dir_.reset(new Directory());
     ASSERT_TRUE(dir_.get());
-    ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName, &delegate_));
+    ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
+                                 &delegate_, NullTransactionObserver()));
   }
 
   void SaveAndReloadDir() {
@@ -1202,7 +1194,8 @@ TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
   dir_->SaveChanges();
   dir_.reset(new Directory());
   ASSERT_TRUE(dir_.get());
-  ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName, &delegate_));
+  ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
+                               &delegate_, NullTransactionObserver()));
   ASSERT_TRUE(dir_->good());
 
   {
@@ -1301,7 +1294,8 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
   // always fail.
   dir_.reset(new TestUnsaveableDirectory());
   ASSERT_TRUE(dir_.get());
-  ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName, &delegate_));
+  ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
+                               &delegate_, NullTransactionObserver()));
   ASSERT_TRUE(dir_->good());
   int64 handle2 = 0;
   {
@@ -1374,7 +1368,8 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailureWithPurge) {
   // always fail.
   dir_.reset(new TestUnsaveableDirectory());
   ASSERT_TRUE(dir_.get());
-  ASSERT_TRUE(OPENED == dir_->Open(file_path_, kName, &delegate_));
+  ASSERT_EQ(OPENED, dir_->Open(file_path_, kName,
+                               &delegate_, NullTransactionObserver()));
   ASSERT_TRUE(dir_->good());
 
   ModelTypeSet set;
@@ -1496,13 +1491,14 @@ class SyncableDirectoryManager : public testing::Test {
   virtual void TearDown() {
   }
  protected:
+  MessageLoop message_loop_;
   ScopedTempDir temp_dir_;
   NullDirectoryChangeDelegate delegate_;
 };
 
 TEST_F(SyncableDirectoryManager, TestFileRelease) {
   DirectoryManager dm(FilePath(temp_dir_.path()));
-  ASSERT_TRUE(dm.Open("ScopeTest", &delegate_));
+  ASSERT_TRUE(dm.Open("ScopeTest", &delegate_, NullTransactionObserver()));
   {
     ScopedDirLookup(&dm, "ScopeTest");
   }
@@ -1520,7 +1516,8 @@ class ThreadOpenTestDelegate : public base::PlatformThread::Delegate {
  private:
   // PlatformThread::Delegate methods:
   virtual void ThreadMain() {
-    CHECK(directory_manager_->Open("Open", &delegate_));
+    CHECK(directory_manager_->Open(
+        "Open", &delegate_, NullTransactionObserver()));
   }
 
   DISALLOW_COPY_AND_ASSIGN(ThreadOpenTestDelegate);
@@ -1564,6 +1561,7 @@ class ThreadBugDelegate : public base::PlatformThread::Delegate {
 
   // PlatformThread::Delegate methods:
   virtual void ThreadMain() {
+    MessageLoop message_loop;
     const std::string dirname = "ThreadBug1";
     base::AutoLock scoped_lock(step_->mutex);
 
@@ -1573,12 +1571,14 @@ class ThreadBugDelegate : public base::PlatformThread::Delegate {
       }
       switch (step_->number) {
       case 0:
-        directory_manager_->Open(dirname, &delegate_);
+        directory_manager_->Open(
+            dirname, &delegate_, NullTransactionObserver());
         break;
       case 1:
         {
           directory_manager_->Close(dirname);
-          directory_manager_->Open(dirname, &delegate_);
+          directory_manager_->Open(
+              dirname, &delegate_, NullTransactionObserver());
           ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
           WriteTransaction trans(FROM_HERE, UNITTEST, dir);
@@ -1636,6 +1636,7 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
     : ThreadBugDelegate(role, step, dirman) {}
 
   virtual void ThreadMain() {
+    MessageLoop message_loop;
     const char test_bytes[] = "test data";
     const std::string dirname = "DirectoryKernelStalenessBug";
     base::AutoLock scoped_lock(step_->mutex);
@@ -1652,7 +1653,8 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
           file_util::Delete(directory_manager_->GetSyncDataDatabasePath(),
                             true);
           // Test.
-          directory_manager_->Open(dirname, &delegate_);
+          directory_manager_->Open(
+              dirname, &delegate_, NullTransactionObserver());
           ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
           WriteTransaction trans(FROM_HERE, UNITTEST, dir);
@@ -1671,7 +1673,8 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
         break;
       case 1:
         {
-          directory_manager_->Open(dirname, &delegate_);
+          directory_manager_->Open(
+              dirname, &delegate_, NullTransactionObserver());
           ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
         }
@@ -1770,13 +1773,14 @@ class StressTransactionsDelegate : public base::PlatformThread::Delegate {
 };
 
 TEST(SyncableDirectory, StressTransactions) {
+  MessageLoop message_loop;
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   DirectoryManager dirman(FilePath(temp_dir.path()));
   std::string dirname = "stress";
   file_util::Delete(dirman.GetSyncDataDatabasePath(), true);
   NullDirectoryChangeDelegate delegate;
-  dirman.Open(dirname, &delegate);
+  dirman.Open(dirname, &delegate, NullTransactionObserver());
 
   const int kThreadCount = 7;
   base::PlatformThreadHandle threads[kThreadCount];

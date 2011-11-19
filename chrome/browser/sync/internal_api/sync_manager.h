@@ -496,10 +496,6 @@ class SyncManager {
   // Request a clearing of all data on the server
   void RequestClearServerData();
 
-  // Add/remove change observers.
-  void AddChangeObserver(ChangeObserver* observer);
-  void RemoveChangeObserver(ChangeObserver* observer);
-
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
   // having received OnInitializationCompleted.

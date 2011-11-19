@@ -192,6 +192,7 @@ class SyncApiTest : public testing::Test {
   }
 
  protected:
+  MessageLoop message_loop_;
   browser_sync::TestUserShare test_user_share_;
 };
 

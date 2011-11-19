@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_INTERNAL_API_DEBUG_INFO_EVENT_LISTENER_H_
 #define CHROME_BROWSER_SYNC_INTERNAL_API_DEBUG_INFO_EVENT_LISTENER_H_
 
+#include <queue>
 #include <string>
 
 #include "chrome/browser/sync/internal_api/sync_manager.h"

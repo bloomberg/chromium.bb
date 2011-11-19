@@ -349,10 +349,14 @@ DictionaryValue* EntryKernel::ToValue() const {
 ///////////////////////////////////////////////////////////////////////////
 // Directory
 
-void Directory::InitKernel(const std::string& name,
-                           DirectoryChangeDelegate* delegate) {
-  DCHECK(kernel_ == NULL);
-  kernel_ = new Kernel(FilePath(), name, KernelLoadInfo(), delegate);
+void Directory::InitKernelForTest(
+    const std::string& name,
+    DirectoryChangeDelegate* delegate,
+    const browser_sync::WeakHandle<TransactionObserver>&
+        transaction_observer) {
+  DCHECK(!kernel_);
+  kernel_ =  new Kernel(FilePath(), name, KernelLoadInfo(),
+                        delegate, transaction_observer);
 }
 
 Directory::PersistedKernelInfo::PersistedKernelInfo()
@@ -378,10 +382,11 @@ Directory::SaveChangesSnapshot::SaveChangesSnapshot()
 
 Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 
-Directory::Kernel::Kernel(const FilePath& db_path,
-                          const string& name,
-                          const KernelLoadInfo& info,
-                          DirectoryChangeDelegate* delegate)
+Directory::Kernel::Kernel(
+    const FilePath& db_path, const string& name,
+    const KernelLoadInfo& info, DirectoryChangeDelegate* delegate,
+    const browser_sync::WeakHandle<TransactionObserver>&
+        transaction_observer)
     : db_path(db_path),
       refcount(1),
       next_write_transaction_id(0),
@@ -399,8 +404,9 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       cache_guid(info.cache_guid),
       next_metahandle(info.max_metahandle + 1),
       delegate(delegate),
-      observers(new ObserverListThreadSafe<TransactionObserver>()) {
+      transaction_observer(transaction_observer) {
   DCHECK(delegate);
+  DCHECK(transaction_observer.IsInitialized());
 }
 
 void Directory::Kernel::AddRef() {
@@ -432,9 +438,13 @@ Directory::~Directory() {
   Close();
 }
 
-DirOpenResult Directory::Open(const FilePath& file_path, const string& name,
-                              DirectoryChangeDelegate* delegate) {
-  const DirOpenResult result = OpenImpl(file_path, name, delegate);
+DirOpenResult Directory::Open(
+    const FilePath& file_path, const string& name,
+    DirectoryChangeDelegate* delegate,
+    const browser_sync::WeakHandle<TransactionObserver>&
+        transaction_observer) {
+  const DirOpenResult result =
+      OpenImpl(file_path, name, delegate, transaction_observer);
   if (OPENED != result)
     Close();
   return result;
@@ -461,9 +471,12 @@ DirectoryBackingStore* Directory::CreateBackingStore(
   return new DirectoryBackingStore(dir_name, backing_filepath);
 }
 
-DirOpenResult Directory::OpenImpl(const FilePath& file_path,
-                                  const string& name,
-                                  DirectoryChangeDelegate* delegate) {
+DirOpenResult Directory::OpenImpl(
+    const FilePath& file_path,
+    const string& name,
+    DirectoryChangeDelegate* delegate,
+    const browser_sync::WeakHandle<TransactionObserver>&
+        transaction_observer) {
   DCHECK_EQ(static_cast<DirectoryBackingStore*>(NULL), store_);
   FilePath db_path(file_path);
   file_util::AbsolutePath(&db_path);
@@ -477,7 +490,7 @@ DirOpenResult Directory::OpenImpl(const FilePath& file_path,
   if (OPENED != result)
     return result;
 
-  kernel_ = new Kernel(db_path, name, info, delegate);
+  kernel_ = new Kernel(db_path, name, info, delegate, transaction_observer);
   kernel_->metahandles_index->swap(metas_bucket);
   InitializeIndices();
   return OPENED;
@@ -1109,14 +1122,6 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
   }
 }
 
-void Directory::AddTransactionObserver(TransactionObserver* observer) {
-  kernel_->observers->AddObserver(observer);
-}
-
-void Directory::RemoveTransactionObserver(TransactionObserver* observer) {
-  kernel_->observers->RemoveObserver(observer);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // ScopedKernelLock
 
@@ -1153,13 +1158,13 @@ BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
                                  Directory* directory)
     : from_here_(from_here), name_(name), writer_(writer),
       directory_(directory), dirkernel_(directory->kernel_) {
-  dirkernel_->observers->Notify(
+  dirkernel_->transaction_observer.Call(FROM_HERE,
       &TransactionObserver::OnTransactionStart, from_here_, writer_);
 }
 
 BaseTransaction::~BaseTransaction() {
   if (writer_ != INVALID) {
-    dirkernel_->observers->Notify(
+    dirkernel_->transaction_observer.Call(FROM_HERE,
         &TransactionObserver::OnTransactionEnd, from_here_, writer_);
   }
 }
@@ -1268,7 +1273,7 @@ ModelTypeBitSet WriteTransaction::NotifyTransactionChangingAndEnding(
       delegate->HandleTransactionEndingChangeEvent(
           immutable_write_transaction_info, this);
 
-  dirkernel_->observers->Notify(
+  dirkernel_->transaction_observer.Call(FROM_HERE,
       &TransactionObserver::OnTransactionWrite,
       immutable_write_transaction_info, models_with_changes);
 

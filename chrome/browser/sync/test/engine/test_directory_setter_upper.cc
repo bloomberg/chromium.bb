@@ -10,9 +10,11 @@
 #include "base/string_util.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/test/null_transaction_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncable::DirectoryManager;
+using syncable::NullTransactionObserver;
 using syncable::ReadTransaction;
 using syncable::ScopedDirLookup;
 
@@ -38,7 +40,7 @@ void TestDirectorySetterUpper::reset_directory_manager(DirectoryManager* d) {
 
 void TestDirectorySetterUpper::SetUp() {
   Init();
-  ASSERT_TRUE(manager()->Open(name(), &delegate_));
+  ASSERT_TRUE(manager()->Open(name(), &delegate_, NullTransactionObserver()));
 }
 
 void TestDirectorySetterUpper::TearDown() {
@@ -80,7 +82,8 @@ void ManuallyOpenedTestDirectorySetterUpper::SetUp() {
 }
 
 void ManuallyOpenedTestDirectorySetterUpper::Open() {
-  ASSERT_TRUE(manager()->Open(name(), &delegate_));
+  ASSERT_TRUE(
+      manager()->Open(name(), &delegate_, NullTransactionObserver()));
   was_opened_ = true;
 }
 
@@ -111,7 +114,7 @@ void TriggeredOpenTestDirectorySetterUpper::TearDown() {
 
 MockDirectorySetterUpper::MockDirectory::MockDirectory(
     const std::string& name) {
-  InitKernel(name, &delegate_);
+  InitKernelForTest(name, &delegate_, NullTransactionObserver());
 }
 
 MockDirectorySetterUpper::MockDirectory::~MockDirectory() {}

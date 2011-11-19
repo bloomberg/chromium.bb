@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/syncable/transaction_observer.h"
@@ -34,6 +35,10 @@ class JsMutationEventObserver
 
   virtual ~JsMutationEventObserver();
 
+  base::WeakPtr<JsMutationEventObserver> AsWeakPtr();
+
+  void InvalidateWeakPtrs();
+
   void SetJsEventHandler(const WeakHandle<JsEventHandler>& event_handler);
 
   // sync_api::SyncManager::ChangeObserver implementation.
@@ -56,6 +61,7 @@ class JsMutationEventObserver
 
  private:
   base::NonThreadSafe non_thread_safe_;
+  base::WeakPtrFactory<JsMutationEventObserver> weak_ptr_factory_;
   WeakHandle<JsEventHandler> event_handler_;
 
   void HandleJsEvent(

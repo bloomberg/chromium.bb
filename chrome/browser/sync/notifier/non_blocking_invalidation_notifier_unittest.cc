@@ -66,18 +66,29 @@ class NonBlockingInvalidationNotifierTest : public testing::Test {
 };
 
 TEST_F(NonBlockingInvalidationNotifierTest, Basic) {
-  syncable::ModelTypeSet types;
-  types.insert(syncable::BOOKMARKS);
-  types.insert(syncable::AUTOFILL);
+  InSequence dummy;
 
-  invalidation_notifier_->SetUniqueId("fake_id");
+  syncable::ModelTypePayloadMap type_payloads;
+  type_payloads[syncable::PREFERENCES] = "payload";
+  type_payloads[syncable::BOOKMARKS] = "";
+  type_payloads[syncable::AUTOFILL] = "";
+
+  EXPECT_CALL(mock_observer_, OnNotificationStateChange(true));
+  EXPECT_CALL(mock_observer_, StoreState("new_fake_state"));
+  EXPECT_CALL(mock_observer_, OnIncomingNotification(type_payloads));
+  EXPECT_CALL(mock_observer_, OnNotificationStateChange(false));
+
   invalidation_notifier_->SetState("fake_state");
+  invalidation_notifier_->SetUniqueId("fake_id");
   invalidation_notifier_->UpdateCredentials("foo@bar.com", "fake_token");
-  invalidation_notifier_->UpdateEnabledTypes(types);
-}
 
-// TODO(akalin): Add synchronous operations for testing to
-// NonBlockingInvalidationNotifierTest and use that to test it.
+  invalidation_notifier_->OnNotificationStateChange(true);
+  invalidation_notifier_->StoreState("new_fake_state");
+  invalidation_notifier_->OnIncomingNotification(type_payloads);
+  invalidation_notifier_->OnNotificationStateChange(false);
+
+  ui_loop_.RunAllPending();
+}
 
 }  // namespace
 

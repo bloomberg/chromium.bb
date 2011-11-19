@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
@@ -467,6 +468,8 @@ class SyncerTest : public testing::Test,
   bool Get(int64 metahandle, syncable::BitField field) const {
     return GetField(metahandle, field, false);
   }
+
+  MessageLoop message_loop_;
 
   // Some ids to aid tests. Only the root one's value is specific. The rest
   // are named for test clarity.

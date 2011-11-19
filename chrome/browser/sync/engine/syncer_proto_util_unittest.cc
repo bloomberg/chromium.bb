@@ -8,6 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/message_loop.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -137,6 +138,7 @@ class SyncerProtoUtilTest : public testing::Test {
   }
 
  protected:
+  MessageLoop message_loop_;
   browser_sync::TestDirectorySetterUpper setter_upper_;
 };
 
