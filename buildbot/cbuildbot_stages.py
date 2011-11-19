@@ -1048,7 +1048,7 @@ class UploadPrebuiltsStage(bs.BuilderStage):
                                constants.CANARY_TYPE]:
       assert prebuilt_type in (constants.PFQ_TYPE, constants.CHROME_PFQ_TYPE)
 
-      push_overlays = self._build_config['push_overlays']
+      overlays = self._build_config['overlays']
       if self._build_config['master']:
         extra_args.append('--sync-binhost-conf')
 
@@ -1063,7 +1063,7 @@ class UploadPrebuiltsStage(bs.BuilderStage):
               extra_args.extend(['--slave-board', slave_board])
 
       # Pre-flight queues should upload host preflight prebuilts.
-      if prebuilt_type == constants.PFQ_TYPE and push_overlays == 'public':
+      if prebuilt_type == constants.PFQ_TYPE and overlays == 'public':
         extra_args.append('--sync-host')
 
       # Deduplicate against previous binhosts.
