@@ -132,7 +132,7 @@
     'win': [
       # Enable sync.SyncIntegrationTest only for windows CONTINUIOUS,
       # which contains the sync protobufs.
-      'sync.SyncIntegrationTest',
+      #'sync.SyncIntegrationTest',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
@@ -155,14 +155,14 @@
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
       # causes browser crash?  crbug.com/99865
       '-prefs.PrefsTest.testGeolocationPref',
+      # crbug.com/104227
+      '-sync.SyncIntegrationTest',
       # crbug.com/88679
       '-sync.SyncTest',
       # crbug.com/86949
       '-sync.SyncTest.testRestartBrowser',
       # crbug.com/87642
       '-sync.SyncTest.testDisableAndEnableDatatypes',
-      # crbug.com/104179
-      '-sync.SyncIntegrationTest.testAddBookmarkAndVerifySync',
       # crbug.com/95621
       '-youtube.YoutubeTest.testPlayerStatus',
       # crbug.com/98526
