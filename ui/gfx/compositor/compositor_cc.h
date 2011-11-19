@@ -87,8 +87,8 @@ class COMPOSITOR_EXPORT CompositorCC
                const gfx::Size& size);
   virtual ~CompositorCC();
 
-  static void InitializeThread();
-  static void TerminateThread();
+  static void Initialize(bool useThread);
+  static void Terminate();
 
  protected:
   // Compositor implementation.

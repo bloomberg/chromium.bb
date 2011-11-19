@@ -134,12 +134,21 @@ CompositorCC::CompositorCC(CompositorDelegate* delegate,
 CompositorCC::~CompositorCC() {
 }
 
-void CompositorCC::InitializeThread() {
-  g_compositor_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
-  WebKit::WebCompositor::setThread(g_compositor_thread);
+void CompositorCC::Initialize(bool use_thread) {
+  if (use_thread)
+    g_compositor_thread = new webkit_glue::WebThreadImpl("Browser Compositor");
+#ifdef WEBCOMPOSITOR_HAS_INITIALIZE
+  WebKit::WebCompositor::initialize(g_compositor_thread);
+#else
+  if (use_thread)
+    WebKit::WebCompositor::setThread(g_compositor_thread);
+#endif
 }
 
-void CompositorCC::TerminateThread() {
+void CompositorCC::Terminate() {
+#ifdef WEBCOMPOSITOR_HAS_INITIALIZE
+  WebKit::WebCompositor::shutdown();
+#endif
   DCHECK(g_compositor_thread);
   delete g_compositor_thread;
   g_compositor_thread = NULL;

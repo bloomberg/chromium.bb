@@ -58,6 +58,7 @@
 #include "net/base/net_util.h"
 #include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebColor.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -245,6 +246,9 @@ RenderThreadImpl::~RenderThreadImpl() {
   if (file_thread_.get())
     file_thread_->Stop();
 
+#ifdef WEBCOMPOSITOR_HAS_INITIALIZE
+  WebKit::WebCompositor::shutdown();
+#endif
   if (compositor_thread_.get()) {
     RemoveFilter(compositor_thread_->GetMessageFilter());
     compositor_thread_.reset();
@@ -433,6 +437,15 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       switches::kEnableThreadedCompositing)) {
     compositor_thread_.reset(new CompositorThread(this));
     AddFilter(compositor_thread_->GetMessageFilter());
+#ifdef WEBCOMPOSITOR_HAS_INITIALIZE
+    WebKit::WebCompositor::initialize(compositor_thread_->GetWebThread());
+#else
+    WebKit::WebCompositor::setThread(compositor_thread_->GetWebThread());
+#endif
+  } else {
+#ifdef WEBCOMPOSITOR_HAS_INITIALIZE
+    WebKit::WebCompositor::initialize(NULL);
+#endif
   }
 
   WebScriptController::enableV8SingleThreadMode();

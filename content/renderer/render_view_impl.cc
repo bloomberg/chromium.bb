@@ -4722,7 +4722,7 @@ void RenderViewImpl::OnMouseLockLost() {
 }
 
 bool RenderViewImpl::WebWidgetHandlesCompositorScheduling() const {
-  return webview()->settings()->useThreadedCompositor();
+  return RenderThreadImpl::current()->compositor_thread();
 }
 
 void RenderViewImpl::OnJavaBridgeInit(

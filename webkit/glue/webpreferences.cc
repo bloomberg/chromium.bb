@@ -8,6 +8,7 @@
 
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
@@ -258,7 +259,9 @@ void WebPreferences::Apply(WebView* web_view) const {
   // Enable gpu-accelerated compositing if requested on the command line.
   settings->setAcceleratedCompositingEnabled(accelerated_compositing_enabled);
 
+#ifndef WEBCOMPOSITOR_HAS_INITIALIZE
   settings->setUseThreadedCompositor(threaded_compositing_enabled);
+#endif
 
   // Always enter compositing if requested on the command line.
   settings->setForceCompositingMode(force_compositing_mode);

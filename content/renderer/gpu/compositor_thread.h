@@ -34,6 +34,8 @@ class CompositorThread {
   // Callable from the main thread or the compositor's thread.
   void AddCompositor(int routing_id, int compositor_id);
 
+  webkit_glue::WebThreadImpl* GetWebThread() { return &thread_; }
+
  private:
   // Callback only from the compositor's thread.
   void RemoveCompositor(int routing_id);

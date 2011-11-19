@@ -31,6 +31,10 @@
 #include "ui/gfx/compositor/screen_rotation.h"
 #include "ui/gfx/interpolated_transform.h"
 
+#ifdef USE_WEBKIT_COMPOSITOR
+#include "ui/gfx/compositor/compositor_cc.h"
+#endif
+
 using std::string;
 using std::vector;
 
@@ -168,6 +172,9 @@ Desktop::Desktop()
   if (ui::Compositor::compositor_factory()) {
     compositor_ = (*ui::Compositor::compositor_factory())(this);
   } else {
+#ifdef USE_WEBKIT_COMPOSITOR
+    ui::CompositorCC::Initialize(false);
+#endif
     compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
                                          host_->GetSize());
   }
@@ -176,6 +183,10 @@ Desktop::Desktop()
 
 Desktop::~Desktop() {
   in_destructor_ = true;
+#ifdef USE_WEBKIT_COMPOSITOR
+  if (!compositor_factory_)
+    ui::CompositorCC::Terminate();
+#endif
   if (instance_ == this)
     instance_ = NULL;
 }

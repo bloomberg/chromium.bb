@@ -63,7 +63,6 @@ CompositorThread::CompositorThread(IPC::Channel::Listener* main_listener)
                            thread_.message_loop()->message_loop_proxy(),
                            base::Bind(&CompositorThread::HandleInputEvent,
                                       base::Unretained(this)));
-  WebCompositor::setThread(&thread_);
 }
 
 CompositorThread::~CompositorThread() {
