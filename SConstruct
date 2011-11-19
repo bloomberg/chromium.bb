@@ -368,10 +368,11 @@ def SetUpArgumentBits(env):
     sysroot = os.environ.get('SYSROOT')
     if sysroot is None or not os.path.exists(sysroot):
       print "Running inside  ChromiumOS chroot.\n"\
-          "You need to export a valid SYSROOT env var\n"
-      sys.exit(-1)
-    env['ENV']['SYSROOT'] = sysroot
-    print "pre_base_env['ENV']['SYSROOT']=", sysroot
+          "You need to export a valid SYSROOT env var\n"\
+          "if you expect to build board-specific trusted tools"
+    else:
+      env['ENV']['SYSROOT'] = sysroot
+      print "pre_base_env['ENV']['SYSROOT']=", sysroot
   #########################################################################
 
 
@@ -3589,7 +3590,10 @@ def DumpEnvironmentInfo(selected_envs):
       print 'CC:', cc
       asppcom = env.subst('${ASPPCOM}')
       print 'ASPPCOM:', asppcom
-      DumpCompilerVersion(cc, env)
+      if env.Bit('cros_chroot'):
+        print "in CrOS chroot. Not Running nacl-gcc"
+      else:
+        DumpCompilerVersion(cc, env)
       print
     # TODO(pdox): This only works for linux/X86-64. Is there a better way
     #             of locating the PNaCl toolchain here?
