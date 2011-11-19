@@ -6,6 +6,8 @@
 <link rel="icon" href="../../app/theme/history_favicon.png">
 
 <link rel="stylesheet" href="chrome://resources/css/menu.css">
+<link rel="stylesheet" href="shared/css/button.css">
+<link rel="stylesheet" href="shared/css/checkbox.css">
 
 <script src="chrome://resources/js/event_tracker.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
@@ -25,12 +27,12 @@
 
 <style>
 #results-separator {
-  margin-top:12px;
-  border-top:1px solid #9cc2ef;
-  background-color:#ebeff9;
-  font-weight:bold;
-  padding:3px;
-  margin-bottom:-8px;
+  border-top: 1px solid #9cc2ef;
+  background-color: #ebeff9;
+  font-weight: bold;
+  padding: 3px;
+  margin-bottom: -8px;
+  margin-top: 12px;
 }
 
 #results-separator table {
@@ -39,8 +41,8 @@
 
 #results-summary {
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
+  white-space: nowrap;
   width: 50%;
 }
 
@@ -49,42 +51,41 @@
 }
 
 #results-display {
-  max-width: 740px;
   margin: 16px 0 0 0;
+  max-width: 740px;
 }
 
 .day {
   color: #6a6a6a;
+  font-size: 13px;
   font-weight: bold;
   margin: 0 0 4px 0;
   text-transform: uppercase;
-  font-size: 13px;
 }
 
 .edit-button {
-  display: inline;
   -webkit-appearance: none;
   background: none;
   border: 0;
   color: blue; /* -webkit-link makes it purple :'( */
   cursor: pointer;
+  display: inline-block;
+  font: inherit;
   text-decoration: underline;
-  padding:0px 9px;
-  display:inline-block;
-  font:inherit;
+  padding: 0px 9px;
 }
 
 .gap,
 .entry,
 .no-entries {
+  list-style: none;
   margin: 0;
   padding: 0;
-  list-style: none;
 }
 .gap {
-  width: 35px;
   -webkit-border-end: 1px solid #ddd;
   height: 14px;
+  width: 35px;
 }
 
 .entry {
@@ -92,18 +93,24 @@
 }
 
 .entry-box {
-  cursor: default;
-  line-height: 1.6em;
-
-  display: -webkit-box;
   -webkit-box-orient: horizontal;
-  max-width: 100%; /* Don't allow it to be bigger than its parent... */
-  float: left;     /* ..but make the box shrink to fit its content. */
+  cursor: default;
+  display: -webkit-box;
+  float: left;
+  line-height: 1.6em;
+/* Don't allow it to be bigger than its parent but make the box shrink to fit
+ * its content. */
+  max-width: 100%;
   overflow: hidden;
 }
 
 html[dir=rtl] .entry-box {
   float: right; /* To make the box shrink to fit its content. */
+}
+
+.entry-box > label > * {
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .search-results, .day-results {
@@ -112,42 +119,42 @@ html[dir=rtl] .entry-box {
 }
 
 .snippet {
+  -webkit-margin-start: 90px; /* Align it with .domain. */
+  clear: both;
   font-size: 12px;
   line-height: 1.6em;
   margin-bottom: 12px;
-  -webkit-margin-start: 90px; /* Align it with .domain. */
-  clear: both;
 }
 
 .entry .domain {
-  color: #282;
-  -webkit-padding-start: 20px;
   -webkit-padding-end: 8px;
-  background-repeat: no-repeat;
+  -webkit-padding-start: 20px;
   background-position-y: center;
+  background-repeat: no-repeat;
+  color: #282;
 }
 
 .drop-down {
+  -webkit-margin-end: 4px;
+  -webkit-margin-start: 8px;
   background: #fff -webkit-canvas(drop-down-arrow) no-repeat center center;
   border: 1px solid hsl(214, 91%, 85%);
   border-radius: 2px;
-  width: 13px;
   height: 13px;
-  -webkit-margin-start: 8px;
-  -webkit-margin-end: 4px;
   position: relative;
   top: 2px;
+  width: 13px;
 }
 
 .drop-down:hover {
-  border-color: #6A86DE;
   background-image: -webkit-canvas(drop-down-arrow-hover);
+  border-color: #6A86DE;
 }
 
 .drop-down[menu-shown], .drop-down:focus {
-  border-color: #6A86DE;
   background-color: #6A86DE;
   background-image: -webkit-canvas(drop-down-arrow-active);
+  border-color: #6A86DE;
 }
 
 html[dir='rtl'] .entry .domain {
@@ -160,15 +167,20 @@ html[dir='rtl'] .entry .domain {
 }
 
 .entry input[type=checkbox] {
-  position: relative;
-  top: 1px;
+  -webkit-margin-end: 6px;
+  -webkit-margin-start: 4px;
+  height: 13px;
+  line-height: 12px;
+  text-indent: -1px;
+  top: 2px;
+  width: 14px;
 }
 
 /* Checkboxes are shown when checked or focused, or when the entry is hovered.
    Fade in on focus, but not on hover, because it makes the UI feel laggy. */
 .entry input[type=checkbox]:not(:checked) {
-  opacity: 0;
   -webkit-transition: opacity 150ms;
+  opacity: 0;
 }
 
 .entry-box:hover input[type=checkbox],
@@ -181,8 +193,8 @@ html[dir='rtl'] .entry .domain {
 }
 
 .entry-box {
-  background-color: none;
   -webkit-transition: background-color 150ms;
+  background-color: none;
 }
 
 .entry-box:hover, .entry-box.contains-focus {
@@ -192,17 +204,17 @@ html[dir='rtl'] .entry .domain {
 .entry .title {
   -webkit-box-flex: 1;
   overflow: hidden;
-  white-space: nowrap;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .entry .title > .starred {
-  background:url('shared/images/star_small.png');
-  background-repeat:no-repeat;
-  display:inline-block;
   -webkit-margin-start: 4px;
-  width:11px;
-  height:11px;
+  background: url('shared/images/star_small.png');
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 11px;
+  width: 11px;
 }
 
 .entry .title > a {
@@ -224,8 +236,8 @@ html[dir='rtl'] .entry .domain {
 }
 
 .fade-out {
-  opacity: 0;
   -webkit-transition: opacity 200ms;
+  opacity: 0;
 }
 </style>
 </head>

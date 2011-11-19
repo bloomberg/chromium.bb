@@ -103,7 +103,7 @@ function Page(result, continued, model, id) {
 Page.prototype.getResultDOM = function(searchResultFlag) {
   var node = createElementWithClassName('li', 'entry');
   var time = createElementWithClassName('div', 'time');
-  var entryBox = createElementWithClassName('label', 'entry-box');
+  var entryBox = createElementWithClassName('div', 'entry-box');
   var domain = createElementWithClassName('div', 'domain');
 
   var dropDown = createElementWithClassName('button', 'drop-down');
@@ -135,15 +135,18 @@ Page.prototype.getResultDOM = function(searchResultFlag) {
   domain.textContent = this.domain_;
 
   // Clicking anywhere in the entryBox will check/uncheck the checkbox.
-  entryBox.setAttribute('for', checkbox.id);
   entryBox.addEventListener('mousedown', entryBoxMousedown, false);
 
   // Prevent clicks on the drop down from affecting the checkbox.
   dropDown.addEventListener('click', function(e) { e.preventDefault(); });
 
+  // A label around the parts that should be clicked to activate the check box.
+  var label = document.createElement('label');
+  label.appendChild(time);
+  label.appendChild(domain);
+
   // We use a wrapper div so that the entry contents will be shinkwrapped.
-  entryBox.appendChild(time);
-  entryBox.appendChild(domain);
+  entryBox.appendChild(label);
   entryBox.appendChild(this.getTitleDOM_());
   entryBox.appendChild(dropDown);
 
@@ -981,7 +984,7 @@ function removeItems() {
       urls = [];
       date = cbDate;
     }
-    var link = checkbox.parentNode.parentNode.querySelector('a');
+    var link = checkbox.parentNode.parentNode.parentNode.querySelector('a');
     checkbox.disabled = true;
     link.classList.add('to-be-removed');
     disabledItems.push(checkbox);
@@ -1003,7 +1006,7 @@ function removeItems() {
     // enabled, non-line-through state.
     for (var i = 0; i < disabledItems.length; i++) {
       var checkbox = disabledItems[i];
-      var link = checkbox.parentNode.parentNode.querySelector('a');
+      var link = checkbox.parentNode.parentNode.parentNode.querySelector('a');
       checkbox.disabled = false;
       link.classList.remove('to-be-removed');
     }

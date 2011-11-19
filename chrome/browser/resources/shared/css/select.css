@@ -7,7 +7,7 @@
 
 select {
   -webkit-appearance: button;
-  -webkit-border-radius: 2px;
+  -webkit-border-radius: 3px;
   -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   -webkit-padding-end: 20px;
   -webkit-padding-start: 8px;
