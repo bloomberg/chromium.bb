@@ -12,21 +12,13 @@
 #include "ui/aura_shell/launcher/launcher_types.h"
 #include "ui/aura_shell/shell_delegate.h"
 
-class Browser;
 class StatusAreaHostAura;
-
-namespace views {
-class View;
-}
+class Browser;
 
 class ChromeShellDelegate : public aura_shell::ShellDelegate {
  public:
   ChromeShellDelegate();
   virtual ~ChromeShellDelegate();
-
-  static ChromeShellDelegate* instance() { return instance_; }
-
-  const views::View* GetStatusArea() const;
 
   // Returns whether a launcher item should be created for |browser|. If an item
   // should be created |type| is set to the launcher type to create.
@@ -43,8 +35,6 @@ class ChromeShellDelegate : public aura_shell::ShellDelegate {
   virtual bool ConfigureLauncherItem(aura_shell::LauncherItem* item) OVERRIDE;
 
  private:
-  static ChromeShellDelegate* instance_;
-
   scoped_ptr<StatusAreaHostAura> status_area_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeShellDelegate);

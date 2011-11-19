@@ -12,8 +12,6 @@
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/view_ids.h"
 
-class ClockMenuButton;
-
 namespace chromeos {
 
 class StatusAreaViewChromeos : public StatusAreaView,
@@ -43,12 +41,9 @@ class StatusAreaViewChromeos : public StatusAreaView,
   void SetDefaultUse24HourClock(bool use_24hour_clock);
 
   // Convenience function to add buttons to a status area for ChromeOS.
-  // |clock_button| (if non-NULL) is set to the ClockMenuButton that is created
-  // by this method.
   static void AddChromeosButtons(StatusAreaView* status_area,
                                  StatusAreaButton::Delegate* delegate,
-                                 ScreenMode screen_mode,
-                                 ClockMenuButton** clock_button);
+                                 ScreenMode screen_mode);
 
  private:
   void UpdateClockText();

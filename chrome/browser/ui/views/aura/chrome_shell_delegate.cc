@@ -12,20 +12,10 @@
 #include "ui/aura/window.h"
 #include "ui/aura_shell/launcher/launcher_types.h"
 
-// static
-ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
-
 ChromeShellDelegate::ChromeShellDelegate() {
-  instance_ = this;
 }
 
 ChromeShellDelegate::~ChromeShellDelegate() {
-  if (instance_ == this)
-    instance_ = NULL;
-}
-
-const views::View* ChromeShellDelegate::GetStatusArea() const {
-  return status_area_host_->GetStatusArea();
 }
 
 // static

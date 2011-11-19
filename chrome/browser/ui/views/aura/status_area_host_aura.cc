@@ -20,19 +20,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "chrome/browser/chromeos/status/timezone_clock_updater.h"
 #endif
 
 StatusAreaHostAura::StatusAreaHostAura()
     : status_area_widget_(NULL),
       status_area_view_(NULL) {
-}
-
-StatusAreaHostAura::~StatusAreaHostAura() {
-}
-
-const views::View* StatusAreaHostAura::GetStatusArea() const {
-  return status_area_view_;
 }
 
 views::Widget* StatusAreaHostAura::CreateStatusArea() {
@@ -45,12 +37,8 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
 
   // Add child buttons.
 #if defined(OS_CHROMEOS)
-  ClockMenuButton* clock = NULL;
   chromeos::StatusAreaViewChromeos::AddChromeosButtons(
-      status_area_view_, this, chromeos::StatusAreaViewChromeos::BROWSER_MODE,
-      &clock);
-  DCHECK(clock);
-  timezone_clock_updater_.reset(new TimezoneClockUpdater(clock));
+      status_area_view_, this, chromeos::StatusAreaViewChromeos::BROWSER_MODE);
 #else
   const bool border = true;
   const bool no_border = false;
