@@ -240,7 +240,9 @@ bool SafeBrowsingService::CanReportStats() const {
 
 // Binhash verification is only enabled for UMA users for now.
 bool SafeBrowsingService::DownloadBinHashNeeded() const {
-  return enable_download_protection_ && CanReportStats();
+  return (enable_download_protection_ && CanReportStats()) ||
+      (download_protection_service() &&
+       download_protection_service()->enabled());
 }
 
 bool SafeBrowsingService::CheckDownloadUrl(const std::vector<GURL>& url_chain,

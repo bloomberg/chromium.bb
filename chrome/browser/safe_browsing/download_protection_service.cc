@@ -340,7 +340,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
         sb_service_(sb_service),
         pingback_enabled_(service_->enabled()),
         finished_(false),
-        ALLOW_THIS_IN_INITIALIZER_LIST(timeout_weakptr_factory_(this)) {
+        ALLOW_THIS_IN_INITIALIZER_LIST(timeout_weakptr_factory_(this)),
+        start_time_(base::TimeTicks::Now()) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
@@ -440,6 +441,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // We don't need the fetcher anymore.
     fetcher_.reset();
     RecordImprovedProtectionStats(reason);
+    UMA_HISTOGRAM_TIMES("SBClientDownload.DownloadRequestDuration",
+                        base::TimeTicks::Now() - start_time_);
     FinishRequest(result);
   }
 
@@ -617,6 +620,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
   scoped_ptr<content::URLFetcher> fetcher_;
   bool finished_;
   base::WeakPtrFactory<CheckClientDownloadRequest> timeout_weakptr_factory_;
+  base::TimeTicks start_time_;  // Used for stats.
 
   DISALLOW_COPY_AND_ASSIGN(CheckClientDownloadRequest);
 };
