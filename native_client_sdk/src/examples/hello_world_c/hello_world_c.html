@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <!--
+  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+<head>
+  <title>Hello, World!</title>
+
+  <script type="text/javascript">
+    helloWorldModule = null;  // Global application object.
+    statusText = 'NO-STATUS';
+
+    // Indicate success when the NaCl module has loaded.
+    function moduleDidLoad() {
+      helloWorldModule = document.getElementById('hello_world');
+      updateStatus('SUCCESS');
+    }
+
+    // Handle a message coming from the NaCl module.
+    function handleMessage(message_event) {
+      alert(message_event.data);
+    }
+
+    // If the page loads before the Native Client module loads, then set the
+    // status message indicating that the module is still loading.  Otherwise,
+    // do not change the status message.
+    function pageDidLoad() {
+      // Set the focus on the text input box.  Doing this means you can press
+      // return as soon as the page loads, and it will fire the reversetText()
+      // function.
+      document.forms.helloForm.inputBox.focus();
+      if (helloWorldModule == null) {
+        updateStatus('LOADING...');
+      } else {
+        // It's possible that the Native Client module onload event fired
+        // before the page's onload event.  In this case, the status message
+        // will reflect 'SUCCESS', but won't be displayed.  This call will
+        // display the current message.
+        updateStatus();
+      }
+    }
+
+    function fortyTwo() {
+      helloWorldModule.postMessage('fortyTwo');
+    }
+
+    function reverseText() {
+      // Grab the text from the text box, pass it into reverseText()
+      var inputBox = document.forms.helloForm.inputBox;
+      helloWorldModule.postMessage('reverseText:' + inputBox.value);
+      // Note: a |false| return tells the <form> tag to cancel the GET action
+      // when submitting the form.
+      return false;
+    }
+
+    // Set the global status message.  If the element with id 'statusField'
+    // exists, then set its HTML to the status message as well.
+    // opt_message The message test.  If this is null or undefined, then
+    //     attempt to set the element with id 'statusField' to the value of
+    //     |statusText|.
+    function updateStatus(opt_message) {
+      if (opt_message)
+        statusText = opt_message;
+      var statusField = document.getElementById('statusField');
+      if (statusField) {
+        statusField.innerHTML = statusText;
+      }
+    }
+  </script>
+</head>
+<body onload="pageDidLoad()">
+
+<h1>Native Client Simple Module</h1>
+<p>
+  <form name="helloForm"
+        action=""
+        method="get"
+        onsubmit="return reverseText()">
+    <input type="text" id="inputBox" name="inputBox" value="Hello world" /><p/>
+    <input type="button" value="Call fortyTwo()" onclick="fortyTwo()" />
+    <input type="submit" value="Call reverseText()" />
+  </form>
+  <!-- Load the published .nexe.  This includes the 'src' attribute which
+  shows how to load multi-architecture modules.  Each entry in the "nexes"
+  object in the  .nmf manifest file is a key-value pair: the key is the runtime
+  ('x86-32', 'x86-64', etc.); the value is a URL for the desired NaCl module.
+  To load the debug versions of your .nexes, set the 'src' attribute to the
+  _dbg.nmf version of the manifest file.
+
+  Note: The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
+  and a 'message' event listener attached.  This wrapping method is used
+  instead of attaching the event listeners directly to the <EMBED> element to
+  ensure that the listeners are active before the NaCl module 'load' event
+  fires.  This also allows you to use PPB_Messaging.PostMessage() (in C) or
+  pp::Instance.PostMessage() (in C++) from within the initialization code in
+  your NaCl module.
+  -->
+  <div id="listener">
+    <script type="text/javascript">
+      var listener = document.getElementById('listener')
+      listener.addEventListener('load', moduleDidLoad, true);
+      listener.addEventListener('message', handleMessage, true);
+    </script>
+
+    <embed name="nacl_module"
+           id="hello_world"
+           width=0 height=0
+           src="hello_world_c.nmf"
+           type="application/x-nacl" />
+  </div>
+
+</p>
+
+<p>If the module is working correctly, a click on the "Call fortyTwo()" button
+  should open a popup dialog containing <b>42</b> as its value.</p>
+
+<p> Clicking on the "Call reverseText()" button
+  should open a popup dialog containing the textbox contents and its reverse
+   as its value.</p>
+
+<h2>Status</h2>
+<div id="statusField">NO-STATUS</div>
+</body>
+</html>

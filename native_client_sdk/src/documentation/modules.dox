@@ -1,0 +1,22 @@
+// This is a doxygen file that describes the documentation groups
+
+/**
+
+@defgroup c_salt C Salt C++ API
+Description of c_salt C++ API goes here.
+
+@defgroup examples c_salt examples
+Here are the examples that use c_salt
+
+@defgroup npapi NPAPI bindings for c_salt
+@ingroup c_salt
+Defines the NPAPI bindings for c_salt
+
+@defgroup ppapi PPAPI bindings for c_salt
+@ingroup c_salt
+Defines the PPAPI (i.e. Pepper2) bindings for c_salt
+
+@defgroup tests c_salt integration and unit tests
+Integration and unit tests for c_salt.
+
+*/

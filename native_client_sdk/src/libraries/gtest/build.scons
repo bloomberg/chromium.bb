@@ -1,0 +1,112 @@
+# -*- python -*-
+# Copyright (c) 2011 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import build_utils
+import glob
+import os
+import shutil
+import subprocess
+import sys
+
+from SCons import Script
+
+# Directories used throughout this script.
+script_dir = os.path.abspath(os.getcwd())
+sdk_root_dir = os.getenv('NACL_SDK_ROOT')
+build_tools_dir = os.path.join(sdk_root_dir, 'build_tools')
+libraries_dir = os.path.join(sdk_root_dir, 'libraries')
+
+# Add the path to build_tools to the shell's python path.
+shell_env = os.environ.copy()
+python_paths = [build_tools_dir]
+python_paths += [shell_env.get('PYTHONPATH', '')]
+shell_env['PYTHONPATH'] = os.pathsep.join(python_paths)
+
+# Argv for the install-gtest python script.
+script_argv = [
+  '--toolchain=%s' % (
+      build_utils.NormalizeToolchain(base_dir=sdk_root_dir,
+                                     arch='x86',
+                                     variant='glibc')),
+  '--toolchain=%s' % (
+      build_utils.NormalizeToolchain(base_dir=sdk_root_dir,
+                                     arch='x86',
+                                     variant='newlib')),
+  '--working_dir=%s' % script_dir
+  ]
+
+# The scons build env.
+build_env = Script.Environment().Clone()
+
+# Where the src for gtest and gmock will be found after running the install
+# script. We keep them around as a sentinel, to indicate they they have been
+# installed. (See BuildGTestLibs below.)
+gtest_src = os.path.join(script_dir, 'gtest-1.5.0')
+gmock_src = os.path.join(script_dir, 'gmock-1.5.0')
+
+
+def BuildGTestLibs(env, target, source):
+  '''Build and install the gtest/gmock libraries.
+
+  This invokes the gtest_install.py script in the build_tools directory. In turn
+  that scripts downloads, untar, patches and build the gtest/gmock libraries.
+  Finally, the libraries and related include files are copied to the toolchain.
+
+  Args:
+    env: The construction Environment() that is building the examples.
+    target: The target that triggered this build.  Not used.
+    source: The sources used for this build.  Not used.
+  '''
+  # If our sentinel, the gtest source is present, do not build.
+  if os.path.exists(gtest_src):
+    return
+  # Remove any old gmock source if still present.
+  shutil.rmtree(gmock_src, ignore_errors=True)
+  # Invoke the gtest install script.
+  script = os.path.join(build_tools_dir, 'install_gtest', 'install_gtest.py')
+  py_command = [sys.executable, script]
+  subprocess.check_call(py_command + script_argv, env=shell_env)
+
+  # Clean up: remove left-over tgz files.
+  for f in glob.iglob(os.path.join(script_dir, '*.tgz')):
+    os.remove(f)
+
+
+def CleanGTestLibs(env, target, suite_name):
+  '''Clean the gtest/gmock libraries sources.
+
+  This does a partial clean up of the gtest/gmock projects. It removes the src
+  directories. However, the actual libraries and related includes in the
+  toolchains are not removed. It is however sufficient to trigger a full
+  rebuild of gtest/gmock.
+
+  Args:
+    env: The construction Environment() that is building the examples.
+    target: The target that triggered this build.
+    suite_name: A suite name that should cause this target to be cleaned.
+  '''
+  # Only do this in 'clean' mode.
+  if not build_env.GetOption('clean'):
+    return
+  # Only clean target if it's on the cmd line or it's a clean all.
+  clean_this = True
+  if len(COMMAND_LINE_TARGETS) > 0:
+    clean_this = False
+    for cl_target in COMMAND_LINE_TARGETS:
+      if cl_target == suite_name or cl_target == target:
+        clean_this = True
+        break
+  # Delete the src trees for gtest and gmock.
+  if clean_this:
+    shutil.rmtree(gmock_src, ignore_errors=True)
+    shutil.rmtree(gtest_src, ignore_errors=True)
+
+
+gtest_libs_builder = build_env.Alias('gtest_libs', [], BuildGTestLibs)
+build_env.AlwaysBuild(gtest_libs_builder)
+CleanGTestLibs(build_env, 'gtest_libs', 'bot')
+
+# ----------------------------------------------------------------------------
+build_env.Default('gtest_libs')

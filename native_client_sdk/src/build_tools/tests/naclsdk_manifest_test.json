@@ -1,0 +1,89 @@
+{
+  "manifest_version": 1,
+  "bundles": [
+    {
+      "name": "sdk_tools",
+      "revision": 1,
+      "version": 2,
+      "description": "Native Client SDK Tools, revision 1",
+      "stability": "stable",
+      "recommended": "yes",
+      "archives": [
+        {
+          "host_os": "linux",
+          "size": 30018483,
+          "checksum": { "sha1": "638bf0020c6f013ebef420d03fd7bb28593047b4" },
+          "url": "nacl_sdk_linux_1.tgz"
+        },
+        {
+          "host_os": "mac",
+          "size": 30227408,
+          "checksum": { "sha1": "638bf0020c6f013ebef420d03fd7bb28593047b4" },
+          "url": "nacl_sdk_mac_1.tgz"
+        },
+        {
+          "host_os": "win",
+          "size": 36440315,
+          "checksum": { "sha1": "638bf0020c6f013ebef420d03fd7bb28593047b4" },
+          "url": "nacl_sdk_win_1.tgz"
+        }
+      ]
+    },
+    {
+      "name": "test_1",
+      "version": 1,
+      "revision": 2,
+      "description": "Test Bundle version 1",
+      "stability": "stable",
+      "recommended": "yes",
+      "archives": [
+        {
+          "host_os": "linux",
+          "size": 30018483,
+          "checksum": { "sha1": "638bf0020c6f013ebef420d03fd7bb28593047b4" },
+          "url": "nacl_linux_pepper_14_1.tgz"
+        },
+        {
+          "host_os": "mac",
+          "size": 30227408,
+          "checksum": { "sha1": "638bf0020c6f013ebef420d03fd7bb28593047b4" },
+          "url": "nacl_mac_pepper_14_1.tgz"
+        },
+        {
+          "host_os": "win",
+          "size": 36440315,
+          "checksum": { "sha1": "638bf0020c6f013ebef420d03fd7bb28593047b4" },
+          "url": "nacl_win_pepper_14_1.tgz"
+        }
+      ]
+    },
+    {
+      "name": "test_2",
+      "version": 1,
+      "revision": 2,
+      "description": "Test Bundle version 2",
+      "stability": "stable",
+      "recommended": "yes",
+      "archives": [
+        {
+          "host_os": "linux",
+          "size": 30018483,
+          "checksum": { "sha1": "638bf0020c6f013ebef420d03fd7bb28593047b4" },
+          "url": "nacl_linux_pepper_15_1.tgz"
+        },
+        {
+          "host_os": "mac",
+          "size": 30227408,
+          "checksum": { "sha1": "638bf0020c6f013ebef420d03fd7bb28593047b4" },
+          "url": "nacl_mac_pepper_15_1.tgz"
+        },
+        {
+          "host_os": "win",
+          "size": 36440315,
+          "checksum": { "sha1": "638bf0020c6f013ebef420d03fd7bb28593047b4" },
+          "url": "nacl_win_pepper_15_1.tgz"
+        }
+      ]
+    }
+  ]
+}

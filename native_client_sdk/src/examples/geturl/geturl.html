@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!--
+  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+<head>
+  <title>Get URL</title>
+
+  <script type="text/javascript">
+    geturlModule = null;  // Global application object.
+    statusText = 'NO-STATUS';
+
+    // Indicate success when the NaCl module has loaded.
+    function moduleDidLoad() {
+      geturlModule = document.getElementById('geturl');
+      updateStatus('SUCCESS');
+    }
+
+    // If the page loads before the Native Client module loads, then set the
+    // status message indicating that the module is still loading.  Otherwise,
+    // do not change the status message.
+    function pageDidLoad() {
+      if (geturl == null) {
+        updateStatus('LOADING...');
+      } else {
+        // It's possible that the Native Client module onload event fired
+        // before the page's onload event.  In this case, the status message
+        // will reflect 'SUCCESS', but won't be displayed.  This call will
+        // display the current message.
+        updateStatus();
+      }
+    }
+
+    // Called from the NaCl module via PostMessage().  The message data
+    // contains a URL followed by a '\n' separator character and the result
+    // text.  The result test itself can contain '\n' characters, only the first
+    // '\n' is considered when separating the message parameters.
+    function handleMessage(message_event) {
+      var logElt = document.getElementById('general_output');
+      // Find the first line break.  This separates the URL data from the
+      // result text.  Note that the result text can contain any number of
+      // '\n' characters, so split() won't work here.
+      var url = message_event.data;
+      var result = '';
+      var eol_pos = message_event.data.indexOf("\n");
+      if (eol_pos != -1) {
+        url = message_event.data.substring(0, eol_pos);
+        if (eol_pos < message_event.data.length - 1) {
+          result = message_event.data.substring(eol_pos + 1);
+        }
+      }
+      logElt.textContent += 'FULLY QUALIFIED URL: ' + url + '\n';
+      logElt.textContent += 'RESULT:\n' + result + '\n';
+    }
+
+    function loadUrl() {
+      geturlModule.postMessage('getUrl:geturl_success.html');
+    }
+
+    // Set the global status message.  If the element with id 'statusField'
+    // exists, then set its HTML to the status message as well.
+    // @param opt_message The message text.  If this is null or undefined, then
+    //   attempt to set the element with id 'status_field' to the value of
+    //   @a statusText.
+    function updateStatus(opt_message) {
+      if (opt_message)
+        statusText = opt_message;
+      var statusField = document.getElementById('status_field');
+      if (statusField) {
+        statusField.innerHTML = statusText;
+      }
+    }
+  </script>
+</head>
+<body onload="pageDidLoad()">
+
+<h1>Native Client GetURL Module</h1>
+<p>
+<table border=5 cellpadding=5% summary="A title and a result log">
+  <tr>
+    <td valign=top><pre id='general_output' class='notrun'></pre></td>
+  </tr>
+</table>
+
+  <form name="geturl_form" action="" method="get">
+  <input type="button" value="Get URL" onclick="loadUrl()"/>
+  </form>
+
+  <!-- Load the published .nexe.  This includes the 'src' attribute which
+  shows how to load multi-architecture modules.  Each entry in the "nexes"
+  object in the  .nmf manifest file is a key-value pair: the key is the runtime
+  ('x86-32', 'x86-64', etc.); the value is a URL for the desired NaCl module.
+  To load the debug versions of your .nexes, set the 'src' attribute to the
+  _dbg.nmf version of the manifest file.
+
+  Note: The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
+  and a 'message' event listener attached.  This wrapping method is used
+  instead of attaching the event listeners directly to the <EMBED> element to
+  ensure that the listeners are active before the NaCl module 'load' event
+  fires.  This also allows you to use PPB_Messaging.PostMessage() (in C) or
+  pp::Instance.PostMessage() (in C++) from within the initialization code in
+  your NaCl module.
+  -->
+  <div id="listener">
+    <script type="text/javascript">
+      var listener = document.getElementById('listener')
+      listener.addEventListener('load', moduleDidLoad, true);
+      listener.addEventListener('message', handleMessage, true);
+    </script>
+
+    <embed name="nacl_module"
+           id="geturl"
+           width=0 height=0
+           src="geturl.nmf"
+           type="application/x-nacl" />
+  </div>
+</p>
+
+<h2>Module loading status</h2>
+<div id="status_field">NO-STATUS</div>
+</body>
+</html>

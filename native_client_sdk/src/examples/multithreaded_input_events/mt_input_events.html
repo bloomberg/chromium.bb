@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <!--
+  Copyright (c) 2011 The Chromium Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+<head>
+  <title>Input Events</title>
+
+  <script type="text/javascript">
+    var kMaxArraySize = 20;
+    var messageArray = new Array();
+    var eventModule = null;
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    // Indicate success when the NaCl module has loaded.
+    function moduleDidLoad() {
+      eventModule = document.getElementById('event_module');
+    }
+
+    function receiveMessage(message) {
+      // Show last |kMaxArraySize| events in html.
+      messageArray.push(message.data);
+      if (messageArray.length > kMaxArraySize) {
+        messageArray.shift();
+      }
+      var newData = messageArray.join('<BR>');
+      document.getElementById('eventString').innerHTML = newData;
+      // Print event to console.
+      console.log(message.data);
+    }
+    function cancelQueue() {
+      if (eventModule == null) {
+        console.log('Module is not loaded.');
+        return;
+      }
+      eventModule.postMessage('CANCEL');
+    }
+  </script>
+</head>
+<body>
+<h1>InputEvent Handling Example</h1>
+  <div id="listener">
+    <script type="text/javascript">
+      $('listener').addEventListener('message', receiveMessage, true);
+      $('listener').addEventListener('load', moduleDidLoad, true);
+    </script>
+    <button onclick="cancelQueue()">Kill worker thread and queue</button>
+    <p/>
+    <embed name="nacl_module"
+           id="event_module"
+           width=400 height=400
+           src="mt_input_events.nmf"
+           type="application/x-nacl"
+           style="background-color:gray" />
+  </div>
+<p>
+This example demonstrates handling of input events in PPAPI.</p>
+<p>
+Each time an input event happens in the context of the gray box,
+the main thread in the embedded NaCl module converts it from a Pepper input
+event to a non-Pepper event and puts this custom event onto a shared queue.
+A worker thread in the embedded NaCl module reads events from the queue,
+and converts each event to a string and then uses CallOnMainThread to post a
+message describing the event back to JavaScript, which prints a message to the
+JavaScript console in Chrome and to a string on the page.</p>
+<p>
+If you press the 'Kill worker thread and queue' button, then the main thread
+(which puts events on the queue) will call CancelQueue, indicating that the
+main thread will no longer put events on the queue.  When the worker sees that
+the shared queue has been cancelled, the worker thread will terminate.</p>
+<h2>Events</h2>
+<pre><p><b id='eventString'>None</b></p>
+</pre>
+</body>
+</html>
