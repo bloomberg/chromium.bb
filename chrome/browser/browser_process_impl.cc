@@ -8,11 +8,12 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/automation/automation_provider_list.h"
@@ -214,7 +215,7 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // but we have some URLFetchers using the DefaultRequestContext, so they need
   // to be cancelled too. Remove this when DefaultRequestContext goes away.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          NewRunnableFunction(&content::URLFetcher::CancelAll));
+                          base::Bind(&content::URLFetcher::CancelAll));
 
   // Need to clear profiles (download managers) before the io_thread_.
   profile_manager_.reset();
@@ -324,12 +325,13 @@ unsigned int BrowserProcessImpl::ReleaseModule() {
     CHECK(!BrowserList::GetLastActive());
     io_thread()->message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
+        base::IgnoreReturn<bool>(
+            base::Bind(&base::ThreadRestrictions::SetIOAllowed, true)));
 
 #if defined(OS_MACOSX)
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        NewRunnableFunction(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
+        base::Bind(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
 #endif
     MessageLoop::current()->Quit();
   }
@@ -360,7 +362,7 @@ void BrowserProcessImpl::EndSession() {
   scoped_ptr<base::WaitableEvent> done_writing(
       new base::WaitableEvent(false, false));
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(Signal, done_writing.get()));
+      base::Bind(Signal, done_writing.get()));
   // If all file writes haven't cleared in the timeout, leak the WaitableEvent
   // so that there's no race to reference it in Signal().
   if (!done_writing->TimedWait(
@@ -369,7 +371,7 @@ void BrowserProcessImpl::EndSession() {
 
 #elif defined(OS_WIN)
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(PostQuit, MessageLoop::current()));
+      base::Bind(PostQuit, MessageLoop::current()));
   int quits_received = 0;
   do {
     MessageLoop::current()->Run();
