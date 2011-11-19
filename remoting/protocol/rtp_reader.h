@@ -66,7 +66,7 @@ class RtpReader : public SocketReaderBase {
  protected:
   friend class RtpVideoReaderTest;
 
-  virtual void OnDataReceived(net::IOBuffer* buffer, int data_size);
+  virtual void OnDataReceived(net::IOBuffer* buffer, int data_size) OVERRIDE;
 
  private:
   OnMessageCallback on_message_callback_;

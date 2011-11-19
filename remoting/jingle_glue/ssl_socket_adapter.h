@@ -41,28 +41,28 @@ class TransportSocket : public net::StreamSocket, public sigslot::has_slots<> {
 
   // net::StreamSocket implementation
 
-  virtual int Connect(net::OldCompletionCallback* callback);
-  virtual void Disconnect();
-  virtual bool IsConnected() const;
-  virtual bool IsConnectedAndIdle() const;
-  virtual int GetPeerAddress(net::AddressList* address) const;
-  virtual int GetLocalAddress(net::IPEndPoint* address) const;
-  virtual const net::BoundNetLog& NetLog() const;
-  virtual void SetSubresourceSpeculation();
-  virtual void SetOmniboxSpeculation();
-  virtual bool WasEverUsed() const;
-  virtual bool UsingTCPFastOpen() const;
-  virtual int64 NumBytesRead() const;
-  virtual base::TimeDelta GetConnectTimeMicros() const;
+  virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
+  virtual void Disconnect() OVERRIDE;
+  virtual bool IsConnected() const OVERRIDE;
+  virtual bool IsConnectedAndIdle() const OVERRIDE;
+  virtual int GetPeerAddress(net::AddressList* address) const OVERRIDE;
+  virtual int GetLocalAddress(net::IPEndPoint* address) const OVERRIDE;
+  virtual const net::BoundNetLog& NetLog() const OVERRIDE;
+  virtual void SetSubresourceSpeculation() OVERRIDE;
+  virtual void SetOmniboxSpeculation() OVERRIDE;
+  virtual bool WasEverUsed() const OVERRIDE;
+  virtual bool UsingTCPFastOpen() const OVERRIDE;
+  virtual int64 NumBytesRead() const OVERRIDE;
+  virtual base::TimeDelta GetConnectTimeMicros() const OVERRIDE;
 
   // net::Socket implementation
 
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::OldCompletionCallback* callback);
+                   net::OldCompletionCallback* callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::OldCompletionCallback* callback);
-  virtual bool SetReceiveBufferSize(int32 size);
-  virtual bool SetSendBufferSize(int32 size);
+                    net::OldCompletionCallback* callback) OVERRIDE;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
  private:
   friend class SSLSocketAdapter;
@@ -101,13 +101,13 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
   // negotiation will begin as soon as the socket connects.
   //
   // restartable is not implemented, and must be set to false.
-  virtual int StartSSL(const char* hostname, bool restartable);
+  virtual int StartSSL(const char* hostname, bool restartable) OVERRIDE;
 
   // Create the default SSL adapter for this platform.
   static SSLSocketAdapter* Create(AsyncSocket* socket);
 
-  virtual int Send(const void* pv, size_t cb);
-  virtual int Recv(void* pv, size_t cb);
+  virtual int Send(const void* pv, size_t cb) OVERRIDE;
+  virtual int Recv(void* pv, size_t cb) OVERRIDE;
 
  private:
   friend class TransportSocket;
@@ -128,7 +128,7 @@ class SSLSocketAdapter : public talk_base::SSLAdapter {
   void OnRead(int result);
   void OnWrite(int result);
 
-  virtual void OnConnectEvent(talk_base::AsyncSocket* socket);
+  virtual void OnConnectEvent(talk_base::AsyncSocket* socket) OVERRIDE;
 
   int BeginSSL();
 

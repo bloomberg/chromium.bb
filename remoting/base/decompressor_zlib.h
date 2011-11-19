@@ -18,12 +18,12 @@ class DecompressorZlib : public Decompressor {
   DecompressorZlib();
   virtual ~DecompressorZlib();
 
-  virtual void Reset();
+  virtual void Reset() OVERRIDE;
 
   // Decompressor implementations.
   virtual bool Process(const uint8* input_data, int input_size,
                        uint8* output_data, int output_size,
-                       int* consumed, int* written);
+                       int* consumed, int* written) OVERRIDE;
 
  private:
   void InitStream();

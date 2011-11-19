@@ -24,7 +24,7 @@ class PepperInputHandler : public InputHandler {
                      PepperViewProxy* view);
   virtual ~PepperInputHandler();
 
-  virtual void Initialize();
+  virtual void Initialize() OVERRIDE;
 
   void HandleKeyEvent(bool keydown, const pp::KeyboardInputEvent& event);
   void HandleCharacterEvent(const pp::KeyboardInputEvent& event);

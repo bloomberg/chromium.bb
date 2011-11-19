@@ -37,7 +37,7 @@ class JavascriptSignalStrategy : public SignalStrategy,
   virtual std::string GetNextId() OVERRIDE;
 
   // XmppProxy::ResponseCallback interface.
-  virtual void OnIq(const std::string& stanza);
+  virtual void OnIq(const std::string& stanza) OVERRIDE;
 
  private:
   std::string your_jid_;

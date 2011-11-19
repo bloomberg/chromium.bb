@@ -16,12 +16,12 @@ class DecompressorVerbatim : public Decompressor {
   DecompressorVerbatim();
   virtual ~DecompressorVerbatim();
 
-  virtual void Reset();
+  virtual void Reset() OVERRIDE;
 
   // Decompressor implementations.
   virtual bool Process(const uint8* input_data, int input_size,
                        uint8* output_data, int output_size,
-                       int* consumed, int* written);
+                       int* consumed, int* written) OVERRIDE;
 };
 
 }  // namespace remoting

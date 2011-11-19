@@ -145,17 +145,17 @@ class ChromotingScriptableObject
   virtual void Init();
 
   // Override the ScriptableObject functions.
-  virtual bool HasProperty(const pp::Var& name, pp::Var* exception);
-  virtual bool HasMethod(const pp::Var& name, pp::Var* exception);
-  virtual pp::Var GetProperty(const pp::Var& name, pp::Var* exception);
+  virtual bool HasProperty(const pp::Var& name, pp::Var* exception) OVERRIDE;
+  virtual bool HasMethod(const pp::Var& name, pp::Var* exception) OVERRIDE;
+  virtual pp::Var GetProperty(const pp::Var& name, pp::Var* exception) OVERRIDE;
   virtual void GetAllPropertyNames(std::vector<pp::Var>* properties,
-                                   pp::Var* exception);
+                                   pp::Var* exception) OVERRIDE;
   virtual void SetProperty(const pp::Var& name,
                            const pp::Var& value,
-                           pp::Var* exception);
+                           pp::Var* exception) OVERRIDE;
   virtual pp::Var Call(const pp::Var& method_name,
                        const std::vector<pp::Var>& args,
-                       pp::Var* exception);
+                       pp::Var* exception) OVERRIDE;
 
   void SetConnectionStatus(ConnectionStatus status, ConnectionError error);
   void LogDebugInfo(const std::string& info);

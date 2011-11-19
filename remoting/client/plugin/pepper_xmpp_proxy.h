@@ -33,10 +33,11 @@ class PepperXmppProxy : public XmppProxy {
   // create a WeakPtr on, say the pepper thread, and then pass execution of
   // this function callback with the weak pointer bound as a parameter.  That
   // will fail because the WeakPtr will have been created on the wrong thread.
-  virtual void AttachCallback(base::WeakPtr<ResponseCallback> callback);
-  virtual void DetachCallback();
+  virtual void AttachCallback(
+      base::WeakPtr<ResponseCallback> callback) OVERRIDE;
+  virtual void DetachCallback() OVERRIDE;
 
-  virtual void SendIq(const std::string& request_xml);
+  virtual void SendIq(const std::string& request_xml) OVERRIDE;
   virtual void OnIq(const std::string& response_xml);
 
  private:

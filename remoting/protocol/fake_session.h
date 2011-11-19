@@ -39,12 +39,12 @@ class FakeSocket : public net::StreamSocket {
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::OldCompletionCallback* callback);
+                   net::OldCompletionCallback* callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::OldCompletionCallback* callback);
+                    net::OldCompletionCallback* callback) OVERRIDE;
 
-  virtual bool SetReceiveBufferSize(int32 size);
-  virtual bool SetSendBufferSize(int32 size);
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
   // net::StreamSocket interface.
   virtual int Connect(net::OldCompletionCallback* callback) OVERRIDE;
@@ -95,12 +95,12 @@ class FakeUdpSocket : public net::Socket {
 
   // net::Socket interface.
   virtual int Read(net::IOBuffer* buf, int buf_len,
-                   net::OldCompletionCallback* callback);
+                   net::OldCompletionCallback* callback) OVERRIDE;
   virtual int Write(net::IOBuffer* buf, int buf_len,
-                    net::OldCompletionCallback* callback);
+                    net::OldCompletionCallback* callback) OVERRIDE;
 
-  virtual bool SetReceiveBufferSize(int32 size);
-  virtual bool SetSendBufferSize(int32 size);
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
  private:
   bool read_pending_;

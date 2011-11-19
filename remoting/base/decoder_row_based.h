@@ -19,12 +19,12 @@ class DecoderRowBased : public Decoder {
   static DecoderRowBased* CreateVerbatimDecoder();
 
   // Decoder implementation.
-  virtual bool IsReadyForData();
-  virtual void Initialize(scoped_refptr<media::VideoFrame> frame);
-  virtual DecodeResult DecodePacket(const VideoPacket* packet);
-  virtual void GetUpdatedRects(RectVector* rects);
-  virtual void Reset();
-  virtual VideoPacketFormat::Encoding Encoding();
+  virtual bool IsReadyForData() OVERRIDE;
+  virtual void Initialize(scoped_refptr<media::VideoFrame> frame) OVERRIDE;
+  virtual DecodeResult DecodePacket(const VideoPacket* packet) OVERRIDE;
+  virtual void GetUpdatedRects(RectVector* rects) OVERRIDE;
+  virtual void Reset() OVERRIDE;
+  virtual VideoPacketFormat::Encoding Encoding() OVERRIDE;
 
  private:
   enum State {

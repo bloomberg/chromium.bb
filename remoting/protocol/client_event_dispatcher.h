@@ -31,8 +31,8 @@ class ClientEventDispatcher : public InputStub {
   void Init(Session* session);
 
   // InputStub implementation.
-  virtual void InjectKeyEvent(const KeyEvent& event);
-  virtual void InjectMouseEvent(const MouseEvent& event);
+  virtual void InjectKeyEvent(const KeyEvent& event) OVERRIDE;
+  virtual void InjectMouseEvent(const MouseEvent& event) OVERRIDE;
 
  private:
   scoped_refptr<BufferedSocketWriter> writer_;

@@ -30,7 +30,7 @@ class CapturerFakeAscii : public Capturer {
   virtual void InvalidateFullScreen() OVERRIDE;
   virtual void CaptureInvalidRegion(
       const CaptureCompletedCallback& callback) OVERRIDE;
-  virtual const SkISize& size_most_recent() const;
+  virtual const SkISize& size_most_recent() const OVERRIDE;
 
  private:
   // Generates an image in the front buffer.

@@ -78,7 +78,7 @@ class ClientChannelAuthenticator : public ChannelAuthenticator {
 
   // ChannelAuthenticator overrides.
   virtual void Authenticate(net::SSLSocket* socket,
-                            const DoneCallback& done_callback);
+                            const DoneCallback& done_callback) OVERRIDE;
 
  private:
   void DoAuthWrite();

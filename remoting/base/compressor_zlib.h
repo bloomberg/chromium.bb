@@ -19,11 +19,15 @@ class CompressorZlib : public Compressor {
   virtual ~CompressorZlib();
 
   // Compressor implementations.
-  virtual bool Process(const uint8* input_data, int input_size,
-                       uint8* output_data, int output_size,
-                       CompressorFlush flush, int* consumed, int* written);
+  virtual bool Process(const uint8* input_data,
+                       int input_size,
+                       uint8* output_data,
+                       int output_size,
+                       CompressorFlush flush,
+                       int* consumed,
+                       int* written) OVERRIDE;
 
-  virtual void Reset();
+  virtual void Reset() OVERRIDE;
 
  private:
   scoped_ptr<z_stream> stream_;

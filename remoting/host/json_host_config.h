@@ -28,7 +28,7 @@ class JsonHostConfig : public InMemoryHostConfig {
   virtual bool Read();
 
   // MutableHostConfig interface.
-  virtual void Save();
+  virtual void Save() OVERRIDE;
 
  private:
   void DoWrite();

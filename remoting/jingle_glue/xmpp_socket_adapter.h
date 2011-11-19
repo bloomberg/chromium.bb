@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,19 +27,19 @@ class XmppSocketAdapter : public buzz::AsyncSocket,
                     bool allow_unverified_certs);
   virtual ~XmppSocketAdapter();
 
-  virtual State state();
-  virtual Error error();
-  virtual int GetError();
+  virtual State state() OVERRIDE;
+  virtual Error error() OVERRIDE;
+  virtual int GetError() OVERRIDE;
 
   void set_firewall(bool firewall) { firewall_ = firewall; }
 
-  virtual bool Connect(const talk_base::SocketAddress& addr);
-  virtual bool Read(char* data, size_t len, size_t* len_read);
-  virtual bool Write(const char* data, size_t len);
-  virtual bool Close();
+  virtual bool Connect(const talk_base::SocketAddress& addr) OVERRIDE;
+  virtual bool Read(char* data, size_t len, size_t* len_read) OVERRIDE;
+  virtual bool Write(const char* data, size_t len) OVERRIDE;
+  virtual bool Close() OVERRIDE;
 
 #if defined(FEATURE_ENABLE_SSL)
-  virtual bool StartTls(const std::string& domainname);
+  virtual bool StartTls(const std::string& domainname) OVERRIDE;
   bool IsOpen() const { return state_ == STATE_OPEN
                             || state_ == STATE_TLS_OPEN; }
 #else

@@ -46,8 +46,8 @@ class ClientSession : public protocol::HostStub,
   virtual ~ClientSession();
 
   // protocol::InputStub interface.
-  virtual void InjectKeyEvent(const protocol::KeyEvent& event);
-  virtual void InjectMouseEvent(const protocol::MouseEvent& event);
+  virtual void InjectKeyEvent(const protocol::KeyEvent& event) OVERRIDE;
+  virtual void InjectMouseEvent(const protocol::MouseEvent& event) OVERRIDE;
 
   // protocol::ConnectionToClient::EventHandler interface.
   virtual void OnConnectionOpened(
