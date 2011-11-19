@@ -113,8 +113,6 @@
       '-search_engines.SearchEnginesTest.testDefaultSearchEngines',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
-      # crbug.com/102517 -- external webpage throws 500
-      '-special_tabs.SpecialTabsTest.testAboutAppCacheTab',
       # crbug.com/95140
       '-translate.TranslateTest.testGoBackAndForwardToTranslatePage',
       # crbug.com/86524

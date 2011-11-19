@@ -198,16 +198,12 @@ class SpecialTabsTest(pyauto.PyUITest):
     """Confirm about:appcache-internals contains expected content for Caches.
        Also confirms that the about page populates Application Caches."""
     # Navigate to html page to activate DNS prefetching.
-    self.NavigateToURL('http://static.webvm.net/appcache-test/simple.html')
-    # Wait for page to load and display sucess or fail message.
-    self.WaitUntil(
-        lambda: self.GetDOMValue('document.getElementById("result").innerHTML'),
-                                 expect_retval='SUCCESS')
+    self.NavigateToURL('http://www.webkit.org/demos/sticky-notes/index.html')
     self.GetBrowserWindow(0).GetTab(0).GoBack()
     test_utils.StringContentCheck(
         self, self.GetTabContents(),
         ['Manifest',
-         'http://static.webvm.net/appcache-test/resources/simple.manifest'],
+         'http://www.webkit.org/demos/sticky-notes/StickyNotes.manifest'],
         [])
 
   def _VerifyAboutDNS(self):
