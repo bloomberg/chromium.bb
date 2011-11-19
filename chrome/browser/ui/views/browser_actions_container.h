@@ -279,7 +279,6 @@ class BrowserActionsContainer
   bool animating() const { return animation_target_size_ > 0; }
 
   // Returns the chevron, if any.
-  views::View* chevron() { return chevron_; }
   const views::View* chevron() const { return chevron_; }
 
   // Returns the profile this container is associated with.

@@ -202,8 +202,6 @@ class LocationBarView : public LocationBar,
     return location_icon_view_;
   }
 
-  views::View* location_entry_view() const { return location_entry_view_; }
-
   // AutocompleteEditController
   virtual void OnAutocompleteAccept(const GURL& url,
                                     WindowOpenDisposition disposition,

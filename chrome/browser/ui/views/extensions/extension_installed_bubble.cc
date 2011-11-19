@@ -29,7 +29,6 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
@@ -91,11 +90,10 @@ class InstalledBubbleContent : public views::View,
   InstalledBubbleContent(Browser* browser,
                          const Extension* extension,
                          ExtensionInstalledBubble::BubbleType type,
-                         SkBitmap* icon,
-                         ExtensionInstalledBubble* bubble)
+                         SkBitmap* icon)
       : browser_(browser),
         extension_id_(extension->id()),
-        bubble_(bubble),
+        bubble_(NULL),
         type_(type),
         info_(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -174,11 +172,17 @@ class InstalledBubbleContent : public views::View,
     AddChildView(close_button_);
   }
 
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event) {
-    if (sender == close_button_)
-      bubble_->StartFade(false);
-    else
+  void set_bubble(Bubble* bubble) { bubble_ = bubble; }
+
+  virtual void ButtonPressed(
+      views::Button* sender,
+      const views::Event& event) {
+    if (sender == close_button_) {
+      bubble_->set_fade_away_on_close(true);
+      GetWidget()->Close();
+    } else {
       NOTREACHED() << "Unknown view";
+    }
   }
 
   // Implements the views::LinkListener interface.
@@ -254,8 +258,8 @@ class InstalledBubbleContent : public views::View,
   // The id of the extension just installed.
   const std::string extension_id_;
 
-  // The ExtensionInstalledBubble showing us.
-  ExtensionInstalledBubble* bubble_;
+  // The Bubble showing us.
+  Bubble* bubble_;
 
   ExtensionInstalledBubble::BubbleType type_;
   views::ImageView* icon_;
@@ -335,7 +339,7 @@ void ExtensionInstalledBubble::Observe(
 void ExtensionInstalledBubble::ShowInternal() {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
 
-  views::View* reference_view = NULL;
+  const views::View* reference_view = NULL;
   if (type_ == APP) {
     if (browser_view->IsTabStripVisible()) {
       AbstractTabStripView* tabstrip = browser_view->tabstrip();
@@ -386,34 +390,35 @@ void ExtensionInstalledBubble::ShowInternal() {
   // Default case.
   if (reference_view == NULL)
     reference_view = browser_view->GetToolbarView()->app_menu();
-  set_anchor_view(reference_view);
 
-  SetLayoutManager(new views::FillLayout());
-  AddChildView(
-      new InstalledBubbleContent(browser_, extension_, type_, &icon_, this));
-  views::BubbleDelegateView::CreateBubble(this);
-  StartFade(true);
-}
+  gfx::Point origin;
+  views::View::ConvertPointToScreen(reference_view, &origin);
+  gfx::Rect bounds = reference_view->bounds();
+  bounds.set_origin(origin);
+  views::BubbleBorder::ArrowLocation arrow_location =
+      views::BubbleBorder::TOP_RIGHT;
 
-gfx::Point ExtensionInstalledBubble::GetAnchorPoint() {
   // For omnibox keyword bubbles, move the arrow to point to the left edge
   // of the omnibox, just to the right of the icon.
   if (type_ == OMNIBOX_KEYWORD) {
-    LocationBarView* location_bar_view =
-        BrowserView::GetBrowserViewForBrowser(browser_)->GetLocationBarView();
-    return location_bar_view->GetLocationEntryOrigin().Add(
-        gfx::Point(0, location_bar_view->location_entry_view()->height()));
+    bounds.set_origin(
+        browser_view->GetLocationBarView()->GetLocationEntryOrigin());
+    bounds.set_width(0);
+    arrow_location = views::BubbleBorder::TOP_LEFT;
   }
-  return views::BubbleDelegateView::GetAnchorPoint();
+
+  bubble_content_ = new InstalledBubbleContent(
+      browser_, extension_, type_, &icon_);
+  Bubble* bubble = Bubble::Show(browser_view->GetWidget(), bounds,
+                                arrow_location,
+                                views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
+                                bubble_content_, this);
+  bubble_content_->set_bubble(bubble);
 }
 
-views::BubbleBorder::ArrowLocation
-    ExtensionInstalledBubble::GetArrowLocation() const {
-  return type_ == OMNIBOX_KEYWORD ? views::BubbleBorder::TOP_LEFT :
-                                    views::BubbleBorder::TOP_RIGHT;
-}
-
-void ExtensionInstalledBubble::WindowClosing() {
+// BubbleDelegate
+void ExtensionInstalledBubble::BubbleClosing(Bubble* bubble,
+                                             bool closed_by_escape) {
   if (extension_ && type_ == PAGE_ACTION) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
     browser_view->GetLocationBarView()->SetPreviewEnabledPageAction(
@@ -422,4 +427,12 @@ void ExtensionInstalledBubble::WindowClosing() {
   }
 
   Release();  // Balanced in ctor.
+}
+
+bool ExtensionInstalledBubble::CloseOnEscape() {
+  return true;
+}
+
+bool ExtensionInstalledBubble::FadeInOnShow() {
+  return true;
 }
