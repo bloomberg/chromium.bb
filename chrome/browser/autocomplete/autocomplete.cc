@@ -371,8 +371,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (NumNonHostComponents(*parts) > 1)
     return URL;
 
-  // If the host has a known TLD, it's probably a URL, with the following
-  // exceptions:
+  // If the host has a known TLD or a port, it's probably a URL, with the
+  // following exceptions:
   // * Any "IP addresses" that make it here are more likely searches
   //   (see above).
   // * If we reach here with a username, our input looks like "user@host[.tld]".
@@ -381,7 +381,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   //   default and let users correct us on a case-by-case basis.
   // Note that we special-case "localhost" as a known hostname.
   if ((host_info.family != url_canon::CanonHostInfo::IPV4) &&
-      ((registry_length != 0) || (host == ASCIIToUTF16("localhost"))))
+      ((registry_length != 0) || (host == ASCIIToUTF16("localhost") ||
+       parts->port.is_nonempty())))
     return parts->username.is_nonempty() ? UNKNOWN : URL;
 
   // If we reach this point, we know there's no known TLD on the input, so if

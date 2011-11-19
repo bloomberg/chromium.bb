@@ -304,7 +304,7 @@ TEST_F(AutocompleteTest, InputType) {
     { ASCIIToUTF16("foo+bar.com"), AutocompleteInput::UNKNOWN },
     { ASCIIToUTF16("\"foo:bar\""), AutocompleteInput::QUERY },
     { ASCIIToUTF16("link:foo.com"), AutocompleteInput::UNKNOWN },
-    { ASCIIToUTF16("foo:81"), AutocompleteInput::UNKNOWN },
+    { ASCIIToUTF16("foo:81"), AutocompleteInput::URL },
     { ASCIIToUTF16("localhost:8080"), AutocompleteInput::URL },
     { ASCIIToUTF16("www.foo.com:81"), AutocompleteInput::URL },
     { ASCIIToUTF16("foo.com:123456"), AutocompleteInput::QUERY },
@@ -331,15 +331,13 @@ TEST_F(AutocompleteTest, InputType) {
     { ASCIIToUTF16("host#ref"), AutocompleteInput::UNKNOWN },
     { ASCIIToUTF16("host/path?query"), AutocompleteInput::URL },
     { ASCIIToUTF16("host/path#ref"), AutocompleteInput::URL },
-    { ASCIIToUTF16("en.wikipedia.org/wiki/James Bond"),
-        AutocompleteInput::URL },
+    { ASCIIToUTF16("en.wikipedia.org/wiki/Jim Beam"), AutocompleteInput::URL },
     // In Chrome itself, mailto: will get handled by ShellExecute, but in
     // unittest mode, we don't have the data loaded in the external protocol
     // handler to know this.
     // { ASCIIToUTF16("mailto:abuse@foo.com"), AutocompleteInput::URL },
     { ASCIIToUTF16("view-source:http://www.foo.com/"), AutocompleteInput::URL },
-    { ASCIIToUTF16("javascript:alert(\"Hey there!\");"),
-        AutocompleteInput::URL },
+    { ASCIIToUTF16("javascript:alert(\"Hi there\");"), AutocompleteInput::URL },
 #if defined(OS_WIN)
     { ASCIIToUTF16("C:\\Program Files"), AutocompleteInput::URL },
     { ASCIIToUTF16("\\\\Server\\Folder\\File"), AutocompleteInput::URL },
@@ -370,12 +368,10 @@ TEST_F(AutocompleteTest, InputType) {
     { ASCIIToUTF16("127.0.1/"), AutocompleteInput::URL },
     { ASCIIToUTF16("browser.tabs.closeButtons"), AutocompleteInput::UNKNOWN },
     { WideToUTF16(L"\u6d4b\u8bd5"), AutocompleteInput::UNKNOWN },
-    { ASCIIToUTF16("[2001:]"), AutocompleteInput::QUERY },  // Not a valid IP
+    { ASCIIToUTF16("[2001:]"), AutocompleteInput::QUERY },
     { ASCIIToUTF16("[2001:dB8::1]"), AutocompleteInput::URL },
-    { ASCIIToUTF16("192.168.0.256"),
-        AutocompleteInput::QUERY },  // Invalid IPv4 literal.
-    { ASCIIToUTF16("[foo.com]"),
-        AutocompleteInput::QUERY },  // Invalid IPv6 literal.
+    { ASCIIToUTF16("192.168.0.256"), AutocompleteInput::QUERY },
+    { ASCIIToUTF16("[foo.com]"), AutocompleteInput::QUERY },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
