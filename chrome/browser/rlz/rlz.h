@@ -14,10 +14,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "rlz/win/lib/rlz_lib.h"
@@ -149,10 +147,6 @@ class RLZTracker : public content::NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(RLZTracker);
 };
-
-// The RLZTracker is a singleton object that outlives any runnable tasks
-// that will be queued up.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(RLZTracker);
 
 #endif  // defined(OS_WIN)
 

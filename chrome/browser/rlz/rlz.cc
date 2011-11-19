@@ -13,12 +13,13 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/synchronization/lock.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/utf_string_conversions.h"
@@ -198,10 +199,12 @@ bool RLZTracker::Init(bool first_run, int delay, bool google_default_search,
 }
 
 void RLZTracker::ScheduleDelayedInit(int delay) {
+  // The RLZTracker is a singleton object that outlives any runnable tasks
+  // that will be queued up.
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE,
       FROM_HERE,
-      NewRunnableMethod(this, &RLZTracker::DelayedInit),
+      base::Bind(&RLZTracker::DelayedInit, base::Unretained(this)),
       delay);
 }
 
@@ -391,7 +394,8 @@ bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
   string16* not_used = NULL;
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(&RLZTracker::GetAccessPointRlz, point, not_used));
+      base::IgnoreReturn<bool>(
+          base::Bind(&RLZTracker::GetAccessPointRlz, point, not_used)));
   return true;
 }
 
