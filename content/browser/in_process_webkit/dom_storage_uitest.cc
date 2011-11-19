@@ -119,7 +119,14 @@ TEST_F(DOMStorageTest, FLAKY_EventLayoutTests) {
   RunTests(kEventsFiles);
 }
 
-TEST_F(DOMStorageTest, LocalStorageLayoutTests) {
+#if defined(OS_LINUX)
+// http://crbug.com/104872
+#define MAYBE_LocalStorageLayoutTests FAILS_LocalStorageLayoutTests
+#else
+#define MAYBE_LocalStorageLayoutTests LocalStorageLayoutTests
+#endif
+
+TEST_F(DOMStorageTest, MAYBE_LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
                           kNoHttpPort);
   AddJSTestResources();
@@ -128,7 +135,14 @@ TEST_F(DOMStorageTest, LocalStorageLayoutTests) {
   RunTests(kStorageFiles);
 }
 
-TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
+#if defined(OS_LINUX)
+// http://crbug.com/104872
+#define MAYBE_SessionStorageLayoutTests FAILS_SessionStorageLayoutTests
+#else
+#define MAYBE_SessionStorageLayoutTests SessionStorageLayoutTests
+#endif
+
+TEST_F(DOMStorageTest, MAYBE_SessionStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage"),
                           kNoHttpPort);
   AddJSTestResources();
