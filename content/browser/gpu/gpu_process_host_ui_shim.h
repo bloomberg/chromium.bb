@@ -63,7 +63,7 @@ class GpuProcessHostUIShim
   // Destroy all remaining GpuProcessHostUIShims.
   CONTENT_EXPORT static void DestroyAll();
 
-  static GpuProcessHostUIShim* FromID(int host_id);
+  CONTENT_EXPORT static GpuProcessHostUIShim* FromID(int host_id);
 
   // IPC::Channel::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
@@ -72,7 +72,11 @@ class GpuProcessHostUIShim
   // The GpuProcessHost causes this to be called on the UI thread to
   // dispatch the incoming messages from the GPU process, which are
   // actually received on the IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message);
+
+  CONTENT_EXPORT void SimulateRemoveAllContext();
+  CONTENT_EXPORT void SimulateCrash();
+  CONTENT_EXPORT void SimulateHang();
 
  private:
   explicit GpuProcessHostUIShim(int host_id);

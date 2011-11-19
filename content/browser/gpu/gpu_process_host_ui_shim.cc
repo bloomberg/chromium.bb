@@ -147,6 +147,18 @@ bool GpuProcessHostUIShim::OnMessageReceived(const IPC::Message& message) {
   return OnControlMessageReceived(message);
 }
 
+void GpuProcessHostUIShim::SimulateRemoveAllContext() {
+  Send(new GpuMsg_Clean());
+}
+
+void GpuProcessHostUIShim::SimulateCrash() {
+  Send(new GpuMsg_Crash());
+}
+
+void GpuProcessHostUIShim::SimulateHang() {
+  Send(new GpuMsg_Hang());
+}
+
 GpuProcessHostUIShim::~GpuProcessHostUIShim() {
   DCHECK(CalledOnValidThread());
   g_hosts_by_id.Pointer()->Remove(host_id_);

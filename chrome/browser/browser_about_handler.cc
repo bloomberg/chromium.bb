@@ -45,11 +45,10 @@
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/gpu/gpu_process_host.h"
+#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/sensors/sensors_provider.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
@@ -1563,14 +1562,17 @@ bool WillHandleBrowserAboutURL(GURL* url,
     // Induce an intentional crash in the browser process.
     CHECK(false);
   } else if (host == chrome::kChromeUIGpuCleanHost) {
-    GpuProcessHost::SendOnIO(
-        0, content::CAUSE_FOR_GPU_LAUNCH_NO_LAUNCH, new GpuMsg_Clean());
+    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::FromID(0);
+    if (shim)
+      shim->SimulateRemoveAllContext();
   } else if (host == chrome::kChromeUIGpuCrashHost) {
-    GpuProcessHost::SendOnIO(
-        0, content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUCRASH, new GpuMsg_Crash());
+    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::FromID(0);
+    if (shim)
+      shim->SimulateCrash();
   } else if (host == chrome::kChromeUIGpuHangHost) {
-    GpuProcessHost::SendOnIO(
-        0, content::CAUSE_FOR_GPU_LAUNCH_ABOUT_GPUHANG, new GpuMsg_Hang());
+    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::FromID(0);
+    if (shim)
+      shim->SimulateHang();
 #if defined(OS_CHROMEOS)
   } else if (host == chrome::kChromeUIRotateHost) {
     sensors::ScreenOrientation change;
