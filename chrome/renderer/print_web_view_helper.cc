@@ -517,14 +517,8 @@ void PrintWebViewHelper::OnPrintForPrintPreview(
     return;
   }
 
-  scoped_ptr<PrepareFrameAndViewForPrint> prepare;
-  prepare.reset(new PrepareFrameAndViewForPrint(print_pages_params_->params,
-                                                pdf_frame, pdf_element));
-  UpdatePrintableSizeInPrintParameters(pdf_frame, pdf_element, prepare.get(),
-                                       &print_pages_params_->params);
-
   // Render Pages for printing.
-  if (!RenderPagesForPrint(pdf_frame, pdf_element, prepare.get())) {
+  if (!RenderPagesForPrint(pdf_frame, pdf_element)) {
     LOG(ERROR) << "RenderPagesForPrint failed";
     DidFinishPrinting(FAIL_PRINT);
   }
@@ -766,7 +760,7 @@ void PrintWebViewHelper::Print(WebKit::WebFrame* frame,
   }
 
   // Render Pages for printing.
-  if (!RenderPagesForPrint(frame, node, NULL)) {
+  if (!RenderPagesForPrint(frame, node)) {
     LOG(ERROR) << "RenderPagesForPrint failed";
     DidFinishPrinting(FAIL_PRINT);
   }
@@ -838,25 +832,20 @@ bool PrintWebViewHelper::CopyAndPrint(WebKit::WebFrame* web_frame) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
 bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
-                                    const WebNode& node,
-                                    PrepareFrameAndViewForPrint* prepare) {
+                                    const WebNode& node) {
   PrintMsg_Print_Params print_params = params.params;
-  scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view;
-  if (!prepare) {
-    prep_frame_view.reset(new PrepareFrameAndViewForPrint(print_params, frame,
-                                                          node));
-    prepare = prep_frame_view.get();
-  }
-  UpdatePrintableSizeInPrintParameters(frame, node, prepare, &print_params);
+  PrepareFrameAndViewForPrint prep_frame_view(print_params, frame, node);
+  UpdatePrintableSizeInPrintParameters(frame, node, &prep_frame_view,
+                                       &print_params);
 
-  int page_count = prepare->GetExpectedPageCount();
+  int page_count = prep_frame_view.GetExpectedPageCount();
   if (!page_count)
     return false;
   Send(new PrintHostMsg_DidGetPrintedPagesCount(routing_id(),
                                                 print_params.document_cookie,
                                                 page_count));
 
-  const gfx::Size& canvas_size = prepare->GetPrintCanvasSize();
+  const gfx::Size& canvas_size = prep_frame_view.GetPrintCanvasSize();
   PrintMsg_PrintPage_Params page_params;
   page_params.params = print_params;
   if (params.pages.empty()) {
@@ -879,7 +868,7 @@ bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
 void PrintWebViewHelper::didStopLoading() {
   PrintMsg_PrintPages_Params* params = print_pages_params_.get();
   DCHECK(params != NULL);
-  PrintPages(*params, print_web_view_->mainFrame(), WebNode(), NULL);
+  PrintPages(*params, print_web_view_->mainFrame(), WebNode());
 }
 
 // static - Not anonymous so that platform implementations can use it.
@@ -1192,14 +1181,13 @@ bool PrintWebViewHelper::GetPrintSettingsFromUser(WebKit::WebFrame* frame,
 
 bool PrintWebViewHelper::RenderPagesForPrint(
     WebKit::WebFrame* frame,
-    const WebKit::WebNode& node,
-    PrepareFrameAndViewForPrint* prepare) {
+    const WebKit::WebNode& node) {
   PrintMsg_PrintPages_Params print_settings = *print_pages_params_;
   if (print_settings.params.selection_only) {
     return CopyAndPrint(frame);
   } else {
     // TODO: Always copy before printing.
-    return PrintPages(print_settings, frame, node, prepare);
+    return PrintPages(print_settings, frame, node);
   }
 }
 

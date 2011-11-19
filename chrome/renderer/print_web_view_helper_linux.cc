@@ -57,21 +57,17 @@ bool PrintWebViewHelper::RenderPreviewPage(int page_number) {
 
 bool PrintWebViewHelper::PrintPages(const PrintMsg_PrintPages_Params& params,
                                     WebFrame* frame,
-                                    const WebNode& node,
-                                    PrepareFrameAndViewForPrint* prepare) {
+                                    const WebNode& node) {
   printing::NativeMetafile metafile;
   if (!metafile.Init())
     return false;
 
-  scoped_ptr<PrepareFrameAndViewForPrint> prep_frame_view;
-  if (!prepare) {
-    prep_frame_view.reset(new PrepareFrameAndViewForPrint(params.params, frame,
-                                                          node));
-    prepare = prep_frame_view.get();
-  }
+  PrepareFrameAndViewForPrint prep_frame_view(params.params, frame, node);
   int page_count = 0;
-  if (!RenderPages(params, frame, node, &page_count, prepare, &metafile))
+  if (!RenderPages(params, frame, node, &page_count, &prep_frame_view,
+                   &metafile)) {
     return false;
+  }
 
   // Get the size of the resulting metafile.
   uint32 buf_size = metafile.GetDataSize();

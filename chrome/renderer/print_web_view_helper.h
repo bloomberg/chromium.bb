@@ -191,8 +191,7 @@ class PrintWebViewHelper
   // It will implicitly revert the document to display CSS media type.
   bool PrintPages(const PrintMsg_PrintPages_Params& params,
                   WebKit::WebFrame* frame,
-                  const WebKit::WebNode& node,
-                  PrepareFrameAndViewForPrint* prepare);
+                  const WebKit::WebNode& node);
 
   // Prints the page listed in |params|.
 #if defined(USE_X11)
@@ -207,8 +206,8 @@ class PrintWebViewHelper
 #endif
 
   // Render the frame for printing.
-  bool RenderPagesForPrint(WebKit::WebFrame* frame, const WebKit::WebNode& node,
-                           PrepareFrameAndViewForPrint* prepare);
+  bool RenderPagesForPrint(WebKit::WebFrame* frame,
+                           const WebKit::WebNode& node);
 
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_WIN)
