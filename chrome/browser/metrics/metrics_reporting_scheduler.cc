@@ -33,7 +33,7 @@ static const int kMaxBackoffMultiplier = 10;
 MetricsReportingScheduler::MetricsReportingScheduler(
     const base::Closure& upload_callback)
     : upload_callback_(upload_callback),
-      ALLOW_THIS_IN_INITIALIZER_LIST(upload_timer_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       upload_interval_(TimeDelta::FromSeconds(kInitialUploadIntervalSeconds)),
       running_(false),
       timer_pending_(false),
@@ -92,8 +92,8 @@ void MetricsReportingScheduler::ScheduleNextCallback() {
 
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      upload_timer_factory_.NewRunnableMethod(
-          &MetricsReportingScheduler::TriggerUpload),
+      base::Bind(&MetricsReportingScheduler::TriggerUpload,
+                 weak_ptr_factory_.GetWeakPtr()),
       upload_interval_.InMilliseconds());
 }
 

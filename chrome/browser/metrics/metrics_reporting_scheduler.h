@@ -8,7 +8,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 
 // Scheduler task to drive a MetricsService object's uploading.
@@ -46,7 +46,7 @@ class MetricsReportingScheduler {
   // The MetricsService method to call when uploading should happen.
   base::Closure upload_callback_;
 
-  ScopedRunnableMethodFactory<MetricsReportingScheduler> upload_timer_factory_;
+  base::WeakPtrFactory<MetricsReportingScheduler> weak_ptr_factory_;
 
   // The interval between being told an upload is done and starting the next
   // upload.

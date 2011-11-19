@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/histogram_synchronizer.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
@@ -101,9 +102,9 @@ void HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
   // making the callback.
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(
-          current_synchronizer,
+      base::Bind(
           &HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback,
+          current_synchronizer,
           sequence_number),
       wait_time);
 }

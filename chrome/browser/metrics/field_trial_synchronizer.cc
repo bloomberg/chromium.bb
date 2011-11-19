@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread.h"
 #include "chrome/common/chrome_constants.h"
@@ -44,10 +45,10 @@ void FieldTrialSynchronizer::OnFieldTrialGroupFinalized(
     const std::string& group_name) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this,
-                        &FieldTrialSynchronizer::NotifyAllRenderers,
-                        field_trial_name,
-                        group_name));
+      base::Bind(&FieldTrialSynchronizer::NotifyAllRenderers,
+                 this,
+                 field_trial_name,
+                 group_name));
 }
 
 // static

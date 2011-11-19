@@ -760,10 +760,11 @@ std::string MetricsService::GenerateClientID() {
 // State save methods
 
 void MetricsService::ScheduleNextStateSave() {
-  state_saver_factory_.RevokeAll();
+  state_saver_factory_.InvalidateWeakPtrs();
 
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      state_saver_factory_.NewRunnableMethod(&MetricsService::SaveLocalState),
+      base::Bind(&MetricsService::SaveLocalState,
+                 state_saver_factory_.GetWeakPtr()),
       kSaveStateInterval * 1000);
 }
 
@@ -1304,7 +1305,7 @@ void MetricsService::LogCleanShutdown() {
   // completed.
   base::WaitableEvent done_writing(false, false);
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableFunction(Signal, &done_writing));
+                          base::Bind(Signal, &done_writing));
   done_writing.TimedWait(base::TimeDelta::FromHours(1));
 
   // Redundant setting to assure that we always reset this value at shutdown

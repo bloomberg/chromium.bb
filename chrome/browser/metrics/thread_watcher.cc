@@ -590,7 +590,7 @@ void ThreadWatcherList::InitializeAndStartWatching(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableFunction(StartupTimeBomb::Disarm));
+      base::Bind(StartupTimeBomb::Disarm));
 }
 
 // static
