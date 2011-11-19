@@ -1,19 +1,19 @@
-GENERAL:__init__.py:360:main running with these options:
-GENERAL:__init__.py:367:main   check: None
-GENERAL:__init__.py:367:main   circular_check: True
-GENERAL:__init__.py:367:main   debug: ['variables', 'general']
-GENERAL:__init__.py:367:main   defines: None
-GENERAL:__init__.py:365:main   depth: '.'
-GENERAL:__init__.py:367:main   formats: ['gypd']
-GENERAL:__init__.py:367:main   generator_flags: []
-GENERAL:__init__.py:367:main   generator_output: None
-GENERAL:__init__.py:367:main   includes: None
-GENERAL:__init__.py:367:main   msvs_version: None
-GENERAL:__init__.py:365:main   suffix: ''
-GENERAL:__init__.py:367:main   toplevel_dir: None
-GENERAL:__init__.py:367:main   use_environment: True
-GENERAL:__init__.py:421:main cmdline_default_variables: {}
-GENERAL:__init__.py:447:main generator_flags: {}
+GENERAL:__init__.py:356:main running with these options:
+GENERAL:__init__.py:363:main   check: None
+GENERAL:__init__.py:363:main   circular_check: True
+GENERAL:__init__.py:363:main   debug: ['variables', 'general']
+GENERAL:__init__.py:363:main   defines: None
+GENERAL:__init__.py:361:main   depth: '.'
+GENERAL:__init__.py:363:main   formats: ['gypd']
+GENERAL:__init__.py:363:main   generator_flags: []
+GENERAL:__init__.py:363:main   generator_output: None
+GENERAL:__init__.py:363:main   includes: None
+GENERAL:__init__.py:363:main   msvs_version: None
+GENERAL:__init__.py:361:main   suffix: ''
+GENERAL:__init__.py:363:main   toplevel_dir: None
+GENERAL:__init__.py:363:main   use_environment: True
+GENERAL:__init__.py:417:main cmdline_default_variables: {}
+GENERAL:__init__.py:443:main generator_flags: {}
 VARIABLES:input.py:785:ExpandVariables Expanding '0' to 0
 VARIABLES:input.py:785:ExpandVariables Expanding '11 ' to '11 '
 VARIABLES:input.py:785:ExpandVariables Expanding '+14' to '+14'
