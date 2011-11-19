@@ -32,7 +32,7 @@ class PrintDialogGtkInterface {
   // Shows the dialog and handles the response with |callback|. Only used when
   // printing with the native print dialog.
   virtual void ShowDialog(
-      PrintingContextGtk::PrintSettingsCallback* callback) = 0;
+      const PrintingContextGtk::PrintSettingsCallback& callback) = 0;
 
   // Prints the document named |document_name| contained in |metafile|.
   // Called from the print worker thread. Once called, the

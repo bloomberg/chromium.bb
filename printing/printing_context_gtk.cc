@@ -59,7 +59,7 @@ void PrintingContextGtk::AskUserForSettings(
     gfx::NativeView parent_view,
     int max_pages,
     bool has_selection,
-    PrintSettingsCallback* callback) {
+    const PrintSettingsCallback& callback) {
   print_dialog_->ShowDialog(callback);
 }
 

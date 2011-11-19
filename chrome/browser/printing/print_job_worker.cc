@@ -185,7 +185,8 @@ void PrintJobWorker::GetSettingsWithUI(gfx::NativeView parent_view,
 
   printing_context_->AskUserForSettings(
       parent_view, document_page_count, has_selection,
-      NewCallback(this, &PrintJobWorker::GetSettingsWithUIDone));
+      base::Bind(&PrintJobWorker::GetSettingsWithUIDone,
+                 base::Unretained(this)));
 }
 
 void PrintJobWorker::GetSettingsWithUIDone(PrintingContext::Result result) {

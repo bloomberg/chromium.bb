@@ -21,22 +21,23 @@ class PRINTING_EXPORT PrintingContextNoSystemDialog : public PrintingContext {
   virtual ~PrintingContextNoSystemDialog();
 
   // PrintingContext implementation.
-  virtual void AskUserForSettings(gfx::NativeView parent_view,
-                                  int max_pages,
-                                  bool has_selection,
-                                  PrintSettingsCallback* callback);
-  virtual Result UseDefaultSettings();
+  virtual void AskUserForSettings(
+      gfx::NativeView parent_view,
+      int max_pages,
+      bool has_selection,
+      const PrintSettingsCallback& callback) OVERRIDE;
+  virtual Result UseDefaultSettings() OVERRIDE;
   virtual Result UpdatePrinterSettings(
       const base::DictionaryValue& job_settings,
-      const PageRanges& ranges);
-  virtual Result InitWithSettings(const PrintSettings& settings);
-  virtual Result NewDocument(const string16& document_name);
-  virtual Result NewPage();
-  virtual Result PageDone();
-  virtual Result DocumentDone();
-  virtual void Cancel();
-  virtual void ReleaseContext();
-  virtual gfx::NativeDrawingContext context() const;
+      const PageRanges& ranges) OVERRIDE;
+  virtual Result InitWithSettings(const PrintSettings& settings) OVERRIDE;
+  virtual Result NewDocument(const string16& document_name) OVERRIDE;
+  virtual Result NewPage() OVERRIDE;
+  virtual Result PageDone() OVERRIDE;
+  virtual Result DocumentDone() OVERRIDE;
+  virtual void Cancel() OVERRIDE;
+  virtual void ReleaseContext() OVERRIDE;
+  virtual gfx::NativeDrawingContext context() const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintingContextNoSystemDialog);

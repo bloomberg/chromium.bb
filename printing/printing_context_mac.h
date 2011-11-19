@@ -25,10 +25,11 @@ class PRINTING_EXPORT PrintingContextMac : public PrintingContext {
   virtual ~PrintingContextMac();
 
   // PrintingContext implementation.
-  virtual void AskUserForSettings(gfx::NativeView parent_view,
-                                  int max_pages,
-                                  bool has_selection,
-                                  PrintSettingsCallback* callback) OVERRIDE;
+  virtual void AskUserForSettings(
+      gfx::NativeView parent_view,
+      int max_pages,
+      bool has_selection,
+      const PrintSettingsCallback& callback) OVERRIDE;
   virtual Result UseDefaultSettings() OVERRIDE;
   virtual Result UpdatePrinterSettings(
       const base::DictionaryValue& job_settings,

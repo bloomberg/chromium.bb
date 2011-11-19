@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "printing/printing_test.h"
 #include "printing/printing_context.h"
@@ -165,12 +167,9 @@ TEST_F(PrintingContextTest, PrintAll) {
   printing::PrintingContextWin context(dummy_locale);
   context.SetPrintDialog(&PrintDlgExMock);
   context.AskUserForSettings(
-      NULL,
-      123,
-      false,
-      NewCallback(static_cast<PrintingContextTest*>(this),
-                  &PrintingContextTest::PrintSettingsCallback));
-  ASSERT_EQ(printing::PrintingContext::OK, result());
+      NULL, 123, false, base::Bind(&PrintingContextTest::PrintSettingsCallback,
+                                   base::Unretained(this)));
+  EXPECT_EQ(printing::PrintingContext::OK, result());
   printing::PrintSettings settings = context.settings();
   EXPECT_EQ(settings.ranges.size(), 0);
 }

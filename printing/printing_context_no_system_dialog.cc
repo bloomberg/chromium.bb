@@ -32,9 +32,9 @@ void PrintingContextNoSystemDialog::AskUserForSettings(
     gfx::NativeView parent_view,
     int max_pages,
     bool has_selection,
-    PrintSettingsCallback* callback) {
+    const PrintSettingsCallback& callback) {
   // We don't want to bring up a dialog here.  Ever.  Just signal the callback.
-  callback->Run(OK);
+  callback.Run(OK);
 }
 
 PrintingContext::Result PrintingContextNoSystemDialog::UseDefaultSettings() {

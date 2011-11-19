@@ -100,8 +100,7 @@ printing::PrintDialogGtkInterface* PrintDialogGtk::CreatePrintDialog(
 }
 
 PrintDialogGtk::PrintDialogGtk(PrintingContextGtk* context)
-    : callback_(NULL),
-      context_(context),
+    : context_(context),
       dialog_(NULL),
       gtk_settings_(NULL),
       page_setup_(NULL),
@@ -232,7 +231,7 @@ bool PrintDialogGtk::UpdateSettings(const DictionaryValue& job_settings,
 }
 
 void PrintDialogGtk::ShowDialog(
-    PrintingContextGtk::PrintSettingsCallback* callback) {
+    const PrintingContextGtk::PrintSettingsCallback& callback) {
   callback_ = callback;
 
   GtkWindow* parent = BrowserList::GetLastActive()->window()->GetNativeHandle();
@@ -343,14 +342,14 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
       printing::PrintSettingsInitializerGtk::InitPrintSettings(
           gtk_settings_, page_setup_, ranges_vector, false, &settings);
       context_->InitWithSettings(settings);
-      callback_->Run(PrintingContextGtk::OK);
-      callback_ = NULL;
+      callback_.Run(PrintingContextGtk::OK);
+      callback_.Reset();
       return;
     }
     case GTK_RESPONSE_DELETE_EVENT:  // Fall through.
     case GTK_RESPONSE_CANCEL: {
-      callback_->Run(PrintingContextGtk::CANCEL);
-      callback_ = NULL;
+      callback_.Run(PrintingContextGtk::CANCEL);
+      callback_.Reset();
       return;
     }
     case GTK_RESPONSE_APPLY:

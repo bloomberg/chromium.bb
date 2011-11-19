@@ -41,7 +41,7 @@ class PrintDialogGtk
                               const printing::PageRanges& ranges,
                               printing::PrintSettings* settings) OVERRIDE;
   virtual void ShowDialog(
-      PrintingContextGtk::PrintSettingsCallback* callback) OVERRIDE;
+      const PrintingContextGtk::PrintSettingsCallback& callback) OVERRIDE;
   virtual void PrintDocument(const printing::Metafile* metafile,
                              const string16& document_name) OVERRIDE;
   virtual void AddRefToDialog() OVERRIDE;
@@ -73,7 +73,7 @@ class PrintDialogGtk
                          printing::PrintSettings* settings);
 
   // Printing dialog callback.
-  PrintingContextGtk::PrintSettingsCallback* callback_;
+  PrintingContextGtk::PrintSettingsCallback callback_;
   PrintingContextGtk* context_;
 
   // Print dialog settings. PrintDialogGtk owns |dialog_| and holds references

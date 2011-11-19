@@ -32,10 +32,11 @@ PrintingContextMac::~PrintingContextMac() {
   ReleaseContext();
 }
 
-void PrintingContextMac::AskUserForSettings(gfx::NativeView parent_view,
-                                            int max_pages,
-                                            bool has_selection,
-                                            PrintSettingsCallback* callback) {
+void PrintingContextMac::AskUserForSettings(
+    gfx::NativeView parent_view,
+    int max_pages,
+    bool has_selection,
+    const PrintSettingsCallback& callback) {
   // Third-party print drivers seem to be an area prone to raising exceptions.
   // This will allow exceptions to be raised, but does not handle them.  The
   // NSPrintPanel appears to have appropriate NSException handlers.
@@ -80,9 +81,9 @@ void PrintingContextMac::AskUserForSettings(gfx::NativeView parent_view,
   if (selection == NSOKButton) {
     print_info_.reset([[panel printInfo] retain]);
     InitPrintSettingsFromPrintInfo(GetPageRangesFromPrintInfo());
-    callback->Run(OK);
+    callback.Run(OK);
   } else {
-    callback->Run(CANCEL);
+    callback.Run(CANCEL);
   }
 }
 
