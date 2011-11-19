@@ -58,9 +58,9 @@ void GTEST_TEST_CLASS_NAME_(test_case_name, test_name)::RunTestOnMainThread()
    public: \
     GTEST_TEST_CLASS_NAME_(test_case_name, test_name)() {} \
    protected: \
-    virtual void RunTestOnMainThread(); \
+    virtual void RunTestOnMainThread() OVERRIDE; \
    private: \
-    virtual void TestBody() {} \
+    virtual void TestBody() OVERRIDE {} \
     static int AddToRegistry() { \
       ::testing::UnitTest::GetInstance()->parameterized_test_registry(). \
           GetTestCasePatternHolder<test_case_name>(\

@@ -48,11 +48,11 @@ class MockRenderProcessHost : public content::RenderProcessHost {
   virtual void WidgetHidden() OVERRIDE;
   virtual int VisibleWidgetCount() const OVERRIDE;
   virtual void AddWord(const string16& word);
-  virtual bool FastShutdownIfPossible();
-  virtual bool FastShutdownStarted() const;
-  virtual void DumpHandles();
-  virtual base::ProcessHandle GetHandle();
-  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
+  virtual bool FastShutdownIfPossible() OVERRIDE;
+  virtual bool FastShutdownStarted() const OVERRIDE;
+  virtual void DumpHandles() OVERRIDE;
+  virtual base::ProcessHandle GetHandle() OVERRIDE;
+  virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id) OVERRIDE;
   virtual void SetCompositingSurface(
       int render_widget_id,
       gfx::PluginWindowHandle compositing_surface) OVERRIDE;
