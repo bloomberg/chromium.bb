@@ -7,6 +7,7 @@
 import constants
 import glob
 import json
+import logging
 import os
 import re
 import shutil
@@ -77,7 +78,9 @@ class Patch(object):
 class GerritPatch(Patch):
   """Object that represents a Gerrit CL."""
   _PUBLIC_URL = os.path.join(constants.GERRIT_HTTP_URL, 'gerrit/p')
-  _GIT_CHANGE_ID_RE = re.compile('^\s*Change-Id:\s*(\w+)\s*$', re.MULTILINE)
+  _GIT_CHANGE_ID_RE = re.compile(r'^\s*Change-Id:\s*(\w+)\s*$', re.MULTILINE)
+  _PALADIN_DEPENDENCY_RE = re.compile(r'^\s*CQ-DEPEND=(.*)$', re.MULTILINE)
+  _PALADIN_BUG_RE = re.compile('(\w+)')
 
   def __init__(self, patch_dict, internal):
     """Construct a GerritPatch object from Gerrit query results.
@@ -130,9 +133,9 @@ class GerritPatch(Patch):
       git_rb = ['git', 'rebase']
       if trivial: git_rb.extend(['--strategy', 'resolve', '-X', 'trivial'])
       git_rb.extend(['--onto', branch, upstream, 'FETCH_HEAD'])
-
       # Run the rebase command.
       cros_lib.RunCommand(git_rb, cwd=project_dir)
+
     except cros_lib.RunCommandError:
       cros_lib.RunCommand(['git', 'rebase', '--abort'], cwd=project_dir,
                           error_ok=True)
@@ -197,7 +200,7 @@ class GerritPatch(Patch):
   def _RunCommand(cmd, dryrun):
     """Runs the specified shell cmd if dryrun=False."""
     if dryrun:
-      cros_lib.Info('Would have run: ' + ' '.join(cmd))
+      logging.info('Would have run: %s', ' '.join(cmd))
     else:
       cros_lib.RunCommand(cmd, error_ok=True)
 
@@ -280,8 +283,17 @@ class GerritPatch(Patch):
     GerritPatch._RunCommand(cmd, dryrun)
     self.RemoveCommitReady(helper, dryrun)
 
+  def CommitMessage(self, buildroot):
+    """Returns the commit message for the patch as a string."""
+    url = self._GetProjectUrl()
+    project_dir = cros_lib.GetProjectDir(buildroot, self.project)
+    cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
+    return_obj = cros_lib.RunCommand(['git', 'show', '-s', 'FETCH_HEAD'],
+                                     cwd=project_dir, redirect_stdout=True)
+    return return_obj.output
+
   def GerritDependencies(self, buildroot):
-    """Returns an ordered list of revisions that this patch depends on.
+    """Returns an ordered list of dependencies from Gerrit.
 
     The list of changes are in order from FETCH_HEAD back to m/master.
 
@@ -289,16 +301,53 @@ class GerritPatch(Patch):
       buildroot: The buildroot.
     Returns:
       An ordered list of Gerrit revisions that this patch depends on.
+    Raises:
+      MissingChangeIDException: If a dependent change is missing its ChangeID.
     """
+    dependencies = []
     url = self._GetProjectUrl()
     project_dir = cros_lib.GetProjectDir(buildroot, self.project)
     cros_lib.RunCommand(['git', 'fetch', url, self.ref], cwd=project_dir)
-    raw_hashes_return_obj = cros_lib.RunCommand(
-        ['git', 'rev-list', '%s..FETCH_HEAD^' %
-         _GetProjectManifestBranch(buildroot, self.project)],
+    return_obj = cros_lib.RunCommand(
+        ['git', 'log', '-z', '%s..FETCH_HEAD^' %
+          _GetProjectManifestBranch(buildroot, self.project)],
         cwd=project_dir, redirect_stdout=True)
 
-    return raw_hashes_return_obj.output.splitlines()
+    for patch_output in return_obj.output.split('\0'):
+      if not patch_output: continue
+      change_id_match = self._GIT_CHANGE_ID_RE.search(patch_output)
+      if change_id_match:
+        dependencies.append(change_id_match.group(1))
+      else:
+        raise MissingChangeIDException('Missing Change-Id in %s' % patch_output)
+
+    logging.debug('Found %s Gerrit dependencies for change %s', dependencies,
+                  self)
+    return dependencies
+
+  def PaladinDependencies(self, buildroot):
+    """Returns an ordered list of dependencies based on the Commit Message.
+
+    Parses the Commit message for this change looking for lines that follow
+    the format:
+
+    CQ-DEPEND:change_num+ e.g.
+
+    A commit which depends on a couple others.
+
+    BUG=blah
+    TEST=blah
+    CQ-DEPEND=10001,10002
+    """
+    dependencies = []
+    commit_message = self.CommitMessage(buildroot)
+    matches = self._PALADIN_DEPENDENCY_RE.findall(commit_message)
+    for match in matches:
+      dependencies.extend(self._PALADIN_BUG_RE.findall(match))
+
+    logging.debug('Found %s Paladin dependencies for change %s', dependencies,
+                  self)
+    return dependencies
 
   def Submit(self, helper, dryrun=False):
     """Submits patch using Gerrit Review.
@@ -317,12 +366,12 @@ class GerritPatch(Patch):
     return '%s:%s' % (self.owner, self.gerrit_number)
 
   # Define methods to use patches in sets.  We uniquely identify patches
-  # by Gerrit Change-ID.
+  # by Gerrit change numbers.
   def __hash__(self):
-    return hash(self.revision)
+    return hash(self.id)
 
   def __eq__(self, other):
-    return self.revision == other.revision
+    return self.id == other.id
 
 
 def RemovePatchRoot(patch_root):

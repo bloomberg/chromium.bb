@@ -168,7 +168,7 @@ class GerritPatchTest(mox.MoxTestBase):
     my_patch.HandleCouldNotVerify(helper, 'http://fake%20url/1234', True)
     self.mox.VerifyAll()
 
-  def GerritDepenedenciesHelper(self, git_rev_list, expected_return_tuple):
+  def GerritDepenedenciesHelper(self, git_log, expected_return_tuple):
     build_root = 'fake_build_root'
     project_dir = 'fake_build_root/fake_project_dir'
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
@@ -182,8 +182,8 @@ class GerritPatchTest(mox.MoxTestBase):
     cros_patch._GetProjectManifestBranch(
         build_root, 'tacos/chromite').AndReturn('m/master')
     cros_lib.RunCommand(
-        ['git', 'rev-list', 'm/master..FETCH_HEAD^'], cwd=project_dir,
-        redirect_stdout=True).AndReturn(git_rev_list)
+        ['git', 'log', '-z', 'm/master..FETCH_HEAD^'], cwd=project_dir,
+        redirect_stdout=True).AndReturn(git_log)
 
     self.mox.ReplayAll()
     deps = my_patch.GerritDependencies(build_root)
@@ -191,17 +191,66 @@ class GerritPatchTest(mox.MoxTestBase):
 
     self.assertEqual(deps, expected_return_tuple)
 
+  def PaladinDepenedenciesHelper(self, commit_msg, expected_return_tuple):
+    build_root = 'fake_build_root'
+    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'CommitMessage')
+
+    my_patch = cros_patch.GerritPatch(self.FAKE_PATCH_JSON, False)
+    my_patch.CommitMessage(build_root).AndReturn(commit_msg)
+
+    self.mox.ReplayAll()
+    deps = my_patch.PaladinDependencies(build_root)
+    self.mox.VerifyAll()
+
+    self.assertEqual(deps, expected_return_tuple)
+
   def testGerritDependencies(self):
     """Tests that we can get dependencies from a commit with 2 dependencies."""
-    git_rev_list_obj = self.mox.CreateMock(cros_lib.CommandResult)
-    git_rev_list_obj.output = '\n'.join(['1234abcd', '1234abce'])
-    self.GerritDepenedenciesHelper(git_rev_list_obj, ['1234abcd', '1234abce'])
+    commit1 = """
+    commit abcdefgh
+
+    Author: Fake person
+    Date:  Tue Oct 99
+
+    I am the first commit.
+
+    Change-Id: 1234abcd
+    """
+    commit2 = """commit abcdefgi
+    Author: Fake person
+    Date:  Tue Oct 99
+
+    I am the first commit.
+
+    Change-Id: 1234abce
+    """
+    git_log = self.mox.CreateMock(cros_lib.CommandResult)
+    git_log.output = '\0'.join([commit1, commit2])
+    self.GerritDepenedenciesHelper(git_log, ['1234abcd', '1234abce'])
 
   def testGerritNoDependencies(self):
     """Tests that we return an empty tuple if the commit has no deps."""
     git_rev_list_obj = self.mox.CreateMock(cros_lib.CommandResult)
     git_rev_list_obj.output = ''
     self.GerritDepenedenciesHelper(git_rev_list_obj, [])
+
+  def testPaladinDependencies(self):
+    """Tests that we can get dependencies specified through commit message."""
+    commit_msg = """
+    commit abcdefgh
+
+    Author: Fake person
+    Date:  Tue Oct 99
+
+    I am the first commit.
+
+    CQ-DEPEND=12345 12356   , 12357
+    CQ-DEPEND=123457a
+
+    Change-Id: Iee5c89d929f1850d7d4e1a4ff5f21adda800025f
+    """
+    self.PaladinDepenedenciesHelper(commit_msg, ['12345', '12356', '12357',
+                                                 '123457a'])
 
   def NotestMockRemoveCommitReady(self):
     """Tests against sosa's test patch to remove Commit Ready bit on failure."""

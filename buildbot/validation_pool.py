@@ -177,11 +177,11 @@ class ValidationPool(object):
     changes_applied = set()
     changes_list = []
 
-    # Change map maps Change-Id to GerritPatch object for lookup of dependent
-    # change-ids.
-    change_map = dict((change.revision, change) for change in self.changes)
+    # Maps Change numbers to GerritPatch object for lookup of dependent
+    # changes.
+    change_map = dict((change.id, change) for change in self.changes)
     for change in self.changes:
-      logging.debug('Trying change %s', change.revision)
+      logging.debug('Trying change %s', change.id)
       # We've already attempted this change because it was a dependent change
       # of another change that was ready.
       if (change in changes_that_failed_to_apply_to_tot or
@@ -191,19 +191,24 @@ class ValidationPool(object):
       # Change stacks consists of the change plus its dependencies in the order
       # that they should be applied.
       change_stack = [change]
-      deps = change.GerritDependencies(buildroot)
-
-      # Put the dependent changes on the stack.
       apply_chain = True
+      deps = []
+      try:
+        deps.extend(change.GerritDependencies(buildroot))
+        deps.extend(change.PaladinDependencies(buildroot))
+      except cros_patch.MissingChangeIDException as me:
+        logging.error(me)
+        apply_chain = False
+
       for dep in deps:
         dep_change = change_map.get(dep)
         if not dep_change:
           # The dep may have been committed already.
-          if self.gerrit_helper.IsRevisionCommitted(change.project, dep):
+          if self.gerrit_helper.IsChangeCommitted(dep):
             logging.info('Dependency %s already submitted.', dep)
           else:
-            logging.info('Cannot apply change %s because dependent change %s '
-                         'is not ready to be committed.', change, dep)
+            logging.error('Cannot apply change %s because dependent change %s '
+                          'is not ready to be committed.', change.id, dep)
             apply_chain = False
             break
         else:
@@ -236,8 +241,13 @@ class ValidationPool(object):
         else:
           lkgm_manager.PrintLink(str(change), change.url)
 
+    if changes_applied:
+      logging.debug('Done investigating changes.  Applied %s',
+                    ' '.join([c.id for c in changes_applied]))
+
     if changes_that_failed_to_apply_to_tot:
-      logging.debug('Some changes could not be applied cleanly.')
+      logging.info('Changes %s could not be applied cleanly.',
+                  ' '.join([c.id for c in changes_that_failed_to_apply_to_tot]))
       self.HandleApplicationFailure(changes_that_failed_to_apply_to_tot)
 
     self.changes = changes_list
@@ -270,7 +280,7 @@ class ValidationPool(object):
   def HandleApplicationFailure(self, changes):
     """Handles changes that were not able to be applied cleanly."""
     for change in changes:
-      logging.info('Change %s did not apply cleanly.', change)
+      logging.info('Change %s did not apply cleanly.', change.id)
       if self.is_master:
         change.HandleCouldNotApply(self.gerrit_helper, self.build_log,
                                    dryrun=self.dryrun)

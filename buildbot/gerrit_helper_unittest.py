@@ -64,9 +64,11 @@ class GerritHelperTest(mox.MoxTestBase):
         'status":"MERGED"}\n'
         '{"type":"stats","rowCount":1,"runTimeMilliseconds":205}\n'
         )
+    no_results = '{"type":"stats","rowCount":0,"runTimeMilliseconds":1}'
 
     self.merged_change = merged_change
     self.results = results
+    self.no_results = no_results
 
   def testParseFakeResults(self):
     """Parses our own fake gerrit query results to verify we parse correctly."""
@@ -150,18 +152,31 @@ class GerritHelperTest(mox.MoxTestBase):
     print 'Changes AFTER filtering ***'
     self._PrintChanges(new_changes)
 
-  def testIsRevisionCommitted(self):
-    """Tests that a revision that has status MERGED is shown as committed."""
-    revision = 'ff10979dd360e75ff21f5cf53b7f8647578785eg'
+  def testIsChangeCommitted(self):
+    """Tests that we can parse a json to check if a change is committed."""
+    changeid = 'Ia6e663415c004bdaa77101a7e3258657598b0468'
+    changeid_bad = 'I97663415c004bdaa77101a7e3258657598b0468'
     fake_result_from_gerrit = self.mox.CreateMock(cros_lib.CommandResult)
     fake_result_from_gerrit.output = self.merged_change
+    fake_bad_result_from_gerrit = self.mox.CreateMock(cros_lib.CommandResult)
+    fake_bad_result_from_gerrit.output = self.no_results
     self.mox.StubOutWithMock(cros_lib, 'RunCommand')
-    cros_lib.RunCommand(mox.In('commit:%s' % revision),
+    cros_lib.RunCommand(mox.In('change:%s' % changeid),
                         redirect_stdout=True).AndReturn(fake_result_from_gerrit)
+    cros_lib.RunCommand(mox.In('change:%s' % changeid_bad),
+                        redirect_stdout=True).AndReturn(
+                            fake_bad_result_from_gerrit)
     self.mox.ReplayAll()
     helper = gerrit_helper.GerritHelper(False)
-    self.assertTrue(helper.IsRevisionCommitted('tacos/chromite', revision))
+    self.assertTrue(helper.IsChangeCommitted(changeid))
+    self.assertFalse(helper.IsChangeCommitted(changeid_bad))
     self.mox.VerifyAll()
+
+  def testCanRunIsChangeCommand(self):
+    """Sanity test for IsChangeCommitted to make sure it works."""
+    changeid = 'Ia6e663415c004bdaa77101a7e3258657598b0468'
+    helper = gerrit_helper.GerritHelper(False)
+    self.assertTrue(helper.IsChangeCommitted(changeid))
 
 
 if __name__ == '__main__':

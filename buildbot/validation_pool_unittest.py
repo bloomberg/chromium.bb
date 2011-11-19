@@ -7,7 +7,6 @@
 """Module that contains unittests for validation_pool module."""
 
 import mox
-import StringIO
 import sys
 import unittest
 import urllib
@@ -70,7 +69,7 @@ class TestValidationPool(mox.MoxTestBase):
                                'open', True, retries_500=2)
 
   def testSimpleDepApplyPoolIntoRepo(self):
-    """Test that can apply changes correctly and respect deps.
+    """Test that we can apply changes correctly and respect deps.
 
     This tests a simple out-of-order change where change1 depends on change2
     but tries to get applied before change2.  What should happen is that
@@ -79,8 +78,8 @@ class TestValidationPool(mox.MoxTestBase):
     patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
 
-    patch1.revision = 'ChangeId1'
-    patch2.revision = 'ChangeId2'
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
     patch1.url = 'fake_url/1'
     patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
@@ -88,8 +87,8 @@ class TestValidationPool(mox.MoxTestBase):
     pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
 
-    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
     patch1.GerritDependencies(build_root).AndReturn(['ChangeId2'])
+    patch1.PaladinDependencies(build_root).AndReturn([])
 
     patch2.Apply(build_root, trivial=True)
     patch1.Apply(build_root, trivial=True)
@@ -98,7 +97,7 @@ class TestValidationPool(mox.MoxTestBase):
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
     self.mox.VerifyAll()
 
-  def testSimpleDepApplyPoolIntoRepo(self):
+  def testSimpleNoApplyPoolIntoRepo(self):
     """Test that we don't try to apply a change without met dependencies.
 
     Patch2 is in the validation pool that depends on Patch1 (which is not)
@@ -107,8 +106,8 @@ class TestValidationPool(mox.MoxTestBase):
     patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
 
-    patch1.revision = 'ChangeId1'
-    patch2.revision = 'ChangeId2'
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
     patch2.project = 'fake_project'
     patch1.url = 'fake_url/1'
     patch2.url = 'fake_url/2'
@@ -118,9 +117,9 @@ class TestValidationPool(mox.MoxTestBase):
     pool.changes = [patch2]
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
     pool.gerrit_helper = helper
-    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
-    helper.IsRevisionCommitted(patch2.project, patch1.revision).AndReturn(False)
+    patch2.PaladinDependencies(build_root).AndReturn([])
+    helper.IsChangeCommitted(patch1.id).AndReturn(False)
 
     self.mox.ReplayAll()
     self.assertFalse(pool.ApplyPoolIntoRepo(build_root))
@@ -131,8 +130,8 @@ class TestValidationPool(mox.MoxTestBase):
     patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
 
-    patch1.revision = 'ChangeId1'
-    patch2.revision = 'ChangeId2'
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
     patch2.project = 'fake_project'
     patch1.url = 'fake_url/1'
     patch2.url = 'fake_url/2'
@@ -142,9 +141,9 @@ class TestValidationPool(mox.MoxTestBase):
     pool.changes = [patch2]
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
     pool.gerrit_helper = helper
-    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
-    helper.IsRevisionCommitted(patch2.project, patch1.revision).AndReturn(True)
+    patch2.PaladinDependencies(build_root).AndReturn([])
+    helper.IsChangeCommitted(patch1.id).AndReturn(True)
     patch2.Apply(build_root, trivial=True)
 
     self.mox.ReplayAll()
@@ -166,10 +165,10 @@ class TestValidationPool(mox.MoxTestBase):
     patch3 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch4 = self.mox.CreateMock(cros_patch.GerritPatch)
 
-    patch1.revision = 'ChangeId1'
-    patch2.revision = 'ChangeId2'
-    patch3.revision = 'ChangeId3'
-    patch4.revision = 'ChangeId4'
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
+    patch3.id = 'ChangeId3'
+    patch4.id = 'ChangeId4'
     patch1.url = 'fake_url/1'
     patch2.url = 'fake_url/2'
     patch3.url = 'fake_url/3'
@@ -180,18 +179,20 @@ class TestValidationPool(mox.MoxTestBase):
     pool.changes = [patch1, patch2, patch3, patch4]
     pool.build_log = 'log'
 
-    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
-    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'HandleCouldNotApply')
     patch1.GerritDependencies(build_root).AndReturn([])
+    patch1.PaladinDependencies(build_root).AndReturn([])
     patch1.Apply(build_root, trivial=True).AndRaise(
         cros_patch.ApplyPatchException(patch1))
 
     patch2.GerritDependencies(build_root).AndReturn(['ChangeId1'])
+    patch2.PaladinDependencies(build_root).AndReturn([])
     patch3.GerritDependencies(build_root).AndReturn([])
+    patch3.PaladinDependencies(build_root).AndReturn([])
     patch3.Apply(build_root, trivial=True)
 
     # This one should be handled later (not where patch1 is handled.
     patch4.GerritDependencies(build_root).AndReturn([])
+    patch4.PaladinDependencies(build_root).AndReturn([])
     patch4.Apply(build_root, trivial=True).AndRaise(
         cros_patch.ApplyPatchException(
             patch1,
@@ -202,6 +203,33 @@ class TestValidationPool(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
     self.assertTrue(patch4 in pool.changes_that_failed_to_apply_earlier)
+    self.mox.VerifyAll()
+
+  def testSimpleApplyButMissingChangeIDIntoRepo(self):
+    """Test that applies changes correctly with a dep with missing changeid."""
+    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
+
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
+    patch1.url = 'fake_url/1'
+    patch2.url = 'fake_url/2'
+    build_root = 'fakebuildroot'
+
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool.changes = [patch1, patch2]
+    pool.build_log = 'log'
+
+    patch1.GerritDependencies(build_root).AndRaise(
+        cros_patch.MissingChangeIDException('Could not find changeid'))
+
+    patch2.GerritDependencies(build_root).AndReturn([])
+    patch2.PaladinDependencies(build_root).AndReturn([])
+    patch2.Apply(build_root, trivial=True)
+
+    self.mox.ReplayAll()
+    self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
+    self.assertEqual([patch2.id], [x.id for x in pool.changes])
     self.mox.VerifyAll()
 
   def testMoreComplexDepApplyPoolIntoRepo(self):
@@ -219,36 +247,42 @@ class TestValidationPool(mox.MoxTestBase):
     patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch3 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch4 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch5 = self.mox.CreateMock(cros_patch.GerritPatch)
 
-    patch1.revision = 'ChangeId1'
-    patch2.revision = 'ChangeId2'
-    patch3.revision = 'ChangeId3'
-    patch4.revision = 'ChangeId4'
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
+    patch3.id = 'ChangeId3'
+    patch4.id = 'ChangeId4'
+    patch5.id = 'ChangeId5'
     patch1.url = 'fake_url/1'
     patch2.url = 'fake_url/2'
     patch3.url = 'fake_url/3'
     patch4.url = 'fake_url/4'
+    patch5.url = 'fake_url/5'
 
     build_root = 'fakebuildroot'
 
     pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
-    pool.changes = [patch1, patch2, patch3, patch4]
+    pool.changes = [patch1, patch2, patch3, patch4, patch5]
 
-    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
     patch1.GerritDependencies(build_root).AndReturn(['ChangeId2'])
+    patch1.PaladinDependencies(build_root).AndReturn([])
     patch3.GerritDependencies(build_root).AndReturn(['ChangeId1', 'ChangeId2'])
+    patch3.PaladinDependencies(build_root).AndReturn([])
     patch4.GerritDependencies(build_root).AndReturn([])
+    patch4.PaladinDependencies(build_root).AndReturn(['ChangeId5'])
 
     patch2.Apply(build_root, trivial=True)
     patch1.Apply(build_root, trivial=True)
     patch3.Apply(build_root, trivial=True)
+    patch5.Apply(build_root, trivial=True)
     patch4.Apply(build_root, trivial=True)
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
     # Check order.
-    self.assertEquals([x.revision for x in pool.changes],
-                      [y.revision for y in [patch2, patch1, patch3, patch4]])
+    self.assertEquals([x.id for x in pool.changes],
+                      [y.id for y in [patch2, patch1, patch3, patch5, patch4]])
     self.mox.VerifyAll()
 
   def testNoDepsApplyPoolIntoRepo(self):
@@ -256,8 +290,8 @@ class TestValidationPool(mox.MoxTestBase):
     patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
     patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
 
-    patch1.revision = 'ChangeId1'
-    patch2.revision = 'ChangeId2'
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
     patch1.url = 'fake_url/1'
     patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
@@ -265,9 +299,10 @@ class TestValidationPool(mox.MoxTestBase):
     pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
 
-    self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
     patch1.GerritDependencies(build_root).AndReturn([])
+    patch1.PaladinDependencies(build_root).AndReturn([])
     patch2.GerritDependencies(build_root).AndReturn([])
+    patch2.PaladinDependencies(build_root).AndReturn([])
 
     patch1.Apply(build_root, trivial=True)
     patch2.Apply(build_root, trivial=True)
