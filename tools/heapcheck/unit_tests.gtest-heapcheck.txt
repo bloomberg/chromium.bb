@@ -15,3 +15,6 @@ MultiProcessLockTest.SimpleLock
 ServiceProcessStateTest.ForceShutdown
 ServiceProcessStateTest.ReadyState
 ServiceProcessStateTest.Singleton
+
+# Failing on Chromium OS. http://crbug.com/104826
+GViewRequestInterceptorTest.DoNotInterceptDownload
