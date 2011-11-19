@@ -76,14 +76,6 @@ class DetectUpgradeTask : public Task {
         is_critical_upgrade_(is_critical_upgrade) {
   }
 
-  virtual ~DetectUpgradeTask() {
-    if (!upgrade_detected_task_.is_null()) {
-      // This has to get deleted on the same thread it was created.
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              upgrade_detected_task_);
-    }
-  }
-
   virtual void Run() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
