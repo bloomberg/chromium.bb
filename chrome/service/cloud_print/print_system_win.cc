@@ -251,23 +251,19 @@ class PrintSystemWin : public PrintSystem {
   PrintSystemWin();
 
   // PrintSystem implementation.
-  virtual PrintSystemResult Init();
-
+  virtual PrintSystemResult Init() OVERRIDE;
   virtual PrintSystem::PrintSystemResult EnumeratePrinters(
-      printing::PrinterList* printer_list);
-
+      printing::PrinterList* printer_list) OVERRIDE;
   virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
-      PrinterCapsAndDefaultsCallback* callback);
-
-  virtual bool IsValidPrinter(const std::string& printer_name);
-
-  virtual bool ValidatePrintTicket(const std::string& printer_name,
-                                   const std::string& print_ticket_data);
-
+      const PrinterCapsAndDefaultsCallback& callback) OVERRIDE;
+  virtual bool IsValidPrinter(const std::string& printer_name) OVERRIDE;
+  virtual bool ValidatePrintTicket(
+      const std::string& printer_name,
+      const std::string& print_ticket_data) OVERRIDE;
   virtual bool GetJobDetails(const std::string& printer_name,
                              PlatformJobId job_id,
-                             PrintJobDetails *job_details);
+                             PrintJobDetails *job_details) OVERRIDE;
 
   class PrintServerWatcherWin
     : public PrintSystem::PrintServerWatcher,
@@ -275,32 +271,31 @@ class PrintSystemWin : public PrintSystem {
    public:
     PrintServerWatcherWin() : delegate_(NULL) {}
 
-    // PrintSystem::PrintServerWatcher interface
+    // PrintSystem::PrintServerWatcher implementation.
     virtual bool StartWatching(
-        PrintSystem::PrintServerWatcher::Delegate* delegate) {
+        PrintSystem::PrintServerWatcher::Delegate* delegate) OVERRIDE{
       delegate_ = delegate;
       return watcher_.Start(std::string(), this);
     }
-    virtual bool StopWatching() {
+
+    virtual bool StopWatching() OVERRIDE{
       bool ret = watcher_.Stop();
       delegate_ = NULL;
       return ret;
     }
 
-    // PrintSystemWatcherWin::Delegate interface
-    virtual void OnPrinterAdded() {
+    // PrintSystemWatcherWin::Delegate implementation.
+    virtual void OnPrinterAdded() OVERRIDE {
       delegate_->OnPrinterAdded();
     }
-    virtual void OnPrinterDeleted() {
-    }
-    virtual void OnPrinterChanged() {
-    }
-    virtual void OnJobChanged() {
-    }
+    virtual void OnPrinterDeleted() OVERRIDE {}
+    virtual void OnPrinterChanged() OVERRIDE {}
+    virtual void OnJobChanged() OVERRIDE {}
 
    private:
     PrintSystem::PrintServerWatcher::Delegate* delegate_;
     PrintSystemWatcherWin watcher_;
+
     DISALLOW_COPY_AND_ASSIGN(PrintServerWatcherWin);
   };
 
@@ -313,33 +308,35 @@ class PrintSystemWin : public PrintSystem {
            delegate_(NULL) {
      }
 
-    // PrintSystem::PrinterWatcher interface
+    // PrintSystem::PrinterWatcher implementation.
     virtual bool StartWatching(
-        PrintSystem::PrinterWatcher::Delegate* delegate) {
+        PrintSystem::PrinterWatcher::Delegate* delegate) OVERRIDE {
       delegate_ = delegate;
       return watcher_.Start(printer_name_, this);
     }
-    virtual bool StopWatching() {
+
+    virtual bool StopWatching() OVERRIDE {
       bool ret = watcher_.Stop();
       delegate_ = NULL;
       return ret;
     }
+
     virtual bool GetCurrentPrinterInfo(
-        printing::PrinterBasicInfo* printer_info) {
+        printing::PrinterBasicInfo* printer_info) OVERRIDE {
       return watcher_.GetCurrentPrinterInfo(printer_info);
     }
 
-    // PrintSystemWatcherWin::Delegate interface
-    virtual void OnPrinterAdded() {
+    // PrintSystemWatcherWin::Delegate implementation.
+    virtual void OnPrinterAdded() OVERRIDE {
       NOTREACHED();
     }
-    virtual void OnPrinterDeleted() {
+    virtual void OnPrinterDeleted() OVERRIDE {
       delegate_->OnPrinterDeleted();
     }
-    virtual void OnPrinterChanged() {
+    virtual void OnPrinterChanged() OVERRIDE {
       delegate_->OnPrinterChanged();
     }
-    virtual void OnJobChanged() {
+    virtual void OnJobChanged() OVERRIDE {
       delegate_->OnJobChanged();
     }
 
@@ -347,12 +344,14 @@ class PrintSystemWin : public PrintSystem {
     std::string printer_name_;
     PrintSystem::PrinterWatcher::Delegate* delegate_;
     PrintSystemWatcherWin watcher_;
+
     DISALLOW_COPY_AND_ASSIGN(PrinterWatcherWin);
   };
 
   class JobSpoolerWin : public PrintSystem::JobSpooler {
    public:
     JobSpoolerWin() : core_(new Core) {}
+
     // PrintSystem::JobSpooler implementation.
     virtual bool Spool(const std::string& print_ticket,
                        const FilePath& print_data_file_path,
@@ -360,7 +359,7 @@ class PrintSystemWin : public PrintSystem {
                        const std::string& printer_name,
                        const std::string& job_title,
                        const std::vector<std::string>& tags,
-                       JobSpooler::Delegate* delegate) {
+                       JobSpooler::Delegate* delegate) OVERRIDE {
       // TODO(gene): add tags handling.
       return core_->Spool(print_ticket, print_data_file_path,
                           print_data_mime_type, printer_name, job_title,
@@ -380,8 +379,9 @@ class PrintSystemWin : public PrintSystem {
             saved_dc_(0),
             should_couninit_(false) {
       }
-      ~Core() {
-      }
+
+      ~Core() {}
+
       bool Spool(const std::string& print_ticket,
                  const FilePath& print_data_file_path,
                  const std::string& print_data_mime_type,
@@ -457,7 +457,7 @@ class PrintSystemWin : public PrintSystem {
       // ServiceUtilityProcessHost::Client implementation.
       virtual void OnRenderPDFPagesToMetafileSucceeded(
           const printing::Emf& metafile,
-          int highest_rendered_page_number) {
+          int highest_rendered_page_number) OVERRIDE {
         metafile.SafePlayback(printer_dc_.Get());
         bool done_printing = (highest_rendered_page_number !=
             last_page_printed_ + kPageCountPerBatch);
@@ -468,8 +468,8 @@ class PrintSystemWin : public PrintSystem {
           RenderNextPDFPages();
       }
 
-      // base::win::ObjectWatcher::Delegate inplementation.
-      virtual void OnObjectSignaled(HANDLE object) {
+      // base::win::ObjectWatcher::Delegate implementation.
+      virtual void OnObjectSignaled(HANDLE object) OVERRIDE {
         DCHECK(xps_print_job_);
         DCHECK(object == job_progress_event_.Get());
         ResetEvent(job_progress_event_.Get());
@@ -499,12 +499,14 @@ class PrintSystemWin : public PrintSystem {
         }
       }
 
-      virtual void OnRenderPDFPagesToMetafileFailed() {
+      virtual void OnRenderPDFPagesToMetafileFailed() OVERRIDE {
         PrintJobDone();
       }
-      virtual void OnChildDied() {
+
+      virtual void OnChildDied() OVERRIDE {
         PrintJobDone();
       }
+
      private:
       void PrintJobDone() {
         // If there is no delegate, then there is nothing pending to process.
@@ -519,6 +521,7 @@ class PrintSystemWin : public PrintSystem {
         }
         delegate_ = NULL;
       }
+
       void RenderNextPDFPages() {
         printing::PageRange range;
         // Render 10 pages at a time.
@@ -537,6 +540,7 @@ class PrintSystemWin : public PrintSystem {
                        print_data_file_path_, render_area, printer_dpi,
                        page_ranges, base::MessageLoopProxy::current()));
       }
+
       // Called on the service process IO thread.
       void RenderPDFPagesInSandbox(
           const FilePath& pdf_path, const gfx::Rect& render_area,
@@ -560,6 +564,7 @@ class PrintSystemWin : public PrintSystem {
           utility_host.release();
         }
       }
+
       bool PrintXPSDocument(const std::string& printer_name,
                             const std::string& job_title,
                             const FilePath& print_data_file_path,
@@ -637,9 +642,11 @@ class PrintSystemWin : public PrintSystem {
       base::win::ObjectWatcher job_progress_watcher_;
       base::win::ScopedComPtr<IXpsPrintJob> xps_print_job_;
       bool should_couninit_;
+
       DISALLOW_COPY_AND_ASSIGN(JobSpoolerWin::Core);
     };
     scoped_refptr<Core> core_;
+
     DISALLOW_COPY_AND_ASSIGN(JobSpoolerWin);
   };
 
@@ -649,33 +656,36 @@ class PrintSystemWin : public PrintSystem {
    public:
     PrinterCapsHandler(
         const std::string& printer_name,
-        PrinterCapsAndDefaultsCallback* callback)
+        const PrinterCapsAndDefaultsCallback& callback)
             : printer_name_(printer_name), callback_(callback) {
     }
-    virtual void Start() {
-      g_service_process->io_thread()->message_loop_proxy()->PostTask(
-          FROM_HERE,
-          base::Bind(&PrinterCapsHandler::GetPrinterCapsAndDefaultsImpl, this,
-                     base::MessageLoopProxy::current()));
-    }
 
-    virtual void OnChildDied() {
+    // ServiceUtilityProcessHost::Client implementation.
+    virtual void OnChildDied() OVERRIDE {
       OnGetPrinterCapsAndDefaultsFailed(printer_name_);
     }
+
     virtual void OnGetPrinterCapsAndDefaultsSucceeded(
         const std::string& printer_name,
-        const printing::PrinterCapsAndDefaults& caps_and_defaults) {
-      callback_->Run(true, printer_name, caps_and_defaults);
-      callback_.reset();
+        const printing::PrinterCapsAndDefaults& caps_and_defaults) OVERRIDE {
+      callback_.Run(true, printer_name, caps_and_defaults);
+      callback_.Reset();
       Release();
     }
 
     virtual void OnGetPrinterCapsAndDefaultsFailed(
-        const std::string& printer_name) {
+        const std::string& printer_name) OVERRIDE {
       printing::PrinterCapsAndDefaults caps_and_defaults;
-      callback_->Run(false, printer_name, caps_and_defaults);
-      callback_.reset();
+      callback_.Run(false, printer_name, caps_and_defaults);
+      callback_.Reset();
       Release();
+    }
+
+    void Start() {
+      g_service_process->io_thread()->message_loop_proxy()->PostTask(
+          FROM_HERE,
+          base::Bind(&PrinterCapsHandler::GetPrinterCapsAndDefaultsImpl, this,
+                     base::MessageLoopProxy::current()));
     }
 
    private:
@@ -699,16 +709,15 @@ class PrintSystemWin : public PrintSystem {
     }
 
     std::string printer_name_;
-    scoped_ptr<PrinterCapsAndDefaultsCallback> callback_;
+    PrinterCapsAndDefaultsCallback callback_;
   };
 
 
-  virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher();
+  virtual PrintSystem::PrintServerWatcher* CreatePrintServerWatcher() OVERRIDE;
   virtual PrintSystem::PrinterWatcher* CreatePrinterWatcher(
-      const std::string& printer_name);
-  virtual PrintSystem::JobSpooler* CreateJobSpooler();
-  virtual std::string GetSupportedMimeTypes();
-
+      const std::string& printer_name) OVERRIDE;
+  virtual PrintSystem::JobSpooler* CreateJobSpooler() OVERRIDE;
+  virtual std::string GetSupportedMimeTypes() OVERRIDE;
 
  private:
   scoped_refptr<printing::PrintBackend> print_backend_;
@@ -735,7 +744,7 @@ PrintSystem::PrintSystemResult PrintSystemWin::EnumeratePrinters(
 
 void PrintSystemWin::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
-    PrinterCapsAndDefaultsCallback* callback) {
+    const PrinterCapsAndDefaultsCallback& callback) {
   // Launch as child process to retrieve the capabilities and defaults because
   // this involves invoking a printer driver DLL and crashes have been known to
   // occur.

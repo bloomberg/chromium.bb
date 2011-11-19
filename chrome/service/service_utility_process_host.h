@@ -105,13 +105,13 @@ class ServiceUtilityProcessHost : public ServiceChildProcessHost {
   // Allows this method to be overridden for tests.
   virtual FilePath GetUtilityProcessCmd();
 
-  // Overriden from ChildProcessHost.
+  // ChildProcessHost implementation.
   virtual bool CanShutdown() OVERRIDE;
   virtual void OnChildDied() OVERRIDE;
 
  private:
   // Starts a process.  Returns true iff it succeeded. |exposed_dir| is the
-  // path to tbe exposed to the sandbox. This is ignored if |no_sandbox| is
+  // path to the exposed to the sandbox. This is ignored if |no_sandbox| is
   // true.
   bool StartProcess(bool no_sandbox, const FilePath& exposed_dir);
 

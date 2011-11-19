@@ -4,6 +4,8 @@
 
 #include "chrome/service/cloud_print/cloud_print_connector.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/md5.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
@@ -380,8 +382,7 @@ void CloudPrintConnector::AddPendingTask(const PendingTask& task) {
   // If this is the only pending task, we need to start the process.
   if (pending_tasks_.size() == 1) {
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(
-            this, &CloudPrintConnector::ProcessPendingTask));
+        FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
   }
 }
 
@@ -428,12 +429,12 @@ void CloudPrintConnector::OnPrinterRegister(
     }
   }
 
-  cloud_print::PrintSystem::PrinterCapsAndDefaultsCallback* callback =
-       NewCallback(this, &CloudPrintConnector::OnReceivePrinterCaps);
-  // Asnchronously fetch the printer caps and defaults. The story will
+  // Asynchronously fetch the printer caps and defaults. The story will
   // continue in OnReceivePrinterCaps.
   print_system_->GetPrinterCapsAndDefaults(
-      info.printer_name.c_str(), callback);
+      info.printer_name.c_str(),
+      base::Bind(&CloudPrintConnector::OnReceivePrinterCaps,
+                 base::Unretained(this)));
 }
 
 void CloudPrintConnector::OnPrinterDelete(const std::string& printer_id) {
@@ -456,14 +457,13 @@ void CloudPrintConnector::OnPrinterDelete(const std::string& printer_id) {
 
 void CloudPrintConnector::ContinuePendingTaskProcessing() {
   if (pending_tasks_.size() == 0)
-    return;  // No peding tasks.
+    return;  // No pending tasks.
 
-  // Delete current task and repost if we have more task avaialble.
+  // Delete current task and repost if we have more task available.
   pending_tasks_.pop_front();
   if (pending_tasks_.size() != 0) {
     MessageLoop::current()->PostTask(
-        FROM_HERE, NewRunnableMethod(
-            this, &CloudPrintConnector::ProcessPendingTask));
+        FROM_HERE, base::Bind(&CloudPrintConnector::ProcessPendingTask, this));
   }
 }
 

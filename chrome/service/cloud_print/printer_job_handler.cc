@@ -5,6 +5,7 @@
 #include "chrome/service/cloud_print/printer_job_handler.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/md5.h"
@@ -161,13 +162,14 @@ bool PrinterJobHandler::UpdatePrinterInfo() {
   // First asynchronously fetch the capabilities.
   printing::PrinterBasicInfo printer_info;
   printer_watcher_->GetCurrentPrinterInfo(&printer_info);
-  cloud_print::PrintSystem::PrinterCapsAndDefaultsCallback* callback =
-       NewCallback(this,
-                   &PrinterJobHandler::OnReceivePrinterCaps);
-  // Asnchronously fetch the printer caps and defaults. The story will
+
+  // Asynchronously fetch the printer caps and defaults. The story will
   // continue in OnReceivePrinterCaps.
   print_system_->GetPrinterCapsAndDefaults(
-      printer_info.printer_name.c_str(), callback);
+      printer_info.printer_name.c_str(),
+      base::Bind(&PrinterJobHandler::OnReceivePrinterCaps,
+                 base::Unretained(this)));
+
   // While we are waiting for the data, pretend we have work to do and return
   // true.
   return true;

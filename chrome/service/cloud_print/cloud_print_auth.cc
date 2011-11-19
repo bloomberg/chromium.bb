@@ -4,6 +4,7 @@
 
 #include "chrome/service/cloud_print/cloud_print_auth.h"
 
+#include "base/bind.h"
 #include "base/string_util.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/service/cloud_print/cloud_print_consts.h"
@@ -139,8 +140,7 @@ void CloudPrintAuth::OnRefreshTokenResponse(const std::string& access_token,
   int64 refresh_delay =
       (expires_in_seconds - kTokenRefreshGracePeriodSecs)*1000;
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableMethod(this, &CloudPrintAuth::RefreshAccessToken),
+      FROM_HERE, base::Bind(&CloudPrintAuth::RefreshAccessToken, this),
       refresh_delay);
 }
 

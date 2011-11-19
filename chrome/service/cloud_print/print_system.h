@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 
 #include "printing/backend/print_backend.h"
@@ -147,11 +147,10 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
     PrintSystemResult() { }
   };
 
-  typedef Callback3<
-      bool,
-      const std::string&,
-      const printing::PrinterCapsAndDefaults&>::Type
-          PrinterCapsAndDefaultsCallback;
+  typedef base::Callback<void(bool,
+                              const std::string&,
+                              const printing::PrinterCapsAndDefaults&)>
+      PrinterCapsAndDefaultsCallback;
 
   virtual ~PrintSystem();
 
@@ -166,7 +165,7 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   // Gets the capabilities and defaults for a specific printer asynchronously.
   virtual void GetPrinterCapsAndDefaults(
       const std::string& printer_name,
-      PrinterCapsAndDefaultsCallback* callback) = 0;
+      const PrinterCapsAndDefaultsCallback& callback) = 0;
 
   // Returns true if printer_name points to a valid printer.
   virtual bool IsValidPrinter(const std::string& printer_name) = 0;
