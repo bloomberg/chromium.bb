@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"

@@ -28,7 +28,6 @@
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
-#include "content/common/worker_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -356,8 +355,8 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
              ChildProcessInfo::WORKER_PROCESS);
          !iter.Done(); ++iter) {
       if (iter->id() == worker_data->worker_process_id) {
-        (*iter)->Send(new WorkerMsg_TerminateWorkerContext(
-            worker_data->worker_route_id));
+        WorkerProcessHost* host = static_cast<WorkerProcessHost*>(*iter);
+        host->TerminateWorker(worker_data->worker_route_id);
         WorkerService::GetInstance()->AddObserver(
             new WorkerTerminationObserver(worker_data));
         return;
