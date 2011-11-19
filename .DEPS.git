@@ -27,7 +27,7 @@ deps = {
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@64fe2324403ea78dbd781073f4e5b34768676e2c',
     'src/seccompsandbox':
-        Var('git_url') + '/external/seccompsandbox.git@f2d60520fbe250b1c33c2012f79d21cf16710a8d',
+        Var('git_url') + '/external/seccompsandbox.git@16a95ccebbef3caed8bfb8f2e667319d61f7d454',
     'src/testing/gmock':
         Var('git_url') + '/external/googlemock.git@1de8831515fed5d6c86989c6c021f08abd2c37a5',
     'src/testing/gtest':
