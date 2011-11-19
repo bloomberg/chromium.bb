@@ -1,3 +1,0 @@
-This is a test file for nsis_script_test.py
-
-It is file 2 within a directory.
