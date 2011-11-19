@@ -705,13 +705,12 @@ bool HistoryURLProvider::FixupExactSuggestion(
           ACMatchClassification::NONE, &match->description_class);
       if (!classifier.url_row().typed_count()) {
         // If we reach here, we must be in the second pass, and we must not have
-        // promoted this match as an exact match during the first pass.  That
-        // means it will have been outscored by the "search what you typed
-        // match".  We need to maintain that ordering in order to not make the
-        // destination for the user's typing change depending on when they hit
-        // enter.  So lower the score here enough to let the search provider
-        // continue to outscore this match.
-        type = WHAT_YOU_TYPED;
+        // this row's data available during the first pass.  That means we
+        // either scored it as WHAT_YOU_TYPED or UNVISITED_INTRANET, and to
+        // maintain the ordering between passes consistent, we need to score it
+        // the same way here.
+        type = CanFindIntranetURL(db, input) ?
+            UNVISITED_INTRANET : WHAT_YOU_TYPED;
       }
       break;
     case VisitClassifier::UNVISITED_INTRANET:
@@ -752,9 +751,8 @@ bool HistoryURLProvider::CanFindIntranetURL(
     return false;
   const std::string host(UTF16ToUTF8(
       input.text().substr(input.parts().host.begin, input.parts().host.len)));
-  if (net::RegistryControlledDomainService::GetRegistryLength(host, false) != 0)
-    return false;
-  return db->IsTypedHost(host);
+  return (net::RegistryControlledDomainService::GetRegistryLength(host,
+      false) == 0) && db->IsTypedHost(host);
 }
 
 bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(

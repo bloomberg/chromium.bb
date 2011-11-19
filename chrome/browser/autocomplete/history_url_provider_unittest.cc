@@ -108,10 +108,12 @@ struct TestURLInfo {
   {"http://intra/two", "Intranet two", 1, 1},
   {"http://intra/three", "Intranet three", 2, 2},
   {"http://moo/bar", "Intranet moo", 1, 1},
+  {"http://typedhost/typedpath", "Intranet typed", 1, 1},
+  {"http://typedhost/untypedpath", "Intranet untyped", 1, 0},
 
-  {"http://x.com/one", "Intranet", 2, 2},
-  {"http://x.com/two", "Intranet two", 1, 1},
-  {"http://x.com/three", "Intranet three", 2, 2},
+  {"http://x.com/one", "Internet", 2, 2},
+  {"http://x.com/two", "Internet two", 1, 1},
+  {"http://x.com/three", "Internet three", 2, 2},
 };
 
 class HistoryURLProviderTest : public testing::Test,
@@ -641,6 +643,13 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
   };
   ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("intra/x"), string16(), false,
                                   expected6, arraysize(expected6)));
+  EXPECT_EQ(1400, matches_[0].relevance);
+
+  const std::string expected7[] = {
+    "http://typedhost/untypedpath",
+  };
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("typedhost/untypedpath"),
+      string16(), false, expected7, arraysize(expected7)));
   EXPECT_EQ(1400, matches_[0].relevance);
 }
 
