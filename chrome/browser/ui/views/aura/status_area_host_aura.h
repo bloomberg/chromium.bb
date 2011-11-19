@@ -10,14 +10,20 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 
 class StatusAreaView;
+class TimezoneClockUpdater;
 
 namespace views {
+class Views;
 class Widget;
 }
 
 class StatusAreaHostAura : public StatusAreaButton::Delegate {
  public:
   StatusAreaHostAura();
+  virtual ~StatusAreaHostAura();
+
+  // Returns the view housing the status area. Exposed for testing.
+  const views::View* GetStatusArea() const;
 
   // Instantiates and sets |status_area_view_|, and sets it as the contents of
   // a new views::Widget |status_area_widget_| which is returned.
@@ -38,6 +44,8 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate {
   views::Widget* status_area_widget_;
   // Owned by status_area_widget_.
   StatusAreaView* status_area_view_;
+
+  scoped_ptr<TimezoneClockUpdater> timezone_clock_updater_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaHostAura);
 };

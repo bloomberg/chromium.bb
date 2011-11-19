@@ -766,6 +766,8 @@
         'browser/chromeos/status/status_area_view.h',
         'browser/chromeos/status/status_area_view_chromeos.cc',
         'browser/chromeos/status/status_area_view_chromeos.h',
+        'browser/chromeos/status/timezone_clock_updater.cc',
+        'browser/chromeos/status/timezone_clock_updater.h',
         'browser/chromeos/system/name_value_pairs_parser.cc',
         'browser/chromeos/system/name_value_pairs_parser.h',
         'browser/chromeos/system/runtime_environment.cc',
