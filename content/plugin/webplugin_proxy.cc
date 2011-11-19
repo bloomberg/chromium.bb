@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_handle.h"
 #include "base/shared_memory.h"
@@ -63,7 +64,7 @@ WebPluginProxy::WebPluginProxy(
       transparent_(false),
       windowless_buffer_index_(0),
       host_render_view_routing_id_(host_render_view_routing_id),
-      ALLOW_THIS_IN_INITIALIZER_LIST(runnable_method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 #if defined(USE_X11)
   windowless_shm_pixmaps_[0] = None;
   windowless_shm_pixmaps_[1] = None;
@@ -198,8 +199,8 @@ void WebPluginProxy::InvalidateRect(const gfx::Rect& rect) {
     // Invalidates caused by calls to NPN_InvalidateRect/NPN_InvalidateRgn
     // need to be painted asynchronously as per the NPAPI spec.
     MessageLoop::current()->PostTask(FROM_HERE,
-        runnable_method_factory_.NewRunnableMethod(
-            &WebPluginProxy::OnPaint, damaged_rect_));
+        base::Bind(&WebPluginProxy::OnPaint, weak_factory_.GetWeakPtr(),
+            damaged_rect_));
     damaged_rect_ = gfx::Rect();
   }
 }

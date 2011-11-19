@@ -6,7 +6,7 @@
 
 #include "content/plugin/webplugin_accelerated_surface_proxy_mac.h"
 
-#include "base/callback_old.h"
+#include "base/bind.h"
 #include "content/plugin/webplugin_proxy.h"
 #include "ui/gfx/surface/accelerated_surface_mac.h"
 #include "ui/gfx/surface/transport_dib.h"
@@ -27,8 +27,10 @@ WebPluginAcceleratedSurfaceProxy::WebPluginAcceleratedSurfaceProxy(
 
   // Only used for 10.5 support, but harmless on 10.6+.
   surface_->SetTransportDIBAllocAndFree(
-      NewCallback(plugin_proxy_, &WebPluginProxy::AllocSurfaceDIB),
-      NewCallback(plugin_proxy_, &WebPluginProxy::FreeSurfaceDIB));
+      base::Bind(&WebPluginProxy::AllocSurfaceDIB,
+          base::Unretained(plugin_proxy)),
+      base::Bind(&WebPluginProxy::FreeSurfaceDIB,
+          base::Unretained(plugin_proxy)));
 }
 
 WebPluginAcceleratedSurfaceProxy::~WebPluginAcceleratedSurfaceProxy() {

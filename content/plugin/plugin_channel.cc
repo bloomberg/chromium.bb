@@ -4,6 +4,7 @@
 
 #include "content/plugin/plugin_channel.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
@@ -238,8 +239,8 @@ void PluginChannel::OnDestroyInstance(int instance_id,
       // Don't release the modal dialog event right away, but do it after the
       // stack unwinds since the plugin can be destroyed later if it's in use
       // right now.
-      MessageLoop::current()->PostNonNestableTask(FROM_HERE, NewRunnableMethod(
-          filter.get(), &MessageFilter::ReleaseModalDialogEvent, window));
+      MessageLoop::current()->PostNonNestableTask(FROM_HERE, base::Bind(
+          &MessageFilter::ReleaseModalDialogEvent, filter.get(), window));
       return;
     }
   }

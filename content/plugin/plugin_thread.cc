@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/process_util.h"
@@ -54,7 +55,7 @@ class EnsureTerminateMessageFilter : public IPC::ChannelProxy::MessageFilter {
     // We achieve this by posting an exit process task on the IO thread.
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        NewRunnableMethod(this, &EnsureTerminateMessageFilter::Terminate),
+        base::Bind(&EnsureTerminateMessageFilter::Terminate, this),
         kPluginProcessTerminateTimeoutMs);
   }
 

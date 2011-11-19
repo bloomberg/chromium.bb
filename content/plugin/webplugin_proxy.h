@@ -278,7 +278,7 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   // Contains the routing id of the host render view.
   int host_render_view_routing_id_;
 
-  ScopedRunnableMethodFactory<WebPluginProxy> runnable_method_factory_;
+  base::WeakPtrFactory<WebPluginProxy> weak_factory_;
 };
 
 #endif  // CONTENT_PLUGIN_WEBPLUGIN_PROXY_H_

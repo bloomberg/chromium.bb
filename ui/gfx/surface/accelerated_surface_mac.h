@@ -8,7 +8,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
-#include "base/callback_old.h"
+#include "base/bind.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gl/gl_context.h"
@@ -112,8 +112,8 @@ class SURFACE_EXPORT AcceleratedSurface {
   // Sets the methods to use for allocating and freeing memory for the
   // transport DIB.
   void SetTransportDIBAllocAndFree(
-      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-      Callback1<TransportDIB::Id>::Type* deallocator);
+      const base::Callback<void(size_t, TransportDIB::Handle*)>& allocator,
+      const base::Callback<void(TransportDIB::Id)>& deallocator);
 
   // Get the accelerated surface size.
   gfx::Size GetSize() const { return surface_size_; }
@@ -175,9 +175,8 @@ class SURFACE_EXPORT AcceleratedSurface {
   GLuint fbo_;
   GLuint depth_stencil_renderbuffer_;
   // Allocate a TransportDIB in the renderer.
-  scoped_ptr<Callback2<size_t, TransportDIB::Handle*>::Type>
-      dib_alloc_callback_;
-  scoped_ptr<Callback1<TransportDIB::Id>::Type> dib_free_callback_;
+  base::Callback<void(size_t, TransportDIB::Handle*)> dib_alloc_callback_;
+  base::Callback<void(TransportDIB::Id)> dib_free_callback_;
 };
 
 #endif  // UI_GFX_SURFACE_ACCELERATED_SURFACE_MAC_H_

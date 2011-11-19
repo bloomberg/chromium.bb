@@ -71,8 +71,8 @@ void AcceleratedSurface::Destroy() {
   // these objects.
 
   // Release the old TransportDIB in the browser.
-  if (dib_free_callback_.get() && transport_dib_.get()) {
-    dib_free_callback_->Run(transport_dib_->id());
+  if (!dib_free_callback_.is_null() && transport_dib_.get()) {
+    dib_free_callback_.Run(transport_dib_->id());
   }
   transport_dib_.reset();
 
@@ -331,8 +331,8 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
   real_surface_size_ = clamped_size;
 
   // Release the old TransportDIB in the browser.
-  if (dib_free_callback_.get() && transport_dib_.get()) {
-    dib_free_callback_->Run(transport_dib_->id());
+  if (!dib_free_callback_.is_null() && transport_dib_.get()) {
+    dib_free_callback_.Run(transport_dib_->id());
   }
   transport_dib_.reset();
 
@@ -340,8 +340,8 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
   size_t dib_size =
       clamped_size.width() * 4 * clamped_size.height();  // 4 bytes per pixel.
   TransportDIB::Handle dib_handle;
-  if (dib_alloc_callback_.get()) {
-    dib_alloc_callback_->Run(dib_size, &dib_handle);
+  if (!dib_alloc_callback_.is_null()) {
+    dib_alloc_callback_.Run(dib_size, &dib_handle);
   }
   if (!TransportDIB::is_valid_handle(dib_handle)) {
     // If the allocator fails, it means the DIB was not created in the browser,
@@ -376,8 +376,8 @@ TransportDIB::Handle AcceleratedSurface::SetTransportDIBSize(
 }
 
 void AcceleratedSurface::SetTransportDIBAllocAndFree(
-    Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
-    Callback1<TransportDIB::Id>::Type* deallocator) {
-  dib_alloc_callback_.reset(allocator);
-  dib_free_callback_.reset(deallocator);
+    const base::Callback<void(size_t, TransportDIB::Handle*)>& allocator,
+    const base::Callback<void(TransportDIB::Id)>& deallocator) {
+  dib_alloc_callback_ = allocator;
+  dib_free_callback_ = deallocator;
 }
