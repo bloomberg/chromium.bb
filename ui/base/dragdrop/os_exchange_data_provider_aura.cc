@@ -12,6 +12,8 @@ namespace ui {
 
 OSExchangeDataProviderAura::OSExchangeDataProviderAura() : formats_(0) {}
 
+OSExchangeDataProviderAura::~OSExchangeDataProviderAura() {}
+
 void OSExchangeDataProviderAura::SetString(const string16& data) {
   string_ = data;
   formats_ |= OSExchangeData::STRING;

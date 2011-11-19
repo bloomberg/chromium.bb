@@ -20,8 +20,7 @@ namespace ui {
 class UI_EXPORT OSExchangeDataProviderAura : public OSExchangeData::Provider {
  public:
   OSExchangeDataProviderAura();
-
-  virtual ~OSExchangeDataProviderAura() {}
+  virtual ~OSExchangeDataProviderAura();
 
   // Overridden from OSExchangeData::Provider:
   virtual void SetString(const string16& data) OVERRIDE;
