@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/content_settings_details.h"
 #include "chrome/browser/content_settings/content_settings_provider.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -224,12 +225,6 @@ DesktopNotificationService::~DesktopNotificationService() {
   StopObserving();
 }
 
-void DesktopNotificationService::SetUIManager(
-    NotificationUIManager* ui_manager) {
-  DCHECK(!ui_manager_);
-  ui_manager_ = ui_manager;
-}
-
 void DesktopNotificationService::StartObserving() {
   if (!profile_->IsOffTheRecord()) {
     notification_registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
@@ -274,8 +269,8 @@ void DesktopNotificationService::Observe(
     // which was unloaded.
     const Extension* extension =
         content::Details<UnloadedExtensionInfo>(details)->extension;
-    if (extension && ui_manager_)
-      ui_manager_->CancelAllBySourceOrigin(extension->url());
+    if (extension)
+      GetUIManager()->CancelAllBySourceOrigin(extension->url());
   } else if (type == chrome::NOTIFICATION_PROFILE_DESTROYED) {
     StopObserving();
   }
@@ -371,8 +366,7 @@ void DesktopNotificationService::RequestPermission(
 
 void DesktopNotificationService::ShowNotification(
     const Notification& notification) {
-  // ui_manager_ should never be NULL here.
-  ui_manager_->Add(notification, profile_);
+  GetUIManager()->Add(notification, profile_);
 }
 
 bool DesktopNotificationService::CancelDesktopNotification(
@@ -380,9 +374,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
-  if (ui_manager_)
-    return ui_manager_->CancelById(proxy->id());
-  return false;
+  return GetUIManager()->CancelById(proxy->id());
 }
 
 bool DesktopNotificationService::ShowDesktopNotification(
@@ -429,6 +421,14 @@ void DesktopNotificationService::NotifySettingsChange() {
       chrome::NOTIFICATION_DESKTOP_NOTIFICATION_SETTINGS_CHANGED,
       content::Source<DesktopNotificationService>(this),
       content::NotificationService::NoDetails());
+}
+
+NotificationUIManager* DesktopNotificationService::GetUIManager() {
+  // We defer setting ui_manager_ to the global singleton until we need it
+  // in order to avoid UI dependent construction during startup.
+  if (!ui_manager_)
+    ui_manager_ = g_browser_process->notification_ui_manager();
+  return ui_manager_;
 }
 
 WebKit::WebNotificationPresenter::Permission

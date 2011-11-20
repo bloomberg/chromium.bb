@@ -1843,11 +1843,6 @@ void ChromeBrowserMainParts::StartBrowserOrUITask() {
   // Still initializing, so need to allow IO.
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
-  // Set the notification UI manager after any desktop initialization in
-  // PreMainMessageLoopRun() is complete, and before starting the browser.
-  DesktopNotificationServiceFactory::GetForProfile(profile_)->SetUIManager(
-      g_browser_process->notification_ui_manager());
-
   // Tests should be able to tune login manager before showing it.
   // Thus only show login manager in normal (non-testing) mode.
   if (!parameters().ui_task)
