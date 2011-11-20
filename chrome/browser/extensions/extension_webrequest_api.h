@@ -360,7 +360,7 @@ class WebRequestHandlerBehaviorChanged : public SyncIOThreadExtensionFunction {
 
  private:
   virtual void GetQuotaLimitHeuristics(
-      std::list<QuotaLimitHeuristic*>* heuristics) const OVERRIDE;
+      QuotaLimitHeuristics* heuristics) const OVERRIDE;
   // Handle quota exceeded gracefully: Only warn the user but still execute the
   // function.
   virtual void OnQuotaExceeded() OVERRIDE;

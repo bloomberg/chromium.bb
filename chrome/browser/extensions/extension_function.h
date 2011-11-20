@@ -82,7 +82,7 @@ class ExtensionFunction
   // Returns a quota limit heuristic suitable for this function.
   // No quota limiting by default.
   virtual void GetQuotaLimitHeuristics(
-      std::list<QuotaLimitHeuristic*>* heuristics) const {}
+      QuotaLimitHeuristics* heuristics) const {}
 
   // Called when the quota limit has been exceeded. The default implementation
   // returns an error.

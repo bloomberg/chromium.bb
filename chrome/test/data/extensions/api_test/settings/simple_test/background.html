@@ -285,6 +285,21 @@ chrome.test.runTests([
       succeed();
     }
     stage0();
+  },
+
+  function throttling() {
+    // Should get throttled after 1000 calls.
+    var maxRequests = 1001;
+    function next() {
+      chrome.experimental.settings.clear((--maxRequests > 0) ? next : done);
+    }
+    function done() {
+      chrome.test.assertEq(
+          "This request exceeds available quota.",
+          chrome.extension.lastError.message);
+      succeed();
+    }
+    chrome.experimental.settings.clear(next);
   }
 ]);
 </script>

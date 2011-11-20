@@ -1602,7 +1602,7 @@ bool WebRequestHandlerBehaviorChanged::RunImpl() {
 }
 
 void WebRequestHandlerBehaviorChanged::GetQuotaLimitHeuristics(
-    std::list<QuotaLimitHeuristic*>* heuristics) const {
+    QuotaLimitHeuristics* heuristics) const {
   QuotaLimitHeuristic::Config config = {
     20,                               // Refill 20 tokens per interval.
     base::TimeDelta::FromMinutes(10)  // 10 minutes refill interval.

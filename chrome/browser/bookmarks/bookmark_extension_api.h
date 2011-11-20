@@ -152,7 +152,7 @@ class RemoveBookmarkFunction : public BookmarksFunction {
   // BookmarksFunction:
   virtual bool RunImpl() OVERRIDE;
   virtual void GetQuotaLimitHeuristics(
-      std::list<QuotaLimitHeuristic*>* heuristics) const;
+      QuotaLimitHeuristics* heuristics) const OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.remove")
@@ -165,7 +165,7 @@ class RemoveTreeBookmarkFunction : public RemoveBookmarkFunction {
 class CreateBookmarkFunction : public BookmarksFunction {
  public:
   virtual void GetQuotaLimitHeuristics(
-      std::list<QuotaLimitHeuristic*>* heuristics) const;
+      QuotaLimitHeuristics* heuristics) const OVERRIDE;
   // BookmarksFunction:
   virtual bool RunImpl() OVERRIDE;
 
@@ -178,7 +178,7 @@ class MoveBookmarkFunction : public BookmarksFunction {
   static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
   virtual void GetQuotaLimitHeuristics(
-      std::list<QuotaLimitHeuristic*>* heuristics) const;
+      QuotaLimitHeuristics* heuristics) const OVERRIDE;
   // BookmarksFunction:
   virtual bool RunImpl() OVERRIDE;
 
@@ -191,7 +191,7 @@ class UpdateBookmarkFunction : public BookmarksFunction {
   static bool ExtractIds(const base::ListValue* args, std::list<int64>* ids,
                          bool* invalid_id);
   virtual void GetQuotaLimitHeuristics(
-      std::list<QuotaLimitHeuristic*>* heuristics) const;
+      QuotaLimitHeuristics* heuristics) const OVERRIDE;
   virtual bool RunImpl();
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.update")

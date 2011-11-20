@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extensions_quota_service.h"
+#include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -77,9 +79,10 @@ bool SettingsFunction::UseWriteResult(
 
 // Concrete settings functions
 
+namespace {
+
 // Adds all StringValues from a ListValue to a vector of strings.
-static void AddAllStringValues(
-    const ListValue& from, std::vector<std::string>* to) {
+void AddAllStringValues(const ListValue& from, std::vector<std::string>* to) {
   DCHECK(to->empty());
   std::string as_string;
   for (ListValue::const_iterator it = from.begin(); it != from.end(); ++it) {
@@ -90,7 +93,7 @@ static void AddAllStringValues(
 }
 
 // Gets the keys of a DictionaryValue.
-static std::vector<std::string> GetKeys(const DictionaryValue& dict) {
+std::vector<std::string> GetKeys(const DictionaryValue& dict) {
   std::vector<std::string> keys;
   for (DictionaryValue::key_iterator it = dict.begin_keys();
       it != dict.end_keys(); ++it) {
@@ -98,6 +101,32 @@ static std::vector<std::string> GetKeys(const DictionaryValue& dict) {
   }
   return keys;
 }
+
+// Creates quota heuristics for settings modification.
+static void GetModificationQuotaLimitHeuristics(
+    QuotaLimitHeuristics* heuristics) {
+  // A max of 1000 operations per hour.
+  QuotaLimitHeuristic::Config longLimitConfig = {
+      1000,
+      base::TimeDelta::FromHours(1)
+  };
+  heuristics->push_back(
+      new ExtensionsQuotaService::TimedLimit(
+          longLimitConfig, new QuotaLimitHeuristic::SingletonBucketMapper()));
+
+  // A max of 10 operations per minute, sustained over 10 minutes.
+  QuotaLimitHeuristic::Config shortLimitConfig = {
+      10,
+      base::TimeDelta::FromMinutes(1)
+  };
+  heuristics->push_back(
+      new ExtensionsQuotaService::SustainedLimit(
+          base::TimeDelta::FromMinutes(10),
+          shortLimitConfig,
+          new QuotaLimitHeuristic::SingletonBucketMapper()));
+};
+
+}  // namespace
 
 bool GetSettingsFunction::RunWithStorage(
     scoped_refptr<SettingsObserverList> observers,
@@ -152,6 +181,11 @@ bool SetSettingsFunction::RunWithStorage(
       observers, storage->Set(SettingsStorage::DEFAULTS, *input));
 }
 
+void SetSettingsFunction::GetQuotaLimitHeuristics(
+    QuotaLimitHeuristics* heuristics) const {
+  GetModificationQuotaLimitHeuristics(heuristics);
+}
+
 bool RemoveSettingsFunction::RunWithStorage(
     scoped_refptr<SettingsObserverList> observers,
     SettingsStorage* storage) {
@@ -179,11 +213,21 @@ bool RemoveSettingsFunction::RunWithStorage(
   };
 }
 
+void RemoveSettingsFunction::GetQuotaLimitHeuristics(
+    QuotaLimitHeuristics* heuristics) const {
+  GetModificationQuotaLimitHeuristics(heuristics);
+}
+
 bool ClearSettingsFunction::RunWithStorage(
     scoped_refptr<SettingsObserverList> observers,
     SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   return UseWriteResult(observers, storage->Clear());
+}
+
+void ClearSettingsFunction::GetQuotaLimitHeuristics(
+    QuotaLimitHeuristics* heuristics) const {
+  GetModificationQuotaLimitHeuristics(heuristics);
 }
 
 }  // namespace extensions

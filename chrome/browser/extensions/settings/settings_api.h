@@ -66,6 +66,9 @@ class SetSettingsFunction : public SettingsFunction {
   virtual bool RunWithStorage(
       scoped_refptr<SettingsObserverList> observers,
       SettingsStorage* storage) OVERRIDE;
+
+  virtual void GetQuotaLimitHeuristics(
+      QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
 
 class RemoveSettingsFunction : public SettingsFunction {
@@ -76,6 +79,9 @@ class RemoveSettingsFunction : public SettingsFunction {
   virtual bool RunWithStorage(
       scoped_refptr<SettingsObserverList> observers,
       SettingsStorage* storage) OVERRIDE;
+
+  virtual void GetQuotaLimitHeuristics(
+      QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
 
 class ClearSettingsFunction : public SettingsFunction {
@@ -86,6 +92,9 @@ class ClearSettingsFunction : public SettingsFunction {
   virtual bool RunWithStorage(
       scoped_refptr<SettingsObserverList> observers,
       SettingsStorage* storage) OVERRIDE;
+
+  virtual void GetQuotaLimitHeuristics(
+      QuotaLimitHeuristics* heuristics) const OVERRIDE;
 };
 
 }  // namespace extensions
