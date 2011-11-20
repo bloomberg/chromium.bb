@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/linked_ptr.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
@@ -36,6 +37,14 @@ void CreateInputEventData(const WebKit::WebInputEvent& event,
 // NULL.  The caller owns the created object on success.
 WebKit::WebInputEvent* CreateWebInputEvent(
     const ::ppapi::InputEventData& event);
+
+// Creates an array of WebInputEvents to make the given event look like a user
+// input event on all platforms. |plugin_x| and |plugin_y| should be the
+// coordinates of a point within the plugin's area on the page.
+std::vector<linked_ptr<WebKit::WebInputEvent> > CreateSimulatedWebInputEvents(
+    const ::ppapi::InputEventData& event,
+    int plugin_x,
+    int plugin_y);
 
 // Returns the PPAPI event class for the given WebKit event type. The given
 // type should not be "Undefined" since there's no corresponding PPAPI class.

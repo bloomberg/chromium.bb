@@ -10,7 +10,8 @@
  */
 
 label Chrome {
-  M14 = 0.7
+  M14 = 0.7,
+  M15 = 0.8
 };
 
 interface PPB_Testing_Dev {
@@ -77,4 +78,28 @@ interface PPB_Testing_Dev {
    * otherwise.
    */
   PP_Bool IsOutOfProcess();
+
+  /**
+   * Passes the input event to the browser, which sends it back to the
+   * plugin. The plugin should implement PPP_InputEvent and register for
+   * the input event type.
+   *
+   * This method sends an input event through the browser just as if it had
+   * come from the user. If the browser determines that it is an event for the
+   * plugin, it will be sent to be handled by the plugin's PPP_InputEvent
+   * interface. When generating mouse events, make sure the position is within
+   * the plugin's area on the page. When generating a keyboard event, make sure
+   * the plugin is focused.
+   *
+   * Note that the browser may generate extra input events in order to
+   * maintain certain invariants, such as always having a "mouse enter" event
+   * before any other mouse event. Furthermore, the event the plugin receives
+   * after sending a simulated event will be slightly different from the
+   * original event. The browser may change the timestamp, add modifiers, and
+   * slightly alter the mouse position, due to coordinate transforms it
+   * performs.
+   */
+  [version=0.8]
+  void SimulateInputEvent([in] PP_Instance instance,
+                          [in] PP_Resource input_event);
 };

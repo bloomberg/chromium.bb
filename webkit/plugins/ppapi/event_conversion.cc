@@ -9,12 +9,14 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/utf_string_conversion_utils.h"
 #include "ppapi/c/pp_input_event.h"
 #include "ppapi/shared_impl/input_event_impl.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "webkit/plugins/ppapi/common.h"
 
 using ppapi::EventTimeToPPTimeTicks;
@@ -24,6 +26,8 @@ using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
 using WebKit::WebMouseWheelEvent;
+using WebKit::WebString;
+using WebKit::WebUChar;
 
 namespace webkit {
 namespace ppapi {
@@ -246,6 +250,92 @@ WebMouseWheelEvent* BuildMouseWheelEvent(const InputEventData& event) {
   return mouse_wheel_event;
 }
 
+#if !defined(OS_WIN)
+#define VK_RETURN         0x0D
+
+#define VK_PRIOR          0x21
+#define VK_NEXT           0x22
+#define VK_END            0x23
+#define VK_HOME           0x24
+#define VK_LEFT           0x25
+#define VK_UP             0x26
+#define VK_RIGHT          0x27
+#define VK_DOWN           0x28
+#define VK_SNAPSHOT       0x2C
+#define VK_INSERT         0x2D
+#define VK_DELETE         0x2E
+
+#define VK_APPS           0x5D
+
+#define VK_F1             0x70
+#endif
+
+// Convert a character string to a Windows virtual key code. Adapted from
+// src/third_party/WebKit/Tools/DumpRenderTree/chromium/EventSender.cpp. This
+// is used by CreateSimulatedWebInputEvents to convert keyboard events.
+void GetKeyCode(const std::string& char_text,
+                WebUChar* code,
+                WebUChar* text,
+                bool* needs_shift_modifier,
+                bool* generate_char) {
+  WebUChar vk_code = 0;
+  WebUChar vk_text = 0;
+  *needs_shift_modifier = false;
+  *generate_char = false;
+  if ("\n" == char_text) {
+    vk_text = vk_code = VK_RETURN;
+    *generate_char = true;
+  } else if ("rightArrow" == char_text) {
+    vk_code = VK_RIGHT;
+  } else if ("downArrow" == char_text) {
+    vk_code = VK_DOWN;
+  } else if ("leftArrow" == char_text) {
+    vk_code = VK_LEFT;
+  } else if ("upArrow" == char_text) {
+    vk_code = VK_UP;
+  } else if ("insert" == char_text) {
+    vk_code = VK_INSERT;
+  } else if ("delete" == char_text) {
+    vk_code = VK_DELETE;
+  } else if ("pageUp" == char_text) {
+    vk_code = VK_PRIOR;
+  } else if ("pageDown" == char_text) {
+    vk_code = VK_NEXT;
+  } else if ("home" == char_text) {
+    vk_code = VK_HOME;
+  } else if ("end" == char_text) {
+    vk_code = VK_END;
+  } else if ("printScreen" == char_text) {
+    vk_code = VK_SNAPSHOT;
+  } else if ("menu" == char_text) {
+    vk_code = VK_APPS;
+  } else {
+    // Compare the input string with the function-key names defined by the
+    // DOM spec (i.e. "F1",...,"F24").
+    for (int i = 1; i <= 24; ++i) {
+      std::string functionKeyName = base::StringPrintf("F%d", i);
+      if (functionKeyName == char_text) {
+        vk_code = VK_F1 + (i - 1);
+        break;
+      }
+    }
+    if (!vk_code) {
+      WebString web_char_text =
+          WebString::fromUTF8(char_text.data(), char_text.size());
+      DCHECK_EQ(web_char_text.length(), 1U);
+      vk_text = vk_code = web_char_text.data()[0];
+      *needs_shift_modifier =
+          (vk_code & 0xFF) >= 'A' && (vk_code & 0xFF) <= 'Z';
+      if ((vk_code & 0xFF) >= 'a' && (vk_code & 0xFF) <= 'z')
+          vk_code -= 'a' - 'A';
+      *generate_char = true;
+    }
+  }
+
+  *code = vk_code;
+  *text = vk_text;
+}
+
 }  // namespace
 
 void CreateInputEventData(const WebInputEvent& event,
@@ -313,6 +403,98 @@ WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
   }
 
   return web_input_event.release();
+}
+
+// Generate a coherent sequence of input events to simulate a user event.
+// From src/third_party/WebKit/Tools/DumpRenderTree/chromium/EventSender.cpp.
+std::vector<linked_ptr<WebInputEvent> > CreateSimulatedWebInputEvents(
+    const ::ppapi::InputEventData& event,
+    int plugin_x,
+    int plugin_y) {
+  std::vector<linked_ptr<WebInputEvent> > events;
+  linked_ptr<WebInputEvent> original_event(CreateWebInputEvent(event));
+
+  switch (event.event_type) {
+    case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+    case PP_INPUTEVENT_TYPE_MOUSEUP:
+    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
+    case PP_INPUTEVENT_TYPE_MOUSEENTER:
+    case PP_INPUTEVENT_TYPE_MOUSELEAVE:
+      events.push_back(original_event);
+      break;
+
+    case PP_INPUTEVENT_TYPE_WHEEL: {
+      WebMouseWheelEvent* web_mouse_wheel_event =
+          static_cast<WebMouseWheelEvent*>(original_event.get());
+      web_mouse_wheel_event->x = plugin_x;
+      web_mouse_wheel_event->y = plugin_y;
+      events.push_back(original_event);
+      break;
+    }
+
+    case PP_INPUTEVENT_TYPE_RAWKEYDOWN:
+    case PP_INPUTEVENT_TYPE_KEYDOWN:
+    case PP_INPUTEVENT_TYPE_KEYUP: {
+      // Windows key down events should always be "raw" to avoid an ASSERT.
+#if defined(OS_WIN)
+      WebKeyboardEvent* web_keyboard_event =
+          static_cast<WebKeyboardEvent*>(original_event.get());
+      if (web_keyboard_event->type == WebInputEvent::KeyDown)
+        web_keyboard_event->type = WebInputEvent::RawKeyDown;
+#endif
+      events.push_back(original_event);
+      break;
+    }
+
+    case PP_INPUTEVENT_TYPE_CHAR: {
+      WebKeyboardEvent* web_char_event =
+          static_cast<WebKeyboardEvent*>(original_event.get());
+
+      WebUChar code = 0, text = 0;
+      bool needs_shift_modifier = false, generate_char = false;
+      GetKeyCode(event.character_text,
+                 &code,
+                 &text,
+                 &needs_shift_modifier,
+                 &generate_char);
+
+      // Synthesize key down and key up events in all cases.
+      scoped_ptr<WebKeyboardEvent> key_down_event(new WebKeyboardEvent());
+      scoped_ptr<WebKeyboardEvent> key_up_event(new WebKeyboardEvent());
+
+      key_down_event->type = WebInputEvent::RawKeyDown;
+      key_down_event->windowsKeyCode = code;
+      key_down_event->nativeKeyCode = code;
+      if (needs_shift_modifier)
+        key_down_event->modifiers |= WebInputEvent::ShiftKey;
+
+      // If a char event is needed, set the text fields.
+      if (generate_char) {
+        key_down_event->text[0] = text;
+        key_down_event->unmodifiedText[0] = text;
+      }
+      // Convert the key code to a string identifier.
+      key_down_event->setKeyIdentifierFromWindowsKeyCode();
+
+      *key_up_event = *web_char_event = *key_down_event;
+
+      events.push_back(linked_ptr<WebInputEvent>(key_down_event.release()));
+
+      if (generate_char) {
+        web_char_event->type = WebInputEvent::Char;
+        web_char_event->keyIdentifier[0] = '\0';
+        events.push_back(original_event);
+      }
+
+      key_up_event->type = WebInputEvent::KeyUp;
+      events.push_back(linked_ptr<WebInputEvent>(key_up_event.release()));
+      break;
+    }
+
+    default:
+      break;
+  }
+  return events;
 }
 
 PP_InputEvent_Class ClassifyInputEvent(WebInputEvent::Type type) {

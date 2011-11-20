@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -100,6 +101,7 @@
 #endif
 
 using base::StringPrintf;
+using ppapi::InputEventData;
 using ppapi::InputEventImpl;
 using ppapi::PpapiGlobals;
 using ppapi::StringVar;
@@ -1597,6 +1599,24 @@ void PluginInstance::OnLockMouseACK(int32_t result) {
 void PluginInstance::OnMouseLockLost() {
   if (LoadMouseLockInterface())
     plugin_mouse_lock_interface_->MouseLockLost(pp_instance());
+}
+
+void PluginInstance::SimulateInputEvent(const InputEventData& input_event) {
+  WebView* web_view = container()->element().document().frame()->view();
+  if (!web_view) {
+    NOTREACHED();
+    return;
+  }
+
+  std::vector<linked_ptr<WebInputEvent> > events =
+      CreateSimulatedWebInputEvents(
+          input_event,
+          position().x() + position().width() / 2,
+          position().y() + position().height() / 2);
+  for (std::vector<linked_ptr<WebInputEvent> >::iterator it = events.begin();
+      it != events.end(); ++it) {
+    web_view->handleInputEvent(*it->get());
+  }
 }
 
 PPB_Instance_FunctionAPI* PluginInstance::AsPPB_Instance_FunctionAPI() {

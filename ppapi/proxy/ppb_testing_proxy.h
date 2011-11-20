@@ -15,6 +15,9 @@ struct PP_Point;
 struct PPB_Testing_Dev;
 
 namespace ppapi {
+
+struct InputEventData;
+
 namespace proxy {
 
 class PPB_Testing_Proxy : public InterfaceProxy {
@@ -36,6 +39,8 @@ class PPB_Testing_Proxy : public InterfaceProxy {
   void OnMsgRunMessageLoop(PP_Instance instance);
   void OnMsgQuitMessageLoop(PP_Instance instance);
   void OnMsgGetLiveObjectsForInstance(PP_Instance instance, uint32_t* result);
+  void OnMsgSimulateInputEvent(PP_Instance instance,
+                               const ppapi::InputEventData& input_event);
 
   // When this proxy is in the host side, this value caches the interface
   // pointer so we don't have to retrieve it from the dispatcher each time.

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_testing_dev.idl modified Thu Nov 17 13:50:20 2011. */
+/* From dev/ppb_testing_dev.idl modified Sat Nov 19 15:58:18 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_TESTING_DEV_H_
 #define PPAPI_C_DEV_PPB_TESTING_DEV_H_
@@ -16,7 +16,8 @@
 #include "ppapi/c/pp_stdint.h"
 
 #define PPB_TESTING_DEV_INTERFACE_0_7 "PPB_Testing(Dev);0.7"
-#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_7
+#define PPB_TESTING_DEV_INTERFACE_0_8 "PPB_Testing(Dev);0.8"
+#define PPB_TESTING_DEV_INTERFACE PPB_TESTING_DEV_INTERFACE_0_8
 
 /**
  * @file
@@ -89,6 +90,37 @@ struct PPB_Testing_Dev {
    * Returns PP_TRUE if the plugin is running out-of-process, PP_FALSE
    * otherwise.
    */
+  PP_Bool (*IsOutOfProcess)();
+  /**
+   * Passes the input event to the browser, which sends it back to the
+   * plugin. The plugin should implement PPP_InputEvent and register for
+   * the input event type.
+   *
+   * This method sends an input event through the browser just as if it had
+   * come from the user. If the browser determines that it is an event for the
+   * plugin, it will be sent to be handled by the plugin's PPP_InputEvent
+   * interface. When generating mouse events, make sure the position is within
+   * the plugin's area on the page. When generating a keyboard event, make sure
+   * the plugin is focused.
+   *
+   * Note that the browser may generate extra input events in order to
+   * maintain certain invariants, such as always having a "mouse enter" event
+   * before any other mouse event. Furthermore, the event the plugin receives
+   * after sending a simulated event will be slightly different from the
+   * original event. The browser may change the timestamp, add modifiers, and
+   * slightly alter the mouse position, due to coordinate transforms it
+   * performs.
+   */
+  void (*SimulateInputEvent)(PP_Instance instance, PP_Resource input_event);
+};
+
+struct PPB_Testing_Dev_0_7 {
+  PP_Bool (*ReadImageData)(PP_Resource device_context_2d,
+                           PP_Resource image,
+                           const struct PP_Point* top_left);
+  void (*RunMessageLoop)(PP_Instance instance);
+  void (*QuitMessageLoop)(PP_Instance instance);
+  uint32_t (*GetLiveObjectsForInstance)(PP_Instance instance);
   PP_Bool (*IsOutOfProcess)();
 };
 /**

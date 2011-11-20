@@ -117,11 +117,13 @@
 #include "webkit/plugins/ppapi/ppb_video_layer_impl.h"
 #include "webkit/plugins/ppapi/webkit_forwarding_impl.h"
 
+using ppapi::InputEventData;
 using ppapi::PpapiGlobals;
 using ppapi::TimeTicksToPPTimeTicks;
 using ppapi::TimeToPPTime;
 using ppapi::thunk::EnterResource;
 using ppapi::thunk::PPB_Graphics2D_API;
+using ppapi::thunk::PPB_InputEvent_API;
 
 namespace webkit {
 namespace ppapi {
@@ -225,12 +227,26 @@ PP_Bool IsOutOfProcess() {
   return PP_FALSE;
 }
 
+void SimulateInputEvent(PP_Instance instance, PP_Resource input_event) {
+  PluginInstance* plugin_instance = host_globals->GetInstance(instance);
+  if (!plugin_instance)
+    return;
+
+  EnterResource<PPB_InputEvent_API> enter(input_event, false);
+  if (enter.failed())
+    return;
+
+  const InputEventData& input_event_data = enter.object()->GetInputEventData();
+  plugin_instance->SimulateInputEvent(input_event_data);
+}
+
 const PPB_Testing_Dev testing_interface = {
   &ReadImageData,
   &RunMessageLoop,
   &QuitMessageLoop,
   &GetLiveObjectsForInstance,
-  &IsOutOfProcess
+  &IsOutOfProcess,
+  &SimulateInputEvent
 };
 
 // GetInterface ----------------------------------------------------------------
@@ -324,10 +340,12 @@ const void* GetInterface(const char* name) {
   // Only support the testing interface when the command line switch is
   // specified. This allows us to prevent people from (ab)using this interface
   // in production code.
-  if (strcmp(name, PPB_TESTING_DEV_INTERFACE) == 0) {
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnablePepperTesting))
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePepperTesting)) {
+    if (strcmp(name, PPB_TESTING_DEV_INTERFACE) == 0 ||
+        strcmp(name, PPB_TESTING_DEV_INTERFACE_0_7) == 0) {
       return &testing_interface;
+    }
   }
   return NULL;
 }

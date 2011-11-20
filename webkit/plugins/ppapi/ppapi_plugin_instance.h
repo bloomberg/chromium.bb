@@ -58,6 +58,7 @@ struct WebCursorInfo;
 }
 
 namespace ppapi {
+struct InputEventData;
 struct PPP_Instance_Combined;
 class Resource;
 }
@@ -244,14 +245,15 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // In normal state, events come from webkit and painting goes back to it.
   // In fullscreen state, events come from the fullscreen container, and
   // painting goes back to it.
-  // In pending state, events from webkit are ignored, and as soon as we receive
-  // events from the fullscreen container, we go to the fullscreen state.
+  // In pending state, events from webkit are ignored, and as soon as we
+  // receive events from the fullscreen container, we go to the fullscreen
+  // state.
   bool FlashIsFullscreenOrPending();
 
   // Switches between fullscreen and normal mode. If |delay_report| is set to
   // false, it may report the new state through DidChangeView immediately. If
-  // true, it will delay it. When called from the plugin, delay_report should be
-  // true to avoid re-entrancy.
+  // true, it will delay it. When called from the plugin, delay_report should
+  // be true to avoid re-entrancy.
   void FlashSetFullscreen(bool fullscreen, bool delay_report);
 
   FullscreenContainer* fullscreen_container() const {
@@ -288,16 +290,20 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
 
   PluginDelegate::PlatformContext3D* CreateContext3D();
 
-  // Returns true iff the plugin is a full-page plugin (i.e. not in an iframe or
-  // embedded in a page).
+  // Returns true iff the plugin is a full-page plugin (i.e. not in an iframe
+  // or embedded in a page).
   bool IsFullPagePlugin() const;
 
   void OnLockMouseACK(int32_t result);
   void OnMouseLockLost();
 
+  // Simulates an input event to the plugin by passing it down to WebKit,
+  // which sends it back up to the plugin as if it came from the user.
+  void SimulateInputEvent(const ::ppapi::InputEventData& input_event);
+
   // FunctionGroupBase overrides.
-  virtual ::ppapi::thunk::PPB_Instance_FunctionAPI* AsPPB_Instance_FunctionAPI()
-      OVERRIDE;
+  virtual ::ppapi::thunk::PPB_Instance_FunctionAPI*
+      AsPPB_Instance_FunctionAPI() OVERRIDE;
 
   // PPB_Instance_FunctionAPI implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,

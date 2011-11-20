@@ -112,6 +112,8 @@
         'tests/test_graphics_3d.h',
         'tests/test_image_data.cc',
         'tests/test_image_data.h',
+        'tests/test_input_event.cc',
+        'tests/test_input_event.h',
         'tests/test_memory.cc',
         'tests/test_memory.h',
         'tests/test_net_address_private.cc',
