@@ -376,6 +376,14 @@ def SetUpArgumentBits(env):
   #########################################################################
 
 
+def CrosChrootHasGclient():
+  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
+  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
+  # Without truly gross hackery, it is difficult to use gclient
+  # inside a CrOS chroot within an emerge/ebuild.
+  # For now, just report False
+  return False
+
 def CheckArguments():
   for key in ARGUMENTS:
     if key not in ACCEPTABLE_ARGUMENTS:
@@ -3062,8 +3070,26 @@ nacl_env.Append(
     'src/shared/gio/nacl.scons',
     'src/shared/imc/nacl.scons',
     'src/shared/platform/nacl.scons',
-    'src/shared/ppapi/nacl.scons',
-    'src/shared/ppapi_proxy/nacl.scons',
+    ]);
+
+# BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
+# BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
+# The two nacl.scons files generate dependencies outside of the native_client
+# source tree. Unfortunately, due to several issues, the chromeos chroot can
+# not run gclient within an ebuild process.
+# In order to generate the PNaCl toolchain within chromeos chroot as an ebuild
+# process, we need to excise those nacl.scons file that DO generate
+# dependencies outside of the native_client source tree
+
+if (not nacl_env.Bit('cros_chroot')) or CrosChrootHasGclient():
+  nacl_env.Append(
+      BUILD_SCONSCRIPTS = [
+          'src/shared/ppapi/nacl.scons',
+          'src/shared/ppapi_proxy/nacl.scons',
+          ])
+
+nacl_env.Append(
+    BUILD_SCONSCRIPTS = [
     'src/shared/srpc/nacl.scons',
     'src/trusted/service_runtime/nacl.scons',
     'src/trusted/validator_x86/nacl.scons',
@@ -3220,7 +3246,12 @@ nonvariant_tests = [
     #### ALPHABETICALLY SORTED ####
     ]
 
-nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests + nonvariant_tests)
+if (not nacl_env.Bit('cros_chroot')) or CrosChrootHasGclient():
+  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
+  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
+  # Do not load up these nacl.scons files in CrOS chroot, as they
+  # inject dependecies outside of the native_client source tree
+  nacl_env.Append(BUILD_SCONSCRIPTS=irt_variant_tests + nonvariant_tests)
 
 # ----------------------------------------------------------
 # Possibly install an sdk by downloading it
@@ -3409,7 +3440,19 @@ nacl_irt_env.Append(
         'src/include/nacl/nacl.scons',
         'src/shared/gio/nacl.scons',
         'src/shared/platform/nacl.scons',
-        'src/shared/ppapi_proxy/nacl.scons',
+        ])
+
+if (not nacl_irt_env.Bit('cros_chroot')) or CrosChrootHasGclient():
+  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=2455
+  # BUG=http://code.google.com/p/nativeclient/issues/detail?id=135
+  # Do not load up these nacl.scons files in CrOS chroot, as they
+  # inject dependecies outside of the native_client source tree
+  nacl_irt_env.Append(
+      BUILD_SCONSCRIPTS = [
+          'src/shared/ppapi_proxy/nacl.scons',
+          ])
+nacl_irt_env.Append(
+    BUILD_SCONSCRIPTS = [
         'src/shared/srpc/nacl.scons',
         'src/untrusted/irt/nacl.scons',
         'src/untrusted/nacl/nacl.scons',
