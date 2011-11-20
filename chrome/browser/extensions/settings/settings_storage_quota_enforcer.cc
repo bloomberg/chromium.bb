@@ -98,8 +98,7 @@ SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(
   }
 }
 
-SettingsStorageQuotaEnforcer::~SettingsStorageQuotaEnforcer(
-    ) {}
+SettingsStorageQuotaEnforcer::~SettingsStorageQuotaEnforcer() {}
 
 SettingsStorage::ReadResult SettingsStorageQuotaEnforcer::Get(
     const std::string& key) {
@@ -111,29 +110,29 @@ SettingsStorage::ReadResult SettingsStorageQuotaEnforcer::Get(
   return delegate_->Get(keys);
 }
 
-SettingsStorage::ReadResult
-SettingsStorageQuotaEnforcer::Get() {
+SettingsStorage::ReadResult SettingsStorageQuotaEnforcer::Get() {
   return delegate_->Get();
 }
 
-SettingsStorage::WriteResult
-SettingsStorageQuotaEnforcer::Set(
-    const std::string& key, const Value& value) {
+SettingsStorage::WriteResult SettingsStorageQuotaEnforcer::Set(
+    WriteOptions options, const std::string& key, const Value& value) {
   size_t new_used_total = used_total_;
   std::map<std::string, size_t> new_used_per_setting = used_per_setting_;
   Allocate(key, value, &new_used_total, &new_used_per_setting);
 
-  if (new_used_total > quota_bytes_) {
-    return QuotaExceededFor(TOTAL_BYTES);
-  }
-  if (new_used_per_setting[key] > quota_bytes_per_setting_) {
-    return QuotaExceededFor(BYTES_PER_SETTING);
-  }
-  if (new_used_per_setting.size() > max_keys_) {
-    return QuotaExceededFor(KEY_COUNT);
+  if (options != FORCE) {
+    if (new_used_total > quota_bytes_) {
+      return QuotaExceededFor(TOTAL_BYTES);
+    }
+    if (new_used_per_setting[key] > quota_bytes_per_setting_) {
+      return QuotaExceededFor(BYTES_PER_SETTING);
+    }
+    if (new_used_per_setting.size() > max_keys_) {
+      return QuotaExceededFor(KEY_COUNT);
+    }
   }
 
-  WriteResult result = delegate_->Set(key, value);
+  WriteResult result = delegate_->Set(options, key, value);
   if (result.HasError()) {
     return result;
   }
@@ -143,26 +142,29 @@ SettingsStorageQuotaEnforcer::Set(
   return result;
 }
 
-SettingsStorage::WriteResult
-SettingsStorageQuotaEnforcer::Set(
-    const DictionaryValue& values) {
+SettingsStorage::WriteResult SettingsStorageQuotaEnforcer::Set(
+    WriteOptions options, const DictionaryValue& values) {
   size_t new_used_total = used_total_;
   std::map<std::string, size_t> new_used_per_setting = used_per_setting_;
   for (DictionaryValue::Iterator it(values); it.HasNext(); it.Advance()) {
     Allocate(it.key(), it.value(), &new_used_total, &new_used_per_setting);
-    if (new_used_per_setting[it.key()] > quota_bytes_per_setting_) {
+
+    if (options != FORCE &&
+        new_used_per_setting[it.key()] > quota_bytes_per_setting_) {
       return QuotaExceededFor(BYTES_PER_SETTING);
     }
   }
 
-  if (new_used_total > quota_bytes_) {
-    return QuotaExceededFor(TOTAL_BYTES);
-  }
-  if (new_used_per_setting.size() > max_keys_) {
-    return QuotaExceededFor(KEY_COUNT);
+  if (options != FORCE) {
+    if (new_used_total > quota_bytes_) {
+      return QuotaExceededFor(TOTAL_BYTES);
+    }
+    if (new_used_per_setting.size() > max_keys_) {
+      return QuotaExceededFor(KEY_COUNT);
+    }
   }
 
-  WriteResult result = delegate_->Set(values);
+  WriteResult result = delegate_->Set(options, values);
   if (result.HasError()) {
     return result;
   }
@@ -172,8 +174,7 @@ SettingsStorageQuotaEnforcer::Set(
   return result;
 }
 
-SettingsStorage::WriteResult
-SettingsStorageQuotaEnforcer::Remove(
+SettingsStorage::WriteResult SettingsStorageQuotaEnforcer::Remove(
     const std::string& key) {
   WriteResult result = delegate_->Remove(key);
   if (result.HasError()) {
@@ -183,8 +184,7 @@ SettingsStorageQuotaEnforcer::Remove(
   return result;
 }
 
-SettingsStorage::WriteResult
-SettingsStorageQuotaEnforcer::Remove(
+SettingsStorage::WriteResult SettingsStorageQuotaEnforcer::Remove(
     const std::vector<std::string>& keys) {
   WriteResult result = delegate_->Remove(keys);
   if (result.HasError()) {
@@ -198,9 +198,7 @@ SettingsStorageQuotaEnforcer::Remove(
   return result;
 }
 
-SettingsStorage::WriteResult
-SettingsStorageQuotaEnforcer::Clear(
-    ) {
+SettingsStorage::WriteResult SettingsStorageQuotaEnforcer::Clear() {
   WriteResult result = delegate_->Clear();
   if (result.HasError()) {
     return result;

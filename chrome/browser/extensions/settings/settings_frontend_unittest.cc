@@ -23,6 +23,9 @@ using namespace settings_test_util;
 
 namespace {
 
+// To save typing SettingsStorage::DEFAULTS everywhere.
+const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
+
 // A SettingsStorageFactory which always returns NULL.
 class NullSettingsStorageFactory : public SettingsStorageFactory {
  public:
@@ -89,7 +92,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   // be too rigorous.
   {
     StringValue bar("bar");
-    SettingsStorage::WriteResult result = storage->Set("foo", bar);
+    SettingsStorage::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_FALSE(result.HasError());
   }
 
@@ -118,7 +121,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
 
   {
     StringValue bar("bar");
-    SettingsStorage::WriteResult result = storage->Set("foo", bar);
+    SettingsStorage::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_FALSE(result.HasError());
   }
 
@@ -144,7 +147,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
 
   {
     StringValue bar("bar");
-    SettingsStorage::WriteResult result = storage->Set("foo", bar);
+    SettingsStorage::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_FALSE(result.HasError());
     EXPECT_TRUE(file_util::PathExists(temp_dir_.path()));
   }
@@ -179,7 +182,7 @@ TEST_F(ExtensionSettingsFrontendTest,
 
   EXPECT_TRUE(storage->Get().HasError());
   EXPECT_TRUE(storage->Clear().HasError());
-  EXPECT_TRUE(storage->Set("foo", bar).HasError());
+  EXPECT_TRUE(storage->Set(DEFAULTS, "foo", bar).HasError());
   EXPECT_TRUE(storage->Remove("foo").HasError());
 
   // For simplicity: just always fail those requests, even if the leveldb
@@ -191,7 +194,7 @@ TEST_F(ExtensionSettingsFrontendTest,
 
   EXPECT_TRUE(storage->Get().HasError());
   EXPECT_TRUE(storage->Clear().HasError());
-  EXPECT_TRUE(storage->Set("foo", bar).HasError());
+  EXPECT_TRUE(storage->Set(DEFAULTS, "foo", bar).HasError());
   EXPECT_TRUE(storage->Remove("foo").HasError());
 }
 

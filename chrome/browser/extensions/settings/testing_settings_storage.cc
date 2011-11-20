@@ -67,14 +67,14 @@ SettingsStorage::ReadResult TestingSettingsStorage::Get() {
 }
 
 SettingsStorage::WriteResult TestingSettingsStorage::Set(
-    const std::string& key, const Value& value) {
+    WriteOptions options, const std::string& key, const Value& value) {
   DictionaryValue settings;
   settings.SetWithoutPathExpansion(key, value.DeepCopy());
-  return Set(settings);
+  return Set(options, settings);
 }
 
 SettingsStorage::WriteResult TestingSettingsStorage::Set(
-    const DictionaryValue& settings) {
+    WriteOptions options, const DictionaryValue& settings) {
   if (fail_all_requests_) {
     return WriteResultError();
   }

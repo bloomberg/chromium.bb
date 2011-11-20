@@ -49,9 +49,9 @@ SettingsStorage::ReadResult SyncableSettingsStorage::Get() {
 }
 
 SettingsStorage::WriteResult SyncableSettingsStorage::Set(
-    const std::string& key, const Value& value) {
+    WriteOptions options, const std::string& key, const Value& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  WriteResult result = delegate_->Set(key, value);
+  WriteResult result = delegate_->Set(options, key, value);
   if (result.HasError()) {
     return result;
   }
@@ -62,9 +62,9 @@ SettingsStorage::WriteResult SyncableSettingsStorage::Set(
 }
 
 SettingsStorage::WriteResult SyncableSettingsStorage::Set(
-    const DictionaryValue& values) {
+    WriteOptions options, const DictionaryValue& values) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  WriteResult result = delegate_->Set(values);
+  WriteResult result = delegate_->Set(options, values);
   if (result.HasError()) {
     return result;
   }
@@ -100,8 +100,7 @@ SettingsStorage::WriteResult SyncableSettingsStorage::Remove(
   return result;
 }
 
-SettingsStorage::WriteResult
-SyncableSettingsStorage::Clear() {
+SettingsStorage::WriteResult SyncableSettingsStorage::Clear() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   WriteResult result = delegate_->Clear();
   if (result.HasError()) {
@@ -396,7 +395,7 @@ SyncError SyncableSettingsStorage::OnSyncAdd(
     SettingChangeList* changes) {
   DCHECK(new_value);
   synced_keys_.insert(key);
-  WriteResult result = delegate_->Set(key, *new_value);
+  WriteResult result = delegate_->Set(FORCE, key, *new_value);
   if (result.HasError()) {
     return SyncError(
         FROM_HERE,
@@ -415,7 +414,7 @@ SyncError SyncableSettingsStorage::OnSyncUpdate(
     SettingChangeList* changes) {
   DCHECK(old_value);
   DCHECK(new_value);
-  WriteResult result = delegate_->Set(key, *new_value);
+  WriteResult result = delegate_->Set(FORCE, key, *new_value);
   if (result.HasError()) {
     return SyncError(
         FROM_HERE,

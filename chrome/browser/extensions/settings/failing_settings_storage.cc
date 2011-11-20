@@ -35,12 +35,12 @@ SettingsStorage::ReadResult FailingSettingsStorage::Get() {
 }
 
 SettingsStorage::WriteResult FailingSettingsStorage::Set(
-    const std::string& key, const Value& value) {
+    WriteOptions options, const std::string& key, const Value& value) {
   return WriteResultError();
 }
 
 SettingsStorage::WriteResult FailingSettingsStorage::Set(
-    const DictionaryValue& settings) {
+    WriteOptions options, const DictionaryValue& settings) {
   return WriteResultError();
 }
 

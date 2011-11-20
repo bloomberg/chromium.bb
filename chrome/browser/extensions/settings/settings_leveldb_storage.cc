@@ -164,21 +164,20 @@ SettingsStorage::ReadResult SettingsLeveldbStorage::Get() {
 }
 
 SettingsStorage::WriteResult SettingsLeveldbStorage::Set(
-    const std::string& key, const Value& value) {
+    WriteOptions options, const std::string& key, const Value& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DictionaryValue settings;
   settings.SetWithoutPathExpansion(key, value.DeepCopy());
-  return Set(settings);
+  return Set(options, settings);
 }
 
 SettingsStorage::WriteResult SettingsLeveldbStorage::Set(
-    const DictionaryValue& settings) {
+    WriteOptions options, const DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   std::string value_as_json;
   leveldb::WriteBatch batch;
-  scoped_ptr<SettingChangeList> changes(
-      new SettingChangeList());
+  scoped_ptr<SettingChangeList> changes(new SettingChangeList());
 
   for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
     scoped_ptr<Value> old_value;
@@ -246,16 +245,15 @@ SettingsStorage::WriteResult SettingsLeveldbStorage::Remove(
 SettingsStorage::WriteResult SettingsLeveldbStorage::Clear() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  leveldb::ReadOptions options;
+  leveldb::ReadOptions read_options;
   // All interaction with the db is done on the same thread, so snapshotting
   // isn't strictly necessary.  This is just defensive.
   leveldb::WriteBatch batch;
-  scoped_ptr<SettingChangeList> changes(
-      new SettingChangeList());
+  scoped_ptr<SettingChangeList> changes(new SettingChangeList());
 
   ScopedSnapshot snapshot(db_.get());
-  options.snapshot = snapshot.get();
-  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
+  read_options.snapshot = snapshot.get();
+  scoped_ptr<leveldb::Iterator> it(db_->NewIterator(read_options));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     const std::string key = it->key().ToString();
     const std::string old_value_json = it->value().ToString();

@@ -89,6 +89,17 @@ class SettingsStorage {
     scoped_refptr<Inner> inner_;
   };
 
+  // Options for write operations.
+  enum WriteOptions {
+    // Callers should usually use this.
+    DEFAULTS,
+
+    // Ignore restrictions, such as quota.  It is still possible for the
+    // operation to fail, such as on hard drive failure or if the storage area
+    // is configured to fail.
+    FORCE
+  };
+
   virtual ~SettingsStorage() {}
 
   // Gets a single value from storage.
@@ -101,10 +112,12 @@ class SettingsStorage {
   virtual ReadResult Get() = 0;
 
   // Sets a single key to a new value.
-  virtual WriteResult Set(const std::string& key, const Value& value) = 0;
+  virtual WriteResult Set(
+      WriteOptions options, const std::string& key, const Value& value) = 0;
 
   // Sets multiple keys to new values.
-  virtual WriteResult Set(const DictionaryValue& values) = 0;
+  virtual WriteResult Set(
+      WriteOptions options, const DictionaryValue& values) = 0;
 
   // Removes a key from the storage.
   virtual WriteResult Remove(const std::string& key) = 0;

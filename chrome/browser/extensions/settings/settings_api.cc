@@ -148,7 +148,8 @@ bool SetSettingsFunction::RunWithStorage(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DictionaryValue *input;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
-  return UseWriteResult(observers, storage->Set(*input));
+  return UseWriteResult(
+      observers, storage->Set(SettingsStorage::DEFAULTS, *input));
 }
 
 bool RemoveSettingsFunction::RunWithStorage(

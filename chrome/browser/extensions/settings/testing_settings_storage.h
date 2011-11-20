@@ -25,8 +25,12 @@ class TestingSettingsStorage : public SettingsStorage {
   virtual ReadResult Get(const std::string& key) OVERRIDE;
   virtual ReadResult Get(const std::vector<std::string>& keys) OVERRIDE;
   virtual ReadResult Get() OVERRIDE;
-  virtual WriteResult Set(const std::string& key, const Value& value) OVERRIDE;
-  virtual WriteResult Set(const DictionaryValue& values) OVERRIDE;
+  virtual WriteResult Set(
+      WriteOptions options,
+      const std::string& key,
+      const Value& value) OVERRIDE;
+  virtual WriteResult Set(
+      WriteOptions options, const DictionaryValue& values) OVERRIDE;
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
   virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
   virtual WriteResult Clear() OVERRIDE;

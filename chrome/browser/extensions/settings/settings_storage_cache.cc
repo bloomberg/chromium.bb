@@ -67,8 +67,8 @@ SettingsStorage::ReadResult SettingsStorageCache::Get() {
 }
 
 SettingsStorage::WriteResult SettingsStorageCache::Set(
-    const std::string& key, const Value& value) {
-  WriteResult result = delegate_->Set(key, value);
+    WriteOptions options, const std::string& key, const Value& value) {
+  WriteResult result = delegate_->Set(options, key, value);
   if (!result.HasError()) {
     cache_.SetWithoutPathExpansion(key, value.DeepCopy());
   }
@@ -76,8 +76,8 @@ SettingsStorage::WriteResult SettingsStorageCache::Set(
 }
 
 SettingsStorage::WriteResult SettingsStorageCache::Set(
-    const DictionaryValue& settings) {
-  WriteResult result = delegate_->Set(settings);
+    WriteOptions options, const DictionaryValue& settings) {
+  WriteResult result = delegate_->Set(options, settings);
   if (result.HasError()) {
     return result;
   }

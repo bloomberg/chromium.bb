@@ -32,6 +32,9 @@ using namespace settings_test_util;
 
 namespace {
 
+// To save typing SettingsStorage::DEFAULTS everywhere.
+const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
+
 // Gets the pretty-printed JSON for a value.
 static std::string GetJson(const Value& value) {
   std::string json;
@@ -272,8 +275,8 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
   SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
   SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
-  storage1->Set("foo", value1);
-  storage2->Set("bar", value2);
+  storage1->Set(DEFAULTS, "foo", value1);
+  storage2->Set(DEFAULTS, "bar", value2);
 
   std::map<std::string, SettingSyncDataList> all_sync_data =
       GetAllSyncData(model_type);
@@ -297,10 +300,10 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
 
   // Regression test: not-changing the synced value shouldn't result in a sync
   // change, and changing the synced value should result in an update.
-  storage1->Set("foo", value1);
+  storage1->Set(DEFAULTS, "foo", value1);
   ASSERT_EQ(0u, sync_.changes().size());
 
-  storage1->Set("foo", value2);
+  storage1->Set(DEFAULTS, "foo", value2);
   ASSERT_EQ(1u, sync_.changes().size());
   SettingSyncData change = sync_.GetOnlyChange("s1", "foo");
   ASSERT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
@@ -320,8 +323,8 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
   SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
   SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
-  storage1->Set("foo", value1);
-  storage2->Set("bar", value2);
+  storage1->Set(DEFAULTS, "foo", value1);
+  storage2->Set(DEFAULTS, "bar", value2);
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, SyncDataList(), &sync_);
@@ -352,7 +355,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
 
   // Pre-populate one of the storage areas.
   SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
-  storage1->Set("overwriteMe", value1);
+  storage1->Set(DEFAULTS, "overwriteMe", value1);
 
   SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
@@ -392,7 +395,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
   SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
-  storage1->Set("foo", value1);
+  storage1->Set(DEFAULTS, "foo", value1);
   expected1.Set("foo", value1.DeepCopy());
 
   SyncDataList sync_data;
@@ -462,8 +465,8 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   SettingsStorage* storage3 = AddExtensionAndGetStorage("s3", type);
   SettingsStorage* storage4 = AddExtensionAndGetStorage("s4", type);
 
-  storage1->Set("foo", value1);
-  storage2->Set("foo", value1);
+  storage1->Set(DEFAULTS, "foo", value1);
+  storage2->Set(DEFAULTS, "foo", value1);
 
   SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
@@ -475,10 +478,10 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
       model_type, sync_data, &sync_);
 
   // Add something locally.
-  storage1->Set("bar", value2);
-  storage2->Set("bar", value2);
-  storage3->Set("foo", value1);
-  storage4->Set("foo", value1);
+  storage1->Set(DEFAULTS, "bar", value2);
+  storage2->Set(DEFAULTS, "bar", value2);
+  storage3->Set(DEFAULTS, "foo", value1);
+  storage4->Set(DEFAULTS, "foo", value1);
 
   SettingSyncData change = sync_.GetOnlyChange("s1", "bar");
     ASSERT_EQ(SyncChange::ACTION_ADD, change.change_type());
@@ -497,10 +500,10 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   // initial setting, for all combinations of local vs sync intialisation and
   // new vs initial.
   sync_.ClearChanges();
-  storage1->Set("bar", value1);
-  storage2->Set("foo", value2);
-  storage3->Set("bar", value1);
-  storage4->Set("foo", value2);
+  storage1->Set(DEFAULTS, "bar", value1);
+  storage2->Set(DEFAULTS, "foo", value2);
+  storage3->Set(DEFAULTS, "bar", value1);
+  storage4->Set(DEFAULTS, "foo", value2);
 
   change = sync_.GetOnlyChange("s1", "bar");
     ASSERT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
@@ -548,10 +551,10 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
 
   // Clear the rest of the settings.  Add the removed ones back first so that
   // more than one setting is cleared.
-  storage1->Set("foo", value1);
-  storage2->Set("bar", value2);
-  storage3->Set("foo", value1);
-  storage4->Set("bar", value2);
+  storage1->Set(DEFAULTS, "foo", value1);
+  storage2->Set(DEFAULTS, "bar", value2);
+  storage3->Set(DEFAULTS, "foo", value1);
+  storage4->Set(DEFAULTS, "bar", value2);
 
   sync_.ClearChanges();
   storage1->Clear();
@@ -598,8 +601,8 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   SettingsStorage* storage2 = AddExtensionAndGetStorage(
       "s2", Extension::TYPE_PACKAGED_APP);
 
-  storage1->Set("foo", value1);
-  storage2->Set("bar", value2);
+  storage1->Set(DEFAULTS, "foo", value1);
+  storage2->Set(DEFAULTS, "bar", value2);
 
   std::map<std::string, SettingSyncDataList> extension_sync_data =
       GetAllSyncData(syncable::EXTENSION_SETTINGS);
@@ -677,8 +680,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
 
   // Changes made to good should be sent to sync, changes from bad shouldn't.
   sync_.ClearChanges();
-  good->Set("bar", barValue);
-  bad->Set("bar", barValue);
+  good->Set(DEFAULTS, "bar", barValue);
+  bad->Set(DEFAULTS, "bar", barValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_ADD,
@@ -725,8 +728,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   // Changes made to bad still shouldn't go to sync, even though it didn't fail
   // last time.
   sync_.ClearChanges();
-  good->Set("bar", fooValue);
-  bad->Set("bar", fooValue);
+  good->Set(DEFAULTS, "bar", fooValue);
+  bad->Set(DEFAULTS, "bar", fooValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_UPDATE,
@@ -791,8 +794,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
 
   // Live local changes now get pushed, too.
   sync_.ClearChanges();
-  good->Set("bar", barValue);
-  bad->Set("bar", barValue);
+  good->Set(DEFAULTS, "bar", barValue);
+  bad->Set(DEFAULTS, "bar", barValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_UPDATE,
@@ -891,8 +894,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
 
   // No more changes sent to sync for bad.
   sync_.ClearChanges();
-  good->Set("foo", barValue);
-  bad->Set("foo", barValue);
+  good->Set(DEFAULTS, "foo", barValue);
+  bad->Set(DEFAULTS, "foo", barValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_UPDATE,
@@ -936,8 +939,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
   SettingsStorage* good = AddExtensionAndGetStorage("good", type);
   SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
 
-  good->Set("foo", fooValue);
-  bad->Set("foo", fooValue);
+  good->Set(DEFAULTS, "foo", fooValue);
+  bad->Set(DEFAULTS, "foo", fooValue);
 
   // Even though bad will fail to get all sync data, sync data should still
   // include that from good.
@@ -963,8 +966,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
   EXPECT_EQ(2u, sync_.changes().size());
 
   sync_.ClearChanges();
-  good->Set("bar", barValue);
-  bad->Set("bar", barValue);
+  good->Set(DEFAULTS, "bar", barValue);
+  bad->Set(DEFAULTS, "bar", barValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_ADD,
@@ -989,8 +992,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
   SettingsStorage* good = AddExtensionAndGetStorage("good", type);
   SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
 
-  good->Set("foo", fooValue);
-  bad->Set("foo", fooValue);
+  good->Set(DEFAULTS, "foo", fooValue);
+  bad->Set(DEFAULTS, "foo", fooValue);
 
   // good will successfully push foo:fooValue to sync, but bad will fail to
   // get them so won't.
@@ -1006,8 +1009,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
 
   // bad should now be disabled for sync.
   sync_.ClearChanges();
-  good->Set("bar", barValue);
-  bad->Set("bar", barValue);
+  good->Set(DEFAULTS, "bar", barValue);
+  bad->Set(DEFAULTS, "bar", barValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_ADD,
@@ -1060,8 +1063,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
   EXPECT_EQ(4u, sync_.changes().size());
 
   sync_.ClearChanges();
-  good->Set("bar", fooValue);
-  bad->Set("bar", fooValue);
+  good->Set(DEFAULTS, "bar", fooValue);
+  bad->Set(DEFAULTS, "bar", fooValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_UPDATE,
@@ -1087,7 +1090,7 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
   SettingsStorage* bad = AddExtensionAndGetStorage("bad", type);
 
   // Only set bad; setting good will cause it to fail below.
-  bad->Set("foo", fooValue);
+  bad->Set(DEFAULTS, "foo", fooValue);
 
   sync_.SetFailAllRequests(true);
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
@@ -1096,8 +1099,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
 
   // Changes from good will be send to sync, changes from bad won't.
   sync_.ClearChanges();
-  good->Set("foo", barValue);
-  bad->Set("foo", barValue);
+  good->Set(DEFAULTS, "foo", barValue);
+  bad->Set(DEFAULTS, "foo", barValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_ADD,
@@ -1144,8 +1147,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
   EXPECT_EQ(3u, sync_.changes().size());
 
   sync_.ClearChanges();
-  good->Set("foo", fooValue);
-  bad->Set("foo", fooValue);
+  good->Set(DEFAULTS, "foo", fooValue);
+  bad->Set(DEFAULTS, "foo", fooValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_UPDATE,
@@ -1174,9 +1177,9 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
       model_type, SyncDataList(), &sync_);
 
   // bad will fail to send changes.
-  good->Set("foo", fooValue);
+  good->Set(DEFAULTS, "foo", fooValue);
   sync_.SetFailAllRequests(true);
-  bad->Set("foo", fooValue);
+  bad->Set(DEFAULTS, "foo", fooValue);
   sync_.SetFailAllRequests(false);
 
   EXPECT_EQ(
@@ -1186,8 +1189,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
 
   // No further changes should be sent from bad.
   sync_.ClearChanges();
-  good->Set("foo", barValue);
-  bad->Set("foo", barValue);
+  good->Set(DEFAULTS, "foo", barValue);
+  bad->Set(DEFAULTS, "foo", barValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_UPDATE,
@@ -1234,8 +1237,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
   EXPECT_EQ(3u, sync_.changes().size());
 
   sync_.ClearChanges();
-  good->Set("foo", fooValue);
-  bad->Set("foo", fooValue);
+  good->Set(DEFAULTS, "foo", fooValue);
+  bad->Set(DEFAULTS, "foo", fooValue);
 
   EXPECT_EQ(
       SyncChange::ACTION_UPDATE,
@@ -1244,6 +1247,46 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
       SyncChange::ACTION_UPDATE,
       sync_.GetOnlyChange("good", "foo").change_type());
   EXPECT_EQ(2u, sync_.changes().size());
+}
+
+TEST_F(ExtensionSettingsSyncTest,
+    LargeOutgoingChangeRejectedButIncomingAccepted) {
+  syncable::ModelType model_type = syncable::APP_SETTINGS;
+  Extension::Type type = Extension::TYPE_PACKAGED_APP;
+
+  // This value should be larger than the limit in settings_backend.cc.
+  std::string string_5k;
+  for (size_t i = 0; i < 5000; ++i) {
+    string_5k.append("a");
+  }
+  StringValue large_value(string_5k);
+
+  GetSyncableService(model_type)->MergeDataAndStartSyncing(
+      model_type, SyncDataList(), &sync_);
+
+  // Large local change rejected and doesn't get sent out.
+  SettingsStorage* storage1 = AddExtensionAndGetStorage("s1", type);
+  EXPECT_TRUE(storage1->Set(DEFAULTS, "large_value", large_value).HasError());
+  EXPECT_EQ(0u, sync_.changes().size());
+
+  // Large incoming change should still get accepted.
+  SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
+  {
+    SyncChangeList change_list;
+    change_list.push_back(
+        settings_sync_util::CreateAdd("s1", "large_value", large_value));
+    change_list.push_back(
+        settings_sync_util::CreateAdd("s2", "large_value", large_value));
+    GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
+  }
+  {
+    DictionaryValue expected;
+    expected.Set("large_value", large_value.DeepCopy());
+    EXPECT_PRED_FORMAT2(SettingsEq, expected, storage1->Get());
+    EXPECT_PRED_FORMAT2(SettingsEq, expected, storage2->Get());
+  }
+
+  GetSyncableService(model_type)->StopSyncing(model_type);
 }
 
 }  // namespace extensions
