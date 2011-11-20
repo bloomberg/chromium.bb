@@ -60,6 +60,7 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   }
 
   View* anchor_view() const { return anchor_view_; }
+  void set_anchor_view(View* anchor_view) { anchor_view_ = anchor_view; }
 
   bool use_focusless() const { return use_focusless_; }
   void set_use_focusless(bool use_focusless) {
