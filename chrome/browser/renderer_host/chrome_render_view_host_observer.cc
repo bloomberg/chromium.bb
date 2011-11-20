@@ -114,13 +114,12 @@ void ChromeRenderViewHostObserver::InitRenderViewForExtensions() {
       type == Extension::TYPE_PACKAGED_APP) {
     ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
         process->GetID(), chrome::kChromeUIScheme);
-  }
 
-  if (type == Extension::TYPE_EXTENSION &&
-      profile_->GetExtensionService()->extension_prefs()->AllowFileAccess(
+    if (profile_->GetExtensionService()->extension_prefs()->AllowFileAccess(
           extension->id())) {
-    ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-        process->GetID(), chrome::kFileScheme);
+      ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+          process->GetID(), chrome::kFileScheme);
+    }
   }
 
   if (type == Extension::TYPE_EXTENSION ||
