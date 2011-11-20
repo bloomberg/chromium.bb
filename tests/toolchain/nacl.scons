@@ -112,9 +112,6 @@ def MakeEnv(use_opts, use_frames):
   if use_opts:
     new_env.Append(CFLAGS=['-O2'])
     new_env.Append(CCFLAGS=['-O2'])
-    # TODO(dschuff) remove this once we merge closer to tip and fix bug 1941
-    if env.Bit('bitcode'):
-      new_env.Append(LINKFLAGS=['-Wl,--add-opt-option=-std-compile-opts'])
   else:
     new_env.FilterOut(CFLAGS=['-O2'])
     new_env.FilterOut(CCFLAGS=['-O2'])
@@ -141,18 +138,6 @@ for tag, e in ENVIRONMENTS_TO_TRY:
     if src in ['unwind_trace.cc', 'stack_frame.cc']:
       # the tracing gets messed up by optimizations
       is_broken |= tag.startswith('opt')
-
-    # There is a problem with the optimized eh_loop_many on ARM
-    if (src == 'eh_loop_many.cc' and
-        env.Bit('target_arm') and
-        tag.startswith('opt')):
-      is_broken = True
-
-    # After merge to LLVM r137789, some EH tests are failing on ARM,
-    # and some are failing on X86-64.
-    is_broken |= (src == 'eh_loop_many.cc' and
-                  env.Bit('target_x86_64') and
-                  tag.startswith('opt'))
 
     # After merge to LLVM r144148, all ARM EH sandboxed translator tests fail
     # BUG= http://code.google.com/p/nativeclient/issues/detail?id=1565
