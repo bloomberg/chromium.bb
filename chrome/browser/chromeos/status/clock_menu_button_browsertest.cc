@@ -17,6 +17,10 @@
 #include "unicode/calendar.h"
 #include "unicode/timezone.h"
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#endif
+
 namespace chromeos {
 
 class ClockMenuButtonTest : public InProcessBrowserTest {
@@ -27,15 +31,20 @@ class ClockMenuButtonTest : public InProcessBrowserTest {
     // to use stub, so reset it here.
     CrosLibrary::Get()->GetTestApi()->ResetUseStubImpl();
   }
-  ClockMenuButton* GetClockMenuButton() {
-    BrowserView* view = static_cast<BrowserView*>(browser()->window());
-    return static_cast<ClockMenuButton*>(view->GetViewByID(
+  const ClockMenuButton* GetClockMenuButton() {
+    const views::View* parent = NULL;
+#if defined(USE_AURA)
+    parent = ChromeShellDelegate::instance()->GetStatusArea();
+#else
+    parent = static_cast<const BrowserView*>(browser()->window());
+#endif
+    return static_cast<const ClockMenuButton*>(parent->GetViewByID(
         VIEW_ID_STATUS_BUTTON_CLOCK));
   }
 };
 
 IN_PROC_BROWSER_TEST_F(ClockMenuButtonTest, TimezoneTest) {
-  ClockMenuButton* clock = GetClockMenuButton();
+  const ClockMenuButton* clock = GetClockMenuButton();
   ASSERT_TRUE(clock != NULL);
 
   // Update timezone and make sure clock text changes.

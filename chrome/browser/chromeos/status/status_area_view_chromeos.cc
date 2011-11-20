@@ -30,7 +30,7 @@ StatusAreaViewChromeos::~StatusAreaViewChromeos() {
 
 void StatusAreaViewChromeos::Init(StatusAreaButton::Delegate* delegate,
                                   ScreenMode screen_mode) {
-  AddChromeosButtons(this, delegate, screen_mode);
+  AddChromeosButtons(this, delegate, screen_mode, NULL);
 }
 
 void StatusAreaViewChromeos::SystemResumed() {
@@ -59,7 +59,8 @@ void StatusAreaViewChromeos::SetDefaultUse24HourClock(bool use_24hour_clock) {
 void StatusAreaViewChromeos::AddChromeosButtons(
     StatusAreaView* status_area,
     StatusAreaButton::Delegate* delegate,
-    ScreenMode screen_mode) {
+    ScreenMode screen_mode,
+    ClockMenuButton** clock_button) {
   const bool border = true;
   const bool no_border = false;
 
@@ -69,7 +70,10 @@ void StatusAreaViewChromeos::AddChromeosButtons(
   status_area->AddButton(
       new AccessibilityMenuButton(delegate, screen_mode), border);
   status_area->AddButton(new CapsLockMenuButton(delegate), border);
-  status_area->AddButton(new ClockMenuButton(delegate), border);
+  ClockMenuButton* clock = new ClockMenuButton(delegate);
+  status_area->AddButton(clock, border);
+  if (clock_button)
+    *clock_button = clock;
 
   status_area->AddButton(
       new InputMethodMenuButton(delegate, screen_mode), no_border);
