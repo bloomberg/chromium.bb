@@ -409,6 +409,8 @@ add_config('arm-tegra2-commit-queue', [commit_queue, {
 add_config('x86-mario-commit-queue', [commit_queue, internal, {
   'board' : 'x86-mario',
   'master': True,
+
+  'vm_tests': constants.SIMPLE_AU_TEST_TYPE,
   'overlays': 'private',
 }])
 
