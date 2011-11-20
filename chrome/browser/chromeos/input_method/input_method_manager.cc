@@ -697,7 +697,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       const size_t num_active_input_methods = GetNumActiveInputMethods();
       FOR_EACH_OBSERVER(InputMethodManager::Observer, observers_,
                         ActiveInputMethodsChanged(this,
-                                                  current_input_method_,
+                                                  current_input_method(),
                                                   num_active_input_methods));
     }
   }
