@@ -77,7 +77,6 @@ Status ApplyEnsemblePatch(SourceStream* old, SourceStream* patch,
 // Returns C_OK unless something went wrong.
 // This function first validates that the patch file has a proper header, so the
 // function can be used to 'try' a patch.
-
 Status ApplyEnsemblePatch(const FilePath::CharType* old_file_name,
                           const FilePath::CharType* patch_file_name,
                           const FilePath::CharType* new_file_name);
@@ -111,7 +110,6 @@ Status ParseDetectedExecutable(const void* buffer, size_t length,
 // Returns C_OK if succeeded, otherwise returns an error status and
 // sets |*output| to NULL
 Status Encode(AssemblyProgram* program, EncodedProgram** output);
-
 
 // Serializes |encoded| into the stream set.
 // Returns C_OK if succeeded, otherwise returns an error status.

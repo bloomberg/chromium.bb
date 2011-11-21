@@ -22,6 +22,7 @@
 void PrintHelp() {
   fprintf(stderr,
     "Usage:\n"
+    "  courgette -supported <executable_file>\n"
     "  courgette -dis <executable_file> <binary_assembly_file>\n"
     "  courgette -asm <binary_assembly_file> <executable_file>\n"
     "  courgette -disadj <executable_file> <reference> <binary_assembly_file>\n"
@@ -103,6 +104,41 @@ void Disassemble(const FilePath& input_file,
     Problem("Can't combine serialized encoded program streams.");
 
   WriteSinkToFile(&sink, output_file);
+}
+
+bool Supported(const FilePath& input_file) {
+  bool result = false;
+
+  std::string buffer = ReadOrFail(input_file, "input");
+
+  courgette::ExecutableType type;
+  size_t detected_length;
+
+  DetectExecutableType(buffer.c_str(), buffer.length(),
+                       &type,
+                       &detected_length);
+
+  // If the detection fails, we just fall back on UNKNOWN
+  std::string format = "Unsupported";
+
+  switch (type)
+  {
+    case courgette::EXE_UNKNOWN:
+      break;
+
+    case courgette::EXE_WIN_32_X86:
+      format = "Windows 32 PE";
+      result = true;
+      break;
+
+    case courgette::EXE_ELF_32_X86:
+      format = "ELF 32 X86";
+      result = true;
+      break;
+  }
+
+  printf("%s Executable\n", format.c_str());
+  return result;
 }
 
 void DisassembleAndAdjust(const FilePath& program_file,
@@ -391,6 +427,7 @@ int main(int argc, const char* argv[]) {
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
   logging::SetMinLogLevel(logging::LOG_VERBOSE);
 
+  bool cmd_sup = command_line.HasSwitch("supported");
   bool cmd_dis = command_line.HasSwitch("dis");
   bool cmd_asm = command_line.HasSwitch("asm");
   bool cmd_disadj = command_line.HasSwitch("disadj");
@@ -415,19 +452,24 @@ int main(int argc, const char* argv[]) {
     if (!base::StringToInt(repeat_switch, &repeat_count))
       repeat_count = 1;
 
-  if (cmd_dis + cmd_asm + cmd_disadj + cmd_make_patch + cmd_apply_patch +
-      cmd_make_bsdiff_patch + cmd_apply_bsdiff_patch +
+  if (cmd_sup + cmd_dis + cmd_asm + cmd_disadj + cmd_make_patch +
+      cmd_apply_patch + cmd_make_bsdiff_patch + cmd_apply_bsdiff_patch +
       cmd_spread_1_adjusted + cmd_spread_1_unadjusted
       != 1)
     UsageProblem(
         "Must have exactly one of:\n"
-        "  -asm, -dis, -disadj, -gen or -apply, -genbsdiff or -applybsdiff.");
+        "  -supported -asm, -dis, -disadj, -gen or -apply, -genbsdiff"
+        " or -applybsdiff.");
 
   while (repeat_count-- > 0) {
-    if (cmd_dis) {
-      if (values.size() != 2)
-        UsageProblem("-dis <executable_file> <courgette_file>");
-      Disassemble(values[0], values[1]);
+    if (cmd_sup) {
+      if (values.size() != 1)
+        UsageProblem("-supported <executable_file>");
+      return !Supported(values[0]);
+    } else if (cmd_dis) {
+        if (values.size() != 2)
+          UsageProblem("-dis <executable_file> <courgette_file>");
+        Disassemble(values[0], values[1]);
     } else if (cmd_asm) {
       if (values.size() != 2)
         UsageProblem("-asm <courgette_file_input> <executable_file_output>");
@@ -461,4 +503,6 @@ int main(int argc, const char* argv[]) {
       UsageProblem("No operation specified");
     }
   }
+
+  return 0;
 }
