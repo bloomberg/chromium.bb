@@ -964,13 +964,6 @@ class ArchiveStageTest(AbstractStageTest):
     commands.UploadArchivedFile(mox.IgnoreArg(), mox.IgnoreArg(),
                                 'LATEST', False)
 
-    self.mox.StubOutWithMock(commands, 'PushImages')
-    commands.PushImages(self.build_root,
-                        board=self._build_config['board'],
-                        branch_name='master',
-                        archive_dir=mox.IgnoreArg(),
-                        profile=None)
-
     self.mox.StubOutWithMock(commands, 'RemoveOldArchives')
     commands.RemoveOldArchives(mox.IgnoreArg(), mox.IgnoreArg())
 
