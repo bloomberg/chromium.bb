@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@ enum DirOpenResult { OPENED,   // success.
                      FAILED_OPEN_DATABASE,  // sqlite_open() failed.
                      FAILED_DISK_FULL,  // The disk is full.
                      FAILED_DATABASE_CORRUPT,  // Something is wrong with the DB
+                     FAILED_LOGICAL_CORRUPTION, // Invalid database contents
 };
 }  // namespace syncable
 

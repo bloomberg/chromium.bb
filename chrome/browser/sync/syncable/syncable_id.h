@@ -87,6 +87,11 @@ class Id {
   inline bool operator > (const Id& that) const {
     return s_ > that.s_;
   }
+
+  const std::string& value() const {
+    return s_;
+  }
+
   // Return the next highest ID in the lexicographic ordering.  This is
   // useful for computing upper bounds on std::sets that are ordered
   // by operator<.
