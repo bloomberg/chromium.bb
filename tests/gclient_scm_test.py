@@ -120,6 +120,22 @@ class SVNWrapperTestCase(BaseTestCase):
                             relpath=self.relpath)
     self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'git://a/b/c/crap')
 
+  def testGITFakeHttpUrl(self):
+    self.url = 'git+http://foo'
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    self.assertEqual(scm.url, 'http://foo')
+
+  def testGITFakeHttpsUrl(self):
+    self.url = 'git+https://foo'
+
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    self.assertEqual(scm.url, 'https://foo')
+
   def testRunCommandException(self):
     options = self.Options(verbose=False)
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)

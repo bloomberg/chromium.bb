@@ -67,6 +67,7 @@ def GetScmName(url):
   if url:
     url, _ = gclient_utils.SplitUrlRevision(url)
     if (url.startswith('git://') or url.startswith('ssh://') or
+        url.startswith('git+http://') or url.startswith('git+https://') or
         url.endswith('.git')):
       return 'git'
     elif (url.startswith('http://') or url.startswith('https://') or
@@ -125,6 +126,12 @@ class SCMWrapper(object):
 
 class GitWrapper(SCMWrapper):
   """Wrapper for Git"""
+
+  def __init__(self, url=None, root_dir=None, relpath=None):
+    """Removes 'git+' fake prefix from git URL."""
+    if url.startswith('git+http://') or url.startswith('git+https://'):
+      url = url[4:]
+    SCMWrapper.__init__(self, url, root_dir, relpath)
 
   def GetRevisionDate(self, revision):
     """Returns the given revision's date in ISO-8601 format (which contains the
