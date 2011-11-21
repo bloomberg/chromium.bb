@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,7 +25,7 @@ class SelectedKeywordDecoration : public BubbleDecoration {
   // Determines what combination of labels and image will best fit
   // within |width|, makes those current for |BubbleDecoration|, and
   // return the resulting width.
-  virtual CGFloat GetWidthForSpace(CGFloat width);
+  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
 
   void SetImage(NSImage* image);
 

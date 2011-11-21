@@ -127,15 +127,15 @@ class HistoryMenuBridge : public content::NotificationObserver,
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service);
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
 
   // MainMenuItem:
-  virtual void ResetMenu();
-  virtual void BuildMenu();
+  virtual void ResetMenu() OVERRIDE;
+  virtual void BuildMenu() OVERRIDE;
 
   // Looks up an NSMenuItem in the |menu_item_map_| and returns the
   // corresponding HistoryItem.

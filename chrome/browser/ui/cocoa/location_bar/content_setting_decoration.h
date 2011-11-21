@@ -31,11 +31,11 @@ class ContentSettingDecoration : public ImageDecoration {
   bool UpdateFromTabContents(TabContents* tab_contents);
 
   // Overridden from |LocationBarDecoration|
-  virtual bool AcceptsMousePress();
-  virtual bool OnMousePressed(NSRect frame);
-  virtual NSString* GetToolTip();
-  virtual CGFloat GetWidthForSpace(CGFloat width);
-  virtual void DrawInFrame(NSRect frame, NSView* control_view);
+  virtual bool AcceptsMousePress() OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual NSString* GetToolTip() OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
 
   // Called from internal animator. Only public because ObjC objects can't
   // be friends.

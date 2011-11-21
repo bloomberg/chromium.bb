@@ -30,8 +30,8 @@ class BubbleDecoration : public LocationBarDecoration {
                  NSColor* text_color);
 
   // Implement |LocationBarDecoration|.
-  virtual void DrawInFrame(NSRect frame, NSView* control_view);
-  virtual CGFloat GetWidthForSpace(CGFloat width);
+  virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
 
  protected:
   // Helper returning bubble width for the given |image| and |label|

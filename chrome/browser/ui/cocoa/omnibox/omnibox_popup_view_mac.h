@@ -44,11 +44,11 @@ class OmniboxPopupViewMac : public AutocompletePopupView,
   virtual ~OmniboxPopupViewMac();
 
   // Implement the InstantOptInControllerDelegate interface.
-  virtual void UserPressedOptIn(bool opt_in);
+  virtual void UserPressedOptIn(bool opt_in) OVERRIDE;
 
   // Implement the AutocompletePopupView interface.
-  virtual bool IsOpen() const;
-  virtual void InvalidateLine(size_t line) {
+  virtual bool IsOpen() const OVERRIDE;
+  virtual void InvalidateLine(size_t line) OVERRIDE {
     // TODO(shess): Verify that there is no need to implement this.
     // This is currently used in two places in the model:
     //
@@ -68,18 +68,18 @@ class OmniboxPopupViewMac : public AutocompletePopupView,
     // may need to move away from NSTableView to implement hover,
     // though.
   }
-  virtual void UpdatePopupAppearance();
+  virtual void UpdatePopupAppearance() OVERRIDE;
 
-  virtual gfx::Rect GetTargetBounds();
+  virtual gfx::Rect GetTargetBounds() OVERRIDE;
 
   // Set |line| to be selected.
   void SetSelectedLine(size_t line);
 
   // This is only called by model in SetSelectedLine() after updating
   // everything.  Popup should already be visible.
-  virtual void PaintUpdatesNow();
+  virtual void PaintUpdatesNow() OVERRIDE;
 
-  virtual void OnDragCanceled() {}
+  virtual void OnDragCanceled() OVERRIDE {}
 
   // Opens the URL corresponding to the given |row|.  If |force_background| is
   // true, forces the URL to open in a background tab.  Otherwise, determines

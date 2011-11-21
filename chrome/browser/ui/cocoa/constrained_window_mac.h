@@ -69,7 +69,7 @@ class ConstrainedWindowMacDelegateSystemSheet
 
  private:
   virtual void RunSheet(GTMWindowSheetController* sheetController,
-                        NSView* view);
+                        NSView* view) OVERRIDE;
   scoped_nsobject<id> systemSheet_;
   scoped_nsobject<id> delegate_;
   SEL didEndSelector_;
@@ -92,7 +92,7 @@ class ConstrainedWindowMacDelegateCustomSheet
 
  private:
   virtual void RunSheet(GTMWindowSheetController* sheetController,
-                        NSView* view);
+                        NSView* view) OVERRIDE;
   scoped_nsobject<NSWindow> customSheet_;
   scoped_nsobject<id> delegate_;
   SEL didEndSelector_;
@@ -113,8 +113,8 @@ class ConstrainedWindowMac : public ConstrainedWindow {
   virtual ~ConstrainedWindowMac();
 
   // Overridden from ConstrainedWindow:
-  virtual void ShowConstrainedWindow();
-  virtual void CloseConstrainedWindow();
+  virtual void ShowConstrainedWindow() OVERRIDE;
+  virtual void CloseConstrainedWindow() OVERRIDE;
 
   // Returns the TabContentsWrapper that constrains this Constrained Window.
   TabContentsWrapper* owner() const { return wrapper_; }

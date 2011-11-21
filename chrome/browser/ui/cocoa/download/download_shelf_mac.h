@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/download/download_shelf.h"
 
 class BaseDownloadItemModel;
@@ -22,12 +23,12 @@ class DownloadShelfMac : public DownloadShelf {
   DownloadShelfMac(Browser* browser, DownloadShelfController* controller);
 
   // DownloadShelf implementation.
-  virtual void AddDownload(BaseDownloadItemModel* download_model);
-  virtual bool IsShowing() const;
-  virtual bool IsClosing() const;
-  virtual void Show();
-  virtual void Close();
-  virtual Browser* browser() const;
+  virtual void AddDownload(BaseDownloadItemModel* download_model) OVERRIDE;
+  virtual bool IsShowing() const OVERRIDE;
+  virtual bool IsClosing() const OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual Browser* browser() const OVERRIDE;
 
  private:
   // The browser that owns this shelf.

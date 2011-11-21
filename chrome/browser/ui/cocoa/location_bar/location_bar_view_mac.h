@@ -126,19 +126,20 @@ class LocationBarViewMac : public AutocompleteEditController,
   NSRect GetBlockedPopupRect() const;
 
   // AutocompleteEditController implementation.
-  virtual void OnAutocompleteAccept(const GURL& url,
+  virtual void OnAutocompleteAccept(
+      const GURL& url,
       WindowOpenDisposition disposition,
       content::PageTransition transition,
-      const GURL& alternate_nav_url);
-  virtual void OnChanged();
-  virtual void OnSelectionBoundsChanged();
-  virtual void OnInputInProgress(bool in_progress);
-  virtual void OnKillFocus();
-  virtual void OnSetFocus();
-  virtual SkBitmap GetFavicon() const;
-  virtual string16 GetTitle() const;
-  virtual InstantController* GetInstant();
-  virtual TabContentsWrapper* GetTabContentsWrapper() const;
+      const GURL& alternate_nav_url) OVERRIDE;
+  virtual void OnChanged() OVERRIDE;
+  virtual void OnSelectionBoundsChanged() OVERRIDE;
+  virtual void OnInputInProgress(bool in_progress) OVERRIDE;
+  virtual void OnKillFocus() OVERRIDE;
+  virtual void OnSetFocus() OVERRIDE;
+  virtual SkBitmap GetFavicon() const OVERRIDE;
+  virtual string16 GetTitle() const OVERRIDE;
+  virtual InstantController* GetInstant() OVERRIDE;
+  virtual TabContentsWrapper* GetTabContentsWrapper() const OVERRIDE;
 
   NSImage* GetKeywordImage(const string16& keyword);
 
@@ -148,7 +149,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Overridden from NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Posts |notification| to the default notification center.

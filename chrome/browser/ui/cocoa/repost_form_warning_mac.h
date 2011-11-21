@@ -29,7 +29,7 @@ class RepostFormWarningMac : public ConstrainedWindowMacDelegateSystemSheet {
                        TabContents* tab_contents);
 
   // ConstrainedWindowDelegateMacSystemSheet methods:
-  virtual void DeleteDelegate();
+  virtual void DeleteDelegate() OVERRIDE;
 
  private:
   virtual ~RepostFormWarningMac();

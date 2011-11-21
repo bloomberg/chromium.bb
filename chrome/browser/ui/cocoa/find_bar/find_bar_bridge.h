@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_COCOA_FIND_BAR_FIND_BAR_BRIDGE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 
@@ -44,34 +45,35 @@ class FindBarBridge : public FindBar,
     return cocoa_controller_;
   }
 
-  virtual void SetFindBarController(FindBarController* find_bar_controller);
+  virtual void SetFindBarController(
+      FindBarController* find_bar_controller) OVERRIDE;
 
-  virtual FindBarController* GetFindBarController() const;
+  virtual FindBarController* GetFindBarController() const OVERRIDE;
 
-  virtual FindBarTesting* GetFindBarTesting();
+  virtual FindBarTesting* GetFindBarTesting() OVERRIDE;
 
   // Methods from FindBar.
-  virtual void Show(bool animate);
-  virtual void Hide(bool animate);
-  virtual void SetFocusAndSelection();
-  virtual void ClearResults(const FindNotificationDetails& results);
-  virtual void StopAnimation();
-  virtual void SetFindText(const string16& find_text);
+  virtual void Show(bool animate) OVERRIDE;
+  virtual void Hide(bool animate) OVERRIDE;
+  virtual void SetFocusAndSelection() OVERRIDE;
+  virtual void ClearResults(const FindNotificationDetails& results) OVERRIDE;
+  virtual void StopAnimation() OVERRIDE;
+  virtual void SetFindText(const string16& find_text) OVERRIDE;
   virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
-                                     const string16& find_text);
-  virtual void AudibleAlert();
-  virtual bool IsFindBarVisible();
-  virtual void RestoreSavedFocus();
+                                     const string16& find_text) OVERRIDE;
+  virtual void AudibleAlert() OVERRIDE;
+  virtual bool IsFindBarVisible() OVERRIDE;
+  virtual void RestoreSavedFocus() OVERRIDE;
   virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                                     bool no_redraw);
+                                     bool no_redraw) OVERRIDE;
 
   // Methods from FindBarTesting.
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
-                                    bool* fully_visible);
-  virtual string16 GetFindText();
-  virtual string16 GetFindSelectedText();
-  virtual string16 GetMatchCountText();
-  virtual int GetWidth();
+                                    bool* fully_visible) OVERRIDE;
+  virtual string16 GetFindText() OVERRIDE;
+  virtual string16 GetFindSelectedText() OVERRIDE;
+  virtual string16 GetMatchCountText() OVERRIDE;
+  virtual int GetWidth() OVERRIDE;
 
   // Used to disable find bar animations when testing.
   static bool disable_animations_during_testing_;

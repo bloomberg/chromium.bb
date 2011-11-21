@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,13 +35,13 @@ class EVBubbleDecoration : public BubbleDecoration {
   NSPoint GetBubblePointInFrame(NSRect frame);
 
   // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width);
-  virtual bool IsDraggable();
-  virtual NSPasteboard* GetDragPasteboard();
-  virtual NSImage* GetDragImage();
-  virtual NSRect GetDragImageFrame(NSRect frame);
-  virtual bool OnMousePressed(NSRect frame);
-  virtual bool AcceptsMousePress();
+  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual bool IsDraggable() OVERRIDE;
+  virtual NSPasteboard* GetDragPasteboard() OVERRIDE;
+  virtual NSImage* GetDragImage() OVERRIDE;
+  virtual NSRect GetDragImageFrame(NSRect frame) OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual bool AcceptsMousePress() OVERRIDE;
 
  private:
   // Keeps a reference to the font for use when eliding.

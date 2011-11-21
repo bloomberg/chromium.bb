@@ -16,18 +16,19 @@ public:
   BackgroundTheme(ui::ThemeProvider* provider);
   virtual ~BackgroundTheme();
 
-  virtual void Init(Profile* profile) {}
-  virtual SkBitmap* GetBitmapNamed(int id) const;
-  virtual SkColor GetColor(int id) const;
-  virtual bool GetDisplayProperty(int id, int* result) const;
-  virtual bool ShouldUseNativeFrame() const;
-  virtual bool HasCustomImage(int id) const;
-  virtual RefCountedMemory* GetRawData(int id) const;
-  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const;
-  virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const;
-  virtual NSColor* GetNSColor(int id, bool allow_default) const;
-  virtual NSColor* GetNSColorTint(int id, bool allow_default) const;
-  virtual NSGradient* GetNSGradient(int id) const;
+  virtual void Init(Profile* profile) OVERRIDE {}
+  virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;
+  virtual SkColor GetColor(int id) const OVERRIDE;
+  virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual bool HasCustomImage(int id) const OVERRIDE;
+  virtual RefCountedMemory* GetRawData(int id) const OVERRIDE;
+  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const OVERRIDE;
+  virtual NSColor* GetNSImageColorNamed(int id,
+                                        bool allow_default) const OVERRIDE;
+  virtual NSColor* GetNSColor(int id, bool allow_default) const OVERRIDE;
+  virtual NSColor* GetNSColorTint(int id, bool allow_default) const OVERRIDE;
+  virtual NSGradient* GetNSGradient(int id) const OVERRIDE;
 
 private:
   ui::ThemeProvider* provider_;

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,12 +22,12 @@ class BalloonViewBridge : public BalloonView {
   virtual ~BalloonViewBridge();
 
   // BalloonView interface.
-  virtual void Show(Balloon* balloon);
-  virtual void Update();
-  virtual void RepositionToBalloon();
-  virtual void Close(bool by_user);
-  virtual gfx::Size GetSize() const;
-  virtual BalloonHost* GetHost() const;
+  virtual void Show(Balloon* balloon) OVERRIDE;
+  virtual void Update() OVERRIDE;
+  virtual void RepositionToBalloon() OVERRIDE;
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
+  virtual BalloonHost* GetHost() const OVERRIDE;
 
  private:
   // Weak pointer to the balloon controller which manages the UI.

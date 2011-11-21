@@ -24,8 +24,8 @@ class ImageDecoration : public LocationBarDecoration {
   NSRect GetDrawRectInFrame(NSRect frame);
 
   // Implement |LocationBarDecoration|.
-  virtual CGFloat GetWidthForSpace(CGFloat width);
-  virtual void DrawInFrame(NSRect frame, NSView* control_view);
+  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
 
  private:
   scoped_nsobject<NSImage> image_;

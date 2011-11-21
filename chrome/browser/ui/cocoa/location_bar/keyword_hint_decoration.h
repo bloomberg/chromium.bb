@@ -25,8 +25,8 @@ class KeywordHintDecoration : public LocationBarDecoration {
   void SetKeyword(const string16& keyword, bool is_extension_keyword);
 
   // Implement |LocationBarDecoration|.
-  virtual void DrawInFrame(NSRect frame, NSView* control_view);
-  virtual CGFloat GetWidthForSpace(CGFloat width);
+  virtual void DrawInFrame(NSRect frame, NSView* control_view) OVERRIDE;
+  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
 
  private:
   // Fetch and cache the [tab] image.

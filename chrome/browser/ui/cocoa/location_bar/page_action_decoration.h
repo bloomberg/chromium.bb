@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class PageActionDecoration : public ImageDecoration,
 
   // Overridden from |ImageLoadingTracker::Observer|.
   virtual void OnImageLoaded(
-      SkBitmap* image, const ExtensionResource& resource, int index);
+      SkBitmap* image, const ExtensionResource& resource, int index) OVERRIDE;
 
   // Called to notify the Page Action that it should determine whether
   // to be visible or hidden. |contents| is the TabContents that is
@@ -51,17 +51,17 @@ class PageActionDecoration : public ImageDecoration,
   NSPoint GetBubblePointInFrame(NSRect frame);
 
   // Overridden from |LocationBarDecoration|
-  virtual CGFloat GetWidthForSpace(CGFloat width);
-  virtual bool AcceptsMousePress();
-  virtual bool OnMousePressed(NSRect frame);
-  virtual NSString* GetToolTip();
-  virtual NSMenu* GetMenu();
+  virtual CGFloat GetWidthForSpace(CGFloat width) OVERRIDE;
+  virtual bool AcceptsMousePress() OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual NSString* GetToolTip() OVERRIDE;
+  virtual NSMenu* GetMenu() OVERRIDE;
 
  private:
   // Overridden from NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // The location bar view that owns us.
   LocationBarViewMac* owner_;

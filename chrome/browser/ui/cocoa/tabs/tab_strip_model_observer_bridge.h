@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 
 class TabContentsWrapper;
@@ -26,27 +27,28 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
   // Overridden from TabStripModelObserver
   virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
-                             bool foreground);
+                             bool foreground) OVERRIDE;
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             TabContentsWrapper* contents,
-                            int index);
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+                            int index) OVERRIDE;
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
   virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index,
-                                bool user_gesture);
+                                bool user_gesture) OVERRIDE;
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
-                        int to_index);
+                        int to_index) OVERRIDE;
   virtual void TabChangedAt(TabContentsWrapper* contents, int index,
-                            TabChangeType change_type);
+                            TabChangeType change_type) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
-                             int index);
-  virtual void TabMiniStateChanged(TabContentsWrapper* contents, int index);
-  virtual void TabStripEmpty();
-  virtual void TabStripModelDeleted();
+                             int index) OVERRIDE;
+  virtual void TabMiniStateChanged(TabContentsWrapper* contents,
+                                   int index) OVERRIDE;
+  virtual void TabStripEmpty() OVERRIDE;
+  virtual void TabStripModelDeleted() OVERRIDE;
 
  private:
   id controller_;  // weak, owns me

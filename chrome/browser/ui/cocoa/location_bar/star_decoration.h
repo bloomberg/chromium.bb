@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,9 +27,9 @@ class StarDecoration : public ImageDecoration {
   NSPoint GetBubblePointInFrame(NSRect frame);
 
   // Implement |LocationBarDecoration|.
-  virtual bool AcceptsMousePress();
-  virtual bool OnMousePressed(NSRect frame);
-  virtual NSString* GetToolTip();
+  virtual bool AcceptsMousePress() OVERRIDE;
+  virtual bool OnMousePressed(NSRect frame) OVERRIDE;
+  virtual NSString* GetToolTip() OVERRIDE;
 
  private:
   // For bringing up bookmark bar.

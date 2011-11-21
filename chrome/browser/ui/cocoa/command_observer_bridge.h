@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/command_updater.h"
 
 @protocol CommandObserverProtocol;
@@ -31,7 +32,8 @@ class CommandObserverBridge : public CommandUpdater::CommandObserver {
 
  protected:
   // Overridden from CommandUpdater::CommandObserver
-  virtual void EnabledStateChangedForCommand(int command, bool enabled);
+  virtual void EnabledStateChangedForCommand(int command,
+                                             bool enabled) OVERRIDE;
 
  private:
   id<CommandObserverProtocol> observer_;  // weak, owns me

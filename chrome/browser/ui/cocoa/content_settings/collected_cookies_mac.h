@@ -27,7 +27,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
   void OnSheetDidEnd(NSWindow* sheet);
 
   // ConstrainedWindowMacDelegateCustomSheet implementation.
-  virtual void DeleteDelegate();
+  virtual void DeleteDelegate() OVERRIDE;
 
  private:
   virtual ~CollectedCookiesMac();
@@ -35,7 +35,7 @@ class CollectedCookiesMac : public ConstrainedWindowMacDelegateCustomSheet,
   // NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   content::NotificationRegistrar registrar_;
 
