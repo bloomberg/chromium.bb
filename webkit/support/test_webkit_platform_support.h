@@ -1,10 +1,11 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_
 #define WEBKIT_SUPPORT_TEST_WEBKIT_PLATFORM_SUPPORT_H_
 
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGamepads.h"
 #include "webkit/glue/webfileutilities_impl.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/support/simple_database_system.h"
@@ -103,6 +104,9 @@ class TestWebKitPlatformSupport :
       unsigned numberOfChannels, double sampleRate,
       WebKit::WebAudioDevice::RenderCallback*);
 
+  virtual void sampleGamepads(WebKit::WebGamepads& data);
+  void setGamepadData(const WebKit::WebGamepads& data);
+
  private:
   TestShellWebMimeRegistryImpl mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
@@ -116,6 +120,7 @@ class TestWebKitPlatformSupport :
   ScopedTempDir file_system_root_;
   WebURLLoaderMockFactory url_loader_factory_;
   bool unit_test_mode_;
+  WebKit::WebGamepads gamepad_data_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   WebKit::WebThemeEngine* active_theme_engine_;

@@ -18,6 +18,7 @@ class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebFileSystemCallbacks;
 class WebFrame;
+class WebGamepads;
 class WebKitPlatformSupport;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
@@ -220,6 +221,10 @@ double GetForegroundTabTimerInterval();
 // - Logging
 
 void EnableWebCoreLogChannels(const std::string& channels);
+
+// - Gamepad
+
+void SetGamepadData(const WebKit::WebGamepads& pads);
 
 }  // namespace webkit_support
 

@@ -19,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystem.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyPath.h"
@@ -84,6 +85,7 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport(bool unit_test_mode)
   WebKit::WebRuntimeFeatures::enablePushState(true);
   WebKit::WebRuntimeFeatures::enableNotifications(true);
   WebKit::WebRuntimeFeatures::enableTouch(true);
+  WebKit::WebRuntimeFeatures::enableGamepad(true);
 
   // Load libraries for media and enable the media player.
   bool enable_media = false;
@@ -395,4 +397,13 @@ WebKit::WebAudioDevice* TestWebKitPlatformSupport::createAudioDevice(
     size_t bufferSize, unsigned numberOfChannels, double sampleRate,
     WebKit::WebAudioDevice::RenderCallback*) {
   return new WebAudioDeviceMock(sampleRate);
+}
+
+void TestWebKitPlatformSupport::sampleGamepads(WebKit::WebGamepads& data) {
+  data = gamepad_data_;
+}
+
+void TestWebKitPlatformSupport::setGamepadData(
+    const WebKit::WebGamepads& data) {
+  gamepad_data_ = data;
 }

@@ -646,4 +646,8 @@ void EnableWebCoreLogChannels(const std::string& channels) {
   webkit_glue::EnableWebCoreLogChannels(channels);
 }
 
+void SetGamepadData(const WebKit::WebGamepads& pads) {
+  test_environment->webkit_platform_support()->setGamepadData(pads);
+}
+
 }  // namespace webkit_support
