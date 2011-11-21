@@ -19,6 +19,7 @@
 #include "ui/aura_shell/drag_drop_controller.h"
 #include "ui/aura_shell/launcher/launcher.h"
 #include "ui/aura_shell/modal_container_layout_manager.h"
+#include "ui/aura_shell/shadow_controller.h"
 #include "ui/aura_shell/shelf_layout_controller.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
@@ -172,8 +173,10 @@ void Shell::Init() {
 
   shelf_layout_controller_.reset(new internal::ShelfLayoutController(
       launcher_->widget(), status_widget));
-
   desktop_layout->set_shelf(shelf_layout_controller_.get());
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraNoShadows))
+    shadow_controller_.reset(new internal::ShadowController());
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAuraWindows)) {
     EnableWorkspaceManager();
@@ -187,7 +190,6 @@ void Shell::Init() {
   // Force a layout.
   desktop_layout->OnWindowResized();
 
-  // Initialize drag drop controller.
   drag_drop_controller_.reset(new internal::DragDropController);
   aura::Desktop::GetInstance()->SetProperty(aura::kDesktopDragDropClientKey,
       static_cast<aura::DragDropClient*>(drag_drop_controller_.get()));

@@ -31,6 +31,7 @@ class ShellDelegate;
 
 namespace internal {
 class DragDropController;
+class ShadowController;
 class ShelfLayoutController;
 class WorkspaceController;
 }
@@ -64,6 +65,11 @@ class AURA_SHELL_EXPORT Shell {
   ShellDelegate* delegate() { return delegate_.get(); }
   Launcher* launcher() { return launcher_.get(); }
 
+  // Made available for tests.
+  internal::ShadowController* shadow_controller() {
+    return shadow_controller_.get();
+  }
+
  private:
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
@@ -88,6 +94,7 @@ class AURA_SHELL_EXPORT Shell {
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::WorkspaceController> workspace_controller_;
   scoped_ptr<internal::ShelfLayoutController> shelf_layout_controller_;
+  scoped_ptr<internal::ShadowController> shadow_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

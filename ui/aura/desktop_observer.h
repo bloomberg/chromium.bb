@@ -21,6 +21,9 @@ class AURA_EXPORT DesktopObserver {
   // Invoked after the desktop is resized.
   virtual void OnDesktopResized(const gfx::Size& new_size) {}
 
+  // Invoked when a new window is initialized.
+  virtual void OnWindowInitialized(Window* window) {}
+
   // Invoked when the active window is changed. |active| may be NULL if there is
   // not active window.
   virtual void OnActiveWindowChanged(Window* active) {}

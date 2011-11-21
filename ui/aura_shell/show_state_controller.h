@@ -26,7 +26,7 @@ public:
   explicit ShowStateController(WorkspaceManager* layout_manager);
   virtual ~ShowStateController();
 
-  // Invoked when window proparty has changed.
+  // aura::WindowObserver overrides:
   virtual void OnPropertyChanged(aura::Window* window,
                                  const char* name,
                                  void* old) OVERRIDE;

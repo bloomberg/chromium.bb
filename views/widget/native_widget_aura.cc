@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/shadow_types.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/desktop_observer.h"
 #include "ui/aura/event.h"
@@ -160,12 +161,17 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
         GetWidget()->GetRootView());
     tooltip_manager_.reset(manager);
   }
+
   drop_helper_.reset(new DropHelper(GetWidget()->GetRootView()));
   if (params.type != Widget::InitParams::TYPE_TOOLTIP &&
       params.type != Widget::InitParams::TYPE_POPUP) {
     window_->SetProperty(aura::kDragDropDelegateKey,
         static_cast<aura::WindowDragDropDelegate*>(this));
   }
+
+  if (window_type == Widget::InitParams::TYPE_MENU)
+    window_->SetIntProperty(aura::kShadowTypeKey,
+                            aura::SHADOW_TYPE_RECTANGULAR);
 }
 
 NonClientFrameView* NativeWidgetAura::CreateNonClientFrameView() {

@@ -382,6 +382,10 @@ void Desktop::Deactivate(Window* window) {
     SetActiveWindow(to_activate, NULL);
 }
 
+void Desktop::WindowInitialized(Window* window) {
+  FOR_EACH_OBSERVER(DesktopObserver, observers_, OnWindowInitialized(window));
+}
+
 void Desktop::WindowDestroying(Window* window) {
   // Update the focused window state if the window was focused.
   if (focused_window_ == window)

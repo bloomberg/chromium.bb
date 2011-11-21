@@ -109,6 +109,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // activate.
   void Deactivate(Window* window);
 
+  // Invoked when |window| is initialized.
+  void WindowInitialized(Window* window);
+
   // Invoked when |window| is being destroyed.
   void WindowDestroying(Window* window);
 

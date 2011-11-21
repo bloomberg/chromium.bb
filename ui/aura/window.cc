@@ -78,6 +78,7 @@ void Window::Init(ui::Layer::LayerType layer_type) {
   layer_.reset(new ui::Layer(layer_type));
   layer_->SetVisible(false);
   layer_->set_delegate(this);
+
 #if !defined(NDEBUG)
   std::string layer_name(name_);
   if (layer_name.empty())
@@ -90,6 +91,8 @@ void Window::Init(ui::Layer::LayerType layer_type) {
   }
   layer_->set_name(layer_name);
 #endif
+
+  Desktop::GetInstance()->WindowInitialized(this);
 }
 
 void Window::SetType(WindowType type) {
@@ -218,6 +221,8 @@ void Window::MoveChildAbove(Window* child, Window* other) {
       last_transient = transient_child;
     }
   }
+
+  child->OnStackingChanged();
 }
 
 bool Window::CanActivate() const {
@@ -230,11 +235,14 @@ void Window::AddChild(Window* child) {
   if (child->parent())
     child->parent()->RemoveChild(child);
   child->parent_ = this;
+
   layer_->Add(child->layer_.get());
+
   children_.push_back(child);
   if (layout_manager_.get())
     layout_manager_->OnWindowAddedToLayout(child);
   FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowAdded(child));
+  child->OnParentChanged();
 }
 
 void Window::AddTransientChild(Window* child) {
@@ -267,6 +275,7 @@ void Window::RemoveChild(Window* child) {
     desktop->WindowDetachedFromDesktop(child);
   layer_->Remove(child->layer_.get());
   children_.erase(i);
+  child->OnParentChanged();
 }
 
 Window* Window::GetChildById(int id) {
@@ -450,6 +459,9 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
     layout_manager_->OnWindowResized();
   if (delegate_)
     delegate_->OnBoundsChanged(old_bounds, actual_new_bounds);
+  FOR_EACH_OBSERVER(WindowObserver,
+                    observers_,
+                    OnWindowBoundsChanged(this, actual_new_bounds));
 }
 
 void Window::SetVisible(bool visible) {
@@ -464,6 +476,7 @@ void Window::SetVisible(bool visible) {
     if (delegate_)
       delegate_->OnWindowVisibilityChanged(is_visible);
   }
+
   if (parent_ && parent_->layout_manager_.get())
     parent_->layout_manager_->OnChildWindowVisibilityChanged(this, visible);
   FOR_EACH_OBSERVER(WindowObserver, observers_,
@@ -510,6 +523,15 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
   }
 
   return delegate_ ? this : NULL;
+}
+
+void Window::OnParentChanged() {
+  FOR_EACH_OBSERVER(
+      WindowObserver, observers_, OnWindowParentChanged(this, parent_));
+}
+
+void Window::OnStackingChanged() {
+  FOR_EACH_OBSERVER(WindowObserver, observers_, OnWindowStackingChanged(this));
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {

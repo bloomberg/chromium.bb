@@ -7,11 +7,12 @@
 namespace aura {
 
 const char kAlwaysOnTopKey[] = "AlwaysOnTop";
-const char kRestoreBoundsKey[] = "RestoreBoundsKey";
-const char kShowStateKey[] = "ShowStateKey";
-const char kTooltipTextKey[] = "TooltipTextKey";
-const char kModalKey[] = "ModalKey";
-const char kDesktopDragDropClientKey[] = "DesktopDragDropClientKey";
-const char kDragDropDelegateKey[] = "DragDropDelegateKey";
+const char kRestoreBoundsKey[] = "RestoreBounds";
+const char kShowStateKey[] = "ShowState";
+const char kTooltipTextKey[] = "TooltipText";
+const char kModalKey[] = "Modal";
+const char kShadowTypeKey[] = "ShadowType";
+const char kDesktopDragDropClientKey[] = "DesktopDragDropClient";
+const char kDragDropDelegateKey[] = "DragDropDelegate";
 
 }  // namespace aura

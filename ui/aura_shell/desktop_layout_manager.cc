@@ -47,7 +47,7 @@ void DesktopLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
 }
 
 void DesktopLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
-                                                          bool visibile) {
+                                                          bool visible) {
 }
 
 void DesktopLayoutManager::SetChildBounds(aura::Window* child,

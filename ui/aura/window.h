@@ -288,6 +288,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
                             bool return_tightest,
                             bool for_event_handling);
 
+  // Called when this window's parent has changed.
+  void OnParentChanged();
+
+  // Called when this window's stacking order among its siblings is changed.
+  void OnStackingChanged();
+
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
 
