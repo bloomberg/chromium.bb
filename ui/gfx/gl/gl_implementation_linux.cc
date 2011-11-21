@@ -57,9 +57,11 @@ base::LazyInstance<base::Lock,
 }  // namespace anonymous
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
-  impls->push_back(kGLImplementationDesktopGL);
-  impls->push_back(kGLImplementationEGLGLES2);
+#if !defined(USE_WAYLAND)
   impls->push_back(kGLImplementationOSMesaGL);
+  impls->push_back(kGLImplementationDesktopGL);
+#endif
+  impls->push_back(kGLImplementationEGLGLES2);
 }
 
 bool InitializeGLBindings(GLImplementation implementation) {
@@ -190,6 +192,7 @@ bool InitializeGLBindings(GLImplementation implementation) {
 bool InitializeGLExtensionBindings(GLImplementation implementation,
     GLContext* context) {
   switch (implementation) {
+#if !defined(USE_WAYLAND)
     case kGLImplementationOSMesaGL:
       InitializeGLExtensionBindingsGL(context);
       InitializeGLExtensionBindingsOSMESA(context);
@@ -198,6 +201,7 @@ bool InitializeGLExtensionBindings(GLImplementation implementation,
       InitializeGLExtensionBindingsGL(context);
       InitializeGLExtensionBindingsGLX(context);
       break;
+#endif
     case kGLImplementationEGLGLES2:
       InitializeGLExtensionBindingsGL(context);
       InitializeGLExtensionBindingsEGL(context);
