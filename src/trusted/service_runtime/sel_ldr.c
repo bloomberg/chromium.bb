@@ -33,8 +33,6 @@
 
 #include "native_client/src/trusted/handle_pass/ldr_handle.h"
 
-#include "native_client/src/trusted/reverse_service/reverse_control_rpc.h"
-
 #include "native_client/src/trusted/gio/gio_nacl_desc.h"
 #include "native_client/src/trusted/gio/gio_shm.h"
 #include "native_client/src/trusted/service_runtime/arch/sel_ldr_arch.h"
@@ -1565,46 +1563,6 @@ struct NaClSimpleRevClientVtbl const kNaClSecureReverseClientVtbl = {
 };
 
 
-static void WINAPI ReverseSetupThread(void *thread_state) {
-  struct NaClApp *nap = (struct NaClApp *) thread_state;
-  NaClSrpcError rpc_result;
-
-  /* wait for reverse connection */
-  NaClLog(1, "ReverseSetupThread\n");
-  NaClXMutexLock(&nap->mu);
-  while (NACL_REVERSE_CHANNEL_INITIALIZED !=
-         nap->reverse_channel_initialization_state) {
-    NaClLog(1, "ReverseSetupThread waiting\n");
-    NaClXCondVarWait(&nap->cv, &nap->mu);
-  }
-  NaClLog(1, "ReverseSetupThread initialized, making rpc\n");
-  rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
-                                         NACL_REVERSE_CONTROL_TEST,
-                                         "Hello world");
-  if (NACL_SRPC_RESULT_OK != rpc_result) {
-    NaClLog(LOG_ERROR,
-            "ReverseSetupThread, test:s: rpc_result %d\n",
-            rpc_result);
-  }
-  NaClLog(4,
-          "Hello world should be logged browser side, rpc_result %d.\n",
-          rpc_result);
-  rpc_result = NaClSrpcInvokeBySignature(&nap->reverse_channel,
-                                         NACL_REVERSE_CONTROL_LOG,
-                                         ("Log message that should show up"
-                                          " on the JavaScript console"));
-  NaClLog(4, "revlog returned %d.\n", rpc_result);
-  if (NACL_SRPC_RESULT_OK != rpc_result) {
-    NaClLog(LOG_ERROR,
-            "ReverseSetupThread, revlog:s: rpc_result %d\n",
-            rpc_result);
-  }
-  NaClXMutexUnlock(&nap->mu);
-
-  NaClThreadDtor(&nap->reverse_setup_thread);
-}
-
-
 void NaClSecureCommandChannel(struct NaClApp *nap) {
   struct NaClSecureService *secure_command_server;
 
@@ -1638,12 +1596,6 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
                                            secure_command_server)) {
     NaClLog(LOG_FATAL,
             "Could not start secure command channel service thread\n");
-  }
-
-  if (!NaClThreadCtor(&nap->reverse_setup_thread, ReverseSetupThread, nap,
-                      NACL_KERN_STACK_SIZE)) {
-    NaClLog(LOG_FATAL,
-            "Could not start reverse setup thread\n");
   }
 
   NaClLog(4, "Leaving NaClSecureCommandChannel\n");

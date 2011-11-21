@@ -205,8 +205,6 @@ struct NaClApp {
   struct NaClDesc           *name_service_conn_cap;
 
   struct NaClSecureService        *secure_service;
-  struct NaClThread               reverse_setup_thread;
-  /* used only during setup, thread dtors before exiting */
   struct NaClManifestProxy        *manifest_proxy;
   struct NaClKernService          *kern_service;
 
