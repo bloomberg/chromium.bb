@@ -32,7 +32,7 @@ div#header {
   background: url('../../app/theme/flags_section.png') 0px 20px no-repeat;
   display: inline;
   margin: 0;
-  padding-bottom: 43px;
+  padding-bottom: 20px;
   -webkit-padding-start: 75px;
   padding-top: 40px;
 }
