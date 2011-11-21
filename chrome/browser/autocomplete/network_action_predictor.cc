@@ -130,6 +130,42 @@ NetworkActionPredictor::~NetworkActionPredictor() {
   db_->OnPredictorDestroyed();
 }
 
+void NetworkActionPredictor::RegisterTransitionalMatches(
+    const string16& user_text,
+    const AutocompleteResult& result) {
+  if (prerender::GetOmniboxHeuristicToUse() !=
+      prerender::OMNIBOX_HEURISTIC_EXACT_FULL) {
+    return;
+  }
+  if (user_text.length() < kMinimumUserTextLength)
+    return;
+  const string16 lower_user_text(base::i18n::ToLower(user_text));
+
+  // Merge this in to an existing match if we already saw |user_text|
+  std::vector<TransitionalMatch>::iterator match_it =
+      std::find(transitional_matches_.begin(), transitional_matches_.end(),
+                lower_user_text);
+
+  if (match_it == transitional_matches_.end()) {
+    TransitionalMatch transitional_match;
+    transitional_match.user_text = lower_user_text;
+    match_it = transitional_matches_.insert(transitional_matches_.end(),
+                                            transitional_match);
+  }
+
+  for (AutocompleteResult::const_iterator it = result.begin();
+       it != result.end(); ++it) {
+    if (std::find(match_it->urls.begin(), match_it->urls.end(),
+                  it->destination_url) == match_it->urls.end()) {
+      match_it->urls.push_back(it->destination_url);
+    }
+  }
+}
+
+void NetworkActionPredictor::ClearTransitionalMatches() {
+  transitional_matches_.clear();
+}
+
 // Given a match, return a recommended action.
 NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
     const string16& user_text,
@@ -150,6 +186,7 @@ NetworkActionPredictor::Action NetworkActionPredictor::RecommendAction(
       break;
     }
     case prerender::OMNIBOX_HEURISTIC_EXACT:
+    case prerender::OMNIBOX_HEURISTIC_EXACT_FULL:
       confidence = ExactAlgorithm(user_text, match);
       break;
     default:
@@ -225,40 +262,10 @@ void NetworkActionPredictor::Observe(
     // and those are the events we're most interested in.
     case chrome::NOTIFICATION_OMNIBOX_OPENED_URL: {
       DCHECK(initialized_);
-      AutocompleteLog* log = content::Details<AutocompleteLog>(details).ptr();
-      if (log->text.length() < kMinimumUserTextLength)
-        break;
 
-      const string16 lower_user_text(base::i18n::ToLower(log->text));
-
-      BeginTransaction();
-      for (size_t i = 0; i < log->result.size(); ++i) {
-        const AutocompleteMatch& match(log->result.match_at(i));
-        const DBCacheKey key = { lower_user_text, match.destination_url };
-
-        bool is_hit = (i == log->selected_index);
-
-        NetworkActionPredictorDatabase::Row row;
-        row.user_text = key.user_text;
-        row.url = key.url;
-
-        DBCacheMap::iterator it = db_cache_.find(key);
-        if (it == db_cache_.end()) {
-          row.id = guid::GenerateGUID();
-          row.number_of_hits = is_hit ? 1 : 0;
-          row.number_of_misses = is_hit ? 0 : 1;
-
-          AddRow(key, row);
-        } else {
-          DCHECK(db_id_cache_.find(key) != db_id_cache_.end());
-          row.id = db_id_cache_.find(key)->second;
-          row.number_of_hits = it->second.number_of_hits + (is_hit ? 1 : 0);
-          row.number_of_misses = it->second.number_of_misses + (is_hit ? 0 : 1);
-
-          UpdateRow(it, row);
-        }
-      }
-      CommitTransaction();
+      // TODO(dominich): This doesn't need to be synchronous. Investigate
+      // posting it as a task to be run later.
+      OnOmniboxOpenedUrl(*content::Details<AutocompleteLog>(details).ptr());
       break;
     }
 
@@ -277,6 +284,68 @@ void NetworkActionPredictor::Observe(
       break;
   }
 }
+
+void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
+  if (log.text.length() < kMinimumUserTextLength)
+    return;
+
+  const GURL& opened_url =
+      log.result.match_at(log.selected_index).destination_url;
+
+  const string16 lower_user_text(base::i18n::ToLower(log.text));
+
+  // Add the current match as the only transitional match.
+  if (prerender::GetOmniboxHeuristicToUse() !=
+      prerender::OMNIBOX_HEURISTIC_EXACT_FULL) {
+    DCHECK(transitional_matches_.empty());
+    TransitionalMatch dummy_match;
+    dummy_match.user_text = lower_user_text;
+    dummy_match.urls.push_back(opened_url);
+    transitional_matches_.push_back(dummy_match);
+  }
+
+  BeginTransaction();
+  // Traverse transitional matches for those that have a user_text that is a
+  // prefix of |lower_user_text|.
+  for (std::vector<TransitionalMatch>::const_iterator it =
+       transitional_matches_.begin(); it != transitional_matches_.end();
+       ++it) {
+    if (!StartsWith(lower_user_text, it->user_text, true))
+      continue;
+
+    // Add entries to the database for those matches.
+    for (std::vector<GURL>::const_iterator url_it = it->urls.begin();
+         url_it != it->urls.end(); ++url_it) {
+      DCHECK(it->user_text.length() >= kMinimumUserTextLength);
+      const DBCacheKey key = { it->user_text, *url_it };
+      const bool is_hit = (*url_it == opened_url);
+
+      NetworkActionPredictorDatabase::Row row;
+      row.user_text = key.user_text;
+      row.url = key.url;
+
+      DBCacheMap::iterator it = db_cache_.find(key);
+      if (it == db_cache_.end()) {
+        row.id = guid::GenerateGUID();
+        row.number_of_hits = is_hit ? 1 : 0;
+        row.number_of_misses = is_hit ? 0 : 1;
+
+        AddRow(key, row);
+      } else {
+        DCHECK(db_id_cache_.find(key) != db_id_cache_.end());
+        row.id = db_id_cache_.find(key)->second;
+        row.number_of_hits = it->second.number_of_hits + (is_hit ? 1 : 0);
+        row.number_of_misses = it->second.number_of_misses + (is_hit ? 0 : 1);
+
+        UpdateRow(it, row);
+      }
+    }
+  }
+  CommitTransaction();
+
+  ClearTransitionalMatches();
+}
+
 
 void NetworkActionPredictor::DeleteOldIdsFromCaches(
     history::URLDatabase* url_db,
@@ -448,4 +517,10 @@ void NetworkActionPredictor::CommitTransaction() {
 
   content::BrowserThread::PostTask(content::BrowserThread::DB, FROM_HERE,
       base::Bind(&NetworkActionPredictorDatabase::CommitTransaction, db_));
+}
+
+NetworkActionPredictor::TransitionalMatch::TransitionalMatch() {
+}
+
+NetworkActionPredictor::TransitionalMatch::~TransitionalMatch() {
 }

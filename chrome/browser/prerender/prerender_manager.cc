@@ -349,6 +349,10 @@ bool PrerenderManager::AddPrerenderFromOmnibox(
       origin = ORIGIN_OMNIBOX_EXACT;
       break;
 
+    case OMNIBOX_HEURISTIC_EXACT_FULL:
+      origin = ORIGIN_OMNIBOX_EXACT_FULL;
+      break;
+
     default:
       NOTREACHED();
       break;
@@ -1063,6 +1067,9 @@ DictionaryValue* PrerenderManager::GetAsValue() const {
         break;
       case OMNIBOX_HEURISTIC_EXACT:
         dict_value->SetString("omnibox_heuristic", "(exact)");
+        break;
+      case OMNIBOX_HEURISTIC_EXACT_FULL:
+        dict_value->SetString("omnibox_heuristic", "(exact full)");
         break;
       default:
         NOTREACHED();

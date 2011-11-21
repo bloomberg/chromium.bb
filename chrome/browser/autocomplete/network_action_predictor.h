@@ -17,7 +17,9 @@
 #include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
 
+struct AutocompleteLog;
 struct AutocompleteMatch;
+class AutocompleteResult;
 class HistoryService;
 class Profile;
 
@@ -47,6 +49,16 @@ class NetworkActionPredictor
   explicit NetworkActionPredictor(Profile* profile);
   virtual ~NetworkActionPredictor();
 
+  // Registers an AutocompleteResult for a given |user_text|. This will be used
+  // when the user navigates from the Omnibox to determine early opportunities
+  // to predict their actions.
+  void RegisterTransitionalMatches(const string16& user_text,
+                                   const AutocompleteResult& result);
+
+  // Clears any transitional matches that have been registered. Called when, for
+  // example, the AutocompleteEditModel is reverted.
+  void ClearTransitionalMatches();
+
   // Return the recommended action given |user_text|, the text the user has
   // entered in the Omnibox, and |match|, the suggestion from Autocomplete.
   // This method uses information from the ShortcutsBackend including how much
@@ -62,6 +74,18 @@ class NetworkActionPredictor
 
  private:
   friend class NetworkActionPredictorTest;
+
+  struct TransitionalMatch {
+    TransitionalMatch();
+    ~TransitionalMatch();
+
+    string16 user_text;
+    std::vector<GURL> urls;
+
+    bool operator==(const string16& other_user_text) const {
+      return user_text == other_user_text;
+    }
+  };
 
   struct DBCacheKey {
     string16 user_text;
@@ -92,6 +116,9 @@ class NetworkActionPredictor
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Called when NOTIFICATION_OMNIBOX_OPENED_URL is observed.
+  void OnOmniboxOpenedUrl(const AutocompleteLog& log);
 
   // Deletes any old or invalid entries from the local caches. |url_db| and
   // |id_list| must not be NULL. Every row id deleted will be added to id_list.
@@ -139,6 +166,9 @@ class NetworkActionPredictor
   Profile* profile_;
   scoped_refptr<NetworkActionPredictorDatabase> db_;
   content::NotificationRegistrar notification_registrar_;
+
+  // This is cleared after every Omnibox navigation.
+  std::vector<TransitionalMatch> transitional_matches_;
 
   DBCacheMap db_cache_;
   DBIdCacheMap db_id_cache_;

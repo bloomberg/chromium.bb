@@ -29,28 +29,29 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
                              bool is_wash, const std::string& name) {
   if (is_wash)
     return ComposeHistogramName("wash", name);
+
+  if (origin == ORIGIN_GWS_PRERENDER) {
+    if (experiment_id == kNoExperiment)
+      return ComposeHistogramName("gws", name);
+    return ComposeHistogramName("exp" + std::string(1, experiment_id + '0'),
+                                name);
+  }
+
+  if (experiment_id != kNoExperiment)
+    return ComposeHistogramName("wash", name);
+
   switch (origin) {
     case ORIGIN_OMNIBOX_ORIGINAL:
-      if (experiment_id != kNoExperiment)
-        return ComposeHistogramName("wash", name);
       return ComposeHistogramName("omnibox_original", name);
     case ORIGIN_OMNIBOX_CONSERVATIVE:
-      if (experiment_id != kNoExperiment)
-        return ComposeHistogramName("wash", name);
       return ComposeHistogramName("omnibox_conservative", name);
     case ORIGIN_OMNIBOX_EXACT:
-      if (experiment_id != kNoExperiment)
-        return ComposeHistogramName("wash", name);
       return ComposeHistogramName("omnibox_exact", name);
+    case ORIGIN_OMNIBOX_EXACT_FULL:
+      return ComposeHistogramName("omnibox_exact_full", name);
     case ORIGIN_LINK_REL_PRERENDER:
-      if (experiment_id != kNoExperiment)
-        return ComposeHistogramName("wash", name);
       return ComposeHistogramName("web", name);
-    case ORIGIN_GWS_PRERENDER:
-      if (experiment_id == kNoExperiment)
-        return ComposeHistogramName("gws", name);
-      return ComposeHistogramName("exp" + std::string(1, experiment_id + '0'),
-                                  name);
+    case ORIGIN_GWS_PRERENDER:  // Handled above.
     default:
       NOTREACHED();
       break;
@@ -97,11 +98,10 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
               experiment != recording_experiment)) { \
   } else if (origin == ORIGIN_LINK_REL_PRERENDER) { \
     HISTOGRAM; \
-  } else if (origin == ORIGIN_OMNIBOX_ORIGINAL) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_OMNIBOX_CONSERVATIVE) { \
-    HISTOGRAM; \
-  } else if (origin == ORIGIN_OMNIBOX_EXACT) { \
+  } else if (origin == ORIGIN_OMNIBOX_ORIGINAL || \
+             origin == ORIGIN_OMNIBOX_CONSERVATIVE || \
+             origin == ORIGIN_OMNIBOX_EXACT || \
+             origin == ORIGIN_OMNIBOX_EXACT_FULL) { \
     HISTOGRAM; \
   } else if (experiment != kNoExperiment) { \
     HISTOGRAM; \

@@ -213,23 +213,29 @@ bool AutocompleteEditModel::AcceptCurrentInstantPreview() {
 void AutocompleteEditModel::OnChanged() {
   const AutocompleteMatch current_match = CurrentMatch();
 
-  string16 suggested_text;
-
-  // Confer with the NetworkActionPredictor to determine what action, if any,
-  // we should take. Get the recommended action here even if we don't need it
-  // so we can get stats for anyone who is opted in to UMA, but only get it if
-  // the user has actually typed something to avoid constructing it before it's
-  // needed. Note: This event is triggered as part of startup when the initial
-  // tab transitions to the start page.
+  NetworkActionPredictor::Action recommended_action =
+      NetworkActionPredictor::ACTION_NONE;
   NetworkActionPredictor* network_action_predictor = user_input_in_progress() ?
       profile_->GetNetworkActionPredictor() : NULL;
-  NetworkActionPredictor::Action recommended_action = network_action_predictor ?
-       network_action_predictor->RecommendAction(user_text_, current_match) :
-       NetworkActionPredictor::ACTION_NONE;
+  if (network_action_predictor) {
+    network_action_predictor->RegisterTransitionalMatches(user_text_,
+                                                          result());
+    // Confer with the NetworkActionPredictor to determine what action, if any,
+    // we should take. Get the recommended action here even if we don't need it
+    // so we can get stats for anyone who is opted in to UMA, but only get it if
+    // the user has actually typed something to avoid constructing it before
+    // it's needed. Note: This event is triggered as part of startup when the
+    // initial tab transitions to the start page.
+    recommended_action =
+        network_action_predictor->RecommendAction(user_text_, current_match);
+  }
+
   UMA_HISTOGRAM_ENUMERATION("NetworkActionPredictor.Action_" +
                             prerender::GetOmniboxHistogramSuffix(),
                             recommended_action,
                             NetworkActionPredictor::LAST_PREDICT_ACTION);
+  string16 suggested_text;
+
   if (DoInstant(current_match, &suggested_text)) {
     SetSuggestedText(suggested_text, instant_complete_behavior_);
   } else {
@@ -394,6 +400,10 @@ void AutocompleteEditModel::Revert() {
   has_temporary_text_ = false;
   view_->SetWindowTextAndCaretPos(permanent_text_,
                                   has_focus_ ? permanent_text_.length() : 0);
+  NetworkActionPredictor* network_action_predictor =
+      profile_->GetNetworkActionPredictor();
+  if (network_action_predictor)
+    network_action_predictor->ClearTransitionalMatches();
 }
 
 void AutocompleteEditModel::StartAutocomplete(
