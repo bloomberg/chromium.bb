@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/at_exit.h"
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -32,6 +33,9 @@
 #include "net/base/load_flags.h"
 
 using content::BrowserThread;
+
+// The component updater is designed to live until process shutdown, so
+// base::Bind() calls are not refcounted.
 
 namespace {
 // Extends an omaha compatible update check url |query| string. Does
@@ -322,10 +326,6 @@ class CrxUpdateService : public ComponentUpdateService {
 
   DISALLOW_COPY_AND_ASSIGN(CrxUpdateService);
 };
-
-// The component updater is designed to live until process shutdown, besides
-// we can't be refcounted because we are a singleton.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(CrxUpdateService);
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -693,10 +693,12 @@ void CrxUpdateService::OnURLFetchComplete(const content::URLFetcher* source,
         content::Source<std::string>(&context->id),
         content::NotificationService::NoDetails());
 
+    // Why unretained? See comment at top of file.
     BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &CrxUpdateService::Install,
-                          context,
-                          temp_crx_path),
+        base::Bind(&CrxUpdateService::Install,
+                   base::Unretained(this),
+                   context,
+                   temp_crx_path),
         config_->StepDelay());
   }
 }
@@ -714,9 +716,10 @@ void CrxUpdateService::Install(const CRXContext* context,
   if (!file_util::Delete(crx_path, false)) {
     NOTREACHED() << crx_path.value();
   }
+  // Why unretained? See comment at top of file.
   BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &CrxUpdateService::DoneInstalling,
-                        context->id, unpacker.error()),
+      base::Bind(&CrxUpdateService::DoneInstalling, base::Unretained(this),
+                 context->id, unpacker.error()),
       config_->StepDelay());
   delete context;
 }
