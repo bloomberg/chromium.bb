@@ -66,8 +66,8 @@ void Protector::OnDiscardChange() {
 }
 
 void Protector::OnDecisionTimeout() {
-  // TODO(ivankr): Add histogram.
   DVLOG(1) << "Timeout";
+  change_->Timeout();
 }
 
 void Protector::OnRemovedFromProfile() {

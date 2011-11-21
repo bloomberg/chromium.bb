@@ -3590,4 +3590,12 @@ int GetSearchEngineLogo(const GURL& url_to_find) {
   return kNoSearchEngineLogo;
 }
 
+TemplateURL* FindPrepopulatedEngine(const std::string& search_url) {
+  for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
+    if (search_url == ToUTF8(kAllEngines[i]->search_url))
+      return MakePrepopulateTemplateURLFromPrepopulateEngine(*kAllEngines[i]);
+  }
+  return NULL;
+}
+
 }  // namespace TemplateURLPrepopulateData

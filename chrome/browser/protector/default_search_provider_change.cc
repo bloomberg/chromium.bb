@@ -5,16 +5,18 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/protector/base_setting_change.h"
+#include "chrome/browser/protector/histograms.h"
 #include "chrome/browser/protector/protector.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/webdata/keyword_table.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "googleurl/src/gurl.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace protector {
@@ -36,6 +38,7 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   virtual bool Init(Protector* protector) OVERRIDE;
   virtual void Apply() OVERRIDE;
   virtual void Discard() OVERRIDE;
+  virtual void Timeout() OVERRIDE;
   virtual void OnBeforeRemoved() OVERRIDE;
   virtual string16 GetBubbleTitle() const OVERRIDE;
   virtual string16 GetBubbleMessage() const OVERRIDE;
@@ -67,6 +70,8 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   // Name of the search engine that we fall back to if the backup is lost.
   string16 fallback_name_;
   string16 product_name_;
+  // Histogram ID of the new search provider.
+  int new_histogram_id_;
   // Default search provider set by |Init| for the period until user makes a
   // choice and either |Apply| or |Discard| is performed. Should only be used
   // for comparison with the current default search provider and never
@@ -84,6 +89,7 @@ DefaultSearchProviderChange::DefaultSearchProviderChange(
       new_id_(0),
       fallback_id_(0),
       product_name_(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
+      new_histogram_id_(GetSearchProviderHistogramID(new_url)),
       default_search_provider_(NULL) {
   if (new_url) {
     new_id_ = new_url->id();
@@ -100,6 +106,11 @@ DefaultSearchProviderChange::~DefaultSearchProviderChange() {
 
 bool DefaultSearchProviderChange::Init(Protector* protector) {
   BaseSettingChange::Init(protector);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      kProtectorHistogramNewSearchProvider,
+      new_histogram_id_,
+      kProtectorMaxSearchProviderID);
 
   // Initially reset the search engine to its previous setting.
   default_search_provider_ = SetDefaultSearchProvider(old_id_, true);
@@ -120,7 +131,11 @@ bool DefaultSearchProviderChange::Init(Protector* protector) {
 }
 
 void DefaultSearchProviderChange::Apply() {
-  // TODO(avayvod): Add histrogram.
+  UMA_HISTOGRAM_ENUMERATION(
+      kProtectorHistogramSearchProviderApplied,
+      new_histogram_id_,
+      kProtectorMaxSearchProviderID);
+
   if (!new_id_) {
     // Open settings page in case the new setting is invalid.
     OpenSearchEngineSettings();
@@ -130,13 +145,24 @@ void DefaultSearchProviderChange::Apply() {
 }
 
 void DefaultSearchProviderChange::Discard() {
-  // TODO(avayvod): Add histrogram.
+  UMA_HISTOGRAM_ENUMERATION(
+      kProtectorHistogramSearchProviderDiscarded,
+      new_histogram_id_,
+      kProtectorMaxSearchProviderID);
+
   if (!old_id_) {
     // Open settings page in case the old setting is invalid.
     OpenSearchEngineSettings();
   }
   // Nothing to do otherwise since we have already set the search engine
   // to |old_id_| in |Init|.
+}
+
+void DefaultSearchProviderChange::Timeout() {
+  UMA_HISTOGRAM_ENUMERATION(
+      kProtectorHistogramSearchProviderTimeout,
+      new_histogram_id_,
+      kProtectorMaxSearchProviderID);
 }
 
 void DefaultSearchProviderChange::OnBeforeRemoved() {

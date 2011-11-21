@@ -4,6 +4,11 @@
 
 #include "chrome/browser/protector/histograms.h"
 
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/search_engines/search_engine_type.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
+
 namespace protector {
 
 const char kProtectorHistogramDefaultSearchProvider[] =
@@ -13,5 +18,29 @@ const char kProtectorBackupInvalidCounter[] =
     "Protector.BackupInvalidCounter";
 const char kProtectorValueChangedCounter[] = "Protector.ValueChangedCounter";
 const char kProtectorValueValidCounter[] = "Protector.ValueValidCounter";
+
+const char kProtectorHistogramNewSearchProvider[] =
+    "Protector.NewSearchProvider";
+const char kProtectorHistogramSearchProviderApplied[] =
+    "Protector.SearchProviderApplied";
+const char kProtectorHistogramSearchProviderDiscarded[] =
+    "Protector.SearchProviderDiscarded";
+const char kProtectorHistogramSearchProviderTimeout[] =
+    "Protector.SearchProviderTimeout";
+
+const int kProtectorMaxSearchProviderID = SEARCH_ENGINE_MAX;
+
+int GetSearchProviderHistogramID(const TemplateURL* t_url) {
+  if (t_url && t_url->url()) {
+    scoped_ptr<TemplateURL> prepopulated_url(
+        TemplateURLPrepopulateData::FindPrepopulatedEngine(
+            t_url->url()->url()));
+    if (prepopulated_url.get())
+      return static_cast<int>(prepopulated_url->search_engine_type());
+  }
+  // If |t_url| is NULL or not among the prepopulated providers, return
+  // SEARCH_ENGINE_OTHER as well.
+  return SEARCH_ENGINE_OTHER;
+}
 
 }  // namespace protector

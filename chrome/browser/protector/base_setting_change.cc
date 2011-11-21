@@ -27,6 +27,9 @@ void BaseSettingChange::Apply() {
 void BaseSettingChange::Discard() {
 }
 
+void BaseSettingChange::Timeout() {
+}
+
 void BaseSettingChange::OnBeforeRemoved() {
 }
 

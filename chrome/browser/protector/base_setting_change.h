@@ -38,6 +38,9 @@ class BaseSettingChange {
   // Restores old setting if needed.
   virtual void Discard();
 
+  // Indicates that user has ignored this change and timeout has passed.
+  virtual void Timeout();
+
   // Called before the change is removed from the protector instance.
   virtual void OnBeforeRemoved() = 0;
 
