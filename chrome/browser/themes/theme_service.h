@@ -150,8 +150,8 @@ class ThemeService : public base::NonThreadSafe,
 #if defined(TOOLKIT_USES_GTK)
   // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
   // shared instances owned by the theme provider and should not be freed.
-  virtual GdkPixbuf* GetPixbufNamed(int id) const OVERRIDE;
-  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const OVERRIDE;
+  virtual GdkPixbuf* GetPixbufNamed(int id) const;
+  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const;
 #elif defined(OS_MACOSX)
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const OVERRIDE;
   virtual NSColor* GetNSImageColorNamed(int id,
