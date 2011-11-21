@@ -554,7 +554,12 @@ TEST_F(WidgetOwnershipTest, Ownership_PlatformNativeWidgetOwnsWidget) {
 }
 
 // NativeWidget owns its Widget, part 2: NativeWidget is a NativeWidget.
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
+// Temporarily disable the test (http://crbug.com/104945).
+TEST_F(WidgetOwnershipTest, DISABLED_Ownership_ViewsNativeWidgetOwnsWidget) {
+#else
 TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget) {
+#endif
   OwnershipTestState state;
 
   Widget* toplevel = CreateTopLevelPlatformWidget();
@@ -604,8 +609,14 @@ TEST_F(WidgetOwnershipTest,
 
 // NativeWidget owns its Widget, part 4: NativeWidget is a NativeWidget,
 // destroyed by the view hierarchy that contains it.
+#if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
+// Temporarily disable the test (http://crbug.com/104945).
+TEST_F(WidgetOwnershipTest,
+       DISABLED_Ownership_ViewsNativeWidgetOwnsWidget_NativeDestroy) {
+#else
 TEST_F(WidgetOwnershipTest,
        Ownership_ViewsNativeWidgetOwnsWidget_NativeDestroy) {
+#endif
   OwnershipTestState state;
 
   Widget* toplevel = CreateTopLevelPlatformWidget();
