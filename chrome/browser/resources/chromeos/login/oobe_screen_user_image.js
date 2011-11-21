@@ -231,8 +231,13 @@ cr.define('oobe', function() {
      * @private
      */
     acceptImage_: function() {
-      if (!$('ok-button').disabled)
+      var okButton = $('ok-button');
+      if (!okButton.disabled) {
+        // This ensures that #ok-button won't be re-enabled again.
+        $('user-image-grid').disabled = true;
+        okButton.disabled = true;
         chrome.send('onUserImageAccepted');
+      }
     },
 
     /**
