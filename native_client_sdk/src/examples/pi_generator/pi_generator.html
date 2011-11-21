@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!--
+  Copyright (c) 2011 The Native Client Authors. All rights reserved.
+  Use of this source code is governed by a BSD-style license that can be
+  found in the LICENSE file.
+  -->
+  <head>
+    <title>Monte Carlo Estimate for Pi</title>
+    <script type="text/javascript">
+      var piGenerator = null;
+      var paintInterval = null;
+
+      // Start up the paint timer when the NaCl module has loaded.
+      function moduleDidLoad() {
+        piGenerator = document.getElementById('piGenerator');
+        paintInterval = setInterval('piGenerator.postMessage("paint")', 5);
+      }
+
+      // Handle a message coming from the NaCl module.  The message payload is
+      // assumed to contain the current estimated value of Pi.  Update the Pi
+      // text display with this value.
+      function handleMessage(message_event) {
+        document.form.pi.value = message_event.data;
+      }
+
+      function pageDidUnload() {
+        clearInterval(paintInterval);
+      }
+    </script>
+  </head>
+  <body id="bodyId" onunload="pageDidUnload()">
+    <h1>Monte Carlo Estimate for Pi</h1>
+    <p>
+      The Native Client module executed in this page creates a thread
+      that estimates pi (&pi;) using the Monte Carlo method.
+      The thread randomly puts 1,000,000,000 points
+      inside a square that shares two sides with a quarter circle (a quadrant).
+      Because the area of
+      the quadrant is r&#178;&pi;/4
+      and the area of
+      the square is r&#178;,
+      dividing the number of points inside the quadrant
+      by the number of points inside the square gives us
+      an estimate of &pi;/4.
+      The textbox under the square
+      shows the current estimate of &pi;.
+    </p>
+    <!-- Load the published .nexe.  This includes the 'src' attribute which
+    shows how to load multi-architecture modules.  Each entry in the "nexes"
+    object in the .nmf manifest file is a key-value pair: the key is the
+    runtime ('x86-32', 'x86-64', etc.); the value is a URL for the desired NaCl
+    module.  To load the debug versions of your .nexes, set the 'src'
+    attribute to the _dbg.nmf version of the manifest file.
+
+    Note: The <EMBED> element is wrapped inside a <DIV>, which has both a 'load'
+    and a 'message' event listener attached.  This wrapping method is used
+    instead of attaching the event listeners directly to the <EMBED> element to
+    ensure that the listeners are active before the NaCl module 'load' event
+    fires.  This also allows you to use PPB_Messaging.PostMessage() (in C) or
+    pp::Instance.PostMessage() (in C++) from within the initialization code in
+    your NaCl module.
+    -->
+    <div id="listener">
+      <script type="text/javascript">
+        var listener = document.getElementById('listener')
+        listener.addEventListener('load', moduleDidLoad, true);
+        listener.addEventListener('message', handleMessage, true);
+      </script>
+
+      <embed name="nacl_module"
+             id="piGenerator"
+             width=200 height=200
+             src="pi_generator.nmf"
+             type="application/x-nacl" />
+    </div>
+    <br />
+    <form name="form">
+      <input type="text" size="15" name="pi" />
+    </form>
+  </body>
+</html>

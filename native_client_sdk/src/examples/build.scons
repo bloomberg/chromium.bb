@@ -1,0 +1,82 @@
+#! -*- python -*-
+#
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import os
+import shutil
+import sys
+
+"""
+Build file for the NaCl SDK Examples
+
+This file runs all the scons files in the various example sub-directories.
+Do not invoke this script directly, but instead use the scons or scons.bat
+wrapper function.  E.g.
+
+Linux or Mac:
+  ./scons [Options...]
+
+Windows:
+  scons.bat [Options...]
+"""
+
+#------------------------------------------------------------------------------
+HELP_STRING = """
+===============================================================================
+Help for NaCl SDK Examples
+===============================================================================
+
+* cleaning:            ./scons -c
+* build a target:      ./scons <target>
+* clean a target:      ./scons -c <target>
+
+Supported targets:
+  * fullscreen_tumbler Build the fullscreen-tumbler example.
+  * geturl             Build the geturl example.
+  * hello_world        Build the hello_world example.
+  * hello_world_c      Build the hello_world_c example.
+  * input_events       Build the input_events example.
+  * load_progress      Build the load_progress example.
+  * mouselock          Build the mouselock example.
+  * multithreaded_input_events  Build the multithreaded input_events example.
+  * pi_generator       Build the pi_generator example.
+  * pong               Build the pong example.
+  * sine_synth         Build the sine_synth example.
+  * tumbler            Build the tumbler example.
+"""
+
+example_directories = [
+    'fullscreen_tumbler',
+    'geturl',
+    'hello_world',
+    'hello_world_c',
+    'input_events',
+    'load_progress',
+    'mouselock',
+    'multithreaded_input_events',
+    'pi_generator',
+    'pong',
+    'sine_synth',
+    'tumbler',
+    ]
+
+Help(HELP_STRING)
+
+staging_dir = os.path.abspath(os.getenv(
+    'NACL_INSTALL_ROOT', os.path.join(os.getenv('NACL_SDK_ROOT', '.'),
+                                      'staging')))
+general_files = Install(staging_dir, ['httpd.py'])
+general_files.extend(InstallAs(os.path.join(staging_dir, 'index.html'),
+                               'index_staging.html'))
+
+if sys.platform in ['win32', 'cygwin']:
+  general_files.extend(Install(staging_dir, 'httpd.cmd'))
+
+SConscript([os.path.join(dir, 'build.scons') for dir in example_directories])
+
+Default(['install'] + general_files + example_directories)
+if GetOption('clean'):
+  print "Removing the staging directory at %s" % staging_dir
+  shutil.rmtree(staging_dir, ignore_errors=True)

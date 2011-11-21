@@ -401,6 +401,7 @@ skip_child_includes = [
   "breakpad",
   "chrome_frame",
   "native_client",
+  "native_client_sdk",
   "o3d",
   "pdf",
   "sdch",

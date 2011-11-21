@@ -1,0 +1,26 @@
+#! -*- python -*-
+#
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Build file for tests of init_project interface.
+
+Adapted from scons documentation: http://www.scons.org/wiki/UnitTests
+
+RunUnitTests(): Runs a comment and uses the return code to determine success.
+"""
+
+__author__ = 'mlinck@google.com (Michael Linck)'
+
+import os
+import sys
+
+Import('env')
+
+#TODO(mlinck) Enable this test again when it works on Windows
+cmd = env.CreatePythonUnitTest(filename='init_project_test.py',
+                               dependencies=['init_project.py'],
+                               disabled=env['IS_WINDOWS'])
+
+env.AddNodeToTestSuite(cmd, ['bot'], 'run_init_project_test', 'small')
