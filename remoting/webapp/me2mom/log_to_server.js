@@ -17,6 +17,7 @@ var remoting = remoting || {};
  */
 remoting.LogToServer = function() {
   /** @type Array.<string> */ this.pendingEntries = [];
+  /** @type boolean */ this.enabled = false;
 };
 
 /**
@@ -42,6 +43,9 @@ remoting.LogToServer.prototype.logClientSessionStateChange =
  * @param {remoting.ServerLogEntry} entry
  */
 remoting.LogToServer.prototype.log = function(entry) {
+  if (!this.enabled) {
+    return;
+  }
   // Store a stanza for the entry
   this.pendingEntries.push(entry.toStanza());
   // Stop if there's no connection to the server.
