@@ -331,12 +331,12 @@ class ItemObserver : public DownloadItem::Observer {
   // DownloadItem::Observer methods
   virtual void OnDownloadUpdated(DownloadItem* download) {
     DCHECK_EQ(tracked_, download);
-    states_hit_ |= (1 << download->state());
+    states_hit_ |= (1 << download->GetState());
     was_updated_ = true;
   }
   virtual void OnDownloadOpened(DownloadItem* download) {
     DCHECK_EQ(tracked_, download);
-    states_hit_ |= (1 << download->state());
+    states_hit_ |= (1 << download->GetState());
     was_opened_ = true;
   }
 
@@ -424,7 +424,7 @@ TEST_F(DownloadManagerTest, DownloadRenameTest) {
     download_manager_->CreateDownloadItem(info.get(), DownloadRequestHandle());
     DownloadItem* download = GetActiveDownloadItem(i);
     ASSERT_TRUE(download != NULL);
-    DownloadStateInfo state = download->state_info();
+    DownloadStateInfo state = download->GetStateInfo();
     state.danger = kDownloadRenameCases[i].danger;
     download->SetFileCheckResults(state);
 
@@ -481,7 +481,7 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   scoped_ptr<DownloadItemModel> download_item_model(
       new DownloadItemModel(download));
 
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
+  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   download_file->AppendDataToFile(kTestData, kTestDataLen);
@@ -505,8 +505,8 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
-  EXPECT_FALSE(download->file_externally_removed());
-  EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
+  EXPECT_FALSE(download->GetFileExternallyRemoved());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
   ui::DataUnits amount_units = ui::GetByteDisplayUnits(kTestDataLen);
   string16 simple_size =
       ui::FormatBytesWithUnits(error_size, amount_units, false);
@@ -526,10 +526,10 @@ TEST_F(DownloadManagerTest, DownloadInterruptTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
-  EXPECT_FALSE(download->file_externally_removed());
-  EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
-  EXPECT_EQ(download->received_bytes(), error_size);
-  EXPECT_EQ(download->total_bytes(), static_cast<int64>(kTestDataLen));
+  EXPECT_FALSE(download->GetFileExternallyRemoved());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
+  EXPECT_EQ(download->GetReceivedBytes(), error_size);
+  EXPECT_EQ(download->GetTotalBytes(), static_cast<int64>(kTestDataLen));
 }
 
 // Test the behavior of DownloadFileManager and DownloadManager in the event
@@ -571,7 +571,7 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
   scoped_ptr<DownloadItemModel> download_item_model(
       new DownloadItemModel(download));
 
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
+  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   // Add some data before finalizing the file name.
@@ -598,8 +598,8 @@ TEST_F(DownloadManagerTest, DownloadFileErrorTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
-  EXPECT_FALSE(download->file_externally_removed());
-  EXPECT_EQ(DownloadItem::INTERRUPTED, download->state());
+  EXPECT_FALSE(download->GetFileExternallyRemoved());
+  EXPECT_EQ(DownloadItem::INTERRUPTED, download->GetState());
 
   // Check the download shelf's information.
   size_t error_size = kTestDataLen * 3;
@@ -652,7 +652,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   scoped_ptr<DownloadItemModel> download_item_model(
       new DownloadItemModel(download));
 
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
+  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   ContinueDownloadWithPath(download, new_path);
@@ -672,8 +672,8 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
-  EXPECT_FALSE(download->file_externally_removed());
-  EXPECT_EQ(DownloadItem::CANCELLED, download->state());
+  EXPECT_FALSE(download->GetFileExternallyRemoved());
+  EXPECT_EQ(DownloadItem::CANCELLED, download->GetState());
   EXPECT_EQ(download_item_model->GetStatusText(),
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_CANCELED));
 
@@ -724,7 +724,7 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   scoped_ptr<DownloadItemModel> download_item_model(
       new DownloadItemModel(download));
 
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
+  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   // Create and initialize the download file.  We're bypassing the first part
@@ -759,8 +759,8 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
-  EXPECT_FALSE(download->file_externally_removed());
-  EXPECT_EQ(DownloadItem::COMPLETE, download->state());
+  EXPECT_FALSE(download->GetFileExternallyRemoved());
+  EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
   EXPECT_EQ(download_item_model->GetStatusText(), ASCIIToUTF16(""));
 
   EXPECT_TRUE(file_util::PathExists(new_path));
@@ -801,7 +801,7 @@ TEST_F(DownloadManagerTest, DownloadRemoveTest) {
   scoped_ptr<DownloadItemModel> download_item_model(
       new DownloadItemModel(download));
 
-  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->state());
+  EXPECT_EQ(DownloadItem::IN_PROGRESS, download->GetState());
   scoped_ptr<ItemObserver> observer(new ItemObserver(download));
 
   // Create and initialize the download file.  We're bypassing the first part
@@ -836,8 +836,8 @@ TEST_F(DownloadManagerTest, DownloadRemoveTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
-  EXPECT_FALSE(download->file_externally_removed());
-  EXPECT_EQ(DownloadItem::COMPLETE, download->state());
+  EXPECT_FALSE(download->GetFileExternallyRemoved());
+  EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
   EXPECT_EQ(download_item_model->GetStatusText(), ASCIIToUTF16(""));
 
   EXPECT_TRUE(file_util::PathExists(new_path));
@@ -856,8 +856,8 @@ TEST_F(DownloadManagerTest, DownloadRemoveTest) {
   EXPECT_FALSE(observer->hit_state(DownloadItem::REMOVING));
   EXPECT_TRUE(observer->was_updated());
   EXPECT_FALSE(observer->was_opened());
-  EXPECT_TRUE(download->file_externally_removed());
-  EXPECT_EQ(DownloadItem::COMPLETE, download->state());
+  EXPECT_TRUE(download->GetFileExternallyRemoved());
+  EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
   EXPECT_EQ(download_item_model->GetStatusText(),
             l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED));
 

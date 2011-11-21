@@ -20,7 +20,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/download/download_file_manager.h"
-#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/save_file.h"
 #include "content/browser/download/save_file_manager.h"
@@ -266,11 +266,11 @@ bool SavePackage::Init() {
   }
 
   // Create the download item, and add ourself as an observer.
-  download_ = new DownloadItem(download_manager_,
-                               saved_main_file_path_,
-                               page_url_,
-                               browser_context->IsOffTheRecord(),
-                               download_manager_->GetNextId());
+  download_ = new DownloadItemImpl(download_manager_,
+                                   saved_main_file_path_,
+                                   page_url_,
+                                   browser_context->IsOffTheRecord(),
+                                   download_manager_->GetNextId());
   download_->AddObserver(this);
 
   // Transfer ownership to the download manager.
@@ -293,7 +293,7 @@ bool SavePackage::Init() {
     // Add this item to waiting list.
     waiting_item_queue_.push(save_item);
     all_save_items_count_ = 1;
-    download_->set_total_bytes(1);
+    download_->SetTotalBytes(1);
 
     DoSavingProcess();
   }
@@ -1014,7 +1014,7 @@ void SavePackage::OnReceivedSavableResourceLinksForCurrentPage(
 
   // We use total bytes as the total number of files we want to save.
   if (download_)
-    download_->set_total_bytes(all_save_items_count_);
+    download_->SetTotalBytes(all_save_items_count_);
 
   if (all_save_items_count_) {
     // Put all sub-resources to wait list.
@@ -1277,7 +1277,7 @@ void SavePackage::OnDownloadUpdated(DownloadItem* download) {
   DCHECK(download_manager_);
 
   // Check for removal.
-  if (download->state() == DownloadItem::REMOVING)
+  if (download->GetState() == DownloadItem::REMOVING)
     StopObservation();
 }
 

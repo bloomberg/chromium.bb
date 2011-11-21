@@ -3127,7 +3127,7 @@ DownloadItem* GetDownloadItemFromId(int id, DownloadManager* download_manager) {
        it != downloads.end();
        it++) {
     DownloadItem* curr_item = *it;
-    if (curr_item->id() == id) {
+    if (curr_item->GetId() == id) {
       selected_item = curr_item;
       break;
     }
@@ -3173,7 +3173,7 @@ void TestingAutomationProvider::PerformActionOnDownload(
     selected_item->OpenDownload();
   } else if (action == "toggle_open_files_like_this") {
     DownloadPrefs* prefs =
-        DownloadPrefs::FromDownloadManager(selected_item->download_manager());
+        DownloadPrefs::FromDownloadManager(selected_item->GetDownloadManager());
     FilePath path = selected_item->GetUserVerifiedFilePath();
     if (!selected_item->ShouldOpenFileBasedOnExtension())
       prefs->EnableAutoOpenBasedOnExtension(path);

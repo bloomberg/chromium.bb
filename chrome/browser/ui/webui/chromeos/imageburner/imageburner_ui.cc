@@ -223,20 +223,20 @@ void WebUIHandler::OnDownloadUpdated(DownloadItem* download) {
     DownloadCompleted(false);
     DCHECK(!active_download_item_);
   } else if (download->IsComplete()) {
-    burn_manager_->set_final_zip_file_path(download->full_path());
+    burn_manager_->set_final_zip_file_path(download->GetFullPath());
     DownloadCompleted(true);
     DCHECK(!active_download_item_);
   } else if (download->IsPartialDownload() &&
       state_machine_->state() == StateMachine::DOWNLOADING) {
     base::TimeDelta remaining_time;
     download->TimeRemaining(&remaining_time);
-    SendProgressSignal(DOWNLOAD, download->received_bytes(),
-        download->total_bytes(), &remaining_time);
+    SendProgressSignal(DOWNLOAD, download->GetReceivedBytes(),
+        download->GetTotalBytes(), &remaining_time);
   }
 }
 
 void WebUIHandler::OnDownloadOpened(DownloadItem* download) {
-  if (download->safety_state() == DownloadItem::DANGEROUS)
+  if (download->GetSafetyState() == DownloadItem::DANGEROUS)
     download->DangerousDownloadValidated();
 }
 
@@ -250,7 +250,7 @@ void WebUIHandler::ModelChanged() {
   for (std::vector<DownloadItem*>::const_iterator it = downloads.begin();
       it != downloads.end();
       ++it) {
-    if ((*it)->original_url() == image_download_url_) {
+    if ((*it)->GetOriginalUrl() == image_download_url_) {
       (*it)->AddObserver(this);
       active_download_item_ = *it;
       break;

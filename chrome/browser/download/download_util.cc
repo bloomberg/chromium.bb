@@ -131,10 +131,10 @@ void GenerateFileNameFromRequest(const DownloadItem& download_item,
       l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
 
   *generated_name = net::GenerateFileName(download_item.GetURL(),
-                                          download_item.content_disposition(),
-                                          download_item.referrer_charset(),
-                                          download_item.suggested_filename(),
-                                          download_item.mime_type(),
+                                          download_item.GetContentDisposition(),
+                                          download_item.GetReferrerCharset(),
+                                          download_item.GetSuggestedFilename(),
+                                          download_item.GetMimeType(),
                                           default_file_name);
 }
 
@@ -354,10 +354,10 @@ void DragDownload(const DownloadItem* download,
         download->GetFileNameToReportUser(), *icon, &data);
   }
 
-  const FilePath full_path = download->full_path();
+  const FilePath full_path = download->GetFullPath();
   data.SetFilename(full_path);
 
-  std::string mime_type = download->mime_type();
+  std::string mime_type = download->GetMimeType();
   if (mime_type.empty())
     net::GetMimeTypeFromFile(full_path, &mime_type);
 
@@ -403,11 +403,11 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   DictionaryValue* file_value = new DictionaryValue();
 
   file_value->SetInteger("started",
-      static_cast<int>(download->start_time().ToTimeT()));
+      static_cast<int>(download->GetStartTime().ToTimeT()));
   file_value->SetString("since_string",
-      TimeFormat::RelativeDate(download->start_time(), NULL));
+      TimeFormat::RelativeDate(download->GetStartTime(), NULL));
   file_value->SetString("date_string",
-      base::TimeFormatShortDate(download->start_time()));
+      base::TimeFormatShortDate(download->GetStartTime()));
   file_value->SetInteger("id", id);
 
   FilePath download_path(download->GetTargetFilePath());
@@ -420,13 +420,13 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   file_name = base::i18n::GetDisplayStringInLTRDirectionality(file_name);
   file_value->SetString("file_name", file_name);
   file_value->SetString("url", download->GetURL().spec());
-  file_value->SetBoolean("otr", download->is_otr());
-  file_value->SetInteger("total", static_cast<int>(download->total_bytes()));
+  file_value->SetBoolean("otr", download->IsOtr());
+  file_value->SetInteger("total", static_cast<int>(download->GetTotalBytes()));
   file_value->SetBoolean("file_externally_removed",
-                         download->file_externally_removed());
+                         download->GetFileExternallyRemoved());
 
   if (download->IsInProgress()) {
-    if (download->safety_state() == DownloadItem::DANGEROUS) {
+    if (download->GetSafetyState() == DownloadItem::DANGEROUS) {
       file_value->SetString("state", "DANGEROUS");
       DCHECK(download->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ||
              download->GetDangerType() == DownloadStateInfo::DANGEROUS_URL);
@@ -434,7 +434,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
           download->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ?
           "DANGEROUS_FILE" : "DANGEROUS_URL";
       file_value->SetString("danger_type", danger_type_value);
-    } else if (download->is_paused()) {
+    } else if (download->IsPaused()) {
       file_value->SetString("state", "PAUSED");
     } else {
       file_value->SetString("state", "IN_PROGRESS");
@@ -446,7 +446,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
     file_value->SetInteger("percent",
         static_cast<int>(download->PercentComplete()));
     file_value->SetInteger("received",
-        static_cast<int>(download->received_bytes()));
+        static_cast<int>(download->GetReceivedBytes()));
   } else if (download->IsInterrupted()) {
     file_value->SetString("state", "INTERRUPTED");
 
@@ -456,15 +456,15 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
     file_value->SetInteger("percent",
         static_cast<int>(download->PercentComplete()));
     file_value->SetInteger("received",
-        static_cast<int>(download->received_bytes()));
+        static_cast<int>(download->GetReceivedBytes()));
   } else if (download->IsCancelled()) {
     file_value->SetString("state", "CANCELLED");
   } else if (download->IsComplete()) {
-    if (download->safety_state() == DownloadItem::DANGEROUS)
+    if (download->GetSafetyState() == DownloadItem::DANGEROUS)
       file_value->SetString("state", "DANGEROUS");
     else
       file_value->SetString("state", "COMPLETE");
-  } else if (download->state() == DownloadItem::REMOVING) {
+  } else if (download->GetState() == DownloadItem::REMOVING) {
     file_value->SetString("state", "REMOVING");
   } else {
     NOTREACHED() << "state undefined";
@@ -474,8 +474,8 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
 }
 
 string16 GetProgressStatusText(DownloadItem* download) {
-  int64 total = download->total_bytes();
-  int64 size = download->received_bytes();
+  int64 total = download->GetTotalBytes();
+  int64 size = download->GetReceivedBytes();
   string16 received_size = ui::FormatBytes(size);
   string16 amount = received_size;
 
@@ -500,7 +500,7 @@ string16 GetProgressStatusText(DownloadItem* download) {
 
   base::TimeDelta remaining;
   string16 time_remaining;
-  if (download->is_paused())
+  if (download->IsPaused())
     time_remaining = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
   else if (download->TimeRemaining(&remaining))
     time_remaining = TimeFormat::TimeRemaining(remaining);

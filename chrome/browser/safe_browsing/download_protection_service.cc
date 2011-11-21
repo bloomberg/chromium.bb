@@ -146,12 +146,12 @@ DownloadProtectionService::DownloadInfo
 DownloadProtectionService::DownloadInfo::FromDownloadItem(
     const DownloadItem& item) {
   DownloadInfo download_info;
-  download_info.local_file = item.full_path();
   download_info.target_file = item.GetTargetFilePath();
-  download_info.download_url_chain = item.url_chain();
-  download_info.referrer_url = item.referrer_url();
-  download_info.sha256_hash = item.hash();
-  download_info.total_bytes = item.total_bytes();
+  download_info.sha256_hash = item.GetHash();
+  download_info.local_file = item.GetFullPath();
+  download_info.download_url_chain = item.GetUrlChain();
+  download_info.referrer_url = item.GetReferrerUrl();
+  download_info.total_bytes = item.GetTotalBytes();
   // TODO(bryner): Populate user_initiated
   return download_info;
 }

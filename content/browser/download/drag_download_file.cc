@@ -174,7 +174,7 @@ void DragDownloadFile::ModelChanged() {
   download_manager_->GetTemporaryDownloads(file_path_.DirName(), &downloads);
   for (std::vector<DownloadItem*>::const_iterator i = downloads.begin();
        i != downloads.end(); ++i) {
-    if ((*i)->original_url() == url_) {
+    if ((*i)->GetOriginalUrl() == url_) {
       download_item_ = *i;
       download_item_->AddObserver(this);
       break;
@@ -184,7 +184,8 @@ void DragDownloadFile::ModelChanged() {
 
 void DragDownloadFile::OnDownloadUpdated(DownloadItem* download) {
   AssertCurrentlyOnUIThread();
-  if (download->IsCancelled() || download->state() == DownloadItem::REMOVING) {
+  if (download->IsCancelled() ||
+      (download->GetState() == DownloadItem::REMOVING)) {
     RemoveObservers();
     DownloadCompleted(false);
   } else if (download->IsComplete()) {

@@ -35,6 +35,8 @@
         'browser/download/mock_download_file.h',
         'browser/download/mock_download_manager.cc',
         'browser/download/mock_download_manager.h',
+        'browser/download/mock_download_item.cc',
+        'browser/download/mock_download_item.h',
         'browser/download/mock_download_manager_delegate.cc',
         'browser/download/mock_download_manager_delegate.h',
         'browser/geolocation/arbitrator_dependency_factories_for_test.cc',

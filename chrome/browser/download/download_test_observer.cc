@@ -83,7 +83,7 @@ bool DownloadTestObserver::IsFinished() const {
 void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
   // The REMOVING state indicates that the download is being destroyed.
   // Stop observing.  Do not do anything with it, as it is about to be gone.
-  if (download->state() == DownloadItem::REMOVING) {
+  if (download->GetState() == DownloadItem::REMOVING) {
     DownloadSet::iterator it = downloads_observed_.find(download);
     ASSERT_TRUE(it != downloads_observed_.end());
     downloads_observed_.erase(it);
@@ -92,9 +92,9 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
   }
 
   // Real UI code gets the user's response after returning from the observer.
-  if (download->safety_state() == DownloadItem::DANGEROUS &&
-      !ContainsKey(dangerous_downloads_seen_, download->id())) {
-    dangerous_downloads_seen_.insert(download->id());
+  if (download->GetSafetyState() == DownloadItem::DANGEROUS &&
+      !ContainsKey(dangerous_downloads_seen_, download->GetId())) {
+    dangerous_downloads_seen_.insert(download->GetId());
 
     // Calling DangerousDownloadValidated() at this point will
     // cause the download to be completed twice.  Do what the real UI
@@ -108,7 +108,7 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
             NewRunnableFunction(
                 &AcceptDangerousDownload,
                 download_manager_,
-                download->id()));
+                download->GetId()));
         break;
 
       case ON_DANGEROUS_DOWNLOAD_DENY:
@@ -119,7 +119,7 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
             NewRunnableFunction(
                 &DenyDangerousDownload,
                 download_manager_,
-                download->id()));
+                download->GetId()));
         break;
 
       case ON_DANGEROUS_DOWNLOAD_FAIL:
@@ -131,7 +131,7 @@ void DownloadTestObserver::OnDownloadUpdated(DownloadItem* download) {
     }
   }
 
-  if (download->state() == download_finished_state_) {
+  if (download->GetState() == download_finished_state_) {
     DownloadInFinalState(download);
   }
 }
@@ -213,7 +213,7 @@ void DownloadTestFlushObserver::ModelChanged() {
 void DownloadTestFlushObserver::OnDownloadUpdated(DownloadItem* download) {
   // The REMOVING state indicates that the download is being destroyed.
   // Stop observing.  Do not do anything with it, as it is about to be gone.
-  if (download->state() == DownloadItem::REMOVING) {
+  if (download->GetState() == DownloadItem::REMOVING) {
     DownloadSet::iterator it = downloads_observed_.find(download);
     ASSERT_TRUE(it != downloads_observed_.end());
     downloads_observed_.erase(it);
@@ -245,7 +245,7 @@ void DownloadTestFlushObserver::CheckDownloadsInProgress(
     download_manager_->SearchDownloads(string16(), &downloads);
     for (std::vector<DownloadItem*>::iterator it = downloads.begin();
          it != downloads.end(); ++it) {
-      if ((*it)->state() == DownloadItem::IN_PROGRESS)
+      if ((*it)->GetState() == DownloadItem::IN_PROGRESS)
         count++;
       if (observe_downloads) {
         if (downloads_observed_.find(*it) == downloads_observed_.end()) {

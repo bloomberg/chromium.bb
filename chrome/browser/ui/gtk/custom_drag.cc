@@ -24,7 +24,7 @@ const GdkDragAction kBookmarkDragAction =
 void OnDragDataGetForDownloadItem(GtkSelectionData* selection_data,
                                   guint target_type,
                                   const DownloadItem* download_item) {
-  GURL url = net::FilePathToFileURL(download_item->full_path());
+  GURL url = net::FilePathToFileURL(download_item->GetFullPath());
   ui::WriteURLWithName(selection_data, url,
       UTF8ToUTF16(download_item->GetFileNameToReportUser().value()),
       target_type);

@@ -219,12 +219,12 @@ void DownloadShelfGtk::Closed() {
                             download->IsCancelled() ||
                             download->IsInterrupted();
     if (is_transfer_done &&
-        download->safety_state() != DownloadItem::DANGEROUS) {
+        download->GetSafetyState() != DownloadItem::DANGEROUS) {
       RemoveDownloadItem(download_items_[i]);
     } else {
       // We set all remaining items as "opened", so that the shelf will auto-
       // close in the future without the user clicking on them.
-      download->set_opened(true);
+      download->SetOpened(true);
       ++i;
     }
   }
@@ -303,7 +303,7 @@ void DownloadShelfGtk::OnButtonClick(GtkWidget* button) {
 void DownloadShelfGtk::AutoCloseIfPossible() {
   for (std::vector<DownloadItemGtk*>::iterator iter = download_items_.begin();
        iter != download_items_.end(); ++iter) {
-    if (!(*iter)->get_download()->opened())
+    if (!(*iter)->get_download()->GetOpened())
       return;
   }
 

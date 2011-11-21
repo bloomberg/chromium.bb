@@ -29,7 +29,7 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
   DCHECK_EQ(download, download_model_->download());
 
   if ([item_controller_ isDangerousMode] &&
-      download->safety_state() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
+      download->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
     // We have been approved.
     [item_controller_ clearDangerousMode];
   }
@@ -44,16 +44,16 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
     [item_controller_ updateToolTip];
   }
 
-  switch (download->state()) {
+  switch (download->GetState()) {
     case DownloadItem::REMOVING:
       [item_controller_ remove];  // We're deleted now!
       break;
     case DownloadItem::COMPLETE:
-      if (download->auto_opened()) {
+      if (download->GetAutoOpened()) {
         [item_controller_ remove];  // We're deleted now!
         return;
       }
-      download_util::NotifySystemOfDownloadComplete(download->full_path());
+      download_util::NotifySystemOfDownloadComplete(download->GetFullPath());
       // fall through
     case DownloadItem::IN_PROGRESS:
     case DownloadItem::INTERRUPTED:

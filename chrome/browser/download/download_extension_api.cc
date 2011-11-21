@@ -452,24 +452,24 @@ void DownloadsDragFunction::RunInternal() {
 namespace {
 base::DictionaryValue* DownloadItemToJSON(DownloadItem* item) {
   base::DictionaryValue* json = new base::DictionaryValue();
-  json->SetInteger(kIdKey, item->id());
-  json->SetString(kUrlKey, item->original_url().spec());
-  json->SetString(kFilenameKey, item->full_path().LossyDisplayName());
+  json->SetInteger(kIdKey, item->GetId());
+  json->SetString(kUrlKey, item->GetOriginalUrl().spec());
+  json->SetString(kFilenameKey, item->GetFullPath().LossyDisplayName());
   json->SetString(kDangerKey, DangerString(item->GetDangerType()));
   json->SetBoolean(kDangerAcceptedKey,
-      item->safety_state() == DownloadItem::DANGEROUS_BUT_VALIDATED);
-  json->SetString(kStateKey, StateString(item->state()));
-  json->SetBoolean(kPausedKey, item->is_paused());
-  json->SetString(kMimeKey, item->mime_type());
+      item->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED);
+  json->SetString(kStateKey, StateString(item->GetState()));
+  json->SetBoolean(kPausedKey, item->IsPaused());
+  json->SetString(kMimeKey, item->GetMimeType());
   json->SetInteger(kStartTimeKey,
-      (item->start_time() - base::Time::UnixEpoch()).InMilliseconds());
-  json->SetInteger(kBytesReceivedKey, item->received_bytes());
-  json->SetInteger(kTotalBytesKey, item->total_bytes());
-  if (item->state() == DownloadItem::INTERRUPTED)
-    json->SetInteger(kErrorKey, static_cast<int>(item->last_reason()));
+      (item->GetStartTime() - base::Time::UnixEpoch()).InMilliseconds());
+  json->SetInteger(kBytesReceivedKey, item->GetReceivedBytes());
+  json->SetInteger(kTotalBytesKey, item->GetTotalBytes());
+  if (item->GetState() == DownloadItem::INTERRUPTED)
+    json->SetInteger(kErrorKey, static_cast<int>(item->GetLastReason()));
   // TODO(benjhayden): Implement endTime and fileSize.
   // json->SetInteger(kEndTimeKey, -1);
-  json->SetInteger(kFileSizeKey, item->total_bytes());
+  json->SetInteger(kFileSizeKey, item->GetTotalBytes());
   return json;
 }
 }  // anonymous namespace
@@ -504,7 +504,7 @@ void ExtensionDownloadsEventRouter::ModelChanged() {
        current_vec.begin();
        iter != current_vec.end(); ++iter) {
     DownloadItem* item = *iter;
-    int item_id = item->id();
+    int item_id = item->GetId();
     // TODO(benjhayden): Remove the following line when every item's id >= 0,
     // which will allow firing onErased events for items from the history.
     if (item_id < 0) continue;

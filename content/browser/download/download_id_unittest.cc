@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/download/mock_download_manager.h"
 #include "content/browser/download/mock_download_manager_delegate.h"

@@ -293,7 +293,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
   DCHECK_EQ(download, get_download());
 
   if (dangerous_prompt_ != NULL &&
-      download->safety_state() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
+      download->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
     // We have been approved.
     gtk_widget_set_no_show_all(body_.get(), FALSE);
     gtk_widget_set_no_show_all(menu_button_, FALSE);
@@ -315,7 +315,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
     UpdateTooltip();
   }
 
-  switch (download->state()) {
+  switch (download->GetState()) {
     case DownloadItem::REMOVING:
       parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
       return;
@@ -329,9 +329,9 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       complete_animation_.Show();
       break;
     case DownloadItem::COMPLETE:
-      // auto_opened() may change after the download's initial transition to
+      // GetAutoOpened() may change after the download's initial transition to
       // COMPLETE, so we check it before the idemopotency shield below.
-      if (download->auto_opened()) {
+      if (download->GetAutoOpened()) {
         parent_shelf_->RemoveDownloadItem(this);  // This will delete us!
         return;
       }
@@ -350,7 +350,7 @@ void DownloadItemGtk::OnDownloadUpdated(DownloadItem* download) {
       download_complete_ = true;
       break;
     case DownloadItem::IN_PROGRESS:
-      get_download()->is_paused() ?
+      get_download()->IsPaused() ?
           StopDownloadProgress() : StartDownloadProgress();
       break;
     default:
@@ -417,7 +417,7 @@ DownloadItem* DownloadItemGtk::get_download() {
 }
 
 bool DownloadItemGtk::IsDangerous() {
-  return get_download()->safety_state() == DownloadItem::DANGEROUS;
+  return get_download()->GetSafetyState() == DownloadItem::DANGEROUS;
 }
 
 // Download progress animation functions.
@@ -573,7 +573,7 @@ void DownloadItemGtk::UpdateDangerWarning() {
             l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
       } else {
         string16 elided_filename = ui::ElideFilename(
-            get_download()->target_name(), gfx::Font(), kTextWidth);
+            get_download()->GetTargetName(), gfx::Font(), kTextWidth);
         dangerous_warning =
             l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,
                                        elided_filename);

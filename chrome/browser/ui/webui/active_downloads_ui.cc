@@ -300,8 +300,8 @@ void ActiveDownloadsHandler::UpdateDownloadList() {
 
 void ActiveDownloadsHandler::AddDownload(DownloadItem* item) {
   // Observe in progress and dangerous downloads.
-  if (item->state() == DownloadItem::IN_PROGRESS ||
-      item->safety_state() == DownloadItem::DANGEROUS) {
+  if (item->GetState() == DownloadItem::IN_PROGRESS ||
+      item->GetSafetyState() == DownloadItem::DANGEROUS) {
     active_downloads_.push_back(item);
 
     DownloadList::const_iterator it =
@@ -327,11 +327,11 @@ void ActiveDownloadsHandler::OnDownloadUpdated(DownloadItem* item) {
       find(downloads_.begin(), downloads_.end(), item);
 
   if (it == downloads_.end()) {
-    NOTREACHED() << "Updated item " << item->full_path().value()
+    NOTREACHED() << "Updated item " << item->GetFullPath().value()
       << " not found";
   }
 
-  if (item->state() == DownloadItem::REMOVING || item->auto_opened()) {
+  if (item->GetState() == DownloadItem::REMOVING || item->GetAutoOpened()) {
     // Item is going away, or item is an extension that has auto opened.
     item->RemoveObserver(this);
     downloads_.erase(it);

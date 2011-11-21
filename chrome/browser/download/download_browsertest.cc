@@ -606,7 +606,7 @@ class DownloadTest : public InProcessBrowserTest {
     FilePath full_path(DestinationFile(browser, filename));
     bool exists = false;
     for (size_t i = 0; i < downloads.size(); ++i) {
-      if (downloads[i]->full_path() == full_path) {
+      if (downloads[i]->GetFullPath() == full_path) {
         exists = true;
         break;
       }
@@ -1167,7 +1167,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
   browser()->profile()->GetDownloadManager()->SearchDownloads(
       string16(), &downloads);
   ASSERT_EQ(1u, downloads.size());
-  ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->state());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->GetState());
   CheckDownloadUI(browser(), true, true, FilePath());
   DownloadItem* download1 = downloads[0];  // The only download.
 
@@ -1185,8 +1185,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
   // We don't know the order of the downloads.
   DownloadItem* download2 = downloads[(download1 == downloads[0]) ? 1 : 0];
 
-  ASSERT_EQ(DownloadItem::IN_PROGRESS, download1->state());
-  ASSERT_EQ(DownloadItem::COMPLETE, download2->state());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, download1->GetState());
+  ASSERT_EQ(DownloadItem::COMPLETE, download2->GetState());
   // The download shelf should be open.
   CheckDownloadUI(browser(), true, true, FilePath());
 
@@ -1212,13 +1212,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MultiDownload) {
   // Verify that the files have the expected data and size.
   // |file1| should be full of '*'s, and |file2| should be the same as the
   // source file.
-  FilePath file1(download1->full_path());
+  FilePath file1(download1->GetFullPath());
   size_t file_size1 = URLRequestSlowDownloadJob::kFirstDownloadSize +
                       URLRequestSlowDownloadJob::kSecondDownloadSize;
   std::string expected_contents(file_size1, '*');
   ASSERT_TRUE(VerifyFile(file1, expected_contents, file_size1));
 
-  FilePath file2(download2->full_path());
+  FilePath file2(download2->GetFullPath());
   ASSERT_TRUE(file_util::ContentsEqual(OriginFile(file), file2));
 }
 
@@ -1254,7 +1254,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadCancelled) {
   DownloadManagerForBrowser(browser())->SearchDownloads(
       string16(), &downloads);
   ASSERT_EQ(1u, downloads.size());
-  ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->state());
+  ASSERT_EQ(DownloadItem::IN_PROGRESS, downloads[0]->GetState());
   CheckDownloadUI(browser(), true, true, FilePath());
 
   // Cancel the download and wait for download system quiesce.
@@ -1292,7 +1292,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryCheck) {
   std::vector<DownloadItem*> downloads;
   GetDownloads(browser(), &downloads);
   ASSERT_EQ(1u, downloads.size());
-  int64 db_handle = downloads[0]->db_handle();
+  int64 db_handle = downloads[0]->GetDbHandle();
 
   // Check state.
   EXPECT_EQ(1, browser()->tab_count());
@@ -1405,8 +1405,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, AutoOpen) {
   DownloadManagerForBrowser(browser())->SearchDownloads(
       string16(), &downloads);
   ASSERT_EQ(1u, downloads.size());
-  EXPECT_EQ(DownloadItem::COMPLETE, downloads[0]->state());
-  EXPECT_TRUE(downloads[0]->opened());
+  EXPECT_EQ(DownloadItem::COMPLETE, downloads[0]->GetState());
+  EXPECT_TRUE(downloads[0]->GetOpened());
 
   // As long as we're here, confirmed everything else is good.
   EXPECT_EQ(1, browser()->tab_count());
@@ -1553,7 +1553,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxLargeTheme) {
 
 // Sort download items by db_handle.
 static bool DownloadItemSorter(DownloadItem* d1, DownloadItem* d2) {
-  return d1->db_handle() < d2->db_handle();
+  return d1->GetDbHandle() < d2->GetDbHandle();
 }
 
 // Confirm that searching through the history works properly
@@ -1617,43 +1617,43 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SearchDownloads) {
     DownloadItem* d1 = search_results[0];
     DownloadItem* d2 = search_results[1];
     DownloadItem* d3 = search_results[2];
-    EXPECT_EQ(FilePath(FILE_PATH_LITERAL("/path/to/file")), d1->full_path());
+    EXPECT_EQ(FilePath(FILE_PATH_LITERAL("/path/to/file")), d1->GetFullPath());
     EXPECT_EQ(GURL("http://www.google.com/fantasy_download"),
-              d1->original_url());
+              d1->GetOriginalUrl());
     EXPECT_EQ(current - base::TimeDelta::FromMinutes(5),
-              d1->start_time());
-    EXPECT_EQ(current, d1->end_time());
-    EXPECT_EQ(128, d1->received_bytes());
-    EXPECT_EQ(128, d1->total_bytes());
-    EXPECT_EQ(DownloadItem::COMPLETE, d1->state());
-    EXPECT_EQ(1, d1->db_handle());
-    EXPECT_FALSE(d1->opened());
+              d1->GetStartTime());
+    EXPECT_EQ(current, d1->GetEndTime());
+    EXPECT_EQ(128, d1->GetReceivedBytes());
+    EXPECT_EQ(128, d1->GetTotalBytes());
+    EXPECT_EQ(DownloadItem::COMPLETE, d1->GetState());
+    EXPECT_EQ(1, d1->GetDbHandle());
+    EXPECT_FALSE(d1->GetOpened());
 
     EXPECT_EQ(FilePath(FILE_PATH_LITERAL("/path/to/another_file")),
-              d2->full_path());
+              d2->GetFullPath());
     EXPECT_EQ(GURL("http://www.google.com/reality_download"),
-              d2->original_url());
+              d2->GetOriginalUrl());
     EXPECT_EQ(current - base::TimeDelta::FromMinutes(10),
-              d2->start_time());
-    EXPECT_EQ(current, d2->end_time());
-    EXPECT_EQ(256, d2->received_bytes());
-    EXPECT_EQ(256, d2->total_bytes());
-    EXPECT_EQ(DownloadItem::COMPLETE, d2->state());
-    EXPECT_EQ(2, d2->db_handle());
-    EXPECT_FALSE(d2->opened());
+              d2->GetStartTime());
+    EXPECT_EQ(current, d2->GetEndTime());
+    EXPECT_EQ(256, d2->GetReceivedBytes());
+    EXPECT_EQ(256, d2->GetTotalBytes());
+    EXPECT_EQ(DownloadItem::COMPLETE, d2->GetState());
+    EXPECT_EQ(2, d2->GetDbHandle());
+    EXPECT_FALSE(d2->GetOpened());
 
     EXPECT_EQ(FilePath(FILE_PATH_LITERAL("/different_path/to/another_file")),
-              d3->full_path());
+              d3->GetFullPath());
     EXPECT_EQ(GURL("http://www.izzle.com/not_really_a_download"),
-              d3->original_url());
+              d3->GetOriginalUrl());
     EXPECT_EQ(current - base::TimeDelta::FromMinutes(15),
-              d3->start_time());
-    EXPECT_EQ(current, d3->end_time());
-    EXPECT_EQ(512, d3->received_bytes());
-    EXPECT_EQ(512, d3->total_bytes());
-    EXPECT_EQ(DownloadItem::COMPLETE, d3->state());
-    EXPECT_EQ(3, d3->db_handle());
-    EXPECT_TRUE(d3->opened());
+              d3->GetStartTime());
+    EXPECT_EQ(current, d3->GetEndTime());
+    EXPECT_EQ(512, d3->GetReceivedBytes());
+    EXPECT_EQ(512, d3->GetTotalBytes());
+    EXPECT_EQ(DownloadItem::COMPLETE, d3->GetState());
+    EXPECT_EQ(3, d3->GetDbHandle());
+    EXPECT_TRUE(d3->GetOpened());
   }
   search_results.clear();
 
@@ -1662,23 +1662,23 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SearchDownloads) {
   ASSERT_EQ(2u, search_results.size());
   std::sort(search_results.begin(), search_results.end(),
             DownloadItemSorter);
-  EXPECT_EQ(1, search_results[0]->db_handle());
-  EXPECT_EQ(2, search_results[1]->db_handle());
+  EXPECT_EQ(1, search_results[0]->GetDbHandle());
+  EXPECT_EQ(2, search_results[1]->GetDbHandle());
   search_results.clear();
 
   manager->SearchDownloads(UTF8ToUTF16("real"), &search_results);
   ASSERT_EQ(2u, search_results.size());
   std::sort(search_results.begin(), search_results.end(),
             DownloadItemSorter);
-  EXPECT_EQ(2, search_results[0]->db_handle());
-  EXPECT_EQ(3, search_results[1]->db_handle());
+  EXPECT_EQ(2, search_results[0]->GetDbHandle());
+  EXPECT_EQ(3, search_results[1]->GetDbHandle());
   search_results.clear();
 
   manager->SearchDownloads(UTF8ToUTF16("another_file"), &search_results);
   ASSERT_EQ(2u, search_results.size());
   std::sort(search_results.begin(), search_results.end(),
             DownloadItemSorter);
-  EXPECT_EQ(2, search_results[0]->db_handle());
-  EXPECT_EQ(3, search_results[1]->db_handle());
+  EXPECT_EQ(2, search_results[0]->GetDbHandle());
+  EXPECT_EQ(3, search_results[1]->GetDbHandle());
   search_results.clear();
 }

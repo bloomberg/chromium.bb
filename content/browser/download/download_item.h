@@ -20,26 +20,22 @@
 
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/file_path.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/observer_list.h"
-#include "base/time.h"
-#include "content/browser/download/download_id.h"
-#include "content/browser/download/download_request_handle.h"
+#include "base/string16.h"
 #include "content/browser/download/download_state_info.h"
 #include "content/browser/download/interrupt_reasons.h"
-#include "content/common/content_export.h"
-#include "googleurl/src/gurl.h"
-#include "net/base/net_errors.h"
 
 class DownloadFileManager;
 class DownloadId;
 class DownloadManager;
+class FilePath;
+class GURL;
 class TabContents;
-
 struct DownloadCreateInfo;
 struct DownloadPersistentStoreInfo;
+namespace base {
+class Time;
+class TimeDelta;
+}
 
 // One DownloadItem per download. This is the model class that stores all the
 // state for a download. Multiple views, such as a tab's download shelf and the
@@ -100,54 +96,36 @@ class CONTENT_EXPORT DownloadItem {
     virtual ~Observer() {}
   };
 
-  // Constructing from persistent store:
-  DownloadItem(DownloadManager* download_manager,
-               const DownloadPersistentStoreInfo& info);
-
-  // Constructing for a regular download.
-  // Takes ownership of the object pointed to by |request_handle|.
-  DownloadItem(DownloadManager* download_manager,
-               const DownloadCreateInfo& info,
-               DownloadRequestHandleInterface* request_handle,
-               bool is_otr);
-
-  // Constructing for the "Save Page As..." feature:
-  DownloadItem(DownloadManager* download_manager,
-               const FilePath& path,
-               const GURL& url,
-               bool is_otr,
-               DownloadId download_id);
-
   virtual ~DownloadItem();
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  virtual void AddObserver(DownloadItem::Observer* observer) = 0;
+  virtual void RemoveObserver(DownloadItem::Observer* observer) = 0;
 
   // Notifies our observers periodically.
-  void UpdateObservers();
+  virtual void UpdateObservers() = 0;
 
   // Returns true if it is OK to open a folder which this file is inside.
-  bool CanShowInFolder();
+  virtual bool CanShowInFolder() = 0;
 
   // Returns true if it is OK to register the type of this file so that
   // it opens automatically.
-  bool CanOpenDownload();
+  virtual bool CanOpenDownload() = 0;
 
   // Tests if a file type should be opened automatically.
-  bool ShouldOpenFileBasedOnExtension();
+  virtual bool ShouldOpenFileBasedOnExtension() = 0;
 
   // Open the file associated with this download (wait for the download to
   // complete if it is in progress).
-  void OpenDownload();
+  virtual void OpenDownload() = 0;
 
   // Show the download via the OS shell.
-  void ShowDownloadInShell();
+  virtual void ShowDownloadInShell() = 0;
 
   // Called when the user has validated the download of a dangerous file.
-  void DangerousDownloadValidated();
+  virtual void DangerousDownloadValidated() = 0;
 
   // Received a new chunk of data
-  void Update(int64 bytes_so_far);
+  virtual void Update(int64 bytes_so_far) = 0;
 
   // Cancel the download operation. We need to distinguish between cancels at
   // exit (DownloadManager destructor) from user interface initiated cancels
@@ -158,168 +136,157 @@ class CONTENT_EXPORT DownloadItem {
   // downloaded file's size on disk, and what the history system's last record
   // of it is. At worst, we'll end up re-downloading a small portion of the file
   // when resuming a download (assuming the server supports byte ranges).
-  void Cancel(bool user_cancel);
+  virtual void Cancel(bool user_cancel) = 0;
 
   // Called by external code (SavePackage) using the DownloadItem interface
   // to display progress when the DownloadItem should be considered complete.
-  void MarkAsComplete();
+  virtual void MarkAsComplete() = 0;
 
   // Called by the delegate after it delayed opening the download in
   // DownloadManagerDelegate::ShouldOpenDownload.
-  void DelayedDownloadOpened();
+  virtual void DelayedDownloadOpened() = 0;
 
-  // Called when all data has been saved.
-  void OnAllDataSaved(int64 size, const std::string& final_hash);
+  // Called when all data has been saved. Only has display effects.
+  virtual void OnAllDataSaved(int64 size, const std::string& final_hash) = 0;
 
   // Called when the downloaded file is removed.
-  void OnDownloadedFileRemoved();
+  virtual void OnDownloadedFileRemoved() = 0;
 
   // Download operation had an error.
   // |size| is the amount of data received at interruption.
   // |reason| is the download interrupt reason code that the operation received.
-  void Interrupted(int64 size, InterruptReason reason);
+  virtual void Interrupted(int64 size, InterruptReason reason) = 0;
 
   // Deletes the file from disk and removes the download from the views and
   // history.  |user| should be true if this is the result of the user clicking
   // the discard button, and false if it is being deleted for other reasons like
   // browser shutdown.
-  void Delete(DeleteReason reason);
+  virtual void Delete(DeleteReason reason) = 0;
 
   // Removes the download from the views and history.
-  void Remove();
+  virtual void Remove() = 0;
 
   // Simple calculation of the amount of time remaining to completion. Fills
   // |*remaining| with the amount of time remaining if successful. Fails and
   // returns false if we do not have the number of bytes or the speed so can
   // not estimate.
-  bool TimeRemaining(base::TimeDelta* remaining) const;
+  virtual bool TimeRemaining(base::TimeDelta* remaining) const = 0;
 
   // Simple speed estimate in bytes/s
-  int64 CurrentSpeed() const;
+  virtual int64 CurrentSpeed() const = 0;
 
   // Rough percent complete, -1 means we don't know (since we didn't receive a
   // total size).
-  int PercentComplete() const;
+  virtual int PercentComplete() const = 0;
 
   // Called when the final path has been determined.
-  void OnPathDetermined(const FilePath& path);
+  virtual void OnPathDetermined(const FilePath& path) = 0;
 
   // Returns true if this download has saved all of its data.
-  bool all_data_saved() const { return all_data_saved_; }
+  virtual bool AllDataSaved() const = 0;
 
   // Update the fields that may have changed in DownloadStateInfo as a
   // result of analyzing the file and figuring out its type, location, etc.
   // May only be called once.
-  void SetFileCheckResults(const DownloadStateInfo& state);
+  virtual void SetFileCheckResults(const DownloadStateInfo& state) = 0;
 
   // Update the download's path, the actual file is renamed on the download
   // thread.
-  void Rename(const FilePath& full_path);
+  virtual void Rename(const FilePath& full_path) = 0;
 
   // Allow the user to temporarily pause a download or resume a paused download.
-  void TogglePause();
+  virtual void TogglePause() = 0;
 
   // Called when the download is ready to complete.
   // This may perform final rename if necessary and will eventually call
   // DownloadItem::Completed().
-  void OnDownloadCompleting(DownloadFileManager* file_manager);
+  virtual void OnDownloadCompleting(DownloadFileManager* file_manager) = 0;
 
   // Called when the file name for the download is renamed to its final name.
-  void OnDownloadRenamedToFinalName(const FilePath& full_path);
+  virtual void OnDownloadRenamedToFinalName(const FilePath& full_path) = 0;
 
   // Returns true if this item matches |query|. |query| must be lower-cased.
-  bool MatchesQuery(const string16& query) const;
+  virtual bool MatchesQuery(const string16& query) const = 0;
 
   // Returns true if the download needs more data.
-  bool IsPartialDownload() const;
+  virtual bool IsPartialDownload() const = 0;
 
   // Returns true if the download is still receiving data.
-  bool IsInProgress() const;
+  virtual bool IsInProgress() const = 0;
 
   // Returns true if the download has been cancelled or was interrupted.
-  bool IsCancelled() const;
+  virtual bool IsCancelled() const = 0;
 
   // Returns true if the download was interrupted.
-  bool IsInterrupted() const;
+  virtual bool IsInterrupted() const = 0;
 
   // Returns true if we have all the data and know the final file name.
-  bool IsComplete() const;
+  virtual bool IsComplete() const = 0;
 
   // Accessors
-  DownloadState state() const { return state_; }
-  const FilePath& full_path() const { return full_path_; }
-  void set_path_uniquifier(int uniquifier) {
-    state_info_.path_uniquifier = uniquifier;
-  }
-  const GURL& GetURL() const;
-
-  const std::vector<GURL>& url_chain() const { return url_chain_; }
-  const GURL& original_url() const { return url_chain_.front(); }
-  const GURL& referrer_url() const { return referrer_url_; }
-  std::string suggested_filename() const { return suggested_filename_; }
-  std::string content_disposition() const { return content_disposition_; }
-  std::string mime_type() const { return mime_type_; }
-  std::string original_mime_type() const { return original_mime_type_; }
-  std::string referrer_charset() const { return referrer_charset_; }
-  int64 total_bytes() const { return total_bytes_; }
-  void set_total_bytes(int64 total_bytes) {
-    total_bytes_ = total_bytes;
-  }
-  int64 received_bytes() const { return received_bytes_; }
-  const std::string& hash() const { return hash_; }
-  int32 id() const { return download_id_.local(); }
-  DownloadId global_id() const { return download_id_; }
-  base::Time start_time() const { return start_time_; }
-  base::Time end_time() const { return end_time_; }
-  void set_db_handle(int64 handle) { db_handle_ = handle; }
-  int64 db_handle() const { return db_handle_; }
-  DownloadManager* download_manager() { return download_manager_; }
-  bool is_paused() const { return is_paused_; }
-  bool open_when_complete() const { return open_when_complete_; }
-  void set_open_when_complete(bool open) { open_when_complete_ = open; }
-  bool file_externally_removed() const { return file_externally_removed_; }
-  SafetyState safety_state() const { return safety_state_; }
+  virtual const std::string& GetHash() const = 0;
+  virtual DownloadState GetState() const = 0;
+  virtual const FilePath& GetFullPath() const = 0;
+  virtual void SetPathUniquifier(int uniquifier) = 0;
+  virtual const GURL& GetURL() const = 0;
+  virtual const std::vector<GURL>& GetUrlChain() const = 0;
+  virtual const GURL& GetOriginalUrl() const = 0;
+  virtual const GURL& GetReferrerUrl() const = 0;
+  virtual std::string GetSuggestedFilename() const = 0;
+  virtual std::string GetContentDisposition() const = 0;
+  virtual std::string GetMimeType() const = 0;
+  virtual std::string GetOriginalMimeType() const = 0;
+  virtual std::string GetReferrerCharset() const = 0;
+  virtual int64 GetTotalBytes() const = 0;
+  virtual void SetTotalBytes(int64 total_bytes) = 0;
+  virtual int64 GetReceivedBytes() const = 0;
+  virtual int32 GetId() const = 0;
+  virtual DownloadId GetGlobalId() const = 0;
+  virtual base::Time GetStartTime() const = 0;
+  virtual base::Time GetEndTime() const = 0;
+  virtual void SetDbHandle(int64 handle) = 0;
+  virtual int64 GetDbHandle() const = 0;
+  virtual DownloadManager* GetDownloadManager() = 0;
+  virtual bool IsPaused() const = 0;
+  virtual bool GetOpenWhenComplete() const = 0;
+  virtual void SetOpenWhenComplete(bool open) = 0;
+  virtual bool GetFileExternallyRemoved() const = 0;
+  virtual SafetyState GetSafetyState() const = 0;
   // Why |safety_state_| is not SAFE.
-  DownloadStateInfo::DangerType GetDangerType() const;
-  bool IsDangerous() const;
-  void MarkFileDangerous();
-  void MarkUrlDangerous();
-  void MarkContentDangerous();
+  virtual DownloadStateInfo::DangerType GetDangerType() const = 0;
+  virtual bool IsDangerous() const = 0;
+  virtual void MarkContentDangerous() = 0;
+  virtual void MarkFileDangerous() = 0;
+  virtual void MarkUrlDangerous() = 0;
 
-  bool auto_opened() { return auto_opened_; }
-  const FilePath& target_name() const { return state_info_.target_name; }
-  bool prompt_user_for_save_location() const {
-    return state_info_.prompt_user_for_save_location;
-  }
-  bool is_otr() const { return is_otr_; }
-  const FilePath& suggested_path() const { return state_info_.suggested_path; }
-  bool is_temporary() const { return is_temporary_; }
-  void set_opened(bool opened) { opened_ = opened; }
-  bool opened() const { return opened_; }
+  virtual bool GetAutoOpened() = 0;
+  virtual const FilePath& GetTargetName() const = 0;
+  virtual bool PromptUserForSaveLocation() const = 0;
+  virtual bool IsOtr() const = 0;
+  virtual const FilePath& GetSuggestedPath() const = 0;
+  virtual bool IsTemporary() const = 0;
+  virtual void SetOpened(bool opened) = 0;
+  virtual bool GetOpened() const = 0;
 
-  InterruptReason last_reason() const { return last_reason_; }
-
-  DownloadPersistentStoreInfo GetPersistentStoreInfo() const;
-  DownloadStateInfo state_info() const { return state_info_; }
-
-  TabContents* GetTabContents() const;
+  virtual InterruptReason GetLastReason() const = 0;
+  virtual DownloadPersistentStoreInfo GetPersistentStoreInfo() const = 0;
+  virtual DownloadStateInfo GetStateInfo() const = 0;
+  virtual TabContents* GetTabContents() const = 0;
 
   // Returns the final target file path for the download.
-  FilePath GetTargetFilePath() const;
+  virtual FilePath GetTargetFilePath() const = 0;
 
   // Returns the file-name that should be reported to the user, which is
   // target_name possibly with the uniquifier number.
-  FilePath GetFileNameToReportUser() const;
+  virtual FilePath GetFileNameToReportUser() const = 0;
 
   // Returns the user-verified target file path for the download.
   // This returns the same path as GetTargetFilePath() for safe downloads
   // but does not for dangerous downloads until the name is verified.
-  FilePath GetUserVerifiedFilePath() const;
+  virtual FilePath GetUserVerifiedFilePath() const = 0;
 
   // Returns true if the current file name is not the final target name yet.
-  bool NeedsRename() const {
-    return state_info_.target_name != full_path_.BaseName();
-  }
+  virtual bool NeedsRename() const = 0;
 
   // Cancels the off-thread aspects of the download.
   // TODO(rdsmith): This should be private and only called from
@@ -327,156 +294,11 @@ class CONTENT_EXPORT DownloadItem {
   // call those functions from
   // DownloadManager::FileSelectionCancelled() without doing some
   // rewrites of the DownloadManager queues.
-  void OffThreadCancel(DownloadFileManager* file_manager);
+  virtual void OffThreadCancel(DownloadFileManager* file_manager) = 0;
 
-  std::string DebugString(bool verbose) const;
+  virtual std::string DebugString(bool verbose) const = 0;
 
-  void MockDownloadOpenForTesting() { open_enabled_ = false; }
-
- private:
-  // Construction common to all constructors. |active| should be true for new
-  // downloads and false for downloads from the history.
-  void Init(bool active);
-
-  // Internal helper for maintaining consistent received and total sizes.
-  void UpdateSize(int64 size);
-
-  // Called when the entire download operation (including renaming etc)
-  // is completed.
-  void Completed();
-
-  // Call to transition state; all state transitions should go through this.
-  void TransitionTo(DownloadState new_state);
-
-  // Called when safety_state_ should be recomputed from the DangerType of the
-  // state info.
-  void UpdateSafetyState();
-
-  // Helper function to recompute |state_info_.target_name| when
-  // it may have changed.  (If it's non-null it should be left alone,
-  // otherwise updated from |full_path_|.)
-  void UpdateTarget();
-
-  // State information used by the download manager.
-  DownloadStateInfo state_info_;
-
-  // The handle to the request information.  Used for operations outside the
-  // download system.  May be null if the download item isn't associated
-  // with a request (e.g. created from persistent store).
-  scoped_ptr<DownloadRequestHandleInterface> request_handle_;
-
-  // Download ID assigned by DownloadResourceHandler.
-  DownloadId download_id_;
-
-  // Full path to the downloaded or downloading file.
-  FilePath full_path_;
-
-  // A number that should be appended to the path to make it unique, or 0 if the
-  // path should be used as is.
-  int path_uniquifier_;
-
-  // The chain of redirects that leading up to and including the final URL.
-  std::vector<GURL> url_chain_;
-
-  // The URL of the page that initiated the download.
-  GURL referrer_url_;
-
-  // Suggested filename in 'download' attribute of an anchor. Details:
-  // http://www.whatwg.org/specs/web-apps/current-work/#downloading-hyperlinks
-  std::string suggested_filename_;
-
-  // Information from the request.
-  // Content-disposition field from the header.
-  std::string content_disposition_;
-
-  // Mime-type from the header.  Subject to change.
-  std::string mime_type_;
-
-  // The value of the content type header sent with the downloaded item.  It
-  // may be different from |mime_type_|, which may be set based on heuristics
-  // which may look at the file extension and first few bytes of the file.
-  std::string original_mime_type_;
-
-  // The charset of the referring page where the download request comes from.
-  // It's used to construct a suggested filename.
-  std::string referrer_charset_;
-
-  // Total bytes expected
-  int64 total_bytes_;
-
-  // Current received bytes
-  int64 received_bytes_;
-
-  // Sha256 hash of the content.  This might be empty either because
-  // the download isn't done yet or because the hash isn't needed
-  // (ChromeDownloadManagerDelegate::GenerateFileHash() returned false).
-  std::string hash_;
-
-  // Last reason.
-  InterruptReason last_reason_;
-
-  // Start time for calculating remaining time
-  base::TimeTicks start_tick_;
-
-  // The current state of this download
-  DownloadState state_;
-
-  // The views of this item in the download shelf and download tab
-  ObserverList<Observer> observers_;
-
-  // Time the download was started
-  base::Time start_time_;
-
-  // Time the download completed
-  base::Time end_time_;
-
-  // Our persistent store handle
-  int64 db_handle_;
-
-  // Our owning object
-  DownloadManager* download_manager_;
-
-  // In progress downloads may be paused by the user, we note it here
-  bool is_paused_;
-
-  // A flag for indicating if the download should be opened at completion.
-  bool open_when_complete_;
-
-  // A flag for indicating if the downloaded file is externally removed.
-  bool file_externally_removed_;
-
-  // Indicates if the download is considered potentially safe or dangerous
-  // (executable files are typically considered dangerous).
-  SafetyState safety_state_;
-
-  // True if the download was auto-opened. We set this rather than using
-  // an observer as it's frequently possible for the download to be auto opened
-  // before the observer is added.
-  bool auto_opened_;
-
-  // True if the download was initiated in an incognito window.
-  bool is_otr_;
-
-  // True if the item was downloaded temporarily.
-  bool is_temporary_;
-
-  // True if we've saved all the data for the download.
-  bool all_data_saved_;
-
-  // Did the user open the item either directly or indirectly (such as by
-  // setting always open files of this type)? The shelf also sets this field
-  // when the user closes the shelf before the item has been opened but should
-  // be treated as though the user opened it.
-  bool opened_;
-
-  // Do we actual open downloads when requested?  For testing purposes
-  // only.
-  bool open_enabled_;
-
-  // Did the delegate delay calling Complete on this download?
-  bool delegate_delayed_complete_;
-
-  DISALLOW_COPY_AND_ASSIGN(DownloadItem);
+  virtual void MockDownloadOpenForTesting() = 0;
 };
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_ITEM_H_

@@ -163,7 +163,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   DCHECK_EQ(bridge_->download_model(), downloadModel);
 
   // Handle dangerous downloads.
-  if (downloadModel->download()->safety_state() == DownloadItem::DANGEROUS) {
+  if (downloadModel->download()->GetSafetyState() == DownloadItem::DANGEROUS) {
     [self setState:kDangerous];
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -196,7 +196,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
         // This basic fixup copies Windows DownloadItemView::DownloadItemView().
 
         // Extract the file extension (if any).
-        FilePath filename(downloadModel->download()->target_name());
+        FilePath filename(downloadModel->download()->GetTargetName());
         FilePath::StringType extension = filename.Extension();
 
         // Remove leading '.' from the extension
@@ -237,7 +237,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   // Set correct popup menu. Also, set draggable download on completion.
   if (downloadModel->download()->IsComplete()) {
     [progressView_ setMenu:completeDownloadMenu_];
-    [progressView_ setDownload:downloadModel->download()->full_path()];
+    [progressView_ setDownload:downloadModel->download()->GetFullPath()];
   } else {
     [progressView_ setMenu:activeDownloadMenu_];
   }

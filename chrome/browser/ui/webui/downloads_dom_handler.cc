@@ -57,7 +57,7 @@ class DownloadItemSorter : public std::binary_function<DownloadItem*,
                                                        bool> {
  public:
   bool operator()(const DownloadItem* lhs, const DownloadItem* rhs) {
-    return lhs->start_time() > rhs->start_time();
+    return lhs->GetStartTime() > rhs->GetStartTime();
   }
 };
 
@@ -202,7 +202,7 @@ void DownloadsDOMHandler::OnDownloadUpdated(DownloadItem* download) {
   if (it == download_items_.end())
     return;
 
-  if (download->state() == DownloadItem::REMOVING) {
+  if (download->GetState() == DownloadItem::REMOVING) {
     (*it)->RemoveObserver(this);
     *it = NULL;
     // A later ModelChanged() notification will change the WebUI's
@@ -252,7 +252,7 @@ void DownloadsDOMHandler::ModelChanged() {
     // fixed.
     // We should never see anything that isn't already in the history.
     CHECK(*it);
-    CHECK_NE(DownloadItem::kUninitializedHandle, (*it)->db_handle());
+    CHECK_NE(DownloadItem::kUninitializedHandle, (*it)->GetDbHandle());
 
     (*it)->AddObserver(this);
   }
@@ -329,7 +329,7 @@ void DownloadsDOMHandler::HandleRemove(const ListValue* args) {
   DownloadItem* file = GetDownloadByValue(args);
   if (file) {
     // TODO(rdsmith): Change to DCHECK when http://crbug.com/85408 is fixed.
-    CHECK_NE(DownloadItem::kUninitializedHandle, file->db_handle());
+    CHECK_NE(DownloadItem::kUninitializedHandle, file->GetDbHandle());
     file->Remove();
   }
 }

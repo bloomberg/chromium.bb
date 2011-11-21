@@ -20,7 +20,7 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_id_factory.h"
-#include "content/browser/download/download_item.h"
+#include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_persistent_store_info.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_status_updater.h"
@@ -129,7 +129,7 @@ void DownloadManagerImpl::Shutdown() {
     // associative containers such as sets.
     it++;
 
-    if (download->safety_state() == DownloadItem::DANGEROUS &&
+    if (download->GetSafetyState() == DownloadItem::DANGEROUS &&
         download->IsPartialDownload()) {
       // The user hasn't accepted it, so we need to remove it
       // from the disk.  This may or may not result in it being
@@ -174,8 +174,8 @@ void DownloadManagerImpl::GetTemporaryDownloads(
 
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
-    if (it->second->is_temporary() &&
-        it->second->full_path().DirName() == dir_path)
+    if (it->second->IsTemporary() &&
+        it->second->GetFullPath().DirName() == dir_path)
       result->push_back(it->second);
   }
 }
@@ -186,8 +186,8 @@ void DownloadManagerImpl::GetAllDownloads(
 
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
-    if (!it->second->is_temporary() &&
-        (dir_path.empty() || it->second->full_path().DirName() == dir_path))
+    if (!it->second->IsTemporary() &&
+        (dir_path.empty() || it->second->GetFullPath().DirName() == dir_path))
       result->push_back(it->second);
   }
 }
@@ -200,13 +200,13 @@ void DownloadManagerImpl::SearchDownloads(const string16& query,
        it != history_downloads_.end(); ++it) {
     DownloadItem* download_item = it->second;
 
-    if (download_item->is_temporary())
+    if (download_item->IsTemporary())
       continue;
 
     // Display Incognito downloads only in Incognito window, and vice versa.
     // The Incognito Downloads page will get the list of non-Incognito downloads
     // from its parent profile.
-    if (browser_context_->IsOffTheRecord() != download_item->is_otr())
+    if (browser_context_->IsOffTheRecord() != download_item->IsOtr())
       continue;
 
     if (download_item->MatchesQuery(query_lower))
@@ -254,11 +254,11 @@ void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
 void DownloadManagerImpl::CheckForFileRemoval(DownloadItem* download_item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (download_item->IsComplete() &&
-      !download_item->file_externally_removed()) {
+      !download_item->GetFileExternallyRemoved()) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&DownloadManagerImpl::CheckForFileRemovalOnFileThread,
-                   this, download_item->db_handle(),
+                   this, download_item->GetDbHandle(),
                    download_item->GetTargetFilePath()));
   }
 }
@@ -295,9 +295,9 @@ void DownloadManagerImpl::RestartDownload(
   VLOG(20) << __FUNCTION__ << "()"
            << " download = " << download->DebugString(true);
 
-  FilePath suggested_path = download->suggested_path();
+  FilePath suggested_path = download->GetSuggestedPath();
 
-  if (download->prompt_user_for_save_location()) {
+  if (download->PromptUserForSaveLocation()) {
     // We must ask the user for the place to put the download.
     TabContents* contents = download->GetTabContents();
 
@@ -329,7 +329,7 @@ void DownloadManagerImpl::CreateDownloadItem(
     DownloadCreateInfo* info, const DownloadRequestHandle& request_handle) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DownloadItem* download = new DownloadItem(
+  DownloadItem* download = new DownloadItemImpl(
       this, *info, new DownloadRequestHandle(request_handle),
       browser_context_->IsOffTheRecord());
   int32 download_id = info->download_id.local();
@@ -346,7 +346,7 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(download);
 
-  int32 download_id = download->id();
+  int32 download_id = download->GetId();
 
   // NOTE(ahendrickson) Eventually |active_downloads_| will replace
   // |in_progress_|, but we don't want to change the semantics yet.
@@ -366,12 +366,12 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
   // Rename to intermediate name.
   FilePath download_path;
   if (!delegate_->OverrideIntermediatePath(download, &download_path))
-    download_path = download->full_path();
+    download_path = download->GetFullPath();
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileManager::RenameInProgressDownloadFile,
-                 file_manager_, download->global_id(), download_path));
+                 file_manager_, download->GetGlobalId(), download_path));
 
   download->Rename(download_path);
 
@@ -413,11 +413,11 @@ void DownloadManagerImpl::OnResponseCompleted(int32 download_id,
 
 void DownloadManagerImpl::AssertQueueStateConsistent(DownloadItem* download) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
-  if (download->state() == DownloadItem::REMOVING) {
+  if (download->GetState() == DownloadItem::REMOVING) {
     CHECK(!ContainsKey(downloads_, download));
-    CHECK(!ContainsKey(active_downloads_, download->id()));
-    CHECK(!ContainsKey(in_progress_, download->id()));
-    CHECK(!ContainsKey(history_downloads_, download->db_handle()));
+    CHECK(!ContainsKey(active_downloads_, download->GetId()));
+    CHECK(!ContainsKey(in_progress_, download->GetId()));
+    CHECK(!ContainsKey(history_downloads_, download->GetDbHandle()));
     return;
   }
 
@@ -425,8 +425,8 @@ void DownloadManagerImpl::AssertQueueStateConsistent(DownloadItem* download) {
   CHECK(ContainsKey(downloads_, download));
 
   // Check history_downloads_ consistency.
-  if (download->db_handle() != DownloadItem::kUninitializedHandle) {
-    CHECK(ContainsKey(history_downloads_, download->db_handle()));
+  if (download->GetDbHandle() != DownloadItem::kUninitializedHandle) {
+    CHECK(ContainsKey(history_downloads_, download->GetDbHandle()));
   } else {
     // TODO(rdsmith): Somewhat painful; make sure to disable in
     // release builds after resolution of http://crbug.com/85408.
@@ -436,38 +436,38 @@ void DownloadManagerImpl::AssertQueueStateConsistent(DownloadItem* download) {
     }
   }
 
-  int64 state = download->state();
+  int64 state = download->GetState();
   base::debug::Alias(&state);
-  if (ContainsKey(active_downloads_, download->id())) {
-    if (download->db_handle() != DownloadItem::kUninitializedHandle)
-      CHECK_EQ(DownloadItem::IN_PROGRESS, download->state());
-    if (DownloadItem::IN_PROGRESS != download->state())
-      CHECK_EQ(DownloadItem::kUninitializedHandle, download->db_handle());
+  if (ContainsKey(active_downloads_, download->GetId())) {
+    if (download->GetDbHandle() != DownloadItem::kUninitializedHandle)
+      CHECK_EQ(DownloadItem::IN_PROGRESS, download->GetState());
+    if (DownloadItem::IN_PROGRESS != download->GetState())
+      CHECK_EQ(DownloadItem::kUninitializedHandle, download->GetDbHandle());
   }
-  if (DownloadItem::IN_PROGRESS == download->state())
-    CHECK(ContainsKey(active_downloads_, download->id()));
+  if (DownloadItem::IN_PROGRESS == download->GetState())
+    CHECK(ContainsKey(active_downloads_, download->GetId()));
 }
 
 bool DownloadManagerImpl::IsDownloadReadyForCompletion(DownloadItem* download) {
   // If we don't have all the data, the download is not ready for
   // completion.
-  if (!download->all_data_saved())
+  if (!download->AllDataSaved())
     return false;
 
   // If the download is dangerous, but not yet validated, it's not ready for
   // completion.
-  if (download->safety_state() == DownloadItem::DANGEROUS)
+  if (download->GetSafetyState() == DownloadItem::DANGEROUS)
     return false;
 
   // If the download isn't active (e.g. has been cancelled) it's not
   // ready for completion.
-  if (active_downloads_.count(download->id()) == 0)
+  if (active_downloads_.count(download->GetId()) == 0)
     return false;
 
   // If the download hasn't been inserted into the history system
   // (which occurs strictly after file name determination, intermediate
   // file rename, and UI display) then it's not ready for completion.
-  if (download->db_handle() == DownloadItem::kUninitializedHandle)
+  if (download->GetDbHandle() == DownloadItem::kUninitializedHandle)
     return false;
 
   return true;
@@ -487,11 +487,11 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
 
   // Confirm we're in the proper set of states to be here;
   // in in_progress_, have all data, have a history handle, (validated or safe).
-  DCHECK_NE(DownloadItem::DANGEROUS, download->safety_state());
-  DCHECK_EQ(1u, in_progress_.count(download->id()));
-  DCHECK(download->all_data_saved());
-  DCHECK(download->db_handle() != DownloadItem::kUninitializedHandle);
-  DCHECK_EQ(1u, history_downloads_.count(download->db_handle()));
+  DCHECK_NE(DownloadItem::DANGEROUS, download->GetSafetyState());
+  DCHECK_EQ(1u, in_progress_.count(download->GetId()));
+  DCHECK(download->AllDataSaved());
+  DCHECK(download->GetDbHandle() != DownloadItem::kUninitializedHandle);
+  DCHECK_EQ(1u, history_downloads_.count(download->GetDbHandle()));
 
   // Give the delegate a chance to override.
   if (!delegate_->ShouldCompleteDownload(download))
@@ -501,7 +501,7 @@ void DownloadManagerImpl::MaybeCompleteDownload(DownloadItem* download) {
            << download->DebugString(false);
 
   // Remove the id from in_progress
-  in_progress_.erase(download->id());
+  in_progress_.erase(download->GetId());
   UpdateDownloadProgress();  // Reflect removal from in_progress_.
 
   delegate_->UpdateItemInPersistentStore(download);
@@ -532,17 +532,17 @@ void DownloadManagerImpl::OnDownloadRenamedToFinalName(
   if (!item)
     return;
 
-  if (item->safety_state() == DownloadItem::SAFE) {
+  if (item->GetSafetyState() == DownloadItem::SAFE) {
     DCHECK_EQ(0, uniquifier) << "We should not uniquify SAFE downloads twice";
   }
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DownloadFileManager::CompleteDownload,
-                 file_manager_, item->global_id()));
+                 file_manager_, item->GetGlobalId()));
 
   if (uniquifier)
-    item->set_path_uniquifier(uniquifier);
+    item->SetPathUniquifier(uniquifier);
 
   item->OnDownloadRenamedToFinalName(full_path);
   delegate_->UpdatePathForItemInPersistentStore(item, full_path);
@@ -584,7 +584,7 @@ void DownloadManagerImpl::OnDownloadInterrupted(int32 download_id,
 
   VLOG(20) << __FUNCTION__ << "()"
            << " reason " << InterruptReasonDebugString(reason)
-           << " at offset " << download->received_bytes()
+           << " at offset " << download->GetReceivedBytes()
            << " size = " << size
            << " download = " << download->DebugString(true);
 
@@ -602,7 +602,7 @@ DownloadItem* DownloadManagerImpl::GetActiveDownload(int32 download_id) {
   DownloadItem* download = it->second;
 
   DCHECK(download);
-  DCHECK_EQ(download_id, download->id());
+  DCHECK_EQ(download_id, download->GetId());
 
   return download;
 }
@@ -613,9 +613,9 @@ void DownloadManagerImpl::RemoveFromActiveList(DownloadItem* download) {
 
   // Clean up will happen when the history system create callback runs if we
   // don't have a valid db_handle yet.
-  if (download->db_handle() != DownloadItem::kUninitializedHandle) {
-    in_progress_.erase(download->id());
-    active_downloads_.erase(download->id());
+  if (download->GetDbHandle() != DownloadItem::kUninitializedHandle) {
+    in_progress_.erase(download->GetId());
+    active_downloads_.erase(download->GetId());
     UpdateDownloadProgress();  // Reflect removal from in_progress_.
     delegate_->UpdateItemInPersistentStore(download);
   }
@@ -645,8 +645,8 @@ int DownloadManagerImpl::RemoveDownloadItems(
       ++it) {
     DownloadItem* download = *it;
     DCHECK(download);
-    history_downloads_.erase(download->db_handle());
-    save_page_downloads_.erase(download->id());
+    history_downloads_.erase(download->GetDbHandle());
+    save_page_downloads_.erase(download->GetId());
     downloads_.erase(download);
   }
 
@@ -684,8 +684,8 @@ int DownloadManagerImpl::RemoveDownloadsBetween(const base::Time remove_begin,
       it != history_downloads_.end();
       ++it) {
     DownloadItem* download = it->second;
-    if (download->start_time() >= remove_begin &&
-        (remove_end.is_null() || download->start_time() < remove_end) &&
+    if (download->GetStartTime() >= remove_begin &&
+        (remove_end.is_null() || download->GetStartTime() < remove_end) &&
         (download->IsComplete() || download->IsCancelled())) {
       AssertQueueStateConsistent(download);
       pending_deletes.push_back(download);
@@ -747,7 +747,7 @@ void DownloadManagerImpl::RemoveObserver(Observer* observer) {
 bool DownloadManagerImpl::IsDownloadProgressKnown() const {
   for (DownloadMap::const_iterator i = in_progress_.begin();
        i != in_progress_.end(); ++i) {
-    if (i->second->total_bytes() <= 0)
+    if (i->second->GetTotalBytes() <= 0)
       return false;
   }
 
@@ -763,7 +763,7 @@ int64 DownloadManagerImpl::GetReceivedDownloadBytes() const {
   int64 received_bytes = 0;
   for (DownloadMap::const_iterator i = in_progress_.begin();
        i != in_progress_.end(); ++i) {
-    received_bytes += i->second->received_bytes();
+    received_bytes += i->second->GetReceivedBytes();
   }
   return received_bytes;
 }
@@ -773,7 +773,7 @@ int64 DownloadManagerImpl::GetTotalDownloadBytes() const {
   int64 total_bytes = 0;
   for (DownloadMap::const_iterator i = in_progress_.begin();
        i != in_progress_.end(); ++i) {
-    total_bytes += i->second->total_bytes();
+    total_bytes += i->second->GetTotalBytes();
   }
   return total_bytes;
 }
@@ -792,7 +792,7 @@ void DownloadManagerImpl::FileSelected(const FilePath& path, void* params) {
   VLOG(20) << __FUNCTION__ << "()" << " path = \"" << path.value() << "\""
             << " download = " << download->DebugString(true);
 
-  if (download->prompt_user_for_save_location())
+  if (download->PromptUserForSaveLocation())
     last_download_path_ = path.DirName();
 
   // Make sure the initial file name is set only once.
@@ -834,16 +834,16 @@ void DownloadManagerImpl::OnPersistentStoreQueryComplete(
   largest_db_handle_in_history_ = 0;
 
   for (size_t i = 0; i < entries->size(); ++i) {
-    DownloadItem* download = new DownloadItem(this, entries->at(i));
+    DownloadItem* download = new DownloadItemImpl(this, entries->at(i));
     // TODO(rdsmith): Remove after http://crbug.com/85408 resolved.
-    CHECK(!ContainsKey(history_downloads_, download->db_handle()));
+    CHECK(!ContainsKey(history_downloads_, download->GetDbHandle()));
     downloads_.insert(download);
-    history_downloads_[download->db_handle()] = download;
+    history_downloads_[download->GetDbHandle()] = download;
     VLOG(20) << __FUNCTION__ << "()" << i << ">"
              << " download = " << download->DebugString(true);
 
-    if (download->db_handle() > largest_db_handle_in_history_)
-      largest_db_handle_in_history_ = download->db_handle();
+    if (download->GetDbHandle() > largest_db_handle_in_history_)
+      largest_db_handle_in_history_ = download->GetDbHandle();
   }
   NotifyModelChanged();
   CheckForHistoryFilesRemoval();
@@ -859,13 +859,13 @@ void DownloadManagerImpl::AddDownloadItemToHistory(DownloadItem* download,
 
   download_stats::RecordHistorySize(history_downloads_.size());
 
-  DCHECK(download->db_handle() == DownloadItem::kUninitializedHandle);
-  download->set_db_handle(db_handle);
+  DCHECK(download->GetDbHandle() == DownloadItem::kUninitializedHandle);
+  download->SetDbHandle(db_handle);
 
   // TODO(rdsmith): Convert to DCHECK() when http://crbug.com/85408
   // is fixed.
-  CHECK(!ContainsKey(history_downloads_, download->db_handle()));
-  history_downloads_[download->db_handle()] = download;
+  CHECK(!ContainsKey(history_downloads_, download->GetDbHandle()));
+  history_downloads_[download->GetDbHandle()] = download;
 
   // Show in the appropriate browser UI.
   // This includes buttons to save or cancel, for a dangerous download.
@@ -905,7 +905,7 @@ void DownloadManagerImpl::OnDownloadItemAddedToPersistentStore(
   base::debug::Alias(&largest_handle);
   int32 matching_item_download_id
       = (ContainsKey(history_downloads_, db_handle) ?
-         history_downloads_[db_handle]->id() : 0);
+         history_downloads_[db_handle]->GetId() : 0);
   base::debug::Alias(&matching_item_download_id);
 
   CHECK(!ContainsKey(history_downloads_, db_handle));
@@ -966,7 +966,7 @@ DownloadItem* DownloadManagerImpl::GetDownloadItem(int download_id) {
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
     DownloadItem* item = it->second;
-    if (item->id() == download_id)
+    if (item->GetId() == download_id)
       return item;
   }
   return NULL;
@@ -1025,9 +1025,9 @@ void DownloadManagerImpl::AssertContainersConsistent() const {
 }
 
 void DownloadManagerImpl::SavePageDownloadStarted(DownloadItem* download) {
-  DCHECK(!ContainsKey(save_page_downloads_, download->id()));
+  DCHECK(!ContainsKey(save_page_downloads_, download->GetId()));
   downloads_.insert(download);
-  save_page_downloads_[download->id()] = download;
+  save_page_downloads_[download->GetId()] = download;
 
   // Add this entry to the history service.
   // Additionally, the UI is notified in the callback.
@@ -1077,10 +1077,10 @@ void DownloadManagerImpl::OnSavePageItemAddedToPersistentStore(
 }
 
 void DownloadManagerImpl::SavePageDownloadFinished(DownloadItem* download) {
-  if (download->db_handle() != DownloadItem::kUninitializedHandle) {
+  if (download->GetDbHandle() != DownloadItem::kUninitializedHandle) {
     delegate_->UpdateItemInPersistentStore(download);
-    DCHECK(ContainsKey(save_page_downloads_, download->id()));
-    save_page_downloads_.erase(download->id());
+    DCHECK(ContainsKey(save_page_downloads_, download->GetId()));
+    save_page_downloads_.erase(download->GetId());
 
     if (download->IsComplete())
       content::NotificationService::current()->Notify(
@@ -1095,7 +1095,7 @@ void DownloadManagerImpl::MarkDownloadOpened(DownloadItem* download) {
   int num_unopened = 0;
   for (DownloadMap::iterator it = history_downloads_.begin();
        it != history_downloads_.end(); ++it) {
-    if (it->second->IsComplete() && !it->second->opened())
+    if (it->second->IsComplete() && !it->second->GetOpened())
       ++num_unopened;
   }
   download_stats::RecordOpensOutstanding(num_unopened);

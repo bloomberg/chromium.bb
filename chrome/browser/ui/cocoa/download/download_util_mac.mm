@@ -41,7 +41,7 @@ void DragDownload(const DownloadItem* download,
                   gfx::Image* icon,
                   gfx::NativeView view) {
   NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-  AddFileToPasteboard(pasteboard, download->full_path());
+  AddFileToPasteboard(pasteboard, download->GetFullPath());
 
   // Synthesize a drag event, since we don't have access to the actual event
   // that initiated a drag (possibly consumed by the Web UI, for example).

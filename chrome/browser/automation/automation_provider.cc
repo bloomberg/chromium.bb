@@ -269,21 +269,21 @@ DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
       std::string("DANGEROUS_BUT_VALIDATED");
 
   DictionaryValue* dl_item_value = new DictionaryValue;
-  dl_item_value->SetInteger("id", static_cast<int>(download->id()));
+  dl_item_value->SetInteger("id", static_cast<int>(download->GetId()));
   dl_item_value->SetString("url", download->GetURL().spec());
-  dl_item_value->SetString("referrer_url", download->referrer_url().spec());
+  dl_item_value->SetString("referrer_url", download->GetReferrerUrl().spec());
   dl_item_value->SetString("file_name",
                            download->GetFileNameToReportUser().value());
   dl_item_value->SetString("full_path",
                            download->GetTargetFilePath().value());
-  dl_item_value->SetBoolean("is_paused", download->is_paused());
+  dl_item_value->SetBoolean("is_paused", download->IsPaused());
   dl_item_value->SetBoolean("open_when_complete",
-                            download->open_when_complete());
-  dl_item_value->SetBoolean("is_temporary", download->is_temporary());
-  dl_item_value->SetBoolean("is_otr", download->is_otr());  // incognito
-  dl_item_value->SetString("state", state_to_string[download->state()]);
+                            download->GetOpenWhenComplete());
+  dl_item_value->SetBoolean("is_temporary", download->IsTemporary());
+  dl_item_value->SetBoolean("is_otr", download->IsOtr());  // incognito
+  dl_item_value->SetString("state", state_to_string[download->GetState()]);
   dl_item_value->SetString("safety_state",
-                           safety_state_to_string[download->safety_state()]);
+                           safety_state_to_string[download->GetSafetyState()]);
   dl_item_value->SetInteger("PercentComplete", download->PercentComplete());
 
   return dl_item_value;

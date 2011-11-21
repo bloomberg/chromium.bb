@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_callback_factory.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/webui/web_ui.h"

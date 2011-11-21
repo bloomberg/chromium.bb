@@ -1508,7 +1508,7 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadUpdated(
     DownloadItem* download) {
   // If this observer is watching for open, only send the reply if the download
   // has been auto-opened.
-  if (wait_for_open_ && !download->auto_opened())
+  if (wait_for_open_ && !download->GetAutoOpened())
     return;
 
   download->RemoveObserver(this);
@@ -1588,8 +1588,8 @@ void AllDownloadsCompleteObserver::ModelChanged() {
   download_manager_->GetAllDownloads(FilePath(), &downloads);
   for (std::vector<DownloadItem*>::iterator it = downloads.begin();
        it != downloads.end(); ++it) {
-    if ((*it)->state() == DownloadItem::IN_PROGRESS &&
-        pre_download_ids_.find((*it)->id()) == pre_download_ids_.end()) {
+    if ((*it)->GetState() == DownloadItem::IN_PROGRESS &&
+        pre_download_ids_.find((*it)->GetId()) == pre_download_ids_.end()) {
       (*it)->AddObserver(this);
       pending_downloads_.insert(*it);
     }
@@ -1600,7 +1600,7 @@ void AllDownloadsCompleteObserver::ModelChanged() {
 void AllDownloadsCompleteObserver::OnDownloadUpdated(DownloadItem* download) {
   // If the current download's status has changed to a final state (not state
   // "in progress"), remove it from the pending list.
-  if (download->state() != DownloadItem::IN_PROGRESS) {
+  if (download->GetState() != DownloadItem::IN_PROGRESS) {
     download->RemoveObserver(this);
     pending_downloads_.erase(download);
     ReplyIfNecessary();

@@ -8,8 +8,10 @@
 #include "content/browser/download/download_id.h"
 #include "content/browser/download/download_id_factory.h"
 #include "content/browser/download/download_item.h"
+#include "content/browser/download/download_request_handle.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/interrupt_reasons.h"
+#include "content/browser/download/mock_download_item.h"
 #include "content/browser/download/mock_download_manager.h"
 #include "content/browser/download/mock_download_manager_delegate.h"
 #include "content/test/test_browser_thread.h"
@@ -191,7 +193,7 @@ TEST_F(DownloadItemTest, NotificationAfterSetFileCheckResults) {
   DownloadItem* safe_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver safe_observer(safe_item);
 
-  DownloadStateInfo state = safe_item->state_info();;
+  DownloadStateInfo state = safe_item->GetStateInfo();;
   state.danger = DownloadStateInfo::NOT_DANGEROUS;
   safe_item->SetFileCheckResults(state);
   ASSERT_FALSE(safe_observer.CheckUpdated());
@@ -200,7 +202,7 @@ TEST_F(DownloadItemTest, NotificationAfterSetFileCheckResults) {
   DownloadItem* unsafeurl_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver unsafeurl_observer(unsafeurl_item);
 
-  state = unsafeurl_item->state_info();;
+  state = unsafeurl_item->GetStateInfo();;
   state.danger = DownloadStateInfo::DANGEROUS_URL;
   unsafeurl_item->SetFileCheckResults(state);
   ASSERT_TRUE(unsafeurl_observer.CheckUpdated());
@@ -211,7 +213,7 @@ TEST_F(DownloadItemTest, NotificationAfterSetFileCheckResults) {
   DownloadItem* unsafefile_item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver unsafefile_observer(unsafefile_item);
 
-  state = unsafefile_item->state_info();;
+  state = unsafefile_item->GetStateInfo();;
   state.danger = DownloadStateInfo::DANGEROUS_FILE;
   unsafefile_item->SetFileCheckResults(state);
   ASSERT_TRUE(unsafefile_observer.CheckUpdated());
@@ -247,4 +249,8 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
 
   item->TogglePause();
   ASSERT_TRUE(observer.CheckUpdated());
+}
+
+TEST(MockDownloadItem, Compiles) {
+  MockDownloadItem mock_item;
 }

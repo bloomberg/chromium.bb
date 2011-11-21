@@ -61,7 +61,7 @@ void MockDownloadManagerDelegate::OnResponseCompleted(DownloadItem* item) {
 }
 
 void MockDownloadManagerDelegate::AddItemToPersistentStore(DownloadItem* item) {
-  download_manager_->OnItemAddedToPersistentStore(item->id(), item->id());
+  download_manager_->OnItemAddedToPersistentStore(item->GetId(), item->GetId());
 }
 
 void MockDownloadManagerDelegate::UpdateItemInPersistentStore(

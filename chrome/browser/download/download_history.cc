@@ -72,14 +72,14 @@ void DownloadHistory::AddEntry(
   // you'd have to do enough downloading that your ISP would likely stab you in
   // the neck first. YMMV.
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (download_item->is_otr() ||
+  if (download_item->IsOtr() ||
       ChromeDownloadManagerDelegate::IsExtensionDownload(download_item) ||
-      download_item->is_temporary() || !hs) {
-    callback.Run(download_item->id(), GetNextFakeDbHandle());
+      download_item->IsTemporary() || !hs) {
+    callback.Run(download_item->GetId(), GetNextFakeDbHandle());
     return;
   }
 
-  int32 id = download_item->id();
+  int32 id = download_item->GetId();
   DownloadPersistentStoreInfo history_info =
       download_item->GetPersistentStoreInfo();
   hs->CreateDownload(id, history_info, &history_consumer_, callback);
@@ -88,7 +88,7 @@ void DownloadHistory::AddEntry(
 void DownloadHistory::UpdateEntry(DownloadItem* download_item) {
   // Don't store info in the database if the download was initiated while in
   // incognito mode or if it hasn't been initialized in our database table.
-  if (download_item->db_handle() <= DownloadItem::kUninitializedHandle)
+  if (download_item->GetDbHandle() <= DownloadItem::kUninitializedHandle)
     return;
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
@@ -100,22 +100,22 @@ void DownloadHistory::UpdateEntry(DownloadItem* download_item) {
 void DownloadHistory::UpdateDownloadPath(DownloadItem* download_item,
                                          const FilePath& new_path) {
   // No update necessary if the download was initiated while in incognito mode.
-  if (download_item->db_handle() <= DownloadItem::kUninitializedHandle)
+  if (download_item->GetDbHandle() <= DownloadItem::kUninitializedHandle)
     return;
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
-    hs->UpdateDownloadPath(new_path, download_item->db_handle());
+    hs->UpdateDownloadPath(new_path, download_item->GetDbHandle());
 }
 
 void DownloadHistory::RemoveEntry(DownloadItem* download_item) {
   // No update necessary if the download was initiated while in incognito mode.
-  if (download_item->db_handle() <= DownloadItem::kUninitializedHandle)
+  if (download_item->GetDbHandle() <= DownloadItem::kUninitializedHandle)
     return;
 
   HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
   if (hs)
-    hs->RemoveDownload(download_item->db_handle());
+    hs->RemoveDownload(download_item->GetDbHandle());
 }
 
 void DownloadHistory::RemoveEntriesBetween(const base::Time remove_begin,

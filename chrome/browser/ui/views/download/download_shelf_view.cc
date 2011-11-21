@@ -420,12 +420,12 @@ void DownloadShelfView::Closed() {
                             download->IsCancelled() ||
                             download->IsInterrupted();
     if (is_transfer_done &&
-        download->safety_state() != DownloadItem::DANGEROUS) {
+        download->GetSafetyState() != DownloadItem::DANGEROUS) {
       RemoveDownloadView(download_views_[i]);
     } else {
       // Treat the item as opened when we close. This way if we get shown again
       // the user need not open this item for the shelf to auto-close.
-      download->set_opened(true);
+      download->SetOpened(true);
       ++i;
     }
   }
@@ -433,7 +433,7 @@ void DownloadShelfView::Closed() {
 
 bool DownloadShelfView::CanAutoClose() {
   for (size_t i = 0; i < download_views_.size(); ++i) {
-    if (!download_views_[i]->download()->opened())
+    if (!download_views_[i]->download()->GetOpened())
       return false;
   }
   return true;

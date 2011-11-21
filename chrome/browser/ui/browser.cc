@@ -3648,7 +3648,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
     if (!ChromeDownloadManagerDelegate::IsExtensionDownload(download) ||
         (service == NULL) ||
         !service->IsDownloadFromGallery(download->GetURL(),
-                                        download->referrer_url())) {
+                                        download->GetReferrerUrl())) {
       // Open the Active Downloads ui for chromeos.
       ActiveDownloadsUI::OpenPopup(profile_);
     }
@@ -3664,7 +3664,7 @@ void Browser::OnStartDownload(TabContents* source, DownloadItem* download) {
     // Don't show the animation if the selected tab is not visible (i.e. the
     // window is minimized, we're in a unit test, etc.).
     TabContents* shelf_tab = shelf->browser()->GetSelectedTabContents();
-    if ((download->total_bytes() > 0) &&
+    if ((download->GetTotalBytes() > 0) &&
         !ChromeDownloadManagerDelegate::IsExtensionDownload(download) &&
         platform_util::IsVisible(shelf_tab->GetNativeView()) &&
         ui::Animation::ShouldRenderRichAnimation()) {

@@ -30,8 +30,8 @@ void DownloadItemModel::CancelTask() {
 }
 
 string16 DownloadItemModel::GetStatusText() {
-  int64 size = download_->received_bytes();
-  int64 total = download_->total_bytes();
+  int64 size = download_->GetReceivedBytes();
+  int64 total = download_->GetTotalBytes();
 
   ui::DataUnits amount_units = ui::GetByteDisplayUnits(total);
   string16 simple_size = ui::FormatBytesWithUnits(size, amount_units, false);
@@ -46,25 +46,25 @@ string16 DownloadItemModel::GetStatusText() {
 
   TimeDelta remaining;
   string16 simple_time;
-  if (download_->IsInProgress() && download_->is_paused()) {
+  if (download_->IsInProgress() && download_->IsPaused()) {
     simple_time = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
   } else if (download_->TimeRemaining(&remaining)) {
-    simple_time = download_->open_when_complete() ?
+    simple_time = download_->GetOpenWhenComplete() ?
                       TimeFormat::TimeRemainingShort(remaining) :
                       TimeFormat::TimeRemaining(remaining);
   }
 
   string16 status_text;
-  switch (download_->state()) {
+  switch (download_->GetState()) {
     case DownloadItem::IN_PROGRESS:
       if (ChromeDownloadManagerDelegate::IsExtensionDownload(download_) &&
-          download_->all_data_saved() &&
-          download_->state() == DownloadItem::IN_PROGRESS) {
+          download_->AllDataSaved() &&
+          download_->GetState() == DownloadItem::IN_PROGRESS) {
         // The download is a CRX (app, extension, theme, ...) and it is
         // being unpacked and validated.
         status_text = l10n_util::GetStringUTF16(
             IDS_DOWNLOAD_STATUS_CRX_INSTALL_RUNNING);
-      } else if (download_->open_when_complete()) {
+      } else if (download_->GetOpenWhenComplete()) {
         if (simple_time.empty()) {
           status_text =
               l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_OPEN_WHEN_COMPLETE);
@@ -86,7 +86,7 @@ string16 DownloadItemModel::GetStatusText() {
       }
       break;
     case DownloadItem::COMPLETE:
-      if (download_->file_externally_removed()) {
+      if (download_->GetFileExternallyRemoved()) {
         status_text = l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_REMOVED);
       } else {
         status_text.clear();
@@ -122,11 +122,11 @@ void SavePageModel::CancelTask() {
 }
 
 string16 SavePageModel::GetStatusText() {
-  int64 size = download_->received_bytes();
-  int64 total_size = download_->total_bytes();
+  int64 size = download_->GetReceivedBytes();
+  int64 total_size = download_->GetTotalBytes();
 
   string16 status_text;
-  switch (download_->state()) {
+  switch (download_->GetState()) {
     case DownloadItem::IN_PROGRESS:
       status_text = l10n_util::GetStringFUTF16(
           IDS_SAVE_PAGE_PROGRESS,

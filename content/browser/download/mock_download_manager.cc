@@ -5,6 +5,7 @@
 #include "content/browser/download/mock_download_manager.h"
 
 #include "content/browser/download/download_create_info.h"
+#include "content/browser/download/download_item_impl.h"
 
 MockDownloadManager::MockDownloadManager(
     content::DownloadManagerDelegate* delegate,
@@ -65,20 +66,20 @@ void MockDownloadManager::OnDownloadInterrupted(int32 download_id, int64 size,
 
 void MockDownloadManager::DownloadCancelledInternal(DownloadItem* download) {
   download->Cancel(true);
-  item_map_.erase(download->id());
-  inactive_item_map_[download->id()] = download;
+  item_map_.erase(download->GetId());
+  inactive_item_map_[download->GetId()] = download;
 }
 
 void MockDownloadManager::RemoveDownload(int64 download_handle) {
 }
 
 bool MockDownloadManager::IsDownloadReadyForCompletion(DownloadItem* download) {
-  return download->all_data_saved();
+  return download->AllDataSaved();
 }
 
 void MockDownloadManager::MaybeCompleteDownload(DownloadItem* download) {
   if (IsDownloadReadyForCompletion(download))
-    download->OnDownloadRenamedToFinalName(download->full_path());
+    download->OnDownloadRenamedToFinalName(download->GetFullPath());
 }
 
 void MockDownloadManager::OnDownloadRenamedToFinalName(
@@ -150,11 +151,8 @@ void MockDownloadManager::CreateDownloadItem(
     DownloadCreateInfo* info,
     const DownloadRequestHandle& request_handle) {
   item_map_.insert(std::make_pair(
-      info->download_id.local(),
-      new DownloadItem(this,
-                       *info,
-                       new DownloadRequestHandle(request_handle),
-                       false)));
+      info->download_id.local(), new DownloadItemImpl(
+        this, *info, new DownloadRequestHandle(request_handle), false)));
 }
 
 void MockDownloadManager::ClearLastDownloadPath() {
@@ -170,7 +168,7 @@ void MockDownloadManager::RestartDownload(int32 download_id) {
 }
 
 void MockDownloadManager::MarkDownloadOpened(DownloadItem* download) {
-  download->set_open_when_complete(true);
+  download->SetOpenWhenComplete(true);
 }
 
 void MockDownloadManager::CheckForHistoryFilesRemoval() {

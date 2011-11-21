@@ -353,12 +353,12 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
                           download->IsCancelled() ||
                           download->IsInterrupted();
     if (isTransferDone &&
-        download->safety_state() != DownloadItem::DANGEROUS) {
+        download->GetSafetyState() != DownloadItem::DANGEROUS) {
       [self remove:itemController];
     } else {
       // Treat the item as opened when we close. This way if we get shown again
       // the user need not open this item for the shelf to auto-close.
-      download->set_opened(true);
+      download->SetOpened(true);
       ++i;
     }
   }
@@ -387,7 +387,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 16, 16 };
   for (NSUInteger i = 0; i < [downloadItemControllers_ count]; ++i) {
     DownloadItemController* itemController =
         [downloadItemControllers_ objectAtIndex:i];
-    if (![itemController download]->opened())
+    if (![itemController download]->GetOpened())
       return NO;
   }
   return YES;

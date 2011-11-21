@@ -61,21 +61,21 @@ scoped_refptr<CrxInstaller> OpenChromeExtension(
   installer->set_delete_source(true);
 
   if (UserScript::IsURLUserScript(download_item.GetURL(),
-                                  download_item.mime_type())) {
-    installer->InstallUserScript(download_item.full_path(),
+                                  download_item.GetMimeType())) {
+    installer->InstallUserScript(download_item.GetFullPath(),
                                  download_item.GetURL());
   } else {
     bool is_gallery_download = service->IsDownloadFromGallery(
-        download_item.GetURL(), download_item.referrer_url());
-    installer->set_original_mime_type(download_item.original_mime_type());
+        download_item.GetURL(), download_item.GetReferrerUrl());
+    installer->set_original_mime_type(download_item.GetOriginalMimeType());
     installer->set_apps_require_extension_mime_type(true);
     installer->set_download_url(download_item.GetURL());
     installer->set_is_gallery_install(is_gallery_download);
     if (is_gallery_download)
-      installer->set_original_download_url(download_item.original_url());
+      installer->set_original_download_url(download_item.GetOriginalUrl());
     installer->set_allow_silent_install(is_gallery_download);
     installer->set_install_cause(extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
-    installer->InstallCrx(download_item.full_path());
+    installer->InstallCrx(download_item.GetFullPath());
   }
 
   return installer;

@@ -86,7 +86,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
         content::NOTIFICATION_SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
         content::NotificationService::AllSources());
     return content::Details<DownloadItem>(observer.details()).ptr()->
-        original_url();
+        GetOriginalUrl();
   }
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
@@ -115,7 +115,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
 
     bool found = false;
     for (size_t i = 0; i < downloads.size(); ++i) {
-      if (downloads[i]->full_path() == download_path) {
+      if (downloads[i]->GetFullPath() == download_path) {
         found = true;
         break;
       }

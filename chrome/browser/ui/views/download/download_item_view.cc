@@ -211,7 +211,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
   body_hover_animation_.reset(new ui::SlideAnimation(this));
   drop_hover_animation_.reset(new ui::SlideAnimation(this));
 
-  if (download->safety_state() == DownloadItem::DANGEROUS)
+  if (download->GetSafetyState() == DownloadItem::DANGEROUS)
     EnterDangerousMode();
 
   UpdateAccessibleName();
@@ -264,20 +264,20 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
   DCHECK(download == download_);
 
   if (body_state_ == DANGEROUS &&
-      download->safety_state() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
+      download->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED) {
     // We have been approved.
     ClearDangerousMode();
   } else if (body_state_ != DANGEROUS &&
-      download->safety_state() == DownloadItem::DANGEROUS) {
+      download->GetSafetyState() == DownloadItem::DANGEROUS) {
     EnterDangerousMode();
     // Force the shelf to layout again as our size has changed.
     parent_->Layout();
     SchedulePaint();
   } else {
     string16 status_text = model_->GetStatusText();
-    switch (download_->state()) {
+    switch (download_->GetState()) {
       case DownloadItem::IN_PROGRESS:
-        download_->is_paused() ?
+        download_->IsPaused() ?
             StopDownloadProgress() : StartDownloadProgress();
         LoadIconIfItemPathChanged();
         break;
@@ -291,7 +291,7 @@ void DownloadItemView::OnDownloadUpdated(DownloadItem* download) {
         LoadIcon();
         break;
       case DownloadItem::COMPLETE:
-        if (download_->auto_opened()) {
+        if (download_->GetAutoOpened()) {
           parent_->RemoveDownloadView(this);  // This will delete us!
           return;
         }
@@ -567,7 +567,7 @@ void DownloadItemView::ShowContextMenu(const gfx::Point& p,
 void DownloadItemView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->name = accessible_name_;
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  if (download_->safety_state() == DownloadItem::DANGEROUS) {
+  if (download_->GetSafetyState() == DownloadItem::DANGEROUS) {
     state->state = ui::AccessibilityTypes::STATE_UNAVAILABLE;
   } else {
     state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
@@ -900,7 +900,7 @@ void DownloadItemView::SetState(State body_state, State drop_down_state) {
 }
 
 void DownloadItemView::ClearDangerousMode() {
-  DCHECK(download_->safety_state() == DownloadItem::DANGEROUS_BUT_VALIDATED &&
+  DCHECK(download_->GetSafetyState() == DownloadItem::DANGEROUS_BUT_VALIDATED &&
          body_state_ == DANGEROUS && drop_down_state_ == DANGEROUS);
 
   body_state_ = NORMAL;
@@ -950,7 +950,7 @@ void DownloadItemView::EnterDangerousMode() {
   // Ensure the file name is not too long.
 
   // Extract the file extension (if any).
-  FilePath filename(download_->target_name());
+  FilePath filename(download_->GetTargetName());
 #if defined(OS_POSIX)
   string16 extension = WideToUTF16(base::SysNativeMBToWide(
       filename.Extension()));
@@ -1114,7 +1114,7 @@ bool DownloadItemView::InDropDownButtonXCoordinateRange(int x) {
 
 void DownloadItemView::UpdateAccessibleName() {
   string16 new_name;
-  if (download_->safety_state() == DownloadItem::DANGEROUS) {
+  if (download_->GetSafetyState() == DownloadItem::DANGEROUS) {
     new_name = dangerous_download_label_->GetText();
   } else {
     new_name = status_text_ + char16(' ') +
