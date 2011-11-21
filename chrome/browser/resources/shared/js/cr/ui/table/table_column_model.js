@@ -132,6 +132,16 @@ cr.define('cr.ui.table', function() {
     },
 
     /**
+     * Render the column header.
+     * @param {number} index The index of the column.
+     * @param {cr.ui.Table} Owner table.
+     */
+    renderHeader: function(index, table) {
+      var c = this.columns_[index];
+      return c.headerRenderFunction.call(c, table);
+    },
+
+    /**
      * The total width of the columns.
      * @type {number}
      */

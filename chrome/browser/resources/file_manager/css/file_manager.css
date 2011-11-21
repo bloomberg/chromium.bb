@@ -378,7 +378,12 @@ div.img-container > img {
   z-index: 2;
   -webkit-margin-end: 0px;
   margin-top: 6px;
+  margin-left: 7px;
   opacity: 0.1;
+}
+
+#select-all-checkbox {
+  margin: 0;
 }
 
 li.thumbnail-item .file-checkbox {

@@ -637,11 +637,12 @@ FileManager.prototype = {
    * One-time initialization of dialogs.
    */
   FileManager.prototype.initDialogs_ = function() {
-    cr.ui.dialogs.BaseDialog.OK_LABEL = str('OK_LABEL');
-    cr.ui.dialogs.BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
-    this.alert = new cr.ui.dialogs.AlertDialog(this.dialogDom_);
-    this.confirm = new cr.ui.dialogs.ConfirmDialog(this.dialogDom_);
-    this.prompt = new cr.ui.dialogs.PromptDialog(this.dialogDom_);
+    var d = cr.ui.dialogs;
+    d.BaseDialog.OK_LABEL = str('OK_LABEL');
+    d.BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
+    this.alert = new d.AlertDialog(this.dialogDom_);
+    this.confirm = new d.ConfirmDialog(this.dialogDom_);
+    this.prompt = new d.PromptDialog(this.dialogDom_);
   };
 
   /**
@@ -1155,8 +1156,10 @@ FileManager.prototype = {
     columns[3].renderFunction = this.renderDate_.bind(this);
 
     if (this.showCheckboxes_) {
-      columns.unshift(new cr.ui.table.TableColumn('checkbox_', '', 3));
+      columns.unshift(new cr.ui.table.TableColumn('checkbox_', '', 3.6));
       columns[0].renderFunction = this.renderCheckbox_.bind(this);
+      columns[0].headerRenderFunction =
+          this.renderCheckboxColumnHeader_.bind(this);
     }
 
     this.table_ = this.dialogDom_.querySelector('.detail-table');
@@ -1540,6 +1543,34 @@ FileManager.prototype = {
     }
 
     return input;
+  };
+
+  FileManager.prototype.renderCheckboxColumnHeader_ = function(table) {
+    var input = this.document_.createElement('input');
+    input.setAttribute('type', 'checkbox');
+    input.setAttribute('tabindex', -1);
+    input.id = 'select-all-checkbox';
+    input.checked = this.areAllItemsSelected();
+
+    var self = this;
+    input.addEventListener('click', function(event) {
+      if (self.areAllItemsSelected())
+        table.selectionModel.unselectAll();
+      else
+        table.selectionModel.selectAll();
+      event.preventDefault();
+    });
+
+    return input;
+  };
+
+  /**
+   * Check if all items in the current list are selected.
+   * @return {boolean} True if all items are selected.
+   */
+  FileManager.prototype.areAllItemsSelected = function() {
+    return this.selection &&
+           this.dataModel_.length == this.selection.totalCount;
   };
 
   /**
@@ -2816,6 +2847,10 @@ FileManager.prototype = {
           listItem.querySelector('input[type="checkbox"]').checked = true;
       }
     }
+    var selectAllCheckbox =
+        this.document_.getElementById('select-all-checkbox');
+    if (selectAllCheckbox)
+      selectAllCheckbox.checked = this.areAllItemsSelected();
   };
 
   FileManager.prototype.updateOkButton_ = function(event) {

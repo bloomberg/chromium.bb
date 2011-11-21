@@ -124,7 +124,7 @@ cr.define('cr.ui.table', function() {
       labelDiv.className = 'table-header-label';
 
       var span = this.ownerDocument.createElement('span');
-      span.textContent = cm.getName(index);
+      span.appendChild(cm.renderHeader(index, this.table_));
       var rtl = this.ownerDocument.defaultView.getComputedStyle(this).
           direction == 'rtl';
       if (rtl) {

@@ -31,8 +31,6 @@ cr.define('cr.ui.table', function() {
 
     width_: null,
 
-    renderFunction_: null,
-
     /**
      * Clones column.
      * @return {cr.ui.table.TableColumn} Clone of the given column.
@@ -40,6 +38,7 @@ cr.define('cr.ui.table', function() {
     clone: function() {
       var tableColumn = new TableColumn(this.id_, this.name_, this.width_);
       tableColumn.renderFunction = this.renderFunction_;
+      tableColumn.headerRenderFunction = this.headerRenderFunction_;
       return tableColumn;
     },
 
@@ -54,6 +53,15 @@ cr.define('cr.ui.table', function() {
       var div = table.ownerDocument.createElement('div');
       div.textContent = dataItem[columnId];
       return div;
+    },
+
+    /**
+     * Renders table header. This is the default render function.
+     * @param {cr.ui.Table} table The table.
+     * @return {HTMLElement} Rendered element.
+     */
+    headerRenderFunction_: function(table) {
+      return table.ownerDocument.createTextNode(this.name);
     },
   };
 
@@ -80,6 +88,12 @@ cr.define('cr.ui.table', function() {
    * @type {Function(*, string, cr.ui.Table): HTMLElement}
    */
   cr.defineProperty(TableColumn, 'renderFunction');
+
+  /**
+   * The column header render function.
+   * @type {Function(cr.ui.Table): HTMLElement}
+   */
+  cr.defineProperty(TableColumn, 'headerRenderFunction');
 
   return {
     TableColumn: TableColumn
