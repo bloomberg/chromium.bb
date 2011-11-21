@@ -49,7 +49,7 @@ PP_Resource PPB_AudioInput_Impl::Create(PP_Instance instance,
                                    PPB_AudioInput_Callback audio_input_callback,
                                    void* user_data) {
   scoped_refptr<PPB_AudioInput_Impl>
-    audio_input(new PPB_AudioInput_Impl(instance));
+      audio_input(new PPB_AudioInput_Impl(instance));
   if (!audio_input->Init(config, audio_input_callback, user_data))
     return 0;
   return audio_input->GetReference();

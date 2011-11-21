@@ -44,9 +44,10 @@ class PPB_AudioInput_Impl : public ::ppapi::Resource,
                             PPB_AudioInput_Callback audio_input_callback,
                             void* user_data);
 
-  // Initialization function for non-trusted init.
+  // Initialization function for trusted init.
   bool Init(PP_Resource config_id,
-      PPB_AudioInput_Callback callback, void* user_data);
+            PPB_AudioInput_Callback callback,
+            void* user_data);
 
   // Resource overrides.
   virtual ::ppapi::thunk::PPB_AudioInput_API* AsPPB_AudioInput_API() OVERRIDE;

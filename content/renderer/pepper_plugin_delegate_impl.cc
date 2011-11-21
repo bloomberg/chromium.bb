@@ -163,7 +163,6 @@ class PlatformImage2DImpl
   DISALLOW_COPY_AND_ASSIGN(PlatformImage2DImpl);
 };
 
-
 class PlatformAudioImpl
     : public webkit::ppapi::PluginDelegate::PlatformAudio,
       public AudioMessageFilter::Delegate,
@@ -188,9 +187,9 @@ class PlatformAudioImpl
        webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
 
   // PlatformAudio implementation (called on main thread).
-  virtual bool StartPlayback();
-  virtual bool StopPlayback();
-  virtual void ShutDown();
+  virtual bool StartPlayback() OVERRIDE;
+  virtual bool StopPlayback() OVERRIDE;
+  virtual void ShutDown() OVERRIDE;
 
  private:
   // I/O thread backends to above functions.
@@ -199,21 +198,22 @@ class PlatformAudioImpl
   void StopPlaybackOnIOThread();
   void ShutDownOnIOThread();
 
-  virtual void OnRequestPacket(AudioBuffersState buffers_state) {
+  virtual void OnRequestPacket(AudioBuffersState buffers_state) OVERRIDE {
     LOG(FATAL) << "Should never get OnRequestPacket in PlatformAudioImpl";
   }
 
-  virtual void OnStateChanged(AudioStreamState state) {}
+  virtual void OnStateChanged(AudioStreamState state) OVERRIDE {}
 
-  virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length) {
+  virtual void OnCreated(base::SharedMemoryHandle handle,
+                         uint32 length) OVERRIDE {
     LOG(FATAL) << "Should never get OnCreated in PlatformAudioImpl";
   }
 
   virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
                                    base::SyncSocket::Handle socket_handle,
-                                   uint32 length);
+                                   uint32 length) OVERRIDE;
 
-  virtual void OnVolume(double volume) {}
+  virtual void OnVolume(double volume) OVERRIDE {}
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.
@@ -362,9 +362,9 @@ class PlatformAudioInputImpl
     webkit::ppapi::PluginDelegate::PlatformAudioCommonClient* client);
 
   // PlatformAudio implementation (called on main thread).
-  virtual bool StartCapture();
-  virtual bool StopCapture();
-  virtual void ShutDown();
+  virtual bool StartCapture() OVERRIDE;
+  virtual bool StopCapture() OVERRIDE;
+  virtual void ShutDown() OVERRIDE;
 
  private:
   // I/O thread backends to above functions.
@@ -375,13 +375,13 @@ class PlatformAudioInputImpl
 
   virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
                                    base::SyncSocket::Handle socket_handle,
-                                   uint32 length);
+                                   uint32 length) OVERRIDE;
 
-  virtual void OnVolume(double volume) {}
+  virtual void OnVolume(double volume) OVERRIDE {}
 
-  virtual void OnStateChanged(AudioStreamState state) {}
+  virtual void OnStateChanged(AudioStreamState state) OVERRIDE {}
 
-  virtual void OnDeviceReady(int index) {}
+  virtual void OnDeviceReady(int index) OVERRIDE {}
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.
