@@ -275,6 +275,34 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
 }
 
+void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+      int gpu_host_id) {
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  window_->layer()->SetExternalTexture(
+      accelerated_surface_containers_[params.surface_id]->GetTexture());
+  glFlush();
+
+  if (!window_->layer()->GetCompositor()) {
+    // We have no compositor, so we have no way to display the surface.
+    // Must still send the ACK.
+    host_->AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
+  } else {
+    window_->layer()->ScheduleDraw();
+
+    // Add sending an ACK to the list of things to do OnCompositingEnded
+    on_compositing_ended_callbacks_.push_back(
+        base::Bind(&RenderWidgetHost::AcknowledgeSwapBuffers,
+                   base::Unretained(host_), params.route_id, gpu_host_id));
+    ui::Compositor* compositor = window_->layer()->GetCompositor();
+    if (!compositor->HasObserver(this))
+      compositor->AddObserver(this);
+  }
+#else
+  NOTREACHED();
+#endif
+}
+
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
       int32 width,
@@ -290,31 +318,6 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
   *surface_handle = surface->Handle();
 
   accelerated_surface_containers_[*surface_id] = surface;
-}
-
-void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
-      uint64 surface_id,
-      int32 route_id,
-      int gpu_host_id) {
-  window_->layer()->SetExternalTexture(
-      accelerated_surface_containers_[surface_id]->GetTexture());
-  glFlush();
-
-  if (!window_->layer()->GetCompositor()) {
-    // We have no compositor, so we have no way to display the surface.
-    // Must still send the ACK.
-    host_->AcknowledgeSwapBuffers(route_id, gpu_host_id);
-  } else {
-    window_->layer()->ScheduleDraw();
-
-    // Add sending an ACK to the list of things to do OnCompositingEnded
-    on_compositing_ended_callbacks_.push_back(
-        base::Bind(&RenderWidgetHost::AcknowledgeSwapBuffers,
-                   base::Unretained(host_), route_id, gpu_host_id));
-    ui::Compositor* compositor = window_->layer()->GetCompositor();
-    if (!compositor->HasObserver(this))
-      compositor->AddObserver(this);
-  }
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(uint64 surface_id) {

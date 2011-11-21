@@ -88,8 +88,6 @@ class GpuChannel : public IPC::Channel::Listener,
       const GPUCreateCommandBufferConfig& init_params,
       int32* route_id);
 
-  void ViewResized(int32 command_buffer_route_id);
-
   gfx::GLShareGroup* share_group() const { return share_group_.get(); }
 
   GpuCommandBufferStub* LookupCommandBuffer(int32 route_id);

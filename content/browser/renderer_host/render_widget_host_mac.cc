@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/common/gpu/gpu_messages.h"
 
 void RenderWidgetHost::OnMsgPluginFocusChanged(bool focused, int plugin_id) {
   if (view_)
@@ -64,7 +65,9 @@ void RenderWidgetHost::OnAcceleratedSurfaceBuffersSwapped(
     // This code path could be updated to implement flow control for
     // updating of accelerated plugins as well. However, if we add support
     // for composited plugins then this is not necessary.
-    view_->AcceleratedSurfaceBuffersSwapped(window, surface_id,
-                                            0, 0, 0);
+    GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params;
+    params.window = window;
+    params.surface_id = surface_id;
+    view_->AcceleratedSurfaceBuffersSwapped(params, 0);
   }
 }
