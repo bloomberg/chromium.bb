@@ -17,6 +17,12 @@ function LayoutTestController() {
     setTimeout(layoutTestController.DelayedNotifyDone1, 0);
   };
 
+  this.overridePreference = function () {
+    // WebSocket tests call this function by preference name
+    // 'WebKitHixie76WebSocketProtocolEnabled' to switch its protocol version.
+    // In Chromium, the value must be 0 because it doesn't support old one.
+  };
+
   this.DelayedNotifyDone1 = function () {
     setTimeout(layoutTestController.DelayedNotifyDone2, 0);
   };
