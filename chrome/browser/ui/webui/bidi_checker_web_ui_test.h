@@ -15,29 +15,27 @@ class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {
  public:
   virtual ~WebUIBidiCheckerBrowserTest();
 
- protected:
-  WebUIBidiCheckerBrowserTest();
-
   // Runs the Bidi Checker on the given page URL. |isRTL| should be true when
   // the active page locale is RTL.
   void RunBidiCheckerOnPage(const char pageURL[], bool isRTL);
+
+ protected:
+  WebUIBidiCheckerBrowserTest();
 
   // Setup test path.
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
 };
 
-// Base class for BidiChecker-based tests that run with an LTR UI.
-class WebUIBidiCheckerBrowserTestLTR : public WebUIBidiCheckerBrowserTest {
- public:
-  void RunBidiCheckerOnPage(const char pageURL[]);
-};
-
 // Base class for BidiChecker-based tests that run with an RTL UI.
-class WebUIBidiCheckerBrowserTestRTL : public WebUIBidiCheckerBrowserTest {
+// Preloads the BidiChecker JS library for each test, as well as modifies the
+// active language.
+class WebUIBidiCheckerBrowserTestFakeBidi : public WebUIBidiCheckerBrowserTest {
  public:
-  void RunBidiCheckerOnPage(const char pageURL[]);
+  virtual ~WebUIBidiCheckerBrowserTestFakeBidi();
 
  protected:
+  WebUIBidiCheckerBrowserTestFakeBidi();
+
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
 
