@@ -74,7 +74,6 @@ DownloadRateMonitor::DownloadRateMonitor() {
 
 void DownloadRateMonitor::Start(
     const base::Closure& canplaythrough_cb, int media_bitrate) {
-  DCHECK(stopped_);
   canplaythrough_cb_ = canplaythrough_cb;
   stopped_ = false;
   bitrate_ = media_bitrate;
