@@ -120,7 +120,11 @@ class ChromotingScriptableObject
     : public pp::deprecated::ScriptableObject,
       public base::SupportsWeakPtr<ChromotingScriptableObject> {
  public:
+  // These state values are duplicated in the JS code. Remember to update both
+  // copies when making changes.
   enum ConnectionStatus {
+    // TODO(jamiewalch): Remove STATUS_UNKNOWN once all web-apps that might try
+    // to access it have been upgraded.
     STATUS_UNKNOWN = 0,
     STATUS_CONNECTING,
     STATUS_INITIALIZING,
@@ -129,6 +133,8 @@ class ChromotingScriptableObject
     STATUS_FAILED,
   };
 
+  // These state values are duplicated in the JS code. Remember to update both
+  // copies when making changes.
   enum ConnectionError {
     ERROR_NONE = 0,
     ERROR_HOST_IS_OFFLINE,
@@ -197,13 +203,13 @@ class ChromotingScriptableObject
   void AddAttribute(const std::string& name, pp::Var attribute);
   void AddMethod(const std::string& name, MethodHandler handler);
 
-  void SignalConnectionInfoChange();
+  void SignalConnectionInfoChange(int status, int error);
   void SignalDesktopSizeChange();
 
   // Calls to these methods are posted to the plugin thread so that we
   // call JavaScript with clean stack. This is necessary because
   // JavaScript event handlers may destroy the plugin.
-  void DoSignalConnectionInfoChange();
+  void DoSignalConnectionInfoChange(int status, int error);
   void DoSignalDesktopSizeChange();
   void DoSendIq(const std::string& message_xml);
 

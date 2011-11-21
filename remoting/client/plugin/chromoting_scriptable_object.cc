@@ -246,7 +246,7 @@ void ChromotingScriptableObject::SetConnectionStatus(
   }
 
   if (signal)
-    SignalConnectionInfoChange();
+    SignalConnectionInfoChange(status, error);
 }
 
 void ChromotingScriptableObject::LogDebugInfo(const std::string& info) {
@@ -299,10 +299,12 @@ void ChromotingScriptableObject::AddMethod(const std::string& name,
   properties_.push_back(PropertyDescriptor(name, handler));
 }
 
-void ChromotingScriptableObject::SignalConnectionInfoChange() {
+void ChromotingScriptableObject::SignalConnectionInfoChange(int status,
+                                                            int error) {
   plugin_message_loop_->PostTask(
       FROM_HERE, task_factory_.NewRunnableMethod(
-          &ChromotingScriptableObject::DoSignalConnectionInfoChange));
+          &ChromotingScriptableObject::DoSignalConnectionInfoChange,
+          status, error));
 }
 
 void ChromotingScriptableObject::SignalDesktopSizeChange() {
@@ -311,12 +313,13 @@ void ChromotingScriptableObject::SignalDesktopSizeChange() {
           &ChromotingScriptableObject::DoSignalDesktopSizeChange));
 }
 
-void ChromotingScriptableObject::DoSignalConnectionInfoChange() {
+void ChromotingScriptableObject::DoSignalConnectionInfoChange(int status,
+                                                              int error) {
   Var exception;
   VarPrivate cb = GetProperty(Var(kConnectionInfoUpdate), &exception);
 
   // |this| must not be touched after Call() returns.
-  cb.Call(Var(), &exception);
+  cb.Call(Var(), Var(status), Var(error), &exception);
 
   if (!exception.is_undefined())
     LOG(ERROR) << "Exception when invoking connectionInfoUpdate JS callback.";

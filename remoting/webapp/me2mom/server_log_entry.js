@@ -85,8 +85,6 @@ remoting.ServerLogEntry.prototype.getValueForConnectionError =
       return 'incompatible-protocol';
     case remoting.ClientSession.ConnectionError.NETWORK_FAILURE:
       return 'network-failure';
-    case remoting.ClientSession.ConnectionError.OTHER:
-      return 'other';
     default:
       return 'unknown-' + connectionError;
   }

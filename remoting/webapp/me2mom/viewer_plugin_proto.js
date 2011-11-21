@@ -32,6 +32,9 @@ remoting.ViewerPlugin.prototype.releaseAllKeys = function() {};
 remoting.ViewerPlugin.prototype.connect =
     function(hostJid, hostPublicKey, clientJid, accessCode) {};
 
+/** @type {function(number, number): void} State change callback function. */
+remoting.ViewerPlugin.prototype.connectionInfoUpdate;
+
 /** @type {number} */ remoting.ViewerPlugin.prototype.apiMinVersion;
 /** @type {number} */ remoting.ViewerPlugin.prototype.apiVersion;
 

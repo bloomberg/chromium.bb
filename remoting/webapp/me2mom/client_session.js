@@ -22,10 +22,9 @@ var remoting = remoting || {};
  *     public key.
  * @param {string} accessCode The access code for the IT2Me connection.
  * @param {string} email The username for the talk network.
- * @param {function(remoting.ClientSession.State):void} onStateChange
- *     The callback to invoke when the session changes state. This callback
- *     occurs after the state changes and is passed the previous state; the
- *     new state is accessible via ClientSession's |state| property.
+ * @param {function(remoting.ClientSession.State,
+                    remoting.ClientSession.State):void} onStateChange
+ *     The callback to invoke when the session changes state.
  * @constructor
  */
 remoting.ClientSession = function(hostJid, hostPublicKey, accessCode, email,
@@ -43,17 +42,21 @@ remoting.ClientSession = function(hostJid, hostPublicKey, accessCode, email,
   this.onStateChange = onStateChange;
 };
 
+// Note that the positive values in both of these enums are copied directly
+// from chromoting_scriptable_object.h and must be kept in sync. The negative
+// values represent states transitions that occur within the web-app that have
+// no corresponding plugin state transition.
 /** @enum {number} */
 remoting.ClientSession.State = {
+  CREATED: -3,
+  BAD_PLUGIN_VERSION: -2,
+  UNKNOWN_PLUGIN_ERROR: -1,
   UNKNOWN: 0,
-  CREATED: 1,
-  BAD_PLUGIN_VERSION: 2,
-  UNKNOWN_PLUGIN_ERROR: 3,
-  CONNECTING: 4,
-  INITIALIZING: 5,
-  CONNECTED: 6,
-  CLOSED: 7,
-  CONNECTION_FAILED: 8
+  CONNECTING: 1,
+  INITIALIZING: 2,
+  CONNECTED: 3,
+  CLOSED: 4,
+  CONNECTION_FAILED: 5
 };
 
 /** @enum {number} */
@@ -62,8 +65,7 @@ remoting.ClientSession.ConnectionError = {
   HOST_IS_OFFLINE: 1,
   SESSION_REJECTED: 2,
   INCOMPATIBLE_PROTOCOL: 3,
-  NETWORK_FAILURE: 4,
-  OTHER: 5
+  NETWORK_FAILURE: 4
 };
 
 /**
@@ -119,9 +121,11 @@ remoting.ClientSession.prototype.PLUGIN_ID = 'session-client-plugin';
 /**
  * Callback to invoke when the state is changed.
  *
- * @param {remoting.ClientSession.State} state The previous state.
+ * @param {remoting.ClientSession.State} oldState The previous state.
+ * @param {remoting.ClientSession.State} newState The current state.
  */
-remoting.ClientSession.prototype.onStateChange = function(state) { };
+remoting.ClientSession.prototype.onStateChange =
+    function(oldState, newState) { };
 
 /**
  * Adds <embed> element to |container| and readies the sesion object.
@@ -159,8 +163,12 @@ remoting.ClientSession.prototype.createPluginAndConnect =
   // TODO(ajwong): Is it even worth having this class handle these events?
   // Or would it be better to just allow users to pass in their own handlers
   // and leave these blank by default?
-  this.plugin.connectionInfoUpdate = function() {
-    that.connectionInfoUpdateCallback();
+  /**
+   * @param {number} status The plugin status.
+   * @param {number} error The plugin error status, if any.
+   */
+  this.plugin.connectionInfoUpdate = function(status, error) {
+    that.connectionInfoUpdateCallback(status, error);
   };
   this.plugin.desktopSizeUpdate = function() { that.onDesktopSizeChanged_(); };
 
@@ -290,49 +298,39 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
 /**
  * Callback that the plugin invokes to indicate that the connection
  * status has changed.
+ *
+ * @param {number} status The plugin's status.
+ * @param {number} error The plugin's error state, if any.
  */
-remoting.ClientSession.prototype.connectionInfoUpdateCallback = function() {
-  var state = this.plugin.status;
-
-  // TODO(ajwong): We're doing silly type translation here. Any way to avoid?
-  if (state == this.plugin.STATUS_UNKNOWN) {
-    this.setState_(remoting.ClientSession.State.UNKNOWN);
-  } else if (state == this.plugin.STATUS_CONNECTING) {
-    this.setState_(remoting.ClientSession.State.CONNECTING);
-  } else if (state == this.plugin.STATUS_INITIALIZING) {
-    this.setState_(remoting.ClientSession.State.INITIALIZING);
-  } else if (state == this.plugin.STATUS_CONNECTED) {
-    this.onDesktopSizeChanged_();
-    this.setState_(remoting.ClientSession.State.CONNECTED);
-  } else if (state == this.plugin.STATUS_CLOSED) {
-    this.setState_(remoting.ClientSession.State.CLOSED);
-  } else if (state == this.plugin.STATUS_FAILED) {
-    var error = this.plugin.error;
-    if (error == this.plugin.ERROR_HOST_IS_OFFLINE) {
-      this.error = remoting.ClientSession.ConnectionError.HOST_IS_OFFLINE;
-    } else if (error == this.plugin.ERROR_SESSION_REJECTED) {
-      this.error = remoting.ClientSession.ConnectionError.SESSION_REJECTED;
-    } else if (error == this.plugin.ERROR_INCOMPATIBLE_PROTOCOL) {
-      this.error = remoting.ClientSession.ConnectionError.INCOMPATIBLE_PROTOCOL;
-    } else if (error == this.plugin.ERROR_NETWORK_FAILURE) {
-      this.error = remoting.ClientSession.ConnectionError.NETWORK_FAILURE;
-    } else {
-      this.error = remoting.ClientSession.ConnectionError.OTHER;
-    }
-    this.setState_(remoting.ClientSession.State.CONNECTION_FAILED);
+remoting.ClientSession.prototype.connectionInfoUpdateCallback =
+    function(status, error) {
+  // Old plugins didn't pass the status and error values, so get them directly.
+  // Note that there is a race condition inherent in this approach.
+  if (typeof(status) == 'undefined') {
+    status = this.plugin.status;
   }
+  if (typeof(error) == 'undefined') {
+    error = this.plugin.error;
+  }
+
+  if (status == this.plugin.STATUS_CONNECTED) {
+    this.onDesktopSizeChanged_();
+  } else if (status == this.plugin.STATUS_FAILED) {
+    this.error = /** @type {remoting.ClientSession.ConnectionError} */ (error);
+  }
+  this.setState_(/** @type {remoting.ClientSession.State} */ (status));
 };
 
 /**
  * @private
- * @param {remoting.ClientSession.State} state The new state for the session.
+ * @param {remoting.ClientSession.State} newState The new state for the session.
  * @return {void} Nothing.
  */
-remoting.ClientSession.prototype.setState_ = function(state) {
+remoting.ClientSession.prototype.setState_ = function(newState) {
   var oldState = this.state;
-  this.state = state;
+  this.state = newState;
   if (this.onStateChange) {
-    this.onStateChange(oldState);
+    this.onStateChange(oldState, newState);
   }
   this.logToServer.logClientSessionStateChange(this.state, this.error);
 };
@@ -343,9 +341,6 @@ remoting.ClientSession.prototype.setState_ = function(state) {
  * @return {void} Nothing.
  */
 remoting.ClientSession.prototype.onWindowSizeChanged = function() {
-  remoting.debug.log('window size changed: ' +
-                     window.innerWidth + 'x' +
-                     window.innerHeight);
   this.updateDimensions();
 };
 

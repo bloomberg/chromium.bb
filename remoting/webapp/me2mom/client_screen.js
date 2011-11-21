@@ -179,29 +179,29 @@ function tryConnectWithWcs_(success) {
  * current state is available via the |state| member variable.
  *
  * @param {number} oldState The previous state of the plugin.
+ * @param {number} newState The current state of the plugin.
  */
 // TODO(jamiewalch): Make this pass both the current and old states to avoid
 // race conditions.
-function onClientStateChange_(oldState) {
+function onClientStateChange_(oldState, newState) {
   if (!remoting.clientSession) {
     // If the connection has been cancelled, then we no longer have a reference
     // to the session object and should ignore any state changes.
     return;
   }
-  var state = remoting.clientSession.state;
-  if (state == remoting.ClientSession.State.CREATED) {
+  if (newState == remoting.ClientSession.State.CREATED) {
     remoting.debug.log('Created plugin');
 
-  } else if (state == remoting.ClientSession.State.BAD_PLUGIN_VERSION) {
+  } else if (newState == remoting.ClientSession.State.BAD_PLUGIN_VERSION) {
     showConnectError_(remoting.Error.BAD_PLUGIN_VERSION);
 
-  } else if (state == remoting.ClientSession.State.CONNECTING) {
+  } else if (newState == remoting.ClientSession.State.CONNECTING) {
     remoting.debug.log('Connecting as ' + remoting.oauth2.getCachedEmail());
 
-  } else if (state == remoting.ClientSession.State.INITIALIZING) {
+  } else if (newState == remoting.ClientSession.State.INITIALIZING) {
     remoting.debug.log('Initializing connection');
 
-  } else if (state == remoting.ClientSession.State.CONNECTED) {
+  } else if (newState == remoting.ClientSession.State.CONNECTED) {
     if (remoting.clientSession) {
       remoting.setMode(remoting.AppMode.IN_SESSION);
       recenterToolbar_();
@@ -209,7 +209,7 @@ function onClientStateChange_(oldState) {
       updateStatistics_();
     }
 
-  } else if (state == remoting.ClientSession.State.CLOSED) {
+  } else if (newState == remoting.ClientSession.State.CLOSED) {
     if (oldState == remoting.ClientSession.State.CONNECTED) {
       remoting.clientSession.removePlugin();
       remoting.clientSession = null;
@@ -222,7 +222,7 @@ function onClientStateChange_(oldState) {
       showConnectError_(remoting.Error.INVALID_ACCESS_CODE);
     }
 
-  } else if (state == remoting.ClientSession.State.CONNECTION_FAILED) {
+  } else if (newState == remoting.ClientSession.State.CONNECTION_FAILED) {
     remoting.debug.log('Client plugin reported connection failed: ' +
                        remoting.clientSession.error);
     if (remoting.clientSession.error ==
@@ -242,7 +242,7 @@ function onClientStateChange_(oldState) {
     }
 
   } else {
-    remoting.debug.log('Unexpected client plugin state: ' + state);
+    remoting.debug.log('Unexpected client plugin state: ' + newState);
     // This should only happen if the web-app and client plugin get out of
     // sync, and even then the version check should allow compatibility.
     showConnectError_(remoting.Error.MISSING_PLUGIN);
