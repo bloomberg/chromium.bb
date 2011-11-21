@@ -23,6 +23,13 @@ namespace {
 
 const char kNPAPITestPluginMimeType[] = "application/vnd.npapi-test";
 
+void OpenChannel(PluginProcessHost::Client* client) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // Start opening the channel
+  PluginService::GetInstance()->OpenChannelToNpapiPlugin(
+      0, 0, GURL(), GURL(), kNPAPITestPluginMimeType, client);
+}
+
 // Mock up of the Client and the Listener classes that would supply the
 // communication channel with the plugin.
 class MockPluginProcessHostClient : public PluginProcessHost::Client,
@@ -100,8 +107,9 @@ class PluginServiceTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PluginServiceTest, OpenChannelToPlugin) {
   ::testing::StrictMock<MockPluginProcessHostClient> mock_client(
       browser()->profile()->GetResourceContext());
-  PluginService::GetInstance()->OpenChannelToNpapiPlugin(
-      0, 0, GURL(), GURL(), kNPAPITestPluginMimeType, &mock_client);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&OpenChannel, &mock_client));
   ui_test_utils::RunMessageLoop();
 }
 
@@ -233,13 +241,6 @@ class MockCanceledBeforeSentPluginProcessHostClient
 
   DISALLOW_COPY_AND_ASSIGN(MockCanceledBeforeSentPluginProcessHostClient);
 };
-
-void OpenChannel(PluginProcessHost::Client* client) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Start opening the channel
-  PluginService::GetInstance()->OpenChannelToNpapiPlugin(
-      0, 0, GURL(), GURL(), kNPAPITestPluginMimeType, client);
-}
 
 IN_PROC_BROWSER_TEST_F(
     PluginServiceTest, CancelBeforeSentOpenChannelToPluginProcessHost) {

@@ -332,6 +332,7 @@ void PluginService::OpenChannelToNpapiPlugin(
     const GURL& page_url,
     const std::string& mime_type,
     PluginProcessHost::Client* client) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!ContainsKey(pending_plugin_clients_, client));
   pending_plugin_clients_.insert(client);
 
