@@ -514,25 +514,6 @@
   fun:ThreadWatcherList::InitializeAndStartWatching
 }
 {
-  bug_93757_a
-  ThreadSanitizer:Race
-  fun:__memset_sse2
-  fun:VisitedLinkMaster::CreateURLTable
-}
-{
-  bug_93757_b
-  ThreadSanitizer:Race
-  ...
-  fun:webkit::npapi::PluginLib::ReadWebPluginInfo
-  fun:webkit::npapi::PluginList::ReadPluginInfo
-  fun:webkit::npapi::PluginList::LoadPlugin
-  fun:webkit::npapi::PluginList::LoadPluginsFromDir
-  fun:webkit::npapi::PluginList::LoadPluginsInternal
-  fun:webkit::npapi::PluginList::LoadPlugins
-  fun:webkit::npapi::PluginList::GetPlugins
-  fun:PluginService::GetPluginsInternal
-}
-{
   bug_93932_a
   ThreadSanitizer:Race
   ...
