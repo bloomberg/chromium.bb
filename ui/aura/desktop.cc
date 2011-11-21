@@ -184,7 +184,7 @@ Desktop::Desktop()
 Desktop::~Desktop() {
   in_destructor_ = true;
 #ifdef USE_WEBKIT_COMPOSITOR
-  if (!compositor_factory_)
+  if (!ui::Compositor::compositor_factory())
     ui::CompositorCC::Terminate();
 #endif
   if (instance_ == this)
