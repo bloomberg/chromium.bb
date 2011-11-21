@@ -727,7 +727,7 @@
         'GR_AGGRESSIVE_SHADER_OPTS=1',
         'SK_DISABLE_FAST_AA_STROKE_RECT',
 #        'SK_ENABLE_FAST_SHADERMASK',
-        'SK_DEFAULT_FONT_CACHE_LIMIT=(16*1024*1024)',
+        'SK_DEFAULT_FONT_CACHE_LIMIT=(20*1024*1024)',
       ],
       'sources!': [
         '../third_party/skia/include/core/SkTypes.h',
