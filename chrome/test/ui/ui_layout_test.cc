@@ -149,6 +149,7 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("layout_tests");
   path = path.AppendASCII("layout_test_controller.html");
+  layout_test_controller_.clear();
   ASSERT_TRUE(file_util::ReadFileToString(path, &layout_test_controller_));
 }
 
