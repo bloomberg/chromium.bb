@@ -2,7 +2,6 @@
 //
 // Version
 //
-#include "verrsrc.h"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION @MAJOR@,@MINOR@,@BUILD@,@PATCH@
