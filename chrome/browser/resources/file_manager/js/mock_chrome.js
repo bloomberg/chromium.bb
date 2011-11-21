@@ -59,6 +59,21 @@ chrome.fileBrowserPrivate = {
   },
 
   /**
+   * File system change notification.
+   */
+  onFileChanged: {
+    callbacks: [],
+    addListener: function(cb) { this.callbacks.push(cb) }
+  },
+
+  /**
+   * File watchers.
+   */
+  addFileWatch: function(path, callback) { callback(true) },
+
+  removeFileWatch: function(path, callback) { callback(true) },
+
+  /**
    * Returns common tasks for a given list of files.
    */
   getFileTasks: function(urlList, callback) {

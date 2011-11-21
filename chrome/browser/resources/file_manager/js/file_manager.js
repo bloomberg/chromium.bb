@@ -9,8 +9,6 @@ const EMPTY_IMAGE_URI = 'data:image/gif;base64,'
 
 var g_slideshow_data = null;
 
-const GALLERY_ENABLED = true;
-
 // If directory files changes too often, don't rescan directory more than once
 // per specified interval
 const SIMULTANEOUS_RESCAN_INTERVAL = 1000;
@@ -2269,7 +2267,6 @@ FileManager.prototype = {
           selectedUrl,
           function () {
             // TODO(kaznacheev): keep selection.
-            self.rescanDirectoryNow_();  // Make sure new files show up.
             self.dialogDom_.removeChild(galleryFrame);
             self.document_.title = self.currentDirEntry_.fullPath;
             self.refocus();
@@ -3064,6 +3061,11 @@ FileManager.prototype = {
 
       function onReadSome(entries) {
         if (entries.length == 0) {
+          metrics.recordTime('DirectoryScan');
+          if (self.currentDirEntry_.fullPath == DOWNLOADS_DIRECTORY) {
+            metrics.reportCount("DownloadsCount", self.dataModel_.length);
+          }
+
           if (self.pendingRescanQueue_.length > 0) {
             setTimeout(self.rescanDirectory_.bind(self),
                 SIMULTANEOUS_RESCAN_INTERVAL);
@@ -3098,6 +3100,8 @@ FileManager.prototype = {
 
         spliceArgs.unshift(0, 0);  // index, deleteCount
         self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
+
+        metrics.startInterval('DirectoryScan');
 
         // Keep reading until entries.length is 0.
         reader.readEntries(onReadSome, onError);
