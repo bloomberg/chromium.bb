@@ -28,15 +28,13 @@
 
 using content::BrowserThread;
 
-namespace {
-
 const char kPropertyDevicePath[] = "devicePath";
 const char kPropertyFilePath[] = "filePath";
 const char kPropertyLabel[] = "label";
 const char kPropertyPath[] = "path";
 
 // Name for hwid in machine statistics.
-const std::string kHwidStatistic = "hardware_class";
+const char kHwidStatistic[] = "hardware_class";
 
 const char kImageZipFileName[] = "chromeos_image.bin.zip";
 
@@ -44,8 +42,10 @@ const char kImageZipFileName[] = "chromeos_image.bin.zip";
 const uint64 kMinDeviceSize = static_cast<uint64>(3.9) * 1000 * 1000 * 1000;
 
 // Link displayed on imageburner ui.
-const std::string kMoreInfoLink =
+const char kMoreInfoLink[] =
     "http://www.chromium.org/chromium-os/chromiumos-design-docs/recovery-mode";
+
+namespace {
 
 ChromeWebUIDataSource *CreateImageburnerUIHTMLSource() {
   ChromeWebUIDataSource *source =

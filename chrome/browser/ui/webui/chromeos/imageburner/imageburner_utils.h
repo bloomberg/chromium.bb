@@ -28,19 +28,10 @@
 namespace imageburner {
 
 // Config file properties.
-static const std::string kRecoveryToolVersion = "recovery_tool_version";
-static const std::string kRecoveryToolLinuxVersion =
-    "recovery_tool_linux_version";
-static const std::string kName = "name";
-static const std::string kVersion = "version";
-static const std::string kDescription = "desc";
-static const std::string kChannel = "channel";
-static const std::string kHwid = "hwid";
-static const std::string kSha1 = "sha1";
-static const std::string kZipFileSize = "zipfilesize";
-static const std::string kFileSize = "filesize";
-static const std::string kFileName = "file";
-static const std::string kUrl = "url";
+extern const char kName[];
+extern const char kHwid[];
+extern const char kFileName[];
+extern const char kUrl[];
 
 class Downloader {
  public:

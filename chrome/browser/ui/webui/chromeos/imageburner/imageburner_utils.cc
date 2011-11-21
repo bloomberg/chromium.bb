@@ -17,10 +17,15 @@ using content::BrowserThread;
 
 namespace imageburner {
 
-static const char kConfigFileUrl[] =
+const char kName[] = "name";
+const char kHwid[] = "hwid";
+const char kFileName[] = "file";
+const char kUrl[] = "url";
+
+const char kConfigFileUrl[] =
     "https://dl.google.com/dl/edgedl/chromeos/recovery/recovery.conf";
-static const char kTempImageFolderName[] = "chromeos_image";
-static const char kConfigFileName[] = "recovery.conf";
+const char kTempImageFolderName[] = "chromeos_image";
+const char kConfigFileName[] = "recovery.conf";
 
 ////////////////////////////////////////////////////////////////////////////////
 //
