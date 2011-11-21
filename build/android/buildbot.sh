@@ -31,7 +31,7 @@ for mandatory_directory in "${ANDROID_SDK_ROOT}" "${ANDROID_NDK_ROOT}" ; do
   fi
 done
 
-if [ ! -n "$BUILDBOT_CLOBBER" ]; then
+if [ ! "$BUILDBOT_CLOBBER" = "" ]; then
   NEED_CLOBBER=1
 fi
 
