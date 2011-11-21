@@ -40,7 +40,6 @@ Supported targets:
   * debug_server_Win32    Build the out-of-process debug_server.
   * docs                  Build all of the Doxygen documentation.
   * examples              Build the examples.
-  * experimental          Build the experimental projects.
   * installer             Build the SDK installer.
   * nacl-bpad             Build the native client crash reporting tool.
   * sdk_tools             Build nacl_sdk.zip and sdk_tools.tgz
@@ -121,10 +120,7 @@ base_env.Append(
     BUILD_SCONSCRIPTS = [
         # Keep in alphabetical order
         'build_tools/build.scons',
-        'debugger/build.scons',
         'documentation/build.scons',
-        'experimental/visual_studio_plugin/build.scons',
-        'experimental/webgtt/tests/nacltest/test.scons',
         'project_templates/test.scons',
     ],
 )
@@ -680,50 +676,6 @@ def DependsOnExamples(env, dependency):
 
 build_env.AddMethod(DependsOnExamples)
 
-
-# ----------------------------------------------------------------------------
-# Add a builder for experimental projects.  This adds an Alias() node named
-# 'experimental' that is always built.  There is some special handling for the
-# clean mode, since SCons relies on actual build products for its clean
-# processing and will not run Alias() actions during clean unless they actually
-# produce something.
-
-
-def BuildExperimental(env, target, source):
-  '''Build the experimental projects.
-
-  This runs the build command in the 'experimental' directory.
-
-  Args:
-    env: The construction Environment() that is building the experimental
-         projects.
-    target: The target that triggered this build.  Not used.
-    source: The sources used for this build.  Not used.
-  '''
-  subprocess.check_call(SconsBuildCommand(env),
-                        cwd='experimental',
-                        shell=True)
-
-
-def CleanExperimental(env, target, source):
-  '''Clean the experimental projects.
-
-  This runs the clean command in the 'experimental' directory.
-
-  Args:
-    env: The construction Environment() that is building the experimental
-         projects.
-  '''
-  subprocess.check_call('%s --clean' % SconsBuildCommand(env),
-                        cwd='experimental',
-                        shell=True)
-
-
-experimental_builder = build_env.Alias('experimental', [toolchain_node],
-                                       BuildExperimental)
-build_env.AlwaysBuild(experimental_builder)
-build_env.AddCleanAction(['experimental'], CleanExperimental, ['bot'],
-                         experimental_builder)
 
 # ----------------------------------------------------------------------------
 # Add helper functions that build/clean a test by invoking scons under the

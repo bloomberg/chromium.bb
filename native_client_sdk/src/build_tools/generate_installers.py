@@ -70,17 +70,6 @@ def main(argv):
   env['NACL_SDK_ROOT'] = parent_dir
   env['NACL_TARGET_PLATFORM'] = '.'  # Use the repo's toolchain.
 
-  # Build the experimental projects.
-  bot.BuildStep('build experimental')
-  bot.Print('generate_installers is building the experimental projects.')
-  experimental_path = os.path.join(home_dir, 'src', 'experimental')
-  scons_path = os.path.join(experimental_path, 'scons')
-  scons_cmd = scons_path + ' --nacl-platform="."'
-  subprocess.check_call(scons_cmd,
-                        cwd=experimental_path,
-                        env=env,
-                        shell=True)
-
   # Use native tar to copy the SDK into the build location
   # because copytree has proven to be error prone and is not supported on mac.
   # We use a buffer for speed here.  -1 causes the default OS size to be used.
