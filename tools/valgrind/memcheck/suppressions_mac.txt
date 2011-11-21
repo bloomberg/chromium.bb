@@ -1786,8 +1786,6 @@
    fun:_ZN3net19NSSSSLInitSingletonD1Ev
    ...
    fun:_ZN4base12LazyInstanceIN3net19NSSSSLInitSingletonENS_25DefaultLazyInstanceTraitsIS2_EEE6OnExitEPv
-   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IPFvPvES3_EES5_E8DoInvokeEPNS0_18InvokerStorageBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
 {
    bug_96300
