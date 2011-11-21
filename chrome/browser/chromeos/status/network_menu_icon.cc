@@ -32,11 +32,11 @@ const int kThrobDurationMs = 750;
 
 // Network strength bars images.
 const int kNumBarsImages = 5;
-SkBitmap kBarsImagesAnimating[kNumBarsImages - 1];
+SkBitmap* kBarsImagesAnimating[kNumBarsImages - 1];
 
 // Network strength arcs images.
 const int kNumArcsImages = 5;
-SkBitmap kArcsImagesAnimating[kNumArcsImages - 1];
+SkBitmap* kArcsImagesAnimating[kNumArcsImages - 1];
 
 // Badge offsets.  If a badge is large enough that it won't fit within the icon
 // when using the right or bottom offset, it gets shifted inwards so it will.
@@ -526,7 +526,7 @@ void NetworkMenuIcon::SetConnectingIcon(const Network* network,
                                         double animation) {
   int image_count;
   BitmapType bitmap_type;
-  SkBitmap* images;
+  SkBitmap** images;
 
   if (network->type() == TYPE_WIFI) {
     image_count = kNumArcsImages - 1;
@@ -542,11 +542,12 @@ void NetworkMenuIcon::SetConnectingIcon(const Network* network,
   index = max(min(index, image_count - 1), 0);
 
   // Lazily cache images.
-  if (images[index].empty()) {
+  if (!images[index]) {
     SkBitmap source = GetBitmap(bitmap_type, index + 1);
-    images[index] = NetworkMenuIcon::GenerateConnectingBitmap(source);
+    images[index] =
+        new SkBitmap(NetworkMenuIcon::GenerateConnectingBitmap(source));
   }
-  icon_->set_icon(images[index]);
+  icon_->set_icon(*images[index]);
 }
 
 // Sets up the icon and badges for GenerateBitmap().

@@ -10,6 +10,7 @@
       'mac_bundle': 1,
       'variables': {
         'use_system_xdg_utils%': 0,
+        'enable_wexit_time_destructors': 1,
       },
       'sources': [
         'app/breakpad_win.cc',

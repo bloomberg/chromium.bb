@@ -7,6 +7,7 @@
     {
       'target_name': 'browser',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'app/policy/cloud_policy_codegen.gyp:policy',
         'autofill_regexes',

@@ -7,6 +7,7 @@
     {
       'target_name': 'renderer',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'common',
         'common_net',

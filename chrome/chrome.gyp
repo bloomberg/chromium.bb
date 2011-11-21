@@ -163,6 +163,7 @@
       # TODO(joi): Move debugger-related build rules to content/
       'target_name': 'debugger',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'chrome_resources.gyp:chrome_extra_resources',
         'chrome_resources.gyp:chrome_resources',
@@ -217,6 +218,7 @@
     {
       'target_name': 'plugin',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'chrome_resources.gyp:chrome_strings',
         '../base/base.gyp:base',
@@ -234,6 +236,7 @@
     {
       'target_name': 'utility',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         '../base/base.gyp:base',
         '../content/content.gyp:content_utility',
@@ -259,6 +262,7 @@
       # or from compiling a stub implementation.
       'target_name': 'syncapi_core',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'sources': [
         'browser/sync/engine/syncapi_internal.cc',
         'browser/sync/engine/syncapi_internal.h',
@@ -323,6 +327,7 @@
       # Provides the API that Chrome services use to talk to sync.
       'target_name': 'syncapi_service',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'sources': [
         'browser/sync/api/syncable_service.cc',
         'browser/sync/api/syncable_service.h',
@@ -356,6 +361,7 @@
     {
       'target_name': 'sync',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'sources': [
         'browser/sync/engine/all_status.cc',
         'browser/sync/engine/all_status.h',
@@ -554,6 +560,7 @@
     {
       'target_name': 'sync_notifier',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'sources': [
         'browser/sync/notifier/cache_invalidation_packet_handler.cc',
         'browser/sync/notifier/cache_invalidation_packet_handler.h',
@@ -597,6 +604,7 @@
     {
       'target_name': 'service',
       'type': 'static_library',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'chrome_resources.gyp:chrome_strings',
         'common',
@@ -687,6 +695,7 @@
     {
       'target_name': 'ipclist',
       'type': 'executable',
+      'variables': { 'enable_wexit_time_destructors': 1, },
       'dependencies': [
         'test_support_common',
         '../skia/skia.gyp:skia',
@@ -705,6 +714,7 @@
         {
           'target_name': 'helper_app',
           'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
           'product_name': '<(mac_product_name) Helper',
           'mac_bundle': 1,
           'dependencies': [
@@ -820,6 +830,7 @@
           # itself is responsible for producing bundles.
           'target_name': 'app_mode_app',
           'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
           'product_name': '<(mac_product_name) App Mode Loader',
           'sources': [
             'app/app_mode_loader_mac.mm',
@@ -868,6 +879,7 @@
           # build without actually linking to the resulting library.
           'target_name': 'interpose_dependency_shim',
           'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             'plugin_carbon_interpose',
           ],
@@ -891,6 +903,7 @@
           # dylib for interposing Carbon calls in the plugin process.
           'target_name': 'plugin_carbon_interpose',
           'type': 'shared_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             'chrome_dll',
           ],
@@ -930,6 +943,7 @@
         {
           'target_name': 'infoplist_strings_tool',
           'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             'chrome_resources.gyp:chrome_strings',
             '../base/base.gyp:base',
@@ -948,6 +962,7 @@
         {
           'target_name': 'convert_dict',
           'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
             '../base/base.gyp:base',
             '../base/base.gyp:base_i18n',
@@ -962,6 +977,7 @@
           'target_name': 'convert_dict_lib',
           'product_name': 'convert_dict',
           'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
           'include_dirs': [
             '..',
           ],

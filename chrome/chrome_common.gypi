@@ -9,6 +9,9 @@
       'type': 'static_library',
       'variables': {
         'chrome_common_target': 1,
+        # TODO(thakis): Turn this on. Blocked on g_log_function_mapping in
+        # ipc_message_macros.h. http://crbug.com/101600
+        #'enable_wexit_time_destructors': 1,
       },
       'include_dirs': [
           '..',

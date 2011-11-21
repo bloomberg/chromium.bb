@@ -7,6 +7,7 @@
       'targets': [
         {
           'variables': {
+            'enable_wexit_time_destructors': 1,
             'conditions' : [
               ['OS=="win" and optimize_with_syzygy==1', {
                 # On Windows we use build chrome_dll as an intermediate target
