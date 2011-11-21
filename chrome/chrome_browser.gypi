@@ -4253,6 +4253,7 @@
             ['include', '^browser/ui/webui/cookies_tree_model_adapter.h'],
           ],
           'dependencies': [
+            '../ui/aura/aura.gyp:aura',
             '../ui/aura_shell/aura_shell.gyp:aura_shell',
             '../ui/gfx/compositor/compositor.gyp:compositor',
           ],
