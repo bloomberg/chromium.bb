@@ -272,7 +272,15 @@ remoting.ClientSession.prototype.connectPluginToWcs_ =
   /** @param {string} stanza The IQ stanza received. */
   var onIq = function(stanza) {
     remoting.debug.logIq(false, stanza);
-    that.plugin.onIq(stanza);
+    if (that.plugin.onIq) {
+      that.plugin.onIq(stanza);
+    } else {
+      // plugin.onIq may not be set after the plugin has been shut
+      // down. Particularly this happens when we receive response to
+      // session-terminate stanza.
+      remoting.debug.log(
+          'plugin.onIq is not set so dropping incoming message.');
+    }
   }
   remoting.wcs.setOnIq(onIq);
   that.plugin.connect(this.hostJid, this.hostPublicKey, this.clientJid,
