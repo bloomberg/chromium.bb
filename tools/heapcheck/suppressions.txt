@@ -1644,9 +1644,7 @@
    ...
    fun:SQLitePersistentCookieStore::Backend::LoadCookiesForDomains
    ...
-   fun:base::internal::Invoker*::DoInvoke
-   fun:base::Callback::Run
-   fun:MessageLoop::RunTask
+   fun:base::internal::InvokeHelper::MakeItSo
 }
 {
    bug_102831_a
