@@ -42,7 +42,6 @@ struct evdev_input_device {
 	struct wl_event_source *source;
 	struct wlsc_output *output;
 	char *devnode;
-	int tool;
 	int fd;
 	struct {
 		int min_x, max_x, min_y, max_y;
@@ -77,7 +76,6 @@ evdev_process_key(struct evdev_input_device *device,
 	case BTN_TOOL_FINGER:
 	case BTN_TOOL_MOUSE:
 	case BTN_TOOL_LENS:
-		device->tool = e->value ? e->code : 0;
 		if (device->is_touchpad)
 		{
 			device->abs.reset_x = 1;
@@ -354,7 +352,6 @@ evdev_input_device_create(struct evdev_input *master,
 	device->output =
 		container_of(ec->output_list.next, struct wlsc_output, link);
 
-	device->tool = 1;
 	device->master = master;
 	device->is_touchpad = 0;
 	device->devnode = strdup(path);
