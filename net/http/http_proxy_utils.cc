@@ -1,14 +1,19 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "net/http/http_proxy_utils.h"
 
+#include "base/logging.h"
 #include "base/stringprintf.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/http/http_auth_controller.h"
 #include "net/http/http_request_info.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_response_info.h"
 
 namespace net {
 
@@ -34,6 +39,19 @@ void BuildTunnelRequest(
     request_headers->SetHeader(HttpRequestHeaders::kUserAgent, user_agent);
 
   request_headers->MergeFrom(auth_headers);
+}
+
+int HandleAuthChallenge(HttpAuthController *auth,
+                        HttpResponseInfo* response,
+                        const BoundNetLog& net_log) {
+  DCHECK(response->headers);
+
+  int rv = auth->HandleAuthChallenge(response->headers, false, true, net_log);
+  response->auth_challenge = auth->auth_info();
+  if (rv == OK)
+    return ERR_PROXY_AUTH_REQUESTED;
+
+  return rv;
 }
 
 }  // namespace net
