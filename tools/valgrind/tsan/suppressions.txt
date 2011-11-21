@@ -386,6 +386,13 @@
   fun:HistogramSynchronizer::DeserializeHistogramList*
 }
 
+{
+   bug_104776 Benign race to initialize pointer with the same value again.
+   ThreadSanitizer:Race
+   fun:base::StatisticsRecorder::FindHistogram
+   fun:base::*Histogram::FactoryGet
+}
+
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 ############################
 # Real races in Chromium
@@ -691,12 +698,4 @@
    fun:MessageLoop::RunInternal
    fun:MessageLoop::RunHandler
    fun:MessageLoop::Run
-}
-{
-   bug_104776
-   ThreadSanitizer:Race
-   fun:base::StatisticsRecorder::FindHistogram
-   fun:base::LinearHistogram::FactoryGet
-   fun:dbus::ObjectProxy::RunResponseCallback
-   fun:base::internal::Invoker4::DoInvoke
 }
