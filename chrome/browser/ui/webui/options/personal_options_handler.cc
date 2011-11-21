@@ -202,8 +202,10 @@ void PersonalOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX));
   localized_strings->SetString("changePicture",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE));
-  localized_strings->SetString("userEmail",
-      chromeos::UserManager::Get()->logged_in_user().email());
+  if (chromeos::UserManager::Get()->user_is_logged_in()) {
+    localized_strings->SetString("userEmail",
+        chromeos::UserManager::Get()->logged_in_user().email());
+  }
 #endif
 }
 
