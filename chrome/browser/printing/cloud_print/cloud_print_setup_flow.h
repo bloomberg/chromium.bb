@@ -84,9 +84,9 @@ class CloudPrintSetupFlow : public HtmlDialogUIDelegate,
 
   // GaiaAuthConsumer implementation.
   virtual void OnClientLoginSuccess(
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
   virtual void OnClientLoginFailure(
-      const GoogleServiceAuthError& error);
+      const GoogleServiceAuthError& error) OVERRIDE;
 
  private:
   friend class CloudPrintServiceProcessHelper;

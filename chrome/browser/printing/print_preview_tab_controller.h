@@ -60,7 +60,7 @@ class PrintPreviewTabController
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Returns true if |tab| is a print preview tab.
   static bool IsPrintPreviewTab(TabContentsWrapper* tab);

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEBDATA_AUTOFILL_TABLE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/webdata/web_database_table.h"
@@ -118,8 +119,8 @@ class AutofillTable : public WebDatabaseTable {
  public:
   AutofillTable(sql::Connection* db, sql::MetaTable* meta_table);
   virtual ~AutofillTable();
-  virtual bool Init();
-  virtual bool IsSyncable();
+  virtual bool Init() OVERRIDE;
+  virtual bool IsSyncable() OVERRIDE;
 
   // Records the form elements in |elements| in the database in the
   // autofill table.  A list of all added and updated autofill entries

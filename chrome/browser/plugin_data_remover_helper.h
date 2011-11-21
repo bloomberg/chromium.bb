@@ -48,7 +48,7 @@ class PluginDataRemoverHelper : public content::NotificationObserver {
   // content::NotificationObserver methods:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void StartUpdate();

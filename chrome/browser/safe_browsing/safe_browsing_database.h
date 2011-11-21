@@ -223,26 +223,29 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   virtual ~SafeBrowsingDatabaseNew();
 
   // Implement SafeBrowsingDatabase interface.
-  virtual void Init(const FilePath& filename);
-  virtual bool ResetDatabase();
+  virtual void Init(const FilePath& filename) OVERRIDE;
+  virtual bool ResetDatabase() OVERRIDE;
   virtual bool ContainsBrowseUrl(const GURL& url,
                                  std::string* matching_list,
                                  std::vector<SBPrefix>* prefix_hits,
                                  std::vector<SBFullHashResult>* full_hits,
-                                 base::Time last_update);
+                                 base::Time last_update) OVERRIDE;
   virtual bool ContainsDownloadUrl(const std::vector<GURL>& urls,
-                                   std::vector<SBPrefix>* prefix_hits);
-  virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix);
-  virtual bool ContainsCsdWhitelistedUrl(const GURL& url);
-  virtual bool ContainsDownloadWhitelistedUrl(const GURL& url);
-  virtual bool ContainsDownloadWhitelistedString(const std::string& str);
-  virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists);
+                                   std::vector<SBPrefix>* prefix_hits) OVERRIDE;
+  virtual bool ContainsDownloadHashPrefix(const SBPrefix& prefix) OVERRIDE;
+  virtual bool ContainsCsdWhitelistedUrl(const GURL& url) OVERRIDE;
+  virtual bool ContainsDownloadWhitelistedUrl(const GURL& url) OVERRIDE;
+  virtual bool ContainsDownloadWhitelistedString(
+      const std::string& str) OVERRIDE;
+  virtual bool UpdateStarted(std::vector<SBListChunkRanges>* lists) OVERRIDE;
   virtual void InsertChunks(const std::string& list_name,
-                            const SBChunkList& chunks);
-  virtual void DeleteChunks(const std::vector<SBChunkDelete>& chunk_deletes);
-  virtual void UpdateFinished(bool update_succeeded);
-  virtual void CacheHashResults(const std::vector<SBPrefix>& prefixes,
-                                const std::vector<SBFullHashResult>& full_hits);
+                            const SBChunkList& chunks) OVERRIDE;
+  virtual void DeleteChunks(
+      const std::vector<SBChunkDelete>& chunk_deletes) OVERRIDE;
+  virtual void UpdateFinished(bool update_succeeded) OVERRIDE;
+  virtual void CacheHashResults(
+      const std::vector<SBPrefix>& prefixes,
+      const std::vector<SBFullHashResult>& full_hits) OVERRIDE;
 
  private:
   friend class SafeBrowsingDatabaseTest;

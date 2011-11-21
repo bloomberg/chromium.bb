@@ -99,7 +99,7 @@ class TemplateURLTableModel : public ui::TableModel,
   void FaviconAvailable(ModelEntry* entry);
 
   // TemplateURLServiceObserver notification.
-  virtual void OnTemplateURLServiceChanged();
+  virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
   ui::TableModelObserver* observer_;
 

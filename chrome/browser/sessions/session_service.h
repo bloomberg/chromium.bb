@@ -182,7 +182,7 @@ class SessionService : public BaseSessionService,
 
   // Overridden from BaseSessionService because we want some UMA reporting on
   // session update activities.
-  virtual void Save();
+  virtual void Save() OVERRIDE;
 
  private:
   typedef std::map<SessionID::id_type, std::pair<int, int> > IdToRange;
@@ -208,7 +208,7 @@ class SessionService : public BaseSessionService,
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Sets the application extension id of the specified tab.
   void SetTabExtensionAppID(const SessionID& window_id,
@@ -350,7 +350,7 @@ class SessionService : public BaseSessionService,
 
   // Schedules the specified command. This method takes ownership of the
   // command.
-  virtual void ScheduleCommand(SessionCommand* command);
+  virtual void ScheduleCommand(SessionCommand* command) OVERRIDE;
 
   // Converts all pending tab/window closes to commands and schedules them.
   void CommitPendingCloses();

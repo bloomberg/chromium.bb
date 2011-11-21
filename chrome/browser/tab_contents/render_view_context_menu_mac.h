@@ -23,7 +23,7 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
                            const ContextMenuParams& params,
                            NSView* parent_view);
   virtual ~RenderViewContextMenuMac();
-  virtual void ExecuteCommand(int id);
+  virtual void ExecuteCommand(int id) OVERRIDE;
 
   // RenderViewContextMenuDelegate implementation.
   virtual void UpdateMenuItem(int command_id,
@@ -32,13 +32,13 @@ class RenderViewContextMenuMac : public RenderViewContextMenu {
                               const string16& title) OVERRIDE;
 
  protected:
-  // RenderViewContextMenu implementation-
-  virtual void PlatformInit();
+  // RenderViewContextMenu implementation.
+  virtual void PlatformInit() OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator);
+      ui::Accelerator* accelerator) OVERRIDE;
 
-  virtual void LookUpInDictionary();
+  virtual void LookUpInDictionary() OVERRIDE;
 
   void InitPlatformMenu();
  private:

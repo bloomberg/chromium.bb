@@ -18,7 +18,7 @@ class PluginObserver : public TabContentsObserver {
   virtual ~PluginObserver();
 
   // IPC::Channel::Listener implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);

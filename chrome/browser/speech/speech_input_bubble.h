@@ -133,12 +133,12 @@ class SpeechInputBubbleBase : public SpeechInputBubble {
   virtual ~SpeechInputBubbleBase();
 
   // SpeechInputBubble methods
-  virtual void SetWarmUpMode();
-  virtual void SetRecordingMode();
-  virtual void SetRecognizingMode();
-  virtual void SetMessage(const string16& text);
-  virtual void SetInputVolume(float volume, float noise_volume);
-  virtual TabContents* tab_contents();
+  virtual void SetWarmUpMode() OVERRIDE;
+  virtual void SetRecordingMode() OVERRIDE;
+  virtual void SetRecognizingMode() OVERRIDE;
+  virtual void SetMessage(const string16& text) OVERRIDE;
+  virtual void SetInputVolume(float volume, float noise_volume) OVERRIDE;
+  virtual TabContents* tab_contents() OVERRIDE;
 
  protected:
   // Updates the platform specific UI layout for the current display mode.

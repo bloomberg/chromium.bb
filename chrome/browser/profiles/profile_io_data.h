@@ -230,7 +230,7 @@ class ProfileIOData {
     virtual ~ResourceContext();
 
    private:
-    virtual void EnsureInitialized() const;
+    virtual void EnsureInitialized() const OVERRIDE;
 
     const ProfileIOData* const io_data_;
   };

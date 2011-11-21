@@ -31,25 +31,26 @@ class OverlayUserPrefStore : public PersistentPrefStore,
   virtual bool IsSetInOverlay(const std::string& key) const;
 
   // Methods of PrefStore.
-  virtual void AddObserver(PrefStore::Observer* observer);
-  virtual void RemoveObserver(PrefStore::Observer* observer);
-  virtual bool IsInitializationComplete() const;
+  virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(PrefStore::Observer* observer) OVERRIDE;
+  virtual bool IsInitializationComplete() const OVERRIDE;
   virtual ReadResult GetValue(const std::string& key,
-                              const base::Value** result) const;
+                              const base::Value** result) const OVERRIDE;
 
   // Methods of PersistentPrefStore.
   virtual ReadResult GetMutableValue(const std::string& key,
-                                     base::Value** result);
-  virtual void SetValue(const std::string& key, base::Value* value);
-  virtual void SetValueSilently(const std::string& key, base::Value* value);
-  virtual void RemoveValue(const std::string& key);
-  virtual bool ReadOnly() const;
-  virtual PrefReadError ReadPrefs();
-  virtual void ReadPrefsAsync(ReadErrorDelegate* delegate);
-  virtual bool WritePrefs();
-  virtual void ScheduleWritePrefs();
-  virtual void CommitPendingWrite();
-  virtual void ReportValueChanged(const std::string& key);
+                                     base::Value** result) OVERRIDE;
+  virtual void SetValue(const std::string& key, base::Value* value) OVERRIDE;
+  virtual void SetValueSilently(const std::string& key,
+                                base::Value* value) OVERRIDE;
+  virtual void RemoveValue(const std::string& key) OVERRIDE;
+  virtual bool ReadOnly() const OVERRIDE;
+  virtual PrefReadError ReadPrefs() OVERRIDE;
+  virtual void ReadPrefsAsync(ReadErrorDelegate* delegate) OVERRIDE;
+  virtual bool WritePrefs() OVERRIDE;
+  virtual void ScheduleWritePrefs() OVERRIDE;
+  virtual void CommitPendingWrite() OVERRIDE;
+  virtual void ReportValueChanged(const std::string& key) OVERRIDE;
 
  protected:
   void RegisterOverlayProperty(const std::string& key);
@@ -62,8 +63,8 @@ class OverlayUserPrefStore : public PersistentPrefStore,
   typedef std::map<std::string, std::string> NamesMap;
 
   // Methods of PrefStore::Observer.
-  virtual void OnPrefValueChanged(const std::string& key);
-  virtual void OnInitializationCompleted(bool succeeded);
+  virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
+  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
 
   const std::string& GetOverlayKey(const std::string& underlay_key) const;
   const std::string& GetUnderlayKey(const std::string& overlay_key) const;

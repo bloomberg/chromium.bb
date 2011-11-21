@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 
 class Profile;
@@ -55,15 +56,15 @@ class UIThreadSearchTermsData : public SearchTermsData {
   void set_profile(Profile* profile) { profile_ = profile; }
 
   // Implementation of SearchTermsData.
-  virtual std::string GoogleBaseURLValue() const;
-  virtual std::string GetApplicationLocale() const;
+  virtual std::string GoogleBaseURLValue() const OVERRIDE;
+  virtual std::string GetApplicationLocale() const OVERRIDE;
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-  virtual string16 GetRlzParameterValue() const;
+  virtual string16 GetRlzParameterValue() const OVERRIDE;
 #endif
 
   // This returns the empty string unless set_profile() has been called with a
   // non-NULL Profile.
-  virtual std::string InstantFieldTrialUrlParam() const;
+  virtual std::string InstantFieldTrialUrlParam() const OVERRIDE;
 
   // Used by tests to set the value for the Google base url. This takes
   // ownership of the given std::string.

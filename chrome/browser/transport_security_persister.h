@@ -53,10 +53,10 @@ class TransportSecurityPersister
   virtual ~TransportSecurityPersister();
 
   // Called by the TransportSecurityState when it changes its state.
-  virtual void StateIsDirty(net::TransportSecurityState*);
+  virtual void StateIsDirty(net::TransportSecurityState*) OVERRIDE;
 
   // ImportantFileWriter::DataSerializer:
-  virtual bool SerializeData(std::string* data);
+  virtual bool SerializeData(std::string* data) OVERRIDE;
 
  private:
   class Loader;

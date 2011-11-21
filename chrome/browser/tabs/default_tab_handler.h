@@ -24,59 +24,62 @@ class DefaultTabHandler : public TabHandler,
   virtual ~DefaultTabHandler();
 
   // Overridden from TabHandler:
-  virtual TabStripModel* GetTabStripModel() const;
+  virtual TabStripModel* GetTabStripModel() const OVERRIDE;
 
   // Overridden from TabStripModelDelegate:
-  virtual TabContentsWrapper* AddBlankTab(bool foreground);
-  virtual TabContentsWrapper* AddBlankTabAt(int index, bool foreground);
+  virtual TabContentsWrapper* AddBlankTab(bool foreground) OVERRIDE;
+  virtual TabContentsWrapper* AddBlankTabAt(int index,
+                                            bool foreground) OVERRIDE;
   virtual Browser* CreateNewStripWithContents(
       TabContentsWrapper* detached_contents,
       const gfx::Rect& window_bounds,
       const DockInfo& dock_info,
-      bool maximize);
-  virtual int GetDragActions() const;
+      bool maximize) OVERRIDE;
+  virtual int GetDragActions() const OVERRIDE;
   virtual TabContentsWrapper* CreateTabContentsForURL(
       const GURL& url,
       const GURL& referrer,
       Profile* profile,
       content::PageTransition transition,
       bool defer_load,
-      SiteInstance* instance) const;
-  virtual bool CanDuplicateContentsAt(int index);
-  virtual void DuplicateContentsAt(int index);
-  virtual void CloseFrameAfterDragSession();
-  virtual void CreateHistoricalTab(TabContentsWrapper* contents);
-  virtual bool RunUnloadListenerBeforeClosing(TabContentsWrapper* contents);
-  virtual bool CanCloseContents(std::vector<int>* indices);
-  virtual bool CanBookmarkAllTabs() const;
-  virtual void BookmarkAllTabs();
-  virtual bool CanCloseTab() const;
-  virtual bool CanRestoreTab();
-  virtual void RestoreTab();
-  virtual bool LargeIconsPermitted() const;
+      SiteInstance* instance) const OVERRIDE;
+  virtual bool CanDuplicateContentsAt(int index) OVERRIDE;
+  virtual void DuplicateContentsAt(int index) OVERRIDE;
+  virtual void CloseFrameAfterDragSession() OVERRIDE;
+  virtual void CreateHistoricalTab(TabContentsWrapper* contents) OVERRIDE;
+  virtual bool RunUnloadListenerBeforeClosing(
+      TabContentsWrapper* contents) OVERRIDE;
+  virtual bool CanCloseContents(std::vector<int>* indices) OVERRIDE;
+  virtual bool CanBookmarkAllTabs() const OVERRIDE;
+  virtual void BookmarkAllTabs() OVERRIDE;
+  virtual bool CanCloseTab() const OVERRIDE;
+  virtual bool CanRestoreTab() OVERRIDE;
+  virtual void RestoreTab() OVERRIDE;
+  virtual bool LargeIconsPermitted() const OVERRIDE;
 
   // Overridden from TabStripModelObserver:
   virtual void TabInsertedAt(TabContentsWrapper* contents,
                              int index,
-                             bool foreground);
+                             bool foreground) OVERRIDE;
   virtual void TabClosingAt(TabStripModel* tab_strip_model,
                             TabContentsWrapper* contents,
-                            int index);
-  virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
-  virtual void TabDeactivated(TabContentsWrapper* contents);
+                            int index) OVERRIDE;
+  virtual void TabDetachedAt(TabContentsWrapper* contents, int index) OVERRIDE;
+  virtual void TabDeactivated(TabContentsWrapper* contents) OVERRIDE;
   virtual void ActiveTabChanged(TabContentsWrapper* old_contents,
                                 TabContentsWrapper* new_contents,
                                 int index,
-                                bool user_gesture);
+                                bool user_gesture) OVERRIDE;
   virtual void TabMoved(TabContentsWrapper* contents,
                         int from_index,
-                        int to_index);
+                        int to_index) OVERRIDE;
   virtual void TabReplacedAt(TabStripModel* tab_strip_model,
                              TabContentsWrapper* old_contents,
                              TabContentsWrapper* new_contents,
-                             int index);
-  virtual void TabPinnedStateChanged(TabContentsWrapper* contents, int index);
-  virtual void TabStripEmpty();
+                             int index) OVERRIDE;
+  virtual void TabPinnedStateChanged(TabContentsWrapper* contents,
+                                     int index) OVERRIDE;
+  virtual void TabStripEmpty() OVERRIDE;
 
  private:
   TabHandlerDelegate* delegate_;

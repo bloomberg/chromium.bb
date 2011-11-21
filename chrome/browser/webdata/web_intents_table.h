@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/webdata/web_database_table.h"
 #include "webkit/glue/web_intent_service_data.h"
@@ -33,8 +34,8 @@ class WebIntentsTable : public WebDatabaseTable {
   virtual ~WebIntentsTable();
 
   // WebDatabaseTable implementation.
-  virtual bool Init();
-  virtual bool IsSyncable();
+  virtual bool Init() OVERRIDE;
+  virtual bool IsSyncable() OVERRIDE;
 
   // Adds a web intent service to the WebIntents table.
   // If |service| already exists, replaces it.

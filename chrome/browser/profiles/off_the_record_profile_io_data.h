@@ -93,16 +93,17 @@ class OffTheRecordProfileIOData : public ProfileIOData {
   OffTheRecordProfileIOData();
   virtual ~OffTheRecordProfileIOData();
 
-  virtual void LazyInitializeInternal(ProfileParams* profile_params) const;
+  virtual void LazyInitializeInternal(
+      ProfileParams* profile_params) const OVERRIDE;
   virtual scoped_refptr<ChromeURLRequestContext> InitializeAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
-      const std::string& app_id) const;
+      const std::string& app_id) const OVERRIDE;
   virtual scoped_refptr<ChromeURLRequestContext>
-      AcquireMediaRequestContext() const;
+      AcquireMediaRequestContext() const OVERRIDE;
   virtual scoped_refptr<ChromeURLRequestContext>
       AcquireIsolatedAppRequestContext(
           scoped_refptr<ChromeURLRequestContext> main_context,
-          const std::string& app_id) const;
+          const std::string& app_id) const OVERRIDE;
 
   mutable scoped_ptr<net::HttpServerPropertiesImpl> http_server_properties_;
 

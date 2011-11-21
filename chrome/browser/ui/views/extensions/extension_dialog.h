@@ -67,7 +67,7 @@ class ExtensionDialog : public views::WidgetDelegate,
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Use Show() to create instances.

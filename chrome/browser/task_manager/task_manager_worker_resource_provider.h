@@ -35,9 +35,9 @@ class TaskManagerWorkerResourceProvider
   // TaskManager::ResourceProvider implementation.
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
-                                             int routing_id);
-  virtual void StartUpdating();
-  virtual void StopUpdating();
+                                             int routing_id) OVERRIDE;
+  virtual void StartUpdating() OVERRIDE;
+  virtual void StopUpdating() OVERRIDE;
 
   // WorkerServiceObserver implementation.
   virtual void WorkerCreated(
@@ -51,7 +51,7 @@ class TaskManagerWorkerResourceProvider
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void NotifyWorkerCreated(WorkerResourceHolder* resource_holder);
   void NotifyWorkerDestroyed(int process_id, int routing_id);

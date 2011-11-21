@@ -29,7 +29,7 @@ class CloudPrintSetupHandler
   virtual ~CloudPrintSetupHandler();
 
   // CloudPrintSetupFlow::Delegate implementation.
-  virtual void OnDialogClosed();
+  virtual void OnDialogClosed() OVERRIDE;
 
  private:
   Delegate* handler_;

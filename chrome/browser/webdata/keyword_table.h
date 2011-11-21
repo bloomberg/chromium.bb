@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "chrome/browser/webdata/web_database_table.h"
@@ -54,8 +55,8 @@ class KeywordTable : public WebDatabaseTable {
   KeywordTable(sql::Connection* db, sql::MetaTable* meta_table)
       : WebDatabaseTable(db, meta_table) {}
   virtual ~KeywordTable();
-  virtual bool Init();
-  virtual bool IsSyncable();
+  virtual bool Init() OVERRIDE;
+  virtual bool IsSyncable() OVERRIDE;
 
   // Adds a new keyword, updating the id field on success.
   // Returns true if successful.

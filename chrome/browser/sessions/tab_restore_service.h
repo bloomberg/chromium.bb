@@ -171,7 +171,7 @@ class TabRestoreService : public BaseSessionService {
                                 std::vector<Entry*>* entries);
 
  protected:
-  virtual void Save();
+  virtual void Save() OVERRIDE;
 
  private:
   // Used to indicate what has loaded.

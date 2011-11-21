@@ -23,7 +23,7 @@ class SearchProviderInstallStateMessageFilter : public BrowserMessageFilter {
 
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
 
  private:
   // Figures out the install state for the search provider.

@@ -46,7 +46,7 @@ class PrefSetObserver : public content::NotificationObserver {
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   typedef std::set<std::string> PrefSet;
   PrefSet prefs_;

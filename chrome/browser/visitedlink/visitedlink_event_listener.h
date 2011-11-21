@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,9 +31,9 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
   explicit VisitedLinkEventListener(Profile* profile);
   virtual ~VisitedLinkEventListener();
 
-  virtual void NewTable(base::SharedMemory* table_memory);
-  virtual void Add(VisitedLinkMaster::Fingerprint fingerprint);
-  virtual void Reset();
+  virtual void NewTable(base::SharedMemory* table_memory) OVERRIDE;
+  virtual void Add(VisitedLinkMaster::Fingerprint fingerprint) OVERRIDE;
+  virtual void Reset() OVERRIDE;
 
  private:
   void CommitVisitedLinks();
@@ -41,7 +41,7 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   base::OneShotTimer<VisitedLinkEventListener> coalesce_timer_;
   VisitedLinkCommon::Fingerprints pending_visited_links_;

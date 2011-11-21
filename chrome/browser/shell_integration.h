@@ -242,10 +242,10 @@ class ShellIntegration {
     virtual ~DefaultBrowserWorker() {}
 
     // Check if Chrome is the default browser.
-    virtual DefaultWebClientState CheckIsDefault();
+    virtual DefaultWebClientState CheckIsDefault() OVERRIDE;
 
     // Set Chrome as the default browser.
-    virtual void SetAsDefault();
+    virtual void SetAsDefault() OVERRIDE;
 
     DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
   };
@@ -266,10 +266,10 @@ class ShellIntegration {
 
    private:
     // Check is Chrome is the default handler for this protocol.
-    virtual DefaultWebClientState CheckIsDefault();
+    virtual DefaultWebClientState CheckIsDefault() OVERRIDE;
 
     // Set Chrome as the default handler for this protocol.
-    virtual void SetAsDefault();
+    virtual void SetAsDefault() OVERRIDE;
 
     std::string protocol_;
 

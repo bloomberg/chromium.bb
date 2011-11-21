@@ -77,12 +77,12 @@ class ServiceProcessControl : public IPC::Channel::Sender,
   virtual void OnChannelError() OVERRIDE;
 
   // IPC::Channel::Sender implementation
-  virtual bool Send(IPC::Message* message);
+  virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Message handlers
   void OnCloudPrintProxyInfo(

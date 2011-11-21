@@ -39,11 +39,11 @@ class SSLBlockingPage : public ChromeInterstitialPage {
 
  protected:
   // ChromeInterstitialPage implementation.
-  virtual std::string GetHTMLContents();
-  virtual void CommandReceived(const std::string& command);
-  virtual void UpdateEntry(NavigationEntry* entry);
-  virtual void Proceed();
-  virtual void DontProceed();
+  virtual std::string GetHTMLContents() OVERRIDE;
+  virtual void CommandReceived(const std::string& command) OVERRIDE;
+  virtual void UpdateEntry(NavigationEntry* entry) OVERRIDE;
+  virtual void Proceed() OVERRIDE;
+  virtual void DontProceed() OVERRIDE;
 
  private:
   void NotifyDenyCertificate();

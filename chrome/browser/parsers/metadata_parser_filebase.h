@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,10 +24,10 @@ class FileMetadataParser : public MetadataParser {
   virtual ~FileMetadataParser();
 
   // Implementation of MetadataParser
-  virtual bool Parse();
-  virtual bool GetProperty(const std::string& key, std::string* value);
+  virtual bool Parse() OVERRIDE;
+  virtual bool GetProperty(const std::string& key, std::string* value) OVERRIDE;
 
-  virtual MetadataPropertyIterator* GetPropertyIterator();
+  virtual MetadataPropertyIterator* GetPropertyIterator() OVERRIDE;
 
  protected:
   PropertyMap properties_;
@@ -44,9 +44,9 @@ class FileMetadataPropertyIterator : public MetadataPropertyIterator {
   virtual ~FileMetadataPropertyIterator();
 
   // Implementation of MetadataPropertyIterator
-  virtual bool GetNext(std::string* key, std::string* value);
-  virtual int Length();
-  virtual bool IsEnd();
+  virtual bool GetNext(std::string* key, std::string* value) OVERRIDE;
+  virtual int Length() OVERRIDE;
+  virtual bool IsEnd() OVERRIDE;
 
  private:
   PropertyMap& properties_;

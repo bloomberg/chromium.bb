@@ -34,7 +34,7 @@ class AsynchronousPolicyTestBase : public testing::Test {
   virtual ~AsynchronousPolicyTestBase();
 
   // testing::Test:
-  virtual void TearDown();
+  virtual void TearDown() OVERRIDE;
 
  protected:
   // Create an actual IO loop (needed by FilePathWatcher).

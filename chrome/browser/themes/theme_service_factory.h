@@ -37,8 +37,9 @@ class ThemeServiceFactory : public ProfileKeyedServiceFactory {
   virtual ~ThemeServiceFactory();
 
   // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const;
-  virtual bool ServiceRedirectedInIncognito();
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
+      Profile* profile) const OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeServiceFactory);
 };

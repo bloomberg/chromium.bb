@@ -121,16 +121,17 @@ class ProfileImplIOData : public ProfileIOData {
   ProfileImplIOData();
   virtual ~ProfileImplIOData();
 
-  virtual void LazyInitializeInternal(ProfileParams* profile_params) const;
+  virtual void LazyInitializeInternal(
+      ProfileParams* profile_params) const OVERRIDE;
   virtual scoped_refptr<ChromeURLRequestContext> InitializeAppRequestContext(
       scoped_refptr<ChromeURLRequestContext> main_context,
-      const std::string& app_id) const;
+      const std::string& app_id) const OVERRIDE;
   virtual scoped_refptr<ChromeURLRequestContext>
-      AcquireMediaRequestContext() const;
+      AcquireMediaRequestContext() const OVERRIDE;
   virtual scoped_refptr<ChromeURLRequestContext>
       AcquireIsolatedAppRequestContext(
           scoped_refptr<ChromeURLRequestContext> main_context,
-          const std::string& app_id) const;
+          const std::string& app_id) const OVERRIDE;
 
   // Lazy initialization params.
   mutable scoped_ptr<LazyParams> lazy_params_;

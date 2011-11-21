@@ -80,13 +80,14 @@ class SpeechInputBubbleController
   void CloseBubble(int caller_id);
 
   // SpeechInputBubble::Delegate methods.
-  virtual void InfoBubbleButtonClicked(SpeechInputBubble::Button button);
-  virtual void InfoBubbleFocusChanged();
+  virtual void InfoBubbleButtonClicked(
+      SpeechInputBubble::Button button) OVERRIDE;
+  virtual void InfoBubbleFocusChanged() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // The various calls received by this object and handled in the UI thread.

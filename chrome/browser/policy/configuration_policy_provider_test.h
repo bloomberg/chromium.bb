@@ -90,8 +90,8 @@ class ConfigurationPolicyProviderTest
   ConfigurationPolicyProviderTest();
   virtual ~ConfigurationPolicyProviderTest();
 
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   // Installs a valid policy and checks whether the provider returns the
   // |expected_value|.

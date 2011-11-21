@@ -56,7 +56,7 @@ class BackgroundContents : public TabContentsDelegate,
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
   // Exposed for testing.

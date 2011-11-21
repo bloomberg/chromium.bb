@@ -764,11 +764,11 @@ class Browser : public TabHandlerDelegate,
   virtual TabContents* OpenURL(const OpenURLParams& params) OVERRIDE;
 
   // Overridden from CommandUpdater::CommandUpdaterDelegate:
-  virtual void ExecuteCommand(int id);
+  virtual void ExecuteCommand(int id) OVERRIDE;
 
   // Overridden from TabRestoreServiceObserver:
-  virtual void TabRestoreServiceChanged(TabRestoreService* service);
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
 
   // Centralized method for creating a TabContents, configuring and installing
   // all its supporting objects and observers.
@@ -780,8 +780,8 @@ class Browser : public TabHandlerDelegate,
                          SessionStorageNamespace* session_storage_namespace);
 
   // Overridden from TabHandlerDelegate:
-  virtual Profile* GetProfile() const;
-  virtual Browser* AsBrowser();
+  virtual Profile* GetProfile() const OVERRIDE;
+  virtual Browser* AsBrowser() OVERRIDE;
 
   // Overridden from TabStripModelDelegate:
   virtual TabContentsWrapper* AddBlankTab(bool foreground);
@@ -938,7 +938,7 @@ class Browser : public TabHandlerDelegate,
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos) OVERRIDE;
   virtual void DetachContents(TabContents* source) OVERRIDE;
   virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
-  virtual bool CanReloadContents(TabContents* source) const;
+  virtual bool CanReloadContents(TabContents* source) const OVERRIDE;
   virtual void UpdateTargetURL(TabContents* source, int32 page_id,
                                const GURL& url) OVERRIDE;
   virtual void ContentsMouseEvent(
@@ -1053,15 +1053,17 @@ class Browser : public TabHandlerDelegate,
                                  bool starred) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
-  virtual void FileSelected(const FilePath& path, int index, void* params);
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from ProfileSyncServiceObserver:
-  virtual void OnStateChanged();
+  virtual void OnStateChanged() OVERRIDE;
 
   // Overriden from InstantDelegate:
   virtual void ShowInstant(TabContentsWrapper* preview_contents) OVERRIDE;

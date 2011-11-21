@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_TABS_PINNED_TAB_SERVICE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -27,7 +28,7 @@ class PinnedTabService : public content::NotificationObserver,
   // content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   Profile* profile_;
 

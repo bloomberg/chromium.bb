@@ -140,24 +140,25 @@ class ThemeService : public base::NonThreadSafe,
   } Tiling;
 
   // ui::ThemeProvider implementation.
-  virtual void Init(Profile* profile);
-  virtual SkBitmap* GetBitmapNamed(int id) const;
-  virtual SkColor GetColor(int id) const;
-  virtual bool GetDisplayProperty(int id, int* result) const;
-  virtual bool ShouldUseNativeFrame() const;
-  virtual bool HasCustomImage(int id) const;
-  virtual RefCountedMemory* GetRawData(int id) const;
+  virtual void Init(Profile* profile) OVERRIDE;
+  virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;
+  virtual SkColor GetColor(int id) const OVERRIDE;
+  virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual bool HasCustomImage(int id) const OVERRIDE;
+  virtual RefCountedMemory* GetRawData(int id) const OVERRIDE;
 #if defined(TOOLKIT_USES_GTK)
   // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
   // shared instances owned by the theme provider and should not be freed.
-  virtual GdkPixbuf* GetPixbufNamed(int id) const;
-  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const;
+  virtual GdkPixbuf* GetPixbufNamed(int id) const OVERRIDE;
+  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const OVERRIDE;
 #elif defined(OS_MACOSX)
-  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const;
-  virtual NSColor* GetNSImageColorNamed(int id, bool allow_default) const;
-  virtual NSColor* GetNSColor(int id, bool allow_default) const;
-  virtual NSColor* GetNSColorTint(int id, bool allow_default) const;
-  virtual NSGradient* GetNSGradient(int id) const;
+  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const OVERRIDE;
+  virtual NSColor* GetNSImageColorNamed(int id,
+                                        bool allow_default) const OVERRIDE;
+  virtual NSColor* GetNSColor(int id, bool allow_default) const OVERRIDE;
+  virtual NSColor* GetNSColorTint(int id, bool allow_default) const OVERRIDE;
+  virtual NSGradient* GetNSGradient(int id) const OVERRIDE;
 #endif
 
   // Set the current theme to the theme defined in |extension|.
@@ -251,7 +252,7 @@ class ThemeService : public base::NonThreadSafe,
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class ThemeServiceTest;

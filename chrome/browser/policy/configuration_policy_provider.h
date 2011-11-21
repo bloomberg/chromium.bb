@@ -100,8 +100,8 @@ class ConfigurationPolicyObserverRegistrar
             ConfigurationPolicyProvider::Observer* observer);
 
   // ConfigurationPolicyProvider::Observer implementation:
-  virtual void OnUpdatePolicy();
-  virtual void OnProviderGoingAway();
+  virtual void OnUpdatePolicy() OVERRIDE;
+  virtual void OnProviderGoingAway() OVERRIDE;
 
   ConfigurationPolicyProvider* provider() { return provider_; }
 

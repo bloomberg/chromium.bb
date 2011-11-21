@@ -40,7 +40,7 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
   void TearDown();
 
   // TemplateURLServiceObserver implemementation.
-  virtual void OnTemplateURLServiceChanged();
+  virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
   // Gets the observer count.
   int GetObserverCount();

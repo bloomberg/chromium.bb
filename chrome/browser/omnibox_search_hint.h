@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -28,7 +29,7 @@ class OmniboxSearchHint : public content::NotificationObserver {
   // content::NotificationObserver method:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Focus the location bar and displays a message instructing that search
   // queries can be typed directly in there.

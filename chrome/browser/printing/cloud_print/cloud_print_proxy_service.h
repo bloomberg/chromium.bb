@@ -53,7 +53,7 @@ class CloudPrintProxyService
   std::string proxy_id() const { return proxy_id_; }
 
   // CloudPrintSetupHandler::Delegate implementation.
-  virtual void OnCloudPrintSetupClosed();
+  virtual void OnCloudPrintSetupClosed() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

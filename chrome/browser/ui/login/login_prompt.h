@@ -40,7 +40,7 @@ class LoginHandler : public ResourceDispatcherHostLoginDelegate,
                               net::URLRequest* request);
 
   // ResourceDispatcherHostLoginDelegate implementation:
-  virtual void OnRequestCancelled();
+  virtual void OnRequestCancelled() OVERRIDE;
 
   // Initializes the underlying platform specific view.
   virtual void BuildViewForPasswordManager(PasswordManager* manager,
@@ -71,7 +71,7 @@ class LoginHandler : public ResourceDispatcherHostLoginDelegate,
   // if it was waiting for the same authentication.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Who/where/what asked for the authentication.
   const net::AuthChallengeInfo* auth_info() const { return auth_info_.get(); }
@@ -157,7 +157,7 @@ class LoginHandler : public ResourceDispatcherHostLoginDelegate,
 };
 
 // Details to provide the content::NotificationObserver.  Used by the automation
-//proxy for testing.
+// proxy for testing.
 class LoginNotificationDetails {
  public:
   explicit LoginNotificationDetails(LoginHandler* handler)

@@ -54,18 +54,18 @@ class TaskManagerRendererResource : public TaskManager::Resource {
   virtual void Inspect() const OVERRIDE;
 
   // RenderResources always provide the network usage.
-  virtual bool SupportNetworkUsage() const;
-  virtual void SetSupportNetworkUsage() { }
+  virtual bool SupportNetworkUsage() const OVERRIDE;
+  virtual void SetSupportNetworkUsage() OVERRIDE { }
 
-  virtual void Refresh();
+  virtual void Refresh() OVERRIDE;
 
   virtual void NotifyResourceTypeStats(
-      const WebKit::WebCache::ResourceTypeStats& stats);
+      const WebKit::WebCache::ResourceTypeStats& stats) OVERRIDE;
 
-  virtual void NotifyFPS(float fps);
+  virtual void NotifyFPS(float fps) OVERRIDE;
 
   virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
-                                 size_t v8_memory_used);
+                                 size_t v8_memory_used) OVERRIDE;
 
  private:
   base::ProcessHandle process_;
@@ -125,14 +125,14 @@ class TaskManagerTabContentsResourceProvider
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
-                                             int routing_id);
-  virtual void StartUpdating();
-  virtual void StopUpdating();
+                                             int routing_id) OVERRIDE;
+  virtual void StartUpdating() OVERRIDE;
+  virtual void StopUpdating() OVERRIDE;
 
   // content::NotificationObserver method:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   virtual ~TaskManagerTabContentsResourceProvider();
@@ -195,14 +195,14 @@ class TaskManagerBackgroundContentsResourceProvider
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
-                                             int routing_id);
-  virtual void StartUpdating();
-  virtual void StopUpdating();
+                                             int routing_id) OVERRIDE;
+  virtual void StartUpdating() OVERRIDE;
+  virtual void StopUpdating() OVERRIDE;
 
   // content::NotificationObserver method:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   virtual ~TaskManagerBackgroundContentsResourceProvider();
@@ -274,14 +274,14 @@ class TaskManagerChildProcessResourceProvider
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
-                                             int routing_id);
-  virtual void StartUpdating();
-  virtual void StopUpdating();
+                                             int routing_id) OVERRIDE;
+  virtual void StartUpdating() OVERRIDE;
+  virtual void StopUpdating() OVERRIDE;
 
   // content::NotificationObserver method:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Retrieves the current ChildProcessInfo (performed in the IO thread).
   virtual void RetrieveChildProcessInfo();
@@ -341,7 +341,7 @@ class TaskManagerExtensionProcessResource : public TaskManager::Resource {
   int process_id() const { return pid_; }
 
   // Returns true if the associated extension has a background page.
-  virtual bool IsBackground() const;
+  virtual bool IsBackground() const OVERRIDE;
 
  private:
   // The icon painted for the extension process.
@@ -366,14 +366,14 @@ class TaskManagerExtensionProcessResourceProvider
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
-                                             int routing_id);
-  virtual void StartUpdating();
-  virtual void StopUpdating();
+                                             int routing_id) OVERRIDE;
+  virtual void StartUpdating() OVERRIDE;
+  virtual void StopUpdating() OVERRIDE;
 
   // content::NotificationObserver method:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   virtual ~TaskManagerExtensionProcessResourceProvider();
@@ -439,14 +439,14 @@ class TaskManagerNotificationResourceProvider
   // TaskManager::ResourceProvider interface
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
-                                             int routing_id);
-  virtual void StartUpdating();
-  virtual void StopUpdating();
+                                             int routing_id) OVERRIDE;
+  virtual void StartUpdating() OVERRIDE;
+  virtual void StopUpdating() OVERRIDE;
 
   // content::NotificationObserver interface
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   explicit TaskManagerNotificationResourceProvider(TaskManager* task_manager);
@@ -507,9 +507,9 @@ class TaskManagerBrowserProcessResourceProvider
 
   virtual TaskManager::Resource* GetResource(int origin_pid,
                                              int render_process_host_id,
-                                             int routing_id);
-  virtual void StartUpdating();
-  virtual void StopUpdating();
+                                             int routing_id) OVERRIDE;
+  virtual void StartUpdating() OVERRIDE;
+  virtual void StopUpdating() OVERRIDE;
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().

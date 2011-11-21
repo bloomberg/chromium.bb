@@ -124,8 +124,8 @@ class ThumbnailGenerator : public content::NotificationObserver,
                                     const GURL& url);
 
   // TabContentsObserver overrides.
-  virtual void DidStartLoading();
-  virtual void StopNavigation();
+  virtual void DidStartLoading() OVERRIDE;
+  virtual void StopNavigation() OVERRIDE;
 
  private:
   virtual void WidgetDidReceivePaintAtSizeAck(
@@ -136,7 +136,7 @@ class ThumbnailGenerator : public content::NotificationObserver,
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Indicates that the given widget has changed is visibility.
   void WidgetHidden(RenderWidgetHost* widget);

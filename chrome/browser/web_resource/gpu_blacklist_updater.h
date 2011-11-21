@@ -21,7 +21,7 @@ class GpuBlacklistUpdater : public WebResourceService {
  private:
   virtual ~GpuBlacklistUpdater();
 
-  virtual void Unpack(const base::DictionaryValue& parsed_json);
+  virtual void Unpack(const base::DictionaryValue& parsed_json) OVERRIDE;
 
   // Initialize GpuBlacklistUpdater and schedule an auto update.
   static void SetupOnUIThread();

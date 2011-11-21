@@ -99,10 +99,10 @@ class SidebarManager : public content::NotificationObserver,
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from SidebarContainer::Delegate.
-  virtual void UpdateSidebar(SidebarContainer* host);
+  virtual void UpdateSidebar(SidebarContainer* host) OVERRIDE;
 
   // Hides all sidebars registered for |tab|.
   void HideAllSidebars(TabContents* tab);

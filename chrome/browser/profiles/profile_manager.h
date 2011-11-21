@@ -118,12 +118,12 @@ class ProfileManager : public base::NonThreadSafe,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // BrowserList::Observer implementation.
-  virtual void OnBrowserAdded(const Browser* browser);
-  virtual void OnBrowserRemoved(const Browser* browser);
-  virtual void OnBrowserSetLastActive(const Browser* browser);
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserSetLastActive(const Browser* browser) OVERRIDE;
 
   // Indicate that an import process will run for the next created Profile.
   void SetWillImport();
@@ -156,7 +156,7 @@ class ProfileManager : public base::NonThreadSafe,
       BrowserInit::IsFirstRun is_first_run);
 
   // Profile::Delegate implementation:
-  virtual void OnProfileCreated(Profile* profile, bool success);
+  virtual void OnProfileCreated(Profile* profile, bool success) OVERRIDE;
 
   // Add or remove a profile launcher to/from the list of launchers waiting for
   // new profiles to be created from the multi-profile menu.

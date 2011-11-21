@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_REPOST_FORM_WARNING_CONTROLLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -33,7 +34,7 @@ class RepostFormWarningController : public content::NotificationObserver {
   // Watch for a new load or a closed tab and dismiss the dialog if they occur.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Close the warning dialog.
   void CloseDialog();

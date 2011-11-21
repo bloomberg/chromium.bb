@@ -127,7 +127,7 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
                             base::Time receive_time,
                             const SBFullHash& full_hash) OVERRIDE;
   virtual bool WriteSubPrefix(int32 chunk_id,
-                              int32 add_chunk_id, SBPrefix prefix);
+                              int32 add_chunk_id, SBPrefix prefix) OVERRIDE;
   virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
                             const SBFullHash& full_hash) OVERRIDE;
   virtual bool FinishChunk() OVERRIDE;

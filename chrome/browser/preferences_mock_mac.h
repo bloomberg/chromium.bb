@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,12 +15,13 @@ class MockPreferences : public MacPreferences {
   MockPreferences();
   virtual ~MockPreferences();
 
-  virtual Boolean AppSynchronize(CFStringRef applicationID);
+  virtual Boolean AppSynchronize(CFStringRef applicationID) OVERRIDE;
 
   virtual CFPropertyListRef CopyAppValue(CFStringRef key,
-                                         CFStringRef applicationID);
+                                         CFStringRef applicationID) OVERRIDE;
 
-  virtual Boolean AppValueIsForced(CFStringRef key, CFStringRef applicationID);
+  virtual Boolean AppValueIsForced(CFStringRef key,
+                                   CFStringRef applicationID) OVERRIDE;
 
   // Adds a preference item with the given info to the test set.
   void AddTestItem(CFStringRef key, CFPropertyListRef value, bool is_forced);

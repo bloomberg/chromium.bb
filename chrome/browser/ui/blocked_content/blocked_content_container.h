@@ -65,25 +65,26 @@ class BlockedContentContainer : public BlockedContentTabHelperDelegate,
       WindowOpenDisposition disposition,
       content::PageTransition transition) OVERRIDE;
   virtual TabContents* OpenURLFromTab(TabContents* source,
-                                      const OpenURLParams& params);
+                                      const OpenURLParams& params) OVERRIDE;
 
   // Forwards AddNewContents to our |owner_|.
   virtual void AddNewContents(TabContents* source,
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_position,
-                              bool user_gesture);
+                              bool user_gesture) OVERRIDE;
 
   // Removes |source| from our internal list of blocked contents.
-  virtual void CloseContents(TabContents* source);
+  virtual void CloseContents(TabContents* source) OVERRIDE;
 
   // Changes the opening rectangle associated with |source|.
-  virtual void MoveContents(TabContents* source, const gfx::Rect& new_bounds);
+  virtual void MoveContents(TabContents* source,
+                            const gfx::Rect& new_bounds) OVERRIDE;
 
   virtual bool IsPopupOrPanel(const TabContents* source) const OVERRIDE;
 
   // Always returns true.
-  virtual bool ShouldSuppressDialogs();
+  virtual bool ShouldSuppressDialogs() OVERRIDE;
 
   // Maximum number of blocked contents we allow. No page should really need
   // this many anyway. If reached it typically means there is a compromised

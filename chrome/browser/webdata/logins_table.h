@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/webdata/web_database_table.h"
 
 namespace base {
@@ -50,8 +51,8 @@ class LoginsTable : public WebDatabaseTable {
   LoginsTable(sql::Connection* db, sql::MetaTable* meta_table)
       : WebDatabaseTable(db, meta_table) {}
   virtual ~LoginsTable() {}
-  virtual bool Init();
-  virtual bool IsSyncable();
+  virtual bool Init() OVERRIDE;
+  virtual bool IsSyncable() OVERRIDE;
 
   // Adds |form| to the list of remembered password forms.
   bool AddLogin(const webkit_glue::PasswordForm& form);

@@ -153,8 +153,8 @@ class PrefValueStore {
 
    private:
     // PrefStore::Observer implementation.
-    virtual void OnPrefValueChanged(const std::string& key);
-    virtual void OnInitializationCompleted(bool succeeded);
+    virtual void OnPrefValueChanged(const std::string& key) OVERRIDE;
+    virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
 
     // PrefValueStore this keeper is part of.
     PrefValueStore* pref_value_store_;

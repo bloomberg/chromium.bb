@@ -32,8 +32,8 @@ class PrefNotifierImpl : public PrefNotifier,
   void RemovePrefObserver(const char* path, content::NotificationObserver* obs);
 
   // PrefNotifier overrides.
-  virtual void OnPreferenceChanged(const std::string& pref_name);
-  virtual void OnInitializationCompleted(bool succeeded);
+  virtual void OnPreferenceChanged(const std::string& pref_name) OVERRIDE;
+  virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
 
  protected:
   // A map from pref names to a list of observers. Observers get fired in the
