@@ -15,6 +15,7 @@
 #include "base/memory/singleton.h"
 #include "base/time.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_webrequest_api_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/url_pattern_set.h"
 #include "ipc/ipc_message.h"
@@ -30,6 +31,7 @@ class GURL;
 namespace base {
 class DictionaryValue;
 class ListValue;
+class StringValue;
 }
 
 namespace content {
@@ -110,8 +112,9 @@ class ExtensionWebRequestEventRouter {
     bool cancel;
     GURL new_url;
     scoped_ptr<net::HttpRequestHeaders> request_headers;
-    // Contains all header lines after the status line, lines are \n separated.
-    std::string response_headers_string;
+    scoped_ptr<extension_webrequest_api_helpers::ResponseHeaders>
+        response_headers;
+
     scoped_ptr<net::AuthCredentials> auth_credentials;
 
     EventResponse(const std::string& extension_id,

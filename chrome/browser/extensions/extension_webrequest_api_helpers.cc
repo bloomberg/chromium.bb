@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_webrequest_api_helpers.h"
 
+#include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_webrequest_api.h"
 #include "net/http/http_util.h"
@@ -165,21 +166,54 @@ EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
-    const std::string& status_line,
-    const std::string& response_headers_string) {
+    net::HttpResponseHeaders* old_response_headers,
+    ResponseHeaders* new_response_headers) {
   EventResponseDelta* result =
       new EventResponseDelta(extension_id, extension_install_time);
   result->cancel = cancel;
 
-  if (!response_headers_string.empty()) {
-    std::string new_headers_string =
-        status_line + "\n" + response_headers_string;
+  if (!new_response_headers)
+    return result;
 
-    result->new_response_headers =
-        new net::HttpResponseHeaders(
-            net::HttpUtil::AssembleRawHeaders(new_headers_string.c_str(),
-                                              new_headers_string.length()));
+  // Find deleted headers (header keys are treated case insensitively).
+  {
+    void* iter = NULL;
+    std::string name;
+    std::string value;
+    while (old_response_headers->EnumerateHeaderLines(&iter, &name, &value)) {
+      std::string name_lowercase(name);
+      StringToLowerASCII(&name_lowercase);
+
+      bool header_found = false;
+      for (ResponseHeaders::const_iterator i = new_response_headers->begin();
+           i != new_response_headers->end(); ++i) {
+        if (LowerCaseEqualsASCII(i->first, name_lowercase.c_str()) &&
+            value == i->second) {
+          header_found = true;
+          break;
+        }
+      }
+      if (!header_found)
+        result->deleted_response_headers.push_back(ResponseHeader(name, value));
+    }
   }
+
+  // Find added headers (header keys are treated case insensitively).
+  {
+    for (ResponseHeaders::const_iterator i = new_response_headers->begin();
+         i != new_response_headers->end(); ++i) {
+      void* iter = NULL;
+      std::string value;
+      bool header_found = false;
+      while (old_response_headers->EnumerateHeader(&iter, i->first, &value) &&
+             !header_found) {
+        header_found = (value == i->second);
+      }
+      if (!header_found)
+        result->added_response_headers.push_back(*i);
+    }
+  }
+
   return result;
 }
 
@@ -346,33 +380,83 @@ void MergeOnBeforeSendHeadersResponses(
   }
 }
 
+// Converts the key of the (key, value) pair to lower case.
+static ResponseHeader ToLowerCase(const ResponseHeader& header) {
+  std::string lower_key(header.first);
+  StringToLowerASCII(&lower_key);
+  return ResponseHeader(lower_key, header.second);
+}
+
 void MergeOnHeadersReceivedResponses(
     const EventResponseDeltas& deltas,
+    const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     std::set<std::string>* conflicting_extensions,
     EventLogEntries* event_log_entries) {
   EventResponseDeltas::const_iterator delta;
 
-  // Whether any extension has overridden the response headers, yet.
-  bool headers_overridden = false;
+  // Here we collect which headers we have removed or added so far due to
+  // extensions of higher precedence. Header keys are always stored as
+  // lower case.
+  std::set<ResponseHeader> removed_headers;
+  std::set<ResponseHeader> added_headers;
 
   // We assume here that the deltas are sorted in decreasing extension
   // precedence (i.e. decreasing extension installation time).
   for (delta = deltas.begin(); delta != deltas.end(); ++delta) {
-    if (!(*delta)->new_response_headers.get())
+    if ((*delta)->added_response_headers.empty() &&
+        (*delta)->deleted_response_headers.empty()) {
       continue;
+    }
 
-    scoped_refptr<NetLogModificationParameter> log(
-        new NetLogModificationParameter((*delta)->extension_id));
+    // Only create a copy if we really want to modify the response headers.
+    if (override_response_headers->get() == NULL) {
+      *override_response_headers = new net::HttpResponseHeaders(
+          original_response_headers->raw_headers());
+    }
 
-    // Conflict if a second extension returned new response headers;
-    bool extension_conflicts = headers_overridden;
+    // We consider modifications as pairs of (delete, add) operations.
+    // If a header is deleted twice by different extensions we assume that the
+    // intention was to modify it to different values and consider this a
+    // conflict. As deltas is sorted by decreasing extension installation order,
+    // this takes care of precedence.
+    bool extension_conflicts = false;
+    ResponseHeaders::const_iterator i;
+    for (i = (*delta)->deleted_response_headers.begin();
+         i != (*delta)->deleted_response_headers.end(); ++i) {
+      if (removed_headers.find(ToLowerCase(*i)) != removed_headers.end()) {
+        extension_conflicts = true;
+        break;
+      }
+    }
 
+    // Now execute the modifications if there were no conflicts.
     if (!extension_conflicts) {
-      headers_overridden = true;
-      *override_response_headers = (*delta)->new_response_headers;
+      // Delete headers
+      {
+        for (i = (*delta)->deleted_response_headers.begin();
+             i != (*delta)->deleted_response_headers.end(); ++i) {
+          (*override_response_headers)->RemoveHeaderWithValue(i->first,
+                                                              i->second);
+          removed_headers.insert(ToLowerCase(*i));
+        }
+      }
+
+      // Add headers.
+      {
+        for (i = (*delta)->added_response_headers.begin();
+             i != (*delta)->added_response_headers.end(); ++i) {
+          ResponseHeader lowercase_header(ToLowerCase(*i));
+          if (added_headers.find(lowercase_header) != added_headers.end())
+            continue;
+          added_headers.insert(lowercase_header);
+          (*override_response_headers)->AddHeader(i->first + ": " + i->second);
+        }
+      }
       EventLogEntry log_entry(
-          net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS, log);
+          net::NetLog::TYPE_CHROME_EXTENSION_MODIFIED_HEADERS,
+          make_scoped_refptr(
+              new NetLogModificationParameter((*delta)->extension_id)));
       event_log_entries->push_back(log_entry);
     } else {
       conflicting_extensions->insert((*delta)->extension_id);

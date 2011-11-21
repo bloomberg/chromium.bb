@@ -1197,10 +1197,11 @@ helpers::EventResponseDelta* CalculateDelta(
     case ExtensionWebRequestEventRouter::kOnHeadersReceived: {
       net::HttpResponseHeaders* old_headers =
           blocked_request->original_response_headers.get();
+      helpers::ResponseHeaders* new_headers =
+          response->response_headers.get();
       return helpers::CalculateOnHeadersReceivedDelta(
           response->extension_id, response->extension_install_time,
-          response->cancel, old_headers->GetStatusLine(),
-          response->response_headers_string);
+          response->cancel, old_headers, new_headers);
     }
     case ExtensionWebRequestEventRouter::kOnAuthRequired:
       return helpers::CalculateOnAuthRequiredDelta(
@@ -1277,6 +1278,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
       CHECK(blocked_request.callback);
       helpers::MergeOnHeadersReceivedResponses(
           blocked_request.response_deltas,
+          blocked_request.original_response_headers.get(),
           blocked_request.override_response_headers,
           &conflicting_extensions,
           &event_log_entries);
@@ -1554,7 +1556,8 @@ bool WebRequestEventHandled::RunImpl() {
     }
 
     if (value->HasKey("responseHeaders")) {
-      std::string response_headers_string;
+      helpers::ResponseHeaders* response_headers =
+          new helpers::ResponseHeaders();
       ListValue* response_headers_value = NULL;
       EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kResponseHeadersKey,
                                                  &response_headers_value));
@@ -1566,10 +1569,9 @@ bool WebRequestEventHandled::RunImpl() {
             response_headers_value->GetDictionary(i, &header_value));
         EXTENSION_FUNCTION_VALIDATE(
             FromHeaderDictionary(header_value, &name, &value));
-        response_headers_string += name + ": " + value + '\n';
+        response_headers->push_back(helpers::ResponseHeader(name, value));
       }
-      response_headers_string += '\n';
-      response->response_headers_string.swap(response_headers_string);
+      response->response_headers.reset(response_headers);
     }
 
     if (value->HasKey(keys::kAuthCredentialsKey)) {

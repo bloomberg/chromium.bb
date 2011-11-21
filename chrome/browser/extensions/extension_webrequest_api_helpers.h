@@ -29,6 +29,9 @@ class Value;
 
 namespace extension_webrequest_api_helpers {
 
+typedef std::pair<std::string, std::string> ResponseHeader;
+typedef std::vector<ResponseHeader> ResponseHeaders;
+
 // Contains the modification an extension wants to perform on an event.
 struct EventResponseDelta {
   // ID of the extension that sent this response.
@@ -49,8 +52,12 @@ struct EventResponseDelta {
   // Keys of request headers to be deleted.
   std::vector<std::string> deleted_request_headers;
 
-  // Complete set of response headers that will replace the original ones.
-  scoped_refptr<net::HttpResponseHeaders> new_response_headers;
+  // Headers that were added to the response. A modification of a header
+  // corresponds to a deletion and subsequent addition of the new header.
+  ResponseHeaders added_response_headers;
+
+  // Headers that were deleted from the response.
+  ResponseHeaders deleted_response_headers;
 
   // Authentication Credentials to use.
   scoped_ptr<net::AuthCredentials> auth_credentials;
@@ -110,16 +117,12 @@ EventResponseDelta* CalculateOnBeforeSendHeadersDelta(
     bool cancel,
     net::HttpRequestHeaders* old_headers,
     net::HttpRequestHeaders* new_headers);
-// |status_line| contains the status line of the original request. Together
-// with |response_headers_string| we can assemble a complete new response
-// header. |response_headers_string| contains all headers with \n as line
-// separator. It terminates with two \n.
 EventResponseDelta* CalculateOnHeadersReceivedDelta(
     const std::string& extension_id,
     const base::Time& extension_install_time,
     bool cancel,
-    const std::string& status_line,
-    const std::string& response_headers_string);
+    net::HttpResponseHeaders* old_response_headers,
+    ResponseHeaders* new_response_headers);
 // Destructively moves the auth credentials from |auth_credentials| to the
 // returned EventResponseDelta.
 EventResponseDelta* CalculateOnAuthRequiredDelta(
@@ -154,11 +157,12 @@ void MergeOnBeforeSendHeadersResponses(
     net::HttpRequestHeaders* request_headers,
     std::set<std::string>* conflicting_extensions,
     EventLogEntries* event_log_entries);
-// Overrides |override_response_headers| with the response headers returned
-// by the extension with the highest precedence.
-// TODO(battre) Implement merging of response header modifications.
+// Stores a copy of |original_response_header| into |override_response_headers|
+// that is modified according to |deltas|. If |deltas| does not instruct to
+// modify the response headers, |override_response_headers| remains empty.
 void MergeOnHeadersReceivedResponses(
     const EventResponseDeltas& deltas,
+    const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     std::set<std::string>* conflicting_extensions,
     EventLogEntries* event_log_entries);

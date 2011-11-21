@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <queue>
+#include <map>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -42,6 +43,15 @@ static void EventHandledOnIOThread(
       profile, extension_id, event_name, sub_event_name, request_id,
       response);
 }
+
+// Searches |key| in |collection| by iterating over its elements and returns
+// true if found.
+template <typename Collection, typename Key>
+bool Contains(const Collection& collection, const Key& key) {
+  return std::find(collection.begin(), collection.end(), key) !=
+      collection.end();
+}
+
 }  // namespace
 
 // A mock event router that responds to events with a pre-arranged queue of
@@ -821,21 +831,38 @@ TEST(ExtensionWebRequestHelpersTest, TestCalculateOnBeforeSendHeadersDelta) {
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnHeadersReceivedDelta) {
   using namespace extension_webrequest_api_helpers;
   const bool cancel = true;
-  const char status_line[] = "HTTP/1.0 200 OK";
-  const char response_headers_string[] = "key1: value1\n"
-                                         "key2: value2\n\n";
+  char base_headers_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "Key1: Value1\r\n"
+      "Key2: Value2\r\n"
+      "Key3: Value3\r\n"
+      "\r\n";
+  scoped_refptr<net::HttpResponseHeaders> base_headers(
+      new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(
+            base_headers_string, sizeof(base_headers_string))));
+
+  ResponseHeaders new_headers;
+  new_headers.push_back(ResponseHeader("kEy1", "Value1"));  // Unchanged
+  new_headers.push_back(ResponseHeader("Key2", "Value1"));  // Modified
+  // Key3 is deleted
+  new_headers.push_back(ResponseHeader("Key4", "Value4"));  // Added
 
   scoped_ptr<EventResponseDelta> delta(
       CalculateOnHeadersReceivedDelta("extid", base::Time::Now(), cancel,
-          status_line, response_headers_string));
+          base_headers, &new_headers));
   ASSERT_TRUE(delta.get());
   EXPECT_TRUE(delta->cancel);
-  ASSERT_TRUE(delta->new_response_headers.get());
-  EXPECT_TRUE(delta->new_response_headers->HasHeader("key1"));
-  EXPECT_TRUE(delta->new_response_headers->HasHeader("key2"));
-  EXPECT_EQ(status_line, delta->new_response_headers->GetStatusLine());
-  // net::HttpResponseHeaders does not have easy access to header values.
-  // Let's be lazy and not test it here.
+  EXPECT_EQ(2u, delta->added_response_headers.size());
+  EXPECT_TRUE(Contains(delta->added_response_headers,
+                       ResponseHeader("Key2", "Value1")));
+  EXPECT_TRUE(Contains(delta->added_response_headers,
+                       ResponseHeader("Key4", "Value4")));
+  EXPECT_EQ(2u, delta->deleted_response_headers.size());
+  EXPECT_TRUE(Contains(delta->deleted_response_headers,
+                        ResponseHeader("Key2", "Value2")));
+  EXPECT_TRUE(Contains(delta->deleted_response_headers,
+                        ResponseHeader("Key3", "Value3")));
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestCalculateOnAuthRequiredDelta) {
@@ -1060,10 +1087,20 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   using namespace extension_webrequest_api_helpers;
-  EventLogEntries event_log;
-  std::set<std::string> conflicting_extensions;
-  std::string header_value;
-  EventResponseDeltas deltas;
+    EventLogEntries event_log;
+    std::set<std::string> conflicting_extensions;
+    std::string header_value;
+    EventResponseDeltas deltas;
+
+  char base_headers_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "Key1: Value1\r\n"
+      "Key2: Value2\r\n"
+      "\r\n";
+  scoped_refptr<net::HttpResponseHeaders> base_headers(
+      new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(
+            base_headers_string, sizeof(base_headers_string))));
 
   // Check that we can handle if not touching the response headers.
   linked_ptr<EventResponseDelta> d0(
@@ -1071,57 +1108,110 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   deltas.push_back(d0);
   scoped_refptr<net::HttpResponseHeaders> new_headers0;
   MergeOnHeadersReceivedResponses(
-        deltas, &new_headers0, &conflicting_extensions, &event_log);
+        deltas, base_headers.get(), &new_headers0, &conflicting_extensions,
+        &event_log);
   EXPECT_FALSE(new_headers0.get());
   EXPECT_EQ(0u, conflicting_extensions.size());
   EXPECT_EQ(0u, event_log.size());
 
-  // Check that we can replace response headers.
-  char headers1_string[] =
-      "HTTP/1.0 200 OK\r\n"
-      "Foo: bar\r\n"
-      "\r\n";
-  scoped_refptr<net::HttpResponseHeaders> headers1(
-      new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(
-            headers1_string, sizeof(headers1_string))));
   linked_ptr<EventResponseDelta> d1(
       new EventResponseDelta("extid1", base::Time::FromInternalValue(2000)));
-  d1->new_response_headers = headers1;
+  d1->deleted_response_headers.push_back(ResponseHeader("KEY1", "Value1"));
+  d1->deleted_response_headers.push_back(ResponseHeader("KEY2", "Value2"));
+  d1->added_response_headers.push_back(ResponseHeader("Key2", "Value3"));
   deltas.push_back(d1);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
-  scoped_refptr<net::HttpResponseHeaders> new_headers1;
   conflicting_extensions.clear();
   event_log.clear();
+  scoped_refptr<net::HttpResponseHeaders> new_headers1;
   MergeOnHeadersReceivedResponses(
-        deltas, &new_headers1, &conflicting_extensions, &event_log);
-  EXPECT_EQ(headers1.get(), new_headers1.get());
+        deltas, base_headers.get(), &new_headers1, &conflicting_extensions,
+        &event_log);
+  ASSERT_TRUE(new_headers1.get());
+  std::multimap<std::string, std::string> expected1;
+  expected1.insert(std::pair<std::string, std::string>("Key2", "Value3"));
+  void* iter = NULL;
+  std::string name;
+  std::string value;
+  std::multimap<std::string, std::string> actual1;
+  while (new_headers1->EnumerateHeaderLines(&iter, &name, &value)) {
+    actual1.insert(std::pair<std::string, std::string>(name, value));
+  }
+  EXPECT_EQ(expected1, actual1);
   EXPECT_EQ(0u, conflicting_extensions.size());
   EXPECT_EQ(1u, event_log.size());
 
   // Check that we replace response headers only once.
-  char headers2_string[] =
-      "HTTP/1.0 200 OK\r\n"
-      "Foo: baz\r\n"
-      "\r\n";
-  scoped_refptr<net::HttpResponseHeaders> headers2(
-      new net::HttpResponseHeaders(
-        net::HttpUtil::AssembleRawHeaders(
-            headers2_string, sizeof(headers2_string))));
   linked_ptr<EventResponseDelta> d2(
       new EventResponseDelta("extid2", base::Time::FromInternalValue(1500)));
-  d2->new_response_headers = headers2;
+  // Note that we use a different capitalization of KeY2. This should not
+  // matter.
+  d2->deleted_response_headers.push_back(ResponseHeader("KeY2", "Value2"));
+  d2->added_response_headers.push_back(ResponseHeader("Key2", "Value4"));
   deltas.push_back(d2);
   deltas.sort(&InDecreasingExtensionInstallationTimeOrder);
-  scoped_refptr<net::HttpResponseHeaders> new_headers2;
   conflicting_extensions.clear();
   event_log.clear();
+  scoped_refptr<net::HttpResponseHeaders> new_headers2;
   MergeOnHeadersReceivedResponses(
-        deltas, &new_headers2, &conflicting_extensions, &event_log);
-  EXPECT_EQ(headers1.get(), new_headers1.get());
+        deltas, base_headers.get(), &new_headers2, &conflicting_extensions,
+        &event_log);
+  ASSERT_TRUE(new_headers2.get());
+  iter = NULL;
+  std::multimap<std::string, std::string> actual2;
+  while (new_headers2->EnumerateHeaderLines(&iter, &name, &value)) {
+    actual2.insert(std::pair<std::string, std::string>(name, value));
+  }
+  EXPECT_EQ(expected1, actual2);
   EXPECT_EQ(1u, conflicting_extensions.size());
   EXPECT_TRUE(ContainsKey(conflicting_extensions, "extid2"));
   EXPECT_EQ(2u, event_log.size());
+}
+
+// Check that we do not delete too much
+TEST(ExtensionWebRequestHelpersTest,
+     TestMergeOnHeadersReceivedResponsesDeletion) {
+  using namespace extension_webrequest_api_helpers;
+    EventLogEntries event_log;
+    std::set<std::string> conflicting_extensions;
+    std::string header_value;
+    EventResponseDeltas deltas;
+
+  char base_headers_string[] =
+      "HTTP/1.0 200 OK\r\n"
+      "Key1: Value1\r\n"
+      "Key1: Value2\r\n"
+      "Key1: Value3\r\n"
+      "Key2: Value4\r\n"
+      "\r\n";
+  scoped_refptr<net::HttpResponseHeaders> base_headers(
+      new net::HttpResponseHeaders(
+        net::HttpUtil::AssembleRawHeaders(
+            base_headers_string, sizeof(base_headers_string))));
+
+  linked_ptr<EventResponseDelta> d1(
+      new EventResponseDelta("extid1", base::Time::FromInternalValue(2000)));
+  d1->deleted_response_headers.push_back(ResponseHeader("KEY1", "Value2"));
+  deltas.push_back(d1);
+  scoped_refptr<net::HttpResponseHeaders> new_headers1;
+  MergeOnHeadersReceivedResponses(
+        deltas, base_headers.get(), &new_headers1, &conflicting_extensions,
+        &event_log);
+  ASSERT_TRUE(new_headers1.get());
+  std::multimap<std::string, std::string> expected1;
+  expected1.insert(std::pair<std::string, std::string>("Key1", "Value1"));
+  expected1.insert(std::pair<std::string, std::string>("Key1", "Value3"));
+  expected1.insert(std::pair<std::string, std::string>("Key2", "Value4"));
+  void* iter = NULL;
+  std::string name;
+  std::string value;
+  std::multimap<std::string, std::string> actual1;
+  while (new_headers1->EnumerateHeaderLines(&iter, &name, &value)) {
+    actual1.insert(std::pair<std::string, std::string>(name, value));
+  }
+  EXPECT_EQ(expected1, actual1);
+  EXPECT_EQ(0u, conflicting_extensions.size());
+  EXPECT_EQ(1u, event_log.size());
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestMergeOnAuthRequiredResponses) {
