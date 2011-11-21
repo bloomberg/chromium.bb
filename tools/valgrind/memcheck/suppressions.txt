@@ -5236,6 +5236,58 @@
    fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsEii
    fun:_ZN15tracked_objects10ThreadData32TallyRunOnWorkerThreadIfTrackingEPKNS_6BirthsERKNS_11TrackedTimeES6_S6_
 }
+{
+   bug_104998a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12SiteInstance10GetProcessEv
+   fun:_ZN14RenderViewHostC1EP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN21RenderViewHostFactory6CreateEP12SiteInstanceP22RenderViewHostDelegateiP23SessionStorageNamespace
+   fun:_ZN21RenderViewHostManager4InitEPN7content14BrowserContextEP12SiteInstancei
+   fun:_ZN11TabContentsC1EPN7content14BrowserContextEP12SiteInstanceiPKS_P23SessionStorageNamespace
+   fun:_ZN11BalloonHost4InitEv
+   fun:_ZN15BalloonViewHost4InitEP10_GtkWidget
+   fun:_ZN19BalloonViewHostView20ViewHierarchyChangedEbPN5views4ViewES2_
+   fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View14AddChildViewAtEPS0_i
+   fun:_ZN5views4View12AddChildViewEPS0_
+   fun:_ZN5views8internal8RootView15SetContentsViewEPNS_4ViewE
+   fun:_ZN5views6Widget15SetContentsViewEPNS_4ViewE
+   fun:_ZN8chromeos17NotificationPanel4ShowEv
+   fun:_ZN8chromeos17NotificationPanel3AddEP7Balloon
+   fun:_ZN8chromeos21BalloonCollectionImpl21AddSystemNotificationERK12NotificationP7Profilebb
+   fun:_ZN8chromeos18SystemNotification4ShowERKSbItN4base20string16_char_traitsESaItEES6_RKNS1_8CallbackIFvPKNS1_9ListValueEEEEbb
+}
+{
+   bug_104998b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN6chrome26ChromeContentBrowserClient24RenderProcessHostCreatedEPN7content17RenderProcessHostE
+   fun:_ZN21RenderProcessHostImpl4InitEb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLS2_N7content14PageTransitionERKSs
+   fun:_ZN11BalloonHost4InitEv
+   fun:_ZN15BalloonViewHost4InitEP10_GtkWidget
+   fun:_ZN19BalloonViewHostView20ViewHierarchyChangedEbPN5views4ViewES2_
+   fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
+   fun:_ZN5views4View14AddChildViewAtEPS0_i
+   fun:_ZN5views4View12AddChildViewEPS0_
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
