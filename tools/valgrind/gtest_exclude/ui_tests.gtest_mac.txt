@@ -320,9 +320,11 @@ OutOfProcessPPAPITest.Flash_MessageLoop
 OutOfProcessPPAPITest.Flash_GetCommandLineArgs
 OutOfProcessPPAPITest.Flash_GetProxyForURL
 OutOfProcessPPAPITest.Flash_GetLocalTimeZoneOffset
+OutOfProcessPPAPITest.InputEvent
 PPAPITest.Flash_GetLocalTimeZoneOffset
 PPAPITest.Flash_GetProxyForURL
 PPAPITest.Flash_SetInstanceAlwaysOnTop
 PPAPITest.Flash_MessageLoop
+PPAPITest.InputEvent
 PPAPITest.WebSocket_Create
 PPAPITest.WebSocket_IsWebSocket
