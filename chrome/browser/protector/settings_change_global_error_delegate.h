@@ -16,10 +16,10 @@ class SettingsChangeGlobalErrorDelegate {
   virtual ~SettingsChangeGlobalErrorDelegate() {}
 
   // Called if user clicks "Apply change" button.
-  virtual void OnApplyChanges() = 0;
+  virtual void OnApplyChange() = 0;
 
   // Called if user clicks "Discard change" button.
-  virtual void OnDiscardChanges() = 0;
+  virtual void OnDiscardChange() = 0;
 
   // Called if user clicked outside the bubble and timeout for its reshow
   // has passed.
@@ -32,4 +32,3 @@ class SettingsChangeGlobalErrorDelegate {
 }  // namespace protector
 
 #endif  // CHROME_BROWSER_PROTECTOR_SETTINGS_CHANGE_GLOBAL_ERROR_DELEGATE_H_
-

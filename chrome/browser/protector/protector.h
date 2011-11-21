@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/browser/protector/setting_change.h"
+#include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/protector/settings_change_global_error_delegate.h"
 
 class GURL;
@@ -21,9 +21,8 @@ namespace protector {
 
 class SettingsChangeGlobalError;
 
-// Accumulates settings changes and shows them altogether to user.
-// Deletes itself when changes are shown to the user and some action is taken
-// or timeout expires.
+// Presents a SettingChange to user and handles possible user actions.
+// Deletes itself after a user action is taken or timeout expires.
 class Protector : public SettingsChangeGlobalErrorDelegate {
  public:
   explicit Protector(Profile* profile);
@@ -37,12 +36,12 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
   TemplateURLService* GetTemplateURLService();
 
   // Shows global error about the specified change. Ownership of the change
-  // is passed to the error object.
-  void ShowChange(SettingChange* change);
+  // is passed to the GlobalError object.
+  void ShowChange(BaseSettingChange* change);
 
   // SettingsChangeGlobalErrorDelegate implementation.
-  virtual void OnApplyChanges() OVERRIDE;
-  virtual void OnDiscardChanges() OVERRIDE;
+  virtual void OnApplyChange() OVERRIDE;
+  virtual void OnDiscardChange() OVERRIDE;
   virtual void OnDecisionTimeout() OVERRIDE;
   virtual void OnRemovedFromProfile() OVERRIDE;
 
@@ -52,9 +51,10 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
   // The object can only be allocated and destroyed on heap.
   virtual ~Protector();
 
-  // Common handler for error delegate handlers. Calls the specified method
-  // on each change we showed error for.
-  void OnChangesAction(SettingChangeAction action);
+  // Performs the initial action on settings change and shows it. This is run
+  // asynchronously on UI thread because |ShowChange| may be called in the
+  // middle of some operations on settings that have changed.
+  void InitAndShowChange(BaseSettingChange* change);
 
   // Pointer to error bubble controller. Indicates if we're showing change
   // notification to user. Owns itself.

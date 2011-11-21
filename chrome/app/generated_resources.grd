@@ -1203,53 +1203,53 @@ are declared in build/common.gypi.
         </message>
       </if>
 
-      <!-- Settings change error messages -->
-      <message name="IDS_SEARCH_ENGINE_CHANGE_WRENCH_MENU_ITEM" desc="The wrench menu item indicating a search engine change.">
-        Verify search engine change
+      <!-- Protector error messages -->
+      <message name="IDS_SEARCH_ENGINE_CHANGE_TITLE" desc="The title of the bubble and the wrench menu item with a search engine change notification.">
+        Attempted search engine change
       </message>
-      <message name="IDS_SEARCH_ENGINE_CHANGE_BUBBLE_TITLE" desc="The title of the bubble view with a search engine change notification.">
-        Verify Search Engine Change
+      <message name="IDS_SEARCH_ENGINE_CHANGE_MESSAGE" desc="The text of the search engine change notification.">
+        Arrr! Something tried to commandeer <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s default search engine!
       </message>
-      <message name="IDS_SEARCH_ENGINE_CHANGE_BUBBLE_TEXT" desc="The text of the bubble view with a search engine change notification.">
-        A program on your computer tried to change your search engine from <ph name="PREV_ENGINE">$1<ex>OldSearchEngine</ex></ph> to <ph name="NEW_ENGINE">$2<ex>NewSearchEngine</ex></ph>. Would you like to keep using <ph name="PREV_ENGINE">$1<ex>OldSearchEngine</ex></ph>?
+      <message name="IDS_SEARCH_ENGINE_CHANGE_NO_BACKUP_MESSAGE" desc="The text of the search engine change notification when the previous setting is lost.">
+        Arrr! Something tried to commandeer <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s default search engine! We weren't sure what to do, so we set it to <ph name="PREPOPULATED_ENGINE">$2<ex>DefaultSearchEngine</ex></ph>.
       </message>
-      <message name="IDS_SEARCH_ENGINE_CHANGE_UNKNOWN_BUBBLE_TEXT" desc="The text of the bubble view with a search engine change notification when the previous search engine is unknown.">
-        A program on your computer tried to change your search engine to <ph name="NEW_ENGINE">$1<ex>NewSearchEngine</ex></ph> and your previous setting was deleted. Please check your settings to make sure everything is configured the way you like.
+      <message name="IDS_KEEP_SEARCH_ENGINE" desc="The title of the button that confirms staying with the previous search engine setting.">
+        Keep using <ph name="PREV_ENGINE">$1<ex>PreviousSearchEngine</ex></ph>
       </message>
-      <message name="IDS_SEARCH_ENGINE_CHANGE_RESTORE" desc="The title of the button that restores previous default search engine setting.">
-        Keep using <ph name="PREV_ENGINE">$1<ex>OldSearchEngine</ex></ph>
-      </message>
-      <message name="IDS_SEARCH_ENGINE_CHANGE_APPLY" desc="The title of the button that accepts new default search engine setting.">
+      <message name="IDS_CHANGE_SEARCH_ENGINE" desc="The title of the button that accepts new default search engine setting.">
         Change to <ph name="NEW_ENGINE">$1<ex>NewSearchEngine</ex></ph>
       </message>
-
-      <message name="IDS_HOMEPAGE_CHANGE_WRENCH_MENU_ITEM" desc="The wrench menu item indicating a home page change.">
-        Verify home page change
+      <message name="IDS_CHANGE_SEARCH_ENGINE_NO_NAME" desc="The title of the button that accepts new default search engine setting when the search engine name is too long.">
+        Change search engine
       </message>
-      <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_TITLE" desc="The title of the bubble view with a home page change notification.">
-        Verify Home Page Change
-      </message>
-      <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_TEXT" desc="The text of the bubble view with a home page change notification.">
-        A program on your computer tried to change your home page from <ph name="PREV_HOMEPAGE">$1<ex>http://example.net/</ex></ph> to <ph name="NEW_HOMEPAGE">$2<ex>http://example.com/</ex></ph>. Would you like to keep using <ph name="PREV_HOMEPAGE">$1<ex>http://example.net/</ex></ph>?
-      </message>
-      <message name="IDS_HOMEPAGE_CHANGE_UNKNOWN_BUBBLE_TEXT" desc="The text of the bubble view with a home page change notification when the previous home page is unknown.">
-        A program on your computer tried to change your home page to <ph name="NEW_HOMEPAGE">$1<ex>http://example.com/</ex></ph> and your previous setting was deleted. Please check your settings to make sure everything is configured the way you like.
-      </message>
-      <message name="IDS_HOMEPAGE_CHANGE_RESTORE" desc="The title of the button that restores previous home page setting.">
-        Keep using <ph name="PREV_HOMEPAGE">$1<ex>http://example.net/</ex></ph>
-      </message>
-      <message name="IDS_HOMEPAGE_CHANGE_APPLY" desc="The title of the button that accepts new home page setting.">
-        Change to <ph name="NEW_HOMEPAGE">$1<ex>http://example.com/</ex></ph>
+      <message name="IDS_SELECT_SEARCH_ENGINE" desc="The title of the button that opens a settings page, allowing user to select the default search engine to use.">
+        Select search engine...
       </message>
 
-      <message name="IDS_SETTINGS_CHANGE_OPEN_SETTINGS" desc="The title of the button that takes user to the settings page to restore settings.">
-        Go to settings
+      <message name="IDS_HOMEPAGE_CHANGE_TITLE" desc="The title of the bubble and the wrench menu item with a home page change notification.">
+        Attempted home page change
       </message>
-      <message name="IDS_SETTINGS_CHANGE_RESTORE" desc="The title of the button that restores previous settings.">
-        Keep previous settings
+      <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_MESSAGE" desc="The text of the home page change notification.">
+        Arrr! Something tried to commandeer <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> home page!
       </message>
-      <message name="IDS_SETTINGS_CHANGE_APPLY" desc="The title of the button that accepts new settings.">
-        Accept changes
+      <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_NO_BACKUP_MESSAGE" desc="The text of the home page change notification when the previous setting is lost.">
+        Arrr! Something tried to commandeer <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> home page! We weren't sure what to do, so we set it to the New Tab page.
+      </message>
+      <message name="IDS_KEEP_HOMEPAGE" desc="The title of the button that confirms staying with the previous home page setting.">
+        Keep using <ph name="PREV_HOMEPAGE">$1<ex>My Awesome Blog</ex></ph>
+      </message>
+      <message name="IDS_CHANGE_HOMEPAGE" desc="The title of the button that accepts new home page setting.">
+        Change to <ph name="NEW_HOMEPAGE">$1<ex>My Awesome Blog</ex></ph>
+      </message>
+      <message name="IDS_CHANGE_HOMEPAGE_NO_NAME" desc="The title of the button that accepts new home page setting when the home page title is too long.">
+        Change home page
+      </message>
+      <message name="IDS_SELECT_HOMEPAGE" desc="The title of the button that opens a settings page, allowing user to select the home page to use.">
+        Select home page...
+      </message>
+
+      <message name="IDS_KEEP_SETTING" desc="The title of the button that confirms staying with the previous setting.">
+        Keep existing setting
       </message>
 
       <!-- Keywords -->
