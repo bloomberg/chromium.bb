@@ -33,10 +33,10 @@ class CONTENT_EXPORT NotificationRegistrar {
   // Wrappers around NotificationService::[Add|Remove]Observer.
   void Add(NotificationObserver* observer,
            int type,
-           const content::NotificationSource& source);
+           const NotificationSource& source);
   void Remove(NotificationObserver* observer,
               int type,
-              const content::NotificationSource& source);
+              const NotificationSource& source);
 
   // Unregisters all notifications.
   void RemoveAll();
@@ -48,7 +48,7 @@ class CONTENT_EXPORT NotificationRegistrar {
   // specified details.
   bool IsRegistered(NotificationObserver* observer,
                     int type,
-                    const content::NotificationSource& source);
+                    const NotificationSource& source);
 
  private:
   struct Record;

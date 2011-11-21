@@ -6,8 +6,8 @@
 // happen in various parts of the application, and allows users to register
 // observers for various classes of events that they're interested in.
 
-#ifndef CONTENT_PUBLIC_NOTIFICATION_SERVICE_H_
-#define CONTENT_PUBLIC_NOTIFICATION_SERVICE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_NOTIFICATION_SERVICE_H_
+#define CONTENT_PUBLIC_BROWSER_NOTIFICATION_SERVICE_H_
 #pragma once
 
 #include "content/common/content_export.h"
@@ -56,9 +56,9 @@ class CONTENT_EXPORT NotificationService {
 
   // Returns a NotificationDetails object that represents a lack of details
   // associated with a notification.  (This is effectively a null pointer.)
-  static Details<void> NoDetails() { return content::Details<void>(NULL); }
+  static Details<void> NoDetails() { return Details<void>(NULL); }
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_NOTIFICATION_SERVICE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_NOTIFICATION_SERVICE_H_
