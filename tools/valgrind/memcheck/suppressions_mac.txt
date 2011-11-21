@@ -1989,3 +1989,17 @@
    fun:_ZN18RenderWidgetHelper17AllocTransportDIBEmbPN4base14FileDescriptorE
    fun:_ZN19RenderMessageFilter19OnAllocTransportDIBEmbPN4base14FileDescriptorE
 }
+{
+   bug_105022
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:malloc_set_zone_name
+   fun:init__zone0
+   fun:setenv$UNIX2003
+   fun:_ZN12_GLOBAL__N_115EnvironmentImpl10SetVarImplEPKcRKSs
+   fun:_ZN12_GLOBAL__N_115EnvironmentImpl6SetVarEPKcRKSs
+   fun:_Z18AppendToPythonPathRK8FilePath
+   fun:_ZN3net10TestServer13SetPythonPathEv
+   fun:_ZN3net10TestServer5StartEv
+   fun:_ZN12_GLOBAL__N_132MimeTypeTests_MimeTypeTests_Test8TestBodyEv
+}
