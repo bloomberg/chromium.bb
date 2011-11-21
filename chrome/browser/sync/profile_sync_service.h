@@ -247,7 +247,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   browser_sync::SyncBackendHost::StatusSummary QuerySyncStatusSummary();
   virtual browser_sync::SyncBackendHost::Status QueryDetailedSyncStatus();
 
-  virtual const GoogleServiceAuthError& GetAuthError() const;
+  const GoogleServiceAuthError& GetAuthError() const {
+    return last_auth_error_;
+  }
 
   // Displays a dialog for the user to enter GAIA credentials and attempt
   // re-authentication, and returns true if it actually opened the dialog.
@@ -299,7 +301,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     return unrecoverable_error_location_;
   }
 
-  virtual bool UIShouldDepictAuthInProgress() const;
+  bool UIShouldDepictAuthInProgress() const {
+    return is_auth_in_progress_;
+  }
 
   // Returns true if OnPassphraseRequired has been called for any reason.
   virtual bool IsPassphraseRequired() const;

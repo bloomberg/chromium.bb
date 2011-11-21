@@ -996,10 +996,6 @@ SyncBackendHost::Status ProfileSyncService::QueryDetailedSyncStatus() {
   }
 }
 
-const GoogleServiceAuthError& ProfileSyncService::GetAuthError() const {
-  return last_auth_error_;
-}
-
 bool ProfileSyncService::SetupInProgress() const {
   return !HasSyncSetupCompleted() && WizardIsVisible();
 }
@@ -1025,10 +1021,6 @@ bool ProfileSyncService::sync_initialized() const {
 
 bool ProfileSyncService::unrecoverable_error_detected() const {
   return unrecoverable_error_detected_;
-}
-
-bool ProfileSyncService::UIShouldDepictAuthInProgress() const {
-  return is_auth_in_progress_;
 }
 
 bool ProfileSyncService::IsPassphraseRequired() const {
