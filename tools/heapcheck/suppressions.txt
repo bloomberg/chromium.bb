@@ -1745,11 +1745,3 @@
 #   fun:PrintPreviewTabControllerUnitTest_MultiplePreviewTabs_Test::TestBody
 #   fun:PrintPreviewTabControllerUnitTest_ClearInitiatorTabDetails_Test::TestBody
 }
-{
-   bug_104775
-   Heapcheck:Leak
-   fun:base::Value::CreateIntegerValue
-   fun:HostContentSettingsMap::SetDefaultContentSetting
-   fun:CookieSettings::SetDefaultCookieSetting
-   fun:ExtensionSpecialStoragePolicyTest_HasSessionOnlyOrigins_Test::TestBody
-}

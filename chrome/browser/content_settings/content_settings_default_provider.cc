@@ -134,7 +134,7 @@ bool DefaultProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    Value* value) {
+    Value* in_value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
 
@@ -149,12 +149,15 @@ bool DefaultProvider::SetWebsiteSetting(
   if (is_incognito_)
     return false;
 
+  // Put |in_value| in a scoped pointer to ensure that it gets cleaned up
+  // properly if we don't pass on the ownership.
+  scoped_ptr<base::Value> value(in_value);
   {
     AutoReset<bool> auto_reset(&updating_preferences_, true);
     // Keep the obsolete pref in sync as long as backwards compatibility is
     // required. This is required to keep sync working correctly.
     if (content_type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-      if (value) {
+      if (value.get()) {
         prefs_->Set(prefs::kGeolocationDefaultContentSetting, *value);
       } else {
         prefs_->ClearPref(prefs::kGeolocationDefaultContentSetting);
@@ -169,8 +172,8 @@ bool DefaultProvider::SetWebsiteSetting(
     DictionaryPrefUpdate update(prefs_, prefs::kDefaultContentSettings);
     DictionaryValue* default_settings_dictionary = update.Get();
     base::AutoLock lock(lock_);
-    if (value == NULL ||
-        ValueToContentSetting(value) == kDefaultSettings[content_type]) {
+    if (value.get() == NULL ||
+        ValueToContentSetting(value.get()) == kDefaultSettings[content_type]) {
       // If |value| is NULL we need to reset the default setting the the
       // hardcoded default.
       default_settings_[content_type].reset(
@@ -184,7 +187,7 @@ bool DefaultProvider::SetWebsiteSetting(
       default_settings_[content_type].reset(value->DeepCopy());
       // Transfer ownership of |value| to the |default_settings_dictionary|.
       default_settings_dictionary->SetWithoutPathExpansion(
-          GetTypeName(content_type), value);
+          GetTypeName(content_type), value.release());
     }
   }
 

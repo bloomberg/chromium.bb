@@ -210,12 +210,15 @@ void HostContentSettingsMap::SetDefaultContentSetting(
   DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE);
   DCHECK(IsSettingAllowedForType(setting, content_type));
 
-  base::Value* value = Value::CreateIntegerValue(setting);
-  if (!content_settings_providers_[DEFAULT_PROVIDER]->SetWebsiteSetting(
-      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
-      content_type, std::string(), value)) {
-    delete value;
-  }
+  base::Value* value = NULL;
+  if (setting != CONTENT_SETTING_DEFAULT)
+    value = Value::CreateIntegerValue(setting);
+  SetWebsiteSetting(
+      ContentSettingsPattern::Wildcard(),
+      ContentSettingsPattern::Wildcard(),
+      content_type,
+      std::string(),
+      value);
 }
 
 void HostContentSettingsMap::SetWebsiteSetting(
