@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define SKIA_EXT_VECTOR_CANVAS_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "skia/ext/platform_canvas.h"
 
 class SkDevice;
@@ -22,8 +23,8 @@ class SK_API VectorCanvas : public PlatformCanvas {
   explicit VectorCanvas(SkDevice* device);
   virtual ~VectorCanvas();
 
-  virtual SkBounder* setBounder(SkBounder* bounder);
-  virtual SkDrawFilter* setDrawFilter(SkDrawFilter* filter);
+  virtual SkBounder* setBounder(SkBounder* bounder) OVERRIDE;
+  virtual SkDrawFilter* setDrawFilter(SkDrawFilter* filter) OVERRIDE;
 
  private:
   // Returns true if the top device is vector based and not bitmap based.
