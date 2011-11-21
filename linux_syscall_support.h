@@ -1,4 +1,4 @@
-/* Copyright (c) 2005-2010, Google Inc.
+/* Copyright (c) 2005-2011, Google Inc.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -3015,7 +3015,7 @@ struct kernel_statfs {
       return 0;
     }
   }
-  
+
   LSS_INLINE int LSS_NAME(sigismember)(struct kernel_sigset_t *set,
                                           int signum) {
     if (signum < 1 || signum > (int)(8*sizeof(set->sig))) {
@@ -3464,14 +3464,32 @@ struct kernel_statfs {
     #define __NR__pread64   __NR_pread64
     #define __NR__pwrite64  __NR_pwrite64
     #define __NR__readahead __NR_readahead
-    LSS_INLINE _syscall5(ssize_t, _pread64,        int,         f,
-                         void *,         b, size_t, c, unsigned, o1,
-                         unsigned, o2)
-    LSS_INLINE _syscall5(ssize_t, _pwrite64,       int,         f,
-                         const void *,   b, size_t, c, unsigned, o1,
-                         long, o2)
-    LSS_INLINE _syscall4(int, _readahead,          int,         f,
-                         unsigned,       o1, unsigned, o2, size_t, c)
+    #if defined(__ARM_EABI__)
+      /* On ARM, a 64-bit parameter has to be in an even-odd register pair.
+       * Hence these calls ignore their fourth argument (r3) so that their
+       * fifth and sixth make such a pair (r4,r5).
+       */
+      #define LSS_LLARG_PAD 0,
+      LSS_INLINE _syscall6(ssize_t, _pread64,        int,         f,
+                           void *,         b, size_t, c,
+                           unsigned, skip, unsigned, o1, unsigned, o2)
+      LSS_INLINE _syscall6(ssize_t, _pwrite64,       int,         f,
+                           const void *,   b, size_t, c,
+                           unsigned, skip, unsigned, o1, unsigned, o2)
+      LSS_INLINE _syscall5(int, _readahead,          int,         f,
+                           unsigned,     skip,
+                           unsigned,       o1, unsigned, o2, size_t, c)
+    #else
+      #define LSS_LLARG_PAD
+      LSS_INLINE _syscall5(ssize_t, _pread64,        int,         f,
+                           void *,         b, size_t, c, unsigned, o1,
+                           unsigned, o2)
+      LSS_INLINE _syscall5(ssize_t, _pwrite64,       int,         f,
+                           const void *,   b, size_t, c, unsigned, o1,
+                           long, o2)
+      LSS_INLINE _syscall4(int, _readahead,          int,         f,
+                           unsigned,       o1, unsigned, o2, size_t, c)
+    #endif
     /* We force 64bit-wide parameters onto the stack, then access each
      * 32-bit component individually. This guarantees that we build the
      * correct parameters independent of the native byte-order of the
@@ -3480,16 +3498,18 @@ struct kernel_statfs {
     LSS_INLINE ssize_t LSS_NAME(pread64)(int fd, void *buf, size_t count,
                                          loff_t off) {
       union { loff_t off; unsigned arg[2]; } o = { off };
-      return LSS_NAME(_pread64)(fd, buf, count, o.arg[0], o.arg[1]);
+      return LSS_NAME(_pread64)(fd, buf, count,
+                                LSS_LLARG_PAD o.arg[0], o.arg[1]);
     }
     LSS_INLINE ssize_t LSS_NAME(pwrite64)(int fd, const void *buf,
                                           size_t count, loff_t off) {
       union { loff_t off; unsigned arg[2]; } o = { off };
-      return LSS_NAME(_pwrite64)(fd, buf, count, o.arg[0], o.arg[1]);
+      return LSS_NAME(_pwrite64)(fd, buf, count,
+                                 LSS_LLARG_PAD o.arg[0], o.arg[1]);
     }
     LSS_INLINE int LSS_NAME(readahead)(int fd, loff_t off, int len) {
       union { loff_t off; unsigned arg[2]; } o = { off };
-      return LSS_NAME(_readahead)(fd, o.arg[0], o.arg[1], len);
+      return LSS_NAME(_readahead)(fd, LSS_LLARG_PAD o.arg[0], o.arg[1], len);
     }
   #endif
 #endif
