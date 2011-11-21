@@ -88,12 +88,12 @@ cr.define('cloudprint', function() {
       params = new Array;
     }
     if (lastXSRFToken.length != 0) {
-      params.push("xsrf=" + lastXSRFToken);
+      params.push('xsrf=' + lastXSRFToken);
     }
     if (params.length != 0) {
-      url = url + "?";
+      url = url + '?';
       for (param in params) {
-        url = url + params[param] + "&";
+        url = url + params[param] + '&';
       }
     }
     xhr.open(method, url, true);
@@ -215,10 +215,10 @@ cr.define('cloudprint', function() {
             printer.cloudPrintOptions.colorOption.type = cap.type;
             for (var option in cap.options) {
               var opt = cap.options[option];
-              if (opt.name == "Color") {
+              if (opt.name == 'Color') {
                 printer.cloudPrintOptions.colorOnOption = opt;
               }
-              if (opt.name == "Grey_K") {
+              if (opt.name == 'Grey_K') {
                 printer.cloudPrintOptions.colorOffOption = opt;
               }
               if (opt.default) {
@@ -323,7 +323,7 @@ cr.define('cloudprint', function() {
     if (isCloudPrint(printer)) {
       return JSON.stringify(printer.cloudPrintOptions);
     } else {
-      return "";
+      return '';
     }
   }
 

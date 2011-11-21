@@ -26,7 +26,7 @@ function addAnimation(code) {
  * @return {string} The css code for the fade in animation.
  */
 function getFadeInAnimationCode(targetHeight) {
-  return  '0% { opacity: 0; height: 0; } ' +
+  return '0% { opacity: 0; height: 0; } ' +
       '80% { height: ' + (targetHeight + 4) + 'px; }' +
       '100% { opacity: 1; height: ' + targetHeight + 'px; }';
 }
@@ -68,7 +68,7 @@ function fadeOutElement(el) {
   var eventTracker = new EventTracker();
   eventTracker.add(el, 'webkitTransitionEnd',
                    onFadeOutTransitionEnd.bind(el, animName, eventTracker),
-                   false );
+                   false);
   el.classList.add('closing');
   el.classList.remove('visible');
 }
@@ -76,8 +76,8 @@ function fadeOutElement(el) {
 /**
  * Executes when a fade out animation ends.
  * @param {string} animationName The name of the animation to be removed.
- * @param {EventTracker} The |EventTracker| object that was used for adding this
- *     listener.
+ * @param {EventTracker} eventTracker The |EventTracker| object that was used
+ *     for adding this listener.
  * @param {WebkitTransitionEvent} event The event that triggered this listener.
  */
 function onFadeOutTransitionEnd(animationName, eventTracker, event) {
@@ -90,8 +90,8 @@ function onFadeOutTransitionEnd(animationName, eventTracker, event) {
 
 /**
  * Executes when a fade in animation ends.
- * @param{EventTracker} The |EventTracker| object that was used for adding this
- *     listener.
+ * @param {EventTracker} eventTracker The |EventTracker| object that was used
+ *     for adding this listener.
  * @param {WebkitAnimationEvent} event The event that triggered this listener.
  */
 function onFadeInAnimationEnd(eventTracker, event) {

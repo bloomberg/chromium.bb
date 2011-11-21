@@ -165,7 +165,7 @@ cr.define('print_preview', function() {
 
     /**
      * Executes whenever a mousedown event occurs on |this| or its child nodes.
-     * @parameter {MouseEvent} e The event that occured.
+     * @param {MouseEvent} e The event that occured.
      */
     onMouseDown_: function(e) {
       if (e.button != 0)
@@ -193,7 +193,7 @@ cr.define('print_preview', function() {
      */
     moveTo: function(point) {
       if (this.isTop_() || this.isBottom_())
-        this.style.top = point.y  - this.mousePointerOffset.y + 'px';
+        this.style.top = point.y - this.mousePointerOffset.y + 'px';
       else
         this.style.left = point.x - this.mousePointerOffset.x + 'px';
     },

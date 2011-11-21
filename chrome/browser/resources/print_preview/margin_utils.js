@@ -50,7 +50,7 @@ cr.define('print_preview', function() {
     WITHIN_RANGE: 1,
     TOO_BIG: 2,
     NOT_A_NUMBER: 3
-  }
+  };
 
   /**
    * Checks  whether |value| is within range [0, limit].

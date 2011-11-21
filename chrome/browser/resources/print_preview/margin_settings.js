@@ -169,7 +169,7 @@ cr.define('print_preview', function() {
    * locale.
    * @param {string} numberFormat Is the formatted version of a sample number,
    *     sent from the backend.
-   * @oaram {number} measurementSystem 0 for SI (aka metric system), 1 for the
+   * @param {number} measurementSystem 0 for SI (aka metric system), 1 for the
    *     system used in the US. Note: Mathces UMeasurementSystem enum in
    *     third_party/icu/public/i18n/unicode/ulocdata.h.
    */
@@ -228,7 +228,7 @@ cr.define('print_preview', function() {
      *     |margin{Top|Bottom|Left|Right}| attributes are missing.
      */
     setLastUsedMargins: function(lastUsedMarginsSettings) {
-      var lastUsedMarginsType = lastUsedMarginsSettings['marginsType']
+      var lastUsedMarginsType = lastUsedMarginsSettings['marginsType'];
       this.forceMarginsUIOnPDFLoad_ =
           lastUsedMarginsType == MarginSettings.MARGINS_VALUE_CUSTOM;
       this.marginList_.selectedIndex =

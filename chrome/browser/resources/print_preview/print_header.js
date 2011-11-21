@@ -141,7 +141,7 @@ cr.define('print_preview', function() {
       numOfSheets *= copies;
 
       if (numOfSheets > 1) {
-        summaryLabel =  printToPDF ? pagesLabel :
+        summaryLabel = printToPDF ? pagesLabel :
             localStrings.getString('printPreviewSheetsLabelPlural');
       }
 

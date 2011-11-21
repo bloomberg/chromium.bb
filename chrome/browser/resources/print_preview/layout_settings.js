@@ -50,14 +50,14 @@ cr.define('print_preview', function() {
      * @return {boolean} true if the chosen layout mode has changed since last
      *     time the state was updated.
      */
-    hasChanged_ : function() {
-      return this.isLandscape() !=  this.wasLandscape_;
+    hasChanged_: function() {
+      return this.isLandscape() != this.wasLandscape_;
     },
 
     /**
      * Saves the currently selected layout mode. Used  in |this.hasChanged_|.
      */
-    updateState : function() {
+    updateState: function() {
       this.wasLandscape_ = this.isLandscape();
     },
 

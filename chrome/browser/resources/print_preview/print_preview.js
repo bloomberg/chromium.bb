@@ -125,8 +125,8 @@ var customEvents = {
   // Fired when the print button needs to be updated.
   UPDATE_PRINT_BUTTON: 'updatePrintButton',
   // Fired when the print summary needs to be updated.
-  UPDATE_SUMMARY: 'updateSummary',
-}
+  UPDATE_SUMMARY: 'updateSummary'
+};
 
 /**
  * Window onload handler, sets up the page and starts print preview by getting
@@ -175,7 +175,6 @@ function onLoad() {
 }
 
 /**
- * @param {string} initiatorTabTitle The title of the initiator tab.
  * @param {object} initialSettings An object containing all the initial
  *     settings.
  */
@@ -348,7 +347,7 @@ function reloadPrintersList() {
 
 /**
  * Turn on the integration of Cloud Print.
- * @param {string} cloudPrintUrl The URL to use for cloud print servers.
+ * @param {string} cloudPrintURL The URL to use for cloud print servers.
  */
 function setUseCloudPrint(cloudPrintURL) {
   useCloudPrint = true;
@@ -476,7 +475,7 @@ function isExpectedPreviewResponse(previewResponseId) {
  * @return {string} The name of the currently selected printer.
  */
 function getSelectedPrinterName() {
-  var printerList = $('printer-list')
+  var printerList = $('printer-list');
   var selectedPrinter = printerList.selectedIndex;
   if (selectedPrinter < 0)
     return '';
@@ -611,7 +610,7 @@ function fileSelectionCompleted() {
 
 /**
  * Set the default printer. If there is one, generate a print preview.
- * @param {string} printer Name of the default printer. Empty if none.
+ * @param {string} printerName Name of the default printer. Empty if none.
  * @param {string} cloudPrintData Cloud print related data to restore if
  *     the default printer is a cloud printer.
  */
@@ -715,6 +714,8 @@ function createDestinationListOption(optionText, optionValue, isDefault,
  * @param {string} optionValue specifies the option value.
  * @param {boolean} isDefault is true if the option needs to be selected.
  * @param {boolean} isDisabled is true if the option needs to be disabled.
+ * @param {boolean} isSeparator is true if the option serves just as a
+ *     separator.
  * @return {Object} The created option.
  */
 function addDestinationListOption(optionText, optionValue, isDefault,
@@ -736,6 +737,8 @@ function addDestinationListOption(optionText, optionValue, isDefault,
  * @param {string} optionValue specifies the option value.
  * @param {boolean} isDefault is true if the option needs to be selected.
  * @param {boolean} isDisabled is true if the option needs to be disabled.
+ * @param {boolean} isSeparator is true if the option is a visual separator and
+ *     needs to be disabled.
  * @return {Object} The created option.
  */
 function addDestinationListOptionAtPosition(position,
@@ -877,8 +880,10 @@ function reloadPreviewPages(previewUid, previewResponseId) {
   cr.dispatchSimpleEvent(document, customEvents.UPDATE_PRINT_BUTTON);
   checkAndHideOverlayLayerIfValid();
   var pageSet = pageSettings.previouslySelectedPages;
-  for (var i = 0; i < pageSet.length; i++)
-    $('pdf-viewer').loadPreviewPage(getPageSrcURL(previewUid, pageSet[i]-1), i);
+  for (var i = 0; i < pageSet.length; i++) {
+    $('pdf-viewer').loadPreviewPage(
+        getPageSrcURL(previewUid, pageSet[i] - 1), i);
+  }
 
   hasPendingPreviewRequest = false;
   isPrintReadyMetafileReady = true;
@@ -928,7 +933,6 @@ function onDidPreviewPage(pageNumber, previewUid, previewResponseId) {
  * Update the print preview when new preview data is available.
  * Create the PDF plugin as needed.
  * Called from PrintPreviewUI::PreviewDataIsAvailable().
- * @param {boolean} modifiable If the preview is modifiable.
  * @param {string} previewUid Preview unique identifier.
  * @param {number} previewResponseId The preview request id that resulted in
  *     this response.
@@ -1069,6 +1073,7 @@ function checkCompatiblePluginExists() {
 /**
  * Sets the default values and sends a request to regenerate preview data.
  * Resets the margin options only if |resetMargins| is true.
+ * @param {boolean} resetMargins True if margin settings should be resetted.
  */
 function setDefaultValuesAndRegeneratePreview(resetMargins) {
   if (resetMargins)
@@ -1093,7 +1098,7 @@ PrintSettings.prototype.save = function() {
   this.deviceName = getSelectedPrinterName();
   this.isLandscape = layoutSettings.isLandscape();
   this.hasHeaderFooter = headerFooterSettings.hasHeaderFooter();
-}
+};
 
 /**
  * Updates the title of the print preview tab according to |initiatorTabTitle|.

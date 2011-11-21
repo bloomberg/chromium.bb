@@ -46,7 +46,7 @@ cr.define('print_preview', function() {
      */
     get colorMode() {
       return this.bwRadioButton_.checked ?
-             this.printerColorModelForBlack_:
+             this.printerColorModelForBlack_ :
              this.printerColorModelForColor_;
     },
 

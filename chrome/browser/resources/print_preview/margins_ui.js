@@ -79,7 +79,7 @@ cr.define('print_preview', function() {
 
     /**
      * Updates the state of the margins UI.
-     * @param {print_preview.Rect}
+     * @param {print_preview.Rect} marginsRectangle
      * @param {Margins} marginValues
      * @param {array} valueLimits
      */
@@ -129,7 +129,7 @@ cr.define('print_preview', function() {
     applyClippingMask_: function() {
       var bottom = previewArea.height;
       var right = previewArea.width;
-      this.style.clip = "rect(0, " + right + "px, " + bottom + "px, 0)";
+      this.style.clip = 'rect(0, ' + right + 'px, ' + bottom + 'px, 0)';
     },
 
     /**
