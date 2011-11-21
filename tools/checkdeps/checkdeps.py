@@ -246,6 +246,9 @@ def ApplyDirectoryRules(existing_rules, dir_name):
   def FromImpl(unused, unused2):
     pass  # NOP function so "From" doesn't fail.
 
+  def FileImpl(unused):
+    pass  # NOP function so "File" doesn't fail.
+
   class _VarImpl:
     def __init__(self, local_scope):
       self._local_scope = local_scope
@@ -257,7 +260,11 @@ def ApplyDirectoryRules(existing_rules, dir_name):
       raise Error("Var is not defined: %s" % var_name)
 
   local_scope = {}
-  global_scope = {"From": FromImpl, "Var": _VarImpl(local_scope).Lookup}
+  global_scope = {
+      "File": FileImpl,
+      "From": FromImpl,
+      "Var": _VarImpl(local_scope).Lookup,
+      }
   deps_file = os.path.join(dir_name, "DEPS")
 
   if os.path.isfile(deps_file):
