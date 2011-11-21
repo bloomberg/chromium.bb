@@ -4,7 +4,11 @@
 
 #include "ui/gfx/gl/egl_util.h"
 
+#if defined(OS_ANDROID)
+#include <EGL/egl.h>
+#else
 #include "third_party/angle/include/EGL/egl.h"
+#endif
 
 // This needs to be after the EGL includes
 #include "ui/gfx/gl/gl_bindings.h"

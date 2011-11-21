@@ -7,9 +7,15 @@
 #include "build/build_config.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#if !defined(OS_ANDROID)
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
+#endif
 #include "ui/gfx/gl/egl_util.h"
+
+#if defined(OS_ANDROID)
+#include <EGL/egl.h>
+#endif
 
 // This header must come after the above third-party include, as
 // it brings in #defines that cause conflicts.
@@ -110,7 +116,7 @@ bool GLSurfaceEGL::InitializeOneOff() {
 
   initialized = true;
 
-#if defined(USE_X11)
+#if defined(USE_X11) || defined(OS_ANDROID)
   return true;
 #else
   g_software_native_display = EGL_SOFTWARE_DISPLAY_ANGLE;
@@ -184,6 +190,10 @@ NativeViewGLSurfaceEGL::~NativeViewGLSurfaceEGL() {
 }
 
 bool NativeViewGLSurfaceEGL::Initialize() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+  return false;
+#else
   DCHECK(!surface_);
 
   if (!GetDisplay()) {
@@ -219,6 +229,7 @@ bool NativeViewGLSurfaceEGL::Initialize() {
   supports_post_sub_buffer_ = (surfaceVal && retVal) == EGL_TRUE;
 
   return true;
+#endif
 }
 
 void NativeViewGLSurfaceEGL::Destroy() {
@@ -351,6 +362,10 @@ EGLSurface PbufferGLSurfaceEGL::GetHandle() {
 }
 
 void* PbufferGLSurfaceEGL::GetShareHandle() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+  return NULL;
+#else
   const char* extensions = eglQueryString(g_display, EGL_EXTENSIONS);
   if (!strstr(extensions, "EGL_ANGLE_query_surface_pointer"))
     return NULL;
@@ -364,6 +379,7 @@ void* PbufferGLSurfaceEGL::GetShareHandle() {
   }
 
   return handle;
+#endif
 }
 
 }  // namespace gfx

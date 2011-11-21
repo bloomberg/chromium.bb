@@ -40,6 +40,7 @@
         'gl_bindings_skia_in_process.h',
         'gl_context.cc',
         'gl_context.h',
+        'gl_context_android.cc',
         'gl_context_linux.cc',
         'gl_context_mac.mm',
         'gl_context_osmesa.cc',
@@ -50,6 +51,7 @@
         'gl_export.h',
         'gl_implementation.cc',
         'gl_implementation.h',
+        'gl_implementation_android.cc',
         'gl_implementation_linux.cc',
         'gl_implementation_mac.cc',
         'gl_implementation_win.cc',
@@ -114,7 +116,7 @@
         },
       ],
       'conditions': [
-        ['OS != "mac" and OS != "android"', {
+        ['OS != "mac"', {
           'sources': [
             'egl_util.cc',
             'egl_util.h',
@@ -178,6 +180,17 @@
             'gl_context_nsview.h',
             'gl_surface_nsview.mm',
             'gl_surface_nsview.h',
+          ],
+        }],
+        ['OS=="android"', {
+          'sources!': [            
+            '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.cc',
+            '<(gl_binding_output_dir)/gl_bindings_autogen_osmesa.h',
+            'system_monitor_posix.cc',
+          ],
+          'defines': [
+            'GL_GLEXT_PROTOTYPES',
+            'EGL_EGLEXT_PROTOTYPES',
           ],
         }],
       ],

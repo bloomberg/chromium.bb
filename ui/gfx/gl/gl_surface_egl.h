@@ -18,7 +18,9 @@ typedef void* EGLConfig;
 typedef void* EGLDisplay;
 typedef void* EGLSurface;
 
-#if defined(OS_WIN)
+#if defined(OS_ANDROID)
+typedef void* EGLNativeDisplayType;
+#elif defined(OS_WIN)
 typedef HDC EGLNativeDisplayType;
 #elif defined(USE_WAYLAND)
 typedef struct wl_display* EGLNativeDisplayType;

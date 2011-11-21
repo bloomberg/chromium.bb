@@ -90,6 +90,8 @@ typedef Window   EGLNativeWindowType;
 #elif defined(USE_X11)
 #include "gl_bindings_autogen_egl.h"
 #include "gl_bindings_autogen_glx.h"
+#elif defined(OS_ANDROID)
+#include "gl_bindings_autogen_egl.h"
 #endif
 
 namespace gfx {
