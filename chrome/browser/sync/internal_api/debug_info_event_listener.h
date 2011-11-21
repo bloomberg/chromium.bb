@@ -8,6 +8,7 @@
 #include <queue>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/js/js_backend.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"

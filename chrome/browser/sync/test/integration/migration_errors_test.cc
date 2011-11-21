@@ -4,6 +4,7 @@
 
 // TODO(akalin): Rename this file to migration_test.cc.
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_harness.h"

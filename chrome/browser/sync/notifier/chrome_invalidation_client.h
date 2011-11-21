@@ -85,7 +85,7 @@ class ChromeInvalidationClient
   // notifications for.  May be called at any time.
   void RegisterTypes(const syncable::ModelTypeSet& types);
 
-  virtual void WriteState(const std::string& state);
+  virtual void WriteState(const std::string& state) OVERRIDE;
 
   // invalidation::InvalidationListener implementation.
   virtual void Ready(

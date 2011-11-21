@@ -105,8 +105,8 @@ class BookmarkChangeProcessor : public BookmarkModelObserver,
                               UnrecoverableErrorHandler* error_handler);
 
  protected:
-  virtual void StartImpl(Profile* profile);
-  virtual void StopImpl();
+  virtual void StartImpl(Profile* profile) OVERRIDE;
+  virtual void StopImpl() OVERRIDE;
 
  private:
   enum MoveOrCreate {

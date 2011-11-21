@@ -49,7 +49,7 @@ class UIModelWorker : public browser_sync::ModelSafeWorker {
     virtual ~CallDoWorkAndSignalTask() { }
 
     // Task implementation.
-    virtual void Run();
+    virtual void Run() OVERRIDE;
 
    private:
     // Task data - a closure and a waitable event to signal after the work has

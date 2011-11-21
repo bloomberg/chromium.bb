@@ -55,7 +55,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     // the browser's UA string.
     void set_user_agent(const std::string& ua) { user_agent_ = ua; }
 
-    virtual const std::string& GetUserAgent(const GURL& url) const {
+    virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE {
       // If the user agent is set explicitly return that, otherwise call the
       // base class method to return default value.
       return user_agent_.empty() ?
@@ -82,8 +82,9 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     bool is_user_agent_set() const { return !user_agent_.empty(); }
 
     // net::URLRequestContextGetter implementation.
-    virtual net::URLRequestContext* GetURLRequestContext();
-    virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
+    virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+    virtual scoped_refptr<base::MessageLoopProxy>
+        GetIOMessageLoopProxy() const OVERRIDE;
 
    private:
     virtual ~RequestContextGetter() {}
@@ -102,25 +103,26 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
   explicit HttpBridge(RequestContextGetter* context);
 
   // sync_api::HttpPostProvider implementation.
-  virtual void SetUserAgent(const char* user_agent);
-  virtual void SetExtraRequestHeaders(const char* headers);
-  virtual void SetURL(const char* url, int port);
+  virtual void SetUserAgent(const char* user_agent) OVERRIDE;
+  virtual void SetExtraRequestHeaders(const char* headers) OVERRIDE;
+  virtual void SetURL(const char* url, int port) OVERRIDE;
   virtual void SetPostPayload(const char* content_type, int content_length,
-                              const char* content);
-  virtual bool MakeSynchronousPost(int* error_code, int* response_code);
-  virtual void Abort();
+                              const char* content) OVERRIDE;
+  virtual bool MakeSynchronousPost(int* error_code,
+                                   int* response_code) OVERRIDE;
+  virtual void Abort() OVERRIDE;
 
   // WARNING: these response content methods are used to extract plain old data
   // and not null terminated strings, so you should make sure you have read
   // GetResponseContentLength() characters when using GetResponseContent. e.g
   // string r(b->GetResponseContent(), b->GetResponseContentLength()).
-  virtual int GetResponseContentLength() const;
-  virtual const char* GetResponseContent() const;
+  virtual int GetResponseContentLength() const OVERRIDE;
+  virtual const char* GetResponseContent() const OVERRIDE;
   virtual const std::string GetResponseHeaderValue(
-      const std::string& name) const;
+      const std::string& name) const OVERRIDE;
 
   // content::URLFetcherDelegate implementation.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
 #if defined(UNIT_TEST)
   net::URLRequestContextGetter* GetRequestContextGetter() const {

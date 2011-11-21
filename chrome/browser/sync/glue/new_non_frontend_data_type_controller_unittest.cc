@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/new_non_frontend_data_type_controller.h"
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"

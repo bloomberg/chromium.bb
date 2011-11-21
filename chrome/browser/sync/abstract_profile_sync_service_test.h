@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -52,9 +53,9 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   AbstractProfileSyncServiceTest();
   virtual ~AbstractProfileSyncServiceTest();
 
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 
-  virtual void TearDown();
+  virtual void TearDown() OVERRIDE;
 
   bool CreateRoot(syncable::ModelType model_type);
 
@@ -74,7 +75,7 @@ class CreateRootTask : public Task {
                  syncable::ModelType model_type);
 
   virtual ~CreateRootTask();
-  virtual void Run();
+  virtual void Run() OVERRIDE;
 
   bool success();
 

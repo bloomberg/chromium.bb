@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 
@@ -35,7 +36,8 @@ class BuildAndProcessConflictSetsCommand : public ModelChangingSyncerCommand {
   virtual ~BuildAndProcessConflictSetsCommand();
 
   // ModelChangingSyncerCommand implementation.
-  virtual void ModelChangingExecuteImpl(sessions::SyncSession* session);
+  virtual void ModelChangingExecuteImpl(
+      sessions::SyncSession* session) OVERRIDE;
 
  private:
   bool BuildAndProcessConflictSets(sessions::SyncSession* session);

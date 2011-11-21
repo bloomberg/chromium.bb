@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_ENGINE_PROCESS_UPDATES_COMMAND_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 
@@ -34,8 +35,9 @@ class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
   virtual ~ProcessUpdatesCommand();
 
   // ModelChangingSyncerCommand implementation.
-  virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session);
-  virtual void ModelChangingExecuteImpl(sessions::SyncSession* session);
+  virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session) OVERRIDE;
+  virtual void ModelChangingExecuteImpl(
+      sessions::SyncSession* session) OVERRIDE;
 
  private:
   ServerUpdateProcessingResult ProcessUpdate(

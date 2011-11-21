@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/internal_api/base_node.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
@@ -53,9 +54,9 @@ class WriteNode : public BaseNode {
   // populate the node.
 
   // BaseNode implementation.
-  virtual bool InitByIdLookup(int64 id);
+  virtual bool InitByIdLookup(int64 id) OVERRIDE;
   virtual bool InitByClientTagLookup(syncable::ModelType model_type,
-      const std::string& tag);
+                                     const std::string& tag) OVERRIDE;
 
   // Create a new node with the specified parent and predecessor.  |model_type|
   // dictates the type of the item, and controls which EntitySpecifics proto
@@ -162,9 +163,9 @@ class WriteNode : public BaseNode {
       syncable::MutableEntry* entry);
 
   // Implementation of BaseNode's abstract virtual accessors.
-  virtual const syncable::Entry* GetEntry() const;
+  virtual const syncable::Entry* GetEntry() const OVERRIDE;
 
-  virtual const BaseTransaction* GetTransaction() const;
+  virtual const BaseTransaction* GetTransaction() const OVERRIDE;
 
  private:
   friend class browser_sync::TestBookmarkModelAssociator;

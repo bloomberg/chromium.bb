@@ -20,7 +20,7 @@ class ClearDataCommand : public SyncerCommand {
   virtual ~ClearDataCommand();
 
   // SyncerCommand implementation.
-  virtual void ExecuteImpl(sessions::SyncSession* session);
+  virtual void ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClearDataCommand);

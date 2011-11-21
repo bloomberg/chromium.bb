@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
@@ -30,14 +31,15 @@ class DataTypeManagerImpl : public DataTypeManager {
 
   // DataTypeManager interface.
   virtual void Configure(const TypeSet& desired_types,
-                         sync_api::ConfigureReason reason);
+                         sync_api::ConfigureReason reason) OVERRIDE;
 
   // Needed only for backend migration.
-  virtual void ConfigureWithoutNigori(const TypeSet& desired_types,
-                                      sync_api::ConfigureReason reason);
+  virtual void ConfigureWithoutNigori(
+      const TypeSet& desired_types,
+      sync_api::ConfigureReason reason) OVERRIDE;
 
-  virtual void Stop();
-  virtual State state();
+  virtual void Stop() OVERRIDE;
+  virtual State state() OVERRIDE;
 
  private:
   // Starts the next data type in the kStartOrder list, indicated by

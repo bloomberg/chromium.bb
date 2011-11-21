@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 
 namespace browser_sync {
@@ -25,20 +26,20 @@ class SessionDataTypeController : public FrontendDataTypeController {
   SessionModelAssociator* GetModelAssociator();
 
   // FrontendDataTypeController implementation.
-  virtual syncable::ModelType type() const;
+  virtual syncable::ModelType type() const OVERRIDE;
 
  private:
   // FrontendDataTypeController implementations.
   // Datatype specific creation of sync components.
-  virtual void CreateSyncComponents();
+  virtual void CreateSyncComponents() OVERRIDE;
   // Record unrecoverable errors.
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message);
+      const std::string& message) OVERRIDE;
   // Record association time.
-  virtual void RecordAssociationTime(base::TimeDelta time);
+  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
   // Record causes of start failure.
-  virtual void RecordStartFailure(StartResult result);
+  virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(SessionDataTypeController);
 };

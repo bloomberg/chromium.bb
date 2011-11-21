@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/notification_observer.h"
@@ -59,7 +60,7 @@ class ExtensionsActivityMonitor : public content::NotificationObserver {
   // content::NotificationObserver implementation.  Called on |ui_loop_|.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
  private:
   Records records_;
   mutable base::Lock records_lock_;

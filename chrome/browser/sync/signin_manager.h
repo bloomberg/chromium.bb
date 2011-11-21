@@ -13,6 +13,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/net/gaia/gaia_oauth_fetcher.h"
@@ -88,15 +89,14 @@ class SigninManager : public GaiaAuthConsumer,
 
   // GaiaAuthConsumer
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) OVERRIDE;
-  virtual void OnClientLoginFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
+  virtual void OnClientLoginFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnGetUserInfoSuccess(const std::string& key,
                                     const std::string& value) OVERRIDE;
   virtual void OnGetUserInfoKeyNotFound(const std::string& key) OVERRIDE;
-  virtual void OnGetUserInfoFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
-  virtual void OnTokenAuthFailure(const GoogleServiceAuthError& error)
-      OVERRIDE;
+  virtual void OnGetUserInfoFailure(
+      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnTokenAuthFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
   // GaiaOAuthConsumer
   virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
@@ -105,10 +105,10 @@ class SigninManager : public GaiaAuthConsumer,
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnOAuthWrapBridgeSuccess(const std::string& service_name,
                                         const std::string& token,
-                                        const std::string& expires_in)
-      OVERRIDE;
-  virtual void OnOAuthWrapBridgeFailure(const std::string& service_name,
-                                        const GoogleServiceAuthError& error);
+                                        const std::string& expires_in) OVERRIDE;
+  virtual void OnOAuthWrapBridgeFailure(
+      const std::string& service_name,
+      const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnUserInfoSuccess(const std::string& email) OVERRIDE;
   virtual void OnUserInfoFailure(const GoogleServiceAuthError& error) OVERRIDE;
 

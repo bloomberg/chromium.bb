@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 
@@ -46,16 +47,16 @@ class FrontendDataTypeController : public DataTypeController {
   virtual ~FrontendDataTypeController();
 
   // DataTypeController interface.
-  virtual void Start(StartCallback* start_callback);
-  virtual void Stop();
+  virtual void Start(StartCallback* start_callback) OVERRIDE;
+  virtual void Stop() OVERRIDE;
   virtual syncable::ModelType type() const = 0;
-  virtual browser_sync::ModelSafeGroup model_safe_group() const;
-  virtual std::string name() const;
-  virtual State state() const;
+  virtual browser_sync::ModelSafeGroup model_safe_group() const OVERRIDE;
+  virtual std::string name() const OVERRIDE;
+  virtual State state() const OVERRIDE;
 
   // UnrecoverableErrorHandler interface.
   virtual void OnUnrecoverableError(const tracked_objects::Location& from_here,
-                                    const std::string& message);
+                                    const std::string& message) OVERRIDE;
 
  protected:
   // For testing only.

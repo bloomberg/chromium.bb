@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_INTERNAL_API_WRITE_TRANSACTION_H_
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
 
 namespace syncable {
@@ -32,7 +33,7 @@ class WriteTransaction : public BaseTransaction {
   virtual ~WriteTransaction();
 
   // Provide access to the syncable.h transaction from the API WriteNode.
-  virtual syncable::BaseTransaction* GetWrappedTrans() const;
+  virtual syncable::BaseTransaction* GetWrappedTrans() const OVERRIDE;
   syncable::WriteTransaction* GetWrappedWriteTrans() { return transaction_; }
 
  protected:

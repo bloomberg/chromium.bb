@@ -34,6 +34,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -89,8 +90,8 @@ class TestDirectorySetterUpper {
 class ManuallyOpenedTestDirectorySetterUpper : public TestDirectorySetterUpper {
  public:
   ManuallyOpenedTestDirectorySetterUpper() : was_opened_(false) {}
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
   void Open();
  private:
   bool was_opened_;
@@ -104,8 +105,8 @@ class TriggeredOpenTestDirectorySetterUpper : public TestDirectorySetterUpper {
   // as in "real life".  In this case, the name that will be used should be
   // deterministically known at construction, and is passed in |name|.
   explicit TriggeredOpenTestDirectorySetterUpper(const std::string& name);
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 };
 
 // Use this when you don't want to test the whole stack down to the Directory
@@ -131,8 +132,8 @@ class MockDirectorySetterUpper : public TestDirectorySetterUpper {
   MockDirectorySetterUpper();
   virtual ~MockDirectorySetterUpper();
 
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
   MockDirectory* directory() { return directory_.get(); }
 
  private:

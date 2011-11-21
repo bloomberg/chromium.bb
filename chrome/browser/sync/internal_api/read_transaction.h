@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_INTERNAL_API_READ_TRANSACTION_H_
 #define CHROME_BROWSER_SYNC_INTERNAL_API_READ_TRANSACTION_H_
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/internal_api/base_transaction.h"
 
 namespace tracked_objects {
@@ -29,7 +30,7 @@ class ReadTransaction : public BaseTransaction {
   virtual ~ReadTransaction();
 
   // BaseTransaction override.
-  virtual syncable::BaseTransaction* GetWrappedTrans() const;
+  virtual syncable::BaseTransaction* GetWrappedTrans() const OVERRIDE;
  private:
   void* operator new(size_t size);  // Transaction is meant for stack use only.
 

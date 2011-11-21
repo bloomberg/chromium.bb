@@ -109,10 +109,10 @@ class P2PNotifier
       const syncable::ModelTypeSet& changed_types) OVERRIDE;
 
   // TalkMediator::Delegate implementation.
-  virtual void OnNotificationStateChange(bool notifications_enabled);
+  virtual void OnNotificationStateChange(bool notifications_enabled) OVERRIDE;
   virtual void OnIncomingNotification(
-      const notifier::Notification& notification);
-  virtual void OnOutgoingNotification();
+      const notifier::Notification& notification) OVERRIDE;
+  virtual void OnOutgoingNotification() OVERRIDE;
 
   // For testing.
   void SendNotificationDataForTest(

@@ -11,6 +11,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
@@ -33,7 +34,7 @@ class AllStatus : public SyncEngineEventListener {
 
   void HandleAuthWatcherEvent(const AuthWatcherEvent& event);
 
-  virtual void OnSyncEngineEvent(const SyncEngineEvent& event);
+  virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE;
 
   sync_api::SyncManager::Status status() const;
 

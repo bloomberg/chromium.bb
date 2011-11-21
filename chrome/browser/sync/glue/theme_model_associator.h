@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
@@ -25,14 +26,14 @@ class ThemeModelAssociator : public AssociatorInterface {
   static syncable::ModelType model_type() { return syncable::THEMES; }
 
   // AssociatorInterface implementation.
-  virtual bool AssociateModels(SyncError* error);
-  virtual bool DisassociateModels(SyncError* error);
-  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
-  virtual void AbortAssociation() {
+  virtual bool AssociateModels(SyncError* error) OVERRIDE;
+  virtual bool DisassociateModels(SyncError* error) OVERRIDE;
+  virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes) OVERRIDE;
+  virtual void AbortAssociation() OVERRIDE {
     // No implementation needed, this associator runs on the main
     // thread.
   }
-  virtual bool CryptoReadyIfNecessary();
+  virtual bool CryptoReadyIfNecessary() OVERRIDE;
 
  private:
   ProfileSyncService* sync_service_;

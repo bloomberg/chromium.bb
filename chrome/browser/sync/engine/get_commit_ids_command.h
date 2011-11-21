@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
@@ -27,7 +28,7 @@ class GetCommitIdsCommand : public SyncerCommand {
   virtual ~GetCommitIdsCommand();
 
   // SyncerCommand implementation.
-  virtual void ExecuteImpl(sessions::SyncSession* session);
+  virtual void ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
   // Builds a vector of IDs that should be committed.
   void BuildCommitIds(const vector<int64>& unsynced_handles,

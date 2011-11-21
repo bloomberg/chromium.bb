@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 
+#include "base/compiler_specific.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"

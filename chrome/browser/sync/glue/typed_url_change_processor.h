@@ -9,6 +9,7 @@
 #include "chrome/browser/sync/glue/change_processor.h"
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
@@ -52,7 +53,7 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   // History -> sync_api model change application.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // sync_api model -> WebDataService change application.
   virtual void ApplyChangesFromSyncModel(
@@ -64,8 +65,8 @@ class TypedUrlChangeProcessor : public ChangeProcessor,
   virtual void CommitChangesFromSyncModel() OVERRIDE;
 
  protected:
-  virtual void StartImpl(Profile* profile);
-  virtual void StopImpl();
+  virtual void StartImpl(Profile* profile) OVERRIDE;
+  virtual void StopImpl() OVERRIDE;
 
  private:
   friend class ScopedStopObserving<TypedUrlChangeProcessor>;

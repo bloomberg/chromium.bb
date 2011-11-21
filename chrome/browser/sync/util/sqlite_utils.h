@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -154,8 +155,8 @@ class SQLNestedTransaction : public SQLTransaction {
   virtual ~SQLNestedTransaction();
 
  protected:
-  virtual int BeginCommand(const char* command);
-  virtual int EndCommand(const char* command);
+  virtual int BeginCommand(const char* command) OVERRIDE;
+  virtual int EndCommand(const char* command) OVERRIDE;
 
  private:
   bool needs_rollback_;

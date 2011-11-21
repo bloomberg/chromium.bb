@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 
+#include "base/compiler_specific.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"

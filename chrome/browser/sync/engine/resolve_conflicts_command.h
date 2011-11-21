@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 
 namespace browser_sync {
@@ -17,7 +18,8 @@ class ResolveConflictsCommand : public ModelChangingSyncerCommand {
   virtual ~ResolveConflictsCommand();
 
   // ModelChangingSyncerCommand implementation.
-  virtual void ModelChangingExecuteImpl(sessions::SyncSession* session);
+  virtual void ModelChangingExecuteImpl(
+      sessions::SyncSession* session) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResolveConflictsCommand);

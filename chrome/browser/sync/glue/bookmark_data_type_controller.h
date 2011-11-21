@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -25,23 +26,23 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   virtual ~BookmarkDataTypeController();
 
   // FrontendDataTypeController interface.
-  virtual syncable::ModelType type() const;
+  virtual syncable::ModelType type() const OVERRIDE;
 
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // FrontendDataTypeController interface.
-  virtual bool StartModels();
-  virtual void CleanUpState();
-  virtual void CreateSyncComponents();
+  virtual bool StartModels() OVERRIDE;
+  virtual void CleanUpState() OVERRIDE;
+  virtual void CreateSyncComponents() OVERRIDE;
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
-      const std::string& message);
-  virtual void RecordAssociationTime(base::TimeDelta time);
-  virtual void RecordStartFailure(StartResult result);
+      const std::string& message) OVERRIDE;
+  virtual void RecordAssociationTime(base::TimeDelta time) OVERRIDE;
+  virtual void RecordStartFailure(StartResult result) OVERRIDE;
 
   content::NotificationRegistrar registrar_;
 

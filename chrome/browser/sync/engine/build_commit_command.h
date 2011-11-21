@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -19,7 +20,7 @@ class BuildCommitCommand : public SyncerCommand {
   virtual ~BuildCommitCommand();
 
   // SyncerCommand implementation.
-  virtual void ExecuteImpl(sessions::SyncSession* session);
+  virtual void ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BuildCommitCommandTest, InterpolatePosition);

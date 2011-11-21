@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 #include "content/browser/cancelable_request.h"
@@ -42,7 +43,7 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // CancelableRequestConsumerBase implementation.
   virtual void OnRequestAdded(CancelableRequestProvider* provider,

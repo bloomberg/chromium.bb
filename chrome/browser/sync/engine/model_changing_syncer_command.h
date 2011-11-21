@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_ENGINE_MODEL_CHANGING_SYNCER_COMMAND_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
 #include "chrome/browser/sync/util/unrecoverable_error_info.h"
 
@@ -30,7 +31,7 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   virtual ~ModelChangingSyncerCommand() { }
 
   // SyncerCommand implementation. Sets work_session to session.
-  virtual void ExecuteImpl(sessions::SyncSession* session);
+  virtual void ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
   // wrapper so implementations don't worry about storing work_session
   UnrecoverableErrorInfo StartChangingModel() {

@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -16,17 +17,17 @@ namespace browser_sync {
 
 class MockUIModelWorker : public ModelSafeWorker {
  public:
-  virtual ModelSafeGroup GetModelSafeGroup();
+  virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 };
 
 class MockDBModelWorker : public ModelSafeWorker {
  public:
-  virtual ModelSafeGroup GetModelSafeGroup();
+  virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 };
 
 class MockFileModelWorker : public ModelSafeWorker {
  public:
-  virtual ModelSafeGroup GetModelSafeGroup();
+  virtual ModelSafeGroup GetModelSafeGroup() OVERRIDE;
 };
 
 class MockModelSafeWorkerRegistrar : public ModelSafeWorkerRegistrar {
@@ -35,8 +36,8 @@ class MockModelSafeWorkerRegistrar : public ModelSafeWorkerRegistrar {
   static MockModelSafeWorkerRegistrar* PassiveBookmarks();
   static MockModelSafeWorkerRegistrar* PassiveForTypes(
       const syncable::ModelTypeBitSet& set);
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out);
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE;
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE;
 
  private:
   explicit MockModelSafeWorkerRegistrar(const ModelSafeRoutingInfo& routes);
