@@ -2,6 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  'target_defaults': {
+    'conditions': [
+      ['strip_tests==1', {
+        'cflags!': [ '-g' ],
+        'ldflags': [ '-Wl,--strip-debug' ],
+      }],
+    ],
+  },
   'variables' : {
     # Variables for js2gtest rules
     'gypv8sh': '../tools/gypv8sh.py',
