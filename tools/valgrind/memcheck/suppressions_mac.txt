@@ -1242,8 +1242,14 @@
    fun:CFBundlePreflightExecutable
 }
 {
-   bug_75142
+   bug_75142a
    Memcheck:Addr4
+   ...
+   fun:CGContextShowGlyphsWithAdvances
+}
+{
+   bug_75142b
+   Memcheck:Leak
    ...
    fun:CGContextShowGlyphsWithAdvances
 }
