@@ -342,6 +342,8 @@ void CrashService::OnClientExited(void* context,
 
 void CrashService::OnClientDumpRequest(void* context,
     const google_breakpad::ClientInfo* client_info,
+    const google_breakpad::CrashGenerationServer::ClientDumpRequestType
+        request_type,
     const std::wstring* file_path) {
   ProcessingLock lock;
 

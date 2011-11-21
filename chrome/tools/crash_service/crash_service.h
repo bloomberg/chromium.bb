@@ -11,11 +11,11 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/synchronization/lock.h"
+#include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
 
 namespace google_breakpad {
 
 class CrashReportSender;
-class CrashGenerationServer;
 class ClientInfo;
 
 }
@@ -89,6 +89,8 @@ class CrashService {
   static void OnClientDumpRequest(
       void* context,
       const google_breakpad::ClientInfo* client_info,
+      const google_breakpad::CrashGenerationServer::ClientDumpRequestType
+          request_type,
       const std::wstring* file_path);
 
   static void OnClientExited(void* context,

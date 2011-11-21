@@ -80,7 +80,7 @@
           'sources': [
             'src/common/mac/HTTPMultipartUpload.m',
             'src/client/mac/sender/crash_report_sender.m',
-            'src/client/mac/sender/uploader.m',
+            'src/client/mac/sender/uploader.mm',
             'src/common/mac/GTMLogger.m',
           ],
           'mac_bundle_resources': [
