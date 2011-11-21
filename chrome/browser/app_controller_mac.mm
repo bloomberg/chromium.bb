@@ -461,6 +461,9 @@ const AEEventClass kAECloudPrintUninstallClass = 'GCPu';
     // If the profile is incognito, use the original profile.
     Profile* newProfile = [windowController profile]->GetOriginalProfile();
     [self windowChangedToProfile:newProfile];
+  } else if (BrowserList::empty()) {
+    [self windowChangedToProfile:
+        g_browser_process->profile_manager()->GetLastUsedProfile()];
   }
 }
 

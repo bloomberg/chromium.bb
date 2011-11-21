@@ -642,11 +642,27 @@ void ProfileManager::ScheduleProfileForDeletion(const FilePath& profile_dir) {
     CreateProfileAsync(new_path, launcher);
   }
 
+  // Update the last used profile pref before closing browser windows. This way
+  // the correct last used profile is set for any notification observers.
+  PrefService* local_state = g_browser_process->local_state();
+  std::string last_profile = local_state->GetString(prefs::kProfileLastUsed);
+  if (profile_dir.BaseName().MaybeAsASCII() == last_profile) {
+    for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
+      FilePath cur_path = cache.GetPathOfProfileAtIndex(i);
+      if (cur_path != profile_dir) {
+        local_state->SetString(
+            prefs::kProfileLastUsed, cur_path.BaseName().MaybeAsASCII());
+        break;
+      }
+    }
+  }
+
   // TODO(sail): Due to bug 88586 we don't delete the profile instance. Once we
   // start deleting the profile instance we need to close background apps too.
   Profile* profile = GetProfileByPath(profile_dir);
   if (profile)
     BrowserList::CloseAllBrowsersWithProfile(profile);
+
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);
 }
