@@ -234,6 +234,7 @@ void DownloadDatabase::RemoveDownloadsBetween(base::Time delete_begin,
       int64 id_to_delete = dbg_statement.ColumnInt64(0);
       returned_ids_.erase(id_to_delete);
     }
+    CHECK(dbg_statement.Succeeded());
   }
 
   // This does not use an index. We currently aren't likely to have enough
