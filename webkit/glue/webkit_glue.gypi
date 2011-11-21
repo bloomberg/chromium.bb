@@ -454,9 +454,11 @@
         }],
         ['use_aura==1', {
           'sources/': [
-            ['exclude', '^../plugins/npapi/webplugin_delegate_impl_win.cc'],
+            ['exclude', '^\\.\\./plugins/npapi/webplugin_delegate_impl_mac.mm'],
+            ['exclude', '^\\.\\./plugins/npapi/webplugin_delegate_impl_win.cc'],
           ],
           'sources!': [
+            'webcursor_mac.mm',
             'webcursor_win.cc',
           ],
         }],

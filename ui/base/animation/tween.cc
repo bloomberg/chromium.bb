@@ -11,10 +11,7 @@
 #endif
 
 #include "base/logging.h"
-
-#if !defined(OS_MACOSX)
 #include "ui/gfx/interpolated_transform.h"
-#endif
 
 namespace ui {
 
@@ -86,7 +83,6 @@ gfx::Rect Tween::ValueBetween(double value,
                                 target_bounds.height()));
 }
 
-#if !defined(OS_MACOSX)
 // static
 Transform Tween::ValueBetween(double value,
                               const Transform& start_transform,
@@ -127,6 +123,5 @@ Transform Tween::ValueBetween(double value,
 
   return to_return;
 }
-#endif
 
 }  // namespace ui

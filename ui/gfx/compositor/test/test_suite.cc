@@ -30,10 +30,6 @@ void CompositorTestSuite::Initialize() {
   gfx::RegisterPathProvider();
   ui::RegisterPathProvider();
 
-  // Force unittests to run using en-US so if we test against string
-  // output, it'll pass regardless of the system language.
-  ui::ResourceBundle::InitSharedInstance("en-US");
-
   message_loop_.reset(new MessageLoop(MessageLoop::TYPE_UI));
   ui::CompositorTestSupport::Initialize();
 }

@@ -226,6 +226,11 @@ static inline NativeView NativeViewFromIdInBrowser(NativeViewId id) {
 #elif defined(USE_X11)
   typedef unsigned long PluginWindowHandle;
   const PluginWindowHandle kNullPluginWindow = 0;
+#elif defined(USE_AURA) && defined(OS_MACOSX)
+  // Mac-Aura uses NSView-backed GLSurface.  Regular Mac does not.
+  // TODO(dhollowa): Rationalize these two definitions. http://crbug.com/104551.
+  typedef NSView* PluginWindowHandle;
+  const PluginWindowHandle kNullPluginWindow = 0;
 #else
   // On OS X we don't have windowed plugins.
   // We use a NULL/0 PluginWindowHandle in shared code to indicate there
@@ -250,6 +255,11 @@ typedef struct wl_egl_window* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = NULL;
 #elif defined(USE_X11)
 typedef unsigned long AcceleratedWidget;
+const AcceleratedWidget kNullAcceleratedWidget = 0;
+#elif defined(USE_AURA) && defined(OS_MACOSX)
+// Mac-Aura uses NSView-backed GLSurface.  Regular Mac does not.
+// TODO(dhollowa): Rationalize these two definitions. http://crbug.com/104551.
+typedef NSView* AcceleratedWidget;
 const AcceleratedWidget kNullAcceleratedWidget = 0;
 #else
 typedef void* AcceleratedWidget;

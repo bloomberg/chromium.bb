@@ -16,7 +16,11 @@ namespace ui {
 
 class Compositor;
 
+#if defined (OS_MACOSX)
+class TestCompositorHost {
+#else
 class TestCompositorHost : public MessageLoop::Dispatcher {
+#endif
  public:
   virtual ~TestCompositorHost() {}
 

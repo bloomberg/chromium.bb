@@ -111,6 +111,14 @@
             ['exclude', 'metafile_skia_wrapper\\.(cc|h)$'],
           ],
         }],
+        # Mac-Aura does not support printing.
+        ['OS=="mac" and use_aura==1',{
+          'sources!': [
+            'printed_document_mac.cc',
+            'printing_context_mac.mm',
+            'printing_context_mac.h',
+          ],
+        }],
         ['OS=="mac" and use_aura==0',{
           'sources': [
             'printing_context_mac.mm',

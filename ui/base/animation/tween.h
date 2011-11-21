@@ -9,10 +9,7 @@
 #include "base/basictypes.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/rect.h"
-
-#if !defined(OS_MACOSX)
 #include "ui/gfx/transform.h"
-#endif
 
 namespace ui {
 
@@ -37,11 +34,9 @@ class UI_EXPORT Tween {
   static gfx::Rect ValueBetween(double value,
                                 const gfx::Rect& start_bounds,
                                 const gfx::Rect& target_bounds);
-#if !defined(OS_MACOSX)
   static Transform ValueBetween(double value,
                                 const Transform& start_transform,
                                 const Transform& target_transform);
-#endif
 
  private:
   Tween();

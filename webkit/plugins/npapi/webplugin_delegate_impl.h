@@ -163,7 +163,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   bool GetIMEStatus(int* input_type, gfx::Rect* caret_rect);
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(USE_AURA)
   // Informs the plugin that the geometry has changed, as with UpdateGeometry,
   // but also includes the new buffer context for that new geometry.
   void UpdateGeometryAndContext(const gfx::Rect& window_rect,
@@ -211,7 +211,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   void CGPaint(CGContextRef context, const gfx::Rect& rect);
 
   bool AllowBufferFlipping();
-#endif  // OS_MACOSX
+#endif  // OS_MACOSX && !USE_AURA
 
   gfx::PluginWindowHandle windowed_handle() const {
     return windowed_handle_;
@@ -424,7 +424,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Calls SetCapture/ReleaseCapture based on the message type.
   static void HandleCaptureForMessage(HWND window, UINT message);
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(USE_AURA)
   // Sets window_rect_ to |rect|
   void SetPluginRect(const gfx::Rect& rect);
   // Sets content_area_origin to |origin|
@@ -493,7 +493,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   int keyup_ignore_count_;
 
   scoped_ptr<ExternalDragTracker> external_drag_tracker_;
-#endif  // OS_MACOSX
+#endif  // OS_MACOSX && !USE_AURA
 
   // Called by the message filter hook when the plugin enters a modal loop.
   void OnModalLoopEntered();

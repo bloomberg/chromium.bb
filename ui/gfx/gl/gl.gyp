@@ -41,7 +41,7 @@
         'gl_context.cc',
         'gl_context.h',
         'gl_context_linux.cc',
-        'gl_context_mac.cc',
+        'gl_context_mac.mm',
         'gl_context_osmesa.cc',
         'gl_context_osmesa.h',
         'gl_context_stub.cc',
@@ -171,6 +171,14 @@
               '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
             ],
           },
+        }],
+        ['OS=="mac" and use_aura == 1', {
+          'sources': [
+            'gl_context_nsview.mm',
+            'gl_context_nsview.h',
+            'gl_surface_nsview.mm',
+            'gl_surface_nsview.h',
+          ],
         }],
       ],
     },

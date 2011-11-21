@@ -46,8 +46,8 @@
         'compositor_switches.cc',
         'compositor_switches.h',
         'compositor_win.cc',
-	'debug_utils.cc',
-	'debug_utils.h',
+        'debug_utils.cc',
+        'debug_utils.h',
         'layer.cc',
         'layer.h',
         'layer_animation_delegate.h',
@@ -62,7 +62,7 @@
         'screen_rotation.h',
       ],
       'conditions': [
-        ['os_posix == 1 and OS != "mac"', {
+        ['os_posix == 1', {
           'sources!': [
             'compositor_stub.cc',
           ],
@@ -92,7 +92,7 @@
         }],
         ['use_webkit_compositor == 1', {
             'sources/': [
-              ['exclude', '^compositor_(gl|win|stub).(h|cc)$'],
+              ['exclude', '^compositor_(gl|mac|win|stub).(h|cc|mm)$'],
             ],
             'dependencies': [
               '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
@@ -162,6 +162,7 @@
         'run_all_unittests.cc',
         'test/test_compositor_host.h',
         'test/test_compositor_host_linux.cc',
+        'test/test_compositor_host_mac.mm',
         'test/test_compositor_host_win.cc',
         'test/test_layer_animation_delegate.cc',
         'test/test_layer_animation_delegate.h',

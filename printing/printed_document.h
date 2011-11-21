@@ -51,7 +51,7 @@ class PRINTING_EXPORT PrintedDocument
 
   // Draws the page in the context.
   // Note: locks for a short amount of time in debug only.
-#if defined(OS_WIN) || defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX) && !defined(USE_AURA)
   void RenderPrintedPage(const PrintedPage& page,
                          gfx::NativeDrawingContext context) const;
 #elif defined(OS_POSIX)

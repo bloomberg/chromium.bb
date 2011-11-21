@@ -15,7 +15,7 @@ class MessageLoop;
 class CompositorTestSuite : public base::TestSuite {
  public:
   CompositorTestSuite(int argc, char** argv);
-  ~CompositorTestSuite();
+  virtual ~CompositorTestSuite();
 
  protected:
   // base::TestSuite:

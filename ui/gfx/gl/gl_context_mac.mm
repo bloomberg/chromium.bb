@@ -13,8 +13,11 @@
 #include "ui/gfx/gl/gl_context_osmesa.h"
 #include "ui/gfx/gl/gl_context_stub.h"
 #include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface_cgl.h"
-#include "ui/gfx/gl/gl_surface_osmesa.h"
+#include "ui/gfx/gl/gl_surface.h"
+
+#if defined(USE_AURA)
+#include "ui/gfx/gl/gl_context_nsview.h"
+#endif
 
 namespace {
 
@@ -38,9 +41,18 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
     GpuPreference gpu_preference) {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL: {
-      scoped_refptr<GLContext> context(new GLContextCGL(share_group));
-      if (!context->Initialize(compatible_surface, gpu_preference))
-        return NULL;
+      scoped_refptr<GLContext> context;
+      if (compatible_surface->IsOffscreen()) {
+        context = new GLContextCGL(share_group);
+        if (!context->Initialize(compatible_surface, gpu_preference))
+          return NULL;
+      } else {
+#if defined(USE_AURA)
+        context = new GLContextNSView(share_group);
+        if (!context->Initialize(compatible_surface, gpu_preference))
+          return NULL;
+#endif
+      }
 
       return context;
     }
