@@ -134,7 +134,6 @@
       #'sync.SyncIntegrationTest',
 
       # crbug.com/104886 - cannot trigger dangerous download.
-      '-downloads.DownloadsTest.testDeclineDangerousDownload',
       '-downloads.DownloadsTest.testSaveDangerousFile',
 
       # ==================================================
