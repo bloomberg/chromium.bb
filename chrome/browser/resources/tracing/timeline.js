@@ -119,7 +119,7 @@ cr.define('tracing', function() {
         window.clearInterval(this.checkForAttachInterval_);
         this.checkForAttachInterval_ = undefined;
       }
-      this.iframe_.removeListener('resize', this.onResizeBoundToThis_);
+      this.iframe_.removeEventListener('resize', this.onResizeBoundToThis_);
       this.parentEl_.removeChild(this.iframe_);
     },
 
