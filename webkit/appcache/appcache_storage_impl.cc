@@ -172,8 +172,8 @@ class AppCacheStorageImpl::DatabaseTask
   DelegateReferenceVector delegates_;
 
  private:
-  void CallRun();
-  void CallRunCompleted();
+  void CallRun(base::TimeTicks schedule_time);
+  void CallRunCompleted(base::TimeTicks schedule_time);
   void CallDisableStorage();
 
   scoped_refptr<base::MessageLoopProxy> io_thread_;
@@ -184,7 +184,7 @@ void AppCacheStorageImpl::DatabaseTask::Schedule() {
   DCHECK(io_thread_->BelongsToCurrentThread());
   if (storage_->db_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&DatabaseTask::CallRun, this))) {
+      base::Bind(&DatabaseTask::CallRun, this, base::TimeTicks::Now()))) {
     storage_->scheduled_database_tasks_.push_back(this);
   } else {
     NOTREACHED() << "The database thread is not running.";
@@ -197,9 +197,15 @@ void AppCacheStorageImpl::DatabaseTask::CancelCompletion() {
   storage_ = NULL;
 }
 
-void AppCacheStorageImpl::DatabaseTask::CallRun() {
+void AppCacheStorageImpl::DatabaseTask::CallRun(
+    base::TimeTicks schedule_time) {
+  AppCacheHistograms::AddTaskQueueTimeSample(
+      base::TimeTicks::Now() - schedule_time);
   if (!database_->is_disabled()) {
+    base::TimeTicks run_time = base::TimeTicks::Now();
     Run();
+    AppCacheHistograms::AddTaskRunTimeSample(
+        base::TimeTicks::Now() - run_time);
     if (database_->is_disabled()) {
       io_thread_->PostTask(
           FROM_HERE,
@@ -208,15 +214,22 @@ void AppCacheStorageImpl::DatabaseTask::CallRun() {
   }
   io_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&DatabaseTask::CallRunCompleted, this));
+      base::Bind(&DatabaseTask::CallRunCompleted, this,
+                 base::TimeTicks::Now()));
 }
 
-void AppCacheStorageImpl::DatabaseTask::CallRunCompleted() {
+void AppCacheStorageImpl::DatabaseTask::CallRunCompleted(
+    base::TimeTicks schedule_time) {
+  AppCacheHistograms::AddCompletionQueueTimeSample(
+      base::TimeTicks::Now() - schedule_time);
   if (storage_) {
     DCHECK(io_thread_->BelongsToCurrentThread());
     DCHECK(storage_->scheduled_database_tasks_.front() == this);
     storage_->scheduled_database_tasks_.pop_front();
+    base::TimeTicks run_time = base::TimeTicks::Now();
     RunCompleted();
+    AppCacheHistograms::AddCompletionRunTimeSample(
+        base::TimeTicks::Now() - run_time);
     delegates_.clear();
   }
 }
@@ -849,6 +862,8 @@ void AppCacheStorageImpl::FindMainResponseTask::Run() {
     }
   }
 
+  // TODO(michaeln): Also lookup matches in intercept namespaces.
+  // http://code.google.com/p/chromium/issues/detail?id=101565
   if (FindExactMatch(preferred_cache_id) ||
       FindFallback(preferred_cache_id)) {
     // We found something.

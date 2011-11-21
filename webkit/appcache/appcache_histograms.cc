@@ -23,4 +23,28 @@ void AppCacheHistograms::CountCheckResponseResult(
        result, NUM_CHECK_RESPONSE_RESULT_TYPES);
 }
 
+// static
+void AppCacheHistograms::AddTaskQueueTimeSample(
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_TIMES("appcache.TaskQueueTime", duration);
+}
+
+// static
+void AppCacheHistograms::AddTaskRunTimeSample(
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_TIMES("appcache.TaskRunTime", duration);
+}
+
+// static
+void AppCacheHistograms::AddCompletionQueueTimeSample(
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_TIMES("appcache.CompletionQueueTime", duration);
+}
+
+// static
+void AppCacheHistograms::AddCompletionRunTimeSample(
+    const base::TimeDelta& duration) {
+  UMA_HISTOGRAM_TIMES("appcache.CompletionRunTime", duration);
+}
+
 }  // namespace appcache

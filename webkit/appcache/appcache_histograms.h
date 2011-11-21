@@ -8,6 +8,10 @@
 
 #include "base/basictypes.h"
 
+namespace base {
+class TimeDelta;
+}
+
 namespace appcache {
 
 class AppCacheHistograms {
@@ -24,6 +28,11 @@ class AppCacheHistograms {
     NUM_CHECK_RESPONSE_RESULT_TYPES
   };
   static void CountCheckResponseResult(CheckResponseResultType result);
+
+  static void AddTaskQueueTimeSample(const base::TimeDelta& duration);
+  static void AddTaskRunTimeSample(const base::TimeDelta& duration);
+  static void AddCompletionQueueTimeSample(const base::TimeDelta& duration);
+  static void AddCompletionRunTimeSample(const base::TimeDelta& duration);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AppCacheHistograms);
