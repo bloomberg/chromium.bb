@@ -25,15 +25,21 @@ class BaseSettingChange {
   virtual ~BaseSettingChange();
 
   // Applies initial actions to the setting if needed. Must be called before
-  // any other calls are made, including text getters. Returns true if
-  // initialization was successful.
+  // any other calls are made, including text getters.
+  // Returns true if initialization was successful. Otherwise, no other
+  // calls should be made.
+  // Associates this change with |protector_| instance so overrides must
+  // call the base method.
   virtual bool Init(Protector* protector);
 
   // Persists new setting if needed.
-  virtual void Apply(Protector* protector);
+  virtual void Apply();
 
   // Restores old setting if needed.
-  virtual void Discard(Protector* protector);
+  virtual void Discard();
+
+  // Called before the change is removed from the protector instance.
+  virtual void OnBeforeRemoved() = 0;
 
   // Returns the wrench menu item and bubble title.
   virtual string16 GetBubbleTitle() const = 0;
@@ -48,7 +54,12 @@ class BaseSettingChange {
   // Returns text for the button to discard the change with |Discard|.
   virtual string16 GetDiscardButtonText() const = 0;
 
+  // Protector instance we've been associated with by an |Init| call.
+  Protector* protector() { return protector_; }
+
  private:
+  Protector* protector_;
+
   DISALLOW_COPY_AND_ASSIGN(BaseSettingChange);
 };
 

@@ -18,13 +18,15 @@ class Profile;
 
 namespace protector {
 
+class BaseSettingChange;
 class SettingsChangeGlobalErrorDelegate;
 
 // Global error about unwanted settings changes.
 class SettingsChangeGlobalError : public GlobalError {
  public:
-  // Creates new global error about setting changes |change| and takes
-  // ownership over it. Uses |delegate| to notify about user decision.
+  // Creates new global error about setting changes |change| which must not be
+  // deleted until |delegate->OnRemovedFromProfile| is called. Uses |delegate|
+  // to notify about user decision.
   SettingsChangeGlobalError(BaseSettingChange* change,
                             SettingsChangeGlobalErrorDelegate* delegate);
   virtual ~SettingsChangeGlobalError();
@@ -33,10 +35,11 @@ class SettingsChangeGlobalError : public GlobalError {
   // Can be called from any thread.
   void ShowForProfile(Profile* profile);
 
+  // Removes global error from its profile.
+  void RemoveFromProfile();
+
   // Browser that the bubble has been last time shown for.
   Browser* browser() const { return browser_; }
-
-  BaseSettingChange* mutable_change() { return change_.get(); }
 
   // GlobalError implementation.
   virtual bool HasBadge() OVERRIDE;
@@ -61,11 +64,12 @@ class SettingsChangeGlobalError : public GlobalError {
   // Displays global error bubble. Must be called on the UI thread.
   void Show();
 
-  // Removes global error from its profile and deletes |this| later.
-  void RemoveFromProfile();
+  // Called when the wrench menu item has been displayed for enough time
+  // without user interaction.
+  void OnInactiveTimeout();
 
   // Change to show.
-  scoped_ptr<BaseSettingChange> change_;
+  BaseSettingChange* change_;
 
   // Delegate to notify about user actions.
   SettingsChangeGlobalErrorDelegate* delegate_;

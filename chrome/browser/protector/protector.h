@@ -31,13 +31,15 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
   // bubble for.
   void OpenTab(const GURL& url);
 
-  // Returns TemplateURLService for the profile we've shown error bubble
-  // for.
+  // Returns TemplateURLService for the profile we've shown error bubble for.
   TemplateURLService* GetTemplateURLService();
 
-  // Shows global error about the specified change. Ownership of the change
-  // is passed to the GlobalError object.
+  // Shows global error about the specified change. Owns |change|.
   void ShowChange(BaseSettingChange* change);
+
+  // Silently discards any change previously shown (without calling Discard),
+  // removes global error and deletes itself.
+  void DismissChange();
 
   // SettingsChangeGlobalErrorDelegate implementation.
   virtual void OnApplyChange() OVERRIDE;
@@ -53,12 +55,16 @@ class Protector : public SettingsChangeGlobalErrorDelegate {
 
   // Performs the initial action on settings change and shows it. This is run
   // asynchronously on UI thread because |ShowChange| may be called in the
-  // middle of some operations on settings that have changed.
+  // middle of some operations on settings that have changed. If the initial
+  // action fails, deletes itself.
   void InitAndShowChange(BaseSettingChange* change);
 
   // Pointer to error bubble controller. Indicates if we're showing change
-  // notification to user. Owns itself.
+  // notification to user.
   scoped_ptr<SettingsChangeGlobalError> error_;
+
+  // Setting change which we're showing.
+  scoped_ptr<BaseSettingChange> change_;
 
   // Profile which settings we are protecting.
   Profile* profile_;

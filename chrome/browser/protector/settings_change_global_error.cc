@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/protector/base_setting_change.h"
 #include "chrome/browser/protector/settings_change_global_error_delegate.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/global_error_service.h"
@@ -103,8 +104,6 @@ void SettingsChangeGlobalError::BubbleViewCancelButtonPressed() {
 void SettingsChangeGlobalError::RemoveFromProfile() {
   if (profile_)
     GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(this);
-  if (!closed_by_button_)
-    delegate_->OnDecisionTimeout();
   delegate_->OnRemovedFromProfile();
 }
 
@@ -113,7 +112,7 @@ void SettingsChangeGlobalError::BubbleViewDidClose() {
   if (!closed_by_button_) {
     BrowserThread::PostDelayedTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&SettingsChangeGlobalError::RemoveFromProfile,
+        base::Bind(&SettingsChangeGlobalError::OnInactiveTimeout,
                    weak_factory_.GetWeakPtr()),
         kMenuItemDisplayPeriodMs);
   } else {
@@ -146,6 +145,11 @@ void SettingsChangeGlobalError::Show() {
   browser_ = BrowserList::GetLastActiveWithProfile(profile_);
   if (browser_)
     ShowBubbleView(browser_);
+}
+
+void SettingsChangeGlobalError::OnInactiveTimeout() {
+  delegate_->OnDecisionTimeout();
+  RemoveFromProfile();
 }
 
 }  // namespace protector

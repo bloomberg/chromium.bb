@@ -26,6 +26,8 @@ Protector::Protector(Profile* profile)
 }
 
 Protector::~Protector() {
+  if (change_.get())
+    change_->OnBeforeRemoved();
 }
 
 void Protector::OpenTab(const GURL& url) {
@@ -48,35 +50,42 @@ void Protector::ShowChange(BaseSettingChange* change) {
                  base::Unretained(this), change));
 }
 
-void Protector::InitAndShowChange(BaseSettingChange* change) {
-  VLOG(1) << "Init change";
-  if (!change->Init(this)) {
-    VLOG(1) << "Error while initializing, removing ourselves";
-    delete change;
-    OnRemovedFromProfile();
-    return;
-  }
-  error_.reset(new SettingsChangeGlobalError(change, this));
-  error_->ShowForProfile(profile_);
+void Protector::DismissChange() {
+  DCHECK(error_.get());
+  error_->RemoveFromProfile();
 }
 
 void Protector::OnApplyChange() {
-  VLOG(1) << "Apply change";
-  error_->mutable_change()->Apply(this);
+  DVLOG(1) << "Apply change";
+  change_->Apply();
 }
 
 void Protector::OnDiscardChange() {
-  VLOG(1) << "Discard change";
-  error_->mutable_change()->Discard(this);
+  DVLOG(1) << "Discard change";
+  change_->Discard();
 }
 
 void Protector::OnDecisionTimeout() {
   // TODO(ivankr): Add histogram.
-  VLOG(1) << "Timeout";
+  DVLOG(1) << "Timeout";
 }
 
 void Protector::OnRemovedFromProfile() {
   BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
+}
+
+void Protector::InitAndShowChange(BaseSettingChange* change) {
+  DVLOG(1) << "Init change";
+  if (!change->Init(this)) {
+    LOG(WARNING) << "Error while initializing, removing ourselves";
+    delete change;
+    delete this;
+    return;
+  }
+  // |change_| should not be set until a successful |Init| call.
+  change_.reset(change);
+  error_.reset(new SettingsChangeGlobalError(change, this));
+  error_->ShowForProfile(profile_);
 }
 
 

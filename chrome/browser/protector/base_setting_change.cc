@@ -4,22 +4,30 @@
 
 #include "chrome/browser/protector/base_setting_change.h"
 
+#include "base/logging.h"
+
 namespace protector {
 
-BaseSettingChange::BaseSettingChange() {
+BaseSettingChange::BaseSettingChange()
+    : protector_(NULL) {
 }
 
 BaseSettingChange::~BaseSettingChange() {
 }
 
 bool BaseSettingChange::Init(Protector* protector) {
+  DCHECK(protector);
+  protector_ = protector;
   return true;
 }
 
-void BaseSettingChange::Apply(Protector* protector) {
+void BaseSettingChange::Apply() {
 }
 
-void BaseSettingChange::Discard(Protector* protector) {
+void BaseSettingChange::Discard() {
+}
+
+void BaseSettingChange::OnBeforeRemoved() {
 }
 
 }  // namespace protector
