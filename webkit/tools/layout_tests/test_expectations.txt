@@ -6,3 +6,5 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
+
+BUGWK72651 LINUX DEBUG : inspector/styles/show-user-agent-styles.html = CRASH PASS TIMEOUT
