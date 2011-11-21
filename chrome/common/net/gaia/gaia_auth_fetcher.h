@@ -82,7 +82,7 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   void StartMergeSession(const std::string& auth_token);
 
   // Implementation of content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // StartClientLogin been called && results not back yet?
   bool HasPendingFetch();

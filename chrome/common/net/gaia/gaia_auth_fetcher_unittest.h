@@ -35,7 +35,7 @@ class MockFetcher : public TestURLFetcher {
 
   virtual ~MockFetcher();
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockFetcher);

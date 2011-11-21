@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 
 class GURL;
@@ -199,23 +200,23 @@ class ContentSettingsPattern {
      virtual ~Builder();
 
      // Overrides BuilderInterface
-     virtual BuilderInterface* WithPort(const std::string& port);
+     virtual BuilderInterface* WithPort(const std::string& port) OVERRIDE;
 
-     virtual BuilderInterface* WithPortWildcard();
+     virtual BuilderInterface* WithPortWildcard() OVERRIDE;
 
-     virtual BuilderInterface* WithHost(const std::string& host);
+     virtual BuilderInterface* WithHost(const std::string& host) OVERRIDE;
 
-     virtual BuilderInterface* WithDomainWildcard();
+     virtual BuilderInterface* WithDomainWildcard() OVERRIDE;
 
-     virtual BuilderInterface* WithScheme(const std::string& scheme);
+     virtual BuilderInterface* WithScheme(const std::string& scheme) OVERRIDE;
 
-     virtual BuilderInterface* WithSchemeWildcard();
+     virtual BuilderInterface* WithSchemeWildcard() OVERRIDE;
 
-     virtual BuilderInterface* WithPath(const std::string& path);
+     virtual BuilderInterface* WithPath(const std::string& path) OVERRIDE;
 
-     virtual BuilderInterface* Invalid();
+     virtual BuilderInterface* Invalid() OVERRIDE;
 
-     virtual ContentSettingsPattern Build();
+     virtual ContentSettingsPattern Build() OVERRIDE;
     private:
      // Canonicalizes the pattern parts so that they are ASCII only, either
      // in original (if it was already ASCII) or punycode form.

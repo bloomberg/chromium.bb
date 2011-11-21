@@ -23,7 +23,7 @@ class NaClListener : public IPC::Channel::Listener {
 
  private:
   void OnStartSelLdr(std::vector<nacl::FileDescriptor> handles);
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   bool debug_enabled_;
 

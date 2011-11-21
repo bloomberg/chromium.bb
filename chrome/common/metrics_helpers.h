@@ -236,10 +236,10 @@ class MetricsServiceBase : public HistogramSender {
   // HistogramSender interface (override) methods.
   virtual void TransmitHistogramDelta(
       const base::Histogram& histogram,
-      const base::Histogram::SampleSet& snapshot);
-  virtual void InconsistencyDetected(int problem);
-  virtual void UniqueInconsistencyDetected(int problem);
-  virtual void SnapshotProblemResolved(int amount);
+      const base::Histogram::SampleSet& snapshot) OVERRIDE;
+  virtual void InconsistencyDetected(int problem) OVERRIDE;
+  virtual void UniqueInconsistencyDetected(int problem) OVERRIDE;
+  virtual void SnapshotProblemResolved(int amount) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceBase);
 };
