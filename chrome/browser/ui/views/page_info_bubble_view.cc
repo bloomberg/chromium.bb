@@ -10,7 +10,6 @@
 #include "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/url_constants.h"
