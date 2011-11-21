@@ -48,6 +48,9 @@ class TestPackage(object):
         timeout = 900
       else:
         timeout = 60
+    # On a VM (e.g. chromium buildbots), this timeout is way too small.
+    if os.environ.get('BUILDBOT_SLAVENAME'):
+      timeout = timeout * 2
     self.timeout = timeout * self.tool.GetTimeoutScale()
     self.dump_debug_info = dump_debug_info
 
