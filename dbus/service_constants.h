@@ -737,6 +737,8 @@ const char kCrosDisksServiceError[] = "org.chromium.CrosDisks.Error";
 
 // Methods.
 const char kEnumerateAutoMountableDevices[] = "EnumerateAutoMountableDevices";
+const char kFormat[] = "Format";
+// TODO(benchan): Deprecate FormatDevice method (crosbug.com/22981)
 const char kFormatDevice[] = "FormatDevice";
 const char kGetDeviceProperties[] = "GetDeviceProperties";
 const char kMount[] = "Mount";
@@ -786,6 +788,17 @@ enum DeviceMediaType {
   DEVICE_MEDIA_OPTICAL_DISC = 3,
   DEVICE_MEDIA_MOBILE = 4,
   DEVICE_MEDIA_NUM_VALUES = 5,
+};
+
+enum FormatErrorType {
+  FORMAT_ERROR_NONE = 0,
+  FORMAT_ERROR_UNKNOWN = 1,
+  FORMAT_ERROR_INTERNAL = 2,
+  FORMAT_ERROR_INVALID_DEVICE_PATH = 3,
+  FORMAT_ERROR_DEVICE_BEING_FORMATTED = 4,
+  FORMAT_ERROR_UNSUPPORTED_FILESYSTEM = 5,
+  FORMAT_ERROR_FORMAT_PROGRAM_NOT_FOUND = 6,
+  FORMAT_ERROR_FORMAT_PROGRAM_FAILED = 7,
 };
 
 // TODO(benchan): After both Chrome and cros-disks use these enum values,
