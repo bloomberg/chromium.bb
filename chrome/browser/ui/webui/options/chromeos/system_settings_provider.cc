@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/i18n/rtl.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -120,7 +121,9 @@ static const char* kTimeZones[] = {
     "Pacific/Tongatapu",
 };
 
-static base::Lock timezone_bundle_lock;
+static base::LazyInstance<base::Lock,
+                          base::LeakyLazyInstanceTraits<base::Lock> >
+    g_timezone_bundle_lock = LAZY_INSTANCE_INITIALIZER;
 
 struct UResClose {
   inline void operator() (UResourceBundle* b) const {
@@ -138,7 +141,7 @@ string16 GetExemplarCity(const icu::TimeZone& zone) {
 
   UErrorCode status = U_ZERO_ERROR;
   {
-    base::AutoLock lock(timezone_bundle_lock);
+    base::AutoLock lock(g_timezone_bundle_lock.Get());
     if (zone_bundle == NULL)
       zone_bundle = ures_open(zone_bundle_name, uloc_getDefault(), &status);
 

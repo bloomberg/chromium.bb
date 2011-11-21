@@ -699,7 +699,7 @@ const SkBitmap NetworkMenuIcon::GenerateBitmapFromComponents(
 // We blend connecting icons with a black image to generate a faded icon.
 const SkBitmap NetworkMenuIcon::GenerateConnectingBitmap(
     const SkBitmap& source) {
-  static SkBitmap empty_badge;
+  CR_DEFINE_STATIC_LOCAL(SkBitmap, empty_badge, ());
   if (empty_badge.empty()) {
     empty_badge.setConfig(SkBitmap::kARGB_8888_Config,
                           source.width(), source.height(), 0);

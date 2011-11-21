@@ -57,12 +57,24 @@ static const int kErrorLabelVerticalSpacing = 15;  // Pixels.
 namespace {
 // These are used as placeholder text around the links in the text in the about
 // dialog.
-const string16 kBeginLink(ASCIIToUTF16("BEGIN_LINK"));
-const string16 kEndLink(ASCIIToUTF16("END_LINK"));
-const string16 kBeginLinkChr(ASCIIToUTF16("BEGIN_LINK_CHR"));
-const string16 kBeginLinkOss(ASCIIToUTF16("BEGIN_LINK_OSS"));
-const string16 kEndLinkChr(ASCIIToUTF16("END_LINK_CHR"));
-const string16 kEndLinkOss(ASCIIToUTF16("END_LINK_OSS"));
+string16 kBeginLink() {
+  return ASCIIToUTF16("BEGIN_LINK");
+}
+string16 kEndLink() {
+  return ASCIIToUTF16("END_LINK");
+}
+string16 kBeginLinkChr() {
+  return ASCIIToUTF16("BEGIN_LINK_CHR");
+}
+string16 kBeginLinkOss() {
+  return ASCIIToUTF16("BEGIN_LINK_OSS");
+}
+string16 kEndLinkChr() {
+  return ASCIIToUTF16("END_LINK_CHR");
+}
+string16 kEndLinkOss() {
+  return ASCIIToUTF16("END_LINK_OSS");
+}
 
 // Returns a substring from |text| between start and end.
 string16 StringSubRange(const string16& text, size_t start, size_t end) {
@@ -196,33 +208,33 @@ void AboutChromeView::Init() {
   string16 text = l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_LICENSE);
 
   chromium_url_appears_first_ =
-      text.find(kBeginLinkChr) < text.find(kBeginLinkOss);
+      text.find(kBeginLinkChr()) < text.find(kBeginLinkOss());
 
-  size_t link1 = text.find(kBeginLink);
+  size_t link1 = text.find(kBeginLink());
   DCHECK(link1 != string16::npos);
-  size_t link1_end = text.find(kEndLink, link1);
+  size_t link1_end = text.find(kEndLink(), link1);
   DCHECK(link1_end != string16::npos);
-  size_t link2 = text.find(kBeginLink, link1_end);
+  size_t link2 = text.find(kBeginLink(), link1_end);
   DCHECK(link2 != string16::npos);
-  size_t link2_end = text.find(kEndLink, link2);
+  size_t link2_end = text.find(kEndLink(), link2);
   DCHECK(link1_end != string16::npos);
 
   main_label_chunk1_ = text.substr(0, link1);
-  main_label_chunk2_ = StringSubRange(text, link1_end + kEndLinkOss.size(),
+  main_label_chunk2_ = StringSubRange(text, link1_end + kEndLinkOss().size(),
                                       link2);
-  main_label_chunk3_ = text.substr(link2_end + kEndLinkOss.size());
+  main_label_chunk3_ = text.substr(link2_end + kEndLinkOss().size());
 
   // The Chromium link within the main text of the dialog.
   chromium_url_ = new views::Link(
-      StringSubRange(text, text.find(kBeginLinkChr) + kBeginLinkChr.size(),
-                     text.find(kEndLinkChr)));
+      StringSubRange(text, text.find(kBeginLinkChr()) + kBeginLinkChr().size(),
+                     text.find(kEndLinkChr())));
   AddChildView(chromium_url_);
   chromium_url_->set_listener(this);
 
   // The Open Source link within the main text of the dialog.
   open_source_url_ = new views::Link(
-      StringSubRange(text, text.find(kBeginLinkOss) + kBeginLinkOss.size(),
-                     text.find(kEndLinkOss)));
+      StringSubRange(text, text.find(kBeginLinkOss()) + kBeginLinkOss().size(),
+                     text.find(kEndLinkOss())));
   AddChildView(open_source_url_);
   open_source_url_->set_listener(this);
 

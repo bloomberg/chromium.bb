@@ -473,7 +473,7 @@ gfx::Size ToolbarView::GetPreferredSize() {
         browser_actions_->GetPreferredSize().width() +
         app_menu_->GetPreferredSize().width() + kEdgeSpacing;
 
-    static SkBitmap normal_background;
+    CR_DEFINE_STATIC_LOCAL(SkBitmap, normal_background, ());
     if (normal_background.isNull()) {
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       normal_background = *rb.GetBitmapNamed(IDR_CONTENT_TOP_CENTER);

@@ -339,7 +339,7 @@ class GetVolumeMetadataFunction
 
  private:
 #if defined(OS_CHROMEOS)
-  const std::string& DeviceTypeToString(chromeos::DeviceType type);
+  std::string DeviceTypeToString(chromeos::DeviceType type);
 #endif
 
   DECLARE_EXTENSION_FUNCTION_NAME("fileBrowserPrivate.getVolumeMetadata");

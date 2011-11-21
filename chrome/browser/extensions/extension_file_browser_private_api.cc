@@ -61,10 +61,10 @@ const char kVolumeDevicePathNotFound[] = "Device path not found";
 
 #ifdef OS_CHROMEOS
 // Volume type strings.
-const std::string kVolumeTypeFlash = "flash";
-const std::string kVolumeTypeOptical = "optical";
-const std::string kVolumeTypeHardDrive = "hdd";
-const std::string kVolumeTypeUnknown = "undefined";
+const char kVolumeTypeFlash[] = "flash";
+const char kVolumeTypeOptical[] = "optical";
+const char kVolumeTypeHardDrive[] = "hdd";
+const char kVolumeTypeUnknown[] = "undefined";
 #endif
 
 // Internal task ids.
@@ -1491,7 +1491,7 @@ bool GetVolumeMetadataFunction::RunImpl() {
 }
 
 #ifdef OS_CHROMEOS
-const std::string& GetVolumeMetadataFunction::DeviceTypeToString(
+std::string GetVolumeMetadataFunction::DeviceTypeToString(
     chromeos::DeviceType type) {
   switch (type) {
     case chromeos::FLASH:

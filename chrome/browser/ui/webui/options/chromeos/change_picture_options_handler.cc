@@ -142,8 +142,8 @@ void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
   }
 
   // Static so we initialize it only once.
-  static SelectFileDialog::FileTypeInfo file_type_info =
-      GetUserImageFileTypeInfo();
+  CR_DEFINE_STATIC_LOCAL(SelectFileDialog::FileTypeInfo, file_type_info,
+      (GetUserImageFileTypeInfo()));
 
   select_file_dialog_->SelectFile(
       SelectFileDialog::SELECT_OPEN_FILE,

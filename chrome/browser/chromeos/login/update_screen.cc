@@ -57,7 +57,7 @@ void StartUpdateCallback(void* user_data,
 
 // static
 UpdateScreen::InstanceSet& UpdateScreen::GetInstanceSet() {
-  static std::set<UpdateScreen*> instance_set;
+  CR_DEFINE_STATIC_LOCAL(std::set<UpdateScreen*>, instance_set, ());
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));  // not threadsafe.
   return instance_set;
 }

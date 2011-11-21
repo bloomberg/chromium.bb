@@ -109,8 +109,8 @@ void AppInfoView::Init(const string16& title_text,
 void AppInfoView::PrepareDescriptionLabel(const string16& description) {
   DCHECK(!description.empty());
 
-  static const size_t kMaxLength = 200;
-  static const string16 kEllipsis(ASCIIToUTF16(" ... "));
+  const size_t kMaxLength = 200;
+  const string16 kEllipsis(ASCIIToUTF16(" ... "));
 
   string16 text = description;
   if (text.length() > kMaxLength) {
