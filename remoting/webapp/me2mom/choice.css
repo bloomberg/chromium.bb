@@ -110,6 +110,10 @@ label {
   padding-bottom: 20px;
 }
 
+.clickable {
+  cursor: pointer;
+}
+
 .description {
   margin-bottom: 25px;
 }
@@ -201,10 +205,6 @@ label {
   color: black;
 }
 
-.host-list-row, .host-list-row td {
-  -webkit-transition: all 0.5s;
-}
-
 .host-list-row td {
   border-bottom: 1px solid transparent;
   border-top: 1px solid transparent;
@@ -212,6 +212,26 @@ label {
 
 .host-list-row:hover {
   background-color: #e7eef2;
+}
+
+.host-list-rename-icon, .host-list-remove-icon {
+  opacity: 0;
+}
+
+.host-list-row:hover .host-list-rename-icon {
+  opacity: 0.8;
+}
+
+.host-list-row:hover .host-list-remove-icon {
+  opacity: 0.3;
+}
+
+.host-list-edit:hover .host-list-rename-icon {
+  opacity: 1;
+}
+
+.host-list-edit:hover .host-list-remove-icon {
+  opacity: 0.5;
 }
 
 .host-list-row:hover td {
@@ -231,7 +251,7 @@ label {
   color: #a9a9a9;
 }
 
-.host-offline img {
+.host-offline .host-list-main-icon {
   opacity: 0.5;
 }
 

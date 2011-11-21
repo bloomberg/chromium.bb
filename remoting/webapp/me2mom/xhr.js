@@ -51,50 +51,8 @@ remoting.xhr.urlencodeParamHash = function(paramHash) {
  */
 remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
                             opt_withCredentials) {
-  /** @type {XMLHttpRequest} */
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState != 4) {
-      return;
-    }
-    onDone(xhr);
-  };
-
-  // Add parameters into URL.
-  if (typeof(opt_parameters) === 'string') {
-    if (opt_parameters.length > 0) {
-      url = url + '?' + opt_parameters;
-    }
-  } else if (typeof(opt_parameters) === 'object') {
-    var paramString = remoting.xhr.urlencodeParamHash(opt_parameters);
-    if (paramString.length > 0) {
-      url = url + '?' + paramString;
-    }
-  } else if (opt_parameters === undefined) {
-    // No problem here. Do nothing.
-  } else {
-    throw 'opt_parameters must be string or associated array.';
-  }
-
-  xhr.open('GET', url, true);
-
-  // Add in request headers.
-  if (typeof(opt_headers) === 'object') {
-    for (var key in opt_headers) {
-      xhr.setRequestHeader(key, opt_headers[key]);
-    }
-  } else if (opt_headers === undefined) {
-    // No problem here. Do nothing.
-  } else {
-    throw 'opt_headers must be associative array.';
-  }
-
-  if (opt_withCredentials) {
-    xhr.withCredentials = true;
-  }
-
-  xhr.send(null);
-  return xhr;
+  return remoting.xhr.doMethod('GET', url, onDone, opt_parameters,
+                               opt_headers, opt_withCredentials);
 };
 
 /**
@@ -110,10 +68,75 @@ remoting.xhr.get = function(url, onDone, opt_parameters, opt_headers,
  *     request.
  * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
  *     XHR.
- * @return {void} Nothing.
+ * @return {XMLHttpRequest} The request object.
  */
 remoting.xhr.post = function(url, onDone, opt_parameters, opt_headers,
                              opt_withCredentials) {
+  return remoting.xhr.doMethod('POST', url, onDone, opt_parameters,
+                               opt_headers, opt_withCredentials);
+};
+
+/**
+ * Execute an XHR DELETE asynchronously.
+ *
+ * @param {string} url The base URL to DELETE, excluding parameters.
+ * @param {function(XMLHttpRequest):void} onDone The function to call on
+ *     completion.
+ * @param {(string|Object.<string>)=} opt_parameters The request parameters,
+ *     either as an associative array, or a string.  If it is a string, be
+ *     sure it is correctly URLEncoded.
+ * @param {Object.<string>=} opt_headers Additional headers to include on the
+ *     request.
+ * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
+ *     XHR.
+ * @return {XMLHttpRequest} The request object.
+ */
+remoting.xhr.remove = function(url, onDone, opt_parameters, opt_headers,
+                             opt_withCredentials) {
+  return remoting.xhr.doMethod('DELETE', url, onDone, opt_parameters,
+                               opt_headers, opt_withCredentials);
+};
+
+/**
+ * Execute an XHR PUT asynchronously.
+ *
+ * @param {string} url The base URL to PUT, excluding parameters.
+ * @param {function(XMLHttpRequest):void} onDone The function to call on
+ *     completion.
+ * @param {(string|Object.<string>)=} opt_parameters The request parameters,
+ *     either as an associative array, or a string.  If it is a string, be
+ *     sure it is correctly URLEncoded.
+ * @param {Object.<string>=} opt_headers Additional headers to include on the
+ *     request.
+ * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
+ *     XHR.
+ * @return {XMLHttpRequest} The request object.
+ */
+remoting.xhr.put = function(url, onDone, opt_parameters, opt_headers,
+                             opt_withCredentials) {
+  return remoting.xhr.doMethod('PUT', url, onDone, opt_parameters,
+                               opt_headers, opt_withCredentials);
+};
+
+/**
+ * Execute an arbitrary HTTP method asynchronously.
+ *
+ * @param {string} methodName The HTTP method name, e.g. "GET", "POST" etc.
+ * @param {string} url The base URL, excluding parameters.
+ * @param {function(XMLHttpRequest):void} onDone The function to call on
+ *     completion.
+ * @param {(string|Object.<string>)=} opt_parameters The request parameters,
+ *     either as an associative array, or a string.  If it is a string, be
+ *     sure it is correctly URLEncoded.
+ * @param {Object.<string>=} opt_headers Additional headers to include on the
+ *     request.
+ * @param {boolean=} opt_withCredentials Set the withCredentials flags in the
+ *     XHR.
+ * @return {XMLHttpRequest} The XMLHttpRequest object.
+ */
+remoting.xhr.doMethod = function(methodName, url, onDone,
+                                 opt_parameters, opt_headers,
+                                 opt_withCredentials) {
   /** @type {XMLHttpRequest} */
   var xhr = new XMLHttpRequest();
   xhr.onreadystatechange = function() {
@@ -123,21 +146,27 @@ remoting.xhr.post = function(url, onDone, opt_parameters, opt_headers,
     onDone(xhr);
   };
 
-  // Add parameters into URL.
-  var postData = '';
+  var parameterString = '';
   if (typeof(opt_parameters) === 'string') {
-    postData = opt_parameters;
+    parameterString = opt_parameters;
   } else if (typeof(opt_parameters) === 'object') {
-    postData = remoting.xhr.urlencodeParamHash(opt_parameters);
+    parameterString = remoting.xhr.urlencodeParamHash(opt_parameters);
   } else if (opt_parameters === undefined) {
     // No problem here. Do nothing.
   } else {
     throw 'opt_parameters must be string or associated array.';
   }
 
-  xhr.open('POST', url, true);
-  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  var useBody = (methodName == 'POST') || (methodName == 'PUT');
 
+  if (!useBody && parameterString != '') {
+    url = url + '?' + parameterString;
+  }
+
+  xhr.open(methodName, url, true);
+  if (methodName == 'POST') {
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+  }
   // Add in request headers.
   if (typeof(opt_headers) === 'object') {
     for (var key in opt_headers) {
@@ -153,5 +182,6 @@ remoting.xhr.post = function(url, onDone, opt_parameters, opt_headers,
     xhr.withCredentials = true;
   }
 
-  xhr.send(postData);
+  xhr.send(useBody ? parameterString : null);
+  return xhr;
 };

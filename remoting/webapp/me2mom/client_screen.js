@@ -392,31 +392,30 @@ function recenterToolbar_() {
  * @return {void} Nothing.
  */
 remoting.connectHost = function(hostId) {
-  for (var i = 0; i < remoting.hostList.hosts.length; ++i) {
-    /** @type {remoting.Host} */
-    var host = remoting.hostList.hosts[i];
-    if (host.hostId != hostId)
-      continue;
-
-    remoting.hostJid = host.jabberId;
-    remoting.hostPublicKey = host.publicKey;
-    document.getElementById('connected-to').innerText = host.hostName;
-
-    remoting.debug.log('Connecting to host...');
-
-    if (!remoting.wcsLoader) {
-      remoting.wcsLoader = new remoting.WcsLoader();
-    }
-    /** @param {function(string):void} setToken The callback function. */
-    var callWithToken = function(setToken) {
-      remoting.oauth2.callWithToken(setToken);
-    };
-    remoting.wcsLoader.start(
-        remoting.oauth2.getAccessToken(),
-        callWithToken,
-        remoting.connectHostWithWcs);
-    break;
+  var hostTableEntry = remoting.hostList.getHostForId(hostId);
+  if (!hostTableEntry) {
+    console.error('connectHost: Unrecognised hostId: ' + hostId);
+    return;
   }
+
+  remoting.hostJid = hostTableEntry.host.jabberId;
+  remoting.hostPublicKey = hostTableEntry.host.publicKey;
+  document.getElementById('connected-to').innerText =
+  hostTableEntry.host.hostName;
+
+  remoting.debug.log('Connecting to host...');
+
+  if (!remoting.wcsLoader) {
+    remoting.wcsLoader = new remoting.WcsLoader();
+  }
+  /** @param {function(string):void} setToken The callback function. */
+  var callWithToken = function(setToken) {
+    remoting.oauth2.callWithToken(setToken);
+  };
+  remoting.wcsLoader.start(
+      remoting.oauth2.getAccessToken(),
+      callWithToken,
+      remoting.connectHostWithWcs);
 }
 
 /**
