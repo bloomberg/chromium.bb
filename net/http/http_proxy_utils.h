@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,9 @@
 
 namespace net {
 
+class BoundNetLog;
+class HttpAuthController;
+class HttpResponseInfo;
 struct HttpRequestInfo;
 class HttpRequestHeaders;
 class HostPortPair;
@@ -22,6 +25,12 @@ void BuildTunnelRequest(const HttpRequestInfo& request_info,
                         const HostPortPair& endpoint,
                         std::string* request_line,
                         HttpRequestHeaders* request_headers);
+
+// When an auth challenge (407 response) is received during tunnel construction
+// this method should be called.
+int HandleAuthChallenge(HttpAuthController* auth,
+                        HttpResponseInfo* response,
+                        const BoundNetLog& net_log);
 
 }  // namespace net
 
