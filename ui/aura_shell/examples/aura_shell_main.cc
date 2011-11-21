@@ -15,9 +15,39 @@
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
+#include "views/widget/widget_delegate.h"
+#include "views/widget/widget.h"
 
 namespace {
+
+class AppListWindow : public views::WidgetDelegateView {
+ public:
+  AppListWindow() {
+  }
+
+  // static
+  static views::Widget* Create() {
+    AppListWindow* app_list = new AppListWindow;
+
+    views::Widget::InitParams widget_params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    widget_params.delegate = app_list;
+    widget_params.keep_on_top = true;
+    widget_params.transparent = true;
+
+    views::Widget* widget = new views::Widget;
+    widget->Init(widget_params);
+    widget->SetContentsView(app_list);
+    return widget;
+  }
+
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    canvas->FillRect(SkColorSetARGB(0x4F, 0xFF, 0, 0), bounds());
+  }
+};
 
 class ShellDelegateImpl : public aura_shell::ShellDelegate {
  public:
@@ -35,8 +65,9 @@ class ShellDelegateImpl : public aura_shell::ShellDelegate {
     return aura_shell::internal::CreateStatusArea();
   }
 
-  virtual void ShowApps() OVERRIDE {
-    NOTIMPLEMENTED();
+  virtual void RequestAppListWidget(
+      const SetWidgetCallback& callback) OVERRIDE {
+    callback.Run(AppListWindow::Create());
   }
 
   virtual void LauncherItemClicked(

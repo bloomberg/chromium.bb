@@ -598,7 +598,7 @@ void LauncherView::ButtonPressed(views::Button* sender,
   if (sender == new_browser_button_) {
     delegate->CreateNewWindow();
   } else if (sender == show_apps_button_) {
-    delegate->ShowApps();
+    Shell::GetInstance()->ToggleAppList();
   } else if (sender == overflow_button_) {
     ShowOverflowMenu();
   } else {

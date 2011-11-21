@@ -6,6 +6,7 @@
 #define UI_AURA_SHELL_SHELL_DELEGATE_H_
 #pragma once
 
+#include "base/callback.h"
 #include "ui/aura_shell/aura_shell_export.h"
 
 namespace views {
@@ -19,6 +20,9 @@ struct LauncherItem;
 // Delegate of the Shell.
 class AURA_SHELL_EXPORT ShellDelegate {
  public:
+  // Callback to pass back a widget used by RequestAppListWidget.
+  typedef base::Callback<void(views::Widget*)> SetWidgetCallback;
+
   // The Shell owns the delegate.
   virtual ~ShellDelegate() {}
 
@@ -29,8 +33,9 @@ class AURA_SHELL_EXPORT ShellDelegate {
   // Invoked to create a new status area. Can return NULL.
   virtual views::Widget* CreateStatusArea() = 0;
 
-  // Invoked when the user clicks the app list button on the launcher.
-  virtual void ShowApps() = 0;
+  // Invoked to create app list widget. The Delegate calls the callback
+  // when the widget is ready to show.
+  virtual void RequestAppListWidget(const SetWidgetCallback& callback) = 0;
 
   // Invoked when the user clicks on a window entry in the launcher.
   virtual void LauncherItemClicked(const LauncherItem& item) = 0;

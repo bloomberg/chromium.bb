@@ -12,6 +12,7 @@
 #include "ui/aura/desktop.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_types.h"
+#include "ui/aura_shell/app_list.h"
 #include "ui/aura_shell/default_container_event_filter.h"
 #include "ui/aura_shell/default_container_layout_manager.h"
 #include "ui/aura_shell/desktop_event_filter.h"
@@ -217,6 +218,12 @@ void Shell::RemoveDesktopEventFilter(aura::EventFilter* filter) {
 void Shell::ToggleOverview() {
   if (workspace_controller_.get())
     workspace_controller_->ToggleOverview();
+}
+
+void Shell::ToggleAppList() {
+  if (!app_list_.get())
+    app_list_.reset(new internal::AppList);
+  app_list_->SetVisible(!app_list_->IsVisible());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

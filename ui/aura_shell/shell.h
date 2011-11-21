@@ -30,6 +30,7 @@ class Launcher;
 class ShellDelegate;
 
 namespace internal {
+class AppList;
 class DragDropController;
 class ShadowController;
 class ShelfLayoutController;
@@ -62,6 +63,9 @@ class AURA_SHELL_EXPORT Shell {
   // Toggles between overview mode and normal mode.
   void ToggleOverview();
 
+  // Toggles app list.
+  void ToggleAppList();
+
   ShellDelegate* delegate() { return delegate_.get(); }
   Launcher* launcher() { return launcher_.get(); }
 
@@ -90,6 +94,8 @@ class AURA_SHELL_EXPORT Shell {
   scoped_ptr<ShellDelegate> delegate_;
 
   scoped_ptr<Launcher> launcher_;
+
+  scoped_ptr<internal::AppList> app_list_;
 
   scoped_ptr<internal::DragDropController> drag_drop_controller_;
   scoped_ptr<internal::WorkspaceController> workspace_controller_;

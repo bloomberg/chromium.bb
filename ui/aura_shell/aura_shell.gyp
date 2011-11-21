@@ -35,6 +35,8 @@
         # All .cc, .h under views, except unittests
         'always_on_top_controller.cc',
         'always_on_top_controller.h',
+        'app_list.cc',
+        'app_list.h',
         'default_container_event_filter.cc',
         'default_container_event_filter.h',
         'default_container_layout_manager.cc',

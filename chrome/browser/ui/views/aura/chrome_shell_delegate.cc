@@ -57,8 +57,9 @@ views::Widget* ChromeShellDelegate::CreateStatusArea() {
   return status_area_widget;
 }
 
-void ChromeShellDelegate::ShowApps() {
-  AppListWindow::SetVisible(!AppListWindow::IsVisible());
+void ChromeShellDelegate::RequestAppListWidget(
+    const SetWidgetCallback& callback) {
+  new AppListWindow(callback);  // AppListWindow deletes itself when closed.
 }
 
 void ChromeShellDelegate::LauncherItemClicked(
