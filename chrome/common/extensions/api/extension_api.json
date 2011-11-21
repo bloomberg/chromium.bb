@@ -3371,21 +3371,24 @@
               },
               "segments": {
                 "description": "List of segments and their associated types.",
-                "type": "object",
+                "type": "array",
                 "optional": true,
-                "properties": {
-                  "start": {
-                    "description": "Index of the character to start this segment at",
-                    "type": "integer"
-                  },
-                  "end": {
-                    "description": "Index of the character to end this segment after.",
-                    "type": "integer"
-                  },
-                  "style": {
-                    "description": "How to render this segment",
-                    "enum": ["underline", "doubleUnderline"],
-                    "type": "string"
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "start": {
+                      "description": "Index of the character to start this segment at",
+                      "type": "integer"
+                    },
+                    "end": {
+                      "description": "Index of the character to end this segment after.",
+                      "type": "integer"
+                    },
+                    "style": {
+                      "description": "How to render this segment",
+                      "enum": ["underline", "doubleUnderline"],
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -3598,7 +3601,12 @@
             "name": "callback",
             "optional": true,
             "description": "Called when the operation completes",
-            "parameters": []
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean"
+              }
+            ]
           }
         ]
       },

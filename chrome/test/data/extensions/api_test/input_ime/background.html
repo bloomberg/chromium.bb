@@ -1,4 +1,81 @@
 <script>
+  function setCompositionTest() {
+    chrome.experimental.input.ime.setComposition({
+      "contextID": 1,
+      "text": "Pie",
+      "selectionStart": 1,
+      "selectionEnd": 2,
+      "segments": [{
+        "start": 0,
+        "end": 1,
+        "style": "underline"
+      }]
+    }, chrome.test.callbackPass());
+  }
+
+
+  function clearCompositionTest() {
+    chrome.experimental.input.ime.clearComposition({
+      "contextID": 1
+    }, chrome.test.callbackPass());
+  }
+
+
+  function commitTextTest() {
+    chrome.experimental.input.ime.commitText({
+      "contextID": 2,
+      "text": "Seaguls"
+    }, chrome.test.callbackPass());
+  }
+
+
+  function setCandidateWindowPropertiesTest() {
+    chrome.experimental.input.ime.setCandidateWindowProperties({
+      "engineID": "test",
+      "properties": {
+        "visible": true,
+        "cursorVisible": false,
+        "vertical": true,
+        "pageSize": 6,
+        "auxiliaryText": "notes",
+        "auxiliaryTextVisible": true
+      }
+    }, chrome.test.callbackPass());
+  }
+
+
+  function setCandidatesTest() {
+    chrome.experimental.input.ime.setCandidates({
+      "contextID": 8,
+      "candidates": [{
+        "candidate": "one",
+        "id": 1,
+        "label": "first",
+        "annotation": "The first one"
+      }, {
+        "candidate": "two",
+        "id": 2,
+        "label": "second",
+        "annotation": "The second one"
+      }, {
+        "candidate": "three",
+        "id": 3,
+        "label": "third",
+        "annotation": "The third one"
+      }]
+    }, chrome.test.callbackPass());
+  }
+
+
+  function setCursorPositionTest() {
+    chrome.experimental.input.ime.setCursorPosition({
+      "contextID": 9,
+      "candidateID": 1
+    }, chrome.test.callbackPass());
+  }
+
+
+
   function setMenuItemsTest() {
     chrome.experimental.input.ime.setMenuItems({
       "engineID": "test",
@@ -15,10 +92,7 @@
         "visible": true,
         "enabled": true
       }]
-    }, function () {
-      chrome.test.assertNoLastError();
-      chrome.test.succeed();
-    });
+    }, chrome.test.callbackPass());
   }
 
   function updateMenuItemsTest() {
@@ -31,11 +105,11 @@
         "id": "Menu 2",
         "visible": false,
       }]
-    }, function () {
-      chrome.test.assertNoLastError();
-      chrome.test.succeed();
-    });
+    }, chrome.test.callbackPass());
   }
 
-  chrome.test.runTests([setMenuItemsTest, updateMenuItemsTest]);
+  chrome.test.runTests([setCompositionTest, clearCompositionTest,
+                        commitTextTest, setCandidateWindowPropertiesTest,
+                        setCandidatesTest, setCursorPositionTest,
+                        setMenuItemsTest, updateMenuItemsTest]);
 </script>

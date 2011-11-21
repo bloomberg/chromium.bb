@@ -64,35 +64,35 @@ class ExtensionInputImeEventRouter {
   DISALLOW_COPY_AND_ASSIGN(ExtensionInputImeEventRouter);
 };
 
-class SetCompositionFunction : public AsyncExtensionFunction {
+class SetCompositionFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.input.ime.setComposition");
 };
 
-class ClearCompositionFunction : public AsyncExtensionFunction {
+class ClearCompositionFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.input.ime.clearComposition");
 };
 
-class CommitTextFunction : public AsyncExtensionFunction {
+class CommitTextFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.input.ime.commitText");
 };
 
-class SetCandidateWindowPropertiesFunction : public AsyncExtensionFunction {
+class SetCandidateWindowPropertiesFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(
       "experimental.input.ime.setCandidateWindowProperties");
 };
 
-class SetCandidatesFunction : public AsyncExtensionFunction {
+class SetCandidatesFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(
@@ -103,7 +103,7 @@ class SetCandidatesFunction : public AsyncExtensionFunction {
       std::vector<chromeos::InputMethodEngine::Candidate>* output);
 };
 
-class SetCursorPositionFunction : public AsyncExtensionFunction {
+class SetCursorPositionFunction : public SyncExtensionFunction {
  public:
   virtual bool RunImpl();
   DECLARE_EXTENSION_FUNCTION_NAME(

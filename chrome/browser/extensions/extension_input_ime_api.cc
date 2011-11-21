@@ -779,9 +779,9 @@ bool SetCursorPositionFunction::RunImpl() {
   int candidate_id;
 
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kContextIdKey,
-                                                     &context_id));
+                                               &context_id));
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kCandidateIdKey,
-                                                     &candidate_id));
+                                               &candidate_id));
 
   if (engine->SetCursorPosition(context_id, candidate_id, &error_)) {
     result_.reset(Value::CreateBooleanValue(true));
