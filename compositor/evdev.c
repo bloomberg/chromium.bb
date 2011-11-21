@@ -44,8 +44,11 @@ struct evdev_input_device {
 	char *devnode;
 	int tool;
 	int fd;
-	int min_x, max_x, min_y, max_y;
-	int is_touchpad, old_x_value, old_y_value, reset_x_value, reset_y_value;
+	struct {
+		int min_x, max_x, min_y, max_y;
+		int old_x, old_y, reset_x, reset_y;
+	} abs;
+	int is_touchpad;
 };
 
 static inline void
@@ -67,8 +70,8 @@ evdev_process_key(struct evdev_input_device *device,
 		device->tool = e->value ? e->code : 0;
 		if (device->is_touchpad)
 		{
-			device->reset_x_value = 1;
-			device->reset_y_value = 1;
+			device->abs.reset_x = 1;
+			device->abs.reset_y = 1;
 		}
 		break;
 
@@ -107,13 +110,13 @@ evdev_process_absolute_motion(struct evdev_input_device *device,
 	switch (e->code) {
 	case ABS_X:
 		*absolute_event = device->tool;
-		*x = (e->value - device->min_x) * screen_width /
-			(device->max_x - device->min_x) + device->output->x;
+		*x = (e->value - device->abs.min_x) * screen_width /
+			(device->abs.max_x - device->abs.min_x) + device->output->x;
 		break;
 	case ABS_Y:
 		*absolute_event = device->tool;
-		*y = (e->value - device->min_y) * screen_height /
-			(device->max_y - device->min_y) + device->output->y;
+		*y = (e->value - device->abs.min_y) * screen_height /
+			(device->abs.max_y - device->abs.min_y) + device->output->y;
 		break;
 	}
 }
@@ -127,25 +130,25 @@ evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
 
 	switch (e->code) {
 	case ABS_X:
-		e->value -= device->min_x;
-		if (device->reset_x_value)
-			device->reset_x_value = 0;
+		e->value -= device->abs.min_x;
+		if (device->abs.reset_x)
+			device->abs.reset_x = 0;
 		else {
-			*dx = (e->value - device->old_x_value) * touchpad_speed /
-				(device->max_x - device->min_x);
+			*dx = (e->value - device->abs.old_x) * touchpad_speed /
+				(device->abs.max_x - device->abs.min_x);
 		}
-		device->old_x_value = e->value;
+		device->abs.old_x = e->value;
 		break;
 	case ABS_Y:
-		e->value -= device->min_y;
-		if (device->reset_y_value)
-			device->reset_y_value = 0;
+		e->value -= device->abs.min_y;
+		if (device->abs.reset_y)
+			device->abs.reset_y = 0;
 		else {
-			*dy = (e->value - device->old_y_value) * touchpad_speed /
+			*dy = (e->value - device->abs.old_y) * touchpad_speed /
 				/* maybe use x size here to have the same scale? */
-				(device->max_y - device->min_y);
+				(device->abs.max_y - device->abs.min_y);
 		}
-		device->old_y_value = e->value;
+		device->abs.old_y = e->value;
 		break;
 	}
 }
@@ -287,17 +290,18 @@ evdev_configure_device(struct evdev_input_device *device)
 	ioctl(device->fd, EVIOCGBIT(0, sizeof(ev_bits)), ev_bits);
 	if (TEST_BIT(ev_bits, EV_ABS)) {
 		has_abs = 1;
+
 		ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)),
 		      abs_bits);
 		if (TEST_BIT(abs_bits, ABS_X)) {
 			ioctl(device->fd, EVIOCGABS(ABS_X), &absinfo);
-			device->min_x = absinfo.minimum;
-			device->max_x = absinfo.maximum;
+			device->abs.min_x = absinfo.minimum;
+			device->abs.max_x = absinfo.maximum;
 		}
 		if (TEST_BIT(abs_bits, ABS_Y)) {
 			ioctl(device->fd, EVIOCGABS(ABS_Y), &absinfo);
-			device->min_y = absinfo.minimum;
-			device->max_y = absinfo.maximum;
+			device->abs.min_y = absinfo.minimum;
+			device->abs.max_y = absinfo.maximum;
 		}
 	}
 	if (TEST_BIT(ev_bits, EV_KEY)) {
