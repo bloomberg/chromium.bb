@@ -2615,11 +2615,11 @@ void BrowserView::ShowAvatarBubble(TabContents* tab_contents,
   views::View::ConvertPointToScreen(GetTabContentsContainerView(), &origin);
   gfx::Rect bounds(origin, rect.size());
 
-  // TODO(msw): Set and support views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE.
-  AvatarMenuBubbleView* bubble = new AvatarMenuBubbleView(this,
-      views::BubbleBorder::TOP_RIGHT, bounds, browser_.get());
-  views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->Show();
+  AvatarMenuBubbleView* bubble_view = new AvatarMenuBubbleView(browser_.get());
+  // Bubble::Show() takes ownership of the view.
+  Bubble::Show(this->GetWidget(), bounds, views::BubbleBorder::TOP_RIGHT,
+               views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE,
+               bubble_view, bubble_view);
 }
 
 void BrowserView::ShowAvatarBubbleFromAvatarButton() {

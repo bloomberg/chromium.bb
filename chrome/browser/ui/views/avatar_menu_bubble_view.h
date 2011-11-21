@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
-#include "ui/views/bubble/bubble_delegate.h"
+#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 
@@ -26,15 +26,13 @@ class Separator;
 
 // This bubble view is displayed when the user clicks on the avatar button.
 // It displays a list of profiles and allows users to switch between profiles.
-class AvatarMenuBubbleView : public views::BubbleDelegateView,
+class AvatarMenuBubbleView : public views::View,
                              public views::ButtonListener,
                              public views::LinkListener,
+                             public BubbleDelegate,
                              public AvatarMenuModelObserver {
  public:
-  AvatarMenuBubbleView(views::View* anchor_view,
-                       views::BubbleBorder::ArrowLocation arrow_location,
-                       const gfx::Rect& anchor_rect,
-                       Browser* browser);
+  explicit AvatarMenuBubbleView(Browser* browser);
   virtual ~AvatarMenuBubbleView();
 
   // views::View implementation.
@@ -50,8 +48,10 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   // BubbleDelegate implementation.
-  virtual gfx::Point GetAnchorPoint() OVERRIDE;
-  virtual void Init() OVERRIDE;
+  virtual void BubbleShown() OVERRIDE;
+  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
+  virtual bool CloseOnEscape() OVERRIDE;
+  virtual bool FadeInOnShow() OVERRIDE;
 
   // AvatarMenuModelObserver implementation.
   virtual void OnAvatarMenuModelChanged(
@@ -60,7 +60,6 @@ class AvatarMenuBubbleView : public views::BubbleDelegateView,
  private:
   views::Link* add_profile_link_;
   scoped_ptr<AvatarMenuModel> avatar_menu_model_;
-  gfx::Rect anchor_rect_;
   Browser* browser_;
   std::vector<views::CustomButton*> item_views_;
   views::Separator* separator_;

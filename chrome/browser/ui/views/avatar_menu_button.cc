@@ -78,6 +78,7 @@ void DrawTaskBarDecoration(const Browser* browser, const SkBitmap* bitmap) {
 AvatarMenuButton::AvatarMenuButton(Browser* browser, bool has_menu)
     : MenuButton(NULL, string16(), this, false),
       browser_(browser),
+      bubble_(NULL),
       has_menu_(has_menu),
       set_taskbar_decoration_(false) {
   // In RTL mode, the avatar icon should be looking the opposite direction.
@@ -85,6 +86,8 @@ AvatarMenuButton::AvatarMenuButton(Browser* browser, bool has_menu)
 }
 
 AvatarMenuButton::~AvatarMenuButton() {
+  if (bubble_)
+    OnBubbleClosing();
   // During destruction of the browser frame, we might not have a window
   // so the taskbar button will be removed by windows anyway.
   if (browser_->IsAttemptingToCloseBrowser())
@@ -144,18 +147,26 @@ void AvatarMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 }
 
 void AvatarMenuButton::ShowAvatarBubble() {
-  if (!has_menu_)
+  if (!has_menu_ || bubble_)
     return;
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   gfx::Point origin;
   views::View::ConvertPointToScreen(this, &origin);
-  gfx::Rect bounds(origin, size());
+  gfx::Rect bounds(0, 0, width(), height());
+  bounds.set_origin(origin);
 
-  AvatarMenuBubbleView* bubble = new AvatarMenuBubbleView(this,
-      views::BubbleBorder::TOP_LEFT, bounds, browser_);
-  views::BubbleDelegateView::CreateBubble(bubble);
-  bubble->Show();
+  AvatarMenuBubbleView* bubble_view = new AvatarMenuBubbleView(browser_);
+  // Bubble::Show() takes ownership of the view.
+  bubble_ = Bubble::Show(browser_view->GetWidget(), bounds,
+      views::BubbleBorder::TOP_LEFT,
+      views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bubble_view, bubble_view);
+  bubble_->AddObserver(this);
 
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
+}
+
+void AvatarMenuButton::OnBubbleClosing() {
+  bubble_->RemoveObserver(this);
+  bubble_ = NULL;
 }
