@@ -85,7 +85,7 @@ class IconManager : public IconLoader::Delegate,
                   const IconRequestCallback& callback);
 
   // IconLoader::Delegate interface.
-  virtual bool OnImageLoaded(IconLoader* source, gfx::Image* result);
+  virtual bool OnImageLoaded(IconLoader* source, gfx::Image* result) OVERRIDE;
 
   // Get the identifying string for the given file. The implementation
   // is in icon_manager_[platform].cc.

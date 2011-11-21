@@ -515,7 +515,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // details argument will have ownership taken by this function (it will be
   // sent to the main thread and deleted there).
   virtual void BroadcastNotifications(int type,
-                                      HistoryDetails* details_deleted);
+                                      HistoryDetails* details_deleted) OVERRIDE;
 
   // Deleting all history ------------------------------------------------------
 

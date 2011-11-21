@@ -55,10 +55,10 @@ class FileSelectHelper
           id_(id) {}
     virtual ~DirectoryListerDispatchDelegate() {}
     virtual void OnListFile(
-        const net::DirectoryLister::DirectoryListerData& data) {
+        const net::DirectoryLister::DirectoryListerData& data) OVERRIDE {
       parent_->OnListFile(id_, data);
     }
-    virtual void OnListDone(int error) {
+    virtual void OnListDone(int error) OVERRIDE {
       parent_->OnListDone(id_, error);
     }
    private:

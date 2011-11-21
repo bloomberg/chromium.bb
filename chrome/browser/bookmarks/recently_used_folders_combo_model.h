@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,8 +21,8 @@ class RecentlyUsedFoldersComboModel : public ui::ComboboxModel {
   virtual ~RecentlyUsedFoldersComboModel();
 
   // Overridden from ui::ComboboxModel:
-  virtual int GetItemCount();
-  virtual string16 GetItemAt(int index);
+  virtual int GetItemCount() OVERRIDE;
+  virtual string16 GetItemAt(int index) OVERRIDE;
 
   // Returns the node at the specified |index|.
   const BookmarkNode* GetNodeAt(int index);

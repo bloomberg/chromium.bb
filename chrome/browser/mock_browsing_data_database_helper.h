@@ -23,10 +23,10 @@ class MockBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
       const base::Callback<void(const std::list<DatabaseInfo>&)>& callback)
           OVERRIDE;
 
-  virtual void CancelNotification();
+  virtual void CancelNotification() OVERRIDE;
 
   virtual void DeleteDatabase(const std::string& origin,
-      const std::string& name);
+      const std::string& name) OVERRIDE;
 
   // Adds some DatabaseInfo samples.
   void AddDatabaseSamples();

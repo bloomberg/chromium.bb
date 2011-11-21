@@ -67,7 +67,7 @@ class InMemoryHistoryBackend : public content::NotificationObserver {
   // Notification callback.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Return the quick history index.
   history::InMemoryURLIndex* InMemoryIndex() const { return index_.get(); }

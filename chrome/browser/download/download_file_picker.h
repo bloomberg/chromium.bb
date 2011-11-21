@@ -24,12 +24,14 @@ class DownloadFilePicker : public DownloadManager::Observer,
 
  private:
   // DownloadManager::Observer implementation.
-  virtual void ModelChanged();
-  virtual void ManagerGoingDown();
+  virtual void ModelChanged() OVERRIDE;
+  virtual void ManagerGoingDown() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void FileSelectionCanceled(void* params);
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   DownloadManager* download_manager_;
 

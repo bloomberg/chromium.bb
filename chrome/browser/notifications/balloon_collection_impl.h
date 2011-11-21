@@ -46,16 +46,16 @@ class BalloonCollectionImpl : public BalloonCollection,
 
   // BalloonCollection interface.
   virtual void Add(const Notification& notification,
-                   Profile* profile);
-  virtual bool RemoveById(const std::string& id);
-  virtual bool RemoveBySourceOrigin(const GURL& source_origin);
-  virtual void RemoveAll();
-  virtual bool HasSpace() const;
-  virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size);
-  virtual void SetPositionPreference(PositionPreference position);
-  virtual void DisplayChanged();
-  virtual void OnBalloonClosed(Balloon* source);
-  virtual const Balloons& GetActiveBalloons();
+                   Profile* profile) OVERRIDE;
+  virtual bool RemoveById(const std::string& id) OVERRIDE;
+  virtual bool RemoveBySourceOrigin(const GURL& source_origin) OVERRIDE;
+  virtual void RemoveAll() OVERRIDE;
+  virtual bool HasSpace() const OVERRIDE;
+  virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) OVERRIDE;
+  virtual void SetPositionPreference(PositionPreference position) OVERRIDE;
+  virtual void DisplayChanged() OVERRIDE;
+  virtual void OnBalloonClosed(Balloon* source) OVERRIDE;
+  virtual const Balloons& GetActiveBalloons() OVERRIDE;
 
   // content::NotificationObserver interface.
   virtual void Observe(int type,

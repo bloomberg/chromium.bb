@@ -24,9 +24,10 @@ class ChromeAccessTokenStore : public AccessTokenStore {
 
   // AccessTokenStore
   virtual void DoLoadAccessTokens(
-      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request);
+      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request)
+          OVERRIDE;
   virtual void SaveAccessToken(
-      const GURL& server_url, const string16& access_token);
+      const GURL& server_url, const string16& access_token) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAccessTokenStore);
 };

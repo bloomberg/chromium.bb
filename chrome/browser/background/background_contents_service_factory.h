@@ -30,7 +30,7 @@ class BackgroundContentsServiceFactory : public ProfileKeyedServiceFactory {
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
       Profile* profile) const OVERRIDE;
-  virtual void RegisterUserPrefs(PrefService* user_prefs);
+  virtual void RegisterUserPrefs(PrefService* user_prefs) OVERRIDE;
   // Use a separate background contents service for incognito.
   virtual bool ServiceHasOwnInstanceInIncognito() OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() OVERRIDE;

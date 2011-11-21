@@ -38,13 +38,13 @@ class MockBalloonCollection : public BalloonCollectionImpl {
 
   // BalloonCollectionImpl overrides
   virtual void Add(const Notification& notification,
-                   Profile* profile);
-  virtual bool HasSpace() const;
+                   Profile* profile) OVERRIDE;
+  virtual bool HasSpace() const OVERRIDE;
   virtual Balloon* MakeBalloon(const Notification& notification,
-                               Profile* profile);
-  virtual void DisplayChanged() {}
-  virtual void OnBalloonClosed(Balloon* source);
-  virtual const BalloonCollection::Balloons& GetActiveBalloons();
+                               Profile* profile) OVERRIDE;
+  virtual void DisplayChanged() OVERRIDE {}
+  virtual void OnBalloonClosed(Balloon* source) OVERRIDE;
+  virtual const BalloonCollection::Balloons& GetActiveBalloons() OVERRIDE;
 
   // Number of balloons being shown.
   std::deque<Balloon*>& balloons() { return balloons_; }
@@ -79,8 +79,8 @@ class DesktopNotificationsTest : public testing::Test {
 
  protected:
   // testing::Test overrides
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   void AllowOrigin(const GURL& origin) {
     service_->GrantPermission(origin);

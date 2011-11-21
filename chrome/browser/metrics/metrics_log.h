@@ -63,7 +63,7 @@ class MetricsLog : public MetricsLogBase {
   // Get the current version of the application as a string.
   static std::string GetVersionString();
 
-  virtual MetricsLog* AsMetricsLog();
+  virtual MetricsLog* AsMetricsLog() OVERRIDE;
 
   // Use |extension| in all uploaded appversions in addition to the standard
   // version string.

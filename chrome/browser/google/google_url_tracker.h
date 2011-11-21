@@ -106,15 +106,15 @@ class GoogleURLTracker : public content::URLFetcherDelegate,
   void StartFetchIfDesirable();
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // NetworkChangeNotifier::IPAddressObserver
-  virtual void OnIPAddressChanged();
+  virtual void OnIPAddressChanged() OVERRIDE;
 
   void SearchCommitted();
   void OnNavigationPending(const content::NotificationSource& source,

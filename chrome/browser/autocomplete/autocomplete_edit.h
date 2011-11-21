@@ -363,7 +363,7 @@ class AutocompleteEditModel : public AutocompleteControllerDelegate {
   };
 
   // AutocompleteControllerDelegate:
-  virtual void OnResultChanged(bool default_match_changed);
+  virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
 
   // Returns true if a query to an autocomplete provider is currently
   // in progress.  This logic should in the future live in

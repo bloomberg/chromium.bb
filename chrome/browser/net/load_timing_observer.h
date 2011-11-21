@@ -69,7 +69,7 @@ class LoadTimingObserver : public ChromeNetLog::ThreadSafeObserverImpl {
                           const base::TimeTicks& time,
                           const net::NetLog::Source& source,
                           net::NetLog::EventPhase phase,
-                          net::NetLog::EventParameters* params);
+                          net::NetLog::EventParameters* params) OVERRIDE;
 
   static void PopulateTimingInfo(net::URLRequest* request,
                                  ResourceResponse* response);

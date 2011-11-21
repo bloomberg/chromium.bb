@@ -51,12 +51,12 @@ class DevToolsProtocolHandler
   }
 
   // DevToolsRemoteListener interface
-  virtual void HandleMessage(const DevToolsRemoteMessage& message);
-  virtual void OnAcceptConnection(net::ListenSocket *connection);
-  virtual void OnConnectionLost();
+  virtual void HandleMessage(const DevToolsRemoteMessage& message) OVERRIDE;
+  virtual void OnAcceptConnection(net::ListenSocket *connection) OVERRIDE;
+  virtual void OnConnectionLost() OVERRIDE;
 
   // OutboundSocketDelegate interface
-  virtual void Send(const DevToolsRemoteMessage& message);
+  virtual void Send(const DevToolsRemoteMessage& message) OVERRIDE;
 
  private:
   explicit DevToolsProtocolHandler(int port);

@@ -44,17 +44,17 @@ class ExtensionPortsRemoteService : public DevToolsRemoteListener,
 
   // Processes |message| from the external client (where the tool is
   // "ExtensionPorts").
-  virtual void HandleMessage(const DevToolsRemoteMessage& message);
+  virtual void HandleMessage(const DevToolsRemoteMessage& message) OVERRIDE;
 
   // Gets invoked on the external client socket connection loss.
   // Closes open message ports.
-  virtual void OnConnectionLost();
+  virtual void OnConnectionLost() OVERRIDE;
 
   // IPC::Message::Sender methods:
 
   // This is the callback through which the ExtensionMessageService
   // passes us messages from extensions as well as disconnect events.
-  virtual bool Send(IPC::Message* msg);
+  virtual bool Send(IPC::Message* msg) OVERRIDE;
 
  private:
   // Operation result returned in the "result" field in messages sent

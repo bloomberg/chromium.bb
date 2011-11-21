@@ -85,8 +85,9 @@ class WebIntentsRegistry
   typedef base::hash_map<WebDataService::Handle, IntentsQuery*> QueryMap;
 
   // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result);
+  virtual void OnWebDataServiceRequestDone(
+      WebDataService::Handle h,
+      const WDTypedResult* result) OVERRIDE;
 
   // Map for all in-flight web data requests/intent queries.
   QueryMap queries_;

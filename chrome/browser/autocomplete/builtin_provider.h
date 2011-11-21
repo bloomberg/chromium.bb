@@ -25,7 +25,8 @@ class BuiltinProvider : public AutocompleteProvider {
   virtual ~BuiltinProvider();
 
   // AutocompleteProvider:
-  virtual void Start(const AutocompleteInput& input, bool minimal_changes);
+  virtual void Start(const AutocompleteInput& input,
+                     bool minimal_changes) OVERRIDE;
 
  private:
   typedef std::vector<string16> Builtins;

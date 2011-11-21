@@ -68,11 +68,11 @@ class DebuggerRemoteService : public DevToolsRemoteListener {
   // Processes |message| from the remote debugger, where the tool is
   // "V8Debugger". Either sends the reply immediately or waits for an
   // asynchronous response from the V8 debugger.
-  virtual void HandleMessage(const DevToolsRemoteMessage& message);
+  virtual void HandleMessage(const DevToolsRemoteMessage& message) OVERRIDE;
 
   // Gets invoked on the remote debugger [socket] connection loss.
   // Notifies the InspectableTabProxy of the remote debugger detachment.
-  virtual void OnConnectionLost();
+  virtual void OnConnectionLost() OVERRIDE;
 
   // Specifies a tool name ("V8Debugger") handled by this class.
   static const char kToolName[];

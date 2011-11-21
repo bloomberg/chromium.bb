@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 
 class DownloadItem;
@@ -43,10 +44,10 @@ class DownloadItemModel : public BaseDownloadItemModel {
   virtual ~DownloadItemModel() { }
 
   // Cancel the downloading.
-  virtual void CancelTask();
+  virtual void CancelTask() OVERRIDE;
 
   // Get downloading status text.
-  virtual string16 GetStatusText();
+  virtual string16 GetStatusText() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadItemModel);
@@ -61,10 +62,10 @@ class SavePageModel : public BaseDownloadItemModel {
   virtual ~SavePageModel() { }
 
   // Cancel the page saving.
-  virtual void CancelTask();
+  virtual void CancelTask() OVERRIDE;
 
   // Get page saving status text.
-  virtual string16 GetStatusText();
+  virtual string16 GetStatusText() OVERRIDE;
 
  private:
   // Saving page management.

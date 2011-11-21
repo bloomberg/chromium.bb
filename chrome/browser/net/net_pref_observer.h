@@ -36,7 +36,7 @@ class NetPrefObserver : public content::NotificationObserver {
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   static void RegisterPrefs(PrefService* prefs);
 

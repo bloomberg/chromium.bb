@@ -192,7 +192,7 @@ class UpdateBookmarkFunction : public BookmarksFunction {
                          bool* invalid_id);
   virtual void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const OVERRIDE;
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("bookmarks.update")
 };

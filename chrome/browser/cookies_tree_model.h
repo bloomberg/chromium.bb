@@ -194,8 +194,8 @@ class CookieTreeRootNode : public CookieTreeNode {
   CookieTreeOriginNode* GetOrCreateOriginNode(const GURL& url);
 
   // CookieTreeNode methods:
-  virtual CookiesTreeModel* GetModel() const;
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual CookiesTreeModel* GetModel() const OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
   CookiesTreeModel* model_;
@@ -213,7 +213,7 @@ class CookieTreeOriginNode : public CookieTreeNode {
   virtual ~CookieTreeOriginNode();
 
   // CookieTreeNode methods:
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
   // CookieTreeOriginNode methods:
   CookieTreeCookiesNode* GetOrCreateCookiesNode();
@@ -267,8 +267,8 @@ class CookieTreeCookieNode : public CookieTreeNode {
   virtual ~CookieTreeCookieNode();
 
   // CookieTreeNode methods:
-  virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
   // cookie_ is expected to remain valid as long as the CookieTreeCookieNode is
@@ -283,7 +283,7 @@ class CookieTreeCookiesNode : public CookieTreeNode {
   CookieTreeCookiesNode();
   virtual ~CookieTreeCookiesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
   void AddCookieNode(CookieTreeCookieNode* child) {
     AddChildSortedByTitle(child);
@@ -305,8 +305,8 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
       std::list<appcache::AppCacheInfo>::iterator appcache_info);
   virtual ~CookieTreeAppCacheNode();
 
-  virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
   GURL origin_url_;
@@ -319,7 +319,7 @@ class CookieTreeAppCachesNode : public CookieTreeNode {
   CookieTreeAppCachesNode();
   virtual ~CookieTreeAppCachesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
   void AddAppCacheNode(CookieTreeAppCacheNode* child) {
     AddChildSortedByTitle(child);
@@ -341,8 +341,8 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
           database_info);
   virtual ~CookieTreeDatabaseNode();
 
-  virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
   // database_info_ is expected to remain valid as long as the
@@ -358,7 +358,7 @@ class CookieTreeDatabasesNode : public CookieTreeNode {
   CookieTreeDatabasesNode();
   virtual ~CookieTreeDatabasesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
   void AddDatabaseNode(CookieTreeDatabaseNode* child) {
     AddChildSortedByTitle(child);
@@ -380,8 +380,8 @@ class CookieTreeFileSystemNode : public CookieTreeNode {
           file_system_info);
   virtual ~CookieTreeFileSystemNode();
 
-  virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
   // file_system_info_ expected to remain valid as long as the
@@ -397,7 +397,7 @@ class CookieTreeFileSystemsNode : public CookieTreeNode {
   CookieTreeFileSystemsNode();
   virtual ~CookieTreeFileSystemsNode();
 
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
   void AddFileSystemNode(CookieTreeFileSystemNode* child) {
     AddChildSortedByTitle(child);
@@ -418,8 +418,8 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
   virtual ~CookieTreeLocalStorageNode();
 
   // CookieTreeNode methods:
-  virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
   // local_storage_info_ is expected to remain valid as long as the
@@ -435,7 +435,7 @@ class CookieTreeLocalStoragesNode : public CookieTreeNode {
   CookieTreeLocalStoragesNode();
   virtual ~CookieTreeLocalStoragesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
   void AddLocalStorageNode(CookieTreeLocalStorageNode* child) {
     AddChildSortedByTitle(child);
@@ -458,8 +458,8 @@ class CookieTreeSessionStorageNode : public CookieTreeNode {
   virtual ~CookieTreeSessionStorageNode();
 
   // CookieTreeNode methods:
-  virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
   // session_storage_info_ is expected to remain valid as long as the
@@ -475,7 +475,7 @@ class CookieTreeSessionStoragesNode : public CookieTreeNode {
   CookieTreeSessionStoragesNode();
   virtual ~CookieTreeSessionStoragesNode();
 
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
   void AddSessionStorageNode(CookieTreeSessionStorageNode* child) {
     AddChildSortedByTitle(child);
@@ -497,8 +497,8 @@ class CookieTreeIndexedDBNode : public CookieTreeNode {
   virtual ~CookieTreeIndexedDBNode();
 
   // CookieTreeNode methods:
-  virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
   // indexed_db_info_ is expected to remain valid as long as the
@@ -514,7 +514,7 @@ class CookieTreeIndexedDBsNode : public CookieTreeNode {
   CookieTreeIndexedDBsNode();
   virtual ~CookieTreeIndexedDBsNode();
 
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
   void AddIndexedDBNode(CookieTreeIndexedDBNode* child) {
     AddChildSortedByTitle(child);
@@ -533,8 +533,8 @@ class CookieTreeQuotaNode : public CookieTreeNode {
       std::list<BrowsingDataQuotaHelper::QuotaInfo>::iterator quota_info);
   virtual ~CookieTreeQuotaNode();
 
-  virtual void DeleteStoredObjects();
-  virtual DetailedInfo GetDetailedInfo() const;
+  virtual void DeleteStoredObjects() OVERRIDE;
+  virtual DetailedInfo GetDetailedInfo() const OVERRIDE;
 
  private:
   // quota_info_ is expected to remain valid as long as the CookieTreeQuotaNode
@@ -573,12 +573,12 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // ui::TreeModel methods:
   // Returns the set of icons for the nodes in the tree. You only need override
   // this if you don't want to use the default folder icons.
-  virtual void GetIcons(std::vector<SkBitmap>* icons);
+  virtual void GetIcons(std::vector<SkBitmap>* icons) OVERRIDE;
 
   // Returns the index of the icon to use for |node|. Return -1 to use the
   // default icon. The index is relative to the list of icons returned from
   // GetIcons.
-  virtual int GetIconIndex(ui::TreeModelNode* node);
+  virtual int GetIconIndex(ui::TreeModelNode* node) OVERRIDE;
 
   // CookiesTreeModel methods:
   void DeleteAllStoredObjects();

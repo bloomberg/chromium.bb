@@ -20,11 +20,11 @@ class MockNotificationDelegate : public NotificationDelegate {
   virtual ~MockNotificationDelegate();
 
   // NotificationDelegate interface.
-  virtual void Display() {}
-  virtual void Error() {}
-  virtual void Close(bool by_user) {}
-  virtual void Click() {}
-  virtual std::string id() const;
+  virtual void Display() OVERRIDE {}
+  virtual void Error() OVERRIDE {}
+  virtual void Close(bool by_user) OVERRIDE {}
+  virtual void Click() OVERRIDE {}
+  virtual std::string id() const OVERRIDE;
 
  private:
   std::string id_;
@@ -79,12 +79,12 @@ class MockBalloonView : public BalloonView {
       balloon_(balloon) {}
 
   // BalloonView:
-  virtual void Show(Balloon* balloon) {}
-  virtual void Update() {}
-  virtual void RepositionToBalloon() {}
-  virtual void Close(bool by_user);
-  virtual gfx::Size GetSize() const;
-  virtual BalloonHost* GetHost() const;
+  virtual void Show(Balloon* balloon) OVERRIDE {}
+  virtual void Update() OVERRIDE {}
+  virtual void RepositionToBalloon() OVERRIDE {}
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
+  virtual BalloonHost* GetHost() const OVERRIDE;
 
  private:
   // Non-owned pointer.

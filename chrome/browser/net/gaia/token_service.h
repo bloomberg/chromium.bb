@@ -162,9 +162,9 @@ class TokenService : public GaiaAuthConsumer,
   // GaiaAuthConsumer implementation.
   virtual void OnIssueAuthTokenSuccess(const std::string& service,
                                        const std::string& auth_token) OVERRIDE;
-  virtual void OnIssueAuthTokenFailure(const std::string& service,
-                                       const GoogleServiceAuthError& error)
-      OVERRIDE;
+  virtual void OnIssueAuthTokenFailure(
+      const std::string& service,
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // GaiaOAuthConsumer implementation.
   virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
@@ -175,18 +175,19 @@ class TokenService : public GaiaAuthConsumer,
   virtual void OnOAuthWrapBridgeSuccess(const std::string& service_scope,
                                         const std::string& token,
                                         const std::string& expires_in) OVERRIDE;
-  virtual void OnOAuthWrapBridgeFailure(const std::string& service_name,
-                                        const GoogleServiceAuthError& error)
-      OVERRIDE;
+  virtual void OnOAuthWrapBridgeFailure(
+      const std::string& service_name,
+      const GoogleServiceAuthError& error) OVERRIDE;
 
   // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result);
+  virtual void OnWebDataServiceRequestDone(
+      WebDataService::Handle h,
+      const WDTypedResult* result) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
 

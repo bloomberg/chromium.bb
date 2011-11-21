@@ -25,13 +25,18 @@ class MediaInternals : public MediaObserver, public base::NonThreadSafe {
   virtual ~MediaInternals();
 
   // MediaObserver implementation.
-  virtual void OnDeleteAudioStream(void* host, int stream_id);
-  virtual void OnSetAudioStreamPlaying(void* host, int stream_id, bool playing);
-  virtual void OnSetAudioStreamStatus(void* host, int stream_id,
-                                      const std::string& status);
-  virtual void OnSetAudioStreamVolume(void* host, int stream_id, double volume);
+  virtual void OnDeleteAudioStream(void* host, int stream_id) OVERRIDE;
+  virtual void OnSetAudioStreamPlaying(void* host,
+                                       int stream_id,
+                                       bool playing) OVERRIDE;
+  virtual void OnSetAudioStreamStatus(void* host,
+                                      int stream_id,
+                                      const std::string& status) OVERRIDE;
+  virtual void OnSetAudioStreamVolume(void* host,
+                                      int stream_id,
+                                      double volume) OVERRIDE;
   virtual void OnMediaEvent(int render_process_id,
-                            const media::MediaLogEvent& event);
+                            const media::MediaLogEvent& event) OVERRIDE;
 
   // Methods for observers.
   // Observers should add themselves on construction and remove themselves

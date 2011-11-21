@@ -72,8 +72,9 @@ class KeywordProvider : public AutocompleteProvider,
       string16* remaining_input);
 
   // AutocompleteProvider
-  virtual void Start(const AutocompleteInput& input, bool minimal_changes);
-  virtual void Stop();
+  virtual void Start(const AutocompleteInput& input,
+                     bool minimal_changes) OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
  private:
   class ScopedEndExtensionKeywordMode;
@@ -136,7 +137,7 @@ class KeywordProvider : public AutocompleteProvider,
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Model for the keywords.  This is only non-null when testing, otherwise the
   // TemplateURLService from the Profile is used.

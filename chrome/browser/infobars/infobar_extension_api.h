@@ -10,7 +10,7 @@
 
 class ShowInfoBarFunction : public SyncExtensionFunction {
   virtual ~ShowInfoBarFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.infobars.show")
 };
 

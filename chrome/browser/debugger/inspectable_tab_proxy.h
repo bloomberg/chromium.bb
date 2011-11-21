@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "content/browser/debugger/devtools_client_host.h"
 
@@ -72,14 +73,14 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
   void CloseImpl();
 
   // DevToolsClientHost interface
-  virtual void InspectedTabClosing();
-  virtual void SendMessageToClient(const IPC::Message& msg);
-  virtual void TabReplaced(TabContents* new_tab);
+  virtual void InspectedTabClosing() OVERRIDE;
+  virtual void SendMessageToClient(const IPC::Message& msg) OVERRIDE;
+  virtual void TabReplaced(TabContents* new_tab) OVERRIDE;
 
  private:
   // Message handling routines
   void OnDebuggerOutput(const std::string& msg);
-  virtual void FrameNavigating(const std::string& url);
+  virtual void FrameNavigating(const std::string& url) OVERRIDE;
   void TabClosed();
 
   int32 id_;

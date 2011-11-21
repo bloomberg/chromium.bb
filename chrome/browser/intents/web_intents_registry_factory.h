@@ -31,8 +31,9 @@ class WebIntentsRegistryFactory : public ProfileKeyedServiceFactory {
   virtual ~WebIntentsRegistryFactory();
 
   // ProfileKeyedServiceFactory implementation.
-  virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const;
-  virtual bool ServiceRedirectedInIncognito();
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
+      Profile* profile) const OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebIntentsRegistryFactory);
 };

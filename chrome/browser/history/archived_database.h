@@ -41,7 +41,7 @@ class ArchivedDatabase : public URLDatabase,
 
  private:
   // Implemented for the specialized databases.
-  virtual sql::Connection& GetDB();
+  virtual sql::Connection& GetDB() OVERRIDE;
 
   // Makes sure the version is up-to-date, updating if necessary. If the
   // database is too old to migrate, the user will be notified. In this case, or

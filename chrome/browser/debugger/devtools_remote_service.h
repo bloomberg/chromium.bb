@@ -29,8 +29,8 @@ class DevToolsRemoteService : public DevToolsRemoteListener {
   explicit DevToolsRemoteService(DevToolsProtocolHandler* delegate);
 
   // DevToolsRemoteListener interface
-  virtual void HandleMessage(const DevToolsRemoteMessage& message);
-  virtual void OnConnectionLost() {}
+  virtual void HandleMessage(const DevToolsRemoteMessage& message) OVERRIDE;
+  virtual void OnConnectionLost() OVERRIDE {}
 
   static const char kToolName[];
 

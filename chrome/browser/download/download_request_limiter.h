@@ -133,7 +133,7 @@ class DownloadRequestLimiter
     // content::NotificationObserver method.
     virtual void Observe(int type,
                          const content::NotificationSource& source,
-                         const content::NotificationDetails& details);
+                         const content::NotificationDetails& details) OVERRIDE;
 
     // Notifies the callbacks as to whether the download is allowed or not.
     // Updates status_ appropriately.

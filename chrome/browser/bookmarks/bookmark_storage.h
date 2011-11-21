@@ -108,7 +108,7 @@ class BookmarkStorage : public content::NotificationObserver,
   void BookmarkModelDeleted();
 
   // ImportantFileWriter::DataSerializer
-  virtual bool SerializeData(std::string* output);
+  virtual bool SerializeData(std::string* output) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<BookmarkStorage>;
@@ -140,7 +140,7 @@ class BookmarkStorage : public content::NotificationObserver,
   // content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Serializes the data and schedules save using ImportantFileWriter.
   // Returns true on successful serialization.

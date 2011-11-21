@@ -46,10 +46,10 @@ class Toolbar5Importer : public content::URLFetcherDelegate, public Importer {
   // Importer view call this method when the user clicks the cancel button
   // in the tabbed options UI.  We need to post a message to our loop
   // to cancel network retrieval.
-  virtual void Cancel();
+  virtual void Cancel() OVERRIDE;
 
   // content::URLFetcherDelegate method called back from the URLFetcher object.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(Toolbar5ImporterTest, BookmarkParse);

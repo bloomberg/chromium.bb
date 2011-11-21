@@ -34,7 +34,7 @@ class TokenAvailableTracker : public TestNotificationTracker {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   TokenService::TokenAvailableDetails details_;
 };
@@ -51,7 +51,7 @@ class TokenFailedTracker : public TestNotificationTracker {
  private:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   TokenService::TokenRequestFailedDetails details_;
 };
@@ -61,9 +61,9 @@ class TokenServiceTestHarness : public testing::Test {
   TokenServiceTestHarness();
   virtual ~TokenServiceTestHarness();
 
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 
-  virtual void TearDown();
+  virtual void TearDown() OVERRIDE;
 
   void WaitForDBLoadCompletion();
 

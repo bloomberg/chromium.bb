@@ -38,9 +38,9 @@ class BalloonHost : public TabContentsDelegate,
   void Shutdown();
 
   // ExtensionFunctionDispatcher::Delegate overrides.
-  virtual Browser* GetBrowser();
-  virtual gfx::NativeView GetNativeViewOfHost();
-  virtual TabContents* GetAssociatedTabContents() const;
+  virtual Browser* GetBrowser() OVERRIDE;
+  virtual gfx::NativeView GetNativeViewOfHost() OVERRIDE;
+  virtual TabContents* GetAssociatedTabContents() const OVERRIDE;
 
   const string16& GetSource() const;
 

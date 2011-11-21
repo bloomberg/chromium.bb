@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DIAGNOSTICS_DIAGNOSTICS_TEST_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/diagnostics/diagnostics_model.h"
 
@@ -34,11 +35,11 @@ class DiagnosticTest : public DiagnosticsModel::TestInfo {
   bool Execute(DiagnosticsModel::Observer* observer, DiagnosticsModel* model,
                size_t index);
 
-  virtual string16 GetTitle();
+  virtual string16 GetTitle() OVERRIDE;
 
-  virtual DiagnosticsModel::TestResult GetResult();
+  virtual DiagnosticsModel::TestResult GetResult() OVERRIDE;
 
-  virtual string16 GetAdditionalInfo();
+  virtual string16 GetAdditionalInfo() OVERRIDE;
 
   void RecordStopFailure(const string16& additional_info) {
     RecordOutcome(additional_info, DiagnosticsModel::TEST_FAIL_STOP);

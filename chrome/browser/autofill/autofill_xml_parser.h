@@ -28,20 +28,23 @@ class AutofillXmlParser : public buzz::XmlParseHandler {
   // A callback for the end of an </element>, called by Expat.
   // |context| is a parsing context used to resolve element/attribute names.
   // |name| is the name of the element.
-  virtual void EndElement(buzz::XmlParseContext* context, const char* name);
+  virtual void EndElement(buzz::XmlParseContext* context,
+                          const char* name) OVERRIDE;
 
   // The callback for character data between tags (<element>text...</element>).
   // |context| is a parsing context used to resolve element/attribute names.
   // |text| is a pointer to the beginning of character data (not null
   // terminated).
   // |len| is the length of the string pointed to by text.
-  virtual void CharacterData(buzz::XmlParseContext* context, const char* text,
-                             int len);
+  virtual void CharacterData(buzz::XmlParseContext* context,
+                             const char* text,
+                             int len) OVERRIDE;
 
   // The callback for parsing errors.
   // |context| is a parsing context used to resolve names.
   // |error_code| is a code representing the parsing error.
-  virtual void Error(buzz::XmlParseContext* context, XML_Error error_code);
+  virtual void Error(buzz::XmlParseContext* context,
+                     XML_Error error_code) OVERRIDE;
 
   // True if parsing succeeded.
   bool succeeded_;
@@ -73,8 +76,9 @@ class AutofillQueryXmlParser : public AutofillXmlParser {
   // |context| is a parsing context used to resolve element/attribute names.
   // |name| is the name of the element.
   // |attrs| is the list of attributes (names and values) for the element.
-  virtual void StartElement(buzz::XmlParseContext* context, const char* name,
-                            const char** attrs);
+  virtual void StartElement(buzz::XmlParseContext* context,
+                            const char* name,
+                            const char** attrs) OVERRIDE;
 
   // A helper function to retrieve integer values from strings.  Raises an
   // XML parse error if it fails.
@@ -117,8 +121,9 @@ class AutofillUploadXmlParser : public AutofillXmlParser {
   // |context| is a parsing context used to resolve element/attribute names.
   // |name| is the name of the element.
   // |attrs| is the list of attributes (names and values) for the element.
-  virtual void StartElement(buzz::XmlParseContext* context, const char* name,
-                            const char** attrs);
+  virtual void StartElement(buzz::XmlParseContext* context,
+                            const char* name,
+                            const char** attrs) OVERRIDE;
 
   // A helper function to retrieve double values from strings.  Raises an XML
   // parse error if it fails.

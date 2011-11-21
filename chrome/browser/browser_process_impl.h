@@ -117,7 +117,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual MHTMLGenerationManager* mhtml_generation_manager() OVERRIDE;
   virtual GpuBlacklistUpdater* gpu_blacklist_updater() OVERRIDE;
   virtual ComponentUpdateService* component_updater() OVERRIDE;
-  virtual CRLSetFetcher* crl_set_fetcher();
+  virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
 
  private:
   void CreateResourceDispatcherHost();

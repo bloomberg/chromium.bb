@@ -72,7 +72,7 @@ class AccessibilityWindowInfo : public AccessibilityControlInfo {
  public:
   AccessibilityWindowInfo(Profile* profile, const std::string& window_name);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 };
 
 // Accessibility information about a push button passed to onControlFocused
@@ -81,7 +81,7 @@ class AccessibilityButtonInfo : public AccessibilityControlInfo {
  public:
   AccessibilityButtonInfo(Profile* profile, const std::string& button_name);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 };
 
 // Accessibility information about a hyperlink passed to onControlFocused
@@ -90,7 +90,7 @@ class AccessibilityLinkInfo : public AccessibilityControlInfo {
  public:
   AccessibilityLinkInfo(Profile* profile, const std::string& link_name);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 };
 
 // Accessibility information about a radio button passed to onControlFocused
@@ -103,9 +103,9 @@ class AccessibilityRadioButtonInfo : public AccessibilityControlInfo {
                                int item_index,
                                int item_count);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 
-  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 
   void SetChecked(bool checked) { checked_ = checked; }
 
@@ -128,9 +128,9 @@ class AccessibilityCheckboxInfo : public AccessibilityControlInfo {
                             const std::string& name,
                             bool checked);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 
-  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 
   void SetChecked(bool checked) { checked_ = checked; }
 
@@ -149,9 +149,9 @@ class AccessibilityTabInfo : public AccessibilityControlInfo {
                        int tab_index,
                        int tab_count);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 
-  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 
   void SetTab(int tab_index, std::string tab_name) {
     tab_index_ = tab_index;
@@ -177,9 +177,9 @@ class AccessibilityComboBoxInfo : public AccessibilityControlInfo {
                             int item_index,
                             int item_count);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 
-  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 
   void SetValue(int item_index, const std::string& value) {
     item_index_ = item_index;
@@ -207,9 +207,9 @@ class AccessibilityTextBoxInfo : public AccessibilityControlInfo {
                            const std::string& name,
                            bool password);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 
-  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 
   void SetValue(
       const std::string& value, int selection_start, int selection_end) {
@@ -240,9 +240,9 @@ class AccessibilityListBoxInfo : public AccessibilityControlInfo {
                            int item_index,
                            int item_count);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 
-  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 
   void SetValue(int item_index, std::string value) {
     item_index_ = item_index;
@@ -268,7 +268,7 @@ class AccessibilityMenuInfo : public AccessibilityControlInfo {
  public:
   AccessibilityMenuInfo(Profile* profile, const std::string& menu_name);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 };
 
 // Accessibility information about a volume; this class is used by
@@ -278,7 +278,7 @@ class AccessibilityVolumeInfo : public AccessibilityEventInfo {
   // |volume| must range between 0 to 100.
   AccessibilityVolumeInfo(Profile* profile, double volume, bool is_muted);
 
-  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 
  private:
   double volume_;
@@ -295,9 +295,9 @@ class AccessibilityMenuItemInfo : public AccessibilityControlInfo {
                             int item_index,
                             int item_count);
 
-  virtual const char* type() const;
+  virtual const char* type() const OVERRIDE;
 
-  virtual void SerializeToDict(base::DictionaryValue* dict) const;
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 
   int item_index() const { return item_index_; }
   int item_count() const { return item_count_; }

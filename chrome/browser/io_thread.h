@@ -110,8 +110,8 @@ class IOThread : public content::BrowserProcessSubThread {
   void ClearHostCache();
 
  protected:
-  virtual void Init();
-  virtual void CleanUp();
+  virtual void Init() OVERRIDE;
+  virtual void CleanUp() OVERRIDE;
 
  private:
   // Provide SystemURLRequestContextGetter with access to

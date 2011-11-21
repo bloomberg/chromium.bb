@@ -29,8 +29,10 @@ class SavePackageFilePicker : public SelectFileDialog::Listener {
 
  private:
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void FileSelectionCanceled(void* params);
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
   base::WeakPtr<SavePackage> save_package_;
 

@@ -28,10 +28,10 @@ class BookmarkManagerExtensionEventRouter
   virtual ~BookmarkManagerExtensionEventRouter();
 
   // RenderViewHostDelegate::BookmarkDrag interface
-  virtual void OnDragEnter(const BookmarkNodeData& data);
-  virtual void OnDragOver(const BookmarkNodeData& data);
-  virtual void OnDragLeave(const BookmarkNodeData& data);
-  virtual void OnDrop(const BookmarkNodeData& data);
+  virtual void OnDragEnter(const BookmarkNodeData& data) OVERRIDE;
+  virtual void OnDragOver(const BookmarkNodeData& data) OVERRIDE;
+  virtual void OnDragLeave(const BookmarkNodeData& data) OVERRIDE;
+  virtual void OnDrop(const BookmarkNodeData& data) OVERRIDE;
 
   // The bookmark drag and drop data. This gets set after a drop was done on
   // the page. This returns NULL if no data is available.

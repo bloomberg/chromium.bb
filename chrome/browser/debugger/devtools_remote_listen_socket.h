@@ -27,20 +27,20 @@ class DevToolsRemoteListenSocket
       DevToolsRemoteListener* message_listener);
 
  protected:
-  virtual void Listen();
-  virtual void Accept();
-  virtual void Close();
-  virtual void SendInternal(const char* bytes, int len);
+  virtual void Listen() OVERRIDE;
+  virtual void Accept() OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual void SendInternal(const char* bytes, int len) OVERRIDE;
 
  private:
   virtual ~DevToolsRemoteListenSocket();
 
   // net::ListenSocket::ListenSocketDelegate interface
   virtual void DidAccept(net::ListenSocket *server,
-                         net::ListenSocket *connection);
+                         net::ListenSocket *connection) OVERRIDE;
   virtual void DidRead(net::ListenSocket *connection,
-                       const char* data, int len);
-  virtual void DidClose(net::ListenSocket *connection);
+                       const char* data, int len) OVERRIDE;
+  virtual void DidClose(net::ListenSocket *connection) OVERRIDE;
 
   // The protocol states while reading socket input
   enum State {

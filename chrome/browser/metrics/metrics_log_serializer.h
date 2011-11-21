@@ -38,9 +38,9 @@ class MetricsLogSerializer : public MetricsLogManager::LogSerializer {
 
   // Implementation of MetricsLogManager::LogSerializer
   virtual void SerializeLogs(const std::vector<std::string>& logs,
-                             MetricsLogManager::LogType log_type);
+                             MetricsLogManager::LogType log_type) OVERRIDE;
   virtual void DeserializeLogs(MetricsLogManager::LogType log_type,
-                               std::vector<std::string>* logs);
+                               std::vector<std::string>* logs) OVERRIDE;
 
  private:
   // Encodes the textual log data from |local_list| and writes it to the given

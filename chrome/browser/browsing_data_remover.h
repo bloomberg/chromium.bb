@@ -134,11 +134,12 @@ class BrowsingDataRemover : public content::NotificationObserver,
   // BrowsingDataRemover.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // WaitableEventWatcher implementation.
   // Called when plug-in data has been cleared. Invokes NotifyAndDeleteIfDone.
-  virtual void OnWaitableEventSignaled(base::WaitableEvent* waitable_event);
+  virtual void OnWaitableEventSignaled(
+      base::WaitableEvent* waitable_event) OVERRIDE;
 
   // If we're not waiting on anything, notifies observers and deletes this
   // object.

@@ -173,7 +173,7 @@ class HttpServerPropertiesManager
   // Callback for preference changes.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ---------
   // UI thread

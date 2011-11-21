@@ -22,11 +22,11 @@ class NotificationObjectProxy
                           int notification_id, bool worker);
 
   // NotificationDelegate implementation.
-  virtual void Display();
-  virtual void Error();
-  virtual void Close(bool by_user);
-  virtual void Click();
-  virtual std::string id() const;
+  virtual void Display() OVERRIDE;
+  virtual void Error() OVERRIDE;
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual void Click() OVERRIDE;
+  virtual std::string id() const OVERRIDE;
 
  protected:
   friend class base::RefCountedThreadSafe<NotificationObjectProxy>;

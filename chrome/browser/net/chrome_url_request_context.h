@@ -41,7 +41,7 @@ class ChromeURLRequestContext : public net::URLRequestContext {
     return is_incognito_;
   }
 
-  virtual const std::string& GetUserAgent(const GURL& url) const;
+  virtual const std::string& GetUserAgent(const GURL& url) const OVERRIDE;
 
   // TODO(willchan): Get rid of the need for this accessor. Really, this should
   // move completely to ProfileIOData.
@@ -102,9 +102,10 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   // GetIOMessageLoopProxy however can be called from any thread.
   //
   // net::URLRequestContextGetter implementation.
-  virtual net::URLRequestContext* GetURLRequestContext();
-  virtual net::CookieStore* DONTUSEME_GetCookieStore();
-  virtual scoped_refptr<base::MessageLoopProxy> GetIOMessageLoopProxy() const;
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
+  virtual net::CookieStore* DONTUSEME_GetCookieStore() OVERRIDE;
+  virtual scoped_refptr<base::MessageLoopProxy>
+      GetIOMessageLoopProxy() const OVERRIDE;
 
   // Convenience overload of GetURLRequestContext() that returns a
   // ChromeURLRequestContext* rather than a net::URLRequestContext*.
@@ -159,7 +160,7 @@ class ChromeURLRequestContextGetter : public net::URLRequestContextGetter,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Must be called on the IO thread.

@@ -33,7 +33,7 @@ class InMemoryDatabase : public URLDatabase {
 
  protected:
   // Implemented for URLDatabase.
-  virtual sql::Connection& GetDB();
+  virtual sql::Connection& GetDB() OVERRIDE;
 
  private:
   // Initializes the database connection, this is the shared code between

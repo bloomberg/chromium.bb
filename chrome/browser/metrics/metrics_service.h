@@ -86,7 +86,7 @@ class MetricsService : public content::NotificationObserver,
   // Implementation of content::NotificationObserver
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Invoked when we get a WM_SESSIONEND. This places a value in prefs that is
   // reset when RecordCompletedSessionEnd is invoked.
@@ -234,7 +234,7 @@ class MetricsService : public content::NotificationObserver,
 
   // Implementation of content::URLFetcherDelegate. Called after transmission
   // completes (either successfully or with failure).
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Logs debugging details, for the case where the server returns a response
   // code other than 200.

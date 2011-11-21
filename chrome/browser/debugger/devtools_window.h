@@ -57,10 +57,10 @@ class DevToolsWindow
   virtual ~DevToolsWindow();
 
   // Overridden from DevToolsClientHost.
-  virtual void SendMessageToClient(const IPC::Message& message);
-  virtual void InspectedTabClosing();
-  virtual void TabReplaced(TabContents* new_tab);
-  virtual RenderViewHost* GetClientRenderViewHost();
+  virtual void SendMessageToClient(const IPC::Message& message) OVERRIDE;
+  virtual void InspectedTabClosing() OVERRIDE;
+  virtual void TabReplaced(TabContents* new_tab) OVERRIDE;
+  virtual RenderViewHost* GetClientRenderViewHost() OVERRIDE;
   RenderViewHost* GetRenderViewHost();
 
   void Show(DevToolsToggleAction action);
@@ -85,7 +85,7 @@ class DevToolsWindow
   // Overridden from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void ScheduleAction(DevToolsToggleAction action);
   void DoAction();
@@ -109,15 +109,17 @@ class DevToolsWindow
                               TabContents* new_contents,
                               WindowOpenDisposition disposition,
                               const gfx::Rect& initial_pos,
-                              bool user_gesture);
-  virtual void CloseContents(TabContents* source) {}
-  virtual bool CanReloadContents(TabContents* source) const;
+                              bool user_gesture) OVERRIDE;
+  virtual void CloseContents(TabContents* source) OVERRIDE {}
+  virtual bool CanReloadContents(TabContents* source) const OVERRIDE;
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
-                                      bool* is_keyboard_shortcut);
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
-  virtual content::JavaScriptDialogCreator* GetJavaScriptDialogCreator();
+                                      bool* is_keyboard_shortcut) OVERRIDE;
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
+  virtual content::JavaScriptDialogCreator*
+      GetJavaScriptDialogCreator() OVERRIDE;
 
-  virtual void FrameNavigating(const std::string& url) {}
+  virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
   static DevToolsWindow* ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
                                               bool force_open,

@@ -32,10 +32,13 @@ class ChromeProxyConfigService
   virtual ~ChromeProxyConfigService();
 
   // ProxyConfigService implementation:
-  virtual void AddObserver(net::ProxyConfigService::Observer* observer);
-  virtual void RemoveObserver(net::ProxyConfigService::Observer* observer);
-  virtual ConfigAvailability GetLatestProxyConfig(net::ProxyConfig* config);
-  virtual void OnLazyPoll();
+  virtual void AddObserver(
+      net::ProxyConfigService::Observer* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      net::ProxyConfigService::Observer* observer) OVERRIDE;
+  virtual ConfigAvailability GetLatestProxyConfig(
+      net::ProxyConfig* config) OVERRIDE;
+  virtual void OnLazyPoll() OVERRIDE;
 
   // Method on IO thread that receives the preference proxy settings pushed from
   // PrefProxyConfigTrackerImpl.
@@ -45,7 +48,7 @@ class ChromeProxyConfigService
  private:
   // ProxyConfigService::Observer implementation:
   virtual void OnProxyConfigChanged(const net::ProxyConfig& config,
-                                    ConfigAvailability availability);
+                                    ConfigAvailability availability) OVERRIDE;
 
   // Makes sure that the observer registration with the base service is set up.
   void RegisterObserver();
@@ -121,7 +124,7 @@ class PrefProxyConfigTrackerImpl : public content::NotificationObserver {
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Converts a ProxyConfigDictionary to net::ProxyConfig representation.
   // Returns true if the data from in the dictionary is valid, false otherwise.

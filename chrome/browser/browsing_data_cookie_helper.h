@@ -112,8 +112,8 @@ class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
 
   // BrowsingDataCookieHelper methods.
   virtual void StartFetching(
-      const net::CookieMonster::GetCookieListCallback& callback);
-  virtual void CancelNotification();
+      const net::CookieMonster::GetCookieListCallback& callback) OVERRIDE;
+  virtual void CancelNotification() OVERRIDE;
 
  private:
   // Check if the cookie list contains a cookie with the same name,

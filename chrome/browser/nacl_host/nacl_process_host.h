@@ -36,13 +36,14 @@ class NaClProcessHost : public BrowserChildProcessHost {
               int socket_count,
               IPC::Message* reply_msg);
 
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   void OnProcessLaunchedByBroker(base::ProcessHandle handle);
 
  protected:
-  virtual base::TerminationStatus GetChildTerminationStatus(int* exit_code);
-  virtual void OnChildDied();
+  virtual base::TerminationStatus GetChildTerminationStatus(
+      int* exit_code) OVERRIDE;
+  virtual void OnChildDied() OVERRIDE;
 
  private:
   // Internal class that holds the nacl::Handle objecs so that
@@ -53,12 +54,12 @@ class NaClProcessHost : public BrowserChildProcessHost {
 
   bool LaunchSelLdr();
 
-  virtual void OnProcessLaunched();
+  virtual void OnProcessLaunched() OVERRIDE;
 
   void IrtReady();
   void SendStart(base::PlatformFile irt_file);
 
-  virtual bool CanShutdown();
+  virtual bool CanShutdown() OVERRIDE;
 
  private:
   // The ChromeRenderMessageFilter that requested this NaCl process.  We use

@@ -209,16 +209,16 @@ class UDPStatsClient : public NetworkStats {
   // Called after host is resolved. Creates UDClientSocket and connects to the
   // server. If successfully connected, then calls ConnectComplete() to start
   // the echo protocol. Returns |false| if there is any error.
-  virtual bool DoConnect(int result);
+  virtual bool DoConnect(int result) OVERRIDE;
 
   // This method calls NetworkStats::ReadComplete() to verify the data and calls
   // Finish() if there is an error or if read callback didn't return any data
   // (|result| is less than or equal to 0).
-  virtual bool ReadComplete(int result);
+  virtual bool ReadComplete(int result) OVERRIDE;
 
   // Collects stats for UDP connectivity. This is called when all the data from
   // server is read or when there is a failure during connect/read/write.
-  virtual void Finish(Status status, int result);
+  virtual void Finish(Status status, int result) OVERRIDE;
 };
 
 class TCPStatsClient : public NetworkStats {
@@ -234,15 +234,15 @@ class TCPStatsClient : public NetworkStats {
 
   // Called after host is resolved. Creates TCPClientSocket and connects to the
   // server.
-  virtual bool DoConnect(int result);
+  virtual bool DoConnect(int result) OVERRIDE;
 
   // This method calls NetworkStats::ReadComplete() to verify the data and calls
   // Finish() if there is an error (|result| is less than 0).
-  virtual bool ReadComplete(int result);
+  virtual bool ReadComplete(int result) OVERRIDE;
 
   // Collects stats for TCP connectivity. This is called when all the data from
   // server is read or when there is a failure during connect/read/write.
-  virtual void Finish(Status status, int result);
+  virtual void Finish(Status status, int result) OVERRIDE;
 
  private:
   // Callback that is called when connect is completed and calls

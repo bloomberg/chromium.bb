@@ -18,9 +18,10 @@ class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
 
   // BrowsingDataCookieHelper methods.
   virtual void StartFetching(
-      const net::CookieMonster::GetCookieListCallback &callback);
-  virtual void CancelNotification();
-  virtual void DeleteCookie(const net::CookieMonster::CanonicalCookie& cookie);
+      const net::CookieMonster::GetCookieListCallback &callback) OVERRIDE;
+  virtual void CancelNotification() OVERRIDE;
+  virtual void DeleteCookie(
+      const net::CookieMonster::CanonicalCookie& cookie) OVERRIDE;
 
   // Adds some cookie samples.
   void AddCookieSamples(const GURL& url, const std::string& cookie_line);

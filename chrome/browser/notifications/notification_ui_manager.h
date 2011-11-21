@@ -90,7 +90,7 @@ class NotificationUIManager
   // content::NotificationObserver override.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Attempts to display notifications from the show_queue if the user
   // is active.
@@ -100,7 +100,7 @@ class NotificationUIManager
   void ShowNotifications();
 
   // BalloonCollectionObserver implementation.
-  virtual void OnBalloonSpaceChanged();
+  virtual void OnBalloonSpaceChanged() OVERRIDE;
 
   // Replace an existing notification with this one if applicable;
   // returns true if the replacement happened.

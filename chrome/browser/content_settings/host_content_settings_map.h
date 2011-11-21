@@ -168,7 +168,7 @@ class HostContentSettingsMap
       ContentSettingsPattern primary_pattern,
       ContentSettingsPattern secondary_pattern,
       ContentSettingsType content_type,
-      std::string resource_identifier);
+      std::string resource_identifier) OVERRIDE;
 
   // Returns true if we should allow all content types for this URL.  This is
   // true for various internal objects like chrome:// URLs, so UI and other

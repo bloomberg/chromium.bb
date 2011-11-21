@@ -66,10 +66,10 @@ class IntranetRedirectDetector
   void FinishSleep();
 
   // content::URLFetcherDelegate
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // NetworkChangeNotifier::IPAddressObserver
-  virtual void OnIPAddressChanged();
+  virtual void OnIPAddressChanged() OVERRIDE;
 
   GURL redirect_origin_;
   ScopedRunnableMethodFactory<IntranetRedirectDetector> fetcher_factory_;
@@ -92,7 +92,7 @@ class IntranetRedirectHostResolverProc : public net::HostResolverProc {
                       net::AddressFamily address_family,
                       net::HostResolverFlags host_resolver_flags,
                       net::AddressList* addrlist,
-                      int* os_error);
+                      int* os_error) OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_INTRANET_REDIRECT_DETECTOR_H_

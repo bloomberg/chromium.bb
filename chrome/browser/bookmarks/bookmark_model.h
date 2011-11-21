@@ -171,7 +171,7 @@ class BookmarkPermanentNode : public BookmarkNode {
   BookmarkPermanentNode(int64 id, const GURL& url, Profile* profile);
 
   virtual ~BookmarkPermanentNode();
-  virtual bool IsVisible() const;
+  virtual bool IsVisible() const OVERRIDE;
 
  private:
   Profile* profile_;

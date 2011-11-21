@@ -146,7 +146,7 @@ class HistoryDatabase : public DownloadDatabase,
   FRIEND_TEST_ALL_PREFIXES(IconMappingMigrationTest, TestIconMappingMigration);
 
   // Implemented for URLDatabase.
-  virtual sql::Connection& GetDB();
+  virtual sql::Connection& GetDB() OVERRIDE;
 
   // Migration -----------------------------------------------------------------
 

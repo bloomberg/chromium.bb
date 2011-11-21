@@ -40,7 +40,7 @@ class ProtocolHandlerRegistry
     // Get response from the worker regarding whether Chrome is the default
     // handler for the protocol.
     virtual void SetDefaultWebClientUIState(
-        ShellIntegration::DefaultWebClientUIState state);
+        ShellIntegration::DefaultWebClientUIState state) OVERRIDE;
 
     // Give the observer a handle to the worker, so we can find out the protocol
     // when we're called and also tell the worker if we get deleted.
@@ -50,7 +50,7 @@ class ProtocolHandlerRegistry
     ShellIntegration::DefaultProtocolClientWorker* worker_;
 
    private:
-    virtual bool IsOwnedByWorker() { return true; }
+    virtual bool IsOwnedByWorker() OVERRIDE { return true; }
     // This is a raw pointer, not reference counted, intentionally. In general
     // subclasses of DefaultWebClientObserver are not able to be refcounted
     // e.g. the browser options page

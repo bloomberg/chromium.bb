@@ -15,9 +15,10 @@ class BrowserListTabContentsProvider
   virtual ~BrowserListTabContentsProvider() {}
 
   // DevToolsHttpProtocolHandler::Delegate overrides.
-  virtual DevToolsHttpProtocolHandler::InspectableTabs GetInspectableTabs();
-  virtual std::string GetDiscoveryPageHTML();
-  virtual net::URLRequestContext* GetURLRequestContext();
+  virtual DevToolsHttpProtocolHandler::InspectableTabs
+      GetInspectableTabs() OVERRIDE;
+  virtual std::string GetDiscoveryPageHTML() OVERRIDE;
+  virtual net::URLRequestContext* GetURLRequestContext() OVERRIDE;
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserListTabContentsProvider);
 };

@@ -30,11 +30,12 @@ class AutocompleteHistoryManager : public TabContentsObserver,
   virtual ~AutocompleteHistoryManager();
 
   // TabContentsObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result);
+  virtual void OnWebDataServiceRequestDone(
+      WebDataService::Handle h,
+      const WDTypedResult* result) OVERRIDE;
 
   // Pass-through functions that are called by AutofillManager, after it has
   // dispatched a message.

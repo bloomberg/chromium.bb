@@ -295,7 +295,7 @@ class TopSites
   // Implementation of content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Resets top_sites_ and updates the db (in the background). All mutations to
   // top_sites_ *must* go through this.

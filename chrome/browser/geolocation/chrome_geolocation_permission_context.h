@@ -29,15 +29,17 @@ class ChromeGeolocationPermissionContext : public GeolocationPermissionContext {
                            bool allowed);
 
   // GeolocationPermissionContext
-  virtual void RequestGeolocationPermission(int render_process_id,
-                                            int render_view_id,
-                                            int bridge_id,
-                                            const GURL& requesting_frame);
+  virtual void RequestGeolocationPermission(
+      int render_process_id,
+      int render_view_id,
+      int bridge_id,
+      const GURL& requesting_frame) OVERRIDE;
 
-  virtual void CancelGeolocationPermissionRequest(int render_process_id,
-                                                  int render_view_id,
-                                                  int bridge_id,
-                                                  const GURL& requesting_frame);
+  virtual void CancelGeolocationPermissionRequest(
+      int render_process_id,
+      int render_view_id,
+      int bridge_id,
+      const GURL& requesting_frame) OVERRIDE;
 
  private:
   virtual ~ChromeGeolocationPermissionContext();
