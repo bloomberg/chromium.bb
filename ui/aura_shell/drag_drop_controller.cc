@@ -15,7 +15,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/widget/native_widget_aura.h"
+#include "views/widget/native_widget_aura.h"
 
 namespace aura_shell {
 namespace internal {

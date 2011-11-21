@@ -17,11 +17,11 @@
 #include "content/public/browser/notification_types.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/events/event.h"
-#include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "ui/views/widget/native_widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 #endif
 
 class RenderWidgetHost;

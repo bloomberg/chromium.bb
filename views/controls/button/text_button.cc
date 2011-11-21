@@ -12,8 +12,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/views/events/event.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/button.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "skia/ext/skia_utils_win.h"

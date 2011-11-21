@@ -11,7 +11,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "net/base/mock_host_resolver.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 class VirtualKeyboardManagerTest : public InProcessBrowserTest,
                             public content::NotificationObserver {

@@ -8,7 +8,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/events/event.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

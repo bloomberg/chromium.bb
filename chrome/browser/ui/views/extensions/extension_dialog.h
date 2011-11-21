@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 class Browser;
 class ExtensionDialogObserver;

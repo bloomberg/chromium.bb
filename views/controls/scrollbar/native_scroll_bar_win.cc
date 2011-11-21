@@ -11,9 +11,9 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/win/hwnd_util.h"
 #include "ui/base/win/window_impl.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/controls/scrollbar/scroll_bar.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

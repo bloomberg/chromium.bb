@@ -7,9 +7,9 @@
 #include "chrome/browser/ui/views/bubble/border_contents.h"
 #include "chrome/browser/ui/views/bubble/border_widget_win.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "ui/views/widget/native_widget_win.h"
-#include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/root_view.h"
+#include "views/widget/native_widget_win.h"
+#include "views/widget/widget.h"
 
 class BubbleWidget : public views::NativeWidgetWin {
  public:

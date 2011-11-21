@@ -7,10 +7,10 @@
 #include <gtk/gtk.h>
 
 #include "ui/base/keycodes/keyboard_codes_posix.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/controls/scrollbar/native_scroll_bar_views.h"
 #include "views/controls/scrollbar/scroll_bar.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

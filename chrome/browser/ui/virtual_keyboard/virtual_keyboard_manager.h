@@ -8,7 +8,7 @@
 
 #include "base/memory/singleton.h"
 #include "ui/views/desktop/desktop_window_view.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 class KeyboardWidget;
 

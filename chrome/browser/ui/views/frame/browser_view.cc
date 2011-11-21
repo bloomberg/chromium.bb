@@ -99,11 +99,11 @@
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/widget/native_widget.h"
-#include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/single_split_view.h"
+#include "views/widget/native_widget.h"
+#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/accelerator_table.h"
@@ -117,7 +117,7 @@
 #include "chrome/browser/aeropeek_manager.h"
 #include "chrome/browser/jumplist_win.h"
 #include "ui/base/message_box_win.h"
-#include "ui/views/widget/native_widget_win.h"
+#include "views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/ui/views/accelerator_table.h"
 #if !defined(TOUCH_UI)

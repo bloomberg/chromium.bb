@@ -14,7 +14,7 @@
 #include "chrome/browser/tab_first_render_watcher.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 class DOMView;
 class GURL;

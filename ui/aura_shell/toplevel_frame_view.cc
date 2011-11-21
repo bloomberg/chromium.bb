@@ -10,9 +10,9 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "views/controls/button/custom_button.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace aura_shell {
 namespace internal {

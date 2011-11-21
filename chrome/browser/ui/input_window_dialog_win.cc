@@ -15,11 +15,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
+#include "views/widget/widget.h"
 
 namespace {
 

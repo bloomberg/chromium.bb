@@ -22,9 +22,9 @@
 #include "ui/views/events/event.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
+#include "views/widget/widget.h"
 
 namespace {
 const int kAnchorVerticalOffset = -4;

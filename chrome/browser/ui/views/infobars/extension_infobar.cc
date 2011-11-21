@@ -16,9 +16,9 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_item_view.h"
+#include "views/widget/widget.h"
 
 // ExtensionInfoBarDelegate ----------------------------------------------------
 

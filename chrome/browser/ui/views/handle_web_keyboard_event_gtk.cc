@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/handle_web_keyboard_event.h"
 
 #include "content/public/browser/native_web_keyboard_event.h"
-#include "ui/views/widget/native_widget_gtk.h"
+#include "views/widget/native_widget_gtk.h"
 
 void HandleWebKeyboardEvent(views::Widget* widget,
                             const NativeWebKeyboardEvent& event) {

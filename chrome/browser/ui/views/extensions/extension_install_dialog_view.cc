@@ -18,7 +18,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/border.h"
 #include "views/controls/image_view.h"
@@ -27,6 +26,7 @@
 #include "views/controls/link_listener.h"
 #include "views/controls/separator.h"
 #include "views/view.h"
+#include "views/widget/widget.h"
 
 namespace {
 

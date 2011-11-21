@@ -25,7 +25,6 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/focus/external_focus_tracker.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
@@ -35,6 +34,7 @@
 #include "views/controls/link.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"

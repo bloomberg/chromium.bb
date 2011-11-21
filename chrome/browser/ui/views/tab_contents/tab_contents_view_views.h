@@ -11,7 +11,7 @@
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 class ConstrainedWindowGtk;
 class NativeTabContentsView;

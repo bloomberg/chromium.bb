@@ -8,9 +8,9 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
+#include "views/widget/widget.h"
 
 namespace examples {
 

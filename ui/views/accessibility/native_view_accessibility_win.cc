@@ -14,8 +14,8 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/atl_module.h"
-#include "ui/views/widget/native_widget_win.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/native_widget_win.h"
+#include "views/widget/widget.h"
 
 using ui::AccessibilityTypes;
 

@@ -22,10 +22,10 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
+#include "views/widget/widget.h"
 
 namespace {
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/browser_list.h"
 
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 // static
 void BrowserList::AllBrowsersClosedAndAppExiting() {

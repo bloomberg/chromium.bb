@@ -20,10 +20,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "views/controls/table/table_view.h"
 #include "views/controls/table/table_view2.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 // Put the tests in the views namespace to make it easier to declare them as
 // friend classes.

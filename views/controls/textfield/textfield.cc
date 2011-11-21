@@ -18,10 +18,10 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/selection_model.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/controls/textfield/textfield_controller.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_LINUX)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"

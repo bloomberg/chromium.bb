@@ -8,7 +8,7 @@
 #include "ui/aura/screen_aura.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace aura_shell {
 namespace internal {

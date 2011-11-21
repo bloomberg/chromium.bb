@@ -17,8 +17,8 @@
 #include "grit/chromium_strings.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/label.h"
+#include "views/widget/widget.h"
 
 namespace {
 // This value is experimental and subjective.

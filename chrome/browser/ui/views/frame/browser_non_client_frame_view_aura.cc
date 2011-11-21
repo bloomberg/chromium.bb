@@ -18,9 +18,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "views/controls/button/custom_button.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace {
 // Our window is larger than it appears, as it includes space around the edges

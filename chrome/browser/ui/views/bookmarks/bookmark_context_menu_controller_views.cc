@@ -18,7 +18,7 @@
 #include "content/browser/tab_contents/page_navigator.h"
 #include "content/browser/user_metrics.h"
 #include "grit/generated_resources.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 BookmarkContextMenuControllerViews::BookmarkContextMenuControllerViews(
     views::Widget* parent_widget,

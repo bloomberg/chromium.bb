@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/menu/native_menu_host_delegate.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

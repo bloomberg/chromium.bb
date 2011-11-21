@@ -13,10 +13,10 @@
 #include "ui/aura_shell/toplevel_frame_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_runner.h"
+#include "views/widget/widget.h"
 
 using views::MenuItemView;
 using views::MenuRunner;

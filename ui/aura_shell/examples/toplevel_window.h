@@ -6,7 +6,7 @@
 #define UI_AURA_SHELL_EXAMPLES_TOPLEVEL_WINDOW_H_
 #pragma once
 
-#include "ui/views/widget/widget_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 namespace aura_shell {
 namespace examples {

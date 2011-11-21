@@ -7,17 +7,17 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura/event.h"
-#include "ui/aura/screen_aura.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
+#include "ui/aura/screen_aura.h"
 #include "ui/aura/window_types.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura_shell/property_util.h"
 #include "ui/aura_shell/show_state_controller.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/widget/native_widget_aura.h"
+#include "views/widget/native_widget_aura.h"
 
 namespace aura_shell {
 namespace internal {

@@ -25,10 +25,10 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/button/text_button.h"
+#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/native_theme.h"

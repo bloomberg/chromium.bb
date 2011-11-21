@@ -4,9 +4,9 @@
 
 #include "ui/aura_shell/desktop_layout_manager.h"
 
-#include "ui/aura/window.h"
 #include "ui/aura_shell/shelf_layout_controller.h"
-#include "ui/views/widget/widget.h"
+#include "ui/aura/window.h"
+#include "views/widget/widget.h"
 
 namespace aura_shell {
 namespace internal {

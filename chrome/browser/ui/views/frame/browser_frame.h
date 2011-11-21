@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame_delegate.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 class AvatarMenuButton;
 class BrowserNonClientFrameView;

@@ -20,8 +20,8 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"

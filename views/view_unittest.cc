@@ -26,8 +26,6 @@
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/touchui/gesture_manager.h"
-#include "ui/views/widget/native_widget.h"
-#include "ui/views/widget/root_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/background.h"
 #include "views/controls/button/button_dropdown.h"
@@ -37,6 +35,8 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
+#include "views/widget/native_widget.h"
+#include "views/widget/root_view.h"
 
 #if defined(OS_WIN)
 #include "ui/views/test/test_views_delegate.h"

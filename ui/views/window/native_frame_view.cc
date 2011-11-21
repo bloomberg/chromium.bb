@@ -4,11 +4,11 @@
 
 #include "ui/views/window/native_frame_view.h"
 
-#include "ui/views/widget/native_widget.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/native_widget.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/views/widget/native_widget_win.h"
+#include "views/widget/native_widget_win.h"
 #endif
 
 namespace views {

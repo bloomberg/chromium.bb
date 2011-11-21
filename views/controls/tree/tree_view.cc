@@ -24,7 +24,7 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/point.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 using ui::TreeModel;
 using ui::TreeModelNode;

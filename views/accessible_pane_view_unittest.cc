@@ -7,8 +7,8 @@
 #include "ui/base/models/accelerator.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

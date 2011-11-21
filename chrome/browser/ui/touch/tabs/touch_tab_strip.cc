@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/touch/tabs/touch_tab_strip.h"
 
 #include "chrome/browser/ui/touch/tabs/touch_tab.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 TouchTabStrip::TouchTabStrip(TabStripController* controller)
     : TabStrip(controller) {

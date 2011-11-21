@@ -34,10 +34,10 @@
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/test/test_views_delegate.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
 // TableView is not yet ported to Linux.

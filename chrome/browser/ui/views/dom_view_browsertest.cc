@@ -8,7 +8,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 using views::Widget;
 

@@ -4,13 +4,13 @@
 
 #include "views/controls/menu/menu_host.h"
 
-#include "ui/views/widget/native_widget_private.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_host_root_view.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/native_menu_host.h"
 #include "views/controls/menu/submenu_view.h"
+#include "views/widget/native_widget_private.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

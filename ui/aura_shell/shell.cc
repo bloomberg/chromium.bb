@@ -29,8 +29,8 @@
 #include "ui/aura_shell/workspace_controller.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animator.h"
-#include "ui/views/widget/native_widget_aura.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/native_widget_aura.h"
+#include "views/widget/widget.h"
 
 namespace aura_shell {
 

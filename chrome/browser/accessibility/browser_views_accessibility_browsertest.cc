@@ -21,7 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/atl_module.h"
 #include "ui/views/accessibility/native_view_accessibility_win.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace {
 

@@ -5,8 +5,8 @@
 #include "chrome/browser/automation/testing_automation_provider.h"
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/automation/automation_browser_tracker.h"
 #include "chrome/browser/automation/automation_window_tracker.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/automation_messages.h"
 #include "ui/gfx/point.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/menu/menu_listener.h"
 #include "views/view.h"
+#include "views/widget/widget.h"
 
 namespace {
 

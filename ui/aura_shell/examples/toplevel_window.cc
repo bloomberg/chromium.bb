@@ -8,7 +8,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura_shell/toplevel_frame_view.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace aura_shell {
 namespace examples {

@@ -16,7 +16,7 @@
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/focus/view_storage.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 #if defined(USE_AURA)
 #include "ui/gfx/scoped_sk_region.h"

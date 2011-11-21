@@ -10,8 +10,8 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
-#include "ui/views/widget/widget.h"
 #include "views/views_delegate.h"
+#include "views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // NativeTabContentsViewAura, public:

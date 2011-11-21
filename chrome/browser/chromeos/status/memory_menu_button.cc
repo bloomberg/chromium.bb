@@ -7,11 +7,11 @@
 
 #include "chrome/browser/chromeos/status/memory_menu_button.h"
 
+#include "base/utf_string_conversions.h"
 #include "base/file_util.h"
 #include "base/process_util.h"  // GetSystemMemoryInfo
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/memory_purger.h"
 #include "chrome/common/render_messages.h"
@@ -20,8 +20,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/menu/menu_runner.h"
+#include "views/widget/widget.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"

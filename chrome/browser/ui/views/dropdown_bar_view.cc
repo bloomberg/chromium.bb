@@ -11,8 +11,8 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/widget/widget.h"
 #include "views/background.h"
+#include "views/widget/widget.h"
 
 namespace {
 

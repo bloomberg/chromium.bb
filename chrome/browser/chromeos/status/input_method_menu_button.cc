@@ -14,7 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_UI_EXPORT_H_
-#define UI_BASE_UI_EXPORT_H_
+#ifndef UI_UI_EXPORT_H_
+#define UI_UI_EXPORT_H_
 #pragma once
 
 // Defines UI_EXPORT so that functionality implemented by the UI module can be
@@ -26,4 +26,4 @@
 #define UI_EXPORT
 #endif
 
-#endif  // UI_BASE_UI_EXPORT_H_
+#endif  // UI_UI_EXPORT_H_

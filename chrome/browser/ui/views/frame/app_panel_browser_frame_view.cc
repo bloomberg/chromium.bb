@@ -19,9 +19,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "views/controls/button/image_button.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace {
 // The frame border is only visible in restored mode and is hardcoded to 1 px on

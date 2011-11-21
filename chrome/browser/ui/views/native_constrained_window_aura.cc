@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/constrained_window_views.h"
 
-#include "ui/views/widget/native_widget_aura.h"
+#include "views/widget/native_widget_aura.h"
 
 class NativeConstrainedWindowAura : public NativeConstrainedWindow,
                                    public views::NativeWidgetAura {

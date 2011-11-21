@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/frame/browser_view.h"
 #include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace {
 

@@ -14,12 +14,12 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/skia_utils_gtk.h"
-#include "ui/views/widget/native_widget_gtk.h"
 #include "views/controls/textfield/gtk_views_entry.h"
 #include "views/controls/textfield/gtk_views_textview.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
+#include "views/widget/native_widget_gtk.h"
 
 namespace views {
 

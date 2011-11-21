@@ -14,9 +14,6 @@
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/non_client_view.h"
 #include "views/background.h"
 #include "views/border.h"
@@ -31,6 +28,9 @@
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 #if defined(OS_LINUX)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"

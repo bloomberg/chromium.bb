@@ -11,8 +11,8 @@
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/aura_shell/test/aura_shell_test_base.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace aura_shell {
 namespace test {

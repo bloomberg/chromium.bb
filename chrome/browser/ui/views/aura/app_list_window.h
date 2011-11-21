@@ -10,7 +10,7 @@
 #include "chrome/browser/tab_first_render_watcher.h"
 #include "ui/aura/desktop_observer.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 class DOMView;
 

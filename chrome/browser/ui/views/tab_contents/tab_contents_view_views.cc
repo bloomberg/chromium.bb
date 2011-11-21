@@ -22,8 +22,8 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/view_storage.h"
-#include "ui/views/widget/native_widget.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/native_widget.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

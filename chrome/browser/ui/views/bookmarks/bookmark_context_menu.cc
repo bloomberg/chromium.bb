@@ -13,9 +13,9 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_runner.h"
+#include "views/widget/widget.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BookmarkContextMenu, public:

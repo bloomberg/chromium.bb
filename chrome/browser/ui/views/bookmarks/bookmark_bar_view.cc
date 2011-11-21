@@ -53,14 +53,14 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/gfx/canvas_skia.h"
-#include "ui/views/widget/tooltip_manager.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/drag_utils.h"
 #include "views/metrics.h"
 #include "views/view_constants.h"
+#include "views/widget/tooltip_manager.h"
+#include "views/widget/widget.h"
 
 using views::CustomButton;
 using views::DropTargetEvent;

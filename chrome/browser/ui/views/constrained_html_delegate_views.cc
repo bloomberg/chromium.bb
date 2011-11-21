@@ -13,8 +13,8 @@
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "views/view.h"
+#include "views/widget/widget_delegate.h"
 
 class ConstrainedHtmlDelegateViews : public TabContentsContainer,
                                      public ConstrainedHtmlUIDelegate,

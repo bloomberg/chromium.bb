@@ -5,7 +5,7 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

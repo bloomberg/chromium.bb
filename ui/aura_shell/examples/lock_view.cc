@@ -10,8 +10,8 @@
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "views/widget/widget.h"
+#include "views/widget/widget_delegate.h"
 
 namespace aura_shell {
 namespace examples {

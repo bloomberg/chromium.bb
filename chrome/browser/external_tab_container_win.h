@@ -25,7 +25,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/models/accelerator.h"
-#include "ui/views/widget/native_widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 class AutomationProvider;
 class Browser;

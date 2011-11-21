@@ -21,7 +21,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/views/widget/native_widget_win.h"
+#include "views/widget/native_widget_win.h"
 #endif
 
 using content::BrowserThread;

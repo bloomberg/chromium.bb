@@ -29,12 +29,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/views/events/event.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/painter.h"
 #include "views/view.h"
+#include "views/widget/widget.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"

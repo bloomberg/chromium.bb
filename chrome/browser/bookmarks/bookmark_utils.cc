@@ -42,9 +42,9 @@
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/events/event.h"
-#include "ui/views/widget/native_widget.h"
-#include "ui/views/widget/widget.h"
 #include "views/drag_utils.h"
+#include "views/widget/native_widget.h"
+#include "views/widget/widget.h"
 #endif
 
 #if defined(TOOLKIT_GTK)

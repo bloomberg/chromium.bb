@@ -17,8 +17,8 @@
 #include "chrome/common/pref_names.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/widget/native_widget.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/native_widget.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/app_icon_win.h"

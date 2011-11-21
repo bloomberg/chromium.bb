@@ -28,13 +28,13 @@
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/views_delegate.h"
+#include "views/widget/widget.h"
 
 using content::BrowserThread;
 

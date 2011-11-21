@@ -15,7 +15,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace chromeos {
 

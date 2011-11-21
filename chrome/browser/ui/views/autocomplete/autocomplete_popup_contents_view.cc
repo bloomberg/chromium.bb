@@ -32,16 +32,16 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/widget.h"
 #include "unicode/ubidi.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/painter.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"
 #if !defined(USE_AURA)
-#include "ui/views/widget/native_widget_win.h"
+#include "views/widget/native_widget_win.h"
 #endif
 #endif
 

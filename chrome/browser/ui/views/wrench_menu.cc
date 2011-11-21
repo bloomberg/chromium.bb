@@ -32,7 +32,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/views/widget/widget.h"
 #include "views/background.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
@@ -43,6 +42,7 @@
 #include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
 #include "views/controls/menu/submenu_view.h"
+#include "views/widget/widget.h"
 
 using ui::MenuModel;
 using views::CustomButton;

@@ -5,8 +5,8 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #include "base/logging.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

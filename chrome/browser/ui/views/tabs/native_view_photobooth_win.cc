@@ -9,7 +9,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace {
 

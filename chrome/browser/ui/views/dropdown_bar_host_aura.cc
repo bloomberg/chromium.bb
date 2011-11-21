@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/aura/window.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const TabContents* contents,

@@ -8,8 +8,8 @@
 
 #include "chrome/browser/ui/views/bubble/border_contents.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "ui/views/widget/native_widget_gtk.h"
-#include "ui/views/widget/root_view.h"
+#include "views/widget/root_view.h"
+#include "views/widget/native_widget_gtk.h"
 
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"

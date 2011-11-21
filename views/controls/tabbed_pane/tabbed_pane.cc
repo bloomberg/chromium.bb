@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 #include "views/controls/tabbed_pane/tabbed_pane_listener.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

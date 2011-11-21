@@ -9,7 +9,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace {
 

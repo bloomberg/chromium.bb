@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

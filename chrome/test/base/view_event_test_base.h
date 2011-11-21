@@ -16,7 +16,7 @@
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "views/widget/widget_delegate.h"
 
 namespace gfx {
 class Size;

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/window.h"
 
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_CHROMEOS) && defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/frame/bubble_window.h"

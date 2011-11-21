@@ -18,7 +18,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 using testing::Eq;
 

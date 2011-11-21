@@ -11,10 +11,10 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/combobox/native_combobox_views.h"
 #include "views/views_delegate.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

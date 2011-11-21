@@ -9,9 +9,9 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/touchui/touch_selection_controller.h"
 #include "ui/views/touchui/touch_selection_controller_impl.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/textfield/native_textfield_views.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

@@ -12,11 +12,11 @@
 #include "ui/aura/screen_aura.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
+#include "ui/aura_shell/workspace_controller.h"
 #include "ui/aura_shell/workspace/workspace.h"
 #include "ui/aura_shell/workspace/workspace_manager.h"
-#include "ui/aura_shell/workspace_controller.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/views/widget/native_widget_aura.h"
+#include "views/widget/native_widget_aura.h"
 
 namespace aura_shell {
 namespace test {

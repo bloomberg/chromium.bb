@@ -10,9 +10,9 @@
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/gtk_util.h"
-#include "ui/views/widget/widget.h"
 #include "views/controls/table/table_view2.h"
 #include "views/controls/table/table_view_observer.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

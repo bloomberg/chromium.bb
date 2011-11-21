@@ -6,7 +6,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 BrowserBubble::BrowserBubble(Browser* browser,
                              views::View* view,

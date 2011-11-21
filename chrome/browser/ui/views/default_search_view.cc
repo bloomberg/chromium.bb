@@ -24,11 +24,11 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
+#include "views/widget/widget.h"
 
 namespace {
 

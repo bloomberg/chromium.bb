@@ -29,7 +29,7 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/ime/text_input_type_tracker.h"
-#include "ui/views/widget/widget.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"

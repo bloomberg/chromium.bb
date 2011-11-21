@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/widget/native_widget_win.h"
+#include "views/widget/native_widget_win.h"
 
 class BorderContents;
 

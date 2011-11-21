@@ -9,8 +9,8 @@
 #include "ui/views/bubble/border_contents_view.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
+#include "views/widget/widget.h"
 
 namespace views {
 

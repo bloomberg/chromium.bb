@@ -32,16 +32,16 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
 #include "views/controls/button/image_button.h"
 #include "views/views_delegate.h"
+#include "views/widget/widget.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
-#include "ui/views/widget/native_widget_win.h"
+#include "views/widget/native_widget_win.h"
 #endif
 
 using base::TimeDelta;
