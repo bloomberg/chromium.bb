@@ -22,6 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/mac/WebSandboxSupport.h"
 #elif defined(OS_POSIX)
 #include "content/common/child_process_sandbox_support_impl_linux.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontFamily.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebSandboxSupport.h"
 #endif
 
@@ -41,10 +42,11 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport : public WebSandboxSupport 
   virtual bool loadFont(
       NSFont* srcFont, CGFontRef* out, uint32_t* fontID);
 #elif defined(OS_POSIX)
-  virtual WebString getFontFamilyForCharacters(
+  virtual void getFontFamilyForCharacters(
       const WebUChar* characters,
       size_t numCharacters,
-      const char* preferred_locale);
+      const char* preferred_locale,
+      WebKit::WebFontFamily* family);
   virtual void getRenderStyleForStrike(
       const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out);
 
@@ -54,7 +56,7 @@ class PpapiWebKitPlatformSupportImpl::SandboxSupport : public WebSandboxSupport 
   // here. The key in this map is an array of 16-bit UTF16 values from WebKit.
   // The value is a string containing the correct font family.
   base::Lock unicode_font_families_mutex_;
-  std::map<string16, std::string> unicode_font_families_;
+  std::map<string16, WebKit::WebFontFamily> unicode_font_families_;
 #endif
 };
 
@@ -83,24 +85,29 @@ bool PpapiWebKitPlatformSupportImpl::SandboxSupport::loadFont(
 
 #elif defined(OS_POSIX)
 
-WebString
+void
 PpapiWebKitPlatformSupportImpl::SandboxSupport::getFontFamilyForCharacters(
     const WebUChar* characters,
     size_t num_characters,
-    const char* preferred_locale) {
+    const char* preferred_locale,
+    WebKit::WebFontFamily* family) {
   base::AutoLock lock(unicode_font_families_mutex_);
   const string16 key(characters, num_characters);
-  const std::map<string16, std::string>::const_iterator iter =
+  const std::map<string16, WebKit::WebFontFamily>::const_iterator iter =
       unicode_font_families_.find(key);
-  if (iter != unicode_font_families_.end())
-    return WebString::fromUTF8(iter->second);
+  if (iter != unicode_font_families_.end()) {
+    family->name = iter->second.name;
+    family->isBold = iter->second.isBold;
+    family->isItalic = iter->second.isItalic;
+    return;
+  }
 
-  const std::string family_name = content::GetFontFamilyForCharacters(
+  content::GetFontFamilyForCharacters(
       characters,
       num_characters,
-      preferred_locale);
-  unicode_font_families_.insert(make_pair(key, family_name));
-  return WebString::fromUTF8(family_name);
+      preferred_locale,
+      family);
+  unicode_font_families_.insert(make_pair(key, *family));
 }
 
 void PpapiWebKitPlatformSupportImpl::SandboxSupport::getRenderStyleForStrike(

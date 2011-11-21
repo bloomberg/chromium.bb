@@ -267,16 +267,20 @@ class SandboxIPCProcess  {
     if (!pickle.ReadString(&iter, &preferred_locale))
       return;
 
-    WebCString family = WebFontInfo::familyForChars(chars.get(),
-                                                    num_chars,
-                                                    preferred_locale.c_str());
+    WebKit::WebFontFamily family;
+    WebFontInfo::familyForChars(chars.get(),
+                                num_chars,
+                                preferred_locale.c_str(),
+                                &family);
 
     Pickle reply;
-    if (family.data()) {
-      reply.WriteString(family.data());
+    if (family.name.data()) {
+      reply.WriteString(family.name.data());
     } else {
       reply.WriteString("");
     }
+    reply.WriteBool(family.isBold);
+    reply.WriteBool(family.isItalic);
     SendRendererReply(fds, reply, -1);
   }
 

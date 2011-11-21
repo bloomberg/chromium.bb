@@ -13,6 +13,7 @@
 #include "content/common/chrome_descriptors.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/unix_domain_socket_posix.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontFamily.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontRenderStyle.h"
 
 static int GetSandboxFD() {
@@ -21,9 +22,10 @@ static int GetSandboxFD() {
 
 namespace content {
 
-std::string GetFontFamilyForCharacters(const uint16_t* utf16,
-                                       size_t num_utf16,
-                                       const char* preferred_locale) {
+void GetFontFamilyForCharacters(const uint16_t* utf16,
+                                size_t num_utf16,
+                                const char* preferred_locale,
+                                WebKit::WebFontFamily* family) {
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_GET_FONT_FAMILY_FOR_CHARS);
   request.WriteInt(num_utf16);
@@ -36,13 +38,19 @@ std::string GetFontFamilyForCharacters(const uint16_t* utf16,
                                                   sizeof(buf), NULL, request);
 
   std::string family_name;
+  bool isBold = false;
+  bool isItalic = false;
   if (n != -1) {
     Pickle reply(reinterpret_cast<char*>(buf), n);
     void* pickle_iter = NULL;
-    reply.ReadString(&pickle_iter, &family_name);
+    if (reply.ReadString(&pickle_iter, &family_name) &&
+        reply.ReadBool(&pickle_iter, &isBold) &&
+        reply.ReadBool(&pickle_iter, &isItalic)) {
+      family->name = family_name;
+      family->isBold = isBold;
+      family->isItalic = isItalic;
+    }
   }
-
-  return family_name;
 }
 
 void GetRenderStyleForStrike(const char* family, int sizeAndStyle,
