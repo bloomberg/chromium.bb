@@ -88,7 +88,9 @@ WHITELIST_FILENAMES = set((
   'depcomp',
   'install-sh',
   'missing',
-  'mkinstalldirs'
+  'mkinstalldirs',
+  'scons',
+  'naclsdk',
 ))
 
 # File paths that contain these regexps will be whitelisted as well.
