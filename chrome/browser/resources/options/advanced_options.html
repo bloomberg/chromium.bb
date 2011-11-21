@@ -35,6 +35,16 @@
             <span i18n-content="suggestPref"></span>
           </label>
         </div>
+<if expr="pp_ifdef('_google_chrome') and os == 'win32'">
+        <div class="checkbox">
+          <label>
+            <input id="spellingServiceEnabled"
+                pref="spellcheck.use_spelling_service"
+                metric="Options_UseSpellingServiceCheckbox" type="checkbox">
+            <span i18n-content="spellingPref"></span>
+          </label>
+        </div>
+</if>
         <div class="checkbox">
           <label>
             <input id="dnsPrefetchingEnabled" pref="dns_prefetching.enabled"

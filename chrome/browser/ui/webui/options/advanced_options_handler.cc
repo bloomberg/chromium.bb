@@ -110,6 +110,10 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_LINKDOCTOR_PREF },
     { "suggestPref",
       IDS_OPTIONS_SUGGEST_PREF },
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+    { "spellingPref",
+      IDS_OPTIONS_SPELLING_PREF },
+#endif
     { "tabsToLinksPref",
       IDS_OPTIONS_TABS_TO_LINKS_PREF },
     { "fontSettingsInfo",
