@@ -1119,27 +1119,29 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_DrawPixels) {
 // Checks the logic around Compositor::SetRootLayer and Layer::SetCompositor.
 TEST_F(LayerWithRealCompositorTest, MAYBE_SetRootLayer) {
   Compositor* compositor = GetCompositor();
-  Layer l1;
-  EXPECT_EQ(NULL, l1.GetCompositor());
+  scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
+                                        gfx::Rect(20, 20, 400, 400)));
+  scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
+                                        gfx::Rect(10, 10, 350, 350)));
 
-  Layer l2;
-  EXPECT_EQ(NULL, l2.GetCompositor());
+  EXPECT_EQ(NULL, l1->GetCompositor());
+  EXPECT_EQ(NULL, l2->GetCompositor());
 
-  compositor->SetRootLayer(&l1);
-  EXPECT_EQ(compositor, l1.GetCompositor());
+  compositor->SetRootLayer(l1.get());
+  EXPECT_EQ(compositor, l1->GetCompositor());
 
-  l1.Add(&l2);
-  EXPECT_EQ(compositor, l2.GetCompositor());
+  l1->Add(l2.get());
+  EXPECT_EQ(compositor, l2->GetCompositor());
 
-  l1.Remove(&l2);
-  EXPECT_EQ(NULL, l2.GetCompositor());
+  l1->Remove(l2.get());
+  EXPECT_EQ(NULL, l2->GetCompositor());
 
-  l1.Add(&l2);
-  EXPECT_EQ(compositor, l2.GetCompositor());
+  l1->Add(l2.get());
+  EXPECT_EQ(compositor, l2->GetCompositor());
 
   compositor->SetRootLayer(NULL);
-  EXPECT_EQ(NULL, l1.GetCompositor());
-  EXPECT_EQ(NULL, l2.GetCompositor());
+  EXPECT_EQ(NULL, l1->GetCompositor());
+  EXPECT_EQ(NULL, l2->GetCompositor());
 }
 
 // Checks that compositor observers are notified when:

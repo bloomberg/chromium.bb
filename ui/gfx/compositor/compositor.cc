@@ -35,6 +35,8 @@ void Compositor::ScheduleDraw() {
 }
 
 void Compositor::SetRootLayer(Layer* root_layer) {
+  if (root_layer_ == root_layer)
+    return;
   if (root_layer_)
     root_layer_->SetCompositor(NULL);
   root_layer_ = root_layer;
