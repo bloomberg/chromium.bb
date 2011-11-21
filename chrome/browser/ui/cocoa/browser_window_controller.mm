@@ -1988,7 +1988,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   if (presentationMode) {
     BOOL fullscreen = [self isFullscreen];
-    BOOL fullscreen_for_tab = browser_->is_fullscreen_for_tab();
+    BOOL fullscreen_for_tab = browser_->IsFullscreenForTab();
     if (!fullscreen_for_tab)
       [self setShouldUsePresentationModeWhenEnteringFullscreen:YES];
     enteredPresentationModeFromFullscreen_ = fullscreen;

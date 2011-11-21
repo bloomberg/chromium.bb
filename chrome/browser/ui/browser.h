@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_delegate.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/constrained_window_tab_helper_delegate.h"
+#include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
 #include "chrome/browser/ui/select_file_dialog.h"
@@ -55,6 +56,7 @@ class BrowserTabRestoreServiceDelegate;
 class BrowserWindow;
 class Extension;
 class FindBarController;
+class FullscreenController;
 class HtmlDialogUIDelegate;
 class InstantController;
 class InstantUnloadHandler;
@@ -222,6 +224,7 @@ class Browser : public TabHandlerDelegate,
   void set_window(BrowserWindow* window) {
     DCHECK(!window_);
     window_ = window;
+    fullscreen_controller_ = new FullscreenController(window_, profile_, this);
   }
 #endif
 
@@ -498,9 +501,6 @@ class Browser : public TabHandlerDelegate,
   // BrowserWindow::EnterFullscreen invokes this after the window has become
   // fullscreen.
   void WindowFullscreenStateChanged();
-
-  // Sends a notification that the fullscreen state has changed.
-  void NotifyFullscreenChange();
 
   // Assorted browser commands ////////////////////////////////////////////////
 
@@ -838,11 +838,10 @@ class Browser : public TabHandlerDelegate,
   virtual void TabStripEmpty();
 
   // Fullscreen permission infobar callbacks.
+  // TODO(koz): Remove this and have callers call FullscreenController directly.
   void OnAcceptFullscreenPermission(const GURL& url,
                                     FullscreenExitBubbleType bubble_type);
   void OnDenyFullscreenPermission(FullscreenExitBubbleType bubble_type);
-  ContentSetting GetFullscreenSetting(const GURL& url);
-  ContentSetting GetMouseLockSetting(const GURL& url);
 
   // Figure out if there are tabs that have beforeunload handlers.
   bool TabsNeedBeforeUnloadFired();
@@ -856,7 +855,7 @@ class Browser : public TabHandlerDelegate,
 
   // True when the current tab is in fullscreen mode, requested by
   // webkitRequestFullScreen.
-  bool is_fullscreen_for_tab() const { return fullscreened_tab_ != NULL; }
+  bool IsFullscreenForTab() const;
 
   // Called each time the browser window is shown.
   void OnWindowDidShow();
@@ -912,15 +911,6 @@ class Browser : public TabHandlerDelegate,
 
     // Change is the result of window toggling in/out of fullscreen mode.
     BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN,
-  };
-
-  enum MouseLockState {
-    MOUSELOCK_NOT_REQUESTED,
-    // The page requests to lock the mouse and the user hasn't responded to the
-    // request.
-    MOUSELOCK_REQUESTED,
-    // Mouse lock has been allowed by the user.
-    MOUSELOCK_ACCEPTED
   };
 
   // Overridden from TabContentsDelegate:
@@ -1174,25 +1164,6 @@ class Browser : public TabHandlerDelegate,
   // >= index.
   void SyncHistoryWithTabs(int index);
 
-  // Tab fullscreen functions /////////////////////////////////////////////////
-
-  // There are two different kinds of fullscreen mode - "tab fullscreen" and
-  // "browser fullscreen". "Tab fullscreen" refers to when a tab enters
-  // fullscreen mode via the JS fullscreen API, and "browser fullscreen"
-  // refers to the user putting the browser itself into fullscreen mode from
-  // the UI. The difference is that tab fullscreen has implications for how
-  // the contents of the tab render (eg: a video element may grow to consume
-  // the whole tab), whereas browser fullscreen mode doesn't. Therefore if a
-  // user forces an exit from fullscreen, we need to notify the tab so it can
-  // stop rendering in its fullscreen mode.
-
-  // Make the current tab exit fullscreen mode if it is in it.
-  void ExitTabbedFullscreenModeIfNecessary();
-
-  // Notifies the tab that it has been forced out of fullscreen mode if
-  // necessary.
-  void NotifyTabOfFullscreenExitIfNecessary();
-
   // OnBeforeUnload handling //////////////////////////////////////////////////
 
   typedef std::set<TabContents*> UnloadListenerSet;
@@ -1311,12 +1282,6 @@ class Browser : public TabHandlerDelegate,
 
   // Notifies the tab that it has been forced out of fullscreen mode.
   void NotifyTabOfFullscreenExit();
-
-  // Determines what should be shown in the fullscreen exit bubble.
-  FullscreenExitBubbleType GetFullscreenExitBubbleType() const;
-
-  // Updates the content of the fullscreen exit bubble.
-  void UpdateFullscreenExitBubbleContent();
 
   // Data members /////////////////////////////////////////////////////////////
 
@@ -1458,17 +1423,7 @@ class Browser : public TabHandlerDelegate,
 
   BookmarkBar::State bookmark_bar_state_;
 
-  // If there is currently a tab in fullscreen mode (entered via
-  // webkitRequestFullScreen), this is its wrapper.
-  TabContentsWrapper* fullscreened_tab_;
-
-  // True if the current tab entered fullscreen mode via webkitRequestFullScreen
-  bool tab_caused_fullscreen_;
-  // True if tab fullscreen has been allowed, either by settings or by user
-  // clicking the allow button on the fullscreen infobar.
-  bool tab_fullscreen_accepted_;
-
-  MouseLockState mouse_lock_state_;
+  scoped_refptr<FullscreenController> fullscreen_controller_;
 
   // True if the browser window has been shown at least once.
   bool window_has_shown_;

@@ -2403,6 +2403,8 @@
         'browser/ui/bookmarks/bookmark_tab_helper_delegate.h',
         'browser/ui/browser.cc',
         'browser/ui/browser.h',
+        'browser/ui/fullscreen_controller.cc',
+        'browser/ui/fullscreen_controller.h',
         'browser/ui/browser_dialogs.h',
         'browser/ui/browser_init.cc',
         'browser/ui/browser_init.h',

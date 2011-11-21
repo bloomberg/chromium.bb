@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -905,13 +906,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestFullscreenBubbleMouseLockState) {
   }
 
   browser()->RequestToLockMouse(fullscreen_tab);
-  FullscreenExitBubbleType type = browser()->GetFullscreenExitBubbleType();
+  FullscreenExitBubbleType type =
+      browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
   bool mouse_lock = false;
   fullscreen_bubble::PermissionRequestedByType(type, NULL, &mouse_lock);
   ASSERT_TRUE(mouse_lock);
 
   browser()->OnAcceptFullscreenPermission(fullscreen_tab->GetURL(), type);
-  type = browser()->GetFullscreenExitBubbleType();
+  type = browser()->fullscreen_controller_->GetFullscreenExitBubbleType();
   ASSERT_FALSE(fullscreen_bubble::ShowButtonsForType(type));
 }
 

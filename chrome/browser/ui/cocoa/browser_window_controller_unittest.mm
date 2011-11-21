@@ -688,6 +688,7 @@ static bool IsFrontWindow(NSWindow *window) {
 }
 
 TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreenNotLion) {
+  CreateBrowserWindow();
   EXPECT_FALSE([controller_ isFullscreen]);
   [controller_ enterFullscreenForURL:GURL()
                        bubbleType:FEB_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION];
@@ -701,6 +702,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreenNotLion) {
 // please do not mark it as flaky without first verifying that there are no bot
 // problems.
 TEST_F(BrowserWindowFullScreenControllerTest, TestActivateNotLion) {
+  CreateBrowserWindow();
   EXPECT_FALSE([controller_ isFullscreen]);
 
   [controller_ activate];
