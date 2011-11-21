@@ -1,13 +1,13 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Makes sure that all EXE and DLL files in the provided directory were built
 correctly.
 
-Currently this tool will check that binaries were built with /NXCOMPAT and
-/DYNAMICBASE set.
+In essense it runs a subset of BinScope tests ensuring that binaries have
+/NXCOMPAT, /DYNAMICBASE and /SAFESEH.
 """
 
 import os
@@ -22,6 +22,7 @@ import pefile
 PE_FILE_EXTENSIONS = ['.exe', '.dll']
 DYNAMICBASE_FLAG = 0x0040
 NXCOMPAT_FLAG = 0x0100
+NO_SEH_FLAG = 0x0400
 
 # Please do not add your file here without confirming that it indeed doesn't
 # require /NXCOMPAT and /DYNAMICBASE.  Contact cpu@chromium.org or your local
@@ -45,6 +46,8 @@ def main(options, args):
     if not IsPEFile(path):
       continue
     pe = pefile.PE(path, fast_load=True)
+    pe.parse_data_directories(directories=[
+        pefile.DIRECTORY_ENTRY['IMAGE_DIRECTORY_ENTRY_LOAD_CONFIG']])
     pe_total = pe_total + 1
     success = True
 
@@ -63,6 +66,22 @@ def main(options, args):
     else:
       success = False
       print "Checking %s for /NXCOMPAT... FAIL" % path
+
+    # Check for /SAFESEH. Binaries should either have no SEH table
+    # (in which case a bit is set in the DLL characteristics section)
+    # or there should be a LOAD_CONFIG section present containing
+    # a valid SEH table.
+    if (pe.OPTIONAL_HEADER.DllCharacteristics & NO_SEH_FLAG or
+        (hasattr(pe, "DIRECTORY_ENTRY_LOAD_CONFIG") and
+         pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SEHandlerCount > 0 and
+         pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SEHandlerTable != 0)):
+      if options.verbose:
+        print "Checking %s for /SAFESEH... PASS" % path
+    else:
+      # TODO(scherkus): uncomment this code after we're confident that we
+      # won't cause unintentional failures on the build bots.
+      #success = False
+      print "Checking %s for /SAFESEH... FAIL" % path
 
     # Update tally.
     if success:
