@@ -788,6 +788,30 @@ enum DeviceMediaType {
   DEVICE_MEDIA_NUM_VALUES = 5,
 };
 
+// TODO(benchan): After both Chrome and cros-disks use these enum values,
+// make these error values contiguous so that they can be directly reported
+// via UMA.
+enum MountErrorType {
+  MOUNT_ERROR_NONE = 0,
+  MOUNT_ERROR_UNKNOWN = 1,
+  MOUNT_ERROR_INTERNAL = 2,
+  MOUNT_ERROR_INVALID_ARGUMENT = 3,
+  MOUNT_ERROR_INVALID_PATH = 4,
+  MOUNT_ERROR_PATH_ALREADY_MOUNTED = 5,
+  MOUNT_ERROR_PATH_NOT_MOUNTED = 6,
+  MOUNT_ERROR_DIRECTORY_CREATION_FAILED = 7,
+  MOUNT_ERROR_INVALID_MOUNT_OPTIONS = 8,
+  MOUNT_ERROR_INVALID_UNMOUNT_OPTIONS = 9,
+  MOUNT_ERROR_INSUFFICIENT_PERMISSIONS = 10,
+  MOUNT_ERROR_MOUNT_PROGRAM_NOT_FOUND = 11,
+  MOUNT_ERROR_MOUNT_PROGRAM_FAILED = 12,
+  MOUNT_ERROR_INVALID_DEVICE_PATH = 100,
+  MOUNT_ERROR_UNKNOWN_FILESYSTEM = 101,
+  MOUNT_ERROR_UNSUPPORTED_FILESYSTEM = 102,
+  MOUNT_ERROR_INVALID_ARCHIVE = 201,
+  MOUNT_ERROR_UNSUPPORTED_ARCHIVE = 202,
+};
+
 // MountSourceType enum values are solely used by Chrome/CrosDisks in
 // the MountCompleted signal, and currently not reported through UMA.
 enum MountSourceType {
