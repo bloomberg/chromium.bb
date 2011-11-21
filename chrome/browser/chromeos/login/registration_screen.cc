@@ -56,9 +56,6 @@ WebPageDomView* RegistrationView::dom_view() {
 // RegistrationScreen, public:
 RegistrationScreen::RegistrationScreen(ViewScreenDelegate* delegate)
     : ViewScreen<RegistrationView>(delegate) {
-  if (!host_page_url_.get())
-    set_registration_host_page_url(GURL(kRegistrationHostPageUrl));
-
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kCrosScheme);
   net::URLRequestFilter::GetInstance()->AddHostnameHandler(
@@ -66,14 +63,6 @@ RegistrationScreen::RegistrationScreen(ViewScreenDelegate* delegate)
       kRegistrationHostnameUrl,
       &RegistrationScreen::Factory);
 }
-
-// static
-void RegistrationScreen::set_registration_host_page_url(const GURL& url) {
-  host_page_url_.reset(new GURL(url));
-}
-
-// static
-scoped_ptr<GURL> RegistrationScreen::host_page_url_;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RegistrationScreen, ViewScreen implementation:
@@ -84,7 +73,7 @@ void RegistrationScreen::CreateView() {
 
 void RegistrationScreen::Refresh() {
   StartTimeoutTimer();
-  GURL url(*host_page_url_);
+  GURL url(kRegistrationHostPageUrl);
   Profile* profile = ProfileManager::GetDefaultProfile();
   view()->InitDOM(profile,
                   SiteInstance::CreateSiteInstanceForURL(profile, url));

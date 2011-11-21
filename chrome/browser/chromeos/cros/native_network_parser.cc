@@ -140,9 +140,10 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
 
 // Serve the singleton mapper instance.
 const EnumMapper<PropertyIndex>* get_native_mapper() {
-  static const EnumMapper<PropertyIndex> mapper(property_index_table,
-                                                arraysize(property_index_table),
-                                                PROPERTY_INDEX_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<PropertyIndex>, mapper,
+      (property_index_table,
+       arraysize(property_index_table),
+       PROPERTY_INDEX_UNKNOWN));
   return &mapper;
 }
 
@@ -155,8 +156,8 @@ ConnectionType ParseNetworkType(const std::string& type) {
     { flimflam::kTypeCellular, TYPE_CELLULAR },
     { flimflam::kTypeVPN, TYPE_VPN },
   };
-  static EnumMapper<ConnectionType> parser(
-      table, arraysize(table), TYPE_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionType>, parser,
+      (table, arraysize(table), TYPE_UNKNOWN));
   return parser.Get(type);
 }
 
@@ -455,8 +456,8 @@ SimLockState NativeNetworkDeviceParser::ParseSimLockState(
     { flimflam::kSIMLockPin, SIM_LOCKED_PIN },
     { flimflam::kSIMLockPuk, SIM_LOCKED_PUK },
   };
-  static EnumMapper<SimLockState> parser(
-      table, arraysize(table), SIM_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<SimLockState>, parser,
+      (table, arraysize(table), SIM_UNKNOWN));
   SimLockState parsed_state = parser.Get(state);
   DCHECK(parsed_state != SIM_UNKNOWN) << "Unknown SIMLock state encountered";
   return parsed_state;
@@ -484,8 +485,8 @@ TechnologyFamily NativeNetworkDeviceParser::ParseTechnologyFamily(
     { flimflam::kTechnologyFamilyCdma, TECHNOLOGY_FAMILY_CDMA },
     { flimflam::kTechnologyFamilyGsm, TECHNOLOGY_FAMILY_GSM },
   };
-  static EnumMapper<TechnologyFamily> parser(
-      table, arraysize(table), TECHNOLOGY_FAMILY_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<TechnologyFamily>, parser,
+      (table, arraysize(table), TECHNOLOGY_FAMILY_UNKNOWN));
   return parser.Get(technology_family);
 }
 
@@ -625,8 +626,8 @@ ConnectionMode NativeNetworkParser::ParseMode(const std::string& mode) {
     { flimflam::kModeManaged, MODE_MANAGED },
     { flimflam::kModeAdhoc, MODE_ADHOC },
   };
-  static EnumMapper<ConnectionMode> parser(
-      table, arraysize(table), MODE_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionMode>, parser,
+      (table, arraysize(table), MODE_UNKNOWN));
   return parser.Get(mode);
 }
 
@@ -643,8 +644,8 @@ ConnectionState NativeNetworkParser::ParseState(const std::string& state) {
     { flimflam::kStatePortal, STATE_PORTAL },
     { flimflam::kStateOnline, STATE_ONLINE },
   };
-  static EnumMapper<ConnectionState> parser(
-      table, arraysize(table), STATE_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionState>, parser,
+      (table, arraysize(table), STATE_UNKNOWN));
   return parser.Get(state);
 }
 
@@ -668,8 +669,8 @@ ConnectionError NativeNetworkParser::ParseError(const std::string& error) {
     { flimflam::kErrorIpsecCertAuthFailed, ERROR_IPSEC_CERT_AUTH_FAILED },
     { flimflam::kErrorPppAuthFailed, ERROR_PPP_AUTH_FAILED },
   };
-  static EnumMapper<ConnectionError> parser(
-      table, arraysize(table), ERROR_NO_ERROR);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionError>, parser,
+      (table, arraysize(table), ERROR_NO_ERROR));
   return parser.Get(error);
 }
 
@@ -848,8 +849,8 @@ ActivationState NativeCellularNetworkParser::ParseActivationState(
       ACTIVATION_STATE_PARTIALLY_ACTIVATED},
     { flimflam::kActivationStateUnknown, ACTIVATION_STATE_UNKNOWN},
   };
-  static EnumMapper<ActivationState> parser(
-      table, arraysize(table), ACTIVATION_STATE_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ActivationState>, parser,
+      (table, arraysize(table), ACTIVATION_STATE_UNKNOWN));
   return parser.Get(state);
 }
 
@@ -868,8 +869,8 @@ NetworkTechnology NativeCellularNetworkParser::ParseNetworkTechnology(
       NETWORK_TECHNOLOGY_LTE_ADVANCED },
     { flimflam::kNetworkTechnologyGsm, NETWORK_TECHNOLOGY_GSM },
   };
-  static EnumMapper<NetworkTechnology> parser(
-      table, arraysize(table), NETWORK_TECHNOLOGY_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<NetworkTechnology>, parser,
+      (table, arraysize(table), NETWORK_TECHNOLOGY_UNKNOWN));
   return parser.Get(technology);
 }
 
@@ -880,8 +881,8 @@ NetworkRoamingState NativeCellularNetworkParser::ParseRoamingState(
     { flimflam::kRoamingStateRoaming, ROAMING_STATE_ROAMING },
     { flimflam::kRoamingStateUnknown, ROAMING_STATE_UNKNOWN },
   };
-  static EnumMapper<NetworkRoamingState> parser(
-      table, arraysize(table), ROAMING_STATE_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<NetworkRoamingState>, parser,
+      (table, arraysize(table), ROAMING_STATE_UNKNOWN));
   return parser.Get(roaming_state);
 }
 
@@ -1040,8 +1041,8 @@ ConnectionSecurity NativeWifiNetworkParser::ParseSecurity(
     { flimflam::kSecurityPsk, SECURITY_PSK },
     { flimflam::kSecurity8021x, SECURITY_8021X },
   };
-  static EnumMapper<ConnectionSecurity> parser(
-      table, arraysize(table), SECURITY_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionSecurity>, parser,
+      (table, arraysize(table), SECURITY_UNKNOWN));
   return parser.Get(security);
 }
 
@@ -1052,8 +1053,8 @@ EAPMethod NativeWifiNetworkParser::ParseEAPMethod(const std::string& method) {
     { flimflam::kEapMethodTTLS, EAP_METHOD_TTLS },
     { flimflam::kEapMethodLEAP, EAP_METHOD_LEAP },
   };
-  static EnumMapper<EAPMethod> parser(
-      table, arraysize(table), EAP_METHOD_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<EAPMethod>, parser,
+      (table, arraysize(table), EAP_METHOD_UNKNOWN));
   return parser.Get(method);
 }
 
@@ -1068,8 +1069,8 @@ EAPPhase2Auth NativeWifiNetworkParser::ParseEAPPhase2Auth(
     { flimflam::kEapPhase2AuthTTLSPAP, EAP_PHASE_2_AUTH_PAP },
     { flimflam::kEapPhase2AuthTTLSCHAP, EAP_PHASE_2_AUTH_CHAP },
   };
-  static EnumMapper<EAPPhase2Auth> parser(
-      table, arraysize(table), EAP_PHASE_2_AUTH_AUTO);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<EAPPhase2Auth>, parser,
+      (table, arraysize(table), EAP_PHASE_2_AUTH_AUTO));
   return parser.Get(auth);
 }
 
@@ -1210,8 +1211,8 @@ ProviderType NativeVirtualNetworkParser::ParseProviderType(
     { flimflam::kProviderL2tpIpsec, PROVIDER_TYPE_L2TP_IPSEC_PSK },
     { flimflam::kProviderOpenVpn, PROVIDER_TYPE_OPEN_VPN },
   };
-  static EnumMapper<ProviderType> parser(
-      table, arraysize(table), PROVIDER_TYPE_MAX);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ProviderType>, parser,
+      (table, arraysize(table), PROVIDER_TYPE_MAX));
   return parser.Get(type);
 }
 

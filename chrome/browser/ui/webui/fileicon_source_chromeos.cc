@@ -40,12 +40,6 @@ typedef std::map<std::string, IdrBySize> ExtensionIconSizeMap;
 
 const char *kIconSize = "iconsize";
 
-QueryIconSizeMap::value_type kQueryIconSizeData[] = {
-  std::make_pair("small", IconLoader::SMALL),
-  std::make_pair("normal", IconLoader::NORMAL),
-  std::make_pair("large", IconLoader::LARGE)
-};
-
 const IdrBySize kAudioIdrs = {
   IDR_FILE_MANAGER_IMG_FILETYPE_AUDIO,
   IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_AUDIO,
@@ -112,6 +106,18 @@ const IdrBySize kVideoIdrs = {
   IDR_FILE_MANAGER_IMG_FILETYPE_LARGE_VIDEO
 };
 
+QueryIconSizeMap BuildQueryIconSizeMap() {
+  QueryIconSizeMap::value_type kQueryIconSizeData[] = {
+    std::make_pair("small", IconLoader::SMALL),
+    std::make_pair("normal", IconLoader::NORMAL),
+    std::make_pair("large", IconLoader::LARGE)
+  };
+
+  size_t kQSize = arraysize(kQueryIconSizeData);
+  return QueryIconSizeMap(&kQueryIconSizeData[0],
+                          &kQueryIconSizeData[kQSize]);
+}
+
 // The code below should match translation in
 // chrome/browser/resources/file_manager/js/file_manager.js
 // chrome/browser/resources/file_manager/css/file_manager.css
@@ -122,54 +128,49 @@ const IdrBySize kVideoIdrs = {
 // 'text': /\.(pod|rst|txt|log)$/i,
 // 'video': /\.(mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
 
-const ExtensionIconSizeMap::value_type kExtensionIdrBySizeData[] = {
+ExtensionIconSizeMap BuildExtensionIdrSizeMap() {
+  const ExtensionIconSizeMap::value_type kExtensionIdrBySizeData[] = {
 #if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
-  std::make_pair(".m4a", kAudioIdrs),
-  std::make_pair(".mp3", kAudioIdrs),
-  std::make_pair(".pdf", kPdfIdrs),
-  std::make_pair(".3gp", kVideoIdrs),
-  std::make_pair(".avi", kVideoIdrs),
-  std::make_pair(".m4v", kVideoIdrs),
-  std::make_pair(".mov", kVideoIdrs),
-  std::make_pair(".mp4", kVideoIdrs),
-  std::make_pair(".mpeg", kVideoIdrs),
-  std::make_pair(".mpg", kVideoIdrs),
-  std::make_pair(".mpeg4", kVideoIdrs),
-  std::make_pair(".mpg4", kVideoIdrs),
+    std::make_pair(".m4a", kAudioIdrs),
+    std::make_pair(".mp3", kAudioIdrs),
+    std::make_pair(".pdf", kPdfIdrs),
+    std::make_pair(".3gp", kVideoIdrs),
+    std::make_pair(".avi", kVideoIdrs),
+    std::make_pair(".m4v", kVideoIdrs),
+    std::make_pair(".mov", kVideoIdrs),
+    std::make_pair(".mp4", kVideoIdrs),
+    std::make_pair(".mpeg", kVideoIdrs),
+    std::make_pair(".mpg", kVideoIdrs),
+    std::make_pair(".mpeg4", kVideoIdrs),
+    std::make_pair(".mpg4", kVideoIdrs),
 #endif
-  std::make_pair(".flac", kAudioIdrs),
-  std::make_pair(".oga", kAudioIdrs),
-  std::make_pair(".ogg", kAudioIdrs),
-  std::make_pair(".wav", kAudioIdrs),
-  std::make_pair(".htm", kHtmlIdrs),
-  std::make_pair(".html", kHtmlIdrs),
-  std::make_pair(".bmp", kImageIdrs),
-  std::make_pair(".gif", kImageIdrs),
-  std::make_pair(".ico", kImageIdrs),
-  std::make_pair(".jpeg", kImageIdrs),
-  std::make_pair(".jpg", kImageIdrs),
-  std::make_pair(".png", kImageIdrs),
-  std::make_pair(".webp", kImageIdrs),
-  std::make_pair(".log", kTextIdrs),
-  std::make_pair(".pod", kTextIdrs),
-  std::make_pair(".rst", kTextIdrs),
-  std::make_pair(".txt", kTextIdrs),
-  std::make_pair(".ogm", kVideoIdrs),
-  std::make_pair(".ogv", kVideoIdrs),
-  std::make_pair(".ogx", kVideoIdrs),
-  std::make_pair(".webm", kVideoIdrs),
-};
+    std::make_pair(".flac", kAudioIdrs),
+    std::make_pair(".oga", kAudioIdrs),
+    std::make_pair(".ogg", kAudioIdrs),
+    std::make_pair(".wav", kAudioIdrs),
+    std::make_pair(".htm", kHtmlIdrs),
+    std::make_pair(".html", kHtmlIdrs),
+    std::make_pair(".bmp", kImageIdrs),
+    std::make_pair(".gif", kImageIdrs),
+    std::make_pair(".ico", kImageIdrs),
+    std::make_pair(".jpeg", kImageIdrs),
+    std::make_pair(".jpg", kImageIdrs),
+    std::make_pair(".png", kImageIdrs),
+    std::make_pair(".webp", kImageIdrs),
+    std::make_pair(".log", kTextIdrs),
+    std::make_pair(".pod", kTextIdrs),
+    std::make_pair(".rst", kTextIdrs),
+    std::make_pair(".txt", kTextIdrs),
+    std::make_pair(".ogm", kVideoIdrs),
+    std::make_pair(".ogv", kVideoIdrs),
+    std::make_pair(".ogx", kVideoIdrs),
+    std::make_pair(".webm", kVideoIdrs),
+  };
 
-const size_t kQSize = arraysize(kQueryIconSizeData);
-
-const QueryIconSizeMap kQueryIconSizeMap(&kQueryIconSizeData[0],
-                                         &kQueryIconSizeData[kQSize]);
-
-const size_t kESize = arraysize(kExtensionIdrBySizeData);
-
-const ExtensionIconSizeMap kExtensionIdrSizeMap(
-                               &kExtensionIdrBySizeData[0],
-                               &kExtensionIdrBySizeData[kESize]);
+  const size_t kESize = arraysize(kExtensionIdrBySizeData);
+  return ExtensionIconSizeMap(&kExtensionIdrBySizeData[0],
+                              &kExtensionIdrBySizeData[kESize]);
+}
 
 // Split on the very first &. The first part is path, the rest query.
 void GetExtensionAndQuery(const std::string& url,
@@ -184,6 +185,8 @@ void GetExtensionAndQuery(const std::string& url,
 
 // Simple parser for data on the query.
 IconLoader::IconSize QueryToIconSize(const std::string& query) {
+  CR_DEFINE_STATIC_LOCAL(
+      QueryIconSizeMap, kQueryIconSizeMap, (BuildQueryIconSizeMap()));
   typedef std::pair<std::string, std::string> KVPair;
   std::vector<KVPair> parameters;
   if (base::SplitStringIntoKeyValuePairs(query, '=', '&', &parameters)) {
@@ -202,6 +205,8 @@ IconLoader::IconSize QueryToIconSize(const std::string& query) {
 
 // Finds matching resource of proper size. Fallback to generic.
 int UrlToIDR(const std::string& url) {
+  CR_DEFINE_STATIC_LOCAL(
+      ExtensionIconSizeMap, kExtensionIdrSizeMap, (BuildExtensionIdrSizeMap()));
   std::string extension, query;
   int idr = -1;
   GetExtensionAndQuery(url, &extension, &query);

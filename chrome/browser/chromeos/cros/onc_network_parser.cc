@@ -46,9 +46,10 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
 
 // Serve the singleton mapper instance.
 const EnumMapper<PropertyIndex>* get_onc_mapper() {
-  static const EnumMapper<PropertyIndex> mapper(property_index_table,
-                                                arraysize(property_index_table),
-                                                PROPERTY_INDEX_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(const EnumMapper<PropertyIndex>, mapper,
+      (property_index_table,
+       arraysize(property_index_table),
+       PROPERTY_INDEX_UNKNOWN));
   return &mapper;
 }
 
@@ -57,8 +58,8 @@ ConnectionType ParseNetworkType(const std::string& type) {
     { "WiFi", TYPE_WIFI },
     { "VPN", TYPE_VPN },
   };
-  static EnumMapper<ConnectionType> parser(
-      table, arraysize(table), TYPE_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionType>, parser,
+      (table, arraysize(table), TYPE_UNKNOWN));
   return parser.Get(type);
 }
 
@@ -469,8 +470,8 @@ ConnectionSecurity OncWifiNetworkParser::ParseSecurity(
     { "WPA", SECURITY_WPA },
     { "WPA2", SECURITY_8021X },
   };
-  static EnumMapper<ConnectionSecurity> parser(
-      table, arraysize(table), SECURITY_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionSecurity>, parser,
+      (table, arraysize(table), SECURITY_UNKNOWN));
   return parser.Get(security);
 }
 
@@ -481,8 +482,8 @@ EAPMethod OncWifiNetworkParser::ParseEAPMethod(const std::string& method) {
     { "EAP-TTLS", EAP_METHOD_TTLS },
     { "LEAP", EAP_METHOD_LEAP },
   };
-  static EnumMapper<EAPMethod> parser(
-      table, arraysize(table), EAP_METHOD_UNKNOWN);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<EAPMethod>, parser,
+      (table, arraysize(table), EAP_METHOD_UNKNOWN));
   return parser.Get(method);
 }
 
@@ -494,8 +495,8 @@ EAPPhase2Auth OncWifiNetworkParser::ParseEAPPhase2Auth(
     { "MSCHAP", EAP_PHASE_2_AUTH_MSCHAP },
     { "PAP", EAP_PHASE_2_AUTH_PAP },
   };
-  static EnumMapper<EAPPhase2Auth> parser(
-      table, arraysize(table), EAP_PHASE_2_AUTH_AUTO);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<EAPPhase2Auth>, parser,
+      (table, arraysize(table), EAP_PHASE_2_AUTH_AUTO));
   return parser.Get(auth);
 }
 
@@ -633,8 +634,8 @@ ProviderType OncVirtualNetworkParser::ParseProviderType(
     { flimflam::kProviderL2tpIpsec, PROVIDER_TYPE_L2TP_IPSEC_PSK },
     { flimflam::kProviderOpenVpn, PROVIDER_TYPE_OPEN_VPN },
   };
-  static EnumMapper<ProviderType> parser(
-      table, arraysize(table), PROVIDER_TYPE_MAX);
+  CR_DEFINE_STATIC_LOCAL(EnumMapper<ProviderType>, parser,
+      (table, arraysize(table), PROVIDER_TYPE_MAX));
   return parser.Get(type);
 }
 

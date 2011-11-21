@@ -2172,7 +2172,7 @@ const std::string& NetworkLibraryImplBase::IPAddress() const {
     result = ethernet_;  // Use non active ethernet addr if no active network.
   if (result)
     return result->ip_address();
-  static std::string null_address("0.0.0.0");
+  CR_DEFINE_STATIC_LOCAL(std::string, null_address, ("0.0.0.0"));
   return null_address;
 }
 

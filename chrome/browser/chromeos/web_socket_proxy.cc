@@ -26,6 +26,7 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -461,7 +462,9 @@ class Conn {
   // Used to schedule a timeout for initial phase of connection.
   scoped_ptr<struct event> destconnect_timeout_event_;
 
-  static EventKeyMap evkey_map_;
+  static base::LazyInstance<EventKeyMap,
+                            base::LeakyLazyInstanceTraits<EventKeyMap> >
+      evkey_map_;
   static EventKey last_evkey_;
 
   DISALLOW_COPY_AND_ASSIGN(Conn);
@@ -1142,12 +1145,12 @@ Conn::Conn(Serv* master)
       do_tls_(false),
       destresolution_ipv4_failed_(false),
       destresolution_ipv6_failed_(false) {
-  while (evkey_map_.find(last_evkey_) != evkey_map_.end()) {
+  while (evkey_map_.Get().find(last_evkey_) != evkey_map_.Get().end()) {
     last_evkey_ = reinterpret_cast<EventKey>(reinterpret_cast<size_t>(
         last_evkey_) + 1);
   }
   evkey_ = last_evkey_;
-  evkey_map_[evkey_] = this;
+  evkey_map_.Get()[evkey_] = this;
   // Schedule timeout for initial phase of connection.
   destconnect_timeout_event_.reset(new struct event);
   evtimer_set(destconnect_timeout_event_.get(),
@@ -1164,15 +1167,15 @@ Conn::Conn(Serv* master)
 Conn::~Conn() {
   phase_ = PHASE_DEFUNCT;
   event_del(destconnect_timeout_event_.get());
-  if (evkey_map_[evkey_] == this)
-    evkey_map_.erase(evkey_);
+  if (evkey_map_.Get()[evkey_] == this)
+    evkey_map_.Get().erase(evkey_);
   else
     NOTREACHED();
 }
 
 Conn* Conn::Get(EventKey evkey) {
-  EventKeyMap::iterator it = evkey_map_.find(evkey);
-  if (it == evkey_map_.end())
+  EventKeyMap::iterator it = evkey_map_.Get().find(evkey);
+  if (it == evkey_map_.Get().end())
     return NULL;
   Conn* cs = it->second;
   if (cs == NULL ||
@@ -1909,8 +1912,13 @@ void Conn::OnDestchanError(struct bufferevent* bev,
              "Failure reported on destination channel");
 }
 
+// static
 Conn::EventKey Conn::last_evkey_ = 0;
-Conn::EventKeyMap Conn::evkey_map_;
+
+// static
+base::LazyInstance<Conn::EventKeyMap,
+                   base::LeakyLazyInstanceTraits<Conn::EventKeyMap> >
+    Conn::evkey_map_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 

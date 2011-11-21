@@ -67,11 +67,8 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   explicit RegistrationScreen(ViewScreenDelegate* delegate);
 
   // WebPageDelegate implementation:
-  virtual void OnPageLoaded();
-  virtual void OnPageLoadFailed(const std::string& url);
-
-  // Sets the url for registration host page. Used in tests.
-  static void set_registration_host_page_url(const GURL& url);
+  virtual void OnPageLoaded() OVERRIDE;
+  virtual void OnPageLoadFailed(const std::string& url) OVERRIDE;
 
   // Handler factory for net::URLRequestFilter::AddHostnameHandler.
   static net::URLRequestJob* Factory(net::URLRequest* request,
@@ -99,9 +96,6 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
 
   // WebPageScreen implementation:
   virtual void CloseScreen(ScreenObserver::ExitCodes code);
-
-  // Url of account creation page. Overriden by tests.
-  static scoped_ptr<GURL> host_page_url_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationScreen);
 };

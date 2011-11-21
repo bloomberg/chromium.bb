@@ -59,8 +59,6 @@ class WizardAccessibilityHelper {
 
   void SetAccessibilityEnabled(bool);
 
-  static scoped_ptr<ui::Accelerator> accelerator_;
-
   scoped_ptr<WizardAccessibilityHandler> accessibility_handler_;
 
   Profile* profile_;

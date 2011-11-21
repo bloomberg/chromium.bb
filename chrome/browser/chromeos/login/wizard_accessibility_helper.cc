@@ -23,14 +23,9 @@
 
 namespace chromeos {
 
-scoped_ptr<ui::Accelerator> WizardAccessibilityHelper::accelerator_;
-
 // static
 ui::Accelerator WizardAccessibilityHelper::GetAccelerator() {
-  if (!WizardAccessibilityHelper::accelerator_.get())
-    WizardAccessibilityHelper::accelerator_.reset(
-        new ui::Accelerator(ui::VKEY_Z, false, true, true));
-  return *(WizardAccessibilityHelper::accelerator_.get());
+  return ui::Accelerator(ui::VKEY_Z, false, true, true);
 }
 
 // static
