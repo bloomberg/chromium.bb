@@ -89,7 +89,7 @@ class MockHttpServer {
         "Cache-Control: no-store\0"
         "\0";
 
-    if (path == "/files/wrong-mime-manifest") {
+    if (path == "/files/missing-mime-manifest") {
       (*headers) = std::string(ok_headers, arraysize(ok_headers));
       (*body) = "CACHE MANIFEST\n";
     } else if (path == "/files/bad-manifest") {
@@ -766,27 +766,39 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
-  void ManifestWrongMimeTypeTest() {
+  void ManifestMissingMimeTypeTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
     MakeService();
     group_ = new AppCacheGroup(
-        service_.get(), MockHttpServer::GetMockUrl("files/wrong-mime-manifest"),
+        service_.get(),
+        MockHttpServer::GetMockUrl("files/missing-mime-manifest"),
         service_->storage()->NewGroupId());
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 33);
     MockFrontend* frontend = MakeMockFrontend();
     AppCacheHost* host = MakeHost(1, frontend);
-    update->StartUpdate(host, GURL());
+    host->AssociateCompleteCache(cache);
+
+    frontend->SetVerifyProgressEvents(true);
+
+    update->StartUpdate(NULL, GURL());
     EXPECT_TRUE(update->manifest_fetcher_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
     expect_group_obsolete_ = false;
-    expect_group_has_cache_ = false;  // bad mime type is like a failed request
-    frontend->AddExpectedEvent(MockFrontend::HostIds(1, host->host_id()),
-                               CHECKING_EVENT);
+    expect_group_has_cache_ = true;
+    expect_old_cache_ = cache;
+    tested_manifest_ = EMPTY_MANIFEST;
+    tested_manifest_path_override_ = "files/missing-mime-manifest";
+    MockFrontend::HostIds ids(1, host->host_id());
+    frontend->AddExpectedEvent(ids, CHECKING_EVENT);
+    frontend->AddExpectedEvent(ids, DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(ids, PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(ids, UPDATE_READY_EVENT);
 
     WaitForUpdateToFinish();
   }
@@ -3267,8 +3279,8 @@ TEST_F(AppCacheUpdateJobTest, ManifestRedirect) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestRedirectTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, ManifestWrongMimeType) {
-  RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestWrongMimeTypeTest);
+TEST_F(AppCacheUpdateJobTest, ManifestMissingMimeTypeTest) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::ManifestMissingMimeTypeTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, ManifestNotFound) {

@@ -438,17 +438,13 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(
 
   net::URLRequest* request = fetcher->request();
   int response_code = -1;
-  std::string mime_type;
   bool is_valid_response_code = false;
-  bool is_valid_mime_type = false;
   if (request->status().is_success()) {
     response_code = request->GetResponseCode();
     is_valid_response_code = (response_code / 100 == 2);
-    request->GetMimeType(&mime_type);
-    is_valid_mime_type = (mime_type == kManifestMimeType);
   }
 
-  if (is_valid_response_code && is_valid_mime_type) {
+  if (is_valid_response_code) {
     manifest_data_ = fetcher->manifest_data();
     manifest_response_info_.reset(
         new net::HttpResponseInfo(request->response_info()));
@@ -462,17 +458,9 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(
              update_type_ == UPGRADE_ATTEMPT) {
     service_->storage()->MakeGroupObsolete(group_, this);  // async
   } else {
-    std::string message;
-    if (!is_valid_response_code) {
-      const char* kFormatString = "Manifest fetch failed (%d) %s";
-      message = base::StringPrintf(kFormatString, response_code,
-                                   manifest_url_.spec().c_str());
-    } else {
-      DCHECK(!is_valid_mime_type);
-      const char* kFormatString = "Invalid manifest mime type (%s) %s";
-      message = base::StringPrintf(kFormatString, mime_type.c_str(),
-                                   manifest_url_.spec().c_str());
-    }
+    const char* kFormatString = "Manifest fetch failed (%d) %s";
+    std::string message = base::StringPrintf(kFormatString, response_code,
+                                             manifest_url_.spec().c_str());
     HandleCacheFailure(message);
   }
 }
@@ -880,6 +868,9 @@ void AppCacheUpdateJob::BuildUrlFileList(const Manifest& manifest) {
        it != manifest.explicit_urls.end(); ++it) {
     AddUrlToFileList(GURL(*it), AppCacheEntry::EXPLICIT);
   }
+
+  // TODO(michaeln): Add resources from intercept namepsaces too.
+  // http://code.google.com/p/chromium/issues/detail?id=101565
 
   const std::vector<FallbackNamespace>& fallbacks =
       manifest.fallback_namespaces;
