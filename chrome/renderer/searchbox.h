@@ -33,7 +33,7 @@ class SearchBox : public content::RenderViewObserver,
 
  private:
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnChange(const string16& value,
                 bool verbatim,

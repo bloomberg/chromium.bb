@@ -88,9 +88,9 @@ class ExtensionDispatcher : public content::RenderProcessObserver {
   friend class RenderViewTest;
 
   // RenderProcessObserver implementation:
-  virtual bool OnControlMessageReceived(const IPC::Message& message);
-  virtual void WebKitInitialized();
-  virtual void IdleNotification();
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void WebKitInitialized() OVERRIDE;
+  virtual void IdleNotification() OVERRIDE;
 
   void OnMessageInvoke(const std::string& extension_id,
                        const std::string& function_name,

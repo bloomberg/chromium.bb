@@ -56,14 +56,14 @@ class ExtensionHelper
 
  private:
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame);
-  virtual void DidFinishLoad(WebKit::WebFrame* frame);
-  virtual void DidCreateDocumentElement(WebKit::WebFrame* frame);
-  virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame);
-  virtual void FrameDetached(WebKit::WebFrame* frame);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,
-                                   WebKit::WebDataSource* ds);
+                                   WebKit::WebDataSource* ds) OVERRIDE;
 
   void OnExtensionResponse(int request_id, bool success,
                            const std::string& response,

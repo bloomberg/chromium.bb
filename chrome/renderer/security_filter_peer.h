@@ -29,21 +29,21 @@ class SecurityFilterPeer : public webkit_glue::ResourceLoaderBridge::Peer {
       int os_error);
 
   // ResourceLoaderBridge::Peer methods.
-  virtual void OnUploadProgress(uint64 position, uint64 size);
+  virtual void OnUploadProgress(uint64 position, uint64 size) OVERRIDE;
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const webkit_glue::ResourceResponseInfo& info,
       bool* has_new_first_party_for_cookies,
-      GURL* new_first_party_for_cookies);
+      GURL* new_first_party_for_cookies) OVERRIDE;
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info);
-  virtual void OnDownloadedData(int len) {}
+      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
+  virtual void OnDownloadedData(int len) OVERRIDE {}
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length);
+                              int encoded_data_length) OVERRIDE;
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
-                                  const base::Time& completion_time);
+                                  const base::Time& completion_time) OVERRIDE;
 
  protected:
   SecurityFilterPeer(webkit_glue::ResourceLoaderBridge* resource_loader_bridge,
@@ -67,13 +67,13 @@ class BufferedPeer : public SecurityFilterPeer {
 
   // ResourceLoaderBridge::Peer Implementation.
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info);
+      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length);
+                              int encoded_data_length) OVERRIDE;
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
-                                  const base::Time& completion_time);
+                                  const base::Time& completion_time) OVERRIDE;
 
  protected:
   // Invoked when the entire request has been processed before the data is sent
@@ -109,13 +109,13 @@ class ReplaceContentPeer : public SecurityFilterPeer {
 
   // ResourceLoaderBridge::Peer Implementation.
   virtual void OnReceivedResponse(
-      const webkit_glue::ResourceResponseInfo& info);
+      const webkit_glue::ResourceResponseInfo& info) OVERRIDE;
   virtual void OnReceivedData(const char* data,
                               int data_length,
-                              int encoded_data_length);
+                              int encoded_data_length) OVERRIDE;
   virtual void OnCompletedRequest(const net::URLRequestStatus& status,
                                   const std::string& security_info,
-                                  const base::Time& completion_time);
+                                  const base::Time& completion_time) OVERRIDE;
 
  private:
   webkit_glue::ResourceResponseInfo response_info_;

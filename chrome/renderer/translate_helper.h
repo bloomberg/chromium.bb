@@ -83,7 +83,7 @@ class TranslateHelper : public content::RenderViewObserver {
   static std::string DetermineTextLanguage(const string16& text);
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Cancels any translation that is currently being performed.  This does not
   // revert existing translations.

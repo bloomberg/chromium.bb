@@ -67,9 +67,9 @@ class ContentSettingsObserver
 
  private:
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
-                                        bool is_new_navigation);
+                                        bool is_new_navigation) OVERRIDE;
 
   // Message handlers.
   void OnLoadBlockedPlugins();

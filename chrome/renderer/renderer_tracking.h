@@ -22,7 +22,7 @@ class RendererTracking : public content::RenderProcessObserver {
 
  private:
   // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message);
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnGetRendererTrackingData(int sequence_number);
 

@@ -50,8 +50,8 @@ class SpellCheckProvider : public content::RenderViewObserver,
   int document_tag() const { return document_tag_; }
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void FocusedNodeChanged(const WebKit::WebNode& node);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
 
   void SetSpellCheck(SpellCheck* spellcheck);
 

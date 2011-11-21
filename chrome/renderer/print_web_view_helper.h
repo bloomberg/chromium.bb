@@ -106,8 +106,8 @@ class PrintWebViewHelper
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   // RenderViewObserver implementation.
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void PrintPage(WebKit::WebFrame* frame);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void PrintPage(WebKit::WebFrame* frame) OVERRIDE;
 
   // Message handlers ---------------------------------------------------------
 

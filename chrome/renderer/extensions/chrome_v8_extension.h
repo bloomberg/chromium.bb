@@ -59,7 +59,7 @@ class ChromeV8Extension : public v8::Extension {
   // order to expose common native functions, like GetChromeHidden, to the
   // v8 extension.
   virtual v8::Handle<v8::FunctionTemplate>
-      GetNativeFunction(v8::Handle<v8::String> name);
+      GetNativeFunction(v8::Handle<v8::String> name) OVERRIDE;
 
  protected:
   template<class T>

@@ -71,7 +71,7 @@ class SpellCheck : public content::RenderProcessObserver {
   FRIEND_TEST(SpellCheckTest, GetAutoCorrectionWord_EN_US);
 
   // RenderProcessObserver implementation:
-  virtual bool OnControlMessageReceived(const IPC::Message& message);
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Message handlers.
   void OnInit(IPC::PlatformFileForTransit bdict_file,

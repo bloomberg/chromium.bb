@@ -29,7 +29,7 @@ class RendererHistogramSnapshots : public HistogramSender,
 
  private:
   // RenderProcessObserver implementation.
-  virtual bool OnControlMessageReceived(const IPC::Message& message);
+  virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
   void OnGetRendererHistograms(int sequence_number);
 
@@ -46,10 +46,10 @@ class RendererHistogramSnapshots : public HistogramSender,
   // HistogramSender interface (override) methods.
   virtual void TransmitHistogramDelta(
       const base::Histogram& histogram,
-      const base::Histogram::SampleSet& snapshot);
-  virtual void InconsistencyDetected(int problem);
-  virtual void UniqueInconsistencyDetected(int problem);
-  virtual void SnapshotProblemResolved(int amount);
+      const base::Histogram::SampleSet& snapshot) OVERRIDE;
+  virtual void InconsistencyDetected(int problem) OVERRIDE;
+  virtual void UniqueInconsistencyDetected(int problem) OVERRIDE;
+  virtual void SnapshotProblemResolved(int amount) OVERRIDE;
 
   // Collection of histograms to send to the browser.
   HistogramPickledList pickled_histograms_;

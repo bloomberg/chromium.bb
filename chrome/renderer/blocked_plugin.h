@@ -30,9 +30,9 @@ class BlockedPlugin : public content::RenderViewObserver,
   webkit::npapi::WebViewPlugin* plugin() { return plugin_; }
 
   // WebViewPlugin::Delegate methods:
-  virtual void BindWebFrame(WebKit::WebFrame* frame);
-  virtual void WillDestroyPlugin();
-  virtual void ShowContextMenu(const WebKit::WebMouseEvent&);
+  virtual void BindWebFrame(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void WillDestroyPlugin() OVERRIDE;
+  virtual void ShowContextMenu(const WebKit::WebMouseEvent&) OVERRIDE;
 
  private:
   virtual ~BlockedPlugin();

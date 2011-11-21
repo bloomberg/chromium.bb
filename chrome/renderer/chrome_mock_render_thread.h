@@ -49,7 +49,7 @@ class ChromeMockRenderThread : public content::MockRenderThread {
  private:
   // Overrides base class implementation to add custom handling for
   // print and extensions.
-  virtual bool OnMessageReceived(const IPC::Message& msg);
+  virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
 
   // The callee expects to be returned a valid channel_id.
   void OnMsgOpenChannelToExtension(
