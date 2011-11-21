@@ -169,7 +169,7 @@ class RenderViewHostTestTabContentsObserver : public TabContentsObserver {
 
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE {
+      const content::FrameNavigateParams& params) OVERRIDE {
     observed_socket_address_ = params.socket_address;
     ++navigation_count_;
   }

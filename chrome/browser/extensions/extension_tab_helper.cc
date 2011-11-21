@@ -87,7 +87,7 @@ SkBitmap* ExtensionTabHelper::GetExtensionAppIcon() {
 
 void ExtensionTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
   if (details.is_in_page)
     return;
 

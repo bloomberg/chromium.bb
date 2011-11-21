@@ -45,7 +45,7 @@ class BookmarkTabHelper : public content::NotificationObserver,
   // TabContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+      const content::FrameNavigateParams& params) OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

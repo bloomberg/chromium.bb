@@ -38,17 +38,17 @@ class HistoryTabHelper : public TabContentsObserver,
   scoped_refptr<history::HistoryAddPageArgs> CreateHistoryAddPageArgs(
       const GURL& virtual_url,
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
+      const content::FrameNavigateParams& params);
 
  private:
   // TabContentsObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+      const content::FrameNavigateParams& params) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

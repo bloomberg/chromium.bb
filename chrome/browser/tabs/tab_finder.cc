@@ -19,9 +19,9 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 
 class TabFinder::TabContentsObserverImpl : public TabContentsObserver {
@@ -34,7 +34,7 @@ class TabFinder::TabContentsObserverImpl : public TabContentsObserver {
   // TabContentsObserver overrides:
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
  private:
@@ -55,7 +55,7 @@ TabFinder::TabContentsObserverImpl::~TabContentsObserverImpl() {
 
 void TabFinder::TabContentsObserverImpl::DidNavigateAnyFrame(
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
   finder_->DidNavigateAnyFrame(tab_contents(), details, params);
 }
 
@@ -133,7 +133,7 @@ TabFinder::~TabFinder() {
 void TabFinder::DidNavigateAnyFrame(
     TabContents* source,
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
   CancelRequestsFor(source);
 
   if (content::PageTransitionIsRedirect(params.transition)) {

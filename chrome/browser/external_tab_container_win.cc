@@ -40,10 +40,10 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/provisional_load_details.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/page_zoom.h"
 #include "grit/generated_resources.h"
@@ -365,7 +365,7 @@ TabContents* ExternalTabContainer::OpenURLFromTab(TabContents* source,
         // We should populate other fields in the
         // ViewHostMsg_FrameNavigate_Params structure. Another option could be
         // to refactor the UpdateHistoryForNavigation function in TabContents.
-        ViewHostMsg_FrameNavigate_Params nav_params;
+        content::FrameNavigateParams nav_params;
         nav_params.referrer = params.referrer;
         nav_params.url = params.url;
         nav_params.page_id = -1;

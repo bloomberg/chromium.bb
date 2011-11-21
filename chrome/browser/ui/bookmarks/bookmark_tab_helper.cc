@@ -62,7 +62,7 @@ bool BookmarkTabHelper::ShouldShowBookmarkBar() {
 
 void BookmarkTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& /*details*/,
-    const ViewHostMsg_FrameNavigate_Params& /*params*/) {
+    const content::FrameNavigateParams& /*params*/) {
   UpdateStarredStateForCurrentURL();
 }
 

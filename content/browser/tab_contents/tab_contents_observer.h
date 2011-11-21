@@ -13,7 +13,10 @@
 #include "webkit/glue/window_open_disposition.h"
 
 class RenderViewHost;
-struct ViewHostMsg_FrameNavigate_Params;
+
+namespace content {
+struct FrameNavigateParams;
+}
 
 // An observer API implemented by classes which are interested in various page
 // load events from TabContents.  They also get a chance to filter IPC messages.
@@ -29,10 +32,10 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
       NavigationController::ReloadType reload_type);
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
+      const content::FrameNavigateParams& params);
   virtual void DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
+      const content::FrameNavigateParams& params);
   // |render_view_host| is the RenderViewHost for which the provisional load is
   // happening.
   virtual void DidStartProvisionalLoadForFrame(

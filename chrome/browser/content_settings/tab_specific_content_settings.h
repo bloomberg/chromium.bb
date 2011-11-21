@@ -162,7 +162,7 @@ class TabSpecificContentSettings : public TabContentsObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       int64 frame_id,
       bool is_main_frame,

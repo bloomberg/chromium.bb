@@ -19,9 +19,9 @@
 class Browser;
 class GURL;
 class TabContents;
-struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
+struct FrameNavigateParams;
 struct LoadCommittedDetails;
 }
 
@@ -65,7 +65,7 @@ class TabFinder : public content::NotificationObserver {
   void DidNavigateAnyFrame(
       TabContents* source,
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params);
+      const content::FrameNavigateParams& params);
 
   // Returns true if the tab's current url is |url|, or the start of the
   // redirect chain for the tab is |url|.

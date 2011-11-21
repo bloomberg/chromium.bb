@@ -13,6 +13,7 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/webkit_param_traits.h"
@@ -21,7 +22,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/base/media_log_event.h"
-#include "net/base/host_port_pair.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositionUnderline.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
@@ -33,7 +33,6 @@
 #include "ui/base/range/range.h"
 #include "ui/gfx/rect.h"
 #include "webkit/glue/context_menu.h"
-#include "webkit/glue/password_form.h"
 #include "webkit/glue/webcookie.h"
 #include "webkit/glue/webmenuitem.h"
 #include "webkit/glue/webpreferences.h"
@@ -115,24 +114,6 @@ IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
   IPC_STRUCT_TRAITS_MEMBER(font_point_size)
 IPC_STRUCT_TRAITS_END()
 #endif
-
-IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
-  IPC_STRUCT_TRAITS_MEMBER(can_accept_load_drops)
-  IPC_STRUCT_TRAITS_MEMBER(should_antialias_text)
-  IPC_STRUCT_TRAITS_MEMBER(hinting)
-  IPC_STRUCT_TRAITS_MEMBER(subpixel_rendering)
-  IPC_STRUCT_TRAITS_MEMBER(focus_ring_color)
-  IPC_STRUCT_TRAITS_MEMBER(thumb_active_color)
-  IPC_STRUCT_TRAITS_MEMBER(thumb_inactive_color)
-  IPC_STRUCT_TRAITS_MEMBER(track_color)
-  IPC_STRUCT_TRAITS_MEMBER(active_selection_bg_color)
-  IPC_STRUCT_TRAITS_MEMBER(active_selection_fg_color)
-  IPC_STRUCT_TRAITS_MEMBER(inactive_selection_bg_color)
-  IPC_STRUCT_TRAITS_MEMBER(inactive_selection_fg_color)
-  IPC_STRUCT_TRAITS_MEMBER(browser_handles_top_level_requests)
-  IPC_STRUCT_TRAITS_MEMBER(caret_blink_interval)
-  IPC_STRUCT_TRAITS_MEMBER(enable_referrers)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ViewMsg_StopFinding_Params)
   IPC_STRUCT_TRAITS_MEMBER(action)
@@ -259,6 +240,38 @@ IPC_STRUCT_TRAITS_BEGIN(WebMenuItem)
   IPC_STRUCT_TRAITS_MEMBER(submenu)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
+  IPC_STRUCT_TRAITS_MEMBER(page_id)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(referrer)
+  IPC_STRUCT_TRAITS_MEMBER(transition)
+  IPC_STRUCT_TRAITS_MEMBER(redirects)
+  IPC_STRUCT_TRAITS_MEMBER(should_update_history)
+  IPC_STRUCT_TRAITS_MEMBER(searchable_form_url)
+  IPC_STRUCT_TRAITS_MEMBER(searchable_form_encoding)
+  IPC_STRUCT_TRAITS_MEMBER(password_form)
+  IPC_STRUCT_TRAITS_MEMBER(contents_mime_type)
+  IPC_STRUCT_TRAITS_MEMBER(socket_address)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::RendererPreferences)
+  IPC_STRUCT_TRAITS_MEMBER(can_accept_load_drops)
+  IPC_STRUCT_TRAITS_MEMBER(should_antialias_text)
+  IPC_STRUCT_TRAITS_MEMBER(hinting)
+  IPC_STRUCT_TRAITS_MEMBER(subpixel_rendering)
+  IPC_STRUCT_TRAITS_MEMBER(focus_ring_color)
+  IPC_STRUCT_TRAITS_MEMBER(thumb_active_color)
+  IPC_STRUCT_TRAITS_MEMBER(thumb_inactive_color)
+  IPC_STRUCT_TRAITS_MEMBER(track_color)
+  IPC_STRUCT_TRAITS_MEMBER(active_selection_bg_color)
+  IPC_STRUCT_TRAITS_MEMBER(active_selection_fg_color)
+  IPC_STRUCT_TRAITS_MEMBER(inactive_selection_bg_color)
+  IPC_STRUCT_TRAITS_MEMBER(inactive_selection_fg_color)
+  IPC_STRUCT_TRAITS_MEMBER(browser_handles_top_level_requests)
+  IPC_STRUCT_TRAITS_MEMBER(caret_blink_interval)
+  IPC_STRUCT_TRAITS_MEMBER(enable_referrers)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::CustomContextMenuContext)
   IPC_STRUCT_TRAITS_MEMBER(is_pepper_menu)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
@@ -342,7 +355,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
   IPC_STRUCT_MEMBER(GURL, target_url)
 IPC_STRUCT_END()
 
-
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // URL for the worker script.
   IPC_STRUCT_MEMBER(GURL, url)
@@ -365,78 +377,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   IPC_STRUCT_MEMBER(int64, script_resource_appcache_id)
 IPC_STRUCT_END()
 
-// Parameters structure for ViewHostMsg_FrameNavigate, which has too many data
-// parameters to be reasonably put in a predefined IPC message.
-IPC_STRUCT_BEGIN(ViewHostMsg_FrameNavigate_Params)
-  // Page ID of this navigation. The renderer creates a new unique page ID
-  // anytime a new session history entry is created. This means you'll get new
-  // page IDs for user actions, and the old page IDs will be reloaded when
-  // iframes are loaded automatically.
-  IPC_STRUCT_MEMBER(int32, page_id)
-
-  // The frame ID for this navigation. The frame ID uniquely identifies the
-  // frame the navigation happened in for a given renderer.
-  IPC_STRUCT_MEMBER(int64, frame_id)
-
-  // URL of the page being loaded.
-  IPC_STRUCT_MEMBER(GURL, url)
-
-  // URL of the referrer of this load. WebKit generates this based on the
-  // source of the event that caused the load.
-  IPC_STRUCT_MEMBER(GURL, referrer)
-
-  // The type of transition.
-  IPC_STRUCT_MEMBER(content::PageTransition, transition)
-
-  // Lists the redirects that occurred on the way to the current page. This
-  // vector has the same format as reported by the WebDataSource in the glue,
-  // with the current page being the last one in the list (so even when
-  // there's no redirect, there will be one entry in the list.
-  IPC_STRUCT_MEMBER(std::vector<GURL>, redirects)
-
-  // Set to false if we want to update the session history but not update
-  // the browser history.  E.g., on unreachable urls.
-  IPC_STRUCT_MEMBER(bool, should_update_history)
-
-  // See SearchableFormData for a description of these.
-  IPC_STRUCT_MEMBER(GURL, searchable_form_url)
-  IPC_STRUCT_MEMBER(std::string, searchable_form_encoding)
-
-  // See password_form.h.
-  IPC_STRUCT_MEMBER(webkit_glue::PasswordForm, password_form)
-
-  // Information regarding the security of the connection (empty if the
-  // connection was not secure).
-  IPC_STRUCT_MEMBER(std::string, security_info)
-
-  // The gesture that initiated this navigation.
-  IPC_STRUCT_MEMBER(NavigationGesture, gesture)
-
-  // Contents MIME type of main frame.
-  IPC_STRUCT_MEMBER(std::string, contents_mime_type)
-
-  // True if this was a post request.
-  IPC_STRUCT_MEMBER(bool, is_post)
-
-  // Whether the frame navigation resulted in no change to the documents within
-  // the page. For example, the navigation may have just resulted in scrolling
-  // to a named anchor.
-  IPC_STRUCT_MEMBER(bool, was_within_same_page)
-
-  // The status code of the HTTP request.
-  IPC_STRUCT_MEMBER(int, http_status_code)
-
-  // Remote address of the socket which fetched this resource.
-  IPC_STRUCT_MEMBER(net::HostPortPair, socket_address)
-
-  // True if the connection was proxied.  In this case, socket_address
-  // will represent the address of the proxy, rather than the remote host.
-  IPC_STRUCT_MEMBER(bool, was_fetched_via_proxy)
-
-  // Serialized history item state to store in the navigation entry.
-  IPC_STRUCT_MEMBER(std::string, content_state)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(ViewHostMsg_AccessibilityNotification_Params)
   // Type of notification.
   IPC_STRUCT_MEMBER(ViewHostMsg_AccEvent::Value, notification_type)
@@ -452,6 +392,40 @@ IPC_STRUCT_BEGIN(ViewHostMsg_AccessibilityNotification_Params)
   IPC_STRUCT_MEMBER(bool, includes_children)
 IPC_STRUCT_END()
 
+// Parameters structure for ViewHostMsg_FrameNavigate, which has too many data
+// parameters to be reasonably put in a predefined IPC message.
+IPC_STRUCT_BEGIN_WITH_PARENT(ViewHostMsg_FrameNavigate_Params,
+                             content::FrameNavigateParams)
+  IPC_STRUCT_TRAITS_PARENT(content::FrameNavigateParams)
+  // The frame ID for this navigation. The frame ID uniquely identifies the
+  // frame the navigation happened in for a given renderer.
+  IPC_STRUCT_MEMBER(int64, frame_id)
+
+  // Information regarding the security of the connection (empty if the
+  // connection was not secure).
+  IPC_STRUCT_MEMBER(std::string, security_info)
+
+  // The gesture that initiated this navigation.
+  IPC_STRUCT_MEMBER(NavigationGesture, gesture)
+
+  // True if this was a post request.
+  IPC_STRUCT_MEMBER(bool, is_post)
+
+  // Whether the frame navigation resulted in no change to the documents within
+  // the page. For example, the navigation may have just resulted in scrolling
+  // to a named anchor.
+  IPC_STRUCT_MEMBER(bool, was_within_same_page)
+
+  // The status code of the HTTP request.
+  IPC_STRUCT_MEMBER(int, http_status_code)
+
+  // True if the connection was proxied.  In this case, socket_address
+  // will represent the address of the proxy, rather than the remote host.
+  IPC_STRUCT_MEMBER(bool, was_fetched_via_proxy)
+
+  // Serialized history item state to store in the navigation entry.
+  IPC_STRUCT_MEMBER(std::string, content_state)
+IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_RunFileChooser_Params)
   IPC_STRUCT_MEMBER(ViewHostMsg_RunFileChooser_Mode::Value, mode)

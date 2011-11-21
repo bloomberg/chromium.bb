@@ -30,7 +30,6 @@
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/view_messages.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_MACOSX)

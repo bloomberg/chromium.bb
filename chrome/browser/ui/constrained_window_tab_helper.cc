@@ -87,7 +87,7 @@ void ConstrainedWindowTabHelper::BlockTabContent(bool blocked) {
 
 void ConstrainedWindowTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
   // Close constrained windows if necessary.
   if (!net::RegistryControlledDomainService::SameDomainOrHost(
           details.previous_url, details.entry->url()))

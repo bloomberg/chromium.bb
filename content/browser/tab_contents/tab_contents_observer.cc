@@ -27,12 +27,12 @@ void TabContentsObserver::NavigateToPendingEntry(
 
 void TabContentsObserver::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
 }
 
 void TabContentsObserver::DidNavigateAnyFrame(
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
 }
 
 void TabContentsObserver::DidStartProvisionalLoadForFrame(

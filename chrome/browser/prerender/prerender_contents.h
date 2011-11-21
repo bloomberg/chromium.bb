@@ -24,7 +24,6 @@ class SessionStorageNamespace;
 class TabContents;
 class TabContentsWrapper;
 struct FaviconURL;
-struct ViewHostMsg_FrameNavigate_Params;
 
 namespace base {
 class ProcessMetrics;
@@ -94,10 +93,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   RenderViewHost* render_view_host_mutable();
   const RenderViewHost* render_view_host() const;
-
-  ViewHostMsg_FrameNavigate_Params* navigate_params() {
-    return navigate_params_.get();
-  }
   string16 title() const { return title_; }
   int32 page_id() const { return page_id_; }
   GURL icon_url() const { return icon_url_; }
@@ -242,9 +237,6 @@ class PrerenderContents : public content::NotificationObserver,
 
   // The referrer.
   GURL referrer_;
-
-  // The NavigationParameters of the finished navigation.
-  scoped_ptr<ViewHostMsg_FrameNavigate_Params> navigate_params_;
 
   // The profile being used
   Profile* profile_;

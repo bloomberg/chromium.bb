@@ -58,7 +58,7 @@ class BlockedContentTabHelper : public TabContentsObserver {
   // TabContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+      const content::FrameNavigateParams& params) OVERRIDE;
 
  private:
   // Called when the blocked popup notification is shown or hidden.

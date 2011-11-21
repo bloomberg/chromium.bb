@@ -4,6 +4,9 @@
 
 #import "chrome/browser/ui/cocoa/applescript/tab_applescript.h"
 
+#import <Carbon/Carbon.h>
+#import <Foundation/NSAppleEventDescriptor.h>
+
 #include "base/file_path.h"
 #include "base/logging.h"
 #import "base/memory/scoped_nsobject.h"
@@ -20,7 +23,6 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/common/view_messages.h"
 #include "googleurl/src/gurl.h"
 
 @interface AnyResultValue : NSObject {

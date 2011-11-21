@@ -48,7 +48,7 @@ include_rules = [
   "-content/common/gamepad_messages.h",
   # TODO(jam) "-content/common/geolocation_messages.h",
   "-content/common/indexed_db_messages.h",
-  "-content/common/intents_messages.h",
+  # TODO(jam) "-content/common/intents_messages.h",
   "-content/common/java_bridge_messages.h",
   "-content/common/mime_registry_messages.h",
   "-content/common/p2p_messages.h",

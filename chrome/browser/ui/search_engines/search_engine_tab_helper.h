@@ -26,7 +26,7 @@ class SearchEngineTabHelper : public TabContentsObserver {
   // TabContentsObserver overrides.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
@@ -37,7 +37,7 @@ class SearchEngineTabHelper : public TabContentsObserver {
 
   // If params has a searchable form, this tries to create a new keyword.
   void GenerateKeywordIfNecessary(
-      const ViewHostMsg_FrameNavigate_Params& params);
+      const content::FrameNavigateParams& params);
 
   // Delegate for notifying our owner about stuff. Not owned by us.
   SearchEngineTabHelperDelegate* delegate_;

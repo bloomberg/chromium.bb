@@ -28,7 +28,7 @@ BlockedContentTabHelper::~BlockedContentTabHelper() {
 
 void BlockedContentTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.
   if (!details.is_in_page) {

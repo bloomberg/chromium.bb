@@ -191,10 +191,12 @@
 
 // Macros for defining structs.  May be subsequently redefined.
 #define IPC_STRUCT_BEGIN(struct_name) \
+  IPC_STRUCT_BEGIN_WITH_PARENT(struct_name, IPC::NoParams)
+#define IPC_STRUCT_BEGIN_WITH_PARENT(struct_name, parent) \
   struct struct_name; \
   IPC_STRUCT_TRAITS_BEGIN(struct_name) \
   IPC_STRUCT_TRAITS_END() \
-  struct IPC_MESSAGE_EXPORT struct_name : IPC::NoParams { \
+  struct IPC_MESSAGE_EXPORT struct_name : parent { \
     struct_name(); \
     ~struct_name();
 #define IPC_STRUCT_MEMBER(type, name) type name;

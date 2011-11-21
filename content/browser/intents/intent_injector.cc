@@ -9,8 +9,8 @@
 #include "base/string16.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/common/intents_messages.h"
 #include "content/public/common/content_switches.h"
-#include "ipc/ipc_message_macros.h"
 #include "webkit/glue/web_intent_data.h"
 #include "webkit/glue/web_intent_reply_data.h"
 
@@ -54,7 +54,7 @@ void IntentInjector::RenderViewCreated(RenderViewHost* host) {
 
 void IntentInjector::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
   SendIntent();
 }
 

@@ -159,7 +159,7 @@ void FaviconTabHelper::NavigateToPendingEntry(
 
 void FaviconTabHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
   // Get the favicon, either from history or request it from the net.
   FetchFavicon(details.entry->url());
 }

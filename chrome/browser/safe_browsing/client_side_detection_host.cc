@@ -27,12 +27,12 @@
 #include "content/browser/renderer_host/resource_request_details.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
@@ -50,7 +50,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     : public base::RefCountedThreadSafe<
           ClientSideDetectionHost::ShouldClassifyUrlRequest> {
  public:
-  ShouldClassifyUrlRequest(const ViewHostMsg_FrameNavigate_Params& params,
+  ShouldClassifyUrlRequest(const content::FrameNavigateParams& params,
                            TabContents* tab_contents,
                            ClientSideDetectionService* csd_service,
                            SafeBrowsingService* sb_service,
@@ -214,7 +214,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
   // No need to protect |canceled_| with a lock because it is only read and
   // written by the UI thread.
   bool canceled_;
-  ViewHostMsg_FrameNavigate_Params params_;
+  content::FrameNavigateParams params_;
   TabContents* tab_contents_;
   ClientSideDetectionService* csd_service_;
   // We keep a ref pointer here just to make sure the service class stays alive
@@ -292,7 +292,7 @@ bool ClientSideDetectionHost::OnMessageReceived(const IPC::Message& message) {
 
 void ClientSideDetectionHost::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const content::FrameNavigateParams& params) {
   // TODO(noelutz): move this DCHECK to TabContents and fix all the unit tests
   // that don't call this method on the UI thread.
   // DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

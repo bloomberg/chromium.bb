@@ -55,7 +55,7 @@ class ConstrainedWindowTabHelper : public TabContentsObserver {
   // Overridden from TabContentsObserver:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual void DidGetIgnoredUIEvent() OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 

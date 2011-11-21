@@ -10,17 +10,10 @@
 #include "base/string16.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/content_export.h"
-#include "content/common/intents_messages.h"
-
-class RenderViewHost;
-class TabContents;
+#include "webkit/glue/web_intent_reply_data.h"
 
 namespace webkit_glue {
 struct WebIntentData;
-}
-
-namespace IPC {
-class Message;
 }
 
 // Injects an intent into the renderer of a TabContents. The intent dispatch
@@ -38,7 +31,7 @@ class CONTENT_EXPORT IntentInjector : public TabContentsObserver {
   virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
-      const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
+      const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 

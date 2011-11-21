@@ -10,6 +10,9 @@
 
 // Set up so next include will generate destructors.
 #undef IPC_STRUCT_BEGIN
+#undef IPC_STRUCT_BEGIN_WITH_PARENT
+#define IPC_STRUCT_BEGIN_WITH_PARENT(struct_name, parent) \
+  IPC_STRUCT_BEGIN(struct_name)
 #define IPC_STRUCT_BEGIN(struct_name) struct_name::~struct_name() {}
 
 #endif  // IPC_STRUCT_DESTRUCTOR_MACROS_H_
