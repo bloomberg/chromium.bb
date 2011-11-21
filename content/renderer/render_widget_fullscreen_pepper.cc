@@ -497,7 +497,7 @@ void RenderWidgetFullscreenPepper::OnLostContext(
   // created when the plugin recreates its own.
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(DestroyContext, context_, program_, buffer_));
+      base::Bind(&DestroyContext, context_, program_, buffer_));
   context_ = NULL;
   program_ = 0;
   buffer_ = 0;

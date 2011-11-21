@@ -115,7 +115,7 @@ void Increment(int* value) {
 TEST(TaskTest, TestScopedClosureRunnerExitScope) {
   int run_count = 0;
   {
-    base::ScopedClosureRunner runner(base::Bind(Increment, &run_count));
+    base::ScopedClosureRunner runner(base::Bind(&Increment, &run_count));
     EXPECT_EQ(0, run_count);
   }
   EXPECT_EQ(1, run_count);
@@ -125,7 +125,7 @@ TEST(TaskTest, TestScopedClosureRunnerRelease) {
   int run_count = 0;
   base::Closure c;
   {
-    base::ScopedClosureRunner runner(base::Bind(Increment, &run_count));
+    base::ScopedClosureRunner runner(base::Bind(&Increment, &run_count));
     c = runner.Release();
     EXPECT_EQ(0, run_count);
   }

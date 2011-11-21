@@ -33,7 +33,7 @@ int BrowserX11ErrorHandler(Display* d, XErrorEvent* error) {
   if (!g_in_x11_io_error_handler)
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        base::Bind(ui::LogErrorEventDescription, d, *error));
+        base::Bind(&ui::LogErrorEventDescription, d, *error));
   return 0;
 }
 

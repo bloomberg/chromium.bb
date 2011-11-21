@@ -71,7 +71,7 @@ void NetPrefObserver::ApplySettings(const std::string* pref_name) {
   if (!pref_name || *pref_name == prefs::kHttpThrottlingEnabled) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(SetEnforceThrottlingOnThrottlerManager,
+        base::Bind(&SetEnforceThrottlingOnThrottlerManager,
                    *http_throttling_enabled_));
   }
 }

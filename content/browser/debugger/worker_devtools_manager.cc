@@ -205,7 +205,7 @@ class WorkerDevToolsManager::DetachedClientHosts {
   static void RemovePendingWorkerData(WorkerId id) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(RemoveInspectedWorkerDataOnIOThread, id));
+        base::Bind(&RemoveInspectedWorkerDataOnIOThread, id));
   }
 
   static void RemoveInspectedWorkerDataOnIOThread(WorkerId id) {
@@ -303,7 +303,7 @@ void WorkerDevToolsManager::WorkerDestroyed(
   inspected_workers_.erase(it);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(DetachedClientHosts::WorkerDestroyed, worker_id));
+      base::Bind(&DetachedClientHosts::WorkerDestroyed, worker_id));
 }
 
 void WorkerDevToolsManager::WorkerContextStarted(WorkerProcessHost* process,
@@ -316,7 +316,7 @@ void WorkerDevToolsManager::WorkerContextStarted(WorkerProcessHost* process,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          DetachedClientHosts::WorkerReloaded,
+          &DetachedClientHosts::WorkerReloaded,
           it->second,
           new_worker_id));
   paused_workers_.erase(it);
@@ -394,7 +394,7 @@ void WorkerDevToolsManager::ForwardToDevToolsClient(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          ForwardToDevToolsClientOnUIThread,
+          &ForwardToDevToolsClientOnUIThread,
           worker_process_id,
           worker_route_id,
           message));
@@ -406,7 +406,7 @@ void WorkerDevToolsManager::SaveAgentRuntimeState(int worker_process_id,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(
-          SaveAgentRuntimeStateOnUIThread,
+          &SaveAgentRuntimeStateOnUIThread,
           worker_process_id,
           worker_route_id,
           state));
@@ -479,4 +479,3 @@ void WorkerDevToolsManager::SendResumeToWorker(const WorkerId& id) {
   if (WorkerProcessHost* process = FindWorkerProcess(id.first))
     process->Send(new DevToolsAgentMsg_ResumeWorkerContext(id.second));
 }
-

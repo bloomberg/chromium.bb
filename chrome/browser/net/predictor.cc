@@ -799,7 +799,7 @@ void Predictor::SaveStateForNextStartupAndTrim(PrefService* prefs) {
         BrowserThread::IO,
         FROM_HERE,
         base::Bind(
-            SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread,
+            &SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread,
             update_startup_list.Get(),
             update_referral_list.Get(),
             &completion,

@@ -554,7 +554,7 @@ bool ExtensionService::UpdateExtension(
     if (!BrowserThread::PostTask(
             BrowserThread::FILE, FROM_HERE,
             base::Bind(
-                extension_file_util::DeleteFile, extension_path, false)))
+                &extension_file_util::DeleteFile, extension_path, false)))
       NOTREACHED();
 
     return false;

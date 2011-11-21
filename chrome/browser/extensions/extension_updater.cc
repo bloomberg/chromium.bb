@@ -108,7 +108,7 @@ void RecordCRXWriteHistogram(bool success, const FilePath& crx_path) {
     // can not be read. Try reading.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(CheckThatCRXIsReadable, crx_path));
+        base::Bind(&CheckThatCRXIsReadable, crx_path));
   }
 }
 
@@ -128,7 +128,7 @@ void CheckThatCRXIsReadable(const FilePath& crx_path) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(RecordFileUpdateHistogram, file_write_result));
+      base::Bind(&RecordFileUpdateHistogram, file_write_result));
 }
 
 void RecordFileUpdateHistogram(FileWriteResult file_write_result) {

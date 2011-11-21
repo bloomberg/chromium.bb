@@ -83,7 +83,7 @@ void OnTimeoutTerminateThread(bool* timeout) {
 bool RunMessageLoopWithTimeout(int timeout_ms) {
   bool timeout = false;
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, base::Bind(OnTimeoutTerminateThread, &timeout), timeout_ms);
+      FROM_HERE, base::Bind(&OnTimeoutTerminateThread, &timeout), timeout_ms);
   MessageLoop::current()->Run();
   return !timeout;
 }

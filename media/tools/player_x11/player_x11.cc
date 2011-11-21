@@ -189,7 +189,7 @@ void PeriodicalUpdate(
   }
 
   message_loop->PostDelayedTask(FROM_HERE, base::Bind(
-      PeriodicalUpdate, make_scoped_refptr(pipeline),
+      &PeriodicalUpdate, make_scoped_refptr(pipeline),
       message_loop, audio_only), 10);
 }
 
@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
     audio_only = !pipeline->HasVideo();
 
     message_loop.PostTask(FROM_HERE, base::Bind(
-        PeriodicalUpdate, pipeline, &message_loop, audio_only));
+        &PeriodicalUpdate, pipeline, &message_loop, audio_only));
     message_loop.Run();
   } else{
     std::cout << "Pipeline initialization failed..." << std::endl;

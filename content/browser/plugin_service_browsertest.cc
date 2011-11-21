@@ -247,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(
       mock_client(browser()->profile()->GetResourceContext());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(OpenChannel, &mock_client));
+      base::Bind(&OpenChannel, &mock_client));
   ui_test_utils::RunMessageLoop();
   EXPECT_TRUE(mock_client.get_resource_context_called());
   EXPECT_TRUE(mock_client.set_plugin_info_called());
@@ -299,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(
       mock_client(browser()->profile()->GetResourceContext());
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(OpenChannel, &mock_client));
+      base::Bind(&OpenChannel, &mock_client));
   ui_test_utils::RunMessageLoop();
   EXPECT_TRUE(mock_client.get_resource_context_called());
   EXPECT_TRUE(mock_client.set_plugin_info_called());
