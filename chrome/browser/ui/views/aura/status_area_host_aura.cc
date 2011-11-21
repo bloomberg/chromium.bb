@@ -31,7 +31,7 @@ StatusAreaHostAura::StatusAreaHostAura()
 StatusAreaHostAura::~StatusAreaHostAura() {
 }
 
-const views::View* StatusAreaHostAura::GetStatusArea() const {
+views::View* StatusAreaHostAura::GetStatusAreaForTest() {
   return status_area_view_;
 }
 

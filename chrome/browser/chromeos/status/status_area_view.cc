@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/view_ids.h"
 #include "ui/gfx/canvas.h"
 #include "views/border.h"
 
@@ -21,6 +22,7 @@ const int kSeparation = 0;
 
 StatusAreaView::StatusAreaView()
     : need_return_focus_(false) {
+  set_id(VIEW_ID_STATUS_AREA);
 }
 
 StatusAreaView::~StatusAreaView() {

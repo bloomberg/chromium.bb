@@ -7,20 +7,31 @@
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "views/view.h"
+
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#endif
 
 namespace chromeos {
 
 class StatusAreaViewTest : public InProcessBrowserTest {
  protected:
   StatusAreaViewTest() : InProcessBrowserTest() {}
-  StatusAreaView* GetStatusAreaView() {
-    BrowserView* view = static_cast<BrowserView*>(browser()->window());
-    return static_cast<StatusAreaView*>(view->GetViewByID(VIEW_ID_STATUS_AREA));
+  const StatusAreaView* GetStatusAreaView() {
+    const views::View* view =
+#if defined(USE_AURA)
+        ChromeShellDelegate::instance()->GetStatusAreaForTest();
+#else
+        static_cast<BrowserView*>(browser()->window());
+#endif
+    return static_cast<const StatusAreaView*>(
+        view->GetViewByID(VIEW_ID_STATUS_AREA));
   }
 };
 
 IN_PROC_BROWSER_TEST_F(StatusAreaViewTest, VisibleTest) {
-  StatusAreaView* status = GetStatusAreaView();
+  const StatusAreaView* status = GetStatusAreaView();
   EXPECT_TRUE(status->IsVisibleInRootView());
   EXPECT_FALSE(status->size().IsEmpty());
 }

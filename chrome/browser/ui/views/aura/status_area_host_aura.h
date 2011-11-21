@@ -23,7 +23,7 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate {
   virtual ~StatusAreaHostAura();
 
   // Returns the view housing the status area. Exposed for testing.
-  const views::View* GetStatusArea() const;
+  views::View* GetStatusAreaForTest();
 
   // Instantiates and sets |status_area_view_|, and sets it as the contents of
   // a new views::Widget |status_area_widget_| which is returned.

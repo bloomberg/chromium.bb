@@ -9,6 +9,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "views/view.h"
+
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#endif
 
 namespace chromeos {
 
@@ -21,9 +26,14 @@ class PowerMenuButtonTest : public InProcessBrowserTest {
   }
 
   PowerMenuButton* GetPowerMenuButton() {
-    BrowserView* view = static_cast<BrowserView*>(browser()->window());
-    return static_cast<PowerMenuButton*>(view->GetViewByID(
-        VIEW_ID_STATUS_BUTTON_POWER));
+    views::View* view =
+#if defined(USE_AURA)
+        ChromeShellDelegate::instance()->GetStatusAreaForTest();
+#else
+        static_cast<BrowserView*>(browser()->window());
+#endif
+    return static_cast<PowerMenuButton*>(
+        view->GetViewByID(VIEW_ID_STATUS_BUTTON_POWER));
   }
 
   string16 CallPowerChangedAndGetTooltipText(const PowerSupplyStatus& status) {

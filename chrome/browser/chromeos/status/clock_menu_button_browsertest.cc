@@ -34,12 +34,12 @@ class ClockMenuButtonTest : public InProcessBrowserTest {
   const ClockMenuButton* GetClockMenuButton() {
     const views::View* parent = NULL;
 #if defined(USE_AURA)
-    parent = ChromeShellDelegate::instance()->GetStatusArea();
+    parent = ChromeShellDelegate::instance()->GetStatusAreaForTest();
 #else
     parent = static_cast<const BrowserView*>(browser()->window());
 #endif
-    return static_cast<const ClockMenuButton*>(parent->GetViewByID(
-        VIEW_ID_STATUS_BUTTON_CLOCK));
+    return static_cast<const ClockMenuButton*>(
+        parent->GetViewByID(VIEW_ID_STATUS_BUTTON_CLOCK));
   }
 };
 

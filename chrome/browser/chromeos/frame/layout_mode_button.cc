@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -28,6 +29,7 @@ namespace chromeos {
 
 LayoutModeButton::LayoutModeButton()
     : ALLOW_THIS_IN_INITIALIZER_LIST(ImageButton(this)) {
+  set_id(VIEW_ID_LAYOUT_MODE_BUTTON);
 }
 
 LayoutModeButton::~LayoutModeButton() {

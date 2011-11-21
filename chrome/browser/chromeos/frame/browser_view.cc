@@ -18,7 +18,6 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
-#include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
@@ -355,11 +354,9 @@ void BrowserView::Init() {
   ::BrowserView::Init();
   status_area_ = new StatusAreaViewChromeos();
   status_area_->Init(this, StatusAreaViewChromeos::BROWSER_MODE);
-  status_area_->set_id(VIEW_ID_STATUS_AREA);
   AddChildView(status_area_);
 
   layout_mode_button_ = new LayoutModeButton();
-  layout_mode_button_->set_id(VIEW_ID_LAYOUT_MODE_BUTTON);
   AddChildView(layout_mode_button_);
   layout_mode_button_->Init();
 
