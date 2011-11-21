@@ -290,15 +290,16 @@ TEST_PPAPI_OUT_OF_PROCESS(URLUtil)
 TEST_PPAPI_IN_PROCESS(CharSet)
 TEST_PPAPI_OUT_OF_PROCESS(CharSet)
 
-TEST_PPAPI_IN_PROCESS(Crypto)
-#if defined(OS_POSIX)
+#if defined(ADDRESS_SANITIZER)
 #define MAYBE_Crypto DISABLED_Crypto
 #else
 #define MAYBE_Crypto Crypto
 #endif
-// http://crbug.com/104832 fails on ASAN, so this is an overly broad disable.
-// But ASAN currently doesn't have a way to disable specific tests.
-TEST_F(OutOfProcessPPAPITest, Crypto) {
+// http://crbug.com/104832 fails on ASAN.
+TEST_F(PPAPITest, MAYBE_Crypto) {
+  RunTestViaHTTP("Crypto");
+}
+TEST_F(OutOfProcessPPAPITest, MAYBE_Crypto) {
   RunTest("Crypto");
 }
 
