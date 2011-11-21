@@ -26,11 +26,12 @@ class ImportDataHandler : public OptionsPageUIHandler,
   virtual ~ImportDataHandler();
 
   // OptionsPageUIHandler:
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler:
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   void ImportData(const base::ListValue* args);

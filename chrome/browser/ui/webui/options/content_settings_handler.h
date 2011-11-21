@@ -22,16 +22,16 @@ class ContentSettingsHandler : public OptionsPageUIHandler {
   virtual ~ContentSettingsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
 
-  virtual void Initialize();
+  virtual void Initialize() OVERRIDE;
 
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Gets a string identifier for the group name, for use in HTML.
   static std::string ContentSettingsTypeToGroupName(ContentSettingsType type);

@@ -21,17 +21,17 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   virtual ~PasswordManagerHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
-  virtual void Initialize();
-  virtual void RegisterMessages();
+  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // PasswordStore::Observer implementation.
-  virtual void OnLoginsChanged();
+  virtual void OnLoginsChanged() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // The password store associated with the currently active profile.
@@ -88,12 +88,12 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     explicit PasswordListPopulater(PasswordManagerHandler* page);
 
     // Send a query to the password store to populate a password list.
-    virtual void Populate();
+    virtual void Populate() OVERRIDE;
 
     // Send the password store's reply back to the handler.
     virtual void OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<webkit_glue::PasswordForm*>& result);
+        const std::vector<webkit_glue::PasswordForm*>& result) OVERRIDE;
   };
 
   // A short class to mediate requests to the password store for exceptions.
@@ -102,12 +102,12 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
     explicit PasswordExceptionListPopulater(PasswordManagerHandler* page);
 
     // Send a query to the password store to populate a passwordException list.
-    virtual void Populate();
+    virtual void Populate() OVERRIDE;
 
     // Send the password store's reply back to the handler.
     virtual void OnPasswordStoreRequestDone(
         CancelableRequestProvider::Handle handle,
-        const std::vector<webkit_glue::PasswordForm*>& result);
+        const std::vector<webkit_glue::PasswordForm*>& result) OVERRIDE;
   };
 
   // Password store consumer for populating the password list and exceptions.

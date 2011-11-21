@@ -63,7 +63,7 @@ class NewTabUI : public ChromeWebUI,
 
     virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
-    virtual bool ShouldReplaceExistingSource() const;
+    virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
    private:
     virtual ~NewTabHTMLSource() {}
@@ -79,7 +79,7 @@ class NewTabUI : public ChromeWebUI,
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Reset the CSS caches.
   void InitializeCSSCaches();

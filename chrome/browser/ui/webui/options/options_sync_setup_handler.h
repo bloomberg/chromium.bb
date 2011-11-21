@@ -15,7 +15,7 @@ class OptionsSyncSetupHandler : public SyncSetupHandler {
   virtual ~OptionsSyncSetupHandler();
 
  protected:
-  virtual void ShowSetupUI();
+  virtual void ShowSetupUI() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_OPTIONS_SYNC_SETUP_HANDLER_H_

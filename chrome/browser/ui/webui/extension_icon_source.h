@@ -68,11 +68,11 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
 
   // ChromeURLDataManager::DataSource
 
-  virtual std::string GetMimeType(const std::string&) const;
+  virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
-                                int request_id);
+                                int request_id) OVERRIDE;
 
  private:
   // Encapsulates the request parameters for |request_id|.
@@ -116,7 +116,7 @@ class ExtensionIconSource : public ChromeURLDataManager::DataSource,
   // ImageLoadingTracker::Observer
   virtual void OnImageLoaded(SkBitmap* image,
                              const ExtensionResource& resource,
-                             int id);
+                             int id) OVERRIDE;
 
   // Called when the extension doesn't have an icon. We fall back to multiple
   // sources, using the following order:

@@ -21,10 +21,11 @@ class LanguageOptionsHandlerCommon : public OptionsPageUIHandler {
   virtual ~LanguageOptionsHandlerCommon();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
 
   // DOMMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // The following static methods are public for ease of testing.
 

@@ -19,24 +19,25 @@ class SearchEngineManagerHandler : public OptionsPageUIHandler,
   SearchEngineManagerHandler();
   virtual ~SearchEngineManagerHandler();
 
-  virtual void Initialize();
+  virtual void Initialize() OVERRIDE;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
 
   // ui::TableModelObserver implementation.
-  virtual void OnModelChanged();
-  virtual void OnItemsChanged(int start, int length);
-  virtual void OnItemsAdded(int start, int length);
-  virtual void OnItemsRemoved(int start, int length);
+  virtual void OnModelChanged() OVERRIDE;
+  virtual void OnItemsChanged(int start, int length) OVERRIDE;
+  virtual void OnItemsAdded(int start, int length) OVERRIDE;
+  virtual void OnItemsRemoved(int start, int length) OVERRIDE;
 
   // EditSearchEngineControllerDelegate implementation.
   virtual void OnEditedKeyword(const TemplateURL* template_url,
                                const string16& title,
                                const string16& keyword,
-                               const std::string& url);
+                               const std::string& url) OVERRIDE;
 
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   scoped_ptr<KeywordEditorController> list_controller_;

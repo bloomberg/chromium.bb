@@ -21,13 +21,14 @@ class ThemeSource : public ChromeURLDataManager::DataSource {
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string& path) const;
+                                int request_id) OVERRIDE;
+  virtual std::string GetMimeType(const std::string& path) const OVERRIDE;
 
   // Used to tell ChromeURLDataManager which thread to handle the request on.
-  virtual MessageLoop* MessageLoopForRequestPath(const std::string& path) const;
+  virtual MessageLoop* MessageLoopForRequestPath(
+      const std::string& path) const OVERRIDE;
 
-  virtual bool ShouldReplaceExistingSource() const;
+  virtual bool ShouldReplaceExistingSource() const OVERRIDE;
 
  protected:
   virtual ~ThemeSource();

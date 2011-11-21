@@ -69,7 +69,7 @@ class InputWindowDialogHandler : public WebUIMessageHandler {
   void CloseDialog();
 
   // Overridden from WebUIMessageHandler
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   void Validate(const base::ListValue* args);

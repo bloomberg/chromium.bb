@@ -39,7 +39,7 @@ class MediaInternalsProxy
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Register a Handler and start receiving callbacks from MediaInternals.
   void Attach(MediaInternalsMessageHandler* handler);
@@ -51,7 +51,7 @@ class MediaInternalsProxy
   void GetEverything();
 
   // MediaInternalsObserver implementation. Called on the IO thread.
-  virtual void OnUpdate(const string16& update);
+  virtual void OnUpdate(const string16& update) OVERRIDE;
 
   // ChromeNetLog::ThreadSafeObserver implementation. Callable from any thread:
   virtual void OnAddEntry(net::NetLog::EventType type,

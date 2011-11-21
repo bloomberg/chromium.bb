@@ -27,8 +27,9 @@ class NTPResourceCacheFactory : public ProfileKeyedServiceFactory {
   virtual ~NTPResourceCacheFactory();
 
   // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const;
-  virtual bool ServiceRedirectedInIncognito();
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
+      Profile* profile) const OVERRIDE;
+  virtual bool ServiceRedirectedInIncognito() OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_NTP_NTP_RESOURCE_CACHE_FACTORY_H_

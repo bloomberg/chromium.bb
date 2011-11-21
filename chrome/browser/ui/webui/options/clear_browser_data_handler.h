@@ -18,19 +18,19 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   virtual ~ClearBrowserDataHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void Initialize();
+  virtual void Initialize() OVERRIDE;
 
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   // Javascript callback to start clearing data.
   void HandleClearBrowserData(const ListValue* value);
 
   // Callback from BrowsingDataRemover. Closes the dialog.
-  virtual void OnBrowsingDataRemoverDone();
+  virtual void OnBrowsingDataRemoverDone() OVERRIDE;
 
   // If non-null it means removal is in progress. BrowsingDataRemover takes care
   // of deleting itself when done.

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
 // A DataSource for chrome://resources/ URLs.
@@ -18,8 +19,8 @@ class SharedResourcesDataSource : public ChromeURLDataManager::DataSource {
   // Overridden from ChromeURLDataManager::DataSource:
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
-                                int request_id);
-  virtual std::string GetMimeType(const std::string&) const;
+                                int request_id) OVERRIDE;
+  virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
  private:
   virtual ~SharedResourcesDataSource();

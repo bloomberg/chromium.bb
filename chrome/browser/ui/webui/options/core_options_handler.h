@@ -23,18 +23,18 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   virtual ~CoreOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void Initialize();
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
-  virtual void Uninitialize();
+  virtual void Initialize() OVERRIDE;
+  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Uninitialize() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
-  virtual WebUIMessageHandler* Attach(WebUI* web_ui);
+  virtual void RegisterMessages() OVERRIDE;
+  virtual WebUIMessageHandler* Attach(WebUI* web_ui) OVERRIDE;
 
   void set_handlers_host(OptionsPageUIHandlerHost* handlers_host) {
     handlers_host_ = handlers_host;

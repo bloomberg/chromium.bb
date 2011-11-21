@@ -20,7 +20,7 @@ class ForeignSessionHandler : public WebUIMessageHandler,
                               public content::NotificationObserver {
  public:
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   ForeignSessionHandler();
   virtual ~ForeignSessionHandler() {}

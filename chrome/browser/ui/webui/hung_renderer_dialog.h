@@ -102,7 +102,7 @@ class HungRendererDialogHandler : public WebUIMessageHandler {
   void CloseDialog();
 
   // Overridden from WebUIMessageHandler
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   void RequestTabContentsList(const base::ListValue* args);

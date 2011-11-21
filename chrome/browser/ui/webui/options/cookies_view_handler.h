@@ -18,8 +18,9 @@ class CookiesViewHandler : public OptionsPageUIHandler,
   virtual ~CookiesViewHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void RegisterMessages();
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // CookiesTreeModel::Observer implementation.
   virtual void TreeNodesAdded(ui::TreeModel* model,

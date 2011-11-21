@@ -15,16 +15,17 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   virtual ~ManageProfileHandler();
 
   // OptionsPageUIHandler:
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler:
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Callback for the "requestDefaultProfileIcons" message.

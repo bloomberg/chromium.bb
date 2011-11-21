@@ -21,19 +21,19 @@ class PersonalOptionsHandler : public OptionsPageUIHandler,
   virtual ~PersonalOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
-  virtual void Initialize();
+  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged();
+  virtual void OnStateChanged() OVERRIDE;
 
  private:
   void ObserveThemeChanged();
