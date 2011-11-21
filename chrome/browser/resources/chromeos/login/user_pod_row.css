@@ -214,6 +214,7 @@ html[dir=rtl] .pod .capslock-hint {
 }
 
 .signed-in-indicator {
+  -webkit-transition: all .14s ease;
   background: rgba(0, 0, 0, 0.5);
   color: white;
   font-size: small;
@@ -225,4 +226,9 @@ html[dir=rtl] .pod .capslock-hint {
   /* Width of .user-image. */
   width: 160px;
   z-index: 1;
+}
+
+.pod.focused .signed-in-indicator {
+  /* Track shifting of .user-image on pod focus. */
+  -webkit-transform: translateY(-1px);
 }
