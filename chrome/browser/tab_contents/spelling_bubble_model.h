@@ -26,6 +26,8 @@ class SpellingBubbleModel : public ConfirmBubbleModel {
   virtual string16 GetButtonLabel(BubbleButton button) const OVERRIDE;
   virtual void Accept() OVERRIDE;
   virtual void Cancel() OVERRIDE;
+  virtual string16 GetLinkText() const OVERRIDE;
+  virtual void LinkClicked() OVERRIDE;
 
  private:
   Profile* profile_;

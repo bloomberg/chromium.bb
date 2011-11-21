@@ -493,6 +493,9 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
           Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
         </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_LINK" desc="The link text of a bubble. This link opens the 'Exploring Chrome's privacy features' page.">
+          Learn More
+        </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
           Enable
         </message>
@@ -704,6 +707,9 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_TEXT" desc="The text of a bubble that confirms users allows integrating the spelling service of Google to Chrome.">
           Google Chrome can provide smarter spell-checking by sending what you type in the browser to Google servers, allowing you to use the same spell-checking technology used by Google search.
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_LINK" desc="The link text of a bubble. This link opens the 'Google Chrome Privacy Notice' page.">
+          Learn More
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_BUBBLE_ENABLE" desc="The button text that allows integrating the spelling service of Google.">
           Enable
