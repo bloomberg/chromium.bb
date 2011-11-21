@@ -3322,32 +3322,6 @@
    fun:*ResolveProxyMsgHelperTest_*_Test8TestBodyEv
 }
 {
-   bug_76647a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN11webkit_glue18BufferedDataSource20CreateResourceLoaderExx
-   fun:_ZN11webkit_glue18BufferedDataSource14InitializeTaskEv
-   fun:_Z16DispatchToMethodIN11webkit_glue18BufferedDataSourceEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodIN11webkit_glue18BufferedDataSourceEMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskEP4Task
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
-   fun:_ZN4base16MessagePumpForUI3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
-   bug_76647b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z17NewRunnableMethodIN11webkit_glue18BufferedDataSourceEMS1_FvvEEP14CancelableTaskPT_T0_
-   fun:_ZN11webkit_glue18BufferedDataSource4StopEP14CallbackRunnerI6Tuple0E
-   fun:_ZN5media13FFmpegDemuxer8StopTaskEP14CallbackRunnerI6Tuple0E
-   fun:_Z16DispatchToMethodIN5media13FFmpegDemuxerEMS1_FvP14CallbackRunnerI6Tuple0EES5_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN5media13FFmpegDemuxerEMS1_FvP14CallbackRunnerI6Tuple0EE6Tuple1IS5_EE3RunEv
-}
-{
    bug_77990
    Memcheck:Leak
    fun:calloc
@@ -4723,17 +4697,15 @@
    bug_100914a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN11webkit_glue18BufferedDataSource20CreateResourceLoaderExx
-   fun:_ZN11webkit_glue18BufferedDataSource24HttpInitialStartCallbackEi
+   fun:_ZN12webkit_media18BufferedDataSource20CreateResourceLoaderEll
+   fun:_ZN12webkit_media18BufferedDataSource24HttpInitialStartCallbackEi
 }
 {
    bug_100914b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN11webkit_glue18BufferedDataSource20CreateResourceLoaderExx
-   fun:_ZN11webkit_glue18BufferedDataSource14InitializeTaskEv
-   ...
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
+   fun:_ZN12webkit_media18BufferedDataSource20CreateResourceLoaderEll
+   fun:_ZN12webkit_media18BufferedDataSource14InitializeTaskEv
 }
 {
    bug_100916
