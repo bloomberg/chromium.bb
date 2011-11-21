@@ -114,7 +114,7 @@ download-toolchain() {
 scons-bot() {
   #download-toolchain
   local concurrency=8
-  FAIL_FAST=false ${PNACL_SCRIPT} mode-test-all ${concurrency} || RETCODE=$?
+  FAIL_FAST=false ${PNACL_SCRIPT} test-all-newlib ${concurrency} || RETCODE=$?
 }
 
 spec2k-x86-bot() {

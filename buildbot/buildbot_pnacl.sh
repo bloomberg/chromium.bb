@@ -339,10 +339,15 @@ mode-buildbot-arm-hw-try() {
   mode-buildbot-arm-hw "--mode=opt-host,nacl"
 }
 
+mode-test-all() {
+  test-all-newlib
+  test-all-glibc
+}
+
 # NOTE: clobber and toolchain setup to be done manually, since this is for
 # testing a locally built toolchain.
 # This runs tests concurrently, so may be more difficult to parse logs.
-mode-test-all() {
+test-all-newlib() {
   local concur=$1
 
   # turn verbose mode off
@@ -366,6 +371,10 @@ mode-test-all() {
   browser-tests "arm" "--verbose --mode=opt-host,nacl -j1"
   browser-tests "x86-32" "--verbose --mode=opt-host,nacl -j1"
   browser-tests "x86-64" "--verbose --mode=opt-host,nacl -j1"
+}
+
+test-all-glibc() {
+  # TODO(pdox): Add GlibC tests
   ad-hoc-shared-lib-tests "arm"
 }
 
