@@ -154,7 +154,8 @@ static void NTAPI on_tls_callback(HINSTANCE h, DWORD dwReason, PVOID pv) {
 extern "C" {
 // This tells the linker to run these functions.
 #pragma data_seg(push, old_seg)
-#pragma data_seg(".CRT$XLB")
+  // Use CRT$XLY instead of CRT$XLB to ensure we're called LATER in sequence.
+#pragma data_seg(".CRT$XLY")
 void (NTAPI *p_thread_callback_tcmalloc)(
     HINSTANCE h, DWORD dwReason, PVOID pv) = on_tls_callback;
 #pragma data_seg(".CRT$XTU")
