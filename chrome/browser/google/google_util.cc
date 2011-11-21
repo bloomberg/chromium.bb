@@ -176,4 +176,14 @@ bool IsOrganicFirstRun(const std::string& brand) {
          StartsWithASCII(brand, "EU", true);
 }
 
+bool IsInternetCafeBrandCode(const std::string& brand) {
+  const char* const kBrands[] = {
+    "CHIQ", "CHSG", "HLJY", "NTMO", "OOBA", "OOBB", "OOBC", "OOBD", "OOBE",
+    "OOBF", "OOBG", "OOBH", "OOBI", "OOBJ",
+  };
+  const char* const* end = &kBrands[arraysize(kBrands)];
+  const char* const* found = std::find(&kBrands[0], end, brand);
+  return found != end;
+}
+
 }  // namespace google_util

@@ -46,6 +46,9 @@ bool AllowPromoAtStartupForCurrentBrand() {
   if (brand.empty())
     return true;
 
+  if (google_util::IsInternetCafeBrandCode(brand))
+    return false;
+
   if (google_util::IsOrganic(brand))
     return true;
 
