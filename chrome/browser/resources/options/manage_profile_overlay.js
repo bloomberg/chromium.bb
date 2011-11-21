@@ -102,6 +102,11 @@ cr.define('options', function() {
     receiveDefaultProfileIcons_: function(iconURLs) {
       $('manage-profile-icon-grid').dataModel = new ArrayDataModel(iconURLs);
 
+      // Changing the dataModel resets the selectedItem. Re-select it, if there
+      // is one.
+      if (this.profileInfo_)
+        $('manage-profile-icon-grid').selectedItem = this.profileInfo_.iconURL;
+
       var grid = $('manage-profile-icon-grid');
       // Recalculate the measured item size.
       grid.measured_ = null;
