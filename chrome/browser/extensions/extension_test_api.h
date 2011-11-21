@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,31 +13,31 @@ template <typename T> struct DefaultSingletonTraits;
 
 class ExtensionTestPassFunction : public SyncExtensionFunction {
   virtual ~ExtensionTestPassFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyPass")
 };
 
 class ExtensionTestFailFunction : public SyncExtensionFunction {
   virtual ~ExtensionTestFailFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.notifyFail")
 };
 
 class ExtensionTestLogFunction : public SyncExtensionFunction {
   virtual ~ExtensionTestLogFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.log")
 };
 
 class ExtensionTestQuotaResetFunction : public SyncExtensionFunction {
   virtual ~ExtensionTestQuotaResetFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.resetQuota")
 };
 
 class ExtensionTestCreateIncognitoTabFunction : public SyncExtensionFunction {
   virtual ~ExtensionTestCreateIncognitoTabFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.createIncognitoTab")
 };
 
@@ -49,7 +49,7 @@ class ExtensionTestSendMessageFunction : public AsyncExtensionFunction {
 
  private:
   virtual ~ExtensionTestSendMessageFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.sendMessage")
 };
 
@@ -82,7 +82,7 @@ class ExtensionTestGetConfigFunction : public SyncExtensionFunction {
   };
 
   virtual ~ExtensionTestGetConfigFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("test.getConfig")
 };
 

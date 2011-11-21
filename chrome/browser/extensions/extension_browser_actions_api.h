@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,7 +23,7 @@ class BrowserActionFunction : public SyncExtensionFunction {
         tab_id_(ExtensionAction::kDefaultTabId),
         browser_action_(NULL) {}
   virtual ~BrowserActionFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   virtual bool RunBrowserAction() = 0;
 
   // All the browser action APIs take a single argument called details that is
@@ -41,28 +41,28 @@ class BrowserActionFunction : public SyncExtensionFunction {
 // Implement chrome.browserAction.setIcon().
 class BrowserActionSetIconFunction : public BrowserActionFunction {
   virtual ~BrowserActionSetIconFunction() {}
-  virtual bool RunBrowserAction();
+  virtual bool RunBrowserAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
 };
 
 // Implement chrome.browserAction.setTitle().
 class BrowserActionSetTitleFunction : public BrowserActionFunction {
   virtual ~BrowserActionSetTitleFunction() {}
-  virtual bool RunBrowserAction();
+  virtual bool RunBrowserAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setTitle")
 };
 
 // Implement chrome.browserActions.setPopup().
 class BrowserActionSetPopupFunction : public BrowserActionFunction {
   virtual ~BrowserActionSetPopupFunction() {}
-  virtual bool RunBrowserAction();
+  virtual bool RunBrowserAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setPopup")
 };
 
 // Implement chrome.browserAction.setBadgeText().
 class BrowserActionSetBadgeTextFunction : public BrowserActionFunction {
   virtual ~BrowserActionSetBadgeTextFunction() {}
-  virtual bool RunBrowserAction();
+  virtual bool RunBrowserAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeText")
 };
 
@@ -70,7 +70,7 @@ class BrowserActionSetBadgeTextFunction : public BrowserActionFunction {
 class BrowserActionSetBadgeBackgroundColorFunction
     : public BrowserActionFunction {
   virtual ~BrowserActionSetBadgeBackgroundColorFunction() {}
-  virtual bool RunBrowserAction();
+  virtual bool RunBrowserAction() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeBackgroundColor")
 };
 

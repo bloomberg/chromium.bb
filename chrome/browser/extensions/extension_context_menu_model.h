@@ -45,15 +45,16 @@ class ExtensionContextMenuModel
   virtual ~ExtensionContextMenuModel();
 
   // SimpleMenuModel::Delegate overrides.
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // ExtensionUninstallDialog::Delegate:
-  virtual void ExtensionUninstallAccepted();
-  virtual void ExtensionUninstallCanceled();
+  virtual void ExtensionUninstallAccepted() OVERRIDE;
+  virtual void ExtensionUninstallCanceled() OVERRIDE;
 
  private:
   void InitCommonCommands();

@@ -13,7 +13,7 @@
 // Currently, only writing to standard buffer is possible.
 class WriteDataClipboardFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   // Writes plain text to the buffer. Ignores url argument if sent from the
@@ -29,7 +29,7 @@ class WriteDataClipboardFunction : public SyncExtensionFunction {
 // are specified by parameters passed from the extension.
 class ReadDataClipboardFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   // Reads plain text from the clipboard buffer. Callback will have only data
@@ -44,7 +44,7 @@ class ReadDataClipboardFunction : public SyncExtensionFunction {
 // For a given clipbord buffer, returns list of data types available on it.
 class GetAvailableMimeTypesClipboardFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.clipboard.getAvailableTypes")
 };

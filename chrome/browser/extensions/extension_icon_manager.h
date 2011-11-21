@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class ExtensionIconManager : public ImageLoadingTracker::Observer {
 
   // Implements the ImageLoadingTracker::Observer interface.
   virtual void OnImageLoaded(SkBitmap* image, const ExtensionResource& resource,
-                             int index);
+                             int index) OVERRIDE;
 
   void set_monochrome(bool value) { monochrome_ = value; }
   void set_padding(const gfx::Insets& value) { padding_ = value; }

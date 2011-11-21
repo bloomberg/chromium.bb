@@ -10,13 +10,13 @@
 
 class AppNotifyFunction : public SyncExtensionFunction {
   virtual ~AppNotifyFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.app.notify");
 };
 
 class AppClearAllNotificationsFunction : public SyncExtensionFunction {
   virtual ~AppClearAllNotificationsFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.app.clearAllNotifications");
 };
 

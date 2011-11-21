@@ -19,7 +19,8 @@ class ExtensionHostMac : public ExtensionHost {
       ExtensionHost(extension, site_instance, url, host_type) {}
   virtual ~ExtensionHostMac();
  private:
-  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual void UnhandledKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionHostMac);
 };

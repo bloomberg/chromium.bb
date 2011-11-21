@@ -64,25 +64,25 @@ class ExtensionContextMenuFunction : public SyncExtensionFunction {
 
 class CreateContextMenuFunction : public ExtensionContextMenuFunction {
   virtual ~CreateContextMenuFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.create")
 };
 
 class UpdateContextMenuFunction : public ExtensionContextMenuFunction {
   virtual ~UpdateContextMenuFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.update")
 };
 
 class RemoveContextMenuFunction : public ExtensionContextMenuFunction {
   virtual ~RemoveContextMenuFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.remove")
 };
 
 class RemoveAllContextMenusFunction : public ExtensionContextMenuFunction {
   virtual ~RemoveAllContextMenusFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("contextMenus.removeAll")
 };
 

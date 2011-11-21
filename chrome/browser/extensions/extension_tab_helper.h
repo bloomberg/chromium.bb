@@ -130,7 +130,7 @@ class ExtensionTabHelper
   virtual void AppNotifyChannelSetupComplete(const std::string& channel_id,
                                              const std::string& error,
                                              int return_route_id,
-                                             int callback_id);
+                                             int callback_id) OVERRIDE;
 
   // Data for app extensions ---------------------------------------------------
 

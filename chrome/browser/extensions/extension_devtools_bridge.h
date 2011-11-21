@@ -26,17 +26,17 @@ class ExtensionDevToolsBridge : public DevToolsClientHost {
 
   // DevToolsClientHost, called when the tab inspected by this client is
   // closing.
-  virtual void InspectedTabClosing();
+  virtual void InspectedTabClosing() OVERRIDE;
 
   // DevToolsClientHost, called to send a message to this host.
-  virtual void SendMessageToClient(const IPC::Message& msg);
+  virtual void SendMessageToClient(const IPC::Message& msg) OVERRIDE;
 
-  virtual void TabReplaced(TabContents* new_tab);
+  virtual void TabReplaced(TabContents* new_tab) OVERRIDE;
 
  private:
   void OnDispatchOnInspectorFrontend(const std::string& data);
 
-  virtual void FrameNavigating(const std::string& url) {}
+  virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
   // ID of the tab we are monitoring.
   int tab_id_;

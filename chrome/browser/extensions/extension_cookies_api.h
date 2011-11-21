@@ -182,7 +182,7 @@ class GetAllCookieStoresFunction : public CookiesFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   // GetAllCookieStoresFunction is sync.
-  virtual void Run();
+  virtual void Run() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("cookies.getAllCookieStores")
 };
 

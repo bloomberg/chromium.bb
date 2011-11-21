@@ -25,11 +25,11 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
 
   // SpecialStoragePolicy methods used by storage subsystems and the browsing
   // data remover. These methods are safe to call on any thread.
-  virtual bool IsStorageProtected(const GURL& origin);
-  virtual bool IsStorageUnlimited(const GURL& origin);
-  virtual bool IsStorageSessionOnly(const GURL& origin);
-  virtual bool IsFileHandler(const std::string& extension_id);
-  virtual bool HasSessionOnlyOrigins();
+  virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
+  virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;
+  virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;
+  virtual bool IsFileHandler(const std::string& extension_id) OVERRIDE;
+  virtual bool HasSessionOnlyOrigins() OVERRIDE;
 
   // Methods used by the ExtensionService to populate this class.
   void GrantRightsForExtension(const Extension* extension);

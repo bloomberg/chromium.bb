@@ -16,25 +16,25 @@ class PluginGroup;
 
 class ClearContentSettingsFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.clear")
 };
 
 class GetContentSettingFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.get")
 };
 
 class SetContentSettingFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.set")
 };
 
 class GetResourceIdentifiersFunction : public AsyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("contentSettings.getResourceIdentifiers")
 
  private:

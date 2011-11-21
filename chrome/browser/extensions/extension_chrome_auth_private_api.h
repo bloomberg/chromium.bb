@@ -21,7 +21,7 @@ class SetCloudPrintCredentialsFunction : public AsyncExtensionFunction {
  protected:
   virtual ~SetCloudPrintCredentialsFunction();
 
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   DECLARE_EXTENSION_FUNCTION_NAME("chromeAuthPrivate.setCloudPrintCredentials");

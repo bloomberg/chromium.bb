@@ -84,7 +84,7 @@ class BeginInstallWithManifestFunction
 
  protected:
   virtual ~BeginInstallWithManifestFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 
   // Sets the result_ as a string based on |code|.
   void SetResult(ResultCode code);
@@ -109,7 +109,7 @@ class BeginInstallWithManifestFunction
 };
 
 class CompleteInstallFunction : public SyncExtensionFunction {
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.completeInstall");
 };
 
@@ -145,17 +145,17 @@ class SilentlyInstallFunction : public AsyncExtensionFunction,
 };
 
 class GetBrowserLoginFunction : public SyncExtensionFunction {
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.getBrowserLogin");
 };
 
 class GetStoreLoginFunction : public SyncExtensionFunction {
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.getStoreLogin");
 };
 
 class SetStoreLoginFunction : public SyncExtensionFunction {
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("webstorePrivate.setStoreLogin");
 };
 

@@ -194,8 +194,8 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   void StartProcessOnIOThread(const FilePath& temp_crx_path);
 
   // UtilityProcessHost::Client
-  virtual bool OnMessageReceived(const IPC::Message& message);
-  virtual void OnProcessCrashed(int exit_code);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void OnProcessCrashed(int exit_code) OVERRIDE;
 
   // IPC message handlers.
   void OnUnpackExtensionSucceeded(const base::DictionaryValue& manifest);

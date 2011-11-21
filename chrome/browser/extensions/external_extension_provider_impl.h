@@ -62,7 +62,7 @@ class ExternalExtensionProviderImpl
                                    Extension::Location* location,
                                    scoped_ptr<Version>* version) const OVERRIDE;
 
-  virtual bool IsReady() const;
+  virtual bool IsReady() const OVERRIDE;
 
   static const char kLocation[];
   static const char kState[];

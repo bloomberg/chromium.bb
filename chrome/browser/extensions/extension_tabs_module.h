@@ -112,7 +112,7 @@ class UpdateTabFunction : public AsyncExtensionFunction,
  private:
   virtual ~UpdateTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   void OnExecuteCodeFinished(int request_id,
                              bool success,
                              const std::string& error);
@@ -125,7 +125,7 @@ class MoveTabsFunction : public SyncExtensionFunction {
 };
 class ReloadTabFunction : public SyncExtensionFunction {
   virtual ~ReloadTabFunction() {}
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("tabs.reload")
 };
 class RemoveTabsFunction : public SyncExtensionFunction {

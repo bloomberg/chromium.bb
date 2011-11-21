@@ -26,7 +26,7 @@ class ExtensionBrowserTest
  protected:
   ExtensionBrowserTest();
 
-  virtual void SetUpCommandLine(CommandLine* command_line);
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
   const Extension* LoadExtension(const FilePath& path);
 
   // Same as above, but enables the extension in incognito mode first.

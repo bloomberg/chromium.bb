@@ -235,7 +235,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   virtual ~UIThreadExtensionFunction();
 
-  virtual void SendResponse(bool success);
+  virtual void SendResponse(bool success) OVERRIDE;
 
   // Gets the "current" browser, if any.
   //
@@ -282,7 +282,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
     content::NotificationRegistrar registrar_;
   };
 
-  virtual void Destruct() const;
+  virtual void Destruct() const OVERRIDE;
 
   scoped_ptr<RenderViewHostTracker> tracker_;
 };
@@ -325,9 +325,9 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
   virtual ~IOThreadExtensionFunction();
 
-  virtual void Destruct() const;
+  virtual void Destruct() const OVERRIDE;
 
-  virtual void SendResponse(bool success);
+  virtual void SendResponse(bool success) OVERRIDE;
 
  private:
   base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_;

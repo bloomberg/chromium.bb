@@ -20,10 +20,10 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   virtual ~ExecuteCodeInTabFunction();
 
  private:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 
   // TabContentsObserver overrides.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // Message handler.
   void OnExecuteCodeFinished(int request_id, bool success,

@@ -40,7 +40,7 @@ class AttachDebuggerFunction : public DebuggerFunction {
  public:
   AttachDebuggerFunction();
   virtual ~AttachDebuggerFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.attach")
 };
 
@@ -49,7 +49,7 @@ class DetachDebuggerFunction : public DebuggerFunction {
  public:
   DetachDebuggerFunction();
   virtual ~DetachDebuggerFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.detach")
 };
 
@@ -58,7 +58,7 @@ class SendCommandDebuggerFunction : public DebuggerFunction {
  public:
   SendCommandDebuggerFunction();
   virtual ~SendCommandDebuggerFunction();
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 
   void SendResponseBody(base::DictionaryValue* dictionary);
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.debugger.sendCommand")

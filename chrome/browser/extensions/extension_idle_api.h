@@ -23,7 +23,7 @@ class ExtensionIdleEventRouter {
 // Implementation of the chrome.idle.queryState API.
 class ExtensionIdleQueryStateFunction : public AsyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("idle.queryState")
 
  private:

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,7 +22,7 @@ class AutoUpdateInterceptor
 
   // When computing matches, this ignores query parameters (since the autoupdate
   // fetch code appends a bunch of them to manifest fetches).
-  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
+  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) OVERRIDE;
 
   // When requests for |url| arrive, respond with the contents of |path|. The
   // hostname of |url| must be "localhost" to avoid DNS lookups, and the scheme

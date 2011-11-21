@@ -190,7 +190,8 @@ class ExtensionsQuotaService::TimedLimit : public QuotaLimitHeuristic {
  public:
   TimedLimit(const Config& config, BucketMapper* map)
       : QuotaLimitHeuristic(config, map) {}
-  virtual bool Apply(Bucket* bucket, const base::TimeTicks& event_time);
+  virtual bool Apply(Bucket* bucket,
+                     const base::TimeTicks& event_time) OVERRIDE;
 };
 
 // A per-item heuristic to limit the number of events that can occur in a
@@ -201,7 +202,8 @@ class ExtensionsQuotaService::SustainedLimit : public QuotaLimitHeuristic {
   SustainedLimit(const base::TimeDelta& sustain,
                  const Config& config,
                  BucketMapper* map);
-  virtual bool Apply(Bucket* bucket, const base::TimeTicks& event_time);
+  virtual bool Apply(Bucket* bucket,
+                     const base::TimeTicks& event_time) OVERRIDE;
  private:
   // Specifies how long exhaustion of buckets is allowed to continue before
   // denying requests.

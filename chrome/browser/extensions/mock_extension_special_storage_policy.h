@@ -20,11 +20,11 @@ class MockExtensionSpecialStoragePolicy : public ExtensionSpecialStoragePolicy {
   MockExtensionSpecialStoragePolicy();
   virtual ~MockExtensionSpecialStoragePolicy();
 
-  virtual bool IsStorageProtected(const GURL& origin);
-  virtual bool IsStorageUnlimited(const GURL& origin);
-  virtual bool IsStorageSessionOnly(const GURL& origin);
-  virtual bool IsFileHandler(const std::string& extension_id);
-  virtual bool HasSessionOnlyOrigins();
+  virtual bool IsStorageProtected(const GURL& origin) OVERRIDE;
+  virtual bool IsStorageUnlimited(const GURL& origin) OVERRIDE;
+  virtual bool IsStorageSessionOnly(const GURL& origin) OVERRIDE;
+  virtual bool IsFileHandler(const std::string& extension_id) OVERRIDE;
+  virtual bool HasSessionOnlyOrigins() OVERRIDE;
 
   void AddProtected(const GURL& origin) {
     protected_.insert(origin);
