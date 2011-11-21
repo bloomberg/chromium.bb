@@ -730,6 +730,18 @@ var MainView = (function() {
   }
 
   /**
+   * Adds a checkbox to |parent|. The checkbox will have a label on its right
+   * with text |label|. Returns the checkbox input node.
+   */
+  function addLabeledCheckbox(parent, label) {
+    var labelNode = addNode(parent, 'label');
+    var checkbox = addNode(labelNode, 'input');
+    checkbox.type = 'checkbox';
+    addText(labelNode, label);
+    return checkbox;
+  }
+
+  /**
    * Return the last component in a path which is separated by either forward
    * slashes or backslashes.
    */
@@ -1484,13 +1496,14 @@ var MainView = (function() {
     fillSelectionCheckboxes_: function(parent) {
       this.selectionCheckboxes_ = {};
 
+      var onChangeFunc = this.onSelectCheckboxChanged_.bind(this);
+
       for (var i = 0; i < ALL_TABLE_COLUMNS.length; ++i) {
         var key = ALL_TABLE_COLUMNS[i];
-        var checkbox = addNode(parent, 'input');
-        checkbox.type = 'checkbox';
-        checkbox.onchange = this.onSelectCheckboxChanged_.bind(this);
+        var checkbox = addLabeledCheckbox(parent, getNameForKey(key));
         checkbox.checked = true;
-        addNode(parent, 'span', getNameForKey(key) + ' ');
+        checkbox.onchange = onChangeFunc;
+        addText(parent, ' ');
         this.selectionCheckboxes_[key] = checkbox;
       }
 
@@ -1514,13 +1527,13 @@ var MainView = (function() {
     fillMergeCheckboxes_: function(parent) {
       this.mergeCheckboxes_ = {};
 
+      var onChangeFunc = this.onMergeCheckboxChanged_.bind(this);
+
       for (var i = 0; i < MERGEABLE_KEYS.length; ++i) {
         var key = MERGEABLE_KEYS[i];
-        var checkbox = addNode(parent, 'input');
-        checkbox.type = 'checkbox';
-        checkbox.onchange = this.onMergeCheckboxChanged_.bind(this);
-        checkbox.checked = false;
-        addNode(parent, 'span', getNameForKey(key) + ' ');
+        var checkbox = addLabeledCheckbox(parent, getNameForKey(key));
+        checkbox.onchange = onChangeFunc;
+        addText(parent, ' ');
         this.mergeCheckboxes_[key] = checkbox;
       }
 
