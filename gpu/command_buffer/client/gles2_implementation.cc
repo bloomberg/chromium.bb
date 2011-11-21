@@ -1569,7 +1569,7 @@ void GLES2Implementation::TexSubImage2DImpl(
     return;
   }
 
-  GLsizei original_height = height;
+  GLint original_yoffset = yoffset;
   if (padded_row_size <= max_size) {
     // Transfer by rows.
     GLint max_rows = max_size / std::max(padded_row_size,
@@ -1584,7 +1584,7 @@ void GLES2Implementation::TexSubImage2DImpl(
         CopyRectToBufferFlipped(
             source, width, num_rows, format, type, buffer);
         // GPU_DCHECK(copy_success);  // can't check this because bot fails!
-        y = original_height - yoffset - num_rows;
+        y = original_yoffset + height - num_rows;
       } else {
         memcpy(buffer, source, part_size);
         y = yoffset;
@@ -1614,7 +1614,7 @@ void GLES2Implementation::TexSubImage2DImpl(
         GLsizeiptr part_size = num_pixels * element_size;
         void* buffer = transfer_buffer_.Alloc(part_size);
         memcpy(buffer, row_source, part_size);
-        GLint y = unpack_flip_y_ ? (original_height - yoffset - 1) : yoffset;
+        GLint y = unpack_flip_y_ ? (original_yoffset + height - 1) : yoffset;
         helper_->TexSubImage2D(
             target, level, temp_xoffset, y, num_pixels, 1, format, type,
             transfer_buffer_id_, transfer_buffer_.GetOffset(buffer), internal);

@@ -1755,6 +1755,74 @@ TEST_F(GLES2ImplementationTest, TexImage2DSubRows) {
       GetTransferAddressFromOffsetAs<uint8>(offset4, part_size)));
 }
 
+// Test TexSubImage2D with GL_PACK_FLIP_Y set and partial multirow transfers
+TEST_F(GLES2ImplementationTest, TexSubImage2DFlipY) {
+  const GLsizei kTextureWidth = MaxTransferBufferSize() / 4;
+  const GLsizei kTextureHeight = 7;
+  const GLsizei kSubImageWidth = MaxTransferBufferSize() / 8;
+  const GLsizei kSubImageHeight = 4;
+  const GLint kSubImageXOffset = 1;
+  const GLint kSubImageYOffset = 2;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLint kLevel = 0;
+  const GLint kBorder = 0;
+  const GLint kPixelStoreUnpackAlignment = 4;
+
+  struct Cmds {
+    PixelStorei pixel_store_i1;
+    TexImage2D tex_image_2d;
+    TexSubImage2D tex_sub_image_2d1;
+    cmd::SetToken set_token1;
+    TexSubImage2D tex_sub_image_2d2;
+    cmd::SetToken set_token2;
+  };
+
+  uint32 sub_2_high_size = 0;
+  ASSERT_TRUE(GLES2Util::ComputeImageDataSize(
+      kSubImageWidth, 2, kFormat, kType, kPixelStoreUnpackAlignment,
+      &sub_2_high_size));
+  uint32 offset1 = AllocateTransferBuffer(sub_2_high_size);
+  uint32 offset2 = AllocateTransferBuffer(sub_2_high_size);
+
+  Cmds expected;
+  expected.pixel_store_i1.Init(GL_UNPACK_ALIGNMENT, kPixelStoreUnpackAlignment);
+  expected.tex_image_2d.Init(
+      kTarget, kLevel, kFormat, kTextureWidth, kTextureHeight, kBorder, kFormat,
+      kType, 0, NULL);
+  expected.tex_sub_image_2d1.Init(kTarget, kLevel, kSubImageXOffset,
+      kSubImageYOffset + 2, kSubImageWidth, 2, kFormat, kType,
+      kTransferBufferId, offset1, false);
+  expected.set_token1.Init(GetNextToken());
+  expected.tex_sub_image_2d2.Init(kTarget, kLevel, kSubImageXOffset,
+      kSubImageYOffset, kSubImageWidth , 2, kFormat, kType, kTransferBufferId,
+      offset2, false);
+  expected.set_token2.Init(GetNextToken());
+
+  gl_->PixelStorei(GL_UNPACK_ALIGNMENT, kPixelStoreUnpackAlignment);
+  gl_->TexImage2D(
+      kTarget, kLevel, kFormat, kTextureWidth, kTextureHeight, kBorder, kFormat,
+      kType, NULL);
+  // this call should not emit commands (handled client-side)
+  gl_->PixelStorei(GL_UNPACK_FLIP_Y_CHROMIUM, GL_TRUE);
+  scoped_array<uint32> pixels(new uint32[kSubImageWidth * kSubImageHeight]);
+  for (int y = 0; y < kSubImageHeight; ++y) {
+    for (int x = 0; x < kSubImageWidth; ++x) {
+        pixels.get()[kSubImageWidth * y + x] = x | (y << 16);
+    }
+  }
+  gl_->TexSubImage2D(
+      GL_TEXTURE_2D, 0, kSubImageXOffset, kSubImageYOffset, kSubImageWidth,
+      kSubImageHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels.get());
+
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_TRUE(CheckRect(
+      kSubImageWidth, 2, kFormat, kType, kPixelStoreUnpackAlignment, true,
+      reinterpret_cast<uint8*>(pixels.get() + 2 * kSubImageWidth),
+      GetTransferAddressFromOffsetAs<uint8>(offset2, sub_2_high_size)));
+}
+
 // Test that GenBuffer does not call GenSharedIds.
 // This is because with client side arrays on we know the StrictSharedIdHandler
 // for buffers has already gotten a set of ids
