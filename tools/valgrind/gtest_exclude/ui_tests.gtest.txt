@@ -132,3 +132,7 @@ OptionsUITest.LoadOptionsByURL
 
 # Flaky failure on Linux/ChromeOS, http://crbug.com/100031
 IFrameTest.InEmptyFrame
+
+# Fails consistently on ChromeOS, http://crbug.com/104938
+WidgetOwnershipTest.Ownership_ViewsNativeWidgetOwnsWidget
+WidgetOwnershipTest.Ownership_ViewsNativeWidgetOwnsWidget_NativeDestroy
