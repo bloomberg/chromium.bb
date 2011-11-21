@@ -29,6 +29,9 @@
 
 namespace {
 
+// TODO(msw): Get color from theme/window color.
+const SkColor kColor = SK_ColorWHITE;
+
 const int kItemHeight = 44;
 const int kItemMarginY = 4;
 const int kIconWidth = 38;
@@ -234,7 +237,7 @@ void ProfileItemView::Layout() {
   image_view_->SetBoundsRect(icon_rect);
 
   int label_x = icon_rect.right() + kIconMarginX;
-  int max_label_width = width() - label_x;
+  int max_label_width = std::max(width() - label_x, 0);
   gfx::Size name_size = name_label_->GetPreferredSize();
   name_size.set_width(std::min(name_size.width(), max_label_width));
   gfx::Size state_size = sync_state_label_->GetPreferredSize();
@@ -279,11 +282,6 @@ void ProfileItemView::OnBlur() {
 void ProfileItemView::OnHighlightStateChanged() {
   set_background(IsHighlighted() ? views::Background::CreateSolidBackground(
       SkColorSetRGB(0xe3, 0xed, 0xf6)) : NULL);
-  SkColor background_color = background() ?
-      background()->get_color() : Bubble::kBackgroundColor;
-  name_label_->SetBackgroundColor(background_color);
-  sync_state_label_->SetBackgroundColor(background_color);
-  edit_link_->SetBackgroundColor(background_color);
 
   bool show_edit = IsHighlighted() && item_.active;
   sync_state_label_->SetVisible(!show_edit);
@@ -330,8 +328,14 @@ bool ProfileItemView::IsHighlighted() {
 
 // AvatarMenuBubbleView -------------------------------------------------------
 
-AvatarMenuBubbleView::AvatarMenuBubbleView(Browser* browser)
-    : add_profile_link_(NULL),
+AvatarMenuBubbleView::AvatarMenuBubbleView(
+    views::View* anchor_view,
+    views::BubbleBorder::ArrowLocation arrow_location,
+    const gfx::Rect& anchor_rect,
+    Browser* browser)
+    : BubbleDelegateView(anchor_view, arrow_location, kColor),
+      anchor_rect_(anchor_rect),
+      add_profile_link_(NULL),
       browser_(browser) {
   avatar_menu_model_.reset(new AvatarMenuModel(
       &g_browser_process->profile_manager()->GetProfileInfoCache(),
@@ -444,23 +448,13 @@ void AvatarMenuBubbleView::LinkClicked(views::Link* source, int event_flags) {
   }
 }
 
-void AvatarMenuBubbleView::BubbleShown() {
-  GetFocusManager()->RegisterAccelerator(
-      ui::Accelerator(ui::VKEY_DOWN, false, false, false), this);
-  GetFocusManager()->RegisterAccelerator(
-      ui::Accelerator(ui::VKEY_UP, false, false, false), this);
+gfx::Point AvatarMenuBubbleView::GetAnchorPoint() {
+  return gfx::Point(anchor_rect_.CenterPoint().x(), anchor_rect_.bottom());
 }
 
-void AvatarMenuBubbleView::BubbleClosing(Bubble* bubble,
-                                         bool closed_by_escape) {
-}
-
-bool AvatarMenuBubbleView::CloseOnEscape() {
-  return true;
-}
-
-bool AvatarMenuBubbleView::FadeInOnShow() {
-  return false;
+void AvatarMenuBubbleView::Init() {
+  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, 0));
+  AddAccelerator(ui::Accelerator(ui::VKEY_UP, 0));
 }
 
 void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
@@ -488,7 +482,6 @@ void AvatarMenuBubbleView::OnAvatarMenuModelChanged(
       l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_NEW_PROFILE_LINK));
   add_profile_link_->set_listener(this);
   add_profile_link_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  add_profile_link_->SetBackgroundColor(Bubble::kBackgroundColor);
   add_profile_link_->SetEnabledColor(SkColorSetRGB(0xe3, 0xed, 0xf6));
   AddChildView(add_profile_link_);
 
