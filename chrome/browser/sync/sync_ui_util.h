@@ -32,13 +32,19 @@ enum MessageType {
                // attention, but not as an error.
 };
 
+enum StatusLabelStyle {
+  PLAIN_TEXT,  // Label will be plain-text only.
+  WITH_HTML    // Label may contain an HTML-formatted link.
+};
+
 // TODO(akalin): audit the use of ProfileSyncService* service below,
 // and use const ProfileSyncService& service where possible.
 
 // Create status and link labels for the current status labels and link text
 // by querying |service|.
-// |status_label| may contain an HTML-formatted link.
+// |style| sets the link properties, see |StatusLabelStyle|.
 MessageType GetStatusLabels(ProfileSyncService* service,
+                            StatusLabelStyle style,
                             string16* status_label,
                             string16* link_label);
 

@@ -10199,6 +10199,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Synced as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Last synced: <ph name="LAST_SYNC_TIME">$2<ex>12 seconds ago</ex></ph>
       </message>
       <message name="IDS_SYNC_ACCOUNT_SYNCING_TO_USER" desc="The message that appears in the options dialog indicating that account is syncing to a user with the given email address.">
+        Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>.
+      </message>
+      <message name="IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK" desc="The message that appears in the options dialog indicating that account is syncing to a user with the given email address, together with a link to manage their data (where supported, or not possible through the application)">
         Signed in as <ph name="USER_EMAIL_ADDRESS">$1<ex>foo@gmail.com</ex></ph>. Manage your synced data on <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;.</ph>
       </message>
       <message name="IDS_SYNC_ACCOUNT_DETAILS_NOT_ENTERED" desc="The sync setup is underway and the user has not yet entered credentials.">

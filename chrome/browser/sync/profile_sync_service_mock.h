@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/sync_protocol_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
+#include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class ProfileSyncServiceMock : public ProfileSyncService {
@@ -59,8 +60,11 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetLastSessionSnapshot,
                      const browser_sync::sessions::SyncSessionSnapshot*());
 
+  MOCK_CONST_METHOD0(UIShouldDepictAuthInProgress, bool());
   MOCK_METHOD0(QueryDetailedSyncStatus,
                browser_sync::SyncBackendHost::Status());
+  MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
+  MOCK_CONST_METHOD0(SetupInProgress, bool());
   MOCK_CONST_METHOD0(GetLastSyncedTimeString, string16());
   MOCK_CONST_METHOD0(unrecoverable_error_detected, bool());
   MOCK_METHOD1(OnActionableError, void(
