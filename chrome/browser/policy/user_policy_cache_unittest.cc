@@ -103,16 +103,15 @@ class UserPolicyCacheTest : public testing::Test {
   // Takes ownership of |policy_response|.
   void SetPolicy(UserPolicyCache* cache,
                  em::PolicyFetchResponse* policy_response) {
+    EXPECT_CALL(observer_, OnCacheUpdate(_)).Times(1);
+    cache->AddObserver(&observer_);
+
     scoped_ptr<em::PolicyFetchResponse> policy(policy_response);
-    cache->SetReady();
-    cache->AddObserver(&observer);
-
-    EXPECT_CALL(observer, OnCacheUpdate(_)).Times(1);
-
     cache->SetPolicy(*policy);
-    testing::Mock::VerifyAndClearExpectations(&observer);
+    cache->SetReady();
+    testing::Mock::VerifyAndClearExpectations(&observer_);
 
-    cache->RemoveObserver(&observer);
+    cache->RemoveObserver(&observer_);
   }
 
   void SetReady(UserPolicyCache* cache) {
@@ -132,7 +131,7 @@ class UserPolicyCacheTest : public testing::Test {
   }
 
   MessageLoop loop_;
-  MockCloudPolicyCacheBaseObserver observer;
+  MockCloudPolicyCacheBaseObserver observer_;
 
  private:
   ScopedTempDir temp_dir_;
@@ -359,19 +358,19 @@ TEST_F(UserPolicyCacheTest, FreshPolicyOverride) {
 
 TEST_F(UserPolicyCacheTest, SetReady) {
   UserPolicyCache cache(test_file(), false  /* wait_for_policy_fetch */);
-  cache.AddObserver(&observer);
+  cache.AddObserver(&observer_);
   scoped_ptr<em::PolicyFetchResponse> policy(
       CreateHomepagePolicy("http://www.example.com",
                            base::Time::NowFromSystemTime(),
                            em::PolicyOptions::MANDATORY));
-  EXPECT_CALL(observer, OnCacheUpdate(_)).Times(0);
+  EXPECT_CALL(observer_, OnCacheUpdate(_)).Times(0);
   cache.SetPolicy(*policy);
-  testing::Mock::VerifyAndClearExpectations(&observer);
+  testing::Mock::VerifyAndClearExpectations(&observer_);
 
   // Switching the cache to ready should send a notification.
-  EXPECT_CALL(observer, OnCacheUpdate(_)).Times(1);
+  EXPECT_CALL(observer_, OnCacheUpdate(_)).Times(1);
   SetReady(&cache);
-  cache.RemoveObserver(&observer);
+  cache.RemoveObserver(&observer_);
 }
 
 // Test case for the temporary support for GenericNamedValues in the

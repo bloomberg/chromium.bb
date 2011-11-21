@@ -25,6 +25,11 @@ CloudPolicyCacheBase::~CloudPolicyCacheBase() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnCacheGoingAway(this));
 }
 
+void CloudPolicyCacheBase::SetFetchingDone() {
+  // NotifyObservers only fires notifications if the cache is ready.
+  NotifyObservers();
+}
+
 void CloudPolicyCacheBase::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -109,8 +114,6 @@ bool CloudPolicyCacheBase::SetPolicyInternal(
                               kMetricPolicySize);
   }
 
-  NotifyObservers();
-
   InformNotifier(CloudPolicySubsystem::SUCCESS,
                  CloudPolicySubsystem::NO_DETAILS);
   return true;
@@ -122,8 +125,6 @@ void CloudPolicyCacheBase::SetUnmanagedInternal(const base::Time& timestamp) {
   mandatory_policy_.Clear();
   recommended_policy_.Clear();
   last_policy_refresh_time_ = timestamp;
-
-  NotifyObservers();
 }
 
 void CloudPolicyCacheBase::SetReady() {

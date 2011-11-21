@@ -8,6 +8,7 @@
 
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {
 
@@ -26,6 +27,7 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
   // ConfigurationPolicyProvider method overrides.
   virtual bool ProvideInternal(PolicyMap* policies) OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
+  virtual void RefreshPolicies() OVERRIDE;
 
   // Make public for tests.
   using ConfigurationPolicyProvider::NotifyPolicyUpdated;
@@ -34,6 +36,16 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
 
   PolicyMap policy_map_;
   bool initialization_complete_;
+};
+
+class MockConfigurationPolicyObserver
+    : public ConfigurationPolicyProvider::Observer {
+ public:
+  MockConfigurationPolicyObserver();
+  virtual ~MockConfigurationPolicyObserver();
+
+  MOCK_METHOD1(OnUpdatePolicy, void(ConfigurationPolicyProvider*));
+  MOCK_METHOD1(OnProviderGoingAway, void(ConfigurationPolicyProvider*));
 };
 
 }  // namespace policy

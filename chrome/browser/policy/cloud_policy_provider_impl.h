@@ -14,16 +14,20 @@
 
 namespace policy {
 
+class BrowserPolicyConnector;
+
 class CloudPolicyProviderImpl : public CloudPolicyProvider,
                                 public CloudPolicyCacheBase::Observer {
  public:
-  CloudPolicyProviderImpl(const PolicyDefinitionList* policy_list,
+  CloudPolicyProviderImpl(BrowserPolicyConnector* browser_policy_connector,
+                          const PolicyDefinitionList* policy_list,
                           CloudPolicyCacheBase::PolicyLevel level);
   virtual ~CloudPolicyProviderImpl();
 
   // ConfigurationPolicyProvider implementation.
   virtual bool ProvideInternal(PolicyMap* result) OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
+  virtual void RefreshPolicies() OVERRIDE;
 
   // CloudPolicyCacheBase::Observer implementation.
   virtual void OnCacheUpdate(CloudPolicyCacheBase* cache) OVERRIDE;
@@ -33,6 +37,8 @@ class CloudPolicyProviderImpl : public CloudPolicyProvider,
 
  private:
   friend class CloudPolicyProviderTest;
+
+  typedef std::vector<CloudPolicyCacheBase*> ListType;
 
   // Combines two PolicyMap and stores the result in out_map. The policies in
   // |base| take precedence over the policies in |overlay|. Proxy policies are
@@ -50,9 +56,18 @@ class CloudPolicyProviderImpl : public CloudPolicyProvider,
   // groups.
   void RecombineCachesAndTriggerUpdate();
 
+  // Removes |cache| from |caches|, if contained therein.
+  static void RemoveCache(CloudPolicyCacheBase* cache, ListType* caches);
+
+  // Weak pointer to the connector. Guaranteed to outlive |this|.
+  BrowserPolicyConnector* browser_policy_connector_;
+
   // The underlying policy caches.
-  typedef std::vector<CloudPolicyCacheBase*> ListType;
   ListType caches_;
+
+  // Caches with pending updates. Used by RefreshPolicies to determine if a
+  // refresh has fully completed.
+  ListType pending_update_caches_;
 
   // Policy level this provider will handle.
   CloudPolicyCacheBase::PolicyLevel level_;

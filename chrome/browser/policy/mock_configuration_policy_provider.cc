@@ -40,4 +40,12 @@ bool MockConfigurationPolicyProvider::IsInitializationComplete() const {
   return initialization_complete_;
 }
 
+void MockConfigurationPolicyProvider::RefreshPolicies() {
+  NotifyPolicyUpdated();
+}
+
+MockConfigurationPolicyObserver::MockConfigurationPolicyObserver() {}
+
+MockConfigurationPolicyObserver::~MockConfigurationPolicyObserver() {}
+
 }  // namespace policy

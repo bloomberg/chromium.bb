@@ -137,7 +137,8 @@ TEST_F(ConfigurationPolicyProviderMacTest, Invalid) {
   prefs_->AddTestItem(name, invalid_data.get(), true);
 
   // Create the provider and have it read |prefs_|.
-  provider_.ForceReload();
+  provider_.RefreshPolicies();
+  loop_.RunAllPending();
   PolicyMap policy_map;
   EXPECT_TRUE(provider_.Provide(&policy_map));
   EXPECT_TRUE(policy_map.empty());
@@ -152,7 +153,8 @@ TEST_F(ConfigurationPolicyProviderMacTest, TestNonForcedValue) {
   prefs_->AddTestItem(name, test_value.get(), false);
 
   // Create the provider and have it read |prefs_|.
-  provider_.ForceReload();
+  provider_.RefreshPolicies();
+  loop_.RunAllPending();
   PolicyMap policy_map;
   EXPECT_TRUE(provider_.Provide(&policy_map));
   EXPECT_TRUE(policy_map.empty());

@@ -6,6 +6,8 @@
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "chrome/browser/policy/asynchronous_policy_test_base.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -48,12 +50,26 @@ TEST_F(AsynchronousPolicyTestBase, ProvideAfterRefresh) {
   EXPECT_CALL(*delegate, Load()).WillOnce(Return(refresh_policies));
   AsynchronousPolicyLoader* loader = new AsynchronousPolicyLoader(delegate, 10);
   AsynchronousPolicyProvider provider(GetChromePolicyDefinitionList(), loader);
-  loop_.RunAllPending();
-  provider.ForceReload();
+
+  // The original policies have been loaded.
   PolicyMap policy_map;
   provider.Provide(&policy_map);
-  EXPECT_TRUE(policy_map.Get(policy::kPolicySyncDisabled));
   EXPECT_EQ(1U, policy_map.size());
+  EXPECT_TRUE(policy_map.Get(policy::kPolicySyncDisabled));
+  EXPECT_FALSE(policy_map.Get(policy::kPolicyJavascriptEnabled));
+
+  MockConfigurationPolicyObserver observer;
+  ConfigurationPolicyObserverRegistrar registrar;
+  registrar.Init(&provider, &observer);
+  EXPECT_CALL(observer, OnUpdatePolicy(&provider)).Times(1);
+  provider.RefreshPolicies();
+  loop_.RunAllPending();
+  // The refreshed policies are now provided.
+  policy_map.Clear();
+  provider.Provide(&policy_map);
+  EXPECT_EQ(1U, policy_map.size());
+  EXPECT_FALSE(policy_map.Get(policy::kPolicySyncDisabled));
+  EXPECT_TRUE(policy_map.Get(policy::kPolicyJavascriptEnabled));
 }
 
 }  // namespace policy

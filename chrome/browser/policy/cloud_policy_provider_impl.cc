@@ -4,14 +4,19 @@
 
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
 
+#include <algorithm>
+
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 
 namespace policy {
 
 CloudPolicyProviderImpl::CloudPolicyProviderImpl(
+    BrowserPolicyConnector* browser_policy_connector,
     const PolicyDefinitionList* policy_list,
     CloudPolicyCacheBase::PolicyLevel level)
     : CloudPolicyProvider(policy_list),
+      browser_policy_connector_(browser_policy_connector),
       level_(level),
       initialization_complete_(true) {}
 
@@ -29,19 +34,23 @@ bool CloudPolicyProviderImpl::IsInitializationComplete() const {
   return initialization_complete_;
 }
 
+void CloudPolicyProviderImpl::RefreshPolicies() {
+  pending_update_caches_ = caches_;
+  if (pending_update_caches_.empty())
+    NotifyPolicyUpdated();
+  else
+    browser_policy_connector_->FetchCloudPolicy();
+}
+
 void CloudPolicyProviderImpl::OnCacheUpdate(CloudPolicyCacheBase* cache) {
+  RemoveCache(cache, &pending_update_caches_);
   RecombineCachesAndTriggerUpdate();
 }
 
 void CloudPolicyProviderImpl::OnCacheGoingAway(CloudPolicyCacheBase* cache) {
   cache->RemoveObserver(this);
-  for (ListType::iterator i = caches_.begin(); i != caches_.end(); ++i) {
-    if (*i == cache) {
-      caches_.erase(i);
-      break;
-    }
-  }
-
+  RemoveCache(cache, &caches_);
+  RemoveCache(cache, &pending_update_caches_);
   RecombineCachesAndTriggerUpdate();
 }
 
@@ -112,7 +121,16 @@ void CloudPolicyProviderImpl::RecombineCachesAndTriggerUpdate() {
 
   // Trigger a notification.
   combined_.Swap(&newly_combined);
-  NotifyPolicyUpdated();
+  if (pending_update_caches_.empty())
+    NotifyPolicyUpdated();
+}
+
+// static
+void CloudPolicyProviderImpl::RemoveCache(CloudPolicyCacheBase* cache,
+                                          ListType* caches) {
+  ListType::iterator it = std::find(caches->begin(), caches->end(), cache);
+  if (it != caches->end())
+    caches->erase(it);
 }
 
 }  // namespace policy

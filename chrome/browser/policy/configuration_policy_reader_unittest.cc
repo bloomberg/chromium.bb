@@ -62,7 +62,7 @@ TEST_F(ConfigurationPolicyReaderTest, SetListValue) {
   in_value->Append(Value::CreateStringValue("test1"));
   in_value->Append(Value::CreateStringValue("test2"));
   provider_.AddPolicy(kPolicyRestoreOnStartupURLs, in_value);
-  managed_reader_->OnUpdatePolicy();
+  managed_reader_->OnUpdatePolicy(&provider_);
 
   scoped_ptr<DictionaryValue>
       dict(CreateDictionary(key::kRestoreOnStartupURLs, in_value->DeepCopy()));
@@ -70,7 +70,7 @@ TEST_F(ConfigurationPolicyReaderTest, SetListValue) {
       managed_reader_->GetPolicyStatus(kPolicyRestoreOnStartupURLs));
   EXPECT_TRUE(dict->Equals(result.get()));
 
-  recommended_reader_->OnUpdatePolicy();
+  recommended_reader_->OnUpdatePolicy(&provider_);
   dict->SetString("level",
       PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
   result.reset(
@@ -82,14 +82,14 @@ TEST_F(ConfigurationPolicyReaderTest, SetListValue) {
 TEST_F(ConfigurationPolicyReaderTest, SetStringValue) {
   provider_.AddPolicy(kPolicyHomepageLocation,
       Value::CreateStringValue("http://chromium.org"));
-  managed_reader_->OnUpdatePolicy();
+  managed_reader_->OnUpdatePolicy(&provider_);
   scoped_ptr<DictionaryValue> dict(CreateDictionary(key::kHomepageLocation,
       Value::CreateStringValue("http://chromium.org")));
   scoped_ptr<DictionaryValue> result(
       managed_reader_->GetPolicyStatus(kPolicyHomepageLocation));
   EXPECT_TRUE(dict->Equals(result.get()));
 
-  recommended_reader_->OnUpdatePolicy();
+  recommended_reader_->OnUpdatePolicy(&provider_);
   dict->SetString("level",
       PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
   result.reset(
@@ -100,21 +100,21 @@ TEST_F(ConfigurationPolicyReaderTest, SetStringValue) {
 // Test for boolean-valued policy settings.
 TEST_F(ConfigurationPolicyReaderTest, SetBooleanValue) {
   provider_.AddPolicy(kPolicyShowHomeButton, Value::CreateBooleanValue(true));
-  managed_reader_->OnUpdatePolicy();
+  managed_reader_->OnUpdatePolicy(&provider_);
   scoped_ptr<DictionaryValue> dict(CreateDictionary(key::kShowHomeButton,
       Value::CreateBooleanValue(true)));
   scoped_ptr<DictionaryValue> result(
       managed_reader_->GetPolicyStatus(kPolicyShowHomeButton));
   EXPECT_TRUE(dict->Equals(result.get()));
 
-  recommended_reader_->OnUpdatePolicy();
+  recommended_reader_->OnUpdatePolicy(&provider_);
   dict->SetString("level",
       PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
   result.reset(recommended_reader_->GetPolicyStatus(kPolicyShowHomeButton));
   EXPECT_TRUE(dict->Equals(result.get()));
 
   provider_.AddPolicy(kPolicyShowHomeButton, Value::CreateBooleanValue(false));
-  managed_reader_->OnUpdatePolicy();
+  managed_reader_->OnUpdatePolicy(&provider_);
   dict->Set(
       PolicyStatusInfo::kValueDictPath, Value::CreateBooleanValue(false));
   dict->SetString("level",
@@ -122,7 +122,7 @@ TEST_F(ConfigurationPolicyReaderTest, SetBooleanValue) {
   result.reset(managed_reader_->GetPolicyStatus(kPolicyShowHomeButton));
   EXPECT_TRUE(dict->Equals(result.get()));
 
-  recommended_reader_->OnUpdatePolicy();
+  recommended_reader_->OnUpdatePolicy(&provider_);
   dict->SetString("level",
       PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
   result.reset(recommended_reader_->GetPolicyStatus(kPolicyShowHomeButton));
@@ -132,14 +132,14 @@ TEST_F(ConfigurationPolicyReaderTest, SetBooleanValue) {
 // Test for integer-valued policy settings.
 TEST_F(ConfigurationPolicyReaderTest, SetIntegerValue) {
   provider_.AddPolicy(kPolicyRestoreOnStartup, Value::CreateIntegerValue(3));
-  managed_reader_->OnUpdatePolicy();
+  managed_reader_->OnUpdatePolicy(&provider_);
   scoped_ptr<DictionaryValue> dict(CreateDictionary(key::kRestoreOnStartup,
       Value::CreateIntegerValue(3)));
   scoped_ptr<DictionaryValue> result(
       managed_reader_->GetPolicyStatus(kPolicyRestoreOnStartup));
   EXPECT_TRUE(dict->Equals(result.get()));
 
-  recommended_reader_->OnUpdatePolicy();
+  recommended_reader_->OnUpdatePolicy(&provider_);
   dict->SetString("level",
       PolicyStatusInfo::GetPolicyLevelString(PolicyStatusInfo::RECOMMENDED));
   result.reset(recommended_reader_->GetPolicyStatus(kPolicyRestoreOnStartup));

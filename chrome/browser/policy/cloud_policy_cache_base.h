@@ -57,7 +57,7 @@ class CloudPolicyCacheBase : public base::NonThreadSafe {
   // Invoked whenever an attempt to fetch policy has been completed. The fetch
   // may or may not have suceeded. This can be triggered by failed attempts to
   // fetch oauth tokens, register with dmserver or fetch policy.
-  virtual void SetFetchingDone() = 0;
+  virtual void SetFetchingDone();
 
   bool is_unmanaged() const {
     return is_unmanaged_;

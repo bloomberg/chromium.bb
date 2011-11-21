@@ -61,7 +61,7 @@ TEST_P(ConfigurationPolicyPrefStoreListTest, SetValue) {
   in_value->Append(Value::CreateStringValue("test1"));
   in_value->Append(Value::CreateStringValue("test2,"));
   provider_.AddPolicy(GetParam().type(), in_value);
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -108,7 +108,7 @@ TEST_P(ConfigurationPolicyPrefStoreStringTest, GetDefault) {
 TEST_P(ConfigurationPolicyPrefStoreStringTest, SetValue) {
   provider_.AddPolicy(GetParam().type(),
                       Value::CreateStringValue("http://chromium.org"));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -158,7 +158,7 @@ TEST_P(ConfigurationPolicyPrefStoreBooleanTest, GetDefault) {
 
 TEST_P(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   provider_.AddPolicy(GetParam().type(), Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -169,7 +169,7 @@ TEST_P(ConfigurationPolicyPrefStoreBooleanTest, SetValue) {
   EXPECT_FALSE(boolean_value);
 
   provider_.AddPolicy(GetParam().type(), Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -278,7 +278,7 @@ TEST_P(ConfigurationPolicyPrefStoreIntegerTest, GetDefault) {
 
 TEST_P(ConfigurationPolicyPrefStoreIntegerTest, SetValue) {
   provider_.AddPolicy(GetParam().type(), Value::CreateIntegerValue(2));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(GetParam().pref_name(), &value));
@@ -830,7 +830,7 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Default) {
 
 TEST_F(ConfigurationPolicyPrefStoreSyncTest, Enabled) {
   provider_.AddPolicy(kPolicySyncDisabled, Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   // Enabling Sync should not set the pref.
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kSyncManaged, NULL));
@@ -838,7 +838,7 @@ TEST_F(ConfigurationPolicyPrefStoreSyncTest, Enabled) {
 
 TEST_F(ConfigurationPolicyPrefStoreSyncTest, Disabled) {
   provider_.AddPolicy(kPolicySyncDisabled, Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   // Sync should be flagged as managed.
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK, store_->GetValue(prefs::kSyncManaged, &value));
@@ -865,7 +865,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest, SetDownloadDirectory) {
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kPromptForDownload, NULL));
   provider_.AddPolicy(kPolicyDownloadDirectory, Value::CreateStringValue(""));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
 
   // Setting a DownloadDirectory should disable the PromptForDownload pref.
   const Value* value = NULL;
@@ -885,7 +885,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
             store_->GetValue(prefs::kPromptForDownload, NULL));
   provider_.AddPolicy(kPolicyAllowFileSelectionDialogs,
                       Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
 
   // Allowing file-selection dialogs should not influence the PromptForDownload
   // pref.
@@ -899,7 +899,7 @@ TEST_F(ConfigurationPolicyPrefStorePromptDownloadTest,
             store_->GetValue(prefs::kPromptForDownload, NULL));
   provider_.AddPolicy(kPolicyAllowFileSelectionDialogs,
                       Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
 
   // Disabling file-selection dialogs should disable the PromptForDownload pref.
   const Value* value = NULL;
@@ -924,7 +924,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Default) {
 
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
   provider_.AddPolicy(kPolicyAutoFillEnabled, Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   // Enabling Autofill should not set the pref.
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kAutofillEnabled, NULL));
@@ -932,7 +932,7 @@ TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Enabled) {
 
 TEST_F(ConfigurationPolicyPrefStoreAutofillTest, Disabled) {
   provider_.AddPolicy(kPolicyAutoFillEnabled, Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   // Disabling Autofill should switch the pref to managed.
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
@@ -967,19 +967,19 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Refresh) {
   EXPECT_CALL(observer_, OnPrefValueChanged(prefs::kHomePage)).Times(1);
   provider_.AddPolicy(kPolicyHomepageLocation,
                       Value::CreateStringValue("http://www.chromium.org"));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kHomePage, &value));
   EXPECT_TRUE(StringValue("http://www.chromium.org").Equals(value));
 
   EXPECT_CALL(observer_, OnPrefValueChanged(_)).Times(0);
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   Mock::VerifyAndClearExpectations(&observer_);
 
   EXPECT_CALL(observer_, OnPrefValueChanged(prefs::kHomePage)).Times(1);
   provider_.RemovePolicy(kPolicyHomepageLocation);
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kHomePage, NULL));
@@ -993,7 +993,7 @@ TEST_F(ConfigurationPolicyPrefStoreRefreshTest, Initialization) {
   provider_.SetInitializationComplete(true);
   EXPECT_FALSE(store_->IsInitializationComplete());
 
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(store_->IsInitializationComplete());
 }
@@ -1009,12 +1009,12 @@ TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabled) {
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   provider_.AddPolicy(kPolicyJavascriptEnabled,
                       Value::CreateBooleanValue(true));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   EXPECT_EQ(PrefStore::READ_NO_VALUE,
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   provider_.AddPolicy(kPolicyJavascriptEnabled,
                       Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
@@ -1026,7 +1026,7 @@ TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabledOverridden) {
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, NULL));
   provider_.AddPolicy(kPolicyJavascriptEnabled,
                       Value::CreateBooleanValue(false));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   const Value* value = NULL;
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
@@ -1034,7 +1034,7 @@ TEST_F(ConfigurationPolicyPrefStoreOthersTest, JavascriptEnabledOverridden) {
   // DefaultJavaScriptSetting overrides JavascriptEnabled.
   provider_.AddPolicy(kPolicyDefaultJavaScriptSetting,
                       Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
-  store_->OnUpdatePolicy();
+  store_->OnUpdatePolicy(&provider_);
   EXPECT_EQ(PrefStore::READ_OK,
             store_->GetValue(prefs::kManagedDefaultJavaScriptSetting, &value));
   EXPECT_TRUE(base::FundamentalValue(CONTENT_SETTING_ALLOW).Equals(value));

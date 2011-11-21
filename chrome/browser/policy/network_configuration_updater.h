@@ -28,7 +28,7 @@ class NetworkConfigurationUpdater
   virtual ~NetworkConfigurationUpdater();
 
   // ConfigurationPolicyProvider::Observer:
-  virtual void OnUpdatePolicy() OVERRIDE;
+  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
 
  private:
   // Grabs network configuration from policy and applies it.

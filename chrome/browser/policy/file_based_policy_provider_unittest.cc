@@ -5,7 +5,9 @@
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/asynchronous_policy_test_base.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/file_based_policy_provider.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -72,7 +74,11 @@ TEST_F(AsynchronousPolicyTestBase, ProviderRefresh) {
   DictionaryValue* policies = new DictionaryValue();
   policies->SetBoolean(policy::key::kSyncDisabled, true);
   EXPECT_CALL(*provider_delegate, Load()).WillOnce(Return(policies));
-  file_based_provider.ForceReload();
+  MockConfigurationPolicyObserver observer;
+  ConfigurationPolicyObserverRegistrar registrar;
+  registrar.Init(&file_based_provider, &observer);
+  EXPECT_CALL(observer, OnUpdatePolicy(&file_based_provider)).Times(1);
+  file_based_provider.RefreshPolicies();
   loop_.RunAllPending();
   PolicyMap policy_map;
   file_based_provider.Provide(&policy_map);

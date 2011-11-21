@@ -72,8 +72,10 @@ void FileBasedPolicyLoader::OnFilePathError(const FilePath& path) {
 void FileBasedPolicyLoader::Reload(bool force) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  if (!delegate())
+  if (!delegate()) {
+    PostUpdatePolicyTask(NULL);
     return;
+  }
 
   // Check the directory time in order to see whether a reload is required.
   base::TimeDelta delay;

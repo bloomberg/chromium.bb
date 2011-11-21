@@ -81,11 +81,13 @@ ConfigurationPolicyPrefStore::GetValue(const std::string& key,
   return PrefStore::READ_OK;
 }
 
-void ConfigurationPolicyPrefStore::OnUpdatePolicy() {
+void ConfigurationPolicyPrefStore::OnUpdatePolicy(
+    ConfigurationPolicyProvider* provider) {
   Refresh();
 }
 
-void ConfigurationPolicyPrefStore::OnProviderGoingAway() {
+void ConfigurationPolicyPrefStore::OnProviderGoingAway(
+    ConfigurationPolicyProvider* provider) {
   provider_ = NULL;
 }
 

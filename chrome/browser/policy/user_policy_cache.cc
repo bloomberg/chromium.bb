@@ -76,6 +76,7 @@ void UserPolicyCache::SetUnmanaged() {
 }
 
 void UserPolicyCache::SetFetchingDone() {
+  CloudPolicyCacheBase::SetFetchingDone();
   if (!fetch_ready_)
     DVLOG(1) << "SetFetchingDone, cache is now fetch_ready_";
   fetch_ready_ = true;

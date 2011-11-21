@@ -115,10 +115,7 @@ void PolicyUIHandler::HandleRequestData(const ListValue* args) {
 }
 
 void PolicyUIHandler::HandleFetchPolicy(const ListValue* args) {
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  connector->FetchDevicePolicy();
-  connector->FetchUserPolicy();
+  g_browser_process->browser_policy_connector()->RefreshPolicies();
 }
 
 void PolicyUIHandler::SendDataToUI(bool is_policy_update) {

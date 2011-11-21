@@ -33,7 +33,6 @@ class DevicePolicyCache : public CloudPolicyCacheBase,
   virtual void Load() OVERRIDE;
   virtual void SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE;
   virtual void SetUnmanaged() OVERRIDE;
-  virtual void SetFetchingDone() OVERRIDE;
 
   // SignedSettingsHelper::Callback implementation:
   virtual void OnRetrievePolicyCompleted(

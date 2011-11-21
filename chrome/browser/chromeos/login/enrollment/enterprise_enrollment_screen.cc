@@ -286,7 +286,7 @@ void EnterpriseEnrollmentScreen::WriteInstallAttributesData() {
       // Proceed with policy fetch.
       policy::BrowserPolicyConnector* connector =
           g_browser_process->browser_policy_connector();
-      connector->FetchDevicePolicy();
+      connector->FetchCloudPolicy();
       return;
     }
     case policy::EnterpriseInstallAttributes::LOCK_NOT_READY: {

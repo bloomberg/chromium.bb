@@ -54,8 +54,9 @@ class ConfigurationPolicyPrefStore
                               const Value** result) const OVERRIDE;
 
   // ConfigurationPolicyProvider::Observer methods:
-  virtual void OnUpdatePolicy() OVERRIDE;
-  virtual void OnProviderGoingAway() OVERRIDE;
+  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
+  virtual void OnProviderGoingAway(
+      ConfigurationPolicyProvider* provider) OVERRIDE;
 
   // Creates a ConfigurationPolicyPrefStore that reads managed platform policy.
   static ConfigurationPolicyPrefStore* CreateManagedPlatformPolicyPrefStore();

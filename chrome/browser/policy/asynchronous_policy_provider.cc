@@ -7,6 +7,9 @@
 #include "base/bind.h"
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace policy {
 
@@ -14,9 +17,11 @@ AsynchronousPolicyProvider::AsynchronousPolicyProvider(
     const PolicyDefinitionList* policy_list,
     scoped_refptr<AsynchronousPolicyLoader> loader)
     : ConfigurationPolicyProvider(policy_list),
-      loader_(loader) {
+      loader_(loader),
+      pending_refreshes_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   loader_->Init(
-      base::Bind(&AsynchronousPolicyProvider::NotifyPolicyUpdated,
+      base::Bind(&AsynchronousPolicyProvider::OnLoaderReloaded,
                  base::Unretained(this)));
 }
 
@@ -27,15 +32,43 @@ AsynchronousPolicyProvider::~AsynchronousPolicyProvider() {
   loader_->Stop();
 }
 
-void AsynchronousPolicyProvider::ForceReload() {
-  loader_->Reload(true);
-}
-
 bool AsynchronousPolicyProvider::ProvideInternal(PolicyMap* map) {
   DCHECK(CalledOnValidThread());
-  DCHECK(loader_->policy());
+  if (!loader_->policy())
+    return false;
   map->LoadFrom(loader_->policy(), policy_definition_list());
   return true;
+}
+
+void AsynchronousPolicyProvider::RefreshPolicies() {
+  DCHECK(CalledOnValidThread());
+  pending_refreshes_++;
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&AsynchronousPolicyProvider::PostReloadOnFileThread,
+                 loader_),
+      base::Bind(&AsynchronousPolicyProvider::OnReloadPosted,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+// static
+void AsynchronousPolicyProvider::PostReloadOnFileThread(
+    AsynchronousPolicyLoader* loader) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&AsynchronousPolicyLoader::Reload, loader, true));
+}
+
+void AsynchronousPolicyProvider::OnReloadPosted() {
+  DCHECK(CalledOnValidThread());
+  pending_refreshes_--;
+}
+
+void AsynchronousPolicyProvider::OnLoaderReloaded() {
+  DCHECK(CalledOnValidThread());
+  if (pending_refreshes_ == 0)
+    NotifyPolicyUpdated();
 }
 
 }  // namespace policy

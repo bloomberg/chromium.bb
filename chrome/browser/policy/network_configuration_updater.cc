@@ -21,7 +21,8 @@ NetworkConfigurationUpdater::NetworkConfigurationUpdater(
 
 NetworkConfigurationUpdater::~NetworkConfigurationUpdater() {}
 
-void NetworkConfigurationUpdater::OnUpdatePolicy() {
+void NetworkConfigurationUpdater::OnUpdatePolicy(
+    ConfigurationPolicyProvider* provider) {
   Update();
 }
 

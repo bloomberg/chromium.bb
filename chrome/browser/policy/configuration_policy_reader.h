@@ -40,8 +40,9 @@ class ConfigurationPolicyReader : public ConfigurationPolicyProvider::Observer {
   virtual ~ConfigurationPolicyReader();
 
   // ConfigurationPolicyProvider::Observer methods:
-  virtual void OnUpdatePolicy() OVERRIDE;
-  virtual void OnProviderGoingAway() OVERRIDE;
+  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
+  virtual void OnProviderGoingAway(
+      ConfigurationPolicyProvider* provider) OVERRIDE;
 
   // Methods to handle Observers. |observer| must be non-NULL.
   void AddObserver(Observer* observer);

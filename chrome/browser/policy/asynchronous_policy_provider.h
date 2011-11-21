@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 
@@ -37,17 +38,31 @@ class AsynchronousPolicyProvider
       scoped_refptr<AsynchronousPolicyLoader> loader);
   virtual ~AsynchronousPolicyProvider();
 
-  // Force a policy reload from the underlying data source.
-  void ForceReload();
-
- protected:
   // ConfigurationPolicyProvider implementation.
   virtual bool ProvideInternal(PolicyMap* map) OVERRIDE;
+  virtual void RefreshPolicies() OVERRIDE;
+
+ private:
+  // Used to trigger a Reload on |loader| on the FILE thread.
+  static void PostReloadOnFileThread(AsynchronousPolicyLoader* loader);
+
+  // Used to notify UI that a reload task has been submitted.
+  void OnReloadPosted();
+
+  // Callback from the loader. This is invoked whenever the loader has completed
+  // a reload of the policies.
+  void OnLoaderReloaded();
 
   // The loader object used internally.
   scoped_refptr<AsynchronousPolicyLoader> loader_;
 
- private:
+  // Number of refreshes requested whose reload is still pending. Used to only
+  // fire notifications when all pending refreshes are done.
+  int pending_refreshes_;
+
+  // Used to post tasks to self on UI.
+  base::WeakPtrFactory<AsynchronousPolicyProvider> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(AsynchronousPolicyProvider);
 };
 

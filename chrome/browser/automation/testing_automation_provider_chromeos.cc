@@ -900,7 +900,7 @@ void TestingAutomationProvider::FetchEnterprisePolicy(
   if (policy_subsystem) {
     // Set up an observer (it will delete itself).
     new CloudPolicyObserver(this, reply_message, connector, policy_subsystem);
-    connector->FetchDevicePolicy();
+    connector->FetchCloudPolicy();
   } else {
     AutomationJSONReply(this, reply_message).SendError(
         "Unable to access CloudPolicySubsystem");

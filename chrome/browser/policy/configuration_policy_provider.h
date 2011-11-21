@@ -28,8 +28,8 @@ class ConfigurationPolicyProvider {
   class Observer {
    public:
     virtual ~Observer();
-    virtual void OnUpdatePolicy() = 0;
-    virtual void OnProviderGoingAway();
+    virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) = 0;
+    virtual void OnProviderGoingAway(ConfigurationPolicyProvider* provider);
   };
 
   explicit ConfigurationPolicyProvider(const PolicyDefinitionList* policy_list);
@@ -53,6 +53,13 @@ class ConfigurationPolicyProvider {
   // This is meant for tests only, and is disabled on official builds.
   void OverridePolicies(PolicyMap* policies);
 #endif
+
+  // Asks the provider to refresh its policies. All the updates caused by this
+  // call will be visible on the next call of OnUpdatePolicy on the observers,
+  // which are guaranteed to happen even if the refresh fails.
+  // It is possible that OnProviderGoingAway is called first though, and
+  // OnUpdatePolicy won't be called if that happens.
+  virtual void RefreshPolicies() = 0;
 
  protected:
   // Sends a policy update notification to observers.
@@ -100,8 +107,9 @@ class ConfigurationPolicyObserverRegistrar
             ConfigurationPolicyProvider::Observer* observer);
 
   // ConfigurationPolicyProvider::Observer implementation:
-  virtual void OnUpdatePolicy() OVERRIDE;
-  virtual void OnProviderGoingAway() OVERRIDE;
+  virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
+  virtual void OnProviderGoingAway(
+      ConfigurationPolicyProvider* provider) OVERRIDE;
 
   ConfigurationPolicyProvider* provider() { return provider_; }
 

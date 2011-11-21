@@ -217,7 +217,7 @@ TEST_F(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
   hkcu_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
                       UTF8ToUTF16("hkcu").c_str());
 
-  provider_.ForceReload();
+  provider_.RefreshPolicies();
   loop_.RunAllPending();
 
   PolicyMap policy_map;

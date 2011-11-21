@@ -9,8 +9,13 @@
 #include "chrome/browser/policy/asynchronous_policy_loader.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using ::testing::Mock;
+using ::testing::_;
 
 namespace policy {
 
@@ -56,6 +61,9 @@ void ConfigurationPolicyProviderTest::SetUp() {
 
   provider_.reset(
       test_harness_->CreateProvider(&test_policy_definitions::kList));
+  // Some providers do a reload on init. Make sure any notifications generated
+  // are fired now.
+  loop_.RunAllPending();
 
   PolicyMap policy_map;
   EXPECT_TRUE(provider_->Provide(&policy_map));
@@ -76,7 +84,7 @@ void ConfigurationPolicyProviderTest::CheckValue(
     base::Closure install_value) {
   // Install the value, reload policy and check the provider for the value.
   install_value.Run();
-  provider_->ForceReload();
+  provider_->RefreshPolicies();
   loop_.RunAllPending();
   PolicyMap policy_map;
   EXPECT_TRUE(provider_->Provide(&policy_map));
@@ -86,7 +94,7 @@ void ConfigurationPolicyProviderTest::CheckValue(
 }
 
 TEST_P(ConfigurationPolicyProviderTest, Empty) {
-  provider_->ForceReload();
+  provider_->RefreshPolicies();
   loop_.RunAllPending();
   PolicyMap policy_map;
   EXPECT_TRUE(provider_->Provide(&policy_map));
@@ -138,6 +146,36 @@ TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
                         base::Unretained(test_harness_.get()),
                         test_policy_definitions::kKeyStringList,
                         &expected_value));
+}
+
+TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
+  PolicyMap policy_map;
+  EXPECT_TRUE(provider_->Provide(&policy_map));
+  EXPECT_EQ(0U, policy_map.size());
+
+  // OnUpdatePolicy is called even when there are no changes.
+  MockConfigurationPolicyObserver observer;
+  ConfigurationPolicyObserverRegistrar registrar;
+  registrar.Init(provider_.get(), &observer);
+  EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(1);
+  provider_->RefreshPolicies();
+  loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_TRUE(provider_->Provide(&policy_map));
+  EXPECT_EQ(0U, policy_map.size());
+
+  // OnUpdatePolicy is called when there are changes.
+  test_harness_->InstallStringPolicy(test_policy_definitions::kKeyString,
+                                     "value");
+  EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(1);
+  provider_->RefreshPolicies();
+  loop_.RunAllPending();
+  Mock::VerifyAndClearExpectations(&observer);
+
+  policy_map.Clear();
+  EXPECT_TRUE(provider_->Provide(&policy_map));
+  EXPECT_EQ(1U, policy_map.size());
 }
 
 }  // namespace policy

@@ -117,11 +117,13 @@ ConfigurationPolicyReader::ConfigurationPolicyReader(
 ConfigurationPolicyReader::~ConfigurationPolicyReader() {
 }
 
-void ConfigurationPolicyReader::OnUpdatePolicy() {
+void ConfigurationPolicyReader::OnUpdatePolicy(
+    ConfigurationPolicyProvider* provider) {
   Refresh();
 }
 
-void ConfigurationPolicyReader::OnProviderGoingAway() {
+void ConfigurationPolicyReader::OnProviderGoingAway(
+    ConfigurationPolicyProvider* provider) {
   provider_ = NULL;
 }
 

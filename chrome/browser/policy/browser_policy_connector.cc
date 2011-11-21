@@ -81,10 +81,8 @@ const char* kMachineInfoSerialNumberKeys[] = {
 
 }  // namespace
 
-// static
-BrowserPolicyConnector* BrowserPolicyConnector::Create() {
-  return new BrowserPolicyConnector();
-}
+BrowserPolicyConnector::BrowserPolicyConnector()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {}
 
 BrowserPolicyConnector::~BrowserPolicyConnector() {
   // Shutdown device cloud policy.
@@ -101,6 +99,29 @@ BrowserPolicyConnector::~BrowserPolicyConnector() {
   user_cloud_policy_subsystem_.reset();
   user_policy_token_cache_.reset();
   user_data_store_.reset();
+}
+
+void BrowserPolicyConnector::Init() {
+  managed_platform_provider_.reset(CreateManagedPlatformProvider());
+  recommended_platform_provider_.reset(CreateRecommendedPlatformProvider());
+
+  managed_cloud_provider_.reset(new CloudPolicyProviderImpl(
+      this,
+      GetChromePolicyDefinitionList(),
+      CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
+  recommended_cloud_provider_.reset(new CloudPolicyProviderImpl(
+      this,
+      GetChromePolicyDefinitionList(),
+      CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
+
+#if defined(OS_CHROMEOS)
+  InitializeDevicePolicy();
+
+  network_configuration_updater_.reset(
+      new NetworkConfigurationUpdater(
+          managed_cloud_provider_.get(),
+          chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+#endif
 }
 
 ConfigurationPolicyProvider*
@@ -202,20 +223,24 @@ void BrowserPolicyConnector::ResetDevicePolicy() {
 #endif
 }
 
-void BrowserPolicyConnector::FetchDevicePolicy() {
+void BrowserPolicyConnector::FetchCloudPolicy() {
 #if defined(OS_CHROMEOS)
-  if (device_data_store_.get()) {
+  if (device_data_store_.get())
     device_data_store_->NotifyDeviceTokenChanged();
-  }
+  if (user_data_store_.get())
+    user_data_store_->NotifyDeviceTokenChanged();
 #endif
 }
 
-void BrowserPolicyConnector::FetchUserPolicy() {
-#if defined(OS_CHROMEOS)
-  if (user_data_store_.get()) {
-    user_data_store_->NotifyDeviceTokenChanged();
-  }
-#endif
+void BrowserPolicyConnector::RefreshPolicies() {
+  if (managed_platform_provider_.get())
+    managed_platform_provider_->RefreshPolicies();
+  if (recommended_platform_provider_.get())
+    recommended_platform_provider_->RefreshPolicies();
+  if (managed_cloud_provider_.get())
+    managed_cloud_provider_->RefreshPolicies();
+  if (recommended_cloud_provider_.get())
+    recommended_cloud_provider_->RefreshPolicies();
 }
 
 void BrowserPolicyConnector::ScheduleServiceInitialization(
@@ -347,40 +372,6 @@ CloudPolicyDataStore::UserAffiliation
   return CloudPolicyDataStore::USER_AFFILIATION_NONE;
 }
 
-BrowserPolicyConnector::BrowserPolicyConnector()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  managed_platform_provider_.reset(CreateManagedPlatformProvider());
-  recommended_platform_provider_.reset(CreateRecommendedPlatformProvider());
-
-  managed_cloud_provider_.reset(new CloudPolicyProviderImpl(
-      GetChromePolicyDefinitionList(),
-      CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY));
-  recommended_cloud_provider_.reset(new CloudPolicyProviderImpl(
-      GetChromePolicyDefinitionList(),
-      CloudPolicyCacheBase::POLICY_LEVEL_RECOMMENDED));
-
-#if defined(OS_CHROMEOS)
-  InitializeDevicePolicy();
-
-  network_configuration_updater_.reset(
-      new NetworkConfigurationUpdater(
-          managed_cloud_provider_.get(),
-          chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
-#endif
-}
-
-BrowserPolicyConnector::BrowserPolicyConnector(
-    ConfigurationPolicyProvider* managed_platform_provider,
-    ConfigurationPolicyProvider* recommended_platform_provider,
-    CloudPolicyProvider* managed_cloud_provider,
-    CloudPolicyProvider* recommended_cloud_provider)
-    : managed_platform_provider_(managed_platform_provider),
-      recommended_platform_provider_(recommended_platform_provider),
-      managed_cloud_provider_(managed_cloud_provider),
-      recommended_cloud_provider_(recommended_cloud_provider),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-}
-
 void BrowserPolicyConnector::Observe(
     int type,
     const content::NotificationSource& source,
@@ -443,11 +434,6 @@ void BrowserPolicyConnector::InitializeDevicePolicySubsystem() {
         kServiceInitializationStartupDelay);
   }
 #endif
-}
-
-// static
-BrowserPolicyConnector* BrowserPolicyConnector::CreateForTests() {
-  return new BrowserPolicyConnector(NULL, NULL, NULL, NULL);
 }
 
 // static

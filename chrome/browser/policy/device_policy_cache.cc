@@ -191,10 +191,6 @@ void DevicePolicyCache::SetUnmanaged() {
   // This is not supported for DevicePolicyCache.
 }
 
-void DevicePolicyCache::SetFetchingDone() {
-  // Not interesting for device policy cache.
-}
-
 void DevicePolicyCache::OnRetrievePolicyCompleted(
     chromeos::SignedSettings::ReturnCode code,
     const em::PolicyFetchResponse& policy) {

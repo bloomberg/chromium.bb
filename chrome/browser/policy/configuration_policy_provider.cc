@@ -10,7 +10,8 @@ namespace policy {
 
 ConfigurationPolicyProvider::Observer::~Observer() {}
 
-void ConfigurationPolicyProvider::Observer::OnProviderGoingAway() {}
+void ConfigurationPolicyProvider::Observer::OnProviderGoingAway(
+    ConfigurationPolicyProvider* provider) {}
 
 // Class ConfigurationPolicyProvider.
 
@@ -22,7 +23,7 @@ ConfigurationPolicyProvider::ConfigurationPolicyProvider(
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
   FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
                     observer_list_,
-                    OnProviderGoingAway());
+                    OnProviderGoingAway(this));
 }
 
 bool ConfigurationPolicyProvider::Provide(PolicyMap* result) {
@@ -51,7 +52,7 @@ void ConfigurationPolicyProvider::OverridePolicies(PolicyMap* policies) {
 void ConfigurationPolicyProvider::NotifyPolicyUpdated() {
   FOR_EACH_OBSERVER(ConfigurationPolicyProvider::Observer,
                     observer_list_,
-                    OnUpdatePolicy());
+                    OnUpdatePolicy(this));
 }
 
 void ConfigurationPolicyProvider::AddObserver(Observer* observer) {
@@ -81,12 +82,16 @@ void ConfigurationPolicyObserverRegistrar::Init(
   provider_->AddObserver(this);
 }
 
-void ConfigurationPolicyObserverRegistrar::OnUpdatePolicy() {
-  observer_->OnUpdatePolicy();
+void ConfigurationPolicyObserverRegistrar::OnUpdatePolicy(
+    ConfigurationPolicyProvider* provider) {
+  DCHECK_EQ(provider_, provider);
+  observer_->OnUpdatePolicy(provider_);
 }
 
-void ConfigurationPolicyObserverRegistrar::OnProviderGoingAway() {
-  observer_->OnProviderGoingAway();
+void ConfigurationPolicyObserverRegistrar::OnProviderGoingAway(
+    ConfigurationPolicyProvider* provider) {
+  DCHECK_EQ(provider_, provider);
+  observer_->OnProviderGoingAway(provider_);
   provider_->RemoveObserver(this);
   provider_ = NULL;
 }

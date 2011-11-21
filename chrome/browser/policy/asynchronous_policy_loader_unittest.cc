@@ -24,13 +24,6 @@ void IgnoreCallback() {
 
 }  // namespace
 
-class MockConfigurationPolicyObserver
-    : public ConfigurationPolicyProvider::Observer {
- public:
-  MOCK_METHOD0(OnUpdatePolicy, void());
-  void OnProviderGoingAway() {}
-};
-
 class AsynchronousPolicyLoaderTest : public AsynchronousPolicyTestBase {
  public:
   AsynchronousPolicyLoaderTest() {}
@@ -135,16 +128,16 @@ TEST_F(AsynchronousPolicyLoaderTest, ProviderNotificationOnPolicyChange) {
 
   EXPECT_CALL(*delegate, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number_2));
-  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
-  loader->Reload(true);
+  EXPECT_CALL(observer, OnUpdatePolicy(_)).Times(1);
+  provider.RefreshPolicies();
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(delegate);
   Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_CALL(*delegate, Load()).WillOnce(
       CreateSequencedTestDictionary(&dictionary_number_1));
-  EXPECT_CALL(observer, OnUpdatePolicy()).Times(1);
-  loader->Reload(true);
+  EXPECT_CALL(observer, OnUpdatePolicy(_)).Times(1);
+  provider.RefreshPolicies();
   loop_.RunAllPending();
   Mock::VerifyAndClearExpectations(delegate);
   Mock::VerifyAndClearExpectations(&observer);

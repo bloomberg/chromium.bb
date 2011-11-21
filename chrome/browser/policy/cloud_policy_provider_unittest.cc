@@ -6,13 +6,17 @@
 
 #include "base/basictypes.h"
 #include "base/values.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud_policy_cache_base.h"
 #include "chrome/browser/policy/cloud_policy_provider_impl.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::AnyNumber;
+using testing::Mock;
 using testing::_;
 
 namespace policy {
@@ -23,15 +27,16 @@ class MockCloudPolicyCache : public CloudPolicyCacheBase {
   virtual ~MockCloudPolicyCache() {}
 
   // CloudPolicyCacheBase implementation.
-  void Load() {}
-  void SetPolicy(const em::PolicyFetchResponse& policy) {}
+  void Load() OVERRIDE {}
+  void SetPolicy(const em::PolicyFetchResponse& policy) OVERRIDE {}
   bool DecodePolicyData(const em::PolicyData& policy_data,
                         PolicyMap* mandatory,
-                        PolicyMap* recommended) {
+                        PolicyMap* recommended) OVERRIDE {
     return true;
   }
-  bool IsReady() {
-    return true;
+
+  void SetUnmanaged() OVERRIDE {
+    is_unmanaged_ = true;
   }
 
   // Non-const accessors for underlying PolicyMaps.
@@ -41,14 +46,6 @@ class MockCloudPolicyCache : public CloudPolicyCacheBase {
 
   PolicyMap* raw_recommended_policy() {
     return &recommended_policy_;
-  }
-
-  void SetUnmanaged() {
-    is_unmanaged_ = true;
-  }
-
-  void SetFetchingDone() {
-    // Implement pure virtual method.
   }
 
   void set_initialized(bool initialized) {
@@ -62,8 +59,11 @@ class MockCloudPolicyCache : public CloudPolicyCacheBase {
 class CloudPolicyProviderTest : public testing::Test {
  protected:
   void CreateCloudPolicyProvider(CloudPolicyCacheBase::PolicyLevel level) {
-    cloud_policy_provider_.reset(new CloudPolicyProviderImpl(
-        GetChromePolicyDefinitionList(), level));
+    cloud_policy_provider_.reset(
+        new CloudPolicyProviderImpl(
+            &browser_policy_connector_,
+            GetChromePolicyDefinitionList(),
+            level));
   }
 
   // Appends the caches to a provider and then provides the policies to
@@ -71,6 +71,7 @@ class CloudPolicyProviderTest : public testing::Test {
   void RunCachesThroughProvider(MockCloudPolicyCache caches[], int n,
                                 CloudPolicyCacheBase::PolicyLevel level) {
     CloudPolicyProviderImpl provider(
+        &browser_policy_connector_,
         GetChromePolicyDefinitionList(),
         level);
     for (int i = 0; i < n; i++) {
@@ -110,13 +111,10 @@ class CloudPolicyProviderTest : public testing::Test {
     cloud_policy_provider_->CombineTwoPolicyMaps(base, overlay, out_map);
   }
 
- private:
-  // Some tests need a list of policies that doesn't contain any proxy
-  // policies. Note: these policies will be handled as if they had the
-  // type of Value::TYPE_INTEGER.
-  static const ConfigurationPolicyType simple_policies[];
-
   scoped_ptr<CloudPolicyProviderImpl> cloud_policy_provider_;
+
+ private:
+  BrowserPolicyConnector browser_policy_connector_;
   scoped_ptr<PolicyMap> policy_map_;
 };
 
@@ -238,6 +236,66 @@ TEST_F(CloudPolicyProviderTest, CombineTwoPolicyMapsProxies) {
 
   EXPECT_TRUE(A.Equals(C));
   EXPECT_FALSE(B.Equals(C));
+}
+
+TEST_F(CloudPolicyProviderTest, RefreshPolicies) {
+  CreateCloudPolicyProvider(CloudPolicyCacheBase::POLICY_LEVEL_MANDATORY);
+  MockCloudPolicyCache cache0;
+  MockCloudPolicyCache cache1;
+  MockCloudPolicyCache cache2;
+  MockConfigurationPolicyObserver observer;
+  ConfigurationPolicyObserverRegistrar registrar;
+  registrar.Init(cloud_policy_provider_.get(), &observer);
+
+  // OnUpdatePolicy is called when the provider doesn't have any caches.
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(1);
+  cloud_policy_provider_->RefreshPolicies();
+  Mock::VerifyAndClearExpectations(&observer);
+
+  // OnUpdatePolicy is called when all the caches have updated.
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(2);
+  cloud_policy_provider_->AppendCache(&cache0);
+  cloud_policy_provider_->AppendCache(&cache1);
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(0);
+  cloud_policy_provider_->RefreshPolicies();
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(0);
+  // Updating just one of the caches is not enough.
+  cloud_policy_provider_->OnCacheUpdate(&cache0);
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(0);
+  // This cache wasn't available when RefreshPolicies was called, so it isn't
+  // required to fire the update.
+  cloud_policy_provider_->AppendCache(&cache2);
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(1);
+  cloud_policy_provider_->OnCacheUpdate(&cache1);
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(0);
+  cloud_policy_provider_->RefreshPolicies();
+  Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(0);
+  cloud_policy_provider_->OnCacheUpdate(&cache0);
+  cloud_policy_provider_->OnCacheUpdate(&cache1);
+  Mock::VerifyAndClearExpectations(&observer);
+
+  // If a cache refreshes more than once, the provider should still wait for
+  // the others before firing the update.
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(0);
+  cloud_policy_provider_->OnCacheUpdate(&cache0);
+  Mock::VerifyAndClearExpectations(&observer);
+
+  // Fire updates if one of the required caches goes away while waiting.
+  EXPECT_CALL(observer, OnUpdatePolicy(cloud_policy_provider_.get())).Times(1);
+  cloud_policy_provider_->OnCacheGoingAway(&cache2);
+  Mock::VerifyAndClearExpectations(&observer);
 }
 
 }  // namespace policy

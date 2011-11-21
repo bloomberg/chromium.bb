@@ -40,8 +40,15 @@ class BrowserPolicyConnector : public content::NotificationObserver {
     TOKEN_TYPE_OAUTH, // An OAuth v2 access token.
   };
 
-  static BrowserPolicyConnector* Create();
+  // Builds an uninitialized BrowserPolicyConnector, suitable for testing.
+  // Init() should be called to create and start the policy machinery.
+  BrowserPolicyConnector();
   virtual ~BrowserPolicyConnector();
+
+  // Creates the policy providers and finalizes the initialization of the
+  // connector. This call can be skipped on tests that don't require the full
+  // policy system running.
+  void Init();
 
   ConfigurationPolicyProvider* GetManagedPlatformProvider() const;
   ConfigurationPolicyProvider* GetManagedCloudProvider() const;
@@ -86,12 +93,12 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // and clears the error flags, so potential retries have a chance to succeed.
   void ResetDevicePolicy();
 
-  // Initiates a policy fetch after a successful device registration.
-  void FetchDevicePolicy();
+  // Initiates device and user policy fetches, if possible. Pending fetches
+  // will be cancelled.
+  void FetchCloudPolicy();
 
-  // Initiates a user policy fetch after a successful device registration. This
-  // is only safe to call when a user device token is available.
-  void FetchUserPolicy();
+  // Refreshes policies on each existing provider.
+  void RefreshPolicies();
 
   // Schedules initialization of the cloud policy backend services, if the
   // services are already constructed.
@@ -124,18 +131,6 @@ class BrowserPolicyConnector : public content::NotificationObserver {
       const std::string& user_name);
 
  private:
-  friend class ::TestingBrowserProcess;
-
-  BrowserPolicyConnector();
-
-  // Constructor for tests that allows tests to use fake platform and cloud
-  // policy providers instead of using the actual ones.
-  BrowserPolicyConnector(
-      ConfigurationPolicyProvider* managed_platform_provider,
-      ConfigurationPolicyProvider* recommended_platform_provider,
-      CloudPolicyProvider* managed_cloud_provider,
-      CloudPolicyProvider* recommended_cloud_provider);
-
   // content::NotificationObserver method overrides:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -149,7 +144,6 @@ class BrowserPolicyConnector : public content::NotificationObserver {
   // be running.
   void InitializeDevicePolicySubsystem();
 
-  static BrowserPolicyConnector* CreateForTests();
   static ConfigurationPolicyProvider* CreateManagedPlatformProvider();
   static ConfigurationPolicyProvider* CreateRecommendedPlatformProvider();
 

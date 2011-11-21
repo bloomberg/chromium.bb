@@ -154,8 +154,8 @@ class LoginUtilsTestBase : public TESTBASE,
 
     browser_process_->SetProfileManager(
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
-    connector_ = policy::BrowserPolicyConnector::Create();
-    browser_process_->SetBrowserPolicyConnector(connector_);
+    connector_ = browser_process_->browser_policy_connector();
+    connector_->Init();
 
     loop_.RunAllPending();
   }
