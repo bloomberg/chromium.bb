@@ -15,7 +15,6 @@
     '../third_party/speex/speex.gyp:libspeex',
     '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
     '../third_party/zlib/zlib.gyp:zlib',
-    '../ui/gfx/surface/surface.gyp:surface',
     '../ui/ui.gyp:ui',
     '../ui/ui.gyp:ui_resources',
     '../webkit/support/webkit_support.gyp:webkit_resources',

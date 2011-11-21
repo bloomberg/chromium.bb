@@ -43,7 +43,6 @@ class IOSurfaceImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   virtual void OnNewSurfaceACK(uint64 surface_id,
                                TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
-  virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
  private:
@@ -95,7 +94,6 @@ class TransportDIBImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   virtual void OnBuffersSwappedACK() OVERRIDE;
   virtual void OnNewSurfaceACK(uint64 surface_id,
                                TransportDIB::Handle shm_handle) OVERRIDE;
-  virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
  private:
@@ -239,10 +237,6 @@ void IOSurfaceImageTransportSurface::OnNewSurfaceACK(
     TransportDIB::Handle /* shm_handle */) {
   DCHECK_EQ(io_surface_id_, surface_id);
   helper_->SetScheduled(true);
-}
-
-void IOSurfaceImageTransportSurface::OnResizeViewACK() {
-  NOTREACHED();
 }
 
 void IOSurfaceImageTransportSurface::OnResize(gfx::Size size) {
@@ -447,10 +441,6 @@ void TransportDIBImageTransportSurface::OnNewSurfaceACK(
 
   shared_mem_.reset(TransportDIB::Map(shm_handle));
   DCHECK_NE(shared_mem_.get(), static_cast<void*>(NULL));
-}
-
-void TransportDIBImageTransportSurface::OnResizeViewACK() {
-  NOTREACHED();
 }
 
 void TransportDIBImageTransportSurface::OnResize(gfx::Size size) {

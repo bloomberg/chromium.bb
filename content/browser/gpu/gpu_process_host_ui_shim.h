@@ -91,16 +91,15 @@ class GpuProcessHostUIShim
     defined(OS_WIN)
   void OnResizeView(int32 renderer_id,
                     int32 render_view_id,
-                    int32 route_id,
+                    int32 command_buffer_route_id,
                     gfx::Size size);
 #endif
-
-  void OnAcceleratedSurfaceBuffersSwapped(
-      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   void OnAcceleratedSurfaceNew(
       const GpuHostMsg_AcceleratedSurfaceNew_Params& params);
+  void OnAcceleratedSurfaceBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
 #endif
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)

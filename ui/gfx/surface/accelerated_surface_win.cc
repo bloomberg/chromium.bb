@@ -27,13 +27,7 @@
 
 namespace {
 
-typedef HRESULT (WINAPI *Direct3DCreate9ExFunc)(UINT sdk_version,
-                                                IDirect3D9Ex **d3d);
-
 const int64 kPollQueryInterval = 1;
-
-const wchar_t kD3D9ModuleName[] = L"d3d9.dll";
-const char kCreate3D9DeviceExName[] = "Direct3DCreate9Ex";
 
 class QuerySyncThread
     : public base::Thread,
@@ -336,17 +330,8 @@ void AcceleratedSurface::DoInitialize() {
 
   HRESULT hr;
 
-  HMODULE module = GetModuleHandle(kD3D9ModuleName);
-  if (!module)
-    return;
-
-  Direct3DCreate9ExFunc create_func = reinterpret_cast<Direct3DCreate9ExFunc>(
-      GetProcAddress(module, kCreate3D9DeviceExName));
-  if (!create_func)
-    return;
-
   base::win::ScopedComPtr<IDirect3D9Ex> d3d;
-  hr = create_func(D3D_SDK_VERSION, d3d.Receive());
+  hr = Direct3DCreate9Ex(D3D_SDK_VERSION, d3d.Receive());
   if (FAILED(hr))
     return;
 

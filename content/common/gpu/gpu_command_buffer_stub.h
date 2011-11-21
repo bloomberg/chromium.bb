@@ -65,9 +65,6 @@ class GpuCommandBufferStub
   // Whether this command buffer can currently handle IPC messages.
   bool IsScheduled();
 
-  // Set the swap interval according to the command line.
-  void SetSwapInterval();
-
   gpu::gles2::GLES2Decoder* decoder() const { return decoder_.get(); }
   gpu::GpuScheduler* scheduler() const { return scheduler_.get(); }
 
@@ -80,6 +77,8 @@ class GpuCommandBufferStub
   // Identifies the various GpuCommandBufferStubs in the GPU process belonging
   // to the same renderer process.
   int32 route_id() const { return route_id_; }
+
+  void ViewResized();
 
   gfx::GpuPreference gpu_preference() { return gpu_preference_; }
 
@@ -118,10 +117,21 @@ class GpuCommandBufferStub
 
   void OnSetSurfaceVisible(bool visible);
 
+#if defined(OS_MACOSX)
+  void OnSwapBuffers();
+
+  // Returns the id of the current surface that is being rendered to
+  // (or 0 if no such surface has been created).
+  uint64 GetSurfaceId();
+#endif
+
   void OnCommandProcessed();
   void OnParseError();
 
+  void OnResize(gfx::Size size);
   void ReportState();
+
+  void SetSwapInterval();
 
   // The lifetime of objects of this class is managed by a GpuChannel. The
   // GpuChannels destroy all the GpuCommandBufferStubs that they own when they
