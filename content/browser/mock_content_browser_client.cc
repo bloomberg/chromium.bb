@@ -23,9 +23,9 @@ MockContentBrowserClient::MockContentBrowserClient() {
 MockContentBrowserClient::~MockContentBrowserClient() {
 }
 
-void MockContentBrowserClient::CreateBrowserMainParts(
-    const content::MainFunctionParams& parameters,
-    std::vector<BrowserMainParts*>* parts_list) {
+BrowserMainParts* MockContentBrowserClient::CreateBrowserMainParts(
+    const content::MainFunctionParams& parameters) {
+  return NULL;
 }
 
 RenderWidgetHostView* MockContentBrowserClient::CreateViewForWidget(

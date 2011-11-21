@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_browser_parts_gtk.h"
+#include "chrome/browser/chrome_browser_main_extra_parts_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -14,37 +14,16 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/gtk_util.h"
 
-ChromeBrowserPartsGtk::ChromeBrowserPartsGtk()
-    : content::BrowserMainParts() {
+ChromeBrowserMainExtraPartsGtk::ChromeBrowserMainExtraPartsGtk()
+    : ChromeBrowserMainExtraParts() {
 }
 
-void ChromeBrowserPartsGtk::PreEarlyInitialization() {
+void ChromeBrowserMainExtraPartsGtk::PreEarlyInitialization() {
   DetectRunningAsRoot();
 }
 
-void ChromeBrowserPartsGtk::PostEarlyInitialization() {
-}
 
-void ChromeBrowserPartsGtk::ToolkitInitialized() {
-}
-
-void ChromeBrowserPartsGtk::PreMainMessageLoopStart() {
-}
-
-void ChromeBrowserPartsGtk::PostMainMessageLoopStart() {
-}
-
-void ChromeBrowserPartsGtk::PreMainMessageLoopRun() {
-}
-
-bool ChromeBrowserPartsGtk::MainMessageLoopRun(int* result_code) {
-  return false;
-}
-
-void ChromeBrowserPartsGtk::PostMainMessageLoopRun() {
-}
-
-void ChromeBrowserPartsGtk::DetectRunningAsRoot() {
+void ChromeBrowserMainExtraPartsGtk::DetectRunningAsRoot() {
   if (geteuid() == 0) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (command_line.HasSwitch(switches::kUserDataDir))
@@ -86,7 +65,7 @@ void ChromeBrowserPartsGtk::DetectRunningAsRoot() {
 }
 
 // static
-void ChromeBrowserPartsGtk::ShowMessageBox(const char* message) {
+void ChromeBrowserMainExtraPartsGtk::ShowMessageBox(const char* message) {
   GtkWidget* dialog = gtk_message_dialog_new(
       NULL,
       static_cast<GtkDialogFlags>(0),

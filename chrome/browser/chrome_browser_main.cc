@@ -32,6 +32,7 @@
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/default_apps_trial.h"
 #include "chrome/browser/extensions/extension_protocols.h"
@@ -558,13 +559,6 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
   }
 }
 
-#else
-
-void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
-                                       Profile* profile) {
-  // Dummy empty function for non-ChromeOS builds to avoid extra ifdefs below.
-}
-
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
@@ -685,6 +679,9 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
 }
 
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
+  for (int i = static_cast<int>(chrome_extra_parts_.size())-1; i >= 0; --i)
+    delete chrome_extra_parts_[i];
+  chrome_extra_parts_.clear();
 }
 
 // This will be called after the command-line has been mutated by about:flags
@@ -1166,23 +1163,38 @@ DLLEXPORT void __cdecl RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 }
 #endif
 
+// content::BrowserMainParts implementation ------------------------------------
+
 void ChromeBrowserMainParts::PreEarlyInitialization() {
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PreEarlyInitialization();
 }
 
 void ChromeBrowserMainParts::PostEarlyInitialization() {
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PostEarlyInitialization();
 }
 
 void ChromeBrowserMainParts::ToolkitInitialized() {
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->ToolkitInitialized();
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopStart() {
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PreMainMessageLoopStart();
 }
 
 void ChromeBrowserMainParts::PostMainMessageLoopStart() {
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PostMainMessageLoopStart();
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
   result_code_ = PreMainMessageLoopRunImpl();
+
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PreMainMessageLoopRun();
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
@@ -1496,6 +1508,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   SetBrowserX11ErrorHandlers();
 #endif
 
+  // Desktop construction occurs here, (required before profile creation).
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PostBrowserProcessInit();
+
   // Profile creation ----------------------------------------------------------
 
 #if defined(OS_CHROMEOS)
@@ -1561,6 +1577,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     g_browser_process->browser_policy_connector()->SetUserPolicyTokenService(
         profile_->GetTokenService());
   }
+
+  // Tests should be able to tune login manager before showing it.
+  // Thus only show login manager in normal (non-testing) mode.
+  if (!parameters().ui_task)
+    OptionallyRunChromeOSLoginManager(parsed_command_line(), profile_);
 #endif
 
 #if !defined(OS_MACOSX)
@@ -1608,6 +1629,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     }
   }
 #endif
+
+  // TODO(stevenjb): Move ChromeOS login code into PostProfileInitialized().
+  // (Requires making ChromeBrowserMainPartsChromeos a non "main" Parts).
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PostProfileInitialized();
 
   // Show the First Run UI if this is the first time Chrome has been run on
   // this computer, or we're being compelled to do so by a command line flag.
@@ -1834,20 +1860,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   NaClProcessHost::EarlyStartup();
 #endif
 
-  run_message_loop_ = true;
-  return content::RESULT_CODE_NORMAL_EXIT;
-}
-
-// Called from MainMessageLoopRun().
-void ChromeBrowserMainParts::StartBrowserOrUITask() {
-  // Still initializing, so need to allow IO.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
-
-  // Tests should be able to tune login manager before showing it.
-  // Thus only show login manager in normal (non-testing) mode.
-  if (!parameters().ui_task)
-    OptionallyRunChromeOSLoginManager(parsed_command_line(), profile_);
-
   if (parameters().ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
 #if defined(OS_MACOSX)
@@ -1917,17 +1929,12 @@ void ChromeBrowserMainParts::StartBrowserOrUITask() {
     }
   }
   browser_init_.reset();
+  return result_code_;
 }
 
 bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // Set the result code set in PreMainMessageLoopRun or set above.
   *result_code = result_code_;
-
-  // TODO(stevenjb): Move this to another phase, and/or clean up
-  // PreMainMessageLoopRun() so that this can happen after desktop
-  // initilaization and before running the main loop.
-  if (run_message_loop_)
-    StartBrowserOrUITask();
 
   if (!run_message_loop_)
     return true;  // Don't run the default message loop.
@@ -2050,7 +2057,18 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // to bypass this code.  Perhaps we need a *final* hook that is called on all
   // paths from content/browser/browser_main.
   CHECK(MetricsService::UmaMetricsProperlyShutdown());
+
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PostMainMessageLoopRun();
 }
+
+// Public members:
+
+void ChromeBrowserMainParts::AddParts(ChromeBrowserMainExtraParts* parts) {
+  chrome_extra_parts_.push_back(parts);
+}
+
+// Misc ------------------------------------------------------------------------
 
 // This code is specific to the Windows-only PreReadExperiment field-trial.
 void RecordPreReadExperimentTime(const char* name, base::TimeDelta time) {

@@ -23,10 +23,12 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       const content::MainFunctionParams& parameters);
   virtual ~ChromeBrowserMainPartsChromeos();
 
+  // content::BrowserMainParts overrides.
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
-  virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
+  virtual void PreMainMessageLoopRun() OVERRIDE;
+  virtual void PostMainMessageLoopRun() OVERRIDE;
 
  private:
   scoped_ptr<chromeos::BrightnessObserver> brightness_observer_;

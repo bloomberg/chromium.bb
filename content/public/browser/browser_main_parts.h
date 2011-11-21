@@ -15,9 +15,8 @@ namespace content {
 // Each stage is represented by a single BrowserMainParts method, called from
 // the corresponding method in |BrowserMainLoop| (e.g., EarlyInitialization())
 // which does the following:
-//  - calls a method (e.g., "PreEarlyInitialization()") for each member of
-//    |parts_|. Parts will implement platform or tookit specific code for that
-//    stage.
+//  - calls a method (e.g., "PreEarlyInitialization()") which implements
+//    platform / tookit specific code for that stage.
 //  - calls various methods for things common to all platforms (for that stage).
 //  - calls a method (e.g., "PostEarlyInitialization()") for platform-specific
 //    code to be called after the common code.
@@ -49,9 +48,6 @@ namespace content {
 //    existing chunk which makes it longer than one or two lines, please move
 //    the code out into a separate method.)
 //
-// There can be any number of "Parts". These should be constructed in
-// ContentBrowserClient::CreateBrowserMainParts. Each stage will be called
-// for each part in the order it was added. Destruction is in the inverse order.
 class CONTENT_EXPORT BrowserMainParts {
  public:
   BrowserMainParts() {}
@@ -63,17 +59,16 @@ class CONTENT_EXPORT BrowserMainParts {
 
   virtual void PreMainMessageLoopStart() = 0;
 
+  virtual void PostMainMessageLoopStart() = 0;
+
   // Allows an embedder to do any extra toolkit initialization.
   virtual void ToolkitInitialized() = 0;
-
-  virtual void PostMainMessageLoopStart() = 0;
 
   virtual void PreMainMessageLoopRun() = 0;
 
   // Returns true if the message loop was run, false otherwise.
+  // If this returns false, the default implementation will be run.
   // May set |result_code|, which will be returned by |BrowserMain()|.
-  // If no BrowserMainParts implementations return true, the default
-  // implementation will be run.
   virtual bool MainMessageLoopRun(int* result_code) = 0;
 
   virtual void PostMainMessageLoopRun() = 0;

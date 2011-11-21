@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_browser_parts_views.h"
+#include "chrome/browser/chrome_browser_main_extra_parts_views.h"
 
 #include <string>
 
@@ -11,11 +11,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "views/widget/widget.h"
 
-ChromeBrowserPartsViews::ChromeBrowserPartsViews()
-    : content::BrowserMainParts() {
+ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews()
+    : ChromeBrowserMainExtraParts() {
 }
 
-void ChromeBrowserPartsViews::ToolkitInitialized() {
+void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   // The delegate needs to be set before any UI is created so that windows
   // display the correct icon.
   if (!views::ViewsDelegate::views_delegate)
@@ -24,11 +24,4 @@ void ChromeBrowserPartsViews::ToolkitInitialized() {
   // TODO(beng): Move to WidgetImpl and implement on Windows too!
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDebugViewsPaint))
     views::Widget::SetDebugPaintEnabled(true);
-}
-
-void ChromeBrowserPartsViews::PreMainMessageLoopRun() {
-}
-
-bool ChromeBrowserPartsViews::MainMessageLoopRun(int* result_code) {
-  return false;
 }
