@@ -15,12 +15,6 @@
 #include "base/message_loop.h"
 #include "ui/base/x/x11_util.h"
 
-#if defined(TOOLKIT_USES_GTK)
-// TODO(sad) Remove all TOOLKIT_USES_GTK uses once we move to aura only.
-#include <gtk/gtk.h>
-#include <gdk/gdkx.h>
-#endif
-
 namespace {
 
 // The X cursor is hidden if it is idle for kCursorIdleSeconds seconds.
@@ -77,50 +71,6 @@ XIValuatorClassInfo* FindTPValuator(Display* display,
   return NULL;
 }
 
-#if defined(TOOLKIT_USES_GTK)
-// Setup XInput2 select for the GtkWidget.
-gboolean GtkWidgetRealizeCallback(GSignalInvocationHint* hint, guint nparams,
-                                  const GValue* pvalues, gpointer data) {
-  GtkWidget* widget = GTK_WIDGET(g_value_get_object(pvalues));
-  GdkWindow* window = widget->window;
-  ui::TouchFactory* factory = static_cast<ui::TouchFactory*>(data);
-
-  if (GDK_WINDOW_TYPE(window) != GDK_WINDOW_TOPLEVEL &&
-      GDK_WINDOW_TYPE(window) != GDK_WINDOW_CHILD &&
-      GDK_WINDOW_TYPE(window) != GDK_WINDOW_DIALOG)
-    return true;
-
-  factory->SetupXI2ForXWindow(GDK_WINDOW_XID(window));
-  return true;
-}
-
-// We need to capture all the GDK windows that get created, and start
-// listening for XInput2 events. So we setup a callback to the 'realize'
-// signal for GTK+ widgets, so that whenever the signal triggers for any
-// GtkWidget, which means the GtkWidget should now have a GdkWindow, we can
-// setup XInput2 events for the GdkWindow.
-guint realize_signal_id = 0;
-guint realize_hook_id = 0;
-
-void SetupGtkWidgetRealizeNotifier(ui::TouchFactory* factory) {
-  gpointer klass = g_type_class_ref(GTK_TYPE_WIDGET);
-
-  g_signal_parse_name("realize", GTK_TYPE_WIDGET,
-                      &realize_signal_id, NULL, FALSE);
-  realize_hook_id = g_signal_add_emission_hook(realize_signal_id, 0,
-      GtkWidgetRealizeCallback, static_cast<gpointer>(factory), NULL);
-
-  g_type_class_unref(klass);
-}
-
-void RemoveGtkWidgetRealizeNotifier() {
-  if (realize_signal_id != 0)
-    g_signal_remove_emission_hook(realize_signal_id, realize_hook_id);
-  realize_signal_id = 0;
-  realize_hook_id = 0;
-}
-#endif
-
 }  // namespace
 
 namespace ui {
@@ -158,12 +108,6 @@ TouchFactory::TouchFactory()
   SetCursorVisible(false, false);
   UpdateDeviceList(display);
 
-#if defined(TOOLKIT_USES_GTK)
-  // TODO(sad): Here, we only setup so that the X windows created by GTK+ are
-  // setup for XInput2 events. We need a way to listen for XInput2 events for X
-  // windows created by other means (e.g. for context menus).
-  SetupGtkWidgetRealizeNotifier(this);
-#endif
   // Make sure the list of devices is kept up-to-date by listening for
   // XI_HierarchyChanged event on the root window.
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];
@@ -188,10 +132,6 @@ TouchFactory::~TouchFactory() {
   Display* display = ui::GetXDisplay();
   XFreeCursor(display, invisible_cursor_);
   XFreeCursor(display, arrow_cursor_);
-
-#if defined(TOOLKIT_USES_GTK)
-  RemoveGtkWidgetRealizeNotifier();
-#endif
 }
 
 void TouchFactory::UpdateDeviceList(Display* display) {

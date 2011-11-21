@@ -13,10 +13,6 @@
 
 #include <glib.h>
 
-#if defined(TOOLKIT_USES_GTK)
-#include <gtk/gtk.h>
-#endif
-
 typedef struct _XDisplay Display;
 
 namespace base {
@@ -62,9 +58,6 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   // Initializes the glib event source for X.
   void InitXSource();
 
-  // Decides whether we are interested in processing this XEvent.
-  bool ShouldCaptureXEvent(XEvent* event);
-
   // Dispatches the XEvent and returns true if we should exit the current loop
   // of message processing.
   bool ProcessXEvent(XEvent* event);
@@ -74,57 +67,8 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   // if no observer returns true.
   bool WillProcessXEvent(XEvent* xevent);
   void DidProcessXEvent(XEvent* xevent);
-#if defined(TOOLKIT_USES_GTK)
-  // Some XEvent's can't be directly read from X event queue and will go
-  // through GDK's dispatching process and may get discarded. This function
-  // sets up a filter to intercept those XEvent's we are interested in
-  // and dispatches them so that they won't get lost.
-  static GdkFilterReturn GdkEventFilter(GdkXEvent* gxevent,
-                                        GdkEvent* gevent,
-                                        gpointer data);
 
-  static void EventDispatcherX(GdkEvent* event, gpointer data);
-
-  // Indicates whether a GDK event was injected by chrome (when |true|) or if it
-  // was captured and being processed by GDK (when |false|).
-  bool IsDispatchingEvent(void) { return dispatching_event_; }
-
-  // Update the lookup table and flag the events that should be captured and
-  // processed so that GDK doesn't get to them.
-  void InitializeEventsToCapture(void);
-
-  // The event source for GDK events.
-  GSource* gdksource_;
-
-  // The default GDK event dispatcher. This is stored so that it can be restored
-  // when necessary during nested event dispatching.
-  gboolean (*gdkdispatcher_)(GSource*, GSourceFunc, void*);
-
-  // Indicates whether a GDK event was injected by chrome (when |true|) or if it
-  // was captured and being processed by GDK (when |false|).
-  bool dispatching_event_;
-
-#if ! GTK_CHECK_VERSION(2,18,0)
-// GDK_EVENT_LAST was introduced in GTK+ 2.18.0. For earlier versions, we pick a
-// large enough value (the value of GDK_EVENT_LAST in 2.18.0) so that it works
-// for all versions.
-#define GDK_EVENT_LAST 37
-#endif
-
-// Ideally we would #include X.h for LASTEvent, but it brings in a lot of stupid
-// stuff (like Time, CurrentTime etc.) that messes up a lot of things. So define
-// XLASTEvent here to a large enough value so that it works.
-#define XLASTEvent 40
-
-  // We do not want to process all the events ourselves. So we use a lookup
-  // table to quickly check if a particular event should be handled by us or if
-  // it should be passed on to the default GDK handler.
-  std::bitset<XLASTEvent> capture_x_events_;
-  std::bitset<GDK_EVENT_LAST> capture_gdk_events_;
-#endif  // defined(TOOLKIT_USES_GTK)
-
-  // The event source for X events (used only when GTK event processing is
-  // disabled).
+  // The event source for X events.
   GSource* x_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpX);
