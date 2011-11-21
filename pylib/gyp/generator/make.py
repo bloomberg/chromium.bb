@@ -920,7 +920,7 @@ class XcodeSettings(object):
     config = self.spec['configurations'][self.configname]
     framework_dirs = config.get('mac_framework_dirs', [])
     for directory in framework_dirs:
-      cflags.append('-F ' + os.path.join(sdk_root, directory))
+      cflags.append('-F ' + directory.replace('$(SDKROOT)', sdk_root))
 
     self.configname = None
     return cflags
