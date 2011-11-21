@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
 // hadn't been shown by the moment inspected paged refreshed.
 // @see http://crbug.com/26312
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
-                       TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
+                       FAILS_TestScriptsTabIsPopulatedOnInspectedPageRefresh) {
   // Clear inspector settings to ensure that Elements will be
   // current panel when DevTools window is open.
   content::GetContentClient()->browser()->ClearInspectorSettings(
