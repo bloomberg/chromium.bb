@@ -27,14 +27,14 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/label.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
-#include "views/controls/label.h"
 #include "views/painter.h"
-#include "views/widget/widget_delegate.h"
 
 namespace {
 

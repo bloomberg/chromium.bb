@@ -24,10 +24,10 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
-#include "views/widget/widget.h"
 
 static TabRendererData::NetworkState TabContentsNetworkState(
     TabContents* contents) {

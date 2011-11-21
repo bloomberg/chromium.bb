@@ -11,7 +11,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 class SkBitmap;
 

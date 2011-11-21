@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/constrained_window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 class TabContentsWrapper;
 

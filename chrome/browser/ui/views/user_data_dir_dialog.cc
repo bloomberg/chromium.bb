@@ -9,8 +9,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/message_box_view.h"
-#include "views/widget/widget.h"
 
 // static
 FilePath UserDataDirDialog::RunUserDataDirDialog(

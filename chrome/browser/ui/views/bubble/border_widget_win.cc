@@ -7,7 +7,7 @@
 #include <windows.h>
 
 #include "chrome/browser/ui/views/bubble/border_contents.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 BorderWidgetWin::BorderWidgetWin()
     : views::NativeWidgetWin(new views::Widget),

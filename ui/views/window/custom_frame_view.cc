@@ -15,15 +15,15 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
-#include "views/widget/widget_delegate.h"
 
 #if defined(USE_AURA)
-#include "views/widget/native_widget_aura.h"
+#include "ui/views/widget/native_widget_aura.h"
 #elif defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
+#include "ui/views/widget/native_widget_win.h"
 #endif
 
 namespace views {

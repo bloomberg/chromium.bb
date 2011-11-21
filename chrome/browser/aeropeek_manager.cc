@@ -38,7 +38,7 @@
 #include "ui/base/win/window_impl.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/icon_util.h"
-#include "views/widget/native_widget_win.h"
+#include "ui/views/widget/native_widget_win.h"
 
 #pragma comment(lib, "dwmapi.lib")
 

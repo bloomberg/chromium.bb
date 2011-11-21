@@ -9,8 +9,8 @@
 #include "base/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/dialog_client_view.h"
-#include "views/widget/widget_delegate.h"
 
 namespace views {
 

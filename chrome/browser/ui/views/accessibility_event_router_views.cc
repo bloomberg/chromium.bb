@@ -14,11 +14,11 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "ui/base/accessibility/accessible_view_state.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/submenu_view.h"
 #include "views/view.h"
-#include "views/widget/widget.h"
 
 using views::FocusManager;
 

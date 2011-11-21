@@ -22,11 +22,11 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/separator.h"
-#include "views/widget/widget.h"
 
 namespace {
 

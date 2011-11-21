@@ -23,9 +23,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
+#include "ui/views/widget/widget.h"
 #include "unicode/datefmt.h"
 #include "views/controls/menu/menu_runner.h"
-#include "views/widget/widget.h"
 
 namespace {
 

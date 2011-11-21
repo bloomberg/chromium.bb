@@ -7,7 +7,7 @@
 #include <shellapi.h>
 
 #include "base/logging.h"
-#include "views/widget/monitor_win.h"
+#include "ui/views/widget/monitor_win.h"
 
 namespace {
 // The thickness of the area of an auto-hiding taskbar that is still visible

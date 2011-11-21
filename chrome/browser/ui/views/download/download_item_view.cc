@@ -34,11 +34,11 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 #include "unicode/uchar.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 // TODO(paulg): These may need to be adjusted when download progress
 //              animation is added, and also possibly to take into account

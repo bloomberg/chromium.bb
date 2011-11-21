@@ -12,7 +12,7 @@
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 namespace aura_shell {
 namespace internal {

@@ -16,9 +16,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
-#include "views/widget/widget.h"
 
 InstantConfirmView::InstantConfirmView(Profile* profile) : profile_(profile) {
   views::Label* description_label = new views::Label(

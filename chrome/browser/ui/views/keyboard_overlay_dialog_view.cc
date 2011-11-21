@@ -18,8 +18,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/events/event.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 struct Accelerator {

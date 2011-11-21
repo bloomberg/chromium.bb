@@ -8,7 +8,7 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/screen.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 

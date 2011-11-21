@@ -13,11 +13,11 @@
 #include "views/view.h"
 
 #if defined(USE_AURA)
-#include "views/widget/native_widget_aura.h"
+#include "ui/views/widget/native_widget_aura.h"
 #elif defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
+#include "ui/views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "views/widget/native_widget_gtk.h"
+#include "ui/views/widget/native_widget_gtk.h"
 #endif
 
 // Bubble is used to display an arbitrary view above all other windows.

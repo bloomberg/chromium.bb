@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/native/native_view_host_wrapper.h"
-#include "views/widget/widget.h"
 
 namespace views {
 

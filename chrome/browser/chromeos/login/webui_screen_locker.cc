@@ -31,7 +31,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"
-#include "views/widget/native_widget_gtk.h"
+#include "ui/views/widget/native_widget_gtk.h"
 
 namespace {
 

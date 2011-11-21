@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/views/status_bubble_views.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 // The touch version of the status bubble. This repositions itself as the
 // keyboard slides up/down.

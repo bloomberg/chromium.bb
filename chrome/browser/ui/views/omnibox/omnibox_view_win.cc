@@ -52,9 +52,9 @@
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/textfield/native_textfield_win.h"
 #include "views/drag_utils.h"
-#include "views/widget/widget.h"
 
 #pragma comment(lib, "oleacc.lib")  // Needed for accessibility support.
 #pragma comment(lib, "riched20.lib")  // Needed for the richedit control.

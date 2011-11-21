@@ -14,10 +14,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/events/event.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 using base::Time;
 using base::TimeDelta;

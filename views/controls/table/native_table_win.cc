@@ -19,9 +19,9 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/table/table_view2.h"
 #include "views/controls/table/table_view_observer.h"
-#include "views/widget/widget.h"
 
 namespace views {
 

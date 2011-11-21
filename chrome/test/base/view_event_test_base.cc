@@ -15,8 +15,8 @@
 #include "base/string_number_conversions.h"
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "ui/views/widget/widget.h"
 #include "views/view.h"
-#include "views/widget/widget.h"
 
 namespace {
 

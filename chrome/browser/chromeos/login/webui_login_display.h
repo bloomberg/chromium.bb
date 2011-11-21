@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 namespace chromeos {
 // WebUI-based login UI implementation.

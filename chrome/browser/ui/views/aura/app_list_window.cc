@@ -10,10 +10,10 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "views/widget/widget.h"
 #include "ui/aura/desktop.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 

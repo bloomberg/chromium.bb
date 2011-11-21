@@ -39,7 +39,7 @@
 #include "chrome/common/pref_names.h"
 #include "net/base/network_change_notifier.h"
 #include "policy/policy_constants.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 using chromeos::CrosLibrary;
 using chromeos::NetworkLibrary;

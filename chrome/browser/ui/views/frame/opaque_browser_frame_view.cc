@@ -36,10 +36,10 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/path.h"
+#include "ui/views/widget/root_view.h"
 #include "ui/views/window/window_shape.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
-#include "views/widget/root_view.h"
 
 #if defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/ui/virtual_keyboard/virtual_keyboard_manager.h"

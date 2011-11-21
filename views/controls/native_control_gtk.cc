@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/views/focus/focus_manager.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(TOUCH_UI)
 namespace {

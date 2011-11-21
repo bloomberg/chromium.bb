@@ -13,7 +13,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/gfx/rect.h"
-#include "views/widget/native_widget_gtk.h"
+#include "ui/views/widget/native_widget_gtk.h"
 
 // ConstrainedHtmlDelegateGtk works with ConstrainedWindowGtk to present
 // a TabContents in a ContraintedHtmlUI.

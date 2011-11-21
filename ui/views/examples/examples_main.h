@@ -11,7 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 class Label;

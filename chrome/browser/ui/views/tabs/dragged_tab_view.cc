@@ -8,14 +8,14 @@
 #include "chrome/browser/ui/views/tabs/native_view_photobooth.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/gfx/canvas_skia.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
-#include "views/widget/native_widget_aura.h"
+#include "ui/views/widget/native_widget_aura.h"
 #elif defined(OS_WIN)
-#include "views/widget/native_widget_win.h"
+#include "ui/views/widget/native_widget_win.h"
 #elif defined(TOOLKIT_USES_GTK)
-#include "views/widget/native_widget_gtk.h"
+#include "ui/views/widget/native_widget_gtk.h"
 #endif
 
 static const int kTransparentAlpha = 200;

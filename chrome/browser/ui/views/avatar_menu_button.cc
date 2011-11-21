@@ -9,11 +9,12 @@
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/gfx/canvas_skia.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 
 #if defined(OS_WIN)
 #include <shobjidl.h>
+
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/image_operations.h"

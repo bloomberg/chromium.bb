@@ -24,20 +24,20 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_view_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/chrome_view_types.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -46,7 +46,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 #endif
 
 using WebKit::WebDragOperation;

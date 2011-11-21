@@ -13,13 +13,13 @@
 #include "ui/base/message_box_flags.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/views_delegate.h"
-#include "views/widget/widget.h"
 
 const int kDefaultMessageWidth = 320;
 

@@ -19,7 +19,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/layout/fill_layout.h"
-#include "views/widget/root_view.h"
+#include "ui/views/widget/root_view.h"
 
 #if !defined(USE_AURA)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"

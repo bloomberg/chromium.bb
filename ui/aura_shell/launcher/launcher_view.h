@@ -10,8 +10,8 @@
 
 #include "ui/aura_shell/launcher/launcher_button_host.h"
 #include "ui/aura_shell/launcher/launcher_model_observer.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "views/controls/button/button.h"
-#include "views/widget/widget_delegate.h"
 
 namespace views {
 class BoundsAnimator;

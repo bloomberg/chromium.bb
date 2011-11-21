@@ -35,12 +35,12 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/throbber.h"
 #include "views/view_text_utils.h"
-#include "views/widget/widget.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)

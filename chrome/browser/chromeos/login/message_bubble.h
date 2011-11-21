@@ -16,7 +16,7 @@
 #include "views/view.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include "views/widget/native_widget_gtk.h"
+#include "ui/views/widget/native_widget_gtk.h"
 #endif
 
 class SkBitmap;

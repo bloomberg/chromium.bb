@@ -14,6 +14,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_controller_delegate.h"
 #include "views/controls/menu/menu_scroll_view_container.h"
@@ -21,8 +23,6 @@
 #include "views/drag_utils.h"
 #include "views/view_constants.h"
 #include "views/views_delegate.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"

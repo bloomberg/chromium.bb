@@ -44,8 +44,8 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/events/event.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/textfield/native_textfield_views.h"
-#include "views/widget/widget.h"
 #endif
 
 using base::Time;

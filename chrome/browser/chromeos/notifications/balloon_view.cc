@@ -30,6 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/widget/widget.h"
 #include "views/background.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
@@ -39,7 +40,6 @@
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/view_menu_delegate.h"
-#include "views/widget/widget.h"
 
 namespace {
 // Menu commands

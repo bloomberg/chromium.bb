@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/message_loop.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/scrollbar/native_scroll_bar_wrapper.h"
-#include "views/widget/widget.h"
 
 #if defined(USE_AURA)
 #include "views/controls/scrollbar/native_scroll_bar_views.h"

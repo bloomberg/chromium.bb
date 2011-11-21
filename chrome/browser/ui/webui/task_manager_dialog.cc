@@ -17,7 +17,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 #endif
 
 using content::BrowserThread;

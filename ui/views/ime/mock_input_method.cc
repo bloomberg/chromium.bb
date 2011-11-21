@@ -9,7 +9,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/events/event.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 

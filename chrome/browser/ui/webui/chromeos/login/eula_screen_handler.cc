@@ -16,7 +16,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 namespace {
 

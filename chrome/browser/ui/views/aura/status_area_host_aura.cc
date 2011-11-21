@@ -5,18 +5,18 @@
 #include "chrome/browser/ui/views/aura/status_area_host_aura.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/chromeos/status/clock_menu_button.h"
+#include "chrome/browser/chromeos/status/memory_menu_button.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
-#include "chrome/browser/chromeos/status/clock_menu_button.h"
-#include "chrome/browser/chromeos/status/memory_menu_button.h"
-#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/aura/window.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_window_ids.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"

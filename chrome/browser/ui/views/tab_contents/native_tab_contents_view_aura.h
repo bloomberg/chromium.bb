@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view.h"
-#include "views/widget/native_widget_aura.h"
+#include "ui/views/widget/native_widget_aura.h"
 
 class TabContents;
 
