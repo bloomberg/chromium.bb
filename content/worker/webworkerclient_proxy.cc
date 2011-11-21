@@ -153,7 +153,7 @@ bool WebWorkerClientProxy::allowDatabase(WebFrame* frame,
                                          const WebString& display_name,
                                          unsigned long estimated_size) {
   WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isEmpty())
+  if (origin.isUnique())
     return false;
 
   bool result = false;

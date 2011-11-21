@@ -32,7 +32,7 @@ namespace {
 // True if |frame| contains content that is white-listed for content settings.
 static bool IsWhitelistedForContentSettings(WebFrame* frame) {
   WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isEmpty())
+  if (origin.isUnique())
     return false;  // Uninitialized document?
 
   if (EqualsASCII(origin.protocol(), chrome::kChromeUIScheme))
@@ -161,9 +161,9 @@ bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
                                             const WebString& name,
                                             const WebString& display_name,
                                             unsigned long estimated_size) {
-  if (frame->document().securityOrigin().isEmpty() ||
-      frame->top()->document().securityOrigin().isEmpty())
-    return false; // Uninitialized document.
+  if (frame->document().securityOrigin().isUnique() ||
+      frame->top()->document().securityOrigin().isUnique())
+    return false;
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowDatabase(
@@ -174,9 +174,9 @@ bool ContentSettingsObserver::AllowDatabase(WebFrame* frame,
 }
 
 bool ContentSettingsObserver::AllowFileSystem(WebFrame* frame) {
-  if (frame->document().securityOrigin().isEmpty() ||
-      frame->top()->document().securityOrigin().isEmpty())
-    return false; // Uninitialized document.
+  if (frame->document().securityOrigin().isUnique() ||
+      frame->top()->document().securityOrigin().isUnique())
+    return false;
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowFileSystem(
@@ -207,9 +207,9 @@ bool ContentSettingsObserver::AllowImage(WebFrame* frame,
 bool ContentSettingsObserver::AllowIndexedDB(WebFrame* frame,
                                              const WebString& name,
                                              const WebSecurityOrigin& origin) {
-  if (frame->document().securityOrigin().isEmpty() ||
-      frame->top()->document().securityOrigin().isEmpty())
-    return false; // Uninitialized document.
+  if (frame->document().securityOrigin().isUnique() ||
+      frame->top()->document().securityOrigin().isUnique())
+    return false;
 
   bool result = false;
   Send(new ChromeViewHostMsg_AllowIndexedDB(
@@ -270,9 +270,9 @@ bool ContentSettingsObserver::AllowScriptFromSource(
 }
 
 bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
-  if (frame->document().securityOrigin().isEmpty() ||
-      frame->top()->document().securityOrigin().isEmpty())
-    return false; // Uninitialized document.
+  if (frame->document().securityOrigin().isUnique() ||
+      frame->top()->document().securityOrigin().isUnique())
+    return false;
   bool result = false;
 
   StoragePermissionsKey key(

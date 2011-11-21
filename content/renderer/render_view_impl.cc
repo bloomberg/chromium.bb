@@ -2975,8 +2975,8 @@ void RenderViewImpl::openFileSystem(
   DCHECK(callbacks);
 
   WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isEmpty()) {
-    // Uninitialized document?
+  if (origin.isUnique()) {
+    // Unique origins cannot store persistent state.
     callbacks->didFail(WebKit::WebFileErrorAbort);
     return;
   }
@@ -2992,8 +2992,8 @@ void RenderViewImpl::queryStorageUsageAndQuota(
     WebStorageQuotaCallbacks* callbacks) {
   DCHECK(frame);
   WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isEmpty()) {
-    // Uninitialized document?
+  if (origin.isUnique()) {
+    // Unique origins cannot store persistent state.
     callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
     return;
   }
@@ -3010,8 +3010,8 @@ void RenderViewImpl::requestStorageQuota(
     WebStorageQuotaCallbacks* callbacks) {
   DCHECK(frame);
   WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (origin.isEmpty()) {
-    // Uninitialized document?
+  if (origin.isUnique()) {
+    // Unique origins cannot store persistent state.
     callbacks->didFail(WebKit::WebStorageQuotaErrorAbort);
     return;
   }
