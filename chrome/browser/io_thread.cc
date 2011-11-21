@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -67,6 +69,9 @@
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
+
+// The IOThread object must outlive any tasks posted to the IO thread before the
+// Quit task, so base::Bind() calls are not refcounted.
 
 namespace {
 
@@ -328,10 +333,6 @@ SystemURLRequestContextGetter::GetIOMessageLoopProxy() const {
   return io_message_loop_proxy_;
 }
 
-// The IOThread object must outlive any tasks posted to the IO thread before the
-// Quit task.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(IOThread);
-
 IOThread::Globals::Globals() {}
 
 IOThread::Globals::~Globals() {}
@@ -351,7 +352,7 @@ IOThread::IOThread(
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),
       sdch_manager_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // We call RegisterPrefs() here (instead of inside browser_prefs.cc) to make
   // sure that everything is initialized in the right order.
   RegisterPrefs(local_state);
@@ -370,9 +371,9 @@ IOThread::IOThread(
                                                     local_state);
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state));
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   method_factory_.NewRunnableMethod(
-                                       &IOThread::InitSystemRequestContext));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&IOThread::InitSystemRequestContext,
+                            weak_factory_.GetWeakPtr()));
 }
 
 IOThread::~IOThread() {
@@ -593,10 +594,8 @@ void IOThread::InitSystemRequestContext() {
   system_url_request_context_getter_ =
       new SystemURLRequestContextGetter(this);
   message_loop()->PostTask(
-      FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &IOThread::InitSystemRequestContextOnIOThread));
+      FROM_HERE, base::Bind(&IOThread::InitSystemRequestContextOnIOThread,
+                            base::Unretained(this)));
 }
 
 void IOThread::InitSystemRequestContextOnIOThread() {

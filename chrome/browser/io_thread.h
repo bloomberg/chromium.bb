@@ -9,9 +9,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/browser/browser_process_sub_thread.h"
@@ -180,7 +179,7 @@ class IOThread : public content::BrowserProcessSubThread {
 
   net::SdchManager* sdch_manager_;
 
-  ScopedRunnableMethodFactory<IOThread> method_factory_;
+  base::WeakPtrFactory<IOThread> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOThread);
 };
