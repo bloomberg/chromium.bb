@@ -496,8 +496,7 @@ void SyncSetupFlow::ActivateState(SyncSetupWizard::State state) {
     }
     case SyncSetupWizard::DONE:
     case SyncSetupWizard::ABORT:
-      flow_handler_->ShowSetupDone(
-          UTF16ToWide(service_->GetAuthenticatedUsername()));
+      flow_handler_->ShowSetupDone(service_->GetAuthenticatedUsername());
       break;
     default:
       NOTREACHED() << "Invalid advance state: " << state;

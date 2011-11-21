@@ -482,7 +482,7 @@ void SyncSetupHandler::ShowSettingUp() {
       "SyncSetupOverlay.showSyncSetupPage", page);
 }
 
-void SyncSetupHandler::ShowSetupDone(const std::wstring& user) {
+void SyncSetupHandler::ShowSetupDone(const string16& user) {
   StringValue page("done");
   web_ui_->CallJavascriptFunction(
       "SyncSetupOverlay.showSyncSetupPage", page);

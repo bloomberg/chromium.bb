@@ -36,7 +36,7 @@ class SyncSetupHandler : public GaiaOAuthConsumer,
   virtual void ShowConfigure(const base::DictionaryValue& args) OVERRIDE;
   virtual void ShowPassphraseEntry(const base::DictionaryValue& args) OVERRIDE;
   virtual void ShowSettingUp() OVERRIDE;
-  virtual void ShowSetupDone(const std::wstring& user) OVERRIDE;
+  virtual void ShowSetupDone(const string16& user) OVERRIDE;
   virtual void SetFlow(SyncSetupFlow* flow) OVERRIDE;
   virtual void Focus() OVERRIDE;
 

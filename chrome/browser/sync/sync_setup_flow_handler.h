@@ -24,7 +24,7 @@ class SyncSetupFlowHandler {
   virtual void ShowConfigure(const base::DictionaryValue& args) = 0;
   virtual void ShowPassphraseEntry(const base::DictionaryValue& args) = 0;
   virtual void ShowSettingUp() = 0;
-  virtual void ShowSetupDone(const std::wstring& user) = 0;
+  virtual void ShowSetupDone(const string16& user) = 0;
   virtual void SetFlow(SyncSetupFlow* flow) = 0;
   virtual void Focus() = 0;
 

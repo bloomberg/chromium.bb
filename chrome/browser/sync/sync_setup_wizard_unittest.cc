@@ -35,20 +35,20 @@ class MockSyncSetupHandler : public OptionsSyncSetupHandler {
   MockSyncSetupHandler() : OptionsSyncSetupHandler(NULL) {}
 
   // SyncSetupFlowHandler implementation.
-  virtual void ShowGaiaLogin(const DictionaryValue& args) {}
-  virtual void ShowGaiaSuccessAndClose() {
+  virtual void ShowGaiaLogin(const DictionaryValue& args) OVERRIDE {}
+  virtual void ShowGaiaSuccessAndClose() OVERRIDE {
     flow()->OnDialogClosed("");
   }
-  virtual void ShowGaiaSuccessAndSettingUp() {}
-  virtual void ShowConfigure(const DictionaryValue& args) {}
-  virtual void ShowPassphraseEntry(const DictionaryValue& args) {}
-  virtual void ShowSettingUp() {}
-  virtual void ShowSetupDone(const std::wstring& user) {
+  virtual void ShowGaiaSuccessAndSettingUp() OVERRIDE {}
+  virtual void ShowConfigure(const DictionaryValue& args) OVERRIDE {}
+  virtual void ShowPassphraseEntry(const DictionaryValue& args) OVERRIDE {}
+  virtual void ShowSettingUp() OVERRIDE {}
+  virtual void ShowSetupDone(const string16& user) OVERRIDE {
     flow()->OnDialogClosed("");
   }
 
   void CloseSetupUI() {
-    ShowSetupDone(std::wstring());
+    ShowSetupDone(string16());
   }
 
  private:
