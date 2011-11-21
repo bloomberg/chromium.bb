@@ -207,13 +207,17 @@ is_motion_event(struct input_event *e)
 
 static void
 evdev_flush_motion(struct wl_input_device *device, uint32_t time,
-		   struct evdev_motion_accumulator accum)
+		   struct evdev_motion_accumulator *accum)
 {
-	if (accum.type == EVDEV_RELATIVE_MOTION)
-		notify_motion(device, time, accum.x + accum.dx,
-			      accum.y + accum.dy);
-	if (accum.type == EVDEV_ABSOLUTE_MOTION)
-		notify_motion(device, time, accum.x, accum.y);
+	if (accum->type == EVDEV_RELATIVE_MOTION) {
+		notify_motion(device, time, accum->x + accum->dx,
+			      accum->y + accum->dy);
+		accum->dx = accum->dy = 0;
+	}
+	if (accum->type == EVDEV_ABSOLUTE_MOTION)
+		notify_motion(device, time, accum->x, accum->y);
+
+	accum->type = 0;
 }
 
 static int
@@ -231,9 +235,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	if (!ec->focus)
 		return 1;
 
-	accumulator.dx = 0;
-	accumulator.dy = 0;
-	accumulator.type = 0;
+	memset(&accumulator, 0, sizeof accumulator);
 	accumulator.x = device->master->base.input_device.x;
 	accumulator.y = device->master->base.input_device.y;
 
@@ -251,14 +253,9 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		/* we try to minimize the amount of notifications to be
 		 * forwarded to the compositor, so we accumulate motion
 		 * events and send as a bunch */
-		if (!is_motion_event(e)) {
+		if (!is_motion_event(e))
 			evdev_flush_motion(&device->master->base.input_device,
-					   time, accumulator);
-			accumulator.dx = 0;
-			accumulator.dy = 0;
-			accumulator.type = 0;
-		}
-
+					   time, &accumulator);
 		switch (e->type) {
 		case EV_REL:
 			evdev_process_relative_motion(e, &accumulator);
@@ -278,7 +275,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	}
 
 	evdev_flush_motion(&device->master->base.input_device, time,
-			   accumulator);
+			   &accumulator);
 
 	return 1;
 }
