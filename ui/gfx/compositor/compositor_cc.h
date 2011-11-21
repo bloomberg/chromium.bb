@@ -100,7 +100,7 @@ class COMPOSITOR_EXPORT CompositorCC
   virtual void OnWidgetSizeChanged() OVERRIDE;
   virtual void OnRootLayerChanged() OVERRIDE;
   virtual void DrawTree() OVERRIDE;
-  virtual bool ReadPixels(SkBitmap* bitmap) OVERRIDE;
+  virtual bool ReadPixels(SkBitmap* bitmap, const gfx::Rect& bounds) OVERRIDE;
 
   // WebLayerTreeViewClient implementation.
   virtual void animateAndLayout(double frameBeginTime);
