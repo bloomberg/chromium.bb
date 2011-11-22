@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
@@ -51,8 +52,8 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
                                           const BookmarkNode* node) OVERRIDE;
 
   // Overridden from BookmarkContextMenuController::Delegate:
-  virtual void WillExecuteCommand();
-  virtual void CloseMenu();
+  virtual void WillExecuteCommand() OVERRIDE;
+  virtual void CloseMenu() OVERRIDE;
 
  private:
   // Recursively change the bookmark hierarchy rooted in |parent| into a set of

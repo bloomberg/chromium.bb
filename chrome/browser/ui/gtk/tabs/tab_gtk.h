@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -114,20 +115,22 @@ class TabGtk : public TabRendererGtk,
   void Raise() const;
 
   // TabRendererGtk overrides:
-  virtual bool IsActive() const;
-  virtual bool IsSelected() const;
-  virtual bool IsVisible() const;
-  virtual void SetVisible(bool visible) const;
-  virtual void CloseButtonClicked();
-  virtual void UpdateData(TabContents* contents, bool app, bool loading_only);
-  virtual void SetBounds(const gfx::Rect& bounds);
+  virtual bool IsActive() const OVERRIDE;
+  virtual bool IsSelected() const OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual void SetVisible(bool visible) const OVERRIDE;
+  virtual void CloseButtonClicked() OVERRIDE;
+  virtual void UpdateData(TabContents* contents,
+                          bool app,
+                          bool loading_only) OVERRIDE;
+  virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
 
  private:
   class TabGtkObserverHelper;
 
   // MessageLoop::Observer implementation:
-  virtual void WillProcessEvent(GdkEvent* event);
-  virtual void DidProcessEvent(GdkEvent* event);
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
 
   // button-press-event handler that handles mouse clicks.
   CHROMEGTK_CALLBACK_1(TabGtk, gboolean, OnButtonPressEvent, GdkEventButton*);

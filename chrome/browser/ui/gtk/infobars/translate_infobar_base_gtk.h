@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_INFOBARS_TRANSLATE_INFOBAR_BASE_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "ui/base/animation/animation_delegate.h"
 
@@ -25,12 +26,12 @@ class TranslateInfoBarBase : public InfoBarGtk {
 
   // Overridden from InfoBar:
   virtual void GetTopColor(InfoBarDelegate::Type type,
-                           double* r, double* g, double* b);
+                           double* r, double* g, double* b) OVERRIDE;
   virtual void GetBottomColor(InfoBarDelegate::Type type,
-                              double* r, double* g, double* b);
+                              double* r, double* g, double* b) OVERRIDE;
 
   // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
  protected:
   // Sub-classes that want to have the options menu button showing sould

@@ -46,7 +46,7 @@ class ContentSettingBubbleGtk : public BubbleDelegateGtk,
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Builds the bubble and all the widgets that it displays.
   void BuildBubble();

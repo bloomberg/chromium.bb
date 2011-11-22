@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -59,7 +60,7 @@ class CustomDrawButtonBase : public content::NotificationObserver {
   // Provide content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Get the CairoCachedSurface from |surfaces_| for |state|.
@@ -112,7 +113,7 @@ class CustomDrawHoverController : public ui::AnimationDelegate {
   }
 
  private:
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   CHROMEGTK_CALLBACK_1(CustomDrawHoverController, gboolean, OnEnter,
                        GdkEventCrossing*);
@@ -195,7 +196,7 @@ class CustomDrawButton : public content::NotificationObserver {
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Returns a standard close button. Pass a |theme_provider| to use Gtk icons
   // in Gtk rendering mode.

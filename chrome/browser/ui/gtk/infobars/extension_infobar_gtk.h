@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_INFOBARS_EXTENSION_INFOBAR_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
@@ -26,20 +27,20 @@ class ExtensionInfoBarGtk : public InfoBarGtk,
   virtual ~ExtensionInfoBarGtk();
 
   // Overridden from InfoBar (through InfoBarGtk):
-  virtual void PlatformSpecificHide(bool animate);
+  virtual void PlatformSpecificHide(bool animate) OVERRIDE;
 
   // Overridden from InfoBarGtk:
   virtual void GetTopColor(InfoBarDelegate::Type type,
-                           double* r, double* g, double* b);
+                           double* r, double* g, double* b) OVERRIDE;
   virtual void GetBottomColor(InfoBarDelegate::Type type,
-                              double* r, double* g, double* b);
+                              double* r, double* g, double* b) OVERRIDE;
 
   // Overridden from ImageLoadingTracker::Observer:
   virtual void OnImageLoaded(
-      SkBitmap* image, const ExtensionResource& resource, int index);
+      SkBitmap* image, const ExtensionResource& resource, int index) OVERRIDE;
 
   // Overridden from MenuGtk::Delegate:
-  virtual void StoppedShowing();
+  virtual void StoppedShowing() OVERRIDE;
 
  private:
   // Build the widgets of the Infobar.

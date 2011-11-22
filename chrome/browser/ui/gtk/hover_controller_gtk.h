@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/compiler_specific.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/throb_animation.h"
@@ -43,9 +44,9 @@ class HoverControllerGtk : public ui::AnimationDelegate {
   explicit HoverControllerGtk(GtkWidget* button);
 
   // Overridden from ui::AnimationDelegate.
-  virtual void AnimationProgressed(const ui::Animation* animation);
-  virtual void AnimationEnded(const ui::Animation* animation);
-  virtual void AnimationCanceled(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
   CHROMEGTK_CALLBACK_1(HoverControllerGtk, gboolean, OnEnter,
                        GdkEventCrossing*);

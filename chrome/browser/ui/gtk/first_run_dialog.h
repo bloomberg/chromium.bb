@@ -9,6 +9,7 @@
 typedef struct _GtkButton GtkButton;
 typedef struct _GtkWidget GtkWidget;
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -21,7 +22,7 @@ class FirstRunDialog : public TemplateURLServiceObserver {
   // Displays the first run UI for reporting opt-in, import data etc.
   static bool Show(Profile* profile, bool randomize_search_engine_order);
 
-  virtual void OnTemplateURLServiceChanged();
+  virtual void OnTemplateURLServiceChanged() OVERRIDE;
 
  private:
   FirstRunDialog(Profile* profile,

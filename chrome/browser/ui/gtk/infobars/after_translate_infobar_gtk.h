@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_INFOBARS_AFTER_TRANSLATE_INFOBAR_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/gtk/infobars/translate_infobar_base_gtk.h"
 
@@ -18,10 +19,10 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase {
   virtual ~AfterTranslateInfoBar();
 
   // Overridden from TranslateInfoBarBase:
-  virtual void Init();
+  virtual void Init() OVERRIDE;
 
  protected:
-  virtual bool ShowOptionsMenuButton() const;
+  virtual bool ShowOptionsMenuButton() const OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_0(AfterTranslateInfoBar, void, OnOriginalLanguageModified);

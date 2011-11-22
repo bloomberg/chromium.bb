@@ -10,6 +10,7 @@
 
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "base/nix/xdg_util.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 
@@ -24,8 +25,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
       base::nix::DesktopEnvironment desktop);
 
   // BaseShellDialog implementation.
-  virtual bool IsRunning(gfx::NativeWindow parent_window) const;
-  virtual void ListenerDestroyed();
+  virtual bool IsRunning(gfx::NativeWindow parent_window) const OVERRIDE;
+  virtual void ListenerDestroyed() OVERRIDE;
 
  protected:
   explicit SelectFileDialogImpl(Listener* listener);

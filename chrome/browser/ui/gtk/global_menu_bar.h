@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
@@ -66,12 +67,12 @@ class GlobalMenuBar : public CommandUpdater::CommandObserver,
                            GtkWidget* menu_to_add_to);
 
   // CommandUpdater::CommandObserver:
-  virtual void EnabledStateChangedForCommand(int id, bool enabled);
+  virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Updates the visibility of the bookmark bar on pref changes.
   void OnBookmarkBarVisibilityChanged();

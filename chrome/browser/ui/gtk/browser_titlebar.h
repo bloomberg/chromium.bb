@@ -13,6 +13,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
@@ -165,11 +166,12 @@ class BrowserTitlebar : public content::NotificationObserver,
   // -- Context Menu -----------------------------------------------------------
 
   // SimpleMenuModel::Delegate implementation:
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual void ExecuteCommand(int command_id);
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          ui::Accelerator* accelerator);
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

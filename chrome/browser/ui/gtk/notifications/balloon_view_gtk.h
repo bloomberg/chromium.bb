@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -43,24 +44,24 @@ class BalloonViewImpl : public BalloonView,
   virtual ~BalloonViewImpl();
 
   // BalloonView interface.
-  virtual void Show(Balloon* balloon);
-  virtual void Update();
-  virtual void RepositionToBalloon();
-  virtual void Close(bool by_user);
-  virtual gfx::Size GetSize() const;
-  virtual BalloonHost* GetHost() const;
+  virtual void Show(Balloon* balloon) OVERRIDE;
+  virtual void Update() OVERRIDE;
+  virtual void RepositionToBalloon() OVERRIDE;
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
+  virtual BalloonHost* GetHost() const OVERRIDE;
 
   // MenuGtk::Delegate interface.
-  virtual void StoppedShowing();
+  virtual void StoppedShowing() OVERRIDE;
 
  private:
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ui::AnimationDelegate interface.
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Do the delayed close work.  The balloon and all view components will be
   // destroyed at this time, so it shouldn't be called while still processing

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_OVERFLOW_BUTTON_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -26,7 +27,7 @@ class OverflowButton : public content::NotificationObserver {
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   ui::OwnedWidgetGtk widget_;
 

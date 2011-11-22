@@ -45,8 +45,9 @@ class ExtensionPopupGtk : public content::NotificationObserver,
                              bool closed_by_escape) OVERRIDE;
 
   // ExtensionViewGtk::Container implementation.
-  virtual void OnExtensionPreferredSizeChanged(ExtensionViewGtk* view,
-                                               const gfx::Size& new_size);
+  virtual void OnExtensionPreferredSizeChanged(
+      ExtensionViewGtk* view,
+      const gfx::Size& new_size) OVERRIDE;
 
   // Destroys the popup widget. This will in turn destroy us since we delete
   // ourselves when the bubble closes. Returns true if we successfully

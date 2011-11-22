@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "base/timer.h"
@@ -48,16 +49,16 @@ class DownloadItemGtk : public DownloadItem::Observer,
   virtual ~DownloadItemGtk();
 
   // DownloadItem::Observer implementation.
-  virtual void OnDownloadUpdated(DownloadItem* download);
-  virtual void OnDownloadOpened(DownloadItem* download) { }
+  virtual void OnDownloadUpdated(DownloadItem* download) OVERRIDE;
+  virtual void OnDownloadOpened(DownloadItem* download) OVERRIDE { }
 
   // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Called when the icon manager has finished loading the icon. We take
   // ownership of |icon_bitmap|.

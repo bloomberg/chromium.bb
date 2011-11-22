@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "content/public/browser/notification_observer.h"
@@ -36,7 +37,7 @@ class ReloadButtonGtk : public content::NotificationObserver {
   // Provide content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend class ReloadButtonGtkTest;

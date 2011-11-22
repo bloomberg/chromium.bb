@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "grit/generated_resources.h"
@@ -25,10 +26,10 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   virtual ~TaskManagerGtk();
 
   // TaskManagerModelObserver
-  virtual void OnModelChanged();
-  virtual void OnItemsChanged(int start, int length);
-  virtual void OnItemsAdded(int start, int length);
-  virtual void OnItemsRemoved(int start, int length);
+  virtual void OnModelChanged() OVERRIDE;
+  virtual void OnItemsChanged(int start, int length) OVERRIDE;
+  virtual void OnItemsAdded(int start, int length) OVERRIDE;
+  virtual void OnItemsRemoved(int start, int length) OVERRIDE;
 
   // Closes the task manager window.
   void Close();

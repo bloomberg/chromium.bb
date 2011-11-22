@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view.h"
@@ -37,17 +38,17 @@ class OmniboxPopupViewGtk : public AutocompletePopupView,
   virtual ~OmniboxPopupViewGtk();
 
   // Overridden from AutocompletePopupView:
-  virtual bool IsOpen() const;
-  virtual void InvalidateLine(size_t line);
-  virtual void UpdatePopupAppearance();
-  virtual gfx::Rect GetTargetBounds();
-  virtual void PaintUpdatesNow();
-  virtual void OnDragCanceled();
+  virtual bool IsOpen() const OVERRIDE;
+  virtual void InvalidateLine(size_t line) OVERRIDE;
+  virtual void UpdatePopupAppearance() OVERRIDE;
+  virtual gfx::Rect GetTargetBounds() OVERRIDE;
+  virtual void PaintUpdatesNow() OVERRIDE;
+  virtual void OnDragCanceled() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Be friendly for unit tests.

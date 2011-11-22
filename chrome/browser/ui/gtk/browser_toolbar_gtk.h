@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -84,21 +85,22 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   void ShowAppMenu();
 
   // Overridden from CommandUpdater::CommandObserver:
-  virtual void EnabledStateChangedForCommand(int id, bool enabled);
+  virtual void EnabledStateChangedForCommand(int id, bool enabled) OVERRIDE;
 
   // Overridden from MenuGtk::Delegate:
-  virtual void StoppedShowing();
-  virtual GtkIconSet* GetIconSetForId(int idr);
-  virtual bool AlwaysShowIconForCmd(int command_id) const;
+  virtual void StoppedShowing() OVERRIDE;
+  virtual GtkIconSet* GetIconSetForId(int idr) OVERRIDE;
+  virtual bool AlwaysShowIconForCmd(int command_id) const OVERRIDE;
 
   // Overridden from ui::AcceleratorProvider:
-  virtual bool GetAcceleratorForCommandId(int id,
-                                          ui::Accelerator* accelerator);
+  virtual bool GetAcceleratorForCommandId(
+      int id,
+      ui::Accelerator* accelerator) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Message that we should react to a state change.
   void UpdateTabContents(TabContents* contents, bool should_restore_state);

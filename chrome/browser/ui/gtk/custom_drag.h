@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/base/gtk/gtk_signal.h"
 
 class BookmarkNode;
@@ -74,7 +75,7 @@ class DownloadItemDrag : public CustomDrag {
 
   virtual void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
                              GtkSelectionData* selection_data,
-                             guint target_type, guint time);
+                             guint target_type, guint time) OVERRIDE;
 
   const DownloadItem* download_item_;
 
@@ -96,7 +97,7 @@ class BookmarkDrag : public CustomDrag {
 
   virtual void OnDragDataGet(GtkWidget* widget, GdkDragContext* context,
                              GtkSelectionData* selection_data,
-                             guint target_type, guint time);
+                             guint target_type, guint time) OVERRIDE;
 
   Profile* profile_;
   std::vector<const BookmarkNode*> nodes_;

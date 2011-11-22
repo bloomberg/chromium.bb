@@ -57,7 +57,7 @@ class StatusBubbleGtk : public StatusBubble,
   // Called when the download shelf becomes visible or invisible.
   // This is used by to ensure that the status bubble does not obscure
   // the download shelf, when it is visible.
-  virtual void UpdateDownloadShelfVisibility(bool visible);
+  virtual void UpdateDownloadShelfVisibility(bool visible) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

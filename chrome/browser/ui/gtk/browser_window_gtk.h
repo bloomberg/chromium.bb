@@ -248,7 +248,7 @@ class BrowserWindowGtk : public BrowserWindow,
   int GetXPositionOfLocationIcon(GtkWidget* relative_to);
 
  protected:
-  virtual void DestroyBrowser();
+  virtual void DestroyBrowser() OVERRIDE;
 
   // Checks to see if the mouse pointer at |x|, |y| is over the border of the
   // custom frame (a spot that should trigger a window resize). Returns true if

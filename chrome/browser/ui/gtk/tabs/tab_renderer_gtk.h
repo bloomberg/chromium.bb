@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/gtk/cairo_cached_surface.h"
@@ -76,7 +77,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
     // Provide content::NotificationObserver implementation.
     virtual void Observe(int type,
                          const content::NotificationSource& source,
-                         const content::NotificationDetails& details);
+                         const content::NotificationDetails& details) OVERRIDE;
 
    private:
     scoped_ptr<Data> data_;
@@ -102,7 +103,7 @@ class TabRendererGtk : public ui::AnimationDelegate,
   // Provide content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // TabContents. If only the loading state was updated, the loading_only flag
   // should be specified. If other things change, set this flag to false to
@@ -255,9 +256,9 @@ class TabRendererGtk : public ui::AnimationDelegate,
   };
 
   // Overridden from ui::AnimationDelegate:
-  virtual void AnimationProgressed(const ui::Animation* animation);
-  virtual void AnimationCanceled(const ui::Animation* animation);
-  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // Starts/Stops the crash animation.
   void StartCrashAnimation();

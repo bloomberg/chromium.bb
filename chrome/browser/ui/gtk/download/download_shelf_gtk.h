@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -42,27 +43,27 @@ class DownloadShelfGtk : public DownloadShelf,
   virtual ~DownloadShelfGtk();
 
   // DownloadShelf implementation.
-  virtual void AddDownload(BaseDownloadItemModel* download_model);
-  virtual bool IsShowing() const;
-  virtual bool IsClosing() const;
-  virtual void Show();
-  virtual void Close();
-  virtual Browser* browser() const;
+  virtual void AddDownload(BaseDownloadItemModel* download_model) OVERRIDE;
+  virtual bool IsShowing() const OVERRIDE;
+  virtual bool IsClosing() const OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual Browser* browser() const OVERRIDE;
 
   // SlideAnimatorGtk::Delegate implementation.
-  virtual void Closed();
+  virtual void Closed() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Returns the current height of the shelf.
   int GetHeight() const;
 
   // MessageLoop::Observer implementation:
-  virtual void WillProcessEvent(GdkEvent* event);
-  virtual void DidProcessEvent(GdkEvent* event);
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
 
  private:
   // Remove |download_item| from the download shelf and delete it.

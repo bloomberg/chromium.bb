@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -77,16 +78,16 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   bool IsAnimating();
 
   // ui::AnimationDelegate implementation --------------------------------------
-  virtual void AnimationProgressed(const ui::Animation* animation);
-  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // MenuBarHelper::Delegate implementation ------------------------------------
-  virtual void PopupForButton(GtkWidget* button);
+  virtual void PopupForButton(GtkWidget* button) OVERRIDE;
   virtual void PopupForButtonNextTo(GtkWidget* button,
-                                    GtkMenuDirectionType dir);
+                                    GtkMenuDirectionType dir) OVERRIDE;
 
   // BookmarkContextMenuController::Delegate implementation --------------------
-  virtual void CloseMenu();
+  virtual void CloseMenu() OVERRIDE;
 
   const ui::Animation* animation() { return &slide_animation_; }
 
@@ -233,7 +234,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   GtkWidget* CreateBookmarkButton(const BookmarkNode* node);
   GtkToolItem* CreateBookmarkToolItem(const BookmarkNode* node);
@@ -290,7 +291,7 @@ class BookmarkBarGtk : public ui::AnimationDelegate,
   CHROMEGTK_CALLBACK_0(BookmarkBarGtk, void, OnThrobbingWidgetDestroy);
 
   // Overriden from BookmarkBarInstructionsGtk::Delegate.
-  virtual void ShowImportDialog();
+  virtual void ShowImportDialog() OVERRIDE;
 
   // Updates the drag&drop state when |edit_bookmarks_enabled_| changes.
   void OnEditBookmarksEnabledChanged();

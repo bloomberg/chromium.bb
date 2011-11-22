@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
@@ -41,35 +42,36 @@ class FindBarGtk : public FindBar,
   GtkWidget* widget() const { return slide_widget_->widget(); }
 
   // Methods from FindBar.
-  virtual FindBarController* GetFindBarController() const;
-  virtual void SetFindBarController(FindBarController* find_bar_controller);
-  virtual void Show(bool animate);
-  virtual void Hide(bool animate);
-  virtual void SetFocusAndSelection();
-  virtual void ClearResults(const FindNotificationDetails& results);
-  virtual void StopAnimation();
+  virtual FindBarController* GetFindBarController() const OVERRIDE;
+  virtual void SetFindBarController(
+      FindBarController* find_bar_controller) OVERRIDE;
+  virtual void Show(bool animate) OVERRIDE;
+  virtual void Hide(bool animate) OVERRIDE;
+  virtual void SetFocusAndSelection() OVERRIDE;
+  virtual void ClearResults(const FindNotificationDetails& results) OVERRIDE;
+  virtual void StopAnimation() OVERRIDE;
   virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                                     bool no_redraw);
-  virtual void SetFindText(const string16& find_text);
+                                     bool no_redraw) OVERRIDE;
+  virtual void SetFindText(const string16& find_text) OVERRIDE;
   virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
-                                     const string16& find_text);
-  virtual void AudibleAlert();
-  virtual bool IsFindBarVisible();
-  virtual void RestoreSavedFocus();
-  virtual FindBarTesting* GetFindBarTesting();
+                                     const string16& find_text) OVERRIDE;
+  virtual void AudibleAlert() OVERRIDE;
+  virtual bool IsFindBarVisible() OVERRIDE;
+  virtual void RestoreSavedFocus() OVERRIDE;
+  virtual FindBarTesting* GetFindBarTesting() OVERRIDE;
 
   // Methods from FindBarTesting.
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
-                                    bool* fully_visible);
-  virtual string16 GetFindText();
-  virtual string16 GetFindSelectedText();
-  virtual string16 GetMatchCountText();
-  virtual int GetWidth();
+                                    bool* fully_visible) OVERRIDE;
+  virtual string16 GetFindText() OVERRIDE;
+  virtual string16 GetFindSelectedText() OVERRIDE;
+  virtual string16 GetMatchCountText() OVERRIDE;
+  virtual int GetWidth() OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   void InitWidgets();

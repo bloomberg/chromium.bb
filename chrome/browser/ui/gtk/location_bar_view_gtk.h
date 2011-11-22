@@ -137,7 +137,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Implement the content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Edit background color.
   static const GdkColor kBackgroundColor;
@@ -156,9 +156,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
     void UpdateFromTabContents(TabContents* tab_contents);
 
     // Overridden from ui::AnimationDelegate:
-    virtual void AnimationProgressed(const ui::Animation* animation);
-    virtual void AnimationEnded(const ui::Animation* animation);
-    virtual void AnimationCanceled(const ui::Animation* animation);
+    virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+    virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+    virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
    private:
     // Start the process of showing the label.
@@ -227,13 +227,13 @@ class LocationBarViewGtk : public AutocompleteEditController,
 
     // A callback from ImageLoadingTracker for when the image has loaded.
     virtual void OnImageLoaded(
-        SkBitmap* image, const ExtensionResource& resource, int index);
+        SkBitmap* image, const ExtensionResource& resource, int index) OVERRIDE;
 
     // Simulate left mouse click on the page action button.
     void TestActivatePageAction();
 
     // Overridden from ExtensionContextMenuModel::PopupDelegate:
-    virtual void InspectPopup(ExtensionAction* action);
+    virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
 
    private:
     // Show the popup for this page action. If |devtools| is true, show it

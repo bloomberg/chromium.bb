@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
@@ -63,7 +64,7 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   bool animating() {
     return resize_animation_.is_animating();
@@ -106,27 +107,29 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   bool ShouldDisplayBrowserAction(const Extension* extension);
 
   // ExtensionToolbarModel::Observer implementation.
-  virtual void BrowserActionAdded(const Extension* extension, int index);
-  virtual void BrowserActionRemoved(const Extension* extension);
-  virtual void BrowserActionMoved(const Extension* extension, int index);
-  virtual void ModelLoaded();
+  virtual void BrowserActionAdded(const Extension* extension,
+                                  int index) OVERRIDE;
+  virtual void BrowserActionRemoved(const Extension* extension) OVERRIDE;
+  virtual void BrowserActionMoved(const Extension* extension,
+                                  int index) OVERRIDE;
+  virtual void ModelLoaded() OVERRIDE;
 
   // ui::AnimationDelegate implementation.
-  virtual void AnimationProgressed(const ui::Animation* animation);
-  virtual void AnimationEnded(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
 
   // SimpleMenuModel::Delegate implementation.
   // In our case, |command_id| is be the index into the model's extension list.
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
+      ui::Accelerator* accelerator) OVERRIDE;
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
 
   // MenuGtk::Delegate implementation.
-  virtual void StoppedShowing();
-  virtual bool AlwaysShowIconForCmd(int command_id) const;
+  virtual void StoppedShowing() OVERRIDE;
+  virtual bool AlwaysShowIconForCmd(int command_id) const OVERRIDE;
 
   // Called by the BrowserActionButton in response to drag-begin.
   void DragStarted(BrowserActionButton* button, GdkDragContext* drag_context);

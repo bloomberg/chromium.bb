@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -58,20 +59,20 @@ class GtkThemeService : public ThemeService {
   //
   // Sets that we aren't using the system theme, then calls
   // ThemeService's implementation.
-  virtual void Init(Profile* profile);
-  virtual SkBitmap* GetBitmapNamed(int id) const;
-  virtual SkColor GetColor(int id) const;
-  virtual bool HasCustomImage(int id) const;
-  virtual void SetTheme(const Extension* extension);
-  virtual void UseDefaultTheme();
-  virtual void SetNativeTheme();
-  virtual bool UsingDefaultTheme() const;
-  virtual bool UsingNativeTheme() const;
+  virtual void Init(Profile* profile) OVERRIDE;
+  virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;
+  virtual SkColor GetColor(int id) const OVERRIDE;
+  virtual bool HasCustomImage(int id) const OVERRIDE;
+  virtual void SetTheme(const Extension* extension) OVERRIDE;
+  virtual void UseDefaultTheme() OVERRIDE;
+  virtual void SetNativeTheme() OVERRIDE;
+  virtual bool UsingDefaultTheme() const OVERRIDE;
+  virtual bool UsingNativeTheme() const OVERRIDE;
 
   // Overridden from ThemeService, content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Creates a GtkChromeButton instance, registered with this theme provider,
   // with a "destroy" signal to remove it from our internal list when it goes
@@ -172,16 +173,16 @@ class GtkThemeService : public ThemeService {
   typedef GdkPixbuf*(GtkThemeService::*PixbufProvidingMethod)(int id) const;
 
   // Clears all the GTK color overrides.
-  virtual void ClearAllThemeData();
+  virtual void ClearAllThemeData() OVERRIDE;
 
   // Load theme data from preferences, possibly picking colors from GTK.
-  virtual void LoadThemePrefs();
+  virtual void LoadThemePrefs() OVERRIDE;
 
   // Let all the browser views know that themes have changed.
-  virtual void NotifyThemeChanged();
+  virtual void NotifyThemeChanged() OVERRIDE;
 
   // Additionally frees the CairoCachedSurfaces.
-  virtual void FreePlatformCaches();
+  virtual void FreePlatformCaches() OVERRIDE;
 
   // Extracts colors and tints from the GTK theme, both for the
   // ThemeService interface and the colors we send to webkit.

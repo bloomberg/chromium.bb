@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_INFOBARS_TRANSLATE_MESSAGE_INFOBAR_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/gtk/infobars/translate_infobar_base_gtk.h"
 
 class TranslateInfoBarDelegate;
@@ -17,7 +18,7 @@ class TranslateMessageInfoBar : public TranslateInfoBarBase {
   virtual ~TranslateMessageInfoBar();
 
   // Overridden from TranslateInfoBarBase:
-  virtual void Init();
+  virtual void Init() OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_0(TranslateMessageInfoBar, void, OnButtonPressed);

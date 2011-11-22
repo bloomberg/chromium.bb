@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -47,12 +48,12 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   GtkWidget* widget() { return floating_.get(); }
 
   // ViewIDUtil::Delegate implementation ---------------------------------------
-  virtual GtkWidget* GetWidgetForViewID(ViewID id);
+  virtual GtkWidget* GetWidgetForViewID(ViewID id) OVERRIDE;
 
  private:
   // Called when a TabContents is destroyed. This gives us a chance to clean

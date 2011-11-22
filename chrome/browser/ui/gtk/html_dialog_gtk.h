@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -48,7 +49,8 @@ class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
   // Overridden from TabContentsDelegate:
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(HtmlDialogGtk, void, OnResponse, int);

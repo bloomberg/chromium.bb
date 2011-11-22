@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -23,12 +24,12 @@ class JSModalDialogGtk : public NativeAppModalDialog {
   virtual ~JSModalDialogGtk();
 
   // NativeAppModalDialog:
-  virtual int GetAppModalDialogButtons() const;
-  virtual void ShowAppModalDialog();
-  virtual void ActivateAppModalDialog();
-  virtual void CloseAppModalDialog();
-  virtual void AcceptAppModalDialog();
-  virtual void CancelAppModalDialog();
+  virtual int GetAppModalDialogButtons() const OVERRIDE;
+  virtual void ShowAppModalDialog() OVERRIDE;
+  virtual void ActivateAppModalDialog() OVERRIDE;
+  virtual void CloseAppModalDialog() OVERRIDE;
+  virtual void AcceptAppModalDialog() OVERRIDE;
+  virtual void CancelAppModalDialog() OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_1(JSModalDialogGtk, void, OnResponse, int);

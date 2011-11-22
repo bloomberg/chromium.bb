@@ -10,6 +10,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "chrome/browser/ui/gtk/gtk_tree.h"
@@ -33,9 +34,9 @@ class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
   CollectedCookiesGtk(GtkWindow* parent, TabContentsWrapper* wrapper);
 
   // ConstrainedWindowGtkDelegate methods.
-  virtual GtkWidget* GetWidgetRoot();
-  virtual GtkWidget* GetFocusWidget();
-  virtual void DeleteDelegate();
+  virtual GtkWidget* GetWidgetRoot() OVERRIDE;
+  virtual GtkWidget* GetFocusWidget() OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
 
  private:
   virtual ~CollectedCookiesGtk();
@@ -58,7 +59,7 @@ class CollectedCookiesGtk : public ConstrainedWindowGtkDelegate,
   // Notification Observer implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Create the information panes for the allowed and blocked cookies.
   GtkWidget* CreateAllowedPane();

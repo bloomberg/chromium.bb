@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_observer.h"
@@ -35,7 +36,8 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
 
   // Takes the history menu we need to modify based on the tab restore/most
   // visited state.
-  virtual void Init(GtkWidget* history_menu, GtkWidget* history_menu_item);
+  virtual void Init(GtkWidget* history_menu,
+                    GtkWidget* history_menu_item) OVERRIDE;
 
  private:
   class HistoryItem;
@@ -83,11 +85,11 @@ class GlobalHistoryMenu : public GlobalMenuOwner,
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // For TabRestoreServiceObserver
-  virtual void TabRestoreServiceChanged(TabRestoreService* service);
-  virtual void TabRestoreServiceDestroyed(TabRestoreService* service);
+  virtual void TabRestoreServiceChanged(TabRestoreService* service) OVERRIDE;
+  virtual void TabRestoreServiceDestroyed(TabRestoreService* service) OVERRIDE;
 
   CHROMEGTK_CALLBACK_0(GlobalHistoryMenu, void, OnRecentlyClosedItemActivated);
 

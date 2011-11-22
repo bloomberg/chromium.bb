@@ -113,10 +113,10 @@ class TableAdapter : public ui::TableModelObserver {
                                     gpointer user_data);
 
   // ui::TableModelObserver implementation.
-  virtual void OnModelChanged();
-  virtual void OnItemsChanged(int start, int length);
-  virtual void OnItemsAdded(int start, int length);
-  virtual void OnItemsRemoved(int start, int length);
+  virtual void OnModelChanged() OVERRIDE;
+  virtual void OnItemsChanged(int start, int length) OVERRIDE;
+  virtual void OnItemsAdded(int start, int length) OVERRIDE;
+  virtual void OnItemsRemoved(int start, int length) OVERRIDE;
 
  private:
   // Return whether the row pointed to by |iter| is a group row, i.e. a group

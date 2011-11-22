@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/gtk/constrained_window_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
@@ -25,9 +26,9 @@ class RepostFormWarningGtk : public ConstrainedWindowGtkDelegate {
   RepostFormWarningGtk(GtkWindow* parent, TabContents* tab_contents);
 
   // ConstrainedWindowGtkDelegate methods
-  virtual GtkWidget* GetWidgetRoot();
-  virtual GtkWidget* GetFocusWidget();
-  virtual void DeleteDelegate();
+  virtual GtkWidget* GetWidgetRoot() OVERRIDE;
+  virtual GtkWidget* GetFocusWidget() OVERRIDE;
+  virtual void DeleteDelegate() OVERRIDE;
 
  private:
   virtual ~RepostFormWarningGtk();

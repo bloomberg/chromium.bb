@@ -9,6 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/ui/constrained_window.h"
@@ -60,9 +61,9 @@ class ConstrainedWindowGtk : public ConstrainedWindow {
   virtual ~ConstrainedWindowGtk();
 
   // Overridden from ConstrainedWindow:
-  virtual void ShowConstrainedWindow();
-  virtual void CloseConstrainedWindow();
-  virtual void FocusConstrainedWindow();
+  virtual void ShowConstrainedWindow() OVERRIDE;
+  virtual void CloseConstrainedWindow() OVERRIDE;
+  virtual void FocusConstrainedWindow() OVERRIDE;
 
   // Returns the TabContentsWrapper that constrains this Constrained Window.
   TabContentsWrapper* owner() const { return wrapper_; }
