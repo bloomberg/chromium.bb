@@ -33,43 +33,17 @@ IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(gfx::GpuPreference, gpu_preference)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
+  IPC_STRUCT_MEMBER(int32, renderer_id)
+  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(int32, width)
+  IPC_STRUCT_MEMBER(int32, height)
+  IPC_STRUCT_MEMBER(uint64, surface_id)
+  IPC_STRUCT_MEMBER(int32, route_id)
 #if defined(OS_MACOSX)
-IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
-  IPC_STRUCT_MEMBER(int32, renderer_id)
-  IPC_STRUCT_MEMBER(int32, render_view_id)
   IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
-  IPC_STRUCT_MEMBER(int32, width)
-  IPC_STRUCT_MEMBER(int32, height)
-  IPC_STRUCT_MEMBER(uint64, surface_id)
   IPC_STRUCT_MEMBER(bool, create_transport_dib)
-  IPC_STRUCT_MEMBER(int32, route_id)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
-  IPC_STRUCT_MEMBER(int32, renderer_id)
-  IPC_STRUCT_MEMBER(int32, render_view_id)
-  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
-  IPC_STRUCT_MEMBER(uint64, surface_id)
-  IPC_STRUCT_MEMBER(int32, route_id)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
-  IPC_STRUCT_MEMBER(int32, renderer_id)
-  IPC_STRUCT_MEMBER(int32, render_view_id)
-  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
-  IPC_STRUCT_MEMBER(uint64, identifier)
-  IPC_STRUCT_MEMBER(int32, route_id)
-IPC_STRUCT_END()
 #endif
-
-#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceNew_Params)
-  IPC_STRUCT_MEMBER(int32, renderer_id)
-  IPC_STRUCT_MEMBER(int32, render_view_id)
-  IPC_STRUCT_MEMBER(int32, width)
-  IPC_STRUCT_MEMBER(int32, height)
-  IPC_STRUCT_MEMBER(uint64, surface_id)
-  IPC_STRUCT_MEMBER(int32, route_id)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
@@ -77,6 +51,11 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
   IPC_STRUCT_MEMBER(int32, render_view_id)
   IPC_STRUCT_MEMBER(uint64, surface_id)
   IPC_STRUCT_MEMBER(int32, route_id)
+#if defined(OS_WIN)
+  IPC_STRUCT_MEMBER(gfx::Size, size)
+#elif defined(OS_MACOSX)
+  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
+#endif
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
@@ -84,8 +63,10 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
   IPC_STRUCT_MEMBER(int32, render_view_id)
   IPC_STRUCT_MEMBER(uint64, identifier)
   IPC_STRUCT_MEMBER(int32, route_id)
-IPC_STRUCT_END()
+#if defined(OS_MACOSX)
+  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
 #endif
+IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::DxDiagNode)
   IPC_STRUCT_TRAITS_MEMBER(values)
@@ -160,16 +141,10 @@ IPC_MESSAGE_CONTROL4(GpuMsg_CreateViewCommandBuffer,
 // information.
 IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
 
-#if defined(TOOLKIT_USES_GTK) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT) || \
-    defined(OS_WIN)
 // Tells the GPU process that the browser process has finished resizing the
 // view.
-IPC_MESSAGE_CONTROL2(GpuMsg_ResizeViewACK,
-                     int32 /* renderer_id */,
-                     int32 /* command_buffer_id */)
-#endif
+IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_ResizeViewACK)
 
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 // Tells the GPU process that it's safe to start rendering to the surface.
 IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
                     uint64 /* surface_id */,
@@ -178,7 +153,6 @@ IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
 // Tells the GPU process that the browser process handled the swap
 // buffers request with the given number.
 IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_BuffersSwappedACK)
-#endif
 
 // Tells the GPU process to remove all contexts.
 IPC_MESSAGE_CONTROL0(GpuMsg_Clean)
@@ -234,18 +208,14 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
                      std::string /* header */,
                      std::string /* message */)
 
-#if defined(TOOLKIT_USES_GTK) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT) || \
-    defined(OS_WIN)
 // Resize the window that is being drawn into. It's important that this
 // resize be synchronized with the swapping of the front and back buffers.
 IPC_MESSAGE_CONTROL4(GpuHostMsg_ResizeView,
                      int32 /* renderer_id */,
                      int32 /* render_view_id */,
-                     int32 /* command_buffer_route_id */,
+                     int32 /* route_id */,
                      gfx::Size /* size */)
-#endif
 
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
 // This message is sent from the GPU process to the browser to notify about a
 // new or resized surface in the GPU.  The browser allocates any resources
 // needed for it on its end and replies with an ACK containing any shared
@@ -264,7 +234,6 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
 // is complete.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceRelease,
                      GpuHostMsg_AcceleratedSurfaceRelease_Params)
-#endif
 
 //------------------------------------------------------------------------------
 // GPU Channel Messages

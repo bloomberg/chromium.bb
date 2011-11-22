@@ -179,6 +179,11 @@ BackingStore* TestRenderWidgetHostView::AllocBackingStore(
 void TestRenderWidgetHostView::OnAcceleratedCompositingStateChange() {
 }
 
+void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
+    const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+    int gpu_host_id) {
+}
+
 #if defined(OS_MACOSX)
 
 gfx::Rect TestRenderWidgetHostView::GetViewCocoaBounds() const {
@@ -224,14 +229,6 @@ void TestRenderWidgetHostView::AcceleratedSurfaceSetTransportDIB(
     int32 width,
     int32 height,
     TransportDIB::Handle transport_dib) {
-}
-
-void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
-    gfx::PluginWindowHandle window,
-    uint64 surface_id,
-    int renderer_id,
-    int32 route_id,
-    int gpu_host_id) {
 }
 
 #elif defined(OS_WIN) && !defined(USE_AURA)
