@@ -213,6 +213,20 @@ void AccessibilityVolumeInfo::SerializeToDict(DictionaryValue *dict) const {
   dict->SetBoolean(keys::kIsVolumeMutedKey, is_muted_);
 }
 
+ScreenUnlockedEventInfo::ScreenUnlockedEventInfo(Profile* profile)
+    : AccessibilityEventInfo(profile) {
+}
+
+void ScreenUnlockedEventInfo::SerializeToDict(DictionaryValue *dict) const {
+}
+
+WokeUpEventInfo::WokeUpEventInfo(Profile* profile)
+    : AccessibilityEventInfo(profile) {
+}
+
+void WokeUpEventInfo::SerializeToDict(DictionaryValue *dict) const {
+}
+
 AccessibilityMenuInfo::AccessibilityMenuInfo(Profile* profile,
                                              const std::string& menu_name)
     : AccessibilityControlInfo(profile, menu_name) {

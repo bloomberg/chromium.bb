@@ -55,6 +55,8 @@ class ExtensionAccessibilityEventRouter : public content::NotificationObserver {
   void OnMenuOpened(const AccessibilityMenuInfo* details);
   void OnMenuClosed(const AccessibilityMenuInfo* details);
   void OnVolumeChanged(const AccessibilityVolumeInfo* details);
+  void OnScreenUnlocked(const ScreenUnlockedEventInfo* details);
+  void OnWokeUp(const WokeUpEventInfo* details);
 
   void DispatchEvent(Profile* profile,
                      const char* event_name,

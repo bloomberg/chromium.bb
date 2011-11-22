@@ -285,6 +285,20 @@ class AccessibilityVolumeInfo : public AccessibilityEventInfo {
   bool is_muted_;
 };
 
+// Screen unlock event information; this class is used by onScreenUnlocked.
+class ScreenUnlockedEventInfo : public AccessibilityEventInfo {
+ public:
+  ScreenUnlockedEventInfo(Profile* profile);
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
+};
+
+// Wake up event information; this class is used by onWokeUp.
+class WokeUpEventInfo : public AccessibilityEventInfo {
+ public:
+  WokeUpEventInfo(Profile* profile);
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
+};
+
 // Accessibility information about a menu item; this class is used by
 // onControlFocused event listeners.
 class AccessibilityMenuItemInfo : public AccessibilityControlInfo {

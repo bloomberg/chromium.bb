@@ -509,6 +509,18 @@
             "description": "Information about the current state of the system volume control, including whether it is muted."
           }
         ]
+      },
+      {
+        "name": "onScreenUnlocked",
+        "type": "function",
+        "description": "Fired when the screen is unlocked.",
+        "parameters": []
+      },
+      {
+        "name": "onWokeUp",
+        "type": "function",
+        "description": "Fired when the device wakes up from sleep.",
+        "parameters": []
       }
     ]
   },

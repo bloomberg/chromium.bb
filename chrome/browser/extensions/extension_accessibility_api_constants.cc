@@ -30,6 +30,8 @@ const char kOnTextChanged[] = "experimental.accessibility.onTextChanged";
 const char kOnMenuOpened[] = "experimental.accessibility.onMenuOpened";
 const char kOnMenuClosed[] = "experimental.accessibility.onMenuClosed";
 const char kOnVolumeChanged[] = "experimental.accessibility.onVolumeChanged";
+const char kOnScreenUnlocked[] = "experimental.accessibility.onScreenUnlocked";
+const char kOnWokeUp[] = "experimental.accessibility.onWokeUp";
 
 // Types of controls that can receive accessibility events.
 const char kTypeButton[] = "button";

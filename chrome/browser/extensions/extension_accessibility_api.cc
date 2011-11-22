@@ -65,6 +65,12 @@ ExtensionAccessibilityEventRouter::ExtensionAccessibilityEventRouter()
   registrar_.Add(this,
                  chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED,
                  content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_SCREEN_UNLOCKED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_ACCESSIBILITY_WOKE_UP,
+                 content::NotificationService::AllSources());
 }
 
 ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {
@@ -106,6 +112,14 @@ void ExtensionAccessibilityEventRouter::Observe(
     case chrome::NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED:
       OnVolumeChanged(
           content::Details<const AccessibilityVolumeInfo>(details).ptr());
+      break;
+    case chrome::NOTIFICATION_ACCESSIBILITY_SCREEN_UNLOCKED:
+      OnScreenUnlocked(
+          content::Details<const ScreenUnlockedEventInfo>(details).ptr());
+      break;
+    case chrome::NOTIFICATION_ACCESSIBILITY_WOKE_UP:
+      OnWokeUp(
+          content::Details<const WokeUpEventInfo>(details).ptr());
       break;
     default:
       NOTREACHED();
@@ -168,6 +182,17 @@ void ExtensionAccessibilityEventRouter::OnVolumeChanged(
     const AccessibilityVolumeInfo* info) {
   std::string json_args = ControlInfoToJsonString(info);
   DispatchEvent(info->profile(), keys::kOnVolumeChanged, json_args);
+}
+
+void ExtensionAccessibilityEventRouter::OnScreenUnlocked(
+    const ScreenUnlockedEventInfo* info) {
+  std::string json_args = ControlInfoToJsonString(info);
+  DispatchEvent(info->profile(), keys::kOnScreenUnlocked, json_args);
+}
+
+void ExtensionAccessibilityEventRouter::OnWokeUp(const WokeUpEventInfo* info) {
+  std::string json_args = ControlInfoToJsonString(info);
+  DispatchEvent(info->profile(), keys::kOnWokeUp, json_args);
 }
 
 void ExtensionAccessibilityEventRouter::DispatchEvent(

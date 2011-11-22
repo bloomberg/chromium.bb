@@ -34,6 +34,8 @@ extern const char kOnTextChanged[];
 extern const char kOnMenuOpened[];
 extern const char kOnMenuClosed[];
 extern const char kOnVolumeChanged[];
+extern const char kOnScreenUnlocked[];
+extern const char kOnWokeUp[];
 
 // Types of controls that can receive accessibility events
 extern const char kTypeButton[];

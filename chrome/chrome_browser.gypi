@@ -375,6 +375,8 @@
         'browser/chrome_quota_permission_context.h',
         'browser/chromeos/accessibility_util.cc',
         'browser/chromeos/accessibility_util.h',
+        'browser/chromeos/accessibility/system_event_observer.cc',
+        'browser/chromeos/accessibility/system_event_observer.h',
         'browser/chromeos/audio_handler.cc',
         'browser/chromeos/audio_handler.h',
         'browser/chromeos/audio_mixer.h',

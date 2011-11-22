@@ -658,6 +658,16 @@ enum NotificationType {
   // Details will be an AccessibilityVolumeInfo.
   NOTIFICATION_ACCESSIBILITY_VOLUME_CHANGED,
 
+  // Notification that the screen is unlocked, for propagating to an
+  // accessibility extension.
+  // Details will be an AccessibilityEmptyEventInfo.
+  NOTIFICATION_ACCESSIBILITY_SCREEN_UNLOCKED,
+
+  // Notification that the system woke up from sleep, for propagating to an
+  // accessibility extension.
+  // Details will be an AccessibilityEmptyEventInfo.
+  NOTIFICATION_ACCESSIBILITY_WOKE_UP,
+
   // Content Settings --------------------------------------------------------
 
   // Sent when content settings change. The source is a HostContentSettings

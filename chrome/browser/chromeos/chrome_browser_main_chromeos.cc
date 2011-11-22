@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
+#include "chrome/browser/chromeos/accessibility/system_event_observer.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_manager.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/brightness_observer.h"
@@ -93,6 +94,8 @@ ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
 
   chromeos::DBusThreadManager::Shutdown();
 
+  chromeos::accessibility::SystemEventObserver::Shutdown();
+
   if (!parameters().ui_task && chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Shutdown();
 
@@ -126,6 +129,8 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   // implementation.
   net::NetworkChangeNotifier::SetFactory(
       new chromeos::CrosNetworkChangeNotifierFactory());
+
+  chromeos::accessibility::SystemEventObserver::Initialize();
 }
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
