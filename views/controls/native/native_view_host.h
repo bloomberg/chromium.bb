@@ -94,8 +94,7 @@ class VIEWS_EXPORT NativeViewHost : public View {
   // detached because it's being destroyed, or false otherwise.
   void Detach(bool destroyed);
 
-  // The attached native view. There is exactly one native_view_ or views_view_
-  // attached.
+  // The attached native view. There is exactly one native_view_ attached.
   gfx::NativeView native_view_;
 
   // A platform-specific wrapper that does the OS-level manipulation of the
