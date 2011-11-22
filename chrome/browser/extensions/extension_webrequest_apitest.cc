@@ -89,9 +89,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestAuthRequired) {
       message_;
 }
 
-// Hangs flakily: http://crbug.com/91715
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       DISABLED_WebRequestBlocking) {
+                       WebRequestBlocking) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
