@@ -10,6 +10,8 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/eintr_wrapper.h"
 #include "base/file_path.h"
 #include "base/format_macros.h"
@@ -21,7 +23,6 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/task.h"
 #include "base/threading/thread.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/linux_dumper.h"
@@ -60,8 +61,8 @@ void CrashDumpTask(CrashHandlerHostLinux* handler, BreakpadInfo* info) {
 
 // Since classes derived from CrashHandlerHostLinux are singletons, it's only
 // destroyed at the end of the processes lifetime, which is greater in span than
-// the lifetime of the IO message loop.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(CrashHandlerHostLinux);
+// the lifetime of the IO message loop. Thus, all calls to base::Bind() use
+// non-refcounted pointers.
 
 CrashHandlerHostLinux::CrashHandlerHostLinux()
     : shutting_down_(false) {
@@ -83,7 +84,7 @@ CrashHandlerHostLinux::CrashHandlerHostLinux()
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &CrashHandlerHostLinux::Init));
+      base::Bind(&CrashHandlerHostLinux::Init, base::Unretained(this)));
 }
 
 CrashHandlerHostLinux::~CrashHandlerHostLinux() {
@@ -317,12 +318,12 @@ void CrashHandlerHostLinux::OnFileCanReadWithoutBlocking(int fd) {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &CrashHandlerHostLinux::WriteDumpFile,
-                        info,
-                        crashing_pid,
-                        crash_context,
-                        signal_fd));
+      base::Bind(&CrashHandlerHostLinux::WriteDumpFile,
+                 base::Unretained(this),
+                 info,
+                 crashing_pid,
+                 crash_context,
+                 signal_fd));
 }
 
 void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
@@ -356,10 +357,10 @@ void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(this,
-                        &CrashHandlerHostLinux::QueueCrashDumpTask,
-                        info,
-                        signal_fd));
+      base::Bind(&CrashHandlerHostLinux::QueueCrashDumpTask,
+                 base::Unretained(this),
+                 info,
+                 signal_fd));
 }
 
 void CrashHandlerHostLinux::QueueCrashDumpTask(BreakpadInfo* info,
@@ -379,7 +380,7 @@ void CrashHandlerHostLinux::QueueCrashDumpTask(BreakpadInfo* info,
 
   uploader_thread_->message_loop()->PostTask(
       FROM_HERE,
-      NewRunnableFunction(&CrashDumpTask, this, info));
+      base::Bind(&CrashDumpTask, base::Unretained(this), info));
 }
 
 void CrashHandlerHostLinux::WillDestroyCurrentMessageLoop() {

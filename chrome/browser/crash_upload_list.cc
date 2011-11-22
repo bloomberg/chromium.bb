@@ -6,6 +6,7 @@
 
 #include <iterator>
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -38,9 +39,11 @@ CrashUploadList::CrashUploadList(Delegate* delegate) : delegate_(delegate) {}
 CrashUploadList::~CrashUploadList() {}
 
 void CrashUploadList::LoadCrashListAsynchronously() {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-        &CrashUploadList::LoadCrashListAndInformDelegateOfCompletion));
+  BrowserThread::PostTask(
+      BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&CrashUploadList::LoadCrashListAndInformDelegateOfCompletion,
+                 this));
 }
 
 void CrashUploadList::ClearDelegate() {
@@ -50,8 +53,10 @@ void CrashUploadList::ClearDelegate() {
 
 void CrashUploadList::LoadCrashListAndInformDelegateOfCompletion() {
   LoadCrashList();
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &CrashUploadList::InformDelegateOfCompletion));
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CrashUploadList::InformDelegateOfCompletion, this));
 }
 
 void CrashUploadList::LoadCrashList() {
