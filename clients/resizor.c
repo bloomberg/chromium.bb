@@ -27,7 +27,6 @@
 #include <cairo.h>
 #include <math.h>
 
-#include "wayland-util.h"
 #include <wayland-client.h>
 
 #include "window.h"

@@ -50,7 +50,6 @@
 #include <X11/extensions/XKBcommon.h>
 
 #include <linux/input.h>
-#include "wayland-util.h"
 #include <wayland-client.h>
 #include "cairo-util.h"
 

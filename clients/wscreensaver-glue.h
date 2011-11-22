@@ -43,7 +43,6 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include "wayland-util.h"
 #include "window.h"
 
 #define ENTRYPOINT static
