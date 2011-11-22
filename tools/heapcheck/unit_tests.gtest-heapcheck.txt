@@ -21,3 +21,6 @@ GViewRequestInterceptorTest.DoNotInterceptDownload
 
 # Fails under Heapcheck http://crbug.com/93027
 ProcessWatcherTest.ImmediateTermination
+
+# Fails under Heapcheck http://crbug.com/104566
+GViewRequestInterceptorTest.DoNotInterceptPdfWhenEnabled
