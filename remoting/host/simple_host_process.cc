@@ -42,6 +42,7 @@
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/local_input_monitor.h"
+#include "remoting/host/log_to_server.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/register_support_host_request.h"
 #include "remoting/host/self_access_verifier.h"
@@ -135,6 +136,7 @@ class SimpleHost {
     scoped_ptr<remoting::AccessVerifier> access_verifier;
     scoped_ptr<remoting::RegisterSupportHostRequest> register_request;
     scoped_ptr<remoting::HeartbeatSender> heartbeat_sender;
+    scoped_ptr<remoting::LogToServer> log_to_server;
     if (is_it2me_) {
       scoped_ptr<remoting::SupportAccessVerifier> support_access_verifier(
           new remoting::SupportAccessVerifier());
@@ -153,6 +155,8 @@ class SimpleHost {
         return 1;
       access_verifier.reset(self_access_verifier.release());
     }
+    log_to_server.reset(new remoting::LogToServer(
+        context.network_message_loop()));
 
     // Construct a chromoting host.
     scoped_ptr<DesktopEnvironment> desktop_environment;
@@ -196,6 +200,7 @@ class SimpleHost {
         return 1;
       host_->AddStatusObserver(heartbeat_sender.get());
     }
+    host_->AddStatusObserver(log_to_server.get());
 
     // Let the chromoting host run until the shutdown task is executed.
     host_->Start();

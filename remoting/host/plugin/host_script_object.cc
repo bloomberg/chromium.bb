@@ -92,7 +92,8 @@ HostNPScriptObject::HostNPScriptObject(
       disconnected_event_(true, false),
       am_currently_logging_(false),
       nat_traversal_enabled_(false),
-      policy_received_(false) {
+      policy_received_(false),
+      enable_log_to_server_(false) {
 }
 
 HostNPScriptObject::~HostNPScriptObject() {
@@ -519,6 +520,10 @@ void HostNPScriptObject::FinishConnect(
       access_verifier.release(), nat_traversal_enabled_);
   host_->AddStatusObserver(this);
   host_->AddStatusObserver(register_request_.get());
+  if (enable_log_to_server_) {
+    log_to_server_.reset(new LogToServer(host_context_.network_message_loop()));
+    host_->AddStatusObserver(log_to_server_.get());
+  }
   host_->set_it2me(true);
 
   {
