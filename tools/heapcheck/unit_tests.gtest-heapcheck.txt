@@ -18,3 +18,6 @@ ServiceProcessStateTest.Singleton
 
 # Failing on Chromium OS. http://crbug.com/104826
 GViewRequestInterceptorTest.DoNotInterceptDownload
+
+# Fails under Heapcheck http://crbug.com/93027
+ProcessWatcherTest.ImmediateTermination
