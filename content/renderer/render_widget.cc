@@ -74,7 +74,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type)
       host_window_(0),
       current_paint_buf_(NULL),
       next_paint_flags_(0),
-      filtered_time_per_frame_(1.0f/60.0f),
+      filtered_time_per_frame_(0.0f),
       update_reply_pending_(false),
       using_asynchronous_swapbuffers_(false),
       num_swapbuffers_complete_pending_(0),
