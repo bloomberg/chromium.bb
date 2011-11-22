@@ -5,8 +5,7 @@
 #include "chrome/browser/printing/print_dialog_gtk.h"
 
 #include <fcntl.h>
-#include <gtk/gtkpagesetupunixdialog.h>
-#include <gtk/gtkprintjob.h>
+#include <gtk/gtkunixprint.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 

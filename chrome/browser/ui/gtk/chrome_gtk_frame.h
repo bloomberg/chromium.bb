@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_CHROME_GTK_FRAME_H_
 #pragma once
 
-#include <gdk/gdk.h>
-#include <gtk/gtkwindow.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 

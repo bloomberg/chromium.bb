@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/gtk/bubble/bubble_accelerators_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
-#include <glib.h>
 
 namespace {
 

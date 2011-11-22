@@ -7,7 +7,7 @@
 #pragma once
 
 #include <gtk/gtk.h>
-#include <gtk/gtkprintunixdialog.h>
+#include <gtk/gtkunixprint.h>
 
 #include "base/compiler_specific.h"
 #include "base/file_path.h"

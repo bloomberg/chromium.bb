@@ -16,9 +16,7 @@
 // For a more through overview of this system, see the comments in
 // gtk_custom_menu_item.h.
 
-#include <gdk/gdk.h>
 #include <gtk/gtk.h>
-#include <gtk/gtkmenuitem.h>
 
 G_BEGIN_DECLS
 

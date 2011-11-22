@@ -5,8 +5,6 @@
 #include "ui/base/gtk/gtk_floating_container.h"
 
 #include <gtk/gtk.h>
-#include <gtk/gtkmarshal.h>
-#include <gtk/gtkprivate.h>
 
 #include <algorithm>
 
@@ -40,6 +38,9 @@ GtkFloatingContainerChild* GetChild(GtkFloatingContainer* container,
 
   return NULL;
 }
+
+const GParamFlags kStaticReadWriteProp = static_cast<GParamFlags>(
+    G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
 }  // namespace
 
@@ -99,7 +100,7 @@ static void gtk_floating_container_class_init(
                        G_MININT,
                        G_MAXINT,
                        0,
-                       static_cast<GParamFlags>(GTK_PARAM_READWRITE)));
+                       kStaticReadWriteProp));
 
   gtk_container_class_install_child_property(
       container_class,
@@ -110,7 +111,7 @@ static void gtk_floating_container_class_init(
                        G_MININT,
                        G_MAXINT,
                        0,
-                       static_cast<GParamFlags>(GTK_PARAM_READWRITE)));
+                       kStaticReadWriteProp));
 
   floating_container_signals[SET_FLOATING_POSITION] =
       g_signal_new("set-floating-position",

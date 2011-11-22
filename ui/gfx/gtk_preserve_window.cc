@@ -4,10 +4,8 @@
 
 #include "ui/gfx/gtk_preserve_window.h"
 
-#include <gdk/gdkwindow.h>
+#include <gdk/gdk.h>
 #include <gtk/gtk.h>
-#include <gtk/gtkwidget.h>
-#include <gtk/gtkfixed.h>
 
 #include "ui/base/gtk/gtk_compat.h"
 

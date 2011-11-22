@@ -30,7 +30,6 @@
 // we need to communicate additional information, namely which button was
 // activated.
 
-#include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS

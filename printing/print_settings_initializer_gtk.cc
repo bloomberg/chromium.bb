@@ -5,7 +5,7 @@
 #include "printing/print_settings_initializer_gtk.h"
 
 #include <gtk/gtk.h>
-#include <gtk/gtkprinter.h>
+#include <gtk/gtkunixprint.h>
 
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"

@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/gtk/gtk_input_event_box.h"
 
-#include <gdk/gdkwindow.h>
+#include <gdk/gdk.h>
 #include <gtk/gtk.h>
-#include <gtk/gtkwidget.h>
-#include <gtk/gtkbin.h>
 
 G_BEGIN_DECLS
 

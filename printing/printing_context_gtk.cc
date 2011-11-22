@@ -5,7 +5,7 @@
 #include "printing/printing_context_gtk.h"
 
 #include <gtk/gtk.h>
-#include <gtk/gtkprintunixdialog.h>
+#include <gtk/gtkunixprint.h>
 
 #include "base/logging.h"
 #include "base/values.h"

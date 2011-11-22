@@ -22,7 +22,7 @@
 // These two #includes need to come after gpu_messages.h.
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/size.h"
-#include <gdk/gdkwindow.h>  // NOLINT
+#include <gdk/gdk.h>   // NOLINT
 #include <gdk/gdkx.h>  // NOLINT
 #endif
 

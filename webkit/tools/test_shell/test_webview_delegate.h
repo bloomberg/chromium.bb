@@ -40,7 +40,7 @@
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
-#include <gdk/gdkcursor.h>
+#include <gdk/gdk.h>
 #endif
 
 struct WebPreferences;

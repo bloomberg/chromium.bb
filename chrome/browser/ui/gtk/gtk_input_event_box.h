@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_GTK_GTK_INPUT_EVENT_BOX_H_
 #pragma once
 
-#include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
 // GtkInputEventBox is like GtkEventBox, but with the following differences:

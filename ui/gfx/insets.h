@@ -12,7 +12,7 @@
 #include "ui/base/ui_export.h"
 
 #if defined(TOOLKIT_USES_GTK)
-#include <gtk/gtkstyle.h>
+#include <gtk/gtk.h>
 #endif
 
 namespace gfx {

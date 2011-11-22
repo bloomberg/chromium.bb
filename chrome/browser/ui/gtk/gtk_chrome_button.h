@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_UI_GTK_GTK_CHROME_BUTTON_H_
 #pragma once
 
-#include <gdk/gdk.h>
-#include <gtk/gtkbutton.h>
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
