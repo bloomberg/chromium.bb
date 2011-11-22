@@ -541,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
 #if defined(OS_MACOSX)
 #define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
 #else
-#define MAYBE_InspectSharedWorker InspectSharedWorker
+#define MAYBE_InspectSharedWorker FAILS_InspectSharedWorker
 #endif
 // Flakily fails with 25s timeout: http://crbug.com/89845
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
@@ -551,10 +551,8 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
 // http://crbug.com/100538
 #if defined(OS_MACOSX)
 #define MAYBE_PauseInSharedWorkerInitialization DISABLED_PauseInSharedWorkerInitialization
-#elif defined(OS_WIN)
-#define MAYBE_PauseInSharedWorkerInitialization FLAKY_PauseInSharedWorkerInitialization
 #else
-#define MAYBE_PauseInSharedWorkerInitialization PauseInSharedWorkerInitialization
+#define MAYBE_PauseInSharedWorkerInitialization FAILS_PauseInSharedWorkerInitialization
 #endif
 // See http://crbug.com/100538
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
