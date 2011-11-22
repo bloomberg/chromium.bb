@@ -537,11 +537,8 @@ void NativeWidgetAura::DispatchKeyEventPostIME(const KeyEvent& key) {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, aura::WindowDelegate implementation:
 
-void NativeWidgetAura::OnBoundsChanging(gfx::Rect* new_bounds) {
-  // Enforces a minimum size.
-  const gfx::Size& min_size = delegate_->GetMinimumSize();
-  new_bounds->set_width(std::max(min_size.width(), new_bounds->width()));
-  new_bounds->set_height(std::max(min_size.height(), new_bounds->height()));
+gfx::Size NativeWidgetAura::GetMinimumSize() const {
+  return delegate_->GetMinimumSize();
 }
 
 void NativeWidgetAura::OnBoundsChanged(const gfx::Rect& old_bounds,

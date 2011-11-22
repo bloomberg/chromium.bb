@@ -14,6 +14,7 @@ namespace gfx {
 class Canvas;
 class Point;
 class Rect;
+class Size;
 }
 
 namespace aura {
@@ -26,9 +27,8 @@ class TouchEvent;
 // Delegate interface for aura::Window.
 class AURA_EXPORT WindowDelegate {
  public:
-  // Called before the Window's position and/or size changes and deleage could
-  // take this opportunity to examine and change the new bounds.
-  virtual void OnBoundsChanging(gfx::Rect* new_bounds) = 0;
+  // Returns the window's minimum size, or size 0,0 if there is no limit.
+  virtual gfx::Size GetMinimumSize() const = 0;
 
   // Called when the Window's position and/or size changes.
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,

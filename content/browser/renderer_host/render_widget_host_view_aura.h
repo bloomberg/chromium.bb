@@ -99,7 +99,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void UnlockMouse() OVERRIDE;
 
   // Overridden from aura::WindowDelegate:
-  virtual void OnBoundsChanging(gfx::Rect* new_bounds) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnFocus() OVERRIDE;

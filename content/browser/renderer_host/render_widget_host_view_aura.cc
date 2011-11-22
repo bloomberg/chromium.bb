@@ -396,7 +396,8 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, aura::WindowDelegate implementation:
 
-void RenderWidgetHostViewAura::OnBoundsChanging(gfx::Rect* new_bounds) {
+gfx::Size RenderWidgetHostViewAura::GetMinimumSize() const {
+  return gfx::Size();
 }
 
 void RenderWidgetHostViewAura::OnBoundsChanged(const gfx::Rect& old_bounds,

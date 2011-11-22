@@ -440,9 +440,14 @@ void Window::WindowDetachedFromDesktop(aura::Window* window) {
 void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
   gfx::Rect actual_new_bounds(new_bounds);
 
-  // Gives delegate a change to examine and change the new bounds.
-  if (delegate_)
-    delegate_->OnBoundsChanging(&actual_new_bounds);
+  // Ensure we don't go smaller than our minimum bounds.
+  if (delegate_) {
+    const gfx::Size& min_size = delegate_->GetMinimumSize();
+    actual_new_bounds.set_width(
+        std::max(min_size.width(), actual_new_bounds.width()));
+    actual_new_bounds.set_height(
+        std::max(min_size.height(), actual_new_bounds.height()));
+  }
 
   const gfx::Rect old_bounds = layer_->GetTargetBounds();
 

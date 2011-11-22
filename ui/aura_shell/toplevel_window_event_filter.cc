@@ -106,15 +106,25 @@ int GetSizeChangeDirectionForWindowComponent(int window_component) {
   return size_change_direction;
 }
 
-int GetXMultiplierForWindowComponent(int window_component) {
-  return window_component == HTTOPRIGHT ? -1 : 1;
+// Returns true for resize components along the right edge, where a drag in
+// positive x will make the window larger.
+bool IsRightEdge(int window_component) {
+  return window_component == HTTOPRIGHT ||
+      window_component == HTRIGHT ||
+      window_component == HTBOTTOMRIGHT ||
+      window_component == HTGROWBOX;
 }
 
-int GetYMultiplierForWindowComponent(int window_component) {
-  return window_component == HTBOTTOMLEFT ? -1 : 1;
+// Returns true for resize components in along the bottom edge, where a drag
+// in positive y will make the window larger.
+bool IsBottomEdge(int window_component) {
+  return window_component == HTBOTTOMLEFT ||
+      window_component == HTBOTTOM ||
+      window_component == HTBOTTOMRIGHT ||
+      window_component == HTGROWBOX;
 }
 
-}
+}  // namespace
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
     : EventFilter(owner),
@@ -143,8 +153,7 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       // pressed without mouse move event.
       UpdateWindowComponentForEvent(target, event);
       mouse_down_bounds_ = target->bounds();
-      mouse_down_offset_in_target_ = event->location();
-      mouse_down_offset_in_parent_ = mouse_down_offset_in_target_;
+      mouse_down_offset_in_parent_ = event->location();
       aura::Window::ConvertPointToWindow(target, target->parent(),
                                          &mouse_down_offset_in_parent_);
       return GetBoundsChangeForWindowComponent(window_component_) !=
@@ -192,8 +201,21 @@ bool ToplevelWindowEventFilter::HandleDrag(aura::Window* target,
       target->GetIntProperty(aura::kShowStateKey) != ui::SHOW_STATE_DEFAULT)
     return false;
 
-  target->SetBounds(gfx::Rect(GetOriginForDrag(bounds_change, target, event),
-                              GetSizeForDrag(bounds_change, target, event)));
+  // Dragging a window moves the local coordinate frame, so do arithmetic
+  // in the parent coordinate frame.
+  gfx::Point event_location_in_parent(event->location());
+  aura::Window::ConvertPointToWindow(target, target->parent(),
+                                     &event_location_in_parent);
+  int delta_x = event_location_in_parent.x() - mouse_down_offset_in_parent_.x();
+  int delta_y = event_location_in_parent.y() - mouse_down_offset_in_parent_.y();
+
+  // The minimize size constraint may limit how much we change the window
+  // position.  For example, dragging the left edge to the right should stop
+  // repositioning the window when the minimize size is reached.
+  gfx::Size size = GetSizeForDrag(bounds_change, target, &delta_x, &delta_y);
+  gfx::Point origin = GetOriginForDrag(bounds_change, delta_x, delta_y);
+
+  target->SetBounds(gfx::Rect(origin, size));
   return true;
 }
 
@@ -206,23 +228,16 @@ void ToplevelWindowEventFilter::UpdateWindowComponentForEvent(
 
 gfx::Point ToplevelWindowEventFilter::GetOriginForDrag(
     int bounds_change,
-    aura::Window* target,
-    aura::MouseEvent* event) const {
+    int delta_x,
+    int delta_y) const {
   gfx::Point origin = mouse_down_bounds_.origin();
   if (bounds_change & kBoundsChange_Repositions) {
     int pos_change_direction =
         GetPositionChangeDirectionForWindowComponent(window_component_);
-
-    if (pos_change_direction & kBoundsChangeDirection_Horizontal) {
-      origin.set_x(event->location().x());
-      origin.Offset(-mouse_down_offset_in_target_.x(), 0);
-      origin.Offset(target->bounds().x(), 0);
-    }
-    if (pos_change_direction & kBoundsChangeDirection_Vertical) {
-      origin.set_y(event->location().y());
-      origin.Offset(0, -mouse_down_offset_in_target_.y());
-      origin.Offset(0, target->bounds().y());
-    }
+    if (pos_change_direction & kBoundsChangeDirection_Horizontal)
+      origin.Offset(delta_x, 0);
+    if (pos_change_direction & kBoundsChangeDirection_Vertical)
+      origin.Offset(0, delta_y);
   }
   return origin;
 }
@@ -230,40 +245,56 @@ gfx::Point ToplevelWindowEventFilter::GetOriginForDrag(
 gfx::Size ToplevelWindowEventFilter::GetSizeForDrag(
     int bounds_change,
     aura::Window* target,
-    aura::MouseEvent* event) const {
+    int* delta_x,
+    int* delta_y) const {
   gfx::Size size = mouse_down_bounds_.size();
   if (bounds_change & kBoundsChange_Resizes) {
+    gfx::Size min_size = target->delegate()->GetMinimumSize();
     int size_change_direction =
         GetSizeChangeDirectionForWindowComponent(window_component_);
-
-    gfx::Point event_location_in_parent(event->location());
-    aura::Window::ConvertPointToWindow(target, target->parent(),
-                                       &event_location_in_parent);
-
-    // The math changes depending on whether the window is being resized, or
-    // repositioned in addition to being resized.
-    int first_x = bounds_change & kBoundsChange_Repositions ?
-        mouse_down_offset_in_parent_.x() : event_location_in_parent.x();
-    int first_y = bounds_change & kBoundsChange_Repositions ?
-        mouse_down_offset_in_parent_.y() : event_location_in_parent.y();
-    int second_x = bounds_change & kBoundsChange_Repositions ?
-        event_location_in_parent.x() : mouse_down_offset_in_parent_.x();
-    int second_y = bounds_change & kBoundsChange_Repositions ?
-        event_location_in_parent.y() : mouse_down_offset_in_parent_.y();
-
-    int x_multiplier = GetXMultiplierForWindowComponent(window_component_);
-    int y_multiplier = GetYMultiplierForWindowComponent(window_component_);
-
-    int width = size.width() +
-        (size_change_direction & kBoundsChangeDirection_Horizontal ?
-         x_multiplier * (first_x - second_x) : 0);
-    int height = size.height() +
-        (size_change_direction & kBoundsChangeDirection_Vertical ?
-         y_multiplier * (first_y - second_y) : 0);
-
-    size.SetSize(width, height);
+    size.SetSize(
+      GetWidthForDrag(size_change_direction, min_size.width(), delta_x),
+      GetHeightForDrag(size_change_direction, min_size.height(), delta_y));
   }
   return size;
+}
+
+int ToplevelWindowEventFilter::GetWidthForDrag(int size_change_direction,
+                                               int min_width,
+                                               int* delta_x) const {
+  int width = mouse_down_bounds_.width();
+  if (size_change_direction & kBoundsChangeDirection_Horizontal) {
+    // Along the right edge, positive delta_x increases the window size.
+    int x_multiplier = IsRightEdge(window_component_) ? 1 : -1;
+    width += x_multiplier * (*delta_x);
+
+    // Ensure we don't shrink past the minimum width and clamp delta_x
+    // for the window origin computation.
+    if (width < min_width) {
+      width = min_width;
+      *delta_x = -x_multiplier * (mouse_down_bounds_.width() - min_width);
+    }
+  }
+  return width;
+}
+
+int ToplevelWindowEventFilter::GetHeightForDrag(int size_change_direction,
+                                                int min_height,
+                                                int* delta_y) const {
+  int height = mouse_down_bounds_.height();
+  if (size_change_direction & kBoundsChangeDirection_Vertical) {
+    // Along the bottom edge, positive delta_y increases the window size.
+    int y_multiplier = IsBottomEdge(window_component_) ? 1 : -1;
+    height += y_multiplier * (*delta_y);
+
+    // Ensure we don't shrink past the minimum height and clamp delta_y
+    // for the window origin computation.
+    if (height < min_height) {
+      height = min_height;
+      *delta_y = -y_multiplier * (mouse_down_bounds_.height() - min_height);
+    }
+  }
+  return height;
 }
 
 }  // namespace aura

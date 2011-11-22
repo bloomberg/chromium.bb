@@ -43,13 +43,8 @@ class TestWindowDelegate : public aura::test::TestWindowDelegate {
 
  private:
   // Overridden from aura::Test::TestWindowDelegate:
-  virtual void OnBoundsChanging(gfx::Rect* new_bounds) OVERRIDE {
-    if (!min_size_.IsEmpty()) {
-      new_bounds->set_width(std::max(min_size_.width(),
-                                     new_bounds->width()));
-      new_bounds->set_height(std::max(min_size_.height(),
-                                      new_bounds->height()));
-    }
+  virtual gfx::Size GetMinimumSize() const OVERRIDE {
+    return min_size_;
   }
   virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
     return hittest_code_;
@@ -126,7 +121,7 @@ TEST_F(ToplevelWindowEventFilterTest, GrowBox) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTGROWBOX));
   TestWindowDelegate* window_delegate =
     static_cast<TestWindowDelegate*>(w1->delegate());
-  window_delegate->set_min_size(gfx::Size(50, 50));
+  window_delegate->set_min_size(gfx::Size(40, 40));
 
   gfx::Point position = w1->bounds().origin();
   aura::test::EventGenerator generator;
@@ -147,7 +142,7 @@ TEST_F(ToplevelWindowEventFilterTest, GrowBox) {
   // Enforce minimum size.
   generator.DragMouseBy(-60, -60);
   EXPECT_EQ(position, w1->bounds().origin());
-  EXPECT_EQ(gfx::Size(50, 50), w1->bounds().size());
+  EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
 }
 
 TEST_F(ToplevelWindowEventFilterTest, Right) {
@@ -221,6 +216,88 @@ TEST_F(ToplevelWindowEventFilterTest, Client) {
   DragFromCenterBy(w1.get(), 100, 100);
   // Neither position nor size should have changed.
   EXPECT_EQ(bounds, w1->bounds());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, LeftPastMinimum) {
+  scoped_ptr<aura::Window> w1(CreateWindow(HTLEFT));
+  TestWindowDelegate* window_delegate =
+    static_cast<TestWindowDelegate*>(w1->delegate());
+  window_delegate->set_min_size(gfx::Size(40, 40));
+
+  // Simulate a large left-to-right drag.  Window width should be clamped to
+  // minimum and position change should be limited as well.
+  DragFromCenterBy(w1.get(), 333, 0);
+  EXPECT_EQ(gfx::Point(60, 0), w1->bounds().origin());
+  EXPECT_EQ(gfx::Size(40, 100), w1->bounds().size());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, RightPastMinimum) {
+  scoped_ptr<aura::Window> w1(CreateWindow(HTRIGHT));
+  TestWindowDelegate* window_delegate =
+    static_cast<TestWindowDelegate*>(w1->delegate());
+  window_delegate->set_min_size(gfx::Size(40, 40));
+  gfx::Point position = w1->bounds().origin();
+
+  // Simulate a large right-to-left drag.  Window width should be clamped to
+  // minimum and position should not change.
+  DragFromCenterBy(w1.get(), -333, 0);
+  EXPECT_EQ(position, w1->bounds().origin());
+  EXPECT_EQ(gfx::Size(40, 100), w1->bounds().size());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, TopLeftPastMinimum) {
+  scoped_ptr<aura::Window> w1(CreateWindow(HTTOPLEFT));
+  TestWindowDelegate* window_delegate =
+    static_cast<TestWindowDelegate*>(w1->delegate());
+  window_delegate->set_min_size(gfx::Size(40, 40));
+
+  // Simulate a large top-left to bottom-right drag.  Window width should be
+  // clamped to minimum and position should be limited.
+  DragFromCenterBy(w1.get(), 333, 444);
+  EXPECT_EQ(gfx::Point(60, 60), w1->bounds().origin());
+  EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, TopRightPastMinimum) {
+  scoped_ptr<aura::Window> w1(CreateWindow(HTTOPRIGHT));
+  TestWindowDelegate* window_delegate =
+    static_cast<TestWindowDelegate*>(w1->delegate());
+  window_delegate->set_min_size(gfx::Size(40, 40));
+
+  // Simulate a large top-right to bottom-left drag.  Window size should be
+  // clamped to minimum, x position should not change, and y position should
+  // be clamped.
+  DragFromCenterBy(w1.get(), -333, 444);
+  EXPECT_EQ(gfx::Point(0, 60), w1->bounds().origin());
+  EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, BottomLeftPastMinimum) {
+  scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMLEFT));
+  TestWindowDelegate* window_delegate =
+    static_cast<TestWindowDelegate*>(w1->delegate());
+  window_delegate->set_min_size(gfx::Size(40, 40));
+
+  // Simulate a large bottom-left to top-right drag.  Window size should be
+  // clamped to minimum, x position should be clamped, and y position should
+  // not change.
+  DragFromCenterBy(w1.get(), 333, -444);
+  EXPECT_EQ(gfx::Point(60, 0), w1->bounds().origin());
+  EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, BottomRightPastMinimum) {
+  scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMRIGHT));
+  TestWindowDelegate* window_delegate =
+    static_cast<TestWindowDelegate*>(w1->delegate());
+  window_delegate->set_min_size(gfx::Size(40, 40));
+  gfx::Point position = w1->bounds().origin();
+
+  // Simulate a large bottom-right to top-left drag.  Window size should be
+  // clamped to minimum and position should not change.
+  DragFromCenterBy(w1.get(), -333, -444);
+  EXPECT_EQ(position, w1->bounds().origin());
+  EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
 }
 
 }  // namespace test

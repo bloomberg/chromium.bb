@@ -20,7 +20,7 @@ class TestWindowDelegate : public WindowDelegate {
   virtual ~TestWindowDelegate();
 
   // Overridden from WindowDelegate:
-  virtual void OnBoundsChanging(gfx::Rect* new_bounds) OVERRIDE;
+  virtual gfx::Size GetMinimumSize() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnFocus() OVERRIDE;

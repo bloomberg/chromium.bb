@@ -53,17 +53,29 @@ class AURA_SHELL_EXPORT ToplevelWindowEventFilter : public aura::EventFilter {
 
   // Calculates the new origin of the window during a drag.
   gfx::Point GetOriginForDrag(int bounds_change,
-                              aura::Window* target,
-                              aura::MouseEvent* event) const;
+                              int delta_x,
+                              int delta_y) const;
 
-  // Calculates the new size of the window during a drag.
+  // Calculates the new size of the |target| window during a drag.
+  // If the size is constrained, |delta_x| and |delta_y| may be clamped.
   gfx::Size GetSizeForDrag(int bounds_change,
                            aura::Window* target,
-                           aura::MouseEvent* event) const;
+                           int* delta_x,
+                           int* delta_y) const;
 
-  // The mouse position in the target window when the mouse was pressed, in
-  // target window coordinates.
-  gfx::Point mouse_down_offset_in_target_;
+  // Calculates new width of a window during a drag where the mouse
+  // position changed by |delta_x|.  |delta_x| may be clamped if the window
+  // size is constrained by |min_width|.
+  int GetWidthForDrag(int size_change_direction,
+                      int min_width,
+                      int* delta_x) const;
+
+  // Calculates new height of a window during a drag where the mouse
+  // position changed by |delta_y|.  |delta_y| may be clamped if the window
+  // size is constrained by |min_height|.
+  int GetHeightForDrag(int size_change_direction,
+                       int min_height,
+                       int* delta_y) const;
 
   // The mouse position in the target window when the mouse was pressed, in
   // the target window's parent's coordinates.
