@@ -116,12 +116,6 @@ class UI_EXPORT Clipboard {
   // kept until the system clipboard is set again.
   void WriteObjects(const ObjectMap& objects);
 
-  // Behaves as above. If there is some shared memory handle passed as one of
-  // the objects, it came from the process designated by |process|. This will
-  // assist in turning it into a shared memory region that the current process
-  // can use.
-  void WriteObjects(const ObjectMap& objects, base::ProcessHandle process);
-
   // On Linux/BSD, we need to know when the clipboard is set to a URL.  Most
   // platforms don't care.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(USE_AURA)
