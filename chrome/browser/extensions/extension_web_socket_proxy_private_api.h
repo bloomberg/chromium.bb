@@ -10,38 +10,23 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "net/base/address_list.h"
 
+namespace net {
+class SingleRequestHostResolver;
+}
+
+// Base class for web socket proxy functions.
 class WebSocketProxyPrivate
     : public AsyncExtensionFunction, public content::NotificationObserver {
  public:
   WebSocketProxyPrivate();
-
   virtual ~WebSocketProxyPrivate();
 
-  // Finalizes async operation.
-  virtual void Finalize();
-
  protected:
-  // content::NotificationObserver implementation.
-  virtual void Observe(
-      int type, const content::NotificationSource& source,
-      const content::NotificationDetails& details) OVERRIDE;
+  // Custom finalization.
+  virtual void CustomFinalize() = 0;
 
-  // Whether already finalized.
-  bool is_finalized_;
-
-  // Used to signal timeout (when waiting for proxy initial launch).
-  base::OneShotTimer<WebSocketProxyPrivate> timer_;
-
-  content::NotificationRegistrar registrar_;
-
-  // Proxy accepts websocket connections on this port.
-  int listening_port_;
-};
-
-class WebSocketProxyPrivateGetURLForTCPFunction
-    : public WebSocketProxyPrivate {
- private:
   // ExtensionFunction implementation.
   virtual bool RunImpl() OVERRIDE;
 
@@ -50,24 +35,67 @@ class WebSocketProxyPrivateGetURLForTCPFunction
       int type, const content::NotificationSource& source,
       const content::NotificationDetails& details) OVERRIDE;
 
-  // Finalizes async operation.
-  virtual void Finalize() OVERRIDE;
+  // Destination hostname.
+  std::string hostname_;
+  // Destination IP address.
+  net::AddressList addr_;
+  // Destination port.
+  int port_;
+  // Proxy accepts websocket connections on this port.
+  int listening_port_;
+  // Whether TLS should be used.
+  bool do_tls_;
+  // Requested parameters of connection.
+  std::map<std::string, std::string> map_;
 
-  // Query component of resulting URL.
-  std::string query_;
+ private:
+  // Finalizes and sends respond. Overwrite 'CustomFinalize' in inherited
+  // classes.
+  void Finalize();
+
+  // Callback for DNS resolution.
+  void OnHostResolution(int result);
+
+  // Executes on IO thread. Performs DNS resolution.
+  void ResolveHost();
+
+  // Used to signal timeout (when waiting for proxy initial launch).
+  base::OneShotTimer<WebSocketProxyPrivate> timer_;
+  // Used to register for notifications.
+  content::NotificationRegistrar registrar_;
+  // Used to cancel host resolution when out of scope.
+  scoped_ptr<net::SingleRequestHostResolver> resolver_;
+  // Callback which is called when host is resolved.
+  bool is_finalized_;
+};
+
+// New API function for web socket proxy, which should be used.
+class WebSocketProxyPrivateGetURLForTCPFunction
+    : public WebSocketProxyPrivate {
+ public:
+  WebSocketProxyPrivateGetURLForTCPFunction();
+  virtual ~WebSocketProxyPrivateGetURLForTCPFunction();
+
+ private:
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+  // WebSocketProxyPrivate implementation:
+  virtual void CustomFinalize() OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getURLForTCP")
 };
 
-// Legacy, deprecated, to be eliminated.
+// Legacy API function for web socket proxy, to be eliminated.
 class WebSocketProxyPrivateGetPassportForTCPFunction
     : public WebSocketProxyPrivate {
  public:
   WebSocketProxyPrivateGetPassportForTCPFunction();
+  virtual ~WebSocketProxyPrivateGetPassportForTCPFunction();
 
  private:
-  // ExtensionFunction implementation.
-  virtual bool RunImpl() OVERRIDE;
+  // WebSocketProxyPrivate implementation:
+  virtual void CustomFinalize() OVERRIDE;
 
   DECLARE_EXTENSION_FUNCTION_NAME("webSocketProxyPrivate.getPassportForTCP")
 };

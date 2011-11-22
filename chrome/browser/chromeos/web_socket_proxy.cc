@@ -34,6 +34,7 @@
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/web_socket_proxy_helper.h"
 #include "chrome/browser/internal_auth.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
@@ -146,40 +147,6 @@ std::string FetchAsciiSnippet(uint8* begin, uint8* end, AsciiFilter filter) {
     rv += filter(*begin);
   }
   return rv;
-}
-
-// Parses "passport:hostname:port:" string.  Returns true on success.
-bool FetchPassportNamePort(
-    uint8* begin, uint8* end,
-    std::string* passport, std::string* name, int* port) {
-  std::string input(begin, end);
-  if (input[input.size() - 1] != ':')
-    return false;
-  input.resize(input.size() - 1);
-
-  size_t pos = input.find_last_of(':');
-  if (pos == std::string::npos)
-    return false;
-  std::string port_str(input, pos + 1);
-  if (port_str.empty())
-    return false;
-  const char kAsciiDigits[] = "0123456789";
-  COMPILE_ASSERT(sizeof(kAsciiDigits) == 10 + 1, mess_with_digits);
-  if (port_str.find_first_not_of(kAsciiDigits) != std::string::npos)
-    return false;
-  if (!base::StringToInt(port_str, port) ||
-      *port < 0 ||
-      *port >= (1 << 16)) {
-    return false;
-  }
-  input.resize(pos);
-
-  pos = input.find_first_of(':');
-  if (pos == std::string::npos)
-    return false;
-  passport->assign(input, 0, pos);
-  name->assign(input, pos + 1, std::string::npos);
-  return !name->empty();
 }
 
 std::string FetchExtensionIdFromOrigin(const std::string &origin) {
@@ -450,6 +417,9 @@ class Conn {
   // Websocket client supplies them in first data frame (destframe).
   std::string destname_;
   int destport_;
+
+  // Preresolved |destname_| (empty if not pre-resolved).
+  std::string destaddr_;
 
   // Whether TLS over TCP requested.
   bool do_tls_;
@@ -1305,6 +1275,7 @@ Conn::Status Conn::ConsumeHeader(struct evbuffer* evb) {
       return STATUS_ABORT;
     }
     destport_ = port;
+    destaddr_ = requested_parameters_["addr"];
     do_tls_ = (requested_parameters_["tls"] == "true");
 
     requested_parameters_["extension_id"] =
@@ -1392,14 +1363,17 @@ Conn::Status Conn::ConsumeDestframe(struct evbuffer* evb) {
     frame_mask_index_ = (frame_mask_index_ + 1) % 4;
   }
   std::string passport;
-  if (!FetchPassportNamePort(buf, buf + frame_bytes_remaining_,
-                             &passport, &destname_, &destport_)) {
+  if (!WebSocketProxyHelper::FetchPassportAddrNamePort(
+      buf, buf + frame_bytes_remaining_,
+      &passport, &destaddr_, &destname_, &destport_)) {
     return STATUS_ABORT;
   }
   std::map<std::string, std::string> map;
   map["hostname"] = destname_;
   map["port"] = base::IntToString(destport_);
   map["extension_id"] = FetchExtensionIdFromOrigin(GetOrigin());
+  if (!destaddr_.empty())
+    map["addr"] = destaddr_;
   if (!browser::InternalAuthVerification::VerifyPassport(
       passport, "web_socket_proxy", map)) {
     return STATUS_ABORT;
@@ -1608,12 +1582,14 @@ void Conn::OnPrimchanRead(struct bufferevent* bev, EventKey evkey) {
               if (cs->destname_ == "localhost")
                 cs->destname_ = "127.0.0.1";
             }
+            if (cs->destaddr_.empty())
+              cs->destaddr_ = cs->destname_;
             {
               struct sockaddr_in sa;
               memset(&sa, 0, sizeof(sa));
               sa.sin_port = htons(cs->destport_);
               if (inet_pton(sa.sin_family = AF_INET,
-                            cs->destname_.c_str(),
+                            cs->destaddr_.c_str(),
                             &sa.sin_addr) == 1) {
                 // valid IPv4 address supplied.
                 if (cs->TryConnectDest((struct sockaddr*)&sa, sizeof(sa))) {
@@ -1623,18 +1599,18 @@ void Conn::OnPrimchanRead(struct bufferevent* bev, EventKey evkey) {
               }
             }
             {
-              if (cs->destname_.size() >= 2 &&
-                  cs->destname_[0] == '[' &&
-                  cs->destname_[cs->destname_.size() - 1] == ']') {
+              if (cs->destaddr_.size() >= 2 &&
+                  cs->destaddr_[0] == '[' &&
+                  cs->destaddr_[cs->destaddr_.size() - 1] == ']') {
                 // Literal IPv6 address in brackets.
-                cs->destname_ =
-                    cs->destname_.substr(1, cs->destname_.size() - 2);
+                cs->destaddr_ =
+                    cs->destaddr_.substr(1, cs->destaddr_.size() - 2);
               }
               struct sockaddr_in6 sa;
               memset(&sa, 0, sizeof(sa));
               sa.sin6_port = htons(cs->destport_);
               if (inet_pton(sa.sin6_family = AF_INET6,
-                            cs->destname_.c_str(),
+                            cs->destaddr_.c_str(),
                             &sa.sin6_addr) == 1) {
                 // valid IPv6 address supplied.
                 if (cs->TryConnectDest((struct sockaddr*)&sa, sizeof(sa))) {

@@ -806,6 +806,8 @@
         'browser/chromeos/web_socket_proxy.h',
         'browser/chromeos/web_socket_proxy_controller.cc',
         'browser/chromeos/web_socket_proxy_controller.h',
+        'browser/chromeos/web_socket_proxy_helper.cc',
+        'browser/chromeos/web_socket_proxy_helper.h',
         'browser/chromeos/xinput_hierarchy_changed_event_listener.cc',
         'browser/chromeos/xinput_hierarchy_changed_event_listener.h',
         'browser/chromeos/xinput_hierarchy_changed_event_listener_aura.cc',
