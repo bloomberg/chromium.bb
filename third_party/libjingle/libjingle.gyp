@@ -89,7 +89,7 @@
             'POSIX',
           ],
         }],
-        ['OS=="openbsd" or OS=="freebsd"', {
+        ['os_bsd==1', {
           'defines': [
             'BSD',
           ],
@@ -133,7 +133,7 @@
           'POSIX',
         ],
       }],
-      ['OS=="openbsd" or OS=="freebsd"', {
+      ['os_bsd==1', {
         'defines': [
           'BSD',
         ],

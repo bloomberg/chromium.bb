@@ -34,7 +34,7 @@
   # These are layered in conditionals in the event other platforms
   # end up using this module as well.
   'conditions': [
-    ['OS=="openbsd"', {
+    ['os_bsd==1', {
       'sources/': [
         ['exclude', '^plugin/plugin_main_linux\\.cc$'],
       ],

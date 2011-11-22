@@ -59,7 +59,7 @@
                 'COMPILED_FROM_DSP',
               ],
             }],
-            ['OS=="mac" or OS=="android" or OS=="freebsd" or OS=="openbsd"', {
+            ['OS=="mac" or OS=="android" or os_bsd==1', {
               'defines': [
                 'HAVE_EXPAT_CONFIG_H',
               ],

@@ -711,7 +711,7 @@
         'browser/renderer_host/gtk_key_bindings_handler.h',
       ],
     }],
-    ['OS=="openbsd"', {
+    ['os_bsd==1', {
       'sources/': [
         ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
       ],
