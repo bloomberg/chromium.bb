@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/language_preferences.h"

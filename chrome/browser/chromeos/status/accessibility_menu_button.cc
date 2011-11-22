@@ -6,7 +6,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_service.h"

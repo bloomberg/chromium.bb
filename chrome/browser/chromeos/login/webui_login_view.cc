@@ -9,7 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"

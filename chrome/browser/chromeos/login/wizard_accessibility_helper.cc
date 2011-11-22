@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"

@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/values.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/status/accessibility_menu_button.h"
 
-#include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/test/base/in_process_browser_test.h"

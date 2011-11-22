@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/accessibility_events.h"
-#include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/profiles/profile_manager.h"

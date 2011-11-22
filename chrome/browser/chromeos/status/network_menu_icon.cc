@@ -8,7 +8,7 @@
 #include <cmath>
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/chromeos/accessibility_util.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
