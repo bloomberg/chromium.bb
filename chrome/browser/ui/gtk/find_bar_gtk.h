@@ -11,10 +11,10 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
-#include "chrome/browser/ui/gtk/focus_store_gtk.h"
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/point.h"
@@ -218,7 +218,7 @@ class FindBarGtk : public FindBar,
   FindBarController* find_bar_controller_;
 
   // Saves where the focus used to be whenever we get it.
-  FocusStoreGtk focus_store_;
+  ui::FocusStoreGtk focus_store_;
 
   // If true, the change signal for the text entry is ignored.
   bool ignore_changed_signal_;

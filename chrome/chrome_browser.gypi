@@ -3002,8 +3002,6 @@
         'browser/ui/gtk/first_run_bubble.h',
         'browser/ui/gtk/first_run_dialog.cc',
         'browser/ui/gtk/first_run_dialog.h',
-        'browser/ui/gtk/focus_store_gtk.cc',
-        'browser/ui/gtk/focus_store_gtk.h',
         'browser/ui/gtk/fullscreen_exit_bubble_gtk.cc',
         'browser/ui/gtk/fullscreen_exit_bubble_gtk.h',
         'browser/ui/gtk/gconf_titlebar_listener.cc',

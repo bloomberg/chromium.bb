@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/gtk/focus_store_gtk.h"
+#include "ui/base/gtk/focus_store_gtk.h"
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/platform_util.h"
+namespace ui {
 
 FocusStoreGtk::FocusStoreGtk()
     : widget_(NULL),
@@ -20,7 +20,10 @@ FocusStoreGtk::~FocusStoreGtk() {
 void FocusStoreGtk::Store(GtkWidget* widget) {
   GtkWidget* focus_widget = NULL;
   if (widget) {
-    GtkWindow* window = platform_util::GetTopLevel(widget);
+    // A detached widget won't have a toplevel window as an ancestor, so we
+    // can't assume that the query for toplevel will return a window.
+    GtkWidget* toplevel = gtk_widget_get_ancestor(widget, GTK_TYPE_WINDOW);
+    GtkWindow* window = GTK_IS_WINDOW(toplevel) ? GTK_WINDOW(toplevel) : NULL;
     if (window)
       focus_widget = window->focus_widget;
   }
@@ -48,3 +51,5 @@ void FocusStoreGtk::DisconnectDestroyHandler() {
     widget_ = NULL;
   }
 }
+
+}  // namespace ui

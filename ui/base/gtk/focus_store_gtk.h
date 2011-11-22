@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_FOCUS_STORE_GTK_H_
-#define CHROME_BROWSER_UI_GTK_FOCUS_STORE_GTK_H_
+#ifndef UI_BASE_GTK_FOCUS_STORE_GTK_H_
+#define UI_BASE_GTK_FOCUS_STORE_GTK_H_
 #pragma once
 
 #include "base/basictypes.h"
+#include "ui/base/ui_export.h"
 
 typedef struct _GtkWidget GtkWidget;
 
-class FocusStoreGtk {
+namespace ui {
+
+class UI_EXPORT FocusStoreGtk {
  public:
   FocusStoreGtk();
-
-  virtual ~FocusStoreGtk();
+  ~FocusStoreGtk();
 
   GtkWidget* widget() const { return widget_; }
 
@@ -40,4 +42,6 @@ class FocusStoreGtk {
   DISALLOW_COPY_AND_ASSIGN(FocusStoreGtk);
 };
 
-#endif  // CHROME_BROWSER_UI_GTK_FOCUS_STORE_GTK_H_
+}  // namespace ui
+
+#endif  // UI_BASE_GTK_FOCUS_STORE_GTK_H_

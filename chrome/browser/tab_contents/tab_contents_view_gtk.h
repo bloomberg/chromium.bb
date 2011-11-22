@@ -12,8 +12,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
-#include "chrome/browser/ui/gtk/focus_store_gtk.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "ui/base/gtk/focus_store_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
@@ -134,7 +134,7 @@ class TabContentsViewGtk : public TabContentsView {
   // so that we can control the size of the web pages.
   ui::OwnedWidgetGtk expanded_;
 
-  FocusStoreGtk focus_store_;
+  ui::FocusStoreGtk focus_store_;
 
   // The helper object that handles drag destination related interactions with
   // GTK.
