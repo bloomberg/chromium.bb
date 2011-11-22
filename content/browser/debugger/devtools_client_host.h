@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "content/common/content_export.h"
@@ -15,6 +16,7 @@ namespace IPC {
 class Message;
 }
 
+class RenderViewHost;
 class TabContents;
 
 // Describes interface for managing devtools clients from browser process. There
@@ -30,6 +32,8 @@ class CONTENT_EXPORT DevToolsClientHost {
    private:
     DISALLOW_COPY_AND_ASSIGN(CloseListener);
   };
+
+  static DevToolsClientHost* FindOwnerClientHost(RenderViewHost* client_rvh);
 
   virtual ~DevToolsClientHost();
 
@@ -51,6 +55,10 @@ class CONTENT_EXPORT DevToolsClientHost {
   // Invoked when a tab is replaced by another tab. This is triggered by
   // TabStripModel::ReplaceTabContentsAt.
   virtual void TabReplaced(TabContents* new_tab) = 0;
+
+  // Returns client (front-end) RenderViewHost implementation of this
+  // client host if applicable. NULL otherwise.
+  virtual RenderViewHost* GetClientRenderViewHost();
 
  protected:
   DevToolsClientHost();
