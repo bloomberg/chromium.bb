@@ -813,12 +813,13 @@ libs() {
     # TODO(pdox): Why is this step needed?
     sysroot
     newlib
-    build-compiler-rt
+    compiler-rt-all
     libgcc_eh-all
     libstdcpp
   elif ${LIBMODE_GLIBC} ; then
     # NOTE: glibc() steals libc, libgcc, libstdc++ from the other toolchain
     glibc
+    compiler-rt-all
     libgcc_eh-all
   fi
 }
@@ -893,8 +894,7 @@ glibc() {
   mkdir -p "${GLIBC_INSTALL_DIR}"
 
   # Files in: lib/gcc/${NACL64_TARGET}/4.4.3/[32]/
-  local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o \
-               libgcc.a"
+  local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o"
 
   # Files in: ${NACL64_TARGET}/lib[32]/
   local LIBS2="crt1.o crti.o crtn.o \
@@ -1721,37 +1721,38 @@ install-unwind-header() {
 #########################################################################
 #########################################################################
 
-#+ build-compiler-rt - build/install llvm's replacement for libgcc.a
-build-compiler-rt() {
-  local src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
-  mkdir -p "${TC_BUILD_COMPILER_RT}"
-  spushd "${TC_BUILD_COMPILER_RT}"
+compiler-rt-all() {
   StepBanner "COMPILER-RT (LIBGCC)"
-  for arch in arm x86-32 x86-64; do
-    StepBanner "compiler rt" "build ${arch}"
-    rm -rf "${arch}"
-    mkdir -p "${arch}"
-    spushd "${arch}"
-    RunWithLog libgcc.${arch}.make \
-        make -j ${PNACL_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
-          CC="${PNACL_CC}" \
-          AR="${PNACL_AR}" \
-          "SRC_DIR=${src}" \
-          "CFLAGS=-arch ${arch} --pnacl-allow-translate -O3 -fPIC"
-    spopd
-  done
+  if ! ${LIBMODE_GLIBC}; then
+    compiler-rt arm
+  fi
+  compiler-rt x86-32
+  compiler-rt x86-64
+}
 
-  StepBanner "compiler rt" "install all"
-  ls -l */libgcc.a
 
-  mkdir -p "${INSTALL_LIB_ARM}"
-  cp arm/libgcc.a "${INSTALL_LIB_ARM}/"
+#+ compiler-rt           - build/install llvm's replacement for libgcc.a
+compiler-rt() {
+  local arch=$1
+  local src="${TC_SRC_COMPILER_RT}/compiler-rt/lib"
+  local objdir="${TC_BUILD_COMPILER_RT}-${arch}"
+  local installdir="${INSTALL_LIB}-${arch}"
+  StepBanner "compiler rt" "build (${arch})"
 
-  mkdir -p "${INSTALL_LIB_X8632}"
-  cp x86-32/libgcc.a "${INSTALL_LIB_X8632}/"
+  rm -rf "${objdir}"
+  mkdir -p "${objdir}"
 
-  mkdir -p "${INSTALL_LIB_X8664}"
-  cp x86-64/libgcc.a "${INSTALL_LIB_X8664}/"
+  spushd "${objdir}"
+  RunWithLog libgcc.${arch}.make \
+      make -j ${PNACL_CONCURRENCY} -f ${src}/Makefile-pnacl libgcc.a \
+        CC="${PNACL_CC}" \
+        AR="${PNACL_AR}" \
+        "SRC_DIR=${src}" \
+        "CFLAGS=-arch ${arch} --pnacl-allow-translate -O3 -fPIC"
+
+  StepBanner "compiler rt" "install (${arch})"
+  mkdir -p "${installdir}"
+  cp libgcc.a "${installdir}"
   spopd
 }
 
