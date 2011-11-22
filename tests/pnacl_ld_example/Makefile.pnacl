@@ -44,7 +44,7 @@ fortytwo2.bc:  fortytwo2.c
 
 ######################################################################
 LD_ARM_ARGS= -T ld_script_arm_shared --pnacl-allow-native
-LLC_ARM_ARGS= --add-translate-option=-sfi-zero-mask
+LLC_ARM_ARGS= -Wt,-sfi-zero-mask
 ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 
 # mostly sandboxed

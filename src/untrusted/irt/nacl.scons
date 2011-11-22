@@ -35,7 +35,7 @@ irt_support_sources = [
 # The bitcode build must use -mtls-use-call to separate user TLS
 # from IRT-private TLS.
 if env.Bit('bitcode'):
-  blob_env.Append(LINKFLAGS='-Wl,--add-translate-option=-mtls-use-call')
+  blob_env.Append(LINKFLAGS='-Wt,-mtls-use-call')
 
 # NACL_GC_WRAP_SYSCALL uses ({...}) syntax.
 blob_env.FilterOut(CCFLAGS=['-pedantic'])
