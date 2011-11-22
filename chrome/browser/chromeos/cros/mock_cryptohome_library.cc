@@ -30,9 +30,6 @@ void MockCryptohomeLibrary::SetUp(bool outcome, int code) {
   ON_CALL(*this, AsyncRemove(_, _))
       .WillByDefault(
           WithArgs<1>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
-  ON_CALL(*this, AsyncDoAutomaticFreeDiskSpaceControl(_))
-      .WillByDefault(
-          WithArgs<0>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));
   ON_CALL(*this, AsyncSetOwnerUser(_, _))
       .WillByDefault(
           WithArgs<1>(Invoke(this, &MockCryptohomeLibrary::DoCallback)));

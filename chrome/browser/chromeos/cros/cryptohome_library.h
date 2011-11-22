@@ -30,11 +30,6 @@ class CryptohomeLibrary {
 
   virtual void Init() = 0;
 
-  // Asks cryptohomed to try to find the cryptohome for |user_email| and then
-  // use |passhash| to unlock the key.
-  virtual bool CheckKey(const std::string& user_email,
-                        const std::string& passhash) = 0;
-
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then use |passhash| to unlock the key.
   // Returns true if the attempt is successfully initiated.
@@ -42,12 +37,6 @@ class CryptohomeLibrary {
   virtual bool AsyncCheckKey(const std::string& user_email,
                              const std::string& passhash,
                              Delegate* callback) = 0;
-
-  // Asks cryptohomed to try to find the cryptohome for |user_email| and then
-  // change from using |old_hash| to lock the key to using |new_hash|.
-  virtual bool MigrateKey(const std::string& user_email,
-                          const std::string& old_hash,
-                          const std::string& new_hash) = 0;
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then change from using |old_hash| to lock the
@@ -58,12 +47,6 @@ class CryptohomeLibrary {
                                const std::string& old_hash,
                                const std::string& new_hash,
                                Delegate* callback) = 0;
-
-  // Asks cryptohomed to try to find the cryptohome for |user_email| and then
-  // mount it using |passhash| to unlock the key.
-  virtual bool Mount(const std::string& user_email,
-                     const std::string& passhash,
-                     int* error_code) = 0;
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then mount it using |passhash| to unlock the key.
@@ -79,21 +62,10 @@ class CryptohomeLibrary {
                           const bool create_if_missing,
                           Delegate* callback) = 0;
 
-  // Asks cryptohomed to mount a tmpfs for BWSI mode.
-  virtual bool MountForBwsi(int* error_code) = 0;
-
   // Asks cryptohomed to asynchronously to mount a tmpfs for BWSI mode.
   // Returns true if the attempt is successfully initiated.
   // d->OnComplete() will be called with status info on completion.
   virtual bool AsyncMountForBwsi(Delegate* callback) = 0;
-
-  // Asks cryptohomed to unmount the currently mounted cryptohome.
-  // Returns false if the cryptohome could not be unmounted, true otherwise.
-  virtual bool Unmount() = 0;
-
-  // Asks cryptohomed to try to find the cryptohome for |user_email| and then
-  // nuke it.
-  virtual bool Remove(const std::string& user_email) = 0;
 
   // Asks cryptohomed to asynchronously try to find the cryptohome for
   // |user_email| and then nuke it.
@@ -105,10 +77,6 @@ class CryptohomeLibrary {
 
   // Asks cryptohomed for the system salt.
   virtual CryptohomeBlob GetSystemSalt() = 0;
-
-  // Checks free disk space and if it falls below some minimum
-  // (cryptohome::kMinFreeSpace), performs cleanup.
-  virtual bool AsyncDoAutomaticFreeDiskSpaceControl(Delegate* callback) = 0;
 
   // Passes cryptohomed the owner user. It is used to prevent
   // deletion of the owner in low disk space cleanup (see above).
@@ -144,10 +112,8 @@ class CryptohomeLibrary {
                                     std::string* value) = 0;
   virtual bool InstallAttributesSet(const std::string& name,
                                     const std::string& value) = 0;
-  virtual int InstallAttributesCount() = 0;
   virtual bool InstallAttributesFinalize() = 0;
   virtual bool InstallAttributesIsReady() = 0;
-  virtual bool InstallAttributesIsSecure() = 0;
   virtual bool InstallAttributesIsInvalid() = 0;
   virtual bool InstallAttributesIsFirstInstall() = 0;
 

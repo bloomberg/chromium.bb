@@ -25,33 +25,21 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   void SetUp(bool outcome, int code);
 
   MOCK_METHOD0(Init, void(void));
-  MOCK_METHOD2(CheckKey, bool(const std::string& user_email,
-                              const std::string& passhash));
   MOCK_METHOD3(AsyncCheckKey, bool(const std::string& user_email,
                                    const std::string& passhash,
                                    Delegate* callback));
-  MOCK_METHOD3(MigrateKey, bool(const std::string& user_email,
-                                const std::string& old_hash,
-                                const std::string& new_hash));
   MOCK_METHOD4(AsyncMigrateKey, bool(const std::string& user_email,
                                      const std::string& old_hash,
                                      const std::string& new_hash,
                                      Delegate* callback));
-  MOCK_METHOD3(Mount, bool(const std::string& user_email,
-                           const std::string& passhash,
-                           int* error_code));
   MOCK_METHOD4(AsyncMount, bool(const std::string& user_email,
                                 const std::string& passhash,
                                 const bool create_if_missing,
                                 Delegate* callback));
-  MOCK_METHOD1(MountForBwsi, bool(int*));
   MOCK_METHOD1(AsyncMountForBwsi, bool(Delegate* callback));
-  MOCK_METHOD0(Unmount, bool(void));
-  MOCK_METHOD1(Remove, bool(const std::string& user_email));
   MOCK_METHOD2(AsyncRemove, bool(const std::string& user_email, Delegate* d));
   MOCK_METHOD0(IsMounted, bool(void));
   MOCK_METHOD0(GetSystemSalt, CryptohomeBlob(void));
-  MOCK_METHOD1(AsyncDoAutomaticFreeDiskSpaceControl, bool(Delegate* callback));
   MOCK_METHOD2(AsyncSetOwnerUser, bool(const std::string&, Delegate* callback));
 
   MOCK_METHOD0(TpmIsReady, bool(void));
@@ -67,10 +55,8 @@ class MockCryptohomeLibrary : public CryptohomeLibrary {
   MOCK_METHOD2(InstallAttributesGet, bool(const std::string&, std::string*));
   MOCK_METHOD2(InstallAttributesSet, bool(const std::string&,
                                           const std::string&));
-  MOCK_METHOD0(InstallAttributesCount, int(void));
   MOCK_METHOD0(InstallAttributesFinalize, bool(void));
   MOCK_METHOD0(InstallAttributesIsReady, bool(void));
-  MOCK_METHOD0(InstallAttributesIsSecure, bool(void));
   MOCK_METHOD0(InstallAttributesIsInvalid, bool(void));
   MOCK_METHOD0(InstallAttributesIsFirstInstall, bool(void));
 

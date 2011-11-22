@@ -31,11 +31,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
     cryptohome_connection_ = chromeos::CryptohomeMonitorSession(&Handler, this);
   }
 
-  virtual bool CheckKey(
-      const std::string& user_email, const std::string& passhash) OVERRIDE {
-    return chromeos::CryptohomeCheckKey(user_email.c_str(), passhash.c_str());
-  }
-
   virtual bool AsyncCheckKey(const std::string& user_email,
                              const std::string& passhash,
                              Delegate* d) OVERRIDE {
@@ -43,14 +38,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
         chromeos::CryptohomeAsyncCheckKey(user_email.c_str(), passhash.c_str()),
         d,
         "Couldn't initiate async check of user's key.");
-  }
-
-  virtual bool MigrateKey(const std::string& user_email,
-                          const std::string& old_hash,
-                          const std::string& new_hash) OVERRIDE {
-    return chromeos::CryptohomeMigrateKey(user_email.c_str(),
-                                          old_hash.c_str(),
-                                          new_hash.c_str());
   }
 
   virtual bool AsyncMigrateKey(const std::string& user_email,
@@ -63,14 +50,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
                                             new_hash.c_str()),
         d,
         "Couldn't initiate aync migration of user's key");
-  }
-
-  virtual bool Mount(const std::string& user_email,
-                     const std::string& passhash,
-                     int* error_code) OVERRIDE {
-    return chromeos::CryptohomeMountAllowFail(user_email.c_str(),
-                                              passhash.c_str(),
-                                              error_code);
   }
 
   virtual bool AsyncMount(const std::string& user_email,
@@ -87,22 +66,10 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
         "Couldn't initiate async mount of cryptohome.");
   }
 
-  virtual bool MountForBwsi(int* error_code) OVERRIDE {
-    return chromeos::CryptohomeMountGuest(error_code);
-  }
-
   virtual bool AsyncMountForBwsi(Delegate* d) OVERRIDE {
     return CacheCallback(chromeos::CryptohomeAsyncMountGuest(),
                          d,
                          "Couldn't initiate async mount of cryptohome.");
-  }
-
-  virtual bool Unmount() OVERRIDE {
-    return chromeos::CryptohomeUnmount();
-  }
-
-  virtual bool Remove(const std::string& user_email) OVERRIDE {
-    return chromeos::CryptohomeRemove(user_email.c_str());
   }
 
   virtual bool AsyncRemove(
@@ -132,13 +99,6 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
       }
     }
     return system_salt;
-  }
-
-  virtual bool AsyncDoAutomaticFreeDiskSpaceControl(Delegate* d) OVERRIDE {
-    return CacheCallback(
-        chromeos::CryptohomeAsyncDoAutomaticFreeDiskSpaceControl(),
-        d,
-        "Couldn't do automatic free disk space control.");
   }
 
   virtual bool AsyncSetOwnerUser(
@@ -199,20 +159,12 @@ class CryptohomeLibraryImpl : public CryptohomeLibrary {
                                                     value.c_str());
   }
 
-  virtual int InstallAttributesCount() OVERRIDE {
-    return chromeos::CryptohomeInstallAttributesCount();
-  }
-
   virtual bool InstallAttributesFinalize() OVERRIDE {
     return chromeos::CryptohomeInstallAttributesFinalize();
   }
 
   virtual bool InstallAttributesIsReady() OVERRIDE {
     return chromeos::CryptohomeInstallAttributesIsReady();
-  }
-
-  virtual bool InstallAttributesIsSecure() OVERRIDE {
-    return chromeos::CryptohomeInstallAttributesIsSecure();
   }
 
   virtual bool InstallAttributesIsInvalid() OVERRIDE {
@@ -277,23 +229,12 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
 
   virtual void Init() OVERRIDE {}
 
-  virtual bool CheckKey(
-      const std::string& user_email, const std::string& passhash) OVERRIDE {
-    return true;
-  }
-
   virtual bool AsyncCheckKey(const std::string& user_email,
                              const std::string& passhash,
                              Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DoStubCallback, callback));
-    return true;
-  }
-
-  virtual bool MigrateKey(const std::string& user_email,
-                          const std::string& old_hash,
-                          const std::string& new_hash) OVERRIDE {
     return true;
   }
 
@@ -307,20 +248,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return true;
   }
 
-  virtual bool Mount(const std::string& user_email,
-                     const std::string& passhash,
-                     int* error_code) OVERRIDE {
-    // For testing password change.
-    if (user_email ==
-        CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kLoginUserWithNewPassword)) {
-      *error_code = kCryptohomeMountErrorKeyFailure;
-      return false;
-    }
-
-    return true;
-  }
-
   virtual bool AsyncMount(const std::string& user_email,
                           const std::string& passhash,
                           const bool create_if_missing,
@@ -331,22 +258,10 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return true;
   }
 
-  virtual bool MountForBwsi(int* error_code) OVERRIDE {
-    return true;
-  }
-
   virtual bool AsyncMountForBwsi(Delegate* callback) OVERRIDE {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DoStubCallback, callback));
-    return true;
-  }
-
-  virtual bool Unmount() OVERRIDE {
-    return true;
-  }
-
-  virtual bool Remove(const std::string& user_email) OVERRIDE {
     return true;
   }
 
@@ -368,14 +283,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
       salt.push_back(static_cast<unsigned char>(kStubSystemSalt[i]));
 
     return salt;
-  }
-
-  virtual bool AsyncDoAutomaticFreeDiskSpaceControl(
-      Delegate* callback) OVERRIDE {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DoStubCallback, callback));
-    return true;
   }
 
   virtual bool AsyncSetOwnerUser(
@@ -428,10 +335,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
     return true;
   }
 
-  virtual int InstallAttributesCount() OVERRIDE {
-    return install_attrs_.size();
-  }
-
   virtual bool InstallAttributesFinalize() OVERRIDE {
     locked_ = true;
     return true;
@@ -439,10 +342,6 @@ class CryptohomeLibraryStubImpl : public CryptohomeLibrary {
 
   virtual bool InstallAttributesIsReady() OVERRIDE {
     return true;
-  }
-
-  virtual bool InstallAttributesIsSecure() OVERRIDE {
-    return false;
   }
 
   virtual bool InstallAttributesIsInvalid() OVERRIDE {
