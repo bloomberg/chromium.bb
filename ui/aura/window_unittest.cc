@@ -244,8 +244,8 @@ TEST_F(WindowTest, DestroyTest) {
   EXPECT_EQ(1, child_delegate.destroyed_count());
 }
 
-// Make sure MoveChildToFront moves both the window and layer to the front.
-TEST_F(WindowTest, MoveChildToFront) {
+// Make sure StackChildAtTop moves both the window and layer to the front.
+TEST_F(WindowTest, StackChildAtTop) {
   Window parent(NULL);
   parent.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   Window child1(NULL);
@@ -262,7 +262,7 @@ TEST_F(WindowTest, MoveChildToFront) {
   EXPECT_EQ(child1.layer(), parent.layer()->children()[0]);
   EXPECT_EQ(child2.layer(), parent.layer()->children()[1]);
 
-  parent.MoveChildToFront(&child1);
+  parent.StackChildAtTop(&child1);
   ASSERT_EQ(2u, parent.children().size());
   EXPECT_EQ(&child1, parent.children()[1]);
   EXPECT_EQ(&child2, parent.children()[0]);
@@ -271,8 +271,8 @@ TEST_F(WindowTest, MoveChildToFront) {
   EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
 }
 
-// Various assertions for MoveToFront.
-TEST_F(WindowTest, MoveToFront) {
+// Various assertions for StackAtTop.
+TEST_F(WindowTest, StackAtTop) {
   Window parent(NULL);
   parent.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   Window child1(NULL);
@@ -286,7 +286,7 @@ TEST_F(WindowTest, MoveToFront) {
   child2.SetParent(&parent);
 
   // Move 1 in front of 2.
-  parent.MoveChildAbove(&child1, &child2);
+  parent.StackChildAbove(&child1, &child2);
   ASSERT_EQ(2u, parent.children().size());
   EXPECT_EQ(&child2, parent.children()[0]);
   EXPECT_EQ(&child1, parent.children()[1]);
@@ -297,7 +297,7 @@ TEST_F(WindowTest, MoveToFront) {
   // Add 3, resulting in order [2, 1, 3], then move 2 in front of 1, resulting
   // in [1, 2, 3].
   child3.SetParent(&parent);
-  parent.MoveChildAbove(&child2, &child1);
+  parent.StackChildAbove(&child2, &child1);
   ASSERT_EQ(3u, parent.children().size());
   EXPECT_EQ(&child1, parent.children()[0]);
   EXPECT_EQ(&child2, parent.children()[1]);
@@ -308,7 +308,7 @@ TEST_F(WindowTest, MoveToFront) {
   EXPECT_EQ(child3.layer(), parent.layer()->children()[2]);
 
   // Move 1 in front of 3, resulting in [2 3 1].
-  parent.MoveChildAbove(&child1, &child3);
+  parent.StackChildAbove(&child1, &child3);
   ASSERT_EQ(3u, parent.children().size());
   EXPECT_EQ(&child2, parent.children()[0]);
   EXPECT_EQ(&child3, parent.children()[1]);
@@ -754,8 +754,8 @@ TEST_F(WindowTest, TransientChildren) {
   scoped_ptr<Window> w3(CreateTestWindowWithId(3, parent.get()));
   Window* w2 = CreateTestWindowWithId(2, parent.get());
   w1->AddTransientChild(w2);  // w2 is now owned by w1.
-  // Move w1 to the front (end), this should force w2 to be last (on top of w1).
-  parent->MoveChildToFront(w1.get());
+  // Stack w1 at the top (end), this should force w2 to be last (on top of w1).
+  parent->StackChildAtTop(w1.get());
   ASSERT_EQ(3u, parent->children().size());
   EXPECT_EQ(w2, parent->children().back());
 
@@ -768,10 +768,10 @@ TEST_F(WindowTest, TransientChildren) {
   w1.reset(CreateTestWindowWithId(4, parent.get()));
   w2 = CreateTestWindowWithId(5, w3.get());
   w1->AddTransientChild(w2);
-  parent->MoveChildToFront(w3.get());
-  // Move w1 to the front (end), this shouldn't effect w2 since it has a
+  parent->StackChildAtTop(w3.get());
+  // Stack w1 at the top (end), this shouldn't affect w2 since it has a
   // different parent.
-  parent->MoveChildToFront(w1.get());
+  parent->StackChildAtTop(w1.get());
   ASSERT_EQ(2u, parent->children().size());
   EXPECT_EQ(w3.get(), parent->children()[0]);
   EXPECT_EQ(w1.get(), parent->children()[1]);

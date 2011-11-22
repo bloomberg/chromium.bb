@@ -305,9 +305,9 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   void SetBoundsConstrained(const gfx::Rect& bounds);
 
   // Places the widget in front of the specified widget in z-order.
-  void MoveAboveWidget(Widget* widget);
-  void MoveAbove(gfx::NativeView native_view);
-  void MoveToTop();
+  void StackAboveWidget(Widget* widget);
+  void StackAbove(gfx::NativeView native_view);
+  void StackAtTop();
 
   // Sets a shape on the widget. This takes ownership of shape.
   void SetShape(gfx::NativeRegion shape);

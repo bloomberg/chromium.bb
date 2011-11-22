@@ -132,11 +132,11 @@ void ShadowController::StackShadowBelowWindow(Shadow* shadow,
   ui::Layer* parent_layer = window->parent()->layer();
   DCHECK_EQ(shadow->layer()->parent(), parent_layer);
 
-  // TODO(derat): Add a MoveBelow() method and use that instead (although we
+  // TODO(derat): Add a StackBelow() method and use that instead (although we
   // then run the risk of other layers getting stacked between a window and its
   // shadow).
-  parent_layer->MoveAbove(shadow->layer(), window->layer());
-  parent_layer->MoveAbove(window->layer(), shadow->layer());
+  parent_layer->StackAbove(shadow->layer(), window->layer());
+  parent_layer->StackAbove(window->layer(), shadow->layer());
 }
 
 }  // namespace internal

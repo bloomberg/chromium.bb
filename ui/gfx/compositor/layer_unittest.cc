@@ -1243,7 +1243,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
   // WritePNGFile(bitmap, ref_img1);
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img1));
 
-  l0->MoveToFront(l11.get());
+  l0->StackAtTop(l11.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
@@ -1251,21 +1251,21 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
 
   // l11 is already at the front, should have no effect.
-  l0->MoveToFront(l11.get());
+  l0->StackAtTop(l11.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
 
   // l11 is already at the front, should have no effect.
-  l0->MoveAbove(l11.get(), l12.get());
+  l0->StackAbove(l11.get(), l12.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());
   EXPECT_TRUE(IsSameAsPNGFile(bitmap, ref_img2));
 
   // should restore to original configuration
-  l0->MoveAbove(l12.get(), l11.get());
+  l0->StackAbove(l12.get(), l11.get());
   DrawTree(l0.get());
   ASSERT_TRUE(ReadPixels(&bitmap));
   ASSERT_FALSE(bitmap.empty());

@@ -347,7 +347,7 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     params.bounds = GetPopupBounds();
     popup_->Init(params);
     popup_->SetContentsView(this);
-    popup_->MoveAbove(omnibox_view_->GetRelativeWindowForPopup());
+    popup_->StackAbove(omnibox_view_->GetRelativeWindowForPopup());
     if (!popup_.get()) {
       // For some IMEs GetRelativeWindowForPopup triggers the omnibox to lose
       // focus, thereby closing (and destroying) the popup.

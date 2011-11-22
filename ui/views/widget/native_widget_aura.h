@@ -82,8 +82,8 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual gfx::Rect GetRestoredBounds() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
-  virtual void MoveAbove(gfx::NativeView native_view) OVERRIDE;
-  virtual void MoveToTop() OVERRIDE;
+  virtual void StackAbove(gfx::NativeView native_view) OVERRIDE;
+  virtual void StackAtTop() OVERRIDE;
   virtual void SetShape(gfx::NativeRegion shape) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void CloseNow() OVERRIDE;

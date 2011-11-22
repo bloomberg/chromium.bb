@@ -135,7 +135,7 @@ bool ModalContainerLayoutManager::CanWindowReceiveEvents(
 void ModalContainerLayoutManager::AddModalWindow(aura::Window* window) {
   modal_windows_.push_back(window);
   CreateModalScreen();
-  container_->MoveChildToFront(window);
+  container_->StackChildAtTop(window);
   window->Activate();
 }
 
@@ -172,7 +172,7 @@ void ModalContainerLayoutManager::CreateModalScreen() {
       modal_screen_->GetNativeView()->layer()->GetAnimator());
   modal_screen_->Show();
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.5f);
-  container_->MoveChildToFront(modal_screen_->GetNativeView());
+  container_->StackChildAtTop(modal_screen_->GetNativeView());
 }
 
 void ModalContainerLayoutManager::DestroyModalScreen() {

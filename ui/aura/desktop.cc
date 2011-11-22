@@ -300,7 +300,7 @@ void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
   if (old_active && old_active->delegate())
     old_active->delegate()->OnLostActive();
   if (active_window_) {
-    active_window_->parent()->MoveChildToFront(active_window_);
+    active_window_->parent()->StackChildAtTop(active_window_);
     if (active_window_->delegate())
       active_window_->delegate()->OnActivated();
     active_window_->GetFocusManager()->SetFocusedWindow(

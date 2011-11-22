@@ -442,16 +442,16 @@ void Widget::SetBoundsConstrained(const gfx::Rect& bounds) {
   }
 }
 
-void Widget::MoveAboveWidget(Widget* widget) {
-  native_widget_->MoveAbove(widget->GetNativeView());
+void Widget::StackAboveWidget(Widget* widget) {
+  native_widget_->StackAbove(widget->GetNativeView());
 }
 
-void Widget::MoveAbove(gfx::NativeView native_view) {
-  native_widget_->MoveAbove(native_view);
+void Widget::StackAbove(gfx::NativeView native_view) {
+  native_widget_->StackAbove(native_view);
 }
 
-void Widget::MoveToTop() {
-  native_widget_->MoveToTop();
+void Widget::StackAtTop() {
+  native_widget_->StackAtTop();
 }
 
 void Widget::SetShape(gfx::NativeRegion shape) {

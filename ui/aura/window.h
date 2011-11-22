@@ -128,12 +128,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // the desktop's window.
   void SetParent(Window* parent);
 
-  // Move the specified child of this Window to the front of the z-order.
-  void MoveChildToFront(Window* child);
+  // Stacks the specified child of this Window at the front of the z-order.
+  void StackChildAtTop(Window* child);
 
-  // Moves |other| to be above |child|. Does nothing if |child| is already above
+  // Stacks |child| above |other|.  Does nothing if |child| is already above
   // |other|.
-  void MoveChildAbove(Window* child, Window* other);
+  void StackChildAbove(Window* child, Window* other);
 
   // Returns true if this window can be activated.
   bool CanActivate() const;

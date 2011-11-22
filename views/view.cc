@@ -1219,7 +1219,7 @@ void View::ReorderLayers() {
 void View::ReorderChildLayers(ui::Layer* parent_layer) {
   if (layer()) {
     DCHECK_EQ(parent_layer, layer()->parent());
-    parent_layer->MoveToFront(layer());
+    parent_layer->StackAtTop(layer());
   } else {
     for (Views::const_iterator i(children_.begin()); i != children_.end(); ++i)
       (*i)->ReorderChildLayers(parent_layer);

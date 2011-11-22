@@ -339,7 +339,7 @@ void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
         views::Widget::GetWidgetForNativeView(frame_hwnd);
     GetWidget()->SetBoundsConstrained(bounds);
     if (insert_after)
-      GetWidget()->MoveAboveWidget(insert_after);
+      GetWidget()->StackAboveWidget(insert_after);
 
     // We only do this if the window isn't active (i.e. hasn't been shown yet,
     // or is currently shown but deactivated for another TabContents). This is

@@ -123,15 +123,15 @@ void Layer::Remove(Layer* child) {
   child->DropTextures();
 }
 
-void Layer::MoveToFront(Layer* child) {
+void Layer::StackAtTop(Layer* child) {
   if (children_.size() <= 1 || child == children_.back())
     return;  // Already in front.
-  MoveAbove(child, children_.back());
+  StackAbove(child, children_.back());
 
   SetNeedsToRecomputeHole();
 }
 
-void Layer::MoveAbove(Layer* child, Layer* other) {
+void Layer::StackAbove(Layer* child, Layer* other) {
   DCHECK_NE(child, other);
   DCHECK_EQ(this, child->parent());
   DCHECK_EQ(this, other->parent());

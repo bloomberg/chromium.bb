@@ -183,13 +183,13 @@ void Window::SetParent(Window* parent) {
     NOTREACHED();
 }
 
-void Window::MoveChildToFront(Window* child) {
+void Window::StackChildAtTop(Window* child) {
   if (children_.size() <= 1 || child == children_.back())
     return;  // In the front already.
-  MoveChildAbove(child, children_.back());
+  StackChildAbove(child, children_.back());
 }
 
-void Window::MoveChildAbove(Window* child, Window* other) {
+void Window::StackChildAbove(Window* child, Window* other) {
   DCHECK_NE(child, other);
   DCHECK(child);
   DCHECK(other);
@@ -208,16 +208,16 @@ void Window::MoveChildAbove(Window* child, Window* other) {
   children_.insert(children_.begin() + other_i, child);
 
   // Reorder the layer.
-  layer()->MoveAbove(child->layer(), other->layer());
+  layer()->StackAbove(child->layer(), other->layer());
 
-  // Move any transient children that share the same parent to be in front of
+  // Stack any transient children that share the same parent to be in front of
   // 'child'.
   Window* last_transient = child;
   for (Windows::iterator i = child->transient_children_.begin();
        i != child->transient_children_.end(); ++i) {
     Window* transient_child = *i;
     if (transient_child->parent_ == this) {
-      MoveChildAbove(transient_child, last_transient);
+      StackChildAbove(transient_child, last_transient);
       last_transient = transient_child;
     }
   }

@@ -354,13 +354,13 @@ void NativeWidgetAura::SetSize(const gfx::Size& size) {
   window_->SetBounds(gfx::Rect(window_->bounds().origin(), size));
 }
 
-void NativeWidgetAura::MoveAbove(gfx::NativeView native_view) {
+void NativeWidgetAura::StackAbove(gfx::NativeView native_view) {
   if (window_->parent() && window_->parent() == native_view->parent())
-    window_->parent()->MoveChildAbove(window_, native_view);
+    window_->parent()->StackChildAbove(window_, native_view);
 }
 
-void NativeWidgetAura::MoveToTop() {
-  window_->parent()->MoveChildToFront(window_);
+void NativeWidgetAura::StackAtTop() {
+  window_->parent()->StackChildAtTop(window_);
 }
 
 void NativeWidgetAura::SetShape(gfx::NativeRegion region) {

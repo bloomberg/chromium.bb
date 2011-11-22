@@ -173,7 +173,7 @@ void ToplevelWindowEventFilter::MoveWindowToFront(aura::Window* target) {
   aura::Window* parent = target->parent();
   aura::Window* child = target;
   while (parent) {
-    parent->MoveChildToFront(child);
+    parent->StackChildAtTop(child);
     if (parent == owner())
       break;
     parent = parent->parent();

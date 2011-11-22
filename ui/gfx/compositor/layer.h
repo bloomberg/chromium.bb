@@ -69,12 +69,12 @@ class COMPOSITOR_EXPORT Layer :
   // Removes a Layer from this Layer.
   void Remove(Layer* child);
 
-  // Moves a child to the end of the child list.
-  void MoveToFront(Layer* child);
+  // Stacks |child| above all other children.
+  void StackAtTop(Layer* child);
 
-  // Moves |child| to be above |other|. Does nothing if |other| is already above
-  // |child|.
-  void MoveAbove(Layer* child, Layer* other);
+  // Stacks |child| above |other|, both of which must be children of this layer.
+  // Does nothing if |other| is already above |child|.
+  void StackAbove(Layer* child, Layer* other);
 
   // Returns the child Layers.
   const std::vector<Layer*>& children() const { return children_; }

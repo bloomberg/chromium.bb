@@ -190,7 +190,7 @@ void BalloonViewImpl::SizeContentsWindow() {
 
   gfx::Rect contents_rect = GetContentsRectangle();
   html_container_->SetBounds(contents_rect);
-  html_container_->MoveAboveWidget(frame_container_);
+  html_container_->StackAboveWidget(frame_container_);
 
   gfx::Path path;
   GetContentsMask(contents_rect, &path);
@@ -348,9 +348,9 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   params.bounds = balloon_rect;
   frame_container_->Init(params);
   frame_container_->SetContentsView(this);
-  frame_container_->MoveAboveWidget(html_container_);
+  frame_container_->StackAboveWidget(html_container_);
 
-  // SetAlwaysOnTop should be called after MoveAboveWidget because otherwise
+  // SetAlwaysOnTop should be called after StackAboveWidget because otherwise
   // the top-most flag will be removed.
   html_container_->SetAlwaysOnTop(true);
   frame_container_->SetAlwaysOnTop(true);

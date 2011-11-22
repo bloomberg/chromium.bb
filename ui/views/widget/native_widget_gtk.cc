@@ -1143,11 +1143,11 @@ void NativeWidgetGtk::SetSize(const gfx::Size& size) {
   }
 }
 
-void NativeWidgetGtk::MoveAbove(gfx::NativeView native_view) {
+void NativeWidgetGtk::StackAbove(gfx::NativeView native_view) {
   ui::StackPopupWindow(GetNativeView(), native_view);
 }
 
-void NativeWidgetGtk::MoveToTop() {
+void NativeWidgetGtk::StackAtTop() {
   DCHECK(GTK_IS_WINDOW(GetNativeView()));
   gtk_window_present(GTK_WINDOW(GetNativeView()));
 }

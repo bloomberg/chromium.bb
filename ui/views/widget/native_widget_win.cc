@@ -711,12 +711,12 @@ void NativeWidgetWin::SetSize(const gfx::Size& size) {
                SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE);
 }
 
-void NativeWidgetWin::MoveAbove(gfx::NativeView native_view) {
+void NativeWidgetWin::StackAbove(gfx::NativeView native_view) {
   SetWindowPos(native_view, 0, 0, 0, 0,
                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
-void NativeWidgetWin::MoveToTop() {
+void NativeWidgetWin::StackAtTop() {
   NOTIMPLEMENTED();
 }
 
