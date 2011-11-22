@@ -109,7 +109,7 @@ class FileBrowserNotificationsTest : public InProcessBrowserTest {
 #if defined(USE_AURA)
 // TODO(jamescook): Fails on linux_chromeos_aura because we haven't implemented
 // chromeos::SystemNotification yet.  http://crbug.com/104471
-#define MAYBE_TestBasic FAILS_TestBasic
+#define MAYBE_TestBasic DISABLED_TestBasic
 #else
 #define MAYBE_TestBasic TestBasic
 #endif
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_TestBasic) {
 #if defined(USE_AURA)
 // TODO(jamescook): Fails on linux_chromeos_aura because we haven't implemented
 // chromeos::SystemNotification yet.  http://crbug.com/104471
-#define MAYBE_ShowDelayedTest FAILS_ShowDelayedTest
+#define MAYBE_ShowDelayedTest DISABLED_ShowDelayedTest
 #else
 // TODO(jamescook): This test is flaky on linux_chromeos, occasionally causing
 // this assertion failure inside Gtk:
@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserNotificationsTest, MAYBE_ShowDelayedTest) {
 #if defined(USE_AURA)
 // TODO(jamescook): Fails on linux_chromeos_aura because we haven't implemented
 // chromeos::SystemNotification yet.  http://crbug.com/104471
-#define MAYBE_HideDelayedTest FAILS_HideDelayedTest
+#define MAYBE_HideDelayedTest DISABLED_HideDelayedTest
 #else
 #define MAYBE_HideDelayedTest HideDelayedTest
 #endif
