@@ -42,7 +42,6 @@ class DrMemoryAnalyze:
 
   def ReadLine(self):
     self.line_ = self.cur_fd_.readline()
-    self.stack_trace_line_ = None
 
   def ReadSection(self):
     result = [self.line_]
@@ -58,21 +57,12 @@ class DrMemoryAnalyze:
     while True:
       self.ReadLine()
       if (self.line_ == ''): break
-      if re.search("FINAL SUMMARY:", self.line_):
-        # No more reports since this point.
-        break
-      tmp = []
+
       match = re.search("^Error #[0-9]+: (.*)", self.line_)
       if match:
         self.line_ = match.groups()[0].strip() + "\n"
-        tmp.extend(self.ReadSection())
+        tmp = self.ReadSection()
         self.reports.append(tmp)
-      elif self.line_.startswith("ASSERT FAILURE"):
-        self.reports.append(self.line_.strip())
-
-    while True:
-      self.ReadLine();
-      if (self.line_ == ''): break
 
       if re.search("SUPPRESSIONS USED:", self.line_):
         self.ReadLine()
@@ -82,11 +72,6 @@ class DrMemoryAnalyze:
                                    line).groups()
           self.used_suppressions.append("%7s %s" % (count, name))
           self.ReadLine()
-        break
-
-    while True:
-      self.ReadLine();
-      if (self.line_ == ''): break
 
       if self.line_.startswith("ASSERT FAILURE"):
         self.reports.append(self.line_.strip())
