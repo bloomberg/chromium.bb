@@ -339,8 +339,9 @@ env.EnsureRequiredBuildWarnings()
 # Bootstrap loader used on Linux.
 if env.Bit('linux') and not env.CrossToolsBuild():
   bootstrap_env = env.Clone()
+  bootstrap_env.Replace(CLANG_OPTS='')
   bootstrap_env.FilterOut(CCFLAGS=['-fstack-protector', '-fPIC', '-fPIE',
-                                   '-fasan', '-pedantic'],
+                                   '-pedantic', '$COVERAGE_CCFLAGS'],
                           CFLAGS=['-Wdeclaration-after-statement'])
   bootstrap_env.Append(CCFLAGS=['-fno-pic', '-fno-PIC', '-fno-pie', '-fno-pie',
                                 '-fno-stack-protector'])
@@ -362,7 +363,7 @@ if env.Bit('linux') and not env.CrossToolsBuild():
   bootstrap_raw = bootstrap_env.Command(
       'nacl_bootstrap_raw',
       [bootstrap_obj],
-      ('env CXX=${CXX} ${PYTHON} %s ' +
+      ("env CXX='${CXX}' ${PYTHON} %s " +
        '-m %s --build-id -static -z max-page-size=0x1000 ' +
        defsym + ' --script %s -o ${TARGET} ${SOURCES}') %
       (bootstrap_env.File('linux/ld_bfd.py'),
