@@ -79,8 +79,7 @@ const char kStubUser[] = "stub-user@example.com";
 const char kImagePathNodeName[] = "path";
 const char kImageIndexNodeName[] = "index";
 
-// Index of the default image used as stub while the real user image is loading
-// from file and for the |kStubUser| user.
+// Index of the default image used for the |kStubUser| user.
 const int kStubDefaultImageIndex = 0;
 
 // Delay betweeen user login and attempt to update user's profile image.
@@ -591,7 +590,8 @@ void UserManager::EnsureUsersLoaded() {
             } else {
               int image_index = User::kExternalImageIndex;
               // Until image has been loaded, use a stub.
-              user->SetImage(GetDefaultImage(kStubDefaultImageIndex),
+              user->SetImage(*ResourceBundle::GetSharedInstance().
+                                 GetBitmapNamed(IDR_PROFILE_PICTURE_LOADING),
                              image_index);
               DCHECK(!image_path.empty());
               // Load user image asynchronously.
@@ -615,8 +615,9 @@ void UserManager::EnsureUsersLoaded() {
               // after user logs in).
               DCHECK(!image_path.empty() ||
                      image_index == User::kProfileImageIndex);
-              // Until image has been loaded, use a stub.
-              user->SetImage(GetDefaultImage(kStubDefaultImageIndex),
+              // Until image has been loaded, use a gray avatar.
+              user->SetImage(*ResourceBundle::GetSharedInstance().
+                                 GetBitmapNamed(IDR_PROFILE_PICTURE_LOADING),
                              image_index);
               if (!image_path.empty()) {
                 // Load user image asynchronously.
