@@ -10,7 +10,7 @@
 #include "ui/gfx/native_theme.h"
 #include "ui/views/examples/example_base.h"
 #include "views/controls/button/custom_button.h"
-#include "views/controls/combobox/combobox.h"
+#include "views/controls/combobox/combobox_listener.h"
 #include "views/native_theme_delegate.h"
 #include "views/native_theme_painter.h"
 
@@ -24,7 +24,7 @@ namespace examples {
 // A subclass of button to test native theme rendering.
 class ExampleNativeThemeButton : public views::CustomButton,
                                  public views::NativeThemeDelegate,
-                                 public views::Combobox::Listener {
+                                 public views::ComboboxListener {
  public:
   ExampleNativeThemeButton(views::ButtonListener* listener,
                            views::Combobox* cb_part,
@@ -34,11 +34,11 @@ class ExampleNativeThemeButton : public views::CustomButton,
   std::string MessWithState();
 
  private:
-  // Overridden from View:
+  // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaintBackground(gfx::Canvas* canvas)  OVERRIDE;
 
-  // Overridden from views::Combobox::Listener:
+  // Overridden from views::ComboboxListener:
   virtual void ItemChanged(views::Combobox* combo_box,
                            int prev_index,
                            int new_index) OVERRIDE;

@@ -11,6 +11,7 @@
 #include "ui/views/examples/example_combobox_model.h"
 #include "ui/views/layout/grid_layout.h"
 #include "views/controls/button/checkbox.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/view.h"
 

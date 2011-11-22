@@ -17,6 +17,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "views/controls/button/checkbox.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 
 UninstallView::UninstallView(int* user_selection)

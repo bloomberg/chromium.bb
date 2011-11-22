@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "views/controls/button/button.h"
-#include "views/controls/combobox/combobox.h"
+#include "views/controls/combobox/combobox_listener.h"
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 
@@ -27,31 +27,32 @@ namespace chromeos {
 class VPNConfigView : public ChildNetworkConfigView,
                       public views::TextfieldController,
                       public views::ButtonListener,
-                      public views::Combobox::Listener,
+                      public views::ComboboxListener,
                       public CertLibrary::Observer {
  public:
   VPNConfigView(NetworkConfigView* parent, VirtualNetwork* vpn);
   explicit VPNConfigView(NetworkConfigView* parent);
   virtual ~VPNConfigView();
 
-  // views::TextfieldController methods.
-  virtual void ContentsChanged(
-      views::Textfield* sender, const string16& new_contents) OVERRIDE;
-  virtual bool HandleKeyEvent(
-      views::Textfield* sender, const views::KeyEvent& key_event) OVERRIDE;
+  // views::TextfieldController:
+  virtual void ContentsChanged(views::Textfield* sender,
+                               const string16& new_contents) OVERRIDE;
+  virtual bool HandleKeyEvent(views::Textfield* sender,
+                              const views::KeyEvent& key_event) OVERRIDE;
 
-  // views::ButtonListener
-  virtual void ButtonPressed(
-      views::Button* sender, const views::Event& event) OVERRIDE;
+  // views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
-  // views::Combobox::Listener
-  virtual void ItemChanged(
-      views::Combobox* combo_box, int prev_index, int new_index) OVERRIDE;
+  // views::ComboboxListener:
+  virtual void ItemChanged(views::Combobox* combo_box,
+                           int prev_index,
+                           int new_index) OVERRIDE;
 
   // CertLibrary::Observer:
   virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;
 
-  // ChildNetworkConfigView implementation.
+  // ChildNetworkConfigView:
   virtual string16 GetTitle() OVERRIDE;
   virtual bool CanLogin() OVERRIDE;
   virtual bool Login() OVERRIDE;

@@ -9,12 +9,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/views/examples/example_base.h"
-#include "views/controls/combobox/combobox.h"
+#include "views/controls/combobox/combobox_listener.h"
 
 namespace examples {
 
 class ComboboxExample : public ExampleBase,
-                        public views::Combobox::Listener {
+                        public views::ComboboxListener {
  public:
   explicit ComboboxExample(ExamplesMain* main);
   virtual ~ComboboxExample();
@@ -23,7 +23,7 @@ class ComboboxExample : public ExampleBase,
   virtual void CreateExampleView(views::View* container) OVERRIDE;
 
  private:
-  // Overridden from views::Combobox::Listener:
+  // Overridden from views::ComboboxListener:
   virtual void ItemChanged(views::Combobox* combo_box,
                            int prev_index,
                            int new_index) OVERRIDE;

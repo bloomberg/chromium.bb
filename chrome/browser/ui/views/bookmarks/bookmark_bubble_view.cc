@@ -27,6 +27,7 @@
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 #include "views/controls/textfield/textfield.h"
@@ -279,7 +280,7 @@ void BookmarkBubbleView::LinkClicked(views::Link* source, int event_flags) {
   StartFade(false);
 }
 
-void BookmarkBubbleView::ItemChanged(views::Combobox* combobox,
+void BookmarkBubbleView::ItemChanged(views::Combobox* combo_box,
                                      int prev_index,
                                      int new_index) {
   if (new_index + 1 == parent_model_.GetItemCount()) {

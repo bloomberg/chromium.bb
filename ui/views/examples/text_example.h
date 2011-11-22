@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "ui/views/examples/example_base.h"
 #include "views/controls/button/button.h"
-#include "views/controls/combobox/combobox.h"
+#include "views/controls/combobox/combobox_listener.h"
 
 namespace views {
 class Checkbox;
@@ -21,7 +21,7 @@ namespace examples {
 
 class TextExample : public ExampleBase,
                     public views::ButtonListener,
-                    public views::Combobox::Listener {
+                    public views::ComboboxListener {
  public:
   explicit TextExample(ExamplesMain* main);
   virtual ~TextExample();
@@ -40,7 +40,7 @@ class TextExample : public ExampleBase,
   virtual void ButtonPressed(views::Button* button,
                              const views::Event& event) OVERRIDE;
 
-  // Overridden from views::Combobox::Listener:
+  // Overridden from views::ComboboxListener:
   virtual void ItemChanged(views::Combobox* combo_box,
                            int prev_index,
                            int new_index) OVERRIDE;

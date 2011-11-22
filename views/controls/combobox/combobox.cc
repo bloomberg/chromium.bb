@@ -10,6 +10,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/widget/widget.h"
+#include "views/controls/combobox/combobox_listener.h"
 #include "views/controls/native/native_view_host.h"
 
 namespace views {

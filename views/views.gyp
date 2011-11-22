@@ -75,6 +75,7 @@
         'controls/button/text_button.h',
         'controls/combobox/combobox.cc',
         'controls/combobox/combobox.h',
+        'controls/combobox/combobox_listener.h',
         'controls/combobox/native_combobox_gtk.cc',
         'controls/combobox/native_combobox_gtk.h',
         'controls/combobox/native_combobox_views.cc',

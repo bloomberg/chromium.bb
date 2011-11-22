@@ -19,6 +19,7 @@
 #include "ui/views/layout/layout_constants.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/button/image_button.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 

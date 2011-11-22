@@ -20,6 +20,7 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "views/border.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/tree/tree_view.h"
@@ -136,7 +137,7 @@ void CookieInfoView::ViewHierarchyChanged(bool is_add,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookieInfoView, views::Combobox::Listener overrides.
+// CookieInfoView, views::ComboboxListener overrides.
 
 void CookieInfoView::ItemChanged(views::Combobox* combo_box,
                                  int prev_index,
