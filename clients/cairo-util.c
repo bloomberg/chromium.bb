@@ -289,13 +289,28 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 	cairo_close_path(cr);
 }
 
+static void
+swizzle_row(JSAMPLE *row, JDIMENSION width)
+{
+	JSAMPLE *s;
+	uint32_t *d;
+
+	s = row + (width - 1) * 3;
+	d = (uint32_t *) (row + (width - 1) * 4);
+	while (s >= row) {
+		*d = 0xff000000 | (s[0] << 16) | (s[1] << 8) | (s[2] << 0);
+		s -= 3;
+		d--;
+	}
+}
+
 cairo_surface_t *
 load_jpeg(const char *filename)
 {
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 	FILE *fp;
-	int stride, i;
+	int stride, i, first;
 	JSAMPLE *data, *rows[4];
 
 	cinfo.err = jpeg_std_error(&jerr);
@@ -310,7 +325,7 @@ load_jpeg(const char *filename)
 
 	jpeg_read_header(&cinfo, TRUE);
 
-	cinfo.out_color_space = JCS_EXT_BGRX;
+	cinfo.out_color_space = JCS_RGB;
 	jpeg_start_decompress(&cinfo);
 
 	stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24,
@@ -322,10 +337,13 @@ load_jpeg(const char *filename)
 	}
 
 	while (cinfo.output_scanline < cinfo.output_height) {
+		first = cinfo.output_scanline;
 		for (i = 0; i < ARRAY_LENGTH(rows); i++)
-			rows[i] = data + (cinfo.output_scanline + i) * stride;
+			rows[i] = data + (first + i) * stride;
 
 		jpeg_read_scanlines(&cinfo, rows, ARRAY_LENGTH(rows));
+		for (i = 0; first + i < cinfo.output_scanline; i++)
+			swizzle_row(rows[i], cinfo.output_width);
 	}
 
 	jpeg_finish_decompress(&cinfo);
