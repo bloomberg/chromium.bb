@@ -55,6 +55,7 @@ void Clipboard::WriteObjects(const ObjectMap& objects) {
        iter != objects.end(); ++iter) {
     DispatchObject(static_cast<ObjectType>(iter->first), iter->second);
   }
+
 }
 
 void Clipboard::WriteText(const char* text_data, size_t text_len) {
