@@ -742,6 +742,8 @@
         'protocol/buffered_socket_writer.h',
         'protocol/channel_authenticator.cc',
         'protocol/channel_authenticator.h',
+        'protocol/channel_dispatcher_base.cc',
+        'protocol/channel_dispatcher_base.h',
         'protocol/client_control_dispatcher.cc',
         'protocol/client_control_dispatcher.h',
         'protocol/client_event_dispatcher.cc',

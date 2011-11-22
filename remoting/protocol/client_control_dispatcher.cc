@@ -4,22 +4,20 @@
 
 #include "remoting/protocol/client_control_dispatcher.h"
 
-#include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
-#include "net/base/io_buffer.h"
+#include "net/socket/stream_socket.h"
+#include "remoting/base/constants.h"
 #include "remoting/proto/control.pb.h"
-#include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
+#include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/client_stub.h"
-#include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/message_reader.h"
-#include "remoting/protocol/session.h"
 
 namespace remoting {
 namespace protocol {
 
 ClientControlDispatcher::ClientControlDispatcher()
-    : client_stub_(NULL),
+    : ChannelDispatcherBase(kControlChannelName),
+      client_stub_(NULL),
       writer_(new BufferedSocketWriter(base::MessageLoopProxy::current())) {
 }
 
@@ -27,13 +25,10 @@ ClientControlDispatcher::~ClientControlDispatcher() {
   writer_->Close();
 }
 
-void ClientControlDispatcher::Init(protocol::Session* session) {
-  DCHECK(session);
-
+void ClientControlDispatcher::OnInitialized() {
   // TODO(garykac): Set write failed callback.
-  writer_->Init(session->control_channel(),
-                BufferedSocketWriter::WriteFailedCallback());
-  reader_.Init(session->control_channel(), base::Bind(
+  writer_->Init(channel(), BufferedSocketWriter::WriteFailedCallback());
+  reader_.Init(channel(), base::Bind(
       &ClientControlDispatcher::OnMessageReceived, base::Unretained(this)));
 }
 

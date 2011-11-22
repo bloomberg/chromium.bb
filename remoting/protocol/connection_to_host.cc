@@ -35,17 +35,14 @@ ConnectionToHost::ConnectionToHost(
       client_stub_(NULL),
       video_stub_(NULL),
       state_(CONNECTING),
-      error_(OK),
-      control_connected_(false),
-      input_connected_(false),
-      video_connected_(false) {
+      error_(OK) {
 }
 
 ConnectionToHost::~ConnectionToHost() {
 }
 
 InputStub* ConnectionToHost::input_stub() {
-  return input_dispatcher_.get();
+  return event_dispatcher_.get();
 }
 
 HostStub* ConnectionToHost::host_stub() {
@@ -190,24 +187,19 @@ void ConnectionToHost::OnSessionStateChange(
       break;
 
     case Session::CONNECTED:
-      video_reader_.reset(
-          VideoReader::Create(message_loop_, session_->config()));
-      video_reader_->Init(
-          session_.get(), video_stub_,
-          base::Bind(&ConnectionToHost::OnVideoChannelInitialized,
-                     base::Unretained(this)));
-      break;
+      video_reader_.reset(VideoReader::Create(
+          message_loop_, session_->config()));
+      video_reader_->Init(session_.get(), video_stub_, base::Bind(
+          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
 
-    case Session::CONNECTED_CHANNELS:
       control_dispatcher_.reset(new ClientControlDispatcher());
-      control_dispatcher_->Init(session_.get());
+      control_dispatcher_->Init(session_.get(), base::Bind(
+          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
       control_dispatcher_->set_client_stub(client_stub_);
-      input_dispatcher_.reset(new ClientEventDispatcher());
-      input_dispatcher_->Init(session_.get());
 
-      control_connected_ = true;
-      input_connected_ = true;
-      NotifyIfChannelsReady();
+      event_dispatcher_.reset(new ClientEventDispatcher());
+      event_dispatcher_->Init(session_.get(), base::Bind(
+          &ConnectionToHost::OnChannelInitialized, base::Unretained(this)));
       break;
 
     default:
@@ -216,19 +208,20 @@ void ConnectionToHost::OnSessionStateChange(
   }
 }
 
-void ConnectionToHost::OnVideoChannelInitialized(bool successful) {
+void ConnectionToHost::OnChannelInitialized(bool successful) {
   if (!successful) {
     LOG(ERROR) << "Failed to connect video channel";
     CloseOnError(NETWORK_FAILURE);
     return;
   }
 
-  video_connected_ = true;
   NotifyIfChannelsReady();
 }
 
 void ConnectionToHost::NotifyIfChannelsReady() {
-  if (control_connected_ && input_connected_ && video_connected_ &&
+  if (control_dispatcher_.get() && control_dispatcher_->is_connected() &&
+      event_dispatcher_.get() && event_dispatcher_->is_connected() &&
+      video_reader_.get() && video_reader_->is_connected() &&
       state_ == CONNECTING) {
     SetState(CONNECTED, OK);
     SetState(AUTHENTICATED, OK);
@@ -242,7 +235,7 @@ void ConnectionToHost::CloseOnError(Error error) {
 
 void ConnectionToHost::CloseChannels() {
   control_dispatcher_.reset();
-  input_dispatcher_.reset();
+  event_dispatcher_.reset();
   video_reader_.reset();
 }
 

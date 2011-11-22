@@ -5,14 +5,18 @@
 #ifndef REMOTING_PROTOCOL_HOST_CONTROL_DISPATCHER_H_
 #define REMOTING_PROTOCOL_HOST_CONTROL_DISPATCHER_H_
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/message_reader.h"
 
 namespace base {
 class MessageLoopProxy;
 }  // namespace base
+
+namespace net {
+class StreamSocket;
+}  // namespace net
 
 namespace remoting {
 namespace protocol {
@@ -25,22 +29,21 @@ class Session;
 // HostControlDispatcher dispatches incoming messages on the control
 // channel to HostStub, and also implements ClientStub for outgoing
 // messages.
-class HostControlDispatcher : public ClientStub {
+class HostControlDispatcher : public ChannelDispatcherBase, public ClientStub {
  public:
   HostControlDispatcher();
   virtual ~HostControlDispatcher();
-
-  // Initialize the control channel and the dispatcher for the
-  // |session|. Doesn't take ownership of |session|.
-  void Init(Session* session);
 
   // Sets HostStub that will be called for each incoming control
   // message. Doesn't take ownership of |host_stub|. It must outlive
   // this dispatcher.
   void set_host_stub(HostStub* host_stub) { host_stub_ = host_stub; }
 
+ protected:
+  // ChannelDispatcherBase overrides.
+  virtual void OnInitialized() OVERRIDE;
+
  private:
-  // This method is called by |reader_| when a message is received.
   void OnMessageReceived(ControlMessage* message,
                          const base::Closure& done_task);
 

@@ -81,6 +81,10 @@ void RtpVideoWriter::Close() {
   }
 }
 
+bool RtpVideoWriter::is_connected() {
+  return rtp_channel_.get() && rtcp_channel_.get();
+}
+
 void RtpVideoWriter::ProcessVideoPacket(const VideoPacket* packet,
                                         const base::Closure& done) {
   CHECK(packet->format().encoding() == VideoPacketFormat::ENCODING_VP8)

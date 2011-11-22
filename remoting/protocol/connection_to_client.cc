@@ -21,10 +21,7 @@ ConnectionToClient::ConnectionToClient(protocol::Session* session)
     : handler_(NULL),
       host_stub_(NULL),
       input_stub_(NULL),
-      session_(session),
-      control_connected_(false),
-      input_connected_(false),
-      video_connected_(false) {
+      session_(session) {
   session_->SetStateChangeCallback(
       base::Bind(&ConnectionToClient::OnSessionStateChange,
                  base::Unretained(this)));
@@ -101,27 +98,24 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
       break;
 
     case protocol::Session::CONNECTED:
-      video_writer_.reset(
-          VideoWriter::Create(base::MessageLoopProxy::current(),
-                              session_->config()));
-      video_writer_->Init(
-          session_.get(), base::Bind(&ConnectionToClient::OnVideoInitialized,
-                                     base::Unretained(this)));
-      break;
-
-    case protocol::Session::CONNECTED_CHANNELS:
+      // Initialize channels.
       control_dispatcher_.reset(new HostControlDispatcher());
-      control_dispatcher_->Init(session_.get());
+      control_dispatcher_->Init(session_.get(), base::Bind(
+          &ConnectionToClient::OnChannelInitialized, base::Unretained(this)));
       control_dispatcher_->set_host_stub(host_stub_);
-      input_dispatcher_.reset(new HostEventDispatcher());
-      input_dispatcher_->Init(session_.get());
-      input_dispatcher_->set_input_stub(input_stub_);
-      input_dispatcher_->set_sequence_number_callback(base::Bind(
+
+      event_dispatcher_.reset(new HostEventDispatcher());
+      event_dispatcher_->Init(session_.get(), base::Bind(
+          &ConnectionToClient::OnChannelInitialized, base::Unretained(this)));
+      event_dispatcher_->set_input_stub(input_stub_);
+      event_dispatcher_->set_sequence_number_callback(base::Bind(
           &ConnectionToClient::UpdateSequenceNumber, base::Unretained(this)));
 
-      control_connected_ = true;
-      input_connected_ = true;
-      NotifyIfChannelsReady();
+      video_writer_.reset(VideoWriter::Create(
+          base::MessageLoopProxy::current(), session_->config()));
+      video_writer_->Init(session_.get(), base::Bind(
+          &ConnectionToClient::OnChannelInitialized, base::Unretained(this)));
+
       break;
 
     case protocol::Session::CLOSED:
@@ -139,24 +133,26 @@ void ConnectionToClient::OnSessionStateChange(protocol::Session::State state) {
   }
 }
 
-void ConnectionToClient::OnVideoInitialized(bool successful) {
+void ConnectionToClient::OnChannelInitialized(bool successful) {
   DCHECK(CalledOnValidThread());
 
   if (!successful) {
-    LOG(ERROR) << "Failed to connect video channel";
+    LOG(ERROR) << "Failed to connect a channel";
     CloseOnError();
     return;
   }
 
-  video_connected_ = true;
   NotifyIfChannelsReady();
 }
 
 void ConnectionToClient::NotifyIfChannelsReady() {
   DCHECK(CalledOnValidThread());
 
-  if (control_connected_ && input_connected_ && video_connected_)
+  if (control_dispatcher_.get() && control_dispatcher_->is_connected() &&
+      event_dispatcher_.get() && event_dispatcher_->is_connected() &&
+      video_writer_.get() && video_writer_->is_connected()) {
     handler_->OnConnectionOpened(this);
+  }
 }
 
 void ConnectionToClient::CloseOnError() {
@@ -166,7 +162,7 @@ void ConnectionToClient::CloseOnError() {
 
 void ConnectionToClient::CloseChannels() {
   control_dispatcher_.reset();
-  input_dispatcher_.reset();
+  event_dispatcher_.reset();
   video_writer_.reset();
 }
 

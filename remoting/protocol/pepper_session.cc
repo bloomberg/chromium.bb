@@ -38,8 +38,6 @@ PepperSession::PepperSession(PepperSessionManager* session_manager)
 }
 
 PepperSession::~PepperSession() {
-  control_channel_socket_.reset();
-  event_channel_socket_.reset();
   STLDeleteContainerPairSecondPointers(channels_.begin(), channels_.end());
   session_manager_->SessionDestroyed(this);
 }
@@ -134,16 +132,6 @@ void PepperSession::CancelChannelCreation(const std::string& name) {
   }
 }
 
-net::Socket* PepperSession::control_channel() {
-  DCHECK(CalledOnValidThread());
-  return control_channel_socket_.get();
-}
-
-net::Socket* PepperSession::event_channel() {
-  DCHECK(CalledOnValidThread());
-  return event_channel_socket_.get();
-}
-
 const std::string& PepperSession::jid() {
   DCHECK(CalledOnValidThread());
   return peer_jid_;
@@ -199,8 +187,7 @@ const std::string& PepperSession::shared_secret() {
 void PepperSession::Close() {
   DCHECK(CalledOnValidThread());
 
-  if (state_ == CONNECTING || state_ == CONNECTED ||
-      state_ == CONNECTED_CHANNELS) {
+  if (state_ == CONNECTING || state_ == CONNECTED) {
     // Send session-terminate message.
     JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
                           session_id_);
@@ -252,7 +239,6 @@ void PepperSession::OnAccept(const JingleMessage& message,
     return;
   }
 
-  CreateChannels();
   SetState(CONNECTED);
 
    // In case there is transport information in the accept message.
@@ -292,16 +278,16 @@ void PepperSession::OnTerminate(const JingleMessage& message,
     return;
   }
 
-  // TODO(sergeyu): We should return CHANNEL_CONNECTION_ERROR only in
-  // case when |message.reason| is set GENERAL_ERROR, but some legacy
-  // hosts may sent terminate messages with reason set to SUCCESS.
   if (state_ == CONNECTED) {
-    // Session was connected, but we failed to connect channels.
-    OnError(CHANNEL_CONNECTION_ERROR);
+    if (message.reason == JingleMessage::GENERAL_ERROR) {
+      OnError(CHANNEL_CONNECTION_ERROR);
+    } else {
+      CloseInternal(false);
+    }
     return;
   }
 
-  CloseInternal(false);
+  LOG(WARNING) << "Received unexpected session-terminate message.";
 }
 
 bool PepperSession::InitializeConfigFromDescription(
@@ -369,40 +355,11 @@ void PepperSession::SendTransportInfo() {
           base::Unretained(this))));
 }
 
-void PepperSession::CreateChannels() {
-   CreateStreamChannel(
-      kControlChannelName,
-      base::Bind(&PepperSession::OnChannelConnected,
-                 base::Unretained(this), &control_channel_socket_));
-  CreateStreamChannel(
-      kEventChannelName,
-      base::Bind(&PepperSession::OnChannelConnected,
-                 base::Unretained(this), &event_channel_socket_));
-}
-
-void PepperSession::OnChannelConnected(
-    scoped_ptr<net::Socket>* socket_container,
-    net::StreamSocket* socket) {
-  if (!socket) {
-    LOG(ERROR) << "Failed to connect control or events channel. "
-               << "Terminating connection";
-    OnError(CHANNEL_CONNECTION_ERROR);
-    return;
-  }
-
-  socket_container->reset(socket);
-
-  if (control_channel_socket_.get() && event_channel_socket_.get())
-    SetState(CONNECTED_CHANNELS);
-}
 
 void PepperSession::CloseInternal(bool failed) {
   DCHECK(CalledOnValidThread());
 
   if (state_ != FAILED && state_ != CLOSED) {
-    control_channel_socket_.reset();
-    event_channel_socket_.reset();
-
     if (failed)
       SetState(FAILED);
     else

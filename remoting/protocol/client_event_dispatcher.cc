@@ -6,28 +6,28 @@
 
 #include "base/message_loop_proxy.h"
 #include "base/time.h"
+#include "net/socket/stream_socket.h"
+#include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/buffered_socket_writer.h"
-#include "remoting/protocol/session.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {
 namespace protocol {
 
 ClientEventDispatcher::ClientEventDispatcher()
-    : writer_(new BufferedSocketWriter(base::MessageLoopProxy::current())) {
+    : ChannelDispatcherBase(kEventChannelName),
+      writer_(new BufferedSocketWriter(base::MessageLoopProxy::current())) {
 }
 
 ClientEventDispatcher::~ClientEventDispatcher() {
   writer_->Close();
 }
 
-void ClientEventDispatcher::Init(Session* session) {
-  DCHECK(session);
-
+void ClientEventDispatcher::OnInitialized() {
   // TODO(garykac): Set write failed callback.
-  writer_->Init(session->event_channel(),
+  writer_->Init(channel(),
                 BufferedSocketWriter::WriteFailedCallback());
 }
 

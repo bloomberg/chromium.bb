@@ -56,6 +56,10 @@ void RtpVideoReader::Init(protocol::Session* session,
                  base::Unretained(this), false));
 }
 
+bool RtpVideoReader::is_connected() {
+  return rtp_channel_.get() && rtcp_channel_.get();
+}
+
 void RtpVideoReader::OnChannelReady(bool rtp, net::Socket* socket) {
   if (!socket) {
     if (!initialized_) {

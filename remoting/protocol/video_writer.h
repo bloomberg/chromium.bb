@@ -42,6 +42,9 @@ class VideoWriter : public VideoStub {
   // object is destroyed.
   virtual void Close() = 0;
 
+  // Returns true if the channel is connected.
+  virtual bool is_connected() = 0;
+
  protected:
   VideoWriter() { }
 

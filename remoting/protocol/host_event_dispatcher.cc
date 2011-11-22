@@ -4,24 +4,25 @@
 
 #include "remoting/protocol/host_event_dispatcher.h"
 
+#include "net/socket/stream_socket.h"
+#include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/input_stub.h"
-#include "remoting/protocol/session.h"
 
 namespace remoting {
 namespace protocol {
 
 HostEventDispatcher::HostEventDispatcher()
-    : input_stub_(NULL) {
+    : ChannelDispatcherBase(kEventChannelName),
+      input_stub_(NULL) {
 }
 
 HostEventDispatcher::~HostEventDispatcher() {
 }
 
-void HostEventDispatcher::Init(Session* session) {
-  DCHECK(session);
-  reader_.Init(session->event_channel(), base::Bind(
+void HostEventDispatcher::OnInitialized() {
+  reader_.Init(channel(), base::Bind(
       &HostEventDispatcher::OnMessageReceived, base::Unretained(this)));
 }
 

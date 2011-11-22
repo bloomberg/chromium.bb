@@ -37,6 +37,10 @@ void ProtobufVideoReader::Init(protocol::Session* session,
       base::Bind(&ProtobufVideoReader::OnChannelReady, base::Unretained(this)));
 }
 
+bool ProtobufVideoReader::is_connected() {
+  return channel_.get() != NULL;
+}
+
 void ProtobufVideoReader::OnChannelReady(net::StreamSocket* socket) {
   if (!socket) {
     initialized_callback_.Run(false);

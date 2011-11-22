@@ -80,8 +80,8 @@ class ConnectionToClient : public base::NonThreadSafe {
   // Callback for protocol Session.
   void OnSessionStateChange(Session::State state);
 
-  // Callback for VideoReader::Init().
-  void OnVideoInitialized(bool successful);
+  // Callback for channel initialization.
+  void OnChannelInitialized(bool successful);
 
   void NotifyIfChannelsReady();
 
@@ -100,14 +100,9 @@ class ConnectionToClient : public base::NonThreadSafe {
   // The libjingle channel used to send and receive data from the remote client.
   scoped_ptr<Session> session_;
 
-  scoped_ptr<VideoWriter> video_writer_;
   scoped_ptr<HostControlDispatcher> control_dispatcher_;
-  scoped_ptr<HostEventDispatcher> input_dispatcher_;
-
-  // State of the channels.
-  bool control_connected_;
-  bool input_connected_;
-  bool video_connected_;
+  scoped_ptr<HostEventDispatcher> event_dispatcher_;
+  scoped_ptr<VideoWriter> video_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionToClient);
 };

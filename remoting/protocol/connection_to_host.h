@@ -117,8 +117,8 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
   // Callback for |session_|.
   void OnSessionStateChange(Session::State state);
 
-  // Callback for VideoReader::Init().
-  void OnVideoChannelInitialized(bool successful);
+  // Callbacks for channel initialization
+  void OnChannelInitialized(bool successful);
 
   void NotifyIfChannelsReady();
 
@@ -153,16 +153,11 @@ class ConnectionToHost : public SignalStrategy::StatusObserver,
 
   scoped_ptr<VideoReader> video_reader_;
   scoped_ptr<ClientControlDispatcher> control_dispatcher_;
-  scoped_ptr<ClientEventDispatcher> input_dispatcher_;
+  scoped_ptr<ClientEventDispatcher> event_dispatcher_;
 
   // Internal state of the connection.
   State state_;
   Error error_;
-
-  // State of the channels.
-  bool control_connected_;
-  bool input_connected_;
-  bool video_connected_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectionToHost);

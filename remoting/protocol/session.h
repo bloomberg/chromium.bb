@@ -41,10 +41,6 @@ class Session : public base::NonThreadSafe {
     // Session has been accepted, but channels are connected yet.
     CONNECTED,
 
-    // Video and control channels are connected.
-    // TODO(sergeyu): Remove this state.
-    CONNECTED_CHANNELS,
-
     // Session has been closed.
     CLOSED,
 
@@ -94,11 +90,6 @@ class Session : public base::NonThreadSafe {
   // operation for the named channel. If the channel creation already
   // completed then cancelling it has no effect.
   virtual void CancelChannelCreation(const std::string& name) = 0;
-
-  // TODO(sergeyu): Remove these methods, and use CreateChannel()
-  // instead.
-  virtual net::Socket* control_channel() = 0;
-  virtual net::Socket* event_channel() = 0;
 
   // JID of the other side.
   virtual const std::string& jid() = 0;

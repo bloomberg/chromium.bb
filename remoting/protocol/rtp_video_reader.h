@@ -32,6 +32,7 @@ class RtpVideoReader : public VideoReader {
   virtual void Init(protocol::Session* session,
                     VideoStub* video_stub,
                     const InitializedCallback& callback) OVERRIDE;
+  virtual bool is_connected() OVERRIDE;
 
  private:
   friend class RtpVideoReaderTest;

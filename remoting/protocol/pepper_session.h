@@ -49,8 +49,6 @@ class PepperSession : public Session {
       const std::string& name,
       const DatagramChannelCallback& callback) OVERRIDE;
   virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
-  virtual net::Socket* control_channel() OVERRIDE;
-  virtual net::Socket* event_channel() OVERRIDE;
   virtual const std::string& jid() OVERRIDE;
   virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
   virtual const SessionConfig& config() OVERRIDE;
@@ -104,12 +102,6 @@ class PepperSession : public Session {
   void SendTransportInfo();
   void OnTransportInfoResponse(const buzz::XmlElement* response);
 
-  // Helper methods to create event and control channels.
-  // TODO(sergeyu): Remove these methods.
-  void CreateChannels();
-  void OnChannelConnected(scoped_ptr<net::Socket>* socket_container,
-                          net::StreamSocket* socket);
-
   // Close all the channels and terminate the session.
   void CloseInternal(bool failed);
 
@@ -137,9 +129,6 @@ class PepperSession : public Session {
   scoped_ptr<IqRequest> transport_info_request_;
 
   ChannelsMap channels_;
-
-  scoped_ptr<net::Socket> control_channel_socket_;
-  scoped_ptr<net::Socket> event_channel_socket_;
 
   base::OneShotTimer<PepperSession> transport_infos_timer_;
   std::list<cricket::Candidate> pending_candidates_;

@@ -88,8 +88,6 @@ void JingleSession::CloseInternal(int result, Error error) {
   if (state_ != FAILED && state_ != CLOSED && !closing_) {
     closing_ = true;
 
-    control_channel_socket_.reset();
-    event_channel_socket_.reset();
     STLDeleteContainerPairSecondPointers(channel_connectors_.begin(),
                                          channel_connectors_.end());
 
@@ -178,16 +176,6 @@ void JingleSession::CancelChannelCreation(const std::string& name) {
     delete it->second;
     channel_connectors_.erase(it);
   }
-}
-
-net::Socket* JingleSession::control_channel() {
-  DCHECK(CalledOnValidThread());
-  return control_channel_socket_.get();
-}
-
-net::Socket* JingleSession::event_channel() {
-  DCHECK(CalledOnValidThread());
-  return event_channel_socket_.get();
 }
 
 const std::string& JingleSession::jid() {
@@ -388,8 +376,6 @@ void JingleSession::OnAccept() {
     }
   }
 
-  CreateChannels();
-
   SetState(CONNECTED);
 }
 
@@ -441,33 +427,6 @@ void JingleSession::OnChannelConnectorFinished(
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(channel_connectors_[name], connector);
   channel_connectors_.erase(name);
-}
-
-void JingleSession::CreateChannels() {
-  CreateStreamChannel(
-      kControlChannelName,
-      base::Bind(&JingleSession::OnChannelConnected,
-                 base::Unretained(this), &control_channel_socket_));
-  CreateStreamChannel(
-      kEventChannelName,
-      base::Bind(&JingleSession::OnChannelConnected,
-                 base::Unretained(this), &event_channel_socket_));
-}
-
-void JingleSession::OnChannelConnected(
-    scoped_ptr<net::Socket>* socket_container,
-    net::StreamSocket* socket) {
-  if (!socket) {
-    LOG(ERROR) << "Failed to connect control or events channel. "
-               << "Terminating connection";
-    CloseInternal(net::ERR_CONNECTION_CLOSED, CHANNEL_CONNECTION_ERROR);
-    return;
-  }
-
-  socket_container->reset(socket);
-
-  if (control_channel_socket_.get() && event_channel_socket_.get())
-    SetState(CONNECTED_CHANNELS);
 }
 
 const cricket::ContentInfo* JingleSession::GetContentInfo() const {

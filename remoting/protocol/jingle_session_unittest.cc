@@ -219,32 +219,14 @@ class JingleSessionTest : public testing::Test {
     {
       InSequence dummy;
 
-      if (shared_secret == kTestSharedSecret) {
-        EXPECT_CALL(host_connection_callback_,
-                    OnStateChange(Session::CONNECTED))
-            .Times(1);
-        EXPECT_CALL(host_connection_callback_,
-                    OnStateChange(Session::CONNECTED_CHANNELS))
-            .Times(1)
-            .WillOnce(QuitThreadOnCounter(&not_connected_peers));
-        // Expect that the connection will be closed eventually.
-        EXPECT_CALL(host_connection_callback_,
-                    OnStateChange(Session::CLOSED))
-            .Times(AtMost(1));
-      } else {
-        // Might pass through the CONNECTED state.
-        EXPECT_CALL(host_connection_callback_,
-                    OnStateChange(Session::CONNECTED))
-            .Times(AtMost(1));
-        EXPECT_CALL(host_connection_callback_,
-                    OnStateChange(Session::CONNECTED_CHANNELS))
-            .Times(AtMost(1));
-        // Expect that the connection will fail.
-        EXPECT_CALL(host_connection_callback_,
-                    OnStateChange(Session::FAILED))
-            .Times(1)
-            .WillOnce(InvokeWithoutArgs(&QuitCurrentThread));
-      }
+      EXPECT_CALL(host_connection_callback_,
+                  OnStateChange(Session::CONNECTED))
+          .Times(1)
+          .WillOnce(QuitThreadOnCounter(&not_connected_peers));
+      // Expect that the connection will be closed eventually.
+      EXPECT_CALL(host_connection_callback_,
+                  OnStateChange(Session::CLOSED))
+          .Times(AtMost(1));
     }
 
     {
@@ -253,22 +235,10 @@ class JingleSessionTest : public testing::Test {
       EXPECT_CALL(client_connection_callback_,
                   OnStateChange(Session::CONNECTING))
           .Times(1);
-      if (shared_secret == kTestSharedSecret) {
-        EXPECT_CALL(client_connection_callback_,
-                    OnStateChange(Session::CONNECTED))
-            .Times(1);
-        EXPECT_CALL(client_connection_callback_,
-                    OnStateChange(Session::CONNECTED_CHANNELS))
-            .Times(1)
-            .WillOnce(QuitThreadOnCounter(&not_connected_peers));
-      } else {
-        EXPECT_CALL(client_connection_callback_,
-                    OnStateChange(Session::CONNECTED))
-            .Times(AtMost(1));
-        EXPECT_CALL(client_connection_callback_,
-                    OnStateChange(Session::CONNECTED_CHANNELS))
-            .Times(AtMost(1));
-      }
+      EXPECT_CALL(client_connection_callback_,
+                  OnStateChange(Session::CONNECTED))
+          .Times(1)
+          .WillOnce(QuitThreadOnCounter(&not_connected_peers));
       // Expect that the connection will be closed eventually.
       EXPECT_CALL(client_connection_callback_,
                   OnStateChange(Session::CLOSED))
@@ -368,7 +338,13 @@ class TCPChannelTester : public ChannelTesterBase {
 
   virtual ~TCPChannelTester() { }
 
+  virtual bool did_initialization_fail() {
+    return !sockets_[0].get() || !sockets_[1].get();
+  }
+
   virtual void CheckResults() {
+    ASSERT_FALSE(did_initialization_fail());
+
     EXPECT_EQ(0, write_errors_);
     EXPECT_EQ(0, read_errors_);
 
@@ -394,7 +370,6 @@ class TCPChannelTester : public ChannelTesterBase {
   }
 
   void OnChannelReady(int id, net::StreamSocket* socket) {
-    ASSERT_TRUE(socket);
     if (!socket) {
       Done();
       return;
@@ -714,6 +689,14 @@ TEST_F(JingleSessionTest, Connect) {
 TEST_F(JingleSessionTest, ConnectBadChannelAuth) {
   CreateServerPair();
   ASSERT_TRUE(InitiateConnection(kTestSharedSecretBad));
+  scoped_refptr<TCPChannelTester> tester(
+      new TCPChannelTester(host_session_.get(), client_session_.get(),
+                           kMessageSize, kMessages));
+  tester->Start();
+  ASSERT_TRUE(tester->WaitFinished());
+  EXPECT_TRUE(tester->did_initialization_fail());
+
+  CloseSessions();
 }
 
 // Verify that data can be transmitted over the event channel.

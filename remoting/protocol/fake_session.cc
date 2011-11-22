@@ -245,14 +245,6 @@ void FakeSession::CreateDatagramChannel(
 void FakeSession::CancelChannelCreation(const std::string& name) {
 }
 
-FakeSocket* FakeSession::control_channel() {
-  return &control_channel_;
-}
-
-FakeSocket* FakeSession::event_channel() {
-  return &event_channel_;
-}
-
 const std::string& FakeSession::jid() {
   return jid_;
 }

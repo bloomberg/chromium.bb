@@ -5,7 +5,7 @@
 #ifndef REMOTING_PROTOCOL_HOST_EVENT_DISPATCHER_H_
 #define REMOTING_PROTOCOL_HOST_EVENT_DISPATCHER_H_
 
-#include "base/basictypes.h"
+#include "remoting/protocol/channel_dispatcher_base.h"
 #include "remoting/protocol/message_reader.h"
 
 namespace remoting {
@@ -13,20 +13,15 @@ namespace protocol {
 
 class EventMessage;
 class InputStub;
-class Session;
 
 // HostEventDispatcher dispatches incoming messages on the event
 // channel to InputStub.
-class HostEventDispatcher {
+class HostEventDispatcher : public ChannelDispatcherBase {
  public:
   typedef base::Callback<void(int64)> SequenceNumberCallback;
 
   HostEventDispatcher();
   virtual ~HostEventDispatcher();
-
-  // Initialize the event channel and the dispatcher for the
-  // |session|. Caller retains ownership of |session|.
-  void Init(Session* session);
 
   // Set InputStub that will be called for each incoming input
   // message. Doesn't take ownership of |input_stub|. It must outlive
@@ -39,8 +34,11 @@ class HostEventDispatcher {
     sequence_number_callback_ = value;
   }
 
+ protected:
+  // ChannelDispatcherBase overrides.
+  virtual void OnInitialized() OVERRIDE;
+
  private:
-  // This method is called by |reader_| when a message is received.
   void OnMessageReceived(EventMessage* message,
                          const base::Closure& done_task);
 

@@ -37,8 +37,6 @@ class ConnectionToClientTest : public testing::Test {
     EXPECT_CALL(handler_, OnConnectionOpened(viewer_.get()));
     session_->state_change_callback().Run(
         protocol::Session::CONNECTED);
-    session_->state_change_callback().Run(
-        protocol::Session::CONNECTED_CHANNELS);
     message_loop_.RunAllPending();
   }
 

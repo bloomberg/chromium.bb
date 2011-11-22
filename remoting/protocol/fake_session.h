@@ -150,9 +150,6 @@ class FakeSession : public Session {
       const DatagramChannelCallback& callback) OVERRIDE;
   virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
 
-  virtual FakeSocket* control_channel() OVERRIDE;
-  virtual FakeSocket* event_channel() OVERRIDE;
-
   virtual const std::string& jid() OVERRIDE;
 
   virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
@@ -174,8 +171,6 @@ class FakeSession : public Session {
   scoped_ptr<const CandidateSessionConfig> candidate_config_;
   SessionConfig config_;
   MessageLoop* message_loop_;
-  FakeSocket control_channel_;
-  FakeSocket event_channel_;
 
   std::map<std::string, FakeSocket*> stream_channels_;
   std::map<std::string, FakeUdpSocket*> datagram_channels_;

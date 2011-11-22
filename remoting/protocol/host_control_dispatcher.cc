@@ -5,18 +5,20 @@
 #include "remoting/protocol/host_control_dispatcher.h"
 
 #include "base/message_loop_proxy.h"
+#include "net/socket/stream_socket.h"
+#include "remoting/base/constants.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/buffered_socket_writer.h"
 #include "remoting/protocol/host_stub.h"
-#include "remoting/protocol/session.h"
 #include "remoting/protocol/util.h"
 
 namespace remoting {
 namespace protocol {
 
 HostControlDispatcher::HostControlDispatcher()
-    : host_stub_(NULL),
+    : ChannelDispatcherBase(kControlChannelName),
+      host_stub_(NULL),
       writer_(new BufferedSocketWriter(base::MessageLoopProxy::current())) {
 }
 
@@ -24,13 +26,10 @@ HostControlDispatcher::~HostControlDispatcher() {
   writer_->Close();
 }
 
-void HostControlDispatcher::Init(Session* session) {
-  DCHECK(session);
-
-  reader_.Init(session->control_channel(), base::Bind(
+void HostControlDispatcher::OnInitialized() {
+  reader_.Init(channel(), base::Bind(
       &HostControlDispatcher::OnMessageReceived, base::Unretained(this)));
-  writer_->Init(session->control_channel(),
-                BufferedSocketWriter::WriteFailedCallback());
+  writer_->Init(channel(), BufferedSocketWriter::WriteFailedCallback());
 
   // Write legacy BeginSession message.
   // TODO(sergeyu): Remove it. See http://crbug.com/104670 .

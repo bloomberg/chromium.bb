@@ -37,8 +37,6 @@ class JingleSession : public protocol::Session,
       const std::string& name,
       const DatagramChannelCallback& callback) OVERRIDE;
   virtual void CancelChannelCreation(const std::string& name) OVERRIDE;
-  virtual net::Socket* control_channel() OVERRIDE;
-  virtual net::Socket* event_channel() OVERRIDE;
   virtual const std::string& jid() OVERRIDE;
   virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
   virtual const SessionConfig& config() OVERRIDE;
@@ -121,16 +119,6 @@ class JingleSession : public protocol::Session,
   void OnChannelConnectorFinished(const std::string& name,
                                   JingleChannelConnector* connector);
 
-  // Creates channels after session has been accepted.
-  // TODO(sergeyu): Don't create channels in JingleSession.
-  void CreateChannels();
-
-  // Callbacks for the channels created in JingleSession.
-  // TODO(sergeyu): Remove this method once *_channel() methods are
-  // removed from Session interface.
-  void OnChannelConnected(scoped_ptr<net::Socket>* socket_container,
-                          net::StreamSocket* socket);
-
   const cricket::ContentInfo* GetContentInfo() const;
 
   void SetState(State new_state);
@@ -179,9 +167,6 @@ class JingleSession : public protocol::Session,
 
   // Channels that are currently being connected.
   ChannelConnectorsMap channel_connectors_;
-
-  scoped_ptr<net::Socket> control_channel_socket_;
-  scoped_ptr<net::Socket> event_channel_socket_;
 
   ScopedRunnableMethodFactory<JingleSession> task_factory_;
 
