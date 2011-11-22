@@ -28,20 +28,6 @@ class SignedSettingsHelper {
  public:
   class Callback {
    public:
-    // Callback of CheckWhitelistOp. |success| indicates whether the op succeeds
-    // or not. |email| is the email that is checked against.
-    virtual void OnCheckWhitelistCompleted(
-        SignedSettings::ReturnCode code,
-        const std::string& email) {}
-
-    // Callback of WhitelistOp that adds |email| to the whitelist.
-    virtual void OnWhitelistCompleted(
-        SignedSettings::ReturnCode code, const std::string& email) {}
-
-    // Callback of WhitelistOp that removes |email| to the whitelist.
-    virtual void OnUnwhitelistCompleted(
-        SignedSettings::ReturnCode code, const std::string& email) {}
-
     // Callback of StorePropertyOp.
     virtual void OnStorePropertyCompleted(
         SignedSettings::ReturnCode code,
@@ -68,11 +54,6 @@ class SignedSettingsHelper {
   static SignedSettingsHelper* Get();
 
   // Functions to start signed settings ops.
-  virtual void StartCheckWhitelistOp(const std::string& email,
-                                     Callback* callback) = 0;
-  virtual void StartWhitelistOp(const std::string& email,
-                                bool add_to_whitelist,
-                                Callback* callback) = 0;
   virtual void StartStorePropertyOp(const std::string& name,
                                     const base::Value& value,
                                     Callback* callback) = 0;

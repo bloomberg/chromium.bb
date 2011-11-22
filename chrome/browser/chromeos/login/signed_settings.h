@@ -64,16 +64,6 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
   SignedSettings();
   virtual ~SignedSettings();
 
-  // These are both "whitelist" operations, and only one instance of
-  // one type can be in flight at a time.
-  static SignedSettings* CreateCheckWhitelistOp(
-      const std::string& email,
-      SignedSettings::Delegate<bool>* d);
-
-  static SignedSettings* CreateWhitelistOp(const std::string& email,
-                                           bool add_to_whitelist,
-                                           SignedSettings::Delegate<bool>* d);
-
   // These are both "property" operations, and only one instance of
   // one type can be in flight at a time.
   static SignedSettings* CreateStorePropertyOp(
@@ -93,8 +83,6 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
 
   static SignedSettings* CreateRetrievePolicyOp(
       SignedSettings::Delegate<const em::PolicyFetchResponse&>* d);
-
-  static bool EnumerateWhitelist(std::vector<std::string>* whitelisted);
 
   static ReturnCode MapKeyOpCode(OwnerManager::KeyOpCode code);
 

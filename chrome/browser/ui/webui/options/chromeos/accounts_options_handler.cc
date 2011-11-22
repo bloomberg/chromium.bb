@@ -84,8 +84,10 @@ void AccountsOptionsHandler::WhitelistUser(const base::ListValue* args) {
   if (!args->GetString(0, &email)) {
     return;
   }
-  // TODO(pastarmovj): Those will change to CrosSettings ops in phase 2.
-  UserCrosSettingsProvider::WhitelistUser(Authenticator::Canonicalize(email));
+
+  scoped_ptr<base::StringValue> canonical_email(
+      base::Value::CreateStringValue(Authenticator::Canonicalize(email)));
+  CrosSettings::Get()->AppendToList(kAccountsPrefUsers, canonical_email.get());
 }
 
 void AccountsOptionsHandler::UnwhitelistUser(const base::ListValue* args) {
@@ -93,8 +95,11 @@ void AccountsOptionsHandler::UnwhitelistUser(const base::ListValue* args) {
   if (!args->GetString(0, &email)) {
     return;
   }
-  // TODO(pastarmovj): Those will change to CrosSettings ops in phase 2.
-  UserCrosSettingsProvider::UnwhitelistUser(Authenticator::Canonicalize(email));
+
+  scoped_ptr<base::StringValue> canonical_email(
+      base::Value::CreateStringValue(Authenticator::Canonicalize(email)));
+  CrosSettings::Get()->RemoveFromList(kAccountsPrefUsers,
+                                      canonical_email.get());
   UserManager::Get()->RemoveUser(email, NULL);
 }
 

@@ -32,12 +32,8 @@ namespace chromeos {
 
 class MockSignedSettingsHelperCallback : public SignedSettingsHelper::Callback {
  public:
-  MOCK_METHOD2(OnCheckWhitelistCompleted, void(
-      SignedSettings::ReturnCode code, const std::string& email));
-  MOCK_METHOD2(OnWhitelistCompleted, void(
-      SignedSettings::ReturnCode code, const std::string& email));
-  MOCK_METHOD2(OnUnwhitelistCompleted, void(
-      SignedSettings::ReturnCode code, const std::string& email));
+  virtual ~MockSignedSettingsHelperCallback() {}
+
   MOCK_METHOD3(OnStorePropertyCompleted, void(
       SignedSettings::ReturnCode code,
       const std::string& name,
@@ -119,30 +115,17 @@ TEST_F(SignedSettingsHelperTest, SerializedOps) {
       .Times(2)
       .WillRepeatedly(Return(OwnershipService::OWNERSHIP_TAKEN));
   EXPECT_CALL(m_, has_cached_policy())
-      .Times(5)
+      .Times(2)
       .WillRepeatedly(Return(true));
   em::PolicyData fake_pol = BuildPolicyData();
   EXPECT_CALL(m_, cached_policy())
-      .Times(5)
+      .Times(2)
       .WillRepeatedly(ReturnRef(fake_pol));
   EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
-      .Times(3)
+      .Times(1)
       .WillRepeatedly(SaveArg<0>(&fake_pol));
 
   InSequence s;
-  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
-      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
-  EXPECT_CALL(cb, OnWhitelistCompleted(SignedSettings::SUCCESS, _))
-      .Times(1);
-
-  EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))
-      .Times(1);
-
-  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
-      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
-  EXPECT_CALL(cb, OnUnwhitelistCompleted(SignedSettings::SUCCESS, _))
-      .Times(1);
-
   EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
       .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
   EXPECT_CALL(cb, OnStorePropertyCompleted(SignedSettings::SUCCESS, _, _))
@@ -151,10 +134,8 @@ TEST_F(SignedSettingsHelperTest, SerializedOps) {
   EXPECT_CALL(cb, OnRetrievePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
 
-  pending_ops_ = 5;
-  SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, true, &cb);
-  SignedSettingsHelper::Get()->StartCheckWhitelistOp(fake_email_, &cb);
-  SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, false, &cb);
+
+  pending_ops_ = 2;
   SignedSettingsHelper::Get()->StartStorePropertyOp(fake_prop_, fake_value_,
       &cb);
   SignedSettingsHelper::Get()->StartRetrieveProperty(fake_prop_, &cb);
@@ -166,53 +147,34 @@ TEST_F(SignedSettingsHelperTest, CanceledOps) {
   MockSignedSettingsHelperCallback cb;
 
   EXPECT_CALL(m_, GetStatus(_))
-      .Times(2)
+      .Times(3)
       .WillRepeatedly(Return(OwnershipService::OWNERSHIP_TAKEN));
   EXPECT_CALL(m_, has_cached_policy())
-      .Times(6)
+      .Times(3)
       .WillRepeatedly(Return(true));
   em::PolicyData fake_pol = BuildPolicyData();
   EXPECT_CALL(m_, cached_policy())
-      .Times(7)
+      .Times(3)
       .WillRepeatedly(ReturnRef(fake_pol));
   EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
-      .Times(3)
+      .Times(1)
       .WillRepeatedly(SaveArg<0>(&fake_pol));
 
   InSequence s;
 
-  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
-      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
-  EXPECT_CALL(cb, OnWhitelistCompleted(SignedSettings::SUCCESS, _))
-      .Times(1);
-
-  EXPECT_CALL(cb, OnCheckWhitelistCompleted(SignedSettings::SUCCESS, _))
-      .Times(1);
-
-  EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
-      .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
-  EXPECT_CALL(cb, OnUnwhitelistCompleted(SignedSettings::SUCCESS, _))
-      .Times(1);
-
-  // CheckWhitelistOp for cb_to_be_canceled still gets executed but callback
+  // RetrievePropertyOp for cb_to_be_canceled still gets executed but callback
   // does not happen.
-
   EXPECT_CALL(m_, StartSigningAttempt(_, A<OwnerManager::Delegate*>()))
       .WillOnce(WithArg<1>(Invoke(&SignedSettingsHelperTest::OnKeyOpComplete)));
   EXPECT_CALL(cb, OnStorePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
-
   EXPECT_CALL(cb, OnRetrievePropertyCompleted(SignedSettings::SUCCESS, _, _))
       .Times(1);
 
-  pending_ops_ = 6;
-  SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, true, &cb);
-  SignedSettingsHelper::Get()->StartCheckWhitelistOp(fake_email_, &cb);
-  SignedSettingsHelper::Get()->StartWhitelistOp(fake_email_, false, &cb);
-
+  pending_ops_ = 3;
   MockSignedSettingsHelperCallback cb_to_be_canceled;
-  SignedSettingsHelper::Get()->StartCheckWhitelistOp(fake_email_,
-      &cb_to_be_canceled);
+  SignedSettingsHelper::Get()->StartRetrieveProperty(fake_prop_,
+                                                     &cb_to_be_canceled);
   SignedSettingsHelper::Get()->CancelCallback(&cb_to_be_canceled);
 
   SignedSettingsHelper::Get()->StartStorePropertyOp(fake_prop_, fake_value_,

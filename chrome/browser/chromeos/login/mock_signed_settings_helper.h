@@ -17,10 +17,6 @@ class MockSignedSettingsHelper : public chromeos::SignedSettingsHelper {
   MockSignedSettingsHelper();
   virtual ~MockSignedSettingsHelper();
 
-  MOCK_METHOD2(StartCheckWhitelistOp,
-               void(const std::string& email, Callback*));
-  MOCK_METHOD3(StartWhitelistOp,
-               void(const std::string&, bool, Callback*));
   MOCK_METHOD3(StartStorePropertyOp,
                void(const std::string&, const base::Value&, Callback*));
   MOCK_METHOD2(StartRetrieveProperty,

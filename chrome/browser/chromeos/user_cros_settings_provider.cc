@@ -534,28 +534,6 @@ bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) const {
 }
 
 // static
-void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {
-  SignedSettingsHelper::Get()->StartWhitelistOp(
-      email, true, UserCrosSettingsTrust::GetInstance());
-  PrefService* prefs = g_browser_process->local_state();
-  ListPrefUpdate cached_whitelist_update(prefs, kAccountsPrefUsers);
-  cached_whitelist_update->Append(Value::CreateStringValue(email));
-  prefs->ScheduleSavePersistentPrefs();
-}
-
-// static
-void UserCrosSettingsProvider::UnwhitelistUser(const std::string& email) {
-  SignedSettingsHelper::Get()->StartWhitelistOp(
-      email, false, UserCrosSettingsTrust::GetInstance());
-
-  PrefService* prefs = g_browser_process->local_state();
-  ListPrefUpdate cached_whitelist_update(prefs, kAccountsPrefUsers);
-  StringValue email_value(email);
-  if (cached_whitelist_update->Remove(email_value, NULL))
-    prefs->ScheduleSavePersistentPrefs();
-}
-
-// static
 void UserCrosSettingsProvider::UpdateCachedOwner(const std::string& email) {
   base::StringValue email_value(email);
   UpdateCache(kDeviceOwner, &email_value, USE_VALUE_SUPPLIED);

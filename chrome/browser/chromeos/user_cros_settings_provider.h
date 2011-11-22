@@ -41,9 +41,6 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
                           const base::Closure& callback) const OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
 
-  static void WhitelistUser(const std::string& email);
-  static void UnwhitelistUser(const std::string& email);
-
   // Updates cached value of the owner.
   static void UpdateCachedOwner(const std::string& email);
 
