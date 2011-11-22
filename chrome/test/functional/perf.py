@@ -41,6 +41,7 @@ import urlparse
 import pyauto_functional  # Must be imported before pyauto.
 import pyauto
 
+from netflix import NetflixTestHelper
 import perf_snapshot
 import pyauto_utils
 import test_utils
@@ -537,6 +538,58 @@ class LiveWebappLoadTest(BasePerfTest):
     self._RunNewTabTest('NewTabDocs', _RunSingleDocsTabOpen)
 
 
+class NetflixPerfTest(BasePerfTest, NetflixTestHelper):
+  """Test Netflix video performance."""
+
+  def __init__(self, methodName='runTest', **kwargs):
+    pyauto.PyUITest.__init__(self, methodName, **kwargs)
+    NetflixTestHelper.__init__(self, self)
+
+  def tearDown(self):
+    self._SignOut()
+    pyauto.PyUITest.tearDown(self) 
+
+  def testNetflixDroppedFrames(self):
+    """Measures the Netflix video dropped frames/second. Runs for 60 secs."""
+    self._LoginAndStartPlaying()
+    # Ignore first 10 seconds of video playing so we get smooth videoplayback.
+    time.sleep(10)
+    init_dropped_frames = self._GetVideoDroppedFrames()
+    dropped_frames = []
+    prev_dropped_frames = 0
+    for _ in xrange(60):
+      # Ignoring initial dropped frames of first 10 seconds.
+      total_dropped_frames = self._GetVideoDroppedFrames() - init_dropped_frames
+      dropped_frames.append(total_dropped_frames - prev_dropped_frames)
+      prev_dropped_frames = total_dropped_frames
+      # Play the video for some time.
+      time.sleep(1)
+    self._PrintSummaryResults('NetflixDroppedFrames', dropped_frames, 'frames')
+
+  def testNetflixCPU(self):
+    """Measures the Netflix video CPU usage. Runs for 60 seconds."""
+    self._LoginAndStartPlaying()
+    # Ignore first 10 seconds of video playing so we get smooth videoplayback.
+    time.sleep(10)
+    init_dropped_frames = self._GetVideoDroppedFrames()
+    init_video_frames = self._GetVideoFrames()
+    cpu_usage_start = self._GetCPUUsage()
+    total_shown_frames = 0
+    # Play the video for some time.
+    time.sleep(60)
+    total_video_frames = self._GetVideoFrames() - init_video_frames
+    total_dropped_frames = self._GetVideoDroppedFrames() - init_dropped_frames
+    cpu_usage_end = self._GetCPUUsage()
+    fraction_non_idle_time = \
+        self._GetFractionNonIdleCPUTime(cpu_usage_start, cpu_usage_end)
+    # Counting extrapolation for utilization to play the video.
+    extrapolation_value = fraction_non_idle_time * \
+        (total_video_frames + total_dropped_frames) / total_video_frames
+    logging.info('Netflix CPU extrapolation: %.2f' % extrapolation_value)
+    self._OutputPerfGraphValue('extrapolation_NetflixCPUExtrapolation',
+                               extrapolation_value)
+
+
 class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
   """Test Youtube video performance."""
 
@@ -578,7 +631,7 @@ class YoutubePerfTest(BasePerfTest, YoutubeTestHelper):
     time.sleep(10)
 
   def testYoutubeDroppedFrames(self):
-    """Measures the Youtube video dropped frames. Runs for 60 secs."""
+    """Measures the Youtube video dropped frames/second. Runs for 60 secs."""
     self.StartVideoForPerformance()
     init_dropped_frames = self.GetVideoDroppedFrames()
     total_dropped_frames = 0
