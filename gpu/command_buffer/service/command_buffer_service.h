@@ -8,7 +8,7 @@
 #include <set>
 #include <vector>
 
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
@@ -51,16 +51,16 @@ class CommandBufferService : public CommandBuffer {
   // writer a means of waiting for the reader to make some progress before
   // attempting to write more to the command buffer. Takes ownership of
   // callback.
-  virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
-  virtual void SetParseErrorCallback(Callback0::Type* callback);
+  virtual void SetPutOffsetChangeCallback(const base::Closure& callback);
+  virtual void SetParseErrorCallback(const base::Closure& callback);
 
  private:
   Buffer ring_buffer_;
   int32 num_entries_;
   int32 get_offset_;
   int32 put_offset_;
-  scoped_ptr<Callback0::Type> put_offset_change_callback_;
-  scoped_ptr<Callback0::Type> parse_error_callback_;
+  base::Closure put_offset_change_callback_;
+  base::Closure parse_error_callback_;
   std::vector<Buffer> registered_objects_;
   std::set<int32> unused_registered_object_elements_;
   int32 token_;

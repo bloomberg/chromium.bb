@@ -4,7 +4,8 @@
 
 #include "gpu/demos/framework/window.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -89,7 +90,8 @@ bool Window::CreateRenderContext(gfx::PluginWindowHandle hwnd) {
   }
 
   command_buffer_->SetPutOffsetChangeCallback(
-      NewCallback(gpu_scheduler_.get(), &GpuScheduler::PutChanged));
+      base::Bind(&GpuScheduler::PutChanged,
+                 base::Unretained(gpu_scheduler_.get())));
 
   gles2_cmd_helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
   if (!gles2_cmd_helper_->Initialize(kCommandBufferSize))

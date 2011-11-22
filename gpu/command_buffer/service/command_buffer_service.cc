@@ -6,7 +6,6 @@
 
 #include <limits>
 
-#include "base/callback.h"
 #include "base/process_util.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
@@ -117,9 +116,8 @@ CommandBufferService::State CommandBufferService::FlushSync(
 
   put_offset_ = put_offset;
 
-  if (put_offset_change_callback_.get()) {
-    put_offset_change_callback_->Run();
-  }
+  if (!put_offset_change_callback_.is_null())
+    put_offset_change_callback_.Run();
 
   return GetState();
 }
@@ -132,9 +130,8 @@ void CommandBufferService::Flush(int32 put_offset) {
 
   put_offset_ = put_offset;
 
-  if (put_offset_change_callback_.get()) {
-    put_offset_change_callback_->Run();
-  }
+  if (!put_offset_change_callback_.is_null())
+    put_offset_change_callback_.Run();
 }
 
 void CommandBufferService::SetGetOffset(int32 get_offset) {
@@ -254,8 +251,8 @@ void CommandBufferService::SetToken(int32 token) {
 void CommandBufferService::SetParseError(error::Error error) {
   if (error_ == error::kNoError) {
     error_ = error;
-    if (parse_error_callback_.get())
-      parse_error_callback_->Run();
+    if (!parse_error_callback_.is_null())
+      parse_error_callback_.Run();
   }
 }
 
@@ -265,13 +262,13 @@ void CommandBufferService::SetContextLostReason(
 }
 
 void CommandBufferService::SetPutOffsetChangeCallback(
-    Callback0::Type* callback) {
-  put_offset_change_callback_.reset(callback);
+    const base::Closure& callback) {
+  put_offset_change_callback_ = callback;
 }
 
 void CommandBufferService::SetParseErrorCallback(
-    Callback0::Type* callback) {
-  parse_error_callback_.reset(callback);
+    const base::Closure& callback) {
+  parse_error_callback_ = callback;
 }
 
 }  // namespace gpu

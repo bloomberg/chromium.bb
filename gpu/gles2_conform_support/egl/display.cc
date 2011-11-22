@@ -5,6 +5,8 @@
 #include "gpu/gles2_conform_support/egl/display.h"
 
 #include <vector>
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/gles2_conform_support/egl/config.h"
@@ -134,7 +136,8 @@ EGLSurface Display::CreateWindowSurface(EGLConfig config,
   }
 
   command_buffer_->SetPutOffsetChangeCallback(
-      NewCallback(gpu_scheduler_.get(), &gpu::GpuScheduler::PutChanged));
+      base::Bind(&gpu::GpuScheduler::PutChanged,
+                 base::Unretained(gpu_scheduler_.get())));
 
   surface_.reset(new Surface(win));
 

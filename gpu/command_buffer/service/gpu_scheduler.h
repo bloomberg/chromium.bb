@@ -46,7 +46,7 @@ class GpuScheduler
 
   // Sets a callback that is invoked just before scheduler is rescheduled.
   // Takes ownership of callback object.
-  void SetScheduledCallback(Callback0::Type* scheduled_callback);
+  void SetScheduledCallback(const base::Closure& scheduled_callback);
 
   // Implementation of CommandBufferEngine.
   virtual Buffer GetSharedMemoryBuffer(int32 shm_id) OVERRIDE;
@@ -54,7 +54,7 @@ class GpuScheduler
   virtual bool SetGetOffset(int32 offset) OVERRIDE;
   virtual int32 GetGetOffset() OVERRIDE;
 
-  void SetCommandProcessedCallback(Callback0::Type* callback);
+  void SetCommandProcessedCallback(const base::Closure& callback);
 
   void DeferToFence(base::Closure task);
 
@@ -89,8 +89,8 @@ class GpuScheduler
   };
   std::queue<UnscheduleFence> unschedule_fences_;
 
-  scoped_ptr<Callback0::Type> scheduled_callback_;
-  scoped_ptr<Callback0::Type> command_processed_callback_;
+  base::Closure scheduled_callback_;
+  base::Closure command_processed_callback_;
 };
 
 }  // namespace gpu

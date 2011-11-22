@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/callback_old.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "ui/gfx/size.h"
@@ -107,10 +106,10 @@ class GLES2Decoder : public CommonDecoder {
   // Sets a callback which is called when a glResizeCHROMIUM command
   // is processed.
   virtual void SetResizeCallback(
-      Callback1<gfx::Size>::Type* callback) = 0;
+      const base::Callback<void(gfx::Size)>& callback) = 0;
 
   // Sets a callback which is called when a SwapBuffers command is processed.
-  virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
+  virtual void SetSwapBuffersCallback(const base::Closure& callback) = 0;
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager) = 0;
 

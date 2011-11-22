@@ -6,7 +6,8 @@
 
 #include "content/common/gpu/image_transport_surface.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
@@ -40,7 +41,7 @@ bool ImageTransportHelper::Initialize() {
     return false;
 
   decoder->SetResizeCallback(
-       NewCallback(this, &ImageTransportHelper::Resize));
+       base::Bind(&ImageTransportHelper::Resize, base::Unretained(this)));
 
   return true;
 }

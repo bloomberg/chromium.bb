@@ -14,7 +14,7 @@
 
 #include "base/atomicops.h"
 #include "base/at_exit.h"
-#include "base/callback.h"
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -511,9 +511,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   virtual ContextGroup* GetContextGroup() { return group_.get(); }
 
   virtual void SetGLError(GLenum error, const char* msg);
-  virtual void SetResizeCallback(Callback1<gfx::Size>::Type* callback);
+  virtual void SetResizeCallback(
+      const base::Callback<void(gfx::Size)>& callback);
 
-  virtual void SetSwapBuffersCallback(Callback0::Type* callback);
+  virtual void SetSwapBuffersCallback(const base::Closure& callback);
 
   virtual void SetStreamTextureManager(StreamTextureManager* manager);
   virtual bool GetServiceTextureId(uint32 client_texture_id,
@@ -1371,9 +1372,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   scoped_ptr<Texture> offscreen_resolved_color_texture_;
   GLenum offscreen_saved_color_format_;
 
-  scoped_ptr<Callback1<gfx::Size>::Type> resize_callback_;
+  base::Callback<void(gfx::Size)> resize_callback_;
 
-  scoped_ptr<Callback0::Type> swap_buffers_callback_;
+  base::Closure swap_buffers_callback_;
 
   StreamTextureManager* stream_texture_manager_;
 
@@ -2518,12 +2519,12 @@ void GLES2DecoderImpl::UpdateParentTextureInfo() {
 }
 
 void GLES2DecoderImpl::SetResizeCallback(
-    Callback1<gfx::Size>::Type* callback) {
-  resize_callback_.reset(callback);
+    const base::Callback<void(gfx::Size)>& callback) {
+  resize_callback_ = callback;
 }
 
-void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
-  swap_buffers_callback_.reset(callback);
+void GLES2DecoderImpl::SetSwapBuffersCallback(const base::Closure& callback) {
+  swap_buffers_callback_ = callback;
 }
 
 void GLES2DecoderImpl::SetStreamTextureManager(StreamTextureManager* manager) {
@@ -2796,8 +2797,8 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
       return error::kLostContext;
   }
 
-  if (resize_callback_.get()) {
-    resize_callback_->Run(gfx::Size(width, height));
+  if (!resize_callback_.is_null()) {
+    resize_callback_.Run(gfx::Size(width, height));
     DCHECK(context_->IsCurrent(surface_.get()));
     if (!context_->IsCurrent(surface_.get()))
       return error::kLostContext;
@@ -7137,8 +7138,8 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
       // For multisampled buffers, bind the resolved frame buffer so that
       // callbacks can call ReadPixels or CopyTexImage2D.
       ScopedResolvedFrameBufferBinder binder(this, true, false);
-      if (swap_buffers_callback_.get()) {
-        swap_buffers_callback_->Run();
+      if (!swap_buffers_callback_.is_null()) {
+        swap_buffers_callback_.Run();
       }
 
       return error::kNoError;
@@ -7161,8 +7162,8 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
 
       // Run the callback with |binder| in scope, so that the callback can call
       // ReadPixels or CopyTexImage2D.
-      if (swap_buffers_callback_.get()) {
-        swap_buffers_callback_->Run();
+      if (!swap_buffers_callback_.is_null()) {
+        swap_buffers_callback_.Run();
       }
 
       return error::kNoError;
@@ -7175,8 +7176,8 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
     }
   }
 
-  if (swap_buffers_callback_.get()) {
-    swap_buffers_callback_->Run();
+  if (!swap_buffers_callback_.is_null()) {
+    swap_buffers_callback_.Run();
   }
 
   return error::kNoError;

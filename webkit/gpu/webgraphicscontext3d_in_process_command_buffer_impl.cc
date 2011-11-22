@@ -15,13 +15,16 @@
 #include <algorithm>
 #include <set>
 
-#include "base/string_tokenizer.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop.h"
 #include "base/memory/singleton.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/string_tokenizer.h"
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
@@ -137,9 +140,9 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
 
   // Provides a callback that will be invoked when SwapBuffers has completed
   // service side.
-  void SetSwapBuffersCallback(Callback0::Type* callback);
+  void SetSwapBuffersCallback(const base::Closure& callback);
 
-  void SetContextLostCallback(Callback0::Type* callback);
+  void SetContextLostCallback(const base::Closure& callback);
 
   // Set the current GLInProcessContext for the calling thread.
   static bool MakeCurrent(GLInProcessContext* context);
@@ -183,8 +186,8 @@ class GLInProcessContext : public base::SupportsWeakPtr<GLInProcessContext> {
   void OnContextLost();
 
   base::WeakPtr<GLInProcessContext> parent_;
-  scoped_ptr<Callback0::Type> swap_buffers_callback_;
-  scoped_ptr<Callback0::Type> context_lost_callback_;
+  base::Closure swap_buffers_callback_;
+  base::Closure context_lost_callback_;
   uint32 parent_texture_id_;
   scoped_ptr<CommandBufferService> command_buffer_;
   scoped_ptr< ::gpu::GpuScheduler> gpu_scheduler_;
@@ -323,12 +326,12 @@ void GLInProcessContext::DeleteParentTexture(uint32 texture) {
   gles2_implementation_->DeleteTextures(1, &texture);
 }
 
-void GLInProcessContext::SetSwapBuffersCallback(Callback0::Type* callback) {
-  swap_buffers_callback_.reset(callback);
+void GLInProcessContext::SetSwapBuffersCallback(const base::Closure& callback) {
+  swap_buffers_callback_ = callback;
 }
 
-void GLInProcessContext::SetContextLostCallback(Callback0::Type* callback) {
-  context_lost_callback_.reset(callback);
+void GLInProcessContext::SetContextLostCallback(const base::Closure& callback) {
+  context_lost_callback_ = callback;
 }
 
 bool GLInProcessContext::MakeCurrent(GLInProcessContext* context) {
@@ -519,7 +522,7 @@ bool GLInProcessContext::Initialize(bool onscreen,
   }
 
   command_buffer_->SetPutOffsetChangeCallback(
-      NewCallback(this, &GLInProcessContext::PumpCommands));
+      base::Bind(&GLInProcessContext::PumpCommands, base::Unretained(this)));
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
@@ -585,13 +588,13 @@ void GLInProcessContext::Destroy() {
 }
 
 void GLInProcessContext::OnSwapBuffers() {
-  if (swap_buffers_callback_.get())
-    swap_buffers_callback_->Run();
+  if (!swap_buffers_callback_.is_null())
+    swap_buffers_callback_.Run();
 }
 
 void GLInProcessContext::OnContextLost() {
-  if (context_lost_callback_.get())
-    context_lost_callback_->Run();
+  if (!context_lost_callback_.is_null())
+    context_lost_callback_.Run();
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::
@@ -602,7 +605,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::
 #if defined(OS_MACOSX)
       plugin_handle_(NULL),
 #endif  // defined(OS_MACOSX)
-      context_lost_callback_(0),
+      context_lost_callback_(NULL),
       context_lost_reason_(GL_NO_ERROR),
       cached_width_(0),
       cached_height_(0),
@@ -685,9 +688,9 @@ bool WebGraphicsContext3DInProcessCommandBufferImpl::initialize(
     gl_->EnableFeatureCHROMIUM("webgl_enable_glsl_webgl_validation");
 
   context_->SetContextLostCallback(
-      NewCallback(
-          this,
-          &WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost));
+      base::Bind(
+          &WebGraphicsContext3DInProcessCommandBufferImpl::OnContextLost,
+          base::Unretained(this)));
 
   // Set attributes_ from created offscreen context.
   {

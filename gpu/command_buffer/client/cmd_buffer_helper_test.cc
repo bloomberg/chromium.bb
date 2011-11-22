@@ -4,7 +4,8 @@
 
 // Tests for the Command Buffer Helper.
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/mocks.h"
@@ -82,8 +83,8 @@ class CommandBufferHelperTest : public testing::Test {
 
     gpu_scheduler_.reset(new GpuScheduler(
         command_buffer_.get(), NULL, parser_));
-    command_buffer_->SetPutOffsetChangeCallback(NewCallback(
-        gpu_scheduler_.get(), &GpuScheduler::PutChanged));
+    command_buffer_->SetPutOffsetChangeCallback(base::Bind(
+        &GpuScheduler::PutChanged, base::Unretained(gpu_scheduler_.get())));
 
     api_mock_->set_engine(gpu_scheduler_.get());
 

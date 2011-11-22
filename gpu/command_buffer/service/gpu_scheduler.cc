@@ -5,7 +5,6 @@
 #include "gpu/command_buffer/service/gpu_scheduler.h"
 
 #include "base/bind.h"
-#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
@@ -111,8 +110,8 @@ void GpuScheduler::PutChanged() {
       return;
     }
 
-    if (command_processed_callback_.get())
-      command_processed_callback_->Run();
+    if (!command_processed_callback_.is_null())
+      command_processed_callback_.Run();
 
     if (unscheduled_count_ > 0)
       return;
@@ -127,8 +126,8 @@ void GpuScheduler::SetScheduled(bool scheduled) {
     --unscheduled_count_;
     DCHECK_GE(unscheduled_count_, 0);
 
-    if (unscheduled_count_ == 0 && scheduled_callback_.get())
-      scheduled_callback_->Run();
+    if (unscheduled_count_ == 0 && !scheduled_callback_.is_null())
+      scheduled_callback_.Run();
   } else {
     ++unscheduled_count_;
   }
@@ -138,8 +137,9 @@ bool GpuScheduler::IsScheduled() {
   return unscheduled_count_ == 0;
 }
 
-void GpuScheduler::SetScheduledCallback(Callback0::Type* scheduled_callback) {
-  scheduled_callback_.reset(scheduled_callback);
+void GpuScheduler::SetScheduledCallback(
+    const base::Closure& scheduled_callback) {
+  scheduled_callback_ = scheduled_callback;
 }
 
 Buffer GpuScheduler::GetSharedMemoryBuffer(int32 shm_id) {
@@ -163,8 +163,8 @@ int32 GpuScheduler::GetGetOffset() {
 }
 
 void GpuScheduler::SetCommandProcessedCallback(
-    Callback0::Type* callback) {
-  command_processed_callback_.reset(callback);
+    const base::Closure& callback) {
+  command_processed_callback_ = callback;
 }
 
 void GpuScheduler::DeferToFence(base::Closure task) {

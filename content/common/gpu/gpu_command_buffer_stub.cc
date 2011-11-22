@@ -5,6 +5,7 @@
 #if defined(ENABLE_GPU)
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/shared_memory.h"
@@ -246,12 +247,12 @@ void GpuCommandBufferStub::OnInitialize(
   SetSwapInterval();
 
   command_buffer_->SetPutOffsetChangeCallback(
-      NewCallback(scheduler_.get(),
-                  &gpu::GpuScheduler::PutChanged));
+      base::Bind(&gpu::GpuScheduler::PutChanged,
+                 base::Unretained(scheduler_.get())));
   command_buffer_->SetParseErrorCallback(
-      NewCallback(this, &GpuCommandBufferStub::OnParseError));
+      base::Bind(&GpuCommandBufferStub::OnParseError, base::Unretained(this)));
   scheduler_->SetScheduledCallback(
-      NewCallback(channel_, &GpuChannel::OnScheduled));
+      base::Bind(&GpuChannel::OnScheduled, base::Unretained(channel_)));
 
   // On platforms that use an ImageTransportSurface, the surface
   // handles co-ordinating the resize with the browser process. The
@@ -259,13 +260,14 @@ void GpuCommandBufferStub::OnInitialize(
 #if !defined(OS_MACOSX) && !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   if (handle_ != gfx::kNullPluginWindow) {
     decoder_->SetResizeCallback(
-        NewCallback(this, &GpuCommandBufferStub::OnResize));
+        base::Bind(&GpuCommandBufferStub::OnResize, base::Unretained(this)));
   }
 #endif
 
   if (watchdog_) {
     scheduler_->SetCommandProcessedCallback(
-        NewCallback(this, &GpuCommandBufferStub::OnCommandProcessed));
+        base::Bind(&GpuCommandBufferStub::OnCommandProcessed,
+                   base::Unretained(this)));
   }
 
   if (parent_stub_for_initialization_) {
