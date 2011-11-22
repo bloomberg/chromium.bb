@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/stringprintf.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -44,6 +45,13 @@
 #include "content/public/common/bindings_policy.h"
 #include "grit/generated_resources.h"
 
+typedef std::vector<DevToolsWindow*> DevToolsWindowList;
+namespace {
+base::LazyInstance<DevToolsWindowList,
+                   base::LeakyLazyInstanceTraits<DevToolsWindowList> >
+     g_instances = LAZY_INSTANCE_INITIALIZER;
+}  // namespace
+
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
 // static
@@ -60,9 +68,6 @@ TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
     return NULL;
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (!manager)
-    return NULL;  // Happens only in tests.
-
   DevToolsClientHost* client_host = manager->
       GetDevToolsClientHostFor(inspected_tab->render_view_host());
   DevToolsWindow* window = AsDevToolsWindow(client_host);
@@ -72,12 +77,16 @@ TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
 }
 
 // static
-DevToolsWindow* DevToolsWindow::FindDevToolsWindow(
-    RenderViewHost* window_rvh) {
-  DevToolsClientHost* client_host =
-      DevToolsClientHost::FindOwnerClientHost(window_rvh);
-  return client_host != NULL ? DevToolsWindow::AsDevToolsWindow(client_host)
-                             : NULL;
+bool DevToolsWindow::IsDevToolsWindow(RenderViewHost* window_rvh) {
+  if (g_instances == NULL)
+    return NULL;
+  DevToolsWindowList& instances = g_instances.Get();
+  for (DevToolsWindowList::iterator it = instances.begin();
+       it != instances.end(); ++it) {
+    if ((*it)->tab_contents_->render_view_host() == window_rvh)
+      return true;
+  }
+  return false;
 }
 
 // static
@@ -163,6 +172,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
       docked_(docked),
       is_loaded_(false),
       action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE) {
+  g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
   NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();
   entry->favicon().set_bitmap(SkBitmap());
@@ -191,6 +201,12 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
 }
 
 DevToolsWindow::~DevToolsWindow() {
+  DevToolsWindowList& instances = g_instances.Get();
+  DevToolsWindowList::iterator it = std::find(instances.begin(),
+                                              instances.end(),
+                                              this);
+  DCHECK(it != instances.end());
+  instances.erase(it);
 }
 
 void DevToolsWindow::SendMessageToClient(const IPC::Message& message) {
@@ -229,10 +245,6 @@ void DevToolsWindow::TabReplaced(TabContents* new_tab) {
       return;
   DCHECK_EQ(profile_, new_tab_wrapper->profile());
   inspected_tab_ = new_tab_wrapper;
-}
-
-RenderViewHost* DevToolsWindow::GetClientRenderViewHost() {
-  return tab_contents_->render_view_host();
 }
 
 void DevToolsWindow::Show(DevToolsToggleAction action) {
@@ -646,10 +658,15 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
 // static
 DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
     DevToolsClientHost* client_host) {
-  if (!client_host)
+  if (!client_host || g_instances == NULL)
     return NULL;
-  if (client_host->GetClientRenderViewHost() != NULL)
-    return static_cast<DevToolsWindow*>(client_host);
+  DevToolsWindowList& instances = g_instances.Get();
+  for (DevToolsWindowList::iterator it = instances.begin();
+       it != instances.end(); ++it) {
+    DevToolsClientHost* client = *it;
+    if (client == client_host)
+      return *it;
+  }
   return NULL;
 }
 

@@ -7,13 +7,13 @@
 #include <cmath>
 
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "chrome/common/spellcheck_messages.h"
-#include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/mac/closure_blocks_leopard_compat.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_observer.h"
@@ -165,8 +165,8 @@ class SpellCheckRenderViewObserver : public RenderViewHostObserver {
 
   if (!render_widget_host_ || !render_widget_host_->IsRenderView())
     return NO;
-  bool isDevtoolsRwhv = DevToolsClientHost::FindOwnerClientHost(
-      static_cast<RenderViewHost*>(render_widget_host_)) != NULL;
+  bool isDevtoolsRwhv = DevToolsWindow::IsDevToolsWindow(
+      static_cast<RenderViewHost*>(render_widget_host_));
   if (isDevtoolsRwhv)
     return NO;
 
