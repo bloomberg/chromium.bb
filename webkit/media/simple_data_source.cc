@@ -17,7 +17,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKitPlatformSupport.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
-#include "webkit/glue/webkit_glue.h"
 #include "webkit/media/web_data_source_factory.h"
 
 using WebKit::WebString;
@@ -96,7 +95,7 @@ void SimpleDataSource::Initialize(
 
     // Validate the URL.
     url_ = GURL(url);
-    if (!url_.is_valid() || !webkit_glue::IsProtocolSupportedForMedia(url_)) {
+    if (!url_.is_valid()) {
       DoneInitialization_Locked(false);
       return;
     }

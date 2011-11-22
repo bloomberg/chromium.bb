@@ -118,10 +118,6 @@ bool MockContentRendererClient::HandleSetCookieRequest(
   return false;
 }
 
-bool MockContentRendererClient::IsProtocolSupportedForMedia(const GURL& url) {
-  return false;
-}
-
 void MockContentRendererClient::RegisterPPAPIInterfaceFactories(
     webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) {
 }

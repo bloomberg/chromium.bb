@@ -6,7 +6,6 @@
 
 #include "base/base_paths.h"
 #include "base/path_service.h"
-#include "googleurl/src/gurl.h"
 #include "webkit/glue/user_agent.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
@@ -37,15 +36,6 @@ void GetPlugins(bool refresh,
 }
 
 void AppendToLog(const char*, int, const char*) {
-}
-
-bool IsProtocolSupportedForMedia(const GURL& url) {
-  if (url.SchemeIsFile() ||
-      url.SchemeIs("http") ||
-      url.SchemeIs("https") ||
-      url.SchemeIs("data"))
-    return true;
-  return false;
 }
 
 bool GetPluginFinderURL(std::string* plugin_finder_url) {

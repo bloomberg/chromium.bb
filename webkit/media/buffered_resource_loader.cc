@@ -16,7 +16,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLLoaderOptions.h"
 #include "webkit/glue/multipart_response_delegate.h"
-#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
 using WebKit::WebString;
@@ -357,13 +356,6 @@ void BufferedResourceLoader::willSendRequest(
   // Only allow |single_origin_| if we haven't seen a different origin yet.
   if (single_origin_)
     single_origin_ = url_.GetOrigin() == GURL(newRequest.url()).GetOrigin();
-
-  if (!webkit_glue::IsProtocolSupportedForMedia(newRequest.url())) {
-    // Set the url in the request to an invalid value (empty url).
-    newRequest.setURL(WebKit::WebURL());
-    DoneStart(net::ERR_ADDRESS_INVALID);
-    return;
-  }
 
   url_ = newRequest.url();
 }

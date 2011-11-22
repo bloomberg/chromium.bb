@@ -201,10 +201,6 @@ void ClipboardReadImage(ui::Clipboard::Buffer buffer, std::string* data);
 void GetPlugins(bool refresh,
                 std::vector<webkit::WebPluginInfo>* plugins);
 
-// Returns true if the protocol implemented to serve |url| supports features
-// required by the media engine.
-bool IsProtocolSupportedForMedia(const GURL& url);
-
 // Returns the locale that this instance of webkit is running as.  This is of
 // the form language-country (e.g., en-US or pt-BR).
 std::string GetWebKitLocale();

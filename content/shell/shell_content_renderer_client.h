@@ -63,7 +63,6 @@ class ShellContentRendererClient : public ContentRendererClient {
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& value) OVERRIDE;
-  virtual bool IsProtocolSupportedForMedia(const GURL& url) OVERRIDE;
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
 };

@@ -9,7 +9,6 @@
 #include "media/base/media_log.h"
 #include "net/base/net_errors.h"
 #include "webkit/media/web_data_source_factory.h"
-#include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;
 
@@ -104,9 +103,6 @@ void BufferedDataSource::Initialize(const std::string& url,
   // This data source doesn't support data:// protocol so reject it.
   if (url_.SchemeIs(kDataScheme)) {
     callback.Run(media::DATASOURCE_ERROR_URL_NOT_SUPPORTED);
-    return;
-  } else if (!webkit_glue::IsProtocolSupportedForMedia(url_)) {
-    callback.Run(media::PIPELINE_ERROR_NETWORK);
     return;
   }
 

@@ -719,11 +719,6 @@ bool ChromeContentRendererClient::HandleSetCookieRequest(
   return false;
 }
 
-bool ChromeContentRendererClient::IsProtocolSupportedForMedia(
-    const GURL& url) {
-  return url.SchemeIs(chrome::kExtensionScheme);
-}
-
 void ChromeContentRendererClient::SetExtensionDispatcher(
     ExtensionDispatcher* extension_dispatcher) {
   extension_dispatcher_.reset(extension_dispatcher);

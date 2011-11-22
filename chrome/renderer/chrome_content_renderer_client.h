@@ -91,7 +91,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& value) OVERRIDE;
-  virtual bool IsProtocolSupportedForMedia(const GURL& url) OVERRIDE;
 
   // TODO(mpcomplete): remove after we collect histogram data.
   // http://crbug.com/100411

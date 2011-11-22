@@ -144,10 +144,6 @@ class ContentRendererClient {
                                       const GURL& first_party_for_cookies,
                                       const std::string& value) = 0;
 
-  // True if the protocol implemented to serve |url| supports features required
-  // by the media engine.
-  virtual bool IsProtocolSupportedForMedia(const GURL& url) = 0;
-
   virtual void RegisterPPAPIInterfaceFactories(
     webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) = 0;
 };

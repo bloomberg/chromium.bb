@@ -627,18 +627,7 @@ WebKit::WebGeolocationClientMock* TestShell::geolocation_client_mock() {
   return geolocation_client_mock_.get();
 }
 
-//-----------------------------------------------------------------------------
-
 namespace webkit_glue {
-
-bool IsProtocolSupportedForMedia(const GURL& url) {
-  if (url.SchemeIsFile() ||
-      url.SchemeIs("http") ||
-      url.SchemeIs("https") ||
-      url.SchemeIs("data"))
-    return true;
-  return false;
-}
 
 void GetPlugins(bool refresh,
                 std::vector<webkit::WebPluginInfo>* plugins) {

@@ -157,19 +157,6 @@ void GetPlugins(bool refresh,
       new ViewHostMsg_GetPlugins(refresh, plugins));
 }
 
-bool IsProtocolSupportedForMedia(const GURL& url) {
-  // If new protocol is to be added here, we need to make sure the response is
-  // validated accordingly in the media engine.
-  if (url.SchemeIsFile() || url.SchemeIs(chrome::kHttpScheme) ||
-      url.SchemeIs(chrome::kHttpsScheme) ||
-      url.SchemeIs(chrome::kDataScheme) ||
-      url.SchemeIs(chrome::kFileSystemScheme) ||
-      url.SchemeIs(chrome::kBlobScheme))
-    return true;
-  return
-      content::GetContentClient()->renderer()->IsProtocolSupportedForMedia(url);
-}
-
 // static factory function
 ResourceLoaderBridge* ResourceLoaderBridge::Create(
     const ResourceLoaderBridge::RequestInfo& request_info) {
