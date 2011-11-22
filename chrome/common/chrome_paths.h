@@ -100,6 +100,14 @@ enum {
   DIR_GEN_TEST_DATA,            // Directory where generated test data resides.
   DIR_TEST_DATA,                // Directory where unit test data resides.
   DIR_TEST_TOOLS,               // Directory where unit test tools reside.
+  DIR_LAYOUT_TESTS,             // Returns the LayoutTests path for layout
+                                // tests. For the current git workflow, it
+                                // returns
+                                //   third_party/WebKit/LayoutTests
+                                // On svn workflow (including build machines)
+                                // and older git workflow, it returns
+                                //   chrome/test/data/layout_tests/LayoutTests
+                                // See, http://crbug.com/105104.
 
   PATH_END
 };

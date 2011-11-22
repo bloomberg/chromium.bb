@@ -305,6 +305,19 @@ bool PathProvider(int key, FilePath* result) {
       if (!file_util::PathExists(cur))  // We don't want to create this
         return false;
       break;
+    case chrome::DIR_LAYOUT_TESTS:
+      if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("third_party"));
+      cur = cur.Append(FILE_PATH_LITERAL("WebKit"));
+      cur = cur.Append(FILE_PATH_LITERAL("LayoutTests"));
+      if (file_util::DirectoryExists(cur))
+        break;
+      if (!PathService::Get(chrome::DIR_TEST_DATA, &cur))
+        return false;
+      cur = cur.Append(FILE_PATH_LITERAL("layout_tests"));
+      cur = cur.Append(FILE_PATH_LITERAL("LayoutTests"));
+      break;
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
     case chrome::DIR_POLICY_FILES: {
 #if defined(GOOGLE_CHROME_BUILD)

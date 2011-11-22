@@ -45,35 +45,11 @@ UILayoutTest::~UILayoutTest() {
   }
 }
 
-// Gets layout tests root. For the current git workflow, this is
-//    third_party/WebKit/LayoutTests
-// On svn workflow (including build machines) and older git workflow, this is
-//    chrome/test/data/layout_tests/LayoutTests
-// This function probes for the first and then fallbacks to the second.
-static FilePath GetLayoutTestRoot() {
-  FilePath src_root;
-  PathService::Get(base::DIR_SOURCE_ROOT, &src_root);
-
-  FilePath webkit_layout_tests = src_root;
-  webkit_layout_tests = webkit_layout_tests.AppendASCII("third_party");
-  webkit_layout_tests = webkit_layout_tests.AppendASCII("WebKit");
-  webkit_layout_tests = webkit_layout_tests.AppendASCII("LayoutTests");
-  if (file_util::DirectoryExists(webkit_layout_tests))
-    return webkit_layout_tests;
-
-  FilePath chrome_layout_tests = src_root;
-  chrome_layout_tests = chrome_layout_tests.AppendASCII("chrome");
-  chrome_layout_tests = chrome_layout_tests.AppendASCII("test");
-  chrome_layout_tests = chrome_layout_tests.AppendASCII("data");
-  chrome_layout_tests = chrome_layout_tests.AppendASCII("layout_tests");
-  chrome_layout_tests = chrome_layout_tests.AppendASCII("LayoutTests");
-  return chrome_layout_tests;
-}
-
 void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
                                            const FilePath& test_case_dir,
                                            int port) {
-  FilePath src_dir = GetLayoutTestRoot();
+  FilePath src_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_LAYOUT_TESTS, &src_dir));
   layout_test_dir_ = src_dir.Append(test_parent_dir);
   layout_test_dir_ = layout_test_dir_.Append(test_case_dir);
   ASSERT_TRUE(file_util::DirectoryExists(layout_test_dir_));
@@ -155,7 +131,8 @@ void UILayoutTest::InitializeForLayoutTest(const FilePath& test_parent_dir,
 
 void UILayoutTest::AddResourceForLayoutTest(const FilePath& parent_dir,
                                             const FilePath& resource_name) {
-  FilePath source = GetLayoutTestRoot();
+  FilePath source;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_LAYOUT_TESTS, &source));
   source = source.Append(parent_dir);
   source = source.Append(resource_name);
 
