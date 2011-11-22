@@ -4,7 +4,7 @@
 
 #include "ui/aura_shell/drag_image_view.h"
 
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 namespace aura_shell {
 namespace internal {

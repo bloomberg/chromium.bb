@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/panels/panel_scroller_container.h"
 #include "chrome/browser/chromeos/panels/panel_scroller_header.h"
 #include "ui/gfx/canvas.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 struct PanelScroller::Panel {
   PanelScrollerHeader* header;

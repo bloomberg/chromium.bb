@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
 #include "chrome/common/chrome_switches.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews()
     : ChromeBrowserMainExtraParts() {

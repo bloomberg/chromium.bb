@@ -9,10 +9,10 @@
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/native_widget.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/widget/native_widget.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 namespace views {
 

@@ -22,7 +22,7 @@
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 using ui::ViewProp;
 

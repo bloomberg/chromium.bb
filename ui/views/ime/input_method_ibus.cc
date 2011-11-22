@@ -26,7 +26,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/events/event.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA) || defined(TOUCH_UI)
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"

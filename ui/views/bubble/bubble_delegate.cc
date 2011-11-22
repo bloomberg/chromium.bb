@@ -6,7 +6,7 @@
 
 #include "ui/base/animation/slide_animation.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 // The duration of the fade animation in milliseconds.
 static const int kHideFadeDurationMS = 200;

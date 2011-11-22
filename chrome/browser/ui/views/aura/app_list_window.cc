@@ -9,7 +9,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 AppListWindow::AppListWindow(
     const aura_shell::ShellDelegate::SetWidgetCallback& callback)

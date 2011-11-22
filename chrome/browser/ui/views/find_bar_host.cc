@@ -18,8 +18,8 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/focus/view_storage.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 
 namespace browser {
 

@@ -11,7 +11,7 @@
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_window_ids.h"
 #include "ui/gfx/compositor/layer.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 namespace aura_shell {
 

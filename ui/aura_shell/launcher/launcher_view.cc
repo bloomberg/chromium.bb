@@ -21,10 +21,10 @@
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
-#include "views/widget/widget.h"
 
 using ui::Animation;
 using views::View;

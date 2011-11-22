@@ -24,10 +24,10 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/views/widget/tooltip_manager.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 #include "views/controls/button/image_button.h"
-#include "views/widget/tooltip_manager.h"
-#include "views/widget/widget.h"
 
 static const int kLeftPadding = 16;
 static const int kTopPadding = 6;

@@ -8,6 +8,8 @@
 #include "chrome/test/base/view_event_test_base.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/views/test/test_views_delegate.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_controller.h"
 #include "views/controls/menu/menu_item_view.h"
@@ -16,8 +18,6 @@
 #include "views/controls/menu/submenu_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/views_delegate.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 namespace {
 

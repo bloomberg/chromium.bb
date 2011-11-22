@@ -24,6 +24,7 @@
 #include "ui/base/win/mouse_wheel_util.h"
 #include "ui/gfx/native_theme_win.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/label.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/menu_win.h"
@@ -33,7 +34,6 @@
 #include "views/controls/textfield/textfield_controller.h"
 #include "views/metrics.h"
 #include "views/views_delegate.h"
-#include "views/widget/widget.h"
 
 namespace views {
 

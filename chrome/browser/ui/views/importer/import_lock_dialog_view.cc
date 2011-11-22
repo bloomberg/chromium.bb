@@ -15,8 +15,8 @@
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/label.h"
-#include "views/widget/widget.h"
 
 // Default size of the dialog window.
 static const int kDefaultWindowWidth = 320;

@@ -9,8 +9,8 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/dragged_tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
 // GET_X_LPARAM, et al.

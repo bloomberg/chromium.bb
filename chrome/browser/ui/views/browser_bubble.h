@@ -7,8 +7,8 @@
 #pragma once
 
 #include "ui/views/bubble/bubble_border.h"
+#include "ui/views/widget/widget.h"
 #include "views/view.h"
-#include "views/widget/widget.h"
 
 class Browser;
 class BrowserBubbleHost;

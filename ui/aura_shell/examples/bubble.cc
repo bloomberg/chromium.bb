@@ -6,8 +6,8 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/label.h"
-#include "views/widget/widget.h"
 
 namespace aura_shell {
 namespace examples {

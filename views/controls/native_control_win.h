@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_vector.h"
+#include "ui/views/widget/child_window_message_processor.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/widget/child_window_message_processor.h"
 
 namespace ui {
 class ViewProp;

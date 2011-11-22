@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/event_filter.h"
 #include "ui/gfx/compositor/layer_animation_observer.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 namespace aura_shell {
 namespace internal {

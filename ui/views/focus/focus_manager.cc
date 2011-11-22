@@ -15,9 +15,9 @@
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/focus/widget_focus_manager.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 #include "views/view.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 namespace views {
 

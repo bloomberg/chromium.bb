@@ -11,7 +11,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/confirm_bubble_view.h"
 #include "ui/gfx/rect.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 #endif
 
 ConfirmBubbleModel::ConfirmBubbleModel() {

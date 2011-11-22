@@ -11,9 +11,9 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_theme_win.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/combobox/native_combobox_views.h"
-#include "views/widget/widget.h"
 
 namespace views {
 

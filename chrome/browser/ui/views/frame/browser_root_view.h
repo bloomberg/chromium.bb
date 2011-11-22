@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_ROOT_VIEW_H_
 #pragma once
 
-#include "views/widget/root_view.h"
+#include "ui/views/widget/root_view.h"
 
 class AbstractTabStripView;
 class BrowserView;

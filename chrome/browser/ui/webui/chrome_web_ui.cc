@@ -10,7 +10,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 #endif
 
 namespace {

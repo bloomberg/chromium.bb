@@ -15,7 +15,7 @@
 #include "ui/base/keycodes/keyboard_code_conversion.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory.h"
-#include "views/widget/root_view.h"
+#include "ui/views/widget/root_view.h"
 
 namespace views {
 

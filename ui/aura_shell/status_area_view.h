@@ -7,7 +7,7 @@
 #pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace aura_shell {
 namespace internal {

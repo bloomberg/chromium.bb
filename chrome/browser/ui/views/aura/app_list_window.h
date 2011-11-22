@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_first_render_watcher.h"
 #include "ui/aura_shell/shell_delegate.h"
-#include "views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_delegate.h"
 
 class DOMView;
 

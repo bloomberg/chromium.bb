@@ -18,8 +18,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/message_box_flags.h"
 #include "ui/base/text/text_elider.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/message_box_view.h"
-#include "views/widget/widget.h"
 
 namespace {
 

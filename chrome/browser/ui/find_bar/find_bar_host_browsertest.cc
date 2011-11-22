@@ -30,7 +30,7 @@
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "ui/views/focus/focus_manager.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 #elif defined(TOOLKIT_GTK)
 #include "chrome/browser/ui/gtk/slide_animator_gtk.h"
 #elif defined(OS_MACOSX)

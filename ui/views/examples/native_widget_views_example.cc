@@ -8,10 +8,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/test/test_views_delegate.h"
+#include "ui/views/widget/native_widget_views.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
 #include "views/view.h"
-#include "views/widget/native_widget_views.h"
-#include "views/widget/widget.h"
 
 namespace examples {
 

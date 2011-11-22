@@ -6,9 +6,9 @@
 #define UI_AURA_SHELL_DESKTOP_BACKGROUND_VIEW_H_
 #pragma once
 
-#include "views/view.h"
-#include "views/widget/widget_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/views/widget/widget_delegate.h"
+#include "views/view.h"
 
 namespace aura_shell {
 namespace internal {

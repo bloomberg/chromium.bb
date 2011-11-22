@@ -13,11 +13,11 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/skia_utils_gtk.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/native_widget.h"
+#include "ui/views/widget/widget.h"
 #include "views/background.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/tabbed_pane/tabbed_pane_listener.h"
-#include "views/widget/native_widget.h"
-#include "views/widget/widget.h"
 
 namespace views {
 

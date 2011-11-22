@@ -14,8 +14,8 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/views/events/event.h"
+#include "ui/views/widget/widget.h"
 #include "views/view.h"
-#include "views/widget/widget.h"
 
 namespace aura_shell {
 namespace test {

@@ -9,12 +9,12 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/gtk_views_fixed.h"
+#include "ui/views/widget/native_widget_gtk.h"
+#include "ui/views/widget/widget.h"
+#include "views/controls/native/native_view_host.h"
 #include "views/views_delegate.h"
-#include "views/widget/gtk_views_fixed.h"
-#include "views/widget/native_widget_gtk.h"
-#include "views/widget/widget.h"
 
 namespace views {
 

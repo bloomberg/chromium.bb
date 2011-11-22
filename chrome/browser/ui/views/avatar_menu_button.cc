@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/gfx/canvas_skia.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 
 #if defined(OS_WIN)

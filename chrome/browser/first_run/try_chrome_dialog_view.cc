@@ -20,12 +20,12 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/widget/widget.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/radio_button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/link.h"
-#include "views/widget/widget.h"
 
 namespace {
 

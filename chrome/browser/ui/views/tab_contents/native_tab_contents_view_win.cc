@@ -10,8 +10,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_win.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "ui/views/widget/widget.h"
 #include "views/views_delegate.h"
-#include "views/widget/widget.h"
 
 namespace {
 

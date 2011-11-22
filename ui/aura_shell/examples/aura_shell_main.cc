@@ -17,8 +17,8 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
-#include "views/widget/widget_delegate.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace {
 

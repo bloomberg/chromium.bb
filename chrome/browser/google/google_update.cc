@@ -22,10 +22,10 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "grit/generated_resources.h"
 #include "google_update_idl_i.c"
+#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 using content::BrowserThread;
 

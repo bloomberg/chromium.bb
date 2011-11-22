@@ -9,7 +9,7 @@
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/content_browser_client.h"
-#include "views/widget/widget.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(TOUCH_UI) && !defined(USE_AURA)
 #include "chrome/browser/renderer_host/render_widget_host_view_views.h"

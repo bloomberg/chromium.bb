@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/constrained_window_views.h"
 
-#include "views/widget/native_widget_win.h"
+#include "ui/views/widget/native_widget_win.h"
 
 namespace {
 bool IsNonClientHitTestCode(UINT hittest) {

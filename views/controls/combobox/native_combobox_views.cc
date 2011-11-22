@@ -15,14 +15,14 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
+#include "ui/views/widget/root_view.h"
+#include "ui/views/widget/widget.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/focusable_border.h"
 #include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"
-#include "views/widget/root_view.h"
-#include "views/widget/widget.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"
