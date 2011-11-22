@@ -291,16 +291,7 @@ TEST_PPAPI_IN_PROCESS(CharSet)
 TEST_PPAPI_OUT_OF_PROCESS(CharSet)
 
 TEST_PPAPI_IN_PROCESS(Crypto)
-#if defined(OS_POSIX)
-#define MAYBE_Crypto DISABLED_Crypto
-#else
-#define MAYBE_Crypto Crypto
-#endif
-// http://crbug.com/104832 fails on ASAN, so this is an overly broad disable.
-// But ASAN currently doesn't have a way to disable specific tests.
-TEST_F(OutOfProcessPPAPITest, Crypto) {
-  RunTest("Crypto");
-}
+TEST_PPAPI_OUT_OF_PROCESS(Crypto)
 
 TEST_PPAPI_IN_PROCESS(Var)
 // http://crbug.com/89961
