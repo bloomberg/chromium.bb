@@ -701,29 +701,41 @@ RenderViewHost* RenderViewHostManager::UpdateRendererStateForNavigate(
     }
     // Otherwise, it's safe to treat this as a pending cross-site transition.
 
-    // Make sure the old render view stops, in case a load is in progress.
-    render_view_host_->Send(new ViewMsg_Stop(render_view_host_->routing_id()));
+    // It is possible that a previous cross-site navigation caused
+    // render_view_host_ to be swapped out and we are still waiting for
+    // the old pending_render_view_host_ to inform us about the committed
+    // navigation.
+    if (!render_view_host_->is_swapped_out()) {
+      // Make sure the old render view stops, in case a load is in progress.
+      render_view_host_->Send(
+          new ViewMsg_Stop(render_view_host_->routing_id()));
 
-    // Suspend the new render view (i.e., don't let it send the cross-site
-    // Navigate message) until we hear back from the old renderer's
-    // onbeforeunload handler.  If the handler returns false, we'll have to
-    // cancel the request.
-    DCHECK(!pending_render_view_host_->are_navigations_suspended());
-    pending_render_view_host_->SetNavigationsSuspended(true);
+      // Suspend the new render view (i.e., don't let it send the cross-site
+      // Navigate message) until we hear back from the old renderer's
+      // onbeforeunload handler.  If the handler returns false, we'll have to
+      // cancel the request.
+      DCHECK(!pending_render_view_host_->are_navigations_suspended());
+      pending_render_view_host_->SetNavigationsSuspended(true);
 
-    // Tell the CrossSiteRequestManager that this RVH has a pending cross-site
-    // request, so that ResourceDispatcherHost will know to tell us to run the
-    // old page's onunload handler before it sends the response.
-    pending_render_view_host_->SetHasPendingCrossSiteRequest(true, -1);
+      // Tell the CrossSiteRequestManager that this RVH has a pending cross-site
+      // request, so that ResourceDispatcherHost will know to tell us to run the
+      // old page's onunload handler before it sends the response.
+      pending_render_view_host_->SetHasPendingCrossSiteRequest(true, -1);
+
+      // Tell the old render view to run its onbeforeunload handler, since it
+      // doesn't otherwise know that the cross-site request is happening.  This
+      // will trigger a call to ShouldClosePage with the reply.
+      render_view_host_->FirePageBeforeUnload(true);
+    } else {
+      // As the render_view_host_ is already swapped out, we do not need
+      // to instruct it to run its beforeunload or unload handlers.  Therefore,
+      // we also do not need to suspend outgoing navigation messages and can
+      // just let the new pending_render_view_host_ immediately navigate.
+    }
 
     // We now have a pending RVH.
     DCHECK(!cross_navigation_pending_);
     cross_navigation_pending_ = true;
-
-    // Tell the old render view to run its onbeforeunload handler, since it
-    // doesn't otherwise know that the cross-site request is happening.  This
-    // will trigger a call to ShouldClosePage with the reply.
-    render_view_host_->FirePageBeforeUnload(true);
 
     return pending_render_view_host_;
   } else {

@@ -272,6 +272,141 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
 }
 
+// Tests the Navigate function. In this unit test we verify that the Navigate
+// function can handle a new navigation event before the previous navigation
+// has been committed. This is also a regression test for
+// http://crbug.com/104600.
+TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
+  TestNotificationTracker notifications;
+
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
+
+  TestTabContents tab_contents(profile(), instance);
+  notifications.ListenFor(
+      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
+      content::Source<NavigationController>(&tab_contents.controller()));
+
+  // Create.
+  RenderViewHostManager manager(&tab_contents, &tab_contents);
+
+  manager.Init(profile(), instance, MSG_ROUTING_NONE);
+
+  // 1) The first navigation. --------------------------
+  const GURL kUrl1("http://www.google.com/");
+  NavigationEntry entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
+                         GURL() /* referrer */, string16() /* title */,
+                         content::PAGE_TRANSITION_TYPED,
+                         false /* is_renderer_init */);
+  RenderViewHost* host = manager.Navigate(entry1);
+
+  // The RenderViewHost created in Init will be reused.
+  EXPECT_TRUE(host == manager.current_host());
+  EXPECT_FALSE(manager.pending_render_view_host());
+
+  // We should observe a notification.
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+  notifications.Reset();
+
+  // Commit.
+  manager.DidNavigateMainFrame(host);
+
+  // Commit to SiteInstance should be delayed until RenderView commit.
+  EXPECT_TRUE(host == manager.current_host());
+  ASSERT_TRUE(host);
+  EXPECT_FALSE(host->site_instance()->has_site());
+  host->site_instance()->SetSite(kUrl1);
+
+  // 2) Cross-site navigate to next site. -------------------------
+  const GURL kUrl2("http://www.example.com");
+  NavigationEntry entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
+                         GURL() /* referrer */, string16() /* title */,
+                         content::PAGE_TRANSITION_TYPED,
+                         false /* is_renderer_init */);
+  RenderViewHost* host2 = manager.Navigate(entry2);
+
+  // A new RenderViewHost should be created.
+  EXPECT_TRUE(manager.pending_render_view_host());
+  ASSERT_EQ(host2, manager.pending_render_view_host());
+
+  // Check that the navigation is still suspended because the old RVH
+  // is not swapped out, yet.
+  MockRenderProcessHost* test_process_host2 =
+      static_cast<MockRenderProcessHost*>(host2->process());
+  test_process_host2->sink().ClearMessages();
+  host2->NavigateToURL(kUrl2);
+  EXPECT_FALSE(test_process_host2->sink().GetUniqueMessageMatching(
+      ViewMsg_Navigate::ID));
+
+  // Allow closing the current Render View (precondition for swapping out
+  // the RVH): Simulate response from RenderView for ViewMsg_ShouldClose sent by
+  // FirePageBeforeUnload
+  TestRenderViewHost* test_host = static_cast<TestRenderViewHost*>(host);
+  MockRenderProcessHost* test_process_host =
+      static_cast<MockRenderProcessHost*>(test_host->process());
+  EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
+      ViewMsg_ShouldClose::ID));
+  test_host->SendShouldCloseACK(true);
+
+  // CrossSiteResourceHandler::StartCrossSiteTransition can trigger a
+  // call of RenderViewHostManager::OnCrossSiteResponse before
+  // RenderViewHostManager::DidNavigateMainFrame is called. In this case the
+  // RVH is swapped out.
+  manager.OnCrossSiteResponse(host2->process()->GetID(),
+                              host2->GetPendingRequestId());
+  EXPECT_TRUE(test_process_host->sink().GetUniqueMessageMatching(
+      ViewMsg_SwapOut::ID));
+  test_host->OnSwapOutACK();
+
+  EXPECT_EQ(host, manager.current_host());
+  EXPECT_TRUE(manager.current_host()->is_swapped_out());
+  EXPECT_EQ(host2, manager.pending_render_view_host());
+  // There should be still no navigation messages being sent.
+  EXPECT_FALSE(test_process_host2->sink().GetUniqueMessageMatching(
+      ViewMsg_Navigate::ID));
+
+  // 3) Cross-site navigate to next site before 2) has committed. --------------
+  const GURL kUrl3("http://webkit.org/");
+  NavigationEntry entry3(NULL /* instance */, -1 /* page_id */, kUrl3,
+                         GURL() /* referrer */, string16() /* title */,
+                         content::PAGE_TRANSITION_TYPED,
+                         false /* is_renderer_init */);
+  RenderViewHost* host3 = manager.Navigate(entry3);
+
+  // A new RenderViewHost should be created.
+  EXPECT_TRUE(manager.pending_render_view_host());
+  ASSERT_EQ(host3, manager.pending_render_view_host());
+
+  EXPECT_EQ(host, manager.current_host());
+  EXPECT_TRUE(manager.current_host()->is_swapped_out());
+
+  // The navigation should not be suspended because the RVH |host| has been
+  // swapped out already. Therefore, the RVH should send a navigation event
+  // immediately.
+  MockRenderProcessHost* test_process_host3 =
+      static_cast<MockRenderProcessHost*>(host3->process());
+  test_process_host3->sink().ClearMessages();
+
+  // Usually TabContents::NavigateToEntry would call
+  // RenderViewHostManager::Navigate followed by RenderViewHost::Navigate.
+  // Here we need to call the latter ourselves.
+  host3->NavigateToURL(kUrl3);
+  EXPECT_TRUE(test_process_host3->sink().GetUniqueMessageMatching(
+      ViewMsg_Navigate::ID));
+
+  // Commit.
+  manager.DidNavigateMainFrame(host3);
+  EXPECT_TRUE(host3 == manager.current_host());
+  ASSERT_TRUE(host3);
+  EXPECT_TRUE(host3->site_instance()->has_site());
+  // Check the pending RenderViewHost has been committed.
+  EXPECT_FALSE(manager.pending_render_view_host());
+
+  // We should observe a notification.
+  EXPECT_TRUE(notifications.Check1AndReset(
+      content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED));
+}
+
 // Tests WebUI creation.
 TEST_F(RenderViewHostManagerTest, WebUI) {
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());

@@ -99,6 +99,12 @@
 // - The previous renderer is kept swapped out in RenderViewHostManager in case
 //   the user goes back.  The process only stays live if another tab is using
 //   it, but if so, the existing frame relationships will be maintained.
+//
+// It is possible that we trigger a new navigation after we have received
+// a SwapOut_ACK message but before the FrameNavigation has been confirmed.
+// In this case the old RVH has been swapped out but the new one has not
+// replaced it, yet. Therefore, we cancel the pending RVH and skip the unloading
+// of the old RVH.
 
 namespace {
 
