@@ -55,10 +55,6 @@ void NativeFrameView::GetWindowMask(const gfx::Size& size,
   // Nothing to do, we use the default window mask.
 }
 
-void NativeFrameView::EnableClose(bool enable) {
-  // Nothing to do, handled automatically by Window.
-}
-
 void NativeFrameView::ResetWindowControls() {
   // Nothing to do.
 }

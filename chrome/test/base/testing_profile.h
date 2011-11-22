@@ -125,6 +125,9 @@ class TestingProfile : public Profile {
   // NULL.
   void CreateTemplateURLService();
 
+  // Blocks until TempalteURLService finishes loading.
+  void BlockUntilTemplateURLServiceLoaded();
+
   // Creates an ExtensionProcessManager. If not invoked, the
   // ExtensionProcessManager is NULL.
   void CreateExtensionProcessManager();

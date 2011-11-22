@@ -370,10 +370,6 @@ void PanelBrowserFrameView::GetWindowMask(const gfx::Size& size,
   window_mask->close();
 }
 
-void PanelBrowserFrameView::EnableClose(bool enable) {
-  close_button_->SetEnabled(enable);
-}
-
 void PanelBrowserFrameView::ResetWindowControls() {
   // The close button isn't affected by this constraint.
 }

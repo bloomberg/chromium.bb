@@ -56,7 +56,6 @@ class BrowserNonClientFrameViewAura : public BrowserNonClientFrameView,
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual void GetWindowMask(const gfx::Size& size,
                              gfx::Path* window_mask) OVERRIDE;
-  virtual void EnableClose(bool enable) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE;
   virtual void UpdateWindowIcon() OVERRIDE;
   virtual void ShouldPaintAsActiveChanged() OVERRIDE;

@@ -390,11 +390,6 @@ void NativeWidgetAura::CloseNow() {
   delete window_;
 }
 
-void NativeWidgetAura::EnableClose(bool enable) {
-  // http://crbug.com/102581
-  NOTIMPLEMENTED();
-}
-
 void NativeWidgetAura::Show() {
   ShowWithWindowState(ui::SHOW_STATE_INACTIVE);
 }

@@ -380,10 +380,6 @@ void OpaqueBrowserFrameView::GetWindowMask(const gfx::Size& size,
   views::GetDefaultWindowMask(size, window_mask);
 }
 
-void OpaqueBrowserFrameView::EnableClose(bool enable) {
-  close_button_->SetEnabled(enable);
-}
-
 void OpaqueBrowserFrameView::ResetWindowControls() {
   restore_button_->SetState(views::CustomButton::BS_NORMAL);
   minimize_button_->SetState(views::CustomButton::BS_NORMAL);

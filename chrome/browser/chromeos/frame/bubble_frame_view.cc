@@ -133,9 +133,6 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
                                     gfx::Path* window_mask) {
 }
 
-void BubbleFrameView::EnableClose(bool enable) {
-}
-
 void BubbleFrameView::ResetWindowControls() {
 }
 

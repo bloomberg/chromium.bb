@@ -1180,10 +1180,6 @@ void NativeWidgetGtk::CloseNow() {
   }
 }
 
-void NativeWidgetGtk::EnableClose(bool enable) {
-  gtk_window_set_deletable(GetNativeWindow(), enable);
-}
-
 void NativeWidgetGtk::Show() {
   if (widget_) {
     gtk_widget_show(widget_);

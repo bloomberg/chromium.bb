@@ -53,7 +53,6 @@ class VIEWS_EXPORT NonClientFrameView : public View {
   virtual int NonClientHitTest(const gfx::Point& point) = 0;
   virtual void GetWindowMask(const gfx::Size& size,
                              gfx::Path* window_mask) = 0;
-  virtual void EnableClose(bool enable) = 0;
   virtual void ResetWindowControls() = 0;
   virtual void UpdateWindowIcon() = 0;
 
@@ -174,10 +173,6 @@ class VIEWS_EXPORT NonClientView : public View {
   // Returns a mask to be used to clip the top level window for the given
   // size. This is used to create the non-rectangular window shape.
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask);
-
-  // Toggles the enable state for the Close button (and the Close menu item in
-  // the system menu).
-  void EnableClose(bool enable);
 
   // Tells the window controls as rendered by the NonClientView to reset
   // themselves to a normal state. This happens in situations where the

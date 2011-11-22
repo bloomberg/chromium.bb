@@ -345,6 +345,19 @@ void TestingProfile::CreateTemplateURLService() {
       this, BuildTemplateURLService);
 }
 
+void TestingProfile::BlockUntilTemplateURLServiceLoaded() {
+  TemplateURLService* turl_model =
+      TemplateURLServiceFactory::GetForProfile(this);
+  if (turl_model->loaded())
+    return;
+
+  ui_test_utils::WindowedNotificationObserver turl_service_load_observer(
+      chrome::NOTIFICATION_TEMPLATE_URL_SERVICE_LOADED,
+      content::NotificationService::AllSources());
+  turl_model->Load();
+  turl_service_load_observer.Wait();
+}
+
 void TestingProfile::CreateExtensionProcessManager() {
   extension_process_manager_.reset(ExtensionProcessManager::Create(this));
 }

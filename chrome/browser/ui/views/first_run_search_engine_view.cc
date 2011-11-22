@@ -64,13 +64,10 @@ void ShowFirstRunDialog(Profile* profile,
   views::Widget* window = views::Widget::CreateWindow(
       new FirstRunSearchEngineView(
           profile, randomize_search_engine_experiment));
-  DCHECK(window);
-
   window->SetAlwaysOnTop(true);
   window->Show();
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->RunWithDispatcher(&accelerator_handler);
-  window->Close();
 }
 
 }  // namespace first_run
@@ -146,18 +143,22 @@ FirstRunSearchEngineView::FirstRunSearchEngineView(Profile* profile,
     : background_image_(NULL),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile)),
       text_direction_is_rtl_(base::i18n::IsRTL()),
-      template_url_service_loaded_(false),
       added_to_view_hierarchy_(false),
-      randomize_(randomize) {
+      randomize_(randomize),
+      user_chosen_engine_(false),
+      fallback_choice_(NULL),
+      quit_on_closing_(true) {
   // Don't show ourselves until all the search engines have loaded from
   // the profile -- otherwise we have nothing to show.
   SetVisible(false);
 
-  // Start loading the search engines for the given profile.
+  // Start loading the search engines for the given profile. The service is
+  // already loaded in tests.
   DCHECK(template_url_service_);
-  DCHECK(!template_url_service_->loaded());
-  template_url_service_->AddObserver(this);
-  template_url_service_->Load();
+  if (!template_url_service_->loaded()) {
+    template_url_service_->AddObserver(this);
+    template_url_service_->Load();
+  }
 }
 
 FirstRunSearchEngineView::~FirstRunSearchEngineView() {
@@ -168,16 +169,21 @@ string16 FirstRunSearchEngineView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_FIRSTRUN_DLG_TITLE);
 }
 
+void FirstRunSearchEngineView::WindowClosing() {
+  // If the window is closed by clicking the close button, we default to the
+  // engine in the first slot.
+  if (!user_chosen_engine_)
+    ChooseSearchEngine(fallback_choice_);
+  if (quit_on_closing_)
+    MessageLoop::current()->Quit();
+}
+
 void FirstRunSearchEngineView::ButtonPressed(views::Button* sender,
                                              const views::Event& event) {
-  SearchEngineChoice* choice = static_cast<SearchEngineChoice*>(sender);
-  DCHECK(template_url_service_);
-  template_url_service_->SetSearchEngineDialogSlot(choice->slot());
-  const TemplateURL* default_search = choice->GetSearchEngine();
-  if (default_search)
-    template_url_service_->SetDefaultSearchProvider(default_search);
-
-  MessageLoop::current()->Quit();
+  ChooseSearchEngine(static_cast<SearchEngineChoice*>(sender));
+  GetWidget()->Close();
+  // This will call through to WindowClosing() above and will quit the message
+  // loop.
 }
 
 void FirstRunSearchEngineView::OnPaint(gfx::Canvas* canvas) {
@@ -195,8 +201,6 @@ void FirstRunSearchEngineView::OnTemplateURLServiceChanged() {
   // We only watch the search engine model change once, on load.  Remove
   // observer so we don't try to redraw if engines change under us.
   template_url_service_->RemoveObserver(this);
-
-  template_url_service_loaded_ = true;
   AddSearchEnginesIfPossible();
 }
 
@@ -207,9 +211,6 @@ gfx::Size FirstRunSearchEngineView::GetPreferredSize() {
 }
 
 void FirstRunSearchEngineView::Layout() {
-  // Disable the close button.
-  GetWidget()->EnableClose(false);
-
   gfx::Size pref_size = background_image_->GetPreferredSize();
   background_image_->SetBounds(0, 0, GetPreferredSize().width(),
                                pref_size.height());
@@ -369,7 +370,7 @@ void FirstRunSearchEngineView::GetAccessibleState(
 }
 
 void FirstRunSearchEngineView::AddSearchEnginesIfPossible() {
-  if (!template_url_service_loaded_ || !added_to_view_hierarchy_)
+  if (!template_url_service_->loaded() || !added_to_view_hierarchy_)
     return;
 
   // Add search engines in template_url_service_ to buttons list.  The
@@ -431,6 +432,10 @@ void FirstRunSearchEngineView::AddSearchEnginesIfPossible() {
     AddChildView(default_choice);  // The button associated with the choice.
   }
 
+  // It is critically important that this line happens before randomization is
+  // done below.
+  fallback_choice_ = search_engine_choices_.front();
+
   // Randomize order of logos if option has been set.
   if (randomize_) {
     std::random_shuffle(search_engine_choices_.begin(),
@@ -468,4 +473,13 @@ void FirstRunSearchEngineView::AddSearchEnginesIfPossible() {
   // to explore it).
   GetWidget()->NotifyAccessibilityEvent(
       this, ui::AccessibilityTypes::EVENT_ALERT, true);
+}
+
+void FirstRunSearchEngineView::ChooseSearchEngine(SearchEngineChoice* choice) {
+  user_chosen_engine_ = true;
+  DCHECK(template_url_service_);
+  template_url_service_->SetSearchEngineDialogSlot(choice->slot());
+  const TemplateURL* default_search = choice->GetSearchEngine();
+  if (default_search)
+    template_url_service_->SetDefaultSearchProvider(default_search);
 }

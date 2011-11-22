@@ -438,10 +438,6 @@ void BrowserNonClientFrameViewAura::GetWindowMask(const gfx::Size& size,
   // Nothing.
 }
 
-void BrowserNonClientFrameViewAura::EnableClose(bool enable) {
-  close_button_->SetEnabled(enable);
-}
-
 void BrowserNonClientFrameViewAura::ResetWindowControls() {
   maximize_button_->SetState(views::CustomButton::BS_NORMAL);
   // The close button isn't affected by this constraint.

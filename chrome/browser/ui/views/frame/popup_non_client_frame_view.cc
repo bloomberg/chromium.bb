@@ -32,9 +32,6 @@ void PopupNonClientFrameView::GetWindowMask(const gfx::Size& size,
                                                     gfx::Path* window_mask) {
 }
 
-void PopupNonClientFrameView::EnableClose(bool enable) {
-}
-
 void PopupNonClientFrameView::ResetWindowControls() {
 }
 

@@ -489,12 +489,6 @@ void Widget::CloseNow() {
   native_widget_->CloseNow();
 }
 
-void Widget::EnableClose(bool enable) {
-  if (non_client_view_)
-    non_client_view_->EnableClose(enable);
-  native_widget_->EnableClose(enable);
-}
-
 void Widget::Show() {
   if (non_client_view_) {
     if (saved_show_state_ == ui::SHOW_STATE_MAXIMIZED &&

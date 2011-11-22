@@ -756,13 +756,6 @@ void NativeWidgetWin::CloseNow() {
     DestroyWindow(hwnd());
 }
 
-void NativeWidgetWin::EnableClose(bool enable) {
-  // Disable the native frame's close button regardless of whether or not the
-  // native frame is in use, since this also affects the system menu.
-  EnableMenuItem(GetSystemMenu(GetNativeView(), false), SC_CLOSE, enable);
-  SendFrameChanged(GetNativeView());
-}
-
 void NativeWidgetWin::Show() {
   if (!IsWindow())
     return;

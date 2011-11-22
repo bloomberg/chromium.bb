@@ -87,10 +87,6 @@ void NonClientView::GetWindowMask(const gfx::Size& size,
   frame_view_->GetWindowMask(size, window_mask);
 }
 
-void NonClientView::EnableClose(bool enable) {
-  frame_view_->EnableClose(enable);
-}
-
 void NonClientView::ResetWindowControls() {
   frame_view_->ResetWindowControls();
 }

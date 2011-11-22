@@ -164,7 +164,6 @@ class ConstrainedWindowFrameView
   virtual int NonClientHitTest(const gfx::Point& point) OVERRIDE;
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask)
       OVERRIDE;
-  virtual void EnableClose(bool enable) OVERRIDE;
   virtual void ResetWindowControls() OVERRIDE {}
   virtual void UpdateWindowIcon() OVERRIDE {}
 
@@ -348,10 +347,6 @@ void ConstrainedWindowFrameView::GetWindowMask(const gfx::Size& size,
                                                gfx::Path* window_mask) {
   DCHECK(window_mask);
   views::GetDefaultWindowMask(size, window_mask);
-}
-
-void ConstrainedWindowFrameView::EnableClose(bool enable) {
-  close_button_->SetEnabled(enable);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

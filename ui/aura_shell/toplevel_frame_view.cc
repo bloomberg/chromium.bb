@@ -161,11 +161,6 @@ class WindowCaption : public FrameComponent,
     return HTNOWHERE;
   }
 
-  // Updates the enabled state of the close button.
-  void EnableClose(bool enable) {
-    close_button_->SetEnabled(enable);
-  }
-
   // Overridden from FrameComponent:
   virtual bool IgnoreEventsForPoint(const gfx::Point& point) OVERRIDE {
     gfx::Point translated_point(point);
@@ -399,10 +394,6 @@ int ToplevelFrameView::NonClientHitTest(const gfx::Point& point) {
 void ToplevelFrameView::GetWindowMask(const gfx::Size& size,
                                       gfx::Path* window_mask) {
   // Nothing.
-}
-
-void ToplevelFrameView::EnableClose(bool enable) {
-  caption_->EnableClose(enable);
 }
 
 void ToplevelFrameView::ResetWindowControls() {

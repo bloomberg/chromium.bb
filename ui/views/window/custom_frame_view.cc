@@ -192,10 +192,6 @@ void CustomFrameView::GetWindowMask(const gfx::Size& size,
   views::GetDefaultWindowMask(size, window_mask);
 }
 
-void CustomFrameView::EnableClose(bool enable) {
-  close_button_->SetEnabled(enable);
-}
-
 void CustomFrameView::ResetWindowControls() {
   restore_button_->SetState(CustomButton::BS_NORMAL);
   minimize_button_->SetState(CustomButton::BS_NORMAL);

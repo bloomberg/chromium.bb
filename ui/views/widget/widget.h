@@ -321,10 +321,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // any code that expects it to be valid beyond this call.
   void CloseNow();
 
-  // Toggles the enable state for the Close button (and the Close menu item in
-  // the system menu).
-  void EnableClose(bool enable);
-
   // Shows or hides the widget, without changing activation state.
   virtual void Show();
   void Hide();
