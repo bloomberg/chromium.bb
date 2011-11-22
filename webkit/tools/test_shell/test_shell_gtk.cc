@@ -25,6 +25,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue.h"
@@ -431,7 +432,7 @@ void TestShell::InteractiveSetFocus(WebWidgetHost* host, bool enable) {
     gtk_widget_grab_focus(widget);
   } else if (gtk_widget_is_focus(widget)) {
     GtkWidget *toplevel = gtk_widget_get_toplevel(widget);
-    if (GTK_WIDGET_TOPLEVEL(toplevel))
+    if (gtk_widget_is_toplevel(toplevel))
       gtk_window_set_focus(GTK_WINDOW(toplevel), NULL);
   }
 }

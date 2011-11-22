@@ -10,6 +10,8 @@
 
 #include <algorithm>
 
+#include "ui/base/gtk/gtk_compat.h"
+
 namespace {
 
 enum {
@@ -205,7 +207,7 @@ static void gtk_floating_container_size_allocate(GtkWidget* widget,
                                                  GtkAllocation* allocation) {
   widget->allocation = *allocation;
 
-  if (!GTK_WIDGET_NO_WINDOW(widget) && GTK_WIDGET_REALIZED(widget)) {
+  if (gtk_widget_get_has_window(widget) && gtk_widget_get_realized(widget)) {
     gdk_window_move_resize(widget->window,
                            allocation->x,
                            allocation->y,

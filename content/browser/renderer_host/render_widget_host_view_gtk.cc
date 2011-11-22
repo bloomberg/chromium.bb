@@ -1383,7 +1383,7 @@ gfx::Point RenderWidgetHostViewGtk::GetWidgetCenter() {
   gdk_window_get_origin(window, &window_x, &window_y);
   gint window_w = 0;
   gint window_h = 0;
-  gdk_drawable_get_size(window, &window_w, &window_h);
+  gdk_window_get_size(window, &window_w, &window_h);
 
   widget_center_.SetPoint(window_x + window_w / 2,
                           window_y + window_h / 2);

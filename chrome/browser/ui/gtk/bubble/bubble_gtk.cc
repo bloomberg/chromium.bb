@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/gtk_util.h"
@@ -100,7 +101,7 @@ void BubbleGtk::Init(GtkWidget* anchor_widget,
   DCHECK(!window_);
   anchor_widget_ = anchor_widget;
   toplevel_window_ = GTK_WINDOW(gtk_widget_get_toplevel(anchor_widget_));
-  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel_window_));
+  DCHECK(gtk_widget_is_toplevel(GTK_WIDGET(toplevel_window_)));
   rect_ = rect ? *rect : gtk_util::WidgetBounds(anchor_widget);
   preferred_arrow_location_ = arrow_location;
 

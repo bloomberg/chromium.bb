@@ -22,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/url_request/url_request.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -177,7 +178,7 @@ void LoginHandlerGtk::OnPromptHierarchyChanged(GtkWidget* sender,
                                                GtkWidget* previous_toplevel) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(ok_)))
+  if (!gtk_widget_is_toplevel(gtk_widget_get_toplevel(ok_)))
     return;
 
   // Now that we have attached ourself to the window, we can make our OK

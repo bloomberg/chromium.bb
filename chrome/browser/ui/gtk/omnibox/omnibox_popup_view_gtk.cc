@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "grit/theme_resources.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/gfx/color_utils.h"
@@ -365,7 +366,7 @@ void OmniboxPopupViewGtk::UpdatePopupAppearance() {
 }
 
 gfx::Rect OmniboxPopupViewGtk::GetTargetBounds() {
-  if (!GTK_WIDGET_REALIZED(window_))
+  if (!gtk_widget_get_realized(window_))
     return gfx::Rect();
 
   gfx::Rect retval = gtk_util::GetWidgetScreenBounds(window_);
@@ -461,7 +462,7 @@ void OmniboxPopupViewGtk::StackWindow() {
   gfx::NativeView omnibox_view = omnibox_view_->GetNativeView();
   DCHECK(GTK_IS_WIDGET(omnibox_view));
   GtkWidget* toplevel = gtk_widget_get_toplevel(omnibox_view);
-  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
+  DCHECK(gtk_widget_is_toplevel(toplevel));
   ui::StackPopupWindow(window_, toplevel);
 }
 

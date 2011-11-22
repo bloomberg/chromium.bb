@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/gtk_util.h"
 
 static const gchar* kLinkMarkup = "<u><span color=\"%s\">%s</span></u>";
@@ -54,7 +55,7 @@ G_DEFINE_TYPE(GtkChromeLinkButton, gtk_chrome_link_button, GTK_TYPE_BUTTON)
 static void gtk_chrome_link_button_set_text(GtkChromeLinkButton* button) {
   // If we were called before we were realized, abort. We'll be called for
   // real when |button| is realized.
-  if (!GTK_WIDGET_REALIZED(button))
+  if (!gtk_widget_get_realized(GTK_WIDGET(button)))
     return;
 
   g_free(button->native_markup);

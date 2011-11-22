@@ -37,6 +37,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/events.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -101,7 +102,7 @@ gboolean OnMouseButtonReleased(GtkWidget* widget, GdkEventButton* event,
 // Returns the approximate number of characters that can horizontally fit in
 // |pixel_width| pixels.
 int GetCharacterWidthForPixels(GtkWidget* widget, int pixel_width) {
-  DCHECK(GTK_WIDGET_REALIZED(widget))
+  DCHECK(gtk_widget_get_realized(widget))
       << " widget must be realized to compute font metrics correctly";
 
   PangoContext* context = gtk_widget_create_pango_context(widget);
@@ -274,7 +275,7 @@ GtkWidget* CreateBoldLabel(const std::string& text) {
 void GetWidgetSizeFromCharacters(
     GtkWidget* widget, double width_chars, double height_lines,
     int* width, int* height) {
-  DCHECK(GTK_WIDGET_REALIZED(widget))
+  DCHECK(gtk_widget_get_realized(widget))
       << " widget must be realized to compute font metrics correctly";
   PangoContext* context = gtk_widget_create_pango_context(widget);
   PangoFontMetrics* metrics = pango_context_get_metrics(context,
@@ -297,7 +298,7 @@ void GetWidgetSizeFromCharacters(
 void GetWidgetSizeFromResources(
     GtkWidget* widget, int width_chars, int height_lines,
     int* width, int* height) {
-  DCHECK(GTK_WIDGET_REALIZED(widget))
+  DCHECK(gtk_widget_get_realized(widget))
       << " widget must be realized to compute font metrics correctly";
 
   double chars = 0;
@@ -841,11 +842,11 @@ void SetAlwaysShowImage(GtkWidget* image_menu_item) {
 }
 
 gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget) {
-  DCHECK(GTK_WIDGET_REALIZED(widget));
+  DCHECK(gtk_widget_get_realized(widget));
 
   GtkWidget* toplevel = gtk_widget_get_toplevel(widget);
   DCHECK(toplevel);
-  DCHECK(GTK_WIDGET_REALIZED(toplevel));
+  DCHECK(gtk_widget_get_realized(toplevel));
 
   gint x = 0, y = 0;
   gtk_widget_translate_coordinates(widget,
@@ -1145,7 +1146,7 @@ void SetLabelWidth(GtkWidget* label, int pixel_width) {
     gtk_widget_set_size_request(label, pixel_width, -1);
   } else {
     // The label has to be realized before we can adjust its width.
-    if (GTK_WIDGET_REALIZED(label)) {
+    if (gtk_widget_get_realized(label)) {
       OnLabelRealize(label, GINT_TO_POINTER(pixel_width));
     } else {
       g_signal_connect(label, "realize", G_CALLBACK(OnLabelRealize),

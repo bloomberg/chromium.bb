@@ -8,6 +8,8 @@
 
 #include <algorithm>
 
+#include "ui/base/gtk/gtk_compat.h"
+
 namespace {
 
 enum {
@@ -143,7 +145,7 @@ static void gtk_expanded_container_size_allocate(GtkWidget* widget,
                                                  GtkAllocation* allocation) {
   widget->allocation = *allocation;
 
-  if (!GTK_WIDGET_NO_WINDOW(widget) && GTK_WIDGET_REALIZED(widget)) {
+  if (!GTK_WIDGET_NO_WINDOW(widget) && gtk_widget_get_realized(widget)) {
     gdk_window_move_resize(widget->window,
                            allocation->x,
                            allocation->y,
@@ -180,7 +182,7 @@ void gtk_expanded_container_move(GtkExpandedContainer* container,
 void gtk_expanded_container_set_has_window(GtkExpandedContainer* container,
                                            gboolean has_window) {
   g_return_if_fail(GTK_IS_EXPANDED_CONTAINER(container));
-  g_return_if_fail(!GTK_WIDGET_REALIZED(container));
+  g_return_if_fail(!gtk_widget_get_realized(GTK_WIDGET(container)));
   gtk_fixed_set_has_window(GTK_FIXED(container), has_window);
 }
 

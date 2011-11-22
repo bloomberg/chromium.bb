@@ -37,6 +37,7 @@
 #include "grit/theme_resources.h"
 #include "grit/theme_resources_standard.h"
 #include "grit/ui_resources.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/gtk_util.h"
 
@@ -802,7 +803,7 @@ gboolean BrowserActionsToolbarGtk::OnDragFailed(GtkWidget* widget,
 void BrowserActionsToolbarGtk::OnHierarchyChanged(
     GtkWidget* widget, GtkWidget* previous_toplevel) {
   GtkWidget* toplevel = gtk_widget_get_toplevel(widget);
-  if (!GTK_WIDGET_TOPLEVEL(toplevel))
+  if (!gtk_widget_is_toplevel(toplevel))
     return;
 
   signals_.Connect(toplevel, "set-focus", G_CALLBACK(OnSetFocusThunk), this);

@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/animation/slide_animation.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/text/text_elider.h"
 
@@ -93,7 +94,7 @@ void StatusBubbleGtk::SetStatusTextToURL() {
   GtkWidget* parent = gtk_widget_get_parent(container_.get());
 
   // It appears that parent can be NULL (probably only during shutdown).
-  if (!parent || !GTK_WIDGET_REALIZED(parent))
+  if (!parent || !gtk_widget_get_realized(parent))
     return;
 
   int desired_width = parent->allocation.width;
@@ -166,11 +167,11 @@ void StatusBubbleGtk::MouseMoved(
   last_mouse_location_ = location;
   last_mouse_left_content_ = left_content;
 
-  if (!GTK_WIDGET_REALIZED(container_.get()))
+  if (!gtk_widget_get_realized(container_.get()))
     return;
 
   GtkWidget* parent = gtk_widget_get_parent(container_.get());
-  if (!parent || !GTK_WIDGET_REALIZED(parent))
+  if (!parent || !gtk_widget_get_realized(parent))
     return;
 
   int old_y_offset = y_offset_;
@@ -181,7 +182,7 @@ void StatusBubbleGtk::MouseMoved(
     y_offset_ = 0;
   } else {
     GtkWidget* toplevel = gtk_widget_get_toplevel(container_.get());
-    if (!toplevel || !GTK_WIDGET_REALIZED(toplevel))
+    if (!toplevel || !gtk_widget_get_realized(toplevel))
       return;
 
     bool ltr = !base::i18n::IsRTL();

@@ -7,6 +7,7 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
+#include "ui/base/gtk/gtk_compat.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 
@@ -14,7 +15,7 @@ namespace content {
 
 void GetScreenInfoFromNativeWindow(
     GdkWindow* gdk_window, WebKit::WebScreenInfo* results) {
-  GdkScreen* screen = gdk_drawable_get_screen(gdk_window);
+  GdkScreen* screen = gdk_window_get_screen(gdk_window);
   *results = WebKit::WebScreenInfoFactory::screenInfo(
       gdk_x11_drawable_get_xdisplay(gdk_window),
       gdk_x11_screen_get_screen_number(screen));

@@ -6,6 +6,7 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/ui/gtk/gtk_chrome_button.h"
+#include "ui/base/gtk/gtk_compat.h"
 
 static const gchar* kHoverControllerGtkKey = "__HOVER_CONTROLLER_GTK__";
 
@@ -114,7 +115,7 @@ void HoverControllerGtk::OnHierarchyChanged(GtkWidget* widget,
                                             GtkWidget* previous_toplevel) {
   // GTK+ does not emit leave-notify-event signals when a widget
   // becomes unanchored, so manually unset the hover states.
-  if (!GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(widget))) {
+  if (!gtk_widget_is_toplevel(gtk_widget_get_toplevel(widget))) {
     gtk_widget_set_state(button_, GTK_STATE_NORMAL);
     hover_animation_.Reset();
     gtk_chrome_button_set_hover_state(GTK_CHROME_BUTTON(button_), 0.0);

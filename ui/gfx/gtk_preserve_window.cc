@@ -9,6 +9,8 @@
 #include <gtk/gtkwidget.h>
 #include <gtk/gtkfixed.h>
 
+#include "ui/base/gtk/gtk_compat.h"
+
 G_BEGIN_DECLS
 
 #define GTK_PRESERVE_WINDOW_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), \
@@ -180,7 +182,7 @@ void gtk_preserve_window_set_preserve(GtkPreserveWindow* window,
     attributes_mask = GDK_WA_VISUAL | GDK_WA_COLORMAP | GDK_WA_NOREDIR;
     widget->window = gdk_window_new(
         gdk_get_default_root_window(), &attributes, attributes_mask);
-  } else if (!value && widget->window && !GTK_WIDGET_REALIZED(widget)) {
+  } else if (!value && widget->window && !gtk_widget_get_realized(widget)) {
     gdk_window_destroy(widget->window);
     widget->window = NULL;
   }
@@ -192,7 +194,7 @@ void gtk_preserve_window_size_allocate(GtkWidget* widget,
 
   widget->allocation = *allocation;
 
-  if (GTK_WIDGET_REALIZED(widget)) {
+  if (gtk_widget_get_realized(widget)) {
     GtkPreserveWindowPrivate* priv = GTK_PRESERVE_WINDOW_GET_PRIVATE(widget);
     if (priv->delegate_resize) {
       gdk_window_move(widget->window, allocation->x, allocation->y);

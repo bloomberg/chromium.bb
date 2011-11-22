@@ -36,6 +36,7 @@
 #include "ui/base/animation/multi_animation.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -763,7 +764,7 @@ gfx::NativeView OmniboxViewGtk::GetNativeView() const {
 
 gfx::NativeView OmniboxViewGtk::GetRelativeWindowForPopup() const {
   GtkWidget* toplevel = gtk_widget_get_toplevel(GetNativeView());
-  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
+  DCHECK(gtk_widget_is_toplevel(toplevel));
   return toplevel;
 }
 
@@ -1932,7 +1933,7 @@ void OmniboxViewGtk::SelectAllInternal(bool reversed,
 }
 
 void OmniboxViewGtk::StartUpdatingHighlightedText() {
-  if (GTK_WIDGET_REALIZED(text_view_)) {
+  if (gtk_widget_get_realized(text_view_)) {
     GtkClipboard* clipboard =
         gtk_widget_get_clipboard(text_view_, GDK_SELECTION_PRIMARY);
     DCHECK(clipboard);
@@ -1944,7 +1945,7 @@ void OmniboxViewGtk::StartUpdatingHighlightedText() {
 }
 
 void OmniboxViewGtk::FinishUpdatingHighlightedText() {
-  if (GTK_WIDGET_REALIZED(text_view_)) {
+  if (gtk_widget_get_realized(text_view_)) {
     GtkClipboard* clipboard =
         gtk_widget_get_clipboard(text_view_, GDK_SELECTION_PRIMARY);
     DCHECK(clipboard);

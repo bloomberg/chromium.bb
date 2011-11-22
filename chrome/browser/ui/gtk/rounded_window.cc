@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
 
 namespace gtk_util {
@@ -286,7 +287,7 @@ void ActAsRoundedWindow(
 void StopActingAsRoundedWindow(GtkWidget* widget) {
   g_object_set_data(G_OBJECT(widget), kRoundedData, NULL);
 
-  if (GTK_WIDGET_REALIZED(widget))
+  if (gtk_widget_get_realized(widget))
     gdk_window_shape_combine_mask(widget->window, NULL, 0, 0);
 
   if (gtk_widget_get_visible(widget))

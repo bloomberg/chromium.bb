@@ -21,6 +21,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_screen_utils.h"
 #include "ui/gfx/gtk_util.h"
 #include "webkit/glue/webdropdata.h"
@@ -321,7 +322,7 @@ void WebDragSourceGtk::OnDragBegin(GtkWidget* sender,
                                 gdk_pixbuf_get_height(drag_pixbuf_));
 
     // We only need to do this once.
-    if (!GTK_WIDGET_REALIZED(drag_icon_)) {
+    if (!gtk_widget_get_realized(drag_icon_)) {
       GdkScreen* screen = gtk_widget_get_screen(drag_icon_);
       GdkColormap* rgba = gdk_screen_get_rgba_colormap(screen);
       if (rgba)

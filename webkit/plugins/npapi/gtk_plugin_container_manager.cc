@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/gtk_util.h"
 #include "webkit/plugins/npapi/gtk_plugin_container.h"
 #include "webkit/plugins/npapi/webplugin.h"
@@ -80,7 +81,7 @@ void GtkPluginContainerManager::MovePluginContainer(
   // TODO(piman): if the widget hasn't been realized (e.g. the tab has been
   // torn off and the parent gtk widget has been detached from the hierarchy),
   // we lose the cutout information.
-  if (GTK_WIDGET_REALIZED(widget)) {
+  if (gtk_widget_get_realized(widget)) {
     GdkRectangle clip_rect = move.clip_rect.ToGdkRectangle();
     GdkRegion* clip_region = gdk_region_rectangle(&clip_rect);
     gfx::SubtractRectanglesFromRegion(clip_region, move.cutout_rects);

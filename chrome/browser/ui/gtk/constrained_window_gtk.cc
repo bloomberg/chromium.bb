@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 
 #if defined(TOUCH_UI)
@@ -163,7 +164,7 @@ gboolean ConstrainedWindowGtk::OnKeyPress(GtkWidget* sender,
 void ConstrainedWindowGtk::OnHierarchyChanged(GtkWidget* sender,
                                               GtkWidget* previous_toplevel) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(widget())))
+  if (!gtk_widget_is_toplevel(gtk_widget_get_toplevel(widget())))
     return;
 
   FocusConstrainedWindow();

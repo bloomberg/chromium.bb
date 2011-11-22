@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
@@ -383,7 +384,7 @@ void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
 void SSLClientCertificateSelector::OnPromptShown(GtkWidget* widget,
                                                  GtkWidget* previous_toplevel) {
   if (!root_widget_.get() ||
-      !GTK_WIDGET_TOPLEVEL(gtk_widget_get_toplevel(root_widget_.get())))
+      !gtk_widget_is_toplevel(gtk_widget_get_toplevel(root_widget_.get())))
     return;
   gtk_widget_set_can_default(select_button_, TRUE);
   gtk_widget_grab_default(select_button_);

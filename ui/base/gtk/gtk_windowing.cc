@@ -7,15 +7,16 @@
 #include <gdk/gdkx.h>
 
 #include "base/logging.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/x/x11_util.h"
 
 namespace ui {
 
 void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel) {
-  DCHECK(GTK_IS_WINDOW(popup) && GTK_WIDGET_TOPLEVEL(popup) &&
-         GTK_WIDGET_REALIZED(popup));
-  DCHECK(GTK_IS_WINDOW(toplevel) && GTK_WIDGET_TOPLEVEL(toplevel) &&
-         GTK_WIDGET_REALIZED(toplevel));
+  DCHECK(GTK_IS_WINDOW(popup) && gtk_widget_is_toplevel(popup) &&
+         gtk_widget_get_realized(popup));
+  DCHECK(GTK_IS_WINDOW(toplevel) && gtk_widget_is_toplevel(toplevel) &&
+         gtk_widget_get_realized(toplevel));
 
   // Stack the |popup| window directly above the |toplevel| window.
   // The popup window is a direct child of the root window, so we need to
