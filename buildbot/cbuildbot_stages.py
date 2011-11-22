@@ -905,28 +905,38 @@ class ArchiveStage(NonHaltingBuilderStage):
     upload_url = self._GetGSUploadLocation()
     archive_path = self._SetupArchivePath()
     image_dir = self.GetImageDirSymlink()
+    debug_tarball_queue = multiprocessing.Queue()
+    upload_queue = multiprocessing.Queue()
+
     extra_env = {}
     if config['useflags']:
       extra_env['USE'] = ' '.join(config['useflags'])
 
-    # The following three functions are run in parallel.
-    #  1. UploadUpdatePayloads: Upload update payloads from test phase.
-    #  2. UploadTestResults: Upload results from test phase.
-    #  3. ArchiveDebugSymbols: Generate and upload debug symbols.
-    #  4. BuildAndArchiveAllImages: Build and archive images.
+    # The following functions are run in parallel (except where indicated
+    # otherwise)
+    # \- BuildAndArchiveArtifacts
+    #    \- ArchivePayloads
+    #    \- ArchiveTestResults
+    #    \- BuildAndArchiveReleaseArtifacts
+    #       (runs below steps first, then runs push_image)
+    #       \- ArchiveDebugSymbols
+    #       \- BuildAndArchiveAllImages
+    #          (builds recovery image first, then launches functions below)
+    #          \- BuildAndArchiveFactoryImages
+    #          \- ArchiveRegularImages
+    # \- UploadDebugSymbols
+    # \- UploadArtifacts
 
-    def UploadUpdatePayloads():
-      """Uploads update payloads when ready."""
+    def ArchivePayloads():
+      """Archives update payloads when they are ready."""
       update_payloads_dir = self._GetUpdatePayloads()
       if update_payloads_dir:
         for payload in os.listdir(update_payloads_dir):
           full_path = os.path.join(update_payloads_dir, payload)
-          filename = commands.ArchiveFile(full_path, archive_path)
-          commands.UploadArchivedFile(archive_path, upload_url,
-                                      filename, debug)
+          upload_queue.put(commands.ArchiveFile(full_path, archive_path))
 
-    def UploadTestResults():
-      """Upload test results when they are ready."""
+    def ArchiveTestResults():
+      """Archives test results when they are ready."""
       got_symbols = self._WaitForBreakpadSymbols()
       for test_results in self._GetTestResults():
         if got_symbols:
@@ -934,10 +944,8 @@ class ArchiveStage(NonHaltingBuilderStage):
                                                            board, test_results,
                                                            archive_path)
           for filename in filenames:
-            commands.UploadArchivedFile(archive_path, upload_url,
-                                        filename, debug)
-        filename = commands.ArchiveFile(test_results, archive_path)
-        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+            upload_queue.put(filename)
+        upload_queue.put(commands.ArchiveFile(test_results, archive_path))
 
     def ArchiveDebugSymbols():
       """Generate and upload debug symbols."""
@@ -950,9 +958,13 @@ class ArchiveStage(NonHaltingBuilderStage):
           self._BreakpadSymbolsGenerated(success)
         filename = commands.GenerateDebugTarball(
             buildroot, board, archive_path, config['archive_build_debug'])
-        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+        upload_queue.put(filename)
+        debug_tarball_queue.put(filename)
 
+    def UploadDebugSymbols():
       if not debug and config['upload_symbols']:
+        filename = debug_tarball_queue.get()
+        if filename is None: return
         commands.UploadSymbols(buildroot,
                                board=board,
                                official=config['chromeos_official'])
@@ -982,28 +994,25 @@ class ArchiveStage(NonHaltingBuilderStage):
       if factory_install_symlink and factory_test_symlink:
         image_root = os.path.dirname(factory_install_symlink)
         filename = commands.BuildFactoryZip(archive_path, image_root)
-        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+        upload_queue.put(filename)
 
     def ArchiveRegularImages():
       """Build and archive image.zip and the hwqual image."""
 
       # Zip up everything in the image directory.
-      filename = commands.BuildImageZip(archive_path, image_dir)
-
-      # Upload image.zip to Google Storage.
-      commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+      upload_queue.put(commands.BuildImageZip(archive_path, image_dir))
 
       if config['chromeos_official']:
         # Build hwqual image and upload to Google Storage.
         version = os.path.basename(os.path.realpath(image_dir))
         hwqual_name = 'chromeos-hwqual-%s-%s' % (board, version)
         filename = commands.ArchiveHWQual(buildroot, hwqual_name, archive_path)
-        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+        upload_queue.put(filename)
 
       # Archive au-generator.zip.
       filename = 'au-generator.zip'
       shutil.copy(os.path.join(image_dir, filename), archive_path)
-      commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+      upload_queue.put(filename)
 
     def BuildAndArchiveAllImages():
       # If we're an official build, generate the recovery image. To conserve
@@ -1016,7 +1025,19 @@ class ArchiveStage(NonHaltingBuilderStage):
       background.RunParallelSteps([BuildAndArchiveFactoryImages,
                                    ArchiveRegularImages])
 
+    def UploadArtifacts():
+      # Upload any generated artifacts to Google Storage.
+      while True:
+        filename = upload_queue.get()
+        if filename is None:
+          # Shut down self and other upload processes.
+          upload_queue.put(None)
+          break
+        commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
+
     def BuildAndArchiveReleaseArtifacts():
+      # Archive debug symbols in parallel with our process for creating
+      # images.
       background.RunParallelSteps([ArchiveDebugSymbols,
                                    BuildAndArchiveAllImages])
 
@@ -1033,11 +1054,24 @@ class ArchiveStage(NonHaltingBuilderStage):
                               self._build_config['profile'])
 
 
-    steps = []
-    if self._options.tests:
-      steps += [UploadUpdatePayloads, UploadTestResults]
-    steps += [BuildAndArchiveReleaseArtifacts]
-    background.RunParallelSteps(steps)
+    def BuildAndArchiveArtifacts():
+      try:
+        # Run archiving steps in parallel.
+        steps = []
+        if self._options.tests:
+          steps += [ArchivePayloads, ArchiveTestResults]
+        steps += [BuildAndArchiveReleaseArtifacts]
+        background.RunParallelSteps(steps)
+      finally:
+        # Shut down upload queues.
+        upload_queue.put(None)
+        debug_tarball_queue.put(None)
+
+    # Build and archive artifacts. In the background, create 16 upload
+    # processes for uploading any created artifacts.
+    background.RunParallelSteps([BuildAndArchiveArtifacts] +
+                                [UploadDebugSymbols] +
+                                [UploadArtifacts]*16)
 
     # Update and upload LATEST file.
     commands.UpdateLatestFile(self._bot_archive_root, self._set_version)
