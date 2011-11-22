@@ -9,6 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/prefs/pref_service.h"
 
+class DefaultPrefStore;
+class PrefModelAssociator;
+class PrefNotifierImpl;
 class TestingBrowserProcess;
 class TestingPrefStore;
 
@@ -45,7 +48,10 @@ class TestingPrefServiceBase : public PrefService {
   TestingPrefServiceBase(
       TestingPrefStore* managed_platform_prefs,
       TestingPrefStore* user_prefs,
-      TestingPrefStore* recommended_platform_prefs);
+      TestingPrefStore* recommended_platform_prefs,
+      DefaultPrefStore* default_store,
+      PrefModelAssociator* pref_sync_associator,
+      PrefNotifierImpl* pref_notifier);
 
  private:
   // Reads the value of the preference indicated by |path| from |pref_store|.

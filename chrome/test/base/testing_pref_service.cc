@@ -8,7 +8,8 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/default_pref_store.h"
-#include "chrome/browser/prefs/pref_notifier.h"
+#include "chrome/browser/prefs/pref_model_associator.h"
+#include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/testing_pref_store.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -17,15 +18,25 @@
 TestingPrefServiceBase::TestingPrefServiceBase(
     TestingPrefStore* managed_platform_prefs,
     TestingPrefStore* user_prefs,
-    TestingPrefStore* recommended_platform_prefs)
-    : PrefService(managed_platform_prefs,
-                  NULL,
-                  NULL,
-                  NULL,
+    TestingPrefStore* recommended_platform_prefs,
+    DefaultPrefStore* default_store,
+    PrefModelAssociator* pref_sync_associator,
+    PrefNotifierImpl* pref_notifier)
+    : PrefService(pref_notifier,
+                  new PrefValueStore(
+                      managed_platform_prefs,
+                      NULL,
+                      NULL,
+                      NULL,
+                      user_prefs,
+                      recommended_platform_prefs,
+                      NULL,
+                      default_store,
+                      pref_sync_associator,
+                      pref_notifier),
                   user_prefs,
-                  recommended_platform_prefs,
-                  NULL,
-                  new DefaultPrefStore(),
+                  default_store,
+                  pref_sync_associator,
                   false),
       managed_platform_prefs_(managed_platform_prefs),
       user_prefs_(user_prefs),
@@ -93,7 +104,10 @@ void TestingPrefServiceBase::RemovePref(TestingPrefStore* pref_store,
 TestingPrefService::TestingPrefService()
     : TestingPrefServiceBase(new TestingPrefStore(),
                              new TestingPrefStore(),
-                             new TestingPrefStore()) {
+                             new TestingPrefStore(),
+                             new DefaultPrefStore(),
+                             new PrefModelAssociator(),
+                             new PrefNotifierImpl()) {
 }
 
 TestingPrefService::~TestingPrefService() {

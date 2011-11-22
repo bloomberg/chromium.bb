@@ -306,6 +306,8 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
       new ExtensionWebNavigationTabObserver(contents));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   plugin_observer_.reset(new PluginObserver(this));
+  per_tab_prefs_.reset(
+      profile()->GetPrefs()->CreatePrefServiceWithPerTabPrefStore());
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
   sad_tab_observer_.reset(new SadTabObserver(contents));
   // Start the in-browser thumbnailing if the feature is enabled.

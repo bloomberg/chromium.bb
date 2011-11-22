@@ -146,6 +146,10 @@ class PrefService : public base::NonThreadSafe {
   // incognito windows).
   PrefService* CreateIncognitoPrefService(PrefStore* incognito_extension_prefs);
 
+  // Creates a per-tab copy of the pref service that shares most pref stores
+  // and allows WebKit-related preferences to be overridden on per-tab basis.
+  PrefService* CreatePrefServiceWithPerTabPrefStore();
+
   virtual ~PrefService();
 
   // Reloads the data from file. This should only be called when the importer
@@ -297,17 +301,13 @@ class PrefService : public base::NonThreadSafe {
   SyncableService* GetSyncableService();
 
  protected:
-  // Construct a new pref service, specifying the pref sources as explicit
-  // PrefStore pointers. This constructor is what CreatePrefService() ends up
-  // calling. It's also used for unit tests.
-  PrefService(PrefStore* managed_platform_prefs,
-              PrefStore* managed_cloud_prefs,
-              PrefStore* extension_prefs,
-              PrefStore* command_line_prefs,
+  // Construct a new pref service. This constructor is what
+  // factory methods end up calling and what is used for unit tests.
+  PrefService(PrefNotifierImpl* pref_notifier,
+              PrefValueStore* pref_value_store,
               PersistentPrefStore* user_prefs,
-              PrefStore* recommended_platform_prefs,
-              PrefStore* recommended_cloud_prefs,
               DefaultPrefStore* default_store,
+              PrefModelAssociator* pref_sync_associator,
               bool async);
 
   // The PrefNotifier handles registering and notifying preference observers.
@@ -337,11 +337,6 @@ class PrefService : public base::NonThreadSafe {
 
   // Give access to ReportUserPrefChanged() and GetMutableUserPref().
   friend class subtle::ScopedUserPrefUpdateBase;
-
-  // Construct an incognito version of the pref service. Use
-  // CreateIncognitoPrefService() instead of calling this constructor directly.
-  PrefService(const PrefService& original,
-              PrefStore* incognito_extension_prefs);
 
   // Sends notification of a changed preference. This needs to be called by
   // a ScopedUserPrefUpdate if a DictionaryValue or ListValue is changed.
@@ -382,8 +377,8 @@ class PrefService : public base::NonThreadSafe {
   base::Value* GetMutableUserPref(const char* path,
                                   base::Value::Type type);
 
-  // The PrefValueStore provides prioritized preference values. It is created
-  // and owned by this PrefService. Subclasses may access it for unit testing.
+  // The PrefValueStore provides prioritized preference values. It is owned by
+  // this PrefService. Subclasses may access it for unit testing.
   scoped_ptr<PrefValueStore> pref_value_store_;
 
   // Pref Stores and profile that we passed to the PrefValueStore.

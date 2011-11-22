@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_PREFS_INCOGNITO_USER_PREF_STORE_H_
 #pragma once
 
-#include <string>
-
+#include "base/basictypes.h"
 #include "chrome/browser/prefs/overlay_user_pref_store.h"
 
 class IncognitoUserPrefStore : public OverlayUserPrefStore {
@@ -15,7 +14,6 @@ class IncognitoUserPrefStore : public OverlayUserPrefStore {
   explicit IncognitoUserPrefStore(PersistentPrefStore* underlay);
 
  private:
-
   DISALLOW_COPY_AND_ASSIGN(IncognitoUserPrefStore);
 };
 

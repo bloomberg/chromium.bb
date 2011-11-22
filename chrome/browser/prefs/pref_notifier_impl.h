@@ -23,6 +23,7 @@ class NotificationObserver;
 class PrefNotifierImpl : public PrefNotifier,
                          public base::NonThreadSafe {
  public:
+  PrefNotifierImpl();
   explicit PrefNotifierImpl(PrefService* pref_service);
   virtual ~PrefNotifierImpl();
 
@@ -34,6 +35,8 @@ class PrefNotifierImpl : public PrefNotifier,
   // PrefNotifier overrides.
   virtual void OnPreferenceChanged(const std::string& pref_name) OVERRIDE;
   virtual void OnInitializationCompleted(bool succeeded) OVERRIDE;
+
+  void SetPrefService(PrefService* pref_service);
 
  protected:
   // A map from pref names to a list of observers. Observers get fired in the

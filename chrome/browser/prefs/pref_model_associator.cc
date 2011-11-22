@@ -23,14 +23,6 @@ PrefModelAssociator::PrefModelAssociator()
       processing_syncer_changes_(false),
       pref_service_(NULL),
       sync_processor_(NULL) {
-}
-
-PrefModelAssociator::PrefModelAssociator(
-    PrefService* pref_service)
-    : models_associated_(false),
-      processing_syncer_changes_(false),
-      pref_service_(pref_service),
-      sync_processor_(NULL) {
   DCHECK(CalledOnValidThread());
 }
 
@@ -119,6 +111,7 @@ SyncError PrefModelAssociator::MergeDataAndStartSyncing(
     SyncChangeProcessor* sync_processor) {
   DCHECK_EQ(type, PREFERENCES);
   DCHECK(CalledOnValidThread());
+  DCHECK(pref_service_);
   DCHECK(!sync_processor_);
   sync_processor_ = sync_processor;
 
@@ -429,4 +422,9 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
       sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
   if (error.IsSet())
     StopSyncing(PREFERENCES);
+}
+
+void PrefModelAssociator::SetPrefService(PrefService* pref_service) {
+  DCHECK(pref_service_ == NULL);
+  pref_service_ = pref_service;
 }

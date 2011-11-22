@@ -25,6 +25,7 @@
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/default_pref_store.h"
 #include "chrome/browser/prefs/incognito_user_pref_store.h"
+#include "chrome/browser/prefs/per_tab_user_pref_store.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_notifier_impl.h"
 #include "chrome/browser/prefs/pref_value_store.h"
@@ -154,62 +155,91 @@ PrefService* PrefService::CreatePrefService(const FilePath& pref_filename,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
   DefaultPrefStore* default_pref_store = new DefaultPrefStore();
 
+  PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
+  PrefModelAssociator* pref_sync_associator = new PrefModelAssociator();
+
   return new PrefService(
-      managed_platform, managed_cloud, extension_prefs,
-      command_line, user, recommended_platform,
-      recommended_cloud, default_pref_store, async);
+      pref_notifier,
+      new PrefValueStore(
+          managed_platform,
+          managed_cloud,
+          extension_prefs,
+          command_line,
+          user,
+          recommended_platform,
+          recommended_cloud,
+          default_pref_store,
+          pref_sync_associator,
+          pref_notifier),
+      user,
+      default_pref_store,
+      pref_sync_associator,
+      async);
 }
 
 PrefService* PrefService::CreateIncognitoPrefService(
     PrefStore* incognito_extension_prefs) {
-  return new PrefService(*this, incognito_extension_prefs);
-}
-
-PrefService::PrefService(PrefStore* managed_platform_prefs,
-                         PrefStore* managed_cloud_prefs,
-                         PrefStore* extension_prefs,
-                         PrefStore* command_line_prefs,
-                         PersistentPrefStore* user_prefs,
-                         PrefStore* recommended_platform_prefs,
-                         PrefStore* recommended_cloud_prefs,
-                         DefaultPrefStore* default_store,
-                         bool async)
-    : user_pref_store_(user_prefs),
-      default_store_(default_store) {
-  pref_sync_associator_.reset(new PrefModelAssociator(this));
-  pref_notifier_.reset(new PrefNotifierImpl(this));
-  pref_value_store_.reset(
-      new PrefValueStore(managed_platform_prefs,
-                         managed_cloud_prefs,
-                         extension_prefs,
-                         command_line_prefs,
-                         user_pref_store_,
-                         recommended_platform_prefs,
-                         recommended_cloud_prefs,
-                         default_store,
-                         pref_sync_associator_.get(),
-                         pref_notifier_.get()));
-  InitFromStorage(async);
-}
-
-PrefService::PrefService(const PrefService& original,
-                         PrefStore* incognito_extension_prefs)
-      : user_pref_store_(
-            new IncognitoUserPrefStore(original.user_pref_store_.get())),
-        default_store_(original.default_store_.get()) {
-  // Incognito mode doesn't sync, so no need to create PrefModelAssociator.
-  pref_notifier_.reset(new PrefNotifierImpl(this));
-  pref_value_store_.reset(original.pref_value_store_->CloneAndSpecialize(
-      NULL, // managed_platform_prefs
-      NULL, // managed_cloud_prefs
-      incognito_extension_prefs,
-      NULL, // command_line_prefs
-      user_pref_store_.get(),
-      NULL, // recommended_platform_prefs
-      NULL, // recommended_cloud_prefs
+  PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
+  PersistentPrefStore* incognito_pref_store =
+      new IncognitoUserPrefStore(user_pref_store_.get());
+  return new PrefService(
+      pref_notifier,
+      pref_value_store_->CloneAndSpecialize(
+          NULL, // managed_platform_prefs
+          NULL, // managed_cloud_prefs
+          incognito_extension_prefs,
+          NULL, // command_line_prefs
+          incognito_pref_store,
+          NULL, // recommended_platform_prefs
+          NULL, // recommended_cloud_prefs
+          default_store_.get(),
+          NULL, // pref_sync_associator
+          pref_notifier),
+      incognito_pref_store,
       default_store_.get(),
-      NULL, // pref_sync_associator_
-      pref_notifier_.get()));
+      NULL,
+      false);
+}
+
+PrefService* PrefService::CreatePrefServiceWithPerTabPrefStore() {
+  PrefNotifierImpl* pref_notifier = new PrefNotifierImpl();
+  PersistentPrefStore* per_tab_pref_store =
+      new PerTabUserPrefStore(user_pref_store_.get());
+  DefaultPrefStore* default_store = new DefaultPrefStore();
+  return new PrefService(
+      pref_notifier,
+      pref_value_store_->CloneAndSpecialize(
+          NULL, // managed_platform_prefs
+          NULL, // managed_cloud_prefs
+          NULL, // extension_prefs
+          NULL, // command_line_prefs
+          per_tab_pref_store,
+          NULL, // recommended_platform_prefs
+          NULL, // recommended_cloud_prefs
+          default_store,
+          NULL,
+          pref_notifier),
+      per_tab_pref_store,
+      default_store,
+      NULL,
+      false);
+}
+
+PrefService::PrefService(PrefNotifierImpl* pref_notifier,
+                         PrefValueStore* pref_value_store,
+                         PersistentPrefStore* user_prefs,
+                         DefaultPrefStore* default_store,
+                         PrefModelAssociator* pref_sync_associator,
+                         bool async)
+    : pref_notifier_(pref_notifier),
+      pref_value_store_(pref_value_store),
+      user_pref_store_(user_prefs),
+      default_store_(default_store),
+      pref_sync_associator_(pref_sync_associator) {
+  pref_notifier_->SetPrefService(this);
+  if (pref_sync_associator_.get())
+    pref_sync_associator_->SetPrefService(this);
+  InitFromStorage(async);
 }
 
 PrefService::~PrefService() {

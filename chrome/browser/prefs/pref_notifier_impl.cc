@@ -10,6 +10,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
 
+PrefNotifierImpl::PrefNotifierImpl()
+    : pref_service_(NULL) {
+}
+
 PrefNotifierImpl::PrefNotifierImpl(PrefService* service)
     : pref_service_(service) {
 }
@@ -103,4 +107,9 @@ void PrefNotifierImpl::FireObservers(const std::string& path) {
                       content::Source<PrefService>(pref_service_),
                       content::Details<const std::string>(&path));
   }
+}
+
+void PrefNotifierImpl::SetPrefService(PrefService* pref_service) {
+  DCHECK(pref_service_ == NULL);
+  pref_service_ = pref_service;
 }

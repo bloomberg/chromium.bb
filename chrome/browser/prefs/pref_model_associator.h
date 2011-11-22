@@ -32,7 +32,7 @@ class PrefModelAssociator
     : public SyncableService,
       public base::NonThreadSafe {
  public:
-  explicit PrefModelAssociator(PrefService* pref_service);
+  PrefModelAssociator();
   virtual ~PrefModelAssociator();
 
   // SyncableService implementation.
@@ -64,6 +64,8 @@ class PrefModelAssociator
   // sent to the syncer.
   virtual void ProcessPrefChange(const std::string& name);
 
+  void SetPrefService(PrefService* pref_service);
+
   // Merges the value of local_pref into the supplied server_value and returns
   // the result (caller takes ownership). If there is a conflict, the server
   // value always takes precedence. Note that only certain preferences will
@@ -88,9 +90,6 @@ class PrefModelAssociator
   friend class ProfileSyncServicePreferenceTest;
 
   typedef std::map<std::string, SyncData> SyncDataMap;
-
-  // For testing.
-  PrefModelAssociator();
 
   // Create an association for a given preference. If |sync_pref| is valid,
   // signifying that sync has data for this preference, we reconcile their data
