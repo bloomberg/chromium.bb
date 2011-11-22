@@ -50,12 +50,7 @@ const int InfoBar::kDefaultArrowTargetHeight = 9;
 const int InfoBar::kMaximumArrowTargetHeight = 24;
 const int InfoBar::kDefaultArrowTargetHalfWidth = kDefaultArrowTargetHeight;
 const int InfoBar::kMaximumArrowTargetHalfWidth = 14;
-
-#ifdef TOUCH_UI
-const int InfoBar::kDefaultBarTargetHeight = 75;
-#else
 const int InfoBar::kDefaultBarTargetHeight = 36;
-#endif
 
 const int InfoBarView::kButtonButtonSpacing = 10;
 const int InfoBarView::kEndOfLabelSpacing = 16;

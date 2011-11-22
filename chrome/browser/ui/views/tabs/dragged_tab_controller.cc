@@ -505,7 +505,7 @@ void DraggedTabController::Observe(
 ///////////////////////////////////////////////////////////////////////////////
 // DraggedTabController, MessageLoop::Observer implementation:
 
-#if defined(OS_WIN) || defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(OS_WIN) || defined(USE_AURA)
 base::EventStatus DraggedTabController::WillProcessEvent(
     const base::NativeEvent& event) {
   return base::EVENT_CONTINUE;

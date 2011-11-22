@@ -82,11 +82,7 @@ TabContents* GetTabContentsFromDelegate(LocationBarView::Delegate* delegate) {
 // static
 const int LocationBarView::kNormalHorizontalEdgeThickness = 1;
 const int LocationBarView::kVerticalEdgeThickness = 2;
-#if defined(TOUCH_UI)
-const int LocationBarView::kItemPadding = 10;
-#else
 const int LocationBarView::kItemPadding = 3;
-#endif
 const int LocationBarView::kIconInternalPadding = 2;
 const int LocationBarView::kEdgeItemPadding = kItemPadding;
 const int LocationBarView::kBubbleHorizontalPadding = 1;

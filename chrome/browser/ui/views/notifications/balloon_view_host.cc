@@ -11,10 +11,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(TOUCH_UI) && !defined(USE_AURA)
-#include "chrome/browser/renderer_host/render_widget_host_view_views.h"
-#endif
-
 class BalloonViewHostView : public views::NativeViewHost {
  public:
   explicit BalloonViewHostView(BalloonViewHost* host)
@@ -54,11 +50,6 @@ void BalloonViewHost::Init(gfx::NativeView parent_native_view) {
 
   RenderWidgetHostView* render_widget_host_view =
       tab_contents_->render_view_host()->view();
-#if defined(TOUCH_UI) && !defined(USE_AURA)
-  RenderWidgetHostViewViews* view_views =
-      static_cast<RenderWidgetHostViewViews*>(render_widget_host_view);
-  native_host_->AttachToView(view_views);
-#else
+
   native_host_->Attach(render_widget_host_view->GetNativeView());
-#endif
 }

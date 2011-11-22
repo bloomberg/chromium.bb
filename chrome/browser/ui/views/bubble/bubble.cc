@@ -372,10 +372,6 @@ void Bubble::OnActivate(UINT action, BOOL minimized, HWND window) {
     GetWidget()->GetRootView()->child_at(0)->RequestFocus();
   }
 }
-#elif defined(TOUCH_UI)
-void Bubble::Deactivate() {
-  GetWidget()->Close();
-}
 #elif defined(TOOLKIT_USES_GTK)
 void Bubble::OnActiveChanged() {
   if (!GetWidget()->IsActive())

@@ -91,18 +91,6 @@ class NewTabButton : public views::ImageButton {
     // These values are defined by the shape of the new tab bitmap. Should that
     // bitmap ever change, these values will need to be updated. They're so
     // custom it's not really worth defining constants for.
-#if defined(TOUCH_UI)
-    // touch_newtab.png size is different from newtab.png.
-    // Change the values for TOUCH_UI as per touch_newtab.png.
-    path->moveTo(0, 1);
-    path->lineTo(w - 14, 1);
-    path->lineTo(w - 10, 6);
-    path->lineTo(w - 7, 28);
-    path->lineTo(w - 1, 32);
-    path->lineTo(11, 32);
-    path->lineTo(7, 28);
-    path->lineTo(0, 1);
-#else
     path->moveTo(0, 1);
     path->lineTo(w - 7, 1);
     path->lineTo(w - 4, 4);
@@ -111,7 +99,6 @@ class NewTabButton : public views::ImageButton {
     path->lineTo(7, 17);
     path->lineTo(4, 13);
     path->lineTo(0, 1);
-#endif
     path->close();
   }
 

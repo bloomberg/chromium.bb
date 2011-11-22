@@ -157,7 +157,7 @@ class DraggedTabController : public TabContentsDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // Overridden from MessageLoop::Observer:
-#if defined(OS_WIN) || defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(OS_WIN) || defined(USE_AURA)
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE;
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;

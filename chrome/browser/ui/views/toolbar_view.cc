@@ -79,11 +79,6 @@ static const int kPopupBottomSpacingGlass = 1;
 // corner of the wrench menu).
 static const int kBadgeTopMargin = 2;
 
-#if defined(TOUCH_UI)
-// Extra vertical padding above the location bar.
-static const int kExtraVerticalPadding = 3;
-#endif
-
 static SkBitmap* kPopupBackgroundEdge = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -541,15 +536,8 @@ void ToolbarView::Layout() {
   int location_x = home_->x() + home_->width() + kStandardSpacing;
   int available_width = width() - kEdgeSpacing - app_menu_width -
       browser_actions_width - location_x;
-
-#if defined(TOUCH_UI)
-  // Center the location bar vertically.
-  int location_y = std::min(child_y + kExtraVerticalPadding, height());
-  int location_bar_height = std::max(height() - 2 * location_y, 0);
-#else
   int location_y = child_y;
   int location_bar_height = child_height;
-#endif
 
   location_bar_->SetBounds(location_x, location_y, std::max(available_width, 0),
                            location_bar_height);

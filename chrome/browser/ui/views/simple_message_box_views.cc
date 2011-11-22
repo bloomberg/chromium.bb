@@ -14,7 +14,7 @@
 #include "ui/views/widget/widget.h"
 #include "views/controls/message_box_view.h"
 
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
 #include "ui/views/focus/accelerator_handler.h"
 #endif
 
@@ -158,7 +158,7 @@ bool SimpleMessageBoxViews::Dispatch(const MSG& msg) {
   DispatchMessage(&msg);
   return disposition_ == DISPOSITION_UNKNOWN;
 }
-#elif defined(TOUCH_UI) || defined(USE_AURA)
+#elif defined(USE_AURA)
 base::MessagePumpDispatcher::DispatchStatus
     SimpleMessageBoxViews::Dispatch(XEvent* xev) {
   if (!views::DispatchXEvent(xev))

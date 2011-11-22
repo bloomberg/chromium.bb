@@ -12,6 +12,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -30,12 +31,6 @@
 #include "ui/views/layout/fill_layout.h"
 #include "views/border.h"
 #include "views/controls/textfield/textfield.h"
-
-#if defined(TOUCH_UI)
-#include "chrome/browser/ui/views/autocomplete/touch_autocomplete_popup_contents_view.h"
-#else
-#include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
-#endif
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
@@ -185,11 +180,6 @@ void OmniboxViewViews::Init() {
   textfield_ = new AutocompleteTextfield(this);
   textfield_->SetController(this);
   textfield_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
-
-#if defined(TOUCH_UI)
-  textfield_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-                      ResourceBundle::LargeFont));
-#endif
 
   if (popup_window_mode_)
     textfield_->SetReadOnly(true);
@@ -731,11 +721,7 @@ string16 OmniboxViewViews::GetSelectedText() const {
 
 AutocompletePopupView* OmniboxViewViews::CreatePopupView(
     View* location_bar) {
-#if defined(TOUCH_UI)
-  typedef TouchAutocompletePopupContentsView AutocompleteContentsView;
-#else
   typedef AutocompletePopupContentsView AutocompleteContentsView;
-#endif
   return new AutocompleteContentsView(gfx::Font(), this, model_.get(),
                                       location_bar);
 }

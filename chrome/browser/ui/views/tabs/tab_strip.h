@@ -258,13 +258,8 @@ class TabStrip : public BaseTabStrip,
   // able to lay it out before we are able to get its image from the
   // ui::ThemeProvider.  It also makes sense to do this, because the size of the
   // new tab button should not need to be calculated dynamically.
-#if defined(TOUCH_UI)
-  static const int kNewTabButtonWidth = 66;
-  static const int kNewTabButtonHeight = 39;
-#else
   static const int kNewTabButtonWidth = 28;
   static const int kNewTabButtonHeight = 18;
-#endif
 
   // Valid for the lifetime of a drag over us.
   scoped_ptr<DropInfo> drop_info_;

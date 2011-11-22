@@ -39,13 +39,8 @@ static const int kFaviconTitleSpacing = 4;
 static const int kTitleCloseButtonSpacing = 3;
 static const int kStandardTitleWidth = 175;
 static const int kCloseButtonVertFuzz = 0;
-#if defined(TOUCH_UI)
-static const int kTabIconSize = 32;
-static const int kCloseButtonHorzFuzz = -10;
-#else
 static const int kTabIconSize = gfx::kFaviconSize;
 static const int kCloseButtonHorzFuzz = 5;
-#endif
 
 // Vertical adjustment to the favicon when the tab has a large icon.
 static const int kAppTapFaviconVerticalAdjustment = 2;

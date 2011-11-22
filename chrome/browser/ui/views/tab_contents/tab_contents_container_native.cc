@@ -4,10 +4,6 @@
 
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 
-#if defined(TOUCH_UI)
-#include <X11/extensions/XInput2.h>
-#endif
-
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -72,48 +68,6 @@ void TabContentsContainer::Layout() {
     native_container_->GetView()->Layout();
   }
 }
-
-#if defined(TOUCH_UI)
-bool TabContentsContainer::OnMousePressed(const views::MouseEvent& event) {
-  DCHECK(tab_contents_);
-  if (event.flags() & (ui::EF_LEFT_BUTTON_DOWN |
-                       ui::EF_RIGHT_BUTTON_DOWN |
-                       ui::EF_MIDDLE_BUTTON_DOWN)) {
-    return false;
-  }
-  // It is necessary to look at the native event to determine what special
-  // button was pressed.
-  views::NativeEvent native_event = event.native_event();
-  if (!native_event)
-    return false;
-
-  int button = 0;
-  switch (native_event->type) {
-    case ButtonPress: {
-      button = native_event->xbutton.button;
-      break;
-    }
-    case GenericEvent: {
-      XIDeviceEvent* xievent =
-          static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-      button = xievent->detail;
-      break;
-    }
-    default:
-      break;
-  }
-  switch (button) {
-    case 8:
-      tab_contents_->controller().GoBack();
-      return true;
-    case 9:
-      tab_contents_->controller().GoForward();
-      return true;
-  }
-
-  return false;
-}
-#endif
 
 void TabContentsContainer::ViewHierarchyChanged(bool is_add,
                                                 views::View* parent,
