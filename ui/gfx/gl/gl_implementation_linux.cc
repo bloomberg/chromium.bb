@@ -7,11 +7,9 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
@@ -46,14 +44,6 @@ base::NativeLibrary LoadLibrary(const char* filename) {
   return LoadLibrary(FilePath(filename));
 }
 
-// TODO(backer): Find a more principled (less heavy handed) way to prevent a
-// race in the bindings initialization.
-#if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(TOUCH_UI)
-base::LazyInstance<base::Lock,
-                   base::LeakyLazyInstanceTraits<base::Lock> >
-    g_lock = LAZY_INSTANCE_INITIALIZER;
-#endif
-
 }  // namespace anonymous
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
@@ -67,9 +57,6 @@ void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
 }
 
 bool InitializeGLBindings(GLImplementation implementation) {
-#if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(TOUCH_UI)
-  base::AutoLock locked(g_lock.Get());
-#endif
   // Prevent reinitialization with a different implementation. Once the gpu
   // unit tests have initialized with kGLImplementationMock, we don't want to
   // later switch to another GL implementation.
