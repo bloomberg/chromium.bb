@@ -58,10 +58,12 @@ base::LazyInstance<base::Lock,
 
 void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
 #if !defined(USE_WAYLAND)
-  impls->push_back(kGLImplementationOSMesaGL);
   impls->push_back(kGLImplementationDesktopGL);
 #endif
   impls->push_back(kGLImplementationEGLGLES2);
+#if !defined(USE_WAYLAND)
+  impls->push_back(kGLImplementationOSMesaGL);
+#endif
 }
 
 bool InitializeGLBindings(GLImplementation implementation) {
