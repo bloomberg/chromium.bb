@@ -704,9 +704,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
 // See http://crbug.com/43070
 #define MAYBE_FindNextInNewTabUsesPrepopulate \
     DISABLED_FindNextInNewTabUsesPrepopulate
-#elif defined (OS_WIN)
-// Occasionally times-out on Windows, too.
-// See http://crbug.com/43070 and http://crbug.com/88316
+#elif defined(OS_WIN) || defined(USE_AURA)
+// Occasionally times-out on Windows or aura, too.
+// See http://crbug.com/43070
 #define MAYBE_FindNextInNewTabUsesPrepopulate \
     FLAKY_FindNextInNewTabUsesPrepopulate
 #else
