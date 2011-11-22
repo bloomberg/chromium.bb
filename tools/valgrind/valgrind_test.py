@@ -849,7 +849,14 @@ class DrMemory(BaseTool):
       proc += ["-debug"]
 
     proc += ["-logdir", common.NormalizeWindowsPath(self.log_dir)]
-    proc += ["-batch", "-quiet", "-no_results_to_stderr"]
+
+    # Use -no_summary to suppress DrMemory's summary and init-time
+    # notifications.  We generate our own with drmemory_analyze.py.
+    proc += ["-batch", "-no_summary"]
+
+    # Un-comment to disable interleaved output.  Will also suppress error
+    # messages normally printed to stderr.
+    #proc += ["-quiet", "-no_results_to_stderr"]
 
     proc += ["-callstack_max_frames", "40"]
 
