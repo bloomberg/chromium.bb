@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <X11/Xlib.h>
+#include "ui/base/x/active_window_watcher_x.h"
+
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 
-#include "ui/base/x/active_window_watcher_x.h"
+#include "ui/base/x/active_window_watcher_x_observer.h"
+#include "ui/base/x/root_window_property_watcher_x.h"
+#include "ui/base/x/x11_util.h"
 
 namespace ui {
 
-static Atom g_net_active_window_atom = None;
+static const char* const kNetActiveWindow = "_NET_ACTIVE_WINDOW";
 
 // static
 ActiveWindowWatcherX* ActiveWindowWatcherX::GetInstance() {
@@ -18,45 +21,39 @@ ActiveWindowWatcherX* ActiveWindowWatcherX::GetInstance() {
 }
 
 // static
-void ActiveWindowWatcherX::AddObserver(Observer* observer) {
+void ActiveWindowWatcherX::AddObserver(ActiveWindowWatcherXObserver* observer) {
+  // Ensure that RootWindowPropertyWatcherX exists.
+  internal::RootWindowPropertyWatcherX::GetInstance();
   GetInstance()->observers_.AddObserver(observer);
 }
 
 // static
-void ActiveWindowWatcherX::RemoveObserver(Observer* observer) {
+void ActiveWindowWatcherX::RemoveObserver(
+    ActiveWindowWatcherXObserver* observer) {
   GetInstance()->observers_.RemoveObserver(observer);
+}
+
+// static
+Atom ActiveWindowWatcherX::GetPropertyAtom() {
+  return GetAtom(kNetActiveWindow);
+}
+
+// static
+void ActiveWindowWatcherX::Notify() {
+  GetInstance()->NotifyActiveWindowChanged();
 }
 
 // static
 bool ActiveWindowWatcherX::WMSupportsActivation() {
   return gdk_x11_screen_supports_net_wm_hint(
       gdk_screen_get_default(),
-      gdk_atom_intern_static_string("_NET_ACTIVE_WINDOW"));
+      gdk_atom_intern_static_string(kNetActiveWindow));
 }
 
 ActiveWindowWatcherX::ActiveWindowWatcherX() {
-  Init();
 }
 
 ActiveWindowWatcherX::~ActiveWindowWatcherX() {
-}
-
-void ActiveWindowWatcherX::Init() {
-  GdkAtom net_active_window =
-      gdk_atom_intern_static_string("_NET_ACTIVE_WINDOW");
-  g_net_active_window_atom = gdk_x11_atom_to_xatom_for_display(
-      gdk_screen_get_display(gdk_screen_get_default()), net_active_window);
-
-  GdkWindow* root = gdk_get_default_root_window();
-
-  // Set up X Event filter to listen for PropertyChange X events.  These events
-  // tell us when the active window changes.
-  // Don't use XSelectInput directly here, as gdk internally seems to cache the
-  // mask and reapply XSelectInput after this, resetting any mask we set here.
-  gdk_window_set_events(root,
-                        static_cast<GdkEventMask>(gdk_window_get_events(root) |
-                                                  GDK_PROPERTY_CHANGE_MASK));
-  gdk_window_add_filter(NULL, &ActiveWindowWatcherX::OnWindowXEventThunk, this);
 }
 
 void ActiveWindowWatcherX::NotifyActiveWindowChanged() {
@@ -70,7 +67,7 @@ void ActiveWindowWatcherX::NotifyActiveWindowChanged() {
 
   XGetWindowProperty(gdk_x11_get_default_xdisplay(),
                      GDK_WINDOW_XID(gdk_get_default_root_window()),
-                     g_net_active_window_atom,
+                     GetAtom(kNetActiveWindow),
                      0,      // offset into property data to read
                      1,      // length to get in 32-bit quantities
                      False,  // deleted
@@ -88,25 +85,11 @@ void ActiveWindowWatcherX::NotifyActiveWindowChanged() {
   if (format == 32 && num_items == 1) {
     int xid = *reinterpret_cast<int*>(property);
     GdkWindow* active_window = gdk_window_lookup(xid);
-    FOR_EACH_OBSERVER(
-        Observer,
-        observers_,
-        ActiveWindowChanged(active_window));
+    FOR_EACH_OBSERVER(ActiveWindowWatcherXObserver, observers_,
+                      ActiveWindowChanged(active_window));
   }
   if (property)
     XFree(property);
-}
-
-GdkFilterReturn ActiveWindowWatcherX::OnWindowXEvent(GdkXEvent* xevent,
-                                                     GdkEvent* event) {
-  XEvent* xev = static_cast<XEvent*>(xevent);
-
-  if (xev->xany.type == PropertyNotify &&
-      xev->xproperty.atom == g_net_active_window_atom) {
-    NotifyActiveWindowChanged();
-  }
-
-  return GDK_FILTER_CONTINUE;
 }
 
 }  // namespace ui

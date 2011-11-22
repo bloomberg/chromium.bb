@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "ui/base/gtk/gtk_signal.h"
-#include "ui/base/x/active_window_watcher_x.h"
+#include "ui/base/x/active_window_watcher_x_observer.h"
 #include "ui/gfx/compositor/compositor.h"
 #include "ui/gfx/size.h"
 #include "ui/views/focus/focus_manager.h"
@@ -44,7 +44,7 @@ class NativeWidgetDelegate;
 // Widget implementation for GTK.
 class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
                                      public ui::CompositorDelegate,
-                                     public ui::ActiveWindowWatcherX::Observer {
+                                     public ui::ActiveWindowWatcherXObserver {
  public:
   explicit NativeWidgetGtk(internal::NativeWidgetDelegate* delegate);
   virtual ~NativeWidgetGtk();
@@ -104,7 +104,7 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // size of other kinds of widgets.
   void GetRequestedSize(gfx::Size* out) const;
 
-  // Overridden from ui::ActiveWindowWatcherX::Observer.
+  // Overridden from ui::ActiveWindowWatcherXObserver.
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 
   // Handles a keyboard event by sending it to our focus manager.

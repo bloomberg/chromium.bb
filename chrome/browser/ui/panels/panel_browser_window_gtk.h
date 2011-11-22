@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/base/x/work_area_watcher_x_observer.h"
 
 class Panel;
 class PanelSettingsMenuModel;
@@ -22,17 +23,18 @@ class SlideAnimation;
 }
 
 class PanelBrowserWindowGtk : public BrowserWindowGtk,
-                              public NativePanel,
                               public MenuGtk::Delegate,
                               public MessageLoopForUI::Observer,
-                              public ui::AnimationDelegate {
+                              public NativePanel,
+                              public ui::AnimationDelegate,
+                              public ui::WorkAreaWatcherXObserver {
   friend class NativePanelTestingGtk;
  public:
   PanelBrowserWindowGtk(Browser* browser, Panel* panel,
                         const gfx::Rect& bounds);
   virtual ~PanelBrowserWindowGtk();
 
-  // BrowserWindowGtk overrides
+  // BrowserWindowGtk override
   virtual void Init() OVERRIDE;
 
   // BrowserWindow overrides
@@ -40,6 +42,9 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   virtual void ShowSettingsMenu(GtkWidget* widget,
                                 GdkEventButton* event) OVERRIDE;
   virtual TitleDecoration GetWindowTitle(std::string* title) const OVERRIDE;
+
+  // ui::WorkAreaWatcherXObserver override
+  virtual void WorkAreaChanged() OVERRIDE;
 
  protected:
   // BrowserWindowGtk overrides
@@ -58,7 +63,6 @@ class PanelBrowserWindowGtk : public BrowserWindowGtk,
   // 'focus-in-event' handler.
   virtual void HandleFocusIn(GtkWidget* widget,
                              GdkEventFocus* event) OVERRIDE;
-
 
   // Overridden from NativePanel:
   virtual void ShowPanel() OVERRIDE;

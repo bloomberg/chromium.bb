@@ -26,6 +26,7 @@
 #include "ui/base/gtk/gtk_windowing.h"
 #include "ui/base/gtk/scoped_handle_gtk.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/x/active_window_watcher_x.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/compositor/compositor.h"
@@ -560,7 +561,7 @@ void NativeWidgetGtk::GetRequestedSize(gfx::Size* out) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeWidgetGtk, ActiveWindowWatcherX::Observer implementation:
+// NativeWidgetGtk, ActiveWindowWatcherXObserver implementation:
 
 void NativeWidgetGtk::ActiveWindowChanged(GdkWindow* active_window) {
   if (!GetNativeView())

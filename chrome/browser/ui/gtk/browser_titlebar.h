@@ -19,7 +19,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/x/active_window_watcher_x.h"
+#include "ui/base/x/active_window_watcher_x_observer.h"
 
 class AvatarMenuButtonGtk;
 class BrowserWindowGtk;
@@ -30,7 +30,7 @@ class PopupPageMenuModel;
 class TabContents;
 
 class BrowserTitlebar : public content::NotificationObserver,
-                        public ui::ActiveWindowWatcherX::Observer,
+                        public ui::ActiveWindowWatcherXObserver,
                         public ui::SimpleMenuModel::Delegate {
  public:
   // A default button order string for when we aren't asking gconf for the
@@ -176,8 +176,8 @@ class BrowserTitlebar : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Overriden from ActiveWindowWatcher::Observer.
-  virtual void ActiveWindowChanged(GdkWindow* active_window);
+  // Overriden from ActiveWindowWatcherXObserver.
+  virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 
   bool IsTypePanel();
 

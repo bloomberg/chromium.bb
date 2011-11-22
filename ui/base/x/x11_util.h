@@ -123,6 +123,9 @@ UI_EXPORT bool GetAtomArrayProperty(XID window,
 UI_EXPORT bool GetStringProperty(
     XID window, const std::string& property_name, std::string* value);
 
+// Gets the X atom for default display corresponding to atom_name.
+Atom GetAtom(const char* atom_name);
+
 // Get |window|'s parent window, or None if |window| is the root window.
 XID GetParentWindow(XID window);
 

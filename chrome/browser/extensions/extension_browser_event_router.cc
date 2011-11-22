@@ -22,6 +22,10 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 
+#if defined(TOOLKIT_GTK)
+#include "ui/base/x/active_window_watcher_x.h"
+#endif
+
 namespace events = extension_event_names;
 namespace tab_keys = extension_tabs_module_constants;
 namespace page_action_keys = extension_page_actions_module_constants;

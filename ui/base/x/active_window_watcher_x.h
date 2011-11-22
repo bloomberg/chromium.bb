@@ -6,34 +6,28 @@
 #define UI_BASE_X_ACTIVE_WINDOW_WATCHER_X_H_
 #pragma once
 
-#include <gdk/gdk.h>
-
 #include "base/basictypes.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/ui_export.h"
+#include "ui/base/x/x11_util.h"
 
 namespace ui {
 
+class ActiveWindowWatcherXObserver;
+
+namespace internal {
+class RootWindowPropertyWatcherX;
+}
+
 // This is a helper class that is used to keep track of which window the X
-// window manager thinks is active. Add an Observer to listener for changes to
+// window manager thinks is active. Add an Observer to listen for changes to
 // the active window.
 class UI_EXPORT ActiveWindowWatcherX {
  public:
-  class Observer {
-   public:
-    // |active_window| will be NULL if the active window isn't one of Chrome's.
-    virtual void ActiveWindowChanged(GdkWindow* active_window) = 0;
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   static ActiveWindowWatcherX* GetInstance();
-
-  static void AddObserver(Observer* observer);
-  static void RemoveObserver(Observer* observer);
+  static void AddObserver(ActiveWindowWatcherXObserver* observer);
+  static void RemoveObserver(ActiveWindowWatcherXObserver* observer);
 
   // Checks if the WM supports the active window property. Note that the return
   // value can change, especially during system startup.
@@ -41,21 +35,22 @@ class UI_EXPORT ActiveWindowWatcherX {
 
  private:
   friend struct DefaultSingletonTraits<ActiveWindowWatcherX>;
+  friend class ui::internal::RootWindowPropertyWatcherX;
 
   ActiveWindowWatcherX();
   ~ActiveWindowWatcherX();
 
-  void Init();
+  // Gets the atom for the default display for the property this class is
+  // watching for.
+  static Atom GetPropertyAtom();
 
-  // Sends a notification out through the NotificationService that the active
-  // window has changed.
+  // Notify observers that the active window has changed.
+  static void Notify();
+
+  // Instance method that implements Notify().
   void NotifyActiveWindowChanged();
 
-  // Callback for PropertyChange XEvents.
-  CHROMEG_CALLBACK_1(ActiveWindowWatcherX, GdkFilterReturn,
-                     OnWindowXEvent, GdkXEvent*, GdkEvent*);
-
-  ObserverList<Observer> observers_;
+  ObserverList<ActiveWindowWatcherXObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveWindowWatcherX);
 };

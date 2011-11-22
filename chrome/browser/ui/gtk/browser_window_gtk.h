@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/base/x/active_window_watcher_x.h"
+#include "ui/base/x/active_window_watcher_x_observer.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/rect.h"
 
@@ -46,7 +46,7 @@ class TabStripGtk;
 class BrowserWindowGtk : public BrowserWindow,
                          public content::NotificationObserver,
                          public TabStripModelObserver,
-                         public ui::ActiveWindowWatcherX::Observer,
+                         public ui::ActiveWindowWatcherXObserver,
                          public InfoBarContainer::Delegate {
  public:
   enum TitleDecoration {
@@ -174,7 +174,7 @@ class BrowserWindowGtk : public BrowserWindow,
                                 int index,
                                 bool user_gesture) OVERRIDE;
 
-  // Overridden from ActiveWindowWatcher::Observer.
+  // Overridden from ActiveWindowWatcherXObserver.
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;
 
   // Overridden from InfoBarContainer::Delegate:

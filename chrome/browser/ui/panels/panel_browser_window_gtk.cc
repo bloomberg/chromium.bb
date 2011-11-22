@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
+#include "ui/base/x/work_area_watcher_x.h"
 
 namespace {
 
@@ -70,6 +71,7 @@ PanelBrowserWindowGtk::~PanelBrowserWindowGtk() {
     DestroyDragWidget();
   }
   panel_->OnNativePanelClosed();
+  ui::WorkAreaWatcherX::RemoveObserver(this);
 }
 
 void PanelBrowserWindowGtk::Init() {
@@ -92,6 +94,8 @@ void PanelBrowserWindowGtk::Init() {
                    G_CALLBACK(OnTitlebarButtonPressEventThunk), this);
   g_signal_connect(titlebar_widget(), "button-release-event",
                    G_CALLBACK(OnTitlebarButtonReleaseEventThunk), this);
+
+  ui::WorkAreaWatcherX::AddObserver(this);
 }
 
 bool PanelBrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
@@ -223,6 +227,10 @@ BrowserWindowGtk::TitleDecoration PanelBrowserWindowGtk::GetWindowTitle(
   } else {
     return BrowserWindowGtk::GetWindowTitle(title);
   }
+}
+
+void PanelBrowserWindowGtk::WorkAreaChanged() {
+  panel_->manager()->OnDisplayChanged();
 }
 
 void PanelBrowserWindowGtk::ShowPanel() {

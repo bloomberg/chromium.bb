@@ -80,15 +80,6 @@ int DefaultX11IOErrorHandler(Display* d) {
   _exit(1);
 }
 
-Atom GetAtom(const char* name) {
-#if defined(TOOLKIT_USES_GTK)
-  return gdk_x11_get_xatom_by_name_for_display(
-      gdk_display_get_default(), name);
-#else
-  return XInternAtom(GetXDisplay(), name, false);
-#endif
-}
-
 // Note: The caller should free the resulting value data.
 bool GetProperty(XID window, const std::string& property_name, long max_length,
                  Atom* type, int* format, unsigned long* num_items,
@@ -427,6 +418,15 @@ bool GetStringProperty(
   value->assign(reinterpret_cast<char*>(property), num_items);
   XFree(property);
   return true;
+}
+
+Atom GetAtom(const char* name) {
+#if defined(TOOLKIT_USES_GTK)
+  return gdk_x11_get_xatom_by_name_for_display(
+      gdk_display_get_default(), name);
+#else
+  return XInternAtom(GetXDisplay(), name, false);
+#endif
 }
 
 XID GetParentWindow(XID window) {
