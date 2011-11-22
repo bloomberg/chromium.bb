@@ -26,15 +26,10 @@
 import gyp
 import gyp.common
 import gyp.system_test
-import os.path
 import os
 import re
 import shlex
 import sys
-
-# Debugging-related imports -- remove me once we're solid.
-import code
-import pprint
 
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
