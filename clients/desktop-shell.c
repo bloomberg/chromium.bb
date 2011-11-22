@@ -41,16 +41,37 @@
 struct desktop {
 	struct display *display;
 	struct desktop_shell *shell;
-	struct panel *panel;
-	struct window *background;
 	const char *background_path;
 	struct unlock_dialog *unlock_dialog;
 	struct task unlock_task;
+	struct wl_list outputs;
+};
+
+struct surface {
+	void (*configure)(void *data,
+			  struct desktop_shell *desktop_shell,
+			  uint32_t time, uint32_t edges,
+			  struct wl_surface *surface,
+			  int32_t width, int32_t height);
 };
 
 struct panel {
+	struct surface base;
 	struct window *window;
 	struct window *menu;
+};
+
+struct background {
+	struct surface base;
+	struct window *window;
+};
+
+struct output {
+	struct wl_output *output;
+	struct wl_list link;
+
+	struct panel *panel;
+	struct background *background;
 };
 
 struct panel_item {
@@ -113,6 +134,7 @@ show_menu(struct panel *panel, struct input *input)
 	display = window_get_display(panel->window);
 	panel->menu = window_create_transient(display, panel->window,
 					      x - 10, y - 10, width, height);
+	window_set_user_data(panel->menu, panel);
 
 	window_draw(panel->menu);
 	window_flush(panel->menu);
@@ -234,6 +256,20 @@ panel_button_handler(struct window *window,
 	}
 }
 
+static void
+panel_configure(void *data,
+		struct desktop_shell *desktop_shell,
+		uint32_t time, uint32_t edges,
+		struct wl_surface *surface,
+		int32_t width, int32_t height)
+{
+	struct panel *panel =
+		window_get_user_data(wl_surface_get_user_data(surface));
+
+	window_set_child_size(panel->window, width, 32);
+	window_schedule_redraw(panel->window);
+}
+
 static struct panel *
 panel_create(struct display *display)
 {
@@ -242,6 +278,7 @@ panel_create(struct display *display)
 	panel = malloc(sizeof *panel);
 	memset(panel, 0, sizeof *panel);
 
+	panel->base.configure = panel_configure;
 	panel->window = window_create(display, 0, 0);
 
 	window_set_title(panel->window, "panel");
@@ -302,6 +339,21 @@ background_draw(struct window *window, int width, int height, const char *path)
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 	window_flush(window);
+}
+
+static void
+background_configure(void *data,
+		     struct desktop_shell *desktop_shell,
+		     uint32_t time, uint32_t edges,
+		     struct wl_surface *surface,
+		     int32_t width, int32_t height)
+{
+	struct desktop *desktop = data;
+	struct background *background =
+		window_get_user_data(wl_surface_get_user_data(surface));
+
+	background_draw(background->window,
+			width, height, desktop->background_path);
 }
 
 static void
@@ -454,15 +506,10 @@ desktop_shell_configure(void *data,
 			struct wl_surface *surface,
 			int32_t width, int32_t height)
 {
-	struct desktop *desktop = data;
+	struct surface *s =
+		window_get_user_data(wl_surface_get_user_data(surface));
 
-	if (surface == window_get_wl_surface(desktop->panel->window)) {
-		window_set_child_size(desktop->panel->window, width, 32);
-		window_schedule_redraw(desktop->panel->window);
-	} else if (surface == window_get_wl_surface(desktop->background)) {
-		background_draw(desktop->background,
-				width, height, desktop->background_path);
-	}
+	s->configure(data, desktop_shell, time, edges, surface, width, height);
 }
 
 static void
@@ -482,6 +529,38 @@ static const struct desktop_shell_listener listener = {
 	desktop_shell_prepare_lock_surface
 };
 
+static struct background *
+background_create(struct desktop *desktop)
+{
+	struct background *background;
+
+	background = malloc(sizeof *background);
+	memset(background, 0, sizeof *background);
+
+	background->base.configure = background_configure;
+	background->window = window_create(desktop->display, 0, 0);
+	window_set_decoration(background->window, 0);
+	window_set_custom(background->window);
+	window_set_user_data(background->window, background);
+
+	return background;
+}
+
+static void
+create_output(struct desktop *desktop, uint32_t id)
+{
+	struct output *output;
+
+	output = calloc(1, sizeof *output);
+	if (!output)
+		return;
+
+	output->output = wl_display_bind(display_get_display(desktop->display),
+					 id, &wl_output_interface);
+
+	wl_list_insert(&desktop->outputs, &output->link);
+}
+
 static void
 global_handler(struct wl_display *display, uint32_t id,
 	       const char *interface, uint32_t version, void *data)
@@ -492,6 +571,8 @@ global_handler(struct wl_display *display, uint32_t id,
 		desktop->shell =
 			wl_display_bind(display, id, &desktop_shell_interface);
 		desktop_shell_add_listener(desktop->shell, &listener, desktop);
+	} else if (!strcmp(interface, "wl_output")) {
+		create_output(desktop, id);
 	}
 }
 
@@ -499,13 +580,17 @@ static void
 launcher_section_done(void *data)
 {
 	struct desktop *desktop = data;
+	struct output *output;
 
 	if (key_launcher_icon == NULL || key_launcher_path == NULL) {
 		fprintf(stderr, "invalid launcher section\n");
 		return;
 	}
 
-	panel_add_item(desktop->panel, key_launcher_icon, key_launcher_path);
+	wl_list_for_each(output, &desktop->outputs, link)
+		panel_add_item(output->panel,
+			       key_launcher_icon, key_launcher_path);
+
 	free(key_launcher_icon);
 	key_launcher_icon = NULL;
 	free(key_launcher_path);
@@ -516,8 +601,10 @@ int main(int argc, char *argv[])
 {
 	struct desktop desktop = { 0 };
 	char *config_file;
+	struct output *output;
 
 	desktop.unlock_task.run = unlock_dialog_finish;
+	wl_list_init(&desktop.outputs);
 
 	desktop.display = display_create(&argc, &argv, NULL);
 	if (desktop.display == NULL) {
@@ -531,7 +618,18 @@ int main(int argc, char *argv[])
 	wl_display_add_global_listener(display_get_display(desktop.display),
 				       global_handler, &desktop);
 
-	desktop.panel = panel_create(desktop.display);
+	wl_list_for_each(output, &desktop.outputs, link) {
+		struct wl_surface *surface;
+
+		output->panel = panel_create(desktop.display);
+		surface = window_get_wl_surface(output->panel->window);
+		desktop_shell_set_panel(desktop.shell, output->output, surface);
+
+		output->background = background_create(&desktop);
+		surface = window_get_wl_surface(output->background->window);
+		desktop_shell_set_background(desktop.shell,
+					     output->output, surface);
+	}
 
 	config_file = config_file_path("wayland-desktop-shell.ini");
 	parse_config_file(config_file,
@@ -539,15 +637,7 @@ int main(int argc, char *argv[])
 			  &desktop);
 	free(config_file);
 
-	desktop_shell_set_panel(desktop.shell,
-				window_get_wl_surface(desktop.panel->window));
-
-	desktop.background = window_create(desktop.display, 0, 0);
-	window_set_decoration(desktop.background, 0);
-	window_set_custom(desktop.background);
 	desktop.background_path = key_background_image;
-	desktop_shell_set_background(desktop.shell,
-				     window_get_wl_surface(desktop.background));
 
 	signal(SIGCHLD, sigchild_handler);
 

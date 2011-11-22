@@ -39,10 +39,6 @@
 struct wl_shell {
 	struct wlsc_compositor *compositor;
 	struct wlsc_shell shell;
-	struct wlsc_surface *panel;
-	struct wl_listener panel_listener;
-	struct wlsc_surface *background;
-	struct wl_listener background_listener;
 
 	struct {
 		struct wlsc_process process;
@@ -56,6 +52,9 @@ struct wl_shell {
 	struct wlsc_surface *lock_surface;
 	struct wl_listener lock_surface_listener;
 	struct wl_list hidden_surface_list;
+
+	struct wl_list backgrounds;
+	struct wl_list panels;
 };
 
 enum shell_surface_type {
@@ -71,10 +70,14 @@ enum shell_surface_type {
 };
 
 struct shell_surface {
+	struct wlsc_surface *surface;
 	struct wl_listener destroy_listener;
 
 	enum shell_surface_type type;
 	int32_t saved_x, saved_y;
+
+	struct wlsc_output *output;
+	struct wl_list link;
 };
 
 struct wlsc_move_grab {
@@ -87,6 +90,7 @@ static void
 destroy_shell_surface(struct shell_surface *priv)
 {
 	wl_list_remove(&priv->destroy_listener.link);
+	wl_list_remove(&priv->link);
 	free(priv);
 }
 
@@ -116,6 +120,9 @@ get_shell_surface(struct wlsc_surface *surface)
 		       &priv->destroy_listener.link);
 
 	surface->shell_priv = priv;
+	priv->surface = surface;
+	/* init link so its safe to always remove it in destroy_shell_surface */
+	wl_list_init(&priv->link);
 
 	priv->type = SHELL_SURFACE_NORMAL;
 
@@ -826,79 +833,55 @@ static const struct wl_shell_interface shell_interface = {
 };
 
 static void
-handle_background_surface_destroy(struct wl_listener *listener,
-				  struct wl_resource *resource, uint32_t time)
-{
-	struct wl_shell *shell =
-		container_of(listener, struct wl_shell, background_listener);
-
-	fprintf(stderr, "background surface gone\n");
-	shell->background = NULL;
-}
-
-static void
 desktop_shell_set_background(struct wl_client *client,
 			     struct wl_resource *resource,
+			     struct wl_resource *output_resource,
 			     struct wl_resource *surface_resource)
 {
 	struct wl_shell *shell = resource->data;
 	struct wlsc_surface *surface = surface_resource->data;
-	struct wlsc_output *output =
-		container_of(shell->compositor->output_list.next,
-			     struct wlsc_output, link);
 	struct shell_surface *priv;
-
-	shell->background = surface_resource->data;
-	shell->background_listener.func = handle_background_surface_destroy;
-	wl_list_insert(&surface_resource->destroy_listener_list,
-		       &shell->background_listener.link);
 
 	priv = get_shell_surface(surface);
 	priv->type = SHELL_SURFACE_BACKGROUND;
+	priv->output = output_resource->data;
+
+	wl_list_insert(&shell->backgrounds, &priv->link);
+
+	surface->x = priv->output->x;
+	surface->y = priv->output->y;
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
 			       wlsc_compositor_get_time(), 0, surface,
-			       output->current->width,
-			       output->current->height);
-}
-
-static void
-handle_panel_surface_destroy(struct wl_listener *listener,
-			     struct wl_resource *resource, uint32_t time)
-{
-	struct wl_shell *shell =
-		container_of(listener, struct wl_shell, panel_listener);
-
-	fprintf(stderr, "panel surface gone\n");
-	shell->panel = NULL;
+			       priv->output->current->width,
+			       priv->output->current->height);
 }
 
 static void
 desktop_shell_set_panel(struct wl_client *client,
 			struct wl_resource *resource,
+			struct wl_resource *output_resource,
 			struct wl_resource *surface_resource)
 {
 	struct wl_shell *shell = resource->data;
-	struct wlsc_output *output =
-		container_of(shell->compositor->output_list.next,
-			     struct wlsc_output, link);
+	struct wlsc_surface *surface = surface_resource->data;
 	struct shell_surface *priv;
 
-	shell->panel = surface_resource->data;
-
-	shell->panel_listener.func = handle_panel_surface_destroy;
-	wl_list_insert(&surface_resource->destroy_listener_list,
-		       &shell->panel_listener.link);
-
-	priv = get_shell_surface(shell->panel);
+	priv = get_shell_surface(surface);
 	priv->type = SHELL_SURFACE_PANEL;
+	priv->output = output_resource->data;
+
+	wl_list_insert(&shell->panels, &priv->link);
+
+	surface->x = priv->output->x;
+	surface->y = priv->output->y;
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
 			       wlsc_compositor_get_time(), 0, surface_resource,
-			       output->current->width,
-			       output->current->height);
+			       priv->output->current->width,
+			       priv->output->current->height);
 }
 
 static void
@@ -939,12 +922,15 @@ static void
 resume_desktop(struct wl_shell *shell)
 {
 	struct wlsc_surface *surface;
+	struct shell_surface *background;
 
 	wl_list_for_each(surface, &shell->hidden_surface_list, link)
 		wlsc_surface_configure(surface, surface->x, surface->y,
 				       surface->width, surface->height);
 
-	wl_list_insert_list(shell->background->link.prev,
+	background = container_of(shell->backgrounds.prev,
+				  struct shell_surface, link);
+	wl_list_insert_list(background->surface->link.prev,
 			    &shell->hidden_surface_list);
 	wl_list_init(&shell->hidden_surface_list);
 
@@ -976,20 +962,22 @@ static void
 move_binding(struct wl_input_device *device, uint32_t time,
 	     uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wl_shell *shell = data;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 	struct shell_surface *priv;
 
-	priv = get_shell_surface(surface);
+	if (surface == NULL)
+		return;
 
-	if (surface == NULL ||
-	    priv->type == SHELL_SURFACE_FULLSCREEN)
-		return;
-	if (surface == shell->panel)
-		return;
-	if (surface == shell->background)
-		return;
+	priv = get_shell_surface(surface);
+	switch (priv->type) {
+		case SHELL_SURFACE_PANEL:
+		case SHELL_SURFACE_BACKGROUND:
+		case SHELL_SURFACE_FULLSCREEN:
+			return;
+		default:
+			break;
+	}
 
 	wlsc_surface_move(surface, (struct wlsc_input_device *) device, time);
 }
@@ -998,7 +986,6 @@ static void
 resize_binding(struct wl_input_device *device, uint32_t time,
 	       uint32_t key, uint32_t button, uint32_t state, void *data)
 {
-	struct wl_shell *shell = data;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
 	struct wl_resource *resource;
@@ -1006,14 +993,18 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 	int32_t x, y;
 	struct shell_surface *priv;
 
+	if (surface == NULL)
+		return;
+	
 	priv = get_shell_surface(surface);
-
-	if (surface == NULL ||
-	    priv->type == SHELL_SURFACE_FULLSCREEN)
-	if (surface == shell->panel)
-		return;
-	if (surface == shell->background)
-		return;
+	switch (priv->type) {
+		case SHELL_SURFACE_PANEL:
+		case SHELL_SURFACE_BACKGROUND:
+		case SHELL_SURFACE_FULLSCREEN:
+			return;
+		default:
+			break;
+	}
 
 	x = device->grab_x - surface->x;
 	y = device->grab_y - surface->y;
@@ -1065,11 +1056,14 @@ activate(struct wlsc_shell *base, struct wlsc_surface *es,
 		/* already put on top */
 		break;
 	default:
-		if (shell->panel && !shell->locked) {
+		if (!shell->locked) {
 			/* bring panel back to top */
-			wl_list_remove(&shell->panel->link);
-			wl_list_insert(&compositor->surface_list,
-				       &shell->panel->link);
+			struct shell_surface *panel;
+			wl_list_for_each(panel, &shell->panels, link) {
+				wl_list_remove(&panel->surface->link);
+				wl_list_insert(&compositor->surface_list,
+					       &panel->surface->link);
+			}
 		}
 	}
 }
@@ -1188,10 +1182,14 @@ map(struct wlsc_shell *base,
 		break;
 	default:
 		/* everything else just below the panel */
-		if (shell->panel)
-			wl_list_insert(&shell->panel->link, &surface->link);
-		else
+		if (!wl_list_empty(&shell->panels)) {
+			struct shell_surface *panel =
+				container_of(shell->panels.prev,
+					     struct shell_surface, link);
+			wl_list_insert(&panel->surface->link, &surface->link);
+		} else {
 			wl_list_insert(list, &surface->link);
+		}
 	}
 
 	if (priv->type == SHELL_SURFACE_TOPLEVEL) {
@@ -1348,6 +1346,8 @@ shell_init(struct wlsc_compositor *ec)
 	shell->shell.set_selection_focus = wlsc_selection_set_focus;
 
 	wl_list_init(&shell->hidden_surface_list);
+	wl_list_init(&shell->backgrounds);
+	wl_list_init(&shell->panels);
 
 	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
 				  shell, bind_shell) == NULL)

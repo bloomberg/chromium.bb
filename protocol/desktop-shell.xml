@@ -2,10 +2,12 @@
 
   <interface name="desktop_shell" version="1">
     <request name="set_background">
+      <arg name="output" type="object" interface="wl_output"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
     <request name="set_panel">
+      <arg name="output" type="object" interface="wl_output"/>
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
