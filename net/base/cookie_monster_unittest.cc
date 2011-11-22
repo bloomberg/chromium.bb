@@ -3570,4 +3570,13 @@ TEST_F(CookieMonsterTest, ShortLivedSessionCookies) {
   EXPECT_EQ(0U, cookies.size());
 }
 
+TEST_F(CookieMonsterTest, InvalidExpiryTime) {
+  CookieMonster::ParsedCookie pc(
+      std::string(kValidCookieLine) + "; expires=Blarg arg arg");
+  scoped_ptr<CookieMonster::CanonicalCookie> cookie(
+      CookieMonster::CanonicalCookie::Create(url_google_, pc));
+
+  ASSERT_FALSE(cookie->DoesExpire());
+}
+
 }  // namespace net

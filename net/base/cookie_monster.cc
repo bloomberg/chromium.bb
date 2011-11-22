@@ -2631,7 +2631,7 @@ CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
 
   return (Create(url, pc.Name(), pc.Value(), domain_string, path_string,
                  mac_key, mac_algorithm, creation_time, expiration_time,
-                 pc.IsSecure(), pc.IsHttpOnly(), pc.HasExpires()));
+                 pc.IsSecure(), pc.IsHttpOnly(), !expiration_time.is_null()));
 }
 
 CookieMonster::CanonicalCookie* CookieMonster::CanonicalCookie::Create(
