@@ -54,12 +54,12 @@ ARM_FLAGS= $(DEBUG_FLAGS) $(LD_ARM_ARGS) $(LLC_ARM_ARGS)
 libsimple1.arm.so: hello.bc fortytwo.bc
 	$(PNACL_LD) -nostdlib -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@.raw $^
 	$(NCVAL_ARM) --zero-masks $@.raw
-	(head --bytes=7 $@.raw; printf '\x00\x00'; tail --bytes=+10 $@.raw) >$@
+	(head --bytes=7 $@.raw; printf '\000\000'; tail --bytes=+10 $@.raw) >$@
 
 # mostly sandboxed
 libsimple2.arm.so: hello2.bc fortytwo2.bc
 	$(PNACL_LD) -nostdlib -shared -fPIC  -arch arm $(ARM_FLAGS) -o $@.raw $^
-	(head --bytes=7 $@.raw; printf '\x00\x00'; tail --bytes=+10 $@.raw) >$@
+	(head --bytes=7 $@.raw; printf '\000\000'; tail --bytes=+10 $@.raw) >$@
 	# plt does not validate yet
 	# http://code.google.com/p/nativeclient/issues/detail?id=1816
 	#$(NCVAL_ARM) --zero-masks $@
