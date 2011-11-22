@@ -40,7 +40,13 @@ void SavePageAsMHTMLFunction::SetTestDelegate(TestDelegate* delegate) {
 }
 
 bool SavePageAsMHTMLFunction::RunImpl() {
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &tab_id_));
+  DictionaryValue* args;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
+
+  if (!args->HasKey("tabId"))
+    return false;
+
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger("tabId", &tab_id_));
 
   AddRef();  // Balanced in ReturnFailure/ReturnSuccess()
 

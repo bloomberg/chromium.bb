@@ -29,7 +29,8 @@ chrome.test.getConfig(function(config) {
       chrome.tabs.getSelected(null, function(tab) {
         chrome.tabs.update(null, { "url": testUrl });
         waitForCurrentTabLoaded(function() {
-          chrome.experimental.savePage.saveAsMHTML(tab.id, function(data) {
+          chrome.experimental.savePage.saveAsMHTML({ "tabId": tab.id },
+              function(data) {
             assertEq(undefined, chrome.extension.lastError);
             assertTrue(data != null);
             // It should contain few KBs of data.

@@ -9062,13 +9062,18 @@
       {
         "name": "saveAsMHTML",
         "type": "function",
-        "description": "Saves the content of the tab with given id to MHTML.",
+        "description": "Saves the content of the tab with given id as MHTML.",
         "parameters": [
           {
-            "name": "tabId",
-            "type": "integer",
-            "minimum": 0,
-            "description": "The id of the tab to save."
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The id of the tab to save as MHTML."
+              }
+            }
           },
           {
             "name": "callback",
