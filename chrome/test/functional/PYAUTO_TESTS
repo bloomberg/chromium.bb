@@ -155,8 +155,6 @@
       # crbug.com/91887
       '-passwords.PasswordTest.testSavedPasswordInTabsAndWindows',
       '-passwords.PasswordTest.testClearFetchedCredForNewUserName',
-      # causes browser crash?  crbug.com/99865
-      '-prefs.PrefsTest.testGeolocationPref',
       # crbug.com/104227
       '-sync.SyncIntegrationTest',
       # crbug.com/88679
