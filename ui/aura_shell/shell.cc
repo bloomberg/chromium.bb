@@ -22,6 +22,8 @@
 #include "ui/aura_shell/modal_container_layout_manager.h"
 #include "ui/aura_shell/shadow_controller.h"
 #include "ui/aura_shell/shelf_layout_controller.h"
+#include "ui/aura_shell/shell_accelerator_controller.h"
+#include "ui/aura_shell/shell_accelerator_filter.h"
 #include "ui/aura_shell/shell_delegate.h"
 #include "ui/aura_shell/shell_factory.h"
 #include "ui/aura_shell/shell_window_ids.h"
@@ -100,6 +102,7 @@ Shell* Shell::instance_ = NULL;
 
 Shell::Shell(ShellDelegate* delegate)
     : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      accelerator_controller_(new ShellAcceleratorController),
       delegate_(delegate) {
   aura::Desktop::GetInstance()->SetEventFilter(
       new internal::DesktopEventFilter);
@@ -108,6 +111,8 @@ Shell::Shell(ShellDelegate* delegate)
 }
 
 Shell::~Shell() {
+  RemoveDesktopEventFilter(accelerator_filter_.get());
+
   // Drag drop controller needs a valid shell instance. We destroy it first.
   drag_drop_controller_.reset();
 
@@ -191,6 +196,11 @@ void Shell::Init() {
   // Force a layout.
   desktop_layout->OnWindowResized();
 
+  // Initialize ShellAcceleratorFilter
+  accelerator_filter_.reset(new internal::ShellAcceleratorFilter);
+  AddDesktopEventFilter(accelerator_filter_.get());
+
+  // Initialize drag drop controller.
   drag_drop_controller_.reset(new internal::DragDropController);
   aura::Desktop::GetInstance()->SetProperty(aura::kDesktopDragDropClientKey,
       static_cast<aura::DragDropClient*>(drag_drop_controller_.get()));
