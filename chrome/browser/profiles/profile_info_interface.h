@@ -36,6 +36,17 @@ class ProfileInfoInterface {
   virtual bool GetBackgroundStatusOfProfileAtIndex(
       size_t index) const = 0;
 
+  virtual string16 GetGAIANameOfProfileAtIndex(size_t index) const = 0;
+
+  // Checks if the GAIA name should be used as the profile's name.
+  virtual bool IsUsingGAIANameOfProfileAtIndex(size_t index) const = 0;
+
+  virtual const gfx::Image& GetGAIAPictureOfProfileAtIndex(
+      size_t index) const = 0;
+
+  // Checks if the GAIA picture should be used as the profile's avatar icon.
+  virtual bool IsUsingGAIAPictureOfProfileAtIndex(size_t index) const = 0;
+
  protected:
   virtual ~ProfileInfoInterface() {}
 };
