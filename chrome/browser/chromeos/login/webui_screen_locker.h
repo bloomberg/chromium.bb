@@ -35,6 +35,9 @@ class WebUIScreenLocker : public WebUILoginView,
  public:
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
 
+  // Called when the GTK grab breaks.
+  void HandleGtkGrabBroke();
+
   // ScreenLockerDelegate implementation:
   virtual void LockScreen(bool unlock_on_input) OVERRIDE;
   virtual void ScreenLockReady() OVERRIDE;
@@ -67,9 +70,28 @@ class WebUIScreenLocker : public WebUILoginView,
  private:
   virtual ~WebUIScreenLocker();
 
+  // Called when the window manager is ready to handle locked state.
+  void OnWindowManagerReady();
+
+  // Called when the all inputs are grabbed.
+  void OnGrabInputs();
+
+  // Clear current GTK grab.
+  void ClearGtkGrab();
+
+  // Try to grab all inputs. It initiates another try if it fails to
+  // grab and the retry count is within a limit, or fails with CHECK.
+  void TryGrabAllInputs();
+
+  // This method tries to steal pointer/keyboard grab from other
+  // client by sending events that will hopefully close menus or windows
+  // that have the grab.
+  void TryUngrabOtherClients();
+
   // Event handler for client-event.
   CHROMEGTK_CALLBACK_1(WebUIScreenLocker, void, OnClientEvent, GdkEventClient*)
 
+  // The screen locker window.
   views::Widget* lock_window_;
 
   // Login UI implementation instance.
@@ -77,6 +99,21 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // Used for user image changed notifications.
   content::NotificationRegistrar registrar_;
+
+  // True if the screen locker's window has been drawn.
+  bool drawn_;
+
+  // True if both mouse input and keyboard input are grabbed.
+  bool input_grabbed_;
+
+  base::WeakPtrFactory<WebUIScreenLocker> weak_factory_;
+
+  // The number times the widget tried to grab all focus.
+  int grab_failure_count_;
+
+  // Status of keyboard and mouse grab.
+  GdkGrabStatus kbd_grab_status_;
+  GdkGrabStatus mouse_grab_status_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIScreenLocker);
 };
