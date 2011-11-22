@@ -343,9 +343,11 @@ bool KeyboardWidget::OnMessageReceived(const IPC::Message& message) {
 }
 
 void KeyboardWidget::RenderViewGone(base::TerminationStatus status) {
-  // Reload the keyboard if it crashes.
-  dom_view_->LoadURL(keyboard_url_);
-  dom_view_->SchedulePaint();
+  if (status != base::TERMINATION_STATUS_NORMAL_TERMINATION) {
+    // Reload the keyboard if it crashes.
+    dom_view_->LoadURL(keyboard_url_);
+    dom_view_->SchedulePaint();
+  }
 }
 
 void KeyboardWidget::OnRequest(const ExtensionHostMsg_Request_Params& request) {
