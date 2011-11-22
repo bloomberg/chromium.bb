@@ -358,7 +358,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return;
     }
     const GURL& final_url = info_.download_url_chain.back();
-    if (!final_url.is_valid() || final_url.is_empty()) {
+    if (!final_url.is_valid() || final_url.is_empty() ||
+        !final_url.IsStandard() || final_url.SchemeIsFile()) {
       RecordImprovedProtectionStats(REASON_INVALID_URL);
       PostFinishTask(SAFE);
       return;

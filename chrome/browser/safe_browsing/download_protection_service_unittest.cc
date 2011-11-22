@@ -233,6 +233,14 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadInvalidUrl) {
                  base::Unretained(this)));
   msg_loop_.Run();
   ExpectResult(DownloadProtectionService::SAFE);
+
+  info.download_url_chain.push_back(GURL("file://www.google.com/"));
+  download_service_->CheckClientDownload(
+      info,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  msg_loop_.Run();
+  ExpectResult(DownloadProtectionService::SAFE);
 }
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedUrl) {
@@ -413,7 +421,7 @@ TEST_F(DownloadProtectionServiceTest,
   info.local_file = FilePath(FILE_PATH_LITERAL("bla.tmp"));
   info.target_file = FilePath(FILE_PATH_LITERAL("bla.exe"));
   info.download_url_chain.push_back(GURL("http://www.google.com/"));
-  info.download_url_chain.push_back(GURL("http://www.google.com/bla.exe"));
+  info.download_url_chain.push_back(GURL("ftp://www.google.com/bla.exe"));
   info.referrer_url = GURL("http://www.google.com/");
   info.sha256_hash = "hash";
   info.total_bytes = 100;
@@ -434,7 +442,7 @@ TEST_F(DownloadProtectionServiceTest,
   ASSERT_TRUE(fetcher);
   ClientDownloadRequest request;
   EXPECT_TRUE(request.ParseFromString(fetcher->upload_data()));
-  EXPECT_EQ("http://www.google.com/bla.exe", request.url());
+  EXPECT_EQ("ftp://www.google.com/bla.exe", request.url());
   EXPECT_EQ(info.sha256_hash, request.digests().sha256());
   EXPECT_EQ(info.total_bytes, request.length());
   EXPECT_EQ(info.user_initiated, request.user_initiated());
@@ -444,7 +452,7 @@ TEST_F(DownloadProtectionServiceTest,
                                       "http://www.google.com/", ""));
   EXPECT_TRUE(RequestContainsResource(request,
                                       ClientDownloadRequest::DOWNLOAD_URL,
-                                      "http://www.google.com/bla.exe",
+                                      "ftp://www.google.com/bla.exe",
                                       info.referrer_url.spec()));
   EXPECT_TRUE(request.has_signature());
   EXPECT_EQ(0, request.signature().certificate_chain_size());
