@@ -328,3 +328,15 @@ PPAPITest.Flash_MessageLoop
 PPAPITest.InputEvent
 PPAPITest.WebSocket_Create
 PPAPITest.WebSocket_IsWebSocket
+
+# Fails consistently.  http://crbug.com/105080.
+OutOfProcessPPAPITest.NetAddressPrivate_AreEqual
+OutOfProcessPPAPITest.NetAddressPrivate_AreHostsEqual
+OutOfProcessPPAPITest.NetAddressPrivate_Describe
+OutOfProcessPPAPITest.NetAddressPrivate_DescribeIPv6
+OutOfProcessPPAPITest.NetAddressPrivate_ReplacePort
+PPAPITest.NetAddressPrivate_AreEqual
+PPAPITest.NetAddressPrivate_AreHostsEqual
+PPAPITest.NetAddressPrivate_DescribeIPv6
+PPAPITest.NetAddressPrivate_GetAnyAddress
+PPAPITest.NetAddressPrivate_ReplacePort
