@@ -797,7 +797,6 @@ TEST_F(NativeTextfieldViewsTest, DragAndDrop_AcceptDrop) {
 }
 #endif
 
-#if !defined(TOUCH_UI)
 TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_InitiateDrag) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(ASCIIToUTF16("hello string world"));
@@ -969,7 +968,6 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_Canceled) {
   textfield_view_->OnDragDone();
   EXPECT_EQ(ASCIIToUTF16("hello world"), textfield_->text());
 }
-#endif
 
 TEST_F(NativeTextfieldViewsTest, ReadOnlyTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);

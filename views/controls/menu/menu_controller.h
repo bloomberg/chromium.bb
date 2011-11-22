@@ -223,7 +223,7 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
 #elif defined(USE_WAYLAND)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
       base::wayland::WaylandEvent* event);
-#elif defined(TOUCH_UI) || defined(USE_AURA)
+#elif defined(USE_AURA)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xevent);
 #else
   virtual bool Dispatch(GdkEvent* event);

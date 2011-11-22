@@ -13,11 +13,6 @@
         ['include', '/win/'],
         ['include', '/win_[^/]*\\.cc$'],
       ]}],
-      ['touchui==0', {
-        'sources/': [
-          ['exclude', '_(touch)\\.cc$'],
-        ],
-      }],
       ['use_aura==1', {
         'sources/': [ ['exclude', '_win\\.(h|cc)$'],
                       ['exclude', '_gtk\\.(h|cc)$'],

@@ -47,16 +47,6 @@ void BalloonCollectionImpl::PositionBalloons(bool reposition) {
   PositionBalloonsInternal(reposition);
 }
 
-#if defined(TOUCH_UI)
-base::EventStatus BalloonCollectionImpl::WillProcessEvent(
-    const base::NativeEvent& event) {
-  return base::EVENT_CONTINUE;
-}
-
-void BalloonCollectionImpl::DidProcessEvent(const base::NativeEvent& event) {
-  NOTIMPLEMENTED();
-}
-#else
 void BalloonCollectionImpl::WillProcessEvent(GdkEvent* event) {
 }
 
@@ -70,7 +60,6 @@ void BalloonCollectionImpl::DidProcessEvent(GdkEvent* event) {
       break;
   }
 }
-#endif
 
 bool BalloonCollectionImpl::IsCursorInBalloonCollection() const {
   GdkScreen* screen = gdk_screen_get_default();

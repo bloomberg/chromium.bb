@@ -4,10 +4,6 @@
 
 #include "views/controls/menu/nested_dispatcher_gtk.h"
 
-#if defined(TOUCH_UI)
-#include "ui/views/focus/accelerator_handler.h"
-#endif
-
 namespace views {
 
 NestedDispatcherGtk::NestedDispatcherGtk(MessageLoopForUI::Dispatcher* creator,
@@ -32,15 +28,8 @@ void NestedDispatcherGtk::CreatorDestroyed() {
   creator_ = NULL;
 }
 
-#if defined(TOUCH_UI)
-base::MessagePumpDispatcher::DispatchStatus
-    NestedDispatcherGtk::Dispatch(XEvent* xevent) {
-  return creator_->Dispatch(xevent);
-}
-#else
 bool NestedDispatcherGtk::Dispatch(GdkEvent* event) {
   return creator_ && creator_->Dispatch(event);
 }
-#endif  // defined(TOUCH_UI)
 
 }  // namespace views

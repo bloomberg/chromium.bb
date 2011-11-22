@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/gtk/task_manager_gtk.h"
 #endif
 
-#if !defined(OS_CHROMEOS) && !defined(TOUCH_UI)
+#if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/gtk/collected_cookies_gtk.h"
 #include "chrome/browser/ui/gtk/repost_form_warning_gtk.h"
 #endif

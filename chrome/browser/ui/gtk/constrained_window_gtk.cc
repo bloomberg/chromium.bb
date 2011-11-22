@@ -16,9 +16,7 @@
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 
-#if defined(TOUCH_UI)
-#include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
-#elif defined(TOOLKIT_VIEWS)
+#if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view_gtk.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_view_views.h"
 #else
@@ -135,7 +133,7 @@ void ConstrainedWindowGtk::FocusConstrainedWindow() {
 
 ConstrainedWindowGtk::TabContentsViewType*
     ConstrainedWindowGtk::ContainingView() {
-#if defined(TOOLKIT_VIEWS) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_VIEWS)
   return static_cast<NativeTabContentsViewGtk*>(
       static_cast<TabContentsViewViews*>(wrapper_->view())->
           native_tab_contents_view());

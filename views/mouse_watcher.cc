@@ -77,7 +77,7 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
     }
     return EVENT_CONTINUE;
   }
-#elif defined(TOUCH_UI) || defined(USE_AURA)
+#elif defined(USE_AURA)
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE {
     return base::EVENT_CONTINUE;

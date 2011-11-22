@@ -48,9 +48,6 @@ void MenuHost::ShowMenuHost(bool do_capture) {
   // process of showing.
   ignore_capture_lost_ = true;
   Show();
-#if defined(TOUCH_UI)
-  Activate();
-#endif
   if (do_capture)
     native_widget_private()->SetMouseCapture();
   ignore_capture_lost_ = false;

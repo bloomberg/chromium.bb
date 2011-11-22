@@ -8,10 +8,6 @@
 
 #include "base/message_loop.h"
 
-#if defined(TOUCH_UI)
-typedef union _XEvent XEvent;
-#endif
-
 namespace views {
 
 // A nested dispatcher that can out-live the creator of this
@@ -37,12 +33,8 @@ class NestedDispatcherGtk : public MessageLoopForUI::Dispatcher {
  private:
   virtual ~NestedDispatcherGtk() {}
 
-#if defined(TOUCH_UI)
-  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xevent);
-#else
   // Overriden from MessageLoopForUI::Dispatcher:
   virtual bool Dispatch(GdkEvent* event);
-#endif
 
   // Creator of the nested loop.
   MessageLoopForUI::Dispatcher* creator_;
