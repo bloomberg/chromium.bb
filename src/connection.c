@@ -740,7 +740,7 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target, int send)
 	clock_gettime(CLOCK_REALTIME, &tp);
 	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
 
-	fprintf(stderr, "[%10.3f] %s%s@%d.%s(",
+	fprintf(stderr, "[%10.3f] %s%s@%u.%s(",
 		time / 1000.0,
 		send ? " -> " : "",
 		target->interface->name, target->id,
