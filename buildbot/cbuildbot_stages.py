@@ -629,21 +629,19 @@ class VMTestStage(bs.BuilderStage):
     test_results_dir = None
 
     try:
-      if self._options.tests:
-        # Payloads dir is not in the chroot as ctest archives them outside of
-        # the chroot.
-        payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')
-        test_results_dir = commands.CreateTestRoot(self._build_root)
+      # Payloads dir is not in the chroot as ctest archives them outside of
+      # the chroot.
+      payloads_dir = tempfile.mkdtemp(prefix='cbuildbot')
+      test_results_dir = commands.CreateTestRoot(self._build_root)
 
-        if self._build_config['vm_tests']:
-          commands.RunTestSuite(self._build_root,
-                                self._build_config['board'],
-                                self.GetImageDirSymlink(),
-                                os.path.join(test_results_dir,
-                                             'test_harness'),
-                                test_type=self._build_config['vm_tests'],
-                                nplus1_archive_dir=payloads_dir,
-                                build_config=self._bot_id)
+      commands.RunTestSuite(self._build_root,
+                            self._build_config['board'],
+                            self.GetImageDirSymlink(),
+                            os.path.join(test_results_dir,
+                                         'test_harness'),
+                            test_type=self._build_config['vm_tests'],
+                            nplus1_archive_dir=payloads_dir,
+                            build_config=self._bot_id)
 
     except commands.TestException:
       raise bs.NonBacktraceBuildException()  # Suppress redundant output.
@@ -871,9 +869,9 @@ class ArchiveStage(NonHaltingBuilderStage):
 
   def _GetTestResults(self):
     """Get the path to the test results tarball."""
-    num_test_results = (bool(self._build_config['vm_tests']) +
-                        bool(self._build_config['chrome_tests']))
-    for _ in range(num_test_results):
+    vm_tests = bool(self._build_config['vm_tests'])
+    chrome_tests = bool(vm_tests and self._build_config['chrome_tests'])
+    for _ in range(vm_tests + chrome_tests):
       cros_lib.Info('Waiting for test results dir...')
       test_tarball = self._test_results_queue.get()
       if test_tarball:

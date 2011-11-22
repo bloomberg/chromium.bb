@@ -366,9 +366,11 @@ class SimpleBuilder(Builder):
       try:
         # Run the steps in parallel. If any exceptions occur, RunParallelSteps
         # will combine them into a single BackgroundException and throw it.
-        steps = [vm_test_stage.Run]
-        if self.build_config['chrome_tests']:
-          steps.append(chrome_test_stage.Run)
+        steps = []
+        if self.build_config['vm_tests']:
+          steps.append(vm_test_stage.Run)
+          if self.build_config['chrome_tests']:
+            steps.append(chrome_test_stage.Run)
         steps += [unit_test_stage.Run, prebuilts_stage.Run]
         background.RunParallelSteps(steps)
       finally:
