@@ -180,11 +180,6 @@ Clipboard::~Clipboard() {
 }
 
 void Clipboard::WriteObjects(const ObjectMap& objects) {
-  WriteObjects(objects, NULL);
-}
-
-void Clipboard::WriteObjects(const ObjectMap& objects,
-                             base::ProcessHandle process) {
   ScopedClipboard clipboard;
   if (!clipboard.Acquire(GetClipboardWindow()))
     return;

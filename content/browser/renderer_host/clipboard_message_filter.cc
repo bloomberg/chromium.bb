@@ -11,6 +11,7 @@
 #endif
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/stl_util.h"
 #include "content/common/clipboard_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -24,24 +25,12 @@ using content::BrowserThread;
 
 namespace {
 
-// Completes a clipboard write initiated by the renderer. The write must be
-// performed on the UI thread because the clipboard service from the IO thread
-// cannot create windows so it cannot be the "owner" of the clipboard's
-// contents.
-class WriteClipboardTask : public Task {
- public:
-  explicit WriteClipboardTask(ui::Clipboard::ObjectMap* objects)
-      : objects_(objects) {}
-  ~WriteClipboardTask() {}
-
-  void Run() {
-    content::GetContentClient()->browser()->GetClipboard()->WriteObjects(
-        *objects_.get());
-  }
-
- private:
-  scoped_ptr<ui::Clipboard::ObjectMap> objects_;
-};
+// This helper is needed because content::ContentBrowserClient::GetClipboard()
+// must be called on the UI thread.
+void WriteObjectsHelper(const ui::Clipboard::ObjectMap* objects) {
+  content::GetContentClient()->browser()->GetClipboard()->WriteObjects(
+      *objects);
+}
 
 }  // namespace
 
@@ -104,7 +93,7 @@ void ClipboardMessageFilter::OnWriteObjectsSync(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      new WriteClipboardTask(long_living_objects));
+      base::Bind(&WriteObjectsHelper, base::Owned(long_living_objects)));
 }
 
 void ClipboardMessageFilter::OnWriteObjectsAsync(
@@ -122,7 +111,7 @@ void ClipboardMessageFilter::OnWriteObjectsAsync(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      new WriteClipboardTask(long_living_objects));
+      base::Bind(&WriteObjectsHelper, base::Owned(long_living_objects)));
 }
 
 void ClipboardMessageFilter::OnGetSequenceNumber(

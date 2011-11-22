@@ -151,11 +151,6 @@ void Clipboard::WriteObjects(const ObjectMap& objects) {
   }
 }
 
-void Clipboard::WriteObjects(const ObjectMap& objects,
-                             base::ProcessHandle process) {
-  NOTIMPLEMENTED();
-}
-
 bool Clipboard::IsFormatAvailable(const FormatType& format,
                                   Buffer buffer) const {
   ClipboardData* data = GetClipboardData();
