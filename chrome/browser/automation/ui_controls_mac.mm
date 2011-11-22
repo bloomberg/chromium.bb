@@ -381,7 +381,7 @@ void MoveMouseToCenterAndPress(
 
   SendMouseMoveNotifyWhenDone(
       center.x, center.y,
-      base::Bind(&ui_controls::ClickTask, button, state, task));
+      base::Bind(&ui_controls::internal::ClickTask, button, state, task));
 }
 
 }  // ui_controls

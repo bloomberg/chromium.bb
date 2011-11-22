@@ -44,7 +44,7 @@ class EventWaiter : public MessageLoopForUI::Observer {
   }
 
   // MessageLoop::Observer implementation:
-  virtual void WillProcessEvent(GdkEvent* event) {
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {
     if ((event->type == type_) && (--count_ == 0)) {
       // At the time we're invoked the event has not actually been processed.
       // Use PostTask to make sure the event has been processed before
@@ -57,7 +57,7 @@ class EventWaiter : public MessageLoopForUI::Observer {
     }
   }
 
-  virtual void DidProcessEvent(GdkEvent* event) {
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {
     // No-op.
   }
 
@@ -230,7 +230,8 @@ bool SendMouseEvents(MouseButton type, int state) {
   return false;
 }
 
-bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
+bool SendMouseEventsNotifyWhenDone(MouseButton type,
+                                   int state,
                                    const base::Closure& task) {
   bool rv = SendMouseEvents(type, state);
   GdkEventType wait_type;
@@ -280,8 +281,10 @@ void SynchronizeWidgetSize(views::Widget* widget) {
 }
 #endif
 
-void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
-                               int state, const base::Closure& task) {
+void MoveMouseToCenterAndPress(views::View* view,
+                               MouseButton button,
+                               int state,
+                               const base::Closure& task) {
 #if defined(OS_LINUX)
   // X is asynchronous and we need to wait until the window gets
   // resized to desired size.
@@ -292,7 +295,7 @@ void MoveMouseToCenterAndPress(views::View* view, MouseButton button,
   views::View::ConvertPointToScreen(view, &view_center);
   SendMouseMoveNotifyWhenDone(
       view_center.x(), view_center.y(),
-      base::Bind(&ui_controls::ClickTask, button, state, task));
+      base::Bind(&ui_controls::internal::ClickTask, button, state, task));
 }
 #else
 void MoveMouseToCenterAndPress(GtkWidget* widget,
@@ -303,7 +306,7 @@ void MoveMouseToCenterAndPress(GtkWidget* widget,
   SendMouseMoveNotifyWhenDone(
       bounds.x() + bounds.width() / 2,
       bounds.y() + bounds.height() / 2,
-      base::Bind(&ui_controls::ClickTask, button, state, task));
+      base::Bind(&ui_controls::internal::ClickTask, button, state, task));
 }
 #endif
 

@@ -119,7 +119,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
       int renderer_id,
       int32 route_id,
       int gpu_host_id) OVERRIDE;
-#elif defined(OS_WIN)
+#elif defined(OS_WIN) && !defined(USE_AURA)
   virtual void WillWmDestroy() OVERRIDE;
 #endif
 #if defined(OS_POSIX) || defined(USE_AURA)

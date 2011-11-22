@@ -206,6 +206,13 @@ void DesktopHostWin::SetSize(const gfx::Size& size) {
       SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOREDRAW | SWP_NOREPOSITION);
 }
 
+gfx::Point DesktopHostWin::GetLocationOnNativeScreen() const {
+  RECT r;
+  GetClientRect(hwnd(), &r);
+  return gfx::Point(r.left, r.top);
+}
+
+
 void DesktopHostWin::SetCursor(gfx::NativeCursor native_cursor) {
   // Custom web cursors are handled directly.
   if (native_cursor == kCursorCustom)

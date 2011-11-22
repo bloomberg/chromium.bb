@@ -227,9 +227,8 @@ net::URLRequestJob* PrintDialogCloudTest::Factory(net::URLRequest* request,
   return new SimpleTestJob(request);
 }
 
-#if defined(OS_WIN) || defined(USE_AURA)
+#if defined(OS_WIN) && !defined(USE_AURA)
 // http://crbug.com/94864 for OS_WIN issue
-// http://crbug.com/103497 for USE_AURA issue
 #define MAYBE_HandlersRegistered DISABLED_HandlersRegistered
 #else
 #define MAYBE_HandlersRegistered HandlersRegistered

@@ -238,6 +238,7 @@ class DesktopHostLinux : public DesktopHost {
   virtual void ToggleFullScreen() OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
@@ -256,8 +257,8 @@ class DesktopHostLinux : public DesktopHost {
   // Current Aura cursor.
   gfx::NativeCursor current_cursor_;
 
-  // The size of |xwindow_|.
-  gfx::Size size_;
+  // The bounds of |xwindow_|.
+  gfx::Rect bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopHostLinux);
 };
@@ -267,7 +268,7 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
       xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
       xwindow_(0),
       current_cursor_(aura::kCursorNull),
-      size_(bounds.size()) {
+      bounds_(bounds) {
   xwindow_ = XCreateSimpleWindow(xdisplay_, DefaultRootWindow(xdisplay_),
                                  bounds.x(), bounds.y(),
                                  bounds.width(), bounds.height(),
@@ -331,11 +332,12 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       // It's possible that the X window may be resized by some other means than
       // from within aura (e.g. the X window manager can change the size). Make
       // sure the desktop size is maintained properly.
-      gfx::Size size(xev->xconfigure.width, xev->xconfigure.height);
-      if (size_ != size) {
-        size_ = size;
-        desktop_->OnHostResized(size);
-      }
+      gfx::Rect bounds(xev->xconfigure.x, xev->xconfigure.y,
+                       xev->xconfigure.width, xev->xconfigure.height);
+      bool size_changed = bounds_.size() != bounds.size();
+      bounds_ = bounds;
+      if (size_changed)
+        desktop_->OnHostResized(bounds.size());
       handled = true;
       break;
     }
@@ -437,11 +439,11 @@ void DesktopHostLinux::ToggleFullScreen() {
 }
 
 gfx::Size DesktopHostLinux::GetSize() const {
-  return size_;
+  return bounds_.size();
 }
 
 void DesktopHostLinux::SetSize(const gfx::Size& size) {
-  if (size == size_)
+  if (size == bounds_.size())
     return;
 
   XResizeWindow(xdisplay_, xwindow_, size.width(), size.height());
@@ -450,9 +452,13 @@ void DesktopHostLinux::SetSize(const gfx::Size& size) {
   // case if we're running without a window manager.  If there's a window
   // manager, it can modify or ignore the request, but (per ICCCM) we'll get a
   // (possibly synthetic) ConfigureNotify about the actual size and correct
-  // |size_| later.
-  size_ = size;
+  // |bounds_| later.
+  bounds_.set_size(size);
   desktop_->OnHostResized(size);
+}
+
+gfx::Point DesktopHostLinux::GetLocationOnNativeScreen() const {
+  return bounds_.origin();
 }
 
 void DesktopHostLinux::SetCursor(gfx::NativeCursor cursor) {
@@ -478,8 +484,8 @@ gfx::Point DesktopHostLinux::QueryMouseLocation() {
                 &root_x_return, &root_y_return,
                 &win_x_return, &win_y_return,
                 &mask_return);
-  return gfx::Point(max(0, min(size_.width(), win_x_return)),
-                    max(0, min(size_.height(), win_y_return)));
+  return gfx::Point(max(0, min(bounds_.width(), win_x_return)),
+                    max(0, min(bounds_.height(), win_y_return)));
 }
 
 void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
@@ -488,7 +494,30 @@ void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
   XEvent xevent = *native_event;
   xevent.xany.display = xdisplay_;
   xevent.xany.window = xwindow_;
-  ::XPutBackEvent(xdisplay_, &xevent);
+
+  switch (xevent.type) {
+    case EnterNotify:
+    case LeaveNotify:
+    case MotionNotify:
+    case KeyPress:
+    case KeyRelease:
+    case ButtonPress:
+    case ButtonRelease: {
+      // The fields used below are in the same place for all of events
+      // above. Using xmotion from XEvent's unions to avoid repeating
+      // the code.
+      xevent.xmotion.root = DefaultRootWindow(xdisplay_);
+      xevent.xmotion.time = CurrentTime;
+
+      gfx::Point point(xevent.xmotion.x, xevent.xmotion.y);
+      desktop_->ConvertPointToNativeScreen(&point);
+      xevent.xmotion.x_root = point.x();
+      xevent.xmotion.y_root = point.y();
+    }
+    default:
+      break;
+  }
+  XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
 }
 
 bool DesktopHostLinux::IsWindowManagerPresent() {

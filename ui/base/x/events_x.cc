@@ -6,11 +6,16 @@
 
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
+#include <string.h>
 
 #include "base/logging.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory.h"
 #include "ui/gfx/point.h"
+
+#if !defined(TOOLKIT_USES_GTK)
+#include "base/message_pump_x.h"
+#endif
 
 namespace {
 
@@ -356,12 +361,25 @@ float GetTouchForce(const base::NativeEvent& native_event) {
 }
 
 base::NativeEvent CreateNoopEvent() {
-  static XEvent* noop = new XEvent();
-  noop->xclient.type = ClientMessage;
-  noop->xclient.display = NULL;
-  noop->xclient.window = None;
-  noop->xclient.message_type = 0;
-  noop->xclient.format = 0;
+  static XEvent* noop = NULL;
+  if (!noop) {
+    noop = new XEvent();
+    memset(noop, 0, sizeof(XEvent));
+    noop->xclient.type = ClientMessage;
+    noop->xclient.window = None;
+    noop->xclient.format = 8;
+    DCHECK(!noop->xclient.display);
+  }
+  // TODO(oshima): Remove ifdef once gtk is removed from views.
+#if defined(TOOLKIT_USES_GTK)
+  NOTREACHED();
+#else
+  // Make sure we use atom from current xdisplay, which may
+  // change during the test.
+  noop->xclient.message_type = XInternAtom(
+      base::MessagePumpX::GetDefaultXDisplay(),
+      "noop", False);
+#endif
   return noop;
 }
 

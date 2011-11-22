@@ -27,6 +27,7 @@ class DesktopHostWin : public DesktopHost, public ui::WindowImpl {
   virtual void ToggleFullScreen() OVERRIDE;
   virtual gfx::Size GetSize() const OVERRIDE;
   virtual void SetSize(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Point GetLocationOnNativeScreen() const OVERRIDE;
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& native_event) OVERRIDE;

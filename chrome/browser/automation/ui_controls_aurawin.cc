@@ -4,8 +4,9 @@
 
 #include "chrome/browser/automation/ui_controls.h"
 
+#include "base/logging.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
-#include "ui/gfx/point.h"
+#include "ui/aura/desktop.h"
 #include "views/view.h"
 
 namespace ui_controls {
@@ -16,7 +17,7 @@ bool SendKeyPress(gfx::NativeWindow window,
                   bool shift,
                   bool alt,
                   bool command) {
-  DCHECK(!command);  // No command key on Windows
+  DCHECK(!command);  // No command key on Aura
   return internal::SendKeyPressImpl(key, control, shift, alt, base::Closure());
 }
 
@@ -27,16 +28,20 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool alt,
                                 bool command,
                                 const base::Closure& task) {
-  DCHECK(!command);  // No command key on Windows
+  DCHECK(!command);  // No command key on Aura
   return internal::SendKeyPressImpl(key, control, shift, alt, task);
 }
 
 bool SendMouseMove(long x, long y) {
-  return internal::SendMouseMoveImpl(x, y, base::Closure());
+  gfx::Point point(x, y);
+  aura::Desktop::GetInstance()->ConvertPointToNativeScreen(&point);
+  return internal::SendMouseMoveImpl(point.x(), point.y(), base::Closure());
 }
 
 bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
-  return internal::SendMouseMoveImpl(x, y, task);
+  gfx::Point point(x, y);
+  aura::Desktop::GetInstance()->ConvertPointToNativeScreen(&point);
+  return internal::SendMouseMoveImpl(point.x(), point.y(), task);
 }
 
 bool SendMouseEvents(MouseButton type, int state) {
@@ -44,12 +49,12 @@ bool SendMouseEvents(MouseButton type, int state) {
 }
 
 bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
-                                   const base::Closure& task) {
+    const base::Closure& task) {
   return internal::SendMouseEventsImpl(type, state, task);
 }
 
 bool SendMouseClick(MouseButton type) {
-  return internal::SendMouseEventsImpl(type, UP | DOWN, base::Closure());
+  return SendMouseEvents(type, UP | DOWN);
 }
 
 void MoveMouseToCenterAndPress(views::View* view,
@@ -64,4 +69,4 @@ void MoveMouseToCenterAndPress(views::View* view,
   SendMouseEventsNotifyWhenDone(button, state, task);
 }
 
-}  // ui_controls
+}  // namespace ui_controls

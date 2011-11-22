@@ -131,6 +131,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Posts |native_event| to the platform's event queue.
   void PostNativeEvent(const base::NativeEvent& native_event);
 
+  // Converts |point| from the desktop's coordinate system to native screen's.
+  void ConvertPointToNativeScreen(gfx::Point* point) const;
+
   // Capture -------------------------------------------------------------------
 
   // Sets capture to the specified window.

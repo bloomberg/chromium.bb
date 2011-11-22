@@ -490,7 +490,7 @@ scoped_refptr<TabProxy> AutomationProxy::CreateExternalTab(
     return NULL;
   }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && !defined(USE_AURA)
   DCHECK(IsWindow(*external_tab_container));
 #else  // defined(OS_WIN)
   DCHECK(*external_tab_container);

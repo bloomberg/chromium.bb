@@ -50,6 +50,9 @@ class DesktopHost : public MessageLoop::Dispatcher {
   virtual gfx::Size GetSize() const = 0;
   virtual void SetSize(const gfx::Size& size) = 0;
 
+  // Returns the location of the desktop on native screen.
+  virtual gfx::Point GetLocationOnNativeScreen() const = 0;
+
   // Sets the currently displayed cursor.
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
 

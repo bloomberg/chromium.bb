@@ -234,7 +234,7 @@ void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
     int gpu_host_id) {
 }
 
-#elif defined(OS_WIN)
+#elif defined(OS_WIN) && !defined(USE_AURA)
 void TestRenderWidgetHostView::WillWmDestroy() {
 }
 
