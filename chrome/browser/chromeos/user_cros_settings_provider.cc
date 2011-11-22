@@ -533,10 +533,4 @@ bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) const {
       path == kReleaseChannel;
 }
 
-// static
-void UserCrosSettingsProvider::UpdateCachedOwner(const std::string& email) {
-  base::StringValue email_value(email);
-  UpdateCache(kDeviceOwner, &email_value, USE_VALUE_SUPPLIED);
-}
-
 }  // namespace chromeos

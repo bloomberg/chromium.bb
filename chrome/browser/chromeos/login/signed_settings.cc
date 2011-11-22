@@ -372,6 +372,8 @@ void StorePropertyOp::SetInPolicy(const std::string& prop,
       if ((*i)->GetAsString(&email))
         whitelist_proto->add_user_whitelist(email.c_str());
     }
+  } else if (prop == kDeviceOwner) {
+    // We don't serialize this one to the policy blob.
   } else {
     NOTREACHED();
   }

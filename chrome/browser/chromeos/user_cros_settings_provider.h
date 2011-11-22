@@ -41,9 +41,6 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
                           const base::Closure& callback) const OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
 
-  // Updates cached value of the owner.
-  static void UpdateCachedOwner(const std::string& email);
-
  private:
   // CrosSettingsProvider implementation.
   virtual void DoSet(const std::string& path,

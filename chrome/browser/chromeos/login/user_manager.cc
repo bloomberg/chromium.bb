@@ -802,7 +802,9 @@ void UserManager::UpdateOwnership(bool is_owner) {
       content::NotificationService::NoDetails());
   if (is_owner) {
     // Also update cached value.
-    UserCrosSettingsProvider::UpdateCachedOwner(logged_in_user().email());
+    CrosSettings::Get()->SetString(
+        kDeviceOwner,
+        g_user_manager.Get().logged_in_user().email());
   }
 }
 
