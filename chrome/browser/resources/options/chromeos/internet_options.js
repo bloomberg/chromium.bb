@@ -90,11 +90,6 @@ cr.define('options', function() {
       });
       $('upload-network-settings').addEventListener('change', function(event) {
         var file = event.target.files[0];
-        if (!file.type.match('text/plain')) {
-          InternetOptions.invalidNetworkSettings();
-          return;
-        }
-
         var reader = new FileReader();
         reader.onloadend = function(e) {
           chrome.send('importNetworkSettings', [this.result]);
