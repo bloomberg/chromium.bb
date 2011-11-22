@@ -235,8 +235,8 @@ void NativeWidgetAura::ReorderLayers() {
 }
 
 void NativeWidgetAura::ViewRemoved(View* view) {
-  // DropTarget stuff. Most likely http://crbug.com/97845
-  //NOTIMPLEMENTED();
+  DCHECK(drop_helper_.get() != NULL);
+  drop_helper_->ResetTargetViewIfEquals(view);
 }
 
 void NativeWidgetAura::SetNativeWindowProperty(const char* name, void* value) {

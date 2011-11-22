@@ -9,6 +9,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura_shell/aura_shell_export.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_delegate.h"
 #include "ui/gfx/rect.h"
@@ -57,7 +58,7 @@ namespace internal {
 //   | xXX|
 //   ...
 //
-class ImageGrid {
+class AURA_SHELL_EXPORT ImageGrid {
  public:
   // Helper class for use by tests.
   class TestAPI {

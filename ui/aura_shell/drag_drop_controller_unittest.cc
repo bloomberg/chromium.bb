@@ -367,5 +367,60 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   delete widget2;
 }
 
+TEST_F(DragDropControllerTest, ViewRemovedWhileInDragDropTest) {
+  views::Widget* widget = CreateNewWidget();
+  DragTestView* drag_view = new DragTestView;
+  AddViewToWidgetAndResize(widget, drag_view);
+  gfx::Point point = gfx::Rect(drag_view->bounds()).CenterPoint();
+  ui::OSExchangeData data;
+  data.SetString(UTF8ToUTF16("I am being dragged"));
+
+  aura::MouseEvent event1(ui::ET_MOUSE_PRESSED, point, ui::EF_LEFT_BUTTON_DOWN);
+  aura::Desktop::GetInstance()->DispatchMouseEvent(&event1);
+
+  int num_drags_1 = 17;
+  for (int i = 0; i < num_drags_1; ++i) {
+    // Because we are not doing a blocking drag and drop, the original
+    // OSDragExchangeData object is lost as soon as we return from the drag
+    // initiation in DragDropController::StartDragAndDrop(). Hence we set the
+    // drag_data_ to a fake drag data object that we created.
+    if (i > 0)
+      UpdateDragData(&data);
+    point.Offset(0, 1);
+    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
+        ui::EF_LEFT_BUTTON_DOWN);
+    aura::Desktop::GetInstance()->DispatchMouseEvent(&drag_event);
+  }
+
+  drag_view->parent()->RemoveChildView(drag_view);
+  // View has been removed. We will not get any of the following drag updates.
+  int num_drags_2 = 23;
+  for (int i = 0; i < num_drags_2; ++i) {
+    UpdateDragData(&data);
+    point.Offset(0, 1);
+    aura::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, point,
+        ui::EF_LEFT_BUTTON_DOWN);
+    aura::Desktop::GetInstance()->DispatchMouseEvent(&drag_event);
+  }
+
+  aura::MouseEvent event2(ui::ET_MOUSE_RELEASED, point, 0);
+  aura::Desktop::GetInstance()->DispatchMouseEvent(&event2);
+
+  EXPECT_TRUE(drag_drop_controller_->drag_start_received_);
+  EXPECT_EQ(num_drags_1 + num_drags_2 - 1 - drag_view->VerticalDragThreshold(),
+      drag_drop_controller_->num_drag_updates_);
+  EXPECT_TRUE(drag_drop_controller_->drop_received_);
+  EXPECT_EQ(UTF8ToUTF16("I am being dragged"),
+      drag_drop_controller_->drag_string_);
+
+  EXPECT_EQ(1, drag_view->num_drag_enters_);
+  EXPECT_EQ(num_drags_1 - 1 - drag_view->VerticalDragThreshold(),
+      drag_view->num_drag_updates_);
+  EXPECT_EQ(0, drag_view->num_drops_);
+  EXPECT_EQ(0, drag_view->num_drag_exits_);
+  EXPECT_TRUE(drag_view->drag_done_received_);
+  delete widget;
+}
+
 }  // namespace test
 }  // namespace aura
