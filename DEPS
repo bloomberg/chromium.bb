@@ -14,11 +14,12 @@ vars = {
   # source changes when LKGR is lagging too far back.
   "chromebinaries_rev": "110106",
   "chrome_rev": "110106",
-  # NOTE!  These three should match their counterparts in chromium/src/DEPS.
+  # NOTE!  These four should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.
+  "gtest_rev": "560",
   "gyp_rev": "1088",
   "jsoncpp_revision": "246",
-  "gtest_rev": "560",
+  "lss_rev": "9",
 
   "lcov_rev": "54822",
   "python_26_rev": "53573",
@@ -67,6 +68,9 @@ deps = {
         "/trunk/jsoncpp/src/lib_json@" + Var("jsoncpp_revision"),
   "third_party/lcov":
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
+  "third_party/lss":
+    ((Var("googlecode_url") % "linux-syscall-support") +
+     "/trunk/lss@" + Var("lss_rev")),
   "third_party/pyftpdlib":
     Var("chromium_trunk") + "/src/third_party/pyftpdlib@" + Var("chrome_rev"),
   "third_party/pyftpdlib/src":

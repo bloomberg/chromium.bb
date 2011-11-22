@@ -265,6 +265,9 @@
               '-ldl',
             ],
           },
+          'dependencies': [
+            'linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
+          ]
         }],
       ],
     },

@@ -336,6 +336,67 @@ if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
 
 env.EnsureRequiredBuildWarnings()
 
+# Bootstrap loader used on Linux.
+if env.Bit('linux') and not env.CrossToolsBuild():
+  bootstrap_env = env.Clone()
+  bootstrap_env.FilterOut(CCFLAGS=['-fstack-protector', '-fPIC', '-fPIE',
+                                   '-fasan', '-pedantic'],
+                          CFLAGS=['-Wdeclaration-after-statement'])
+  bootstrap_env.Append(CCFLAGS=['-fno-pic', '-fno-PIC', '-fno-pie', '-fno-pie',
+                                '-fno-stack-protector'])
+  if env.Bit('clang'):
+    bootstrap_env.Append(CCFLAGS=['-ffreestanding',
+                                  '-U__STDC_HOSTED__',
+                                  '-D__STDC_HOSTED__=1'])
+  if env.Bit('target_x86_64'):
+    ld_emul = 'elf_x86_64'
+    defsym = ''
+  elif env.Bit('target_x86_32'):
+    ld_emul = 'elf_i386'
+    defsym = '--defsym RESERVE_TOP=0x40000000'
+  elif env.Bit('target_arm'):
+    ld_emul = 'armelf_linux_eabi'
+    defsym = '--defsym RESERVE_TOP=0x40002000'
+
+  bootstrap_obj = bootstrap_env.ComponentObject('linux/nacl_bootstrap.c')
+  bootstrap_raw = bootstrap_env.Command(
+      'nacl_bootstrap_raw',
+      [bootstrap_obj],
+      ('env CXX=${CXX} ${PYTHON} %s ' +
+       '-m %s --build-id -static -z max-page-size=0x1000 ' +
+       defsym + ' --script %s -o ${TARGET} ${SOURCES}') %
+      (bootstrap_env.File('linux/ld_bfd.py'),
+       ld_emul, bootstrap_env.File('linux/nacl_bootstrap.x')),
+      )
+
+  # This is a terrible kludge in lieu of SCons having decent support for
+  # a "build environment" environment.  We need to compile this program
+  # with native defaults for where we're being built, i.e. for x86-64
+  # when the host is x86-64 but platform=x86-32.
+  munge_env = env.Clone(BUILD_TYPE='gen',
+                        BUILD_TYPE_DESCRIPTION='build-host generation',
+                        NACL_BUILD_FAMILY='TRUSTED_BUILD',
+                        CC='cc',
+                        LINK='${CC}',
+                        CCFLAGS=['-O2'],
+                        LINKFLAGS=[],
+                        )
+  bootstrap_munge = munge_env.Program(
+      'nacl_bootstrap_munge_phdr',
+      ['linux/nacl_bootstrap_munge_phdr.c'],
+      LIBS=['elf'])
+
+  bootstrap_prog = bootstrap_env.Command(
+      'nacl_helper_bootstrap',
+      [bootstrap_env.File('linux/nacl_bootstrap_munge_phdr.py'),
+       bootstrap_munge, bootstrap_raw],
+      '${PYTHON} ${SOURCES} ${TARGET}'
+      )
+  bootstrap_out = bootstrap_env.Install('${STAGING_DIR}', bootstrap_prog)
+
+  bootstrap_env.Alias('nacl_helper_bootstrap', bootstrap_out)
+  bootstrap_env.Requires(SEL_LDR_NODE, bootstrap_out)
+
 # ----------------------------------------------------------
 # Unit Tests
 # ----------------------------------------------------------
