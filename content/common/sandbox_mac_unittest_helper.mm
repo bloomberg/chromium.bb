@@ -148,7 +148,8 @@ MULTIPROCESS_TEST_MAIN(mac_sandbox_test_runner) {
     LOG(ERROR) << "Invalid sandbox test name (" << sandbox_test_name << ")";
     return -1;
   }
-  test_case->SetTestData(test_data);
+  if (test_data)
+    test_case->SetTestData(test_data);
 
   // Run Test.
   if (!test_case->BeforeSandboxInit()) {

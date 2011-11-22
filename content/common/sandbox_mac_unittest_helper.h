@@ -47,7 +47,8 @@ class MacSandboxTest : public base::MultiProcessTest {
  public:
   // Runs a test specified by |test_name| in a sandbox of the type specified
   // by |sandbox_type|. |test_data| is a custom string that a test can pass
-  // to the child process runing in the sandbox.
+  // to the child process runing in the sandbox, or NULL if additional data is
+  // required.
   // Returns true if the test passes, false if either of the functions in
   // the corresponding MacSandboxTestCase return false.
   bool RunTestInSandbox(sandbox::Sandbox::SandboxProcessType sandbox_type,
