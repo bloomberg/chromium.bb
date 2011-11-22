@@ -3,6 +3,15 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'conditions': [
+      ['inside_chromium_build==0', {
+        'webkit_src_dir': '../../../../..',
+      },{
+        'webkit_src_dir': '../../third_party/WebKit',
+      }],
+      ],
+    },
   'targets': [
     {
       'target_name': 'appcache',
@@ -78,7 +87,7 @@
          }, {
           'type': '<(component)',
           'dependencies': [
-              '<(DEPTH)/third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:webkit',
+              '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
           ],
          }],
         ['inside_chromium_build==0', {
