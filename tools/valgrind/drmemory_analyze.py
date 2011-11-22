@@ -84,6 +84,13 @@ class DrMemoryAnalyze:
           self.ReadLine()
         break
 
+    while True:
+      self.ReadLine();
+      if (self.line_ == ''): break
+
+      if self.line_.startswith("ASSERT FAILURE"):
+        self.reports.append(self.line_.strip())
+
     self.cur_fd_.close()
 
   def Report(self, check_sanity):
