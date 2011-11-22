@@ -120,7 +120,13 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
   // the tab's index.
   ASSERT_TRUE(rename_tab_extension->
               ExecuteActionInActiveTabAsync(browser.get()));
-  ASSERT_NO_FATAL_FAILURE(automation()->EnsureExtensionTestResult());
+
+  bool result;
+  std::string message;
+
+  if (!automation()->GetExtensionTestResult(&result, &message))
+    FAIL() << "Could not send WaitForExtensionTestResult message";
+  ASSERT_TRUE(result) << "Extension test message: " << message;
 
   scoped_refptr<TabProxy> display_tab = browser->GetTab(0);
   ASSERT_TRUE(display_tab);
@@ -134,7 +140,9 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
   ASSERT_TRUE(display_tab);
   ASSERT_TRUE(rename_tab_extension->
               ExecuteActionInActiveTabAsync(browser.get()));
-  ASSERT_NO_FATAL_FAILURE(automation()->EnsureExtensionTestResult());
+  if (!automation()->GetExtensionTestResult(&result, &message))
+    FAIL() << "Could not send WaitForExtensionTestResult message";
+  ASSERT_TRUE(result) << "Extension test message: " << message;
   ASSERT_TRUE(display_tab->GetTabTitle(&title_wstring));
   ASSERT_STREQ(L"1", title_wstring.c_str());
 
@@ -144,25 +152,29 @@ TEST_F(ExtensionProxyUITest, DISABLED_ExecuteBrowserActionInActiveTabAsync) {
 
 // Flaky, http://crbug.com/59441.
 TEST_F(ExtensionProxyUITest, FLAKY_MoveBrowserAction) {
+  int action_index;
+
   scoped_refptr<ExtensionProxy> rename_tab_extension =
       InstallRenameTabExtension();
   ASSERT_TRUE(rename_tab_extension.get());
-  ASSERT_NO_FATAL_FAILURE(simple_extension_->
-                          EnsureBrowserActionIndexMatches(0));
-  ASSERT_NO_FATAL_FAILURE(rename_tab_extension->
-                          EnsureBrowserActionIndexMatches(1));
+
+  ASSERT_TRUE(simple_extension_->GetBrowserActionIndex(&action_index));
+  ASSERT_EQ(0, action_index);
+  ASSERT_TRUE(rename_tab_extension->GetBrowserActionIndex(&action_index));
+  ASSERT_EQ(1, action_index);
 
   // Move google translate to the end, then beginning, and verify.
   ASSERT_TRUE(simple_extension_->MoveBrowserAction(1));
-  ASSERT_NO_FATAL_FAILURE(simple_extension_->
-                          EnsureBrowserActionIndexMatches(1));
-  ASSERT_NO_FATAL_FAILURE(rename_tab_extension->
-                          EnsureBrowserActionIndexMatches(0));
+  ASSERT_TRUE(simple_extension_->GetBrowserActionIndex(&action_index));
+  ASSERT_EQ(1, action_index);
+  ASSERT_TRUE(rename_tab_extension->GetBrowserActionIndex(&action_index));
+  ASSERT_EQ(0, action_index);
+
   ASSERT_TRUE(simple_extension_->MoveBrowserAction(0));
-  ASSERT_NO_FATAL_FAILURE(simple_extension_->
-                          EnsureBrowserActionIndexMatches(0));
-  ASSERT_NO_FATAL_FAILURE(rename_tab_extension->
-                          EnsureBrowserActionIndexMatches(1));
+  ASSERT_TRUE(simple_extension_->GetBrowserActionIndex(&action_index));
+  ASSERT_EQ(0, action_index);
+  ASSERT_TRUE(rename_tab_extension->GetBrowserActionIndex(&action_index));
+  ASSERT_EQ(1, action_index);
 
   // Try moving browser action to invalid index.
   ASSERT_FALSE(simple_extension_->MoveBrowserAction(-1));
@@ -171,14 +183,21 @@ TEST_F(ExtensionProxyUITest, FLAKY_MoveBrowserAction) {
 
 // Flaky, http://crbug.com/59440.
 TEST_F(ExtensionProxyUITest, FLAKY_GetProperty) {
-  ASSERT_NO_FATAL_FAILURE(simple_extension_->
-                          EnsureIdMatches("aiglobglfckejlcpcbdokbkbjeemfhno"));
-  ASSERT_NO_FATAL_FAILURE(simple_extension_->
-                          EnsureNameMatches("Browser Action"));
-  ASSERT_NO_FATAL_FAILURE(simple_extension_->
-                          EnsureVersionMatches("0.1.1"));
-  ASSERT_NO_FATAL_FAILURE(simple_extension_->
-                          EnsureBrowserActionIndexMatches(0));
+  std::string id;
+  ASSERT_TRUE(simple_extension_->GetId(&id));
+  ASSERT_EQ("aiglobglfckejlcpcbdokbkbjeemfhno", id);
+
+  std::string name;
+  ASSERT_TRUE(simple_extension_->GetName(&name));
+  ASSERT_EQ("Browser Action", name);
+
+  std::string version;
+  ASSERT_TRUE(simple_extension_->GetVersion(&version));
+  ASSERT_EQ("0.1.1", version);
+
+  int browser_action_index;
+  ASSERT_TRUE(simple_extension_->GetBrowserActionIndex(&browser_action_index));
+  ASSERT_EQ(0, browser_action_index);
 }
 
 }  // namespace

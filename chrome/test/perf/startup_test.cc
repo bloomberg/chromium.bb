@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/sys_info.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
@@ -203,7 +204,11 @@ class StartupTest : public UIPerfTest {
             automation()->GetBrowserWindow(0));
         ASSERT_TRUE(browser_proxy.get());
 
-        if (browser_proxy->GetInitialLoadTimes(&min_start, &max_stop, &times) &&
+        if (browser_proxy->GetInitialLoadTimes(
+              TestTimeouts::action_max_timeout_ms(),
+              &min_start,
+              &max_stop,
+              &times) &&
             !times.empty()) {
           ASSERT_LT(nth_timed_tab, num_tabs);
           ASSERT_EQ(times.size(), static_cast<size_t>(num_tabs));

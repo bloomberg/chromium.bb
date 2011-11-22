@@ -232,8 +232,11 @@ class BrowserProxy : public AutomationResourceProxy {
   // the time when loading stopped into |max_stop_time| (should be similar to
   // the delay that WaitForInitialLoads waits for), and a list of all
   // finished timestamps into |stop_times|. Returns true on success.
-  bool GetInitialLoadTimes(float* min_start_time, float* max_stop_time,
-                           std::vector<float>* stop_times);
+  bool GetInitialLoadTimes(
+      int timeout_ms,
+      float* min_start_time,
+      float* max_stop_time,
+      std::vector<float>* stop_times);
 
 
  protected:

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,7 +8,6 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 #include "chrome/test/automation/browser_proxy.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 ExtensionProxy::ExtensionProxy(AutomationMessageSender* sender,
                                AutomationHandleTracker* tracker,
@@ -98,30 +97,6 @@ bool ExtensionProxy::GetBrowserActionIndex(int* index) {
   }
   *index = converted_index;
   return true;
-}
-
-void ExtensionProxy::EnsureIdMatches(const std::string& expected_id) {
-  std::string id;
-  ASSERT_TRUE(GetId(&id));
-  ASSERT_EQ(expected_id, id);
-}
-
-void ExtensionProxy::EnsureNameMatches(const std::string& expected_name) {
-  std::string name;
-  ASSERT_TRUE(GetName(&name));
-  ASSERT_EQ(expected_name, name);
-}
-
-void ExtensionProxy::EnsureVersionMatches(const std::string& expected_version) {
-  std::string version;
-  ASSERT_TRUE(GetVersion(&version));
-  ASSERT_EQ(expected_version, version);
-}
-
-void ExtensionProxy::EnsureBrowserActionIndexMatches(int expected_index) {
-  int index;
-  ASSERT_TRUE(GetBrowserActionIndex(&index));
-  ASSERT_EQ(expected_index, index);
 }
 
 bool ExtensionProxy::GetProperty(AutomationMsg_ExtensionProperty type,

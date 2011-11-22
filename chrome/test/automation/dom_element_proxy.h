@@ -157,27 +157,11 @@ class DOMElementProxy : public JavaScriptObjectProxy {
   // Retrieves the element's visibility. Returns true on success.
   bool GetVisibility(bool* visilibity);
 
-  // Asserts that no elements can be found by the given locator method.
-  void EnsureFindNoElements(const By& by);
-
-  // Asserts that |expected_text| matches all the text in this element. This
-  // includes the value of textfields and inputs.
-  void EnsureTextMatches(const std::string& expected_text);
-
-  // Asserts that |expected_html| matches the element's inner html.
-  void EnsureInnerHTMLMatches(const std::string& expected_html);
-
-  // Asserts that |expected_name| matches the element's name.
-  void EnsureNameMatches(const std::string& expected_name);
-
-  // Asserts that |expected_visibility| matches the element's visibility.
-  void EnsureVisibilityMatches(bool expected_visibility);
-
-  // Asserts that |expected_value| eventually matches the element's value for
+  // Returns if |expected_value| eventually matches the element's value for
   // |attribute|. This function will block until the timeout is exceeded, in
   // which case it will fail, or until the two values match.
-  void EnsureAttributeEventuallyMatches(const std::string& attribute,
-                                        const std::string& expected_value);
+  bool DoesAttributeEventuallyMatch(const std::string& attribute,
+                                    const std::string& expected_value);
 
  private:
   // Gets the element's value for the given type. This is a helper method

@@ -8,7 +8,6 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "chrome/common/automation_constants.h"
@@ -579,7 +578,8 @@ bool BrowserProxy::SendJSONRequest(const std::string& request,
   return result;
 }
 
-bool BrowserProxy::GetInitialLoadTimes(float* min_start_time,
+bool BrowserProxy::GetInitialLoadTimes(int timeout_ms,
+                                       float* min_start_time,
                                        float* max_stop_time,
                                        std::vector<float>* stop_times) {
   std::string json_response;
@@ -587,9 +587,7 @@ bool BrowserProxy::GetInitialLoadTimes(float* min_start_time,
 
   *max_stop_time = 0;
   *min_start_time = -1;
-  if (!SendJSONRequest(kJSONCommand,
-                       TestTimeouts::action_max_timeout_ms(),
-                       &json_response)) {
+  if (!SendJSONRequest(kJSONCommand, timeout_ms, &json_response)) {
     // Older browser versions do not support GetInitialLoadTimes.
     // Fail gracefully and do not record them in this case.
     return false;

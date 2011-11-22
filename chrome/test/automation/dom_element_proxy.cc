@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/automation/javascript_message_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using javascript_utils::JavaScriptPrintf;
 
@@ -239,47 +238,13 @@ bool DOMElementProxy::GetVisibility(bool* visibility) {
   return GetValue("visibility", visibility);
 }
 
-void DOMElementProxy::EnsureFindNoElements(const By& by) {
-  std::vector<DOMElementProxyRef> elements;
-  ASSERT_TRUE(FindElements(by, &elements));
-  ASSERT_EQ(0u, elements.size());
-}
-
-void DOMElementProxy::EnsureTextMatches(const std::string& expected_text) {
-  std::string text;
-  ASSERT_TRUE(GetText(&text));
-  ASSERT_EQ(expected_text, text);
-}
-
-void DOMElementProxy::EnsureInnerHTMLMatches(const std::string& expected_html) {
-  std::string html;
-  ASSERT_TRUE(GetInnerHTML(&html));
-  ASSERT_EQ(expected_html, html);
-}
-
-void DOMElementProxy::EnsureNameMatches(const std::string& expected_name) {
-  std::string name;
-  ASSERT_TRUE(GetName(&name));
-  ASSERT_EQ(expected_name, name);
-}
-
-void DOMElementProxy::EnsureVisibilityMatches(bool expected_visibility) {
-  bool visibility;
-  ASSERT_TRUE(GetVisibility(&visibility));
-  ASSERT_EQ(expected_visibility, visibility);
-}
-
-void DOMElementProxy::EnsureAttributeEventuallyMatches(
+bool DOMElementProxy::DoesAttributeEventuallyMatch(
     const std::string& attribute, const std::string& new_value) {
-  ASSERT_TRUE(is_valid());
-
   const char* script = "domAutomation.waitForAttribute("
                        "domAutomation.getObject(%s), %s, %s,"
                        "domAutomation.getCallId())";
-  if (!executor_->ExecuteAsyncJavaScript(
-      JavaScriptPrintf(script, this->handle(), attribute, new_value))) {
-    FAIL() << "Executing or parsing JavaScript failed";
-  }
+  return executor_->ExecuteAsyncJavaScript(
+      JavaScriptPrintf(script, this->handle(), attribute, new_value));
 }
 
 template <typename T>

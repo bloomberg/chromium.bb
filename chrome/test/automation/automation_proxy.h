@@ -203,8 +203,9 @@ class AutomationProxy : public IPC::Channel::Listener,
   scoped_refptr<ExtensionProxy> InstallExtension(const FilePath& extension_path,
                                                  bool with_ui);
 
-  // Asserts that the next extension test result is true.
-  void EnsureExtensionTestResult();
+  // Gets the next extension test result in |result|. Returns false if there
+  // was a problem sending the result querying RPC.
+  bool GetExtensionTestResult(bool* result, std::string* message);
 
   // Resets to the default theme. Returns true on success.
   bool ResetToDefaultTheme();

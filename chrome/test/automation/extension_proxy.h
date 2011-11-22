@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -64,19 +64,6 @@ class ExtensionProxy : public AutomationResourceProxy {
   // the browser action toolbar. |index| will be set to -1 if the extension
   // does not have a browser action in the toolbar. Returns true on success.
   bool GetBrowserActionIndex(int* index) WARN_UNUSED_RESULT;
-
-  // Asserts that |expected_id| matches this extension's id.
-  void EnsureIdMatches(const std::string& expected_id);
-
-  // Asserts that |expected_name| matches this extension's name.
-  void EnsureNameMatches(const std::string& expected_name);
-
-  // Asserts that |expected_version| matches this extension's name.
-  void EnsureVersionMatches(const std::string& expected_version);
-
-  // Asserts that |expected_index| matches the index (zero-based) of this
-  // extension's browser action in the browser action toolbar.
-  void EnsureBrowserActionIndexMatches(int expected_index);
 
  private:
   // Gets the string value of the property of type |type|. Returns true on

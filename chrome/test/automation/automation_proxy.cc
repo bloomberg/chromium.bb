@@ -4,8 +4,6 @@
 
 #include "chrome/test/automation/automation_proxy.h"
 
-#include <gtest/gtest.h>
-
 #include <sstream>
 
 #include "base/basictypes.h"
@@ -251,15 +249,9 @@ scoped_refptr<ExtensionProxy> AutomationProxy::InstallExtension(
   return ProxyObjectFromHandle<ExtensionProxy>(handle);
 }
 
-void AutomationProxy::EnsureExtensionTestResult() {
-  bool result;
-  std::string message;
-  if (!Send(new AutomationMsg_WaitForExtensionTestResult(&result,
-                                                         &message))) {
-    FAIL() << "Could not send WaitForExtensionTestResult message";
-    return;
-  }
-  ASSERT_TRUE(result) << "Extension test message: " << message;
+bool AutomationProxy::GetExtensionTestResult(
+    bool* result, std::string* message) {
+  return Send(new AutomationMsg_WaitForExtensionTestResult(result, message));
 }
 
 bool AutomationProxy::GetBrowserWindowCount(int* num_windows) {

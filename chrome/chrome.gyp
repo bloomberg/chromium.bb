@@ -1237,9 +1237,7 @@
           'type': 'static_library',
           'dependencies': [
             'chrome_resources.gyp:theme_resources',
-            '../base/base.gyp:test_support_base',
             '../skia/skia.gyp:skia',
-            '../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [
             '..',
