@@ -80,7 +80,6 @@
         'build_newlib': 1,
         'include_dirs': [
           '<(DEPTH)/gpu',
-          '<(DEPTH)/third_party/khronos',
           '<(DEPTH)/ppapi/native_client/src/shared/ppapi_proxy/untrusted',
         ],
         'sources': [

@@ -8,8 +8,9 @@
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES
 #endif
-#include "third_party/khronos/GLES2/gl2.h"
-#include "third_party/khronos/GLES2/gl2ext.h"
+#include "gpu/GLES2/gl2.h"
+#include "gpu/GLES2/gl2ext.h"
+
 #include "third_party/skia/include/gpu/GrGLInterface.h"
 
 namespace webkit_glue {
@@ -118,3 +119,4 @@ GrGLInterface* CreateCommandBufferSkiaGLBinding() {
 }
 
 }  // namespace webkit_glue
+

@@ -473,9 +473,9 @@ GLX_FUNCTIONS = [
 
 FUNCTION_SETS = [
   [GL_FUNCTIONS, 'gl', ['../../../third_party/mesa/MesaLib/include/GL/glext.h',
-    '../../../third_party/khronos/GLES2/gl2ext.h']],
+    '../../../gpu/GLES2/gl2ext.h']],
   [OSMESA_FUNCTIONS, 'osmesa', []],
-  [EGL_FUNCTIONS, 'egl', ['../../../third_party/khronos/EGL/eglext.h']],
+  [EGL_FUNCTIONS, 'egl', ['../../../gpu/EGL/eglext.h']],
   [WGL_FUNCTIONS, 'wgl', [
     '../../../third_party/mesa/MesaLib/include/GL/wglext.h']],
   [GLX_FUNCTIONS, 'glx', [
