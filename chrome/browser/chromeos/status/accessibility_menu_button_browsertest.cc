@@ -11,6 +11,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 
+#if defined(USE_AURA)
+#include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#endif
+
 namespace chromeos {
 
 class AccessibilityMenuButtonTest : public InProcessBrowserTest {
@@ -18,16 +22,21 @@ class AccessibilityMenuButtonTest : public InProcessBrowserTest {
   AccessibilityMenuButtonTest() : InProcessBrowserTest() {
   }
 
-  AccessibilityMenuButton* GetAccessibilityMenuButton() {
-    BrowserView* view = static_cast<BrowserView*>(browser()->window());
-    return static_cast<AccessibilityMenuButton*>(view->GetViewByID(
-        VIEW_ID_STATUS_BUTTON_ACCESSIBILITY));
+  const AccessibilityMenuButton* GetAccessibilityMenuButton() {
+    const views::View* view =
+#if defined(USE_AURA)
+        ChromeShellDelegate::instance()->GetStatusAreaForTest();
+#else
+        static_cast<BrowserView*>(browser()->window());
+#endif
+    return static_cast<const AccessibilityMenuButton*>(
+        view->GetViewByID(VIEW_ID_STATUS_BUTTON_ACCESSIBILITY));
   }
 };
 
 IN_PROC_BROWSER_TEST_F(AccessibilityMenuButtonTest,
                        VisibilityIsSyncedWithPreference) {
-  AccessibilityMenuButton* button = GetAccessibilityMenuButton();
+  const AccessibilityMenuButton* button = GetAccessibilityMenuButton();
   ASSERT_TRUE(button != NULL);
 
   accessibility::EnableAccessibility(true, NULL);
