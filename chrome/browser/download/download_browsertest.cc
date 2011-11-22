@@ -645,7 +645,7 @@ class DownloadTest : public InProcessBrowserTest {
     std::string file_contents;
 
     bool read = file_util::ReadFileToString(path, &file_contents);
-
+    EXPECT_TRUE(read) << "Failed reading file: " << path.value() << std::endl;
     if (!read)
       return false;  // Couldn't read the file.
 
@@ -654,10 +654,12 @@ class DownloadTest : public InProcessBrowserTest {
     size_t expected_size = static_cast<size_t>(file_size);
 
     // Check the size.
+    EXPECT_EQ(expected_size, file_contents.size());
     if (expected_size != file_contents.size())
       return false;
 
     // Check the contents.
+    EXPECT_EQ(value, file_contents);
     if (memcmp(file_contents.c_str(), value.c_str(), expected_size) != 0)
       return false;
 
@@ -837,10 +839,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, UnknownSize) {
                           "32.0 KB - ", "100% - "));
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/104310
-#define KnownSize FLAKY_KnownSize
-#endif
 IN_PROC_BROWSER_TEST_F(DownloadTest, KnownSize) {
   ASSERT_TRUE(RunSizeTest(browser(), SIZE_TEST_TYPE_KNOWN,
                           "71% - ", "100% - "));

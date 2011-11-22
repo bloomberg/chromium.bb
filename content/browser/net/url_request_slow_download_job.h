@@ -55,6 +55,25 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
   explicit URLRequestSlowDownloadJob(net::URLRequest* request);
   virtual ~URLRequestSlowDownloadJob();
 
+  // Enum indicating where we are in the read after a call to
+  // FillBufferHelper.
+  enum ReadStatus {
+    // The buffer was filled with data and may be returned.
+    BUFFER_FILLED,
+
+    // No data was added to the buffer because kFinishDownloadUrl has
+    // not yet been seen and we've already returned the first chunk.
+    REQUEST_BLOCKED,
+
+    // No data was added to the buffer because we've already returned
+    // all the data.
+    REQUEST_COMPLETE
+  };
+  ReadStatus FillBufferHelper(
+      net::IOBuffer* buf,
+      int buf_size,
+      int* bytes_written);
+
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
 
   // Mark all pending requests to be finished.  We keep track of pending
@@ -69,7 +88,7 @@ class URLRequestSlowDownloadJob : public net::URLRequestJob {
 
   void set_should_finish_download() { should_finish_download_ = true; }
 
-  int first_download_size_remaining_;
+  int bytes_already_sent_;
   bool should_finish_download_;
   scoped_refptr<net::IOBuffer> buffer_;
   int buffer_size_;

@@ -83,7 +83,7 @@ void URLRequestSlowDownloadJob::FinishPendingRequests() {
 
 URLRequestSlowDownloadJob::URLRequestSlowDownloadJob(net::URLRequest* request)
     : net::URLRequestJob(request),
-      first_download_size_remaining_(kFirstDownloadSize),
+      bytes_already_sent_(0),
       should_finish_download_(false),
       buffer_size_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
@@ -96,56 +96,99 @@ void URLRequestSlowDownloadJob::StartAsync() {
   NotifyHeadersComplete();
 }
 
-bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
-                                            int *bytes_read) {
-  if (LowerCaseEqualsASCII(kFinishDownloadUrl,
-                           request_->url().spec().c_str())) {
-    *bytes_read = 0;
-    return true;
-  }
-
-  if (first_download_size_remaining_ > 0) {
-    int send_size = std::min(first_download_size_remaining_, buf_size);
-    for (int i = 0; i < send_size; ++i) {
+// ReadRawData and CheckDoneStatus together implement a state
+// machine.  ReadRawData may be called arbitrarily by the network stack.
+// It responds by:
+//      * If there are bytes remaining in the first chunk, they are
+//        returned.
+//      [No bytes remaining in first chunk.   ]
+//      * If should_finish_download_ is not set, it returns IO_PENDING,
+//        and starts calling CheckDoneStatus on a regular timer.
+//      [should_finish_download_ set.]
+//      * If there are bytes remaining in the second chunk, they are filled.
+//      * Otherwise, return *bytes_read = 0 to indicate end of request.
+// CheckDoneStatus is called on a regular basis, in the specific
+// case where we have transmitted all of the first chunk and none of the
+// second.  If should_finish_download_ becomes set, it will "complete"
+// the ReadRawData call that spawned off the CheckDoneStatus() repeated call.
+//
+// FillBufferHelper is a helper function that does the actual work of figuring
+// out where in the state machine we are and how we should fill the buffer.
+// It returns an enum indicating the state of the read.
+URLRequestSlowDownloadJob::ReadStatus
+URLRequestSlowDownloadJob::FillBufferHelper(
+    net::IOBuffer* buf, int buf_size, int* bytes_written) {
+  if (bytes_already_sent_ < kFirstDownloadSize) {
+    int bytes_to_write = std::min(kFirstDownloadSize - bytes_already_sent_,
+                                  buf_size);
+    for (int i = 0; i < bytes_to_write; ++i) {
       buf->data()[i] = '*';
     }
-    *bytes_read = send_size;
-    first_download_size_remaining_ -= send_size;
-
-    DCHECK(!is_done());
-    return true;
+    *bytes_written = bytes_to_write;
+    bytes_already_sent_ += bytes_to_write;
+    return BUFFER_FILLED;
   }
 
-  if (should_finish_download_) {
+  if (!should_finish_download_)
+    return REQUEST_BLOCKED;
+
+  if (bytes_already_sent_ < kFirstDownloadSize + kSecondDownloadSize) {
+    int bytes_to_write =
+        std::min(kFirstDownloadSize + kSecondDownloadSize - bytes_already_sent_,
+                 buf_size);
+    for (int i = 0; i < bytes_to_write; ++i) {
+      buf->data()[i] = '*';
+    }
+    *bytes_written = bytes_to_write;
+    bytes_already_sent_ += bytes_to_write;
+    return BUFFER_FILLED;
+  }
+
+  return REQUEST_COMPLETE;
+}
+
+bool URLRequestSlowDownloadJob::ReadRawData(net::IOBuffer* buf, int buf_size,
+                                            int* bytes_read) {
+  if (LowerCaseEqualsASCII(kFinishDownloadUrl,
+                           request_->url().spec().c_str())) {
+    VLOG(10) << __FUNCTION__ << " called w/ kFinishDownloadUrl.";
     *bytes_read = 0;
     return true;
   }
 
-  // If we make it here, the first chunk has been sent and we need to wait
-  // until a request is made for kFinishDownloadUrl.
-  buffer_ = buf;
-  buffer_size_ = buf_size;
-  SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
-                 weak_factory_.GetWeakPtr()),
-      100);
-
-  // Return false to signal there is pending data.
-  return false;
+  VLOG(10) << __FUNCTION__ << " called at position "
+           << bytes_already_sent_ << " in the stream.";
+  ReadStatus status = FillBufferHelper(buf, buf_size, bytes_read);
+  switch (status) {
+    case BUFFER_FILLED:
+      return true;
+    case REQUEST_BLOCKED:
+      buffer_ = buf;
+      buffer_size_ = buf_size;
+      SetStatus(net::URLRequestStatus(net::URLRequestStatus::IO_PENDING, 0));
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&URLRequestSlowDownloadJob::CheckDoneStatus,
+                     weak_factory_.GetWeakPtr()),
+          100);
+      return false;
+    case REQUEST_COMPLETE:
+      *bytes_read = 0;
+      return true;
+  }
+  NOTREACHED();
+  return true;
 }
 
 void URLRequestSlowDownloadJob::CheckDoneStatus() {
   if (should_finish_download_) {
+    VLOG(10) << __FUNCTION__ << " called w/ should_finish_download_ set.";
     DCHECK(NULL != buffer_);
-    // Send the rest of the data.
-    DCHECK_GT(buffer_size_, kSecondDownloadSize);
-    for (int i = 0; i < kSecondDownloadSize; ++i) {
-      buffer_->data()[i] = '*';
-    }
+    int bytes_written = 0;
+    ReadStatus status = FillBufferHelper(buffer_, buffer_size_, &bytes_written);
+    DCHECK_EQ(BUFFER_FILLED, status);
     SetStatus(net::URLRequestStatus());
-    NotifyReadComplete(kSecondDownloadSize);  // Deletes this.
+    NotifyReadComplete(bytes_written);
   } else {
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
