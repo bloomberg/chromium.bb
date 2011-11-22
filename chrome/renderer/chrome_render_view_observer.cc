@@ -5,7 +5,7 @@
 #include "chrome/renderer/chrome_render_view_observer.h"
 
 #include "base/bind.h"
-#include "base/callback_old.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
@@ -1005,7 +1005,8 @@ bool ChromeRenderViewObserver::DownloadFavicon(int id,
       new ImageResourceFetcher(
           image_url, render_view()->GetWebView()->mainFrame(), id, image_size,
           WebURLRequest::TargetIsFavicon,
-          NewCallback(this, &ChromeRenderViewObserver::DidDownloadFavicon))));
+          base::Bind(&ChromeRenderViewObserver::DidDownloadFavicon,
+                     base::Unretained(this)))));
   return true;
 }
 

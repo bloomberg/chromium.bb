@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/extensions/extension_helper.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_value_serializer.h"
 #include "base/lazy_instance.h"
@@ -106,7 +108,8 @@ bool ExtensionHelper::InstallWebApplicationUsingDefinitionFile(
   app_definition_fetcher_.reset(new ResourceFetcher(
       pending_app_info_->manifest_url, render_view()->GetWebView()->mainFrame(),
       WebURLRequest::TargetIsSubresource,
-      NewCallback(this, &ExtensionHelper::DidDownloadApplicationDefinition)));
+      base::Bind(&ExtensionHelper::DidDownloadApplicationDefinition,
+                 base::Unretained(this))));
   return true;
 }
 
@@ -309,8 +312,9 @@ void ExtensionHelper::DidDownloadApplicationDefinition(
               static_cast<int>(i),
               pending_app_info_->icons[i].width,
               WebURLRequest::TargetIsFavicon,
-              NewCallback(
-                  this, &ExtensionHelper::DidDownloadApplicationIcon))));
+              base::Bind(
+                  &ExtensionHelper::DidDownloadApplicationIcon,
+                  base::Unretained(this)))));
     }
   } else {
     Send(new ExtensionHostMsg_InstallApplication(routing_id(), *app_info));

@@ -6,6 +6,7 @@
 
 #include "webkit/glue/weburlloader_impl.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -348,7 +349,7 @@ void WebURLLoaderImpl::Context::Start(
     } else {
       AddRef();  // Balanced in OnCompletedRequest
       MessageLoop::current()->PostTask(FROM_HERE,
-          NewRunnableMethod(this, &Context::HandleDataURL));
+          base::Bind(&Context::HandleDataURL, this));
     }
     return;
   }

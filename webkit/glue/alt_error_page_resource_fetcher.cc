@@ -4,7 +4,8 @@
 
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "webkit/glue/resource_fetcher.h"
 
 using WebKit::WebFrame;
@@ -28,7 +29,8 @@ AltErrorPageResourceFetcher::AltErrorPageResourceFetcher(
       original_error_(original_error) {
   fetcher_.reset(new ResourceFetcherWithTimeout(
       url, frame, WebURLRequest::TargetIsMainFrame, kDownloadTimeoutSec,
-      NewCallback(this, &AltErrorPageResourceFetcher::OnURLFetchComplete)));
+      base::Bind(&AltErrorPageResourceFetcher::OnURLFetchComplete,
+                 base::Unretained(this))));
 }
 
 AltErrorPageResourceFetcher::~AltErrorPageResourceFetcher() {

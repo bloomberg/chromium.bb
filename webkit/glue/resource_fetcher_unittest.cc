@@ -4,7 +4,8 @@
 
 #include "webkit/glue/resource_fetcher.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/timer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -42,8 +43,9 @@ class FetcherDelegate {
 
   virtual ~FetcherDelegate() {}
 
-  ResourceFetcher::Callback* NewCallback() {
-    return ::NewCallback(this, &FetcherDelegate::OnURLFetchComplete);
+  ResourceFetcher::Callback NewCallback() {
+    return base::Bind(&FetcherDelegate::OnURLFetchComplete,
+                      base::Unretained(this));
   }
 
   virtual void OnURLFetchComplete(const WebURLResponse& response,

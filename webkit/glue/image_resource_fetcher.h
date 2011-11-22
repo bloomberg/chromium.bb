@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_IMAGE_RESOURCE_FETCHER_H_
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "webkit/glue/resource_fetcher.h"
 
 class SkBitmap;
@@ -18,14 +18,14 @@ namespace webkit_glue {
 // is used to download the favicon and images for web apps.
 class ImageResourceFetcher {
  public:
-  typedef Callback2<ImageResourceFetcher*, const SkBitmap&>::Type Callback;
+  typedef base::Callback<void(ImageResourceFetcher*, const SkBitmap&)> Callback;
 
   ImageResourceFetcher(const GURL& image_url,
                        WebKit::WebFrame* frame,
                        int id,
                        int image_size,
                        WebKit::WebURLRequest::TargetType target_type,
-                       Callback* callback);
+                       const Callback& callback);
 
   virtual ~ImageResourceFetcher();
 
@@ -40,7 +40,7 @@ class ImageResourceFetcher {
   void OnURLFetchComplete(const WebKit::WebURLResponse& response,
                           const std::string& data);
 
-  scoped_ptr<Callback> callback_;
+  Callback callback_;
 
   // Unique identifier for the request.
   const int id_;

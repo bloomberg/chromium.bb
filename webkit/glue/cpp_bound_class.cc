@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
@@ -44,11 +45,11 @@ class CppVariantPropertyCallback : public CppBoundClass::PropertyCallback {
 
 class GetterPropertyCallback : public CppBoundClass::PropertyCallback {
 public:
-  GetterPropertyCallback(CppBoundClass::GetterCallback* callback)
+  GetterPropertyCallback(const CppBoundClass::GetterCallback& callback)
       : callback_(callback) { }
 
   virtual bool GetValue(CppVariant* value) {
-    callback_->Run(value);
+    callback_.Run(value);
     return true;
   }
 
@@ -57,7 +58,7 @@ public:
   }
 
 private:
-  scoped_ptr<CppBoundClass::GetterCallback> callback_;
+  CppBoundClass::GetterCallback callback_;
 };
 
 }
@@ -178,13 +179,7 @@ CppBoundClass::CppBoundClass()
 }
 
 CppBoundClass::~CppBoundClass() {
-  for (MethodList::iterator i = methods_.begin(); i != methods_.end(); ++i)
-    delete i->second;
-
-  for (PropertyList::iterator i = properties_.begin(); i != properties_.end();
-      ++i) {
-    delete i->second;
-  }
+  STLDeleteValues(&properties_);
 
   // Unregister ourselves if we were bound to a frame.
   if (bound_to_frame_)
@@ -200,20 +195,20 @@ bool CppBoundClass::HasProperty(NPIdentifier ident) const {
 }
 
 bool CppBoundClass::Invoke(NPIdentifier ident,
-                              const NPVariant* args,
-                              size_t arg_count,
-                              NPVariant* result) {
+                           const NPVariant* args,
+                           size_t arg_count,
+                           NPVariant* result) {
   MethodList::const_iterator method = methods_.find(ident);
-  Callback* callback;
+  Callback callback;
   if (method == methods_.end()) {
-    if (fallback_callback_.get()) {
-      callback = fallback_callback_.get();
+    if (!fallback_callback_.is_null()) {
+      callback = fallback_callback_;
     } else {
       VOID_TO_NPVARIANT(*result);
       return false;
     }
   } else {
-    callback = (*method).second;
+    callback = method->second;
   }
 
   // Build a CppArgumentList argument vector from the NPVariants coming in.
@@ -222,7 +217,7 @@ bool CppBoundClass::Invoke(NPIdentifier ident,
     cpp_args[i].Set(args[i]);
 
   CppVariant cpp_result;
-  callback->Run(cpp_args, &cpp_result);
+  callback.Run(cpp_args, &cpp_result);
 
   cpp_result.CopyToNPVariant(result);
   return true;
@@ -253,23 +248,20 @@ bool CppBoundClass::SetProperty(NPIdentifier ident,
   return (*callback).second->SetValue(cpp_value);
 }
 
-void CppBoundClass::BindCallback(const std::string& name, Callback* callback) {
+void CppBoundClass::BindCallback(const std::string& name,
+                                 const Callback& callback) {
   NPIdentifier ident = WebBindings::getStringIdentifier(name.c_str());
-  MethodList::iterator old_callback = methods_.find(ident);
-  if (old_callback != methods_.end()) {
-    delete old_callback->second;
-    if (callback == NULL) {
-      methods_.erase(old_callback);
-      return;
-    }
+  if (callback.is_null()) {
+    methods_.erase(ident);
+    return;
   }
 
   methods_[ident] = callback;
 }
 
 void CppBoundClass::BindGetterCallback(const std::string& name,
-                                       GetterCallback* callback) {
-  PropertyCallback* property_callback = callback == NULL ?
+                                       const GetterCallback& callback) {
+  PropertyCallback* property_callback = callback.is_null() ?
       NULL : new GetterPropertyCallback(callback);
 
   BindProperty(name, property_callback);

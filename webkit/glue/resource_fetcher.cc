@@ -24,7 +24,7 @@ namespace webkit_glue {
 
 ResourceFetcher::ResourceFetcher(const GURL& url, WebFrame* frame,
                                  WebURLRequest::TargetType target_type,
-                                 Callback* callback)
+                                 const Callback& callback)
     : url_(url),
       target_type_(target_type),
       completed_(false),
@@ -58,14 +58,13 @@ void ResourceFetcher::Start(WebFrame* frame) {
 
 void ResourceFetcher::RunCallback(const WebURLResponse& response,
                                   const std::string& data) {
-  if (!callback_.get())
+  if (callback_.is_null())
     return;
 
-  // Take care to clear callback_ before running the callback as it may lead to
-  // our destruction.
-  scoped_ptr<Callback> callback;
-  callback.swap(callback_);
-  callback->Run(response, data);
+  // Take a reference to the callback as running the callback may lead to our
+  // destruction.
+  Callback callback = callback_;
+  callback.Run(response, data);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -125,7 +124,7 @@ void ResourceFetcher::didFail(WebURLLoader* loader, const WebURLError& error) {
 
 ResourceFetcherWithTimeout::ResourceFetcherWithTimeout(
     const GURL& url, WebFrame* frame, WebURLRequest::TargetType target_type,
-    int timeout_secs, Callback* callback)
+    int timeout_secs, const Callback& callback)
     : ResourceFetcher(url, frame, target_type, callback) {
   timeout_timer_.Start(FROM_HERE, TimeDelta::FromSeconds(timeout_secs), this,
                        &ResourceFetcherWithTimeout::TimeoutFired);

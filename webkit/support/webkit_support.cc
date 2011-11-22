@@ -6,6 +6,8 @@
 
 #include "base/at_exit.h"
 #include "base/base64.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/file_path.h"
@@ -205,26 +207,6 @@ class WebKitClientMessageLoopImpl
   }
  private:
   MessageLoop* message_loop_;
-};
-
-// An wrapper object for giving TaskAdaptor ref-countability,
-// which NewRunnableMethod() requires.
-class TaskAdaptorHolder : public CancelableTask {
- public:
-  explicit TaskAdaptorHolder(webkit_support::TaskAdaptor* adaptor)
-      : adaptor_(adaptor) {
-  }
-
-  virtual void Run() {
-    adaptor_->Run();
-  }
-
-  virtual void Cancel() {
-    adaptor_.reset();
-  }
-
- private:
-  scoped_ptr<webkit_support::TaskAdaptor> adaptor_;
 };
 
 webkit_support::GraphicsContext3DImplementation
@@ -428,12 +410,12 @@ WebDevToolsAgentClient::WebKitClientMessageLoop* CreateDevToolsMessageLoop() {
 
 void PostDelayedTask(void (*func)(void*), void* context, int64 delay_ms) {
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, NewRunnableFunction(func, context), delay_ms);
+      FROM_HERE, base::Bind(func, context), delay_ms);
 }
 
 void PostDelayedTask(TaskAdaptor* task, int64 delay_ms) {
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new TaskAdaptorHolder(task), delay_ms);
+      FROM_HERE, base::Bind(&TaskAdaptor::Run, base::Owned(task)), delay_ms);
 }
 
 // Wrappers for FilePath and file_util

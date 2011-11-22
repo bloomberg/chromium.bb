@@ -7,20 +7,11 @@
 
 #include "webkit/glue/webthread_impl.h"
 
-#include "base/task.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 
 namespace webkit_glue {
-
-class TaskAdapter : public Task {
-public:
-  TaskAdapter(WebKit::WebThread::Task* task) : task_(task) { }
-  virtual void Run() {
-    task_->run();
-  }
-private:
-  scoped_ptr<WebKit::WebThread::Task> task_;
-};
 
 WebThreadImpl::WebThreadImpl(const char* name)
     : thread_(new base::Thread(name)) {
@@ -28,13 +19,15 @@ WebThreadImpl::WebThreadImpl(const char* name)
 }
 
 void WebThreadImpl::postTask(Task* task) {
-  thread_->message_loop()->PostTask(FROM_HERE,
-                                    new TaskAdapter(task));
+  thread_->message_loop()->PostTask(
+      FROM_HERE, base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)));
 }
 void WebThreadImpl::postDelayedTask(
     Task* task, long long delay_ms) {
   thread_->message_loop()->PostDelayedTask(
-      FROM_HERE, new TaskAdapter(task), delay_ms);
+      FROM_HERE,
+      base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)),
+      delay_ms);
 }
 
 WebThreadImpl::~WebThreadImpl() {
@@ -47,12 +40,16 @@ WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
 }
 
 void WebThreadImplForMessageLoop::postTask(Task* task) {
-  message_loop_->PostTask(FROM_HERE, new TaskAdapter(task));
+  message_loop_->PostTask(
+      FROM_HERE, base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)));
 }
 
 void WebThreadImplForMessageLoop::postDelayedTask(
     Task* task, long long delay_ms) {
-  message_loop_->PostDelayedTask(FROM_HERE, new TaskAdapter(task), delay_ms);
+  message_loop_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)),
+      delay_ms);
 }
 
 WebThreadImplForMessageLoop::~WebThreadImplForMessageLoop() {

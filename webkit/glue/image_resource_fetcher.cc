@@ -4,7 +4,8 @@
 
 #include "webkit/glue/image_resource_fetcher.h"
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "ui/gfx/size.h"
 #include "webkit/glue/image_decoder.h"
@@ -22,14 +23,15 @@ ImageResourceFetcher::ImageResourceFetcher(
     int id,
     int image_size,
     WebURLRequest::TargetType target_type,
-    Callback* callback)
+    const Callback& callback)
     : callback_(callback),
       id_(id),
       image_url_(image_url),
       image_size_(image_size) {
   fetcher_.reset(new ResourceFetcher(
       image_url, frame, target_type,
-      NewCallback(this, &ImageResourceFetcher::OnURLFetchComplete)));
+      base::Bind(&ImageResourceFetcher::OnURLFetchComplete,
+                 base::Unretained(this))));
 }
 
 ImageResourceFetcher::~ImageResourceFetcher() {
@@ -51,11 +53,10 @@ void ImageResourceFetcher::OnURLFetchComplete(
     // response as an image. The delegate will see a null image, indicating
     // that an error occurred.
 
-  // Take care to clear callback_ before running the callback as it may lead to
-  // our destruction.
-  scoped_ptr<Callback> callback;
-  callback.swap(callback_);
-  callback->Run(this, bitmap);
+  // Take a reference to the callback as running the callback may lead to our
+  // destruction.
+  Callback callback = callback_;
+  callback.Run(this, bitmap);
 }
 
 }  // namespace webkit_glue
