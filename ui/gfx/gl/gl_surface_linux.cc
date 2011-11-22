@@ -6,15 +6,21 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#if !defined(USE_WAYLAND)
 #include "third_party/mesa/MesaLib/include/GL/osmesa.h"
+#endif
 #include "ui/gfx/gl/gl_bindings.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface_egl.h"
+#if !defined(USE_WAYLAND)
 #include "ui/gfx/gl/gl_surface_glx.h"
 #include "ui/gfx/gl/gl_surface_osmesa.h"
+#endif
 #include "ui/gfx/gl/gl_surface_stub.h"
 
 namespace gfx {
+
+#if !defined(USE_WAYLAND)
 
 namespace {
 Display* g_osmesa_display;
@@ -48,17 +54,14 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceOSMesa);
 };
 
+#endif //  !USE_WAYLAND
+
 bool GLSurface::InitializeOneOffInternal() {
   switch (GetGLImplementation()) {
+#if !defined(USE_WAYLAND)
     case kGLImplementationDesktopGL:
       if (!GLSurfaceGLX::InitializeOneOff()) {
         LOG(ERROR) << "GLSurfaceGLX::InitializeOneOff failed.";
-        return false;
-      }
-      break;
-    case kGLImplementationEGLGLES2:
-      if (!GLSurfaceEGL::InitializeOneOff()) {
-        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
         return false;
       }
       break;
@@ -68,12 +71,21 @@ bool GLSurface::InitializeOneOffInternal() {
         return false;
       }
       break;
+#endif
+    case kGLImplementationEGLGLES2:
+      if (!GLSurfaceEGL::InitializeOneOff()) {
+        LOG(ERROR) << "GLSurfaceEGL::InitializeOneOff failed.";
+        return false;
+      }
+      break;
     default:
       break;
   }
 
   return true;
 }
+
+#if !defined(USE_WAYLAND)
 
 NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
     gfx::PluginWindowHandle window)
@@ -231,6 +243,8 @@ bool NativeViewGLSurfaceOSMesa::UpdateSize() {
   return true;
 }
 
+#endif //  !USE_WAYLAND
+
 scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     bool software,
     gfx::PluginWindowHandle window) {
@@ -238,6 +252,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     return NULL;
 
   switch (GetGLImplementation()) {
+#if !defined(USE_WAYLAND)
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(
           new NativeViewGLSurfaceOSMesa(window));
@@ -246,17 +261,18 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 
       return surface;
     }
-    case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(
-          false, window));
+    case kGLImplementationDesktopGL: {
+      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceGLX(
+          window));
       if (!surface->Initialize())
         return NULL;
 
       return surface;
     }
-    case kGLImplementationDesktopGL: {
-      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceGLX(
-          window));
+#endif
+    case kGLImplementationEGLGLES2: {
+      scoped_refptr<GLSurface> surface(new NativeViewGLSurfaceEGL(
+          false, window));
       if (!surface->Initialize())
         return NULL;
 
@@ -277,6 +293,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
     return NULL;
 
   switch (GetGLImplementation()) {
+#if !defined(USE_WAYLAND)
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(new GLSurfaceOSMesa(OSMESA_RGBA,
                                                            size));
@@ -285,15 +302,16 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
 
       return surface;
     }
-    case kGLImplementationEGLGLES2: {
-      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceEGL(false, size));
+    case kGLImplementationDesktopGL: {
+      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceGLX(size));
       if (!surface->Initialize())
         return NULL;
 
       return surface;
     }
-    case kGLImplementationDesktopGL: {
-      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceGLX(size));
+#endif
+    case kGLImplementationEGLGLES2: {
+      scoped_refptr<GLSurface> surface(new PbufferGLSurfaceEGL(false, size));
       if (!surface->Initialize())
         return NULL;
 
