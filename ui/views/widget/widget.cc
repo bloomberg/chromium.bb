@@ -223,7 +223,7 @@ void Widget::SetPureViews(bool pure) {
 
 // static
 bool Widget::IsPureViews() {
-#if defined(USE_AURA) || defined(TOUCH_UI)
+#if defined(USE_AURA)
   return true;
 #else
   return use_pure_views;
