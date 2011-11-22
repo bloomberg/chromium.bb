@@ -131,7 +131,7 @@ panel_activate_item(struct panel *panel, struct panel_item *item)
 
 	if (pid)
 		return;
-	
+
 	if (execl(item->path, item->path, NULL) < 0) {
 		fprintf(stderr, "execl failed: %m\n");
 		exit(1);
@@ -392,7 +392,7 @@ unlock_dialog_keyboard_focus_handler(struct window *window,
 
 static void
 unlock_dialog_item_focus_handler(struct window *window,
-			 struct item *focus, void *data)
+				 struct item *focus, void *data)
 {
 	window_schedule_redraw(window);
 }
@@ -439,7 +439,7 @@ static void
 unlock_dialog_finish(struct task *task, uint32_t events)
 {
 	struct desktop *desktop =
-			container_of(task, struct desktop, unlock_task);
+		container_of(task, struct desktop, unlock_task);
 
 	desktop_shell_unlock(desktop->shell);
 	unlock_dialog_destroy(desktop->unlock_dialog);
