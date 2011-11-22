@@ -242,7 +242,7 @@
             '../build/linux/system.gyp:gtk',
           ],
         }],
-        ['touchui==1', {
+        ['ui_compositor_image_transport==1', {
           'include_dirs': [
             '<(DEPTH)/third_party/angle/include',
           ],

@@ -2787,7 +2787,8 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
   GLuint width = static_cast<GLuint>(c.width);
   GLuint height = static_cast<GLuint>(c.height);
   TRACE_EVENT2("gpu", "glResizeChromium", "width", width, "height", height);
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(TOUCH_UI)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && \
+    !defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // Make sure that we are done drawing to the back buffer before resizing.
   glFinish();
 #endif

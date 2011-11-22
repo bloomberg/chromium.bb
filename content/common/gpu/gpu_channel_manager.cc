@@ -62,7 +62,7 @@ bool GpuChannelManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
                         OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_VisibilityChanged, OnVisibilityChanged)
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuMsg_ResizeViewACK, OnResizeViewACK);
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)

@@ -171,7 +171,7 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
                         OnLogMessage)
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #endif
 
@@ -203,7 +203,7 @@ void GpuProcessHostUIShim::OnLogMessage(
   GpuDataManager::GetInstance()->AddLogMessage(dict);
 }
 
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI) || defined(OS_WIN)
+#if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
 
 void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
                                         int32 render_view_id,
@@ -230,7 +230,7 @@ void GpuProcessHostUIShim::OnResizeView(int32 renderer_id,
   // Resize the window synchronously. The GPU process must not issue GL
   // calls on the command buffer until the window is the size it expects it
   // to be.
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK)
   GdkWindow* window = reinterpret_cast<GdkWindow*>(
       gdk_xid_table_lookup(handle));
   if (window) {

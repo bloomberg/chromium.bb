@@ -97,7 +97,7 @@ void SendGpuProcessMessage(int renderer_id,
 
 }  // anonymous namespace
 
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK)
 // Used to put a lock on surfaces so that the window to which the GPU
 // process is drawing to doesn't disappear while it is drawing when
 // a tab is closed.
@@ -122,7 +122,7 @@ GpuProcessHost::SurfaceRef::~SurfaceRef() {
                           FROM_HERE,
                           new ReleasePermanentXIDDispatcher(surface_));
 }
-#endif  // defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#endif  // defined(TOOLKIT_USES_GTK)
 
 // This class creates a GPU thread (instead of a GPU process), when running
 // with --in-process-gpu or --single-process.
@@ -400,7 +400,7 @@ void GpuProcessHost::CreateViewCommandBuffer(
   DCHECK(CalledOnValidThread());
   linked_ptr<CreateCommandBufferCallback> wrapped_callback(callback);
 
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK)
   ViewID view_id(renderer_id, render_view_id);
 
   // There should only be one such command buffer (for the compositor).  In
@@ -413,13 +413,13 @@ void GpuProcessHost::CreateViewCommandBuffer(
     surface_ref = (*it).second;
   else
     surface_ref.reset(new SurfaceRef(compositing_surface));
-#endif  // defined(TOOLKIT_USES_GTK) && defined(TOUCH_UI)
+#endif  // defined(TOOLKIT_USES_GTK)
 
   if (compositing_surface != gfx::kNullPluginWindow &&
       Send(new GpuMsg_CreateViewCommandBuffer(
           compositing_surface, render_view_id, renderer_id, init_params))) {
     create_command_buffer_requests_.push(wrapped_callback);
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK)
     surface_refs_.insert(std::pair<ViewID, linked_ptr<SurfaceRef> >(
         view_id, surface_ref));
 #endif
@@ -472,12 +472,12 @@ void GpuProcessHost::OnCommandBufferCreated(const int32 route_id) {
 void GpuProcessHost::OnDestroyCommandBuffer(
     gfx::PluginWindowHandle window, int32 renderer_id,
     int32 render_view_id) {
-#if defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#if defined(TOOLKIT_USES_GTK)
   ViewID view_id(renderer_id, render_view_id);
   SurfaceRefMap::iterator it = surface_refs_.find(view_id);
   if (it != surface_refs_.end())
     surface_refs_.erase(it);
-#endif  // defined(TOOLKIT_USES_GTK) && !defined(TOUCH_UI)
+#endif  // defined(TOOLKIT_USES_GTK)
 }
 
 void GpuProcessHost::OnGraphicsInfoCollected(const content::GPUInfo& gpu_info) {
