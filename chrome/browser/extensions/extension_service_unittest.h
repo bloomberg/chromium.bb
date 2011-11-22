@@ -57,7 +57,7 @@ class ExtensionServiceTestBase : public testing::Test {
   FilePath data_dir_;
   // Owned by |profile_|.
   ExtensionService* service_;
-  size_t total_successes_;
+  size_t expected_extensions_count_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread webkit_thread_;
