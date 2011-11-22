@@ -52,7 +52,6 @@ ContentSettingImageView::ContentSettingImageView(
           ContentSettingImageModel::CreateContentSettingImageModel(
               content_type)),
       parent_(parent),
-      bubble_(NULL),
       animation_in_progress_(false),
       text_size_(0),
       visible_text_size_(0) {
@@ -60,8 +59,6 @@ ContentSettingImageView::ContentSettingImageView(
 }
 
 ContentSettingImageView::~ContentSettingImageView() {
-  if (bubble_)
-    bubble_->Close();
 }
 
 void ContentSettingImageView::UpdateFromTabContents(TabContents* tab_contents) {
@@ -131,28 +128,19 @@ void ContentSettingImageView::OnMouseReleased(const views::MouseEvent& event) {
   if (!tab_contents)
     return;
 
-  gfx::Rect screen_bounds(GetImageBounds());
-  gfx::Point origin(screen_bounds.origin());
-  views::View::ConvertPointToScreen(this, &origin);
-  screen_bounds.set_origin(origin);
   Profile* profile = parent_->browser()->profile();
-  ContentSettingBubbleContents* bubble_contents =
-      new ContentSettingBubbleContents(
-          ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-              parent_->browser(), tab_contents, profile,
-              content_setting_image_model_->get_content_settings_type()),
-          profile, tab_contents->tab_contents());
-  bubble_ = Bubble::Show(GetWidget(), screen_bounds,
-                         views::BubbleBorder::TOP_RIGHT,
-                         views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-                         bubble_contents, this);
-  bubble_contents->set_bubble(bubble_);
-}
-
-void ContentSettingImageView::VisibilityChanged(View* starting_from,
-                                                bool is_visible) {
-  if (!is_visible && bubble_)
-    bubble_->Close();
+  ContentSettingBubbleContents* bubble = new ContentSettingBubbleContents(
+      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+          parent_->browser(),
+          tab_contents,
+          profile,
+          content_setting_image_model_->get_content_settings_type()),
+      profile,
+      tab_contents->tab_contents(),
+      this,
+      views::BubbleBorder::TOP_RIGHT);
+  views::BubbleDelegateView::CreateBubble(bubble);
+  bubble->Show();
 }
 
 void ContentSettingImageView::OnPaint(gfx::Canvas* canvas) {
@@ -212,19 +200,6 @@ void ContentSettingImageView::OnPaintBackground(gfx::Canvas* canvas) {
                    SkIntToScalar(kEdgeThickness));
   canvas->GetSkCanvas()->drawRoundRect(color_rect, kBoxCornerRadius,
                                        kBoxCornerRadius, outer_paint);
-}
-
-void ContentSettingImageView::BubbleClosing(Bubble* bubble,
-                                            bool closed_by_escape) {
-  bubble_ = NULL;
-}
-
-bool ContentSettingImageView::CloseOnEscape() {
-  return true;
-}
-
-bool ContentSettingImageView::FadeInOnShow() {
-  return false;
 }
 
 void ContentSettingImageView::AnimateToState(double state) {

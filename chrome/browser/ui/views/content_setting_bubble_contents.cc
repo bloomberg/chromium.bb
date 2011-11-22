@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_source.h"
@@ -107,11 +106,13 @@ gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
 ContentSettingBubbleContents::ContentSettingBubbleContents(
     ContentSettingBubbleModel* content_setting_bubble_model,
     Profile* profile,
-    TabContents* tab_contents)
-    : content_setting_bubble_model_(content_setting_bubble_model),
+    TabContents* tab_contents,
+    views::View* anchor_view,
+    views::BubbleBorder::ArrowLocation arrow_location)
+    : BubbleDelegateView(anchor_view, arrow_location, SK_ColorWHITE),
+      content_setting_bubble_model_(content_setting_bubble_model),
       profile_(profile),
       tab_contents_(tab_contents),
-      bubble_(NULL),
       custom_link_(NULL),
       manage_link_(NULL),
       close_button_(NULL) {
@@ -132,62 +133,11 @@ gfx::Size ContentSettingBubbleContents::GetPreferredSize() {
   return preferred_size;
 }
 
-void ContentSettingBubbleContents::ViewHierarchyChanged(bool is_add,
-                                                        View* parent,
-                                                        View* child) {
-  if (is_add && (child == this))
-    InitControlLayout();
+gfx::Point ContentSettingBubbleContents::GetAnchorPoint() {
+  return BubbleDelegateView::GetAnchorPoint().Subtract(gfx::Point(0, 5));
 }
 
-void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
-                                                 const views::Event& event) {
-  if (sender == close_button_) {
-    bubble_->set_fade_away_on_close(true);
-    bubble_->Close();  // CAREFUL: This deletes us.
-    return;
-  }
-
-  for (RadioGroup::const_iterator i = radio_group_.begin();
-       i != radio_group_.end(); ++i) {
-    if (sender == *i) {
-      content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());
-      return;
-    }
-  }
-  NOTREACHED() << "unknown radio";
-}
-
-void ContentSettingBubbleContents::LinkClicked(views::Link* source,
-                                               int event_flags) {
-  if (source == custom_link_) {
-    content_setting_bubble_model_->OnCustomLinkClicked();
-    bubble_->set_fade_away_on_close(true);
-    bubble_->Close();  // CAREFUL: This deletes us.
-    return;
-  }
-  if (source == manage_link_) {
-    bubble_->set_fade_away_on_close(true);
-    content_setting_bubble_model_->OnManageLinkClicked();
-    // CAREFUL: Showing the settings window activates it, which deactivates the
-    // info bubble, which causes it to close, which deletes us.
-    return;
-  }
-
-  PopupLinks::const_iterator i(popup_links_.find(source));
-  DCHECK(i != popup_links_.end());
-  content_setting_bubble_model_->OnPopupClicked(i->second);
-}
-
-void ContentSettingBubbleContents::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
-  DCHECK(source == content::Source<TabContents>(tab_contents_));
-  tab_contents_ = NULL;
-}
-
-void ContentSettingBubbleContents::InitControlLayout() {
+void ContentSettingBubbleContents::Init() {
   using views::GridLayout;
 
   GridLayout* layout = new views::GridLayout(this);
@@ -339,4 +289,50 @@ void ContentSettingBubbleContents::InitControlLayout() {
   close_button_ = new views::NativeTextButton(
       this, l10n_util::GetStringUTF16(IDS_DONE));
   layout->AddView(close_button_);
+}
+
+void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
+                                                 const views::Event& event) {
+  if (sender == close_button_) {
+    StartFade(false);
+    return;
+  }
+
+  for (RadioGroup::const_iterator i = radio_group_.begin();
+       i != radio_group_.end(); ++i) {
+    if (sender == *i) {
+      content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());
+      return;
+    }
+  }
+  NOTREACHED() << "unknown radio";
+}
+
+void ContentSettingBubbleContents::LinkClicked(views::Link* source,
+                                               int event_flags) {
+  if (source == custom_link_) {
+    content_setting_bubble_model_->OnCustomLinkClicked();
+    StartFade(false);
+    return;
+  }
+  if (source == manage_link_) {
+    StartFade(false);
+    content_setting_bubble_model_->OnManageLinkClicked();
+    // CAREFUL: Showing the settings window activates it, which deactivates the
+    // info bubble, which causes it to close, which deletes us.
+    return;
+  }
+
+  PopupLinks::const_iterator i(popup_links_.find(source));
+  DCHECK(i != popup_links_.end());
+  content_setting_bubble_model_->OnPopupClicked(i->second);
+}
+
+void ContentSettingBubbleContents::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK(type == content::NOTIFICATION_TAB_CONTENTS_DESTROYED);
+  DCHECK(source == content::Source<TabContents>(tab_contents_));
+  tab_contents_ = NULL;
 }

@@ -13,6 +13,7 @@
 #include "chrome/common/content_settings_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 
@@ -26,7 +27,6 @@
 // get to a more comprehensive settings management dialog.  A few types have
 // more or fewer controls than this.
 
-class Bubble;
 class ContentSettingBubbleModel;
 class Profile;
 class TabContents;
@@ -36,32 +36,36 @@ class TextButton;
 class RadioButton;
 }
 
-class ContentSettingBubbleContents : public views::View,
+class ContentSettingBubbleContents : public views::BubbleDelegateView,
                                      public views::ButtonListener,
                                      public views::LinkListener,
                                      public content::NotificationObserver {
  public:
   ContentSettingBubbleContents(
       ContentSettingBubbleModel* content_setting_bubble_model,
-      Profile* profile, TabContents* tab_contents);
+      Profile* profile,
+      TabContents* tab_contents,
+      views::View* anchor_view,
+      views::BubbleBorder::ArrowLocation arrow_location);
   virtual ~ContentSettingBubbleContents();
 
-  // Sets |bubble_|, so we can close the bubble if needed.  The caller owns
-  // the bubble and must keep it alive.
-  void set_bubble(Bubble* bubble) { bubble_ = bubble; }
-
   virtual gfx::Size GetPreferredSize();
+
+  // views::BubbleDelegateView:
+  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+
+ protected:
+  // views::BubbleDelegateView:
+  virtual void Init() OVERRIDE;
 
  private:
   class Favicon;
 
   typedef std::map<views::Link*, int> PopupLinks;
 
-  // Overridden from views::View:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
@@ -69,10 +73,7 @@ class ContentSettingBubbleContents : public views::View,
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
-
-  // Creates the child views.
-  void InitControlLayout();
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Provides data for this bubble.
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model_;
@@ -85,9 +86,6 @@ class ContentSettingBubbleContents : public views::View,
 
   // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
   content::NotificationRegistrar registrar_;
-
-  // The Bubble holding us.
-  Bubble* bubble_;
 
   // Some of our controls, so we can tell what's been clicked when we get a
   // message.
