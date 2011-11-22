@@ -95,7 +95,6 @@
         'chrome_launcher.h',
         'chrome_launcher_unittest.cc',
         'function_stub_unittest.cc',
-        'renderer_glue.cc',
         'test/chrome_tab_mocks.h',
         'test/chrome_frame_test_utils.h',
         'test/chrome_frame_test_utils.cc',
@@ -563,7 +562,6 @@
         'test/win_event_receiver.h',
         '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_tab.h',
         'chrome_tab.idl',
-        'renderer_glue.cc',
         'test_utils.cc',
         'test_utils.h',
       ],
@@ -863,7 +861,6 @@
         'resources/tlb_resource.rc',
         'chrome_tab.rgs',
         'chrome_tab_version.rc',
-        'renderer_glue.cc',
         'resource.h',
       ],
       'conditions': [

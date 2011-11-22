@@ -2410,7 +2410,6 @@
           # glue, which refers to symbols defined in these files.
           # Hopefully this can be resolved with http://crbug.com/98755.
           'sources': [
-            '../content/renderer/renderer_glue.cc',
             '../content/common/socket_stream_dispatcher.cc',
           ]},
         ],
@@ -3036,7 +3035,6 @@
           # glue, which refers to symbols defined in these files.
           # Hopefully this can be resolved with http://crbug.com/98755.
           'sources': [
-            '../content/renderer/renderer_glue.cc',
             '../content/common/socket_stream_dispatcher.cc',
           ]},
         ],
