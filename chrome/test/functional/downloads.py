@@ -64,6 +64,8 @@ class DownloadsTest(pyauto.PyUITest):
   def _GetDangerousDownload(self):
     """Returns the file path for a dangerous download for this OS."""
     sub_path = os.path.join(self.DataDir(), 'downloads', 'dangerous')
+    if self.IsWin():
+      return os.path.join(sub_path, 'dangerous.com')
     return os.path.join(sub_path, 'dangerous.jar')
 
   def _EqualFileContents(self, file1, file2):
