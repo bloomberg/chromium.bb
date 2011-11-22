@@ -18,6 +18,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/views/layout/grid_layout.h"
+#include "views/controls/button/text_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
@@ -60,19 +61,31 @@ SadTabView::SadTabView(TabContents* tab_contents, Kind kind)
 SadTabView::~SadTabView() {}
 
 void SadTabView::LinkClicked(views::Link* source, int event_flags) {
-  if (tab_contents_ != NULL && source == help_link_) {
+  DCHECK(tab_contents_);
+  if (source == help_link_) {
     GURL help_url =
         google_util::AppendGoogleLocaleParam(GURL(kind_ == CRASHED ?
                                                   chrome::kCrashReasonURL :
                                                   chrome::kKillReasonURL));
-    tab_contents_->OpenURL(
-        help_url, GURL(), CURRENT_TAB, content::PAGE_TRANSITION_LINK);
-  } else if (tab_contents_ != NULL && source == feedback_link_) {
+    tab_contents_->OpenURL(OpenURLParams(
+        help_url,
+        GURL(),
+        CURRENT_TAB,
+        content::PAGE_TRANSITION_LINK,
+        false /* is renderer initiated */));
+  } else if (source == feedback_link_) {
     browser::ShowHtmlBugReportView(
         Browser::GetBrowserForController(&tab_contents_->controller(), NULL),
         l10n_util::GetStringUTF8(IDS_KILLED_TAB_FEEDBACK_MESSAGE),
         userfeedback::ChromeOsData_ChromeOsCategory_CRASH);
   }
+}
+
+void SadTabView::ButtonPressed(views::Button* source,
+                               const views::Event& event) {
+  DCHECK(tab_contents_);
+  DCHECK(source == reload_button_);
+  tab_contents_->controller().Reload(true);
 }
 
 void SadTabView::Layout() {
@@ -116,6 +129,14 @@ void SadTabView::ViewHierarchyChanged(bool is_add,
   layout->AddView(message_);
 
   if (tab_contents_) {
+    layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
+    reload_button_ = new views::TextButton(
+        this,
+        l10n_util::GetStringUTF16(IDS_SAD_TAB_RELOAD_LABEL));
+    reload_button_->set_border(new views::TextButtonNativeThemeBorder(
+        reload_button_));
+    layout->AddView(reload_button_);
+
     help_link_ = CreateLink(l10n_util::GetStringUTF16(
         (kind_ == CRASHED) ? IDS_SAD_TAB_HELP_LINK : IDS_LEARN_MORE));
 
@@ -177,3 +198,5 @@ views::Link* SadTabView::CreateLink(const string16& text) {
   link->set_listener(this);
   return link;
 }
+
+

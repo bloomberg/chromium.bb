@@ -7824,6 +7824,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SAD_TAB_HELP_LINK" desc="The link text displayed on the sad tab page pointing the users to a help article.">
         these suggestions
       </message>
+      <message name="IDS_SAD_TAB_RELOAD_LABEL" desc="Button label in the sad tab page for reloading a page.">
+        Reload
+      </message>
 
       <!-- Killed Tab Strings -->
       <!-- TODO(gspencer): These are temporary values until real
