@@ -36,6 +36,7 @@ EXTRA_ENV = {
   'SHARED'      : '0',    # Produce a shared library
   'STDINC'      : '1',    # Include standard headers (-nostdinc sets to 0)
   'STDLIB'      : '1',    # Include standard libraries (-nostdlib sets to 0)
+  'DEFAULTLIBS' : '1',    # Link with default libraries
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
   'STATIC'      : '${LIBMODE_NEWLIB ? 1 : 0}', # -static (on for newlib)
   'PIC'         : '0',    # Generate PIC
@@ -109,29 +110,29 @@ EXTRA_ENV = {
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
     '-l:crt1.x -l:crti.bc -l:crtbegin.bc ${ld_inputs} ' +
-    '--start-group ${LIBSTDCPP} -lc -lnacl --end-group ' +
-    '-l:pnacl_abi.o',
+    '${DEFAULTLIBS ? --start-group ${LIBSTDCPP} -lc -lnacl --end-group ' +
+    '-l:pnacl_abi.o}',
 
   # The next three are copied verbatim from nacl-gcc
   'LD_ARGS_glibc_static':
     '-l:crt1.o -l:crti.o -l:crtbeginT.o ' +
-    '${ld_inputs} ${LIBSTDCPP} -lc ' +
+    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
     # Replace with pnacl_abi.o
-    '--start-group -lgcc_eh -lc -lgcc --end-group ' +
+    '--start-group -lgcc_eh -lc -lgcc --end-group} ' +
     '-l:crtend.o -l:crtn.o',
 
   'LD_ARGS_glibc_shared':
     '-shared -l:crti.o -l:crtbeginS.o ' +
-    '${ld_inputs} ${LIBSTDCPP} -lc ' +
+    '${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
     # Replace with pnacl_abi.o
-    '-lgcc_s ' +
+    '-lgcc_s} ' +
     '-l:crtendS.o -l:crtn.o',
 
   'LD_ARGS_glibc_dynamic':
     '-l:crt1.o -l:crti.o ' +
-    '-l:crtbegin.o ${ld_inputs} ${LIBSTDCPP} -lc ' +
+    '-l:crtbegin.o ${ld_inputs} ${DEFAULTLIBS ? ${LIBSTDCPP} -lc ' +
     # Replace with pnacl_abi.o
-    '-lgcc_s ' +
+    '-lgcc_s} ' +
     '-l:crtend.o -l:crtn.o',
 
   'LIBSTDCPP'   : '${LANGUAGE==CXX ? -lstdc++ -lm }',
@@ -197,6 +198,13 @@ GCCPatterns = [
 
   ( '-nostdinc',       "env.set('STDINC', '0')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
+  ( '-nodefaultlibs',  "env.set('DEFAULTLIBS', '0')"),
+
+  # Flags to pass to native linker
+  ( '(-Wn,.*)',        AddLDFlag),
+
+  # Flags to pass to pnacl-translate
+  ( '(-Wt,.*)',        AddLDFlag),
 
   # We don't care about -fPIC, but pnacl-ld and pnacl-translate do.
   ( '-fPIC',           "env.set('PIC', '1')"),

@@ -21,6 +21,7 @@ EXTRA_ENV = {
   'STATIC'        : '0',
   'SHARED'        : '0',
   'STDLIB'        : '1',
+  'DEFAULTLIBS'   : '1',
 
   'INPUTS'        : '',
   'OUTPUT'        : '',
@@ -42,23 +43,23 @@ EXTRA_ENV = {
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
     '-l:crtbegin.o ${IRT_ABI_HACK_64 ? ${LD_ARGS_IRT_ABI_HACK_64} } ' +
-    '--start-group ${ld_inputs} -lgcc_eh -lgcc --end-group ' +
+    '${DEFAULTLIBS ? --start-group ${ld_inputs} -lgcc_eh -lgcc --end-group} ' +
     '-l:libcrt_platform.a -l:crtend.o',
 
   'LD_ARGS_glibc_static' :
      '-l:crt1.o -l:crti.o -l:crtbeginT.o ${ld_inputs} ' +
-     '${GLIBC_HACK} --start-group -lgcc -lgcc_eh -lc --end-group ' +
-     '-l:crtend.o -l:crtn.o',
+     '${DEFAULTLIBS ? ${GLIBC_HACK} --start-group -lgcc -lgcc_eh -lc ' +
+     '--end-group} -l:crtend.o -l:crtn.o',
 
   'LD_ARGS_glibc_shared' :
      '--eh-frame-hdr -shared -l:crti.o -l:crtbeginS.o ' +
-     '${ld_inputs} ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
-     '-lgcc -lgcc_s -l:crtendS.o -l:crtn.o',
+     '${ld_inputs} ${DEFAULTLIBS ? ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
+     '-lgcc -lgcc_s} -l:crtendS.o -l:crtn.o',
 
   'LD_ARGS_glibc_dynamic':
     '--eh-frame-hdr -l:crt1.o -l:crti.o -l:crtbegin.o ' +
-    '${ld_inputs} ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
-    '-lgcc -lgcc_s -l:crtend.o -l:crtn.o',
+    '${ld_inputs} ${DEFAULTLIBS ? ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
+    '-lgcc -lgcc_s} -l:crtend.o -l:crtn.o',
 
   # Because of ABI and symbol versioning issues, these still need to
   # be included directly in the native link.
@@ -135,6 +136,7 @@ TranslatorPatterns = [
   ( '-static',         "env.set('STATIC', '1')"),
   ( '-shared',         "env.set('SHARED', '1')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
+  ( '-nodefaultlibs',  "env.set('DEFAULTLIBS', '0')"),
 
   ( '-rpath-link=(.+)', "env.append('LD_FLAGS', '-L'+$0)"),
 

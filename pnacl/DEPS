@@ -1,5 +1,5 @@
 vars = {
-  "pnacl_gcc_rev": "c9f6975237dced36869b08213af260e82aaa5a50",
+  "pnacl_gcc_rev": "b7d7566f2220c5257eba284c666039a52988ed46",
 
   "pnacl_base_readonly": "http://git.chromium.org/native_client",
   "pnacl_base_readwrite": "ssh://gerrit.chromium.org:29418/native_client",

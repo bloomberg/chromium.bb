@@ -193,6 +193,8 @@ def FindLib(arg, searchdirs, static_only):
   assert(IsLib(arg))
   assert(searchdirs is not None)
   name = arg[len('-l'):]
+  if not name:
+    driver_tools.Log.Fatal("-l missing library name")
   is_whole_name = (name[0] == ':')
 
   searchnames = []

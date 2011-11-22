@@ -29,6 +29,7 @@ EXTRA_ENV = {
   'PIC'      : '0',
   'STDLIB'   : '1',
   'RELOCATABLE': '0',
+  'SONAME'   : '',
 
   'STRIP_MODE' : 'none',
 
@@ -36,8 +37,16 @@ EXTRA_ENV = {
   'STRIP_FLAGS_all'  : '-s',
   'STRIP_FLAGS_debug': '-S',
 
+  'NOBITCODE': '0', # True if there are no bitcode objects in the link.
+                    # (native link only)
   'PNACL_TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!STDLIB ? -nostdlib} ' +
-                           '${STATIC ? -static}',
+                           '${STATIC ? -static} ' +
+                           # The intermediate bitcode file normally encodes
+                           # these flags. But if there is no bitcode, then
+                           # we must pass these flags manually to
+                           # pnacl-translate.
+                           '${NOBITCODE && SHARED ? -shared} ' +
+                           '${NOBITCODE && #SONAME ? -Wl,--soname=${SONAME}}',
 
   'OPT_FLAGS': '-O${OPT_LEVEL} ${OPT_STRIP_%STRIP_MODE%} ' +
                '-inline-threshold=${OPT_INLINE_THRESHOLD}',
@@ -55,7 +64,8 @@ EXTRA_ENV = {
 
   'LD_FLAGS'       : '-nostdlib ${@AddPrefix:-L:SEARCH_DIRS} ' +
                      '${SHARED ? -shared} ${STATIC ? -static} ' +
-                     '${RELOCATABLE ? -relocatable}',
+                     '${RELOCATABLE ? -relocatable} ' +
+                     '${#SONAME ? --soname=${SONAME}}',
 
   # Flags for native linking.
   # Only allowed if ALLOW_NATIVE is true.
@@ -158,10 +168,19 @@ LDPatterns = [
   # TODO(pdox): Allow setting an alternative _start symbol in bitcode
   ( ('(-e)','(.*)'),     AddToBothFlags),
 
+  # TODO(pdox): Support GNU versioning.
+  ( '(--version-script=.*)', ""),
+
+  # Flags to pass to the native linker.
+  ( '-Wn,(.*)', "env.append('LD_FLAGS_NATIVE', *($0.split(',')))"),
+  # Flags to pass to translate
+  ( '-Wt,(.*)', "env.append('PNACL_TRANSLATE_FLAGS', *($0.split(',')))"),
+
+
   ( ('(--section-start)','(.*)'), AddToNativeFlags),
 
-  ( '(-?-soname=.*)',             AddToBCLinkFlags),
-  ( ('(-?-soname)', '(.*)'),      AddToBCLinkFlags),
+  ( '-?-soname=(.*)',             "env.set('SONAME', $0)"),
+  ( ('-?-soname', '(.*)'),        "env.set('SONAME', $0)"),
 
   ( '(-M)',                       AddToBCLinkFlags),
   ( '(-t)',                       AddToBCLinkFlags),
@@ -270,20 +289,8 @@ def main(argv):
   # translator includes them automatically. Eventually, these will
   # be compiled to bitcode or replaced by bitcode stubs, and this list
   # can go away.
-  if env.getbool('LIBMODE_GLIBC'):
-    autofiles = ['crt1.o', 'crti.o', 'crtbegin.o', 'crtbeginS.o',
-                 'crtbeginT.o', 'crtend.o', 'crtendS.o', 'crtn.o',
-                 'libc_nonshared.a', 'libpthread_nonshared.a',
-                 'libc.a', 'libstdc++.a', 'libgcc.a', 'libgcc_eh.a',
-                 'libm.a']
-  else:
-    autofiles = ['pnacl_abi.o']
-  def native_filter(f):
-    for k in autofiles:
-      if f.endswith(k):
-        return False
-    return True
-  native_objects = filter(native_filter, native_objects)
+  if env.getbool('STDLIB'):
+    native_objects = FilterStdLibs(native_objects)
 
   if env.getbool('SHARED'):
     bitcode_type = 'pso'
@@ -315,6 +322,7 @@ def main(argv):
     elif env.getone('STRIP_MODE') != 'none':
       chain.add(DoStrip, 'stripped.' + bitcode_type)
   else:
+    env.set('NOBITCODE', '1')
     chain = DriverChain('', output, tng)
 
   # If -arch is also specified, invoke pnacl-translate afterwards.
@@ -324,6 +332,19 @@ def main(argv):
 
   chain.run()
   return 0
+
+def FilterStdLibs(objs):
+  if env.getbool('LIBMODE_GLIBC'):
+    startfiles = ['crt1.o', 'crti.o', 'crtbegin.o', 'crtbeginS.o',
+                  'crtbeginT.o', 'crtend.o', 'crtendS.o', 'crtn.o']
+    defaultlibs = ['libc_nonshared.a', 'libpthread_nonshared.a',
+                   'libc.a', 'libstdc++.a', 'libgcc.a', 'libgcc_eh.a',
+                   'libm.a']
+  else:
+    startfiles = ['pnacl_abi.o']
+    defaultlibs = []
+  filterobjs = startfiles + defaultlibs
+  return [f for f in objs if pathtools.split(f)[1] not in filterobjs]
 
 def SplitLinkLine(inputs):
   """ Pull native objects (.o, .a) out of the input list.

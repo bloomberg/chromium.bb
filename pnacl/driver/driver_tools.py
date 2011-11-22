@@ -493,12 +493,12 @@ class env(object):
       (is_cond_true,i) = cls.eval_bool_expr(s, pos, ['?']+terminators)
       assert(i < len(s) and s[i] == '?')
 
-      (if_true_expr, j) = cls.eval_expr(s, i+1, [':']+terminators)
+      (if_true_expr, j) = cls.eval_expr(s, i+1, [' : ']+terminators)
       if j == len(s):
         return ('', j) # Error one level up
 
-      if s[j] == ':':
-        (if_false_expr,j) = cls.eval_expr(s, j+1, terminators)
+      if s[j:j+3] == ' : ':
+        (if_false_expr,j) = cls.eval_expr(s, j+3, terminators)
         if j == len(s):
           # This is an error condition one level up.
           return ('', j)

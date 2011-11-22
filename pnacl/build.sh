@@ -813,15 +813,13 @@ libs() {
     # TODO(pdox): Why is this step needed?
     sysroot
     newlib
-  elif ${LIBMODE_GLIBC} ; then
-    glibc
-  fi
-
-  # NOTE: GLIBC mode steal the libraries which we build for NEWLIB mode
-  if ${LIBMODE_NEWLIB}; then
     build-compiler-rt
     libgcc_eh-all
     libstdcpp
+  elif ${LIBMODE_GLIBC} ; then
+    # NOTE: glibc() steals libc, libgcc, libstdc++ from the other toolchain
+    glibc
+    libgcc_eh-all
   fi
 }
 
@@ -896,11 +894,10 @@ glibc() {
 
   # Files in: lib/gcc/${NACL64_TARGET}/4.4.3/[32]/
   local LIBS1="crtbegin.o crtbeginT.o crtbeginS.o crtend.o crtendS.o \
-               libgcc_eh.a libgcc.a"
+               libgcc.a"
 
   # Files in: ${NACL64_TARGET}/lib[32]/
   local LIBS2="crt1.o crti.o crtn.o \
-               libgcc_s.so libgcc_s.so.1 \
                libstdc++.a libstdc++.so* \
                libc.a libc_nonshared.a \
                libc-2.9.so libc.so libc.so.* \
@@ -1626,7 +1623,9 @@ dragonegg-plugin() {
 
 libgcc_eh-all() {
   StepBanner "LIBGCC_EH (from GCC 4.6)"
-  libgcc_eh arm
+  if ! ${LIBMODE_GLIBC}; then
+    libgcc_eh arm
+  fi
   libgcc_eh x86-32
   libgcc_eh x86-64
 }
@@ -1635,6 +1634,10 @@ libgcc_eh() {
   local arch=$1
   local objdir="${TC_BUILD}/libgcc_eh-${arch}"
   local subdir="${objdir}/fake-target/libgcc"
+  local installdir="${INSTALL_LIB}-${arch}"
+  mkdir -p "${installdir}"
+  rm -rf "${installdir}"/libgcc_s*
+  rm -rf "${installdir}"/libgcc_eh*
   rm -rf "${objdir}"
 
   # Setup fake gcc build directory.
@@ -1648,6 +1651,7 @@ libgcc_eh() {
   mkdir -p "${subdir}"
   spushd "${subdir}"
   local flags="-arch ${arch} --pnacl-bias=${arch} --pnacl-allow-translate"
+  flags+=" --pnacl-allow-native"
   flags+=" -DENABLE_RUNTIME_CHECKING"
   StepBanner "LIBGCC_EH" "Configure ${arch}"
   RunWithLog libgcc.${arch}.configure \
@@ -1674,11 +1678,18 @@ libgcc_eh() {
   StepBanner "LIBGCC_EH" "Make ${arch}"
   RunWithLog libgcc.${arch}.make \
     make libgcc_eh.a
+  if ${LIBMODE_GLIBC}; then
+    RunWithLog libgcc_s.${arch}.make \
+      make disable_libgcc_base=yes libgcc_s.so
+  fi
   spopd
 
   StepBanner "LIBGCC_EH" "Install ${arch}"
-  mkdir -p "${INSTALL_LIB}-${arch}"
-  cp ${subdir}/libgcc_eh.a "${INSTALL_LIB}-${arch}"
+  cp ${subdir}/libgcc_eh.a "${installdir}"
+  if ${LIBMODE_GLIBC}; then
+    cp ${subdir}/libgcc_s.so.1 "${installdir}"
+    ln -s libgcc_s.so.1 "${installdir}"/libgcc_s.so
+  fi
 }
 
 #+ sysroot               - setup initial sysroot
@@ -3029,12 +3040,18 @@ sdk-libs() {
 }
 
 sdk-irt-shim() {
-  # NOTE: this is using the nacl-gcc toolchain and hance cause
-  #       the pnacl TC to depend on it
+  # NOTE: This uses the nacl-gcc toolchain, causing
+  #       the pnacl toolchain to depend on it.
   spushd "${NACL_ROOT}"
-  ./scons platform=x86-64 naclsdk_validate=0 --verbose pnacl_irt_shim
-  lib=scons-out/nacl-x86-64/obj/src/untrusted/pnacl_irt_shim/libpnacl_irt_shim.a
-  cp ${lib} "${INSTALL_LIB_X8664}/"
+  RunWithLog "sdk.irt.shim" \
+    ./scons -j${PNACL_CONCURRENCY} \
+            platform=x86-64 \
+            naclsdk_validate=0 \
+            --verbose \
+            pnacl_irt_shim
+  local outdir="${SCONS_OUT}"/nacl-x86-64/obj/src/untrusted/pnacl_irt_shim
+  mkdir -p "${INSTALL_LIB_X8664}"
+  cp "${outdir}"/libpnacl_irt_shim.a "${INSTALL_LIB_X8664}"
   spopd
 }
 
