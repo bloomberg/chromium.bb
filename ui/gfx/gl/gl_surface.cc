@@ -90,12 +90,13 @@ bool GLSurface::Resize(const gfx::Size& size) {
   return false;
 }
 
-unsigned int GLSurface::GetBackingFrameBufferObject() {
-  return 0;
+std::string GLSurface::GetExtensions() {
+  DCHECK_EQ(GetCurrent(), this);
+  return std::string("");
 }
 
-bool GLSurface::SupportsPostSubBuffer() {
-  return false;
+unsigned int GLSurface::GetBackingFrameBufferObject() {
+  return 0;
 }
 
 bool GLSurface::PostSubBuffer(int x, int y, int width, int height) {

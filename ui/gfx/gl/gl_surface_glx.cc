@@ -73,10 +73,12 @@ bool GLSurfaceGLX::InitializeOneOff() {
   return true;
 }
 
+// static
 const char* GLSurfaceGLX::GetGLXExtensions() {
   return g_glx_extensions;
 }
 
+// static
 bool GLSurfaceGLX::HasGLXExtension(const char* name) {
   DCHECK(name);
   const char* c_extensions = GetGLXExtensions();
@@ -91,6 +93,7 @@ bool GLSurfaceGLX::HasGLXExtension(const char* name) {
   return extensions.find(delimited_name) != std::string::npos;
 }
 
+// static
 bool GLSurfaceGLX::IsCreateContextRobustnessSupported() {
   return g_glx_create_context_robustness_supported;
 }
@@ -140,6 +143,15 @@ gfx::Size NativeViewGLSurfaceGLX::GetSize() {
 
 void* NativeViewGLSurfaceGLX::GetHandle() {
   return reinterpret_cast<void*>(window_);
+}
+
+std::string NativeViewGLSurfaceGLX::GetExtensions() {
+  std::string extensions = GLSurface::GetExtensions();
+  if (g_GLX_MESA_copy_sub_buffer) {
+    extensions += extensions.empty() ? "" : " ";
+    extensions += "GL_CHROMIUM_post_sub_buffer";
+  }
+  return extensions;
 }
 
 void* NativeViewGLSurfaceGLX::GetConfig() {
@@ -203,13 +215,9 @@ void* NativeViewGLSurfaceGLX::GetConfig() {
   return config_;
 }
 
-bool NativeViewGLSurfaceGLX::SupportsPostSubBuffer() {
-  return g_GLX_MESA_copy_sub_buffer;
-}
-
 bool NativeViewGLSurfaceGLX::PostSubBuffer(
     int x, int y, int width, int height) {
-  DCHECK(SupportsPostSubBuffer());
+  DCHECK(g_GLX_MESA_copy_sub_buffer);
   glXCopySubBufferMESA(g_display, window_, x, y, width, height);
   return true;
 }

@@ -6,8 +6,8 @@
 #include <string>
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
-#include "ui/gfx/gl/gl_surface.h"
 
 namespace gpu {
 namespace gles2 {
@@ -97,7 +97,11 @@ bool FeatureInfo::Initialize(const DisallowedFeatures& disallowed_features,
 void FeatureInfo::AddFeatures(const char* desired_features) {
   // Figure out what extensions to turn on.
   ExtensionHelper ext(
-      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)),
+      // Some unittests execute without a context made current
+      // so fall back to glGetString
+      gfx::GLContext::GetCurrent() ?
+          gfx::GLContext::GetCurrent()->GetExtensions().c_str() :
+          reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)),
       desired_features);
 
   bool npot_ok = false;
@@ -359,9 +363,7 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
       enable_texture_half_float_linear;
   feature_flags_.npot_ok = npot_ok;
 
-  if (ext.Desire("GL_CHROMIUM_post_sub_buffer") &&
-      gfx::GLSurface::GetCurrent() &&
-      gfx::GLSurface::GetCurrent()->SupportsPostSubBuffer()) {
+  if (ext.HaveAndDesire("GL_CHROMIUM_post_sub_buffer")) {
     AddExtensionString("GL_CHROMIUM_post_sub_buffer");
   }
 }

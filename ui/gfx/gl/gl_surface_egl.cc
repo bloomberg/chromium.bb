@@ -273,8 +273,13 @@ EGLSurface NativeViewGLSurfaceEGL::GetHandle() {
   return surface_;
 }
 
-bool NativeViewGLSurfaceEGL::SupportsPostSubBuffer() {
-  return supports_post_sub_buffer_;
+std::string NativeViewGLSurfaceEGL::GetExtensions() {
+  std::string extensions = GLSurface::GetExtensions();
+  if (supports_post_sub_buffer_) {
+    extensions += extensions.empty() ? "" : " ";
+    extensions += "GL_CHROMIUM_post_sub_buffer";
+  }
+  return extensions;
 }
 
 bool NativeViewGLSurfaceEGL::PostSubBuffer(

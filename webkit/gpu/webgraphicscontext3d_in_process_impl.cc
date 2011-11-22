@@ -335,7 +335,7 @@ void WebGraphicsContext3DInProcessImpl::prepareTexture() {
 
 void WebGraphicsContext3DInProcessImpl::postSubBufferCHROMIUM(
     int x, int y, int width, int height) {
-  DCHECK(gl_surface_->SupportsPostSubBuffer());
+  DCHECK(gl_context_->HasExtension("GL_CHROMIUM_post_sub_buffer"));
   gl_surface_->PostSubBuffer(x, y, width, height);
 }
 

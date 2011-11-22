@@ -65,7 +65,7 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual bool SwapBuffers();
   virtual gfx::Size GetSize();
   virtual EGLSurface GetHandle();
-  virtual bool SupportsPostSubBuffer();
+  virtual std::string GetExtensions();
   virtual bool PostSubBuffer(int x, int y, int width, int height);
 
  private:

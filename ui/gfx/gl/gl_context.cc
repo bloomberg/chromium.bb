@@ -39,8 +39,20 @@ GLContext::~GLContext() {
 
 std::string GLContext::GetExtensions() {
   DCHECK(IsCurrent(NULL));
-  const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
-  return std::string(ext ? ext : "");
+
+  std::string extensions;
+  if (GLSurface::GetCurrent()) {
+    extensions = GLSurface::GetCurrent()->GetExtensions();
+  }
+
+  const char* gl_ext = reinterpret_cast<const char*>(
+      glGetString(GL_EXTENSIONS));
+  if (gl_ext) {
+    extensions += (!extensions.empty() && gl_ext[0]) ? " " : "";
+    extensions += gl_ext;
+  }
+
+  return extensions;
 }
 
 bool GLContext::HasExtension(const char* name) {

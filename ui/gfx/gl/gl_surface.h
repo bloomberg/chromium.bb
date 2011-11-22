@@ -46,12 +46,15 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Get the underlying platform specific surface "handle".
   virtual void* GetHandle() = 0;
 
+  // Returns space separated list of surface specific extensions.
+  // The surface must be current.
+  virtual std::string GetExtensions();
+
   // Returns the internal frame buffer object name if the surface is backed by
   // FBO. Otherwise returns 0.
   virtual unsigned int GetBackingFrameBufferObject();
 
   // Copy part of the backbuffer to the frontbuffer.
-  virtual bool SupportsPostSubBuffer();
   virtual bool PostSubBuffer(int x, int y, int width, int height);
 
   static bool InitializeOneOff();
