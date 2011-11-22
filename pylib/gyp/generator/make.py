@@ -1669,6 +1669,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     outputs = []
     for copy in copies:
       for path in copy['files']:
+        # Absolutify() calls normpath, stripping trailing slashes.
         path = Sourceify(self.Absolutify(path))
         filename = os.path.split(path)[1]
         output = Sourceify(self.Absolutify(os.path.join(copy['destination'],
@@ -2575,7 +2576,9 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
     """Convert a subdirectory-relative path into a base-relative path.
     Skips over paths that contain variables."""
     if '$(' in path:
-      return path
+      # path is no existing file in this case, but calling normpath is still
+      # important for trimming trailing slashes.
+      return os.path.normpath(path)
     return os.path.normpath(os.path.join(self.path, path))
 
 
