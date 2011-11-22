@@ -208,8 +208,9 @@ evdev_flush_motion(struct wl_input_device *device, uint32_t time,
 		   struct evdev_motion_accumulator *accum)
 {
 	if (accum->type == EVDEV_RELATIVE_MOTION) {
-		notify_motion(device, time, accum->x + accum->dx,
-			      accum->y + accum->dy);
+		accum->dx += device->x;
+		accum->dy += device->y;
+		notify_motion(device, time, accum->dx, accum->dy);
 		accum->dx = accum->dy = 0;
 	}
 	if (accum->type == EVDEV_ABSOLUTE_MOTION)
@@ -233,15 +234,13 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	if (!ec->focus)
 		return 1;
 
-	memset(&accumulator, 0, sizeof accumulator);
-	accumulator.x = device->master->base.input_device.x;
-	accumulator.y = device->master->base.input_device.y;
-
 	len = read(fd, &ev, sizeof ev);
 	if (len < 0 || len % sizeof e[0] != 0) {
 		/* FIXME: call device_removed when errno is ENODEV. */;
 		return 1;
 	}
+
+	memset(&accumulator, 0, sizeof accumulator);
 
 	e = ev;
 	end = (void *) ev + len;
