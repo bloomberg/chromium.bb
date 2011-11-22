@@ -271,15 +271,27 @@ TEST_F(OutOfProcessPPAPITest, MAYBE_URLLoader) {
   RunTestViaHTTP("URLLoader");
 }
 
-
-
+// http://crbug.com/104832
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_PaintAggregator DISABLED_PaintAggregator
+#else
+#define MAYBE_PaintAggregator PaintAggregator
+#endif
 TEST_PPAPI_IN_PROCESS(PaintAggregator)
-TEST_PPAPI_OUT_OF_PROCESS(PaintAggregator)
+TEST_F(OutOfProcessPPAPITest, MAYBE_PaintAggregator) {
+  RunTest("PaintAggregator");
+}
 TEST_PPAPI_NACL_VIA_HTTP(PaintAggregator)
 
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_Scrollbar DISABLED_Scrollbar
+#else
+#define MAYBE_Scrollbar FAILS_Scrollbar
+#endif
 TEST_PPAPI_IN_PROCESS(Scrollbar)
 // http://crbug.com/89961
-TEST_F(OutOfProcessPPAPITest, FAILS_Scrollbar) {
+// http://crbug.com/104832
+TEST_F(OutOfProcessPPAPITest, MAYBE_Scrollbar) {
   RunTest("Scrollbar");
 }
 TEST_PPAPI_NACL_VIA_HTTP(Scrollbar)
