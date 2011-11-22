@@ -6,11 +6,11 @@
 
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 
-#include "gpu/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2.h"
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
-#include "gpu/GLES2/gl2ext.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
 
 #include <algorithm>
 #include <set>

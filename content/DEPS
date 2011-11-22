@@ -37,6 +37,7 @@ include_rules = [
   "+third_party/npapi/bindings",
   "+third_party/sqlite",
   "+third_party/tcmalloc",
+  "+third_party/khronos",
   # Allow inclusion of WebKit API files.
   "+third_party/WebKit/Source/WebKit/chromium",
 
