@@ -20,6 +20,7 @@
 
 namespace chromeos {
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::Return;
 
 class LoginTestBase : public CrosInProcessBrowserTest {
@@ -54,7 +55,11 @@ class LoginUserTest : public LoginTestBase {
     // TODO(nkostylev): Remove this once Aura build includes ScreenLocker.
 #if !defined(USE_AURA)
     EXPECT_CALL(*mock_screen_lock_library_, AddObserver(_))
-        .WillOnce(Return());
+       .Times(AtLeast(1))
+       .WillRepeatedly(Return());
+    EXPECT_CALL(*mock_screen_lock_library_, RemoveObserver(_))
+       .Times(AtLeast(1))
+       .WillRepeatedly(Return());
 #endif
   }
 
@@ -65,7 +70,7 @@ class LoginUserTest : public LoginTestBase {
   }
 };
 
-class LoginProfileTest : public LoginTestBase {
+class LoginProfileTest : public LoginUserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) {
     command_line->AppendSwitchASCII(switches::kLoginProfile, "user");
