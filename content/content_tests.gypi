@@ -176,7 +176,6 @@
         'browser/download/download_id_unittest.cc',
         'browser/download/download_status_updater_unittest.cc',
         'browser/download/save_package_unittest.cc',
-        'browser/gamepad/gamepad_provider_unittest.cc',
         'browser/geolocation/device_data_provider_unittest.cc',
         'browser/geolocation/geolocation_provider_unittest.cc',
         'browser/geolocation/gps_location_provider_unittest_linux.cc',
