@@ -248,23 +248,8 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-
-      if (xievent->sourceid == xievent->deviceid) {
-        // This event is coming from a slave device. Read the position from the
-        // valuators, because the events reported for a slave device seems to be
-        // behind the master device by one event. See more on crbug.com/103981.
-        // The position in the valuators is in the global screen coordinates.
-        // But it is necessary to convert it into the window's coordinates.
-        // Prepare to be revolted.
-        double x = xievent->valuators.values[0] - (xievent->root_x -
-                                                   xievent->event_x);
-        double y = xievent->valuators.values[1] - (xievent->root_y -
-                                                   xievent->event_y);
-        return gfx::Point(static_cast<int>(x), static_cast<int>(y));
-      } else {
-        return gfx::Point(static_cast<int>(xievent->event_x),
-                          static_cast<int>(xievent->event_y));
-      }
+      return gfx::Point(static_cast<int>(xievent->event_x),
+                        static_cast<int>(xievent->event_y));
     }
   }
   return gfx::Point();

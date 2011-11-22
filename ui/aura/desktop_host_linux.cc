@@ -281,8 +281,11 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
   XSelectInput(xdisplay_, xwindow_, event_mask);
   XFlush(xdisplay_);
 
+  // TODO(sadrul): reenable once 103981 is fixed.
+#if defined(TOUCH_UI)
   if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
+#endif
 }
 
 DesktopHostLinux::~DesktopHostLinux() {
