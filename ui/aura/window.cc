@@ -410,8 +410,8 @@ void Window::SetProperty(const char* name, void* value) {
     prop_map_[name] = value;
   else
     prop_map_.erase(name);
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnPropertyChanged(this, name, old));
+  FOR_EACH_OBSERVER(
+      WindowObserver, observers_, OnWindowPropertyChanged(this, name, old));
 }
 
 void Window::SetIntProperty(const char* name, int value) {

@@ -55,7 +55,7 @@ public:
   // aura::WindowObserver overrides:
   virtual void OnWindowParentChanged(
       aura::Window* window, aura::Window* parent) OVERRIDE;
-  virtual void OnPropertyChanged(
+  virtual void OnWindowPropertyChanged(
       aura::Window* window, const char* name, void* old) OVERRIDE;
   virtual void OnWindowVisibilityChanged(
       aura::Window* window, bool visible) OVERRIDE;

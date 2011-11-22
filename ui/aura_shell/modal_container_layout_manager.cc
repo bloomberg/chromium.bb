@@ -91,9 +91,9 @@ void ModalContainerLayoutManager::SetChildBounds(
 ////////////////////////////////////////////////////////////////////////////////
 // ModalContainerLayoutManager, aura::WindowObserver implementation:
 
-void ModalContainerLayoutManager::OnPropertyChanged(aura::Window* window,
-                                                    const char* key,
-                                                    void* old) {
+void ModalContainerLayoutManager::OnWindowPropertyChanged(aura::Window* window,
+                                                          const char* key,
+                                                          void* old) {
   if (key != aura::kModalKey)
     return;
 

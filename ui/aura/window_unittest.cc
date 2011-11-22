@@ -887,7 +887,7 @@ class WindowObserverTest : public WindowTest,
   }
 
   // Return a string representation of the arguments passed in
-  // OnPropertyChanged callback.
+  // OnWindowPropertyChanged callback.
   std::string PropertyChangeInfoAndClear() {
     std::string result(
         base::StringPrintf("name=%s old=%ld new=%ld",
@@ -920,9 +920,9 @@ class WindowObserverTest : public WindowTest,
     destroyed_count_++;
   }
 
-  virtual void OnPropertyChanged(Window* window,
-                                 const char* name,
-                                 void* old) OVERRIDE {
+  virtual void OnWindowPropertyChanged(Window* window,
+                                       const char* name,
+                                       void* old) OVERRIDE {
     property_name_ = std::string(name);
     old_property_value_ = reinterpret_cast<intptr_t>(old);
     new_property_value_ = reinterpret_cast<intptr_t>(window->GetProperty(name));

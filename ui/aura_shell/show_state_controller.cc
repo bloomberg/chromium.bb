@@ -22,9 +22,9 @@ ShowStateController::ShowStateController(
 ShowStateController::~ShowStateController() {
 }
 
-void ShowStateController::OnPropertyChanged(aura::Window* window,
-                                            const char* name,
-                                            void* old) {
+void ShowStateController::OnWindowPropertyChanged(aura::Window* window,
+                                                  const char* name,
+                                                  void* old) {
   if (name != aura::kShowStateKey)
     return;
   if (window->GetIntProperty(name) == ui::SHOW_STATE_NORMAL) {

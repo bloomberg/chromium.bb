@@ -51,9 +51,9 @@ void ToplevelLayoutManager::SetChildBounds(aura::Window* child,
   SetChildBoundsDirect(child, requested_bounds);
 }
 
-void ToplevelLayoutManager::OnPropertyChanged(aura::Window* window,
-                                              const char* name,
-                                              void* old) {
+void ToplevelLayoutManager::OnWindowPropertyChanged(aura::Window* window,
+                                                    const char* name,
+                                                    void* old) {
   if (name == aura::kShowStateKey)
     WindowStateChanged(window);
 }

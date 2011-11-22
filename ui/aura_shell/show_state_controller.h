@@ -27,9 +27,9 @@ public:
   virtual ~ShowStateController();
 
   // aura::WindowObserver overrides:
-  virtual void OnPropertyChanged(aura::Window* window,
-                                 const char* name,
-                                 void* old) OVERRIDE;
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const char* name,
+                                       void* old) OVERRIDE;
 
  private:
   // |workspace_maanger_| is owned by |WorkspaceController|.

@@ -57,9 +57,9 @@ void AlwaysOnTopController::OnWillRemoveWindow(aura::Window* child) {
   child->RemoveObserver(this);
 }
 
-void AlwaysOnTopController::OnPropertyChanged(aura::Window* window,
-                                              const char* name,
-                                              void* old) {
+void AlwaysOnTopController::OnWindowPropertyChanged(aura::Window* window,
+                                                    const char* name,
+                                                    void* old) {
   if (name == aura::kAlwaysOnTopKey) {
     DCHECK(window->type() == aura::WINDOW_TYPE_NORMAL ||
            window->type() == aura::WINDOW_TYPE_POPUP);

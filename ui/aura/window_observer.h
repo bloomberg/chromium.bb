@@ -29,7 +29,9 @@ class AURA_EXPORT WindowObserver {
 
   // Invoked when SetProperty() or SetIntProperty() is called on |window|.
   // |old| is the old property value.
-  virtual void OnPropertyChanged(Window* window, const char* key, void* old) {}
+  virtual void OnWindowPropertyChanged(Window* window,
+                                       const char* key,
+                                       void* old) {}
 
   // Invoked when SetVisible() is invoked on a window. |visible| is the
   // value supplied to SetVisible(). If |visible| is true, window->IsVisible()

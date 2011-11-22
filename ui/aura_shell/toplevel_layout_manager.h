@@ -41,9 +41,9 @@ class AURA_SHELL_EXPORT ToplevelLayoutManager : public aura::LayoutManager,
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
   // WindowObserver overrides:
-  virtual void OnPropertyChanged(aura::Window* window,
-                                 const char* name,
-                                 void* old) OVERRIDE;
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const char* name,
+                                       void* old) OVERRIDE;
 
  private:
   typedef std::set<aura::Window*> Windows;

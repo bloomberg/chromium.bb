@@ -51,9 +51,9 @@ class AURA_SHELL_EXPORT ModalContainerLayoutManager
                               const gfx::Rect& requested_bounds) OVERRIDE;
 
   // Overridden from aura::WindowObserver:
-  virtual void OnPropertyChanged(aura::Window* window,
-                                 const char* key,
-                                 void* old) OVERRIDE;
+  virtual void OnWindowPropertyChanged(aura::Window* window,
+                                       const char* key,
+                                       void* old) OVERRIDE;
 
   // Overridden from ui::LayerAnimationObserver:
   virtual void OnLayerAnimationEnded(
