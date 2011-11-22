@@ -41,7 +41,8 @@ class SystemSettingsProvider : public CrosSettingsProvider,
 
  private:
   // CrosSettingsProvider overrides.
-  virtual void DoSet(const std::string& path, base::Value* in_value) OVERRIDE;
+  virtual void DoSet(const std::string& path,
+                     const base::Value& in_value) OVERRIDE;
 
   // Gets timezone name.
   static string16 GetTimezoneName(const icu::TimeZone& timezone);

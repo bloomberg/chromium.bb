@@ -78,7 +78,21 @@ class NormalDelegate : public DummyDelegate<T> {
   virtual ~NormalDelegate() {}
  protected:
   virtual void compare_expected(T to_compare) {
-    EXPECT_EQ(this->expected_, to_compare);  // without this-> this won't build.
+    // without this-> this won't build.
+    EXPECT_EQ(this->expected_, to_compare);
+  }
+};
+
+// Specialized version for Value objects because these compare differently.
+class PolicyDelegate : public DummyDelegate<const base::Value*> {
+ public:
+  explicit PolicyDelegate(const base::Value* to_expect)
+      : DummyDelegate<const base::Value*>(to_expect) {}
+  virtual ~PolicyDelegate() {}
+ protected:
+  virtual void compare_expected(const base::Value* to_compare) {
+    // without this-> this won't build.
+    EXPECT_TRUE(this->expected_->Equals(to_compare));
   }
 };
 
@@ -105,7 +119,11 @@ class SignedSettingsTest : public testing::Test {
       : fake_email_("fakey@example.com"),
         fake_domain_("*@example.com"),
         fake_prop_(kAccountsPrefAllowGuest),
-        fake_value_("false"),
+        fake_signature_("false"),
+        fake_value_(false),
+        fake_value_signature_(
+            fake_signature_.c_str(),
+            fake_signature_.c_str() + fake_signature_.length()),
         message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE),
@@ -248,9 +266,9 @@ class SignedSettingsTest : public testing::Test {
   }
 
   void DoRetrieveProperty(const std::string& name,
-                          const std::string& value,
+                          const base::Value* value,
                           em::PolicyData* fake_pol) {
-    NormalDelegate<std::string> d(value);
+    PolicyDelegate d(value);
     d.expect_success();
     scoped_refptr<SignedSettings> s(
         SignedSettings::CreateRetrievePropertyOp(name, &d));
@@ -270,7 +288,9 @@ class SignedSettingsTest : public testing::Test {
   const std::string fake_email_;
   const std::string fake_domain_;
   const std::string fake_prop_;
-  const std::string fake_value_;
+  const std::string fake_signature_;
+  const base::FundamentalValue fake_value_;
+  const std::vector<uint8> fake_value_signature_;
   MockOwnershipService m_;
 
   ScopedTempDir tmpdir_;
@@ -497,42 +517,48 @@ TEST_F(SignedSettingsTest, StorePropertyFailed) {
 
 TEST_F(SignedSettingsTest, RetrieveProperty) {
   em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
-  DoRetrieveProperty(fake_prop_, fake_value_, &fake_pol);
+  base::FundamentalValue fake_value(false);
+  DoRetrieveProperty(fake_prop_, &fake_value, &fake_pol);
 }
 
 TEST_F(SignedSettingsTest, RetrieveOwnerProperty) {
   em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
   fake_pol.set_username(fake_email_);
-  DoRetrieveProperty(kDeviceOwner, fake_email_, &fake_pol);
+  base::StringValue fake_value(fake_email_);
+  DoRetrieveProperty(kDeviceOwner, &fake_value, &fake_pol);
 }
 
 TEST_F(SignedSettingsTest, ExplicitlyAllowNewUsers) {
   em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
   SetAllowNewUsers(true, &fake_pol);
-  DoRetrieveProperty(kAccountsPrefAllowNewUser, "true", &fake_pol);
+  base::FundamentalValue fake_value(true);
+  DoRetrieveProperty(kAccountsPrefAllowNewUser, &fake_value, &fake_pol);
 }
 
 TEST_F(SignedSettingsTest, ExplicitlyDisallowNewUsers) {
   std::vector<std::string> whitelist(1, fake_email_ + "m");
   em::PolicyData fake_pol = BuildPolicyData(whitelist);
   SetAllowNewUsers(false, &fake_pol);
-  DoRetrieveProperty(kAccountsPrefAllowNewUser, "false", &fake_pol);
+  base::FundamentalValue fake_value(false);
+  DoRetrieveProperty(kAccountsPrefAllowNewUser, &fake_value, &fake_pol);
 }
 
 TEST_F(SignedSettingsTest, ImplicitlyDisallowNewUsers) {
   std::vector<std::string> whitelist(1, fake_email_ + "m");
   em::PolicyData fake_pol = BuildPolicyData(whitelist);
-  DoRetrieveProperty(kAccountsPrefAllowNewUser, "false", &fake_pol);
+  base::FundamentalValue fake_value(false);
+  DoRetrieveProperty(kAccountsPrefAllowNewUser, &fake_value, &fake_pol);
 }
 
 TEST_F(SignedSettingsTest, AccidentallyDisallowNewUsers) {
   em::PolicyData fake_pol = BuildPolicyData(std::vector<std::string>());
   SetAllowNewUsers(false, &fake_pol);
-  DoRetrieveProperty(kAccountsPrefAllowNewUser, "true", &fake_pol);
+  base::FundamentalValue fake_value(true);
+  DoRetrieveProperty(kAccountsPrefAllowNewUser, &fake_value, &fake_pol);
 }
 
 TEST_F(SignedSettingsTest, RetrievePropertyNotFound) {
-  NormalDelegate<std::string> d(fake_value_);
+  PolicyDelegate d(&fake_value_);
   d.expect_failure(SignedSettings::NOT_FOUND);
   scoped_refptr<SignedSettings> s(
       SignedSettings::CreateRetrievePropertyOp("unknown_prop", &d));
@@ -551,7 +577,8 @@ TEST_F(SignedSettingsTest, RetrievePropertyNotFound) {
 }
 
 TEST_F(SignedSettingsTest, RetrievePolicyToRetrieveProperty) {
-  NormalDelegate<std::string> d(fake_value_);
+  base::FundamentalValue fake_value(false);
+  PolicyDelegate d(&fake_value);
   d.expect_success();
   scoped_refptr<SignedSettings> s(
       SignedSettings::CreateRetrievePropertyOp(fake_prop_, &d));
@@ -560,7 +587,7 @@ TEST_F(SignedSettingsTest, RetrievePolicyToRetrieveProperty) {
   std::string data = fake_pol.SerializeAsString();
   std::string signed_serialized;
   em::PolicyFetchResponse signed_policy = BuildProto(data,
-                                                     fake_value_,
+                                                     fake_signature_,
                                                      &signed_serialized);
   MockSessionManagerClient* client =
       mock_dbus_thread_manager_->mock_session_manager_client();
@@ -582,10 +609,8 @@ TEST_F(SignedSettingsTest, RetrievePolicyToRetrieveProperty) {
   EXPECT_CALL(m_, cached_policy())
       .WillOnce(ReturnRef(out_pol));
 
-  std::vector<uint8> fake_sig(fake_value_.c_str(),
-                              fake_value_.c_str() + fake_value_.length());
-  EXPECT_CALL(m_, StartVerifyAttempt(data, fake_sig, _))
-      .WillOnce(FinishKeyOp(fake_sig))
+  EXPECT_CALL(m_, StartVerifyAttempt(data, fake_value_signature_, _))
+      .WillOnce(FinishKeyOp(fake_value_signature_))
       .RetiresOnSaturation();
 
   s->Execute();
@@ -619,17 +644,14 @@ TEST_F(SignedSettingsTest, SignAndStorePolicy) {
   // Fake out a successful signing.
   std::string signed_serialized;
   em::PolicyFetchResponse signed_policy = BuildProto(data_serialized,
-                                                     fake_value_,
+                                                     fake_signature_,
                                                      &signed_serialized);
-  std::vector<uint8> fake_sig(fake_value_.c_str(),
-                              fake_value_.c_str() + fake_value_.length());
-
   MockSessionManagerClient* client =
       mock_dbus_thread_manager_->mock_session_manager_client();
   EXPECT_CALL(*client, StorePolicy(signed_serialized, _))
       .WillOnce(Store(true))
       .RetiresOnSaturation();
-  s->OnKeyOpComplete(OwnerManager::SUCCESS, fake_sig);
+  s->OnKeyOpComplete(OwnerManager::SUCCESS, fake_value_signature_);
   message_loop_.RunAllPending();
 }
 
@@ -641,7 +663,7 @@ TEST_F(SignedSettingsTest, StoreSignedPolicy) {
   std::string serialized = in_pol.SerializeAsString();
   std::string signed_serialized;
   em::PolicyFetchResponse signed_policy = BuildProto(serialized,
-                                                     fake_value_,
+                                                     fake_signature_,
                                                      &signed_serialized);
   scoped_refptr<SignedSettings> s(
       SignedSettings::CreateStorePolicyOp(&signed_policy, &d));
@@ -688,7 +710,7 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
   std::string serialized = in_pol.SerializeAsString();
   std::string signed_serialized;
   em::PolicyFetchResponse signed_policy = BuildProto(serialized,
-                                                     fake_value_,
+                                                     fake_signature_,
                                                      &signed_serialized);
   ProtoDelegate d(signed_policy);
   d.expect_success();
@@ -701,9 +723,7 @@ TEST_F(SignedSettingsTest, RetrievePolicy) {
       .RetiresOnSaturation();
 
   mock_service(s.get(), &m_);
-  std::vector<uint8> fake_sig(fake_value_.c_str(),
-                              fake_value_.c_str() + fake_value_.length());
-  EXPECT_CALL(m_, StartVerifyAttempt(serialized, fake_sig, _))
+  EXPECT_CALL(m_, StartVerifyAttempt(serialized, fake_value_signature_, _))
       .Times(1);
   em::PolicyData out_pol;
   EXPECT_CALL(m_, set_cached_policy(A<const em::PolicyData&>()))
@@ -771,7 +791,7 @@ TEST_F(SignedSettingsTest, RetrieveUnsignedPolicy) {
 TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
   std::string signed_serialized;
   em::PolicyFetchResponse signed_policy = BuildProto(fake_prop_,
-                                                     fake_value_,
+                                                     fake_signature_,
                                                      &signed_serialized);
   ProtoDelegate d(signed_policy);
   d.expect_failure(SignedSettings::BAD_SIGNATURE);
@@ -784,9 +804,7 @@ TEST_F(SignedSettingsTest, RetrieveMalsignedPolicy) {
       .RetiresOnSaturation();
 
   mock_service(s.get(), &m_);
-  std::vector<uint8> fake_sig(fake_value_.c_str(),
-                              fake_value_.c_str() + fake_value_.length());
-  EXPECT_CALL(m_, StartVerifyAttempt(fake_prop_, fake_sig, _))
+  EXPECT_CALL(m_, StartVerifyAttempt(fake_prop_, fake_value_signature_, _))
       .Times(1);
 
   s->Execute();

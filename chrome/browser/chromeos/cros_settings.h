@@ -35,8 +35,7 @@ class CrosSettings : public base::NonThreadSafe {
   static bool IsCrosSettings(const std::string& path);
 
   // Sets |in_value| to given |path| in cros settings.
-  // Note that this takes ownership of |in_value|.
-  void Set(const std::string& path, base::Value* in_value);
+  void Set(const std::string& path, const base::Value& in_value);
 
   // Fires system setting change notification.
   // TODO(pastarmovj): Consider to remove this function from the public
@@ -60,6 +59,10 @@ class CrosSettings : public base::NonThreadSafe {
   void SetDouble(const std::string& path, double in_value);
   void SetString(const std::string& path, const std::string& in_value);
 
+  // Convenience functions for manipulating lists.
+  void AppendToList(const std::string& path, const base::Value* value);
+  void RemoveFromList(const std::string& path, const base::Value* value);
+
   // These are convenience forms of Get().  The value will be retrieved
   // and the return value will be true if the path is valid and the value at
   // the end of the path can be returned in the form specified.
@@ -69,6 +72,11 @@ class CrosSettings : public base::NonThreadSafe {
   bool GetString(const std::string& path, std::string* out_value) const;
   bool GetList(const std::string& path,
                const base::ListValue** out_value) const;
+
+  // Helper function for the whitelist op. Implemented here because we will need
+  // this in a few places. The functions searches for |email| in the pref |path|
+  // It respects whitelists so foo@bar.baz will match *@bar.baz too.
+  bool FindEmailInList(const std::string& path, const std::string& email) const;
 
   // adding/removing of providers
   bool AddSettingsProvider(CrosSettingsProvider* provider);

@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
@@ -163,7 +164,7 @@ class StorePropertyOp : public SignedSettings,
                         public SignedSettings::Delegate<bool> {
  public:
   StorePropertyOp(const std::string& name,
-                  const std::string& value,
+                  const base::Value& value,
                   SignedSettings::Delegate<bool>* d);
   virtual ~StorePropertyOp();
   void Execute();
@@ -177,7 +178,7 @@ class StorePropertyOp : public SignedSettings,
 
  private:
   void SetInPolicy(const std::string& prop,
-                   const std::string& value,
+                   const base::Value& value,
                    em::PolicyData* poldata);
   // Always call d_->OnSettingOpCompleted() via this call.
   // It guarantees that the callback will not be triggered until _after_
@@ -186,7 +187,7 @@ class StorePropertyOp : public SignedSettings,
   void PerformCallback(SignedSettings::ReturnCode code, bool value);
 
   std::string name_;
-  std::string value_;
+  scoped_ptr<base::Value> value_;
   SignedSettings::Delegate<bool>* d_;
   em::PolicyFetchResponse to_store_;
   scoped_refptr<SignedSettings> store_op_;
@@ -195,29 +196,26 @@ class StorePropertyOp : public SignedSettings,
 class RetrievePropertyOp : public SignedSettings {
  public:
   RetrievePropertyOp(const std::string& name,
-                     SignedSettings::Delegate<std::string>* d);
+                     SignedSettings::Delegate<const base::Value*>* d);
   virtual ~RetrievePropertyOp();
   void Execute();
   void Fail(SignedSettings::ReturnCode code);
-  void Succeed(const std::string& value);
+  void Succeed(const base::Value* value);
   // Implementation of OwnerManager::Delegate::OnKeyOpComplete()
   void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
                        const std::vector<uint8>& payload);
 
  private:
-  static const char* kVeritas[];
-
-  std::string LookUpInPolicy(const std::string& prop);
+  base::Value* LookUpInPolicy(const std::string& prop);
   // Always call d_->OnSettingOpCompleted() via this call.
   // It guarantees that the callback will not be triggered until _after_
   // Execute() returns, which is implicitly assumed by SignedSettingsHelper
   // in some cases.
   void PerformCallback(SignedSettings::ReturnCode code,
-                       const std::string& value);
+                       const base::Value* value);
 
   std::string name_;
-  std::string value_;
-  SignedSettings::Delegate<std::string>* d_;
+  SignedSettings::Delegate<const base::Value*>* d_;
 };
 
 class StorePolicyOp : public SignedSettings {
@@ -295,7 +293,7 @@ SignedSettings* SignedSettings::CreateWhitelistOp(
 // static
 SignedSettings* SignedSettings::CreateStorePropertyOp(
     const std::string& name,
-    const std::string& value,
+    const base::Value& value,
     SignedSettings::Delegate<bool>* d) {
   DCHECK(d != NULL);
   return new StorePropertyOp(name, value, d);
@@ -304,7 +302,7 @@ SignedSettings* SignedSettings::CreateStorePropertyOp(
 // static
 SignedSettings* SignedSettings::CreateRetrievePropertyOp(
     const std::string& name,
-    SignedSettings::Delegate<std::string>* d) {
+    SignedSettings::Delegate<const base::Value*>* d) {
   DCHECK(d != NULL);
   return new RetrievePropertyOp(name, d);
 }
@@ -520,10 +518,10 @@ void WhitelistOp::PerformCallback(SignedSettings::ReturnCode code, bool value) {
 }
 
 StorePropertyOp::StorePropertyOp(const std::string& name,
-                                 const std::string& value,
+                                 const base::Value& value,
                                  SignedSettings::Delegate<bool>* d)
     : name_(name),
-      value_(value),
+      value_(value.DeepCopy()),
       d_(d),
       store_op_(NULL) {
 }
@@ -534,7 +532,7 @@ void StorePropertyOp::Execute() {
   if (service_->GetStatus(true) != OwnershipService::OWNERSHIP_TAKEN) {
     if (g_browser_process &&
         g_browser_process->local_state() &&
-        SignedSettingsTempStorage::Store(name_, value_,
+        SignedSettingsTempStorage::Store(name_, *value_,
                                          g_browser_process->local_state())) {
       Succeed(true);
       return;
@@ -547,7 +545,7 @@ void StorePropertyOp::Execute() {
   // Posts a task to the FILE thread to sign policy.
   em::PolicyData to_sign;
   to_sign.CheckTypeAndMergeFrom(service_->cached_policy());
-  SetInPolicy(name_, value_, &to_sign);
+  SetInPolicy(name_, *value_, &to_sign);
   to_store_.set_policy_data(to_sign.SerializeAsString());
   service_->StartSigningAttempt(to_store_.policy_data(), this);
 }
@@ -598,39 +596,72 @@ void StorePropertyOp::OnSettingsOpCompleted(ReturnCode code, bool value) {
 }
 
 void StorePropertyOp::SetInPolicy(const std::string& prop,
-                                  const std::string& value,
+                                  const base::Value& value,
                                   em::PolicyData* poldata) {
   em::ChromeDeviceSettingsProto pol;
   pol.ParseFromString(poldata->policy_value());
   if (prop == kAccountsPrefAllowNewUser) {
     em::AllowNewUsersProto* allow = pol.mutable_allow_new_users();
-    allow->set_allow_new_users(value == "true");
-
+    bool allow_value;
+    if (value.GetAsBoolean(&allow_value))
+      allow->set_allow_new_users(allow_value);
+    else
+      NOTREACHED();
   } else if (prop == kAccountsPrefAllowGuest) {
     em::GuestModeEnabledProto* guest = pol.mutable_guest_mode_enabled();
-    guest->set_guest_mode_enabled(value == "true");
-
+    bool guest_value;
+    if (value.GetAsBoolean(&guest_value))
+      guest->set_guest_mode_enabled(guest_value);
+    else
+      NOTREACHED();
   } else if (prop == kAccountsPrefShowUserNamesOnSignIn) {
     em::ShowUserNamesOnSigninProto* show = pol.mutable_show_user_names();
-    show->set_show_user_names(value == "true");
-
+    bool show_value;
+    if (value.GetAsBoolean(&show_value))
+      show->set_show_user_names(show_value);
+    else
+      NOTREACHED();
   } else if (prop == kSignedDataRoamingEnabled) {
     em::DataRoamingEnabledProto* roam = pol.mutable_data_roaming_enabled();
-    roam->set_data_roaming_enabled(value == "true");
-
+    bool roaming_value;
+    if (value.GetAsBoolean(&roaming_value))
+      roam->set_data_roaming_enabled(roaming_value);
+    else
+      NOTREACHED();
   } else if (prop == kSettingProxyEverywhere) {
     // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
-    bool success = pol.mutable_device_proxy_settings()->ParseFromString(value);
-    DCHECK(success);
-
+    std::string proxy_value;
+    if (value.GetAsString(&proxy_value)) {
+      bool success =
+          pol.mutable_device_proxy_settings()->ParseFromString(proxy_value);
+      DCHECK(success);
+    } else {
+      NOTREACHED();
+    }
   } else if (prop == kReleaseChannel) {
     em::ReleaseChannelProto* release_channel = pol.mutable_release_channel();
-    release_channel->set_release_channel(value);
-
+    std::string channel_value;
+    if (value.GetAsString(&channel_value))
+      release_channel->set_release_channel(channel_value);
+    else
+      NOTREACHED();
   } else if (prop == kStatsReportingPref) {
     em::MetricsEnabledProto* metrics = pol.mutable_metrics_enabled();
-    metrics->set_metrics_enabled(value == "true");
-
+    bool metrics_value;
+    if (value.GetAsBoolean(&metrics_value))
+      metrics->set_metrics_enabled(metrics_value);
+    else
+      NOTREACHED();
+  } else if (prop == kAccountsPrefUsers) {
+    em::UserWhitelistProto* whitelist_proto = pol.mutable_user_whitelist();
+    whitelist_proto->clear_user_whitelist();
+    const base::ListValue& users = static_cast<const base::ListValue&>(value);
+    for (base::ListValue::const_iterator i = users.begin();
+         i != users.end(); ++i) {
+      std::string email;
+      if ((*i)->GetAsString(&email))
+        whitelist_proto->add_user_whitelist(email.c_str());
+    }
   } else {
     NOTREACHED();
   }
@@ -642,11 +673,9 @@ void StorePropertyOp::PerformCallback(SignedSettings::ReturnCode code,
   d_->OnSettingsOpCompleted(code, value);
 }
 
-// static
-const char* RetrievePropertyOp::kVeritas[] = { "false", "true" };
-
-RetrievePropertyOp::RetrievePropertyOp(const std::string& name,
-                                       SignedSettings::Delegate<std::string>* d)
+RetrievePropertyOp::RetrievePropertyOp(
+    const std::string& name,
+    SignedSettings::Delegate<const base::Value*>* d)
     : name_(name),
       d_(d) {
 }
@@ -654,6 +683,7 @@ RetrievePropertyOp::RetrievePropertyOp(const std::string& name,
 RetrievePropertyOp::~RetrievePropertyOp() {}
 
 void RetrievePropertyOp::Execute() {
+  base::Value* value;
   // TODO(dilmah): Fix the race:
   // At the moment when device becomes owned there is lapse of time after
   // device has been owned and before temp_storage settings are finally
@@ -663,8 +693,8 @@ void RetrievePropertyOp::Execute() {
     if (g_browser_process &&
         g_browser_process->local_state() &&
         SignedSettingsTempStorage::Retrieve(
-            name_, &value_, g_browser_process->local_state())) {
-      Succeed(value_);
+            name_, &value, g_browser_process->local_state())) {
+      Succeed(value->DeepCopy());
       return;
     }
   }
@@ -673,8 +703,8 @@ void RetrievePropertyOp::Execute() {
     TryToFetchPolicyAndCallBack();
     return;
   }
-  std::string value = LookUpInPolicy(name_);
-  if (value.empty())
+  value = LookUpInPolicy(name_);
+  if (!value)
     Fail(NOT_FOUND);
   else
     Succeed(value);
@@ -683,14 +713,15 @@ void RetrievePropertyOp::Execute() {
 void RetrievePropertyOp::Fail(SignedSettings::ReturnCode code) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RetrievePropertyOp::PerformCallback, this, code,
-                 std::string()));
+      base::Bind(&RetrievePropertyOp::PerformCallback, this,
+                 code, static_cast<const base::Value*>(NULL)));
 }
 
-void RetrievePropertyOp::Succeed(const std::string& value) {
+void RetrievePropertyOp::Succeed(const base::Value* value) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RetrievePropertyOp::PerformCallback, this, SUCCESS, value));
+      base::Bind(&RetrievePropertyOp::PerformCallback, this,
+                 SUCCESS, base::Owned(value)));
 }
 
 // DEPRECATED.
@@ -700,12 +731,11 @@ void RetrievePropertyOp::OnKeyOpComplete(
   NOTREACHED();
 }
 
-std::string RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
+base::Value* RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
   if (prop == kDeviceOwner) {
     const em::PolicyData& data = service_->cached_policy();
     if (data.has_username() && !data.has_request_token())
-      return data.username();
-    return "";
+      return base::Value::CreateStringValue(data.username());
   }
   VLOG(2) << "Looking up " << prop;
   em::ChromeDeviceSettingsProto pol;
@@ -714,63 +744,83 @@ std::string RetrievePropertyOp::LookUpInPolicy(const std::string& prop) {
     if (pol.has_allow_new_users() &&
         pol.allow_new_users().has_allow_new_users() &&
         pol.allow_new_users().allow_new_users()) {
-      return kVeritas[1];  // New users allowed, user_whitelist() ignored.
+      // New users allowed, user_whitelist() ignored.
+      return base::Value::CreateBooleanValue(true);
     }
     // If we have the allow_new_users bool, and it is true, we honor that above.
     // In all other cases (don't have it, have it and it is set to false, etc),
     // We will honor the user_whitelist() if it is there and populated.
-    // Otherwise, fail open (to do otherwise could render the device unusable).
+    // Otherwise we default to allowing new users.
     if (!pol.has_user_whitelist())
-      return kVeritas[1];  // Default to allowing new users.
-    return kVeritas[pol.user_whitelist().user_whitelist_size() == 0];
+      return base::Value::CreateBooleanValue(true);
+    return base::Value::CreateBooleanValue(
+               pol.user_whitelist().user_whitelist_size() == 0);
 
   } else if (prop == kAccountsPrefAllowGuest) {
     if (!pol.has_guest_mode_enabled() ||
         !pol.guest_mode_enabled().has_guest_mode_enabled()) {
-      return kVeritas[1];  // Default to allowing guests;
+      // Default to allowing guests;
+      return base::Value::CreateBooleanValue(true);
     }
-    return kVeritas[pol.guest_mode_enabled().guest_mode_enabled()];
+    return base::Value::CreateBooleanValue(
+               pol.guest_mode_enabled().guest_mode_enabled());
 
   } else if (prop == kAccountsPrefShowUserNamesOnSignIn) {
     if (!pol.has_show_user_names() ||
         !pol.show_user_names().has_show_user_names()) {
-      return kVeritas[1];  // Default to showing pods on the login screen;
+      // Default to showing pods on the login screen;
+      return base::Value::CreateBooleanValue(true);
     }
-    return kVeritas[pol.show_user_names().show_user_names()];
+    return base::Value::CreateBooleanValue(
+               pol.show_user_names().show_user_names());
 
   } else if (prop == kSignedDataRoamingEnabled) {
     if (!pol.has_data_roaming_enabled() ||
         !pol.data_roaming_enabled().has_data_roaming_enabled()) {
-      return kVeritas[0];  // Default to disabling cellular data roaming;
+      // Default to disabling cellular data roaming;
+      return base::Value::CreateBooleanValue(false);
     }
-    return kVeritas[pol.data_roaming_enabled().data_roaming_enabled()];
+    return base::Value::CreateBooleanValue(
+               pol.data_roaming_enabled().data_roaming_enabled());
 
   } else if (prop == kSettingProxyEverywhere) {
     // TODO(cmasone): NOTIMPLEMENTED() once http://crosbug.com/13052 is fixed.
     std::string serialized;
-    if (!pol.has_device_proxy_settings() ||
-        !pol.device_proxy_settings().SerializeToString(&serialized)) {
-      return "";           // Default to invalid proxy config (will be ignored).
+    if (pol.has_device_proxy_settings() &&
+        pol.device_proxy_settings().SerializeToString(&serialized)) {
+      return base::Value::CreateStringValue(serialized);
     }
-    return serialized;
 
   } else if (prop == kReleaseChannel) {
     if (!pol.has_release_channel() ||
         !pol.release_channel().has_release_channel()) {
-      return "";           // Default to an invalid channel (will be ignored).
+      // Default to an invalid channel (will be ignored).
+      return base::Value::CreateStringValue("");
     }
-    return pol.release_channel().release_channel();
+    return base::Value::CreateStringValue(
+               pol.release_channel().release_channel());
 
   } else if (prop == kStatsReportingPref) {
     if (pol.has_metrics_enabled()) {
-      return kVeritas[pol.metrics_enabled().metrics_enabled()];
+      return base::Value::CreateBooleanValue(
+                 pol.metrics_enabled().metrics_enabled());
     }
+  } else if (prop == kAccountsPrefUsers) {
+    base::ListValue* list = new base::ListValue();
+    const em::UserWhitelistProto& whitelist_proto = pol.user_whitelist();
+    const RepeatedPtrField<string>& whitelist =
+        whitelist_proto.user_whitelist();
+    for (RepeatedPtrField<string>::const_iterator it = whitelist.begin();
+         it != whitelist.end(); ++it) {
+      list->Append(base::Value::CreateStringValue(*it));
+    }
+    return list;
   }
-  return std::string();
+  return NULL;
 }
 
 void RetrievePropertyOp::PerformCallback(SignedSettings::ReturnCode code,
-                                         const std::string& value) {
+                                         const base::Value* value) {
   d_->OnSettingsOpCompleted(code, value);
 }
 

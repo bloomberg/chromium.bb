@@ -10,6 +10,10 @@
 
 #include "chrome/browser/chromeos/login/signed_settings.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace enterprise_management {
 class PolicyFetchResponse;
 }  // namespace enterprise_management
@@ -42,13 +46,13 @@ class SignedSettingsHelper {
     virtual void OnStorePropertyCompleted(
         SignedSettings::ReturnCode code,
         const std::string& name,
-        const std::string& value) {}
+        const base::Value& value) {}
 
     // Callback of RetrievePropertyOp.
     virtual void OnRetrievePropertyCompleted(
         SignedSettings::ReturnCode code,
         const std::string& name,
-        const std::string& value) {}
+        const base::Value* value) {}
 
     // Callback of StorePolicyOp.
     virtual void OnStorePolicyCompleted(
@@ -70,7 +74,7 @@ class SignedSettingsHelper {
                                 bool add_to_whitelist,
                                 Callback* callback) = 0;
   virtual void StartStorePropertyOp(const std::string& name,
-                                    const std::string& value,
+                                    const base::Value& value,
                                     Callback* callback) = 0;
   virtual void StartRetrieveProperty(const std::string& name,
                                      Callback* callback) = 0;

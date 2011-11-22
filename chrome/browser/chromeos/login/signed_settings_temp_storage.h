@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/values.h"
 
 class PrefService;
 
@@ -24,10 +25,10 @@ class SignedSettingsTempStorage {
   static void RegisterPrefs(PrefService* local_state);
 
   static bool Store(const std::string& name,
-                    const std::string& value,
+                    const base::Value& value,
                     PrefService* local_state);
   static bool Retrieve(const std::string& name,
-                       std::string* value,
+                       base::Value** value,
                        PrefService* local_state);
 
   // Call this after owner has been assigned to persist settings

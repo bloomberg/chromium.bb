@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/login/signed_settings.h"
 #include "chrome/browser/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
@@ -170,12 +171,12 @@ class StorePropertyOpContext : public SignedSettings::Delegate<bool>,
                                public OpContext {
  public:
   StorePropertyOpContext(const std::string& name,
-                         const std::string& value,
+                         const base::Value& value,
                          SignedSettingsHelper::Callback* callback,
                          OpContext::Delegate* delegate)
       : OpContext(callback, delegate),
         name_(name),
-        value_(value) {
+        value_(value.DeepCopy()) {
   }
 
   // chromeos::SignedSettings::Delegate implementation
@@ -183,25 +184,25 @@ class StorePropertyOpContext : public SignedSettings::Delegate<bool>,
                                      bool unused) OVERRIDE {
     VLOG(2) << "OnSettingsOpCompleted, code = " << code;
     if (callback_)
-      callback_->OnStorePropertyCompleted(code, name_, value_);
+      callback_->OnStorePropertyCompleted(code, name_, *value_);
     OnOpCompleted();
   }
 
  protected:
   // OpContext implemenetation
   virtual void CreateOp() OVERRIDE {
-    op_ = SignedSettings::CreateStorePropertyOp(name_, value_, this);
+    op_ = SignedSettings::CreateStorePropertyOp(name_, *value_, this);
   }
 
  private:
   std::string name_;
-  std::string value_;
+  scoped_ptr<base::Value> value_;
 
   DISALLOW_COPY_AND_ASSIGN(StorePropertyOpContext);
 };
 
 class RetrievePropertyOpContext
-    : public SignedSettings::Delegate<std::string>,
+    : public SignedSettings::Delegate<const base::Value*>,
       public OpContext {
  public:
   RetrievePropertyOpContext(const std::string& name,
@@ -213,7 +214,7 @@ class RetrievePropertyOpContext
 
   // chromeos::SignedSettings::Delegate implementation
   virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
-                                     std::string value) OVERRIDE {
+                                     const base::Value* value) OVERRIDE {
     if (callback_)
       callback_->OnRetrievePropertyCompleted(code, name_, value);
 
@@ -303,7 +304,7 @@ class SignedSettingsHelperImpl : public SignedSettingsHelper,
                                 bool add_to_whitelist,
                                 Callback* callback) OVERRIDE;
   virtual void StartStorePropertyOp(const std::string& name,
-                                    const std::string& value,
+                                    const base::Value& value,
                                     Callback* callback) OVERRIDE;
   virtual void StartRetrieveProperty(const std::string& name,
                                      Callback* callback) OVERRIDE;
@@ -367,7 +368,7 @@ void SignedSettingsHelperImpl::StartWhitelistOp(
 
 void SignedSettingsHelperImpl::StartStorePropertyOp(
     const std::string& name,
-    const std::string& value,
+    const base::Value& value,
     SignedSettingsHelper::Callback* callback) {
   AddOpContext(new StorePropertyOpContext(
       name,

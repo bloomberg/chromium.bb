@@ -102,14 +102,12 @@ void ExistingUserController::Init(const UserList& users) {
                              &show_users_on_signin);
   if (show_users_on_signin) {
     bool allow_new_user = false;
-    const base::ListValue *user_list;
     cros_settings_->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-    cros_settings_->GetList(kAccountsPrefUsers, &user_list);
     for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
-      base::StringValue email((*it)->email());
       // TODO(xiyuan): Clean user profile whose email is not in whitelist.
       if (allow_new_user ||
-          user_list->Find(email) != user_list->end()) {
+          cros_settings_->FindEmailInList(kAccountsPrefUsers,
+                                          (*it)->email())) {
         filtered_users.push_back(*it);
       }
     }

@@ -101,13 +101,10 @@ void AccountsOptionsHandler::UnwhitelistUser(const base::ListValue* args) {
 void AccountsOptionsHandler::WhitelistExistingUsers(
     const base::ListValue* args) {
   base::ListValue whitelist_users;
-  const base::ListValue *user_list;
-  CrosSettings::Get()->GetList(kAccountsPrefUsers, &user_list);
   const UserList& users = UserManager::Get()->GetUsers();
   for (UserList::const_iterator it = users.begin(); it < users.end(); ++it) {
     const std::string& email = (*it)->email();
-    base::StringValue email_value(email);
-    if (user_list->Find(email_value) == user_list->end()) {
+    if (!CrosSettings::Get()->FindEmailInList(kAccountsPrefUsers, email)) {
       base::DictionaryValue* user_dict = new DictionaryValue;
       user_dict->SetString("name", (*it)->GetDisplayName());
       user_dict->SetString("email", email);

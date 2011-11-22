@@ -21,32 +21,34 @@ namespace chromeos {
 class SignedSettingsTempStorageTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    ref_map_["some_stuff"] = "a=35;code=64";
-    ref_map_["another_stuff"] = "";
-    ref_map_["name"] = "value";
-    ref_map_["2bc6aa16-e0ea-11df-b13d-18a90520e2e5"] = "512";
+    ref_map_.Set("some_stuff", base::Value::CreateStringValue("a=35;code=64"));
+    ref_map_.Set("another_stuff", base::Value::CreateBooleanValue(false));
+    ref_map_.Set("name", base::Value::CreateStringValue("value"));
+    ref_map_.Set("2bc6aa16-e0ea-11df-b13d-18a90520e2e5",
+                 base::Value::CreateIntegerValue(512));
 
     SignedSettingsTempStorage::RegisterPrefs(&local_state_);
   }
 
-  std::map<std::string, std::string> ref_map_;
+  base::DictionaryValue ref_map_;
   TestingPrefService local_state_;
 };
 
 TEST_F(SignedSettingsTempStorageTest, Basic) {
-  typedef std::map<std::string, std::string>::iterator It;
-  for (It it = ref_map_.begin(); it != ref_map_.end(); ++it) {
-    EXPECT_TRUE(SignedSettingsTempStorage::Store(it->first,
-                                                 it->second,
+  typedef base::DictionaryValue::key_iterator It;
+  base::Value* value;
+  for (It it = ref_map_.begin_keys(); it != ref_map_.end_keys(); ++it) {
+    ref_map_.Get(*it, &value);
+    EXPECT_TRUE(SignedSettingsTempStorage::Store(*it, *value,
                                                  &local_state_));
   }
-  for (It it = ref_map_.begin(); it != ref_map_.end(); ++it) {
-    std::string value;
-    EXPECT_TRUE(SignedSettingsTempStorage::Retrieve(it->first, &value,
+  for (It it = ref_map_.begin_keys(); it != ref_map_.end_keys(); ++it) {
+    EXPECT_TRUE(SignedSettingsTempStorage::Retrieve(*it, &value,
                                                     &local_state_));
-    EXPECT_EQ(it->second, value);
+    base::Value* orignal_value;
+    ref_map_.Get(*it, &orignal_value);
+    EXPECT_TRUE(orignal_value->Equals(value));
   }
-  std::string value;
   EXPECT_FALSE(SignedSettingsTempStorage::Retrieve("non-existent tv-series",
                                                    &value,
                                                    &local_state_));

@@ -276,10 +276,7 @@ void LoginPerformer::CompleteLogin(const std::string& username,
     StartLoginCompletion();
   } else {
     // Otherwise, do whitelist check first.
-    const base::ListValue *user_list;
-    base::StringValue username_value(username);
-    if (cros_settings->GetList(kAccountsPrefUsers, &user_list) &&
-        user_list->Find(username_value) != user_list->end()) {
+    if (cros_settings->FindEmailInList(kAccountsPrefUsers, username)) {
       StartLoginCompletion();
     } else {
       if (delegate_)
@@ -321,10 +318,7 @@ void LoginPerformer::Login(const std::string& username,
     // Starts authentication if guest login is allowed or online auth pending.
     StartAuthentication();
   } else {
-    const base::ListValue *user_list;
-    base::StringValue username_value(username);
-    if (cros_settings->GetList(kAccountsPrefUsers, &user_list) &&
-        user_list->Find(username_value) != user_list->end()) {
+    if (cros_settings->FindEmailInList(kAccountsPrefUsers, username)) {
       StartAuthentication();
     } else {
       if (delegate_)

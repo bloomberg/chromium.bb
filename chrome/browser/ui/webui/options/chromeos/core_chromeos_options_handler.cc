@@ -158,9 +158,7 @@ void CoreChromeOSOptionsHandler::SetPref(const std::string& pref_name,
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::CoreOptionsHandler::SetPref(pref_name, value, metric);
   handling_change_ = true;
-  // CrosSettings takes ownership of its value so we need to copy it.
-  base::Value* pref_value = value->DeepCopy();
-  CrosSettings::Get()->Set(pref_name, pref_value);
+  CrosSettings::Get()->Set(pref_name, *value);
   handling_change_ = false;
 
   ProcessUserMetric(value, metric);

@@ -20,14 +20,15 @@ class CrosSettingsProvider {
   virtual ~CrosSettingsProvider() {}
 
   // Sets |in_value| to given |path| in cros settings.
-  // Note that this takes ownership of |in_value|.
-  void Set(const std::string& path, base::Value* in_value);
+  void Set(const std::string& path, const base::Value& in_value);
 
   // Gets settings value of given |path| to |out_value|.
   virtual const base::Value* Get(const std::string& path) const = 0;
 
-  // Starts a fetch from the trusted store for the value of |path|. It will
-  // call the |callback| function upon completion.
+  // Starts a fetch from the trusted store for the value of |path| if not loaded
+  // yet. It will call the |callback| function upon completion if a new fetch
+  // was needed in which case the return value is false. Else it will return
+  // true and won't call the |callback|.
   virtual bool GetTrusted(const std::string& path,
                           const base::Closure& callback) const = 0;
 
@@ -36,7 +37,8 @@ class CrosSettingsProvider {
 
  private:
   // Does the real job for Set().
-  virtual void DoSet(const std::string& path, base::Value* in_value) = 0;
+  virtual void DoSet(const std::string& path,
+                     const base::Value& in_value) = 0;
 };
 
 }  // namespace chromeos

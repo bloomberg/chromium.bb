@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,7 +12,8 @@
 
 namespace chromeos {
 
-void CrosSettingsProvider::Set(const std::string& path, Value* value) {
+void CrosSettingsProvider::Set(const std::string& path,
+                               const base::Value& value) {
   // We don't allow changing any of the cros settings without prefix
   // "cros.session." in the guest mode.
   // It should not reach here from UI in the guest mode, but just in case.

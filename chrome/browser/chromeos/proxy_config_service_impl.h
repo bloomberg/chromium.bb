@@ -35,7 +35,7 @@ namespace chromeos {
 //   user profile
 class ProxyConfigServiceImpl
     : public PrefProxyConfigTrackerImpl,
-      public SignedSettings::Delegate<std::string>,
+      public SignedSettings::Delegate<const base::Value*>,
       public NetworkLibrary::NetworkManagerObserver,
       public NetworkLibrary::NetworkObserver {
  public:
@@ -193,7 +193,7 @@ class ProxyConfigServiceImpl
 
   // Implementation for SignedSettings::Delegate
   virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
-                                     std::string value) OVERRIDE;
+                                     const base::Value* value) OVERRIDE;
 
   // NetworkLibrary::NetworkManagerObserver implementation.
   virtual void OnNetworkManagerChanged(NetworkLibrary* cros) OVERRIDE;

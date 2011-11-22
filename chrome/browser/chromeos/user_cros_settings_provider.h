@@ -49,7 +49,8 @@ class UserCrosSettingsProvider : public CrosSettingsProvider {
 
  private:
   // CrosSettingsProvider implementation.
-  virtual void DoSet(const std::string& path, base::Value* value) OVERRIDE;
+  virtual void DoSet(const std::string& path,
+                     const base::Value& value) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(UserCrosSettingsProvider);
 };

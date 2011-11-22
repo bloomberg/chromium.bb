@@ -30,6 +30,10 @@
 // and then call the appropriate method of the Delegate you passed in
 // -- again, on the UI thread.
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace enterprise_management {
 class PolicyFetchResponse;
 class PolicyData;
@@ -74,12 +78,12 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
   // one type can be in flight at a time.
   static SignedSettings* CreateStorePropertyOp(
       const std::string& name,
-      const std::string& value,
+      const base::Value& value,
       SignedSettings::Delegate<bool>* d);
 
   static SignedSettings* CreateRetrievePropertyOp(
       const std::string& name,
-      SignedSettings::Delegate<std::string>* d);
+      SignedSettings::Delegate<const base::Value*>* d);
 
   // These are both "policy" operations, and only one instance of
   // one type can be in flight at a time.

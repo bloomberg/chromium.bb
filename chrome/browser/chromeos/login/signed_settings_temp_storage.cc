@@ -22,13 +22,13 @@ void SignedSettingsTempStorage::RegisterPrefs(PrefService* local_state) {
 
 // static
 bool SignedSettingsTempStorage::Store(const std::string& name,
-                                      const std::string& value,
+                                      const base::Value& value,
                                       PrefService* local_state) {
   if (local_state) {
     DictionaryPrefUpdate temp_storage_update(
         local_state, prefs::kSignedSettingsTempStorage);
     temp_storage_update->SetWithoutPathExpansion(
-        name, Value::CreateStringValue(value));
+        name, value.DeepCopy());
     return true;
   }
   return false;
@@ -36,13 +36,13 @@ bool SignedSettingsTempStorage::Store(const std::string& name,
 
 // static
 bool SignedSettingsTempStorage::Retrieve(const std::string& name,
-                                         std::string* value,
+                                         base::Value** value,
                                          PrefService* local_state) {
   if (local_state) {
     const DictionaryValue* temp_storage =
         local_state->GetDictionary(prefs::kSignedSettingsTempStorage);
     if (temp_storage && temp_storage->HasKey(name)) {
-      temp_storage->GetStringWithoutPathExpansion(name, value);
+      temp_storage->GetWithoutPathExpansion(name, value);
       return true;
     }
   }
@@ -63,9 +63,11 @@ void SignedSettingsTempStorage::Finalize(PrefService* local_state) {
       for (DictionaryValue::key_iterator it = temp_storage->begin_keys();
            it != temp_storage->end_keys();
            ++it) {
-        std::string value;
-        temp_storage->GetStringWithoutPathExpansion(*it, &value);
-        SignedSettingsHelper::Get()->StartStorePropertyOp(*it, value, NULL);
+        base::Value* value = NULL;
+        bool get_result = temp_storage->GetWithoutPathExpansion(*it, &value);
+        DCHECK(value && get_result);
+        if (value)
+          SignedSettingsHelper::Get()->StartStorePropertyOp(*it, *value, NULL);
       }
       local_state->ClearPref(prefs::kSignedSettingsTempStorage);
     }

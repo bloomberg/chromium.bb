@@ -41,11 +41,11 @@ class MockSignedSettingsHelperCallback : public SignedSettingsHelper::Callback {
   MOCK_METHOD3(OnStorePropertyCompleted, void(
       SignedSettings::ReturnCode code,
       const std::string& name,
-      const std::string& value));
+      const base::Value& value));
   MOCK_METHOD3(OnRetrievePropertyCompleted, void(
       SignedSettings::ReturnCode code,
       const std::string& name,
-      const std::string& value));
+      const base::Value* value));
 };
 
 class SignedSettingsHelperTest : public testing::Test,
@@ -53,7 +53,7 @@ class SignedSettingsHelperTest : public testing::Test,
  public:
   SignedSettingsHelperTest()
       : fake_email_("fakey@example.com"),
-        fake_prop_(kAccountsPrefAllowGuest),
+        fake_prop_(kReleaseChannel),
         fake_value_("false"),
         message_loop_(MessageLoop::TYPE_UI),
         ui_thread_(BrowserThread::UI, &message_loop_),
@@ -100,7 +100,7 @@ class SignedSettingsHelperTest : public testing::Test,
 
   const std::string fake_email_;
   const std::string fake_prop_;
-  const std::string fake_value_;
+  const base::StringValue fake_value_;
   MockOwnershipService m_;
 
   MessageLoop message_loop_;

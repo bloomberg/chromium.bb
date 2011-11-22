@@ -22,7 +22,7 @@ class MockSignedSettingsHelper : public chromeos::SignedSettingsHelper {
   MOCK_METHOD3(StartWhitelistOp,
                void(const std::string&, bool, Callback*));
   MOCK_METHOD3(StartStorePropertyOp,
-               void(const std::string&, const std::string&, Callback*));
+               void(const std::string&, const base::Value&, Callback*));
   MOCK_METHOD2(StartRetrieveProperty,
                void(const std::string&, Callback*));
   MOCK_METHOD2(StartStorePolicyOp,

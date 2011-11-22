@@ -382,9 +382,10 @@ void WizardController::OnEulaAccepted() {
   // But we can at least create the consent file and Chrome would port that
   // if the device is owned by a local user. In case of enterprise enrolled
   // device the setting will be respected only until the policy is not set.
+  base::FundamentalValue value(usage_statistics_reporting_);
   SignedSettingsTempStorage::Store(
       kStatsReportingPref,
-      (usage_statistics_reporting_ ? "true" : "false"),
+      value,
       g_browser_process->local_state());
   bool enabled =
       OptionsUtil::ResolveMetricsReportingEnabled(usage_statistics_reporting_);

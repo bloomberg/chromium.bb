@@ -526,17 +526,23 @@ void ProxyConfigServiceImpl::OnProxyConfigChanged(
 
 void ProxyConfigServiceImpl::OnSettingsOpCompleted(
     SignedSettings::ReturnCode code,
-    std::string value) {
+    const base::Value* value) {
+  // We assume ownership here to make sure this gets deleted no matter where
+  // this function ends.
+  scoped_ptr<const base::Value> own_value(value);
+
   retrieve_property_op_ = NULL;
   if (code != SignedSettings::SUCCESS) {
     LOG(WARNING) << this << ": Error retrieving proxy setting from device";
     device_config_.clear();
     return;
   }
-  VLOG(1) << this << ": Retrieved proxy setting from device, value=["
-          << value << "]";
+  std::string policy_value;
+  value->GetAsString(&policy_value);
+  VLOG(1) << "Retrieved proxy setting from device, value=["
+          << policy_value << "]";
   ProxyConfig device_config;
-  if (!device_config.DeserializeForDevice(value) ||
+  if (!device_config.DeserializeForDevice(policy_value) ||
       !device_config.SerializeForNetwork(&device_config_)) {
     LOG(WARNING) << "Can't deserialize device setting or serialize for network";
     device_config_.clear();

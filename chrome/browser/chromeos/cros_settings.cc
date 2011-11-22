@@ -46,7 +46,7 @@ void CrosSettings::FireObservers(const char* path) {
   }
 }
 
-void CrosSettings::Set(const std::string& path, Value* in_value) {
+void CrosSettings::Set(const std::string& path, const base::Value& in_value) {
   DCHECK(CalledOnValidThread());
   CrosSettingsProvider* provider;
   provider = GetProvider(path);
@@ -57,23 +57,66 @@ void CrosSettings::Set(const std::string& path, Value* in_value) {
 
 void CrosSettings::SetBoolean(const std::string& path, bool in_value) {
   DCHECK(CalledOnValidThread());
-  Set(path, Value::CreateBooleanValue(in_value));
+  base::FundamentalValue value(in_value);
+  Set(path, value);
 }
 
 void CrosSettings::SetInteger(const std::string& path, int in_value) {
   DCHECK(CalledOnValidThread());
-  Set(path, Value::CreateIntegerValue(in_value));
+  base::FundamentalValue value(in_value);
+  Set(path, value);
 }
 
 void CrosSettings::SetDouble(const std::string& path, double in_value) {
   DCHECK(CalledOnValidThread());
-  Set(path, Value::CreateDoubleValue(in_value));
+  base::FundamentalValue value(in_value);
+  Set(path, value);
 }
 
 void CrosSettings::SetString(const std::string& path,
                              const std::string& in_value) {
   DCHECK(CalledOnValidThread());
-  Set(path, Value::CreateStringValue(in_value));
+  base::StringValue value(in_value);
+  Set(path, value);
+}
+
+void CrosSettings::AppendToList(const std::string& path,
+                                const base::Value* value) {
+  DCHECK(CalledOnValidThread());
+  const base::Value* old_value = GetPref(path);
+  scoped_ptr<base::Value> new_value(
+      old_value ? old_value->DeepCopy() : new base::ListValue());
+  static_cast<base::ListValue*>(new_value.get())->Append(value->DeepCopy());
+  Set(path, *new_value);
+}
+
+void CrosSettings::RemoveFromList(const std::string& path,
+                                  const base::Value* value) {
+  DCHECK(CalledOnValidThread());
+  const base::Value* old_value = GetPref(path);
+  scoped_ptr<base::Value> new_value(
+      old_value ? old_value->DeepCopy() : new base::ListValue());
+  static_cast<base::ListValue*>(new_value.get())->Remove(*value, NULL);
+  Set(path, *new_value);
+}
+
+bool CrosSettings::FindEmailInList(const std::string& path,
+                                   const std::string& email) const {
+  DCHECK(CalledOnValidThread());
+  base::StringValue email_value(email);
+  const base::ListValue* value =
+      static_cast<const base::ListValue*>(GetPref(path));
+  if (value) {
+    if (value->Find(email_value) != value->end())
+      return true;
+    std::string::size_type at_pos = email.find('@');
+    if (at_pos != std::string::npos) {
+      base::StringValue wildcarded_value(
+          std::string("*").append(email.substr(at_pos)));
+      return value->Find(wildcarded_value) != value->end();
+    }
+  }
+  return false;
 }
 
 bool CrosSettings::AddSettingsProvider(CrosSettingsProvider* provider) {

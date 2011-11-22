@@ -197,15 +197,15 @@ SystemSettingsProvider::~SystemSettingsProvider() {
   STLDeleteElements(&timezones_);
 }
 
-void SystemSettingsProvider::DoSet(const std::string& path, Value* in_value) {
+void SystemSettingsProvider::DoSet(const std::string& path,
+                                   const base::Value& in_value) {
   // Non-guest users can change the time zone.
   if (UserManager::Get()->IsLoggedInAsGuest())
     return;
 
   if (path == kSystemTimezone) {
     string16 value;
-    if (!in_value || !in_value->IsType(Value::TYPE_STRING) ||
-        !in_value->GetAsString(&value))
+    if (!in_value.IsType(Value::TYPE_STRING) || !in_value.GetAsString(&value))
       return;
     const icu::TimeZone* timezone = GetTimezone(value);
     if (!timezone)
