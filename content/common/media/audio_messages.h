@@ -5,6 +5,7 @@
 // IPC messages for the audio.
 // Multiply-included message file, hence no include guard.
 
+#include "base/basictypes.h"
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "content/common/media/audio_stream_state.h"
@@ -103,7 +104,7 @@ IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyStreamVolume,
 
 IPC_MESSAGE_CONTROL2(AudioInputMsg_NotifyDeviceStarted,
                      int /* stream id */,
-                     int /* device_index */)
+                     std::string /* device_id */)
 
 // Messages sent from the renderer to the browser.
 
@@ -114,10 +115,11 @@ IPC_MESSAGE_CONTROL3(AudioHostMsg_CreateStream,
                      bool /* low-latency */)
 
 // Request that got sent to browser for creating an audio input stream
-IPC_MESSAGE_CONTROL3(AudioInputHostMsg_CreateStream,
+IPC_MESSAGE_CONTROL4(AudioInputHostMsg_CreateStream,
                      int /* stream_id */,
                      AudioParameters /* params */,
-                     bool /* low-latency */)
+                     bool /* low-latency */,
+                     std::string /* device_id */)
 
 // Tell the browser the audio buffer prepared for stream (stream_id) is
 // filled and is ready to be consumed.

@@ -100,9 +100,10 @@ class CONTENT_EXPORT AudioInputDevice
 
   class CONTENT_EXPORT CaptureEventHandler {
    public:
-    // Notification to the client that the device with the specific index has
-    // been started. This callback is triggered as a result of StartDevice().
-    virtual void OnDeviceStarted(int device_index) = 0;
+    // Notification to the client that the device with the specific |device_id|
+    // has been started.
+    // This callback is triggered as a result of StartDevice().
+    virtual void OnDeviceStarted(const std::string& device_id) = 0;
 
     // Notification to the client that the device has been stopped.
     virtual void OnDeviceStopped() = 0;
@@ -148,10 +149,10 @@ class CONTENT_EXPORT AudioInputDevice
   // AudioInputMessageFilter::Delegate impl., called by AudioInputMessageFilter
   virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
                                    base::SyncSocket::Handle socket_handle,
-                                   uint32 length) OVERRIDE;
-  virtual void OnVolume(double volume) OVERRIDE;
-  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
-  virtual void OnDeviceReady(int index) OVERRIDE;
+                                   uint32 length);
+  virtual void OnVolume(double volume);
+  virtual void OnStateChanged(AudioStreamState state);
+  virtual void OnDeviceReady(const std::string& device_id);
 
  private:
   // Methods called on IO thread ----------------------------------------------

@@ -31,9 +31,9 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // even though Open() has not been called. This is used to be able to use the
   // AudioInputDeviceManager before MediaStream is implemented.
   static const int kFakeOpenSessionId;
+
   static const int kInvalidSessionId;
-  static const int kInvalidDevice;
-  static const int kDefaultDeviceIndex;
+  static const char kInvalidDeviceId[];
 
   AudioInputDeviceManager();
   virtual ~AudioInputDeviceManager();
@@ -70,7 +70,7 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   void ErrorOnIOThread(int session_id, MediaStreamProviderError error);
 
   // Executed on IO thread to call the event handler.
-  void StartedOnIOThread(int session_id, int index);
+  void StartedOnIOThread(int session_id, const std::string& device_id);
   void StoppedOnIOThread(int session_id);
 
   // Executed on audio_input_device_thread_ to make sure

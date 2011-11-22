@@ -113,14 +113,15 @@ void AudioInputMessageFilter::OnStreamStateChanged(
   delegate->OnStateChanged(state);
 }
 
-void AudioInputMessageFilter::OnDeviceStarted(int stream_id, int index) {
+void AudioInputMessageFilter::OnDeviceStarted(int stream_id,
+                                              const std::string& device_id) {
   Delegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
         " audio renderer.";
     return;
   }
-  delegate->OnDeviceReady(index);
+  delegate->OnDeviceReady(device_id);
 }
 
 int32 AudioInputMessageFilter::AddDelegate(Delegate* delegate) {

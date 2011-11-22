@@ -41,7 +41,7 @@ class CONTENT_EXPORT AudioInputMessageFilter
 
     // Called when the device referenced by the index has been started in
     // the browswer process.
-    virtual void OnDeviceReady(int index) = 0;
+    virtual void OnDeviceReady(const std::string& device_id) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -84,7 +84,7 @@ class CONTENT_EXPORT AudioInputMessageFilter
   void OnStreamStateChanged(int stream_id, AudioStreamState state);
 
   // Notification of the opened device of an audio session.
-  void OnDeviceStarted(int stream_id, int index);
+  void OnDeviceStarted(int stream_id, const std::string& device_id);
 
   // A map of stream ids to delegates.
   IDMap<Delegate> delegates_;

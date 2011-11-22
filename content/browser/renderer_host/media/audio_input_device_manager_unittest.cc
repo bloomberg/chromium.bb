@@ -10,7 +10,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
-#include "media/audio/audio_manager.h"
+#include "media/audio/audio_manager_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,7 +56,7 @@ class MockAudioInputDeviceManagerEventHandler
   MockAudioInputDeviceManagerEventHandler() {}
   virtual ~MockAudioInputDeviceManagerEventHandler() {}
 
-  MOCK_METHOD2(OnDeviceStarted, void(int, int));
+  MOCK_METHOD2(OnDeviceStarted, void(int, const std::string&));
   MOCK_METHOD1(OnDeviceStopped, void(int));
 
  private:
@@ -299,7 +299,7 @@ TEST_F(AudioInputDeviceManagerTest, StartAndStopDevice) {
                                                session_id[index]))
         .Times(1);
     EXPECT_CALL(*audio_input_event_handler,
-                OnDeviceStarted(session_id[index], index))
+                OnDeviceStarted(session_id[index], iter->device_id))
         .Times(1);
     EXPECT_CALL(*audio_input_listener_, Closed(kAudioCapture,
                                                session_id[index]))
@@ -337,7 +337,7 @@ TEST_F(AudioInputDeviceManagerTest, CloseWithoutStopDevice) {
                                                session_id[index]))
         .Times(1);
     EXPECT_CALL(*audio_input_event_handler,
-                OnDeviceStarted(session_id[index], index))
+                OnDeviceStarted(session_id[index], iter->device_id))
         .Times(1);
     // Event Handler should get a stop device notification as no stop is called
     // before closing the device.
@@ -386,10 +386,12 @@ TEST_F(AudioInputDeviceManagerTest, StartDeviceTwice) {
   EXPECT_CALL(*audio_input_listener_, Opened(kAudioCapture, second_session_id))
       .Times(1);
   EXPECT_CALL(*first_audio_input_event_handler,
-              OnDeviceStarted(first_session_id, 0))
+              OnDeviceStarted(first_session_id,
+                              AudioManagerBase::kDefaultDeviceId))
       .Times(1);
   EXPECT_CALL(*second_audio_input_event_handler,
-              OnDeviceStarted(second_session_id, 0))
+              OnDeviceStarted(second_session_id,
+                              AudioManagerBase::kDefaultDeviceId))
       .Times(1);
   EXPECT_CALL(*audio_input_listener_, Closed(kAudioCapture, first_session_id))
       .Times(1);

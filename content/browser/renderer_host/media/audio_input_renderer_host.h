@@ -20,10 +20,10 @@
 // OnCloseStream -> AudioInputController::Close
 //
 // For the OnStartDevice() request, AudioInputRendererHost starts the device
-// referenced by the session id, and a OnDeviceStarted() callback with the
-// index of the opened device will be received later. Then it will send a IPC
-// message to notify the renderer that the device is ready, so that renderer
-// can continue with the OnCreateStream() request.
+// referenced by the session id, and an OnDeviceStarted() callback with the
+// id of the opened device will be received later. Then it will send a
+// IPC message to notify the renderer that the device is ready, so that
+// renderer can continue with the OnCreateStream() request.
 //
 // OnDeviceStopped() is called when the user closes the device through
 // AudioInputDeviceManager without calling Stop() before. What
@@ -122,8 +122,8 @@ class CONTENT_EXPORT AudioInputRendererHost
                       uint32 size) OVERRIDE;
 
   // media_stream::AudioInputDeviceManagerEventHandler implementation.
-  virtual void OnDeviceStarted(int session_id, int index) OVERRIDE;
-  virtual void OnDeviceStopped(int session_id) OVERRIDE;
+  virtual void OnDeviceStarted(int session_id, const std::string& device_id);
+  virtual void OnDeviceStopped(int session_id);
 
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)
@@ -144,7 +144,8 @@ class CONTENT_EXPORT AudioInputRendererHost
   // required properties.
   void OnCreateStream(int stream_id,
                       const AudioParameters& params,
-                      bool low_latency);
+                      bool low_latency,
+                      const std::string& device_id);
 
   // Record the audio input stream referenced by |stream_id|.
   void OnRecordStream(int stream_id);

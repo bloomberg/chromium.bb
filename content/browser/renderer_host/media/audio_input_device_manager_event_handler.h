@@ -16,7 +16,8 @@ class CONTENT_EXPORT AudioInputDeviceManagerEventHandler {
  public:
   // Called by AudioInputDeviceManager to create an audio stream using the
   // device index when the device has been started.
-  virtual void OnDeviceStarted(int session_id, int index) = 0;
+  virtual void OnDeviceStarted(int session_id,
+                               const std::string& device_id) = 0;
 
   // Called by AudioInputDeviceManager to stop the audio stream when a device
   // has been stopped. This method is used only when users call Close() without

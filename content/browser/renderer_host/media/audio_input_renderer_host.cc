@@ -202,7 +202,8 @@ void AudioInputRendererHost::OnStartDevice(int stream_id, int session_id) {
 }
 
 void AudioInputRendererHost::OnCreateStream(
-    int stream_id, const AudioParameters& params, bool low_latency) {
+    int stream_id, const AudioParameters& params, bool low_latency,
+    const std::string& device_id) {
   VLOG(1) << "AudioInputRendererHost::OnCreateStream(stream_id="
           << stream_id << ")";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -244,10 +245,11 @@ void AudioInputRendererHost::OnCreateStream(
   // If we have successfully created the SyncWriter then assign it to the
   // entry and construct an AudioInputController.
   entry->writer.reset(writer.release());
-  entry->controller =
-      media::AudioInputController::CreateLowLatency(this,
-                                                    audio_params,
-                                                    entry->writer.get());
+  entry->controller = media::AudioInputController::CreateLowLatency(
+      this,
+      audio_params,
+      device_id,
+      entry->writer.get());
 
   if (!entry->controller) {
     SendErrorMessage(stream_id);
@@ -328,7 +330,8 @@ void AudioInputRendererHost::DeleteEntries() {
   }
 }
 
-void AudioInputRendererHost::OnDeviceStarted(int session_id, int index) {
+void AudioInputRendererHost::OnDeviceStarted(
+    int session_id, const std::string& device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   SessionEntryMap::iterator it = session_entries_.find(session_id);
   if (it == session_entries_.end()) {
@@ -337,8 +340,8 @@ void AudioInputRendererHost::OnDeviceStarted(int session_id, int index) {
     return;
   }
 
-  // Notify the renderer that the device has been started.
-  Send(new AudioInputMsg_NotifyDeviceStarted(it->second, index));
+  // Notify the renderer with the id of the opened device.
+  Send(new AudioInputMsg_NotifyDeviceStarted(it->second, device_id));
 }
 
 void AudioInputRendererHost::OnDeviceStopped(int session_id) {

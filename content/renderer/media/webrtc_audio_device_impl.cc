@@ -165,11 +165,11 @@ void WebRtcAudioDeviceImpl::Capture(
   }
 }
 
-void WebRtcAudioDeviceImpl::OnDeviceStarted(int device_index) {
-  DVLOG(1) << "OnDeviceStarted (device_index=" << device_index << ")";
-  // -1 is an invalid device index. Do nothing if a valid device has
+void WebRtcAudioDeviceImpl::OnDeviceStarted(const std::string& device_id) {
+  VLOG(1) << "OnDeviceStarted (device_id=" << device_id << ")";
+  // Empty string is an invalid device id. Do nothing if a valid device has
   // been started. Otherwise update the |recording_| state to false.
-  if (device_index != -1)
+  if (!device_id.empty())
     return;
 
   base::AutoLock auto_lock(lock_);
@@ -398,7 +398,7 @@ int32_t WebRtcAudioDeviceImpl::Init() {
     DLOG(ERROR) << "Only 48kHz sample rate is supported on Linux.";
     return -1;
   }
-  input_channels = 1;
+  input_channels = 2;
   output_channels = 1;
 
   // Based on tests using the current ALSA implementation in Chrome, we have

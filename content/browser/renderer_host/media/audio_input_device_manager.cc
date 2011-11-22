@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager_event_handler.h"
 #include "content/public/browser/browser_thread.h"
-#include "media/audio/audio_manager.h"
+#include "media/audio/audio_manager_base.h"
 
 using content::BrowserThread;
 
@@ -16,8 +16,7 @@ namespace media_stream {
 
 const int AudioInputDeviceManager::kFakeOpenSessionId = 1;
 const int AudioInputDeviceManager::kInvalidSessionId = 0;
-const int AudioInputDeviceManager::kInvalidDevice = -1;
-const int AudioInputDeviceManager::kDefaultDeviceIndex = 0;
+const char AudioInputDeviceManager::kInvalidDeviceId[] = "";
 
 // Starting id for the first capture session.
 const int kFirstSessionId = AudioInputDeviceManager::kFakeOpenSessionId + 1;
@@ -107,18 +106,19 @@ void AudioInputDeviceManager::Start(
   DCHECK(event_handler);
 
   // Solution for not using MediaStreamManager. This is needed when Start() is
-  // called without using Open(), we post 0(default device) for test purpose.
+  // called without using Open(), we post default device for test purpose.
   // And we do not store the info for the kFakeOpenSessionId but return
   // the callback immediately.
   if (session_id == kFakeOpenSessionId) {
-    event_handler->OnDeviceStarted(session_id, kDefaultDeviceIndex);
+    event_handler->OnDeviceStarted(session_id,
+                                   AudioManagerBase::kDefaultDeviceId);
     return;
   }
 
   // If session has been started, post a callback with an error.
   if (event_handlers_.find(session_id) != event_handlers_.end()) {
     // Session has been started, post a callback with error.
-    event_handler->OnDeviceStarted(session_id, kInvalidDevice);
+    event_handler->OnDeviceStarted(session_id, kInvalidDeviceId);
     return;
   }
 
@@ -203,9 +203,9 @@ void AudioInputDeviceManager::CloseOnDeviceThread(int session_id) {
 void AudioInputDeviceManager::StartOnDeviceThread(const int session_id) {
   DCHECK(IsOnCaptureDeviceThread());
 
-  // Get the up-to-date device enumeration list from the system and find out
-  // the index of the device.
-  int device_index = kInvalidDevice;
+  // Get the up-to-date device enumeration list from the OS and find out
+  // the unique id of the device.
+  std::string device_id = kInvalidDeviceId;
   AudioInputDeviceMap::const_iterator it = devices_.find(session_id);
   if (it != devices_.end()) {
     media::AudioDeviceNames device_names;
@@ -218,12 +218,13 @@ void AudioInputDeviceManager::StartOnDeviceThread(const int session_id) {
         if (iter->device_name == it->second.device_name &&
             iter->unique_id == it->second.unique_id) {
           // Found the device.
-          device_index = index;
+          device_id = iter->unique_id;
           break;
         }
       }
     }
   }
+
   // Posts the index to AudioInputRenderHost through the event handler.
   BrowserThread::PostTask(BrowserThread::IO,
                           FROM_HERE,
@@ -231,7 +232,7 @@ void AudioInputDeviceManager::StartOnDeviceThread(const int session_id) {
                               &AudioInputDeviceManager::StartedOnIOThread,
                               base::Unretained(this),
                               session_id,
-                              device_index));
+                              device_id));
 }
 
 void AudioInputDeviceManager::StopOnDeviceThread(int session_id) {
@@ -276,15 +277,17 @@ void AudioInputDeviceManager::ErrorOnIOThread(int session_id,
     listener_->Error(kAudioCapture, session_id, error);
 }
 
-void AudioInputDeviceManager::StartedOnIOThread(int session_id, int index) {
+void AudioInputDeviceManager::StartedOnIOThread(
+    int session_id, const std::string& device_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   EventHandlerMap::iterator it = event_handlers_.find(session_id);
   if (it == event_handlers_.end())
     return;
 
-  // Post a callback through the event handler to create an audio stream.
-  it->second->OnDeviceStarted(session_id, index);
+  // Post a callback through the AudioInputRendererHost to notify the renderer
+  // device has been started.
+  it->second->OnDeviceStarted(session_id, device_id);
 }
 
 void AudioInputDeviceManager::StoppedOnIOThread(int session_id) {

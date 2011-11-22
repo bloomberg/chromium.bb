@@ -46,6 +46,7 @@
 #include "content/renderer/render_widget_fullscreen_pepper.h"
 #include "content/renderer/webplugin_delegate_proxy.h"
 #include "ipc/ipc_channel_handle.h"
+#include "media/audio/audio_manager_base.h"
 #include "media/video/capture/video_capture_proxy.h"
 #include "ppapi/c/dev/pp_video_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -381,7 +382,7 @@ class PlatformAudioInputImpl
 
   virtual void OnStateChanged(AudioStreamState state) OVERRIDE {}
 
-  virtual void OnDeviceReady(int index) OVERRIDE {}
+  virtual void OnDeviceReady(const std::string&) OVERRIDE {}
 
   // The client to notify when the stream is created. THIS MUST ONLY BE
   // ACCESSED ON THE MAIN THREAD.
@@ -451,7 +452,8 @@ void PlatformAudioInputImpl::ShutDown() {
 void PlatformAudioInputImpl::InitializeOnIOThread(
     const AudioParameters& params) {
   stream_id_ = filter_->AddDelegate(this);
-  filter_->Send(new AudioInputHostMsg_CreateStream(stream_id_, params, true));
+  filter_->Send(new AudioInputHostMsg_CreateStream(
+      stream_id_, params, true, AudioManagerBase::kDefaultDeviceId));
 }
 
 void PlatformAudioInputImpl::StartCaptureOnIOThread() {
