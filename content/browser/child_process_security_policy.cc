@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
@@ -33,6 +34,8 @@ class ChildProcessSecurityPolicy::SecurityState {
       can_read_raw_cookies_(false) { }
   ~SecurityState() {
     scheme_policy_.clear();
+    UMA_HISTOGRAM_COUNTS("ChildProcessSecurityPolicy.PerChildFilePermissions",
+                         file_permissions_.size());
   }
 
   // Grant permission to request URLs with the specified scheme.
@@ -47,7 +50,10 @@ class ChildProcessSecurityPolicy::SecurityState {
 
   // Grant certain permissions to a file.
   void GrantPermissionsForFile(const FilePath& file, int permissions) {
-    file_permissions_[file.StripTrailingSeparators()] |= permissions;
+    FilePath stripped = file.StripTrailingSeparators();
+    file_permissions_[stripped] |= permissions;
+    UMA_HISTOGRAM_COUNTS("ChildProcessSecurityPolicy.FilePermissionPathLength",
+                         stripped.value().size());
   }
 
   // Revokes all permissions granted to a file.
