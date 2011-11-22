@@ -611,6 +611,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   if (IsTextInput(input_element)) {
     field->max_length = input_element->maxLength();
     field->is_autofilled = input_element->isAutofilled();
+    field->is_focusable = input_element->isFocusable();
+    field->should_autocomplete = input_element->autoComplete();
   } else if (extract_mask & EXTRACT_OPTIONS) {
     // Set option strings on the field if available.
     DCHECK(IsSelectElement(element));

@@ -148,7 +148,9 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   virtual void OnQuery(int query_id,
                        const webkit_glue::FormData& form,
                        const webkit_glue::FormField& field,
-                       const gfx::Rect& bounds) OVERRIDE {}
+                       const gfx::Rect& bounds,
+                       bool display_warning) OVERRIDE {}
+
   MOCK_METHOD5(OnSuggestionsReturned,
                void(int query_id,
                     const std::vector<string16>& autofill_values,
@@ -157,6 +159,19 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
                     const std::vector<int>& autofill_unique_ids));
 
   virtual void HideAutofillPopup() OVERRIDE {}
+
+
+  virtual void ApplyAutofillSuggestions(
+      const std::vector<string16>& autofill_values,
+      const std::vector<string16>& autofill_labels,
+      const std::vector<string16>& autofill_icons,
+      const std::vector<int>& autofill_unique_ids,
+      int separator_index) OVERRIDE {}
+
+  virtual void OnQueryPlatformSpecific(
+      int query_id,
+      const webkit_glue::FormData& form,
+      const webkit_glue::FormField& field) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);

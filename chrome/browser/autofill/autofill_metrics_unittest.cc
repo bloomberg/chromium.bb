@@ -977,12 +977,14 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
               LogAddressSuggestionsCount(2)).Times(1);
 
   // Simulate activating the autofill popup for the phone field.
-  autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect());
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form, field, gfx::Rect(), false);
 
   // Simulate activating the autofill popup for the email field after typing.
   // No new metric should be logged, since we're still on the same page.
   autofill_test::CreateTestFormField("Email", "email", "b", "email", &field);
-  autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect());
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form, field, gfx::Rect(), false);
 
   // Reset the autofill manager state.
   autofill_manager_->Reset();
@@ -994,7 +996,8 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
               LogAddressSuggestionsCount(1)).Times(1);
 
   // Simulate activating the autofill popup for the email field after typing.
-  autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect());
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form, field, gfx::Rect(), false);
 
   // Reset the autofill manager state again.
   autofill_manager_->Reset();
@@ -1007,7 +1010,8 @@ TEST_F(AutofillMetricsTest, AddressSuggestionsCount) {
 
   // Simulate activating the autofill popup for the email field after typing.
   form.fields[0].is_autofilled = true;
-  autofill_manager_->OnQueryFormFieldAutofill(0, form, field, gfx::Rect());
+  autofill_manager_->OnQueryFormFieldAutofill(
+      0, form, field, gfx::Rect(), false);
 }
 
 // Test that we log whether Autofill is enabled when filling a form.

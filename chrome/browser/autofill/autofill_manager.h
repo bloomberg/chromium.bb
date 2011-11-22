@@ -68,6 +68,14 @@ class AutofillManager : public TabContentsObserver,
     external_delegate_ = delegate;
   }
 
+  // Called from our external delegate so they cannot be private.
+  void OnFillAutofillFormData(int query_id,
+                              const webkit_glue::FormData& form,
+                              const webkit_glue::FormField& field,
+                              int unique_id);
+  void OnDidShowAutofillSuggestions(bool is_new_popup);
+  void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
+
  protected:
   // Only test code should subclass AutofillManager.
   friend class base::RefCounted<AutofillManager>;
@@ -114,12 +122,6 @@ class AutofillManager : public TabContentsObserver,
 
   ScopedVector<FormStructure>* form_structures() { return &form_structures_; }
 
- // Called from our external delegate so it cannot be private.
-  void OnFillAutoFillFormData(int query_id,
-                              const webkit_glue::FormData& form,
-                              const webkit_glue::FormField& field,
-                              int unique_id);
-
   // Exposed for testing.
   AutofillExternalDelegate* external_delegate() {
     return external_delegate_;
@@ -152,15 +154,11 @@ class AutofillManager : public TabContentsObserver,
   void OnQueryFormFieldAutofill(int query_id,
                                 const webkit_glue::FormData& form,
                                 const webkit_glue::FormField& field,
-                                const gfx::Rect& bounding_box);
-  void OnFillAutofillFormData(int query_id,
-                              const webkit_glue::FormData& form,
-                              const webkit_glue::FormField& field,
-                              int unique_id);
+                                const gfx::Rect& bounding_box,
+                                bool display_warning);
   void OnShowAutofillDialog();
   void OnDidPreviewAutofillFormData();
-  void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
-  void OnDidShowAutofillSuggestions(bool is_new_popup);
+  void OnDidEndTextFieldEditing();
   void OnHideAutofillPopup();
 
   // Fills |host| with the RenderViewHost for this tab.

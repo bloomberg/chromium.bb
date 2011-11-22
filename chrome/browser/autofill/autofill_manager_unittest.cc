@@ -571,7 +571,8 @@ class AutofillManagerTest : public TabContentsWrapperTestHarness {
     autofill_manager_->OnQueryFormFieldAutofill(query_id,
                                                 form,
                                                 field,
-                                                gfx::Rect());
+                                                gfx::Rect(),
+                                                false);
   }
 
   void GetAutofillSuggestions(const webkit_glue::FormData& form,
@@ -2867,18 +2868,25 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
       : AutofillExternalDelegate(wrapper) {}
   virtual ~MockAutofillExternalDelegate() {}
 
-  MOCK_METHOD4(OnQuery, void(int query_id,
+  MOCK_METHOD5(OnQuery, void(int query_id,
                              const webkit_glue::FormData& form,
                              const webkit_glue::FormField& field,
-                             const gfx::Rect& bounds));
-  virtual void OnSuggestionsReturned(
-      int query_id,
+                             const gfx::Rect& bounds,
+                             bool display_warning));
+
+  virtual void HideAutofillPopup() OVERRIDE {}
+
+  virtual void ApplyAutofillSuggestions(
       const std::vector<string16>& autofill_values,
       const std::vector<string16>& autofill_labels,
       const std::vector<string16>& autofill_icons,
-      const std::vector<int>& autofill_unique_ids) OVERRIDE {}
+      const std::vector<int>& autofill_unique_ids,
+      int separator_index) OVERRIDE {}
 
-  virtual void HideAutofillPopup() OVERRIDE {}
+  virtual void OnQueryPlatformSpecific(
+      int query_id,
+      const webkit_glue::FormData& form,
+      const webkit_glue::FormField& field) OVERRIDE {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillExternalDelegate);
@@ -2889,7 +2897,7 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
 // Test our external delegate is called at the right time.
 TEST_F(AutofillManagerTest, TestExternalDelegate) {
   MockAutofillExternalDelegate external_delegate(contents_wrapper());
-  EXPECT_CALL(external_delegate, OnQuery(_, _, _, _));
+  EXPECT_CALL(external_delegate, OnQuery(_, _, _, _, _));
   autofill_manager_->SetExternalDelegate(&external_delegate);
 
   FormData form;

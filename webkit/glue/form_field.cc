@@ -21,7 +21,9 @@ namespace webkit_glue {
 
 FormField::FormField()
     : max_length(0),
-      is_autofilled(false) {
+      is_autofilled(false),
+      is_focusable(false),
+      should_autocomplete(false) {
 }
 
 FormField::~FormField() {
@@ -55,7 +57,11 @@ std::ostream& operator<<(std::ostream& os, const FormField& field) {
       << " "
       << field.max_length
       << " "
-      << (field.is_autofilled ? "true" : "false");
+      << (field.is_autofilled ? "true" : "false")
+      << " "
+      << (field.is_focusable ? "true" : "false")
+      << " "
+      << (field.should_autocomplete ? "true" : "false");
 }
 
 }  // namespace webkit_glue

@@ -28,6 +28,8 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::FormField)
   IPC_STRUCT_TRAITS_MEMBER(autocomplete_type)
   IPC_STRUCT_TRAITS_MEMBER(max_length)
   IPC_STRUCT_TRAITS_MEMBER(is_autofilled)
+  IPC_STRUCT_TRAITS_MEMBER(is_focusable)
+  IPC_STRUCT_TRAITS_MEMBER(should_autocomplete)
   IPC_STRUCT_TRAITS_MEMBER(option_values)
   IPC_STRUCT_TRAITS_MEMBER(option_contents)
 IPC_STRUCT_TRAITS_END()
@@ -123,11 +125,12 @@ IPC_MESSAGE_ROUTED3(AutofillHostMsg_TextFieldDidChange,
                     base::TimeTicks /* timestamp */)
 
 // Queries the browser for Autofill suggestions for a form input field.
-IPC_MESSAGE_ROUTED4(AutofillHostMsg_QueryFormFieldAutofill,
+IPC_MESSAGE_ROUTED5(AutofillHostMsg_QueryFormFieldAutofill,
                     int /* id of this message */,
                     webkit_glue::FormData /* the form */,
                     webkit_glue::FormField /* the form field */,
-                    gfx::Rect /* input field bounds, window-relative */)
+                    gfx::Rect /* input field bounds, window-relative */,
+                    bool /* display warning if autofill disabled */)
 
 // Sent when the popup with Autofill suggestions for a form is shown.
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_DidShowAutofillSuggestions,
@@ -156,6 +159,9 @@ IPC_MESSAGE_ROUTED2(AutofillHostMsg_RemoveAutocompleteEntry,
 
 // Instructs the browser to show the Autofill dialog.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_ShowAutofillDialog)
+
+// Send when a text field is done editing.
+IPC_MESSAGE_ROUTED0(AutofillHostMsg_DidEndTextFieldEditing)
 
 // Instructs the browser to hide the Autofill popup.
 IPC_MESSAGE_ROUTED0(AutofillHostMsg_HideAutofillPopup)

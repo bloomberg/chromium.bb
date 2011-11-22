@@ -206,6 +206,7 @@ void AutofillAgent::removeAutocompleteSuggestion(const WebString& name,
 void AutofillAgent::textFieldDidEndEditing(const WebInputElement& element) {
   password_autofill_manager_->TextFieldDidEndEditing(element);
   has_shown_autofill_popup_for_current_edit_ = false;
+  Send(new AutofillHostMsg_DidEndTextFieldEditing(routing_id()));
 }
 
 void AutofillAgent::textFieldDidChange(const WebInputElement& element) {
@@ -422,8 +423,12 @@ void AutofillAgent::QueryAutofillSuggestions(const WebInputElement& element,
   // gfx::Rect bounding_box(autofill_query_element_.boundsInRootViewSpace());
   gfx::Rect bounding_box(26, 51, 155, 22);
 
-  Send(new AutofillHostMsg_QueryFormFieldAutofill(
-      routing_id(), autofill_query_id_, form, field, bounding_box));
+  Send(new AutofillHostMsg_QueryFormFieldAutofill(routing_id(),
+                                                  autofill_query_id_,
+                                                  form,
+                                                  field,
+                                                  bounding_box,
+                                                  display_warning_if_disabled));
 }
 
 void AutofillAgent::FillAutofillFormData(const WebNode& node,

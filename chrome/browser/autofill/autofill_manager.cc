@@ -312,6 +312,8 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnDidFillAutofillFormData)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_DidShowAutofillSuggestions,
                         OnDidShowAutofillSuggestions)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_DidEndTextFieldEditing,
+                        OnDidEndTextFieldEditing)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_HideAutofillPopup,
                         OnHideAutofillPopup)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -443,14 +445,19 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
 void AutofillManager::OnQueryFormFieldAutofill(int query_id,
                                                const FormData& form,
                                                const FormField& field,
-                                               const gfx::Rect& bounding_box) {
+                                               const gfx::Rect& bounding_box,
+                                               bool display_warning) {
   std::vector<string16> values;
   std::vector<string16> labels;
   std::vector<string16> icons;
   std::vector<int> unique_ids;
 
   if (external_delegate_) {
-    external_delegate_->OnQuery(query_id, form, field, bounding_box);
+    external_delegate_->OnQuery(query_id,
+                                form,
+                                field,
+                                bounding_box,
+                                display_warning);
   }
 
   RenderViewHost* host = NULL;
@@ -692,6 +699,11 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // If the corresponding flag is set, annotate forms with the predicted types.
   SendAutofillTypePredictions(form_structures_.get());
+}
+
+void AutofillManager::OnDidEndTextFieldEditing() {
+  if (external_delegate_)
+    external_delegate_->DidEndTextFieldEditing();
 }
 
 bool AutofillManager::IsAutofillEnabled() const {

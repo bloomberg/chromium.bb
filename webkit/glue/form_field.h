@@ -31,6 +31,8 @@ struct FormField {
   string16 autocomplete_type;
   size_t max_length;
   bool is_autofilled;
+  bool is_focusable;
+  bool should_autocomplete;
 
   // For the HTML snippet |<option value="US">United States</option>|, the
   // value is "US" and the contents are "United States".
