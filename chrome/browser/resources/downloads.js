@@ -305,6 +305,7 @@ Download.DangerType = {
   NOT_DANGEROUS: "NOT_DANGEROUS",
   DANGEROUS_FILE: "DANGEROUS_FILE",
   DANGEROUS_URL: "DANGEROUS_URL",
+  DANGEROUS_CONTENT: "DANGEROUS_CONTENT"
 }
 
 /**
@@ -347,6 +348,7 @@ Download.prototype.update = function(download) {
       this.dangerDesc_.textContent = localStrings.getStringF('danger_file_desc',
                                                              this.fileName_);
     } else {
+      // This is used by both DANGEROUS_URL and DANGEROUS_CONTENT.
       this.dangerDesc_.textContent = localStrings.getString('danger_url_desc');
     }
     this.danger_.style.display = 'block';
@@ -462,6 +464,7 @@ Download.prototype.getStatusText_ = function() {
     case Download.States.PAUSED:
       return localStrings.getString('status_paused');
     case Download.States.DANGEROUS:
+      // danger_url_desc is also used by DANGEROUS_CONTENT.
       var desc = this.dangerType_ == Download.DangerType.DANGEROUS_FILE ?
           'danger_file_desc' : 'danger_url_desc';
       return localStrings.getString(desc);

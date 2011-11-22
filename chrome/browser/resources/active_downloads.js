@@ -382,7 +382,7 @@ DownloadRow.prototype = {
 
     // Handle dangerous files, extensions and dangerous urls.
     var dangerText;
-    if (dangerType == 'DANGEROUS_URL') {
+    if (dangerType == 'DANGEROUS_URL' || dangerType == 'DANGEROUS_CONTENT') {
       dangerText = localStrings.getString('dangerousurl');
     } else if (dangerType == 'DANGEROUS_FILE' && this.path.match(/\.crx$/)) {
       dangerText = localStrings.getString('dangerousextension');

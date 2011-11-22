@@ -83,6 +83,30 @@
 // the same value on all platforms.
 static const double PI = 3.141592653589793;
 
+namespace {
+
+// Returns a string constant to be used as the |danger_type| value in
+// CreateDownloadItemValue().  We only return strings for DANGEROUS_FILE,
+// DANGEROUS_URL and DANGEROUS_CONTENT because the |danger_type| value is only
+// defined if the value of |state| is |DANGEROUS|.
+const char* GetDangerTypeString(DownloadStateInfo::DangerType danger_type) {
+  switch (danger_type) {
+    case DownloadStateInfo::DANGEROUS_FILE:
+      return "DANGEROUS_FILE";
+    case DownloadStateInfo::DANGEROUS_URL:
+      return "DANGEROUS_URL";
+    case DownloadStateInfo::DANGEROUS_CONTENT:
+      return "DANGEROUS_CONTENT";
+    default:
+      // We shouldn't be returning a danger type string if it is
+      // NOT_DANGEROUS or MAYBE_DANGEROUS_CONTENT.
+      NOTREACHED();
+      return "";
+  }
+}
+
+}  // namespace
+
 namespace download_util {
 
 // How many times to cycle the complete animation. This should be an odd number
@@ -428,11 +452,13 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
   if (download->IsInProgress()) {
     if (download->GetSafetyState() == DownloadItem::DANGEROUS) {
       file_value->SetString("state", "DANGEROUS");
+      // These are the only danger states we expect to see (and the UI is
+      // equipped to handle):
       DCHECK(download->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ||
-             download->GetDangerType() == DownloadStateInfo::DANGEROUS_URL);
+             download->GetDangerType() == DownloadStateInfo::DANGEROUS_URL ||
+             download->GetDangerType() == DownloadStateInfo::DANGEROUS_CONTENT);
       const char* danger_type_value =
-          download->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ?
-          "DANGEROUS_FILE" : "DANGEROUS_URL";
+          GetDangerTypeString(download->GetDangerType());
       file_value->SetString("danger_type", danger_type_value);
     } else if (download->IsPaused()) {
       file_value->SetString("state", "PAUSED");
