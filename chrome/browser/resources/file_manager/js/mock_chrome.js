@@ -300,7 +300,7 @@ chrome.fileBrowserPrivate = {
       CANCEL_LABEL: 'Cancel',
       OPEN_LABEL: 'Open',
       SAVE_LABEL: 'Save',
-      OK_LABEL: 'Ok',
+      OK_LABEL: 'OK',
 
       DEFAULT_NEW_FOLDER_NAME: 'New Folder',
       MORE_FILES: 'Show all files',

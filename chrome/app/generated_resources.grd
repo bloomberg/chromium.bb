@@ -9861,8 +9861,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FILE_BROWSER_SAVE_LABEL" desc="Save label.">
         Save
       </message>
-      <message name="IDS_FILE_BROWSER_OK_LABEL" desc="Ok label.">
-        Ok
+      <message name="IDS_FILE_BROWSER_OK_LABEL" desc="OK label.">
+        OK
       </message>
 
       <message name="IDS_FILE_BROWSER_DEFAULT_NEW_FOLDER_NAME" desc="The default name for a newly created folder.">
