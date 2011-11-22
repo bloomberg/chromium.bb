@@ -8,6 +8,15 @@ cr.define('options', function() {
   var UserImagesGrid = options.UserImagesGrid;
   var ButtonImages = UserImagesGrid.ButtonImages;
 
+  /**
+   * Array of button URLs used on this page.
+   * @type {Array.<string>}
+   */
+  const ButtonImageUrls = [
+    ButtonImages.TAKE_PHOTO,
+    ButtonImages.CHOOSE_FILE
+  ];
+
   /////////////////////////////////////////////////////////////////////////////
   // ChangePictureOptions class:
 
@@ -88,6 +97,7 @@ cr.define('options', function() {
      * @private
      */
     closePage_: function() {
+      $('images-grid').blur();  // Make sure the image grid is not active.
       OptionsPage.navigateToPage('personal');
     },
 
@@ -121,8 +131,6 @@ cr.define('options', function() {
         case ButtonImages.CHOOSE_FILE:
           this.handleChooseFile_();
           break;
-        case ButtonImages.PROFILE_PICTURE:
-          break;
         default:
           this.closePage_();
           break;
@@ -134,16 +142,11 @@ cr.define('options', function() {
      * @param {Event} e Double click Event.
      */
     handleImageDblClick_: function(e) {
-      // Close page unless the click target is the grid itself,
-      // any of the buttons or the Profile image until it's not loaded.
+      // Close page unless the click target is the grid itself or
+      // any of the buttons.
       var url = e.target.src;
-      if (!url)
-        return;
-      for (var k in ButtonImages) {
-        if (url == ButtonImages[k])
-          return;
-      }
-      this.closePage_();
+      if (url && ButtonImageUrls.indexOf(url) == -1)
+        this.closePage_();
     },
 
     /**
