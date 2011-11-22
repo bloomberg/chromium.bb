@@ -223,11 +223,11 @@ WebThemeEngine* WebKitPlatformSupportImpl::themeEngine() {
 }
 
 WebURLLoader* WebKitPlatformSupportImpl::createURLLoader() {
-  return new WebURLLoaderImpl();
+  return new WebURLLoaderImpl(this);
 }
 
 WebSocketStreamHandle* WebKitPlatformSupportImpl::createSocketStreamHandle() {
-  return new WebSocketStreamHandleImpl();
+  return new WebSocketStreamHandleImpl(this);
 }
 
 WebString WebKitPlatformSupportImpl::userAgent(const WebURL& url) {
@@ -306,7 +306,8 @@ void WebKitPlatformSupportImpl::traceEventEnd(const char* name, void* id,
 
 namespace {
 
-WebData loadAudioSpatializationResource(const char* name) {
+WebData loadAudioSpatializationResource(WebKitPlatformSupportImpl* platform,
+                                        const char* name) {
 #ifdef IDR_AUDIO_SPATIALIZATION_T000_P000
   const size_t kExpectedSpatializationNameLength = 31;
   if (strlen(name) != kExpectedSpatializationNameLength) {
@@ -346,7 +347,7 @@ WebData loadAudioSpatializationResource(const char* name) {
       is_resource_index_good) {
     const int kFirstAudioResourceIndex = IDR_AUDIO_SPATIALIZATION_T000_P000;
     base::StringPiece resource =
-        GetDataResource(kFirstAudioResourceIndex + resource_index);
+        platform->GetDataResource(kFirstAudioResourceIndex + resource_index);
     return WebData(resource.data(), resource.size());
   }
 #endif  // IDR_AUDIO_SPATIALIZATION_T000_P000
@@ -434,7 +435,7 @@ WebData WebKitPlatformSupportImpl::loadResource(const char* name) {
 
   // Check the name prefix to see if it's an audio resource.
   if (StartsWithASCII(name, "IRC_Composite", true))
-    return loadAudioSpatializationResource(name);
+    return loadAudioSpatializationResource(this, name);
 
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
     if (!strcmp(name, kDataResources[i].name)) {

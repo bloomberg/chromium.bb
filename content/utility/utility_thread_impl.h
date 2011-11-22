@@ -21,9 +21,6 @@ class IndexedDBKey;
 
 namespace content {
 class SerializedScriptValue;
-}
-
-namespace webkit_glue {
 class WebKitPlatformSupportImpl;
 }
 
@@ -64,7 +61,7 @@ class UtilityThreadImpl : public content::UtilityThread,
   // True when we're running in batch mode.
   bool batch_mode_;
 
-  scoped_ptr<webkit_glue::WebKitPlatformSupportImpl> webkit_platform_support_;
+  scoped_ptr<content::WebKitPlatformSupportImpl> webkit_platform_support_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };

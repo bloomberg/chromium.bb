@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include "base/win/resource_util.h"
 #include "grit/webkit_chromium_resources.h"
 #include "grit/webkit_resources.h"
+#include "webkit/support/test_webkit_platform_support.h"
 
 #define MAX_LOADSTRING 100
 
@@ -60,9 +61,7 @@ void AfterShutdown() {
 
 }  // namespace webkit_support
 
-namespace webkit_glue {
-
-string16 GetLocalizedString(int message_id) {
+string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
   wchar_t localized[MAX_LOADSTRING];
   int length = ::LoadString(::GetModuleHandle(NULL), message_id,
                             localized, MAX_LOADSTRING);
@@ -73,7 +72,7 @@ string16 GetLocalizedString(int message_id) {
   return string16(localized, length);
 }
 
-base::StringPiece GetDataResource(int resource_id) {
+base::StringPiece TestWebKitPlatformSupport::GetDataResource(int resource_id) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)
@@ -103,5 +102,3 @@ base::StringPiece GetDataResource(int resource_id) {
 
   return ResourceProvider(resource_id);
 }
-
-}  // namespace webkit_glue

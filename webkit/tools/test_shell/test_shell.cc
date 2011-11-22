@@ -47,8 +47,6 @@
 #include "webkit/glue/user_agent.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
-#include "webkit/plugins/npapi/plugin_list.h"
-#include "webkit/plugins/webplugininfo.h"
 #include "webkit/tools/test_shell/notification_presenter.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
@@ -626,29 +624,3 @@ WebKit::WebGeolocationClientMock* TestShell::geolocation_client_mock() {
   }
   return geolocation_client_mock_.get();
 }
-
-namespace webkit_glue {
-
-void GetPlugins(bool refresh,
-                std::vector<webkit::WebPluginInfo>* plugins) {
-  if (refresh)
-    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
-  webkit::npapi::PluginList::Singleton()->GetPlugins(plugins);
-  // Don't load the forked TestNetscapePlugIn in the chromium code, use
-  // the copy in webkit.org's repository instead.
-  const FilePath::StringType kPluginBlackList[] = {
-    FILE_PATH_LITERAL("npapi_layout_test_plugin.dll"),
-    FILE_PATH_LITERAL("WebKitTestNetscapePlugIn.plugin"),
-    FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
-  };
-  for (int i = plugins->size() - 1; i >= 0; --i) {
-    webkit::WebPluginInfo plugin_info = plugins->at(i);
-    for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
-      if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
-        plugins->erase(plugins->begin() + i);
-      }
-    }
-  }
-}
-
-}  // namespace webkit_glue

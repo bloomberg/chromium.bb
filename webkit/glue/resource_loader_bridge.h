@@ -4,8 +4,7 @@
 //
 // The intent of this file is to provide a type-neutral abstraction between
 // Chrome and WebKit for resource loading. This pure-virtual interface is
-// implemented by the embedder, which also provides a factory method Create
-// to instantiate this object.
+// implemented by the embedder.
 //
 // One of these objects will be created by WebKit for each request. WebKit
 // will own the pointer to the bridge, and will delete it when the request is
@@ -197,7 +196,8 @@ struct ResourceResponseInfo {
 
 class ResourceLoaderBridge {
  public:
-  // Structure used when calling ResourceLoaderBridge::Create().
+  // Structure used when calling
+  // WebKitPlatformSupportImpl::CreateResourceLoader().
   struct RequestInfo {
     RequestInfo();
     ~RequestInfo();
@@ -329,15 +329,9 @@ class ResourceLoaderBridge {
                                     const base::Time& completion_time) = 0;
   };
 
-  // use Create() for construction, but anybody can delete at any time,
-  // INCLUDING during processing of callbacks.
+  // use WebKitPlatformSupportImpl::CreateResourceLoader() for construction, but
+  // anybody can delete at any time, INCLUDING during processing of callbacks.
   virtual ~ResourceLoaderBridge();
-
-  // Call this method to make a new instance.
-  //
-  // For HTTP(S) POST requests, the AppendDataToUpload and AppendFileToUpload
-  // methods may be called to construct the body of the request.
-  static ResourceLoaderBridge* Create(const RequestInfo& request_info);
 
   // Call this method before calling Start() to append a chunk of binary data
   // to the request body.  May only be used with HTTP(S) POST requests.
@@ -394,7 +388,10 @@ class ResourceLoaderBridge {
   virtual void UpdateRoutingId(int new_routing_id) = 0;
 
  protected:
-  // construction must go through Create()
+  // Construction must go through
+  // WebKitPlatformSupportImpl::CreateResourceLoader()
+  // For HTTP(S) POST requests, the AppendDataToUpload and AppendFileToUpload
+  // methods may be called to construct the body of the request.
   ResourceLoaderBridge();
 
  private:

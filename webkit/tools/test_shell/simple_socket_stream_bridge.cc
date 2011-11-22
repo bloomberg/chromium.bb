@@ -234,13 +234,9 @@ void SimpleSocketStreamBridge::Cleanup() {
   g_request_context = NULL;
 }
 
-namespace webkit_glue {
-
 /* static */
-WebSocketStreamHandleBridge* WebSocketStreamHandleBridge::Create(
+webkit_glue::WebSocketStreamHandleBridge* SimpleSocketStreamBridge::Create(
     WebKit::WebSocketStreamHandle* handle,
-    WebSocketStreamHandleDelegate* delegate) {
+    webkit_glue::WebSocketStreamHandleDelegate* delegate) {
   return new WebSocketStreamHandleBridgeImpl(handle, delegate);
 }
-
-}  // namespace webkit_glue

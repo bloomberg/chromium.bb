@@ -12,12 +12,12 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/indexed_db_key.h"
 #include "content/common/utility_messages.h"
+#include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/utility/content_utility_client.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
-#include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 namespace {
@@ -34,7 +34,7 @@ void ConvertVector(const SRC& src, DEST* dest) {
 UtilityThreadImpl::UtilityThreadImpl()
     : batch_mode_(false) {
   ChildProcess::current()->AddRefProcess();
-  webkit_platform_support_.reset(new webkit_glue::WebKitPlatformSupportImpl);
+  webkit_platform_support_.reset(new content::WebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
   content::GetContentClient()->utility()->UtilityThreadStarted();
 }

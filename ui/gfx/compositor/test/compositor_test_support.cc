@@ -5,6 +5,7 @@
 #include "ui/gfx/compositor/test/compositor_test_support.h"
 
 #if defined(USE_WEBKIT_COMPOSITOR)
+#include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #endif
@@ -12,13 +13,43 @@
 namespace ui {
 
 #if defined(USE_WEBKIT_COMPOSITOR)
-static webkit_glue::WebKitPlatformSupportImpl* g_webkit_support;
+class CompositorTestPlatformSupport:
+    public NON_EXPORTED_BASE(webkit_glue::WebKitPlatformSupportImpl) {
+ public:
+  virtual string16 GetLocalizedString(int message_id) OVERRIDE {
+    return string16();
+  }
+
+  virtual base::StringPiece GetDataResource(int resource_id) OVERRIDE {
+    return base::StringPiece();
+  }
+
+  virtual void GetPlugins(
+      bool refresh, std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE {
+  }
+
+  virtual webkit_glue::ResourceLoaderBridge* CreateResourceLoader(
+      const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info)
+      OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+
+  virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketBridge(
+      WebKit::WebSocketStreamHandle* handle,
+      webkit_glue::WebSocketStreamHandleDelegate* delegate) OVERRIDE {
+    NOTREACHED();
+    return NULL;
+  }
+};
+
+static CompositorTestPlatformSupport* g_webkit_support;
 #endif
 
 void CompositorTestSupport::Initialize() {
 #if defined(USE_WEBKIT_COMPOSITOR)
   DCHECK(!g_webkit_support);
-  g_webkit_support = new webkit_glue::WebKitPlatformSupportImpl;
+  g_webkit_support = new CompositorTestPlatformSupport;
   WebKit::initialize(g_webkit_support);
 #endif
 }

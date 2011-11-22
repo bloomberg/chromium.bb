@@ -15,6 +15,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSocketStreamHandleClient.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"
 
@@ -33,7 +34,7 @@ class WebSocketStreamHandleImpl::Context
     client_ = client;
   }
 
-  void Connect(const WebKit::WebURL& url);
+  void Connect(const WebKit::WebURL& url, WebKitPlatformSupportImpl* platform);
   bool Send(const WebKit::WebData& data);
   void Close();
 
@@ -71,10 +72,12 @@ WebSocketStreamHandleImpl::Context::Context(WebSocketStreamHandleImpl* handle)
       bridge_(NULL) {
 }
 
-void WebSocketStreamHandleImpl::Context::Connect(const WebKit::WebURL& url) {
+void WebSocketStreamHandleImpl::Context::Connect(
+    const WebKit::WebURL& url,
+    WebKitPlatformSupportImpl* platform) {
   VLOG(1) << "Connect url=" << url;
   DCHECK(!bridge_);
-  bridge_ = WebSocketStreamHandleBridge::Create(handle_, this);
+  bridge_ = platform->CreateWebSocketBridge(handle_, this);
   AddRef();  // Will be released by DidClose().
   bridge_->Connect(url);
 }
@@ -138,8 +141,10 @@ void WebSocketStreamHandleImpl::Context::DidClose(
 
 // WebSocketStreamHandleImpl ------------------------------------------------
 
-WebSocketStreamHandleImpl::WebSocketStreamHandleImpl()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(context_(new Context(this))) {
+WebSocketStreamHandleImpl::WebSocketStreamHandleImpl(
+    WebKitPlatformSupportImpl* platform)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(context_(new Context(this))),
+      platform_(platform) {
 }
 
 WebSocketStreamHandleImpl::~WebSocketStreamHandleImpl() {
@@ -155,7 +160,7 @@ void WebSocketStreamHandleImpl::connect(
   DCHECK(!context_->client());
   context_->set_client(client);
 
-  context_->Connect(url);
+  context_->Connect(url, platform_);
 }
 
 bool WebSocketStreamHandleImpl::send(const WebKit::WebData& data) {

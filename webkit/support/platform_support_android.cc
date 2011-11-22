@@ -13,6 +13,7 @@
 #include "googleurl/src/gurl.h"
 #include "grit/webkit_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/support/test_webkit_platform_support.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 
 namespace webkit_support {
@@ -53,13 +54,11 @@ void AfterShutdown() {
 
 }  // namespace webkit_support
 
-namespace webkit_glue {
-
-string16 GetLocalizedString(int message_id) {
+string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
   return ResourceBundle::GetSharedInstance().GetLocalizedString(message_id);
 }
 
-base::StringPiece GetDataResource(int resource_id) {
+base::StringPiece TestWebKitPlatformSupport::GetDataResource(int resource_id) {
   FilePath resources_path;
   PathService::Get(base::DIR_EXE, &resources_path);
   resources_path = resources_path.Append("DumpRenderTree_resources");
@@ -88,5 +87,3 @@ base::StringPiece GetDataResource(int resource_id) {
 
   return ResourceBundle::GetSharedInstance().GetRawDataResource(resource_id);
 }
-
-}  // namespace webkit_glue

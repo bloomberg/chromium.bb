@@ -252,6 +252,8 @@
     'common/webblobregistry_impl.cc',
     'common/webblobregistry_impl.h',
     'common/webblob_messages.h',
+    'common/webkitplatformsupport_impl.cc',
+    'common/webkitplatformsupport_impl.h',
     'common/webmessageportchannel_impl.cc',
     'common/webmessageportchannel_impl.h',
     'common/worker_messages.h',

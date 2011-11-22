@@ -43,6 +43,7 @@
 #include "webkit/glue/webkitplatformsupport_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/gpu/webgraphicscontext3d_in_process_impl.h"
+#include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/support/simple_database_system.h"
 #include "webkit/support/test_webmessageportchannel.h"
 #include "webkit/support/webkit_support.h"
@@ -51,6 +52,7 @@
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
+#include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 #include "webkit/tools/test_shell/test_shell_request_context.h"
@@ -406,4 +408,39 @@ void TestWebKitPlatformSupport::sampleGamepads(WebKit::WebGamepads& data) {
 void TestWebKitPlatformSupport::setGamepadData(
     const WebKit::WebGamepads& data) {
   gamepad_data_ = data;
+}
+
+void TestWebKitPlatformSupport::GetPlugins(
+    bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
+  if (refresh)
+    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->GetPlugins(plugins);
+  // Don't load the forked npapi_layout_test_plugin in DRT, we only want to
+  // use the upstream version TestNetscapePlugIn.
+  const FilePath::StringType kPluginBlackList[] = {
+    FILE_PATH_LITERAL("npapi_layout_test_plugin.dll"),
+    FILE_PATH_LITERAL("WebKitTestNetscapePlugIn.plugin"),
+    FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
+  };
+  for (int i = plugins->size() - 1; i >= 0; --i) {
+    webkit::WebPluginInfo plugin_info = plugins->at(i);
+    for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
+      if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
+        plugins->erase(plugins->begin() + i);
+      }
+    }
+  }
+}
+
+webkit_glue::ResourceLoaderBridge*
+TestWebKitPlatformSupport::CreateResourceLoader(
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
+  return SimpleResourceLoaderBridge::Create(request_info);
+}
+
+webkit_glue::WebSocketStreamHandleBridge*
+TestWebKitPlatformSupport::CreateWebSocketBridge(
+    WebKit::WebSocketStreamHandle* handle,
+    webkit_glue::WebSocketStreamHandleDelegate* delegate) {
+  return SimpleSocketStreamBridge::Create(handle, delegate);
 }

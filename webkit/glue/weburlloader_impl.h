@@ -10,9 +10,11 @@
 
 namespace webkit_glue {
 
+class WebKitPlatformSupportImpl;
+
 class WebURLLoaderImpl : public WebKit::WebURLLoader {
  public:
-  WebURLLoaderImpl();
+  explicit WebURLLoaderImpl(WebKitPlatformSupportImpl* platform);
   virtual ~WebURLLoaderImpl();
 
   // WebURLLoader methods:
@@ -32,6 +34,7 @@ class WebURLLoaderImpl : public WebKit::WebURLLoader {
  private:
   class Context;
   scoped_refptr<Context> context_;
+  WebKitPlatformSupportImpl* platform_;
 };
 
 }  // namespace webkit_glue

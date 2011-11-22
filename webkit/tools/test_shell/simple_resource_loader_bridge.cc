@@ -907,18 +907,6 @@ class CookieGetter : public base::RefCountedThreadSafe<CookieGetter> {
 
 //-----------------------------------------------------------------------------
 
-namespace webkit_glue {
-
-// Factory function.
-ResourceLoaderBridge* ResourceLoaderBridge::Create(
-    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
-  return new ResourceLoaderBridgeImpl(request_info);
-}
-
-}  // namespace webkit_glue
-
-//-----------------------------------------------------------------------------
-
 // static
 void SimpleResourceLoaderBridge::Init(
     const FilePath& cache_path,
@@ -1046,4 +1034,10 @@ void SimpleResourceLoaderBridge::AllowFileOverHTTP(
          (http_prefix.SchemeIs("http") || http_prefix.SchemeIs("https")));
   g_file_over_http_params = new FileOverHTTPParams(file_path_template,
                                                    http_prefix);
+}
+
+// static
+webkit_glue::ResourceLoaderBridge* SimpleResourceLoaderBridge::Create(
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
+  return new ResourceLoaderBridgeImpl(request_info);
 }

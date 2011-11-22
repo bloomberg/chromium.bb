@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
+#include "content/common/webkitplatformsupport_impl.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMimeRegistry.h"
-#include "webkit/glue/webkitplatformsupport_impl.h"
 
 class WebFileSystemImpl;
 
@@ -17,7 +17,7 @@ class WebFileUtilities;
 }
 
 class WorkerWebKitPlatformSupportImpl
-    : public webkit_glue::WebKitPlatformSupportImpl,
+    : public content::WebKitPlatformSupportImpl,
       public WebKit::WebMimeRegistry {
  public:
   WorkerWebKitPlatformSupportImpl();

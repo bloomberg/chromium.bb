@@ -19,6 +19,7 @@
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "ui/base/resource/data_pack.h"
 #include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/support/test_webkit_platform_support.h"
 #import "webkit/support/drt_application_mac.h"
 #import "webkit/tools/test_shell/mac/DumpRenderTreePasteboard.h"
 
@@ -156,9 +157,7 @@ void AfterShutdown() {
 
 }  // namespace webkit_support
 
-namespace webkit_glue {
-
-string16 GetLocalizedString(int message_id) {
+string16 TestWebKitPlatformSupport::GetLocalizedString(int message_id) {
   base::StringPiece res;
   if (!g_resource_data_pack->GetStringPiece(message_id, &res)) {
     LOG(FATAL) << "failed to load webkit string with id " << message_id;
@@ -194,7 +193,7 @@ static FilePath GetResourcesFilePath() {
   return path.AppendASCII("Resources");
 }
 
-base::StringPiece GetDataResource(int resource_id) {
+base::StringPiece TestWebKitPlatformSupport::GetDataResource(int resource_id) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)
@@ -231,5 +230,3 @@ base::StringPiece GetDataResource(int resource_id) {
     g_resource_data_pack->GetStringPiece(resource_id, &res);
   return res;
 }
-
-}  // namespace webkit_glue

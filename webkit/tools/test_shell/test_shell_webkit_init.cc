@@ -15,6 +15,9 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityPolicy.h"
 #include "ui/gfx/gl/gl_bindings_skia_in_process.h"
 #include "v8/include/v8.h"
+#include "webkit/plugins/npapi/plugin_list.h"
+#include "webkit/plugins/webplugininfo.h"
+#include "webkit/tools/test_shell/simple_socket_stream_bridge.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 #if defined(OS_WIN)
@@ -300,4 +303,39 @@ TestShellWebKitInit::sharedWorkerRepository() {
 WebKit::WebGraphicsContext3D* TestShellWebKitInit::createGraphicsContext3D() {
   return new webkit::gpu::WebGraphicsContext3DInProcessImpl(
       gfx::kNullPluginWindow, NULL);
+}
+
+void TestShellWebKitInit::GetPlugins(
+    bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
+  if (refresh)
+    webkit::npapi::PluginList::Singleton()->RefreshPlugins();
+  webkit::npapi::PluginList::Singleton()->GetPlugins(plugins);
+  // Don't load the forked TestNetscapePlugIn in the chromium code, use
+  // the copy in webkit.org's repository instead.
+  const FilePath::StringType kPluginBlackList[] = {
+    FILE_PATH_LITERAL("npapi_layout_test_plugin.dll"),
+    FILE_PATH_LITERAL("WebKitTestNetscapePlugIn.plugin"),
+    FILE_PATH_LITERAL("libnpapi_layout_test_plugin.so"),
+  };
+  for (int i = plugins->size() - 1; i >= 0; --i) {
+    webkit::WebPluginInfo plugin_info = plugins->at(i);
+    for (size_t j = 0; j < arraysize(kPluginBlackList); ++j) {
+      if (plugin_info.path.BaseName() == FilePath(kPluginBlackList[j])) {
+        plugins->erase(plugins->begin() + i);
+      }
+    }
+  }
+}
+
+webkit_glue::ResourceLoaderBridge*
+TestShellWebKitInit::CreateResourceLoader(
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info) {
+  return SimpleResourceLoaderBridge::Create(request_info);
+}
+
+webkit_glue::WebSocketStreamHandleBridge*
+TestShellWebKitInit::CreateWebSocketBridge(
+    WebKit::WebSocketStreamHandle* handle,
+    webkit_glue::WebSocketStreamHandleDelegate* delegate) {
+  return SimpleSocketStreamBridge::Create(handle, delegate);
 }

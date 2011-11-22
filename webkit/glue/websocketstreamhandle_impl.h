@@ -10,9 +10,11 @@
 
 namespace webkit_glue {
 
+class WebKitPlatformSupportImpl;
+
 class WebSocketStreamHandleImpl : public WebKit::WebSocketStreamHandle {
  public:
-  WebSocketStreamHandleImpl();
+  explicit WebSocketStreamHandleImpl(WebKitPlatformSupportImpl* platform);
   virtual ~WebSocketStreamHandleImpl();
 
   // WebSocketStreamHandle methods:
@@ -25,6 +27,7 @@ class WebSocketStreamHandleImpl : public WebKit::WebSocketStreamHandle {
  private:
   class Context;
   scoped_refptr<Context> context_;
+  WebKitPlatformSupportImpl* platform_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketStreamHandleImpl);
 };

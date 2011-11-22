@@ -23,10 +23,6 @@ class WebSocketStreamHandleDelegate;
 class WebSocketStreamHandleBridge
     : public base::RefCountedThreadSafe<WebSocketStreamHandleBridge> {
  public:
-  static WebSocketStreamHandleBridge* Create(
-      WebKit::WebSocketStreamHandle* handle,
-      WebSocketStreamHandleDelegate* delegate);
-
   virtual void Connect(const GURL& url) = 0;
 
   virtual bool Send(const std::vector<char>& data) = 0;

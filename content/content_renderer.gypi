@@ -144,7 +144,6 @@
     'renderer/renderer_accessibility.h',
     'renderer/renderer_clipboard_client.cc',
     'renderer/renderer_clipboard_client.h',
-    'renderer/renderer_glue.cc',
     'renderer/renderer_main.cc',
     'renderer/renderer_main_platform_delegate.h',
     'renderer/renderer_main_platform_delegate_linux.cc',

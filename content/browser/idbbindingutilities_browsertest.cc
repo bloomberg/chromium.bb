@@ -9,6 +9,7 @@
 #include "content/browser/utility_process_host.h"
 #include "content/common/indexed_db_key.h"
 #include "content/common/utility_messages.h"
+#include "content/common/webkitplatformsupport_impl.h"
 #include "content/public/common/serialized_script_value.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +17,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
 #include "webkit/glue/idb_bindings.h"
 #include "webkit/glue/web_io_operators.h"
-#include "webkit/glue/webkitplatformsupport_impl.h"
 
 using content::BrowserThread;
 using WebKit::WebSerializedScriptValue;
@@ -37,7 +37,7 @@ class ScopedShutdownWebKit {
 
 // Sanity test, check the function call directly outside the sandbox.
 TEST(IDBKeyPathWithoutSandbox, Value) {
-  webkit_glue::WebKitPlatformSupportImpl webkit_platform_support;
+  content::WebKitPlatformSupportImpl webkit_platform_support;
   WebKit::initialize(&webkit_platform_support);
   ScopedShutdownWebKit shutdown_webkit;
 

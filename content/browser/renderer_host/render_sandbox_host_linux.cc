@@ -29,11 +29,11 @@
 #include "content/common/font_config_ipc_linux.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/unix_domain_socket_posix.h"
+#include "content/common/webkitplatformsupport_impl.h"
 #include "skia/ext/SkFontHost_fontconfig_direct.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/linux/WebFontInfo.h"
-#include "webkit/glue/webkitplatformsupport_impl.h"
 
 using WebKit::WebCString;
 using WebKit::WebFontInfo;
@@ -649,7 +649,7 @@ class SandboxIPCProcess  {
   const int browser_socket_;
   FontConfigDirect* const font_config_;
   std::vector<std::string> sandbox_cmd_;
-  scoped_ptr<webkit_glue::WebKitPlatformSupportImpl> webkit_platform_support_;
+  scoped_ptr<content::WebKitPlatformSupportImpl> webkit_platform_support_;
 };
 
 SandboxIPCProcess::~SandboxIPCProcess() {
@@ -660,7 +660,7 @@ SandboxIPCProcess::~SandboxIPCProcess() {
 void SandboxIPCProcess::EnsureWebKitInitialized() {
   if (webkit_platform_support_.get())
     return;
-  webkit_platform_support_.reset(new webkit_glue::WebKitPlatformSupportImpl);
+  webkit_platform_support_.reset(new content::WebKitPlatformSupportImpl);
   WebKit::initialize(webkit_platform_support_.get());
 }
 

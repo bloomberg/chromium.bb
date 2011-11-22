@@ -36,6 +36,7 @@
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell_devtools_agent.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
+#include "webkit/tools/test_shell/test_shell_webkit_init.h"
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
 using WebKit::WebWidget;
@@ -657,12 +658,7 @@ base::StringPiece TestShell::ResourceProvider(int key) {
 }
 
 
-/////////////////////////////////////////////////////////////////////////////
-// WebKit glue functions
-
-namespace webkit_glue {
-
-string16 GetLocalizedString(int message_id) {
+string16 TestShellWebKitInit::GetLocalizedString(int message_id) {
   wchar_t localized[MAX_LOADSTRING];
   int length = LoadString(GetModuleHandle(NULL), message_id,
                           localized, MAX_LOADSTRING);
@@ -674,7 +670,7 @@ string16 GetLocalizedString(int message_id) {
 }
 
 // TODO(tc): Convert this to using resources from test_shell.rc.
-base::StringPiece GetDataResource(int resource_id) {
+base::StringPiece TestShellWebKitInit::GetDataResource(int resource_id) {
   switch (resource_id) {
   case IDR_BROKENIMAGE: {
     // Use webkit's broken image icon (16x16)
@@ -726,6 +722,11 @@ base::StringPiece GetDataResource(int resource_id) {
 
   return base::StringPiece();
 }
+
+/////////////////////////////////////////////////////////////////////////////
+// WebKit glue functions
+
+namespace webkit_glue {
 
 bool EnsureFontLoaded(HFONT font) {
   return true;

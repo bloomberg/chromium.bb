@@ -8,6 +8,7 @@
 #include <string>
 #include "base/message_loop_proxy.h"
 #include "net/http/http_cache.h"
+#include "webkit/glue/resource_loader_bridge.h"
 
 class FilePath;
 class GURL;
@@ -51,6 +52,10 @@ class SimpleResourceLoaderBridge {
   // That is how we implement file-over-http feature.
   static void AllowFileOverHTTP(const std::string& file_path_template,
                                 const GURL& http_prefix);
+
+  // Creates a ResourceLoaderBridge instance.
+  static webkit_glue::ResourceLoaderBridge* Create(
+    const webkit_glue::ResourceLoaderBridge::RequestInfo& request_info);
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_RESOURCE_LOADER_BRIDGE_H__

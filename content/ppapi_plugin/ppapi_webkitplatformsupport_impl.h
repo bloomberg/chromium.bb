@@ -8,10 +8,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/glue/webkitplatformsupport_impl.h"
+#include "content/common/webkitplatformsupport_impl.h"
 
 class PpapiWebKitPlatformSupportImpl :
-    public webkit_glue::WebKitPlatformSupportImpl {
+    public content::WebKitPlatformSupportImpl {
  public:
   PpapiWebKitPlatformSupportImpl();
   virtual ~PpapiWebKitPlatformSupportImpl();

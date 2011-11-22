@@ -36,14 +36,7 @@ class WebFrame;
 class WebString;
 }
 
-namespace webkit {
-struct WebPluginInfo;
-}
-
 namespace webkit_glue {
-
-
-//---- BEGIN FUNCTIONS IMPLEMENTED BY WEBKIT/GLUE -----------------------------
 
 void SetJavaScriptFlags(const std::string& flags);
 
@@ -150,28 +143,6 @@ std::string GetInspectorProtocolVersion();
 
 // Tells caller whether the given protocol version is supported by the.
 bool IsInspectorProtocolVersionSupported(const std::string& version);
-
-//---- END FUNCTIONS IMPLEMENTED BY WEBKIT/GLUE -------------------------------
-
-
-//---- BEGIN FUNCTIONS IMPLEMENTED BY EMBEDDER --------------------------------
-
-// Glue to get resources from the embedder.
-
-// Gets a localized string given a message id.  Returns an empty string if the
-// message id is not found.
-string16 GetLocalizedString(int message_id);
-
-// Returns the raw data for a resource.  This resource must have been
-// specified as BINDATA in the relevant .rc file.
-base::StringPiece GetDataResource(int resource_id);
-
-// Embedders implement this function to return the list of plugins to Webkit.
-void GetPlugins(bool refresh,
-                std::vector<webkit::WebPluginInfo>* plugins);
-
-// ---- END FUNCTIONS IMPLEMENTED BY EMBEDDER ---------------------------------
-
 
 }  // namespace webkit_glue
 

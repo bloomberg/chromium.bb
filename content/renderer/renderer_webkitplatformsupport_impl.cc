@@ -624,3 +624,10 @@ WebKit::WebString RendererWebKitPlatformSupportImpl::userAgent(
  return WebKitPlatformSupportImpl::userAgent(url);
 }
 
+void RendererWebKitPlatformSupportImpl::GetPlugins(
+    bool refresh, std::vector<webkit::WebPluginInfo>* plugins) {
+  if (!RenderThreadImpl::current()->plugin_refresh_allowed())
+    refresh = false;
+  RenderThreadImpl::current()->Send(
+      new ViewHostMsg_GetPlugins(refresh, plugins));
+}

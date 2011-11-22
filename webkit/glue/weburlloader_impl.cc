@@ -32,6 +32,7 @@
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/webkitplatformsupport_impl.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -262,7 +263,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   void SetDefersLoading(bool value);
   void Start(
       const WebURLRequest& request,
-      ResourceLoaderBridge::SyncLoadResponse* sync_load_response);
+      ResourceLoaderBridge::SyncLoadResponse* sync_load_response,
+      WebKitPlatformSupportImpl* platform);
   void UpdateRoutingId(int new_routing_id);
 
   // ResourceLoaderBridge::Peer methods:
@@ -332,7 +334,8 @@ void WebURLLoaderImpl::Context::UpdateRoutingId(int new_routing_id) {
 
 void WebURLLoaderImpl::Context::Start(
     const WebURLRequest& request,
-    ResourceLoaderBridge::SyncLoadResponse* sync_load_response) {
+    ResourceLoaderBridge::SyncLoadResponse* sync_load_response,
+    WebKitPlatformSupportImpl* platform) {
   DCHECK(!bridge_.get());
 
   request_ = request;  // Save the request.
@@ -413,7 +416,7 @@ void WebURLLoaderImpl::Context::Start(
   request_info.download_to_file = request.downloadToFile();
   request_info.has_user_gesture = request.hasUserGesture();
   request_info.extra_data = request.extraData();
-  bridge_.reset(ResourceLoaderBridge::Create(request_info));
+  bridge_.reset(platform->CreateResourceLoader(request_info));
 
   if (!request.httpBody().isNull()) {
     // GET and HEAD requests shouldn't have http bodies.
@@ -686,8 +689,9 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
 
 // WebURLLoaderImpl -----------------------------------------------------------
 
-WebURLLoaderImpl::WebURLLoaderImpl()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(context_(new Context(this))) {
+WebURLLoaderImpl::WebURLLoaderImpl(WebKitPlatformSupportImpl* platform)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(context_(new Context(this))),
+      platform_(platform) {
 }
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
@@ -699,7 +703,7 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
                                          WebURLError& error,
                                          WebData& data) {
   ResourceLoaderBridge::SyncLoadResponse sync_load_response;
-  context_->Start(request, &sync_load_response);
+  context_->Start(request, &sync_load_response, platform_);
 
   const GURL& final_url = sync_load_response.url;
 
@@ -727,7 +731,7 @@ void WebURLLoaderImpl::loadAsynchronously(const WebURLRequest& request,
   DCHECK(!context_->client());
 
   context_->set_client(client);
-  context_->Start(request, NULL);
+  context_->Start(request, NULL, platform_);
 }
 
 void WebURLLoaderImpl::cancel() {
