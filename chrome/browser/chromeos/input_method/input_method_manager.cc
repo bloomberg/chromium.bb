@@ -685,12 +685,16 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
                                         const ImeConfigValue& value) {
     if (section == language_prefs::kGeneralSectionName &&
         config_name == language_prefs::kPreloadEnginesConfigName) {
-      if (value.string_list_value.size() == 1) {
+      if (value.string_list_value.size() == 1 ||
+          (value.string_list_value.size() != 0 &&
+           current_input_method_.id().empty())) {
         // This is necessary to initialize current_input_method_. This is also
         // necessary when the current layout (e.g. INTL) out of two (e.g. US and
         // INTL) is disabled.
         ChangeCurrentInputMethodFromId(value.string_list_value[0]);
       }
+      DCHECK(!current_input_method_.id().empty());
+
       // Update the indicator.
       // TODO(yusukes): Remove ActiveInputMethodsChanged notification in
       // FlushImeConfig().
