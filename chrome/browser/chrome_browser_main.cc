@@ -1860,6 +1860,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   NaClProcessHost::EarlyStartup();
 #endif
 
+  // Instantiate the notification UI manager, as this triggers a perf timer
+  // used to measure startup time. TODO(stevenjb): Figure out what is actually
+  // triggering the timer and call that explicitly in the approprate place.
+  // http://crbug.com/105065.
+  g_browser_process->notification_ui_manager();
+
   if (parameters().ui_task) {
     // We are in test mode. Run one task and enter the main message loop.
 #if defined(OS_MACOSX)
