@@ -213,8 +213,6 @@
         'test/base/model_test_utils.h',
         'test/base/profile_mock.cc',
         'test/base/profile_mock.h',
-        'test/base/scoped_command_line_override.cc',
-        'test/base/scoped_command_line_override.h',
         'test/base/test_browser_window.cc',
         'test/base/test_browser_window.h',
         'test/base/test_html_dialog_observer.cc',

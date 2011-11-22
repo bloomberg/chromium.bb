@@ -88,14 +88,9 @@ class BookmarkModelTest : public testing::Test,
   };
 
   BookmarkModelTest()
-    : model_(NULL),
-      original_command_line_(*CommandLine::ForCurrentProcess()) {
+    : model_(NULL) {
     model_.AddObserver(this);
     ClearCounts();
-  }
-
-  virtual void TearDown() OVERRIDE {
-    *CommandLine::ForCurrentProcess() = original_command_line_;
   }
 
   void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {
@@ -167,8 +162,6 @@ class BookmarkModelTest : public testing::Test,
   ObserverDetails observer_details_;
 
  private:
-  CommandLine original_command_line_;
-
   int added_count_;
   int moved_count_;
   int removed_count_;

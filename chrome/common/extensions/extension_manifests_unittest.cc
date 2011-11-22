@@ -8,6 +8,7 @@
 #include <gtk/gtk.h>
 #endif
 
+#include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/i18n/rtl.h"
@@ -26,7 +27,6 @@
 #include "chrome/common/extensions/extension_sidebar_defaults.h"
 #include "chrome/common/extensions/file_browser_handler.h"
 #include "chrome/common/extensions/url_pattern.h"
-#include "chrome/test/base/scoped_command_line_override.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -377,6 +377,8 @@ TEST_F(ExtensionManifestTest, AppWebUrls) {
 
 TEST_F(ExtensionManifestTest, AppLaunchContainer) {
   scoped_refptr<Extension> extension;
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnablePlatformApps);
 
   extension = LoadAndExpectSuccess("launch_tab.json");
   EXPECT_EQ(extension_misc::LAUNCH_TAB, extension->launch_container());
@@ -397,11 +399,8 @@ TEST_F(ExtensionManifestTest, AppLaunchContainer) {
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_invalid_type.json",
                      errors::kInvalidLaunchContainer);
-  {
-    ScopedCommandLineOverride override(switches::kEnablePlatformApps);
-    LoadAndExpectError("launch_container_invalid_type_for_platform.json",
-                       errors::kInvalidLaunchContainerForPlatform);
-  }
+  LoadAndExpectError("launch_container_invalid_type_for_platform.json",
+                     errors::kInvalidLaunchContainerForPlatform);
   LoadAndExpectError("launch_container_invalid_value.json",
                      errors::kInvalidLaunchContainer);
   LoadAndExpectError("launch_container_without_launch_url.json",
@@ -536,7 +535,7 @@ TEST_F(ExtensionManifestTest, ExperimentalPermission) {
   LoadAndExpectSuccess("experimental.json", Extension::COMPONENT);
   LoadAndExpectSuccess("experimental.json", Extension::INTERNAL,
                        Extension::FROM_WEBSTORE);
-  ScopedCommandLineOverride override(
+  CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   LoadAndExpectSuccess("experimental.json");
 }
@@ -547,7 +546,7 @@ TEST_F(ExtensionManifestTest, DevToolsExtensions) {
   LoadAndExpectError("devtools_extension_url_invalid_type.json",
       errors::kInvalidDevToolsPage);
 
-  ScopedCommandLineOverride override(
+  CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   scoped_refptr<Extension> extension;
   extension = LoadAndExpectSuccess("devtools_extension.json");
@@ -560,7 +559,7 @@ TEST_F(ExtensionManifestTest, Sidebar) {
   LoadAndExpectError("sidebar.json",
       errors::kExperimentalFlagRequired);
 
-  ScopedCommandLineOverride override(
+  CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 
   LoadAndExpectError("sidebar_no_permissions.json",
@@ -817,7 +816,7 @@ TEST_F(ExtensionManifestTest, TtsEngine) {
 }
 
 TEST_F(ExtensionManifestTest, WebIntents) {
-  ScopedCommandLineOverride override("--enable-web-intents");
+  CommandLine::ForCurrentProcess()->AppendSwitch("--enable-web-intents");
 
   LoadAndExpectError("intent_invalid_1.json",
                      extension_manifest_errors::kInvalidIntents);
@@ -880,7 +879,7 @@ TEST_F(ExtensionManifestTest, IsolatedApps) {
   LoadAndExpectError("isolated_app_valid.json",
                      errors::kExperimentalFlagRequired);
 
-  ScopedCommandLineOverride override(
+  CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   scoped_refptr<Extension> extension2(
       LoadAndExpectSuccess("isolated_app_valid.json"));

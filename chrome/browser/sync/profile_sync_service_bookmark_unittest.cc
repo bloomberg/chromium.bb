@@ -286,8 +286,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   ProfileSyncServiceBookmarkTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        model_(NULL),
-        original_command_line_(*CommandLine::ForCurrentProcess()) {
+        model_(NULL) {
   }
 
   virtual ~ProfileSyncServiceBookmarkTest() {
@@ -303,7 +302,6 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   virtual void TearDown() {
     test_user_share_.TearDown();
-    *CommandLine::ForCurrentProcess() = original_command_line_;
   }
 
   // Load (or re-load) the bookmark model.  |load| controls use of the
@@ -517,7 +515,6 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
  protected:
   BookmarkModel* model_;
-  CommandLine original_command_line_;
   TestUserShare test_user_share_;
   scoped_ptr<BookmarkChangeProcessor> change_processor_;
   StrictMock<MockUnrecoverableErrorHandler> mock_unrecoverable_error_handler_;

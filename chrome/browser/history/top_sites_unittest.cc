@@ -4,7 +4,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/format_macros.h"
 #include "base/path_service.h"
@@ -134,8 +133,7 @@ class TopSitesTest : public HistoryUnitTestBase {
  public:
   TopSitesTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        db_thread_(BrowserThread::DB, &message_loop_),
-        original_command_line_(*CommandLine::ForCurrentProcess()) {
+        db_thread_(BrowserThread::DB, &message_loop_) {
   }
 
   virtual void SetUp() {
@@ -149,7 +147,6 @@ class TopSitesTest : public HistoryUnitTestBase {
 
   virtual void TearDown() {
     profile_.reset();
-    *CommandLine::ForCurrentProcess() = original_command_line_;
   }
 
   // Returns true if history and top sites should be created in SetUp.
@@ -323,7 +320,6 @@ class TopSitesTest : public HistoryUnitTestBase {
   content::TestBrowserThread db_thread_;
   scoped_ptr<TestingProfile> profile_;
   CancelableRequestConsumer consumer_;
-  CommandLine original_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSitesTest);
 };  // Class TopSitesTest
