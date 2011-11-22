@@ -12,7 +12,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
+// NOTE(koz): Linux doesn't use the thick shadowed border, so we add padding
+// here.
+#ifdef LINUX
+const int FullscreenExitBubble::kPaddingPx = 8;
+#else
 const int FullscreenExitBubble::kPaddingPx = 0;
+#endif
 const int FullscreenExitBubble::kInitialDelayMs = 3800;
 const int FullscreenExitBubble::kIdleTimeMs = 2300;
 const int FullscreenExitBubble::kPositionCheckHz = 10;
