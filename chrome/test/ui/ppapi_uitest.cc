@@ -231,6 +231,11 @@ class PPAPINaClTest : public PPAPITestBase {
 // Interface tests.
 //
 
+// Disable tests under ASAN.  http://crbug.com/104832.
+// This is a bit heavy handed, but the majority of these tests fail under ASAN.
+// See bug for history.
+#if !defined(ADDRESS_SANITIZER)
+
 TEST_PPAPI_IN_PROCESS(Broker)
 TEST_PPAPI_OUT_OF_PROCESS(Broker)
 
@@ -446,3 +451,5 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 
 TEST_PPAPI_IN_PROCESS(WebSocket_Create)
 TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
+
+#endif // ADDRESS_SANITIZER
