@@ -332,6 +332,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // prevent us from scheduling multiple calls.
   bool call_set_needs_display_in_rect_pending_;
 
+  // Whether last rendered frame was accelerated.
+  bool last_frame_was_accelerated_;
+
   // The invalid rect that needs to be painted by callSetNeedsDisplayInRect.
   // This value is only meaningful when
   // |call_set_needs_display_in_rect_pending_| is true.

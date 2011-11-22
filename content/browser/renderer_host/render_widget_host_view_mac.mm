@@ -224,6 +224,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
     : render_widget_host_(widget),
       about_to_validate_and_paint_(false),
       call_set_needs_display_in_rect_pending_(false),
+      last_frame_was_accelerated_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       is_loading_(false),
       is_hidden_(false),
@@ -536,6 +537,8 @@ void RenderWidgetHostViewMac::ImeCompositionRangeChanged(
 void RenderWidgetHostViewMac::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect, int scroll_dx, int scroll_dy,
     const std::vector<gfx::Rect>& copy_rects) {
+  last_frame_was_accelerated_ = false;
+
   if (!is_hidden_) {
     std::vector<gfx::Rect> rects(copy_rects);
 
@@ -874,6 +877,7 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   AcceleratedPluginView* view = ViewForPluginWindowHandle(window);
   DCHECK(view);
   if (view) {
+    last_frame_was_accelerated_ = true;
     plugin_container_manager_.SetSurfaceWasPaintedTo(window, surface_id);
 
     // The surface is hidden until its first paint, to not show gargabe.
@@ -1720,8 +1724,7 @@ void RenderWidgetHostViewMac::SetTextInputActive(bool active) {
 
   const gfx::Rect damagedRect([self flipNSRectToRect:dirtyRect]);
 
-  if (renderWidgetHostView_->render_widget_host_->
-      is_accelerated_compositing_active()) {
+  if (renderWidgetHostView_->last_frame_was_accelerated_) {
     gfx::Rect gpuRect;
 
     gfx::PluginWindowHandle root_handle =
