@@ -43,7 +43,6 @@ class DevToolsWindow
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefService* prefs);
   static TabContentsWrapper* GetDevToolsContents(TabContents* inspected_tab);
-  static DevToolsWindow* FindDevToolsWindow(RenderViewHost* window_rvh);
 
   static DevToolsWindow* OpenDevToolsWindowForWorker(
       Profile* profile,
@@ -60,7 +59,6 @@ class DevToolsWindow
   virtual void SendMessageToClient(const IPC::Message& message) OVERRIDE;
   virtual void InspectedTabClosing() OVERRIDE;
   virtual void TabReplaced(TabContents* new_tab) OVERRIDE;
-  virtual RenderViewHost* GetClientRenderViewHost() OVERRIDE;
   RenderViewHost* GetRenderViewHost();
 
   void Show(DevToolsToggleAction action);
