@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process_util.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/common/metrics_helpers.h"
@@ -369,7 +370,7 @@ class MetricsService : public content::NotificationObserver,
   struct ChildProcessStats;
   std::map<string16, ChildProcessStats> child_process_stats_buffer_;
 
-  ScopedRunnableMethodFactory<MetricsService> log_sender_factory_;
+  base::WeakPtrFactory<MetricsService> log_sender_factory_;
   base::WeakPtrFactory<MetricsService> state_saver_factory_;
 
   // Dictionary containing all the profile specific metrics. This is set

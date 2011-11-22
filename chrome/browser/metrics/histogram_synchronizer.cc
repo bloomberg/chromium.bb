@@ -28,7 +28,6 @@ static const int kNeverUsableSequenceNumber = -2;
 HistogramSynchronizer::HistogramSynchronizer()
   : lock_(),
     received_all_renderer_histograms_(&lock_),
-    callback_task_(NULL),
     callback_thread_(NULL),
     last_used_sequence_number_(kNeverUsableSequenceNumber),
     async_sequence_number_(kNeverUsableSequenceNumber),
@@ -41,7 +40,7 @@ HistogramSynchronizer::HistogramSynchronizer()
 
 HistogramSynchronizer::~HistogramSynchronizer() {
   // Just in case we have any pending tasks, clear them out.
-  SetCallbackTaskAndThread(NULL, NULL);
+  SetCallbackTaskAndThread(NULL, base::Closure());
   histogram_synchronizer_ = NULL;
 }
 
@@ -78,21 +77,21 @@ void HistogramSynchronizer::FetchRendererHistogramsSynchronously(
 // static
 void HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
     MessageLoop* callback_thread,
-    Task* callback_task,
+    const base::Closure& callback,
     int wait_time) {
   DCHECK(callback_thread != NULL);
-  DCHECK(callback_task != NULL);
+  DCHECK(!callback.is_null());
 
   HistogramSynchronizer* current_synchronizer = CurrentSynchronizer();
 
   if (current_synchronizer == NULL) {
     // System teardown is happening.
-    callback_thread->PostTask(FROM_HERE, callback_task);
+    callback_thread->PostTask(FROM_HERE, callback);
     return;
   }
 
   current_synchronizer->SetCallbackTaskAndThread(callback_thread,
-                                                 callback_task);
+                                                 callback);
 
   int sequence_number =
       current_synchronizer->NotifyAllRenderers(ASYNC_HISTOGRAMS);
@@ -176,16 +175,16 @@ void HistogramSynchronizer::DecrementPendingRenderers(int sequence_number) {
 
 void HistogramSynchronizer::SetCallbackTaskAndThread(
     MessageLoop* callback_thread,
-    Task* callback_task) {
-  Task* old_task = NULL;
+    const base::Closure& callback) {
+  base::Closure old_callback;
   MessageLoop* old_thread = NULL;
   TimeTicks old_start_time;
   int unresponsive_renderers;
   const TimeTicks now = TimeTicks::Now();
   {
     base::AutoLock auto_lock(lock_);
-    old_task = callback_task_;
-    callback_task_ = callback_task;
+    old_callback = callback_;
+    callback_ = callback;
     old_thread = callback_thread_;
     callback_thread_ = callback_thread;
     unresponsive_renderers = async_renderers_pending_;
@@ -195,13 +194,13 @@ void HistogramSynchronizer::SetCallbackTaskAndThread(
     async_sequence_number_ = kNeverUsableSequenceNumber;
   }
   // Just in case there was a task pending....
-  InternalPostTask(old_thread, old_task, unresponsive_renderers,
+  InternalPostTask(old_thread, old_callback, unresponsive_renderers,
                    old_start_time);
 }
 
 void HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback(
     int sequence_number) {
-  Task* task = NULL;
+  base::Closure callback;
   MessageLoop* thread = NULL;
   TimeTicks started;
   int unresponsive_renderers;
@@ -209,20 +208,21 @@ void HistogramSynchronizer::ForceHistogramSynchronizationDoneCallback(
     base::AutoLock lock(lock_);
     if (sequence_number != async_sequence_number_)
       return;
-    task = callback_task_;
+    callback = callback_;
     thread = callback_thread_;
-    callback_task_ = NULL;
+    callback_.Reset();
     callback_thread_ = NULL;
     started = async_callback_start_time_;
     unresponsive_renderers = async_renderers_pending_;
   }
-  InternalPostTask(thread, task, unresponsive_renderers, started);
+  InternalPostTask(thread, callback, unresponsive_renderers, started);
 }
 
-void HistogramSynchronizer::InternalPostTask(MessageLoop* thread, Task* task,
+void HistogramSynchronizer::InternalPostTask(MessageLoop* thread,
+                                             const base::Closure& callback,
                                              int unresponsive_renderers,
                                              const base::TimeTicks& started) {
-  if (!task || !thread)
+  if (callback.is_null() || !thread)
     return;
   UMA_HISTOGRAM_COUNTS("Histogram.RendersNotRespondingAsynchronous",
                        unresponsive_renderers);
@@ -231,7 +231,7 @@ void HistogramSynchronizer::InternalPostTask(MessageLoop* thread, Task* task,
                         TimeTicks::Now() - started);
   }
 
-  thread->PostTask(FROM_HERE, task);
+  thread->PostTask(FROM_HERE, callback);
 }
 
 int HistogramSynchronizer::GetNextAvailableSequenceNumber(

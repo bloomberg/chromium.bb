@@ -264,16 +264,17 @@ struct MetricsService::ChildProcessStats {
 // Will run the provided task after finished.
 class MetricsMemoryDetails : public MemoryDetails {
  public:
-  explicit MetricsMemoryDetails(Task* completion) : completion_(completion) {}
+  explicit MetricsMemoryDetails(const base::Closure& callback)
+      : callback_(callback) {}
 
   virtual void OnDetailsAvailable() {
-    MessageLoop::current()->PostTask(FROM_HERE, completion_);
+    MessageLoop::current()->PostTask(FROM_HERE, callback_);
   }
 
  private:
   ~MetricsMemoryDetails() {}
 
-  Task* completion_;
+  base::Closure callback_;
   DISALLOW_COPY_AND_ASSIGN(MetricsMemoryDetails);
 };
 
@@ -875,10 +876,12 @@ void MetricsService::StartScheduledUpload() {
   DCHECK(!waiting_for_asynchronus_reporting_step_);
   waiting_for_asynchronus_reporting_step_ = true;
 
-  Task* task = log_sender_factory_.
-      NewRunnableMethod(&MetricsService::OnMemoryDetailCollectionDone);
+  base::Closure callback =
+      base::Bind(&MetricsService::OnMemoryDetailCollectionDone,
+                 log_sender_factory_.GetWeakPtr());
 
-  scoped_refptr<MetricsMemoryDetails> details(new MetricsMemoryDetails(task));
+  scoped_refptr<MetricsMemoryDetails> details(
+      new MetricsMemoryDetails(callback));
   details->StartFetch();
 
   // Collect WebCore cache information to put into a histogram.
@@ -902,8 +905,9 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   // OnHistogramSynchronizationDone to continue processing.
 
   // Create a callback_task for OnHistogramSynchronizationDone.
-  Task* callback_task = log_sender_factory_.NewRunnableMethod(
-      &MetricsService::OnHistogramSynchronizationDone);
+  base::Closure callback = base::Bind(
+      &MetricsService::OnHistogramSynchronizationDone,
+      log_sender_factory_.GetWeakPtr());
 
   base::StatisticsRecorder::CollectHistogramStats("Browser");
 
@@ -911,7 +915,7 @@ void MetricsService::OnMemoryDetailCollectionDone() {
   // renderer processes. Wait time specifies how long to wait before absolutely
   // calling us back on the task.
   HistogramSynchronizer::FetchRendererHistogramsAsynchronously(
-      MessageLoop::current(), callback_task,
+      MessageLoop::current(), callback,
       kMaxHistogramGatheringWaitDuration);
 }
 
