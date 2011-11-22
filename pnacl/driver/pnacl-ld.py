@@ -39,14 +39,18 @@ EXTRA_ENV = {
 
   'NOBITCODE': '0', # True if there are no bitcode objects in the link.
                     # (native link only)
-  'PNACL_TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!STDLIB ? -nostdlib} ' +
-                           '${STATIC ? -static} ' +
-                           # The intermediate bitcode file normally encodes
-                           # these flags. But if there is no bitcode, then
-                           # we must pass these flags manually to
-                           # pnacl-translate.
-                           '${NOBITCODE && SHARED ? -shared} ' +
-                           '${NOBITCODE && #SONAME ? -Wl,--soname=${SONAME}}',
+  'TRANSLATE_FLAGS': '${PIC ? -fPIC} ${!STDLIB ? -nostdlib} ' +
+                     '${STATIC ? -static} ' +
+                     # The intermediate bitcode file normally encodes
+                     # these flags. But if there is no bitcode, then
+                     # we must pass these flags manually to
+                     # pnacl-translate.
+                     '${NOBITCODE && SHARED ? -shared} ' +
+                     '${NOBITCODE && #SONAME ? -Wl,--soname=${SONAME}} ' +
+                     '${TRANSLATE_FLAGS_USER}',
+
+  # Extra pnacl-translate flags specified by the user using -Wt
+  'TRANSLATE_FLAGS_USER': '',
 
   'OPT_FLAGS': '-O${OPT_LEVEL} ${OPT_STRIP_%STRIP_MODE%} ' +
                '-inline-threshold=${OPT_INLINE_THRESHOLD}',
@@ -124,11 +128,6 @@ def AddToBothFlags(*args):
 
 LDPatterns = [
   ( '--pnacl-allow-native', "env.set('ALLOW_NATIVE', '1')"),
-  ( ('--add-translate-option=(.+)'),
-                       "env.append('PNACL_TRANSLATE_FLAGS', $0)"),
-  # todo(dschuff): get rid of this when we get closer to tip and fix bug 1941
-  ( ('--add-opt-option=(.+)'),
-                       "env.append('OPT_FLAGS', $0)"),
 
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
@@ -155,9 +154,9 @@ LDPatterns = [
   ( ('(-rpath)','(.*)'), ""),
   ( ('(-rpath)=(.*)'), ""),
   ( ('(-rpath-link)','(.*)'),
-    "env.append('PNACL_TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
+    "env.append('TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
   ( ('(-rpath-link)=(.*)'),
-    "env.append('PNACL_TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
+    "env.append('TRANSLATE_FLAGS', $0+'='+pathtools.normalize($1))"),
 
   ( ('(-Ttext)','(.*)'), AddToNativeFlags),
   ( ('(-Ttext=.*)'),     AddToNativeFlags),
@@ -174,7 +173,7 @@ LDPatterns = [
   # Flags to pass to the native linker.
   ( '-Wn,(.*)', "env.append('LD_FLAGS_NATIVE', *($0.split(',')))"),
   # Flags to pass to translate
-  ( '-Wt,(.*)', "env.append('PNACL_TRANSLATE_FLAGS', *($0.split(',')))"),
+  ( '-Wt,(.*)', "env.append('TRANSLATE_FLAGS_USER', *($0.split(',')))"),
 
 
   ( ('(--section-start)','(.*)'), AddToNativeFlags),
@@ -228,23 +227,25 @@ LDPatterns = [
   ( '(.*)',                "env.append('INPUTS', pathtools.normalize($0))"),
 ]
 
-
 def main(argv):
   ParseArgs(argv, LDPatterns)
 
   # If the user passed -arch, then they want native output.
   arch_flag_given = GetArch() is not None
 
+  # Both LD_FLAGS_NATIVE and TRANSLATE_FLAGS_USER affect
+  # the translation process. If they are non-empty,
+  # then --pnacl-allow-native must be given.
   allow_native = env.getbool('ALLOW_NATIVE')
-  ld_flags_native = env.get('LD_FLAGS_NATIVE')
-  if len(ld_flags_native) > 0:
+  native_flags = env.get('LD_FLAGS_NATIVE') + env.get('TRANSLATE_FLAGS_USER')
+  if len(native_flags) > 0:
     if not allow_native:
-      flagstr = ' '.join(ld_flags_native)
-      Log.Fatal('"%s" affects native linking. '
+      flagstr = ' '.join(native_flags)
+      Log.Fatal('"%s" affects translation. '
                 'To allow, specify --pnacl-allow-native' % flagstr)
 
   if env.getbool('ALLOW_NATIVE') and not arch_flag_given:
-      Log.Fatal("--pnacl-allow-native given, but native linking "
+      Log.Fatal("--pnacl-allow-native given, but translation "
                 "is not happening (missing -arch?)")
 
   if env.getbool('RELOCATABLE'):
@@ -398,7 +399,7 @@ def DoStrip(infile, outfile):
   RunDriver('pnacl-strip', strip_flags + [ infile, '-o', outfile ])
 
 def DoTranslate(infile, outfile):
-  args = env.get('PNACL_TRANSLATE_FLAGS')
+  args = env.get('TRANSLATE_FLAGS')
   args += ['-Wl,'+s for s in env.get('LD_FLAGS_NATIVE')]
   if infile:
     args += [infile]
