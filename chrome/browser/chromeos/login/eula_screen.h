@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/eula_screen_actor.h"
 #include "chrome/browser/chromeos/login/tpm_password_fetcher.h"
@@ -26,17 +27,17 @@ class EulaScreen : public WizardScreen,
   virtual ~EulaScreen();
 
   // WizardScreen implementation:
-  virtual void PrepareToShow();
-  virtual void Show();
-  virtual void Hide();
+  virtual void PrepareToShow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
 
   // EulaScreenActor::Delegate implementation:
-  virtual bool IsTpmEnabled() const;
-  virtual GURL GetOemEulaUrl() const;
-  virtual void OnExit(bool accepted, bool is_usage_stats_checked);
-  virtual void InitiatePasswordFetch();
-  virtual bool IsUsageStatsEnabled() const;
-  virtual void OnActorDestroyed(EulaScreenActor* actor);
+  virtual bool IsTpmEnabled() const OVERRIDE;
+  virtual GURL GetOemEulaUrl() const OVERRIDE;
+  virtual void OnExit(bool accepted, bool is_usage_stats_checked) OVERRIDE;
+  virtual void InitiatePasswordFetch() OVERRIDE;
+  virtual bool IsUsageStatsEnabled() const OVERRIDE;
+  virtual void OnActorDestroyed(EulaScreenActor* actor) OVERRIDE;
 
   // TpmPasswordFetcherDelegate implementation:
   virtual void OnPasswordFetched(const std::string& tpm_password) OVERRIDE;

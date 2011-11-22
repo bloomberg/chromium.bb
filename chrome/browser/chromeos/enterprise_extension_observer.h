@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_ENTERPRISE_EXTENSION_OBSERVER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -28,7 +29,7 @@ class EnterpriseExtensionObserver
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   static void CheckExtensionAndNotifyEntd(const FilePath& path);

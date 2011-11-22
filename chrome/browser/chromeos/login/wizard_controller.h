@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
@@ -148,12 +149,12 @@ class WizardController : public ScreenObserver {
   void InitiateOOBEUpdate();
 
   // Overridden from ScreenObserver:
-  virtual void OnExit(ExitCodes exit_code);
-  virtual void ShowCurrentScreen();
+  virtual void OnExit(ExitCodes exit_code) OVERRIDE;
+  virtual void ShowCurrentScreen() OVERRIDE;
   virtual void OnSetUserNamePassword(const std::string& username,
-                                     const std::string& password);
-  virtual void set_usage_statistics_reporting(bool val);
-  virtual bool usage_statistics_reporting() const;
+                                     const std::string& password) OVERRIDE;
+  virtual void set_usage_statistics_reporting(bool val) OVERRIDE;
+  virtual bool usage_statistics_reporting() const OVERRIDE;
 
   // Switches from one screen to another.
   void SetCurrentScreen(WizardScreen* screen);

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
@@ -73,11 +74,11 @@ class NetworkConfigView : public views::DialogDelegateView,
 
  protected:
   // views::View overrides:
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
  private:
   // Creates an "Advanced" button in the lower-left corner of the dialog.

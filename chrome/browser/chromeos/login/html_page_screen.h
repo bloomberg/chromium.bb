@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
@@ -25,7 +26,7 @@ class HTMLPageDomView : public WebPageDomView {
  protected:
   // Overriden from DOMView:
   virtual TabContents* CreateTabContents(Profile* profile,
-                                         SiteInstance* instance);
+                                         SiteInstance* instance) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HTMLPageDomView);
@@ -36,7 +37,7 @@ class HTMLPageView : public WebPageView {
   HTMLPageView();
 
  protected:
-  virtual WebPageDomView* dom_view();
+  virtual WebPageDomView* dom_view() OVERRIDE;
 
  private:
   // View that renders page.
@@ -55,23 +56,24 @@ class HTMLPageScreen : public ViewScreen<HTMLPageView>,
   virtual ~HTMLPageScreen();
 
   // WebPageDelegate implementation:
-  virtual void OnPageLoaded();
-  virtual void OnPageLoadFailed(const std::string& url);
+  virtual void OnPageLoaded() OVERRIDE;
+  virtual void OnPageLoadFailed(const std::string& url) OVERRIDE;
 
  protected:
   // Overrides WebPageScreen:
-  virtual void OnNetworkTimeout();
+  virtual void OnNetworkTimeout() OVERRIDE;
 
  private:
   // ViewScreen implementation:
-  virtual void CreateView();
-  virtual void Refresh();
-  virtual HTMLPageView* AllocateView();
+  virtual void CreateView() OVERRIDE;
+  virtual void Refresh() OVERRIDE;
+  virtual HTMLPageView* AllocateView() OVERRIDE;
 
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // WebPageScreen implementation:
-  virtual void CloseScreen(ScreenObserver::ExitCodes code);
+  virtual void CloseScreen(ScreenObserver::ExitCodes code) OVERRIDE;
 
   // URL to navigate.
   std::string url_;

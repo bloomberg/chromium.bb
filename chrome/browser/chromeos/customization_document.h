@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -148,7 +149,7 @@ class ServicesCustomizationDocument : public CustomizationDocument,
   static void SetApplied(bool val);
 
   // Overriden from content::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   // Initiate file fetching.
   void StartFileFetch();

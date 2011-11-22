@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_source.h"
@@ -43,7 +44,7 @@ class WizardAccessibilityHandler : public content::NotificationObserver {
   // Override from content::NotificationObserver.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Get text to speak and an earcon identifier (which may be NONE) for any
   // accessibility event.

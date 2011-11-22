@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREEN_LOCK_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "content/public/browser/notification_observer.h"
@@ -45,23 +46,23 @@ class ScreenLockView : public ThrobberHostView,
 
   // views::View:
   virtual void SetEnabled(bool enabled);
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents);
+                               const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& keystroke);
+                              const views::KeyEvent& keystroke) OVERRIDE;
 
   // UserView::Delegate:
-  virtual void OnSignout();
-  virtual bool IsUserSelected() const;
+  virtual void OnSignout() OVERRIDE;
+  virtual bool IsUserSelected() const OVERRIDE;
 
  private:
   friend class test::ScreenLockerTester;

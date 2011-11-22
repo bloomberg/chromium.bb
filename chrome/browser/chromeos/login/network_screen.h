@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SCREEN_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "base/task.h"
@@ -26,15 +27,15 @@ class NetworkScreen : public WizardScreen,
   virtual ~NetworkScreen();
 
   // WizardScreen implementation:
-  virtual void PrepareToShow();
-  virtual void Show();
-  virtual void Hide();
+  virtual void PrepareToShow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
 
   // NetworkLibrary::NetworkManagerObserver implementation:
-  virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib);
+  virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib) OVERRIDE;
 
   // NetworkScreenActor::Delegate implementation:
-  virtual void OnContinuePressed();
+  virtual void OnContinuePressed() OVERRIDE;
 
   NetworkScreenActor* actor() const { return actor_; }
 

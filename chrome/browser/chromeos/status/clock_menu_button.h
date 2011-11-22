@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_CLOCK_MENU_BUTTON_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
@@ -49,14 +50,14 @@ class ClockMenuButton : public StatusAreaButton,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  protected:
-  virtual int horizontal_padding();
+  virtual int horizontal_padding() OVERRIDE;
 
  private:
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // Create and initialize menu if not already present.
   void EnsureMenu();

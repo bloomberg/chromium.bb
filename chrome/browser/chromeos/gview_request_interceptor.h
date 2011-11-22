@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include "base/compiler_specific.h"
 #include "base/hash_tables.h"
 #include "net/url_request/url_request_job_factory.h"
 
@@ -25,18 +26,19 @@ class GViewRequestInterceptor : public net::URLRequestJobFactory::Interceptor {
 
   // Always returns NULL because we don't want to attempt a redirect
   // before seeing the detected mime type of the request.
-  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request) const;
+  virtual net::URLRequestJob* MaybeIntercept(
+      net::URLRequest* request) const OVERRIDE;
 
   // Always returns NULL.
   virtual net::URLRequestJob* MaybeInterceptRedirect(
       const GURL& location,
-      net::URLRequest* request) const;
+      net::URLRequest* request) const OVERRIDE;
 
   // Determines if the requested document can be viewed by the Google
   // Document Viewer.  If it can, returns a net::URLRequestJob that
   // redirects the browser to the view URL.
   virtual net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request) const;
+      net::URLRequest* request) const OVERRIDE;
 
  private:
   bool ShouldUsePdfPlugin(net::URLRequest* request) const;

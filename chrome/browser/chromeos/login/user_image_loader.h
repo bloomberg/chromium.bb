@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/image_decoder.h"
 
@@ -56,8 +57,8 @@ class UserImageLoader : public base::RefCountedThreadSafe<UserImageLoader>,
 
   // ImageDecoder::Delegate implementation.
   virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image);
-  virtual void OnDecodeImageFailed(const ImageDecoder* decoder);
+                              const SkBitmap& decoded_image) OVERRIDE;
+  virtual void OnDecodeImageFailed(const ImageDecoder* decoder) OVERRIDE;
 
   // The message loop object of the thread in which we notify the delegate.
   MessageLoop* target_message_loop_;

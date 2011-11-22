@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -822,8 +823,8 @@ class VirtualNetwork : public Network {
       const std::string& slot, const std::string& pin);
 
   // Network overrides.
-  virtual bool RequiresUserProfile() const;
-  virtual void CopyCredentialsFromRemembered(Network* remembered);
+  virtual bool RequiresUserProfile() const OVERRIDE;
+  virtual void CopyCredentialsFromRemembered(Network* remembered) OVERRIDE;
 
   // Public getters.
   bool NeedMoreInfoToConnect() const;
@@ -1153,7 +1154,7 @@ class WifiNetwork : public WirelessNetwork {
   void SetCertificatePin(const std::string& pin);
 
   // Network overrides.
-  virtual bool RequiresUserProfile() const;
+  virtual bool RequiresUserProfile() const OVERRIDE;
 
   // Return a string representation of the encryption code.
   // This not translated and should be only used for debugging purposes.

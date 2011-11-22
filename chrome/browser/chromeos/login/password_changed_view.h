@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield_controller.h"
@@ -58,20 +59,20 @@ class PasswordChangedView : public views::DialogDelegateView,
 
   // views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event)  OVERRIDE;
+                             const views::Event& event) OVERRIDE;
 
   // views::TextfieldController:
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& keystroke)  OVERRIDE;
+                              const views::KeyEvent& keystroke) OVERRIDE;
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents)  OVERRIDE {}
+                               const string16& new_contents) OVERRIDE {}
 
  protected:
   // views::View:
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
  private:
   // Called when dialog is accepted.

@@ -77,7 +77,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Set a delegate that we will pass LoginStatusConsumer events to.
   // Used for testing.
@@ -101,27 +101,27 @@ class ExistingUserController : public LoginDisplay::Delegate,
   friend class MockLoginPerformerDelegate;
 
   // LoginPerformer::Delegate implementation:
-  virtual void OnLoginFailure(const LoginFailure& error);
+  virtual void OnLoginFailure(const LoginFailure& error) OVERRIDE;
   virtual void OnLoginSuccess(
       const std::string& username,
       const std::string& password,
       const GaiaAuthConsumer::ClientLoginResult& credentials,
       bool pending_requests,
-      bool using_oauth);
-  virtual void OnOffTheRecordLoginSuccess();
+      bool using_oauth) OVERRIDE;
+  virtual void OnOffTheRecordLoginSuccess() OVERRIDE;
   virtual void OnPasswordChangeDetected(
-      const GaiaAuthConsumer::ClientLoginResult& credentials);
-  virtual void WhiteListCheckFailed(const std::string& email);
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE;
+  virtual void WhiteListCheckFailed(const std::string& email) OVERRIDE;
 
   // LoginUtils::Delegate implementation:
-  virtual void OnProfilePrepared(Profile* profile);
+  virtual void OnProfilePrepared(Profile* profile) OVERRIDE;
 
   // CaptchaView::Delegate:
-  virtual void OnCaptchaEntered(const std::string& captcha);
+  virtual void OnCaptchaEntered(const std::string& captcha) OVERRIDE;
 
   // PasswordChangedView::Delegate:
-  virtual void RecoverEncryptedData(const std::string& old_password);
-  virtual void ResyncEncryptedData();
+  virtual void RecoverEncryptedData(const std::string& old_password) OVERRIDE;
+  virtual void ResyncEncryptedData() OVERRIDE;
 
   // Starts WizardController with the specified screen.
   void ActivateWizard(const std::string& screen_name);

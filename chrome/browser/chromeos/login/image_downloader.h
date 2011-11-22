@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/image_decoder.h"
 #include "content/public/common/url_fetcher_delegate.h"
@@ -29,7 +30,7 @@ class ImageDownloader : public content::URLFetcherDelegate {
 
  private:
   // Overriden from content::URLFetcherDelegate:
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
   ImageDecoder::Delegate* delegate_;
   scoped_ptr<content::URLFetcher> image_fetcher_;

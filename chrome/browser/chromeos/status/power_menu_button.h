@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_POWER_MENU_BUTTON_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "views/controls/menu/menu_delegate.h"
@@ -34,21 +35,21 @@ class PowerMenuButton : public StatusAreaButton,
   virtual ~PowerMenuButton();
 
   // views::MenuDelegate implementation.
-  virtual string16 GetLabel(int id) const;
+  virtual string16 GetLabel(int id) const OVERRIDE;
 
   // PowerLibrary::Observer implementation.
-  virtual void PowerChanged(const PowerSupplyStatus& power_status);
+  virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE;
   virtual void SystemResumed() {}
 
  protected:
-  virtual int icon_width();
+  virtual int icon_width() OVERRIDE;
 
  private:
   // views::View
   virtual void OnLocaleChanged() OVERRIDE;
 
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // Format strings with power status
   string16 GetBatteryIsChargedText() const;

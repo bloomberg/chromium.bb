@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_HELPER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/controls/button/text_button.h"
@@ -159,7 +160,7 @@ class WideButton : public views::NativeTextButton {
   virtual ~WideButton() {}
 
  private:
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WideButton);
 };

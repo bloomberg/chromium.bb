@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TAKE_PHOTO_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
@@ -64,10 +65,11 @@ class TakePhotoView : public views::View,
   void CaptureImage();
 
   // Overridden from views::View:
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   bool is_capturing() const { return is_capturing_; }
 

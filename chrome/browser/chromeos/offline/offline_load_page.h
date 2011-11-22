@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/task.h"
 #include "chrome/browser/tab_contents/chrome_interstitial_page.h"
 #include "net/base/network_change_notifier.h"
@@ -41,10 +42,10 @@ class OfflineLoadPage : public ChromeInterstitialPage,
 
  private:
   // ChromeInterstitialPage implementation.
-  virtual std::string GetHTMLContents();
-  virtual void CommandReceived(const std::string& command);
-  virtual void Proceed();
-  virtual void DontProceed();
+  virtual std::string GetHTMLContents() OVERRIDE;
+  virtual void CommandReceived(const std::string& command) OVERRIDE;
+  virtual void Proceed() OVERRIDE;
+  virtual void DontProceed() OVERRIDE;
 
   // net::NetworkChangeNotifier::OnlineStateObserver overrides.
   virtual void OnOnlineStateChanged(bool online) OVERRIDE;

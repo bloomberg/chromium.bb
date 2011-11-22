@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
 #include "views/view.h"
@@ -39,7 +40,7 @@ class PanelScroller : public views::View, public ui::AnimationDelegate {
   struct Panel;
 
   // ui::AnimationDelegate overrides.
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Scrolls to the panel at the given index. It will be moved to the top.
   void ScrollToPanel(int index);

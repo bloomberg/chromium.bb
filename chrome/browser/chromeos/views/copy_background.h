@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_VIEWS_COPY_BACKGROUND_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "views/background.h"
 
 namespace views {
@@ -22,7 +23,7 @@ class CopyBackground : public views::Background {
   virtual ~CopyBackground() {}
 
   // Overridden from views::Background.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE;
 
  private:
   views::View* background_owner_;

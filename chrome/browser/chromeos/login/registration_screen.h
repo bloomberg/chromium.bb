@@ -35,7 +35,7 @@ class RegistrationDomView : public WebPageDomView {
  protected:
   // Overriden from DOMView:
   virtual TabContents* CreateTabContents(Profile* profile,
-                                         SiteInstance* instance);
+                                         SiteInstance* instance) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationDomView);
 };
@@ -46,7 +46,7 @@ class RegistrationView : public WebPageView {
   RegistrationView() : dom_view_(new RegistrationDomView()) {}
 
  protected:
-  virtual WebPageDomView* dom_view();
+  virtual WebPageDomView* dom_view() OVERRIDE;
 
  private:
   // View that renders page.
@@ -76,9 +76,9 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
 
  private:
   // ViewScreen implementation:
-  virtual void CreateView();
-  virtual void Refresh();
-  virtual RegistrationView* AllocateView();
+  virtual void CreateView() OVERRIDE;
+  virtual void Refresh() OVERRIDE;
+  virtual RegistrationView* AllocateView() OVERRIDE;
 
   // TabContentsDelegate implementation:
   // Deprecated. Please use two-argument variant.
@@ -92,10 +92,11 @@ class RegistrationScreen : public ViewScreen<RegistrationView>,
   virtual TabContents* OpenURLFromTab(TabContents* source,
                                       const OpenURLParams& params) OVERRIDE;
 
-  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual void HandleKeyboardEvent(
+      const NativeWebKeyboardEvent& event) OVERRIDE;
 
   // WebPageScreen implementation:
-  virtual void CloseScreen(ScreenObserver::ExitCodes code);
+  virtual void CloseScreen(ScreenObserver::ExitCodes code) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(RegistrationScreen);
 };

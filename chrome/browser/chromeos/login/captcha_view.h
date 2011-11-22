@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/image_decoder.h"
 #include "googleurl/src/gurl.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -50,16 +51,17 @@ class CaptchaView : public views::DialogDelegateView,
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) {}
+                               const string16& new_contents) OVERRIDE {}
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event);
+                              const views::KeyEvent& key_event) OVERRIDE;
 
   // ImageDownloader::Delegate:
   virtual void OnImageDecoded(const ImageDecoder* decoder,
-                              const SkBitmap& decoded_image);
+                              const SkBitmap& decoded_image) OVERRIDE;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // Initializes UI.
   void Init();
@@ -74,10 +76,10 @@ class CaptchaView : public views::DialogDelegateView,
 
  protected:
   // views::View:
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
  private:
   Delegate* delegate_;

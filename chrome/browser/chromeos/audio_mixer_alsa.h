@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_old.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -31,13 +32,14 @@ class AudioMixerAlsa : public AudioMixer {
   virtual ~AudioMixerAlsa();
 
   // AudioMixer implementation.
-  virtual void Init();
-  virtual bool IsInitialized();
-  virtual void GetVolumeLimits(double* min_volume_db, double* max_volume_db);
-  virtual double GetVolumeDb();
-  virtual void SetVolumeDb(double volume_db);
-  virtual bool IsMuted();
-  virtual void SetMuted(bool muted);
+  virtual void Init() OVERRIDE;
+  virtual bool IsInitialized() OVERRIDE;
+  virtual void GetVolumeLimits(double* min_volume_db,
+                               double* max_volume_db) OVERRIDE;
+  virtual double GetVolumeDb() OVERRIDE;
+  virtual void SetVolumeDb(double volume_db) OVERRIDE;
+  virtual bool IsMuted() OVERRIDE;
+  virtual void SetMuted(bool muted) OVERRIDE;
 
   // Registers volume and mute preferences.
   // TODO(derat): Move prefs into AudioHandler.

@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
@@ -30,9 +31,9 @@ class UpdateScreen: public UpdateEngineClient::Observer,
   virtual ~UpdateScreen();
 
   // Overridden from WizardScreen.
-  virtual void PrepareToShow();
-  virtual void Show();
-  virtual void Hide();
+  virtual void PrepareToShow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
 
   // UpdateScreenActor::Delegate implementation:
   virtual void CancelUpdate() OVERRIDE;

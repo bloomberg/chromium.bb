@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEXTFIELD_WITH_MARGIN_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "views/controls/textfield/textfield.h"
 
 namespace chromeos {
@@ -19,8 +20,8 @@ class TextfieldWithMargin : public views::Textfield {
 
  protected:
   // Overridden from views::View:
-  virtual void Layout();
-  virtual bool OnKeyPressed(const views::KeyEvent& e);
+  virtual void Layout() OVERRIDE;
+  virtual bool OnKeyPressed(const views::KeyEvent& e) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TextfieldWithMargin);

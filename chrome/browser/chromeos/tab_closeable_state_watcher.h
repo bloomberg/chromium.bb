@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/tab_closeable_state_watcher.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -47,11 +48,11 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
   virtual ~TabCloseableStateWatcher();
 
   // TabCloseableStateWatcher implementation:
-  virtual bool CanCloseTab(const Browser* browser) const;
+  virtual bool CanCloseTab(const Browser* browser) const OVERRIDE;
   virtual bool CanCloseTabs(const Browser* browser,
-                            std::vector<int>* indices) const;
-  virtual bool CanCloseBrowser(Browser* browser);
-  virtual void OnWindowCloseCanceled(Browser* browser);
+                            std::vector<int>* indices) const OVERRIDE;
+  virtual bool CanCloseBrowser(Browser* browser) OVERRIDE;
+  virtual void OnWindowCloseCanceled(Browser* browser) OVERRIDE;
 
  private:
   enum BrowserActionType {
@@ -61,12 +62,12 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
   };
 
   // BrowserList::Observer implementation:
-  virtual void OnBrowserAdded(const Browser* browser);
-  virtual void OnBrowserRemoved(const Browser* browser);
+  virtual void OnBrowserAdded(const Browser* browser) OVERRIDE;
+  virtual void OnBrowserRemoved(const Browser* browser) OVERRIDE;
 
   // NotificationObserver implementation:
   virtual void Observe(int type, const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Called by private class TabStripWatcher for TabStripModelObserver
   // notifications.
@@ -122,13 +123,14 @@ class TabCloseableStateWatcher : public ::TabCloseableStateWatcher,
 
     // TabStripModelObserver implementation:
     virtual void TabInsertedAt(TabContentsWrapper* contents, int index,
-                               bool foreground);
+                               bool foreground) OVERRIDE;
     virtual void TabClosingAt(TabStripModel* tab_strip_model,
                               TabContentsWrapper* contents,
-                              int index);
-    virtual void TabDetachedAt(TabContentsWrapper* contents, int index);
+                              int index) OVERRIDE;
+    virtual void TabDetachedAt(TabContentsWrapper* contents,
+                               int index) OVERRIDE;
     virtual void TabChangedAt(TabContentsWrapper* contents, int index,
-                              TabChangeType change_type);
+                              TabChangeType change_type) OVERRIDE;
 
     const Browser* browser() const {
       return browser_;

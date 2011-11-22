@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -50,53 +51,55 @@ class InputMethodMenu
   virtual ~InputMethodMenu();
 
   // ui::MenuModel implementation.
-  virtual bool HasIcons() const;
-  virtual int GetItemCount() const;
-  virtual ui::MenuModel::ItemType GetTypeAt(int index) const;
-  virtual int GetCommandIdAt(int index) const;
-  virtual string16 GetLabelAt(int index) const;
-  virtual bool IsItemDynamicAt(int index) const;
+  virtual bool HasIcons() const OVERRIDE;
+  virtual int GetItemCount() const OVERRIDE;
+  virtual ui::MenuModel::ItemType GetTypeAt(int index) const OVERRIDE;
+  virtual int GetCommandIdAt(int index) const OVERRIDE;
+  virtual string16 GetLabelAt(int index) const OVERRIDE;
+  virtual bool IsItemDynamicAt(int index) const OVERRIDE;
   virtual bool GetAcceleratorAt(int index,
-                                ui::Accelerator* accelerator) const;
-  virtual bool IsItemCheckedAt(int index) const;
-  virtual int GetGroupIdAt(int index) const;
-  virtual bool GetIconAt(int index, SkBitmap* icon);
-  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const;
-  virtual bool IsEnabledAt(int index) const;
-  virtual ui::MenuModel* GetSubmenuModelAt(int index) const;
-  virtual void HighlightChangedTo(int index);
-  virtual void ActivatedAt(int index);
-  virtual void MenuWillShow();
-  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate);
+                                ui::Accelerator* accelerator) const OVERRIDE;
+  virtual bool IsItemCheckedAt(int index) const OVERRIDE;
+  virtual int GetGroupIdAt(int index) const OVERRIDE;
+  virtual bool GetIconAt(int index, SkBitmap* icon) OVERRIDE;
+  virtual ui::ButtonMenuItemModel* GetButtonMenuItemAt(
+      int index) const OVERRIDE;
+  virtual bool IsEnabledAt(int index) const OVERRIDE;
+  virtual ui::MenuModel* GetSubmenuModelAt(int index) const OVERRIDE;
+  virtual void HighlightChangedTo(int index) OVERRIDE;
+  virtual void ActivatedAt(int index) OVERRIDE;
+  virtual void MenuWillShow() OVERRIDE;
+  virtual void SetMenuModelDelegate(ui::MenuModelDelegate* delegate) OVERRIDE;
 
   // views::ViewMenuDelegate implementation. Sub classes can override the method
   // to adjust the position of the menu.
-  virtual void RunMenu(views::View* source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
   // InputMethodManager::Observer implementation.
   virtual void InputMethodChanged(
       input_method::InputMethodManager* manager,
       const input_method::InputMethodDescriptor& current_input_method,
-      size_t num_active_input_methods);
+      size_t num_active_input_methods) OVERRIDE;
   virtual void ActiveInputMethodsChanged(
       input_method::InputMethodManager* manager,
       const input_method::InputMethodDescriptor& current_input_method,
-      size_t num_active_input_methods);
+      size_t num_active_input_methods) OVERRIDE;
   virtual void PropertyListChanged(
       input_method::InputMethodManager* manager,
-      const input_method::ImePropertyList& current_ime_properties);
+      const input_method::ImePropertyList& current_ime_properties) OVERRIDE;
 
   // InputMethodManager::PreferenceObserver implementation.
   virtual void PreferenceUpdateNeeded(
-    input_method::InputMethodManager* manager,
-    const input_method::InputMethodDescriptor& previous_input_method,
-    const input_method::InputMethodDescriptor& current_input_method);
-  virtual void FirstObserverIsAdded(input_method::InputMethodManager* manager);
+      input_method::InputMethodManager* manager,
+      const input_method::InputMethodDescriptor& previous_input_method,
+      const input_method::InputMethodDescriptor& current_input_method) OVERRIDE;
+  virtual void FirstObserverIsAdded(
+      input_method::InputMethodManager* manager) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Specify menu alignment (default TOPRIGHT).
   void set_menu_alignment(views::MenuItemView::AnchorPosition menu_alignment) {

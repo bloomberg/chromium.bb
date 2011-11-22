@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_UPGRADE_DETECTOR_CHROMEOS_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/upgrade_detector.h"

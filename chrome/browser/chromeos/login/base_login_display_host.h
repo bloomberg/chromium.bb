@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
@@ -34,11 +35,11 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   }
 
   // LoginDisplayHost implementation:
-  virtual void OnSessionStart();
+  virtual void OnSessionStart() OVERRIDE;
   virtual void StartWizard(
       const std::string& first_screen_name,
-      const GURL& start_url);
-  virtual void StartSignInScreen();
+      const GURL& start_url) OVERRIDE;
+  virtual void StartSignInScreen() OVERRIDE;
 
   // Creates specific WizardController.
   virtual WizardController* CreateWizardController() = 0;
@@ -49,7 +50,7 @@ class BaseLoginDisplayHost : public LoginDisplayHost,
   // content::NotificationObserver implementation:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Used to calculate position of the screens and background.
   gfx::Rect background_bounds_;

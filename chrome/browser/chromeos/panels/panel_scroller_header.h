@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "views/view.h"
 
@@ -24,8 +25,8 @@ class PanelScrollerHeader : public views::View {
   virtual bool OnMouseDragged(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const views::MouseEvent& event) OVERRIDE;
   virtual void OnMouseCaptureLost() OVERRIDE;
-  virtual gfx::Size GetPreferredSize();
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // Non-owning pointer to our parent scroller object.

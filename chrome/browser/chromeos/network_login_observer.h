@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 
 namespace views {
@@ -30,7 +31,7 @@ class NetworkLoginObserver : public NetworkLibrary::NetworkManagerObserver {
   void CreateModalPopup(views::WidgetDelegate* view);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
+  virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLoginObserver);
 };

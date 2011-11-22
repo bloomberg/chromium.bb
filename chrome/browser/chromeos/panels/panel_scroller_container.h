@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "views/view.h"
 
 class PanelScroller;
@@ -21,9 +22,9 @@ class PanelScrollerContainer : public views::View {
   int HeaderSize() const;
 
   // view::View overrides.
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // Non-owning pointer to our parent scroller object.

@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop.h"
 #include "base/observer_list.h"
@@ -44,8 +45,8 @@ class WmMessageListener : public MessageLoopForUI::Observer {
   virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 #else
   // MessageLoopForUI::Observer overrides.
-  virtual void WillProcessEvent(GdkEvent* event);
-  virtual void DidProcessEvent(GdkEvent* event);
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
 #endif
 
  private:

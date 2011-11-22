@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_HELP_APP_LAUNCHER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_html_dialog.h"
@@ -47,7 +48,7 @@ class HelpAppLauncher : public LoginHtmlDialog::Delegate,
 
  protected:
   // LoginHtmlDialog::Delegate implementation:
-  virtual void OnDialogClosed() {}
+  virtual void OnDialogClosed() OVERRIDE {}
 
  private:
   // Shows help topic dialog for specified GURL.

@@ -27,10 +27,11 @@ class InputMethodMenuButton : public StatusAreaButton,
   virtual ~InputMethodMenuButton();
 
   // views::View implementation.
-  virtual void OnLocaleChanged();
+  virtual void OnLocaleChanged() OVERRIDE;
 
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* unused_source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* unused_source,
+                       const gfx::Point& pt) OVERRIDE;
 
   // InputMethodMenu implementation.
   virtual void UpdateUI(const std::string& input_method_id,

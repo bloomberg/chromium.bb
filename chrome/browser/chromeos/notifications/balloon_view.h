@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -41,16 +42,18 @@ class BalloonViewImpl : public BalloonView,
   virtual ~BalloonViewImpl();
 
   // views::View interface.
-  virtual void Layout();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
 
   // BalloonView interface.
-  virtual void Show(Balloon* balloon);
-  virtual void Update();
-  virtual void Close(bool by_user);
-  virtual void RepositionToBalloon();
-  virtual gfx::Size GetSize() const;
-  virtual BalloonHost* GetHost() const;
+  virtual void Show(Balloon* balloon) OVERRIDE;
+  virtual void Update() OVERRIDE;
+  virtual void Close(bool by_user) OVERRIDE;
+  virtual void RepositionToBalloon() OVERRIDE;
+  virtual gfx::Size GetSize() const OVERRIDE;
+  virtual BalloonHost* GetHost() const OVERRIDE;
 
   // True if the notification is stale. False if the notification is new.
   bool stale() const { return stale_; }
@@ -77,12 +80,12 @@ class BalloonViewImpl : public BalloonView,
   friend class NotificationControlView;
 
   // views::View interface.
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // content::NotificationObserver interface.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Initializes the options menu.
   void CreateOptionsMenu();

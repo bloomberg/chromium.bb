@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_CAMERA_CONTROLLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/login/camera.h"
@@ -45,12 +46,12 @@ class CameraController: public Camera::Delegate {
   void GetFrame(SkBitmap* frame) const;
 
   // Camera::Delegate implementation:
-  virtual void OnInitializeSuccess();
-  virtual void OnInitializeFailure();
-  virtual void OnStartCapturingSuccess();
-  virtual void OnStartCapturingFailure();
-  virtual void OnCaptureSuccess();
-  virtual void OnCaptureFailure();
+  virtual void OnInitializeSuccess() OVERRIDE;
+  virtual void OnInitializeFailure() OVERRIDE;
+  virtual void OnStartCapturingSuccess() OVERRIDE;
+  virtual void OnStartCapturingFailure() OVERRIDE;
+  virtual void OnCaptureSuccess() OVERRIDE;
+  virtual void OnCaptureFailure() OVERRIDE;
 
  private:
   // Size of frame we want to receive.

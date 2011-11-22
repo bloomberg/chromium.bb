@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -80,7 +81,8 @@ class ProxyResolutionServiceProvider
   virtual ~ProxyResolutionServiceProvider();
 
   // CrosDBusService::ServiceProviderInterface override.
-  virtual void Start(scoped_refptr<dbus::ExportedObject> exported_object);
+  virtual void Start(
+      scoped_refptr<dbus::ExportedObject> exported_object) OVERRIDE;
 
   // Creates the instance.
   static ProxyResolutionServiceProvider* Create();

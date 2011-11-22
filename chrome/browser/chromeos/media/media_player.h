@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -86,18 +87,20 @@ class MediaPlayer : public content::NotificationObserver,
   // Always returns NULL because we don't want to attempt a redirect
   // before seeing the detected mime type of the request.
   // Implementation of net::URLRequest::Interceptor.
-  virtual net::URLRequestJob* MaybeIntercept(net::URLRequest* request);
+  virtual net::URLRequestJob* MaybeIntercept(
+      net::URLRequest* request) OVERRIDE;
 
   // Determines if the requested document can be viewed by the
   // MediaPlayer.  If it can, returns a net::URLRequestJob that
   // redirects the browser to the view URL.
   // Implementation of net::URLRequest::Interceptor.
-  virtual net::URLRequestJob* MaybeInterceptResponse(net::URLRequest* request);
+  virtual net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request) OVERRIDE;
 
   // Used to detect when the mediaplayer is closed.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Getter for the singleton.
   static MediaPlayer* GetInstance();

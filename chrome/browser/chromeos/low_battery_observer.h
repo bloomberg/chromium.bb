@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
@@ -24,7 +25,7 @@ class LowBatteryObserver : public PowerManagerClient::Observer {
   virtual ~LowBatteryObserver();
 
  private:
-  virtual void PowerChanged(const PowerSupplyStatus& power_status);
+  virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE;
 
   void Show(base::TimeDelta remaining, bool urgent);
   void Hide();

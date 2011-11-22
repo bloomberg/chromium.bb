@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/notifications/system_notification.h"
@@ -41,12 +42,12 @@ class NetworkMessageObserver
   virtual void ShowLowDataNotification(const CellularDataPlan* plan);
 
   // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
+  virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE;
   // NetworkLibrary::CellularDataPlanObserver implementation.
-  virtual void OnCellularDataPlanChanged(NetworkLibrary* obj);
+  virtual void OnCellularDataPlanChanged(NetworkLibrary* obj) OVERRIDE;
   // NetworkLibrary::UserActionObserver implementation.
   virtual void OnConnectionInitiated(NetworkLibrary* obj,
-                                     const Network* network);
+                                     const Network* network) OVERRIDE;
 
   // Saves the current cellular and plan information.
   // |plan| can be NULL. In that case, we set it to unknown.

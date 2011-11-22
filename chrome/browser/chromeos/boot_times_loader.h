@@ -11,6 +11,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/callback_old.h"
+#include "base/compiler_specific.h"
 #include "base/time.h"
 #include "content/browser/cancelable_request.h"
 #include "content/browser/renderer_host/render_widget_host.h"
@@ -105,7 +106,7 @@ class BootTimesLoader
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // Writes the logout times to a /tmp/logout-times-sent. Unlike login
   // times, we manually call this function for logout times, as we cannot

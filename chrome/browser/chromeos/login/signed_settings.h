@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
 
@@ -115,8 +116,9 @@ class SignedSettings : public base::RefCountedThreadSafe<SignedSettings>,
     explicit Relay(SignedSettings* s);
     virtual ~Relay();
     // Implementation of SignedSettings::Delegate
-    virtual void OnSettingsOpCompleted(SignedSettings::ReturnCode code,
-                                       const em::PolicyFetchResponse& value);
+    virtual void OnSettingsOpCompleted(
+        SignedSettings::ReturnCode code,
+        const em::PolicyFetchResponse& value) OVERRIDE;
    private:
     SignedSettings* settings_;
     DISALLOW_COPY_AND_ASSIGN(Relay);

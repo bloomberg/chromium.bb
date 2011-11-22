@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
@@ -39,21 +40,22 @@ class CapsLockMenuButton : public content::NotificationObserver,
   virtual ~CapsLockMenuButton();
 
   // views::View implementation.
-  virtual void OnLocaleChanged();
+  virtual void OnLocaleChanged() OVERRIDE;
 
   // views::MenuDelegate implementation.
-  virtual string16 GetLabel(int id) const;
+  virtual string16 GetLabel(int id) const OVERRIDE;
 
   // views::ViewMenuDelegate implementation.
-  virtual void RunMenu(views::View* unused_source, const gfx::Point& pt);
+  virtual void RunMenu(views::View* unused_source,
+                       const gfx::Point& pt) OVERRIDE;
 
   // SystemKeyEventListener::CapsLockObserver implementation
-  virtual void OnCapsLockChange(bool enabled);
+  virtual void OnCapsLockChange(bool enabled) OVERRIDE;
 
   // content::NotificationObserver implementation
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Returns true if the Search key is assigned to Caps Lock.

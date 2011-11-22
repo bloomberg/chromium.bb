@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -115,7 +116,7 @@ class WebPageView : public views::View {
 
  private:
   // Overriden from views::View:
-  virtual void Layout();
+  virtual void Layout() OVERRIDE;
 
   // Called by stop_timer_. Shows rendered page.
   void ShowRenderedPage();

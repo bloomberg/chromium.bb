@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_BUTTON_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
@@ -57,11 +58,11 @@ class StatusAreaButton : public views::MenuButton {
   StatusAreaButton(Delegate* button_delegate,
                    views::ViewMenuDelegate* menu_delegate);
   virtual ~StatusAreaButton() {}
-  virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
+  virtual void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) OVERRIDE;
 
   // Overrides TextButton's SetText to clear max text size before seting new
   // text content so that the button size would fit the new text size.
-  virtual void SetText(const string16& text);
+  virtual void SetText(const string16& text) OVERRIDE;
 
   // views::MenuButton overrides.
   virtual bool Activate() OVERRIDE;

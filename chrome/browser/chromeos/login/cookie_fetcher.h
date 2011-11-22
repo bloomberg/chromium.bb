@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/auth_response_handler.h"
 #include "chrome/browser/chromeos/login/client_login_response_handler.h"
@@ -42,7 +43,7 @@ class CookieFetcher : public content::URLFetcherDelegate {
   void AttemptFetch(const std::string& credentials);
 
   // Overloaded from content::URLFetcherDelegate.
-  virtual void OnURLFetchComplete(const content::URLFetcher* source);
+  virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;
 
  private:
   virtual ~CookieFetcher();

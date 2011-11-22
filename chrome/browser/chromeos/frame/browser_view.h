@@ -124,7 +124,7 @@ class BrowserView : public ::BrowserView,
 
  protected:
   virtual void GetAccessiblePanes(
-      std::vector<views::AccessiblePaneView*>* panes);
+      std::vector<views::AccessiblePaneView*>* panes) OVERRIDE;
 
  private:
   void InitSystemMenu();

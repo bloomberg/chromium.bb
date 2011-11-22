@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 
 class Profile;
@@ -29,7 +30,7 @@ class SmsObserver : public NetworkLibrary::NetworkManagerObserver {
   typedef std::map<std::string, SMSHandler*> ObserversMap;
 
   // NetworkLibrary:NetworkManagerObserver implementation:
-  virtual void OnNetworkManagerChanged(NetworkLibrary* obj);
+  virtual void OnNetworkManagerChanged(NetworkLibrary* obj) OVERRIDE;
 
   static void StaticCallback(void* object,
                              const char* modem_device_path,
