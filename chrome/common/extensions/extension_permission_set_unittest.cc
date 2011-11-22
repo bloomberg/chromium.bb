@@ -172,6 +172,7 @@ TEST(ExtensionAPIPermissionTest, ComponentOnlyPermissions) {
   private_perms.insert(ExtensionAPIPermission::kChromeosInfoPrivate);
   private_perms.insert(ExtensionAPIPermission::kFileBrowserPrivate);
   private_perms.insert(ExtensionAPIPermission::kMediaPlayerPrivate);
+  private_perms.insert(ExtensionAPIPermission::kMetricsPrivate);
   private_perms.insert(ExtensionAPIPermission::kWebstorePrivate);
 
   ExtensionAPIPermissionSet perms = info->GetAll();
@@ -183,7 +184,7 @@ TEST(ExtensionAPIPermissionTest, ComponentOnlyPermissions) {
               info->GetByID(*i)->is_component_only());
   }
 
-  EXPECT_EQ(5, count);
+  EXPECT_EQ(6, count);
 }
 
 TEST(ExtensionPermissionSetTest, EffectiveHostPermissions) {
@@ -639,6 +640,7 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kWebstorePrivate);
   skip.insert(ExtensionAPIPermission::kFileBrowserPrivate);
   skip.insert(ExtensionAPIPermission::kMediaPlayerPrivate);
+  skip.insert(ExtensionAPIPermission::kMetricsPrivate);
   skip.insert(ExtensionAPIPermission::kChromeAuthPrivate);
   skip.insert(ExtensionAPIPermission::kChromePrivate);
   skip.insert(ExtensionAPIPermission::kChromeosInfoPrivate);

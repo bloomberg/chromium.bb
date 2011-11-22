@@ -113,6 +113,7 @@ class ExtensionAPIPermission {
     kInputMethodPrivate,
     kManagement,
     kMediaPlayerPrivate,
+    kMetricsPrivate,
     kNotification,
     kPlugin,
     kProxy,

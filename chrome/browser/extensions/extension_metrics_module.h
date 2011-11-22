@@ -11,21 +11,9 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_function.h"
 
-class MetricsSetEnabledFunction : public SyncExtensionFunction {
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.setEnabled")
- protected:
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class MetricsGetEnabledFunction : public SyncExtensionFunction {
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.getEnabled")
- protected:
-  virtual bool RunImpl() OVERRIDE;
-};
-
 class MetricsRecordUserActionFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordUserAction")
+  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordUserAction")
 };
 
 class MetricsHistogramHelperFunction : public SyncExtensionFunction {
@@ -38,42 +26,42 @@ class MetricsHistogramHelperFunction : public SyncExtensionFunction {
 
 class MetricsRecordValueFunction : public MetricsHistogramHelperFunction {
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordValue")
+  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordValue")
 };
 
 class MetricsRecordPercentageFunction : public MetricsHistogramHelperFunction {
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordPercentage")
+  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordPercentage")
 };
 
 class MetricsRecordCountFunction : public MetricsHistogramHelperFunction {
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordCount")
+  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordCount")
 };
 
 class MetricsRecordSmallCountFunction : public MetricsHistogramHelperFunction {
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordSmallCount")
+  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordSmallCount")
 };
 
 class MetricsRecordMediumCountFunction : public MetricsHistogramHelperFunction {
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordMediumCount")
+  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordMediumCount")
 };
 
 class MetricsRecordTimeFunction : public MetricsHistogramHelperFunction {
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordTime")
+  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordTime")
 };
 
 class MetricsRecordMediumTimeFunction : public MetricsHistogramHelperFunction {
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordMediumTime")
+  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordMediumTime")
 };
 
 class MetricsRecordLongTimeFunction : public MetricsHistogramHelperFunction {
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.metrics.recordLongTime")
+  DECLARE_EXTENSION_FUNCTION_NAME("metricsPrivate.recordLongTime")
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_METRICS_MODULE_H__

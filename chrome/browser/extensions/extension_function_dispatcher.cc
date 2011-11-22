@@ -235,8 +235,6 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<GetProcessIdForTabFunction>();
 
   // Metrics.
-  RegisterFunction<MetricsGetEnabledFunction>();
-  RegisterFunction<MetricsSetEnabledFunction>();
   RegisterFunction<MetricsRecordUserActionFunction>();
   RegisterFunction<MetricsRecordValueFunction>();
   RegisterFunction<MetricsRecordPercentageFunction>();

@@ -333,6 +333,9 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
   RegisterPermission(
       ExtensionAPIPermission::kMediaPlayerPrivate, "mediaPlayerPrivate", 0,
       ExtensionPermissionMessage::kNone, component_only);
+  RegisterPermission(
+      ExtensionAPIPermission::kMetricsPrivate, "metricsPrivate", 0,
+      ExtensionPermissionMessage::kNone, component_only);
 
   // Full url access permissions.
   RegisterPermission(

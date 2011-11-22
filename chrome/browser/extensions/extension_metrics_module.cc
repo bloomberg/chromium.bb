@@ -5,58 +5,16 @@
 #include "chrome/browser/extensions/extension_metrics_module.h"
 
 #include "base/metrics/histogram.h"
-#include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/browser/ui/options/options_util.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/user_metrics.h"
 
 using base::Histogram;
 using base::LinearHistogram;
 
-namespace {
-
-// Build the full name of a metrics for the given extension.
-// For a non-component extension the metric name is made up of the unique name
-// within the extension followed by the extension's id. This keeps the metrics
-// from one extension unique from other extensions, as well as those metrics
-// from chrome itself.
-// For a component extension the metric name is used as is. There are not so
-// many of them and it is easy enough to prevent name clashes.
-std::string BuildMetricName(const std::string& name,
-                            const Extension* extension) {
-  std::string full_name(name);
-  if (extension->location() != Extension::COMPONENT)
-    full_name += extension->id();
-  return full_name;
-}
-
-}  // anonymous namespace
-
-bool MetricsSetEnabledFunction::RunImpl() {
-  bool enabled = false;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
-
-  // Using OptionsUtil is better because it actually ensures we reset all the
-  // necessary threads. This is the main way for starting / stopping UMA and
-  // crash reporting.
-  // This method will return the resulting enabled, which we send to JS.
-  bool result = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
-  result_.reset(Value::CreateBooleanValue(result));
-  return true;
-}
-
-bool MetricsGetEnabledFunction::RunImpl() {
-  bool enabled = GoogleUpdateSettings::GetCollectStatsConsent();
-  result_.reset(Value::CreateBooleanValue(enabled));
-  return true;
-}
-
 bool MetricsRecordUserActionFunction::RunImpl() {
   std::string name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
-  name = BuildMetricName(name, GetExtension());
   UserMetrics::RecordComputedAction(name);
   return true;
 }
@@ -74,16 +32,15 @@ bool MetricsHistogramHelperFunction::RecordValue(const std::string& name,
                                                  int max,
                                                  size_t buckets,
                                                  int sample) {
-  std::string full_name = BuildMetricName(name, GetExtension());
   Histogram* counter;
   if (type == Histogram::LINEAR_HISTOGRAM) {
-    counter = LinearHistogram::FactoryGet(full_name,
+    counter = LinearHistogram::FactoryGet(name,
                                           min,
                                           max,
                                           buckets,
                                           Histogram::kUmaTargetedHistogramFlag);
   } else {
-    counter = Histogram::FactoryGet(full_name,
+    counter = Histogram::FactoryGet(name,
                                     min,
                                     max,
                                     buckets,

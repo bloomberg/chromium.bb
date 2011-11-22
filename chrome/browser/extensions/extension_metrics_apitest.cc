@@ -6,8 +6,6 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 
@@ -17,7 +15,7 @@ namespace {
 // user actions, with the specified counts.  If the tests in test.js are
 // modified, this array may need to be updated.
 struct RecordedUserAction {
-  const char* name;  // base name of metric without extension id.
+  const char* name;
   int count;  // number of times the metric was recorded.
 } g_user_actions[] = {
   {"test.ua.1", 1},
@@ -28,7 +26,7 @@ struct RecordedUserAction {
 // histograms.  If the tests in test.js are modified, this array may need to be
 // updated.
 struct RecordedHistogram {
-  const char* name;  // base name of metric without extension id.
+  const char* name;
   base::Histogram::ClassType type;
   int min;
   int max;
@@ -45,24 +43,13 @@ struct RecordedHistogram {
   {"test.small.count", base::Histogram::HISTOGRAM, 1, 100, 50},
 };
 
-// Build the full name of a metrics for the given extension.  Each metric
-// is made up of the unique name within the extension followed by the
-// extension's id.
-std::string BuildFullName(const std::string& name, const Extension* extension) {
-  std::string full_name(name);
-  full_name += extension->id();
-  return full_name;
-}
-
 // This class observes and collects user action notifications that are sent
 // by the tests, so that they can be examined afterwards for correctness.
 class UserActionObserver : public content::NotificationObserver {
  public:
   UserActionObserver();
 
-  void ValidateUserActions(const Extension* extension,
-                           const RecordedUserAction* recorded,
-                           int count);
+  void ValidateUserActions(const RecordedUserAction* recorded, int count);
 
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -96,19 +83,17 @@ void UserActionObserver::Observe(int type,
   ++(count_map_[name]);
 }
 
-void UserActionObserver::ValidateUserActions(const Extension* extension,
-                                             const RecordedUserAction* recorded,
+void UserActionObserver::ValidateUserActions(const RecordedUserAction* recorded,
                                              int count) {
   EXPECT_EQ(count, num_metrics());
 
   for (int i = 0; i < count; ++i) {
     const RecordedUserAction& ua = recorded[i];
-    EXPECT_EQ(ua.count, GetMetricCount(BuildFullName(ua.name, extension)));
+    EXPECT_EQ(ua.count, GetMetricCount(ua.name));
   }
 }
 
-void ValidateHistograms(const Extension* extension,
-                        const RecordedHistogram* recorded,
+void ValidateHistograms(const RecordedHistogram* recorded,
                         int count) {
   base::StatisticsRecorder::Histograms histograms;
   base::StatisticsRecorder::GetHistograms(&histograms);
@@ -119,13 +104,11 @@ void ValidateHistograms(const Extension* extension,
   // correct.
   for (int i = 0; i < count; ++i) {
     const RecordedHistogram& r = recorded[i];
-    std::string name(BuildFullName(r.name, extension));
-
     size_t j = 0;
     for (j = 0; j < histograms.size(); ++j) {
       base::Histogram* histogram(histograms[j]);
 
-      if (name == histogram->histogram_name()) {
+      if (r.name == histogram->histogram_name()) {
         EXPECT_EQ(r.type, histogram->histogram_type());
         EXPECT_EQ(r.min, histogram->declared_min());
         EXPECT_EQ(r.max, histogram->declared_max());
@@ -140,17 +123,10 @@ void ValidateHistograms(const Extension* extension,
 }  // anonymous namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableExperimentalExtensionApis);
-
   UserActionObserver observer;
 
-  ASSERT_TRUE(RunExtensionTest("metrics")) << message_;
-  const Extension* extension = GetSingleLoadedExtension();
-  ASSERT_TRUE(extension);
+  ASSERT_TRUE(RunComponentExtensionTest("metrics")) << message_;
 
-  observer.ValidateUserActions(extension,
-                               g_user_actions,
-                               arraysize(g_user_actions));
-  ValidateHistograms(extension, g_histograms, arraysize(g_histograms));
+  observer.ValidateUserActions(g_user_actions, arraysize(g_user_actions));
+  ValidateHistograms(g_histograms, arraysize(g_histograms));
 }
