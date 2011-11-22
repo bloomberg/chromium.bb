@@ -3569,7 +3569,7 @@ void RenderViewImpl::OnZoom(content::PageZoom zoom) {
     return;
 
   webview()->hidePopups();
-#if !defined(TOUCH_UI)
+
   double old_zoom_level = webview()->zoomLevel();
   double zoom_level;
   if (zoom == content::PAGE_ZOOM_RESET) {
@@ -3591,9 +3591,6 @@ void RenderViewImpl::OnZoom(content::PageZoom zoom) {
     }
   }
   webview()->setZoomLevel(false, zoom_level);
-#else
-  ZoomFactorHelper(zoom, 0, 0, kScalingIncrement);
-#endif
   zoomLevelChanged();
 }
 
@@ -4543,12 +4540,7 @@ void RenderViewImpl::zoomLimitsChanged(double minimum_level,
 
 void RenderViewImpl::zoomLevelChanged() {
   bool remember = !webview()->mainFrame()->document().isPluginDocument();
-#if defined(TOUCH_UI)
-  float zoom_level =
-      WebView::zoomFactorToZoomLevel(webview()->pageScaleFactor());
-#else
   float zoom_level = webview()->zoomLevel();
-#endif
   // Tell the browser which url got zoomed so it can update the menu and the
   // saved values if necessary
   Send(new ViewHostMsg_DidZoomURL(

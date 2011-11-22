@@ -103,10 +103,6 @@ using content::RenderProcessObserver;
 namespace {
 static const int64 kInitialIdleHandlerDelayMs = 1000;
 
-#if defined(TOUCH_UI)
-static const int kPopupListBoxMinimumRowHeight = 60;
-#endif
-
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
 static base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
@@ -515,12 +511,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enablePushState(true);
 
-#ifdef TOUCH_UI
-  WebRuntimeFeatures::enableTouch(true);
-  WebKit::WebPopupMenu::setMinimumRowHeight(kPopupListBoxMinimumRowHeight);
-#else
   WebRuntimeFeatures::enableTouch(false);
-#endif
 
   WebRuntimeFeatures::enableDeviceMotion(
       command_line.HasSwitch(switches::kEnableDeviceMotion));
