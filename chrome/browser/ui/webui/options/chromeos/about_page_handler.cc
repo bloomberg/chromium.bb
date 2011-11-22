@@ -82,9 +82,7 @@ class AboutPageHandler::UpdateObserver
 };
 
 AboutPageHandler::AboutPageHandler()
-    : CrosOptionsPageUIHandler(
-          new UserCrosSettingsProvider),
-      progress_(-1),
+    : progress_(-1),
       sticky_(false),
       started_(false)
 {}

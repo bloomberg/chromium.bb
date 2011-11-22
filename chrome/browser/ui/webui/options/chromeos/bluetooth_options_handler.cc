@@ -19,9 +19,7 @@
 
 namespace chromeos {
 
-BluetoothOptionsHandler::BluetoothOptionsHandler()
-    : chromeos::CrosOptionsPageUIHandler(
-        new chromeos::SystemSettingsProvider()) {
+BluetoothOptionsHandler::BluetoothOptionsHandler() {
 }
 
 BluetoothOptionsHandler::~BluetoothOptionsHandler() {

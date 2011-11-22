@@ -13,7 +13,6 @@
 #include "base/task.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
-#include "chrome/browser/chromeos/login/signed_settings_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/net/gaia/google_service_auth_error.h"
 #include "content/public/browser/notification_observer.h"
@@ -52,7 +51,6 @@ namespace chromeos {
 // 1. ScreenLock active (pending correct new password input)
 // 2. Pending online auth request.
 class LoginPerformer : public LoginStatusConsumer,
-                       public SignedSettingsHelper::Callback,
                        public content::NotificationObserver,
                        public ProfileManagerObserver {
  public:
@@ -127,10 +125,6 @@ class LoginPerformer : public LoginStatusConsumer,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
-
-  // SignedSettingsHelper::Callback implementation:
-  virtual void OnCheckWhitelistCompleted(SignedSettings::ReturnCode code,
-                                         const std::string& email) OVERRIDE;
 
   // ProfileManagerObserver implementation:
   virtual void OnProfileCreated(Profile* profile, Status status) OVERRIDE;

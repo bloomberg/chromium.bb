@@ -11,6 +11,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -22,8 +23,7 @@
 
 namespace chromeos {
 
-AccountsOptionsHandler::AccountsOptionsHandler()
-    : CrosOptionsPageUIHandler(new UserCrosSettingsProvider) {
+AccountsOptionsHandler::AccountsOptionsHandler() {
 }
 
 AccountsOptionsHandler::~AccountsOptionsHandler() {
@@ -43,7 +43,7 @@ void AccountsOptionsHandler::RegisterMessages() {
 }
 
 void AccountsOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   RegisterTitle(localized_strings, "accountsPage",
@@ -63,8 +63,10 @@ void AccountsOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_ACCOUNTS_ADD_USERS));
   localized_strings->SetString("owner_only", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
-  localized_strings->SetString("owner_user_id", UTF8ToUTF16(
-      UserCrosSettingsProvider::cached_owner()));
+
+  std::string owner;
+  CrosSettings::Get()->GetString(kDeviceOwner, &owner);
+  localized_strings->SetString("owner_user_id", UTF8ToUTF16(owner));
 
   localized_strings->SetString("current_user_is_owner",
       UserManager::Get()->current_user_is_owner() ?
@@ -77,37 +79,36 @@ void AccountsOptionsHandler::GetLocalizedValues(
           ASCIIToUTF16("true") : ASCIIToUTF16("false"));
 }
 
-UserCrosSettingsProvider* AccountsOptionsHandler::users_settings() const {
-  return static_cast<UserCrosSettingsProvider*>(settings_provider_.get());
-}
-
-void AccountsOptionsHandler::WhitelistUser(const ListValue* args) {
+void AccountsOptionsHandler::WhitelistUser(const base::ListValue* args) {
   std::string email;
   if (!args->GetString(0, &email)) {
     return;
   }
-
-  users_settings()->WhitelistUser(Authenticator::Canonicalize(email));
+  // TODO(pastarmovj): Those will change to CrosSettings ops in phase 2.
+  UserCrosSettingsProvider::WhitelistUser(Authenticator::Canonicalize(email));
 }
 
-void AccountsOptionsHandler::UnwhitelistUser(const ListValue* args) {
+void AccountsOptionsHandler::UnwhitelistUser(const base::ListValue* args) {
   std::string email;
   if (!args->GetString(0, &email)) {
     return;
   }
-
-  users_settings()->UnwhitelistUser(Authenticator::Canonicalize(email));
+  // TODO(pastarmovj): Those will change to CrosSettings ops in phase 2.
+  UserCrosSettingsProvider::UnwhitelistUser(Authenticator::Canonicalize(email));
   UserManager::Get()->RemoveUser(email, NULL);
 }
 
-void AccountsOptionsHandler::WhitelistExistingUsers(const ListValue* args) {
-  ListValue whitelist_users;
-
+void AccountsOptionsHandler::WhitelistExistingUsers(
+    const base::ListValue* args) {
+  base::ListValue whitelist_users;
+  const base::ListValue *user_list;
+  CrosSettings::Get()->GetList(kAccountsPrefUsers, &user_list);
   const UserList& users = UserManager::Get()->GetUsers();
   for (UserList::const_iterator it = users.begin(); it < users.end(); ++it) {
     const std::string& email = (*it)->email();
-    if (!UserCrosSettingsProvider::IsEmailInCachedWhitelist(email)) {
-      DictionaryValue* user_dict = new DictionaryValue;
+    base::StringValue email_value(email);
+    if (user_list->Find(email_value) == user_list->end()) {
+      base::DictionaryValue* user_dict = new DictionaryValue;
       user_dict->SetString("name", (*it)->GetDisplayName());
       user_dict->SetString("email", email);
       user_dict->SetBoolean("owner", false);

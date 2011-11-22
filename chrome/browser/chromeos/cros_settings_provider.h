@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/callback.h"
+
 namespace base {
 class Value;
 }
@@ -22,8 +24,12 @@ class CrosSettingsProvider {
   void Set(const std::string& path, base::Value* in_value);
 
   // Gets settings value of given |path| to |out_value|.
-  // Note that |out_value| is owned by the caller, not this class.
-  virtual bool Get(const std::string& path, base::Value** out_value) const = 0;
+  virtual const base::Value* Get(const std::string& path) const = 0;
+
+  // Starts a fetch from the trusted store for the value of |path|. It will
+  // call the |callback| function upon completion.
+  virtual bool GetTrusted(const std::string& path,
+                          const base::Closure& callback) const = 0;
 
   // Gets the namespace prefix provided by this provider
   virtual bool HandlesSetting(const std::string& path) const = 0;

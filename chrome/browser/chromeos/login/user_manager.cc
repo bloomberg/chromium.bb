@@ -23,6 +23,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
@@ -126,15 +127,18 @@ class RemoveAttempt : public CryptohomeLibrary::Delegate {
   void RemoveUser() {
     // Owner is not allowed to be removed from the device.
     // Must not proceed without signature verification.
-    UserCrosSettingsProvider user_settings;
-    bool trusted_owner_available = user_settings.RequestTrustedOwner(
+    CrosSettings* cros_settings = CrosSettings::Get();
+    bool trusted_owner_available = cros_settings->GetTrusted(
+        kDeviceOwner,
         base::Bind(&RemoveAttempt::RemoveUser, weak_factory_.GetWeakPtr()));
     if (!trusted_owner_available) {
       // Value of owner email is still not verified.
       // Another attempt will be invoked after verification completion.
       return;
     }
-    if (user_email_ == UserCrosSettingsProvider::cached_owner()) {
+    std::string owner;
+    cros_settings->GetString(kDeviceOwner, &owner);
+    if (user_email_ == owner) {
       // Owner is not allowed to be removed from the device. Probably on
       // the stack, so deffer the deletion.
       MessageLoop::current()->DeleteSoon(FROM_HERE, this);

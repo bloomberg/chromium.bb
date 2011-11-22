@@ -3806,8 +3806,6 @@
         'browser/ui/webui/options/chromeos/core_chromeos_options_handler.h',
         'browser/ui/webui/options/chromeos/cros_language_options_handler.cc',
         'browser/ui/webui/options/chromeos/cros_language_options_handler.h',
-        'browser/ui/webui/options/chromeos/cros_options_page_ui_handler.cc',
-        'browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h',
         'browser/ui/webui/options/chromeos/internet_options_handler.cc',
         'browser/ui/webui/options/chromeos/internet_options_handler.h',
         'browser/ui/webui/options/chromeos/language_chewing_handler.cc',

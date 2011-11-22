@@ -16,10 +16,10 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -222,26 +222,6 @@ void LoginPerformer::OnPasswordChangeDetected(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LoginPerformer, SignedSettingsHelper::Callback implementation:
-
-void LoginPerformer::OnCheckWhitelistCompleted(SignedSettings::ReturnCode code,
-                                               const std::string& email) {
-  if (code == SignedSettings::SUCCESS) {
-    // Whitelist check passed, continue with authentication.
-    if (auth_mode_ == AUTH_MODE_EXTENSION) {
-      StartLoginCompletion();
-    } else {
-      StartAuthentication();
-    }
-  } else {
-    if (delegate_)
-      delegate_->WhiteListCheckFailed(email);
-    else
-      NOTREACHED();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // LoginPerformer, content::NotificationObserver implementation:
 //
 
@@ -269,43 +249,43 @@ void LoginPerformer::CompleteLogin(const std::string& username,
   auth_mode_ = AUTH_MODE_EXTENSION;
   username_ = username;
   password_ = password;
+
+  CrosSettings* cros_settings = CrosSettings::Get();
+
   // Whitelist check is always performed during initial login and
   // should not be performed when ScreenLock is active (pending online auth).
   if (!ScreenLocker::default_screen_locker()) {
-    // Must not proceed without signature verification.
-    UserCrosSettingsProvider user_settings;
-    bool trusted_setting_available = user_settings.RequestTrustedAllowNewUser(
-        base::Bind(&LoginPerformer::CompleteLogin, weak_factory_.GetWeakPtr(),
-                   username, password));
-    if (!trusted_setting_available) {
+    // Must not proceed without signature verification or valid user list.
+    bool trusted_settings_available =
+        cros_settings->GetTrusted(
+            kAccountsPrefAllowNewUser,
+            base::Bind(&LoginPerformer::CompleteLogin,
+                       weak_factory_.GetWeakPtr(),
+                       username, password));
+    if (!trusted_settings_available) {
       // Value of AllowNewUser setting is still not verified.
       // Another attempt will be invoked after verification completion.
       return;
     }
   }
 
-  if (ScreenLocker::default_screen_locker() ||
-      UserCrosSettingsProvider::cached_allow_new_user()) {
+  bool allow_new_user = false;
+  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+  if (ScreenLocker::default_screen_locker() || allow_new_user) {
     // Starts authentication if guest login is allowed or online auth pending.
     StartLoginCompletion();
   } else {
     // Otherwise, do whitelist check first.
-    PrefService* local_state = g_browser_process->local_state();
-    CHECK(local_state);
-    if (local_state->IsManagedPreference(kAccountsPrefUsers)) {
-      if (UserCrosSettingsProvider::IsEmailInCachedWhitelist(username)) {
-        StartLoginCompletion();
-      } else {
-        if (delegate_)
-          delegate_->WhiteListCheckFailed(username);
-        else
-          NOTREACHED();
-      }
+    const base::ListValue *user_list;
+    base::StringValue username_value(username);
+    if (cros_settings->GetList(kAccountsPrefUsers, &user_list) &&
+        user_list->Find(username_value) != user_list->end()) {
+      StartLoginCompletion();
     } else {
-      // In case of signed settings: with current implementation we do not
-      // trust whitelist returned by PrefService.  So make separate check.
-      SignedSettingsHelper::Get()->StartCheckWhitelistOp(
-          username, this);
+      if (delegate_)
+        delegate_->WhiteListCheckFailed(username);
+      else
+        NOTREACHED();
     }
   }
 }
@@ -316,43 +296,41 @@ void LoginPerformer::Login(const std::string& username,
   username_ = username;
   password_ = password;
 
+  CrosSettings* cros_settings = CrosSettings::Get();
+
   // Whitelist check is always performed during initial login and
   // should not be performed when ScreenLock is active (pending online auth).
   if (!ScreenLocker::default_screen_locker()) {
     // Must not proceed without signature verification.
-    UserCrosSettingsProvider user_settings;
-    bool trusted_setting_available = user_settings.RequestTrustedAllowNewUser(
-        base::Bind(&LoginPerformer::Login, weak_factory_.GetWeakPtr(), username,
-                   password));
-    if (!trusted_setting_available) {
+    bool trusted_settings_available =
+        cros_settings->GetTrusted(
+            kAccountsPrefAllowNewUser,
+            base::Bind(&LoginPerformer::Login,
+                       weak_factory_.GetWeakPtr(),
+                       username, password));
+    if (!trusted_settings_available) {
       // Value of AllowNewUser setting is still not verified.
       // Another attempt will be invoked after verification completion.
       return;
     }
   }
 
-  if (ScreenLocker::default_screen_locker() ||
-      UserCrosSettingsProvider::cached_allow_new_user()) {
+  bool allow_new_user = false;
+  cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+  if (ScreenLocker::default_screen_locker() || allow_new_user) {
     // Starts authentication if guest login is allowed or online auth pending.
     StartAuthentication();
   } else {
-    // Otherwise, do whitelist check first.
-    PrefService* local_state = g_browser_process->local_state();
-    CHECK(local_state);
-    if (local_state->IsManagedPreference(kAccountsPrefUsers)) {
-      if (UserCrosSettingsProvider::IsEmailInCachedWhitelist(username)) {
-        StartAuthentication();
-      } else {
-        if (delegate_)
-          delegate_->WhiteListCheckFailed(username);
-        else
-          NOTREACHED();
-      }
+    const base::ListValue *user_list;
+    base::StringValue username_value(username);
+    if (cros_settings->GetList(kAccountsPrefUsers, &user_list) &&
+        user_list->Find(username_value) != user_list->end()) {
+      StartAuthentication();
     } else {
-      // In case of signed settings: with current implementation we do not
-      // trust whitelist returned by PrefService.  So make separate check.
-      SignedSettingsHelper::Get()->StartCheckWhitelistOp(
-          username, this);
+      if (delegate_)
+        delegate_->WhiteListCheckFailed(username);
+      else
+        NOTREACHED();
     }
   }
 }
@@ -368,7 +346,8 @@ void LoginPerformer::RecoverEncryptedData(const std::string& old_password) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&Authenticator::RecoverEncryptedData, authenticator_.get(),
-                 old_password, cached_credentials_));
+                 old_password,
+                 cached_credentials_));
   cached_credentials_ = GaiaAuthConsumer::ClientLoginResult();
 }
 
@@ -539,8 +518,10 @@ void LoginPerformer::StartLoginCompletion() {
   authenticator_ = LoginUtils::Get()->CreateAuthenticator(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&Authenticator::CompleteLogin, authenticator_.get(), profile,
-                 username_, password_));
+      base::Bind(&Authenticator::CompleteLogin, authenticator_.get(),
+                 profile,
+                 username_,
+                 password_));
 
   password_.clear();
 }
@@ -554,7 +535,11 @@ void LoginPerformer::StartAuthentication() {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&Authenticator::AuthenticateToLogin, authenticator_.get(),
-                   profile, username_, password_, captcha_token_, captcha_));
+                   profile,
+                   username_,
+                   password_,
+                   captcha_token_,
+                   captcha_));
   } else {
     DCHECK(authenticator_.get())
         << "Authenticator instance doesn't exist for login attempt retry.";
@@ -562,8 +547,12 @@ void LoginPerformer::StartAuthentication() {
     // retry online auth, using existing Authenticator instance.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&Authenticator::RetryAuth, authenticator_.get(), profile,
-                   username_, password_, captcha_token_, captcha_));
+        base::Bind(&Authenticator::RetryAuth, authenticator_.get(),
+                   profile,
+                   username_,
+                   password_,
+                   captcha_token_,
+                   captcha_));
   }
   password_.clear();
 }

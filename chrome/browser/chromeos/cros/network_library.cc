@@ -27,12 +27,12 @@
 #include "base/utf_string_conversion_utils.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
 #include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/onc_network_parser.h"
 #include "chrome/browser/chromeos/network_login_observer.h"
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/common/time_format.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/nss_util.h"  // crypto::GetTPMTokenInfo() for 802.1X and VPN.
@@ -3589,9 +3589,10 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
         if (!device->data_roaming_allowed() && IsCellularAlwaysInRoaming()) {
           SetCellularDataRoamingAllowed(true);
         } else {
-          bool settings_value =
-              UserCrosSettingsProvider::cached_data_roaming_enabled();
-          if (device->data_roaming_allowed() != settings_value) {
+          bool settings_value;
+          if (CrosSettings::Get()->GetBoolean(
+                  kSignedDataRoamingEnabled, &settings_value) &&
+              device->data_roaming_allowed() != settings_value) {
             // Switch back to signed settings value.
             SetCellularDataRoamingAllowed(settings_value);
             return;
@@ -4670,9 +4671,10 @@ void NetworkLibraryImplCros::ParseNetworkDevice(const std::string& device_path,
     if (!device->data_roaming_allowed() && IsCellularAlwaysInRoaming()) {
       SetCellularDataRoamingAllowed(true);
     } else {
-      bool settings_value =
-          UserCrosSettingsProvider::cached_data_roaming_enabled();
-      if (device->data_roaming_allowed() != settings_value) {
+      bool settings_value;
+      if (CrosSettings::Get()->GetBoolean(
+              kSignedDataRoamingEnabled, &settings_value) &&
+          device->data_roaming_allowed() != settings_value) {
         // Switch back to signed settings value.
         SetCellularDataRoamingAllowed(settings_value);
       }

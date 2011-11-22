@@ -22,17 +22,17 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
  protected:
   // ::CoreOptionsHandler overrides
   virtual void Initialize();
-  virtual base::Value* FetchPref(const std::string& pref_name);
-  virtual void ObservePref(const std::string& pref_name);
+  virtual base::Value* FetchPref(const std::string& pref_name) OVERRIDE;
+  virtual void ObservePref(const std::string& pref_name) OVERRIDE;
   virtual void SetPref(const std::string& pref_name,
                        const base::Value* value,
-                       const std::string& metric);
-  virtual void StopObservingPref(const std::string& path);
+                       const std::string& metric) OVERRIDE;
+  virtual void StopObservingPref(const std::string& path) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Notifies registered JS callbacks on ChromeOS setting change.

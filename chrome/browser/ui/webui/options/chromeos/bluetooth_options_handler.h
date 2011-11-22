@@ -10,7 +10,7 @@
 
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_manager.h"
-#include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace base {
 class DictionaryValue;
@@ -19,7 +19,7 @@ class DictionaryValue;
 namespace chromeos {
 
 // Handler for Bluetooth options on the system options page.
-class BluetoothOptionsHandler : public chromeos::CrosOptionsPageUIHandler,
+class BluetoothOptionsHandler : public OptionsPageUIHandler,
                                 public chromeos::BluetoothManager::Observer,
                                 public chromeos::BluetoothAdapter::Observer {
  public:

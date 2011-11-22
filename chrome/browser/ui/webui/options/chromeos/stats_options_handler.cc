@@ -13,8 +13,7 @@
 
 namespace chromeos {
 
-StatsOptionsHandler::StatsOptionsHandler()
-    : CrosOptionsPageUIHandler(new UserCrosSettingsProvider) {
+StatsOptionsHandler::StatsOptionsHandler() {
 }
 
 // OptionsPageUIHandler implementation.

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace base {
 class DictionaryValue;
@@ -15,7 +15,7 @@ class DictionaryValue;
 
 // ChromeOS system options page UI handler.
 class SystemOptionsHandler
-  : public chromeos::CrosOptionsPageUIHandler,
+  : public OptionsPageUIHandler,
     public base::SupportsWeakPtr<SystemOptionsHandler> {
  public:
   SystemOptionsHandler();

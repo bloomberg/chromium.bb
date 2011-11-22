@@ -214,14 +214,20 @@ void SystemSettingsProvider::DoSet(const std::string& path, Value* in_value) {
   }
 }
 
-bool SystemSettingsProvider::Get(const std::string& path,
-                                 Value** out_value) const {
+const base::Value* SystemSettingsProvider::Get(const std::string& path) const {
   if (path == kSystemTimezone) {
-    *out_value = Value::CreateStringValue(GetKnownTimezoneID(
-        system::TimezoneSettings::GetInstance()->GetTimezone()));
-    return true;
+    // TODO(pastarmovj): Cache this in the local_state instead of locally.
+    system_timezone_.reset(base::Value::CreateStringValue(GetKnownTimezoneID(
+        system::TimezoneSettings::GetInstance()->GetTimezone())));
+    return system_timezone_.get();
   }
-  return false;
+  return NULL;
+}
+
+// The timezone is always trusted.
+bool SystemSettingsProvider::GetTrusted(const std::string& path,
+                                        const base::Closure& callback) const {
+  return true;
 }
 
 bool SystemSettingsProvider::HandlesSetting(const std::string& path) const {

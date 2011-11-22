@@ -34,7 +34,7 @@
 namespace chromeos {
 
 class LoginDisplayHost;
-class UserCrosSettingsProvider;
+class CrosSettings;
 
 // ExistingUserController is used to handle login when someone has
 // already logged into the machine.
@@ -178,8 +178,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // automation tests.
   static ExistingUserController* current_controller_;
 
-  // Triggers prefetching of user settings.
-  scoped_ptr<UserCrosSettingsProvider> user_settings_;
+  // Interface to the signed settings store.
+  CrosSettings* cros_settings_;
 
   // URL to append to start Guest mode with.
   GURL guest_mode_url_;

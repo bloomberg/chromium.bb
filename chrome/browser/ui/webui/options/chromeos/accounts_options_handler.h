@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_ACCOUNTS_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace chromeos {
 
 class UserCrosSettingsProvider;
 
 // ChromeOS accounts options page handler.
-class AccountsOptionsHandler : public CrosOptionsPageUIHandler {
+class AccountsOptionsHandler : public OptionsPageUIHandler {
  public:
   AccountsOptionsHandler();
   virtual ~AccountsOptionsHandler();
@@ -25,8 +25,6 @@ class AccountsOptionsHandler : public CrosOptionsPageUIHandler {
   virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
 
  private:
-  UserCrosSettingsProvider* users_settings() const;
-
   // Javascript callbacks to whitelist/unwhitelist user.
   void WhitelistUser(const base::ListValue* args);
   void UnwhitelistUser(const base::ListValue* args);

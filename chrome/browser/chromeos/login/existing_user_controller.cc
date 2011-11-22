@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
@@ -26,7 +27,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_helper.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -81,7 +81,7 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       host_(host),
       login_display_(host_->CreateLoginDisplay(this)),
       num_login_attempts_(0),
-      user_settings_(new UserCrosSettingsProvider),
+      cros_settings_(CrosSettings::Get()),
       weak_factory_(this),
       is_owner_login_(false) {
   DCHECK(current_controller_ == NULL);
@@ -94,11 +94,22 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
 
 void ExistingUserController::Init(const UserList& users) {
   UserList filtered_users;
-  if (UserCrosSettingsProvider::cached_show_users_on_signin()) {
+  bool show_users_on_signin;
+
+  // TODO(pastarmovj): Make this class an observer of the CrosSettings to be
+  // able to update the UI whenever policy is loaded.
+  cros_settings_->GetBoolean(kAccountsPrefShowUserNamesOnSignIn,
+                             &show_users_on_signin);
+  if (show_users_on_signin) {
+    bool allow_new_user = false;
+    const base::ListValue *user_list;
+    cros_settings_->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+    cros_settings_->GetList(kAccountsPrefUsers, &user_list);
     for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+      base::StringValue email((*it)->email());
       // TODO(xiyuan): Clean user profile whose email is not in whitelist.
-      if (UserCrosSettingsProvider::cached_allow_new_user() ||
-          UserCrosSettingsProvider::IsEmailInCachedWhitelist((*it)->email())) {
+      if (allow_new_user ||
+          user_list->Find(email) != user_list->end()) {
         filtered_users.push_back(*it);
       }
     }
@@ -106,8 +117,9 @@ void ExistingUserController::Init(const UserList& users) {
 
   // If no user pods are visible, fallback to single new user pod which will
   // have guest session link.
-  bool show_guest = UserCrosSettingsProvider::cached_allow_guest() &&
-                    !filtered_users.empty();
+  bool show_guest;
+  cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &show_guest);
+  show_guest &= !filtered_users.empty();
   bool show_new_user = true;
   login_display_->set_parent_window(GetNativeWindow());
   login_display_->Init(filtered_users, show_guest, show_new_user);
@@ -229,7 +241,8 @@ void ExistingUserController::LoginAsGuest() {
 
   // Check allow_guest in case this call is fired from key accelerator.
   // Must not proceed without signature verification.
-  bool trusted_setting_available = user_settings_->RequestTrustedAllowGuest(
+  bool trusted_setting_available = cros_settings_->GetTrusted(
+      kAccountsPrefAllowGuest,
       base::Bind(&ExistingUserController::LoginAsGuest,
                  weak_factory_.GetWeakPtr()));
   if (!trusted_setting_available) {
@@ -237,7 +250,9 @@ void ExistingUserController::LoginAsGuest() {
     // Another attempt will be invoked again after verification completion.
     return;
   }
-  if (!UserCrosSettingsProvider::cached_allow_guest()) {
+  bool allow_guest;
+  cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
+  if (!allow_guest) {
     // Disallowed.
     return;
   }
@@ -328,7 +343,9 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
       // 1. ClientLogin returns ServiceUnavailable code.
       // 2. Internet connectivity may be behind the captive portal.
       // Suggesting user to try sign in to a portal in Guest mode.
-      if (UserCrosSettingsProvider::cached_allow_guest())
+      bool allow_guest;
+      cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
+      if (allow_guest)
         ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL, error);
       else
         ShowError(IDS_LOGIN_ERROR_CAPTIVE_PORTAL_NO_GUEST_MODE, error);
@@ -473,9 +490,11 @@ void ExistingUserController::OnOffTheRecordLoginSuccess() {
 void ExistingUserController::OnPasswordChangeDetected(
     const GaiaAuthConsumer::ClientLoginResult& credentials) {
   // Must not proceed without signature verification.
-  bool trusted_setting_available = user_settings_->RequestTrustedOwner(
+  bool trusted_setting_available = cros_settings_->GetTrusted(
+      kDeviceOwner,
       base::Bind(&ExistingUserController::OnPasswordChangeDetected,
                  weak_factory_.GetWeakPtr(), credentials));
+
   if (!trusted_setting_available) {
     // Value of owner email is still not verified.
     // Another attempt will be invoked after verification completion.
@@ -578,7 +597,8 @@ void ExistingUserController::ShowError(int error_id,
 }
 
 void ExistingUserController::SetOwnerUserInCryptohome() {
-  bool trusted_owner_available = user_settings_->RequestTrustedOwner(
+  bool trusted_owner_available = cros_settings_->GetTrusted(
+      kDeviceOwner,
       base::Bind(&ExistingUserController::SetOwnerUserInCryptohome,
                  weak_factory_.GetWeakPtr()));
   if (!trusted_owner_available) {
@@ -587,8 +607,9 @@ void ExistingUserController::SetOwnerUserInCryptohome() {
     return;
   }
   CryptohomeLibrary* cryptohomed = CrosLibrary::Get()->GetCryptohomeLibrary();
-  cryptohomed->AsyncSetOwnerUser(
-      UserCrosSettingsProvider::cached_owner(), NULL);
+  std::string owner;
+  cros_settings_->GetString(kDeviceOwner, &owner);
+  cryptohomed->AsyncSetOwnerUser(owner, NULL);
 
   // Do not invoke AsyncDoAutomaticFreeDiskSpaceControl(NULL) here
   // so it does not delay the following mount. Cleanup will be

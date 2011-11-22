@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -19,7 +19,7 @@ class WidgetDelegate;
 
 // ChromeOS internet options page UI handler.
 class InternetOptionsHandler
-  : public chromeos::CrosOptionsPageUIHandler,
+  : public OptionsPageUIHandler,
     public chromeos::NetworkLibrary::NetworkManagerObserver,
     public chromeos::NetworkLibrary::NetworkObserver,
     public chromeos::NetworkLibrary::CellularDataPlanObserver {

@@ -17,6 +17,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -46,9 +47,7 @@ void TouchpadExistsFileThread(bool* exists) {
 
 }
 
-SystemOptionsHandler::SystemOptionsHandler()
-    : chromeos::CrosOptionsPageUIHandler(
-        new chromeos::SystemSettingsProvider()) {
+SystemOptionsHandler::SystemOptionsHandler() {
 }
 
 SystemOptionsHandler::~SystemOptionsHandler() {
@@ -105,9 +104,12 @@ void SystemOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_ACCESSIBILITY_DESCRIPTION));
 
+  // TODO(pastarmovj): replace this with a call to the CrosSettings list
+  // handling functionality to come.
   localized_strings->Set("timezoneList",
-      reinterpret_cast<chromeos::SystemSettingsProvider*>(
-          settings_provider_.get())->GetTimezoneList());
+      static_cast<chromeos::SystemSettingsProvider*>(
+          chromeos::CrosSettings::Get()->GetProvider(
+              chromeos::kSystemTimezone))->GetTimezoneList());
 }
 
 void SystemOptionsHandler::Initialize() {

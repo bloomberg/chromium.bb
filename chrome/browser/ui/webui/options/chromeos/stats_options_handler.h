@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_STATS_OPTIONS_HANDLER_H_
 #pragma once
 
-#include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
+#include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace chromeos {
 
@@ -14,7 +14,7 @@ namespace chromeos {
 // settings page. This handler does only ChromeOS-specific actions while default
 // code is in Chrome's AdvancedOptionsHandler
 // (chrome/browser/webui/advanced_options_handler.cc).
-class StatsOptionsHandler : public CrosOptionsPageUIHandler {
+class StatsOptionsHandler : public OptionsPageUIHandler {
  public:
   StatsOptionsHandler();
 

@@ -23,7 +23,6 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/ownership_status_checker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/options/options_util.h"
@@ -176,17 +175,6 @@ void RegisterSetting(PrefService* local_state, const std::string& pref_path) {
   }
 }
 
-// Create a settings value with "managed" and "disabled" property.
-// "managed" property is true if the setting is managed by administrator.
-// "disabled" property is true if the UI for the setting should be disabled.
-Value* CreateSettingsValue(Value *value, bool managed, bool disabled) {
-  DictionaryValue* dict = new DictionaryValue;
-  dict->Set("value", value);
-  dict->Set("managed", Value::CreateBooleanValue(managed));
-  dict->Set("disabled", Value::CreateBooleanValue(disabled));
-  return dict;
-}
-
 enum UseValue {
   USE_VALUE_SUPPLIED,
   USE_VALUE_DEFAULT
@@ -214,6 +202,10 @@ void UpdateCacheString(const std::string& name,
   prefs->ScheduleSavePersistentPrefs();
 }
 
+// Helper function to parse the whitelist from the policy cache into the local
+// state.
+// TODO(pastarmovj): This function will disappear in step two of the refactoring
+// as per design doc. (Contact pastarmovj@chromium.org for a link to it.)
 bool GetUserWhitelist(ListValue* user_list) {
   PrefService* prefs = g_browser_process->local_state();
   DCHECK(!prefs->IsManagedPreference(kAccountsPrefUsers));
@@ -227,22 +219,8 @@ bool GetUserWhitelist(ListValue* user_list) {
   ListPrefUpdate cached_whitelist_update(prefs, kAccountsPrefUsers);
   cached_whitelist_update->Clear();
 
-  const User& self = UserManager::Get()->logged_in_user();
-  bool is_owner = UserManager::Get()->current_user_is_owner();
-
-  for (size_t i = 0; i < whitelist.size(); ++i) {
-    const std::string& email = whitelist[i];
-
-    if (user_list) {
-      DictionaryValue* user = new DictionaryValue;
-      user->SetString("email", email);
-      user->SetString("name", "");
-      user->SetBoolean("owner", is_owner && email == self.email());
-      user_list->Append(user);
-    }
-
-    cached_whitelist_update->Append(Value::CreateStringValue(email));
-  }
+  for (size_t i = 0; i < whitelist.size(); ++i)
+    cached_whitelist_update->Append(Value::CreateStringValue(whitelist[i]));
 
   prefs->ScheduleSavePersistentPrefs();
   return true;
@@ -564,125 +542,8 @@ void UserCrosSettingsProvider::RegisterPrefs(PrefService* local_state) {
     RegisterSetting(local_state, kListSettings[i]);
 }
 
-bool UserCrosSettingsProvider::RequestTrustedAllowGuest(
-    const base::Closure& callback) {
-  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
-      kAccountsPrefAllowGuest, callback);
-}
-
-bool UserCrosSettingsProvider::RequestTrustedAllowNewUser(
-    const base::Closure& callback) {
-  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
-      kAccountsPrefAllowNewUser, callback);
-}
-
-bool UserCrosSettingsProvider::RequestTrustedShowUsersOnSignin(
-    const base::Closure& callback) {
-  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
-      kAccountsPrefShowUserNamesOnSignIn, callback);
-}
-
-bool UserCrosSettingsProvider::RequestTrustedDataRoamingEnabled(
-    const base::Closure& callback) {
-  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
-      kSignedDataRoamingEnabled, callback);
-}
-
-bool UserCrosSettingsProvider::RequestTrustedOwner(
-    const base::Closure& callback) {
-  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
-      kDeviceOwner, callback);
-}
-
-bool UserCrosSettingsProvider::RequestTrustedReportingEnabled(
-    const base::Closure& callback) {
-  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
-      kStatsReportingPref, callback);
-}
-
 void UserCrosSettingsProvider::Reload() {
   UserCrosSettingsTrust::GetInstance()->Reload();
-}
-
-// static
-bool UserCrosSettingsProvider::cached_allow_guest() {
-  // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetInstance();
-  return g_browser_process->local_state()->GetBoolean(kAccountsPrefAllowGuest);
-}
-
-// static
-bool UserCrosSettingsProvider::cached_allow_new_user() {
-  // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetInstance();
-  return g_browser_process->local_state()->GetBoolean(
-      kAccountsPrefAllowNewUser);
-}
-
-// static
-bool UserCrosSettingsProvider::cached_data_roaming_enabled() {
-  // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetInstance();
-  return g_browser_process->local_state()->GetBoolean(
-      kSignedDataRoamingEnabled);
-}
-
-// static
-bool UserCrosSettingsProvider::cached_show_users_on_signin() {
-  // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetInstance();
-  return g_browser_process->local_state()->GetBoolean(
-      kAccountsPrefShowUserNamesOnSignIn);
-}
-
-// static
-bool UserCrosSettingsProvider::cached_reporting_enabled() {
-  // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetInstance();
-  return g_browser_process->local_state()->GetBoolean(
-      kStatsReportingPref);
-}
-
-// static
-const ListValue* UserCrosSettingsProvider::cached_whitelist() {
-  PrefService* prefs = g_browser_process->local_state();
-  const ListValue* cached_users = prefs->GetList(kAccountsPrefUsers);
-  if (!prefs->IsManagedPreference(kAccountsPrefUsers)) {
-    if (cached_users == NULL) {
-      // Update whitelist cache.
-      GetUserWhitelist(NULL);
-      cached_users = prefs->GetList(kAccountsPrefUsers);
-    }
-  }
-  if (cached_users == NULL) {
-    NOTREACHED();
-    cached_users = new ListValue;
-  }
-  return cached_users;
-}
-
-// static
-std::string UserCrosSettingsProvider::cached_owner() {
-  // Trigger prefetching if singleton object still does not exist.
-  UserCrosSettingsTrust::GetInstance();
-  if (!g_browser_process || !g_browser_process->local_state())
-    return std::string();
-  return g_browser_process->local_state()->GetString(kDeviceOwner);
-}
-
-// static
-bool UserCrosSettingsProvider::IsEmailInCachedWhitelist(
-    const std::string& email) {
-  const ListValue* whitelist = cached_whitelist();
-  if (whitelist) {
-    StringValue email_value(email);
-    for (ListValue::const_iterator i(whitelist->begin());
-        i != whitelist->end(); ++i) {
-      if ((*i)->Equals(&email_value))
-        return true;
-    }
-  }
-  return false;
 }
 
 void UserCrosSettingsProvider::DoSet(const std::string& path,
@@ -690,37 +551,37 @@ void UserCrosSettingsProvider::DoSet(const std::string& path,
   UserCrosSettingsTrust::GetInstance()->Set(path, in_value);
 }
 
-bool UserCrosSettingsProvider::Get(const std::string& path,
-                                   Value** out_value) const {
-  if (path == kAccountsPrefUsers) {
-    ListValue* user_list = new ListValue;
-    GetUserWhitelist(user_list);
-    *out_value = user_list;
-    return true;
-  }
-
-  if (IsControlledBooleanSetting(path) || IsControlledStringSetting(path)) {
+const base::Value* UserCrosSettingsProvider::Get(
+    const std::string& path) const {
+  if (HandlesSetting(path)) {
     PrefService* prefs = g_browser_process->local_state();
+    // TODO(pastarmovj): Temporary hack until we refactor the user whitelisting
+    // handling to completely coincide with the rest of the settings.
+    if (path == kAccountsPrefUsers &&
+        prefs->GetList(kAccountsPrefUsers) == NULL) {
+        GetUserWhitelist(NULL);
+    }
     const PrefService::Preference* pref = prefs->FindPreference(path.c_str());
-    const Value *pref_value = pref->GetValue();
-
-    *out_value = CreateSettingsValue(
-        pref_value->DeepCopy(),
-        g_browser_process->browser_policy_connector()->IsEnterpriseManaged(),
-        !UserManager::Get()->current_user_is_owner());
-    return true;
+    return pref->GetValue();
   }
+  return NULL;
+}
 
-  return false;
+bool UserCrosSettingsProvider::GetTrusted(const std::string& path,
+                                          const base::Closure& callback) const {
+  return UserCrosSettingsTrust::GetInstance()->RequestTrustedEntity(
+      path, callback);
 }
 
 bool UserCrosSettingsProvider::HandlesSetting(const std::string& path) const {
   return ::StartsWithASCII(path, "cros.accounts.", true) ||
       ::StartsWithASCII(path, "cros.signed.", true) ||
       ::StartsWithASCII(path, "cros.metrics.", true) ||
+      path == kDeviceOwner ||
       path == kReleaseChannel;
 }
 
+// static
 void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {
   SignedSettingsHelper::Get()->StartWhitelistOp(
       email, true, UserCrosSettingsTrust::GetInstance());
@@ -730,6 +591,7 @@ void UserCrosSettingsProvider::WhitelistUser(const std::string& email) {
   prefs->ScheduleSavePersistentPrefs();
 }
 
+// static
 void UserCrosSettingsProvider::UnwhitelistUser(const std::string& email) {
   SignedSettingsHelper::Get()->StartWhitelistOp(
       email, false, UserCrosSettingsTrust::GetInstance());

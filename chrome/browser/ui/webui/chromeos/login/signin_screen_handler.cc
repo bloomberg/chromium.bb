@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -471,10 +471,14 @@ void SigninScreenHandler::LoadAuthExtension(bool force, bool silent_load) {
   params.SetString("email", email_);
   email_.clear();
 
-  params.SetBoolean("createAccount",
-      UserCrosSettingsProvider::cached_allow_new_user());
-  params.SetBoolean("guestSignin",
-      UserCrosSettingsProvider::cached_allow_guest());
+  // TODO(pastarmovj): Watch for changes of this variables to update the UI
+  // properly when the policy has been fetched on sign-on screen.
+  bool allow_new_user = true;
+  CrosSettings::Get()->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
+  params.SetBoolean("createAccount", allow_new_user);
+  bool allow_guest = true;
+  CrosSettings::Get()->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
+  params.SetBoolean("guestSignin", allow_guest);
 
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   if (!app_locale.empty())
@@ -602,7 +606,9 @@ void SigninScreenHandler::SendUserList(bool animated) {
   bool single_user = users.size() == 1;
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
     const std::string& email = (*it)->email();
-    bool is_owner = email == UserCrosSettingsProvider::cached_owner();
+    std::string owner;
+    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+    bool is_owner = (email == owner);
     bool signed_in = UserManager::Get()->user_is_logged_in() &&
         email == UserManager::Get()->logged_in_user().email();
 

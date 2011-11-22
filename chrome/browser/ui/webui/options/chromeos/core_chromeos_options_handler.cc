@@ -9,9 +9,12 @@
 #include "base/bind.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros_settings.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/prefs/pref_set_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -22,6 +25,47 @@
 #include "content/public/browser/notification_source.h"
 
 namespace chromeos {
+
+namespace {
+
+// Create a settings value with "managed" and "disabled" property.
+// "managed" property is true if the setting is managed by administrator.
+// "disabled" property is true if the UI for the setting should be disabled.
+base::Value* CreateSettingsValue(base::Value *value,
+                                 bool managed,
+                                 bool disabled) {
+  DictionaryValue* dict = new DictionaryValue;
+  dict->Set("value", value);
+  dict->Set("managed", base::Value::CreateBooleanValue(managed));
+  dict->Set("disabled", base::Value::CreateBooleanValue(disabled));
+  return dict;
+}
+
+// This function decorates the bare list of emails with some more information
+// needed by the UI to properly display the Accounts page.
+base::Value* CreateUsersWhitelist(const base::Value *pref_value) {
+  const base::ListValue *list_value =
+      static_cast<const base::ListValue*>(pref_value);
+  base::ListValue *user_list = new base::ListValue();
+
+  const User& self = UserManager::Get()->logged_in_user();
+  bool is_owner = UserManager::Get()->current_user_is_owner();
+
+  for (base::ListValue::const_iterator i = list_value->begin();
+       i != list_value->end(); ++i) {
+    std::string email;
+    if ((*i)->GetAsString(&email)) {
+      DictionaryValue* user = new DictionaryValue;
+      user->SetString("email", email);
+      user->SetString("name", "");
+      user->SetBoolean("owner", is_owner && email == self.email());
+      user_list->Append(user);
+    }
+  }
+  return user_list;
+}
+
+}  // namespace
 
 CoreChromeOSOptionsHandler::CoreChromeOSOptionsHandler()
     : handling_change_(false),
@@ -74,9 +118,22 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
     return ::CoreOptionsHandler::FetchPref(pref_name);
   }
 
-  base::Value* pref_value = NULL;
-  CrosSettings::Get()->Get(pref_name, &pref_value);
-  return pref_value ? pref_value : base::Value::CreateNullValue();
+  const base::Value* pref_value =
+      CrosSettings::Get()->GetPref(pref_name);
+  if (!pref_value)
+    return base::Value::CreateNullValue();
+
+  // Lists don't get the standard pref decoration.
+  if (pref_value->GetType() == base::Value::TYPE_LIST) {
+    if (pref_name == kAccountsPrefUsers)
+      return CreateUsersWhitelist(pref_value);
+    return pref_value->DeepCopy();
+  }
+  // All other prefs are decorated the same way.
+  return CreateSettingsValue(
+      pref_value->DeepCopy(),
+      g_browser_process->browser_policy_connector()->IsEnterpriseManaged(),
+      !UserManager::Get()->current_user_is_owner());
 }
 
 void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
@@ -86,7 +143,6 @@ void CoreChromeOSOptionsHandler::ObservePref(const std::string& pref_name) {
   }
   if (!CrosSettings::IsCrosSettings(pref_name))
     return ::CoreOptionsHandler::ObservePref(pref_name);
-  // TODO(xiyuan): Change this when CrosSettings supports observers.
   CrosSettings::Get()->AddSettingsObserver(pref_name.c_str(), this);
 }
 
@@ -150,11 +206,9 @@ void CoreChromeOSOptionsHandler::NotifySettingsChanged(
     const std::string* setting_name) {
   DCHECK(web_ui_);
   DCHECK(CrosSettings::Get()->IsCrosSettings(*setting_name));
-  base::Value* value = NULL;
-  if (!CrosSettings::Get()->Get(*setting_name, &value)) {
+  const base::Value* value = CrosSettings::Get()->GetPref(*setting_name);
+  if (!value) {
     NOTREACHED();
-    if (value)
-      delete value;
     return;
   }
   for (PreferenceCallbackMap::const_iterator iter =

@@ -14,16 +14,16 @@
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
+#include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "content/public/browser/notification_observer.h"
 
 namespace base {
 template <typename T> struct DefaultLazyInstanceTraits;
+class ListValue;
 class Value;
 }
 
 namespace chromeos {
-
-class CrosSettingsProvider;
 
 // A class manages per-device/global settings.
 class CrosSettings : public base::NonThreadSafe {
@@ -39,11 +39,19 @@ class CrosSettings : public base::NonThreadSafe {
   void Set(const std::string& path, base::Value* in_value);
 
   // Fires system setting change notification.
+  // TODO(pastarmovj): Consider to remove this function from the public
+  // interface.
   void FireObservers(const char* path);
 
   // Gets settings value of given |path| to |out_value|.
-  // Note that the caller owns |out_value| returned.
-  bool Get(const std::string& path, base::Value** out_value) const;
+  const base::Value* GetPref(const std::string& path) const;
+
+  // Starts a fetch from the trusted store for the value of |path| if not loaded
+  // yet. It will call the |callback| function upon completion if a new fetch
+  // was needed in which case the return value is false. Else it will return
+  // true and won't call the |callback|.
+  bool GetTrusted(const std::string& path,
+                  const base::Closure& callback) const;
 
   // Convenience forms of Set().  These methods will replace any existing
   // value at that path, even if it has a different type.
@@ -59,6 +67,8 @@ class CrosSettings : public base::NonThreadSafe {
   bool GetInteger(const std::string& path, int* out_value) const;
   bool GetDouble(const std::string& path, double* out_value) const;
   bool GetString(const std::string& path, std::string* out_value) const;
+  bool GetList(const std::string& path,
+               const base::ListValue** out_value) const;
 
   // adding/removing of providers
   bool AddSettingsProvider(CrosSettingsProvider* provider);

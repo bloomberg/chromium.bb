@@ -8,8 +8,8 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros_settings_provider.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/ui/webui/options/chromeos/system_settings_provider.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -146,68 +146,83 @@ void CrosSettings::RemoveSettingsObserver(const char* path,
 CrosSettingsProvider* CrosSettings::GetProvider(
     const std::string& path) const {
   for (size_t i = 0; i < providers_.size(); ++i) {
-    if (providers_[i]->HandlesSetting(path)) {
+    if (providers_[i]->HandlesSetting(path))
       return providers_[i];
-    }
   }
   return NULL;
 }
 
-bool CrosSettings::Get(const std::string& path, Value** out_value) const {
+const base::Value* CrosSettings::GetPref(const std::string& path) const {
   DCHECK(CalledOnValidThread());
-  CrosSettingsProvider* provider;
-  provider = GetProvider(path);
-  if (provider) {
-    return provider->Get(path, out_value);
-  }
+  CrosSettingsProvider* provider = GetProvider(path);
+  if (provider)
+    return provider->Get(path);
+  NOTREACHED() << path << " preference was not found in the signed settings.";
+  return NULL;
+}
+
+bool CrosSettings::GetTrusted(const std::string& path,
+                              const base::Closure& callback) const {
+  DCHECK(CalledOnValidThread());
+  CrosSettingsProvider* provider = GetProvider(path);
+  if (provider)
+    return provider->GetTrusted(path, callback);
+  NOTREACHED() << "CrosSettings::GetTrusted called for unknown pref : " << path;
   return false;
 }
 
 bool CrosSettings::GetBoolean(const std::string& path,
                               bool* bool_value) const {
   DCHECK(CalledOnValidThread());
-  Value* value;
-  if (!Get(path, &value))
-    return false;
-
-  return value->GetAsBoolean(bool_value);
+  const base::Value* value = GetPref(path);
+  if (value)
+    return value->GetAsBoolean(bool_value);
+  return false;
 }
 
 bool CrosSettings::GetInteger(const std::string& path,
                               int* out_value) const {
   DCHECK(CalledOnValidThread());
-  Value* value;
-  if (!Get(path, &value))
-    return false;
-
-  return value->GetAsInteger(out_value);
+  const base::Value* value = GetPref(path);
+  if (value)
+    return value->GetAsInteger(out_value);
+  return false;
 }
 
 bool CrosSettings::GetDouble(const std::string& path,
                              double* out_value) const {
   DCHECK(CalledOnValidThread());
-  Value* value;
-  if (!Get(path, &value))
-    return false;
-
-  return value->GetAsDouble(out_value);
+  const base::Value* value = GetPref(path);
+  if (value)
+    return value->GetAsDouble(out_value);
+  return false;
 }
 
 bool CrosSettings::GetString(const std::string& path,
                              std::string* out_value) const {
   DCHECK(CalledOnValidThread());
-  Value* value;
-  if (!Get(path, &value))
-    return false;
+  const base::Value* value = GetPref(path);
+  if (value)
+    return value->GetAsString(out_value);
+  return false;
+}
 
-  return value->GetAsString(out_value);
+bool CrosSettings::GetList(const std::string& path,
+                           const base::ListValue** out_value) const {
+  DCHECK(CalledOnValidThread());
+  const base::Value* value = GetPref(path);
+  if (value)
+    return value->GetAsList(out_value);
+  return false;
 }
 
 CrosSettings::CrosSettings() {
+  AddSettingsProvider(new SystemSettingsProvider());
+  AddSettingsProvider(new UserCrosSettingsProvider());
 }
 
 CrosSettings::~CrosSettings() {
-  DCHECK(providers_.empty());
+  STLDeleteElements(&providers_);
   STLDeleteValues(&settings_observers_);
 }
 

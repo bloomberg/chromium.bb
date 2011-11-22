@@ -54,8 +54,7 @@
 
 static const char kOtherNetworksFakePath[] = "?";
 
-InternetOptionsHandler::InternetOptionsHandler()
-    : chromeos::CrosOptionsPageUIHandler(NULL) {
+InternetOptionsHandler::InternetOptionsHandler() {
   registrar_.Add(this, chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_ENTER_PIN_ENDED,
@@ -349,8 +348,9 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_CLOSE));
   localized_strings->SetString("ownerOnly", l10n_util::GetStringUTF16(
       IDS_OPTIONS_ACCOUNTS_OWNER_ONLY));
-  localized_strings->SetString("ownerUserId", UTF8ToUTF16(
-      chromeos::UserCrosSettingsProvider::cached_owner()));
+  std::string owner;
+  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+  localized_strings->SetString("ownerUserId", UTF8ToUTF16(owner));
 
   FillNetworkInfo(localized_strings);
 }
@@ -585,7 +585,7 @@ void InternetOptionsHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  chromeos::CrosOptionsPageUIHandler::Observe(type, source, details);
+  OptionsPageUIHandler::Observe(type, source, details);
   if (type == chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED) {
     base::FundamentalValue require_pin(*content::Details<bool>(details).ptr());
     web_ui_->CallJavascriptFunction(

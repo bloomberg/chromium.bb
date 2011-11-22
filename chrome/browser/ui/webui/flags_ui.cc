@@ -28,7 +28,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/user_cros_settings_provider.h"
+#include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
@@ -57,8 +57,9 @@ ChromeWebUIDataSource* CreateFlagsUIHTMLSource() {
 #if defined(OS_CHROMEOS)
   // Set the strings to show which user can actually change the flags
   source->AddLocalizedString("ownerOnly", IDS_OPTIONS_ACCOUNTS_OWNER_ONLY);
-  source->AddString("ownerUserId", UTF8ToUTF16(
-      chromeos::UserCrosSettingsProvider::cached_owner()));
+  std::string owner;
+  chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
+  source->AddString("ownerUserId", UTF8ToUTF16(owner));
 #endif
 
   source->set_json_path("strings.js");

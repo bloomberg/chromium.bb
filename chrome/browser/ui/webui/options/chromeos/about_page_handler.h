@@ -8,15 +8,13 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
-
-#include "chrome/browser/ui/webui/options/chromeos/cros_options_page_ui_handler.h"
 #include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/version_loader.h"
 
 namespace chromeos {
 
 // ChromeOS about page UI handler.
-class AboutPageHandler : public CrosOptionsPageUIHandler {
+class AboutPageHandler : public OptionsPageUIHandler {
 
  public:
   AboutPageHandler();
