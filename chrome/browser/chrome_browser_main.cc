@@ -478,7 +478,9 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
 class StubLogin : public chromeos::LoginStatusConsumer,
                   public chromeos::LoginUtils::Delegate {
  public:
-  StubLogin(std::string username, std::string password) {
+  StubLogin(std::string username, std::string password)
+      : pending_requests_(false),
+        profile_prepared_(false) {
     authenticator_ = chromeos::LoginUtils::Get()->CreateAuthenticator(this);
     authenticator_.get()->AuthenticateToLogin(
         g_browser_process->profile_manager()->GetDefaultProfile(),
@@ -502,23 +504,32 @@ class StubLogin : public chromeos::LoginStatusConsumer,
                       const GaiaAuthConsumer::ClientLoginResult& credentials,
                       bool pending_requests,
                       bool using_oauth) {
-    // Will call OnProfilePrepared in the end.
-    chromeos::LoginUtils::Get()->PrepareProfile(username,
-                                                password,
-                                                credentials,
-                                                pending_requests,
-                                                using_oauth,
-                                                false,
-                                                this);
+    pending_requests_ = pending_requests;
+    if (!profile_prepared_) {
+      // Will call OnProfilePrepared in the end.
+      chromeos::LoginUtils::Get()->PrepareProfile(username,
+                                                  password,
+                                                  credentials,
+                                                  pending_requests,
+                                                  using_oauth,
+                                                  false,
+                                                  this);
+    } else if (!pending_requests) {
+      delete this;
+    }
   }
 
   // LoginUtils::Delegate implementation:
   virtual void OnProfilePrepared(Profile* profile) {
+    profile_prepared_ = true;
     chromeos::LoginUtils::DoBrowserLaunch(profile, NULL);
-    delete this;
+    if (!pending_requests_)
+      delete this;
   }
 
   scoped_refptr<chromeos::Authenticator> authenticator_;
+  bool pending_requests_;
+  bool profile_prepared_;
 };
 
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
