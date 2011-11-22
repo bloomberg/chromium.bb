@@ -23,7 +23,6 @@ class BackgroundModeManager;
 class ChromeNetLog;
 class CRLSetFetcher;
 class ComponentUpdateService;
-class DevToolsManager;
 class DownloadRequestLimiter;
 class DownloadStatusUpdater;
 class ExtensionEventRouterForwarder;
@@ -101,7 +100,6 @@ class BrowserProcess {
   virtual MetricsService* metrics_service() = 0;
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;
-  virtual DevToolsManager* devtools_manager() = 0;
   virtual SidebarManager* sidebar_manager() = 0;
   virtual ui::Clipboard* clipboard() = 0;
   virtual net::URLRequestContextGetter* system_request_context() = 0;

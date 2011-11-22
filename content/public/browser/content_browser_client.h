@@ -17,7 +17,6 @@
 class AccessTokenStore;
 class BrowserURLHandler;
 class CommandLine;
-class DevToolsManager;
 class FilePath;
 class GURL;
 class MHTMLGenerationManager;
@@ -307,7 +306,6 @@ class ContentBrowserClient {
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() = 0;
   virtual ui::Clipboard* GetClipboard() = 0;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() = 0;
-  virtual DevToolsManager* GetDevToolsManager() = 0;
   virtual net::NetLog* GetNetLog() = 0;
   virtual speech_input::SpeechInputManager* GetSpeechInputManager() = 0;
 

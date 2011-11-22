@@ -4142,7 +4142,7 @@ void Browser::Observe(int type,
       } else if (pref_name == prefs::kDevToolsDisabled) {
         UpdateCommandsForDevTools();
         if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
-          g_browser_process->devtools_manager()->CloseAllClientHosts();
+          DevToolsManager::GetInstance()->CloseAllClientHosts();
       } else if (pref_name == prefs::kEditBookmarksEnabled) {
         UpdateCommandsForBookmarkEditing();
       } else if (pref_name == prefs::kShowBookmarkBar) {

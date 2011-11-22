@@ -250,10 +250,6 @@ MHTMLGenerationManager* MockContentBrowserClient::GetMHTMLGenerationManager() {
   return NULL;
 }
 
-DevToolsManager* MockContentBrowserClient::GetDevToolsManager() {
-  return NULL;
-}
-
 net::NetLog* MockContentBrowserClient::GetNetLog() {
   return NULL;
 }

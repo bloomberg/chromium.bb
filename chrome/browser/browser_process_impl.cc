@@ -71,7 +71,6 @@
 #include "chrome/installer/util/google_update_constants.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_status_updater.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -138,7 +137,6 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
       created_profile_manager_(false),
       created_local_state_(false),
       created_icon_manager_(false),
-      created_devtools_manager_(false),
       created_sidebar_manager_(false),
       created_browser_policy_connector_(false),
       created_notification_ui_manager_(false),
@@ -464,13 +462,6 @@ PrefService* BrowserProcessImpl::local_state() {
   if (!created_local_state_)
     CreateLocalState();
   return local_state_.get();
-}
-
-DevToolsManager* BrowserProcessImpl::devtools_manager() {
-  DCHECK(CalledOnValidThread());
-  if (!created_devtools_manager_)
-    CreateDevToolsManager();
-  return devtools_manager_.get();
 }
 
 SidebarManager* BrowserProcessImpl::sidebar_manager() {
@@ -955,12 +946,6 @@ void BrowserProcessImpl::CreateIconManager() {
   DCHECK(!created_icon_manager_ && icon_manager_.get() == NULL);
   created_icon_manager_ = true;
   icon_manager_.reset(new IconManager);
-}
-
-void BrowserProcessImpl::CreateDevToolsManager() {
-  DCHECK(devtools_manager_.get() == NULL);
-  created_devtools_manager_ = true;
-  devtools_manager_.reset(new DevToolsManager());
 }
 
 void BrowserProcessImpl::CreateSidebarManager() {

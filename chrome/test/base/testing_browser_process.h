@@ -63,7 +63,6 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual policy::BrowserPolicyConnector* browser_policy_connector() OVERRIDE;
   virtual IconManager* icon_manager() OVERRIDE;
   virtual ThumbnailGenerator* GetThumbnailGenerator() OVERRIDE;
-  virtual DevToolsManager* devtools_manager() OVERRIDE;
   virtual SidebarManager* sidebar_manager() OVERRIDE;
   virtual TabCloseableStateWatcher* tab_closeable_state_watcher() OVERRIDE;
   virtual BackgroundModeManager* background_mode_manager() OVERRIDE;
@@ -121,7 +120,6 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetGoogleURLTracker(GoogleURLTracker* google_url_tracker);
   void SetProfileManager(ProfileManager* profile_manager);
   void SetIOThread(IOThread* io_thread);
-  void SetDevToolsManager(DevToolsManager* manager);
   void SetBrowserPolicyConnector(policy::BrowserPolicyConnector* connector);
 
  private:
@@ -141,7 +139,6 @@ class TestingBrowserProcess : public BrowserProcess {
       print_preview_tab_controller_;
   scoped_ptr<prerender::PrerenderTracker> prerender_tracker_;
   IOThread* io_thread_;
-  scoped_ptr<DevToolsManager> devtools_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

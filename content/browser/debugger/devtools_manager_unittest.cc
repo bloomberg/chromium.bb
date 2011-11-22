@@ -92,10 +92,6 @@ class DevToolsManagerTestBrowserClient
   DevToolsManagerTestBrowserClient() {
   }
 
-  virtual DevToolsManager* GetDevToolsManager() OVERRIDE {
-    return &dev_tools_manager_;
-  }
-
   virtual bool ShouldSwapProcessesForNavigation(
       const GURL& current_url,
       const GURL& new_url) OVERRIDE {
@@ -103,8 +99,6 @@ class DevToolsManagerTestBrowserClient
   }
 
  private:
-  DevToolsManager dev_tools_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(DevToolsManagerTestBrowserClient);
 };
 
@@ -182,7 +176,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   contents()->set_delegate(&delegate);
 
   TestDevToolsClientHost client_host;
-  content::GetContentClient()->browser()->GetDevToolsManager()->
+  DevToolsManager::GetInstance()->
       RegisterDevToolsClientHostFor(inspected_rvh, &client_host);
 
   // Start with a short timeout.

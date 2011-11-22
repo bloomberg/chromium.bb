@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/memory/singleton.h"
 #include "content/browser/debugger/devtools_agent_host.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/common/content_export.h"
@@ -88,6 +89,8 @@ class CONTENT_EXPORT DevToolsManager
   int DetachClientHost(DevToolsAgentHost* from_agent);
 
  private:
+  friend struct DefaultSingletonTraits<DevToolsManager>;
+
   // DevToolsClientHost::CloseListener override.
   // This method will remove all references from the manager to the
   // DevToolsClientHost and unregister all listeners related to the

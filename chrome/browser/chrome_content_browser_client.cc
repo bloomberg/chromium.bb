@@ -1009,10 +1009,6 @@ MHTMLGenerationManager*
   return g_browser_process->mhtml_generation_manager();
 }
 
-DevToolsManager* ChromeContentBrowserClient::GetDevToolsManager() {
-  return g_browser_process->devtools_manager();
-}
-
 net::NetLog* ChromeContentBrowserClient::GetNetLog() {
   return g_browser_process->net_log();
 }

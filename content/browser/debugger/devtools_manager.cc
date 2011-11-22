@@ -16,14 +16,13 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "googleurl/src/gurl.h"
 
 using content::BrowserThread;
 
 // static
 DevToolsManager* DevToolsManager::GetInstance() {
-  return content::GetContentClient()->browser()->GetDevToolsManager();
+  return Singleton<DevToolsManager>::get();
 }
 
 DevToolsManager::DevToolsManager()

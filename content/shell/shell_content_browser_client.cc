@@ -263,10 +263,6 @@ MHTMLGenerationManager* ShellContentBrowserClient::GetMHTMLGenerationManager() {
   return NULL;
 }
 
-DevToolsManager* ShellContentBrowserClient::GetDevToolsManager() {
-  return NULL;
-}
-
 net::NetLog* ShellContentBrowserClient::GetNetLog() {
   return NULL;
 }

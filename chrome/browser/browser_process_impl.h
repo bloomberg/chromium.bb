@@ -61,7 +61,6 @@ class BrowserProcessImpl : public BrowserProcess,
 #endif
   virtual ProfileManager* profile_manager() OVERRIDE;
   virtual PrefService* local_state() OVERRIDE;
-  virtual DevToolsManager* devtools_manager() OVERRIDE;
   virtual SidebarManager* sidebar_manager() OVERRIDE;
   virtual ui::Clipboard* clipboard() OVERRIDE;
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
@@ -141,7 +140,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void CreateLocalState();
   void CreateViewedPageTracker();
   void CreateIconManager();
-  void CreateDevToolsManager();
   void CreateSidebarManager();
   void CreateGoogleURLTracker();
   void CreateIntranetRedirectDetector();
@@ -203,9 +201,6 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
 
   scoped_refptr<DevToolsProtocolHandler> devtools_legacy_handler_;
-
-  bool created_devtools_manager_;
-  scoped_ptr<DevToolsManager> devtools_manager_;
 
   bool created_sidebar_manager_;
   scoped_refptr<SidebarManager> sidebar_manager_;

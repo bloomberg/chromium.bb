@@ -122,7 +122,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual ResourceDispatcherHost* GetResourceDispatcherHost() OVERRIDE;
   virtual ui::Clipboard* GetClipboard() OVERRIDE;
   virtual MHTMLGenerationManager* GetMHTMLGenerationManager() OVERRIDE;
-  virtual DevToolsManager* GetDevToolsManager() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
   virtual speech_input::SpeechInputManager* GetSpeechInputManager() OVERRIDE;
   virtual AccessTokenStore* CreateAccessTokenStore() OVERRIDE;
