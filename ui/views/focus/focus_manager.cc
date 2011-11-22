@@ -384,10 +384,6 @@ ui::AcceleratorTarget* FocusManager::GetCurrentTargetForAccelerator(
   return accelerator_manager_->GetCurrentTarget(accelerator);
 }
 
-void FocusManager::FocusNativeView(gfx::NativeView native_view) {
-  widget_->FocusNativeView(native_view);
-}
-
 // static
 bool FocusManager::IsTabTraversalKeyEvent(const KeyEvent& key_event) {
   return key_event.key_code() == ui::VKEY_TAB && !key_event.IsControlDown();

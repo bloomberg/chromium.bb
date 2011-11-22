@@ -526,7 +526,11 @@
         '../ui/views/bubble/bubble_frame_view_unittest.cc',
         '../ui/views/events/event_unittest.cc',
         '../ui/views/focus/accelerator_handler_gtk_unittest.cc',
+        '../ui/views/focus/focus_manager_test.h',
+        '../ui/views/focus/focus_manager_test.cc',
         '../ui/views/focus/focus_manager_unittest.cc',
+        '../ui/views/focus/focus_manager_unittest_win.cc',
+        '../ui/views/focus/focus_traversal_unittest.cc',
         '../ui/views/layout/box_layout_unittest.cc',
         '../ui/views/layout/grid_layout_unittest.cc',
         '../ui/views/touchui/touch_selection_controller_impl_unittest.cc',
@@ -600,7 +604,6 @@
             '../ui/aura/aura.gyp:test_support_aura',
           ],
           'sources/': [
-            ['exclude', '../ui/views/focus/focus_manager_unittest.cc'], # TODO(beng):
             ['exclude', 'controls/combobox/native_combobox_views_unittest.cc'],
             ['exclude', 'controls/table/table_view_unittest.cc'],
             ['exclude', 'controls/tabbed_pane/tabbed_pane_unittest.cc'],

@@ -510,8 +510,7 @@ void NativeWidgetAura::ClearNativeFocus() {
 }
 
 void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
-  // http://crbug.com/102572
-  NOTIMPLEMENTED();
+  window_->GetFocusManager()->SetFocusedWindow(native_view);
 }
 
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {

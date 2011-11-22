@@ -230,9 +230,6 @@ class VIEWS_EXPORT FocusManager {
   ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
       const ui::Accelerator& accelertor) const;
 
-  // Sets the focus to the specified native view.
-  virtual void FocusNativeView(gfx::NativeView native_view);
-
   // Clears the native view having the focus.
   virtual void ClearNativeFocus();
 
