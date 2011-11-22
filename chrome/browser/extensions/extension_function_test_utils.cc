@@ -142,28 +142,10 @@ base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
   return function->GetResultValue()->DeepCopy();
 }
 
-void RunFunction(UIThreadExtensionFunction* function,
-                 const std::string& args,
-                 Browser* browser,
-                 RunFunctionFlags flags) {
-  scoped_ptr<base::ListValue> parsed_args(ParseList(args));
-  ASSERT_TRUE(parsed_args.get()) <<
-      "Could not parse extension function arguments: " << args;
-  function->SetArgs(parsed_args.get());
-
-  TestFunctionDispatcherDelegate dispatcher_delegate(browser);
-  ExtensionFunctionDispatcher dispatcher(
-      browser->profile(), &dispatcher_delegate);
-  function->set_dispatcher(dispatcher.AsWeakPtr());
-
-  function->set_profile(browser->profile());
-  function->set_include_incognito(flags & INCLUDE_INCOGNITO);
-  function->Run();
-}
-
 // This helps us be able to wait until an AsyncExtensionFunction calls
 // SendResponse.
-class SendResponseDelegate : public AsyncExtensionFunction::DelegateForTests {
+class SendResponseDelegate
+    : public UIThreadExtensionFunction::DelegateForTests {
  public:
   SendResponseDelegate() : should_post_quit_(false) {}
 
@@ -182,7 +164,8 @@ class SendResponseDelegate : public AsyncExtensionFunction::DelegateForTests {
     return *response_.get();
   }
 
-  virtual void OnSendResponse(AsyncExtensionFunction* function, bool success) {
+  virtual void OnSendResponse(UIThreadExtensionFunction* function,
+                              bool success) {
     ASSERT_FALSE(HasResponse());
     response_.reset(new bool);
     *response_ = success;
@@ -196,13 +179,25 @@ class SendResponseDelegate : public AsyncExtensionFunction::DelegateForTests {
   bool should_post_quit_;
 };
 
-bool RunAsyncFunction(AsyncExtensionFunction* function,
-                      const std::string& args,
-                      Browser* browser,
-                      RunFunctionFlags flags) {
+bool RunFunction(UIThreadExtensionFunction* function,
+                 const std::string& args,
+                 Browser* browser,
+                 RunFunctionFlags flags) {
   SendResponseDelegate response_delegate;
   function->set_test_delegate(&response_delegate);
-  RunFunction(function, args, browser, flags);
+  scoped_ptr<base::ListValue> parsed_args(ParseList(args));
+  EXPECT_TRUE(parsed_args.get()) <<
+      "Could not parse extension function arguments: " << args;
+  function->SetArgs(parsed_args.get());
+
+  TestFunctionDispatcherDelegate dispatcher_delegate(browser);
+  ExtensionFunctionDispatcher dispatcher(
+      browser->profile(), &dispatcher_delegate);
+  function->set_dispatcher(dispatcher.AsWeakPtr());
+
+  function->set_profile(browser->profile());
+  function->set_include_incognito(flags & INCLUDE_INCOGNITO);
+  function->Run();
 
   // If the RunImpl of |function| didn't already call SendResponse, run the
   // message loop until they do.

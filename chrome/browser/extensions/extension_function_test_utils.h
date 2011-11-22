@@ -49,8 +49,7 @@ enum RunFunctionFlags {
 };
 
 // Run |function| with |args| and return the resulting error. Adds an error to
-// the current test if |function| returns a result. The caller releases
-// ownership of |function|.
+// the current test if |function| returns a result.
 std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                       const std::string& args,
                                       Browser* browser,
@@ -60,8 +59,8 @@ std::string RunFunctionAndReturnError(UIThreadExtensionFunction* function,
                                       Browser* browser);
 
 // Run |function| with |args| and return the result. Adds an error to the
-// current test if |function| returns an error. The caller releases ownership of
-// |function|. the caller takes ownership of the result.
+// current test if |function| returns an error. The caller takes ownership of
+// the result.
 base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
                                         const std::string& args,
                                         Browser* browser,
@@ -70,27 +69,20 @@ base::Value* RunFunctionAndReturnResult(UIThreadExtensionFunction* function,
                                         const std::string& args,
                                         Browser* browser);
 
-// Create and run |function| with |args|. The caller retains ownership of
-// |function|.
+// Create and run |function| with |args|. Works with both synchronous and async
+// functions.
 //
 // TODO(aa): It would be nice if |args| could be validated against the schema
 // that |function| expects. That way, we know that we are testing something
 // close to what the bindings would actually send.
 //
 // TODO(aa): I'm concerned that this style won't scale to all the bits and bobs
-// we're going to need to frob for all the different extension functions. But we
-// can refactor when we see what is needed.
-void RunFunction(UIThreadExtensionFunction* function,
+// we're going to need to frob for all the different extension functions. But
+// we can refactor when we see what is needed.
+bool RunFunction(UIThreadExtensionFunction* function,
                  const std::string& args,
                  Browser* browser,
                  RunFunctionFlags flags);
-
-// Similar to RunFunction, but doesn't return until |function| calls
-// SendResponse. Returns the value |function| passed to SendResponse.
-bool RunAsyncFunction(AsyncExtensionFunction* function,
-                      const std::string& args,
-                      Browser* browser,
-                      RunFunctionFlags flags);
 
 } // namespace extension_function_test_utils
 

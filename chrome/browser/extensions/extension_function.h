@@ -208,10 +208,20 @@ class ExtensionFunction
 // this category.
 class UIThreadExtensionFunction : public ExtensionFunction {
  public:
+  // A delegate for use in testing, to intercept the call to SendResponse.
+  class DelegateForTests {
+   public:
+    virtual void OnSendResponse(UIThreadExtensionFunction* function,
+                                bool success) = 0;
+  };
+
   UIThreadExtensionFunction();
 
   virtual UIThreadExtensionFunction* AsUIThreadExtensionFunction() OVERRIDE;
 
+  void set_test_delegate(DelegateForTests* delegate) {
+    delegate_ = delegate;
+  }
   // Set the profile which contains the extension that has originated this
   // function call.
   void set_profile(Profile* profile) { profile_ = profile; }
@@ -285,6 +295,8 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   virtual void Destruct() const OVERRIDE;
 
   scoped_ptr<RenderViewHostTracker> tracker_;
+
+  DelegateForTests* delegate_;
 };
 
 // Extension functions that run on the IO thread. This type of function avoids
@@ -340,24 +352,10 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 // the browser's UI thread*.
 class AsyncExtensionFunction : public UIThreadExtensionFunction {
  public:
-  // A delegate for use in testing, to intercept the call to SendResponse.
-  class DelegateForTests {
-   public:
-    virtual void OnSendResponse(AsyncExtensionFunction* function,
-                                bool success) = 0;
-  };
-
   AsyncExtensionFunction();
-  virtual void SendResponse(bool success) OVERRIDE;
-
-  void set_test_delegate(DelegateForTests* delegate) {
-    delegate_ = delegate;
-  }
 
  protected:
   virtual ~AsyncExtensionFunction();
-
-  DelegateForTests* delegate_;
 };
 
 // A SyncExtensionFunction is an ExtensionFunction that runs synchronously

@@ -128,7 +128,7 @@ void ExtensionFunction::HandleBadMessage(base::ProcessHandle process) {
   }
 }
 UIThreadExtensionFunction::UIThreadExtensionFunction()
-    : render_view_host_(NULL), profile_(NULL) {
+    : render_view_host_(NULL), profile_(NULL), delegate_(NULL) {
 }
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
@@ -154,13 +154,17 @@ Browser* UIThreadExtensionFunction::GetCurrentBrowser() {
 }
 
 void UIThreadExtensionFunction::SendResponse(bool success) {
-  if (!render_view_host_ || !dispatcher())
-    return;
+  if (delegate_) {
+    delegate_->OnSendResponse(this, success);
+  } else {
+    if (!render_view_host_ || !dispatcher())
+      return;
 
-  SendResponseImpl(render_view_host_->process()->GetHandle(),
-                   render_view_host_,
-                   render_view_host_->routing_id(),
-                   success);
+    SendResponseImpl(render_view_host_->process()->GetHandle(),
+                     render_view_host_,
+                     render_view_host_->routing_id(),
+                     success);
+  }
 }
 
 IOThreadExtensionFunction::IOThreadExtensionFunction()
@@ -187,14 +191,7 @@ void IOThreadExtensionFunction::SendResponse(bool success) {
                    ipc_sender(), routing_id_, success);
 }
 
-AsyncExtensionFunction::AsyncExtensionFunction() : delegate_(NULL) {
-}
-
-void AsyncExtensionFunction::SendResponse(bool success) {
-  if (delegate_)
-    delegate_->OnSendResponse(this, success);
-  else
-    UIThreadExtensionFunction::SendResponse(success);
+AsyncExtensionFunction::AsyncExtensionFunction() {
 }
 
 AsyncExtensionFunction::~AsyncExtensionFunction() {

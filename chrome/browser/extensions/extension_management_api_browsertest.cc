@@ -82,7 +82,7 @@ class ExtensionManagementApiEscalationTest : public ExtensionBrowserTest {
     scoped_refptr<SetEnabledFunction> function(new SetEnabledFunction);
     if (user_gesture)
       function->set_user_gesture(true);
-    bool response = util::RunAsyncFunction(
+    bool response = util::RunFunction(
         function.get(),
         base::StringPrintf("[\"%s\", true]", kId),
         browser(),
