@@ -424,6 +424,19 @@ def FindRepoCheckoutRoot(path=None):
     return None
 
 
+def DoesProjectExist(cwd, project):
+  """Returns whether the project exists in the repository.
+
+  Args:
+    cwd: a directory within a repo-managed checkout.
+    project: the name of the project
+  """
+  build_root = FindRepoCheckoutRoot(cwd)
+  manifest_path = os.path.join(build_root, '.repo', 'manifests/full.xml')
+  handler = ManifestHandler.ParseManifest(manifest_path)
+  return project in handler.projects
+
+
 def GetProjectDir(cwd, project):
   """Returns the absolute path to a project.
 

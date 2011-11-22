@@ -544,17 +544,14 @@ def _RunBuildStagesWithSudoProcess(bot_id, options, build_config):
 # Parser related functions
 
 
-def _CheckLocalPatches(option, opt_str, value, parser):
+def _CheckAndSplitLocalPatches(options):
   """Do an early quick check of the passed-in patches.
 
   If the branch of a project is not specified we append the current branch the
   project is on.
   """
-  patch_args = value.split()
-  if not patch_args:
-    raise optparse.OptionValueError('No patches specified')
-
-  parser.values.local_patches = []
+  patch_args = options.local_patches.split()
+  options.local_patches = []
   for patch in patch_args:
     components = patch.split(':')
     if len(components) > 2:
@@ -563,10 +560,10 @@ def _CheckLocalPatches(option, opt_str, value, parser):
 
     # validate project
     project = components[0]
-    try:
-      project_dir = cros_lib.GetProjectDir('.', project)
-    except cros_lib.RunCommandError:
+    if not cros_lib.DoesProjectExist('.', project):
       raise optparse.OptionValueError('Project %s does not exist.' % project)
+
+    project_dir = cros_lib.GetProjectDir('.', project)
 
     # If no branch was specified, we use the project's current branch.
     if len(components) == 1:
@@ -582,14 +579,12 @@ def _CheckLocalPatches(option, opt_str, value, parser):
         raise optparse.OptionValueError('Project %s does not have branch %s'
                                         % (project, branch))
 
-    parser.values.local_patches.append(patch)
+    options.local_patches.append(patch)
 
 
-def _CheckGerritPatches(option, opt_str, value, parser):
-  """Do an early quick check of the passed-in patches."""
+def _CheckAndSplitGerritPatches(option, opt_str, value, parser):
+  """Early quick check of patches and convert them into a list."""
   parser.values.gerrit_patches = value.split()
-  if not parser.values.gerrit_patches:
-    raise optparse.OptionValueError('No patches specified')
 
 
 def _CheckBuildRootOption(option, opt_str, value, parser):
@@ -661,7 +656,7 @@ def _CreateParser():
                     help=('Revision of Chrome to use, of type '
                           '[%s]' % '|'.join(constants.VALID_CHROME_REVISIONS)))
   parser.add_option('-g', '--gerrit-patches', action='callback',
-                    type='string', callback=_CheckGerritPatches,
+                    type='string', callback=_CheckAndSplitGerritPatches,
                     metavar="'Id1 *int_Id2...IdN'",
                     help=("Space-separated list of short-form Gerrit "
                           "Change-Id's or change numbers to patch.  Please "
@@ -670,9 +665,8 @@ def _CreateParser():
                     default=False,
                     help=('List the suggested trybot configs to use.  Use '
                           '--all to list all of the available configs.'))
-  parser.add_option('-p', '--local-patches', action='callback',
+  parser.add_option('-p', '--local-patches', action='store', type='string',
                     metavar="'<project1>[:<branch1>]...<projectN>[:<branchN>]'",
-                    type='string', callback=_CheckLocalPatches,
                     help=('Space-separated list of project branches with '
                           'patches to apply.  Projects are specified by name. '
                           'If no branch is specified the current branch of the '
@@ -680,7 +674,6 @@ def _CreateParser():
   parser.add_option('--profile', default=None, type='string', action='store',
                     dest='profile',
                     help=('Name of profile to sub-specify board variant.'))
-
 
   # Advanced options
   group = optparse.OptionGroup(
@@ -794,6 +787,13 @@ def _PostParseCheck(options):
       cros_lib.Die('Chrome rev must not be %s if chrome_version is not set.' %
                    constants.CHROME_REV_SPEC)
 
+  if not options.resume:
+    try:
+      if options.local_patches:
+        _CheckAndSplitLocalPatches(options)
+
+    except optparse.OptionValueError as e:
+      cros_lib.Die(str(e))
 
 
 def main(argv=None):
