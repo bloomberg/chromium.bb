@@ -20,7 +20,6 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/public/browser/notification_service.h"
-#include "content/common/view_messages.h"
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
     RenderViewHost* render_view_host, chrome_browser_net::Predictor* predictor)
@@ -47,9 +46,7 @@ void ChromeRenderViewHostObserver::RenderViewHostDestroyed(
   delete this;
 }
 
-void ChromeRenderViewHostObserver::Navigate(
-    const ViewMsg_Navigate_Params& params) {
-  const GURL& url = params.url;
+void ChromeRenderViewHostObserver::Navigate(const GURL& url) {
   if (!predictor_)
     return;
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame) &&

@@ -247,8 +247,7 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
   if (!params.url.SchemeIs(chrome::kJavaScriptScheme))
     delegate_->DidStartLoading();
 
-  FOR_EACH_OBSERVER(
-      RenderViewHostObserver, observers_, Navigate(params));
+  FOR_EACH_OBSERVER(RenderViewHostObserver, observers_, Navigate(params.url));
 }
 
 void RenderViewHost::NavigateToURL(const GURL& url) {

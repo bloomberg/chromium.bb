@@ -8,8 +8,8 @@
 #include "ipc/ipc_channel.h"
 #include "content/common/content_export.h"
 
+class GURL;
 class RenderViewHost;
-struct ViewMsg_Navigate_Params;
 
 // An observer API implemented by classes which want to filter IPC messages from
 // RenderViewHost.
@@ -33,7 +33,7 @@ class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
   virtual void RenderViewHostDestroyed(RenderViewHost* render_view_host);
 
   // Notifies that a navigation is starting.
-  virtual void Navigate(const ViewMsg_Navigate_Params& params);
+  virtual void Navigate(const GURL& url);
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
