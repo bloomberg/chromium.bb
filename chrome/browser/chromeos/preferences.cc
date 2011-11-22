@@ -11,12 +11,11 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/system/screen_locker_settings.h"
 #include "chrome/browser/chromeos/system/touchpad_settings.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -456,7 +455,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
 
   // Init or update power manager config.
   if (!pref_name || *pref_name == prefs::kEnableScreenLock) {
-    CrosLibrary::Get()->GetPowerLibrary()->EnableScreenLock(
+    system::screen_locker_settings::EnableScreenLock(
         enable_screen_lock_.GetValue());
   }
 }

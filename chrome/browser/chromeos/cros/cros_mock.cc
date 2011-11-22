@@ -230,10 +230,6 @@ void CrosMock::SetPowerLibraryStatusAreaExpectations() {
 }
 
 void CrosMock::SetPowerLibraryExpectations() {
-  // EnableScreenLock is currently bounded with a prefs value and thus is
-  // always called when loading
-  EXPECT_CALL(*mock_power_library_, EnableScreenLock(_))
-      .Times(AnyNumber());
 }
 
 void CrosMock::TearDownMocks() {

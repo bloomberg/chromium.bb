@@ -48,23 +48,9 @@ class PowerLibraryImpl : public PowerLibrary {
     observers_.RemoveObserver(observer);
   }
 
-  virtual void EnableScreenLock(bool enable) OVERRIDE {
-    // Called when the screen preference is changed, which should always
-    // run on UI thread.
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    // Post the task to FILE thread as chromeos::EnableScreenLock
-    // would write power manager config file to disk.
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        base::Bind(&PowerLibraryImpl::DoEnableScreenLock, enable));
-  }
-
   // End PowerLibrary implementation.
 
  private:
-  static void DoEnableScreenLock(bool enable) {
-    chromeos::EnableScreenLock(enable);
-  }
 
   static void SystemResumedHandler(void* object) {
     PowerLibraryImpl* power = static_cast<PowerLibraryImpl*>(object);
@@ -104,8 +90,6 @@ class PowerLibraryStubImpl : public PowerLibrary {
   virtual void RemoveObserver(Observer* observer) OVERRIDE {
     observers_.RemoveObserver(observer);
   }
-
-  virtual void EnableScreenLock(bool enable) OVERRIDE {}
 
   // End PowerLibrary implementation.
  private:

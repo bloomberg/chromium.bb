@@ -21,8 +21,6 @@ class MockPowerLibrary : public PowerLibrary {
 
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
-
-  MOCK_METHOD1(EnableScreenLock, void(bool));
 };
 
 }  // namespace chromeos
