@@ -834,7 +834,7 @@ class DrMemory(BaseTool):
     for suppression_file in self._options.suppressions:
       if os.path.exists(suppression_file):
         suppression_count += 1
-        proc += ["-suppress", suppression_file]
+        proc += ["-suppress", common.NormalizeWindowsPath(suppression_file)]
 
     if not suppression_count:
       logging.warning("WARNING: NOT USING SUPPRESSIONS!")
@@ -848,7 +848,7 @@ class DrMemory(BaseTool):
     if self._options.use_debug:
       proc += ["-debug"]
 
-    proc += ["-logdir", self.log_dir]
+    proc += ["-logdir", common.NormalizeWindowsPath(self.log_dir)]
     proc += ["-batch", "-quiet", "-no_results_to_stderr"]
 
     proc += ["-callstack_max_frames", "40"]
@@ -876,6 +876,7 @@ class DrMemory(BaseTool):
       proc = []
 
     # Note that self._args begins with the name of the exe to be run.
+    self._args[0] = common.NormalizeWindowsPath(self._args[0])
     proc += self._args
     return proc
 

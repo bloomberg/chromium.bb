@@ -191,3 +191,24 @@ def BoringCallers(mangled, use_re_wildcards):
       ret[i] = ret[i].replace('*', '.*').replace('?', '.')
 
   return ret
+
+def NormalizeWindowsPath(path):
+  """If we're using Cygwin Python, turn the path into a Windows path.
+
+  Don't turn forward slashes into backslashes for easier copy-pasting and
+  escaping.
+
+  TODO(rnk): If we ever want to cut out the subprocess invocation, we can use
+  _winreg to get the root Cygwin directory from the registry key:
+  HKEY_LOCAL_MACHINE\SOFTWARE\Cygwin\setup\rootdir.
+  """
+  if sys.platform.startswith("cygwin"):
+    p = subprocess.Popen(["cygpath", "-m", path],
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    (out, err) = p.communicate()
+    if err:
+      logging.warning("WARNING: cygpath error: %s", err)
+    return out.strip()
+  else:
+    return path
