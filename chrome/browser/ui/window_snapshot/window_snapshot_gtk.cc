@@ -24,25 +24,32 @@ static cairo_status_t SnapshotCallback(
   return CAIRO_STATUS_SUCCESS;
 }
 
-gfx::Rect GrabWindowSnapshot(gfx::NativeWindow gtk_window,
-                             std::vector<unsigned char>* png_representation) {
-  GdkWindow* gdk_window = GTK_WIDGET(gtk_window)->window;
+bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
+                        std::vector<unsigned char>* png_representation,
+                        const gfx::Rect& snapshot_bounds) {
+  GdkWindow* gdk_window = GTK_WIDGET(window_handle)->window;
   Display* display = GDK_WINDOW_XDISPLAY(gdk_window);
   XID win = GDK_WINDOW_XID(gdk_window);
-  XWindowAttributes attr;
-  if (XGetWindowAttributes(display, win, &attr) == 0) {
-    LOG(ERROR) << "Couldn't get window attributes";
-    return gfx::Rect();
+
+  gfx::Rect window_bounds;
+  if (ui::GetWindowRect(win, &window_bounds) == 0) {
+    LOG(ERROR) << "Couldn't get window bounds";
+    return false;
   }
+
+  DCHECK_LE(snapshot_bounds.right(), window_bounds.width());
+  DCHECK_LE(snapshot_bounds.bottom(), window_bounds.height());
+
   XImage* image = XGetImage(
-      display, win, 0, 0, attr.width, attr.height, AllPlanes, ZPixmap);
+      display, win, snapshot_bounds.x(), snapshot_bounds.y(),
+      snapshot_bounds.width(), snapshot_bounds.height(), AllPlanes, ZPixmap);
   if (!image) {
     LOG(ERROR) << "Couldn't get image";
-    return gfx::Rect();
+    return false;
   }
   if (image->depth != 24) {
     LOG(ERROR)<< "Unsupported image depth " << image->depth;
-    return gfx::Rect();
+    return false;
   }
   cairo_surface_t* surface =
       cairo_image_surface_create_for_data(
@@ -54,13 +61,13 @@ gfx::Rect GrabWindowSnapshot(gfx::NativeWindow gtk_window,
 
   if (!surface) {
     LOG(ERROR) << "Unable to create Cairo surface from XImage data";
-    return gfx::Rect();
+    return false;
   }
   cairo_surface_write_to_png_stream(
       surface, SnapshotCallback, png_representation);
   cairo_surface_destroy(surface);
 
-  return gfx::Rect(image->width, image->height);
+  return true;
 }
 
 }  // namespace browser

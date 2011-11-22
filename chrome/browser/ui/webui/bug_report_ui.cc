@@ -139,8 +139,11 @@ void ShowHtmlBugReportView(Browser* browser,
   last_screenshot_png->clear();
 
   gfx::NativeWindow native_window = browser->window()->GetNativeHandle();
-  BugReportUtil::SetScreenshotSize(
-      browser::GrabWindowSnapshot(native_window, last_screenshot_png));
+  gfx::Rect snapshot_bounds = gfx::Rect(browser->window()->GetBounds().size());
+  bool success = browser::GrabWindowSnapshot(native_window,
+                                             last_screenshot_png,
+                                             snapshot_bounds);
+  BugReportUtil::SetScreenshotSize(success ? snapshot_bounds : gfx::Rect());
 
   std::string bug_report_url = std::string(chrome::kChromeUIBugReportURL) +
       "#" + base::IntToString(browser->active_index()) +

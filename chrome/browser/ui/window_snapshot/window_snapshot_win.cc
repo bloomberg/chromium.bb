@@ -12,22 +12,35 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+namespace {
+
+gfx::Rect GetWindowBounds(gfx::NativeWindow window_handle) {
+  RECT content_rect = {0, 0, 0, 0};
+  ::GetWindowRect(window_handle, &content_rect);
+  content_rect.right++;  // Match what PrintWindow wants.
+
+  return gfx::Rect(content_rect.right - content_rect.left,
+                   content_rect.bottom - content_rect.top);
+}
+
+} // namespace
+
 namespace browser {
 
-gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window_handle,
-                             std::vector<unsigned char>* png_representation) {
+bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
+                        std::vector<unsigned char>* png_representation,
+                        const gfx::Rect& snapshot_bounds) {
+  DCHECK(snapshot_bounds.right() <= GetWindowBounds(window_handle).right());
+  DCHECK(snapshot_bounds.bottom() <= GetWindowBounds(window_handle).bottom());
+
   // Create a memory DC that's compatible with the window.
   HDC window_hdc = GetWindowDC(window_handle);
   base::win::ScopedCreateDC mem_hdc(CreateCompatibleDC(window_hdc));
 
-  // Create a DIB that's the same size as the window.
-  RECT content_rect = {0, 0, 0, 0};
-  ::GetWindowRect(window_handle, &content_rect);
-  content_rect.right++;  // Match what PrintWindow wants.
-  int width = content_rect.right - content_rect.left;
-  int height = content_rect.bottom - content_rect.top;
   BITMAPINFOHEADER hdr;
-  gfx::CreateBitmapHeader(width, height, &hdr);
+  gfx::CreateBitmapHeader(snapshot_bounds.width(),
+                          snapshot_bounds.height(),
+                          &hdr);
   unsigned char *bit_ptr = NULL;
   base::win::ScopedBitmap bitmap(
       CreateDIBSection(mem_hdc,
@@ -41,7 +54,8 @@ gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window_handle,
   // show up on a white background, and strangely-shaped windows
   // look reasonable). Not capturing an alpha mask saves a
   // bit of space.
-  PatBlt(mem_hdc, 0, 0, width, height, WHITENESS);
+  PatBlt(mem_hdc, 0, 0, snapshot_bounds.width(), snapshot_bounds.height(),
+         WHITENESS);
   // Grab a copy of the window
   // First, see if PrintWindow is defined (it's not in Windows 2000).
   typedef BOOL (WINAPI *PrintWindowPointer)(HWND, HDC, UINT);
@@ -54,22 +68,24 @@ gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window_handle,
   // Otherwise grab the bits we can get with BitBlt; it's better
   // than nothing and will work fine in the average case (window is
   // completely on screen).
-  if (print_window)
+  if (snapshot_bounds.origin() == gfx::Point() && print_window)
     (*print_window)(window_handle, mem_hdc, 0);
   else
-    BitBlt(mem_hdc, 0, 0, width, height, window_hdc, 0, 0, SRCCOPY);
+    BitBlt(mem_hdc, 0, 0, snapshot_bounds.width(), snapshot_bounds.height(),
+           window_hdc, snapshot_bounds.x(), snapshot_bounds.y(), SRCCOPY);
 
   // We now have a copy of the window contents in a DIB, so
   // encode it into a useful format for posting to the bug report
   // server.
   gfx::PNGCodec::Encode(bit_ptr, gfx::PNGCodec::FORMAT_BGRA,
-                        gfx::Size(width, height), width * 4, true,
+                        snapshot_bounds.size(),
+                        snapshot_bounds.width() * 4, true,
                         std::vector<gfx::PNGCodec::Comment>(),
                         png_representation);
 
   ReleaseDC(window_handle, window_hdc);
 
-  return gfx::Rect(width, height);
+  return true;
 }
 
 }  // namespace browser

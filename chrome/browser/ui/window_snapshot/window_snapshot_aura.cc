@@ -9,11 +9,12 @@
 
 namespace browser {
 
-gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window_handle,
-                             std::vector<unsigned char>* png_representation) {
+bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
+                             std::vector<unsigned char>* png_representation,
+                             const gfx::Rect& snapshot_bounds) {
   // TODO(saintlou): Stub for Aura.
   NOTIMPLEMENTED();
-  return gfx::Rect();
+  return false;
 }
 
 }  // namespace browser

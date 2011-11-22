@@ -30,7 +30,9 @@ TEST_F(GrabWindowSnapshotTest, TestGrabWindowSnapshot) {
 
   scoped_ptr<std::vector<unsigned char> > png_representation(
       new std::vector<unsigned char>);
-  browser::GrabWindowSnapshot(window, png_representation.get());
+  gfx::Rect bounds = gfx::Rect(0, 0, frame.size.width, frame.size.height);
+  EXPECT_TRUE(browser::GrabWindowSnapshot(window, png_representation.get(),
+                                          bounds));
 
   // Copy png back into NSData object so we can make sure we grabbed a png.
   scoped_nsobject<NSData> image_data(

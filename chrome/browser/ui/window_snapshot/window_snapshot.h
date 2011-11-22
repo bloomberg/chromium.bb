@@ -16,10 +16,12 @@ namespace gfx {
 
 namespace browser {
 
-// Grabs a snapshot of the designated window and stores a PNG representation
-// into a byte vector. Returns the image bounds.
-gfx::Rect GrabWindowSnapshot(gfx::NativeWindow window,
-                             std::vector<unsigned char>* png_representation);
+// Grabs a snapshot of the rectangle area |snapshot_bounds| with respect to the
+// top left corner of the designated window and stores a PNG representation
+// into a byte vector. Returns true if the operation is successful.
+bool GrabWindowSnapshot(gfx::NativeWindow window,
+                        std::vector<unsigned char>* png_representation,
+                        const gfx::Rect& snapshot_bounds);
 
 }  // namespace browser
 
