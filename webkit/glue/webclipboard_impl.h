@@ -11,6 +11,7 @@
 #include <string>
 
 namespace webkit_glue {
+class ClipboardClient;
 
 class WebClipboardImpl : public WebKit::WebClipboard {
  public:
@@ -18,6 +19,8 @@ class WebClipboardImpl : public WebKit::WebClipboard {
       const WebKit::WebString& title);
   static std::string URLToImageMarkup(const WebKit::WebURL& url,
       const WebKit::WebString& title);
+
+  explicit WebClipboardImpl(ClipboardClient* client);
 
   virtual ~WebClipboardImpl();
 
@@ -51,6 +54,7 @@ class WebClipboardImpl : public WebKit::WebClipboard {
 
  private:
   bool ConvertBufferType(Buffer, ui::Clipboard::Buffer*);
+  ClipboardClient* client_;
 };
 
 }  // namespace webkit_glue

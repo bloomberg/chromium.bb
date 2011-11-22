@@ -21,7 +21,8 @@
 #include "webkit/tools/test_shell/test_shell_webthemeengine.h"
 #endif
 
-TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode) {
+TestShellWebKitInit::TestShellWebKitInit(bool layout_test_mode)
+    : real_clipboard_(&clipboard_client_) {
   v8::V8::SetCounterFunction(base::StatsTable::FindLocation);
 
   WebKit::initialize(this);

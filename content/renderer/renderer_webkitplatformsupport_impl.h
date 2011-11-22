@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
 
+class RendererClipboardClient;
 class WebSharedWorkerRepositoryImpl;
 class WebFileSystemImpl;
 
@@ -95,6 +96,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   // Helper function to send synchronous message from any thread.
   static bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg);
 
+  scoped_ptr<RendererClipboardClient> clipboard_client_;
   scoped_ptr<webkit_glue::WebClipboardImpl> clipboard_;
 
   class FileUtilities;

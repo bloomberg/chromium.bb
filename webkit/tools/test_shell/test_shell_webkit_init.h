@@ -19,6 +19,7 @@
 #include "webkit/support/simple_database_system.h"
 #include "webkit/tools/test_shell/mock_webclipboard_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
+#include "webkit/tools/test_shell/simple_clipboard_impl.h"
 #include "webkit/tools/test_shell/simple_file_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
 #include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
@@ -107,6 +108,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitPlatformSupportImpl {
  private:
   scoped_ptr<webkit_glue::SimpleWebMimeRegistryImpl> mime_registry_;
   MockWebClipboardImpl mock_clipboard_;
+  SimpleClipboardClient clipboard_client_;
   webkit_glue::WebClipboardImpl real_clipboard_;
   webkit_glue::WebFileUtilitiesImpl file_utilities_;
   ScopedTempDir appcache_dir_;

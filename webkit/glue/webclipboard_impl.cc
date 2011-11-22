@@ -62,6 +62,10 @@ std::string WebClipboardImpl::URLToImageMarkup(const WebURL& url,
   return markup;
 }
 
+WebClipboardImpl::WebClipboardImpl(ClipboardClient* client)
+    : client_(client) {
+}
+
 WebClipboardImpl::~WebClipboardImpl() {
 }
 
@@ -74,7 +78,7 @@ uint64 WebClipboardImpl::sequenceNumber(Buffer buffer) {
   if (!ConvertBufferType(buffer, &buffer_type))
     return 0;
 
-  return ClipboardGetSequenceNumber(buffer_type);
+  return client_->GetSequenceNumber(buffer_type);
 }
 
 bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
@@ -86,9 +90,9 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
 
   switch (format) {
     case FormatPlainText:
-      return ClipboardIsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+      return client_->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
                                         buffer_type) ||
-          ClipboardIsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
+          client_->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
                                      buffer_type);
     case FormatHTML:
       format_type = ui::Clipboard::GetHtmlFormatType();
@@ -106,7 +110,7 @@ bool WebClipboardImpl::isFormatAvailable(Format format, Buffer buffer) {
       return false;
   }
 
-  return ClipboardIsFormatAvailable(format_type, buffer_type);
+  return client_->IsFormatAvailable(format_type, buffer_type);
 }
 
 WebVector<WebString> WebClipboardImpl::readAvailableTypes(
@@ -114,7 +118,7 @@ WebVector<WebString> WebClipboardImpl::readAvailableTypes(
   ui::Clipboard::Buffer buffer_type;
   std::vector<string16> types;
   if (ConvertBufferType(buffer, &buffer_type)) {
-    ClipboardReadAvailableTypes(buffer_type, &types, contains_filenames);
+    client_->ReadAvailableTypes(buffer_type, &types, contains_filenames);
   }
   return types;
 }
@@ -124,18 +128,18 @@ WebString WebClipboardImpl::readPlainText(Buffer buffer) {
   if (!ConvertBufferType(buffer, &buffer_type))
     return WebString();
 
-  if (ClipboardIsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
+  if (client_->IsFormatAvailable(ui::Clipboard::GetPlainTextWFormatType(),
                                  buffer_type)) {
     string16 text;
-    ClipboardReadText(buffer_type, &text);
+    client_->ReadText(buffer_type, &text);
     if (!text.empty())
       return text;
   }
 
-  if (ClipboardIsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
+  if (client_->IsFormatAvailable(ui::Clipboard::GetPlainTextFormatType(),
                                  buffer_type)) {
     std::string text;
-    ClipboardReadAsciiText(buffer_type, &text);
+    client_->ReadAsciiText(buffer_type, &text);
     if (!text.empty())
       return ASCIIToUTF16(text);
   }
@@ -152,7 +156,7 @@ WebString WebClipboardImpl::readHTML(Buffer buffer, WebURL* source_url,
 
   string16 html_stdstr;
   GURL gurl;
-  ClipboardReadHTML(buffer_type, &html_stdstr, &gurl,
+  client_->ReadHTML(buffer_type, &html_stdstr, &gurl,
                     static_cast<uint32*>(fragment_start),
                     static_cast<uint32*>(fragment_end));
   *source_url = gurl;
@@ -165,14 +169,14 @@ WebData WebClipboardImpl::readImage(Buffer buffer) {
     return WebData();
 
   std::string png_data;
-  ClipboardReadImage(buffer_type, &png_data);
+  client_->ReadImage(buffer_type, &png_data);
   return WebData(png_data);
 }
 
 void WebClipboardImpl::writeHTML(
     const WebString& html_text, const WebURL& source_url,
     const WebString& plain_text, bool write_smart_paste) {
-  ScopedClipboardWriterGlue scw(ClipboardGetClipboard());
+  ScopedClipboardWriterGlue scw(client_);
   scw.WriteHTML(html_text, source_url.spec());
   scw.WriteText(plain_text);
 
@@ -181,12 +185,12 @@ void WebClipboardImpl::writeHTML(
 }
 
 void WebClipboardImpl::writePlainText(const WebString& plain_text) {
-  ScopedClipboardWriterGlue scw(ClipboardGetClipboard());
+  ScopedClipboardWriterGlue scw(client_);
   scw.WriteText(plain_text);
 }
 
 void WebClipboardImpl::writeURL(const WebURL& url, const WebString& title) {
-  ScopedClipboardWriterGlue scw(ClipboardGetClipboard());
+  ScopedClipboardWriterGlue scw(client_);
 
   scw.WriteBookmark(title, url.spec());
   scw.WriteHTML(UTF8ToUTF16(URLToMarkup(url, title)), "");
@@ -195,7 +199,7 @@ void WebClipboardImpl::writeURL(const WebURL& url, const WebString& title) {
 
 void WebClipboardImpl::writeImage(
     const WebImage& image, const WebURL& url, const WebString& title) {
-  ScopedClipboardWriterGlue scw(ClipboardGetClipboard());
+  ScopedClipboardWriterGlue scw(client_);
 
   if (!image.isNull()) {
 #if WEBKIT_USING_SKIA
@@ -226,7 +230,7 @@ void WebClipboardImpl::writeDataObject(const WebDragData& data) {
   // TODO(dcheng): This actually results in a double clear of the clipboard.
   // Once in WebKit, and once here when the clipboard writer goes out of scope.
   // The same is true of the other WebClipboard::write* methods.
-  ScopedClipboardWriterGlue scw(ClipboardGetClipboard());
+  ScopedClipboardWriterGlue scw(client_);
 
   // TODO(dcheng): Properly support text/uri-list here.
   scw.WriteText(data.plainText());

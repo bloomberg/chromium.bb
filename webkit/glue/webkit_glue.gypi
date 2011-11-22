@@ -373,6 +373,7 @@
         'resource_loader_bridge.h',
         'resource_type.cc',
         'resource_type.h',
+        'scoped_clipboard_writer_glue.cc',
         'scoped_clipboard_writer_glue.h',
         'simple_webmimeregistry_impl.cc',
         'simple_webmimeregistry_impl.h',

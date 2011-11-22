@@ -24,6 +24,7 @@
 #include "content/renderer/media/audio_device.h"
 #include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/renderer_clipboard_client.h"
 #include "content/renderer/renderer_webaudiodevice_impl.h"
 #include "content/renderer/renderer_webidbfactory_impl.h"
 #include "content/renderer/renderer_webstoragenamespace_impl.h"
@@ -143,7 +144,8 @@ class RendererWebKitPlatformSupportImpl::SandboxSupport
 //------------------------------------------------------------------------------
 
 RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
-    : clipboard_(new webkit_glue::WebClipboardImpl),
+    : clipboard_client_(new RendererClipboardClient),
+      clipboard_(new webkit_glue::WebClipboardImpl(clipboard_client_.get())),
       mime_registry_(new RendererWebKitPlatformSupportImpl::MimeRegistry),
       sandbox_support_(new RendererWebKitPlatformSupportImpl::SandboxSupport),
       sudden_termination_disables_(0),
