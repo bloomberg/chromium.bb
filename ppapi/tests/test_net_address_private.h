@@ -23,6 +23,8 @@ class TestNetAddressPrivate : public TestCase {
   std::string TestDescribe();
   std::string TestReplacePort();
   std::string TestGetAnyAddress();
+
+  std::string TestDescribeIPv6();
 };
 
 #endif  // PAPPI_TESTS_TEST_NET_ADDRESS_PRIVATE_H_

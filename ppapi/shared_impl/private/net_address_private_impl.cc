@@ -20,6 +20,18 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/thunk.h"
 
+#if defined(OS_MACOSX)
+// This is a bit evil, but it's standard operating procedure for |s6_addr|....
+#define s6_addr16 __u6_addr.__u6_addr16
+#endif
+
+#if defined(OS_WIN)
+// The type of |sockaddr::sa_family|.
+typedef ADDRESS_FAMILY sa_family_t;
+
+#define s6_addr16 u.Word
+#endif
+
 // The net address interface doesn't have a normal C -> C++ thunk since it
 // doesn't actually have any proxy wrapping or associated objects; it's just a
 // call into base. So we implement the entire interface here, using the thunk
@@ -28,11 +40,6 @@
 namespace ppapi {
 
 namespace {
-
-#if defined(OS_WIN)
-// The type of |sockaddr::sa_family|.
-typedef ADDRESS_FAMILY sa_family_t;
-#endif
 
 inline sa_family_t GetFamily(const PP_NetAddress_Private& addr) {
   return reinterpret_cast<const sockaddr*>(addr.data)->sa_family;
@@ -88,32 +95,119 @@ PP_Bool AreEqual(const PP_NetAddress_Private* addr1,
   return PP_FALSE;
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
+std::string ConvertIPv4AddressToString(const sockaddr_in* a,
+                                       bool include_port) {
+  unsigned ip = ntohl(a->sin_addr.s_addr);
+  unsigned port = ntohs(a->sin_port);
+  std::string description = base::StringPrintf(
+      "%u.%u.%u.%u",
+      (ip >> 24) & 0xff, (ip >> 16) & 0xff, (ip >> 8) & 0xff, ip & 0xff);
+  if (include_port)
+    base::StringAppendF(&description, ":%u", port);
+  return description;
+}
+
+// Format an IPv6 address for human consumption, basically according to RFC
+// 5952.
+//  - If the scope is nonzero, it is appended to the address as "%<scope>" (this
+//    is not in RFC 5952, but consistent with |getnameinfo()| on Linux and
+//    Windows).
+//  - If |include_port| is true, the address (possibly including the scope) is
+//    enclosed in square brackets and ":<port>" is appended, i.e., the overall
+//    format is "[<address>]:<port>".
+//  - If the address is an IPv4 address embedded IPv6 (per RFC 4291), then the
+//    mixed format is used, e.g., "::ffff:192.168.1.2". This is optional per RFC
+//    5952, but consistent with |getnameinfo()|.
+std::string ConvertIPv6AddressToString(const sockaddr_in6* a,
+                                       bool include_port) {
+  unsigned port = ntohs(a->sin6_port);
+  unsigned scope = a->sin6_scope_id;
+  std::string description(include_port ? "[" : "");
+
+  // IPv4 address embedded in IPv6.
+  if (a->sin6_addr.s6_addr16[0] == 0 && a->sin6_addr.s6_addr16[1] == 0 &&
+      a->sin6_addr.s6_addr16[2] == 0 && a->sin6_addr.s6_addr16[3] == 0 &&
+      a->sin6_addr.s6_addr16[4] == 0 &&
+      (a->sin6_addr.s6_addr16[5] == 0 || a->sin6_addr.s6_addr16[5] == 0xffff)) {
+    base::StringAppendF(
+        &description,
+        a->sin6_addr.s6_addr16[5] == 0 ? "::%u.%u.%u.%u" : "::ffff:%u.%u.%u.%u",
+        static_cast<unsigned>(a->sin6_addr.s6_addr[12]),
+        static_cast<unsigned>(a->sin6_addr.s6_addr[13]),
+        static_cast<unsigned>(a->sin6_addr.s6_addr[14]),
+        static_cast<unsigned>(a->sin6_addr.s6_addr[15]));
+
+  // "Real" IPv6 addresses.
+  } else {
+    // Find the first longest run of 0s (of length > 1), to collapse to "::".
+    int longest_start = 0;
+    int longest_length = 0;
+    int curr_start = 0;
+    int curr_length = 0;
+    for (int i = 0; i < 8; i++) {
+      if (ntohs(a->sin6_addr.s6_addr16[i]) != 0) {
+        curr_length = 0;
+      } else {
+        if (!curr_length)
+          curr_start = i;
+        curr_length++;
+        if (curr_length > longest_length) {
+          longest_start = curr_start;
+          longest_length = curr_length;
+        }
+      }
+    }
+
+    bool need_sep = false;  // Whether the next item needs a ':' to separate.
+    for (int i = 0; i < 8;) {
+      if (longest_length > 1 && i == longest_start) {
+        description.append("::");
+        need_sep = false;
+        i += longest_length;
+      } else {
+        unsigned v = ntohs(a->sin6_addr.s6_addr16[i]);
+        base::StringAppendF(&description, need_sep ? ":%x" : "%x", v);
+        need_sep = true;
+        i++;
+      }
+    }
+  }
+
+  // Nonzero scopes, e.g., 123, are indicated by appending, e.g., "%123".
+  if (scope != 0)
+    base::StringAppendF(&description, "%%%u", scope);
+
+  if (include_port)
+    base::StringAppendF(&description, "]:%u", port);
+
+  return description;
+}
+#endif  // OS_WIN || OS_MAC
+
 PP_Var Describe(PP_Module module,
                 const struct PP_NetAddress_Private* addr,
                 PP_Bool include_port) {
   if (!NetAddressPrivateImpl::ValidateNetAddress(*addr))
     return PP_MakeUndefined();
 
-#if defined(OS_WIN)
-  // On Windows, |NetAddressToString()| doesn't work in the sandbox.
-  // TODO(viettrungluu): Consider switching to this everywhere once it's fully
-  // implemented.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // On Windows, |NetAddressToString()| doesn't work in the sandbox. On Mac,
+  // the output isn't consistent with RFC 5952, at least on Mac OS 10.6:
+  // |getnameinfo()| collapses length-one runs of zeros (and also doesn't
+  // display the scope).
+  // TODO(viettrungluu): Consider switching to this on Linux.
   switch (GetFamily(*addr)) {
     case AF_INET: {
       const sockaddr_in* a = reinterpret_cast<const sockaddr_in*>(addr->data);
-      unsigned ip = ntohl(a->sin_addr.s_addr);
-      unsigned port = ntohs(a->sin_port);
-      std::string description = base::StringPrintf(
-          "%u.%u.%u.%u",
-          (ip >> 24) & 0xff, (ip >> 16) & 0xff, (ip >> 8) & 0xff, ip & 0xff);
-      if (include_port)
-        description.append(base::StringPrintf(":%u", port));
-      return StringVar::StringToPPVar(module, description);
+      return StringVar::StringToPPVar(
+          module, ConvertIPv4AddressToString(a, !!include_port));
     }
-    case AF_INET6:
-      // TODO(viettrungluu): crbug.com/103969
-      NOTIMPLEMENTED();
-      break;
+    case AF_INET6: {
+      const sockaddr_in6* a = reinterpret_cast<const sockaddr_in6*>(addr->data);
+      return StringVar::StringToPPVar(
+          module, ConvertIPv6AddressToString(a, !!include_port));
+    }
     default:
       NOTREACHED();
       break;

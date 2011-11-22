@@ -425,8 +425,18 @@ TEST_F(OutOfProcessPPAPITest, FAILS_UMA) {
   RunTest("UMA");
 }
 
-TEST_PPAPI_IN_PROCESS(NetAddressPrivate)
-TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate)
+TEST_PPAPI_IN_PROCESS(NetAddressPrivate_AreEqual)
+TEST_PPAPI_IN_PROCESS(NetAddressPrivate_AreHostsEqual)
+TEST_PPAPI_IN_PROCESS(NetAddressPrivate_Describe)
+TEST_PPAPI_IN_PROCESS(NetAddressPrivate_ReplacePort)
+TEST_PPAPI_IN_PROCESS(NetAddressPrivate_GetAnyAddress)
+TEST_PPAPI_IN_PROCESS(NetAddressPrivate_DescribeIPv6)
+TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_AreEqual)
+TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_AreHostsEqual)
+TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_Describe)
+TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_ReplacePort)
+TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_GetAnyAddress)
+TEST_PPAPI_OUT_OF_PROCESS(NetAddressPrivate_DescribeIPv6)
 
 // PPB_TCPSocket_Private currently isn't supported in-process.
 TEST_F(OutOfProcessPPAPITest, TCPSocketPrivate) {
