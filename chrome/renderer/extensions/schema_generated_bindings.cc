@@ -213,6 +213,9 @@ class ExtensionImpl : public ChromeV8Extension {
       return v8::FunctionTemplate::New(DecodeJPEG, v8::External::New(this));
     } else if (name->Equals(v8::String::New("CreateBlob"))) {
       return v8::FunctionTemplate::New(CreateBlob, v8::External::New(this));
+    } else if (name->Equals(v8::String::New("SendResponseAck"))) {
+      return v8::FunctionTemplate::New(SendResponseAck,
+                                       v8::External::New(this));
     }
 
     return ChromeV8Extension::GetNativeFunction(name);
@@ -395,6 +398,18 @@ class ExtensionImpl : public ChromeV8Extension {
     WebKit::WebBlob blob =
         WebKit::WebBlob::createFromFile(path, args[1]->Int32Value());
     return blob.toV8Value();
+  }
+
+  static v8::Handle<v8::Value> SendResponseAck(const v8::Arguments& args) {
+    CHECK(args.Length() == 1);
+    CHECK(args[0]->IsInt32());
+
+    content::RenderView* render_view = GetCurrentRenderView();
+    if (render_view) {
+      render_view->Send(new ExtensionHostMsg_ResponseAck(
+          render_view->GetRoutingId(), args[0]->Int32Value()));
+    }
+    return v8::Undefined();
   }
 
   // Creates a new messaging channel to the tab with the given ID.

@@ -26,8 +26,10 @@ void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
 }
 
 UIThreadExtensionFunction::RenderViewHostTracker::RenderViewHostTracker(
-    UIThreadExtensionFunction* function)
-    : function_(function) {
+    UIThreadExtensionFunction* function,
+    RenderViewHost* render_view_host)
+    : RenderViewHostObserver(render_view_host),
+      function_(function) {
   registrar_.Add(this,
                  content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
                  content::Source<RenderViewHost>(function->render_view_host()));
@@ -41,6 +43,18 @@ void UIThreadExtensionFunction::RenderViewHostTracker::Observe(
   CHECK(content::Source<RenderViewHost>(source).ptr() ==
         function_->render_view_host());
   function_->SetRenderViewHost(NULL);
+}
+
+void UIThreadExtensionFunction::RenderViewHostTracker::RenderViewHostDestroyed(
+    RenderViewHost* render_view_host) {
+  // Overidding the default behavior of RenderViewHostObserver which is to
+  // delete this. In our case, we'll be deleted when the
+  // UIThreadExtensionFunction that contains us goes away.
+}
+
+bool UIThreadExtensionFunction::RenderViewHostTracker::OnMessageReceived(
+    const IPC::Message& message) {
+  return function_->OnMessageReceivedFromRenderView(message);
 }
 
 ExtensionFunction::ExtensionFunction()
@@ -139,6 +153,11 @@ UIThreadExtensionFunction::AsUIThreadExtensionFunction() {
   return this;
 }
 
+bool UIThreadExtensionFunction::OnMessageReceivedFromRenderView(
+    const IPC::Message& message) {
+  return false;
+}
+
 void UIThreadExtensionFunction::Destruct() const {
   BrowserThread::DeleteOnUIThread::Destruct(this);
 }
@@ -146,7 +165,8 @@ void UIThreadExtensionFunction::Destruct() const {
 void UIThreadExtensionFunction::SetRenderViewHost(
     RenderViewHost* render_view_host) {
   render_view_host_ = render_view_host;
-  tracker_.reset(render_view_host ? new RenderViewHostTracker(this) : NULL);
+  tracker_.reset(render_view_host ?
+      new RenderViewHostTracker(this, render_view_host) : NULL);
 }
 
 Browser* UIThreadExtensionFunction::GetCurrentBrowser() {

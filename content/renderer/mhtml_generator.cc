@@ -34,6 +34,7 @@ void MHTMLGenerator::OnSavePageAsMHTML(
       IPC::PlatformFileForTransitToPlatformFile(file_for_transit);
   file_ = file;
   int64 size = GenerateMHTML();
+  base::ClosePlatformFile(file);
   NotifyBrowser(job_id, size);
 }
 

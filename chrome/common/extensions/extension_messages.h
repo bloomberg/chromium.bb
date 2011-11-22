@@ -356,6 +356,11 @@ IPC_MESSAGE_ROUTED4(ExtensionHostMsg_GetAppNotifyChannel,
                     int32 /* return_route_id */,
                     int32 /* callback_id */)
 
+// Optional Ack message sent to the browser to notify that the response to a
+// function has been processed.
+IPC_MESSAGE_ROUTED1(ExtensionHostMsg_ResponseAck,
+                    int /* request_id */)
+
 // Response to the renderer for the above message.
 IPC_MESSAGE_ROUTED3(ExtensionMsg_GetAppNotifyChannelResponse,
                     std::string /* channel_id */,

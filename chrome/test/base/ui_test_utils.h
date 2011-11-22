@@ -18,6 +18,7 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/automation/dom_element_proxy.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_details.h"
@@ -82,6 +83,10 @@ void RunMessageLoop();
 // over MessageLoop::RunAllPending for in process browser tests to run
 // all pending tasks.
 void RunAllPendingInMessageLoop();
+
+// Blocks the current thread until all the pending messages in the loop of the
+// thread |thread_id| have been processed.
+void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id);
 
 // Puts the current tab title in |title|. Returns true on success.
 bool GetCurrentTabTitle(const Browser* browser, string16* title);

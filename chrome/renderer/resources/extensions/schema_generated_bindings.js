@@ -24,6 +24,7 @@ var chrome = chrome || {};
   native function GetLocalFileSystem(name, path);
   native function DecodeJPEG(jpegImage);
   native function CreateBlob(filePath);
+  native function SendResponseAck(requestId);
 
   var chromeHidden = GetChromeHidden();
 
@@ -178,6 +179,7 @@ var chrome = chrome || {};
     var nativeFunction = opt_args.nativeFunction || StartRequest;
 
     var requestId = GetNextRequestId();
+    request.id = requestId;
     requests[requestId] = request;
     var hasCallback =
         (request.callback || opt_args.customCallback) ? true : false;
@@ -795,8 +797,11 @@ var chrome = chrome || {};
 
         if (request.callback)
           request.callback(CreateBlob(path, size));
-
         request.callback = null;
+
+        // Notify the browser. Now that the blob is referenced from JavaScript,
+        // the browser can drop its reference to it.
+        SendResponseAck(request.id);
       };
 
     apiFunctions["fileBrowserPrivate.requestLocalFileSystem"].customCallback =

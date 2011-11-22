@@ -16,6 +16,7 @@
 #include "base/process.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -222,6 +223,11 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   void set_test_delegate(DelegateForTests* delegate) {
     delegate_ = delegate;
   }
+
+  // Called when a message was received.
+  // Should return true if it processed the message.
+  virtual bool OnMessageReceivedFromRenderView(const IPC::Message& message);
+
   // Set the profile which contains the extension that has originated this
   // function call.
   void set_profile(Profile* profile) { profile_ = profile; }
@@ -276,20 +282,30 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
  private:
   // Helper class to track the lifetime of ExtensionFunction's RenderViewHost
-  // pointer and NULL it out when it dies. We use this separate class (instead
-  // of implementing NotificationObserver on ExtensionFunction) because it is
-  // common for subclasses of ExtensionFunction to be NotificationObservers, and
-  // it would be an easy error to forget to call the base class's Observe()
-  // method.
-  class RenderViewHostTracker : public content::NotificationObserver {
+  // pointer and NULL it out when it dies. It also allows us to filter IPC
+  // messages comming from the RenderViewHost. We use this separate class
+  // (instead of implementing NotificationObserver on ExtensionFunction) because
+  // it is/ common for subclasses of ExtensionFunction to be
+  // NotificationObservers, and it would be an easy error to forget to call the
+  // base class's Observe() method.
+  class RenderViewHostTracker : public content::NotificationObserver,
+                                public RenderViewHostObserver {
    public:
-    explicit RenderViewHostTracker(UIThreadExtensionFunction* function);
+    RenderViewHostTracker(UIThreadExtensionFunction* function,
+                          RenderViewHost* render_view_host);
    private:
     virtual void Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) OVERRIDE;
+
+    virtual void RenderViewHostDestroyed(
+        RenderViewHost* render_view_host) OVERRIDE;
+    virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
     UIThreadExtensionFunction* function_;
     content::NotificationRegistrar registrar_;
+
+    DISALLOW_COPY_AND_ASSIGN(RenderViewHostTracker);
   };
 
   virtual void Destruct() const OVERRIDE;

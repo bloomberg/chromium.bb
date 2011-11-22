@@ -40,7 +40,9 @@ chrome.test.getConfig(function(config) {
               var text = e.target.result;
               assertTrue(text.indexOf(testUrl) != -1);
               assertTrue(text.indexOf("logo.png") != -1);
-              chrome.test.notifyPass();
+              // Run the GC so the blob is deleted.
+              window.setTimeout(function() { window.gc(); });
+              window.setTimeout(function() { chrome.test.notifyPass(); }, 0);
             };
             reader.readAsText(data);
           });

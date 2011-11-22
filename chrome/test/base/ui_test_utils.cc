@@ -228,27 +228,57 @@ bool ExecuteJavaScriptHelper(RenderViewHost* render_view_host,
   return true;
 }
 
+void RunAllPendingMessageAndSendQuit(content::BrowserThread::ID thread_id) {
+  MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  RunMessageLoop();
+  content::BrowserThread::PostTask(thread_id, FROM_HERE,
+                                   new MessageLoop::QuitTask());
+}
+
 }  // namespace
 
 void RunMessageLoop() {
-  MessageLoopForUI* loop = MessageLoopForUI::current();
+  MessageLoop* loop = MessageLoop::current();
+  MessageLoopForUI* ui_loop =
+      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) ?
+          MessageLoopForUI::current() : NULL;
   bool did_allow_task_nesting = loop->NestableTasksAllowed();
   loop->SetNestableTasksAllowed(true);
+  if (ui_loop) {
 #if defined(USE_AURA)
-  aura::Desktop::GetInstance()->Run();
+    aura::Desktop::GetInstance()->Run();
 #elif defined(TOOLKIT_VIEWS)
-  views::AcceleratorHandler handler;
-  loop->RunWithDispatcher(&handler);
+    views::AcceleratorHandler handler;
+    ui_loop->RunWithDispatcher(&handler);
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
-  loop->RunWithDispatcher(NULL);
+    ui_loop->RunWithDispatcher(NULL);
 #else
-  loop->Run();
+    ui_loop->Run();
 #endif
+  } else {
+    loop->Run();
+  }
   loop->SetNestableTasksAllowed(did_allow_task_nesting);
 }
 
 void RunAllPendingInMessageLoop() {
   MessageLoop::current()->PostTask(FROM_HERE, new MessageLoop::QuitTask());
+  ui_test_utils::RunMessageLoop();
+}
+
+void RunAllPendingInMessageLoop(content::BrowserThread::ID thread_id) {
+  if (content::BrowserThread::CurrentlyOn(thread_id)) {
+    RunAllPendingInMessageLoop();
+    return;
+  }
+  content::BrowserThread::ID current_thread_id;
+  if (!content::BrowserThread::GetCurrentThreadIdentifier(&current_thread_id)) {
+    NOTREACHED();
+    return;
+  }
+  content::BrowserThread::PostTask(thread_id, FROM_HERE,
+      base::Bind(&RunAllPendingMessageAndSendQuit, current_thread_id));
+
   ui_test_utils::RunMessageLoop();
 }
 
