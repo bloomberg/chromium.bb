@@ -23,7 +23,6 @@ class LibraryLoader;
 class NetworkLibrary;
 class PowerLibrary;
 class ScreenLockLibrary;
-class UpdateLibrary;
 
 // This class handles access to sub-parts of ChromeOS library. it provides
 // a level of indirection so individual libraries that it exposes can
@@ -49,7 +48,6 @@ class CrosLibrary {
     void SetNetworkLibrary(NetworkLibrary* library, bool own);
     void SetPowerLibrary(PowerLibrary* library, bool own);
     void SetScreenLockLibrary(ScreenLockLibrary* library, bool own);
-    void SetUpdateLibrary(UpdateLibrary* library, bool own);
 
    private:
     friend class CrosLibrary;
@@ -74,7 +72,6 @@ class CrosLibrary {
   NetworkLibrary* GetNetworkLibrary();
   PowerLibrary* GetPowerLibrary();
   ScreenLockLibrary* GetScreenLockLibrary();
-  UpdateLibrary* GetUpdateLibrary();
 
   // Getter for Test API that gives access to internal members of this class.
   TestApi* GetTestApi();
@@ -139,7 +136,6 @@ class CrosLibrary {
   Library<NetworkLibrary> network_lib_;
   Library<PowerLibrary> power_lib_;
   Library<ScreenLockLibrary> screen_lock_lib_;
-  Library<UpdateLibrary> update_lib_;
 
   // Stub implementations of the libraries should be used.
   bool use_stub_impl_;

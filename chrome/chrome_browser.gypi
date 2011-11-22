@@ -422,8 +422,6 @@
         'browser/chromeos/cros/power_library.h',
         'browser/chromeos/cros/screen_lock_library.cc',
         'browser/chromeos/cros/screen_lock_library.h',
-        'browser/chromeos/cros/update_library.cc',
-        'browser/chromeos/cros/update_library.h',
         'browser/chromeos/cros_settings.cc',
         'browser/chromeos/cros_settings.h',
         'browser/chromeos/cros_settings_names.cc',
