@@ -35,15 +35,13 @@ class XInputHierarchyChangedEventListener : public MessageLoopForUI::Observer {
   XInputHierarchyChangedEventListener();
   virtual ~XInputHierarchyChangedEventListener();
 
-#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
-  // MessageLoopForUI::Observer overrides.
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-#else
-  // When TOUCH_UI is not defined, WillProcessXEvent() will not be called
-  // automatically. We have to call the function manually by adding the Gdk
-  // event filter.
+  void Init();
+  void StopImpl();
+
+#if defined(TOOLKIT_USES_GTK)
+  // When GTK events are processed, WillProcessXEvent() is not called
+  // automatically. It is necessary to call the function manually by adding the
+  // Gdk event filter.
   static GdkFilterReturn GdkEventFilter(GdkXEvent* gxevent,
                                         GdkEvent* gevent,
                                         gpointer data);
@@ -51,6 +49,11 @@ class XInputHierarchyChangedEventListener : public MessageLoopForUI::Observer {
   // MessageLoopForUI::Observer overrides.
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {}
+#else
+  // MessageLoopForUI::Observer overrides.
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 #endif
 
   // Returns true if the event was processed, false otherwise.

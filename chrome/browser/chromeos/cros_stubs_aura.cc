@@ -79,46 +79,6 @@ std::string SystemNotification::Delegate::id() const {
   return id_;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// XInputHierarchyChangedEventListener
-
-// static
-XInputHierarchyChangedEventListener*
-XInputHierarchyChangedEventListener::GetInstance() {
-  NOTIMPLEMENTED();
-  return new XInputHierarchyChangedEventListener();
-}
-
-XInputHierarchyChangedEventListener::XInputHierarchyChangedEventListener()
-    : stopped_(false),
-      xiopcode_(0) {
-  NOTIMPLEMENTED();
-}
-
-XInputHierarchyChangedEventListener::~XInputHierarchyChangedEventListener() {
-  NOTIMPLEMENTED();
-}
-
-void XInputHierarchyChangedEventListener::Stop() {
-  NOTIMPLEMENTED();
-}
-
-base::EventStatus XInputHierarchyChangedEventListener::WillProcessEvent(
-    const base::NativeEvent& event) {
-  NOTIMPLEMENTED();
-  return base::EVENT_HANDLED;
-}
-
-void XInputHierarchyChangedEventListener::DidProcessEvent(
-    const base::NativeEvent& event) {
-  NOTIMPLEMENTED();
-}
-
-bool XInputHierarchyChangedEventListener::ProcessedXEvent(XEvent* xevent) {
-  NOTIMPLEMENTED();
-  return true;
-}
-
 //////////////////////////////////////////////////////////////////////////////
 // ScreenLocker
 
