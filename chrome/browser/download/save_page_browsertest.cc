@@ -97,7 +97,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(downloads_ui);
     return downloads_ui->GetDownloads();
   }
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) && !defined(USE_AURA)
   const ActiveDownloadsUI::DownloadList& GetDownloads() const {
     Browser* popup = ActiveDownloadsUI::GetPopup();
     EXPECT_TRUE(popup);
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, RemoveFromList) {
 
   EXPECT_EQ(GetDownloadManager()->RemoveAllDownloads(), 1);
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
   EXPECT_EQ(GetDownloads().size(), 0U);
 #endif
 
