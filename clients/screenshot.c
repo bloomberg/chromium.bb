@@ -30,7 +30,7 @@
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
-#include "wayland-client.h"
+#include <wayland-client.h>
 #include "screenshooter-client-protocol.h"
 
 /* The screenshooter is a good example of a custom object exposed by

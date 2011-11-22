@@ -32,11 +32,11 @@
 #include <sys/wait.h>
 #include <linux/input.h>
 
-#include "wayland-client.h"
+#include <wayland-client.h>
 #include "cairo-util.h"
 #include "window.h"
 
-#include <desktop-shell-client-protocol.h>
+#include "desktop-shell-client-protocol.h"
 
 struct desktop {
 	struct display *display;

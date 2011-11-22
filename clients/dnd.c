@@ -32,7 +32,7 @@
 #include <sys/epoll.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
-#include "wayland-client.h"
+#include <wayland-client.h>
 
 #include "window.h"
 #include "cairo-util.h"

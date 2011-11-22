@@ -42,7 +42,7 @@
 #include <getopt.h>
 #include <signal.h>
 
-#include "wayland-server.h"
+#include <wayland-server.h>
 #include "compositor.h"
 
 /* The plan here is to generate a random anonymous socket name and

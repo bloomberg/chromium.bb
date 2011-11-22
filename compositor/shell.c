@@ -32,7 +32,7 @@
 #include <fcntl.h>
 #include <assert.h>
 
-#include "wayland-server.h"
+#include <wayland-server.h>
 #include "compositor.h"
 #include "desktop-shell-server-protocol.h"
 

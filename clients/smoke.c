@@ -32,7 +32,7 @@
 #include <cairo.h>
 #include <glib.h>
 
-#include "wayland-client.h"
+#include <wayland-client.h>
 #include "window.h"
 
 struct smoke {

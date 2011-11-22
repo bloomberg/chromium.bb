@@ -38,7 +38,7 @@
 #include <glib/poppler-page.h>
 
 #include "wayland-util.h"
-#include "wayland-client.h"
+#include <wayland-client.h>
 
 #include "window.h"
 

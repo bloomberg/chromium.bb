@@ -33,7 +33,7 @@
 #include <sys/time.h>
 #include <glib.h>
 
-#include "wayland-client.h"
+#include <wayland-client.h>
 #include "window.h"
 
 static void

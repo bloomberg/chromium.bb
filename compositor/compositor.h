@@ -25,7 +25,7 @@
 
 #include <libudev.h>
 #include <pixman.h>
-#include "wayland-server.h"
+#include <wayland-server.h>
 #include "wayland-util.h"
 
 #include <GLES2/gl2.h>
