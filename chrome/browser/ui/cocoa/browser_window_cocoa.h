@@ -55,6 +55,9 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual gfx::Rect GetBounds() const OVERRIDE;
   virtual bool IsMaximized() const OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
+  virtual void Maximize() OVERRIDE;
+  virtual void Minimize() OVERRIDE;
+  virtual void Restore() OVERRIDE;
   virtual void EnterFullscreen(
       const GURL& url, FullscreenExitBubbleType type) OVERRIDE;
   virtual void ExitFullscreen() OVERRIDE;

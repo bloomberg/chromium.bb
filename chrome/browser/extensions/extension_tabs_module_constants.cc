@@ -30,6 +30,7 @@ const char kPopulateKey[] = "populate";
 const char kQualityKey[] = "quality";
 const char kHighlightedKey[] = "highlighted";
 const char kSelectedKey[] = "selected";
+const char kShowStateKey[] = "state";
 const char kStatusKey[] = "status";
 const char kTabIdKey[] = "tabId";
 const char kTabIdsKey[] = "tabIds";
@@ -49,6 +50,9 @@ const char kFormatValueJpeg[] = "jpeg";
 const char kFormatValuePng[] = "png";
 const char kMimeTypeJpeg[] = "image/jpeg";
 const char kMimeTypePng[] = "image/png";
+const char kShowStateValueNormal[] = "normal";
+const char kShowStateValueMinimized[] = "minimized";
+const char kShowStateValueMaximized[] = "maximized";
 const char kStatusValueComplete[] = "complete";
 const char kStatusValueLoading[] = "loading";
 
@@ -84,6 +88,8 @@ const char kInternalVisibleTabCaptureError[] =
     "Internal error while trying to capture visible region of the current tab";
 const char kNotImplementedError[] = "This call is not yet implemented";
 const char kSupportedInWindowsOnlyError[] = "Supported in Windows only";
+const char kInvalidWindowTypeError[] = "Invalid value for type";
+const char kInvalidWindowStateError[] = "Invalid value for state";
 
 const char kNoCodeOrFileToExecuteError[] = "No source code or file specified.";
 const char kMoreThanOneValuesError[] = "Code and file should not be specified "

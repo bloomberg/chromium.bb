@@ -470,7 +470,8 @@ bool CreateWindowFunction::RunImpl() {
         }
         extension_id = GetExtension()->id();
       } else if (type_str != keys::kWindowTypeValueNormal) {
-        EXTENSION_FUNCTION_VALIDATE(false);
+        error_ = keys::kInvalidWindowTypeError;
+        return false;
       }
     }
   }
@@ -530,8 +531,40 @@ bool UpdateWindowFunction::RunImpl() {
     return false;
   }
 
+  ui::WindowShowState show_state = ui::SHOW_STATE_DEFAULT;  // No change.
+  std::string state_str;
+  if (update_props->HasKey(keys::kShowStateKey)) {
+    EXTENSION_FUNCTION_VALIDATE(update_props->GetString(keys::kShowStateKey,
+                                                        &state_str));
+    if (state_str == keys::kShowStateValueNormal) {
+      show_state = ui::SHOW_STATE_NORMAL;
+    } else if (state_str == keys::kShowStateValueMinimized) {
+      show_state = ui::SHOW_STATE_MINIMIZED;
+    } else if (state_str == keys::kShowStateValueMaximized) {
+      show_state = ui::SHOW_STATE_MAXIMIZED;
+    } else {
+      error_ = keys::kInvalidWindowStateError;
+      return false;
+    }
+  }
+
+  switch (show_state) {
+    case ui::SHOW_STATE_MINIMIZED:
+      browser->window()->Minimize();
+      break;
+    case ui::SHOW_STATE_MAXIMIZED:
+      browser->window()->Maximize();
+      break;
+    case ui::SHOW_STATE_NORMAL:
+      browser->window()->Restore();
+      break;
+    default:
+      break;
+  }
+
   gfx::Rect bounds = browser->window()->GetRestoredBounds();
   bool set_bounds = false;
+
   // Any part of the bounds can optionally be set by the caller.
   int bounds_val;
   if (update_props->HasKey(keys::kLeftKey)) {
@@ -565,17 +598,33 @@ bool UpdateWindowFunction::RunImpl() {
     bounds.set_height(bounds_val);
     set_bounds = true;
   }
-  if (set_bounds)
+
+  if (set_bounds) {
+    if (show_state == ui::SHOW_STATE_MINIMIZED ||
+        show_state == ui::SHOW_STATE_MAXIMIZED) {
+      error_ = keys::kInvalidWindowStateError;
+      return false;
+    }
     browser->window()->SetBounds(bounds);
+  }
 
   bool active_val = false;
   if (update_props->HasKey(keys::kFocusedKey)) {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetBoolean(
         keys::kFocusedKey, &active_val));
-    if (active_val)
+    if (active_val) {
+      if (show_state == ui::SHOW_STATE_MINIMIZED) {
+        error_ = keys::kInvalidWindowStateError;
+        return false;
+      }
       browser->window()->Activate();
-    else
+    } else {
+      if (show_state == ui::SHOW_STATE_MAXIMIZED) {
+        error_ = keys::kInvalidWindowStateError;
+        return false;
+      }
       browser->window()->Deactivate();
+    }
   }
 
   bool draw_attention = false;

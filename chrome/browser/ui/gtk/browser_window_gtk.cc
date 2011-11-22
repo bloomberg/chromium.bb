@@ -845,6 +845,21 @@ bool BrowserWindowGtk::IsMinimized() const {
   return (state_ & GDK_WINDOW_STATE_ICONIFIED);
 }
 
+void BrowserWindowGtk::Maximize() {
+  gtk_window_maximize(window_);
+}
+
+void BrowserWindowGtk::Minimize() {
+  gtk_window_iconify(window_);
+}
+
+void BrowserWindowGtk::Restore() {
+  if (IsMaximized())
+    UnMaximize();
+  else if (IsMinimized())
+    gtk_window_deiconify(window_);
+}
+
 bool BrowserWindowGtk::ShouldDrawContentDropShadow() {
   return !IsMaximized() && UseCustomFrame();
 }

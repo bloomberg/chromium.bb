@@ -774,6 +774,18 @@ bool BrowserView::IsMinimized() const {
   return frame_->IsMinimized();
 }
 
+void BrowserView::Maximize() {
+  frame_->Maximize();
+}
+
+void BrowserView::Minimize() {
+  frame_->Minimize();
+}
+
+void BrowserView::Restore() {
+  frame_->Restore();
+}
+
 void BrowserView::EnterFullscreen(
     const GURL& url, FullscreenExitBubbleType bubble_type) {
   if (IsFullscreen())

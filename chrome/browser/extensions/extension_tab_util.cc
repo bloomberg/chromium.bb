@@ -59,6 +59,16 @@ std::string ExtensionTabUtil::GetWindowTypeText(const Browser* browser) {
   return keys::kWindowTypeValueNormal;
 }
 
+// Return the state name for a browser window state.
+std::string ExtensionTabUtil::GetWindowShowStateText(const Browser* browser) {
+  BrowserWindow* window = browser->window();
+  if (window->IsMinimized())
+    return keys::kShowStateValueMinimized;
+  if (window->IsMaximized() || window->IsFullscreen())
+    return keys::kShowStateValueMaximized;
+  return keys::kShowStateValueNormal;
+}
+
 DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const TabContents* contents) {
   // Find the tab strip and index of this guy.
@@ -146,6 +156,7 @@ DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
   result->SetInteger(keys::kWidthKey, bounds.width());
   result->SetInteger(keys::kHeightKey, bounds.height());
   result->SetString(keys::kWindowTypeKey, GetWindowTypeText(browser));
+  result->SetString(keys::kShowStateKey, GetWindowShowStateText(browser));
 
   if (populate_tabs) {
     result->Set(keys::kTabsKey, ExtensionTabUtil::CreateTabList(browser));

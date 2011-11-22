@@ -254,3 +254,43 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
           incognito_browser),
       extension_tabs_module_constants::kIncognitoModeIsDisabled));
 }
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
+  static const char kArgsMinimizedWithFocus[] =
+      "[%u, {\"state\": \"minimized\", \"focused\": true}]";
+  static const char kArgsMaximizedWithoutFocus[] =
+      "[%u, {\"state\": \"maximized\", \"focused\": false}]";
+  static const char kArgsMinimizedWithBounds[] =
+      "[%u, {\"state\": \"minimized\", \"width\": 500}]";
+  static const char kArgsMaximizedWithBounds[] =
+      "[%u, {\"state\": \"maximized\", \"width\": 500}]";
+  int window_id = ExtensionTabUtil::GetWindowId(browser());
+
+  EXPECT_TRUE(MatchPattern(
+      RunFunctionAndReturnError(
+          new UpdateWindowFunction(),
+          base::StringPrintf(kArgsMinimizedWithFocus, window_id),
+          browser()),
+      extension_tabs_module_constants::kInvalidWindowStateError));
+
+  EXPECT_TRUE(MatchPattern(
+      RunFunctionAndReturnError(
+          new UpdateWindowFunction(),
+          base::StringPrintf(kArgsMaximizedWithoutFocus, window_id),
+          browser()),
+      extension_tabs_module_constants::kInvalidWindowStateError));
+
+  EXPECT_TRUE(MatchPattern(
+      RunFunctionAndReturnError(
+          new UpdateWindowFunction(),
+          base::StringPrintf(kArgsMinimizedWithBounds, window_id),
+          browser()),
+      extension_tabs_module_constants::kInvalidWindowStateError));
+
+  EXPECT_TRUE(MatchPattern(
+      RunFunctionAndReturnError(
+          new UpdateWindowFunction(),
+          base::StringPrintf(kArgsMaximizedWithBounds, window_id),
+          browser()),
+      extension_tabs_module_constants::kInvalidWindowStateError));
+}

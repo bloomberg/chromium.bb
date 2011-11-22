@@ -133,6 +133,11 @@ class BrowserWindow {
   // Returns true if the frame is minimized.
   virtual bool IsMinimized() const = 0;
 
+  // Maximizes/minimizes/restores the window.
+  virtual void Maximize() = 0;
+  virtual void Minimize() = 0;
+  virtual void Restore() = 0;
+
   // Accessors for fullscreen mode state.
   virtual void EnterFullscreen(const GURL& url,
                                FullscreenExitBubbleType bubble_type) = 0;

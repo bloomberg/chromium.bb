@@ -256,6 +256,18 @@ bool Panel::IsMinimized() const {
   return expansion_state_ != EXPANDED;
 }
 
+void Panel::Maximize() {
+  Restore();
+}
+
+void Panel::Minimize() {
+  SetExpansionState(MINIMIZED);
+}
+
+void Panel::Restore() {
+  SetExpansionState(EXPANDED);
+}
+
 void Panel::EnterFullscreen(
       const GURL& url, FullscreenExitBubbleType type) {
   NOTIMPLEMENTED();

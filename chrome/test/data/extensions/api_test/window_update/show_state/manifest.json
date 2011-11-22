@@ -1,0 +1,7 @@
+{
+  "name": "window/update.state",
+  "version": "0.1",
+  "description": "Tests the window.update state parameter.",
+  "background_page": "test.html",
+  "permissions": ["tabs"]
+}

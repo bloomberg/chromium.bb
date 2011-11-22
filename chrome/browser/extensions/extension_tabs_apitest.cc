@@ -26,9 +26,12 @@
   DISABLED_FocusWindowDoesNotExitFullscreen
 #define MAYBE_UpdateWindowSizeExitsFullscreen \
   DISABLED_UpdateWindowSizeExitsFullscreen
+#define MAYBE_UpdateWindowShowState \
+  DISABLED_UpdateWindowShowState
 #else
 #define MAYBE_FocusWindowDoesNotExitFullscreen FocusWindowDoesNotExitFullscreen
 #define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
+#define MAYBE_UpdateWindowShowState UpdateWindowShowState
 #endif
 
 // In the touch build, this fails reliably. http://crbug.com/85191
@@ -204,6 +207,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FocusWindowDoesNotUnmaximize) {
   ASSERT_TRUE(::IsZoomed(window));
 }
 #endif  // OS_WIN
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_UpdateWindowShowState) {
+  ASSERT_TRUE(RunExtensionTest("window_update/show_state")) << message_;
+}
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledByPref) {
   IncognitoModePrefs::SetAvailability(browser()->profile()->GetPrefs(),

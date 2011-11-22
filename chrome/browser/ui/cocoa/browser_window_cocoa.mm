@@ -257,6 +257,23 @@ bool BrowserWindowCocoa::IsMinimized() const {
   return [window() isMiniaturized];
 }
 
+void BrowserWindowCocoa::Maximize() {
+  // Zoom toggles so only call if not already maximized.
+  if (!IsMaximized())
+    [window() zoom:controller_];
+}
+
+void BrowserWindowCocoa::Minimize() {
+  [window() miniaturize:controller_];
+}
+
+void BrowserWindowCocoa::Restore() {
+  if (IsMaximized())
+    [window() zoom:controller_];  // Toggles zoom mode.
+  else if (IsMinimized())
+    [window() deminiaturize:controller_];
+}
+
 void BrowserWindowCocoa::EnterFullscreen(
       const GURL& url, FullscreenExitBubbleType bubble_type) {
   [controller_ enterFullscreenForURL:url

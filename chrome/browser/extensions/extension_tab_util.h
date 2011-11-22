@@ -31,6 +31,7 @@ class ExtensionTabUtil {
   static std::string GetTabStatusText(bool is_loading);
   static int GetWindowIdOfTab(const TabContents* tab_contents);
   static std::string GetWindowTypeText(const Browser* browser);
+  static std::string GetWindowShowStateText(const Browser* browser);
   static base::ListValue* CreateTabList(const Browser* browser);
   static base::DictionaryValue* CreateTabValue(
       const TabContents* tab_contents);
