@@ -162,8 +162,9 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   // animation.
   int x = 0;
   int y = 0;
-  if (expanded_->window)
-    gdk_window_get_origin(expanded_->window, &x, &y);
+  GdkWindow* expanded_window = gtk_widget_get_window(expanded_.get());
+  if (expanded_window)
+    gdk_window_get_origin(expanded_window, &x, &y);
   out->SetRect(x + expanded_->allocation.x, y + expanded_->allocation.y,
                requested_size_.width(), requested_size_.height());
 }
@@ -172,8 +173,12 @@ void TabContentsViewGtk::SetPageTitle(const string16& title) {
   // Set the window name to include the page title so it's easier to spot
   // when debugging (e.g. via xwininfo -tree).
   gfx::NativeView content_view = GetContentNativeView();
-  if (content_view && content_view->window)
-    gdk_window_set_title(content_view->window, UTF16ToUTF8(title).c_str());
+  if (content_view) {
+    GdkWindow* content_window = gtk_widget_get_window(content_view);
+    if (content_window) {
+      gdk_window_set_title(content_window, UTF16ToUTF8(title).c_str());
+    }
+  }
 }
 
 void TabContentsViewGtk::OnTabCrashed(base::TerminationStatus status,
@@ -234,12 +239,13 @@ void TabContentsViewGtk::CloseTabAfterEventTracking() {
 }
 
 void TabContentsViewGtk::GetViewBounds(gfx::Rect* out) const {
-  if (!GetNativeView()->window) {
+  GdkWindow* window = gtk_widget_get_window(GetNativeView());
+  if (!window) {
     out->SetRect(0, 0, requested_size_.width(), requested_size_.height());
     return;
   }
   int x = 0, y = 0, w, h;
-  gdk_window_get_geometry(GetNativeView()->window, &x, &y, &w, &h, NULL);
+  gdk_window_get_geometry(window, &x, &y, &w, &h, NULL);
   out->SetRect(x, y, w, h);
 }
 

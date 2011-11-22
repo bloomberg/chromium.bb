@@ -48,7 +48,7 @@ void AutomationProvider::WindowSimulateDrag(
       browser_tracker_->GetResource(handle)->window()->GetNativeHandle();
   if (window && (drag_path.size() > 1)) {
     int x, y;
-    gdk_window_get_position(GTK_WIDGET(window)->window, &x, &y);
+    gdk_window_get_position(gtk_widget_get_window(GTK_WIDGET(window)), &x, &y);
 
     // Create a nested stack of tasks to run.
     base::Closure drag_response_cb = base::Bind(

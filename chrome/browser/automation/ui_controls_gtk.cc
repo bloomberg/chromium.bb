@@ -88,7 +88,7 @@ void FakeAMouseMotionEvent(gint x, gint y) {
   if (grab_widget) {
     // If there is a grab, we need to target all events at it regardless of
     // what widget the mouse is over.
-    event->motion.window = grab_widget->window;
+    event->motion.window = gtk_widget_get_window(grab_widget);
   } else {
     event->motion.window = gdk_window_at_pointer(&x, &y);
   }
@@ -122,16 +122,16 @@ bool SendKeyPress(gfx::NativeWindow window,
   GtkWidget* grab_widget = gtk_grab_get_current();
   if (grab_widget) {
     // If there is a grab, send all events to the grabbed widget.
-    event_window = grab_widget->window;
+    event_window = gtk_widget_get_window(grab_widget);
   } else if (window) {
-    event_window = GTK_WIDGET(window)->window;
+    event_window = gtk_widget_get_window(GTK_WIDGET(window));
   } else {
     // No target was specified. Send the events to the active toplevel.
     GList* windows = gtk_window_list_toplevels();
     for (GList* element = windows; element; element = g_list_next(element)) {
       GtkWindow* this_window = GTK_WINDOW(element->data);
       if (gtk_window_is_active(this_window)) {
-        event_window = GTK_WIDGET(this_window)->window;
+        event_window = gtk_widget_get_window(GTK_WIDGET(this_window));
         break;
       }
     }
@@ -201,7 +201,7 @@ bool SendMouseEvents(MouseButton type, int state) {
   if (grab_widget) {
     // If there is a grab, we need to target all events at it regardless of
     // what widget the mouse is over.
-    event->button.window = grab_widget->window;
+    event->button.window = gtk_widget_get_window(grab_widget);
     gdk_window_get_pointer(event->button.window, &x, &y, NULL);
   } else {
     event->button.window = gdk_window_at_pointer(&x, &y);

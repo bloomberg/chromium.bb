@@ -836,7 +836,8 @@ void BrowserTitlebar::MaximizeButtonClicked() {
   } else {
     GtkWidget* widget = GTK_WIDGET(window_);
     GdkScreen* screen = gtk_widget_get_screen(widget);
-    gint monitor = gdk_screen_get_monitor_at_window(screen, widget->window);
+    gint monitor = gdk_screen_get_monitor_at_window(
+        screen, gtk_widget_get_window(widget));
     GdkRectangle screen_rect;
     gdk_screen_get_monitor_geometry(screen, monitor, &screen_rect);
 
@@ -1042,7 +1043,8 @@ void BrowserTitlebar::ActiveWindowChanged(GdkWindow* active_window) {
   if (!window_)
     return;
 
-  window_has_focus_ = GTK_WIDGET(window_)->window == active_window;
+  window_has_focus_ =
+      gtk_widget_get_window(GTK_WIDGET(window_)) == active_window;
   if (IsTypePanel()) {
     if (window_has_focus_ || window_has_mouse_)
       gtk_widget_show(panel_wrench_button_->widget());

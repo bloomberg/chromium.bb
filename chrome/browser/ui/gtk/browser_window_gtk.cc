@@ -257,8 +257,9 @@ void SetWindowSize(GtkWindow* window, const gfx::Size& size) {
   gint current_height = 0;
   gtk_window_get_size(window, &current_width, &current_height);
   GdkRectangle size_with_decorations = {0};
-  if (GTK_WIDGET(window)->window) {
-    gdk_window_get_frame_extents(GTK_WIDGET(window)->window,
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+  if (gdk_window) {
+    gdk_window_get_frame_extents(gdk_window,
                                  &size_with_decorations);
   }
 
@@ -743,7 +744,7 @@ void BrowserWindowGtk::Activate() {
 }
 
 void BrowserWindowGtk::Deactivate() {
-  gdk_window_lower(GTK_WIDGET(window_)->window);
+  gdk_window_lower(gtk_widget_get_window(GTK_WIDGET(window_)));
 }
 
 bool BrowserWindowGtk::IsActive() const {
@@ -1276,7 +1277,7 @@ void BrowserWindowGtk::ActiveWindowChanged(GdkWindow* active_window) {
   if (!window_)
     return;
 
-  bool is_active = (GTK_WIDGET(window_)->window == active_window);
+  bool is_active = gtk_widget_get_window(GTK_WIDGET(window_)) == active_window;
   bool changed = (is_active != is_active_);
 
   if (is_active && changed) {
@@ -1572,7 +1573,7 @@ void BrowserWindowGtk::ResetCustomFrameCursor() {
     return;
 
   frame_cursor_ = NULL;
-  gdk_window_set_cursor(GTK_WIDGET(window_)->window, NULL);
+  gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window_)), NULL);
 }
 
 // static
@@ -1788,7 +1789,7 @@ void BrowserWindowGtk::InitWidgets() {
 
   // We have to realize the window before we try to apply a window shape mask.
   gtk_widget_realize(GTK_WIDGET(window_));
-  state_ = gdk_window_get_state(GTK_WIDGET(window_)->window);
+  state_ = gdk_window_get_state(gtk_widget_get_window(GTK_WIDGET(window_)));
   // Note that calling this the first time is necessary to get the
   // proper control layout.
   UpdateCustomFrame();
@@ -1867,7 +1868,8 @@ void BrowserWindowGtk::UpdateWindowShape(int width, int height) {
     gdk_region_union_with_rect(mask, &mid_rect);
     gdk_region_union_with_rect(mask, &bot_mid_rect);
     gdk_region_union_with_rect(mask, &bot_bot_rect);
-    gdk_window_shape_combine_region(GTK_WIDGET(window_)->window, mask, 0, 0);
+    gdk_window_shape_combine_region(gtk_widget_get_window(GTK_WIDGET(window_)),
+                                    mask, 0, 0);
     gdk_region_destroy(mask);
     gtk_alignment_set_padding(GTK_ALIGNMENT(window_container_), 1,
         kFrameBorderThickness, kFrameBorderThickness, kFrameBorderThickness);
@@ -1878,10 +1880,12 @@ void BrowserWindowGtk::UpdateWindowShape(int width, int height) {
       // seem to work on KWin, so manually set the shape to the whole window.
       GdkRectangle rect = { 0, 0, width, height };
       GdkRegion* mask = gdk_region_rectangle(&rect);
-      gdk_window_shape_combine_region(GTK_WIDGET(window_)->window, mask, 0, 0);
+      gdk_window_shape_combine_region(
+          gtk_widget_get_window(GTK_WIDGET(window_)), mask, 0, 0);
       gdk_region_destroy(mask);
     } else {
-      gdk_window_shape_combine_region(GTK_WIDGET(window_)->window, NULL, 0, 0);
+      gdk_window_shape_combine_region(
+          gtk_widget_get_window(GTK_WIDGET(window_)), NULL, 0, 0);
     }
     gtk_alignment_set_padding(GTK_ALIGNMENT(window_container_), 0, 0, 0, 0);
   }
@@ -1918,7 +1922,7 @@ gfx::Size BrowserWindowGtk::GetNonClientFrameSize() const {
 }
 
 void BrowserWindowGtk::InvalidateWindow() {
-  gdk_window_invalidate_rect(GTK_WIDGET(window_)->window,
+  gdk_window_invalidate_rect(gtk_widget_get_window(GTK_WIDGET(window_)),
                              &GTK_WIDGET(window_)->allocation, TRUE);
 }
 
@@ -2073,11 +2077,11 @@ gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
   // This method is used to update the mouse cursor when over the edge of the
   // custom frame.  If the custom frame is off or we're over some other widget,
   // do nothing.
-  if (!UseCustomFrame() || event->window != widget->window) {
+  if (!UseCustomFrame() || event->window != gtk_widget_get_window(widget)) {
     // Reset the cursor.
     if (frame_cursor_) {
       frame_cursor_ = NULL;
-      gdk_window_set_cursor(GTK_WIDGET(window_)->window, NULL);
+      gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window_)), NULL);
     }
     return FALSE;
   }
@@ -2100,7 +2104,8 @@ gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
     } else {
       frame_cursor_ = NULL;
     }
-    gdk_window_set_cursor(GTK_WIDGET(window_)->window, frame_cursor_);
+    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window_)),
+                          frame_cursor_);
   }
   return FALSE;
 }
@@ -2123,7 +2128,8 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
 
   // Make the button press coordinate relative to the browser window.
   int win_x, win_y;
-  gdk_window_get_origin(GTK_WIDGET(window_)->window, &win_x, &win_y);
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window_));
+  gdk_window_get_origin(gdk_window, &win_x, &win_y);
 
   GdkWindowEdge edge;
   gfx::Point point(static_cast<int>(event->x_root - win_x),
@@ -2153,7 +2159,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
       // match the behavior of most window managers, unless that behavior has
       // been suppressed.
       if ((has_hit_titlebar || has_hit_edge) && !suppress_window_raise_)
-        gdk_window_raise(GTK_WIDGET(window_)->window);
+        gdk_window_raise(gdk_window);
 
       if (has_hit_titlebar) {
         return HandleTitleBarLeftMousePress(
@@ -2178,7 +2184,7 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
     }
   } else if (event->button == 2) {
     if (has_hit_titlebar || has_hit_edge) {
-      gdk_window_lower(GTK_WIDGET(window_)->window);
+      gdk_window_lower(gdk_window);
     }
     return TRUE;
   } else if (event->button == 3) {
@@ -2256,7 +2262,7 @@ void BrowserWindowGtk::ShowSupportedWindowFeatures() {
   if (IsToolbarSupported()) {
     toolbar_->Show();
     gtk_widget_show(toolbar_border_);
-    gdk_window_lower(toolbar_border_->window);
+    gdk_window_lower(gtk_widget_get_window(toolbar_border_));
   }
 
   if (IsBookmarkBarSupported())
@@ -2359,7 +2365,7 @@ bool BrowserWindowGtk::BoundsMatchMonitorSize() {
   // A screen can be composed of multiple monitors.
   GdkScreen* screen = gtk_window_get_screen(window_);
   gint monitor_num = gdk_screen_get_monitor_at_window(screen,
-      GTK_WIDGET(window_)->window);
+      gtk_widget_get_window(GTK_WIDGET(window_)));
 
   GdkRectangle monitor_size;
   gdk_screen_get_monitor_geometry(screen, monitor_num, &monitor_size);

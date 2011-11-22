@@ -851,7 +851,7 @@ gboolean BrowserActionsToolbarGtk::OnGripperExpose(GtkWidget* gripper,
 // dragging.
 gboolean BrowserActionsToolbarGtk::OnGripperEnterNotify(
     GtkWidget* gripper, GdkEventCrossing* event) {
-  gdk_window_set_cursor(gripper->window,
+  gdk_window_set_cursor(gtk_widget_get_window(gripper),
                         gfx::GetCursor(GDK_SB_H_DOUBLE_ARROW));
   return FALSE;
 }
@@ -859,7 +859,7 @@ gboolean BrowserActionsToolbarGtk::OnGripperEnterNotify(
 gboolean BrowserActionsToolbarGtk::OnGripperLeaveNotify(
     GtkWidget* gripper, GdkEventCrossing* event) {
   if (!(event->state & GDK_BUTTON1_MASK))
-    gdk_window_set_cursor(gripper->window, NULL);
+    gdk_window_set_cursor(gtk_widget_get_window(gripper), NULL);
   return FALSE;
 }
 
@@ -869,7 +869,7 @@ gboolean BrowserActionsToolbarGtk::OnGripperButtonRelease(
                          gripper->allocation.width, gripper->allocation.height);
   gfx::Point release_point(event->x, event->y);
   if (!gripper_rect.Contains(release_point))
-    gdk_window_set_cursor(gripper->window, NULL);
+    gdk_window_set_cursor(gtk_widget_get_window(gripper), NULL);
 
   // After the user resizes the toolbar, we want to smartly resize it to be
   // the perfect size to fit the buttons.
