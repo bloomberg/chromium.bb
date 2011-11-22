@@ -106,8 +106,6 @@
       '-popups.PopupsTest.testUnblockedPopupAddedToOmnibox',
       # crbug.com/85600
       '-prefs.PrefsTest.testNavigationStateOnSessionRestore',
-      # Flaky browser crash.  crbug.com/99944
-      '-search_engines.SearchEnginesTest.testDefaultSearchEngines',
       # Flaky: crbug.com/67851
       '-special_tabs.SpecialTabsTest.testAboutDNSTab',
       # crbug.com/102517 -- external webpage throws 500
