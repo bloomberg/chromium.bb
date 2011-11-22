@@ -98,6 +98,16 @@ enum ProfileDownloadResult {
   kDownloadResultsCount
 };
 
+// Time histogram name for the default profile image download.
+const char kProfileDownloadDefaultTime[] =
+    "UserImage.ProfileDownloadDefaultTime";
+// Time histogram name for a failed profile image download.
+const char kProfileDownloadFailureTime[] =
+    "UserImage.ProfileDownloadFailureTime";
+// Time histogram name for a successful profile image download.
+const char ProfileDownloadSuccessTime[] =
+    "UserImage.ProfileDownloadSuccessTime";
+
 // Used to handle the asynchronous response of deleting a cryptohome directory.
 class RemoveAttempt : public CryptohomeLibrary::Delegate {
  public:
@@ -473,9 +483,9 @@ void UserManager::DownloadProfileImage() {
     return;
   }
 
+  profile_image_load_start_time_ = base::Time::Now();
   profile_image_downloader_.reset(new ProfileDownloader(this));
   profile_image_downloader_->Start();
-  profile_image_load_start_time_ = base::Time::Now();
 }
 
 void UserManager::Observe(int type,
@@ -819,14 +829,25 @@ Profile* UserManager::GetBrowserProfile() {
 void UserManager::OnDownloadComplete(ProfileDownloader* downloader,
                                      bool success) {
   ProfileDownloadResult result;
-  if (!success)
+  std::string time_histogram_name;
+  if (!success) {
     result = kDownloadFailure;
-  else if (downloader->GetProfilePicture().isNull())
+    time_histogram_name = kProfileDownloadFailureTime;
+  } else if (downloader->GetProfilePicture().isNull()) {
     result = kDownloadDefault;
-  else
+    time_histogram_name = kProfileDownloadDefaultTime;
+  } else {
     result = kDownloadSuccess;
+    time_histogram_name = ProfileDownloadSuccessTime;
+  }
+
   UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
       result, kDownloadResultsCount);
+
+  DCHECK(!profile_image_load_start_time_.is_null());
+  base::TimeDelta delta = base::Time::Now() - profile_image_load_start_time_;
+  VLOG(1) << "Profile image download time: " << delta.InSecondsF();
+  UMA_HISTOGRAM_TIMES(time_histogram_name, delta);
 
   if (result == kDownloadSuccess) {
     // Check if this image is not the same as already downloaded.
