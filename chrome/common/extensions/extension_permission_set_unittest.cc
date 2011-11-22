@@ -603,8 +603,6 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
   // strings associated with them.
   ExtensionAPIPermissionSet skip;
 
-  skip.insert(ExtensionAPIPermission::kDefault);
-
   // These are considered "nuisance" or "trivial" permissions that don't need
   // a prompt.
   skip.insert(ExtensionAPIPermission::kContextMenus);
