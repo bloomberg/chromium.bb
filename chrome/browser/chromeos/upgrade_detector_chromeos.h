@@ -7,13 +7,13 @@
 #pragma once
 
 #include "base/timer.h"
-#include "chrome/browser/chromeos/cros/update_library.h"
+#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/upgrade_detector.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
 class UpgradeDetectorChromeos : public UpgradeDetector,
-                                public chromeos::UpdateLibrary::Observer {
+                                public chromeos::UpdateEngineClient::Observer {
  public:
   virtual ~UpgradeDetectorChromeos();
 
@@ -32,9 +32,9 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   UpgradeDetectorChromeos();
 
-  // chromeos::UpdateLibrary::Observer implementation.
+  // chromeos::UpdateEngineClient::Observer implementation.
   virtual void UpdateStatusChanged(
-      const chromeos::UpdateLibrary::Status& status);
+      const chromeos::UpdateEngineClient::Status& status) OVERRIDE;
 
   // The function that sends out a notification (after a certain time has
   // elapsed) that lets the rest of the UI know we should start notifying the

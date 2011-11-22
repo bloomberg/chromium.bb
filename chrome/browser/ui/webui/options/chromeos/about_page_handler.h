@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "chrome/browser/chromeos/cros/update_library.h"
+#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/version_loader.h"
 
 namespace chromeos {
@@ -25,6 +25,8 @@ class AboutPageHandler : public OptionsPageUIHandler {
   virtual void RegisterMessages();
 
  private:
+  class UpdateObserver;
+
   // The function is called from JavaScript when the about page is ready.
   void PageReady(const base::ListValue* args);
 
@@ -43,10 +45,11 @@ class AboutPageHandler : public OptionsPageUIHandler {
                    std::string version);
   void OnOSFirmware(VersionLoader::Handle handle,
                     std::string firmware);
-  void UpdateStatus(const UpdateLibrary::Status& status);
+  void UpdateStatus(const UpdateEngineClient::Status& status);
 
   // UpdateEngine Callback handler.
-  static void UpdateSelectedChannel(void* user_data, const char* channel);
+  static void UpdateSelectedChannel(UpdateObserver* observer,
+                                    const std::string& channel);
 
   // Handles asynchronously loading the version.
   VersionLoader loader_;
@@ -55,7 +58,6 @@ class AboutPageHandler : public OptionsPageUIHandler {
   CancelableRequestConsumer consumer_;
 
   // Update Observer
-  class UpdateObserver;
   scoped_ptr<UpdateObserver> update_observer_;
 
   int progress_;

@@ -19,6 +19,7 @@ class  MockPowerManagerClient;
 class  MockSensorsClient;
 class  MockSessionManagerClient;
 class  MockSpeechSynthesizerClient;
+class  MockUpdateEngineClient;
 
 // This class provides a mock DBusThreadManager with mock clients
 // installed. You can customize the behaviors of mock clients with
@@ -35,6 +36,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetSensorsClient, SensorsClient*(void));
   MOCK_METHOD0(GetSessionManagerClient, SessionManagerClient*(void));
   MOCK_METHOD0(GetSpeechSynthesizerClient, SpeechSynthesizerClient*(void));
+  MOCK_METHOD0(GetUpdateEngineClient, UpdateEngineClient*(void));
 
   MockBluetoothAdapterClient* mock_bluetooth_adapter_client() {
     return mock_bluetooth_adapter_client_.get();
@@ -57,6 +59,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockSpeechSynthesizerClient* mock_speech_synthesizer_client() {
     return mock_speech_synthesizer_client_.get();
   }
+  MockUpdateEngineClient* mock_update_engine_client() {
+    return mock_update_engine_client_.get();
+  }
 
  private:
   scoped_ptr<MockBluetoothAdapterClient> mock_bluetooth_adapter_client_;
@@ -66,6 +71,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockSensorsClient> mock_sensors_client_;
   scoped_ptr<MockSessionManagerClient> mock_session_manager_client_;
   scoped_ptr<MockSpeechSynthesizerClient> mock_speech_synthesizer_client_;
+  scoped_ptr<MockUpdateEngineClient> mock_update_engine_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDBusThreadManager);
 };

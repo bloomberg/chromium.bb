@@ -15,8 +15,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/update_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"
@@ -350,7 +350,8 @@ void DevicePolicyCache::DecodeDevicePolicy(
     // TODO(dubroy): Once http://crosbug.com/17015 is implemented, we won't
     // have to pass the channel in here, only ping the update engine to tell
     // it to fetch the channel from the policy.
-    chromeos::CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
+    chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()
+        ->SetReleaseTrack(channel);
   }
 
   if (policy.has_open_network_configuration() &&

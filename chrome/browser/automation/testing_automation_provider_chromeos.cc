@@ -17,7 +17,8 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
-#include "chrome/browser/chromeos/cros/update_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display.h"
@@ -42,8 +43,9 @@
 #include "ui/views/widget/widget.h"
 
 using chromeos::CrosLibrary;
+using chromeos::DBusThreadManager;
 using chromeos::NetworkLibrary;
-using chromeos::UpdateLibrary;
+using chromeos::UpdateEngineClient;
 using chromeos::UserManager;
 
 namespace {
@@ -83,33 +85,33 @@ base::Value* GetProxySetting(Browser* browser,
   return NULL;
 }
 
-const char* UpdateStatusToString(chromeos::UpdateStatusOperation status) {
+const char* UpdateStatusToString(
+    UpdateEngineClient::UpdateStatusOperation status) {
   switch (status) {
-    case chromeos::UPDATE_STATUS_IDLE:
+    case UpdateEngineClient::UPDATE_STATUS_IDLE:
       return "idle";
-    case chromeos::UPDATE_STATUS_CHECKING_FOR_UPDATE:
+    case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
       return "checking for update";
-    case chromeos::UPDATE_STATUS_UPDATE_AVAILABLE:
+    case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
       return "update available";
-    case chromeos::UPDATE_STATUS_DOWNLOADING:
+    case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
       return "downloading";
-    case chromeos::UPDATE_STATUS_VERIFYING:
+    case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
       return "verifying";
-    case chromeos::UPDATE_STATUS_FINALIZING:
+    case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
       return "finalizing";
-    case chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT:
+    case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
       return "updated need reboot";
-    case chromeos::UPDATE_STATUS_REPORTING_ERROR_EVENT:
+    case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
       return "reporting error event";
     default:
       return "unknown";
   }
 }
 
-void GetReleaseTrackCallback(void* user_data, const char* track) {
-  AutomationJSONReply* reply = static_cast<AutomationJSONReply*>(user_data);
-
-  if (track == NULL) {
+void GetReleaseTrackCallback(AutomationJSONReply* reply,
+                             const std::string& track) {
+  if (track.empty()) {
     reply->SendError("Unable to get release track.");
     delete reply;
     return;
@@ -118,11 +120,12 @@ void GetReleaseTrackCallback(void* user_data, const char* track) {
   scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
   return_value->SetString("release_track", track);
 
-  UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
-  const UpdateLibrary::Status& status = update_library->status();
-  chromeos::UpdateStatusOperation update_status = status.status;
+  const UpdateEngineClient::Status& status =
+      DBusThreadManager::Get()->GetUpdateEngineClient()->GetLastStatus();
+  UpdateEngineClient::UpdateStatusOperation update_status =
+      status.status;
   return_value->SetString("status", UpdateStatusToString(update_status));
-  if (update_status == chromeos::UPDATE_STATUS_DOWNLOADING)
+  if (update_status == UpdateEngineClient::UPDATE_STATUS_DOWNLOADING)
     return_value->SetDouble("download_progress", status.download_progress);
   if (status.last_checked_time > 0)
     return_value->SetInteger("last_checked_time", status.last_checked_time);
@@ -133,13 +136,12 @@ void GetReleaseTrackCallback(void* user_data, const char* track) {
   delete reply;
 }
 
-void UpdateCheckCallback(void* user_data, chromeos::UpdateResult result,
-                         const char* error_msg) {
-  AutomationJSONReply* reply = static_cast<AutomationJSONReply*>(user_data);
-  if (result == chromeos::UPDATE_RESULT_SUCCESS)
+void UpdateCheckCallback(AutomationJSONReply* reply,
+                         UpdateEngineClient::UpdateCheckResult result) {
+  if (result == UpdateEngineClient::UPDATE_RESULT_SUCCESS)
     reply->SendSuccess(NULL);
   else
-    reply->SendError(error_msg);
+    reply->SendError("update check failed");
   delete reply;
 }
 
@@ -1052,17 +1054,17 @@ void TestingAutomationProvider::SetTimezone(DictionaryValue* args,
 
 void TestingAutomationProvider::GetUpdateInfo(DictionaryValue* args,
                                               IPC::Message* reply_message) {
-  UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
   AutomationJSONReply* reply = new AutomationJSONReply(this, reply_message);
-  update_library->GetReleaseTrack(GetReleaseTrackCallback, reply);
+  DBusThreadManager::Get()->GetUpdateEngineClient()
+      ->GetReleaseTrack(base::Bind(GetReleaseTrackCallback, reply));
 }
 
 void TestingAutomationProvider::UpdateCheck(
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
   AutomationJSONReply* reply = new AutomationJSONReply(this, reply_message);
-  update_library->RequestUpdateCheck(UpdateCheckCallback, reply);
+  DBusThreadManager::Get()->GetUpdateEngineClient()
+      ->RequestUpdateCheck(base::Bind(UpdateCheckCallback, reply));
 }
 
 void TestingAutomationProvider::SetReleaseTrack(DictionaryValue* args,
@@ -1074,8 +1076,7 @@ void TestingAutomationProvider::SetReleaseTrack(DictionaryValue* args,
     return;
   }
 
-  UpdateLibrary* update_library = CrosLibrary::Get()->GetUpdateLibrary();
-  update_library->SetReleaseTrack(track);
+  DBusThreadManager::Get()->GetUpdateEngineClient()->SetReleaseTrack(track);
   reply.SendSuccess(NULL);
 }
 

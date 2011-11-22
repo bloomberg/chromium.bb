@@ -31,10 +31,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
+#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
@@ -334,11 +333,12 @@ void BrowserList::NotifyAndTerminate(bool fast_path) {
 #if defined(OS_CHROMEOS)
   NotifyWindowManagerAboutSignout();
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
+    chromeos::UpdateEngineClient* update_engine_client
+        = chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
     // If update has been installed, reboot, otherwise, sign out.
-    chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
-    if (cros_library->GetUpdateLibrary()->status().status ==
-          chromeos::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-      cros_library->GetUpdateLibrary()->RebootAfterUpdate();
+    if (update_engine_client->GetLastStatus().status ==
+        chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+      update_engine_client->RebootAfterUpdate();
     } else {
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient()
           ->StopSession();

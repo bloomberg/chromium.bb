@@ -16,10 +16,9 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/update_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/dbus/power_manager_client.h"
+#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/user_cros_settings_provider.h"
@@ -64,7 +63,7 @@ std::string StringSubRange(const std::string& text, size_t start,
 namespace chromeos {
 
 class AboutPageHandler::UpdateObserver
-    : public UpdateLibrary::Observer {
+    : public UpdateEngineClient::Observer {
  public:
   explicit UpdateObserver(AboutPageHandler* handler) : page_handler_(handler) {}
   virtual ~UpdateObserver() {}
@@ -72,7 +71,8 @@ class AboutPageHandler::UpdateObserver
   AboutPageHandler* page_handler() const { return page_handler_; }
 
  private:
-  virtual void UpdateStatusChanged(const UpdateLibrary::Status& status) {
+  virtual void UpdateStatusChanged(
+      const UpdateEngineClient::Status& status) OVERRIDE {
     page_handler_->UpdateStatus(status);
   }
 
@@ -89,7 +89,7 @@ AboutPageHandler::AboutPageHandler()
 
 AboutPageHandler::~AboutPageHandler() {
   if (update_observer_.get()) {
-    CrosLibrary::Get()->GetUpdateLibrary()->
+    DBusThreadManager::Get()->GetUpdateEngineClient()->
         RemoveObserver(update_observer_.get());
   }
 }
@@ -256,14 +256,14 @@ void AboutPageHandler::PageReady(const ListValue* args) {
                       base::Bind(&AboutPageHandler::OnOSFirmware,
                                  base::Unretained(this)));
 
-  UpdateLibrary* update_library =
-      CrosLibrary::Get()->GetUpdateLibrary();
+  UpdateEngineClient* update_engine_client =
+      DBusThreadManager::Get()->GetUpdateEngineClient();
 
   update_observer_.reset(new UpdateObserver(this));
-  update_library->AddObserver(update_observer_.get());
+  update_engine_client->AddObserver(update_observer_.get());
 
   // Update the WebUI page with the current status. See comments below.
-  UpdateStatus(update_library->status());
+  UpdateStatus(update_engine_client->GetLastStatus());
 
   // Initiate update check. UpdateStatus() below will be called when we
   // get update status via update_observer_. If the update has been
@@ -273,8 +273,8 @@ void AboutPageHandler::PageReady(const ListValue* args) {
 
   // Request the channel information. Use the observer to track the about
   // page handler and ensure it does not get deleted before the callback.
-  update_library->GetReleaseTrack(UpdateSelectedChannel,
-                                  update_observer_.get());
+  update_engine_client->GetReleaseTrack(
+      base::Bind(UpdateSelectedChannel, update_observer_.get()));
 }
 
 void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
@@ -283,16 +283,15 @@ void AboutPageHandler::SetReleaseTrack(const ListValue* args) {
     return;
   }
   const std::string channel = UTF16ToUTF8(ExtractStringValue(args));
-  CrosLibrary::Get()->GetUpdateLibrary()->SetReleaseTrack(channel);
+  DBusThreadManager::Get()->GetUpdateEngineClient()->SetReleaseTrack(channel);
 }
 
 void AboutPageHandler::CheckNow(const ListValue* args) {
   // Make sure that libcros is loaded and OOBE is complete.
   if (!WizardController::default_controller() ||
       WizardController::IsDeviceRegistered()) {
-    CrosLibrary::Get()->GetUpdateLibrary()->
-        RequestUpdateCheck(NULL,   // no callback
-                           NULL);  // no userdata
+    DBusThreadManager::Get()->GetUpdateEngineClient()->
+        RequestUpdateCheck(UpdateEngineClient::EmptyUpdateCheckCallback());
   }
 }
 
@@ -301,28 +300,28 @@ void AboutPageHandler::RestartNow(const ListValue* args) {
 }
 
 void AboutPageHandler::UpdateStatus(
-    const UpdateLibrary::Status& status) {
+    const UpdateEngineClient::Status& status) {
   string16 message;
   std::string image = "up-to-date";
   bool enabled = false;
 
   switch (status.status) {
-    case UPDATE_STATUS_IDLE:
+    case UpdateEngineClient::UPDATE_STATUS_IDLE:
       if (!sticky_) {
         message = l10n_util::GetStringFUTF16(IDS_UPGRADE_ALREADY_UP_TO_DATE,
             l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME));
         enabled = true;
       }
       break;
-    case UPDATE_STATUS_CHECKING_FOR_UPDATE:
+    case UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE:
       message = l10n_util::GetStringUTF16(IDS_UPGRADE_CHECK_STARTED);
       sticky_ = false;
       break;
-    case UPDATE_STATUS_UPDATE_AVAILABLE:
+    case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
       message = l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE);
       started_ = true;
       break;
-    case UPDATE_STATUS_DOWNLOADING:
+    case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
     {
       int progress = static_cast<int>(status.download_progress * 100.0);
       if (progress != progress_) {
@@ -333,22 +332,22 @@ void AboutPageHandler::UpdateStatus(
       started_ = true;
     }
       break;
-    case UPDATE_STATUS_VERIFYING:
+    case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
       message = l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING);
       started_ = true;
       break;
-    case UPDATE_STATUS_FINALIZING:
+    case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
       message = l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING);
       started_ = true;
       break;
-    case UPDATE_STATUS_UPDATED_NEED_REBOOT:
+    case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
       message = l10n_util::GetStringUTF16(IDS_UPDATE_COMPLETED);
       image = "available";
       sticky_ = true;
       break;
     default:
-    // case UPDATE_STATUS_ERROR:
-    // case UPDATE_STATUS_REPORTING_ERROR_EVENT:
+    // case UpdateEngineClient::UPDATE_STATUS_ERROR:
+    // case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
 
     // The error is only displayed if we were able to determine an
     // update was available.
@@ -366,7 +365,8 @@ void AboutPageHandler::UpdateStatus(
     // "Checking for update..." needs to be shown for a while, so users
     // can read it, hence insert delay for this.
     scoped_ptr<Value> insert_delay(Value::CreateBooleanValue(
-        status.status == UPDATE_STATUS_CHECKING_FOR_UPDATE));
+        status.status ==
+        UpdateEngineClient::UPDATE_STATUS_CHECKING_FOR_UPDATE));
     web_ui_->CallJavascriptFunction("AboutPage.updateStatusCallback",
                                     *update_message, *insert_delay);
 
@@ -379,7 +379,7 @@ void AboutPageHandler::UpdateStatus(
                                     *image_string);
   }
   // We'll change the "Check For Update" button to "Restart" button.
-  if (status.status == UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+  if (status.status == UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
     web_ui_->CallJavascriptFunction("AboutPage.changeToRestartButton");
   }
 }
@@ -404,15 +404,12 @@ void AboutPageHandler::OnOSFirmware(VersionLoader::Handle handle,
 
 // Callback from UpdateEngine with channel information.
 // static
-void AboutPageHandler::UpdateSelectedChannel(void* user_data,
-                                             const char* channel) {
-  if (!user_data || !channel) {
-    LOG(WARNING) << "UpdateSelectedChannel returned NULL.";
-    return;
-  }
-  UpdateObserver* observer = static_cast<UpdateObserver*>(user_data);
-  if (CrosLibrary::Get()->GetUpdateLibrary()->HasObserver(observer)) {
-    // If UpdateLibrary still has the observer, then the page handler is valid.
+void AboutPageHandler::UpdateSelectedChannel(UpdateObserver* observer,
+                                             const std::string& channel) {
+  if (DBusThreadManager::Get()->GetUpdateEngineClient()
+      ->HasObserver(observer)) {
+    // If UpdateEngineClient still has the observer, then the page handler
+    // is valid.
     AboutPageHandler* handler = observer->page_handler();
     scoped_ptr<Value> channel_string(Value::CreateStringValue(channel));
     handler->web_ui_->CallJavascriptFunction(

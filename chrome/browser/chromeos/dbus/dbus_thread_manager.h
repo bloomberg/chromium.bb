@@ -26,6 +26,7 @@ class PowerManagerClient;
 class SessionManagerClient;
 class SensorsClient;
 class SpeechSynthesizerClient;
+class UpdateEngineClient;
 
 // DBusThreadManager manages the D-Bus thread, the thread dedicated to
 // handling asynchronous D-Bus operations.
@@ -100,6 +101,10 @@ class DBusThreadManager {
   // Do not cache this pointer and use it after DBusThreadManager is shut
   // down.
   virtual CrosDisksClient* GetCrosDisksClient() = 0;
+
+  // Returns the update engine client, owned by DBusThreadManager.  Do not
+  // cache this pointer and use it after DBusThreadManager is shut down.
+  virtual UpdateEngineClient* GetUpdateEngineClient() = 0;
 
   virtual ~DBusThreadManager();
 

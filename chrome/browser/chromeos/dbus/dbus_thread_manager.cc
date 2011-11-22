@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/dbus/sensors_client.h"
 #include "chrome/browser/chromeos/dbus/session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/speech_synthesizer_client.h"
+#include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "dbus/bus.h"
 
@@ -65,6 +66,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     // Create the cros-disks client.
     cros_disks_client_.reset(
         CrosDisksClient::Create(system_bus_.get()));
+    update_engine_client_.reset(
+        UpdateEngineClient::Create(system_bus_.get()));
   }
 
   virtual ~DBusThreadManagerImpl() {
@@ -111,6 +114,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return cros_disks_client_.get();
   }
 
+  // DBusThreadManager override.
+  virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE {
+    return update_engine_client_.get();
+  }
+
   scoped_ptr<base::Thread> dbus_thread_;
   scoped_refptr<dbus::Bus> system_bus_;
   scoped_ptr<CrosDBusService> cros_dbus_service_;
@@ -121,6 +129,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SpeechSynthesizerClient> speech_synthesizer_client_;
   scoped_ptr<CrosDisksClient> cros_disks_client_;
+  scoped_ptr<UpdateEngineClient> update_engine_client_;
 };
 
 // static

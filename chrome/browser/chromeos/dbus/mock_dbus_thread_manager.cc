@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/dbus/mock_sensors_client.h"
 #include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/dbus/mock_speech_synthesizer_client.h"
+#include "chrome/browser/chromeos/dbus/mock_update_engine_client.h"
 
 using ::testing::AnyNumber;
 using ::testing::Return;
@@ -25,7 +26,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       mock_power_manager_client_(new MockPowerManagerClient),
       mock_sensors_client_(new MockSensorsClient),
       mock_session_manager_client_(new MockSessionManagerClient),
-      mock_speech_synthesizer_client_(new MockSpeechSynthesizerClient) {
+      mock_speech_synthesizer_client_(new MockSpeechSynthesizerClient),
+      mock_update_engine_client_(new MockUpdateEngineClient) {
   EXPECT_CALL(*this, GetBluetoothAdapterClient())
       .WillRepeatedly(Return(mock_bluetooth_adapter_client_.get()));
   EXPECT_CALL(*this, GetBluetoothManagerClient())
@@ -40,6 +42,8 @@ MockDBusThreadManager::MockDBusThreadManager()
       .WillRepeatedly(Return(mock_session_manager_client_.get()));
   EXPECT_CALL(*this, GetSpeechSynthesizerClient())
       .WillRepeatedly(Return(mock_speech_synthesizer_client_.get()));
+  EXPECT_CALL(*this, GetUpdateEngineClient())
+      .WillRepeatedly(Return(mock_update_engine_client_.get()));
 
   // These observers calls are used in ChromeBrowserMainPartsChromeos.
   EXPECT_CALL(*mock_power_manager_client_.get(), AddObserver(_))
