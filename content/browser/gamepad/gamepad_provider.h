@@ -12,6 +12,7 @@
 #include "base/system_monitor/system_monitor.h"
 #include "base/task.h"
 #include "content/browser/gamepad/data_fetcher.h"
+#include "content/common/content_export.h"
 #include "content/common/gamepad_hardware_buffer.h"
 
 namespace base {
@@ -22,8 +23,9 @@ struct GamepadMsg_Updated_Params;
 
 namespace gamepad {
 
-class Provider : public base::RefCountedThreadSafe<Provider>,
-                 public base::SystemMonitor::DevicesChangedObserver {
+class CONTENT_EXPORT Provider :
+    public base::RefCountedThreadSafe<Provider>,
+    public base::SystemMonitor::DevicesChangedObserver {
  public:
   explicit Provider(DataFetcher* fetcher);
 
