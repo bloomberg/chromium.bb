@@ -31,10 +31,8 @@ PowerSupplyStatus::PowerSupplyStatus()
       battery_percentage(0) {
 }
 
-const std::string& PowerSupplyStatus::ToString() const {
-  // TODO(thakis): This looks weird. This should probably not be static, and
-  // the function should just return a string by value.
-  CR_DEFINE_STATIC_LOCAL(std::string, result, ());
+std::string PowerSupplyStatus::ToString() const {
+  std::string result;
   base::StringAppendF(&result,
                       "line_power_on = %s ",
                       line_power_on ? "true" : "false");

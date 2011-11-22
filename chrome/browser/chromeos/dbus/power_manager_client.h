@@ -30,7 +30,7 @@ struct PowerSupplyStatus {
   double battery_percentage;
 
   PowerSupplyStatus();
-  const std::string& ToString() const;
+  std::string ToString() const;
 };
 
 // Callback used for processing the idle time.  The int64 param is the number of
