@@ -118,7 +118,8 @@ void ResetBookmarkNode(const history::StarredEntry& entry,
 // static
 const int64 StarredURLDatabase::kBookmarkBarID = 1;
 
-StarredURLDatabase::StarredURLDatabase() {
+StarredURLDatabase::StarredURLDatabase(sql::Connection* db)
+    : db_(db) {
 }
 
 StarredURLDatabase::~StarredURLDatabase() {
@@ -164,6 +165,10 @@ bool StarredURLDatabase::GetAllStarredEntries(
     entries->push_back(entry);
   }
   return true;
+}
+
+sql::Connection& StarredURLDatabase::GetDB() {
+  return *db_;
 }
 
 bool StarredURLDatabase::EnsureStarredIntegrity() {

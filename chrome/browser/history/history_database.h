@@ -6,11 +6,12 @@
 #define CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
 #pragma once
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/history/download_database.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/starred_url_database.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_database.h"
 #include "chrome/browser/history/visitsegment_database.h"
@@ -30,10 +31,7 @@ namespace history {
 // as the storage interface. Logic for manipulating this storage layer should
 // be in HistoryBackend.cc.
 class HistoryDatabase : public DownloadDatabase,
-  // TODO(sky): See if we can nuke StarredURLDatabase and just create on the
-  // stack for migration. Then HistoryDatabase would directly descend from
-  // URLDatabase.
-                        public StarredURLDatabase,
+                        public URLDatabase,
                         public VisitDatabase,
                         public VisitSegmentDatabase {
  public:
@@ -145,7 +143,7 @@ class HistoryDatabase : public DownloadDatabase,
  private:
   FRIEND_TEST_ALL_PREFIXES(IconMappingMigrationTest, TestIconMappingMigration);
 
-  // Implemented for URLDatabase.
+  // Overridden from URLDatabase:
   virtual sql::Connection& GetDB() OVERRIDE;
 
   // Migration -----------------------------------------------------------------

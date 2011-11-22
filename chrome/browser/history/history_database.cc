@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
+#include "chrome/browser/history/starred_url_database.h"
 #include "sql/transaction.h"
 
 #if defined(OS_MACOSX)
@@ -261,7 +262,8 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion(
   // Put migration code here
 
   if (cur_version == 15) {
-    if (!MigrateBookmarksToFile(tmp_bookmarks_path) ||
+    StarredURLDatabase starred_url_database(&db_);
+    if (!starred_url_database.MigrateBookmarksToFile(tmp_bookmarks_path) ||
         !DropStarredIDFromURLs()) {
       LOG(WARNING) << "Unable to update history database to version 16.";
       return sql::INIT_FAILURE;

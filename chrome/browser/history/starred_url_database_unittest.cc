@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
@@ -19,7 +20,8 @@ namespace history {
 class StarredURLDatabaseTest : public testing::Test,
                                public StarredURLDatabase {
  public:
-  StarredURLDatabaseTest() {
+  StarredURLDatabaseTest()
+      : StarredURLDatabase(&db_) {
   }
 
   void AddPage(const GURL& url) {
@@ -65,7 +67,7 @@ class StarredURLDatabaseTest : public testing::Test,
 
  private:
   // Test setup.
-  void SetUp() {
+  virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     db_file_ = temp_dir_.path().AppendASCII("VisitTest.db");
     file_util::Delete(db_file_, false);
@@ -85,13 +87,8 @@ class StarredURLDatabaseTest : public testing::Test,
     CreateMainURLIndex();
     EnsureStarredIntegrity();
   }
-  void TearDown() {
+  virtual void TearDown() OVERRIDE {
     db_.Close();
-  }
-
-  // Provided for URL/StarredURLDatabase.
-  virtual sql::Connection& GetDB() {
-    return db_;
   }
 
   ScopedTempDir temp_dir_;

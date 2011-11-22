@@ -9,16 +9,13 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"
 #include "ui/base/models/tree_node_model.h"
 
 class FilePath;
-
-namespace sql {
-class Connection;
-}
 
 namespace history {
 
@@ -27,10 +24,11 @@ namespace history {
 // contains just enough to allow migration.
 class StarredURLDatabase : public URLDatabase {
  public:
-  // Must call InitStarTable() AND any additional init functions provided by
-  // URLDatabase before using this class' functions.
-  StarredURLDatabase();
+  explicit StarredURLDatabase(sql::Connection* db);
   virtual ~StarredURLDatabase();
+
+  // Writes bookmarks to the specified file.
+  bool MigrateBookmarksToFile(const FilePath& path);
 
  protected:
   friend class StarredURLDatabaseTest;
@@ -39,11 +37,8 @@ class StarredURLDatabase : public URLDatabase {
   // This entry always exists.
   static const int64 kBookmarkBarID;
 
-  // Writes bookmarks to the specified file.
-  bool MigrateBookmarksToFile(const FilePath& path);
-
   // Returns the database for the functions in this interface.
-  virtual sql::Connection& GetDB() = 0;
+  virtual sql::Connection& GetDB() OVERRIDE;
 
  private:
   // Used when checking integrity of starred table.
@@ -177,6 +172,8 @@ class StarredURLDatabase : public URLDatabase {
   // Does the work of migrating bookmarks to a temporary file that
   // BookmarkStorage will read from.
   bool MigrateBookmarksToFileImpl(const FilePath& path);
+
+  sql::Connection* db_;
 
   DISALLOW_COPY_AND_ASSIGN(StarredURLDatabase);
 };
