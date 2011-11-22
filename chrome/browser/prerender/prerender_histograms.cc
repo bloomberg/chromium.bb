@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/prerender/prerender_util.h"
+#include "chrome/browser/prerender/prerender_field_trial.h"
 
 namespace prerender {
 
@@ -145,6 +146,21 @@ void PrerenderHistograms::RecordPrerender(Origin origin, const GURL& url) {
   last_prerender_seen_time_ = GetCurrentTimeTicks();
   seen_any_pageload_ = false;
   seen_pageload_started_after_prerender_ = false;
+}
+
+void PrerenderHistograms::RecordPrerenderFromOmnibox() const {
+  UMA_HISTOGRAM_COUNTS("Prerender.OmniboxPrerenderCount_" +
+                       GetOmniboxHistogramSuffix(), 1);
+}
+
+void PrerenderHistograms::RecordOmniboxUsedPrerender(Origin origin) const {
+  if (origin == ORIGIN_OMNIBOX_ORIGINAL ||
+      origin == ORIGIN_OMNIBOX_CONSERVATIVE ||
+      origin == ORIGIN_OMNIBOX_EXACT ||
+      origin == ORIGIN_OMNIBOX_EXACT_FULL) {
+    UMA_HISTOGRAM_COUNTS("Prerender.OmniboxNavigationsUsedPrerenderCount_" +
+                         GetOmniboxHistogramSuffix(), 1);
+  }
 }
 
 base::TimeTicks PrerenderHistograms::GetCurrentTimeTicks() const {

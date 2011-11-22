@@ -289,6 +289,9 @@ void NetworkActionPredictor::OnOmniboxOpenedUrl(const AutocompleteLog& log) {
   if (log.text.length() < kMinimumUserTextLength)
     return;
 
+  UMA_HISTOGRAM_COUNTS("NetworkActionPredictor.NavigationCount_" +
+                       prerender::GetOmniboxHistogramSuffix(), 1);
+
   const GURL& opened_url =
       log.result.match_at(log.selected_index).destination_url;
 

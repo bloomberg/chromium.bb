@@ -358,6 +358,8 @@ bool PrerenderManager::AddPrerenderFromOmnibox(
       break;
   };
 
+  histograms_->RecordPrerenderFromOmnibox();
+
   return AddPrerender(origin, std::make_pair(-1, -1), url, GURL(),
                       session_storage_namespace);
 }
@@ -645,6 +647,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
 
   histograms_->RecordPerSessionCount(++prerenders_per_session_count_);
   prerender_contents->set_final_status(FINAL_STATUS_USED);
+
+  histograms_->RecordOmniboxUsedPrerender(prerender_contents->origin());
 
   new_render_view_host->Send(
       new ChromeViewMsg_SetIsPrerendering(new_render_view_host->routing_id(),
