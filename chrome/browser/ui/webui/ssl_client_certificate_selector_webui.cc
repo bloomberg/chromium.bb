@@ -291,11 +291,14 @@ void ShowSSLClientCertificateSelector(
     TabContentsWrapper* wrapper,
     net::SSLCertRequestInfo* cert_request_info,
     SSLClientAuthHandler* delegate) {
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_CHROMEOS)
   SSLClientCertificateSelectorWebUI::ShowDialog(wrapper,
                                                 cert_request_info,
                                                 delegate);
 #else
+  // TODO(rbyers): Remove the IsMoreWebUI check and (ideally) all #ifdefs onnce
+  // we can select exactly one version of this dialog to use for each platform
+  // at build time.  http://crbug.com/102775
   if (ChromeWebUI::IsMoreWebUI())
     SSLClientCertificateSelectorWebUI::ShowDialog(wrapper,
                                                   cert_request_info,
