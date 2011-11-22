@@ -825,17 +825,23 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
     }
 
     // Draw the icon image.
-    int mirrored_x = GetMirroredXWithWidthInView(
-        download_util::kSmallProgressIconOffset, icon->width());
+    int icon_x, icon_y;
+
+    if (IsDangerousMode()) {
+      icon_x = kLeftPadding + body_image_set->top_left->width();
+      icon_y = (height() - icon->height()) / 2;
+    } else {
+      icon_x = download_util::kSmallProgressIconOffset;
+      icon_y = download_util::kSmallProgressIconOffset;
+    }
+    icon_x = GetMirroredXWithWidthInView(icon_x, icon->width());
     if (IsEnabled()) {
-      canvas->DrawBitmapInt(*icon, mirrored_x,
-                            download_util::kSmallProgressIconOffset);
+      canvas->DrawBitmapInt(*icon, icon_x, icon_y);
     } else {
       // Use an alpha to make the image look disabled.
       SkPaint paint;
       paint.setAlpha(120);
-      canvas->DrawBitmapInt(*icon, mirrored_x,
-                            download_util::kSmallProgressIconOffset, paint);
+      canvas->DrawBitmapInt(*icon, icon_x, icon_y, paint);
     }
   }
 }
