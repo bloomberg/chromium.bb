@@ -23,7 +23,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHRContentScript) {
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/content_script")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHRFileAccess) {
+// Flaky on Mac 10.5, crbug.com/105179.
+#if defined(OS_MACOSX)
+#define MAYBE_CrossOriginXHRFileAccess FLAKY_CrossOriginXHRFileAccess
+#else
+#define MAYBE_CrossOriginXHRFileAccess CrossOriginXHRFileAccess
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_CrossOriginXHRFileAccess) {
   ASSERT_TRUE(RunExtensionTest("cross_origin_xhr/file_access")) << message_;
 }
 
