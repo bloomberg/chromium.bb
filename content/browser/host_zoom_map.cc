@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/page_zoom.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
@@ -56,7 +57,8 @@ void HostZoomMap::SetZoomLevel(std::string host, double level) {
 
   {
     base::AutoLock auto_lock(lock_);
-    if (level == default_zoom_level_)
+
+    if (content::ZoomValuesEqual(level, default_zoom_level_))
       host_zoom_levels_.erase(host);
     else
       host_zoom_levels_[host] = level;

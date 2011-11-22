@@ -228,6 +228,15 @@ bool WebUIMessageHandler::ExtractIntegerValue(const ListValue* value,
   return false;
 }
 
+bool WebUIMessageHandler::ExtractDoubleValue(const ListValue* value,
+                                             double* out_value) {
+  std::string string_value;
+  if (value->GetString(0, &string_value))
+    return base::StringToDouble(string_value, out_value);
+  NOTREACHED();
+  return false;
+}
+
 string16 WebUIMessageHandler::ExtractStringValue(const ListValue* value) {
   string16 string16_value;
   if (value->GetString(0, &string16_value))

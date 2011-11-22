@@ -197,9 +197,9 @@ TabContents::TabContents(content::BrowserContext* browser_context,
       opener_web_ui_type_(WebUI::kNoWebUI),
       closed_by_user_gesture_(false),
       minimum_zoom_percent_(
-          static_cast<int>(WebKit::WebView::minTextSizeMultiplier * 100)),
+          static_cast<int>(content::kMinimumZoomFactor * 100)),
       maximum_zoom_percent_(
-          static_cast<int>(WebKit::WebView::maxTextSizeMultiplier * 100)),
+          static_cast<int>(content::kMaximumZoomFactor * 100)),
       temporary_zoom_settings_(false),
       content_restrictions_(0),
       view_type_(content::VIEW_TYPE_TAB_CONTENTS) {
@@ -862,8 +862,10 @@ double TabContents::GetZoomLevel() const {
 int TabContents::GetZoomPercent(bool* enable_increment,
                                 bool* enable_decrement) {
   *enable_decrement = *enable_increment = false;
+  // Calculate the zoom percent from the factor. Round up to the nearest whole
+  // number.
   int percent = static_cast<int>(
-      WebKit::WebView::zoomLevelToZoomFactor(GetZoomLevel()) * 100);
+      WebKit::WebView::zoomLevelToZoomFactor(GetZoomLevel()) * 100 + 0.5);
   *enable_decrement = percent > minimum_zoom_percent_;
   *enable_increment = percent < maximum_zoom_percent_;
   return percent;

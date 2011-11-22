@@ -33,6 +33,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/register_protocol_handler_infobar_delegate.h"
@@ -152,6 +153,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/common/content_restriction.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/page_zoom.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -1900,16 +1902,53 @@ void Browser::Zoom(content::PageZoom zoom) {
   if (is_devtools())
     return;
 
-  static const UserMetricsAction kActions[] = {
-    UserMetricsAction("ZoomMinus"),
-    UserMetricsAction("ZoomNormal"),
-    UserMetricsAction("ZoomPlus")
-  };
+  RenderViewHost* host = GetSelectedTabContentsWrapper()->render_view_host();
+  if (zoom == content::PAGE_ZOOM_RESET) {
+    host->SetZoomLevel(0);
+    UserMetrics::RecordAction(UserMetricsAction("ZoomNormal"));
+    return;
+  }
 
-  UserMetrics::RecordAction(kActions[zoom - content::PAGE_ZOOM_OUT]);
-  TabContentsWrapper* tab_contents = GetSelectedTabContentsWrapper();
-  RenderViewHost* host = tab_contents->render_view_host();
-  host->Zoom(zoom);
+  double current_zoom_level = GetSelectedTabContents()->GetZoomLevel();
+  double default_zoom_level =
+      profile_->GetPrefs()->GetDouble(prefs::kDefaultZoomLevel);
+
+  // Generate a vector of zoom levels from an array of known presets along with
+  // the default level added if necessary.
+  std::vector<double> zoom_levels =
+      chrome_page_zoom::PresetZoomLevels(default_zoom_level);
+
+  if (zoom == content::PAGE_ZOOM_OUT) {
+    // Iterate through the zoom levels in reverse order to find the next
+    // lower level based on the current zoom level for this page.
+    for (std::vector<double>::reverse_iterator i = zoom_levels.rbegin();
+         i != zoom_levels.rend(); ++i) {
+      double zoom_level = *i;
+      if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
+        continue;
+      if (zoom_level < current_zoom_level) {
+        host->SetZoomLevel(zoom_level);
+        UserMetrics::RecordAction(UserMetricsAction("ZoomMinus"));
+        return;
+      }
+      UserMetrics::RecordAction(UserMetricsAction("ZoomMinus_AtMinimum"));
+    }
+  } else {
+    // Iterate through the zoom levels in normal order to find the next
+    // higher level based on the current zoom level for this page.
+    for (std::vector<double>::const_iterator i = zoom_levels.begin();
+         i != zoom_levels.end(); ++i) {
+      double zoom_level = *i;
+      if (content::ZoomValuesEqual(zoom_level, current_zoom_level))
+        continue;
+      if (zoom_level > current_zoom_level) {
+        host->SetZoomLevel(zoom_level);
+        UserMetrics::RecordAction(UserMetricsAction("ZoomPlus"));
+        return;
+      }
+    }
+    UserMetrics::RecordAction(UserMetricsAction("ZoomPlus_AtMaximum"));
+  }
 }
 
 void Browser::FocusToolbar() {

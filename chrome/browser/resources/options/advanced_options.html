@@ -101,20 +101,8 @@
         </div>
         <div class="section-group">
           <label class="web-content-select-label">
-            <span i18n-content="defaultZoomLevelLabel"></span>
-            <select id="defaultZoomLevel" pref="profile.default_zoom_level"
-                    data-type="double" metric="Options_ChangeDefaultZoomLevel">
-              <option value="-3">57%</option>
-              <option value="-2">69%</option>
-              <option value="-1">83%</option>
-              <option value="0">100%</option>
-              <option value="1">120%</option>
-              <option value="2">144%</option>
-              <option value="3">172%</option>
-              <option value="4">207%</option>
-              <option value="5">248%</option>
-              <option value="6">298%</option>
-            </select>
+            <span i18n-content="defaultZoomFactorLabel"></span>
+            <select id="defaultZoomFactor" dataType="double"></select>
           </label>
         </div>
 <if expr="not pp_ifdef('chromeos') or os == 'win32'">

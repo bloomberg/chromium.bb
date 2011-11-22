@@ -48,22 +48,27 @@ class AdvancedOptionsHandler
   virtual void OnCloudPrintSetupClosed() OVERRIDE;
 
  private:
-  // Callback for the "selectDownloadLocation" message.  This will prompt
-  // the user for a destination folder using platform-specific APIs.
+  // Callback for the "selectDownloadLocation" message. This will prompt the
+  // user for a destination folder using platform-specific APIs.
   void HandleSelectDownloadLocation(const ListValue* args);
 
-  // Callback for the "autoOpenFileTypesResetToDefault" message.  This will
+  // Callback for the "autoOpenFileTypesResetToDefault" message. This will
   // remove all auto-open file-type settings.
   void HandleAutoOpenButton(const ListValue* args);
 
-  // Callback for the "metricsReportingCheckboxAction" message.  This is called
+  // Callback for the "metricsReportingCheckboxAction" message. This is called
   // if the user toggles the metrics reporting checkbox.
   void HandleMetricsReportingCheckbox(const ListValue* args);
 
-  // Callback for the "defaultFontSizeAction" message.  This is called if the
-  // user changes the default font size.  |args| is an array that contains
+  // Callback for the "defaultFontSizeAction" message. This is called if the
+  // user changes the default font size. |args| is an array that contains
   // one item, the font size as a numeric value.
   void HandleDefaultFontSize(const ListValue* args);
+
+  // Callback for the "defaultZoomFactorAction" message. This is called if the
+  // user changes the default zoom factor. |args| is an array that contains
+  // one item, the zoom factor as a numeric value.
+  void HandleDefaultZoomFactor(const ListValue* args);
 
   // Callback for the "Check for server certificate revocation" checkbox. This
   // is called if the user toggles the "Check for server certificate revocation"
@@ -90,16 +95,16 @@ class AdvancedOptionsHandler
   void ShowManageSSLCertificates(const ListValue* args);
 #endif
 
-  // Callback for the Cloud Print manage button.  This will open a new
+  // Callback for the Cloud Print manage button. This will open a new
   // tab pointed at the management URL.
   void ShowCloudPrintManagePage(const ListValue* args);
 
 #if !defined(OS_CHROMEOS)
-  // Callback for the Sign in to Cloud Print button.  This will start
+  // Callback for the Sign in to Cloud Print button. This will start
   // the authentication process.
   void ShowCloudPrintSetupDialog(const ListValue* args);
 
-  // Callback for the Disable Cloud Print button.  This will sign out
+  // Callback for the Disable Cloud Print button. This will sign out
   // of cloud print.
   void HandleDisableCloudPrintProxy(const ListValue* args);
 
@@ -131,7 +136,11 @@ class AdvancedOptionsHandler
   // Setup the visibility for the metrics reporting setting.
   void SetupMetricsReportingSettingVisibility();
 
-  void SetupFontSizeLabel();
+  // Setup the font size selector control.
+  void SetupFontSizeSelector();
+
+  // Setup the page zoom selector control.
+  void SetupPageZoomSelector();
 
   // Setup the enabled state of the reset button.
   void SetupAutoOpenFileTypesDisabledAttribute();
@@ -161,6 +170,7 @@ class AdvancedOptionsHandler
 
   StringPrefMember auto_open_files_;
   IntegerPrefMember default_font_size_;
+  DoublePrefMember default_zoom_level_;
 
 #if !defined(OS_CHROMEOS)
   scoped_ptr<PrefSetObserver> proxy_prefs_;

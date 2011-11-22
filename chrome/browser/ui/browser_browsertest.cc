@@ -1286,6 +1286,40 @@ IN_PROC_BROWSER_TEST_F(BrowserTest,
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_IMPORT_SETTINGS));
 }
 
+IN_PROC_BROWSER_TEST_F(BrowserTest, PageZoom) {
+  TabContents* contents = browser()->GetSelectedTabContents();
+  bool enable_plus, enable_minus;
+
+  ui_test_utils::WindowedNotificationObserver zoom_in_observer(
+      content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+      content::NotificationService::AllSources());
+  browser()->Zoom(content::PAGE_ZOOM_IN);
+  zoom_in_observer.Wait();
+  EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 110);
+  EXPECT_TRUE(enable_plus);
+  EXPECT_TRUE(enable_minus);
+
+  ui_test_utils::WindowedNotificationObserver zoom_reset_observer(
+      content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+      content::NotificationService::AllSources());
+  browser()->Zoom(content::PAGE_ZOOM_RESET);
+  zoom_reset_observer.Wait();
+  EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 100);
+  EXPECT_TRUE(enable_plus);
+  EXPECT_TRUE(enable_minus);
+
+  ui_test_utils::WindowedNotificationObserver zoom_out_observer(
+      content::NOTIFICATION_ZOOM_LEVEL_CHANGED,
+      content::NotificationService::AllSources());
+  browser()->Zoom(content::PAGE_ZOOM_OUT);
+  zoom_out_observer.Wait();
+  EXPECT_EQ(contents->GetZoomPercent(&enable_plus, &enable_minus), 90);
+  EXPECT_TRUE(enable_plus);
+  EXPECT_TRUE(enable_minus);
+
+  browser()->Zoom(content::PAGE_ZOOM_RESET);
+}
+
 // TODO(ben): this test was never enabled. It has bit-rotted since being added.
 // It originally lived in browser_unittest.cc, but has been moved here to make
 // room for real browser unit tests.

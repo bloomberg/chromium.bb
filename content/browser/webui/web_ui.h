@@ -219,6 +219,9 @@ class CONTENT_EXPORT WebUIMessageHandler {
   // Extract an integer value from a list Value.
   bool ExtractIntegerValue(const base::ListValue* value, int* out_int);
 
+  // Extract a floating point (double) value from a list Value.
+  bool ExtractDoubleValue(const base::ListValue* value, double* out_value);
+
   // Extract a string value from a list Value.
   string16 ExtractStringValue(const base::ListValue* value);
 

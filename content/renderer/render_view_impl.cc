@@ -1111,8 +1111,8 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     // will also call us back which will cause us to send a message to
     // update TabContents.
     webview()->zoomLimitsChanged(
-        WebView::zoomFactorToZoomLevel(WebView::minTextSizeMultiplier),
-        WebView::zoomFactorToZoomLevel(WebView::maxTextSizeMultiplier));
+        WebView::zoomFactorToZoomLevel(content::kMinimumZoomFactor),
+        WebView::zoomFactorToZoomLevel(content::kMaximumZoomFactor));
 
     // Update contents MIME type for main frame.
     params.contents_mime_type = ds->response().mimeType().utf8();

@@ -63,6 +63,11 @@ var OptionsPage = options.OptionsPage;
         chrome.send('defaultFontSizeAction',
             [String(event.target.options[event.target.selectedIndex].value)]);
       };
+      $('defaultZoomFactor').onchange = function(event) {
+        chrome.send('defaultZoomFactorAction',
+            [String(event.target.options[event.target.selectedIndex].value)]);
+      };
+
       $('language-button').onclick = function(event) {
         OptionsPage.navigateToPage('languages');
         chrome.send('coreOptionsUserMetricsAction',
@@ -169,6 +174,30 @@ var OptionsPage = options.OptionsPage;
       selectCtl.add(option);
     }
     $('Custom').selected = true;
+  };
+
+  /**
+    * Populate the page zoom selector with values received from the caller.
+    * @param {Array} items An array of items to populate the selector.
+    *     each object is an array with three elements as follows:
+    *       0: The title of the item (string).
+    *       1: The value of the item (number).
+    *       2: Whether the item should be selected (boolean).
+    */
+  AdvancedOptions.SetupPageZoomSelector = function(items) {
+    var element = $('defaultZoomFactor');
+
+    // Remove any existing content.
+    element.textContent = '';
+
+    // Insert new child nodes into select element.
+    var value, title, selected;
+    for (var i = 0; i < items.length; i++) {
+      title = items[i][0];
+      value = items[i][1];
+      selected = items[i][2];
+      element.appendChild(new Option(title, value, false, selected));
+    }
   };
 
   // Set the enabled state for the autoOpenFileTypesResetToDefault button.

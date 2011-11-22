@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -33,9 +34,11 @@
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/page_zoom.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_CHROMEOS)
@@ -118,7 +121,7 @@ void AdvancedOptionsHandler::GetLocalizedValues(
       IDS_OPTIONS_TABS_TO_LINKS_PREF },
     { "fontSettingsInfo",
       IDS_OPTIONS_FONTSETTINGS_INFO },
-    { "defaultZoomLevelLabel",
+    { "defaultZoomFactorLabel",
       IDS_OPTIONS_DEFAULT_ZOOM_LEVEL_LABEL },
     { "defaultFontSizeLabel",
       IDS_OPTIONS_DEFAULT_FONT_SIZE_LABEL },
@@ -205,7 +208,8 @@ void AdvancedOptionsHandler::Initialize() {
   DCHECK(web_ui_);
   SetupMetricsReportingCheckbox();
   SetupMetricsReportingSettingVisibility();
-  SetupFontSizeLabel();
+  SetupFontSizeSelector();
+  SetupPageZoomSelector();
   SetupAutoOpenFileTypesDisabledAttribute();
   SetupProxySettingsSection();
   SetupSSLConfigSettings();
@@ -249,6 +253,7 @@ WebUIMessageHandler* AdvancedOptionsHandler::Attach(WebUI* web_ui) {
 
   auto_open_files_.Init(prefs::kDownloadExtensionsToOpen, prefs, this);
   default_font_size_.Init(prefs::kWebKitDefaultFontSize, prefs, this);
+  default_zoom_level_.Init(prefs::kDefaultZoomLevel, prefs, this);
 #if !defined(OS_CHROMEOS)
   proxy_prefs_.reset(
       PrefSetObserver::CreateProxyPrefSetObserver(prefs, this));
@@ -269,6 +274,9 @@ void AdvancedOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui_->RegisterMessageCallback("defaultFontSizeAction",
       base::Bind(&AdvancedOptionsHandler::HandleDefaultFontSize,
+                 base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("defaultZoomFactorAction",
+      base::Bind(&AdvancedOptionsHandler::HandleDefaultZoomFactor,
                  base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
   web_ui_->RegisterMessageCallback("metricsReportingCheckboxAction",
@@ -325,7 +333,9 @@ void AdvancedOptionsHandler::Observe(
         SetupCloudPrintProxySection();
 #endif
     } else if (*pref_name == prefs::kWebKitDefaultFontSize) {
-      SetupFontSizeLabel();
+      SetupFontSizeSelector();
+    } else if (*pref_name == prefs::kDefaultZoomLevel) {
+      SetupPageZoomSelector();
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
     } else if (*pref_name == prefs::kBackgroundModeEnabled) {
       SetupBackgroundModeSettings();
@@ -388,8 +398,16 @@ void AdvancedOptionsHandler::HandleDefaultFontSize(const ListValue* args) {
   if (ExtractIntegerValue(args, &font_size)) {
     if (font_size > 0) {
       default_font_size_.SetValue(font_size);
-      SetupFontSizeLabel();
+      SetupFontSizeSelector();
     }
+  }
+}
+
+void AdvancedOptionsHandler::HandleDefaultZoomFactor(const ListValue* args) {
+  double zoom_factor;
+  if (ExtractDoubleValue(args, &zoom_factor)) {
+    default_zoom_level_.SetValue(
+        WebKit::WebView::zoomFactorToZoomLevel(zoom_factor));
   }
 }
 
@@ -465,7 +483,6 @@ void AdvancedOptionsHandler::HandleDisableCloudPrintProxy(
 }
 
 void AdvancedOptionsHandler::RefreshCloudPrintStatusFromService() {
-  DCHECK(web_ui_);
   if (cloud_print_proxy_ui_enabled_)
     CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui_))->
         RefreshStatusFromService();
@@ -535,11 +552,46 @@ void AdvancedOptionsHandler::SetupMetricsReportingSettingVisibility() {
 #endif
 }
 
-void AdvancedOptionsHandler::SetupFontSizeLabel() {
+void AdvancedOptionsHandler::SetupFontSizeSelector() {
   // We're only interested in integer values, so convert to int.
   base::FundamentalValue font_size(default_font_size_.GetValue());
   web_ui_->CallJavascriptFunction(
       "options.AdvancedOptions.SetFontSize", font_size);
+}
+
+void AdvancedOptionsHandler::SetupPageZoomSelector() {
+  PrefService* pref_service = Profile::FromWebUI(web_ui_)->GetPrefs();
+  double default_zoom_level = pref_service->GetDouble(prefs::kDefaultZoomLevel);
+  double default_zoom_factor =
+      WebKit::WebView::zoomLevelToZoomFactor(default_zoom_level);
+
+  // Generate a vector of zoom factors from an array of known presets along with
+  // the default factor added if necessary.
+  std::vector<double> zoom_factors =
+      chrome_page_zoom::PresetZoomFactors(default_zoom_factor);
+
+  // Iterate through the zoom factors and and build the contents of the
+  // selector that will be sent to the javascript handler.
+  // Each item in the list has the following parameters:
+  // 1. Title (string).
+  // 2. Value (double).
+  // 3. Is selected? (bool).
+  ListValue zoom_factors_value;
+  for (std::vector<double>::const_iterator i = zoom_factors.begin();
+       i != zoom_factors.end(); ++i) {
+    ListValue* option = new ListValue();
+    double factor = *i;
+    int percent = static_cast<int>(factor * 100 + 0.5);
+    option->Append(Value::CreateStringValue(
+        l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, percent)));
+    option->Append(Value::CreateDoubleValue(factor));
+    bool selected = content::ZoomValuesEqual(factor, default_zoom_factor);
+    option->Append(Value::CreateBooleanValue(selected));
+    zoom_factors_value.Append(option);
+  }
+
+  web_ui_->CallJavascriptFunction(
+      "options.AdvancedOptions.SetupPageZoomSelector", zoom_factors_value);
 }
 
 void AdvancedOptionsHandler::SetupAutoOpenFileTypesDisabledAttribute() {
