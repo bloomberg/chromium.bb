@@ -179,7 +179,7 @@ class COMPOSITOR_EXPORT Layer :
   void DrawTree();
 
   // Sometimes the Layer is being updated by something other than SetCanvas
-  // (e.g. the GPU process on TOUCH_UI).
+  // (e.g. the GPU process on UI_COMPOSITOR_IMAGE_TRANSPORT).
   bool layer_updated_externally() const { return layer_updated_externally_; }
 
   // WebLayerClient

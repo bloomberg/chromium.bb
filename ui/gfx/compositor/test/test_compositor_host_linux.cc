@@ -13,7 +13,7 @@
 
 #include <X11/Xlib.h>
 
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
 #include "base/message_pump_x.h"
 #endif
 
@@ -34,7 +34,7 @@ class TestCompositorHostLinux : public TestCompositorHost,
   virtual void ScheduleDraw() OVERRIDE;
 
   // Overridden from MessagePumpDispatcher:
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
   virtual base::MessagePumpDispatcher::DispatchStatus
     Dispatch(XEvent* xev) OVERRIDE;
 #elif defined(TOOLKIT_USES_GTK)
@@ -94,7 +94,7 @@ void TestCompositorHostLinux::ScheduleDraw() {
     compositor_->Draw(false);
 }
 
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
 base::MessagePumpDispatcher::DispatchStatus TestCompositorHostLinux::Dispatch(
     XEvent* xev) {
   return MessagePumpDispatcher::EVENT_IGNORED;
