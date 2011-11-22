@@ -514,13 +514,6 @@ void NativeWidgetAura::FocusNativeView(gfx::NativeView native_view) {
   NOTIMPLEMENTED();
 }
 
-bool NativeWidgetAura::ConvertPointFromAncestor(const Widget* ancestor,
-                                                gfx::Point* point) const {
-  // http://crbug.com/102573
-  NOTIMPLEMENTED();
-  return false;
-}
-
 gfx::Rect NativeWidgetAura::GetWorkAreaBoundsInScreen() const {
   return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
 }

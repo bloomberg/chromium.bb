@@ -415,27 +415,23 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // the mirrored position of the child Views if the parent View uses a
   // right-to-left UI layout.
 
-  // Convert a point from source coordinate system to dst coordinate system.
+  // Convert a point from the coordinate system of one View to another.
   //
-  // |src| and |dst| needs to be in the same widget, but doesn't need to be in
+  // |source| and |target| must be in the same widget, but doesn't need to be in
   // the same view hierarchy.
-  // If |src| and |dst| are not in the same widget, the result is undefined.
-  // Source can be NULL in which case it means the screen coordinate system
-  static void ConvertPointToView(const View* src,
-                                 const View* dst,
+  // |source| can be NULL in which case it means the screen coordinate system.
+  static void ConvertPointToView(const View* source,
+                                 const View* target,
                                  gfx::Point* point);
 
-  // Convert a point from the coordinate system of a View to that of the
-  // Widget. This is useful for example when sizing HWND children of the
-  // Widget that don't know about the View hierarchy and need to be placed
-  // relative to the Widget that is their parent.
+  // Convert a point from a View's coordinate system to that of its Widget.
   static void ConvertPointToWidget(const View* src, gfx::Point* point);
 
-  // Convert a point from a view Widget to a View dest
+  // Convert a point from the coordinate system of a View's Widget to that
+  // View's coordinate system.
   static void ConvertPointFromWidget(const View* dest, gfx::Point* p);
 
-  // Convert a point from the coordinate system of a View to that of the
-  // screen. This is useful for example when placing popup windows.
+  // Convert a point from a View's coordinate system to that of the screen.
   static void ConvertPointToScreen(const View* src, gfx::Point* point);
 
   // Applies transformation on the rectangle, which is in the view's coordinate
@@ -443,7 +439,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   gfx::Rect ConvertRectToParent(const gfx::Rect& rect) const;
 
   // Converts a rectangle from this views coordinate system to its widget
-  // cooridnate system.
+  // coordinate system.
   gfx::Rect ConvertRectToWidget(const gfx::Rect& rect) const;
 
   // Painting ------------------------------------------------------------------
@@ -1201,15 +1197,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
                               ui::Transform* transform) const;
 
   // Coordinate conversion -----------------------------------------------------
-
-  // This is the actual implementation for ConvertPointToView()
-  // Attempts a parent -> child conversion and then a
-  // child -> parent conversion if try_other_direction is true
-  // Applies necessary transformations during the conversion.
-  static void ConvertPointToView(const View* src,
-                                 const View* dst,
-                                 gfx::Point* point,
-                                 bool try_other_direction);
 
   // Convert a point in the view's coordinate to an ancestor view's coordinate
   // system using necessary transformations. Returns whether the point was

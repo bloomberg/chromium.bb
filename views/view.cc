@@ -75,6 +75,14 @@ class ScopedCanvas {
   DISALLOW_COPY_AND_ASSIGN(ScopedCanvas);
 };
 
+// Returns the top view in |view|'s hierarchy.
+const views::View* GetHierarchyRoot(const views::View* view) {
+  const views::View* root = view;
+  while (root && root->parent())
+    root = root->parent();
+  return root;
+}
+
 }  // namespace
 
 namespace views {
@@ -581,10 +589,29 @@ View* View::GetSelectedViewForGroup(int group) {
 // Coordinate conversion -------------------------------------------------------
 
 // static
-void View::ConvertPointToView(const View* src,
-                              const View* dst,
+void View::ConvertPointToView(const View* source,
+                              const View* target,
                               gfx::Point* point) {
-  ConvertPointToView(src, dst, point, true);
+  if (source == target)
+    return;
+
+  // |source| can be NULL.
+  const View* root = GetHierarchyRoot(target);
+  if (source) {
+    CHECK_EQ(GetHierarchyRoot(source), root);
+
+    if (source != root)
+      source->ConvertPointForAncestor(root, point);
+  }
+
+  if (target != root)
+    target->ConvertPointFromAncestor(root, point);
+
+  // API defines NULL |source| as returning the point in screen coordinates.
+  if (!source) {
+    *point = point->Subtract(
+        root->GetWidget()->GetClientAreaScreenBounds().origin());
+  }
 }
 
 // static
@@ -1704,50 +1731,6 @@ bool View::GetTransformRelativeTo(const View* ancestor,
 }
 
 // Coordinate conversion -------------------------------------------------------
-
-// static
-void View::ConvertPointToView(const View* src,
-                              const View* dst,
-                              gfx::Point* point,
-                              bool try_other_direction) {
-  // src can be NULL
-  DCHECK(dst);
-  DCHECK(point);
-
-  const Widget* src_widget = src ? src->GetWidget() : NULL ;
-  const Widget* dst_widget = dst->GetWidget();
-  // If dest and src aren't in the same widget, try to convert the
-  // point to the destination widget's coordinates first.
-  // TODO(oshima|sadrul): Cleanup and consolidate conversion methods.
-  if (Widget::IsPureViews() && src_widget && src_widget != dst_widget) {
-    // convert to src_widget first.
-    gfx::Point p = *point;
-    src->ConvertPointForAncestor(src_widget->GetRootView(), &p);
-    if (dst_widget->ConvertPointFromAncestor(src_widget, &p)) {
-      // Convertion to destination widget's coordinates was successful.
-      // Use destination's root as a source to convert the point further.
-      src = dst_widget->GetRootView();
-      *point = p;
-    }
-  }
-
-  if (src == NULL || src->Contains(dst)) {
-    dst->ConvertPointFromAncestor(src, point);
-    if (!src) {
-      if (dst_widget) {
-        gfx::Rect b = dst_widget->GetClientAreaScreenBounds();
-        point->SetPoint(point->x() - b.x(), point->y() - b.y());
-      }
-    }
-  } else if (src && try_other_direction) {
-    if (!src->ConvertPointForAncestor(dst, point)) {
-      // |src| is not an ancestor of |dst|, and |dst| is not an ancestor of
-      // |src| either. At this stage, |point| is in the widget's coordinate
-      // system. So convert from the widget's to |dst|'s coordinate system now.
-      ConvertPointFromWidget(dst, point);
-    }
-  }
-}
 
 bool View::ConvertPointForAncestor(const View* ancestor,
                                    gfx::Point* point) const {

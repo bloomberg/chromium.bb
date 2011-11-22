@@ -991,12 +991,6 @@ void NativeWidgetWin::FocusNativeView(gfx::NativeView native_view) {
     ::SetFocus(native_view);
 }
 
-bool NativeWidgetWin::ConvertPointFromAncestor(
-    const Widget* ancestor, gfx::Point* point) const {
-  NOTREACHED();
-  return false;
-}
-
 gfx::Rect NativeWidgetWin::GetWorkAreaBoundsInScreen() const {
   return gfx::Screen::GetMonitorWorkAreaNearestWindow(GetNativeView());
 }

@@ -550,13 +550,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     focus_on_creation_ = focus_on_creation;
   }
 
-  // Converts the |point| in ancestor's coordinate to this widget's coordinates.
-  // Returns false if |ancestor| is not an ancestor of this widget.
-  // The receiver has to be pure views widget (NativeWidgetViews) and
-  // ancestor can be of any type.
-  bool ConvertPointFromAncestor(
-      const Widget* ancestor, gfx::Point* point) const;
-
   // Returns a View* that any child Widgets backed by NativeWidgetViews
   // are added to.  The default implementation returns the contents view
   // if it exists and the root view otherwise.

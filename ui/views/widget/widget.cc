@@ -816,11 +816,6 @@ bool Widget::SetInitialFocus() {
   return !!v;
 }
 
-bool Widget::ConvertPointFromAncestor(
-    const Widget* ancestor, gfx::Point* point) const {
-  return native_widget_->ConvertPointFromAncestor(ancestor, point);
-}
-
 View* Widget::GetChildViewParent() {
   return GetContentsView() ? GetContentsView() : GetRootView();
 }

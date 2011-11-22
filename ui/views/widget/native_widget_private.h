@@ -200,8 +200,6 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget,
   virtual void SetCursor(gfx::NativeCursor cursor) = 0;
   virtual void ClearNativeFocus() = 0;
   virtual void FocusNativeView(gfx::NativeView native_view) = 0;
-  virtual bool ConvertPointFromAncestor(
-      const Widget* ancestor, gfx::Point* point) const = 0;
   virtual gfx::Rect GetWorkAreaBoundsInScreen() const = 0;
   virtual void SetInactiveRenderingDisabled(bool value) = 0;
 
