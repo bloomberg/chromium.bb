@@ -5,6 +5,7 @@
 #include "chrome/browser/user_style_sheet_watcher.h"
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -117,8 +118,8 @@ void UserStyleSheetLoader::LoadStyleSheet(const FilePath& style_sheet_file) {
     }
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &UserStyleSheetLoader::SetStyleSheet,
-                        style_sheet_url));
+                          base::Bind(&UserStyleSheetLoader::SetStyleSheet, this,
+                                     style_sheet_url));
 }
 
 void UserStyleSheetLoader::SetStyleSheet(const GURL& url) {
@@ -148,7 +149,7 @@ void UserStyleSheetWatcher::Init() {
   // Make sure we run on the file thread.
   if (!BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(this, &UserStyleSheetWatcher::Init));
+                            base::Bind(&UserStyleSheetWatcher::Init, this));
     return;
   }
 

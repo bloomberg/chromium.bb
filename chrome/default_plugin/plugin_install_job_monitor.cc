@@ -4,6 +4,7 @@
 
 #include "chrome/default_plugin/plugin_install_job_monitor.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "chrome/default_plugin/plugin_impl.h"
 
@@ -41,9 +42,9 @@ bool PluginInstallationJobMonitorThread::Initialize() {
 }
 
 void PluginInstallationJobMonitorThread::Init() {
-  this->message_loop()->PostTask(FROM_HERE,
-    NewRunnableMethod(this,
-                      &PluginInstallationJobMonitorThread::WaitForJobThread));
+  this->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&PluginInstallationJobMonitorThread::WaitForJobThread, this));
 }
 
 void PluginInstallationJobMonitorThread::WaitForJobThread() {

@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -187,7 +188,7 @@ PasswordStore::GetLoginsRequest* PasswordStoreWin::NewGetLoginsRequest(
 void PasswordStoreWin::Shutdown() {
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(this, &PasswordStoreWin::ShutdownOnDBThread));
+      base::Bind(&PasswordStoreWin::ShutdownOnDBThread, this));
   PasswordStoreDefault::Shutdown();
 }
 
