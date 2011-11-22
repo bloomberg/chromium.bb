@@ -13,6 +13,7 @@
 #include "content/common/navigation_gesture.h"
 #include "content/common/view_message_enums.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
@@ -50,9 +51,7 @@
 
 IPC_ENUM_TRAITS(CSSColors::CSSColorName)
 IPC_ENUM_TRAITS(NavigationGesture)
-IPC_ENUM_TRAITS(content::PageZoom)
 IPC_ENUM_TRAITS(ViewHostMsg_AccEvent::Value)
-IPC_ENUM_TRAITS(ViewHostMsg_RunFileChooser_Mode::Value)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
 IPC_ENUM_TRAITS(ViewMsg_StopFinding_Params::Action)
 IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
@@ -61,10 +60,12 @@ IPC_ENUM_TRAITS(WebKit::WebPopupType)
 IPC_ENUM_TRAITS(WebKit::WebTextDirection)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
-IPC_ENUM_TRAITS(ui::TextInputType)
+IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
 IPC_ENUM_TRAITS(content::RendererPreferencesHintingEnum)
 IPC_ENUM_TRAITS(content::RendererPreferencesSubpixelRenderingEnum)
+IPC_ENUM_TRAITS(content::PageZoom)
 IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
+IPC_ENUM_TRAITS(ui::TextInputType)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::BoolAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::FloatAttribute)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::IntAttribute)
@@ -238,6 +239,13 @@ IPC_STRUCT_TRAITS_BEGIN(WebMenuItem)
   IPC_STRUCT_TRAITS_MEMBER(enabled)
   IPC_STRUCT_TRAITS_MEMBER(checked)
   IPC_STRUCT_TRAITS_MEMBER(submenu)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
+  IPC_STRUCT_TRAITS_MEMBER(mode)
+  IPC_STRUCT_TRAITS_MEMBER(title)
+  IPC_STRUCT_TRAITS_MEMBER(default_file_name)
+  IPC_STRUCT_TRAITS_MEMBER(accept_types)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
@@ -425,21 +433,6 @@ IPC_STRUCT_BEGIN_WITH_PARENT(ViewHostMsg_FrameNavigate_Params,
 
   // Serialized history item state to store in the navigation entry.
   IPC_STRUCT_MEMBER(std::string, content_state)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(ViewHostMsg_RunFileChooser_Params)
-  IPC_STRUCT_MEMBER(ViewHostMsg_RunFileChooser_Mode::Value, mode)
-
-  // Title to be used for the dialog. This may be empty for the default title,
-  // which will be either "Open" or "Save" depending on the mode.
-  IPC_STRUCT_MEMBER(string16, title)
-
-  // Default file name to select in the dialog.
-  IPC_STRUCT_MEMBER(FilePath, default_file_name)
-
-  // A list of valid lower-cased MIME types specified in an input element. It is
-  // used to restrict selectable files to such types.
-  IPC_STRUCT_MEMBER(std::vector<string16>, accept_types)
 IPC_STRUCT_END()
 
 // This message is used for supporting popup menus on Mac OS X using native
@@ -1654,7 +1647,7 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_SelectionBoundsChanged,
 // Asks the browser to display the file chooser.  The result is returned in a
 // ViewHost_RunFileChooserResponse message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RunFileChooser,
-                    ViewHostMsg_RunFileChooser_Params)
+                    content::FileChooserParams)
 
 // Asks the browser to enumerate a directory.  This is equivalent to running
 // the file chooser in directory-enumeration mode and having the user select

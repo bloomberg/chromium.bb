@@ -322,7 +322,7 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
 
 void TabContents::RunFileChooser(
     RenderViewHost* render_view_host,
-    const ViewHostMsg_RunFileChooser_Params& params) {
+    const content::FileChooserParams& params) {
   delegate()->RunFileChooser(this, params);
 }
 

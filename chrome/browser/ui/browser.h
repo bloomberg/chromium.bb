@@ -72,8 +72,6 @@ namespace gfx {
 class Point;
 }
 
-struct ViewHostMsg_RunFileChooser_Params;
-
 class Browser : public TabHandlerDelegate,
                 public TabContentsDelegate,
                 public TabContentsWrapperDelegate,
@@ -676,7 +674,7 @@ class Browser : public TabHandlerDelegate,
 
   // Helper function to display the file selection dialog.
   static void RunFileChooserHelper(
-      TabContents* tab, const ViewHostMsg_RunFileChooser_Params& params);
+      TabContents* tab, const content::FileChooserParams& params);
 
   // Helper function to enumerate a directory.
   static void EnumerateDirectoryHelper(TabContents* tab, int request_id,
@@ -985,7 +983,7 @@ class Browser : public TabHandlerDelegate,
   GetJavaScriptDialogCreator() OVERRIDE;
   virtual void RunFileChooser(
       TabContents* tab,
-      const ViewHostMsg_RunFileChooser_Params& params) OVERRIDE;
+      const content::FileChooserParams& params) OVERRIDE;
   virtual void EnumerateDirectory(TabContents* tab, int request_id,
                                 const FilePath& path) OVERRIDE;
   virtual void ToggleFullscreenModeForTab(TabContents* tab,

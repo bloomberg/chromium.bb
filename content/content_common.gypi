@@ -38,6 +38,8 @@
     'public/common/content_switches.h',
     'public/common/dx_diag_node.cc',
     'public/common/dx_diag_node.h',
+    'public/common/file_chooser_params.cc',
+    'public/common/file_chooser_params.h',
     'public/common/frame_navigate_params.cc',
     'public/common/frame_navigate_params.h',
     'public/common/gpu_info.cc',

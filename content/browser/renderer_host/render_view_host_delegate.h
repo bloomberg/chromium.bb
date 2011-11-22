@@ -33,13 +33,13 @@ struct ContextMenuParams;
 struct NativeWebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_FrameNavigate_Params;
-struct ViewHostMsg_RunFileChooser_Params;
 struct WebDropData;
 struct WebMenuItem;
 struct WebPreferences;
 
 namespace content {
 class BrowserContext;
+struct FileChooserParams;
 struct RendererPreferences;
 }
 
@@ -365,7 +365,7 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
   // Called when a file selection is to be done.
   virtual void RunFileChooser(
       RenderViewHost* render_view_host,
-      const ViewHostMsg_RunFileChooser_Params& params) {}
+      const content::FileChooserParams& params) {}
 
   // Notification that the page wants to go into or out of fullscreen mode.
   virtual void ToggleFullscreenMode(bool enter_fullscreen) {}

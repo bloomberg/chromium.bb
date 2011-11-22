@@ -70,7 +70,6 @@ class RenderWidgetFullscreenPepper;
 class RendererAccessibility;
 class SkBitmap;
 class SpeechInputDispatcher;
-struct ViewHostMsg_RunFileChooser_Params;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
 struct ViewMsg_SwapOut_Params;
@@ -83,6 +82,7 @@ class DocumentState;
 class P2PSocketDispatcher;
 class RenderViewObserver;
 class RenderViewTest;
+struct FileChooserParams;
 }  // namespace content
 
 namespace gfx {
@@ -211,7 +211,7 @@ class RenderViewImpl : public RenderWidget,
   //
   // Returns true if the chooser was successfully scheduled. False means we
   // didn't schedule anything.
-  bool ScheduleFileChooser(const ViewHostMsg_RunFileChooser_Params& params,
+  bool ScheduleFileChooser(const content::FileChooserParams& params,
                            WebKit::WebFileChooserCompletion* completion);
 
   // Sets whether  the renderer should report load progress to the browser.

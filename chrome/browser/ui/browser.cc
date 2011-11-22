@@ -2428,7 +2428,7 @@ Browser* Browser::GetBrowserForController(
 
 // static
 void Browser::RunFileChooserHelper(
-    TabContents* tab, const ViewHostMsg_RunFileChooser_Params& params) {
+    TabContents* tab, const content::FileChooserParams& params) {
   Profile* profile =
       Profile::FromBrowserContext(tab->browser_context());
   // FileSelectHelper adds a reference to itself and only releases it after
@@ -3800,7 +3800,7 @@ content::JavaScriptDialogCreator* Browser::GetJavaScriptDialogCreator() {
 }
 
 void Browser::RunFileChooser(TabContents* tab,
-                             const ViewHostMsg_RunFileChooser_Params& params) {
+                             const content::FileChooserParams& params) {
   RunFileChooserHelper(tab, params);
 }
 

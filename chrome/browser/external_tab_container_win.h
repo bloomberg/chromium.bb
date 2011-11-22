@@ -158,7 +158,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) OVERRIDE;
   virtual void RunFileChooser(
       TabContents* tab,
-      const ViewHostMsg_RunFileChooser_Params& params) OVERRIDE;
+      const content::FileChooserParams& params) OVERRIDE;
   virtual void EnumerateDirectory(TabContents* tab,
                                   int request_id,
                                   const FilePath& path) OVERRIDE;

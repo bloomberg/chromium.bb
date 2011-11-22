@@ -692,7 +692,7 @@ void ExternalTabContainer::ShowRepostFormWarningDialog(
 }
 
 void ExternalTabContainer::RunFileChooser(
-    TabContents* tab, const ViewHostMsg_RunFileChooser_Params& params) {
+    TabContents* tab, const content::FileChooserParams& params) {
   Browser::RunFileChooserHelper(tab, params);
 }
 

@@ -549,7 +549,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void RunFileChooser(
       RenderViewHost* render_view_host,
-      const ViewHostMsg_RunFileChooser_Params& params) OVERRIDE;
+      const content::FileChooserParams& params) OVERRIDE;
   virtual void ToggleFullscreenMode(bool enter_fullscreen) OVERRIDE;
   virtual bool IsFullscreenForCurrentTab() const OVERRIDE;
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) OVERRIDE;

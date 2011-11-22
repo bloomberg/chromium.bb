@@ -41,7 +41,6 @@ struct ContextMenuParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_AccessibilityNotification_Params;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_RunFileChooser_Params;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewMsg_Navigate_Params;
 struct ViewMsg_StopFinding_Params;
@@ -53,6 +52,7 @@ class ListValue;
 }
 
 namespace content {
+struct FileChooserParams;
 struct ShowDesktopNotificationHostMsgParams;
 }
 
@@ -578,7 +578,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   void OnShowDesktopNotification(
       const content::ShowDesktopNotificationHostMsgParams& params);
   void OnCancelDesktopNotification(int notification_id);
-  void OnRunFileChooser(const ViewHostMsg_RunFileChooser_Params& params);
+  void OnRunFileChooser(const content::FileChooserParams& params);
 
   void OnWebUISend(const GURL& source_url, const std::string& name,
                    const base::ListValue& args);

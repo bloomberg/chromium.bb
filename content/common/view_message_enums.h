@@ -69,24 +69,6 @@ struct ViewHostMsg_AccEvent {
   };
 };
 
-struct ViewHostMsg_RunFileChooser_Mode {
- public:
-  enum Value {
-    // Requires that the file exists before allowing the user to pick it.
-    Open,
-
-    // Like Open, but allows picking multiple files to open.
-    OpenMultiple,
-
-    // Like Open, but selects a folder.
-    OpenFolder,
-
-    // Allows picking a nonexistent file, and prompts to overwrite if the file
-    // already exists.
-    Save,
-  };
-};
-
 // Values that may be OR'd together to form the 'flags' parameter of a
 // ViewHostMsg_UpdateRect_Params structure.
 struct ViewHostMsg_UpdateRect_Flags {

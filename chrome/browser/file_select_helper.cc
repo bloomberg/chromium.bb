@@ -19,10 +19,10 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/common/file_chooser_params.h"
 #include "grit/generated_resources.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -264,7 +264,7 @@ SelectFileDialog::FileTypeInfo* FileSelectHelper::GetFileTypesFromAcceptType(
 void FileSelectHelper::RunFileChooser(
     RenderViewHost* render_view_host,
     TabContents* tab_contents,
-    const ViewHostMsg_RunFileChooser_Params& params) {
+    const content::FileChooserParams& params) {
   DCHECK(!render_view_host_);
   DCHECK(!tab_contents_);
   render_view_host_ = render_view_host;
@@ -290,7 +290,7 @@ void FileSelectHelper::RunFileChooser(
 }
 
 void FileSelectHelper::RunFileChooserOnFileThread(
-    const ViewHostMsg_RunFileChooser_Params& params) {
+    const content::FileChooserParams& params) {
   select_file_types_.reset(
       GetFileTypesFromAcceptType(params.accept_types));
 
@@ -300,7 +300,7 @@ void FileSelectHelper::RunFileChooserOnFileThread(
 }
 
 void FileSelectHelper::RunFileChooserOnUIThread(
-    const ViewHostMsg_RunFileChooser_Params& params) {
+    const content::FileChooserParams& params) {
   if (!render_view_host_ || !tab_contents_)
     return;
 
@@ -308,16 +308,16 @@ void FileSelectHelper::RunFileChooserOnUIThread(
     select_file_dialog_ = SelectFileDialog::Create(this);
 
   switch (params.mode) {
-    case ViewHostMsg_RunFileChooser_Mode::Open:
+    case content::FileChooserParams::Open:
       dialog_type_ = SelectFileDialog::SELECT_OPEN_FILE;
       break;
-    case ViewHostMsg_RunFileChooser_Mode::OpenMultiple:
+    case content::FileChooserParams::OpenMultiple:
       dialog_type_ = SelectFileDialog::SELECT_OPEN_MULTI_FILE;
       break;
-    case ViewHostMsg_RunFileChooser_Mode::OpenFolder:
+    case content::FileChooserParams::OpenFolder:
       dialog_type_ = SelectFileDialog::SELECT_FOLDER;
       break;
-    case ViewHostMsg_RunFileChooser_Mode::Save:
+    case content::FileChooserParams::Save:
       dialog_type_ = SelectFileDialog::SELECT_SAVEAS_FILE;
       break;
     default:

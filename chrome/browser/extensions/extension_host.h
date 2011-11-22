@@ -31,7 +31,6 @@ class Browser;
 class Extension;
 class RenderWidgetHostView;
 class TabContents;
-struct ViewHostMsg_RunFileChooser_Params;
 struct WebPreferences;
 
 namespace content {

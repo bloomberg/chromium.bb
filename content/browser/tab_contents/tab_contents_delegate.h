@@ -24,7 +24,6 @@ class TabContents;
 struct ContextMenuParams;
 struct NativeWebKeyboardEvent;
 struct OpenURLParams;
-struct ViewHostMsg_RunFileChooser_Params;
 
 namespace base {
 class ListValue;
@@ -32,6 +31,7 @@ class ListValue;
 
 namespace content {
 class BrowserContext;
+struct FileChooserParams;
 class JavaScriptDialogCreator;
 }
 
@@ -303,7 +303,7 @@ class CONTENT_EXPORT TabContentsDelegate {
 
   // Called when a file selection is to be done.
   virtual void RunFileChooser(TabContents* tab,
-                              const ViewHostMsg_RunFileChooser_Params& params);
+                              const content::FileChooserParams& params);
 
   // Request to enumerate a directory.  This is equivalent to running the file
   // chooser in directory-enumeration mode and having the user select the given

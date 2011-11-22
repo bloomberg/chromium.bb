@@ -1496,7 +1496,7 @@ void RenderViewHost::OnMsgShowPopup(
 #endif
 
 void RenderViewHost::OnRunFileChooser(
-    const ViewHostMsg_RunFileChooser_Params& params) {
+    const content::FileChooserParams& params) {
   delegate_->RunFileChooser(this, params);
 }
 

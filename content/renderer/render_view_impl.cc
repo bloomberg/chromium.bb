@@ -41,6 +41,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/file_chooser_params.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
@@ -305,12 +306,12 @@ static bool IsReload(const ViewMsg_Navigate_Params& params) {
 int32 RenderViewImpl::next_page_id_ = 1;
 
 struct RenderViewImpl::PendingFileChooser {
-  PendingFileChooser(const ViewHostMsg_RunFileChooser_Params& p,
+  PendingFileChooser(const content::FileChooserParams& p,
                      WebFileChooserCompletion* c)
       : params(p),
         completion(c) {
   }
-  ViewHostMsg_RunFileChooser_Params params;
+  content::FileChooserParams params;
   WebFileChooserCompletion* completion;  // MAY BE NULL to skip callback.
 };
 
@@ -1546,15 +1547,15 @@ bool RenderViewImpl::runFileChooser(
   // Do not open the file dialog in a hidden RenderView.
   if (is_hidden())
     return false;
-  ViewHostMsg_RunFileChooser_Params ipc_params;
+  content::FileChooserParams ipc_params;
   if (params.directory)
-    ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::OpenFolder;
+    ipc_params.mode = content::FileChooserParams::OpenFolder;
   else if (params.multiSelect)
-    ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::OpenMultiple;
+    ipc_params.mode = content::FileChooserParams::OpenMultiple;
   else if (params.saveAs)
-    ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::Save;
+    ipc_params.mode = content::FileChooserParams::Save;
   else
-    ipc_params.mode = ViewHostMsg_RunFileChooser_Mode::Open;
+    ipc_params.mode = content::FileChooserParams::Open;
   ipc_params.title = params.title;
   ipc_params.default_file_name =
       webkit_glue::WebStringToFilePath(params.initialValue);
@@ -4479,7 +4480,7 @@ void RenderViewImpl::AcceleratedSurfaceBuffersSwapped(
 #endif
 
 bool RenderViewImpl::ScheduleFileChooser(
-    const ViewHostMsg_RunFileChooser_Params& params,
+    const content::FileChooserParams& params,
     WebFileChooserCompletion* completion) {
   static const size_t kMaximumPendingFileChooseRequests = 4;
   if (file_chooser_completions_.size() > kMaximumPendingFileChooseRequests) {

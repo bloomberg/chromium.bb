@@ -279,7 +279,7 @@ TabContentsDelegate::GetJavaScriptDialogCreator() {
 }
 
 void TabContentsDelegate::RunFileChooser(
-  TabContents* tab, const ViewHostMsg_RunFileChooser_Params& params) {
+  TabContents* tab, const content::FileChooserParams& params) {
 }
 
 void TabContentsDelegate::EnumerateDirectory(TabContents* tab, int request_id,
