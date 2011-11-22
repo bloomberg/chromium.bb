@@ -12,6 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -86,7 +87,7 @@ const int kDefaultNames[] = {
   IDS_DEFAULT_AVATAR_NAME_25
 };
 
-} // namespace
+}  // namespace
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
                                    const FilePath& user_data_dir)
@@ -127,10 +128,22 @@ void ProfileInfoCache::AddProfileToCache(const FilePath& profile_path,
 
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileAdded(name, UTF8ToUTF16(key)));
+
   content::NotificationService::current()->Notify(
-    chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-    content::NotificationService::AllSources(),
-    content::NotificationService::NoDetails());
+      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
+}
+
+void ProfileInfoCache::AddObserver(ProfileInfoCacheObserver* obs) {
+  observer_list_.AddObserver(obs);
+}
+
+void ProfileInfoCache::RemoveObserver(ProfileInfoCacheObserver* obs) {
+  observer_list_.RemoveObserver(obs);
 }
 
 void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {
@@ -138,13 +151,22 @@ void ProfileInfoCache::DeleteProfileFromCache(const FilePath& profile_path) {
   DictionaryValue* cache = update.Get();
 
   std::string key = CacheKeyFromProfilePath(profile_path);
+  DictionaryValue* info = NULL;
+  cache->GetDictionary(key, &info);
+  string16 name;
+  info->GetString(kNameKey, &name);
+
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileRemoved(name));
+
   cache->Remove(key, NULL);
   sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
 
   content::NotificationService::current()->Notify(
-    chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-    content::NotificationService::AllSources(),
-    content::NotificationService::NoDetails());
+      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 size_t ProfileInfoCache::GetNumberOfProfiles() const {
@@ -215,6 +237,8 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
 void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
                                                const string16& name) {
   scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  string16 old_name;
+  info->GetString(kNameKey, &old_name);
   info->SetString(kNameKey, name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -227,10 +251,14 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
   sorted_keys_.erase(key_it);
   sorted_keys_.insert(FindPositionForProfile(key, name), key);
 
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileNameChanged(old_name, name));
+
   content::NotificationService::current()->Notify(
-    chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-    content::NotificationService::AllSources(),
-    content::NotificationService::NoDetails());
+      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 void ProfileInfoCache::SetUserNameOfProfileAtIndex(size_t index,
@@ -395,9 +423,9 @@ void ProfileInfoCache::SetInfoForProfileAtIndex(size_t index,
   cache->Set(sorted_keys_[index], info);
 
   content::NotificationService::current()->Notify(
-    chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-    content::NotificationService::AllSources(),
-    content::NotificationService::NoDetails());
+      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
+      content::NotificationService::AllSources(),
+      content::NotificationService::NoDetails());
 }
 
 std::string ProfileInfoCache::CacheKeyFromProfilePath(
@@ -423,6 +451,25 @@ std::vector<std::string>::iterator ProfileInfoCache::FindPositionForProfile(
   return sorted_keys_.end();
 }
 
+// static
+std::vector<string16> ProfileInfoCache::GetProfileNames() {
+  std::vector<string16> names;
+  PrefService* local_state = g_browser_process->local_state();
+  const DictionaryValue* cache = local_state->GetDictionary(
+      prefs::kProfileInfoCache);
+  string16 name;
+  for (base::DictionaryValue::key_iterator it = cache->begin_keys();
+       it != cache->end_keys();
+       ++it) {
+    base::DictionaryValue* info = NULL;
+    cache->GetDictionary(*it, &info);
+    info->GetString(kNameKey, &name);
+    names.push_back(name);
+  }
+  return names;
+}
+
+// static
 void ProfileInfoCache::RegisterPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kProfileInfoCache);
 }

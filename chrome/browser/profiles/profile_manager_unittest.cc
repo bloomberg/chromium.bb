@@ -66,6 +66,12 @@ class ProfileManagerTest : public testing::Test {
     // Create a new temporary directory, and store the path
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_manager_.reset(new ProfileManagerWithoutInit(temp_dir_.path()));
+#if defined(OS_WIN)
+    // Force the ProfileInfoCache to be created immediately, so we can
+    // remove the shortcut manager for testing.
+    profile_manager_->GetProfileInfoCache();
+    profile_manager_->RemoveProfileShortcutManagerForTesting();
+#endif
   }
 
   virtual void TearDown() {

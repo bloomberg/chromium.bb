@@ -20,6 +20,10 @@
 class BrowserDistribution;
 class FilePath;
 
+namespace base {
+class DictionaryValue;
+}
+
 // This is a utility class that provides common shell integration methods
 // that can be used by installer as well as Chrome.
 class ShellUtil {
@@ -87,18 +91,26 @@ class ShellUtil {
   static bool AdminNeededForRegistryCleanup(BrowserDistribution* dist,
                                             const std::wstring& suffix);
 
-  // Create Chrome shortcut on Desktop
-  // If shell_change is CURRENT_USER, the shortcut is created in the
-  // Desktop folder of current user's profile.
-  // If shell_change is SYSTEM_LEVEL, the shortcut is created in the
-  // Desktop folder of "All Users" profile.
-  // If alternate is true, an alternate text for the shortcut is used.
-  // create_new: If false, will only update the shortcut. If true, the function
-  //             will create a new shortcut if it doesn't exist already.
+  // Creates Chrome shortcut on the Desktop.
+  // |dist| gives the type of browser distribution currently in use.
+  // |chrome_exe| provides the target path information.
+  // |description| provides the shortcut's "comment" property.
+  // |appended_name| provides a string to be appended to the distribution name,
+  //     and can be the empty string.
+  // |arguments| gives a set of arguments to be passed to the executable.
+  // If |shell_change| is CURRENT_USER, the shortcut is created in the
+  //     Desktop folder of current user's profile.
+  // If |shell_change| is SYSTEM_LEVEL, the shortcut is created in the
+  //     Desktop folder of the "All Users" profile.
+  // If |alternate| is true, an alternate text for the shortcut is used.
+  // If |create_new| is false, an existing shortcut will be updated, but if
+  //     no shortcut exists, it will not be created.
   // Returns true iff the method causes a shortcut to be created / updated.
   static bool CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                           const std::wstring& chrome_exe,
                                           const std::wstring& description,
+                                          const std::wstring& appended_name,
+                                          const std::wstring& arguments,
                                           ShellChange shell_change,
                                           bool alternate,
                                           bool create_new);
@@ -129,11 +141,14 @@ class ShellUtil {
   // chrome_exe: the full path to chrome.exe
   static std::wstring GetChromeShellOpenCmd(const std::wstring& chrome_exe);
 
-  // Returns the localized name of Chrome shortcut. If |alternate| is true
-  // it returns a second localized text that is better suited for certain
-  // scenarios.
+  // Returns the localized name of Chrome shortcut in |shortcut|. If
+  // |appended_name| is not empty, it is included in the shortcut name. If
+  // |alternate| is true, a second localized text that is better suited for
+  // certain scenarios is used.
   static bool GetChromeShortcutName(BrowserDistribution* dist,
-                                    std::wstring* shortcut, bool alternate);
+                                    bool alternate,
+                                    const std::wstring& appended_name,
+                                    std::wstring* shortcut);
 
   // Gets the desktop path for the current user or all users (if system_level
   // is true) and returns it in 'path' argument. Return true if successful,
@@ -250,7 +265,14 @@ class ShellUtil {
   // If alternate is true, the shortcut with the alternate name is removed. See
   // CreateChromeDesktopShortcut() for more information.
   static bool RemoveChromeDesktopShortcut(BrowserDistribution* dist,
-                                          int shell_change, bool alternate);
+                                          int shell_change,
+                                          bool alternate);
+
+  // Removes a set of existing Chrome desktop shortcuts. |appended_names| is a
+  // list of shortcut file names as obtained from
+  // ShellUtil::GetChromeShortcutName.
+  static bool RemoveChromeDesktopShortcutsWithAppendedNames(
+      const std::vector<std::wstring>& appended_names);
 
   // Remove Chrome shortcut from Quick Launch Bar.
   // If shell_change is CURRENT_USER, the shortcut is removed from
@@ -261,13 +283,14 @@ class ShellUtil {
                                               int shell_change);
 
   // Updates shortcut (or creates a new shortcut) at destination given by
-  // shortcut to a target given by chrome_exe. The arguments is left NULL
-  // for the target and icon is set as icon at index 0 from exe.
+  // shortcut to a target given by chrome_exe. The arguments are given by
+  // |arguments| for the target and icon is set as icon at index 0 from exe.
   // If create_new is set to true, the function will create a new shortcut if
   // if doesn't exist.
   static bool UpdateChromeShortcut(BrowserDistribution* dist,
                                    const std::wstring& chrome_exe,
                                    const std::wstring& shortcut,
+                                   const std::wstring& arguments,
                                    const std::wstring& description,
                                    bool create_new);
 

@@ -213,6 +213,9 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
 
 ProfileManager::~ProfileManager() {
   BrowserList::RemoveObserver(this);
+#if defined(OS_WIN)
+  profile_info_cache_->RemoveObserver(profile_shortcut_manager_.get());
+#endif
 }
 
 FilePath ProfileManager::GetDefaultProfileDir(
@@ -589,6 +592,10 @@ ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
   if (!profile_info_cache_.get()) {
     profile_info_cache_.reset(new ProfileInfoCache(
         g_browser_process->local_state(), user_data_dir_));
+#if defined(OS_WIN)
+    profile_shortcut_manager_.reset(new ProfileShortcutManagerWin());
+    profile_info_cache_->AddObserver(profile_shortcut_manager_.get());
+#endif
   }
   return *profile_info_cache_.get();
 }
@@ -699,3 +706,9 @@ void ProfileManager::RegisterTestingProfile(Profile* profile,
   if (add_to_cache)
     AddProfileToCache(profile);
 }
+
+#if defined(OS_WIN)
+void ProfileManager::RemoveProfileShortcutManagerForTesting() {
+  profile_info_cache_->RemoveObserver(profile_shortcut_manager_.get());
+}
+#endif

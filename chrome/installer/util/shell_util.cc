@@ -545,11 +545,14 @@ bool ShellUtil::AdminNeededForRegistryCleanup(BrowserDistribution* dist,
 bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
                                             const std::wstring& chrome_exe,
                                             const std::wstring& description,
+                                            const std::wstring& appended_name,
+                                            const std::wstring& arguments,
                                             ShellChange shell_change,
                                             bool alternate,
                                             bool create_new) {
   std::wstring shortcut_name;
-  if (!ShellUtil::GetChromeShortcutName(dist, &shortcut_name, alternate))
+  if (!ShellUtil::GetChromeShortcutName(dist, alternate, appended_name,
+                                        &shortcut_name))
     return false;
 
   bool ret = false;
@@ -565,18 +568,24 @@ bool ShellUtil::CreateChromeDesktopShortcut(BrowserDistribution* dist,
       // nothing in it, so let's continue.
       if (ShellUtil::GetDesktopPath(false, &shortcut_path)) {
         shortcut = shortcut_path.Append(shortcut_name);
-        ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe,
+        ret = ShellUtil::UpdateChromeShortcut(dist,
+                                              chrome_exe,
                                               shortcut.value(),
-                                              description, create_new);
+                                              arguments,
+                                              description,
+                                              create_new);
       }
     }
   } else if (shell_change == ShellUtil::SYSTEM_LEVEL) {
     FilePath shortcut_path;
     if (ShellUtil::GetDesktopPath(true, &shortcut_path)) {
       FilePath shortcut = shortcut_path.Append(shortcut_name);
-      ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe,
+      ret = ShellUtil::UpdateChromeShortcut(dist,
+                                            chrome_exe,
                                             shortcut.value(),
-                                            description, create_new);
+                                            arguments,
+                                            description,
+                                            create_new);
     }
   } else {
     NOTREACHED();
@@ -589,7 +598,7 @@ bool ShellUtil::CreateChromeQuickLaunchShortcut(BrowserDistribution* dist,
                                                 int shell_change,
                                                 bool create_new) {
   std::wstring shortcut_name;
-  if (!ShellUtil::GetChromeShortcutName(dist, &shortcut_name, false))
+  if (!ShellUtil::GetChromeShortcutName(dist, false, L"", &shortcut_name))
     return false;
 
   bool ret = true;
@@ -599,7 +608,7 @@ bool ShellUtil::CreateChromeQuickLaunchShortcut(BrowserDistribution* dist,
     if (ShellUtil::GetQuickLaunchPath(false, &user_ql_path)) {
       file_util::AppendToPath(&user_ql_path, shortcut_name);
       ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe, user_ql_path,
-                                            L"", create_new);
+                                            L"", L"", create_new);
     } else {
       ret = false;
     }
@@ -612,7 +621,7 @@ bool ShellUtil::CreateChromeQuickLaunchShortcut(BrowserDistribution* dist,
     if (ShellUtil::GetQuickLaunchPath(true, &default_ql_path)) {
       file_util::AppendToPath(&default_ql_path, shortcut_name);
       ret = ShellUtil::UpdateChromeShortcut(dist, chrome_exe, default_ql_path,
-                                            L"", create_new) && ret;
+                                            L"", L"", create_new) && ret;
     } else {
       ret = false;
     }
@@ -634,9 +643,16 @@ std::wstring ShellUtil::GetChromeShellOpenCmd(const std::wstring& chrome_exe) {
 }
 
 bool ShellUtil::GetChromeShortcutName(BrowserDistribution* dist,
-                                      std::wstring* shortcut, bool alternate) {
+                                      bool alternate,
+                                      const std::wstring& appended_name,
+                                      std::wstring* shortcut) {
   shortcut->assign(alternate ? dist->GetAlternateApplicationName() :
                                dist->GetAppShortCutName());
+  if (!appended_name.empty()) {
+    shortcut->append(L" (");
+    shortcut->append(appended_name);
+    shortcut->append(L")");
+  }
   shortcut->append(L".lnk");
   return true;
 }
@@ -954,7 +970,8 @@ bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
 bool ShellUtil::RemoveChromeDesktopShortcut(BrowserDistribution* dist,
                                             int shell_change, bool alternate) {
   std::wstring shortcut_name;
-  if (!ShellUtil::GetChromeShortcutName(dist, &shortcut_name, alternate))
+  if (!ShellUtil::GetChromeShortcutName(dist, alternate, L"",
+                                        &shortcut_name))
     return false;
 
   bool ret = true;
@@ -980,10 +997,28 @@ bool ShellUtil::RemoveChromeDesktopShortcut(BrowserDistribution* dist,
   return ret;
 }
 
+bool ShellUtil::RemoveChromeDesktopShortcutsWithAppendedNames(
+    const std::vector<std::wstring>& appended_names) {
+  FilePath shortcut_path;
+  bool ret = true;
+  if (ShellUtil::GetDesktopPath(false, &shortcut_path)) {
+    for (std::vector<std::wstring>::const_iterator it =
+             appended_names.begin();
+         it != appended_names.end();
+         ++it) {
+      FilePath delete_shortcut = shortcut_path.Append(*it);
+      ret = ret && file_util::Delete(delete_shortcut, false);
+    }
+  } else {
+    ret = false;
+  }
+  return ret;
+}
+
 bool ShellUtil::RemoveChromeQuickLaunchShortcut(BrowserDistribution* dist,
                                                 int shell_change) {
   std::wstring shortcut_name;
-  if (!ShellUtil::GetChromeShortcutName(dist, &shortcut_name, false))
+  if (!ShellUtil::GetChromeShortcutName(dist, false, L"", &shortcut_name))
     return false;
 
   bool ret = true;
@@ -1015,6 +1050,7 @@ bool ShellUtil::RemoveChromeQuickLaunchShortcut(BrowserDistribution* dist,
 bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
                                      const std::wstring& chrome_exe,
                                      const std::wstring& shortcut,
+                                     const std::wstring& arguments,
                                      const std::wstring& description,
                                      bool create_new) {
   std::wstring chrome_path = FilePath(chrome_exe).DirName().value();
@@ -1030,7 +1066,7 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
         chrome_exe.c_str(),                // target
         shortcut.c_str(),                  // shortcut
         chrome_path.c_str(),               // working dir
-        NULL,                              // arguments
+        arguments.c_str(),                 // arguments
         description.c_str(),               // description
         chrome_exe.c_str(),                // icon file
         icon_index,                        // icon index
@@ -1040,7 +1076,7 @@ bool ShellUtil::UpdateChromeShortcut(BrowserDistribution* dist,
         chrome_exe.c_str(),                // target
         shortcut.c_str(),                  // shortcut
         chrome_path.c_str(),               // working dir
-        NULL,                              // arguments
+        arguments.c_str(),                 // arguments
         description.c_str(),               // description
         chrome_exe.c_str(),                // icon file
         icon_index,                        // icon index

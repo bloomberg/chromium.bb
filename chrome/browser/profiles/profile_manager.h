@@ -24,13 +24,17 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+#if defined(OS_WIN)
+#include "chrome/browser/profiles/profile_shortcut_manager_win.h"
+#endif
+
 class NewProfileLauncher;
 class ProfileInfoCache;
 
 class ProfileManagerObserver {
  public:
   enum Status {
-    // So epic.
+    // Asynchronous Profile services were not created.
     STATUS_FAIL,
     // Profile created but before initializing extensions and promo resources.
     STATUS_CREATED,
@@ -190,6 +194,11 @@ class ProfileManager : public base::NonThreadSafe,
   // for testing. If |addToCache|, add to ProfileInfoCache as well.
   void RegisterTestingProfile(Profile* profile, bool addToCache);
 
+#if defined(OS_WIN)
+  // Remove the shortcut manager for testing.
+  void RemoveProfileShortcutManagerForTesting();
+#endif
+
   const FilePath& user_data_dir() const { return user_data_dir_; }
 
  protected:
@@ -243,7 +252,7 @@ class ProfileManager : public base::NonThreadSafe,
       const ProfileManager::ProfilePathAndName& pair1,
       const ProfileManager::ProfilePathAndName& pair2);
 
-  // Adds |profile| to the profile info cache if it's not already there.
+  // Adds |profile| to the profile info cache if it hasn't been added yet.
   void AddProfileToCache(Profile* profile);
 
   // For ChromeOS, determines if profile should be otr.
@@ -270,12 +279,21 @@ class ProfileManager : public base::NonThreadSafe,
   bool will_import_;
 
   // Maps profile path to ProfileInfo (if profile has been created). Use
-  // RegisterProfile() to add into this map.
+  // RegisterProfile() to add into this map. This map owns all loaded profile
+  // objects in a running instance of Chrome.
   typedef std::map<FilePath, linked_ptr<ProfileInfo> > ProfilesInfoMap;
   ProfilesInfoMap profiles_info_;
 
-  // Object to cache various information about profiles.
+  // Object to cache various information about profiles. Contains information
+  // about every profile which has been created for this instance of Chrome,
+  // if it has not been explicitly deleted.
   scoped_ptr<ProfileInfoCache> profile_info_cache_;
+
+#if defined(OS_WIN)
+  // Manages the creation, deletion, and renaming of Windows shortcuts by
+  // observing the ProfileInfoCache.
+  scoped_ptr<ProfileShortcutManagerWin> profile_shortcut_manager_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileManager);
 };

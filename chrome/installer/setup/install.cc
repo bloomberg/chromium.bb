@@ -131,12 +131,12 @@ bool CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
     VLOG(1) << "Creating shortcut to " << chrome_exe.value() << " at "
             << chrome_link.value();
     ret = ShellUtil::UpdateChromeShortcut(browser_dist, chrome_exe.value(),
-        chrome_link.value(), product_desc, true);
+        chrome_link.value(), L"", product_desc, true);
   } else if (file_util::PathExists(chrome_link)) {
     VLOG(1) << "Updating shortcut at " << chrome_link.value()
             << " to point to " << chrome_exe.value();
     ret = ShellUtil::UpdateChromeShortcut(browser_dist, chrome_exe.value(),
-        chrome_link.value(), product_desc, false);
+        chrome_link.value(), L"", product_desc, false);
   } else {
     VLOG(1)
         << "not first or repaired install, link file doesn't exist. status: "
@@ -181,7 +181,7 @@ bool CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
   if (ret) {
     if (installer_state.system_install()) {
       ret = ShellUtil::CreateChromeDesktopShortcut(product.distribution(),
-          chrome_exe.value(), product_desc, ShellUtil::SYSTEM_LEVEL,
+          chrome_exe.value(), product_desc, L"", L"", ShellUtil::SYSTEM_LEVEL,
           alt_shortcut, create_all_shortcut);
       if (ret) {
         ret = ShellUtil::CreateChromeQuickLaunchShortcut(
@@ -191,7 +191,7 @@ bool CreateOrUpdateChromeShortcuts(const InstallerState& installer_state,
       }
     } else {
       ret = ShellUtil::CreateChromeDesktopShortcut(product.distribution(),
-          chrome_exe.value(), product_desc, ShellUtil::CURRENT_USER,
+          chrome_exe.value(), product_desc, L"", L"", ShellUtil::CURRENT_USER,
           alt_shortcut, create_all_shortcut);
       if (ret) {
         ret = ShellUtil::CreateChromeQuickLaunchShortcut(

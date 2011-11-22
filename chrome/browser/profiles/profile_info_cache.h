@@ -12,7 +12,9 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/observer_list.h"
 #include "base/string16.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_info_interface.h"
 
 namespace gfx {
@@ -24,7 +26,6 @@ class DictionaryValue;
 }
 
 class PrefService;
-
 
 // This class saves various information about profiles to local preferences.
 // This cache can be used to display a list of profiles without having to
@@ -83,13 +84,22 @@ class ProfileInfoCache : public ProfileInfoInterface {
   static bool IsDefaultAvatarIconUrl(const std::string& icon_url,
                                      size_t *icon_index);
 
+  // Gets all names of profiles associated with this instance of Chrome.
+  // Because this method will be called during uninstall, before the creation
+  // of the ProfileManager, it reads directly from the local state preferences,
+  // rather than going through the ProfileInfoCache object.
+  static std::vector<string16> GetProfileNames();
+
   // Register cache related preferences in Local State.
   static void RegisterPrefs(PrefService* prefs);
+
+  void AddObserver(ProfileInfoCacheObserver* obs);
+  void RemoveObserver(ProfileInfoCacheObserver* obs);
 
  private:
   const base::DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
   // Saves the profile info to a cache and takes ownership of |info|.
-  // Currently the only information that is cached is the profiles name,
+  // Currently the only information that is cached is the profile's name,
   // user name, and avatar icon.
   void SetInfoForProfileAtIndex(size_t index, base::DictionaryValue* info);
   std::string CacheKeyFromProfilePath(const FilePath& profile_path) const;
@@ -109,6 +119,8 @@ class ProfileInfoCache : public ProfileInfoInterface {
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;
   FilePath user_data_dir_;
+
+  ObserverList<ProfileInfoCacheObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };

@@ -108,6 +108,8 @@ bool CreateChromeDesktopShortcut() {
       dist,
       chrome_exe.value(),
       dist->GetAppDescription(),
+      L"",
+      L"",
       ShellUtil::CURRENT_USER,
       false,
       true);  // create if doesn't exist.
