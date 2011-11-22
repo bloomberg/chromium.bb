@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/touch/frame/touch_browser_frame_view.h"
 
 #include "ui/gfx/compositor/layer.h"
-#include "ui/views/desktop/desktop_window_view.h"
 #include "views/controls/button/image_button.h"
 
 // static

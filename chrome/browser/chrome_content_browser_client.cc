@@ -249,10 +249,6 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAura());
 #endif
 
-#if defined(TOUCH_UI)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsTouch());
-#endif
-
   return main_parts;
 }
 

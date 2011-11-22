@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/touch/sensors/screen_orientation_listener.h"
+#include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/sensors/sensors_provider.h"
+#include "ui/aura/desktop.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/screen_rotation.h"
 #include "ui/gfx/interpolated_transform.h"
-#include "ui/views/desktop/desktop_window_view.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/desktop.h"
-#endif
 
 namespace {
 
@@ -47,24 +43,12 @@ void ScreenOrientationListener::OnScreenOrientationChanged(
     const sensors::ScreenOrientation& change) {
   ui::Layer* to_rotate = NULL;
   ui::LayerAnimationObserver* observer = NULL;
-#if defined(USE_AURA)
+  // Desktop is initialized before the listener, so this will not return NULL.
   aura::Desktop* aura_desktop = aura::Desktop::GetInstance();
-  if (aura_desktop) {
-    to_rotate = aura_desktop->layer();
-    observer = aura_desktop;
-  }
-#endif
-  if (!to_rotate) {
-    views::desktop::DesktopWindowView* views_desktop =
-        views::desktop::DesktopWindowView::desktop_window_view;
-    if (views_desktop) {
-      views_desktop->SetPaintToLayer(true);
-      to_rotate = views_desktop->layer();
-      observer = views_desktop;
-    }
-  }
+  to_rotate = aura_desktop->layer();
+  observer = aura_desktop;
 
-  if (!to_rotate || !observer)
+  if (!to_rotate)
     return;
 
   bool should_rotate = true;

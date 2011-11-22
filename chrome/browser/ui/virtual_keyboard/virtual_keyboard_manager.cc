@@ -53,12 +53,7 @@ const char kOnTextInputTypeChanged[] =
 // The default position of the keyboard widget should be at the bottom,
 // spanning the entire width of the desktop.
 gfx::Rect GetKeyboardPosition(int height) {
-  views::View* desktop = views::desktop::DesktopWindowView::desktop_window_view;
-  gfx::Rect area;
-  if (desktop)
-    area = desktop->bounds();
-  else
-    area = gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point());
+  gfx::Rect area = gfx::Screen::GetMonitorAreaNearestPoint(gfx::Point());
   return gfx::Rect(area.x(), area.y() + area.height() - height,
                    area.width(), height);
 }
@@ -519,30 +514,10 @@ void KeyboardWidget::OnWidgetActivationChanged(Widget* widget, bool active) {
 VirtualKeyboardManager::VirtualKeyboardManager()
     : keyboard_(new KeyboardWidget()) {
   keyboard_->AddObserver(this);
-
-  views::desktop::DesktopWindowView* desktop =
-      views::desktop::DesktopWindowView::desktop_window_view;
-
-  // We are either not in views desktop mode, or we are and we are not yet
-  // observing the desktop.
-  DCHECK(!desktop || !desktop->HasObserver(this));
-
-  if (desktop)
-    desktop->AddObserver(this);
 }
 
 VirtualKeyboardManager::~VirtualKeyboardManager() {
   DCHECK(!keyboard_);
-
-  views::desktop::DesktopWindowView* desktop =
-      views::desktop::DesktopWindowView::desktop_window_view;
-
-  // We are either not in views desktop mode, or we are and we have been
-  // observing the desktop
-  DCHECK(!desktop || desktop->HasObserver(this));
-
-  if (desktop)
-    desktop->RemoveObserver(this);
 }
 
 void VirtualKeyboardManager::ShowKeyboardForWidget(views::Widget* widget) {
@@ -560,11 +535,6 @@ views::Widget* VirtualKeyboardManager::keyboard() {
 void VirtualKeyboardManager::OnWidgetClosing(views::Widget* widget) {
   DCHECK_EQ(keyboard_, widget);
   keyboard_ = NULL;
-}
-
-void VirtualKeyboardManager::OnDesktopBoundsChanged(
-    const gfx::Rect& prev_bounds) {
-  keyboard_->ResetBounds();
 }
 
 // static

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOUCH_SENSORS_SCREEN_ORIENTATION_LISTENER_H_
-#define CHROME_BROWSER_UI_TOUCH_SENSORS_SCREEN_ORIENTATION_LISTENER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_AURA_SCREEN_ORIENTATION_LISTENER_H_
+#define CHROME_BROWSER_UI_VIEWS_AURA_SCREEN_ORIENTATION_LISTENER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -29,4 +29,4 @@ class ScreenOrientationListener : public sensors::Listener {
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationListener);
 };
 
-#endif  // CHROME_BROWSER_UI_TOUCH_SENSORS_SCREEN_ORIENTATION_LISTENER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_AURA_SCREEN_ORIENTATION_LISTENER_H_

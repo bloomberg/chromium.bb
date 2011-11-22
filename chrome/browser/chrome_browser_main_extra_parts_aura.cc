@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"
+#include "chrome/browser/ui/views/aura/screen_orientation_listener.h"
 #include "ui/aura/desktop.h"
 #include "ui/aura_shell/shell.h"
 
@@ -23,4 +24,7 @@ void ChromeBrowserMainExtraPartsAura::PostBrowserProcessInit() {
 
   // Shell takes ownership of ChromeShellDelegate.
   aura_shell::Shell::CreateInstance(new ChromeShellDelegate);
+
+  // Make sure the singleton ScreenOrientationListener object is created.
+  ScreenOrientationListener::GetInstance();
 }
