@@ -15,8 +15,8 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "chrome/browser/event_disposition.h"
@@ -1331,7 +1331,7 @@ class Browser : public TabHandlerDelegate,
   UpdateMap scheduled_updates_;
 
   // The following factory is used for chrome update coalescing.
-  ScopedRunnableMethodFactory<Browser> chrome_updater_factory_;
+  base::WeakPtrFactory<Browser> chrome_updater_factory_;
 
   // OnBeforeUnload handling //////////////////////////////////////////////////
 
@@ -1375,7 +1375,7 @@ class Browser : public TabHandlerDelegate,
   bool is_session_restore_;
 
   // The following factory is used to close the frame at a later time.
-  ScopedRunnableMethodFactory<Browser> method_factory_;
+  base::WeakPtrFactory<Browser> weak_factory_;
 
   // The Find Bar. This may be NULL if there is no Find Bar, and if it is
   // non-NULL, it may or may not be visible.

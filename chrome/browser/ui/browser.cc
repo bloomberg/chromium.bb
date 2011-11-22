@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -306,7 +307,7 @@ Browser::Browser(Type type, Profile* profile)
       cancel_download_confirmation_state_(NOT_PROMPTED),
       show_state_(ui::SHOW_STATE_DEFAULT),
       is_session_restore_(false),
-      method_factory_(this),
+      weak_factory_(this),
       block_command_execution_(false),
       last_blocked_command_id_(-1),
       last_blocked_command_disposition_(CURRENT_TAB),
@@ -1736,7 +1737,7 @@ void Browser::Search() {
     // visible at this point. Wait for next event cycle which toggles
     // the visibility of omnibox before creating new tab.
     MessageLoop::current()->PostTask(
-        FROM_HERE, method_factory_.NewRunnableMethod(&Browser::Search));
+        FROM_HERE, base::Bind(&Browser::Search, weak_factory_.GetWeakPtr()));
     return;
   }
 
@@ -3103,7 +3104,7 @@ void Browser::CloseFrameAfterDragSession() {
   // the request.
   // TODO(port): figure out what is required here in a cross-platform world
   MessageLoop::current()->PostTask(
-      FROM_HERE, method_factory_.NewRunnableMethod(&Browser::CloseFrame));
+      FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
 #endif
 }
 
@@ -3253,7 +3254,7 @@ void Browser::ActiveTabChanged(TabContentsWrapper* old_contents,
   }
 
   // If we have any update pending, do it now.
-  if (!chrome_updater_factory_.empty() && old_contents)
+  if (chrome_updater_factory_.HasWeakPtrs() && old_contents)
     ProcessPendingUIUpdates();
 
   // Propagate the profile to the location bar.
@@ -3351,7 +3352,7 @@ void Browser::TabStripEmpty() {
   // NOTE: If you change to be immediate (no invokeLater) then you'll need to
   //       update BrowserList::CloseAllBrowsers.
   MessageLoop::current()->PostTask(
-      FROM_HERE, method_factory_.NewRunnableMethod(&Browser::CloseFrame));
+      FROM_HERE, base::Bind(&Browser::CloseFrame, weak_factory_.GetWeakPtr()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4729,13 +4730,13 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
   // Save the dirty bits.
   scheduled_updates_[source] |= changed_flags;
 
-  if (chrome_updater_factory_.empty()) {
+  if (!chrome_updater_factory_.HasWeakPtrs()) {
     // No task currently scheduled, start another.
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        chrome_updater_factory_.NewRunnableMethod(
-            &Browser::ProcessPendingUIUpdates),
-            kUIUpdateCoalescingTimeMS);
+        base::Bind(&Browser::ProcessPendingUIUpdates,
+                   chrome_updater_factory_.GetWeakPtr()),
+        kUIUpdateCoalescingTimeMS);
   }
 }
 
@@ -4757,7 +4758,7 @@ void Browser::ProcessPendingUIUpdates() {
   }
 #endif
 
-  chrome_updater_factory_.RevokeAll();
+  chrome_updater_factory_.InvalidateWeakPtrs();
 
   for (UpdateMap::const_iterator i = scheduled_updates_.begin();
        i != scheduled_updates_.end(); ++i) {
@@ -4943,7 +4944,7 @@ void Browser::ClearUnloadState(TabContents* tab, bool process_now) {
     } else {
       MessageLoop::current()->PostTask(
           FROM_HERE,
-          method_factory_.NewRunnableMethod(&Browser::ProcessPendingTabs));
+          base::Bind(&Browser::ProcessPendingTabs, weak_factory_.GetWeakPtr()));
     }
   }
 }
