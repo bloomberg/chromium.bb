@@ -101,7 +101,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   SendRequestAndWait();
 
   // And then shutdown the service process.
@@ -115,12 +115,12 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest, LaunchTwice) {
   LaunchServiceProcessControl();
 
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   SendRequestAndWait();
 
   // Launch the service process again.
   LaunchServiceProcessControl();
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   SendRequestAndWait();
 
   // And then shutdown the service process.
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   Disconnect();
   WaitForShutdown();
 }
@@ -184,7 +184,7 @@ IN_PROC_BROWSER_TEST_F(ServiceProcessControlBrowserTest,
   // Launch the service process.
   LaunchServiceProcessControl();
   // Make sure we are connected to the service process.
-  EXPECT_TRUE(ServiceProcessControl::GetInstance()->is_connected());
+  EXPECT_TRUE(ServiceProcessControl::GetInstance()->IsConnected());
   base::ProcessId service_pid;
   EXPECT_TRUE(GetServiceProcessData(NULL, &service_pid));
   EXPECT_NE(static_cast<base::ProcessId>(0), service_pid);

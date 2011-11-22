@@ -51,7 +51,7 @@ class ServiceProcessControl : public IPC::Channel::Sender,
 
   // Return true if this object is connected to the service.
   // Virtual for testing.
-  virtual bool is_connected() const;
+  virtual bool IsConnected() const;
 
   // If no service process is currently running, creates a new service process
   // and connects to it. If a service process is already running this method

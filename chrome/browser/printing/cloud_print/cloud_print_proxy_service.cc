@@ -165,8 +165,8 @@ void CloudPrintProxyService::TokenExpiredNotificationDone(bool keep_alive) {
 
 void CloudPrintProxyService::ApplyCloudPrintConnectorPolicy() {
   if (!profile_->GetPrefs()->GetBoolean(prefs::kCloudPrintProxyEnabled)) {
-    std::string email;
-    email = profile_->GetPrefs()->GetString(prefs::kCloudPrintEmail);
+    std::string email =
+        profile_->GetPrefs()->GetString(prefs::kCloudPrintEmail);
     if (!email.empty()) {
       DisableForUser();
       profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
@@ -183,17 +183,14 @@ void CloudPrintProxyService::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PREF_CHANGED) {
-    ApplyCloudPrintConnectorPolicy();
-  } else {
-    NOTREACHED();
-  }
+  DCHECK_EQ(chrome::NOTIFICATION_PREF_CHANGED, type);
+  ApplyCloudPrintConnectorPolicy();
 }
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ServiceProcessControl* process_control = GetServiceProcessControl();
-  DCHECK(process_control->is_connected());
+  DCHECK(process_control->IsConnected());
   ServiceProcessControl::CloudPrintProxyInfoHandler callback =
        base::Bind(&CloudPrintProxyService::ProxyInfoCallback,
                   base::Unretained(this));
@@ -204,7 +201,7 @@ void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
 void CloudPrintProxyService::EnableCloudPrintProxy(const std::string& lsid,
                                                    const std::string& email) {
   ServiceProcessControl* process_control = GetServiceProcessControl();
-  DCHECK(process_control->is_connected());
+  DCHECK(process_control->IsConnected());
   process_control->Send(new ServiceMsg_EnableCloudPrintProxy(lsid));
   // Assume the IPC worked.
   profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, email);
@@ -215,7 +212,7 @@ void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
     const std::string& robot_email,
     const std::string& user_email) {
   ServiceProcessControl* process_control = GetServiceProcessControl();
-  DCHECK(process_control->is_connected());
+  DCHECK(process_control->IsConnected());
   process_control->Send(new ServiceMsg_EnableCloudPrintProxyWithRobot(
       robot_auth_code,
       robot_email,
@@ -226,7 +223,7 @@ void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
 
 void CloudPrintProxyService::DisableCloudPrintProxy() {
   ServiceProcessControl* process_control = GetServiceProcessControl();
-  DCHECK(process_control->is_connected());
+  DCHECK(process_control->IsConnected());
   process_control->Send(new ServiceMsg_DisableCloudPrintProxy);
   // Assume the IPC worked.
   profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());

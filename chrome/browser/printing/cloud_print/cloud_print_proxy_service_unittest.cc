@@ -34,7 +34,7 @@ class MockServiceProcessControl : public ServiceProcessControl {
 
   MockServiceProcessControl() : connected_(false) { }
 
-  MOCK_CONST_METHOD0(is_connected, bool());
+  MOCK_CONST_METHOD0(IsConnected, bool());
 
   MOCK_METHOD2(Launch, void(const base::Closure&, const base::Closure&));
   MOCK_METHOD0(Disconnect, void());
@@ -78,7 +78,7 @@ void CallTask(const base::Closure& task) {
 
 void MockServiceProcessControl::SetConnectSuccessMockExpectations(
     ServiceState service_state) {
-  EXPECT_CALL(*this, is_connected()).WillRepeatedly(ReturnPointee(&connected_));
+  EXPECT_CALL(*this, IsConnected()).WillRepeatedly(ReturnPointee(&connected_));
 
   EXPECT_CALL(*this, Launch(_, _))
       .WillRepeatedly(
@@ -181,13 +181,13 @@ TEST_F(CloudPrintProxyPolicyTest, VerifyExpectations) {
   mock_control.SetConnectSuccessMockExpectations(
       MockServiceProcessControl::kServiceStateNone);
 
-  EXPECT_FALSE(mock_control.is_connected());
+  EXPECT_FALSE(mock_control.IsConnected());
   mock_control.Launch(base::Closure(), base::Closure());
-  EXPECT_TRUE(mock_control.is_connected());
+  EXPECT_TRUE(mock_control.IsConnected());
   mock_control.Launch(base::Closure(), base::Closure());
-  EXPECT_TRUE(mock_control.is_connected());
+  EXPECT_TRUE(mock_control.IsConnected());
   mock_control.Disconnect();
-  EXPECT_FALSE(mock_control.is_connected());
+  EXPECT_FALSE(mock_control.IsConnected());
 }
 
 TEST_F(CloudPrintProxyPolicyTest, StartWithNoPolicyProxyDisabled) {

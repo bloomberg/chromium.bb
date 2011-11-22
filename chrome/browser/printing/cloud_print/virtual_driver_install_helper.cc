@@ -31,16 +31,15 @@ void VirtualDriverInstallHelper::SetUpUninstall() {
 void VirtualDriverInstallHelper::InstallVirtualDriverTask() {
   ServiceProcessControl* process_control =
       ServiceProcessControl::GetInstance();
-  DCHECK(process_control->is_connected());
+  DCHECK(process_control->IsConnected());
   process_control->Send(new ServiceMsg_EnableVirtualDriver());
 }
 
 void VirtualDriverInstallHelper::UninstallVirtualDriverTask() {
   ServiceProcessControl* process_control =
       ServiceProcessControl::GetInstance();
-  DCHECK(process_control->is_connected());
+  DCHECK(process_control->IsConnected());
   process_control->Send(new ServiceMsg_DisableVirtualDriver());
 }
 
 }  // namespace cloud_print
-

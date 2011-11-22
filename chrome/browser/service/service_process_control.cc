@@ -56,7 +56,7 @@ void ServiceProcessControl::RunConnectDoneTasks() {
   // avoided.
   TaskList tasks;
 
-  if (is_connected()) {
+  if (IsConnected()) {
     tasks.swap(connect_success_tasks_);
     RunAllTasksHelper(&tasks);
     DCHECK(tasks.empty());
@@ -78,8 +78,8 @@ void ServiceProcessControl::RunAllTasksHelper(TaskList* task_list) {
   }
 }
 
-bool ServiceProcessControl::is_connected() const {
-  return channel_.get() != NULL;
+bool ServiceProcessControl::IsConnected() const {
+  return channel_ != NULL;
 }
 
 void ServiceProcessControl::Launch(const base::Closure& success_task,
