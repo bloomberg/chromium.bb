@@ -4773,7 +4773,7 @@
    bug_101146a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN11webkit_glue16WebURLLoaderImplC1Ev
+   fun:_ZN11webkit_glue16WebURLLoaderImplC1EPNS_25WebKitPlatformSupportImplE
    fun:_ZN11webkit_glue25WebKitPlatformSupportImpl15createURLLoaderEv
    fun:_ZN7WebCore22ResourceHandleInternal5startEv
    fun:_ZN7WebCore14ResourceHandle5startEPNS_17NetworkingContextE
