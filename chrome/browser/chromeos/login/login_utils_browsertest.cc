@@ -30,6 +30,7 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
 #include "net/url_request/url_request.h"

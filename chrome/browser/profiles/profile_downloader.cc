@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/profile_image_downloader.h"
+#include "chrome/browser/profiles/profile_downloader.h"
 
 #include <string>
 #include <vector>
@@ -13,10 +13,9 @@
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/net/gaia/token_service.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -31,8 +30,6 @@
 
 using content::BrowserThread;
 
-namespace chromeos {
-
 namespace {
 
 // Template for optional authorization header.
@@ -43,6 +40,9 @@ const char kUserEntryURL[] =
     "http://picasaweb.google.com/data/entry/api/user/default?alt=json";
 // Path in JSON dictionary to user's photo thumbnail URL.
 const char kPhotoThumbnailURLPath[] = "entry.gphoto$thumbnail.$t";
+
+const char kNickNamePath[] = "entry.gphoto$nickname.$t";
+
 // Path format for specifying thumbnail's size.
 const char kThumbnailSizeFormat[] = "s%d-c";
 // Default Picasa thumbnail size.
@@ -74,8 +74,14 @@ const int kPhotoVersionPathComponentIndex = 3;
 
 }  // namespace
 
-std::string ProfileImageDownloader::GetProfileImageURL(
-    const std::string& data) const {
+bool ProfileDownloader::GetProfileNickNameAndImageURL(const std::string& data,
+                                                      string16* nick_name,
+                                                      std::string* url) const {
+  DCHECK(nick_name);
+  DCHECK(url);
+  *nick_name = string16();
+  *url = std::string();
+
   int error_code = -1;
   std::string error_message;
   scoped_ptr<base::Value> root_value(base::JSONReader::ReadAndReturnError(
@@ -83,22 +89,28 @@ std::string ProfileImageDownloader::GetProfileImageURL(
   if (!root_value.get()) {
     LOG(ERROR) << "Error while parsing Picasa user entry response: "
                << error_message;
-    return std::string();
+    return false;
   }
   if (!root_value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "JSON root is not a dictionary: "
                << root_value->GetType();
-    return std::string();
+    return false;
   }
   base::DictionaryValue* root_dictionary =
       static_cast<base::DictionaryValue*>(root_value.get());
+
+  if (!root_dictionary->GetString(kNickNamePath, nick_name)) {
+    LOG(ERROR) << "Can't find nick name path in JSON data: "
+               << data;
+    return false;
+  }
 
   std::string thumbnail_url_string;
   if (!root_dictionary->GetString(
           kPhotoThumbnailURLPath, &thumbnail_url_string)) {
     LOG(ERROR) << "Can't find thumbnail path in JSON data: "
                << data;
-    return std::string();
+    return false;
   }
 
   // Try to change the size of thumbnail we are going to get.
@@ -106,8 +118,9 @@ std::string ProfileImageDownloader::GetProfileImageURL(
   // http://lh0.ggpht.com/-abcd1aBCDEf/AAAA/AAA_A/abc12/s64-c/1234567890.jpg
   std::string default_thumbnail_size_path_component(
       base::StringPrintf(kThumbnailSizeFormat, kDefaultThumbnailSize));
+  int image_size = delegate_->GetDesiredImageSideLength();
   std::string new_thumbnail_size_path_component(
-      base::StringPrintf(kThumbnailSizeFormat, login::kUserImageSize));
+      base::StringPrintf(kThumbnailSizeFormat, image_size));
   size_t thumbnail_size_pos =
       thumbnail_url_string.find(default_thumbnail_size_path_component);
   if (thumbnail_size_pos != std::string::npos) {
@@ -128,14 +141,13 @@ std::string ProfileImageDownloader::GetProfileImageURL(
   GURL thumbnail_url(thumbnail_url_string);
   if (!thumbnail_url.is_valid()) {
     LOG(ERROR) << "Thumbnail URL is not valid: " << thumbnail_url_string;
-    return std::string();
+    return false;
   }
-  return thumbnail_url.spec();
+  *url = thumbnail_url.spec();
+  return true;
 }
 
-bool ProfileImageDownloader::IsDefaultProfileImageURL(
-    const std::string& url) const {
-
+bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) const {
   GURL image_url_object(url);
   DCHECK(image_url_object.is_valid());
   VLOG(1) << "URL to check for default image: " << image_url_object.spec();
@@ -159,21 +171,20 @@ bool ProfileImageDownloader::IsDefaultProfileImageURL(
            photo_version == kDefaultGooglePlusPhotoVersion));
 }
 
-ProfileImageDownloader::ProfileImageDownloader(Delegate* delegate)
+ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
     : delegate_(delegate) {
+  DCHECK(delegate_);
 }
 
-void ProfileImageDownloader::Start() {
-  VLOG(1) << "Starting profile image downloader...";
+void ProfileDownloader::Start() {
+  VLOG(1) << "Starting profile downloader...";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  TokenService* service =
-      ProfileManager::GetDefaultProfile()->GetTokenService();
+  TokenService* service = delegate_->GetBrowserProfile()->GetTokenService();
   if (!service) {
     // This can happen in some test paths.
     LOG(WARNING) << "User has no token service";
-    if (delegate_)
-      delegate_->OnDownloadFailure();
+    delegate_->OnDownloadComplete(this, false);
     return;
   }
   if (service->HasTokenForService(GaiaConstants::kPicasaService)) {
@@ -190,15 +201,20 @@ void ProfileImageDownloader::Start() {
   }
 }
 
-void ProfileImageDownloader::StartFetchingImage() {
-  std::string email = UserManager::Get()->logged_in_user().email();
-  if (email.empty())
-    return;
+const string16& ProfileDownloader::GetProfileFullName() const {
+  return profile_full_name_;
+}
+
+const SkBitmap& ProfileDownloader::GetProfilePicture() const {
+  return profile_picture_;
+}
+
+void ProfileDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
   user_entry_fetcher_.reset(content::URLFetcher::Create(
       GURL(kUserEntryURL), content::URLFetcher::GET, this));
   user_entry_fetcher_->SetRequestContext(
-      ProfileManager::GetDefaultProfile()->GetRequestContext());
+      delegate_->GetBrowserProfile()->GetRequestContext());
   if (!auth_token_.empty()) {
     user_entry_fetcher_->SetExtraRequestHeaders(
         base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
@@ -206,10 +222,9 @@ void ProfileImageDownloader::StartFetchingImage() {
   user_entry_fetcher_->Start();
 }
 
-ProfileImageDownloader::~ProfileImageDownloader() {}
+ProfileDownloader::~ProfileDownloader() {}
 
-void ProfileImageDownloader::OnURLFetchComplete(
-    const content::URLFetcher* source) {
+void ProfileDownloader::OnURLFetchComplete(const content::URLFetcher* source) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::string data;
   source->GetResponseAsString(&data);
@@ -217,28 +232,25 @@ void ProfileImageDownloader::OnURLFetchComplete(
     LOG(ERROR) << "Response code is " << source->GetResponseCode();
     LOG(ERROR) << "Url is " << source->GetURL().spec();
     LOG(ERROR) << "Data is " << data;
-    if (delegate_)
-      delegate_->OnDownloadFailure();
+    delegate_->OnDownloadComplete(this, false);
     return;
   }
 
   if (source == user_entry_fetcher_.get()) {
-    std::string image_url = GetProfileImageURL(data);
-    if (image_url.empty()) {
-      if (delegate_)
-        delegate_->OnDownloadFailure();
+    std::string image_url;
+    if (!GetProfileNickNameAndImageURL(data, &profile_full_name_, &image_url)) {
+      delegate_->OnDownloadComplete(this, false);
       return;
     }
     if (IsDefaultProfileImageURL(image_url)) {
-      if (delegate_)
-        delegate_->OnDownloadDefaultImage();
+      delegate_->OnDownloadComplete(this, true);
       return;
     }
     VLOG(1) << "Fetching profile image from " << image_url;
     profile_image_fetcher_.reset(content::URLFetcher::Create(
         GURL(image_url), content::URLFetcher::GET, this));
     profile_image_fetcher_->SetRequestContext(
-        ProfileManager::GetDefaultProfile()->GetRequestContext());
+        delegate_->GetBrowserProfile()->GetRequestContext());
     if (!auth_token_.empty()) {
       profile_image_fetcher_->SetExtraRequestHeaders(
           base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
@@ -252,25 +264,24 @@ void ProfileImageDownloader::OnURLFetchComplete(
   }
 }
 
-void ProfileImageDownloader::OnImageDecoded(const ImageDecoder* decoder,
-                                            const SkBitmap& decoded_image) {
+void ProfileDownloader::OnImageDecoded(const ImageDecoder* decoder,
+                                       const SkBitmap& decoded_image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  SkBitmap resized_image = skia::ImageOperations::Resize(
+  int image_size = delegate_->GetDesiredImageSideLength();
+  profile_picture_ = skia::ImageOperations::Resize(
       decoded_image,
       skia::ImageOperations::RESIZE_BEST,
-      login::kUserImageSize,
-      login::kUserImageSize);
-  if (delegate_)
-    delegate_->OnDownloadSuccess(resized_image);
+      image_size,
+      image_size);
+  delegate_->OnDownloadComplete(this, true);
 }
 
-void ProfileImageDownloader::OnDecodeImageFailed(const ImageDecoder* decoder) {
+void ProfileDownloader::OnDecodeImageFailed(const ImageDecoder* decoder) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (delegate_)
-    delegate_->OnDownloadFailure();
+  delegate_->OnDownloadComplete(this, false);
 }
 
-void ProfileImageDownloader::Observe(
+void ProfileDownloader::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
@@ -287,11 +298,8 @@ void ProfileImageDownloader::Observe(
     }
   } else {
     if (token_details->service() == GaiaConstants::kPicasaService) {
-      LOG(WARNING) << "ProfileImageDownloader: token request failed";
-      if (delegate_)
-        delegate_->OnDownloadFailure();
+      LOG(WARNING) << "ProfileDownloader: token request failed";
+      delegate_->OnDownloadComplete(this, false);
     }
   }
 }
-
-}  // namespace chromeos

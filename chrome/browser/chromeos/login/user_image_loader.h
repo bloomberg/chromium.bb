@@ -11,7 +11,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/chromeos/login/image_decoder.h"
+#include "chrome/browser/image_decoder.h"
 
 class MessageLoop;
 class SkBitmap;

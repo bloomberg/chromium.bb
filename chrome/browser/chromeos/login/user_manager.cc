@@ -36,6 +36,8 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
+#include "chrome/browser/profiles/profile_downloader.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
@@ -84,6 +86,17 @@ const int kStubDefaultImageIndex = 0;
 const long kProfileImageDownloadDelayMs = 10000;
 
 base::LazyInstance<UserManager> g_user_manager = LAZY_INSTANCE_INITIALIZER;
+
+// Enum for reporting histograms about profile picture download.
+enum ProfileDownloadResult {
+  kDownloadSuccessChanged,
+  kDownloadSuccess,
+  kDownloadFailure,
+  kDownloadDefault,
+
+  // Must be the last, convenient count.
+  kDownloadResultsCount
+};
 
 // Used to handle the asynchronous response of deleting a cryptohome directory.
 class RemoveAttempt : public CryptohomeLibrary::Delegate {
@@ -454,7 +467,13 @@ void UserManager::DownloadProfileImage() {
     // Another download is already in progress
     return;
   }
-  profile_image_downloader_.reset(new ProfileImageDownloader(this));
+
+  if (logged_in_user().email().empty()) {
+    // This is a guest login so there's no profile image to download.
+    return;
+  }
+
+  profile_image_downloader_.reset(new ProfileDownloader(this));
   profile_image_downloader_->Start();
   profile_image_load_start_time_ = base::Time::Now();
 }
@@ -789,65 +808,65 @@ void UserManager::CheckOwnership() {
                  is_owner));
 }
 
-void UserManager::OnDownloadSuccess(const SkBitmap& image) {
-  VLOG(1) << "Downloaded profile image for logged-in user.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
-                            ProfileImageDownloader::kDownloadSuccess,
-                            ProfileImageDownloader::kDownloadResultsCount);
+int UserManager::GetDesiredImageSideLength() {
+  return login::kUserImageSize;
+}
 
-  // Check if this image is not the same as already downloaded.
-  std::string new_image_data_url = web_ui_util::GetImageDataUrl(image);
-  if (!downloaded_profile_image_data_url_.empty() &&
-      new_image_data_url == downloaded_profile_image_data_url_)
-    return;
+Profile* UserManager::GetBrowserProfile() {
+  return ProfileManager::GetDefaultProfile();
+}
 
-  downloaded_profile_image_data_url_ = new_image_data_url;
-  downloaded_profile_image_ = image;
+void UserManager::OnDownloadComplete(ProfileDownloader* downloader,
+                                     bool success) {
+  ProfileDownloadResult result;
+  if (!success)
+    result = kDownloadFailure;
+  else if (downloader->GetProfilePicture().isNull())
+    result = kDownloadDefault;
+  else
+    result = kDownloadSuccess;
+  UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
+      result, kDownloadResultsCount);
 
-  if (logged_in_user().image_index() == User::kProfileImageIndex) {
-    std::string current_image_data_url =
-        web_ui_util::GetImageDataUrl(logged_in_user().image());
-    if (current_image_data_url == new_image_data_url)
+  if (result == kDownloadSuccess) {
+    // Check if this image is not the same as already downloaded.
+    std::string new_image_data_url =
+        web_ui_util::GetImageDataUrl(downloader->GetProfilePicture());
+    if (!downloaded_profile_image_data_url_.empty() &&
+        new_image_data_url == downloaded_profile_image_data_url_)
       return;
 
-    VLOG(1) << "Updating profile image for logged-in user";
-    UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
-                              ProfileImageDownloader::kDownloadSuccessChanged,
-                              ProfileImageDownloader::kDownloadResultsCount);
+    downloaded_profile_image_data_url_ = new_image_data_url;
+    downloaded_profile_image_ = downloader->GetProfilePicture();
 
-    // This will persist |downloaded_profile_image_| to file.
-    SaveUserImageFromProfileImage(logged_in_user().email());
+    if (logged_in_user().image_index() == User::kProfileImageIndex) {
+      std::string current_image_data_url =
+          web_ui_util::GetImageDataUrl(logged_in_user().image());
+      if (current_image_data_url == new_image_data_url)
+        return;
+
+      VLOG(1) << "Updating profile image for logged-in user";
+      UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
+                                kDownloadSuccessChanged,
+                                kDownloadResultsCount);
+
+      // This will persist |downloaded_profile_image_| to file.
+      SaveUserImageFromProfileImage(logged_in_user().email());
+    }
   }
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
-      content::Source<UserManager>(this),
-      content::Details<const SkBitmap>(&image));
+  if (result == kDownloadSuccess) {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
+        content::Source<UserManager>(this),
+        content::Details<const SkBitmap>(&downloader->GetProfilePicture()));
+  } else {
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
+        content::Source<UserManager>(this),
+        content::NotificationService::NoDetails());
+  }
 
-  profile_image_downloader_.reset();
-}
-
-void UserManager::OnDownloadFailure() {
-  VLOG(1) << "Download of profile image for logged-in user failed.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
-                            ProfileImageDownloader::kDownloadFailure,
-                            ProfileImageDownloader::kDownloadResultsCount);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-      content::Source<UserManager>(this),
-      content::NotificationService::NoDetails());
-  profile_image_downloader_.reset();
-}
-
-void UserManager::OnDownloadDefaultImage() {
-  VLOG(1) << "Logged-in user still has the default profile image.";
-  UMA_HISTOGRAM_ENUMERATION("UserImageDownloadResult.LoggedIn",
-                            ProfileImageDownloader::kDownloadDefault,
-                            ProfileImageDownloader::kDownloadResultsCount);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
-      content::Source<UserManager>(this),
-      content::NotificationService::NoDetails());
   profile_image_downloader_.reset();
 }
 

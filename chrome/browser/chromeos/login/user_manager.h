@@ -14,15 +14,16 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/login/profile_image_downloader.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
+#include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class FilePath;
 class PrefService;
+class ProfileDownloader;
 
 namespace base {
 template<typename> struct DefaultLazyInstanceTraits;
@@ -34,7 +35,7 @@ class RemoveUserDelegate;
 
 // This class provides a mechanism for discovering users who have logged
 // into this chromium os device before and updating that list.
-class UserManager : public ProfileImageDownloader::Delegate,
+class UserManager : public ProfileDownloaderDelegate,
                     public content::NotificationObserver {
  public:
   // Returns a shared instance of a UserManager. Not thread-safe, should only be
@@ -210,10 +211,11 @@ class UserManager : public ProfileImageDownloader::Delegate,
   // Checks current user's ownership on file thread.
   void CheckOwnership();
 
-  // ProfileImageDownloader::Delegate implementation.
-  virtual void OnDownloadSuccess(const SkBitmap& image) OVERRIDE;
-  virtual void OnDownloadFailure() OVERRIDE;
-  virtual void OnDownloadDefaultImage() OVERRIDE;
+  // ProfileDownloaderDelegate implementation.
+  virtual int GetDesiredImageSideLength() OVERRIDE;
+  virtual Profile* GetBrowserProfile() OVERRIDE;
+  virtual void OnDownloadComplete(ProfileDownloader* downloader,
+                                  bool success) OVERRIDE;
 
   // Creates a new User instance.
   User* CreateUser(const std::string& email) const;
@@ -259,7 +261,7 @@ class UserManager : public ProfileImageDownloader::Delegate,
   ObserverList<Observer> observer_list_;
 
   // Download user profile image on login to update it if it's changed.
-  scoped_ptr<ProfileImageDownloader> profile_image_downloader_;
+  scoped_ptr<ProfileDownloader> profile_image_downloader_;
 
   // Time when the profile image download has started.
   base::Time profile_image_load_start_time_;

@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "chrome/browser/chromeos/login/image_decoder.h"
+#include "chrome/browser/image_decoder.h"
 #include "googleurl/src/gurl.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/button/button.h"

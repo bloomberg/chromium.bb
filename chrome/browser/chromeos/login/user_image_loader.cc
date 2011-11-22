@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/image_decoder.h"
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"

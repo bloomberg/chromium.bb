@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/image_decoder.h"
+#include "chrome/browser/image_decoder.h"
 
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
@@ -10,8 +10,6 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
-
-namespace chromeos {
 
 ImageDecoder::ImageDecoder(Delegate* delegate,
                            const std::string& image_data)
@@ -64,5 +62,3 @@ void ImageDecoder::DecodeImageInSandbox(
                              target_thread_id_);
   utility_process_host->Send(new ChromeUtilityMsg_DecodeImage(image_data));
 }
-
-}  // namespace chromeos
