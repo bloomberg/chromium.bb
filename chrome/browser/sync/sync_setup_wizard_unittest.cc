@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
@@ -58,7 +58,8 @@ class MockSyncSetupHandler : public OptionsSyncSetupHandler {
 // A PSS subtype to inject.
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
-  ProfileSyncServiceForWizardTest(ProfileSyncFactory* factory, Profile* profile)
+  ProfileSyncServiceForWizardTest(ProfileSyncComponentsFactory* factory,
+                                  Profile* profile)
       : ProfileSyncService(factory, profile, new SigninManager(), ""),
         user_cancelled_dialog_(false),
         is_using_secondary_passphrase_(false),
@@ -183,7 +184,7 @@ class TestingProfileWithSyncService : public TestingProfile {
     return sync_service_.get();
   }
  private:
-  ProfileSyncFactoryMock factory_;
+  ProfileSyncComponentsFactoryMock factory_;
   scoped_ptr<ProfileSyncService> sync_service_;
 };
 

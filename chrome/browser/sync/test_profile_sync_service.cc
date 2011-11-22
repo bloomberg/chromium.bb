@@ -9,7 +9,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/internal_api/user_share.h"
 #include "chrome/browser/sync/js/js_reply_handler.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -135,7 +135,7 @@ browser_sync::SyncBackendHostForProfileSyncTest*
 }
 
 TestProfileSyncService::TestProfileSyncService(
-    ProfileSyncFactory* factory,
+    ProfileSyncComponentsFactory* factory,
     Profile* profile,
     const std::string& test_user,
     bool synchronous_backend_initialization,

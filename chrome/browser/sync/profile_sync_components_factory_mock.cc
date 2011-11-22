@@ -4,16 +4,16 @@
 
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/model_associator.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 
 using browser_sync::AssociatorInterface;
 using browser_sync::ChangeProcessor;
 using testing::_;
 using testing::InvokeWithoutArgs;
 
-ProfileSyncFactoryMock::ProfileSyncFactoryMock() {}
+ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock() {}
 
-ProfileSyncFactoryMock::ProfileSyncFactoryMock(
+ProfileSyncComponentsFactoryMock::ProfileSyncComponentsFactoryMock(
     AssociatorInterface* model_associator, ChangeProcessor* change_processor)
     : model_associator_(model_associator),
       change_processor_(change_processor) {
@@ -21,23 +21,23 @@ ProfileSyncFactoryMock::ProfileSyncFactoryMock(
       WillByDefault(
           InvokeWithoutArgs(
               this,
-              &ProfileSyncFactoryMock::MakeSyncComponents));
+              &ProfileSyncComponentsFactoryMock::MakeSyncComponents));
   ON_CALL(*this, CreateSearchEngineSyncComponents(_, _)).
       WillByDefault(
           InvokeWithoutArgs(
               this,
-              &ProfileSyncFactoryMock::MakeSyncComponents));
+              &ProfileSyncComponentsFactoryMock::MakeSyncComponents));
   ON_CALL(*this, CreateAppNotificationSyncComponents(_, _)).
       WillByDefault(
           InvokeWithoutArgs(
               this,
-              &ProfileSyncFactoryMock::MakeSyncComponents));
+              &ProfileSyncComponentsFactoryMock::MakeSyncComponents));
 }
 
-ProfileSyncFactoryMock::~ProfileSyncFactoryMock() {}
+ProfileSyncComponentsFactoryMock::~ProfileSyncComponentsFactoryMock() {}
 
-ProfileSyncFactory::SyncComponents
-ProfileSyncFactoryMock::MakeSyncComponents() {
+ProfileSyncComponentsFactory::SyncComponents
+    ProfileSyncComponentsFactoryMock::MakeSyncComponents() {
   return SyncComponents(model_associator_.release(),
                         change_processor_.release());
 }

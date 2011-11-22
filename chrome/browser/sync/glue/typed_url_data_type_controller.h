@@ -32,7 +32,7 @@ class TypedUrlDataTypeController : public NonFrontendDataTypeController,
                                    public content::NotificationObserver {
  public:
   TypedUrlDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile);
   virtual ~TypedUrlDataTypeController();
 

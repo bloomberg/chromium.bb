@@ -14,7 +14,7 @@
 #include "chrome/browser/sync/glue/frontend_data_type_controller.h"
 #include "chrome/browser/sync/glue/frontend_data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/model_associator_mock.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/test/test_browser_thread.h"
@@ -36,7 +36,7 @@ using testing::StrictMock;
 class FrontendDataTypeControllerFake : public FrontendDataTypeController {
  public:
   FrontendDataTypeControllerFake(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service,
       FrontendDataTypeControllerMock* mock)
@@ -48,7 +48,7 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
 
  private:
   virtual void CreateSyncComponents() {
-    ProfileSyncFactory::SyncComponents sync_components =
+    ProfileSyncComponentsFactory::SyncComponents sync_components =
         profile_sync_factory_->
             CreateBookmarkSyncComponents(sync_service_, this);
     model_associator_.reset(sync_components.model_associator);
@@ -84,7 +84,7 @@ class FrontendDataTypeControllerTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
-    profile_sync_factory_.reset(new ProfileSyncFactoryMock());
+    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     dtc_mock_ = new StrictMock<FrontendDataTypeControllerMock>();
     frontend_dtc_ =
         new FrontendDataTypeControllerFake(profile_sync_factory_.get(),
@@ -99,8 +99,8 @@ class FrontendDataTypeControllerTest : public testing::Test {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
     EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _)).
-        WillOnce(Return(ProfileSyncFactory::SyncComponents(model_associator_,
-                                                           change_processor_)));
+        WillOnce(Return(ProfileSyncComponentsFactory::SyncComponents(
+            model_associator_, change_processor_)));
   }
 
   void SetAssociateExpectations() {
@@ -137,7 +137,7 @@ class FrontendDataTypeControllerTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<FrontendDataTypeControllerFake> frontend_dtc_;
-  scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
+  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   scoped_refptr<FrontendDataTypeControllerMock> dtc_mock_;
   ProfileMock profile_;
   ProfileSyncServiceMock service_;

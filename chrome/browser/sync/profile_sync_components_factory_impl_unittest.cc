@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/profile_sync_factory_impl.h"
+#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
@@ -19,9 +19,9 @@
 using browser_sync::DataTypeController;
 using content::BrowserThread;
 
-class ProfileSyncFactoryImplTest : public testing::Test {
+class ProfileSyncComponentsFactoryImplTest : public testing::Test {
  protected:
-  ProfileSyncFactoryImplTest()
+  ProfileSyncComponentsFactoryImplTest()
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
@@ -29,7 +29,8 @@ class ProfileSyncFactoryImplTest : public testing::Test {
     FilePath program_path(FILE_PATH_LITERAL("chrome.exe"));
     command_line_.reset(new CommandLine(program_path));
     profile_sync_service_factory_.reset(
-        new ProfileSyncFactoryImpl(profile_.get(), command_line_.get()));
+        new ProfileSyncComponentsFactoryImpl(profile_.get(),
+                                             command_line_.get()));
   }
 
   // Returns the collection of default datatypes.
@@ -90,10 +91,10 @@ class ProfileSyncFactoryImplTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   scoped_ptr<Profile> profile_;
   scoped_ptr<CommandLine> command_line_;
-  scoped_ptr<ProfileSyncFactoryImpl> profile_sync_service_factory_;
+  scoped_ptr<ProfileSyncComponentsFactoryImpl> profile_sync_service_factory_;
 };
 
-TEST_F(ProfileSyncFactoryImplTest, CreatePSSDefault) {
+TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDefault) {
   scoped_ptr<ProfileSyncService> pss(
       profile_sync_service_factory_->CreateProfileSyncService(""));
   profile_sync_service_factory_->RegisterDataTypes(pss.get());
@@ -103,42 +104,42 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDefault) {
   CheckDefaultDatatypesInMapExcept(&controller_states, syncable::UNSPECIFIED);
 }
 
-TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableAutofill) {
+TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableAutofill) {
   TestSwitchDisablesType(switches::kDisableSyncAutofill,
                          syncable::AUTOFILL);
 }
 
-TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableBookmarks) {
+TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableBookmarks) {
   TestSwitchDisablesType(switches::kDisableSyncBookmarks,
                          syncable::BOOKMARKS);
 }
 
-TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisablePreferences) {
+TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisablePreferences) {
   TestSwitchDisablesType(switches::kDisableSyncPreferences,
                          syncable::PREFERENCES);
 }
 
-TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableThemes) {
+TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableThemes) {
   TestSwitchDisablesType(switches::kDisableSyncThemes,
                          syncable::THEMES);
 }
 
-TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableExtensions) {
+TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableExtensions) {
   TestSwitchDisablesType(switches::kDisableSyncExtensions,
                          syncable::EXTENSIONS);
 }
 
-TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableApps) {
+TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableApps) {
   TestSwitchDisablesType(switches::kDisableSyncApps,
                          syncable::APPS);
 }
 
-TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableAutofillProfile) {
+TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisableAutofillProfile) {
   TestSwitchDisablesType(switches::kDisableSyncAutofillProfile,
                          syncable::AUTOFILL_PROFILE);
 }
 
-TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisablePasswords) {
+TEST_F(ProfileSyncComponentsFactoryImplTest, CreatePSSDisablePasswords) {
   TestSwitchDisablesType(switches::kDisableSyncPasswords,
                          syncable::PASSWORDS);
 }

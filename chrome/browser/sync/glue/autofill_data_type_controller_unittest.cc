@@ -13,7 +13,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/glue/autofill_data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/webdata/web_data_service.h"
@@ -83,8 +83,9 @@ class WebDataServiceFake : public WebDataService {
 
 class AutofillDataTypeControllerMock : public AutofillDataTypeController {
  public:
-  AutofillDataTypeControllerMock(ProfileSyncFactory* profile_sync_factory,
-                                 Profile* profile)
+  AutofillDataTypeControllerMock(
+      ProfileSyncComponentsFactory* profile_sync_factory,
+      Profile* profile)
       : AutofillDataTypeController(profile_sync_factory, profile),
         start_called_(false, false) {}
 
@@ -139,7 +140,7 @@ class AutofillDataTypeControllerTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   scoped_refptr<ThreadNotificationService> db_notification_service_;
   scoped_refptr<AutofillDataTypeControllerMock> autofill_dtc_;
-  ProfileSyncFactoryMock profile_sync_factory_;
+  ProfileSyncComponentsFactoryMock profile_sync_factory_;
   ProfileMock profile_;
   ProfileSyncServiceMock service_;
   scoped_refptr<WebDataServiceFake> web_data_service_;

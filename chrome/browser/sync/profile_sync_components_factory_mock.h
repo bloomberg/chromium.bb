@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_MOCK_H__
-#define CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_MOCK_H__
+#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_MOCK_H__
+#define CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_MOCK_H__
 #pragma once
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace browser_sync {
@@ -16,13 +16,13 @@ class AssociatorInterface;
 class ChangeProcessor;
 }
 
-class ProfileSyncFactoryMock : public ProfileSyncFactory {
+class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
  public:
-  ProfileSyncFactoryMock();
-  ProfileSyncFactoryMock(
+  ProfileSyncComponentsFactoryMock();
+  ProfileSyncComponentsFactoryMock(
       browser_sync::AssociatorInterface* model_associator,
       browser_sync::ChangeProcessor* change_processor);
-  virtual ~ProfileSyncFactoryMock();
+  virtual ~ProfileSyncComponentsFactoryMock();
 
   MOCK_METHOD1(CreateProfileSyncService,
                ProfileSyncService*(const std::string&));
@@ -93,4 +93,4 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
   scoped_ptr<browser_sync::ChangeProcessor> change_processor_;
 };
 
-#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_MOCK_H__
+#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_MOCK_H__

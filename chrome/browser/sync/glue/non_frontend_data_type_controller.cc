@@ -11,7 +11,7 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/model_associator.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,7 +30,7 @@ NonFrontendDataTypeController::NonFrontendDataTypeController()
       datatype_stopped_(false, false) {}
 
 NonFrontendDataTypeController::NonFrontendDataTypeController(
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile)
     : profile_sync_factory_(profile_sync_factory),
       profile_(profile),
@@ -277,8 +277,8 @@ void NonFrontendDataTypeController::OnUnrecoverableErrorImpl(
   profile_sync_service_->OnUnrecoverableError(from_here, message);
 }
 
-ProfileSyncFactory* NonFrontendDataTypeController::profile_sync_factory()
-    const {
+ProfileSyncComponentsFactory*
+    NonFrontendDataTypeController::profile_sync_factory() const {
   return profile_sync_factory_;
 }
 

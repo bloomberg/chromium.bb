@@ -5,12 +5,12 @@
 #include "chrome/browser/sync/glue/session_data_type_controller.h"
 
 #include "base/metrics/histogram.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 
 namespace browser_sync {
 
 SessionDataTypeController::SessionDataTypeController(
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
     : FrontendDataTypeController(profile_sync_factory,
@@ -29,8 +29,8 @@ syncable::ModelType SessionDataTypeController::type() const {
 }
 
 void SessionDataTypeController::CreateSyncComponents() {
-  ProfileSyncFactory::SyncComponents sync_components = profile_sync_factory_->
-      CreateSessionSyncComponents(sync_service_, this);
+  ProfileSyncComponentsFactory::SyncComponents sync_components =
+      profile_sync_factory_->CreateSessionSyncComponents(sync_service_, this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
 }
@@ -52,4 +52,3 @@ void SessionDataTypeController::RecordStartFailure(StartResult result) {
 }
 
 }  // namespace browser_sync
-

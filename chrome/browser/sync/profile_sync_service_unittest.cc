@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_event_details.h"
 #include "chrome/browser/sync/js/js_test_util.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -122,7 +122,7 @@ class ProfileSyncServiceTest : public testing::Test {
 
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
-  ProfileSyncFactoryMock factory_;
+  ProfileSyncComponentsFactoryMock factory_;
 };
 
 TEST_F(ProfileSyncServiceTest, InitialState) {

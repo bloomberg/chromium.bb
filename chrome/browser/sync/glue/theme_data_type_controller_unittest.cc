@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/model_associator_mock.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/test/test_browser_thread.h"
@@ -35,7 +35,7 @@ class ThemeDataTypeControllerTest : public testing::Test {
       : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() {
-    profile_sync_factory_.reset(new ProfileSyncFactoryMock());
+    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     theme_dtc_ =
         new ThemeDataTypeController(profile_sync_factory_.get(),
                                     &profile_, &service_);
@@ -46,8 +46,8 @@ class ThemeDataTypeControllerTest : public testing::Test {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
     EXPECT_CALL(*profile_sync_factory_, CreateThemeSyncComponents(_, _)).
-        WillOnce(Return(ProfileSyncFactory::SyncComponents(model_associator_,
-                                                           change_processor_)));
+        WillOnce(Return(ProfileSyncComponentsFactory::SyncComponents(
+            model_associator_, change_processor_)));
   }
 
   void SetAssociateExpectations() {
@@ -75,7 +75,7 @@ class ThemeDataTypeControllerTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<ThemeDataTypeController> theme_dtc_;
-  scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
+  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileMock profile_;
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;

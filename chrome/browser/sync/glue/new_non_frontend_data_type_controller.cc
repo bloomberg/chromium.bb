@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/shared_change_processor_ref.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,7 +21,7 @@ NewNonFrontendDataTypeController::NewNonFrontendDataTypeController()
     : shared_change_processor_(NULL) {}
 
 NewNonFrontendDataTypeController::NewNonFrontendDataTypeController(
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile)
     : NonFrontendDataTypeController(profile_sync_factory, profile),
       shared_change_processor_(NULL) {

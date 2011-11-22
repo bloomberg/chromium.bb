@@ -16,7 +16,7 @@
 #include "chrome/browser/sync/api/sync_error.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 
-class ProfileSyncFactory;
+class ProfileSyncComponentsFactory;
 class ProfileSyncService;
 class SyncData;
 class SyncableService;
@@ -56,7 +56,7 @@ class SharedChangeProcessor
   // Returns: true if successful, false if disconnected or |local_service| was
   // NULL.
   virtual bool Connect(
-    ProfileSyncFactory* sync_factory,
+    ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     UnrecoverableErrorHandler* error_handler,
     const base::WeakPtr<SyncableService>& local_service);

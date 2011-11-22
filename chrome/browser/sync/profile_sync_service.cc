@@ -40,7 +40,7 @@
 #include "chrome/browser/sync/internal_api/sync_manager.h"
 #include "chrome/browser/sync/js/js_arg_list.h"
 #include "chrome/browser/sync/js/js_event_details.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/sync/util/cryptographer.h"
@@ -91,7 +91,7 @@ bool ShouldShowActionOnUI(
           error.action != browser_sync::DISABLE_SYNC_ON_CLIENT);
 }
 
-ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
+ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
                                        Profile* profile,
                                        SigninManager* signin_manager,
                                        const std::string& cros_user)

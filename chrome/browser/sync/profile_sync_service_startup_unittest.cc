@@ -10,7 +10,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/data_type_manager_mock.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/signin_manager.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
@@ -81,7 +81,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
-  ProfileSyncFactoryMock factory_;
+  ProfileSyncComponentsFactoryMock factory_;
   scoped_ptr<TestProfileSyncService> service_;
   ProfileSyncServiceObserverMock observer_;
 };

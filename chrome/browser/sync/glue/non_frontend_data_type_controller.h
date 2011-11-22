@@ -16,7 +16,7 @@
 
 class Profile;
 class ProfileSyncService;
-class ProfileSyncFactory;
+class ProfileSyncComponentsFactory;
 class SyncError;
 
 namespace base { class TimeDelta; }
@@ -41,7 +41,7 @@ class ChangeProcessor;
 class NonFrontendDataTypeController : public DataTypeController {
  public:
   NonFrontendDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile);
   virtual ~NonFrontendDataTypeController();
 
@@ -131,7 +131,7 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual void RecordStartFailure(StartResult result) = 0;
 
   // Accessors and mutators used by derived classes.
-  ProfileSyncFactory* profile_sync_factory() const;
+  ProfileSyncComponentsFactory* profile_sync_factory() const;
   Profile* profile() const;
   ProfileSyncService* profile_sync_service() const;
   void set_start_callback(StartCallback* callback);
@@ -143,7 +143,7 @@ class NonFrontendDataTypeController : public DataTypeController {
   virtual void set_change_processor(ChangeProcessor* change_processor);
 
  private:
-  ProfileSyncFactory* const profile_sync_factory_;
+  ProfileSyncComponentsFactory* const profile_sync_factory_;
   Profile* const profile_;
   ProfileSyncService* const profile_sync_service_;
 

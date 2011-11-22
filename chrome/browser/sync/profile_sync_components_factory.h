@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_H__
-#define CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_H__
+#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_H__
+#define CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_H__
 #pragma once
 
 #include <string>
@@ -31,7 +31,7 @@ class HistoryBackend;
 };
 
 // Factory class for all profile sync related classes.
-class ProfileSyncFactory {
+class ProfileSyncComponentsFactory {
  public:
   // The various factory methods for the data type model associators
   // and change processors all return this struct.  This is needed
@@ -54,10 +54,12 @@ class ProfileSyncFactory {
         : model_associator(ma), change_processor(cp) {}
   };
 
-  virtual ~ProfileSyncFactory() {}
+  virtual ~ProfileSyncComponentsFactory() {}
 
   // Instantiates a new ProfileSyncService. The return pointer is owned by the
   // caller.
+  // TODO(tim): Bug 93922. Remove this method in favor of a
+  // ProfileSyncServiceFactory singleton.
   virtual ProfileSyncService* CreateProfileSyncService(
       const std::string& cros_user) = 0;
 
@@ -176,4 +178,4 @@ class ProfileSyncFactory {
       browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 };
 
-#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_H__
+#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_H__

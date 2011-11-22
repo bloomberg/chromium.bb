@@ -25,7 +25,7 @@ class ExtensionPrefs;
 class ExtensionPrefValueMap;
 class NetPrefObserver;
 class PrefService;
-class ProfileSyncFactory;
+class ProfileSyncComponentsFactory;
 class PromoResourceService;
 class SpeechInputPreferences;
 class SpellCheckProfile;
@@ -228,7 +228,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<ProtocolHandlerRegistry> protocol_handler_registry_;
 
   scoped_ptr<TokenService> token_service_;
-  scoped_ptr<ProfileSyncFactory> profile_sync_factory_;
+  scoped_ptr<ProfileSyncComponentsFactory> profile_sync_factory_;
   scoped_ptr<ProfileSyncService> sync_service_;
 
   ProfileImplIOData::Handle io_data_;

@@ -18,7 +18,7 @@ class SharedChangeProcessorMock : public SharedChangeProcessor {
   SharedChangeProcessorMock();
 
   MOCK_METHOD4(Connect, bool(
-      ProfileSyncFactory* sync_factory,
+      ProfileSyncComponentsFactory* sync_factory,
       ProfileSyncService* sync_service,
       UnrecoverableErrorHandler* error_handler,
       const base::WeakPtr<SyncableService>& local_service));

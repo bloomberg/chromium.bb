@@ -24,7 +24,7 @@
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/session_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -230,7 +230,7 @@ class ProfileSyncServiceSessionTest
         sync_service_.get(), model_associator_,
         true /* setup_for_test */);
     EXPECT_CALL(factory_, CreateSessionSyncComponents(_, _)).
-        WillOnce(Return(ProfileSyncFactory::SyncComponents(
+        WillOnce(Return(ProfileSyncComponentsFactory::SyncComponents(
             model_associator_, change_processor_)));
     EXPECT_CALL(factory_, CreateDataTypeManager(_, _)).
         WillOnce(ReturnNewDataTypeManager());
@@ -252,7 +252,7 @@ class ProfileSyncServiceSessionTest
   SessionModelAssociator* model_associator_;
   SessionChangeProcessor* change_processor_;
   SessionID window_id_;
-  ProfileSyncFactoryMock factory_;
+  ProfileSyncComponentsFactoryMock factory_;
   scoped_ptr<TestProfileSyncService> sync_service_;
   const gfx::Rect window_bounds_;
   bool notified_of_update_;

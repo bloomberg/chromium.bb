@@ -9,7 +9,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -43,7 +43,7 @@ class ControlTask : public HistoryDBTask {
 };
 
 TypedUrlDataTypeController::TypedUrlDataTypeController(
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile)
     : NonFrontendDataTypeController(profile_sync_factory,
                                  profile),
@@ -91,7 +91,7 @@ void TypedUrlDataTypeController::CreateSyncComponents() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
   DCHECK(backend_);
-  ProfileSyncFactory::SyncComponents sync_components =
+  ProfileSyncComponentsFactory::SyncComponents sync_components =
       profile_sync_factory()->CreateTypedUrlSyncComponents(
           profile_sync_service(),
           backend_,

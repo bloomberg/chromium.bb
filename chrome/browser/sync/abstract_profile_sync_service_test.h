@@ -14,7 +14,7 @@
 #include "base/task.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/sync/internal_api/change_record.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,7 +64,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread io_thread_;
-  ProfileSyncFactoryMock factory_;
+  ProfileSyncComponentsFactoryMock factory_;
   scoped_ptr<TokenService> token_service_;
   scoped_ptr<TestProfileSyncService> service_;
 };

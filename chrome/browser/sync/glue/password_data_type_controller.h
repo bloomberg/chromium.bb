@@ -20,7 +20,7 @@ namespace browser_sync {
 class PasswordDataTypeController : public NonFrontendDataTypeController {
  public:
   PasswordDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile);
   virtual ~PasswordDataTypeController();
 

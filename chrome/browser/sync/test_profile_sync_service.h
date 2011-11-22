@@ -67,7 +67,7 @@ class TestProfileSyncService : public ProfileSyncService {
  public:
   // |initial_condition_setup_task| can be used to populate nodes
   // before the OnBackendInitialized callback fires.
-  TestProfileSyncService(ProfileSyncFactory* factory,
+  TestProfileSyncService(ProfileSyncComponentsFactory* factory,
                          Profile* profile,
                          const std::string& test_user,
                          bool synchronous_backend_initialization,

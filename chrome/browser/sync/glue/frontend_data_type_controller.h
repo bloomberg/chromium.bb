@@ -15,7 +15,7 @@
 
 class Profile;
 class ProfileSyncService;
-class ProfileSyncFactory;
+class ProfileSyncComponentsFactory;
 class SyncError;
 
 namespace base { class TimeDelta; }
@@ -41,7 +41,7 @@ class ChangeProcessor;
 class FrontendDataTypeController : public DataTypeController {
  public:
   FrontendDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
   virtual ~FrontendDataTypeController();
@@ -104,7 +104,7 @@ class FrontendDataTypeController : public DataTypeController {
   virtual ChangeProcessor* change_processor() const;
   virtual void set_change_processor(ChangeProcessor* processor);
 
-  ProfileSyncFactory* const profile_sync_factory_;
+  ProfileSyncComponentsFactory* const profile_sync_factory_;
   Profile* const profile_;
   ProfileSyncService* const sync_service_;
 

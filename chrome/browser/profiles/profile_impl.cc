@@ -72,7 +72,7 @@
 #include "chrome/browser/speech/chrome_speech_input_manager.h"
 #include "chrome/browser/speech/chrome_speech_input_preferences.h"
 #include "chrome/browser/spellchecker/spellcheck_profile.h"
-#include "chrome/browser/sync/profile_sync_factory_impl.h"
+#include "chrome/browser/sync/profile_sync_components_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tabs/pinned_tab_service_factory.h"
 #include "chrome/browser/transport_security_persister.h"
@@ -1351,7 +1351,8 @@ ProfileSyncService* ProfileImpl::GetProfileSyncService(
 
 void ProfileImpl::InitSyncService(const std::string& cros_user) {
   profile_sync_factory_.reset(
-      new ProfileSyncFactoryImpl(this, CommandLine::ForCurrentProcess()));
+      new ProfileSyncComponentsFactoryImpl(this,
+                                           CommandLine::ForCurrentProcess()));
   sync_service_.reset(
       profile_sync_factory_->CreateProfileSyncService(cros_user));
   profile_sync_factory_->RegisterDataTypes(sync_service_.get());

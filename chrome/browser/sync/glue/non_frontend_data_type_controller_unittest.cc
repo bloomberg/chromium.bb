@@ -17,7 +17,7 @@
 #include "chrome/browser/sync/glue/model_associator_mock.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller_mock.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/test/test_browser_thread.h"
@@ -49,7 +49,7 @@ ACTION_P(SignalEvent, event) {
 class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
  public:
   NonFrontendDataTypeControllerFake(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       NonFrontendDataTypeControllerMock* mock)
       : NonFrontendDataTypeController(profile_sync_factory,
@@ -63,7 +63,7 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
 
  private:
   virtual void CreateSyncComponents() {
-    ProfileSyncFactory::SyncComponents sync_components =
+    ProfileSyncComponentsFactory::SyncComponents sync_components =
         profile_sync_factory()->
             CreateBookmarkSyncComponents(profile_sync_service(), this);
     set_model_associator(sync_components.model_associator);
@@ -119,7 +119,8 @@ class NonFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
         Return(&service_));
     db_thread_.Start();
-    profile_sync_factory_.reset(new StrictMock<ProfileSyncFactoryMock>());
+    profile_sync_factory_.reset(
+        new StrictMock<ProfileSyncComponentsFactoryMock>());
 
     // Both of these are refcounted, so don't need to be released.
     dtc_mock_ = new StrictMock<NonFrontendDataTypeControllerMock>();
@@ -139,8 +140,8 @@ class NonFrontendDataTypeControllerTest : public testing::Test {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
     EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_, _)).
-        WillOnce(Return(ProfileSyncFactory::SyncComponents(model_associator_,
-                                                           change_processor_)));
+        WillOnce(Return(ProfileSyncComponentsFactory::SyncComponents(
+            model_associator_, change_processor_)));
   }
 
   void SetAssociateExpectations() {
@@ -193,7 +194,7 @@ class NonFrontendDataTypeControllerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   scoped_refptr<NonFrontendDataTypeControllerFake> non_frontend_dtc_;
-  scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
+  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   scoped_refptr<NonFrontendDataTypeControllerMock> dtc_mock_;
   ProfileMock profile_;
   ProfileSyncServiceMock service_;

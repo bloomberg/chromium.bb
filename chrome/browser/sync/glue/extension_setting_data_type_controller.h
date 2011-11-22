@@ -12,7 +12,7 @@
 #include "chrome/browser/sync/glue/non_frontend_data_type_controller.h"
 
 class Profile;
-class ProfileSyncFactory;
+class ProfileSyncComponentsFactory;
 class ProfileSyncService;
 class SyncableService;
 
@@ -28,7 +28,7 @@ class ExtensionSettingDataTypeController
   ExtensionSettingDataTypeController(
       // Either EXTENSION_SETTINGS or APP_SETTINGS.
       syncable::ModelType type,
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* profile_sync_service);
   virtual ~ExtensionSettingDataTypeController();

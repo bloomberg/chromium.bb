@@ -7,12 +7,12 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/syncable_service.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 
 namespace browser_sync {
 
 PreferenceDataTypeController::PreferenceDataTypeController(
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
     : FrontendDataTypeController(profile_sync_factory,
@@ -28,7 +28,7 @@ syncable::ModelType PreferenceDataTypeController::type() const {
 }
 
 void PreferenceDataTypeController::CreateSyncComponents() {
-  ProfileSyncFactory::SyncComponents sync_components =
+  ProfileSyncComponentsFactory::SyncComponents sync_components =
       profile_sync_factory_->CreatePreferenceSyncComponents(sync_service_,
                                                             this);
   set_model_associator(sync_components.model_associator);

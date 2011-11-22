@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -19,7 +19,7 @@ namespace browser_sync {
 
 ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     syncable::ModelType type,
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* profile_sync_service)
     : NonFrontendDataTypeController(profile_sync_factory, profile),
@@ -74,7 +74,7 @@ void ExtensionSettingDataTypeController::CreateSyncComponents() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK_EQ(state(), ASSOCIATING);
   DCHECK(settings_service_);
-  ProfileSyncFactory::SyncComponents sync_components =
+  ProfileSyncComponentsFactory::SyncComponents sync_components =
       profile_sync_factory()->CreateExtensionOrAppSettingSyncComponents(
           type_, settings_service_, profile_sync_service_, this);
   set_model_associator(sync_components.model_associator);

@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_source.h"
@@ -20,7 +20,7 @@ using content::BrowserThread;
 namespace browser_sync {
 
 AppNotificationDataTypeController::AppNotificationDataTypeController(
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
     : FrontendDataTypeController(profile_sync_factory,
@@ -67,7 +67,7 @@ void AppNotificationDataTypeController::CleanUpState() {
 }
 
 void AppNotificationDataTypeController::CreateSyncComponents() {
-  ProfileSyncFactory::SyncComponents sync_components =
+  ProfileSyncComponentsFactory::SyncComponents sync_components =
       profile_sync_factory_->CreateAppNotificationSyncComponents(
           sync_service_, this);
   set_model_associator(sync_components.model_associator);

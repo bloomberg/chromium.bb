@@ -35,7 +35,7 @@
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
@@ -251,10 +251,10 @@ ACTION_P(MakeAutofillProfileSyncComponents, wds) {
 class AbstractAutofillFactory {
  public:
   virtual DataTypeController* CreateDataTypeController(
-      ProfileSyncFactory* factory,
+      ProfileSyncComponentsFactory* factory,
       ProfileMock* profile,
       ProfileSyncService* service) = 0;
-  virtual void SetExpectation(ProfileSyncFactoryMock* factory,
+  virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
                               ProfileSyncService* service,
                               WebDataService* wds,
                               DataTypeController* dtc) = 0;
@@ -264,13 +264,13 @@ class AbstractAutofillFactory {
 class AutofillEntryFactory : public AbstractAutofillFactory {
  public:
   browser_sync::DataTypeController* CreateDataTypeController(
-      ProfileSyncFactory* factory,
+      ProfileSyncComponentsFactory* factory,
       ProfileMock* profile,
       ProfileSyncService* service) {
     return new AutofillDataTypeController(factory, profile);
   }
 
-  void SetExpectation(ProfileSyncFactoryMock* factory,
+  void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
                       ProfileSyncService* service,
                       WebDataService* wds,
                       DataTypeController* dtc) {
@@ -286,13 +286,13 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
 class AutofillProfileFactory : public AbstractAutofillFactory {
  public:
   browser_sync::DataTypeController* CreateDataTypeController(
-      ProfileSyncFactory* factory,
+      ProfileSyncComponentsFactory* factory,
       ProfileMock* profile,
       ProfileSyncService* service) {
     return new AutofillProfileDataTypeController(factory, profile);
   }
 
-  void SetExpectation(ProfileSyncFactoryMock* factory,
+  void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
                       ProfileSyncService* service,
                       WebDataService* wds,
                       DataTypeController* dtc) {

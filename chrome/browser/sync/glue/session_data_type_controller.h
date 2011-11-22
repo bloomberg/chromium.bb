@@ -18,7 +18,7 @@ class SessionModelAssociator;
 class SessionDataTypeController : public FrontendDataTypeController {
  public:
   SessionDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
   virtual ~SessionDataTypeController();

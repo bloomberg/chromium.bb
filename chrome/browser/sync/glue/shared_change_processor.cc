@@ -6,7 +6,7 @@
 
 #include "chrome/browser/sync/api/sync_change.h"
 #include "chrome/browser/sync/glue/generic_change_processor.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -31,7 +31,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 }
 
 bool SharedChangeProcessor::Connect(
-    ProfileSyncFactory* sync_factory,
+    ProfileSyncComponentsFactory* sync_factory,
     ProfileSyncService* sync_service,
     UnrecoverableErrorHandler* error_handler,
     const base::WeakPtr<SyncableService>& local_service) {

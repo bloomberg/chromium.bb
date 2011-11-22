@@ -13,7 +13,7 @@
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/model_associator_mock.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/testing_profile.h"
@@ -37,7 +37,7 @@ class TestAppNotificationDataTypeController
     : public AppNotificationDataTypeController {
  public:
   TestAppNotificationDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service)
       : AppNotificationDataTypeController(profile_sync_factory,
@@ -69,7 +69,7 @@ class AppNotificationDataTypeControllerTest
     profile_.reset(new TestingProfile());
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
-    profile_sync_factory_.reset(new ProfileSyncFactoryMock(
+    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock(
         model_associator_, change_processor_));
     app_notif_dtc_ = new TestAppNotificationDataTypeController(
         profile_sync_factory_.get(),
@@ -131,7 +131,7 @@ class AppNotificationDataTypeControllerTest
   content::TestBrowserThread file_thread_;
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<TestAppNotificationDataTypeController> app_notif_dtc_;
-  scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
+  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;

@@ -24,7 +24,7 @@ class AutofillProfileDataTypeController
       public PersonalDataManagerObserver {
  public:
   AutofillProfileDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile);
   virtual ~AutofillProfileDataTypeController();
 

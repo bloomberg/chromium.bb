@@ -18,7 +18,7 @@ namespace browser_sync {
 class NewNonFrontendDataTypeController : public NonFrontendDataTypeController {
  public:
   NewNonFrontendDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile);
   virtual ~NewNonFrontendDataTypeController();
 

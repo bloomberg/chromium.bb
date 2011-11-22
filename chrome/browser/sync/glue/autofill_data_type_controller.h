@@ -23,8 +23,9 @@ namespace browser_sync {
 class AutofillDataTypeController : public NewNonFrontendDataTypeController,
                                    public content::NotificationObserver {
  public:
-  AutofillDataTypeController(ProfileSyncFactory* profile_sync_factory,
-                             Profile* profile);
+  AutofillDataTypeController(
+      ProfileSyncComponentsFactory* profile_sync_factory,
+      Profile* profile);
   virtual ~AutofillDataTypeController();
 
   // NewNonFrontendDataTypeController implementation.

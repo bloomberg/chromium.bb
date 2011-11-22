@@ -14,7 +14,7 @@
 #include "chrome/browser/sync/glue/change_processor_mock.h"
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/model_associator_mock.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/profile_mock.h"
@@ -50,7 +50,7 @@ class BookmarkDataTypeControllerTest : public testing::Test {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
     profile_sync_factory_.reset(
-        new ProfileSyncFactoryMock(model_associator_,
+        new ProfileSyncComponentsFactoryMock(model_associator_,
                                    change_processor_));
     bookmark_dtc_ =
         new BookmarkDataTypeController(profile_sync_factory_.get(),
@@ -84,7 +84,7 @@ class BookmarkDataTypeControllerTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
-  scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
+  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileMock profile_;
   BookmarkModelMock bookmark_model_;
   ProfileSyncServiceMock service_;

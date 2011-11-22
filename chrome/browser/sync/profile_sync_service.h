@@ -38,7 +38,7 @@
 #include "googleurl/src/gurl.h"
 
 class Profile;
-class ProfileSyncFactory;
+class ProfileSyncComponentsFactory;
 class SigninManager;
 class SyncGlobalError;
 
@@ -148,7 +148,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // Sync server URL for dev channel users
   static const char* kDevServerUrl;
 
-  ProfileSyncService(ProfileSyncFactory* factory,
+  ProfileSyncService(ProfileSyncComponentsFactory* factory,
                      Profile* profile,
                      SigninManager* signin,  // Service takes ownership.
                      const std::string& cros_user);
@@ -599,7 +599,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   base::TimeTicks auth_error_time_;
 
   // Factory used to create various dependent objects.
-  ProfileSyncFactory* factory_;
+  ProfileSyncComponentsFactory* factory_;
 
   // The profile whose data we are synchronizing.
   Profile* profile_;

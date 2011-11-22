@@ -58,8 +58,8 @@ ACTION_P4(BuildPrefSyncComponents, profile_sync_service, pref_sync_service,
       syncable::PREFERENCES,
       pref_sync_service,
       *change_processor_ptr);
-  return ProfileSyncFactory::SyncComponents(*model_associator_ptr,
-                                            *change_processor_ptr);
+  return ProfileSyncComponentsFactory::SyncComponents(*model_associator_ptr,
+                                                      *change_processor_ptr);
 }
 
 // TODO(zea): Refactor to remove the ProfileSyncService usage.

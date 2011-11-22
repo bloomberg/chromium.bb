@@ -9,7 +9,7 @@
 #include "base/task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,7 +20,7 @@ using content::BrowserThread;
 namespace browser_sync {
 
 AutofillDataTypeController::AutofillDataTypeController(
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile)
     : NewNonFrontendDataTypeController(profile_sync_factory, profile) {
 }

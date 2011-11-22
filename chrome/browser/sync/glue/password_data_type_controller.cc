@@ -9,7 +9,7 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/api/sync_error.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +19,7 @@ using content::BrowserThread;
 namespace browser_sync {
 
 PasswordDataTypeController::PasswordDataTypeController(
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile)
     : NonFrontendDataTypeController(profile_sync_factory,
                                     profile) {
@@ -55,7 +55,7 @@ bool PasswordDataTypeController::StartAssociationAsync() {
 void PasswordDataTypeController::CreateSyncComponents() {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK_EQ(state(), ASSOCIATING);
-  ProfileSyncFactory::SyncComponents sync_components =
+  ProfileSyncComponentsFactory::SyncComponents sync_components =
       profile_sync_factory()->CreatePasswordSyncComponents(
           profile_sync_service(),
           password_store_.get(),

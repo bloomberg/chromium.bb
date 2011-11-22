@@ -25,8 +25,8 @@
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/typed_url_specifics.pb.h"
@@ -126,7 +126,8 @@ ACTION_P4(MakeTypedUrlSyncComponents, profile, service, hb, dtc) {
       new TypedUrlModelAssociator(service, hb);
   TypedUrlChangeProcessor* change_processor =
       new TypedUrlChangeProcessor(profile, model_associator, hb, service);
-  return ProfileSyncFactory::SyncComponents(model_associator, change_processor);
+  return ProfileSyncComponentsFactory::SyncComponents(model_associator,
+                                                      change_processor);
 }
 
 class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
@@ -290,7 +291,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   scoped_refptr<ThreadNotificationService> notification_service_;
 
   ProfileMock profile_;
-  ProfileSyncFactoryMock factory_;
+  ProfileSyncComponentsFactoryMock factory_;
   scoped_refptr<HistoryBackendMock> history_backend_;
   scoped_refptr<HistoryServiceMock> history_service_;
 };

@@ -17,7 +17,7 @@
 #include "chrome/browser/sync/glue/data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/new_non_frontend_data_type_controller_mock.h"
 #include "chrome/browser/sync/glue/shared_change_processor_mock.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
 #include "chrome/test/base/profile_mock.h"
 #include "content/test/test_browser_thread.h"
@@ -66,7 +66,7 @@ class NewNonFrontendDataTypeControllerFake
     : public NewNonFrontendDataTypeController {
  public:
   NewNonFrontendDataTypeControllerFake(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       NewNonFrontendDataTypeControllerMock* mock)
       : NewNonFrontendDataTypeController(profile_sync_factory,
@@ -134,7 +134,7 @@ class NewNonFrontendDataTypeControllerTest : public testing::Test {
     EXPECT_CALL(service_, GetUserShare()).WillRepeatedly(
         Return((sync_api::UserShare*)NULL));
     db_thread_.Start();
-    profile_sync_factory_.reset(new ProfileSyncFactoryMock());
+    profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());
     change_processor_ = new SharedChangeProcessorMock();
 
     // Both of these are refcounted, so don't need to be released.
@@ -217,7 +217,7 @@ class NewNonFrontendDataTypeControllerTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   ProfileMock profile_;
-  scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
+  scoped_ptr<ProfileSyncComponentsFactoryMock> profile_sync_factory_;
   ProfileSyncServiceMock service_;
   StartCallback start_callback_;
   // Must be destroyed after new_non_frontend_dtc_.

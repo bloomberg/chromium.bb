@@ -17,7 +17,7 @@ namespace browser_sync {
 class PreferenceDataTypeController : public FrontendDataTypeController {
  public:
   PreferenceDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
   virtual ~PreferenceDataTypeController();

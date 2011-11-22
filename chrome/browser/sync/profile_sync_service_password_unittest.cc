@@ -23,8 +23,8 @@
 #include "chrome/browser/sync/internal_api/read_transaction.h"
 #include "chrome/browser/sync/internal_api/write_node.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/password_specifics.pb.h"
@@ -85,8 +85,8 @@ ACTION_P3(MakePasswordSyncComponents, service, ps, dtc) {
       new PasswordModelAssociator(service, ps);
   PasswordChangeProcessor* change_processor =
       new PasswordChangeProcessor(model_associator, ps, dtc);
-  return ProfileSyncFactory::SyncComponents(model_associator,
-                                            change_processor);
+  return ProfileSyncComponentsFactory::SyncComponents(model_associator,
+                                                      change_processor);
 }
 
 ACTION_P(AcquireSyncTransaction, password_test_service) {
@@ -125,7 +125,7 @@ class MockPasswordStore : public PasswordStore {
 
 class PasswordTestProfileSyncService : public TestProfileSyncService {
  public:
-  PasswordTestProfileSyncService(ProfileSyncFactory* factory,
+  PasswordTestProfileSyncService(ProfileSyncComponentsFactory* factory,
                                  Profile* profile,
                                  const std::string& test_user,
                                  bool synchronous_backend_initialization,

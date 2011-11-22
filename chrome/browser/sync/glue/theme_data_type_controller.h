@@ -16,7 +16,7 @@ namespace browser_sync {
 class ThemeDataTypeController : public FrontendDataTypeController {
  public:
   ThemeDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
   virtual ~ThemeDataTypeController();

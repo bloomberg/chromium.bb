@@ -2,25 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_IMPL_H__
-#define CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_IMPL_H__
+#ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__
+#define CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__
 #pragma once
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 
 class CommandLine;
 class Profile;
 
-class ProfileSyncFactoryImpl : public ProfileSyncFactory {
+class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
  public:
-  ProfileSyncFactoryImpl(Profile* profile, CommandLine* command_line);
-  virtual ~ProfileSyncFactoryImpl() {}
+  ProfileSyncComponentsFactoryImpl(Profile* profile,
+                                   CommandLine* command_line);
+  virtual ~ProfileSyncComponentsFactoryImpl() {}
 
-  // ProfileSyncFactory interface.
+  // ProfileSyncComponentsFactory interface.
   virtual ProfileSyncService* CreateProfileSyncService(
       const std::string& cros_user) OVERRIDE;
 
@@ -97,7 +98,7 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
   Profile* profile_;
   CommandLine* command_line_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileSyncFactoryImpl);
+  DISALLOW_COPY_AND_ASSIGN(ProfileSyncComponentsFactoryImpl);
 };
 
-#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_FACTORY_IMPL_H__
+#endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__

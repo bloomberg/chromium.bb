@@ -22,7 +22,7 @@ class AppNotificationDataTypeController
       public content::NotificationObserver {
  public:
   AppNotificationDataTypeController(
-      ProfileSyncFactory* profile_sync_factory,
+      ProfileSyncComponentsFactory* profile_sync_factory,
       Profile* profile,
       ProfileSyncService* sync_service);
   virtual ~AppNotificationDataTypeController();

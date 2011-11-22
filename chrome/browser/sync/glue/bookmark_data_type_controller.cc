@@ -7,7 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -19,7 +19,7 @@ using content::BrowserThread;
 namespace browser_sync {
 
 BookmarkDataTypeController::BookmarkDataTypeController(
-    ProfileSyncFactory* profile_sync_factory,
+    ProfileSyncComponentsFactory* profile_sync_factory,
     Profile* profile,
     ProfileSyncService* sync_service)
     : FrontendDataTypeController(profile_sync_factory,
@@ -66,8 +66,9 @@ syncable::ModelType BookmarkDataTypeController::type() const {
 }
 
 void BookmarkDataTypeController::CreateSyncComponents() {
-  ProfileSyncFactory::SyncComponents sync_components = profile_sync_factory_->
-      CreateBookmarkSyncComponents(sync_service_, this);
+  ProfileSyncComponentsFactory::SyncComponents sync_components =
+      profile_sync_factory_->CreateBookmarkSyncComponents(sync_service_,
+                                                          this);
   set_model_associator(sync_components.model_associator);
   set_change_processor(sync_components.change_processor);
 }
