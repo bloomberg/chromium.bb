@@ -1410,7 +1410,7 @@
               'caption': '''Ask every time a site wants to show desktop notifications'''
             },
           ],
-          'supported_on': ['chrome.*:10-'],
+          'supported_on': ['chrome.*:10-', 'chrome_os:0.11-'],
           'features': {'dynamic_refresh': 1},
           'example_value': 2,
           'id': 53,
