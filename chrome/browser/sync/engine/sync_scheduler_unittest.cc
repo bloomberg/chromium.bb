@@ -8,10 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/sync_scheduler.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/sessions/test_util.h"
+#include "chrome/browser/sync/test/engine/fake_model_safe_worker_registrar.h"
 #include "chrome/browser/sync/test/engine/mock_connection_manager.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,16 +83,15 @@ class SyncSchedulerTest : public testing::Test {
   };
 
   virtual void SetUp() {
-    syncable::ModelTypeBitSet model_types;
-    model_types[syncable::BOOKMARKS] = true;
-    model_types[syncable::AUTOFILL] = true;
-    model_types[syncable::THEMES] = true;
-
     syncdb_.SetUp();
     syncer_ = new MockSyncer();
     delay_ = NULL;
-    registrar_.reset(MockModelSafeWorkerRegistrar::PassiveForTypes(
-        model_types));
+    ModelSafeRoutingInfo routing_info;
+    routing_info[syncable::BOOKMARKS] = GROUP_UI;
+    routing_info[syncable::AUTOFILL] = GROUP_DB;
+    routing_info[syncable::THEMES] = GROUP_UI;
+    routing_info[syncable::NIGORI] = GROUP_PASSIVE;
+    registrar_.reset(new FakeModelSafeWorkerRegistrar(routing_info));
     connection_.reset(new MockConnectionManager(syncdb_.manager(), "Test"));
     connection_->SetServerReachable();
     context_ = new SyncSessionContext(connection_.get(), syncdb_.manager(),
@@ -205,7 +204,7 @@ class SyncSchedulerTest : public testing::Test {
   SyncSessionContext* context_;
   MockSyncer* syncer_;
   MockDelayProvider* delay_;
-  scoped_ptr<MockModelSafeWorkerRegistrar> registrar_;
+  scoped_ptr<FakeModelSafeWorkerRegistrar> registrar_;
   MockDirectorySetterUpper syncdb_;
 };
 

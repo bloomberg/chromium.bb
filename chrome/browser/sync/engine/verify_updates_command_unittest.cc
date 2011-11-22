@@ -7,9 +7,9 @@
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
-#include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
+#include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,8 +31,8 @@ class VerifyUpdatesCommandTest : public SyncerCommandTest {
   virtual void SetUp() {
     workers()->clear();
     mutable_routing_info()->clear();
-    workers()->push_back(make_scoped_refptr(new MockDBModelWorker()));
-    workers()->push_back(make_scoped_refptr(new MockUIModelWorker()));
+    workers()->push_back(make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
+    workers()->push_back(make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     (*mutable_routing_info())[syncable::PREFERENCES] = GROUP_UI;
     (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_UI;
     (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_DB;

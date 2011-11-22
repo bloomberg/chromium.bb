@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
+#include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,10 +53,14 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
   virtual void SetUp() {
     workers()->clear();
     mutable_routing_info()->clear();
-    // GROUP_PASSIVE worker.
-    workers()->push_back(make_scoped_refptr(new ModelSafeWorker()));
-    (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_PASSIVE;
-    (*mutable_routing_info())[syncable::PASSWORDS] = GROUP_PASSIVE;
+    workers()->push_back(
+        make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
+    workers()->push_back(
+        make_scoped_refptr(new FakeModelWorker(GROUP_PASSWORD)));
+    workers()->push_back(
+        make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));
+    (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_UI;
+    (*mutable_routing_info())[syncable::PASSWORDS] = GROUP_PASSWORD;
     (*mutable_routing_info())[syncable::NIGORI] = GROUP_PASSIVE;
     SyncerCommandTest::SetUp();
   }
@@ -159,7 +164,7 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
 
   sessions::StatusController* status = session()->status_controller();
 
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
   EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
@@ -191,7 +196,7 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
   EXPECT_EQ(5, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
@@ -212,7 +217,7 @@ TEST_F(ApplyUpdatesCommandTest, NestedItemsWithUnknownParent) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
   EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(2, status->conflict_progress().ConflictingItemsSize())
@@ -246,7 +251,7 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
   EXPECT_EQ(6, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(2, status->conflict_progress().ConflictingItemsSize())
@@ -282,7 +287,7 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
-  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSWORD);
   EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
@@ -312,13 +317,26 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
     << "Updates that can't be decrypted should trigger the syncer to have "
     << "conflicting updates.";
   {
-    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-    EXPECT_EQ(3, status->update_progress().AppliedUpdatesSize())
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
+    EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
         << "All updates should have been attempted";
     EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
         << "The updates that can't be decrypted should not be in regular "
         << "conflict";
-    EXPECT_EQ(3, status->conflict_progress().NonblockingConflictingItemsSize())
+    EXPECT_EQ(2, status->conflict_progress().NonblockingConflictingItemsSize())
+        << "The updates that can't be decrypted should be in nonblocking "
+        << "conflict";
+    EXPECT_EQ(0, status->update_progress().SuccessfullyAppliedUpdateCount())
+        << "No update that can't be decrypted should be applied";
+  }
+  {
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSWORD);
+    EXPECT_EQ(1, status->update_progress().AppliedUpdatesSize())
+        << "All updates should have been attempted";
+    EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
+        << "The updates that can't be decrypted should not be in regular "
+        << "conflict";
+    EXPECT_EQ(1, status->conflict_progress().NonblockingConflictingItemsSize())
         << "The updates that can't be decrypted should be in nonblocking "
         << "conflict";
     EXPECT_EQ(0, status->update_progress().SuccessfullyAppliedUpdateCount())
@@ -369,7 +387,7 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
     << "Updates that can't be decrypted should trigger the syncer to have "
     << "conflicting updates.";
   {
-    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSWORD);
     EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
         << "All updates should have been attempted";
     EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())

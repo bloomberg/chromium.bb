@@ -22,7 +22,7 @@ namespace browser_sync {
 // A ModelSafeWorker for models that accept requests from the syncapi that need
 // to be fulfilled on a browser thread, for example autofill on the DB thread.
 // TODO(sync): Try to generalize other ModelWorkers (e.g. history, etc).
-class BrowserThreadModelWorker : public browser_sync::ModelSafeWorker {
+class BrowserThreadModelWorker : public ModelSafeWorker {
  public:
   BrowserThreadModelWorker(content::BrowserThread::ID thread,
                            ModelSafeGroup group);

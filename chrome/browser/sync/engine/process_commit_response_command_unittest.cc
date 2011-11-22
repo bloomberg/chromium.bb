@@ -6,7 +6,6 @@
 
 #include "base/location.h"
 #include "base/stringprintf.h"
-#include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/process_commit_response_command.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
+#include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/syncer_command_test.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,13 +43,13 @@ class ProcessCommitResponseCommandTestWithParam
     workers()->clear();
     mutable_routing_info()->clear();
 
-    // GROUP_PASSIVE worker.
-    workers()->push_back(make_scoped_refptr(new ModelSafeWorker()));
-    // GROUP_UI worker.
-    workers()->push_back(make_scoped_refptr(new MockUIModelWorker()));
+    workers()->push_back(
+        make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
+    workers()->push_back(
+        make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_UI;
     (*mutable_routing_info())[syncable::PREFERENCES] = GROUP_UI;
-    (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_PASSIVE;
+    (*mutable_routing_info())[syncable::AUTOFILL] = GROUP_DB;
 
     commit_set_.reset(new sessions::OrderedCommitSet(routing_info()));
     SyncerCommandTestWithParam<T>::SetUp();

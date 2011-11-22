@@ -50,21 +50,19 @@ std::string ModelSafeGroupToString(ModelSafeGroup group);
 // syncable::Directory due to a race.
 class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
  public:
-  ModelSafeWorker();
-  virtual ~ModelSafeWorker();
-
   // Any time the Syncer performs model modifications (e.g employing a
   // WriteTransaction), it should be done by this method to ensure it is done
   // from a model-safe thread.
   virtual UnrecoverableErrorInfo DoWorkAndWaitUntilDone(
-      const WorkCallback& work);
+      const WorkCallback& work) = 0;
 
-  virtual ModelSafeGroup GetModelSafeGroup();
+  virtual ModelSafeGroup GetModelSafeGroup() = 0;
+
+ protected:
+  virtual ~ModelSafeWorker();
 
  private:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;
-
-  DISALLOW_COPY_AND_ASSIGN(ModelSafeWorker);
 };
 
 // A map that details which ModelSafeGroup each syncable::ModelType

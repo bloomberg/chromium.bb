@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/engine/passive_model_worker.h"
 #include "chrome/browser/sync/glue/browser_thread_model_worker.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/history_model_worker.h"
@@ -65,7 +66,7 @@ SyncBackendRegistrar::SyncBackendRegistrar(
   workers_[GROUP_DB] = new DatabaseModelWorker();
   workers_[GROUP_FILE] = new FileModelWorker();
   workers_[GROUP_UI] = ui_worker_;
-  workers_[GROUP_PASSIVE] = new ModelSafeWorker();
+  workers_[GROUP_PASSIVE] = new PassiveModelWorker(sync_loop_);
 
   // Any datatypes that we want the syncer to pull down must be in the
   // routing_info map.  We set them to group passive, meaning that

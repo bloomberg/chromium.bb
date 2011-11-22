@@ -4,10 +4,10 @@
 
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/sync_scheduler.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/sessions/test_util.h"
+#include "chrome/browser/sync/test/engine/fake_model_safe_worker_registrar.h"
 #include "chrome/browser/sync/test/engine/mock_connection_manager.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,7 +25,10 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
   virtual void SetUp() {
     syncdb_.SetUp();
     Syncer* syncer = new Syncer();
-    registrar_.reset(MockModelSafeWorkerRegistrar::PassiveBookmarks());
+    ModelSafeRoutingInfo routes;
+    routes[syncable::BOOKMARKS] = GROUP_UI;
+    routes[syncable::NIGORI] = GROUP_PASSIVE;
+    registrar_.reset(new FakeModelSafeWorkerRegistrar(routes));
     connection_.reset(new MockConnectionManager(syncdb_.manager(), "Test"));
     connection_->SetServerReachable();
     context_ = new SyncSessionContext(connection_.get(), syncdb_.manager(),
@@ -98,7 +101,7 @@ class SyncSchedulerWhiteboxTest : public testing::Test {
   scoped_ptr<SyncScheduler> scheduler_;
   scoped_ptr<MockConnectionManager> connection_;
   SyncSessionContext* context_;
-  scoped_ptr<MockModelSafeWorkerRegistrar> registrar_;
+  scoped_ptr<FakeModelSafeWorkerRegistrar> registrar_;
   MockDirectorySetterUpper syncdb_;
 };
 

@@ -71,18 +71,6 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
   }
 }
 
-ModelSafeWorker::ModelSafeWorker() {}
-
 ModelSafeWorker::~ModelSafeWorker() {}
-
-UnrecoverableErrorInfo ModelSafeWorker::DoWorkAndWaitUntilDone(
-  const WorkCallback& work) {
-  // For GROUP_PASSIVE, we do the work on the current thread.
-  return work.Run();
-}
-
-ModelSafeGroup ModelSafeWorker::GetModelSafeGroup() {
-  return GROUP_PASSIVE;
-}
 
 }  // namespace browser_sync

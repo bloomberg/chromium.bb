@@ -9,11 +9,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
-#include "chrome/browser/sync/engine/mock_model_safe_workers.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -288,8 +288,8 @@ TEST_F(SyncSessionTest, Coalesce) {
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
   SyncSourceInfo source_two(sync_pb::GetUpdatesCallerInfo::LOCAL, all_types);
 
-  scoped_refptr<MockDBModelWorker> db_worker(new MockDBModelWorker());
-  scoped_refptr<MockUIModelWorker> ui_worker(new MockUIModelWorker());
+  scoped_refptr<ModelSafeWorker> db_worker(new FakeModelWorker(GROUP_DB));
+  scoped_refptr<ModelSafeWorker> ui_worker(new FakeModelWorker(GROUP_UI));
   workers_one.push_back(db_worker);
   workers_two.push_back(db_worker);
   workers_two.push_back(ui_worker);
@@ -326,8 +326,8 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
   SyncSourceInfo source_two(sync_pb::GetUpdatesCallerInfo::LOCAL, all_types);
 
-  scoped_refptr<MockDBModelWorker> db_worker(new MockDBModelWorker());
-  scoped_refptr<MockUIModelWorker> ui_worker(new MockUIModelWorker());
+  scoped_refptr<ModelSafeWorker> db_worker(new FakeModelWorker(GROUP_DB));
+  scoped_refptr<ModelSafeWorker> ui_worker(new FakeModelWorker(GROUP_UI));
   workers_one.push_back(db_worker);
   workers_two.push_back(db_worker);
   workers_two.push_back(ui_worker);
@@ -375,8 +375,8 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   SyncSourceInfo source_second(sync_pb::GetUpdatesCallerInfo::LOCAL,
       all_types);
 
-  scoped_refptr<MockDBModelWorker> db_worker(new MockDBModelWorker());
-  scoped_refptr<MockUIModelWorker> ui_worker(new MockUIModelWorker());
+  scoped_refptr<FakeModelWorker> db_worker(new FakeModelWorker(GROUP_DB));
+  scoped_refptr<FakeModelWorker> ui_worker(new FakeModelWorker(GROUP_UI));
   workers_first.push_back(db_worker);
   workers_first.push_back(ui_worker);
   workers_second.push_back(db_worker);

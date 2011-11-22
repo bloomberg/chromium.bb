@@ -385,6 +385,8 @@
         'browser/sync/engine/model_changing_syncer_command.h',
         'browser/sync/engine/model_safe_worker.cc',
         'browser/sync/engine/model_safe_worker.h',
+        'browser/sync/engine/passive_model_worker.cc',
+        'browser/sync/engine/passive_model_worker.h',
         'browser/sync/engine/net/server_connection_manager.cc',
         'browser/sync/engine/net/server_connection_manager.h',
         'browser/sync/engine/net/url_translator.cc',

@@ -37,6 +37,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/mock_connection_manager.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "chrome/browser/sync/test/engine/test_id_factory.h"
@@ -197,7 +198,7 @@ class SyncerTest : public testing::Test,
     mock_server_.reset(
         new MockConnectionManager(syncdb_.manager(), syncdb_.name()));
     EnableDatatype(syncable::BOOKMARKS);
-    worker_ = new ModelSafeWorker();
+    worker_ = new FakeModelWorker(GROUP_PASSIVE);
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(this);
     context_.reset(new SyncSessionContext(mock_server_.get(),
