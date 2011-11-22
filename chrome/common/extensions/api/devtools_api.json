@@ -226,6 +226,30 @@
         "id": "ExtensionPanel",
         "type": "object",
         "description": "Represents a panel created by extension.",
+        "functions": [
+          {
+            "name": "createStatusBarButton",
+            "description": "Appends a button to the status bar of the panel.",
+            "parameters": [
+              {
+                "name": "iconPath",
+                "type": "string",
+                "description": "Path to the icon of the button. The file should contain a 64x24-pixel image composed of two 32x24 icons. The left icon is used when the button is inactive; the right icon is displayed when the button is pressed."
+              },
+              {
+                "name": "tooltipText",
+                "type": "string",
+                "description": "Text shown as a tooltip when user hovers the mouse over the button."
+              },
+              {
+                "name": "disabled",
+                "type": "boolean",
+                "description": "Whether the button is disabled."
+              }
+            ],
+            "returns": { "$ref": "Button" }
+          }
+        ],
         "events": [
           {
             "name": "onSearch",
@@ -276,7 +300,7 @@
               {
                 "name": "height",
                 "type": "string",
-                "description": "A CSS-like size specification, e.g. '10px' or '12pt'."
+                "description": "A CSS-like size specification, such as <code>'100px'</code> or <code>'12ex'</code>."
               }
             ]
           },
@@ -295,6 +319,12 @@
                 "type": "string",
                 "optional": true,
                 "description": "An optional title for the root of the expression tree."
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "optional": true,
+                "description": "A callback invoked after the sidebar pane is updated with the expression evaluation results."
               }
             ]
           },
@@ -313,6 +343,12 @@
                 "type": "string",
                 "optional": true,
                 "description": "An optional title for the root of the expression tree."
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "optional": true,
+                "description": "A callback invoked after the sidebar is updated with the object."
               }
             ]
           },
@@ -347,6 +383,44 @@
             "name": "onHidden",
             "type": "function",
             "description": "Fired when the sidebar pane becomes hidden as a result of the user switching away from the panel that hosts the sidebar pane."
+          }
+        ]
+      },
+      {
+        "id": "Button",
+        "type": "object",
+        "description": "A button created by the extension.",
+        "functions": [
+          {
+            "name": "update",
+            "description": "Updates the attributes of the button. If some of the arguments are omitted or <code>null</code>, the corresponding attributes are not updated.",
+            "parameters": [
+              {
+                "name": "iconPath",
+                "type": "string",
+                "optional": true,
+                "description": "Path to the new icon of the button."
+              },
+              {
+                "name": "tooltipText",
+                "type": "string",
+                "optional": true,
+                "description": "Text shown as a tooltip when user hovers the mouse over the button."
+              },
+              {
+                "name": "disabled",
+                "type": "boolean",
+                "optional": true,
+                "description": "Whether the button is disabled."
+              }
+            ]
+          }
+        ],
+        "events": [
+          {
+            "name": "onClicked",
+            "type": "function",
+            "description": "Fired when the button is clicked."
           }
         ]
       }
