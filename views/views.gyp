@@ -447,7 +447,6 @@
           ],
         }],
         ['touchui==1', {
-          'defines': ['TOUCH_UI=1'],
           'sources/': [
             ['exclude', '../ui/views/focus/accelerator_handler_gtk.cc'],
             ['exclude', 'controls/menu/native_menu_gtk.cc'],
