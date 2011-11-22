@@ -5285,6 +5285,10 @@ void Browser::OnWindowDidShow() {
     return;
   window_has_shown_ = true;
 
+  // Nothing to do for non-tabbed windows.
+  if (!is_type_tabbed())
+    return;
+
   // Suppress the first run bubble if we're showing the sync promo.
   TabContents* contents = GetSelectedTabContents();
   bool is_showing_promo = contents &&
@@ -5309,7 +5313,7 @@ void Browser::OnWindowDidShow() {
     // windows.
     local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, false);
     window_->GetLocationBar()->ShowFirstRunBubble(bubble_type);
-  } else if (is_type_tabbed()) {
+  } else {
     GlobalErrorService* service =
         GlobalErrorServiceFactory::GetForProfile(profile());
     GlobalError* error = service->GetFirstGlobalErrorWithBubbleView();
