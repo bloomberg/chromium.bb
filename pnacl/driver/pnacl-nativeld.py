@@ -31,8 +31,10 @@ EXTRA_ENV = {
   'LD_EMUL_X8632'  : 'elf_nacl',
   'LD_EMUL_X8664'  : 'elf64_nacl',
 
-   # LD_SB is for non-srpc sandboxed tool
-  'LD'          : '${SANDBOXED ? ${LD_SB} : ${LD_BFD}}',
+   # Intermediate variable LDMODE is used for delaying evaluation.
+   # LD_SB is the non-srpc sandboxed tool.
+  'LDMODE'      : '${SANDBOXED ? SB : BFD}',
+  'LD'          : '${LD_%LDMODE%}',
   'LD_FLAGS'    : '-nostdlib -m ${LD_EMUL} ${#LD_SCRIPT ? -T ${LD_SCRIPT}} ' +
                   '${STATIC ? -static} ${SHARED ? -shared} ${RELOCATABLE ? -r}',
 
@@ -146,7 +148,7 @@ LDPatterns = [
 def main(argv):
   ParseArgs(argv, LDPatterns)
 
-  arch = GetArch(required=True)
+  GetArch(required=True)
   inputs = env.get('INPUTS')
   output = env.getone('OUTPUT')
 

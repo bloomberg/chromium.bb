@@ -71,7 +71,9 @@ EXTRA_ENV = {
   'SDK_HACK'  : '',
   # END HACK
 
-  'LLC'           : '${SANDBOXED ? ${LLC_SB} : ${LLVM_LLC}}',
+  # Intermediate variable LLCVAR is used for delaying evaluation.
+  'LLCVAR'        : '${SANDBOXED ? LLC_SB : LLVM_LLC}',
+  'LLC'           : '${%LLCVAR%}',
 
   'TRIPLE'      : '${TRIPLE_%ARCH%}',
   'TRIPLE_ARM'  : 'armv7a-none-nacl-gnueabi',
