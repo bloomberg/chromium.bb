@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/avatar_menu_bubble_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/window.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/views/widget/widget.h"
 
@@ -153,7 +154,7 @@ void AvatarMenuButton::ShowAvatarBubble() {
 
   AvatarMenuBubbleView* bubble = new AvatarMenuBubbleView(this,
       views::BubbleBorder::TOP_LEFT, bounds, browser_);
-  views::BubbleDelegateView::CreateBubble(bubble);
+  browser::CreateViewsBubble(bubble);
   bubble->Show();
 
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);

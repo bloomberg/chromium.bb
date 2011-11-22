@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/global_error.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/browser/ui/views/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/layout/grid_layout.h"
@@ -152,6 +153,6 @@ void GlobalError::ShowBubbleView(Browser* browser, GlobalError* error) {
                                 SK_ColorWHITE,
                                 browser,
                                 error);
-  views::BubbleDelegateView::CreateBubble(bubble_view);
+  browser::CreateViewsBubble(bubble_view);
   bubble_view->StartFade(true);
 }

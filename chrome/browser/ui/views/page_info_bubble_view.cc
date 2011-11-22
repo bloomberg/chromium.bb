@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/cert_store.h"
 #include "grit/generated_resources.h"
@@ -477,7 +478,7 @@ void ShowPageInfoBubble(views::View* anchor_view,
                         bool show_history) {
   PageInfoBubbleView* page_info_bubble =
       new PageInfoBubbleView(anchor_view, profile, url, ssl, show_history);
-  views::BubbleDelegateView::CreateBubble(page_info_bubble);
+  browser::CreateViewsBubble(page_info_bubble);
   page_info_bubble->Show();
 }
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
@@ -82,7 +83,7 @@ void BookmarkBubbleView::ShowBubble(views::View* anchor_view,
 
   bookmark_bubble_ =
       new BookmarkBubbleView(anchor_view, profile, url, newly_bookmarked);
-  views::BubbleDelegateView::CreateBubble(bookmark_bubble_);
+  browser::CreateViewsBubble(bookmark_bubble_);
   bookmark_bubble_->Show();
   // Select the entire title textfield contents when the bubble is first shown.
   bookmark_bubble_->title_tf_->SelectAll();

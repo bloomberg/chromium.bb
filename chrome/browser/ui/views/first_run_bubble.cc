@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/window.h"
 #include "content/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -45,7 +46,7 @@ FirstRunBubble* FirstRunBubble::ShowBubble(
                          anchor_view,
                          arrow_location,
                          bubble_type);
-  views::BubbleDelegateView::CreateBubble(delegate);
+  browser::CreateViewsBubble(delegate);
   delegate->StartFade(true);
   return delegate;
 }

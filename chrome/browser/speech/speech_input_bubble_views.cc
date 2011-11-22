@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/toolbar_view.h"
+#include "chrome/browser/ui/views/window.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
@@ -343,7 +344,7 @@ void SpeechInputBubbleImpl::Show() {
       browser_view->GetLocationBarView()->location_icon_view() : NULL;
   bubble_ = new SpeechInputBubbleView(delegate_, icon, element_rect_,
                                       tab_contents());
-  views::BubbleDelegateView::CreateBubble(bubble_);
+  browser::CreateViewsBubble(bubble_);
   UpdateLayout();
   bubble_->Show();
 }

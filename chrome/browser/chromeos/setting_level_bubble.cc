@@ -16,15 +16,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/window.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/root_view.h"
-
-#if !defined(USE_AURA)
-#include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
-#include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
-#endif
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -188,20 +184,8 @@ void SettingLevelBubble::OnWidgetClosing(views::Widget* widget) {
 
 SettingLevelBubbleView* SettingLevelBubble::CreateView() {
   SettingLevelBubbleDelegateView* delegate = new SettingLevelBubbleDelegateView;
-  views::Widget* widget = views::BubbleDelegateView::CreateBubble(delegate);
+  views::Widget* widget = browser::CreateViewsBubbleAboveLockScreen(delegate);
   widget->AddObserver(this);
-
-#if !defined(USE_AURA)
-  {
-    std::vector<int> params;
-    params.push_back(1);  // show_while_screen_is_locked_
-    chromeos::WmIpc::instance()->SetWindowType(
-        widget->GetNativeView(),
-        chromeos::WM_IPC_WINDOW_CHROME_INFO_BUBBLE,
-        &params);
-  }
-#endif
-
   // Hold on to the content view.
   return delegate->view();
 }

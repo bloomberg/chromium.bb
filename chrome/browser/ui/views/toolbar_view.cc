@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_actions_container.h"
 #include "chrome/browser/ui/views/event_utils.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/views/wrench_menu.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -719,7 +720,7 @@ void ToolbarView::ShowCriticalNotification() {
 #if defined(OS_WIN)
   CriticalNotificationBubbleView* bubble_delegate =
       new CriticalNotificationBubbleView(app_menu_);
-  views::BubbleDelegateView::CreateBubble(bubble_delegate);
+  browser::CreateViewsBubble(bubble_delegate);
   bubble_delegate->StartFade(true);
 #endif
 }
