@@ -10,11 +10,12 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "webkit/blob/deletable_file_reference.h"
 
-class FilePath;
-
-class SavePageAsMHTMLFunction : public AsyncExtensionFunction {
+class SavePageAsMHTMLFunction : public AsyncExtensionFunction,
+                                public content::NotificationObserver {
  public:
   SavePageAsMHTMLFunction();
 
@@ -30,6 +31,9 @@ class SavePageAsMHTMLFunction : public AsyncExtensionFunction {
  private:
   virtual ~SavePageAsMHTMLFunction();
   virtual bool RunImpl() OVERRIDE;
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
   virtual bool OnMessageReceivedFromRenderView(
       const IPC::Message& message) OVERRIDE;
 
@@ -41,9 +45,6 @@ class SavePageAsMHTMLFunction : public AsyncExtensionFunction {
   void ReturnFailure(const std::string& error);
   void ReturnSuccess(int64 file_size);
 
-  // Callback called once the MHTML generation is done.
-  void MHTMLGenerated(const FilePath& file_path, int64 mhtml_file_size);
-
   // Returns the TabContents we are associated with, NULL if it's been closed.
   TabContents* GetTabContents();
 
@@ -54,6 +55,8 @@ class SavePageAsMHTMLFunction : public AsyncExtensionFunction {
 
   // The file containing the MHTML.
   scoped_refptr<webkit_blob::DeletableFileReference> mhtml_file_;
+
+  content::NotificationRegistrar registrar_;
 
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.savePage.saveAsMHTML")
 };
