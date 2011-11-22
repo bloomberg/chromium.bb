@@ -4806,6 +4806,13 @@
    fun:_ZN6WebKit12WebFrameImpl7didFailERKN7WebCore13ResourceErrorEb
 }
 {
+   bug_101146d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11webkit_glue16WebURLLoaderImplC1EPNS_25WebKitPlatformSupportImplE
+   fun:_ZN11webkit_glue25WebKitPlatformSupportImpl15createURLLoaderEv
+}
+{
    bug_101151
    Memcheck:Leak
    fun:_Znw*
