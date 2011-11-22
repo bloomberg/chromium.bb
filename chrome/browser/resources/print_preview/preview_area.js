@@ -91,6 +91,10 @@ cr.define('print_preview', function() {
       return (height - scrollbarHeight) / height;
     },
 
+    get pdfPlugin() {
+      return this.pdfPlugin_;
+    },
+
     get pdfLoaded() {
       return this.pdfLoaded_;
     },

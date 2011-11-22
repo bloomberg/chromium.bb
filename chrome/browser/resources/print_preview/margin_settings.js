@@ -535,8 +535,11 @@ cr.define('print_preview', function() {
      * Called when there is change in the preview position or size.
      */
     onPreviewPositionChanged: function() {
+      if (!previewArea.pdfPlugin)
+        return;
       if (this.isCustomMarginsSelected() && previewArea.pdfLoaded &&
           pageSettings.totalPageCount != undefined) {
+        this.updatePageData_();
         this.drawCustomMarginsUI_();
       }
     },
@@ -580,6 +583,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onCustomMarginsSelected_: function() {
+      if (!previewArea.pdfPlugin) {
+        this.forceMarginsUIOnPDFLoad_ = true;
+        return;
+      }
       var customMarginsNotSpecified = !this.customMargins_;
       this.updatePageData_();
 
