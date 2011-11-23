@@ -836,24 +836,18 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
+  set_testing_work_area(gfx::Rect(0, 0, 1200, 900));
 
   // Create a test panel with tab contents loaded.
-  CreatePanelParams params("PanelTest1", gfx::Rect(0, 0, 100, 100),
-                           SHOW_AS_ACTIVE);
-  params.url = GURL(chrome::kAboutBlankURL);
-  Panel* panel = CreatePanelWithParams(params);
-
-  // Load the test page.
+  CreatePanelParams params("PanelTest1", gfx::Rect(), SHOW_AS_ACTIVE);
   GURL url(ui_test_utils::GetTestUrl(
       FilePath(kTestDir),
       FilePath(FILE_PATH_LITERAL("update-preferred-size.html"))));
-  ui_test_utils::NavigateToURL(panel->browser(), url);
-
-  gfx::Rect initial_bounds = panel->GetBounds();
-  EXPECT_LE(100, initial_bounds.width());
-  EXPECT_LE(100, initial_bounds.height());
+  params.url = url;
+  Panel* panel = CreatePanelWithParams(params);
 
   // Expand the test page.
+  gfx::Rect initial_bounds = panel->GetBounds();
   ui_test_utils::WindowedNotificationObserver enlarge(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));
@@ -1460,8 +1454,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateWithExistingContents) {
   EXPECT_EQ(1, browser()->tab_count());
 
   Profile* profile = browser()->profile();
-  CreatePanelParams params("PanelTest1", gfx::Rect(0, 0, 100, 100),
-                           SHOW_AS_ACTIVE);
+  CreatePanelParams params("PanelTest1", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   Browser* panel_browser = panel->browser();
   EXPECT_EQ(2U, BrowserList::size());
@@ -1479,9 +1472,6 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateWithExistingContents) {
   // verifying that the panel auto resizes correctly. (Panel
   // enables auto resizing when tab contents are detected.)
   int initial_width = panel->GetBounds().width();
-  EXPECT_LE(100, initial_width);
-
-  // Expand the test page.
   ui_test_utils::WindowedNotificationObserver enlarge(
       chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
       content::Source<Panel>(panel));

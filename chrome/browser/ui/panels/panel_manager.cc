@@ -26,9 +26,9 @@ const size_t kInvalidPanelIndex = static_cast<size_t>(-1);
 // elements located on the bottom right of windows.
 const int kRightScreenEdgeSpacingWidth = 24;
 
-// Default width and height of a panel.
-const int kPanelDefaultWidth = 240;
-const int kPanelDefaultHeight = 290;
+// Width to height ratio is used to compute the default width or height
+// when only one value is provided.
+const double kPanelDefaultWidthToHeightRatio = 1.62;  // golden ratio
 
 // Maxmium width and height of a panel based on the factor of the working
 // area.
@@ -105,9 +105,14 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   int width = browser->override_bounds().width();
   int height = browser->override_bounds().height();
 
-  if (width == 0 && height == 0) {
-    width = kPanelDefaultWidth;
-    height = kPanelDefaultHeight;
+  // Auto resizable is enabled only if no initial size is provided.
+  bool auto_resize = (width == 0 && height == 0);
+
+  if (!auto_resize) {
+    if (height == 0)
+      height = width / kPanelDefaultWidthToHeightRatio;
+    if (width == 0)
+      width = height * kPanelDefaultWidthToHeightRatio;
   }
 
   int max_panel_width = GetMaxPanelWidth();
@@ -127,8 +132,11 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   int x = GetRightMostAvailablePosition() - width;
 
   // Now create the panel with the computed bounds.
-  Panel* panel = new Panel(browser, gfx::Rect(x, y, width, height));
-  panel->SetMaxSize(gfx::Size(max_panel_width, max_panel_height));
+  Panel* panel = new Panel(browser,
+                           gfx::Rect(x, y, width, height),
+                           gfx::Size(kPanelMinWidth, kPanelMinHeight),
+                           gfx::Size(max_panel_width, max_panel_height),
+                           auto_resize);
   panels_.push_back(panel);
 
   content::NotificationService::current()->Notify(

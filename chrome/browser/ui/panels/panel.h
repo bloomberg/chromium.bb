@@ -207,6 +207,7 @@ class Panel : public BrowserWindow,
   ExpansionState expansion_state() const { return expansion_state_; }
   const gfx::Size& min_size() const { return min_size_; }
   const gfx::Size& max_size() const { return max_size_; }
+  bool auto_resizable() const { return auto_resizable_; }
 
  protected:
   virtual void DestroyBrowser() OVERRIDE;
@@ -217,7 +218,11 @@ class Panel : public BrowserWindow,
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, RestoredBounds);
 
   // Panel can only be created using PanelManager::CreatePanel().
-  Panel(Browser* browser, const gfx::Rect& bounds);
+  Panel(Browser* browser,
+        const gfx::Rect& bounds,
+        const gfx::Size& min_size,
+        const gfx::Size& max_size,
+        bool auto_resizable);
 
   // This is different from BrowserWindow::SetBounds():
   // * SetPanelBounds() is only called by PanelManager to manage its position.
@@ -225,13 +230,18 @@ class Panel : public BrowserWindow,
   //   not allowed for Panel.
   void SetPanelBounds(const gfx::Rect& bounds);
 
-  // Updates the maximum size.
-  void SetMaxSize(const gfx::Size& max_size);
+  // Sets whether the panel will auto resize according to its content.
+  void SetAutoResizable(bool resizable);
 
   // NULL might be returned if the tab has not been added.
   RenderViewHost* GetRenderViewHost() const;
 
-  void EnableAutoResize(RenderViewHost* render_view_host);
+  // Configures the tab contents for auto resize, including configurations
+  // on the renderer and detecting renderer changes.
+  void EnableTabContentsAutoResize(TabContents* tab_contents);
+
+  // Configures the renderer for auto resize.
+  void EnableRendererAutoResize(RenderViewHost* render_view_host);
 
   // Requests RenderViewHost not to show the scrollbars till |max_size_| since
   // the panel can grow to |max_size_|.
@@ -244,6 +254,9 @@ class Panel : public BrowserWindow,
   // This is the size beyond which the panel is not going to grow to accomodate
   // the growing content and WebKit would add the scrollbars in such case.
   gfx::Size max_size_;
+
+  // True if this panel auto resizes based on content.
+  bool auto_resizable_;
 
   // Platform specifc implementation for panels.  It'd be one of
   // PanelBrowserWindowGtk/PanelBrowserView/PanelBrowserWindowCocoa.

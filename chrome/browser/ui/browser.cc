@@ -448,8 +448,7 @@ Browser* Browser::Create(Profile* profile) {
 Browser* Browser::CreateWithParams(const CreateParams& params) {
   Browser* browser = new Browser(params.type, params.profile);
   browser->app_name_ = params.app_name;
-  if (!params.initial_bounds.IsEmpty())
-    browser->set_override_bounds(params.initial_bounds);
+  browser->set_override_bounds(params.initial_bounds);
   browser->InitBrowserWindow();
   return browser;
 }
@@ -490,9 +489,7 @@ Browser* Browser::CreateForApp(Type type,
 
   CreateParams params(type, profile);
   params.app_name = app_name;
-  if (!window_bounds.IsEmpty())
-    params.initial_bounds = window_bounds;
-
+  params.initial_bounds = window_bounds;
   return CreateWithParams(params);
 }
 

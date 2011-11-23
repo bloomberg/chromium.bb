@@ -283,6 +283,11 @@ Panel* BasePanelBrowserTest::CreatePanelWithParams(
 
   Panel* panel = static_cast<Panel*>(panel_browser->window());
 
+  if (params.bounds.width() || params.bounds.height())
+    EXPECT_FALSE(panel->auto_resizable());
+  else
+    EXPECT_TRUE(panel->auto_resizable());
+
   if (params.show_flag == SHOW_AS_ACTIVE) {
     panel->Show();
   } else {

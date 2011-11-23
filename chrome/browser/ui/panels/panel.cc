@@ -33,14 +33,18 @@ const Extension* Panel::GetExtensionFromBrowser(Browser* browser) {
       web_app::GetExtensionIdFromApplicationName(browser->app_name()), false);
 }
 
-Panel::Panel(Browser* browser, const gfx::Rect& bounds)
-    : min_size_(bounds.size()),
-      max_size_(bounds.size()),
-      native_panel_(NULL),
+Panel::Panel(Browser* browser,
+             const gfx::Rect& bounds,
+             const gfx::Size& min_size,
+             const gfx::Size& max_size,
+             bool auto_resizable)
+    : min_size_(min_size),
+      max_size_(max_size),
+      auto_resizable_(false),
       expansion_state_(EXPANDED),
       restored_height_(bounds.height()) {
   native_panel_ = CreateNativePanel(browser, this, bounds);
-  browser->tabstrip_model()->AddObserver(this);
+  SetAutoResizable(auto_resizable);
 }
 
 Panel::~Panel() {
@@ -48,7 +52,8 @@ Panel::~Panel() {
 }
 
 void Panel::OnNativePanelClosed() {
-  native_panel_->GetPanelBrowser()->tabstrip_model()->RemoveObserver(this);
+  if (auto_resizable_)
+    native_panel_->GetPanelBrowser()->tabstrip_model()->RemoveObserver(this);
   manager()->Remove(this);
 }
 
@@ -72,16 +77,20 @@ void Panel::SetPanelBounds(const gfx::Rect& bounds) {
       content::NotificationService::NoDetails());
 }
 
-void Panel::SetMaxSize(const gfx::Size& max_size) {
-  if (max_size_ == max_size)
+void Panel::SetAutoResizable(bool resizable) {
+  if (auto_resizable_ == resizable)
     return;
-  max_size_ = max_size;
 
-  // Note: |render_view_host| might be NULL if the tab has not been created.
-  // If so, we will do it when TabInsertedAt() is invoked.
-  RenderViewHost* render_view_host = GetRenderViewHost();
-  if (render_view_host)
-    RequestRenderViewHostToDisableScrollbars(render_view_host);
+  auto_resizable_ = resizable;
+  if (auto_resizable_) {
+    browser()->tabstrip_model()->AddObserver(this);
+    TabContents* tab_contents = browser()->GetSelectedTabContents();
+    if (tab_contents)
+      EnableTabContentsAutoResize(tab_contents);
+  } else {
+    browser()->tabstrip_model()->RemoveObserver(this);
+    registrar_.RemoveAll();
+  }
 }
 
 void Panel::SetExpansionState(ExpansionState new_state) {
@@ -539,8 +548,10 @@ void Panel::ShowKeyboardOverlay(gfx::NativeWindow owning_window) {
 
 void Panel::UpdatePreferredSize(TabContents* tab_contents,
                                 const gfx::Size& pref_size) {
-  return manager()->OnPreferredWindowSizeChanged(this,
-      native_panel_->WindowSizeFromContentSize(pref_size));
+  if (auto_resizable_) {
+    return manager()->OnPreferredWindowSizeChanged(this,
+        native_panel_->WindowSizeFromContentSize(pref_size));
+  }
 }
 
 void Panel::ShowAvatarBubble(TabContents* tab_contents, const gfx::Rect& rect) {
@@ -556,9 +567,17 @@ void Panel::ShowAvatarBubbleFromAvatarButton() {
 void Panel::TabInsertedAt(TabContentsWrapper* contents,
                           int index,
                           bool foreground) {
-  DCHECK_EQ(0, index);
-  TabContents* tab_contents = contents->tab_contents();
-  EnableAutoResize(tab_contents->render_view_host());
+  if (auto_resizable_) {
+    DCHECK_EQ(0, index);
+    EnableTabContentsAutoResize(contents->tab_contents());
+  }
+}
+
+void Panel::EnableTabContentsAutoResize(TabContents* tab_contents) {
+  DCHECK(tab_contents);
+  RenderViewHost* render_view_host = tab_contents->render_view_host();
+  if (render_view_host)
+    EnableRendererAutoResize(render_view_host);
 
   // We also need to know when the render view host changes in order
   // to turn on preferred size changed notifications in the new
@@ -573,11 +592,13 @@ void Panel::TabInsertedAt(TabContentsWrapper* contents,
 void Panel::Observe(int type,
                     const content::NotificationSource& source,
                     const content::NotificationDetails& details) {
-  DCHECK_EQ(type, content::NOTIFICATION_TAB_CONTENTS_SWAPPED);
-  RenderViewHost* render_view_host =
-      content::Source<TabContents>(source).ptr()->render_view_host();
-  if (render_view_host)
-    EnableAutoResize(render_view_host);
+  if (auto_resizable_) {
+    DCHECK_EQ(type, content::NOTIFICATION_TAB_CONTENTS_SWAPPED);
+    RenderViewHost* render_view_host =
+        content::Source<TabContents>(source).ptr()->render_view_host();
+    if (render_view_host)
+      EnableRendererAutoResize(render_view_host);
+  }
 }
 
 RenderViewHost* Panel::GetRenderViewHost() const {
@@ -587,7 +608,8 @@ RenderViewHost* Panel::GetRenderViewHost() const {
   return tab_contents->render_view_host();
 }
 
-void Panel::EnableAutoResize(RenderViewHost* render_view_host) {
+void Panel::EnableRendererAutoResize(RenderViewHost* render_view_host) {
+  DCHECK(auto_resizable_);
   DCHECK(render_view_host);
   render_view_host->EnablePreferredSizeMode();
   RequestRenderViewHostToDisableScrollbars(render_view_host);
@@ -595,15 +617,18 @@ void Panel::EnableAutoResize(RenderViewHost* render_view_host) {
 
 void Panel::RequestRenderViewHostToDisableScrollbars(
     RenderViewHost* render_view_host) {
+  DCHECK(auto_resizable_);
   DCHECK(render_view_host);
   render_view_host->DisableScrollbarsForThreshold(
       native_panel_->ContentSizeFromWindowSize(max_size_));
 }
 
 void Panel::OnWindowSizeAvailable() {
-  RenderViewHost* render_view_host = GetRenderViewHost();
-  if (render_view_host)
-    RequestRenderViewHostToDisableScrollbars(render_view_host);
+  if (auto_resizable_) {
+    RenderViewHost* render_view_host = GetRenderViewHost();
+    if (render_view_host)
+      RequestRenderViewHostToDisableScrollbars(render_view_host);
+  }
 }
 
 Browser* Panel::browser() const {

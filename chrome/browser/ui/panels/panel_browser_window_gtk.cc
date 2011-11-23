@@ -146,12 +146,11 @@ void PanelBrowserWindowGtk::OnSizeChanged(int width, int height) {
     return;
 
   window_size_known_ = true;
-  int bottom = panel_->manager()->GetBottomPositionForExpansionState(
-      panel_->expansion_state());
-  int top = bottom - height;
+  int top = bounds_.bottom() - height;
+  int left = bounds_.right() - width;
 
-  gtk_window_move(window_, bounds_.x(), top);
-  StartBoundsAnimation(gfx::Rect(bounds_.x(), top, width, height));
+  gtk_window_move(window_, left, top);
+  StartBoundsAnimation(gfx::Rect(left, top, width, height));
   panel_->OnWindowSizeAvailable();
 
   content::NotificationService::current()->Notify(
