@@ -86,13 +86,17 @@
           'type': 'static_library',
          }, {
           'type': '<(component)',
-          'dependencies': [
-              '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
-          ],
          }],
         ['inside_chromium_build==0', {
           'dependencies': [
             '<(DEPTH)/webkit/support/setup_third_party.gyp:third_party_headers',
+          ],
+        }],
+        [# TODO(dpranke): Figure out why this doesn't work outside of
+         # a webkit build - this seems to be a bug in the make gyp generator.
+         'OS!="mac" and inside_chromium_build==1', {
+          'dependencies': [
+            '<(webkit_src_dir)/Source/WebKit/chromium/WebKit.gyp:webkit',
           ],
         }],
       ],
