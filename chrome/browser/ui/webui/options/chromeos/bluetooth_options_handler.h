@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_adapter.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_manager.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
@@ -27,9 +28,10 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   virtual ~BluetoothOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
-  virtual void RegisterMessages();
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // Called when the 'Enable bluetooth' checkbox value is changed.
   // |args| will contain the checkbox checked state as a string
@@ -85,17 +87,18 @@ class BluetoothOptionsHandler : public OptionsPageUIHandler,
   void ValidatePasskeyCallback(const base::ListValue* args);
 
   // chromeos::BluetoothManager::Observer override.
-  virtual void DefaultAdapterChanged(chromeos::BluetoothAdapter* adapter);
+  virtual void DefaultAdapterChanged(
+      chromeos::BluetoothAdapter* adapter) OVERRIDE;
 
   // chromeos::BluetoothAdapter::Observer override.
-  virtual void DiscoveryStarted(const std::string& adapter_id);
+  virtual void DiscoveryStarted(const std::string& adapter_id) OVERRIDE;
 
   // chromeos::BluetoothAdapter::Observer override.
-  virtual void DiscoveryEnded(const std::string& adapter_id);
+  virtual void DiscoveryEnded(const std::string& adapter_id) OVERRIDE;
 
   // chromeos::BluetoothAdapter::Observer override.
   virtual void DeviceFound(const std::string& adapter_id,
-                           chromeos::BluetoothDevice* device);
+                           chromeos::BluetoothDevice* device) OVERRIDE;
 
  private:
   // Compares |adapter| with our cached default adapter ID and calls

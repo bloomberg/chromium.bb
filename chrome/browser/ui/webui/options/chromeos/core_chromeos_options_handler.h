@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CORE_CHROMEOS_OPTIONS_HANDLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 
@@ -21,7 +22,7 @@ class CoreChromeOSOptionsHandler : public CoreOptionsHandler {
 
  protected:
   // ::CoreOptionsHandler overrides
-  virtual void Initialize();
+  virtual void Initialize() OVERRIDE;
   virtual base::Value* FetchPref(const std::string& pref_name) OVERRIDE;
   virtual void ObservePref(const std::string& pref_name) OVERRIDE;
   virtual void SetPref(const std::string& pref_name,

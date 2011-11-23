@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_NETWORK_SCREEN_HANDLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/network_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -26,22 +27,23 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual ~NetworkScreenHandler();
 
   // NetworkScreenActor implementation:
-  virtual void SetDelegate(NetworkScreenActor::Delegate* screen);
-  virtual void PrepareToShow();
-  virtual void Show();
-  virtual void Hide();
-  virtual void ShowError(const string16& message);
-  virtual void ClearErrors();
+  virtual void SetDelegate(NetworkScreenActor::Delegate* screen) OVERRIDE;
+  virtual void PrepareToShow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void ShowError(const string16& message) OVERRIDE;
+  virtual void ClearErrors() OVERRIDE;
   virtual void ShowConnectingStatus(bool connecting,
-                                    const string16& network_id);
-  virtual void EnableContinue(bool enabled);
+                                    const string16& network_id) OVERRIDE;
+  virtual void EnableContinue(bool enabled) OVERRIDE;
 
   // BaseScreenHandler implementation:
-  virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
+  virtual void GetLocalizedStrings(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   // Handles moving off the screen.

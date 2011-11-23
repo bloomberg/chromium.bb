@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CERTIFICATE_VIEWER_WEBUI_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "net/base/x509_certificate.h"
@@ -71,7 +72,7 @@ class CertificateViewerDialogHandler : public WebUIMessageHandler {
   virtual ~CertificateViewerDialogHandler();
 
   // Overridden from WebUIMessageHandler
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   // Brings up the export certificate dialog for the chosen certificate in the

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 
 namespace chromeos {
@@ -24,9 +25,9 @@ class UserImageSource : public ChromeURLDataManager::DataSource {
   // the path we registered.
   virtual void StartDataRequest(const std::string& path,
                                 bool is_incognito,
-                                int request_id);
+                                int request_id) OVERRIDE;
 
-  virtual std::string GetMimeType(const std::string&) const;
+  virtual std::string GetMimeType(const std::string&) const OVERRIDE;
 
   // Returns PNG encoded image for user with specified email.
   // If there's no user with such email, returns the default image.

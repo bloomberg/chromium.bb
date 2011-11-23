@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/browser/chromeos/dbus/update_engine_client.h"
 #include "chrome/browser/chromeos/version_loader.h"
@@ -21,8 +22,9 @@ class AboutPageHandler : public OptionsPageUIHandler {
   virtual ~AboutPageHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void RegisterMessages();
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   class UpdateObserver;

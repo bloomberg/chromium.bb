@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/certificate_manager_model.h"
 #include "chrome/browser/ui/select_file_dialog.h"
@@ -26,15 +27,18 @@ class CertificateManagerHandler : public OptionsPageUIHandler,
   virtual ~CertificateManagerHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void RegisterMessages();
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void RegisterMessages() OVERRIDE;
 
   // CertificateManagerModel::Observer implementation.
-  virtual void CertificatesRefreshed();
+  virtual void CertificatesRefreshed() OVERRIDE;
 
   // SelectFileDialog::Listener implementation.
-  virtual void FileSelected(const FilePath& path, int index, void* params);
-  virtual void FileSelectionCanceled(void* params);
+  virtual void FileSelected(const FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
+  virtual void FileSelectionCanceled(void* params) OVERRIDE;
 
  private:
   // View certificate.

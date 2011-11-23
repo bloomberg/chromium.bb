@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_ACCOUNTS_OPTIONS_HANDLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace chromeos {
@@ -19,10 +20,11 @@ class AccountsOptionsHandler : public OptionsPageUIHandler {
   virtual ~AccountsOptionsHandler();
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
 
  private:
   // Javascript callbacks to whitelist/unwhitelist user.

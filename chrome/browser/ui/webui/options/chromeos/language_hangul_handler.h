@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_LANGUAGE_HANGUL_HANDLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace base {
@@ -22,7 +23,8 @@ class LanguageHangulHandler : public OptionsPageUIHandler {
   virtual ~LanguageHangulHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
 
  private:
   // Returns the list of hangul keyboards.

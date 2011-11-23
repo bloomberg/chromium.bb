@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_CROS_LANGUAGE_OPTIONS_HANDLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller.h"
 #include "chrome/browser/ui/webui/options/language_options_handler.h"
 
@@ -19,10 +20,11 @@ class CrosLanguageOptionsHandler : public LanguageOptionsHandlerCommon {
   virtual ~CrosLanguageOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
 
   // DOMMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // The following static methods are public for ease of testing.
 
@@ -45,8 +47,8 @@ class CrosLanguageOptionsHandler : public LanguageOptionsHandlerCommon {
 
  private:
   // LanguageOptionsHandlerCommon implementation.
-  virtual string16 GetProductName();
-  virtual void SetApplicationLocale(const std::string& language_code);
+  virtual string16 GetProductName() OVERRIDE;
+  virtual void SetApplicationLocale(const std::string& language_code) OVERRIDE;
 
   // Called when the sign-out button is clicked.
   void RestartCallback(const base::ListValue* args);

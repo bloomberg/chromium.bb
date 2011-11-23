@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_LANGUAGE_CUSTOMIZE_MODIFIER_KEYS_HANDLER_H_  // NOLINT
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
@@ -18,7 +19,7 @@ class LanguageCustomizeModifierKeysHandler : public OptionsPageUIHandler {
   virtual ~LanguageCustomizeModifierKeysHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings);
+  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LanguageCustomizeModifierKeysHandler);

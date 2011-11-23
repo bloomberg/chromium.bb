@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/memory/weak_ptr.h"
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace base {
@@ -22,10 +23,11 @@ class SystemOptionsHandler
   virtual ~SystemOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // Called when the accessibility checkbox value is changed.
   // |args| will contain the checkbox checked state as a string

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/webui/cookies_tree_model_adapter.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
@@ -47,7 +48,7 @@ class CollectedCookiesUIDelegate : public HtmlDialogUIDelegate,
   virtual bool ShouldShowDialogTitle() const OVERRIDE;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   explicit CollectedCookiesUIDelegate(TabContentsWrapper* wrapper);
@@ -65,7 +66,7 @@ class CollectedCookiesUIDelegate : public HtmlDialogUIDelegate,
   // Notification Observer implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // JS callback to bind cookies tree models with JS trees.
   void BindCookiesTreeModel(const base::ListValue* args);

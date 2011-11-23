@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_EULA_SCREEN_HANDLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/eula_screen_actor.h"
 #include "chrome/browser/chromeos/login/tpm_password_fetcher.h"
@@ -31,18 +32,19 @@ class EulaScreenHandler : public EulaScreenActor,
   virtual ~EulaScreenHandler();
 
   // EulaScreenActor implementation:
-  virtual void PrepareToShow();
-  virtual void Show();
-  virtual void Hide();
-  virtual void SetDelegate(Delegate* delegate);
-  virtual void OnPasswordFetched(const std::string& tpm_password);
+  virtual void PrepareToShow() OVERRIDE;
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void SetDelegate(Delegate* delegate) OVERRIDE;
+  virtual void OnPasswordFetched(const std::string& tpm_password) OVERRIDE;
 
   // BaseScreenHandler implementation:
-  virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
+  virtual void GetLocalizedStrings(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   // JS messages handlers.

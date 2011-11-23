@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_registrar.h"
@@ -28,19 +29,22 @@ class InternetOptionsHandler
   virtual ~InternetOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
   // NetworkLibrary::NetworkManagerObserver implementation.
-  virtual void OnNetworkManagerChanged(chromeos::NetworkLibrary* network_lib);
+  virtual void OnNetworkManagerChanged(
+      chromeos::NetworkLibrary* network_lib) OVERRIDE;
   // NetworkLibrary::NetworkObserver implementation.
   virtual void OnNetworkChanged(chromeos::NetworkLibrary* network_lib,
-                                const chromeos::Network* network);
+                                const chromeos::Network* network) OVERRIDE;
   // NetworkLibrary::CellularDataPlanObserver implementation.
-  virtual void OnCellularDataPlanChanged(chromeos::NetworkLibrary* network_lib);
+  virtual void OnCellularDataPlanChanged(
+      chromeos::NetworkLibrary* network_lib) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

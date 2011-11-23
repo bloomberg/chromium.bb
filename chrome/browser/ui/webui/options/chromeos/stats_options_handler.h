@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CHROMEOS_STATS_OPTIONS_HANDLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace chromeos {
@@ -19,11 +20,12 @@ class StatsOptionsHandler : public OptionsPageUIHandler {
   StatsOptionsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
   // WebUIMessageHandler implementation.
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
   void HandleMetricsReportingCheckbox(const base::ListValue* args);

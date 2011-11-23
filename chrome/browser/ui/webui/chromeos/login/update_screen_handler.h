@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_UPDATE_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_UPDATE_SCREEN_HANDLER_H_
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/login/update_screen_actor.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
@@ -17,21 +18,22 @@ class UpdateScreenHandler : public UpdateScreenActor,
   virtual ~UpdateScreenHandler();
 
   // BaseScreenHandler implementation:
-  virtual void GetLocalizedStrings(base::DictionaryValue* localized_strings);
-  virtual void Initialize();
+  virtual void GetLocalizedStrings(
+      base::DictionaryValue* localized_strings) OVERRIDE;
+  virtual void Initialize() OVERRIDE;
 
   // UpdateScreenActor implementation:
   virtual void SetDelegate(UpdateScreenActor::Delegate* screen) OVERRIDE;
-  virtual void Show();
-  virtual void Hide();
-  virtual void PrepareToShow();
-  virtual void ShowManualRebootInfo();
-  virtual void SetProgress(int progress);
-  virtual void ShowCurtain(bool enable);
-  virtual void ShowPreparingUpdatesInfo(bool visible);
+  virtual void Show() OVERRIDE;
+  virtual void Hide() OVERRIDE;
+  virtual void PrepareToShow() OVERRIDE;
+  virtual void ShowManualRebootInfo() OVERRIDE;
+  virtual void SetProgress(int progress) OVERRIDE;
+  virtual void ShowCurtain(bool enable) OVERRIDE;
+  virtual void ShowPreparingUpdatesInfo(bool visible) OVERRIDE;
 
   // WebUIMessageHandler implementation:
-  virtual void RegisterMessages();
+  virtual void RegisterMessages() OVERRIDE;
 
  private:
 #if !defined(OFFICIAL_BUILD)
