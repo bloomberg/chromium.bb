@@ -14,6 +14,7 @@
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/pepper_session_manager.h"
 #include "remoting/protocol/pepper_stream_channel.h"
+#include "remoting/protocol/v1_client_channel_authenticator.h"
 #include "third_party/libjingle/source/talk/p2p/base/candidate.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
@@ -114,7 +115,9 @@ void PepperSession::CreateStreamChannel(
   PepperStreamChannel* channel = new PepperStreamChannel(this, name, callback);
   channels_[name] = channel;
   channel->Connect(session_manager_->pp_instance_,
-                   session_manager_->transport_config_, remote_cert_);
+                   session_manager_->transport_config_,
+                   new V1ClientChannelAuthenticator(
+                       remote_cert_, shared_secret_));
 }
 
 void PepperSession::CreateDatagramChannel(

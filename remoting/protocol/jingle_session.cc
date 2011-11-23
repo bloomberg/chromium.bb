@@ -17,6 +17,8 @@
 #include "remoting/protocol/jingle_datagram_connector.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/jingle_stream_connector.h"
+#include "remoting/protocol/v1_client_channel_authenticator.h"
+#include "remoting/protocol/v1_host_channel_authenticator.h"
 #include "third_party/libjingle/source/talk/base/thread.h"
 #include "third_party/libjingle/source/talk/p2p/base/p2ptransportchannel.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
@@ -413,8 +415,15 @@ void JingleSession::AddChannelConnector(
   }
 
   channel_connectors_[name] = connector;
-  connector->Connect(cricket_session_->initiator(), local_cert_,
-                     remote_cert_, local_private_key_.get(), raw_channel);
+  ChannelAuthenticator* authenticator;
+  if (cricket_session_->initiator()) {
+    authenticator = new V1ClientChannelAuthenticator(
+        remote_cert_, shared_secret_);
+  } else {
+    authenticator = new V1HostChannelAuthenticator(
+        local_cert_, local_private_key_.get(), shared_secret_);
+  }
+  connector->Connect(authenticator, raw_channel);
 
   // Workaround bug in libjingle - it doesn't connect channels if they
   // are created after the session is accepted. See crbug.com/89384.

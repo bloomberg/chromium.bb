@@ -32,34 +32,6 @@ const int kTcpAckDelayMilliseconds = 10;
 const int kTcpReceiveBufferSize = 256 * 1024;
 const int kTcpSendBufferSize = kTcpReceiveBufferSize + 30 * 1024;
 
-// Helper method to create a SSL client socket.
-net::SSLClientSocket* CreateSSLClientSocket(
-    net::StreamSocket* socket, const std::string& der_cert,
-    net::CertVerifier* cert_verifier) {
-  net::SSLConfig ssl_config;
-
-  // Certificate provided by the host doesn't need authority.
-  net::SSLConfig::CertAndStatus cert_and_status;
-  cert_and_status.cert_status = net::CERT_STATUS_AUTHORITY_INVALID;
-  cert_and_status.der_cert = der_cert;
-  ssl_config.allowed_bad_certs.push_back(cert_and_status);
-
-  // Revocation checking is not needed because we use self-signed
-  // certs. Disable it so that SSL layer doesn't try to initialize
-  // OCSP (OCSP works only on IO thread).
-  ssl_config.rev_checking_enabled = false;
-
-  // SSLClientSocket takes ownership of the adapter.
-  net::HostPortPair host_and_port(
-      ContentDescription::kChromotingContentName, 0);
-  net::SSLClientSocketContext context;
-  context.cert_verifier = cert_verifier;
-  net::SSLClientSocket* ssl_socket =
-      net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-          socket, host_and_port, ssl_config, NULL, context);
-  return ssl_socket;
-}
-
 }  // namespace
 
 JingleStreamConnector::JingleStreamConnector(
@@ -69,30 +41,20 @@ JingleStreamConnector::JingleStreamConnector(
     : session_(session),
       name_(name),
       callback_(callback),
-      initiator_(false),
-      local_private_key_(NULL),
       raw_channel_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(tcp_connect_callback_(
-          this, &JingleStreamConnector::OnTCPConnect)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ssl_connect_callback_(
-          this, &JingleStreamConnector::OnSSLConnect)) {
+          this, &JingleStreamConnector::OnTCPConnect)) {
 }
 
 JingleStreamConnector::~JingleStreamConnector() {
 }
 
-void JingleStreamConnector::Connect(bool initiator,
-                                    const std::string& local_cert,
-                                    const std::string& remote_cert,
-                                    crypto::RSAPrivateKey* local_private_key,
+void JingleStreamConnector::Connect(ChannelAuthenticator* authenticator,
                                     cricket::TransportChannel* raw_channel) {
   DCHECK(CalledOnValidThread());
   DCHECK(!raw_channel_);
 
-  initiator_ = initiator;
-  local_cert_ = local_cert;
-  remote_cert_ = remote_cert;
-  local_private_key_ = local_private_key;
+  authenticator_.reset(authenticator);
   raw_channel_ = raw_channel;
 
   net::Socket* socket =
@@ -132,49 +94,6 @@ bool JingleStreamConnector::EstablishTCPConnection(net::Socket* socket) {
   return false;
 }
 
-bool JingleStreamConnector::EstablishSSLConnection() {
-  DCHECK(tcp_socket_->IsConnected());
-
-  int result;
-  if (initiator_) {
-    cert_verifier_.reset(new net::CertVerifier());
-
-    // Create client SSL socket.
-    net::SSLClientSocket* socket = CreateSSLClientSocket(
-        tcp_socket_.release(), remote_cert_, cert_verifier_.get());
-    socket_.reset(socket);
-
-    result = socket->Connect(&ssl_connect_callback_);
-  } else {
-    scoped_refptr<net::X509Certificate> cert =
-        net::X509Certificate::CreateFromBytes(
-            local_cert_.data(), local_cert_.length());
-    if (!cert) {
-      LOG(ERROR) << "Failed to parse X509Certificate";
-      return false;
-    }
-
-    // Create server SSL socket.
-    net::SSLConfig ssl_config;
-    net::SSLServerSocket* socket = net::CreateSSLServerSocket(
-        tcp_socket_.release(), cert, local_private_key_, ssl_config);
-    socket_.reset(socket);
-
-    result = socket->Handshake(&ssl_connect_callback_);
-  }
-
-  if (result == net::ERR_IO_PENDING) {
-    return true;
-  } else if (result != net::OK) {
-    LOG(ERROR) << "Failed to establish SSL connection";
-    return false;
-  }
-
-  // Reach here if net::OK is received.
-  ssl_connect_callback_.Run(net::OK);
-  return true;
-}
-
 void JingleStreamConnector::OnTCPConnect(int result) {
   DCHECK(CalledOnValidThread());
 
@@ -184,45 +103,16 @@ void JingleStreamConnector::OnTCPConnect(int result) {
     return;
   }
 
-  if (!EstablishSSLConnection())
-    NotifyError();
-}
-
-void JingleStreamConnector::OnSSLConnect(int result) {
-  DCHECK(CalledOnValidThread());
-
-  if (result != net::OK) {
-    LOG(ERROR) << "Error during SSL connection: " << result;
-    NotifyError();
-    return;
-  }
-
-  DCHECK(socket_->IsConnected());
-  AuthenticateChannel();
-}
-
-void JingleStreamConnector::AuthenticateChannel() {
-  if (initiator_) {
-    authenticator_.reset(
-        new ClientChannelAuthenticator(session_->shared_secret()));
-  } else {
-    authenticator_.reset(
-        new HostChannelAuthenticator(session_->shared_secret()));
-  }
-  authenticator_->Authenticate(socket_.get(), base::Bind(
+  authenticator_->SecureAndAuthenticate(tcp_socket_.release(), base::Bind(
       &JingleStreamConnector::OnAuthenticationDone, base::Unretained(this)));
 }
 
 void JingleStreamConnector::OnAuthenticationDone(
-    ChannelAuthenticator::Result result) {
-  switch (result) {
-    case ChannelAuthenticator::SUCCESS:
-      NotifyDone(socket_.release());
-      break;
-
-    case ChannelAuthenticator::FAILURE:
-      NotifyError();
-      break;
+    net::Error error, net::StreamSocket* socket) {
+  if (error != net::OK) {
+    NotifyError();
+  } else {
+    NotifyDone(socket);
   }
 }
 
@@ -233,7 +123,6 @@ void JingleStreamConnector::NotifyDone(net::StreamSocket* socket) {
 }
 
 void JingleStreamConnector::NotifyError() {
-  socket_.reset();
   NotifyDone(NULL);
 }
 

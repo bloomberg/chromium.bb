@@ -11,7 +11,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/javascript_signal_strategy.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
-#include "remoting/protocol/auth_token_utils.h"
+#include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/client_control_dispatcher.h"
 #include "remoting/protocol/client_event_dispatcher.h"
 #include "remoting/protocol/client_stub.h"

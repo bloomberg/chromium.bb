@@ -5,6 +5,7 @@
 #include "remoting/protocol/jingle_datagram_connector.h"
 
 #include "jingle/glue/channel_socket_adapter.h"
+#include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/jingle_session.h"
 
 namespace remoting {
@@ -23,12 +24,11 @@ JingleDatagramConnector::~JingleDatagramConnector() {
 }
 
 void JingleDatagramConnector::Connect(
-    bool initiator,
-    const std::string& local_cert,
-    const std::string& remote_cert,
-    crypto::RSAPrivateKey* local_private_key,
+    ChannelAuthenticator* authenticator,
     cricket::TransportChannel* raw_channel) {
   DCHECK(CalledOnValidThread());
+
+  authenticator_.reset(authenticator);
 
   net::Socket* socket =
       new jingle_glue::TransportChannelSocketAdapter(raw_channel);

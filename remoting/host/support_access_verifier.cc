@@ -11,7 +11,7 @@
 #include "base/rand_util.h"
 #include "base/string_util.h"
 #include "remoting/host/host_config.h"
-#include "remoting/protocol/auth_token_utils.h"
+#include "remoting/protocol/auth_util.h"
 
 namespace remoting {
 
