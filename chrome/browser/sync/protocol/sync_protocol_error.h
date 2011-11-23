@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 
 namespace browser_sync{
 
@@ -67,6 +68,7 @@ struct SyncProtocolError {
   std::string error_description;
   std::string url;
   ClientAction action;
+  syncable::ModelTypeSet error_data_types;
   SyncProtocolError();
   ~SyncProtocolError();
   DictionaryValue* ToValue() const;

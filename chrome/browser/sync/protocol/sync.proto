@@ -420,7 +420,7 @@ message ClearUserDataResponse {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 29];
+  optional int32 protocol_version = 2 [default = 30];
   enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;
@@ -627,7 +627,8 @@ message ClientToServerResponse {
     MIGRATION_DONE     = 9;   // Migration has finished for one or more data
                               // types.  Client should clear the cache for
                               // these data types only and then re-sync with
-                              // a server.
+                              // a server. The migrated datatypes are in the
+                              // |migrated_datatype_ids| field.
     UNKNOWN            = 100; // Unknown value. This should never be explicitly
                               // used; it is the default value when an
                               // out-of-date client parses a value it doesn't
@@ -650,6 +651,10 @@ message ClientToServerResponse {
       UNKNOWN_ACTION              = 5; // This is the default.
     }
     optional Action action              = 4 [default = UNKNOWN_ACTION];
+
+    // Currently only meaningful if |error_type| is throttled. If this field
+    // is absent then the whole client (all datatypes) is throttled.
+    repeated int32 error_data_type_ids = 5;
   }
 
   optional Error error = 13;

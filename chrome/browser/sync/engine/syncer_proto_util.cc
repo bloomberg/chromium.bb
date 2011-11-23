@@ -188,6 +188,20 @@ base::TimeDelta SyncerProtoUtil::GetThrottleDelay(
   return throttle_delay;
 }
 
+void SyncerProtoUtil::HandleThrottleError(
+    const SyncProtocolError& error,
+    const base::TimeTicks& throttled_until,
+    sessions::SyncSessionContext* context,
+    sessions::SyncSession::Delegate* delegate) {
+  DCHECK_EQ(error.error_type, browser_sync::THROTTLED);
+  if (error.error_data_types.size() > 0) {
+     context->SetUnthrottleTime(error.error_data_types, throttled_until);
+  } else {
+    // No datatypes indicates the client should be completely throttled.
+    delegate->OnSilencedUntil(throttled_until);
+  }
+}
+
 namespace {
 
 // Helper function for an assertion in PostClientToServerMessage.
@@ -259,6 +273,17 @@ browser_sync::SyncProtocolError ConvertErrorPBToLocalType(
   sync_protocol_error.url = error.url();
   sync_protocol_error.action = ConvertClientActionPBToLocalClientAction(
       error.action());
+
+  if (error.error_data_type_ids_size() > 0) {
+    // THROTTLED is currently the only error code that uses |error_data_types|.
+    DCHECK_EQ(error.error_type(), ClientToServerResponse::THROTTLED);
+    for (int i = 0; i < error.error_data_type_ids_size(); ++i) {
+      sync_protocol_error.error_data_types.insert(
+          syncable::GetModelTypeFromExtensionFieldNumber(
+              error.error_data_type_ids(i)));
+    }
+  }
+
   return sync_protocol_error;
 }
 
@@ -332,8 +357,10 @@ bool SyncerProtoUtil::PostClientToServerMessage(
       return true;
     case browser_sync::THROTTLED:
       LOG(WARNING) << "Client silenced by server.";
-      session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +
-          GetThrottleDelay(*response));
+      HandleThrottleError(sync_protocol_error,
+                          base::TimeTicks::Now() + GetThrottleDelay(*response),
+                          session->context(),
+                          session->delegate());
       return false;
     case browser_sync::TRANSIENT_ERROR:
       return false;

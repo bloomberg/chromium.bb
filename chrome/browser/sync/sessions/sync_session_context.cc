@@ -33,11 +33,28 @@ SyncSessionContext::SyncSessionContext(
     listeners_.AddObserver(*it);
 }
 
+SyncSessionContext::SyncSessionContext()
+    : connection_manager_(NULL),
+      directory_manager_(NULL),
+      registrar_(NULL),
+      extensions_activity_monitor_(NULL),
+      debug_info_getter_(NULL) {
+}
+
 SyncSessionContext::~SyncSessionContext() {
   // In unittests, there may be no UI thread, so the above will fail.
   if (!BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE,
                                 extensions_activity_monitor_)) {
     delete extensions_activity_monitor_;
+  }
+}
+
+void SyncSessionContext::SetUnthrottleTime(const syncable::ModelTypeSet& types,
+                                           const base::TimeTicks& time) {
+  for (syncable::ModelTypeSet::const_iterator it = types.begin();
+       it != types.end();
+       ++it) {
+    unthrottle_times_[*it] = time;
   }
 }
 

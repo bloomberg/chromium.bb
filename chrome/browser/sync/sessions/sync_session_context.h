@@ -19,9 +19,11 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSION_CONTEXT_H_
 #pragma once
 
+#include <map>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/sessions/debug_info_getter.h"
@@ -52,7 +54,10 @@ class SyncSessionContext {
                      ModelSafeWorkerRegistrar* model_safe_worker_registrar,
                      const std::vector<SyncEngineEventListener*>& listeners,
                      DebugInfoGetter* debug_info_getter);
-  ~SyncSessionContext();
+
+  // Empty constructor for unit tests.
+  SyncSessionContext();
+  virtual ~SyncSessionContext();
 
   ConflictResolver* resolver() { return resolver_; }
   ServerConnectionManager* connection_manager() {
@@ -103,7 +108,15 @@ class SyncSessionContext {
                       OnSyncEngineEvent(event));
   }
 
+  // This is virtual for unit tests.
+  // TODO(lipalani)  Consult the unthrottle times before committing data to
+  // the server.
+  virtual void SetUnthrottleTime(const syncable::ModelTypeSet& types,
+                                 const base::TimeTicks& time);
+
  private:
+  typedef std::map<syncable::ModelType, base::TimeTicks> UnthrottleTimes;
+
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
   // once they are allocated. See definitions of these below.
@@ -146,6 +159,10 @@ class SyncSessionContext {
   // We use this to get debug info to send to the server for debugging
   // client behavior on server side.
   DebugInfoGetter* const debug_info_getter_;
+
+  // This is a map from throttled data types to the time at which they can be
+  // unthrottled.
+  UnthrottleTimes unthrottle_times_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };

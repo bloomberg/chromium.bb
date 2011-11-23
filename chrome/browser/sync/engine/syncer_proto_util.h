@@ -9,6 +9,8 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/time.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 
@@ -25,7 +27,8 @@ class EntitySpecifics;
 namespace browser_sync {
 
 namespace sessions {
-class SyncSession;
+class SyncProtocolError;
+class SyncSessionContext;
 }
 
 class ClientToServerMessage;
@@ -115,10 +118,17 @@ class SyncerProtoUtil {
   static base::TimeDelta GetThrottleDelay(
       const sync_pb::ClientToServerResponse& response);
 
+  static void HandleThrottleError(const SyncProtocolError& error,
+                                  const base::TimeTicks& throttled_until,
+                                  sessions::SyncSessionContext* context,
+                                  sessions::SyncSession::Delegate* delegate);
+
   friend class SyncerProtoUtilTest;
   FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, AddRequestBirthday);
   FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, PostAndProcessHeaders);
   FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, VerifyResponseBirthday);
+  FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, HandleThrottlingNoDatatypes);
+  FRIEND_TEST_ALL_PREFIXES(SyncerProtoUtilTest, HandleThrottlingWithDatatypes);
 
   DISALLOW_COPY_AND_ASSIGN(SyncerProtoUtil);
 };

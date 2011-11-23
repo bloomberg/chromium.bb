@@ -9,7 +9,13 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
+#include "base/time.h"
 #include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/sessions/session_state.h"
+#include "chrome/browser/sync/sessions/sync_session_context.h"
+#include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/password_specifics.pb.h"
+#include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -20,8 +26,33 @@
 
 using syncable::Blob;
 using syncable::ScopedDirLookup;
+using syncable::ModelTypeSet;
+using ::testing::_;
 
 namespace browser_sync {
+using sessions::SyncSessionContext;
+
+class MockSyncSessionContext : public SyncSessionContext {
+ public:
+  MockSyncSessionContext() {}
+  ~MockSyncSessionContext() {}
+  MOCK_METHOD2(SetUnthrottleTime, void(const ModelTypeSet&,
+                                       const base::TimeTicks&));
+};
+
+class MockDelegate : public sessions::SyncSession::Delegate {
+ public:
+   MockDelegate() {}
+   ~MockDelegate() {}
+
+  MOCK_METHOD0(IsSyncingCurrentlySilenced, bool());
+  MOCK_METHOD1(OnReceivedShortPollIntervalUpdate, void(const base::TimeDelta&));
+  MOCK_METHOD1(OnReceivedLongPollIntervalUpdate ,void(const base::TimeDelta&));
+  MOCK_METHOD1(OnReceivedSessionsCommitDelay, void(const base::TimeDelta&));
+  MOCK_METHOD1(OnSyncProtocolError, void(const sessions::SyncSessionSnapshot&));
+  MOCK_METHOD0(OnShouldStopSyncingPermanently, void());
+  MOCK_METHOD1(OnSilencedUntil, void(const base::TimeTicks&));
+};
 
 TEST(SyncerProtoUtil, TestBlobToProtocolBufferBytesUtilityFunctions) {
   unsigned char test_data1[] = {1, 2, 3, 4, 5, 6, 7, 8, 0, 1, 4, 2, 9};
@@ -240,4 +271,31 @@ TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
       msg, &response));
 }
 
+TEST_F(SyncerProtoUtilTest, HandleThrottlingWithDatatypes) {
+  MockSyncSessionContext context;
+  SyncProtocolError error;
+  error.error_type = browser_sync::THROTTLED;
+  syncable::ModelTypeSet types;
+  types.insert(syncable::BOOKMARKS);
+  types.insert(syncable::PASSWORDS);
+  error.error_data_types = types;
+
+  base::TimeTicks ticks = base::TimeTicks::Now();
+
+  EXPECT_CALL(context, SetUnthrottleTime(types, ticks));
+
+  SyncerProtoUtil::HandleThrottleError(error, ticks, &context, NULL);
+}
+
+TEST_F(SyncerProtoUtilTest, HandleThrottlingNoDatatypes) {
+  MockDelegate delegate;
+  SyncProtocolError error;
+  error.error_type = browser_sync::THROTTLED;
+
+  base::TimeTicks ticks = base::TimeTicks::Now();
+
+  EXPECT_CALL(delegate, OnSilencedUntil(ticks));
+
+  SyncerProtoUtil::HandleThrottleError(error, ticks, NULL, &delegate);
+}
 }  // namespace browser_sync
