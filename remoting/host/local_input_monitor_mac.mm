@@ -28,6 +28,7 @@ typedef std::set<remoting::ChromotingHost*> Hosts;
  @private
   GTMCarbonHotKey* hotKey_;
   CFRunLoopSourceRef mouseRunLoopSource_;
+  base::mac::ScopedCFTypeRef<CFMachPortRef> mouseMachPort_;
   base::Lock hostsLock_;
   Hosts hosts_;
 }
@@ -78,18 +79,18 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
     if (!hotKey_) {
       LOG(ERROR) << "registerHotKey failed.";
     }
-    base::mac::ScopedCFTypeRef<CFMachPortRef> mouseMachPort(CGEventTapCreate(
+    mouseMachPort_.reset(CGEventTapCreate(
         kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionListenOnly,
         1 << kCGEventMouseMoved, LocalMouseMoved, self));
-    if (mouseMachPort) {
+    if (mouseMachPort_) {
       mouseRunLoopSource_ = CFMachPortCreateRunLoopSource(
-          NULL, mouseMachPort, 0);
+          NULL, mouseMachPort_, 0);
       CFRunLoopAddSource(
           CFRunLoopGetMain(), mouseRunLoopSource_, kCFRunLoopCommonModes);
     } else {
       LOG(ERROR) << "CGEventTapCreate failed.";
     }
-    if (!hotKey_ && !mouseMachPort) {
+    if (!hotKey_ && !mouseMachPort_) {
       [self release];
       return nil;
     }
@@ -119,9 +120,11 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
     hotKey_ = NULL;
   }
   if (mouseRunLoopSource_) {
+    CFMachPortInvalidate(mouseMachPort_);
     CFRunLoopRemoveSource(
         CFRunLoopGetMain(), mouseRunLoopSource_, kCFRunLoopCommonModes);
     CFRelease(mouseRunLoopSource_);
+    mouseMachPort_.reset(0);
     mouseRunLoopSource_ = NULL;
   }
 }
