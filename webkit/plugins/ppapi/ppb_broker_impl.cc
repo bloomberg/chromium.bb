@@ -5,30 +5,16 @@
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 
 #include "base/logging.h"
+#include "ppapi/shared_impl/platform_file.h"
 #include "webkit/plugins/ppapi/common.h"
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
+using ::ppapi::PlatformFileToInt;
 using ::ppapi::thunk::PPB_Broker_API;
 
 namespace webkit {
 namespace ppapi {
-
-namespace {
-
-// TODO(ddorwin): Put conversion functions in a common place and/or add an
-// invalid value to sync_socket.h.
-int32_t PlatformFileToInt(base::PlatformFile handle) {
-#if defined(OS_WIN)
-  return static_cast<int32_t>(reinterpret_cast<intptr_t>(handle));
-#elif defined(OS_POSIX)
-  return handle;
-#else
-  #error Not implemented.
-#endif
-}
-
-}  // namespace
 
 // PPB_Broker_Impl ------------------------------------------------------
 

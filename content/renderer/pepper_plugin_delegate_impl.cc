@@ -54,6 +54,7 @@
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/host_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCursorInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileChooserCompletion.h"
@@ -80,16 +81,6 @@
 using WebKit::WebView;
 
 namespace {
-
-int32_t PlatformFileToInt(base::PlatformFile handle) {
-#if defined(OS_WIN)
-  return static_cast<int32_t>(reinterpret_cast<intptr_t>(handle));
-#elif defined(OS_POSIX)
-  return handle;
-#else
-  #error Not implemented.
-#endif
-}
 
 base::SyncSocket::Handle DuplicateHandle(base::SyncSocket::Handle handle) {
   base::SyncSocket::Handle out_handle = base::kInvalidPlatformFileValue;
@@ -722,7 +713,8 @@ PpapiBrokerImpl::~PpapiBrokerImpl() {
     base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
     if (weak_ptr) {
       weak_ptr->BrokerConnected(
-          PlatformFileToInt(base::kInvalidPlatformFileValue), PP_ERROR_ABORTED);
+          ppapi::PlatformFileToInt(base::kInvalidPlatformFileValue),
+          PP_ERROR_ABORTED);
     }
   }
   pending_connects_.clear();
@@ -809,7 +801,7 @@ void PpapiBrokerImpl::OnBrokerChannelConnected(
       base::WeakPtr<webkit::ppapi::PPB_Broker_Impl>& weak_ptr = i->second;
       if (weak_ptr) {
         weak_ptr->BrokerConnected(
-            PlatformFileToInt(base::kInvalidPlatformFileValue),
+            ppapi::PlatformFileToInt(base::kInvalidPlatformFileValue),
             PP_ERROR_FAILED);
       }
     }
@@ -845,7 +837,7 @@ void PpapiBrokerImpl::ConnectPluginToBroker(
   // That message handler will then call client->BrokerConnected() with the
   // saved pipe handle.
   // Temporarily, just call back.
-  client->BrokerConnected(PlatformFileToInt(plugin_handle), result);
+  client->BrokerConnected(ppapi::PlatformFileToInt(plugin_handle), result);
 }
 
 PepperPluginDelegateImpl::PepperPluginDelegateImpl(RenderViewImpl* render_view)

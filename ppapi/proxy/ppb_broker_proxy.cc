@@ -10,46 +10,25 @@
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/thunk/ppb_broker_api.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::IntToPlatformFile;
+using ppapi::PlatformFileToInt;
 using ppapi::thunk::PPB_Broker_API;
 
 namespace ppapi {
 namespace proxy {
-
-namespace {
-
-base::PlatformFile IntToPlatformFile(int32_t handle) {
-#if defined(OS_WIN)
-  return reinterpret_cast<HANDLE>(static_cast<intptr_t>(handle));
-#elif defined(OS_POSIX)
-  return handle;
-#else
-  #error Not implemented.
-#endif
-}
-
-int32_t PlatformFileToInt(base::PlatformFile handle) {
-#if defined(OS_WIN)
-  return static_cast<int32_t>(reinterpret_cast<intptr_t>(handle));
-#elif defined(OS_POSIX)
-  return handle;
-#else
-  #error Not implemented.
-#endif
-}
-
-}  // namespace
 
 class Broker : public PPB_Broker_API, public Resource {
  public:
   explicit Broker(const HostResource& resource);
   virtual ~Broker();
 
-  // Resource overries.
+  // Resource overrides.
   virtual PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
 
   // PPB_Broker_API implementation.

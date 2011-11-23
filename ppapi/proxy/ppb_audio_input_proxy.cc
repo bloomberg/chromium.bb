@@ -16,6 +16,7 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/api_id.h"
 #include "ppapi/shared_impl/audio_input_impl.h"
+#include "ppapi/shared_impl/platform_file.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/enter.h"
@@ -23,6 +24,7 @@
 #include "ppapi/thunk/resource_creation_api.h"
 #include "ppapi/thunk/thunk.h"
 
+using ppapi::IntToPlatformFile;
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_AudioInput_API;
 using ppapi::thunk::PPB_AudioConfig_API;
@@ -115,22 +117,6 @@ int32_t AudioInput::GetSyncSocket(int* sync_socket) {
 int32_t AudioInput::GetSharedMemory(int* shm_handle, uint32_t* shm_size) {
   return PP_ERROR_NOTSUPPORTED;  // Don't proxy the trusted interface.
 }
-
-namespace {
-
-base::PlatformFile IntToPlatformFile(int32_t handle) {
-  // TODO(piman/brettw): Change trusted interface to return a PP_FileHandle,
-  // those casts are ugly.
-#if defined(OS_WIN)
-  return reinterpret_cast<HANDLE>(static_cast<intptr_t>(handle));
-#elif defined(OS_POSIX)
-  return handle;
-#else
-  #error Not implemented.
-#endif
-}
-
-}  // namespace
 
 PPB_AudioInput_Proxy::PPB_AudioInput_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
