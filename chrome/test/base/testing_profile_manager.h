@@ -52,6 +52,10 @@ class TestingProfileManager {
   // Deletes a TestingProfile from the profile subsystem.
   void DeleteTestingProfile(const std::string& profile_name);
 
+  // Deletes the cache instance. This is useful for testing that the cache is
+  // properly persisting data.
+  void DeleteProfileInfoCache();
+
   // Helper accessors.
   ProfileManager* profile_manager();
   ProfileInfoCache* profile_info_cache();
