@@ -14,6 +14,10 @@
 #include <crt_externs.h>
 #endif
 
+#if NACL_LINUX
+#include <getopt.h>
+#endif
+
 #include <errno.h>
 #include <limits.h>
 #include <stdio.h>
@@ -145,6 +149,19 @@ static void PrintUsage() {
           );  /* easier to add new flags/lines */
 }
 
+#if NACL_LINUX
+static const struct option longopts[] = {
+  { "r_debug", required_argument, NULL, 'D' },
+  { NULL, 0, NULL, 0 }
+};
+
+static int my_getopt(int argc, char *const *argv, const char *shortopts) {
+  return getopt_long(argc, argv, shortopts, longopts, NULL);
+}
+#else
+#define my_getopt getopt
+#endif
+
 int main(int  argc,
          char **argv) {
   int                           opt;
@@ -249,12 +266,17 @@ int main(int  argc,
    * consumed by getopt.  This makes the behavior of the Linux build
    * of sel_ldr consistent with the Windows and OSX builds.
    */
-  while ((opt = getopt(argc, argv,
+  while ((opt = my_getopt(argc, argv,
 #if NACL_LINUX
-                       "+"
+                       "+D:"
 #endif
                        "aB:cE:f:Fgh:i:Il:Qr:RsSvw:X:")) != -1) {
     switch (opt) {
+#if NACL_LINUX
+      case 'D':
+        handle_r_debug(optarg, argv[0]);
+        break;
+#endif
       case 'c':
         ++debug_mode_ignore_validator;
         break;

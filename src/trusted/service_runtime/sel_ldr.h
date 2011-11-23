@@ -683,6 +683,10 @@ static INLINE void NaClUntrustedThreadsResume(struct NaClApp *nap) {
 
 #endif
 
+#if NACL_LINUX
+void handle_r_debug(const char *switch_value, char *argv0);
+#endif
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H_ */

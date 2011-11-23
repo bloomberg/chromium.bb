@@ -301,8 +301,10 @@ sel_ldr_libs = ['sel',
                 ] + DEBUG_LIBS
 if ((not env.Bit('coverage_enabled') or not env.Bit('windows')) and
     not env.CrossToolsBuild()):
-  sel_main_obj = env.ComponentObject('sel_main.c')
-  SEL_LDR_NODE = env.ComponentProgram('sel_ldr', sel_main_obj,
+  sel_main_objs = [env.ComponentObject('sel_main.c')]
+  if env.Bit('linux'):
+    sel_main_objs += [env.ComponentObject('linux/r_debug.c')]
+  SEL_LDR_NODE = env.ComponentProgram('sel_ldr', sel_main_objs,
                                       EXTRA_LIBS=sel_ldr_libs)
 
   if env.Bit('mac'):
