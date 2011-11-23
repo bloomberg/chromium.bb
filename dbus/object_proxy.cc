@@ -134,14 +134,16 @@ void ObjectProxy::Detach() {
     }
   }
 
-  for (size_t i = 0; i < match_rules_.size(); ++i) {
+  for (std::set<std::string>::iterator iter = match_rules_.begin();
+       iter != match_rules_.end(); ++iter) {
     ScopedDBusError error;
-    bus_->RemoveMatch(match_rules_[i], error.get());
+    bus_->RemoveMatch(*iter, error.get());
     if (error.is_set()) {
       // There is nothing we can do to recover, so just print the error.
-      LOG(ERROR) << "Failed to remove match rule: " << match_rules_[i];
+      LOG(ERROR) << "Failed to remove match rule: " << *iter;
     }
   }
+  match_rules_.clear();
 }
 
 // static
@@ -304,14 +306,22 @@ void ObjectProxy::ConnectToSignalInternal(
     const std::string match_rule =
         base::StringPrintf("type='signal', interface='%s'",
                            interface_name.c_str());
-    ScopedDBusError error;
-    bus_->AddMatch(match_rule, error.get());;
-    if (error.is_set()) {
-      LOG(ERROR) << "Failed to add match rule: " << match_rule;
+
+    // Add the match rule if we don't have it.
+    if (match_rules_.find(match_rule) == match_rules_.end()) {
+      ScopedDBusError error;
+      bus_->AddMatch(match_rule, error.get());;
+      if (error.is_set()) {
+        LOG(ERROR) << "Failed to add match rule: " << match_rule;
+      } else {
+        // Store the match rule, so that we can remove this in Detach().
+        match_rules_.insert(match_rule);
+        // Add the signal callback to the method table.
+        method_table_[absolute_signal_name] = signal_callback;
+        success = true;
+      }
     } else {
-      // Store the match rule, so that we can remove this in Detach().
-      match_rules_.push_back(match_rule);
-      // Add the signal callback to the method table.
+      // We already have the match rule.
       method_table_[absolute_signal_name] = signal_callback;
       success = true;
     }

@@ -55,11 +55,24 @@ class EndToEndAsyncTest : public testing::Test {
                                          "/org/chromium/TestObject");
     ASSERT_TRUE(bus_->HasDBusThread());
 
-    // Connect to the "Test" signal from the remote object.
+    // Connect to the "Test" signal of "org.chromium.TestInterface" from
+    // the remote object.
     object_proxy_->ConnectToSignal(
         "org.chromium.TestInterface",
         "Test",
         base::Bind(&EndToEndAsyncTest::OnTestSignal,
+                   base::Unretained(this)),
+        base::Bind(&EndToEndAsyncTest::OnConnected,
+                   base::Unretained(this)));
+    // Connect to the "Test2" signal of "org.chromium.TestInterface" from
+    // the remote object. There was a bug where we were emitting error
+    // messages like "Requested to remove an unknown match rule: ..." at
+    // the shutdown of Bus when an object proxy is connected to more than
+    // one signal of the same interface. See crosbug.com/23382 for details.
+    object_proxy_->ConnectToSignal(
+        "org.chromium.TestInterface",
+        "Test2",
+        base::Bind(&EndToEndAsyncTest::OnTest2Signal,
                    base::Unretained(this)),
         base::Bind(&EndToEndAsyncTest::OnConnected,
                    base::Unretained(this)));
@@ -119,6 +132,12 @@ class EndToEndAsyncTest : public testing::Test {
   void OnTestSignal(dbus::Signal* signal) {
     dbus::MessageReader reader(signal);
     ASSERT_TRUE(reader.PopString(&test_signal_string_));
+    message_loop_.Quit();
+  }
+
+  // Called when the "Test2" signal is received, in the main thread.
+  void OnTest2Signal(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
     message_loop_.Quit();
   }
 

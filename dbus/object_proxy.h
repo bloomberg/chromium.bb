@@ -9,8 +9,8 @@
 #include <dbus/dbus.h>
 
 #include <map>
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -192,7 +192,7 @@ class ObjectProxy : public base::RefCountedThreadSafe<ObjectProxy> {
   typedef std::map<std::string, SignalCallback> MethodTable;
   MethodTable method_table_;
 
-  std::vector<std::string> match_rules_;
+  std::set<std::string> match_rules_;
 
   DISALLOW_COPY_AND_ASSIGN(ObjectProxy);
 };
