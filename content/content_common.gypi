@@ -289,14 +289,6 @@
       'dependencies': [
         '../build/linux/system.gyp:pangocairo',
       ],
-    }],
-    ['use_x11 == 1 and target_arch != "arm"', {
-      'sources': [
-        'common/gpu/x_util.cc',
-        'common/gpu/x_util.h',
-      ],
-    }],
-    ['OS=="linux"', {
       'include_dirs': [
         '<(DEPTH)/third_party/angle/include',
       ],
@@ -305,6 +297,12 @@
           '-lXcomposite',
         ],
       },
+    }],
+    ['use_x11 == 1 and target_arch != "arm"', {
+      'sources': [
+        'common/gpu/x_util.cc',
+        'common/gpu/x_util.h',
+      ],
     }],
     ['enable_gpu==1', {
       'dependencies': [
