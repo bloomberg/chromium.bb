@@ -366,8 +366,6 @@
         '../ui/views/touchui/gesture_manager.h',
         '../ui/views/touchui/touch_selection_controller.cc',
         '../ui/views/touchui/touch_selection_controller.h',
-        '../ui/views/touchui/touch_selection_controller_impl.cc',
-        '../ui/views/touchui/touch_selection_controller_impl.h',
         '../ui/views/window/client_view.cc',
         '../ui/views/window/client_view.h',
         '../ui/views/window/custom_frame_view.cc',
@@ -442,20 +440,7 @@
             '../ui/views/widget/native_widget_win.cc',
           ],
         }],
-        ['touchui==1', {
-          'sources/': [
-            ['exclude', '../ui/views/focus/accelerator_handler_gtk.cc'],
-            ['exclude', 'controls/menu/native_menu_gtk.cc'],
-            ['exclude', '../ui/views/widget/tooltip_manager_gtk.cc'],
-          ],
-        }],
-        ['touchui==0', {
-          'sources!': [
-            '../ui/views/touchui/touch_selection_controller_impl.cc',
-            '../ui/views/touchui/touch_selection_controller_impl.h',
-          ],
-        }],
-        ['touchui==0 and use_aura==0', {
+        ['use_aura==0', {
           'sources!': [
             'controls/menu/native_menu_views.cc',
             'controls/menu/native_menu_views.h',
@@ -533,7 +518,6 @@
         '../ui/views/focus/focus_traversal_unittest.cc',
         '../ui/views/layout/box_layout_unittest.cc',
         '../ui/views/layout/grid_layout_unittest.cc',
-        '../ui/views/touchui/touch_selection_controller_impl_unittest.cc',
         '../ui/views/test/test_views_delegate.cc',
         '../ui/views/test/test_views_delegate.h',
         '../ui/views/test/views_test_base.cc',
@@ -574,18 +558,6 @@
                  '../base/allocator/allocator.gyp:allocator',
                ],
             }],
-            [ 'touchui==1', {
-              'sources!': [
-                '../ui/views/focus/accelerator_handler_gtk_unittest.cc',
-                'controls/table/table_view_unittest.cc',
-                'controls/tabbed_pane/tabbed_pane_unittest.cc'
-              ],
-            }],
-          ],
-        }],
-        ['touchui==0', {
-          'sources!': [
-            '../ui/views/touchui/touch_selection_controller_impl_unittest.cc',
           ],
         }],
         ['OS=="win"', {
