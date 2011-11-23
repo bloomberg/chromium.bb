@@ -1972,6 +1972,7 @@
         'common/net/gaia/gaia_oauth_client_unittest.cc',
         'common/net/gaia/google_service_auth_error_unittest.cc',
         'common/net/gaia/oauth_request_signer_unittest.cc',
+        'common/net/gaia/oauth2_access_token_fetcher_unittest.cc',
         'common/random_unittest.cc',
         'common/service_process_util_unittest.cc',
         'common/string_ordinal_unittest.cc',

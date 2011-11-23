@@ -33,6 +33,8 @@ extern const char kGaiaLsid[];
 extern const char kGaiaOAuthToken[];
 extern const char kGaiaOAuthSecret[];
 extern const char kGaiaOAuthDuration[];
+extern const char kGaiaOAuth2LoginRefreshToken[];
+extern const char kGaiaOAuth2LoginAccessToken[];
 
 }  // namespace GaiaConstants
 

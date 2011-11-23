@@ -44,8 +44,10 @@ const char kLSOService[] = "lso";
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";
 const char kGaiaLsid[] = "lsid";
-extern const char kGaiaOAuthToken[] = "oauthToken";
-extern const char kGaiaOAuthSecret[] = "oauthSecret";
-extern const char kGaiaOAuthDuration[] = "3600";
+const char kGaiaOAuthToken[] = "oauthToken";
+const char kGaiaOAuthSecret[] = "oauthSecret";
+const char kGaiaOAuthDuration[] = "3600";
+const char kGaiaOAuth2LoginRefreshToken[] = "oauth2LoginRefreshToken";
+const char kGaiaOAuth2LoginAccessToken[] = "oauth2LoginAccessToken";
 
 }  // namespace GaiaConstants

@@ -78,6 +78,9 @@ class GoogleServiceAuthError {
     // The user has provided a HOSTED account, when this service requires
     // a GOOGLE account.
     HOSTED_NOT_ALLOWED = 10,
+
+    // Response format was unexpected.
+    UNEXPECTED_RESPONSE = 11,
   };
 
   // Additional data for CAPTCHA_REQUIRED errors.
