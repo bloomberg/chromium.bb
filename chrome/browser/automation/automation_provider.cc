@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
@@ -105,6 +106,66 @@
 using content::BrowserThread;
 using WebKit::WebFindOptions;
 using base::Time;
+
+namespace {
+
+void PopulateProxyConfig(const DictionaryValue& dict, net::ProxyConfig* pc) {
+  DCHECK(pc);
+  bool no_proxy = false;
+  if (dict.GetBoolean(automation::kJSONProxyNoProxy, &no_proxy)) {
+    // Make no changes to the ProxyConfig.
+    return;
+  }
+  bool auto_config;
+  if (dict.GetBoolean(automation::kJSONProxyAutoconfig, &auto_config)) {
+    pc->set_auto_detect(true);
+  }
+  std::string pac_url;
+  if (dict.GetString(automation::kJSONProxyPacUrl, &pac_url)) {
+    pc->set_pac_url(GURL(pac_url));
+  }
+  bool pac_mandatory;
+  if (dict.GetBoolean(automation::kJSONProxyPacMandatory, &pac_mandatory)) {
+    pc->set_pac_mandatory(pac_mandatory);
+  }
+  std::string proxy_bypass_list;
+  if (dict.GetString(automation::kJSONProxyBypassList, &proxy_bypass_list)) {
+    pc->proxy_rules().bypass_rules.ParseFromString(proxy_bypass_list);
+  }
+  std::string proxy_server;
+  if (dict.GetString(automation::kJSONProxyServer, &proxy_server)) {
+    pc->proxy_rules().ParseFromString(proxy_server);
+  }
+}
+
+void SetProxyConfigCallback(
+    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    const std::string& proxy_config) {
+  // First, deserialize the JSON string. If this fails, log and bail.
+  JSONStringValueSerializer deserializer(proxy_config);
+  std::string error_msg;
+  scoped_ptr<Value> root(deserializer.Deserialize(NULL, &error_msg));
+  if (!root.get() || root->GetType() != Value::TYPE_DICTIONARY) {
+    DLOG(WARNING) << "Received bad JSON string for ProxyConfig: "
+                  << error_msg;
+    return;
+  }
+
+  scoped_ptr<DictionaryValue> dict(
+      static_cast<DictionaryValue*>(root.release()));
+  // Now put together a proxy configuration from the deserialized string.
+  net::ProxyConfig pc;
+  PopulateProxyConfig(*dict.get(), &pc);
+
+  net::ProxyService* proxy_service =
+      request_context_getter->GetURLRequestContext()->proxy_service();
+  DCHECK(proxy_service);
+  scoped_ptr<net::ProxyConfigService> proxy_config_service(
+      new net::ProxyConfigServiceFixed(pc));
+  proxy_service->ResetConfigService(proxy_config_service.release());
+}
+
+}  // namespace
 
 AutomationProvider::AutomationProvider(Profile* profile)
     : profile_(profile),
@@ -431,24 +492,6 @@ void AutomationProvider::OnMessageDeserializationFailure() {
   channel_->Close();
 }
 
-// This task just adds another task to the event queue.  This is useful if
-// you want to ensure that any tasks added to the event queue after this one
-// have already been processed by the time |task| is run.
-class InvokeTaskLaterTask : public Task {
- public:
-  explicit InvokeTaskLaterTask(Task* task) : task_(task) {}
-  virtual ~InvokeTaskLaterTask() {}
-
-  virtual void Run() {
-    MessageLoop::current()->PostTask(FROM_HERE, task_);
-  }
-
- private:
-  Task* task_;
-
-  DISALLOW_COPY_AND_ASSIGN(InvokeTaskLaterTask);
-};
-
 void AutomationProvider::HandleUnused(const IPC::Message& message, int handle) {
   if (window_tracker_->ContainsHandle(handle)) {
     window_tracker_->Remove(window_tracker_->GetResource(handle));
@@ -542,72 +585,6 @@ void AutomationProvider::SendFindRequest(
       options);
 }
 
-class SetProxyConfigTask : public Task {
- public:
-  SetProxyConfigTask(net::URLRequestContextGetter* request_context_getter,
-                     const std::string& new_proxy_config)
-      : request_context_getter_(request_context_getter),
-        proxy_config_(new_proxy_config) {}
-  virtual void Run() {
-    // First, deserialize the JSON string. If this fails, log and bail.
-    JSONStringValueSerializer deserializer(proxy_config_);
-    std::string error_msg;
-    scoped_ptr<Value> root(deserializer.Deserialize(NULL, &error_msg));
-    if (!root.get() || root->GetType() != Value::TYPE_DICTIONARY) {
-      DLOG(WARNING) << "Received bad JSON string for ProxyConfig: "
-                    << error_msg;
-      return;
-    }
-
-    scoped_ptr<DictionaryValue> dict(
-        static_cast<DictionaryValue*>(root.release()));
-    // Now put together a proxy configuration from the deserialized string.
-    net::ProxyConfig pc;
-    PopulateProxyConfig(*dict.get(), &pc);
-
-    net::ProxyService* proxy_service =
-        request_context_getter_->GetURLRequestContext()->proxy_service();
-    DCHECK(proxy_service);
-    scoped_ptr<net::ProxyConfigService> proxy_config_service(
-        new net::ProxyConfigServiceFixed(pc));
-    proxy_service->ResetConfigService(proxy_config_service.release());
-  }
-
-  void PopulateProxyConfig(const DictionaryValue& dict, net::ProxyConfig* pc) {
-    DCHECK(pc);
-    bool no_proxy = false;
-    if (dict.GetBoolean(automation::kJSONProxyNoProxy, &no_proxy)) {
-      // Make no changes to the ProxyConfig.
-      return;
-    }
-    bool auto_config;
-    if (dict.GetBoolean(automation::kJSONProxyAutoconfig, &auto_config)) {
-      pc->set_auto_detect(true);
-    }
-    std::string pac_url;
-    if (dict.GetString(automation::kJSONProxyPacUrl, &pac_url)) {
-      pc->set_pac_url(GURL(pac_url));
-    }
-    bool pac_mandatory;
-    if (dict.GetBoolean(automation::kJSONProxyPacMandatory, &pac_mandatory)) {
-      pc->set_pac_mandatory(pac_mandatory);
-    }
-    std::string proxy_bypass_list;
-    if (dict.GetString(automation::kJSONProxyBypassList, &proxy_bypass_list)) {
-      pc->proxy_rules().bypass_rules.ParseFromString(proxy_bypass_list);
-    }
-    std::string proxy_server;
-    if (dict.GetString(automation::kJSONProxyServer, &proxy_server)) {
-      pc->proxy_rules().ParseFromString(proxy_server);
-    }
-  }
-
- private:
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
-  std::string proxy_config_;
-};
-
-
 void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
   net::URLRequestContextGetter* context_getter =
       profile_->GetRequestContext();
@@ -615,7 +592,8 @@ void AutomationProvider::SetProxyConfig(const std::string& new_proxy_config) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      new SetProxyConfigTask(context_getter, new_proxy_config));
+      base::Bind(SetProxyConfigCallback, make_scoped_refptr(context_getter),
+                 new_proxy_config));
 }
 
 TabContents* AutomationProvider::GetTabContentsForHandle(
