@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "content/common/media/video_capture.h"
 #include "media/video/capture/video_capture.h"
 #include "third_party/webrtc/common_types.h"
 #include "third_party/webrtc/modules/video_capture/main/interface/video_capture_defines.h"
@@ -70,7 +71,7 @@ class VideoCaptureModuleImpl
   base::WaitableEvent stopped_event_;
   // The video capture manager handles open/close of video capture devices.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
-  media::VideoCapture::State state_;
+  video_capture::State state_;
   WebRtc_UWord32 width_;
   WebRtc_UWord32 height_;
   WebRtc_Word32 frame_rate_;

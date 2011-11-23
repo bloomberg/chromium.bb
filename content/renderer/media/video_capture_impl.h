@@ -13,6 +13,7 @@
 #include <map>
 
 #include "content/common/content_export.h"
+#include "content/common/media/video_capture.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "media/video/capture/video_capture.h"
 
@@ -37,7 +38,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void OnBufferCreated(base::SharedMemoryHandle handle,
                                int length, int buffer_id) OVERRIDE;
   virtual void OnBufferReceived(int buffer_id, base::Time timestamp) OVERRIDE;
-  virtual void OnStateChanged(const media::VideoCapture::State& state) OVERRIDE;
+  virtual void OnStateChanged(video_capture::State state) OVERRIDE;
   virtual void OnDeviceInfoReceived(
       const media::VideoCaptureParams& device_info) OVERRIDE;
   virtual void OnDelegateAdded(int32 device_id) OVERRIDE;
@@ -62,7 +63,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   void DoBufferCreated(base::SharedMemoryHandle handle,
                        int length, int buffer_id);
   void DoBufferReceived(int buffer_id, base::Time timestamp);
-  void DoStateChanged(const media::VideoCapture::State& state);
+  void DoStateChanged(video_capture::State state);
   void DoDeviceInfoReceived(const media::VideoCaptureParams& device_info);
   void DoDelegateAdded(int32 device_id);
 
@@ -104,7 +105,7 @@ class CONTENT_EXPORT VideoCaptureImpl
   media::VideoCaptureParams device_info_;
   bool device_info_available_;
 
-  State state_;
+  video_capture::State state_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);
 };

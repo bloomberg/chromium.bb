@@ -25,6 +25,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "content/browser/renderer_host/media/video_capture_controller_event_handler.h"
+#include "content/common/media/video_capture.h"
 #include "media/video/capture/video_capture.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
@@ -131,7 +132,7 @@ class VideoCaptureController
   media_stream::VideoCaptureManager* video_capture_manager_;
 
   bool device_in_use_;
-  media::VideoCapture::State state_;
+  video_capture::State state_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureController);
 };

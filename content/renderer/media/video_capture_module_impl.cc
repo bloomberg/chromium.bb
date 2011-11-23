@@ -16,7 +16,7 @@ VideoCaptureModuleImpl::VideoCaptureModuleImpl(
       thread_("VideoCaptureModuleImpl"),
       stopped_event_(false, false),
       vc_manager_(vc_manager),
-      state_(media::VideoCapture::kStopped),
+      state_(video_capture::kStopped),
       width_(-1),
       height_(-1),
       frame_rate_(-1),
@@ -76,7 +76,7 @@ WebRtc_Word32 VideoCaptureModuleImpl::StopCapture() {
 }
 
 bool VideoCaptureModuleImpl::CaptureStarted() {
-  return state_ == media::VideoCapture::kStarted;
+  return state_ == video_capture::kStarted;
 }
 
 WebRtc_Word32 VideoCaptureModuleImpl::CaptureSettings(
@@ -128,7 +128,7 @@ void VideoCaptureModuleImpl::OnDeviceInfoReceived(
 void VideoCaptureModuleImpl::StartCaptureOnCaptureThread(
     const webrtc::VideoCaptureCapability& capability) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
-  DCHECK_NE(state_, media::VideoCapture::kStarted);
+  DCHECK_NE(state_, video_capture::kStarted);
 
   DVLOG(1) << "StartCaptureOnCaptureThread: " << capability.width << ", "
            << capability.height;
@@ -146,7 +146,7 @@ void VideoCaptureModuleImpl::StartCaptureInternal(
   width_ = capability.width;
   height_ = capability.height;
   frame_rate_ = capability.maxFPS;
-  state_ = media::VideoCapture::kStarted;
+  state_ = video_capture::kStarted;
 
   media::VideoCapture::VideoCaptureCapability cap;
   cap.width = capability.width;
@@ -159,7 +159,7 @@ void VideoCaptureModuleImpl::StartCaptureInternal(
 void VideoCaptureModuleImpl::StopCaptureOnCaptureThread() {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
-  if (state_ != media::VideoCapture::kStarted) {
+  if (state_ != video_capture::kStarted) {
     DVLOG(1) << "Got a StopCapture while not started!!! ";
     return;
   }
@@ -171,7 +171,7 @@ void VideoCaptureModuleImpl::StopCaptureOnCaptureThread() {
   // use-after-free, especially when StopCapture() is called from dtor.
   stopped_event_.Wait();
   DVLOG(1) << "Capture Stopped!!! ";
-  state_ = media::VideoCapture::kStopped;
+  state_ = video_capture::kStopped;
   width_ = -1;
   height_ = -1;
   frame_rate_ = -1;
@@ -182,7 +182,7 @@ void VideoCaptureModuleImpl::OnBufferReadyOnCaptureThread(
     scoped_refptr<media::VideoCapture::VideoFrameBuffer> buf) {
   DCHECK(message_loop_proxy_->BelongsToCurrentThread());
 
-  if (state_ != media::VideoCapture::kStarted)
+  if (state_ != video_capture::kStarted)
     return;
 
   frameInfo_.width = buf->width;

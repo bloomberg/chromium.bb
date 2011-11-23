@@ -84,16 +84,14 @@ class VideoCaptureImplTest : public ::testing::Test {
     void DeviceStartCapture(int device_id,
                             const media::VideoCaptureParams& params) {
       media::VideoCaptureParams device_info = params;
-      media::VideoCapture::State state = kStarted;
       OnDeviceInfoReceived(device_info);
-      OnStateChanged(state);
+      OnStateChanged(video_capture::kStarted);
     }
 
     void DevicePauseCapture(int device_id) {}
 
     void DeviceStopCapture(int device_id) {
-      media::VideoCapture::State state = kStopped;
-      OnStateChanged(state);
+      OnStateChanged(video_capture::kStopped);
     }
 
     void DeviceReceiveEmptyBuffer(int device_id, int buffer_id) {}

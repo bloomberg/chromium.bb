@@ -91,7 +91,7 @@ class CONTENT_EXPORT VideoCaptureHost
   void OnControllerAdded(
       int device_id, const media::VideoCaptureParams& params,
       VideoCaptureController* controller);
-  void DoControllerAddedOnIOThreead(
+  void DoControllerAddedOnIOThread(
       int device_id, const media::VideoCaptureParams params,
       VideoCaptureController* controller);
 
@@ -134,16 +134,10 @@ class CONTENT_EXPORT VideoCaptureHost
   // Helpers.
   media_stream::VideoCaptureManager* GetVideoCaptureManager();
 
-  typedef std::map<VideoCaptureControllerID,
-                   scoped_refptr<VideoCaptureController> > EntryMap;
-  // A map of VideoCaptureControllerID to VideoCaptureController
-  // objects that is currently active.
+  struct Entry;
+  typedef std::map<VideoCaptureControllerID, Entry*> EntryMap;
+  // A map of VideoCaptureControllerID to its state and VideoCaptureController.
   EntryMap entries_;
-
-  typedef std::map<VideoCaptureControllerID,
-                   media::VideoCapture::State> EntryState;
-  // Record state of each VideoCaptureControllerID.
-  EntryState entry_state_;
 
   // Used to get a pointer to VideoCaptureManager to start/stop capture devices.
   const content::ResourceContext* resource_context_;
