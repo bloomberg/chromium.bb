@@ -196,7 +196,7 @@ class CUFixtureBase {
   // not Finish. If NAME is non-zero, use it as the DW_AT_name
   // attribute.
   DIEHandler *StartSpecifiedDIE(DIEHandler *parent, DwarfTag tag,
-                                uint64 offset, const char *name = NULL);
+                                uint64 specification, const char *name = NULL);
  
   // Define a function as a child of PARENT with the given name,
   // address, and size. Call EndAttributes and Finish; one cannot
