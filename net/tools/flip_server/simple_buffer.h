@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "net/tools/flip_server/buffer_interface.h"
 
 namespace net {
@@ -32,32 +33,32 @@ class SimpleBuffer : public BufferInterface {
   // The following functions all override pure virtual functions
   // in BufferInterface. See buffer_interface.h for a description
   // of what they do.
-  virtual int ReadableBytes() const;
-  virtual int BufferSize() const;
-  virtual int BytesFree() const;
+  virtual int ReadableBytes() const OVERRIDE;
+  virtual int BufferSize() const OVERRIDE;
+  virtual int BytesFree() const OVERRIDE;
 
-  virtual bool Empty() const;
-  virtual bool Full() const;
+  virtual bool Empty() const OVERRIDE;
+  virtual bool Full() const OVERRIDE;
 
-  virtual int Write(const char* bytes, int size);
+  virtual int Write(const char* bytes, int size) OVERRIDE;
 
-  virtual void GetWritablePtr(char **ptr, int* size) const;
+  virtual void GetWritablePtr(char **ptr, int* size) const OVERRIDE;
 
-  virtual void GetReadablePtr(char **ptr, int* size) const;
+  virtual void GetReadablePtr(char **ptr, int* size) const OVERRIDE;
 
-  virtual int Read(char* bytes, int size);
+  virtual int Read(char* bytes, int size) OVERRIDE;
 
-  virtual void Clear();
+  virtual void Clear() OVERRIDE;
 
   // This can be an expensive operation: costing a new/delete, and copying of
   // all existing data. Even if the existing buffer does not need to be
   // resized, unread data may still need to be non-destructively copied to
   // consolidate fragmented free space.
-  virtual bool Reserve(int size);
+  virtual bool Reserve(int size) OVERRIDE;
 
-  virtual void AdvanceReadablePtr(int amount_to_advance);
+  virtual void AdvanceReadablePtr(int amount_to_advance) OVERRIDE;
 
-  virtual void AdvanceWritablePtr(int amount_to_advance);
+  virtual void AdvanceWritablePtr(int amount_to_advance) OVERRIDE;
 
   void Swap(SimpleBuffer* other) {
     char* tmp = storage_;

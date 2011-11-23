@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "net/tools/flip_server/constants.h"
 #include "net/tools/flip_server/epoll_server.h"
 #include "net/tools/flip_server/mem_cache.h"
@@ -54,11 +55,11 @@ class OutputOrdering {
     virtual ~BeginOutputtingAlarm();
 
     // EpollAlarmCallbackInterface:
-    virtual int64 OnAlarm();
+    virtual int64 OnAlarm() OVERRIDE;
     virtual void OnRegistration(const EpollServer::AlarmRegToken& tok,
-                                EpollServer* eps);
-    virtual void OnUnregistration();
-    virtual void OnShutdown(EpollServer* eps);
+                                EpollServer* eps) OVERRIDE;
+    virtual void OnUnregistration() OVERRIDE;
+    virtual void OnShutdown(EpollServer* eps) OVERRIDE;
 
    private:
     OutputOrdering* output_ordering_;

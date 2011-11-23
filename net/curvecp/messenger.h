@@ -37,12 +37,12 @@ class Messenger : public base::NonThreadSafe,
   int Write(IOBuffer* buf, int buf_len, OldCompletionCallback* callback);
 
   // Packetizer::Listener methods:
-  virtual void OnConnection(ConnectionKey key);
+  virtual void OnConnection(ConnectionKey key) OVERRIDE;
   virtual void OnClose(Packetizer* packetizer, ConnectionKey key);
   virtual void OnMessage(Packetizer* packetizer,
                          ConnectionKey key,
                          unsigned char* msg,
-                         size_t length);
+                         size_t length) OVERRIDE;
 
  protected:
   ConnectionKey key_;

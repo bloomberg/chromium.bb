@@ -6,6 +6,7 @@
 #define NET_CURVECP_CLIENT_PACKETIZER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "net/base/address_list.h"
@@ -33,10 +34,10 @@ class ClientPacketizer : public Packetizer {
   virtual int SendMessage(ConnectionKey key,
                           const char* data,
                           size_t length,
-                          OldCompletionCallback* callback);
-  virtual void Close(ConnectionKey key);
-  virtual int GetPeerAddress(IPEndPoint* endpoint) const;
-  virtual int max_message_payload() const;
+                          OldCompletionCallback* callback) OVERRIDE;
+  virtual void Close(ConnectionKey key) OVERRIDE;
+  virtual int GetPeerAddress(IPEndPoint* endpoint) const OVERRIDE;
+  virtual int max_message_payload() const OVERRIDE;
 
  private:
   enum StateType {

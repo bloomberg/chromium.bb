@@ -6,6 +6,7 @@
 #define NET_CURVECP_CURVECP_SERVER_SOCKET_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "net/base/completion_callback.h"
 #include "net/curvecp/connection_key.h"
 #include "net/curvecp/protocol.h"
@@ -33,13 +34,17 @@ class CurveCPServerSocket : public Socket,
   void Close();
 
   // Socket methods:
-  virtual int Read(IOBuffer* buf, int buf_len, OldCompletionCallback* callback);
-  virtual int Write(IOBuffer* buf, int buf_len, OldCompletionCallback* callback);
-  virtual bool SetReceiveBufferSize(int32 size);
-  virtual bool SetSendBufferSize(int32 size);
+  virtual int Read(IOBuffer* buf,
+                   int buf_len,
+                   OldCompletionCallback* callback) OVERRIDE;
+  virtual int Write(IOBuffer* buf,
+                    int buf_len,
+                    OldCompletionCallback* callback) OVERRIDE;
+  virtual bool SetReceiveBufferSize(int32 size) OVERRIDE;
+  virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
   // ServerMessenger::Acceptor methods:
-  virtual void OnAccept(ConnectionKey key);
+  virtual void OnAccept(ConnectionKey key) OVERRIDE;
 
  private:
   CurveCPServerSocket(const ConnectionKey& key,

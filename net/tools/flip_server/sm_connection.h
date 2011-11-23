@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include <list>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "net/tools/flip_server/create_listener.h"
 #include "net/tools/flip_server/epoll_server.h"
 #include "net/tools/flip_server/mem_cache.h"
@@ -54,10 +55,10 @@ class SMConnection : public SMConnectionInterface,
   std::string server_ip_;
   std::string server_port_;
 
-  virtual EpollServer* epoll_server();
+  virtual EpollServer* epoll_server() OVERRIDE;
   OutputList* output_list() { return &output_list_; }
   MemoryCache* memory_cache() { return memory_cache_; }
-  virtual void ReadyToSend();
+  virtual void ReadyToSend() OVERRIDE;
   void EnqueueDataFrame(DataFrame* df);
 
   int fd() const { return fd_; }
@@ -79,14 +80,16 @@ class SMConnection : public SMConnectionInterface,
   int Send(const char* data, int len, int flags);
 
   // EpollCallbackInterface interface.
-  virtual void OnRegistration(EpollServer* eps, int fd, int event_mask);
-  virtual void OnModification(int fd, int event_mask) {}
-  virtual void OnEvent(int fd, EpollEvent* event);
-  virtual void OnUnregistration(int fd, bool replaced);
-  virtual void OnShutdown(EpollServer* eps, int fd);
+  virtual void OnRegistration(EpollServer* eps,
+                              int fd,
+                              int event_mask) OVERRIDE;
+  virtual void OnModification(int fd, int event_mask) OVERRIDE {}
+  virtual void OnEvent(int fd, EpollEvent* event) OVERRIDE;
+  virtual void OnUnregistration(int fd, bool replaced) OVERRIDE;
+  virtual void OnShutdown(EpollServer* eps, int fd) OVERRIDE;
 
   // NotifierInterface interface.
-  virtual void Notify() {}
+  virtual void Notify() OVERRIDE {}
 
   void Cleanup(const char* cleanup);
 

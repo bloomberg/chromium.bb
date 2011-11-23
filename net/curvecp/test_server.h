@@ -6,6 +6,7 @@
 #define NET_CURVECP_TEST_SERVER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/task.h"
 #include "net/base/completion_callback.h"
 #include "net/base/test_data_stream.h"
@@ -28,10 +29,10 @@ class TestServer : public OldCompletionCallback,
   bool Start(int port);
 
   // OldCompletionCallback methods:
-  virtual void RunWithParams(const Tuple1<int>& params);
+  virtual void RunWithParams(const Tuple1<int>& params) OVERRIDE;
 
   // CurveCPServerSocket::Acceptor methods:
-  virtual void OnAccept(CurveCPServerSocket* new_socket);
+  virtual void OnAccept(CurveCPServerSocket* new_socket) OVERRIDE;
 
   // Returns the number of errors this server encountered.
   int error_count() { return errors_; }

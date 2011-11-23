@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "net/tools/flip_server/balsa_headers.h"
 #include "net/tools/flip_server/balsa_visitor_interface.h"
 #include "net/tools/flip_server/constants.h"
@@ -20,11 +21,11 @@ class StoreBodyAndHeadersVisitor: public BalsaVisitorInterface {
   void HandleError() { error_ = true; }
 
   // BalsaVisitorInterface:
-  virtual void ProcessBodyInput(const char *input, size_t size) {}
-  virtual void ProcessBodyData(const char *input, size_t size);
-  virtual void ProcessHeaderInput(const char *input, size_t size) {}
-  virtual void ProcessTrailerInput(const char *input, size_t size) {}
-  virtual void ProcessHeaders(const BalsaHeaders& headers) {
+  virtual void ProcessBodyInput(const char *input, size_t size) OVERRIDE {}
+  virtual void ProcessBodyData(const char *input, size_t size) OVERRIDE;
+  virtual void ProcessHeaderInput(const char *input, size_t size) OVERRIDE {}
+  virtual void ProcessTrailerInput(const char *input, size_t size) OVERRIDE {}
+  virtual void ProcessHeaders(const BalsaHeaders& headers) OVERRIDE {
     // nothing to do here-- we're assuming that the BalsaFrame has
     // been handed our headers.
   }
@@ -35,7 +36,7 @@ class StoreBodyAndHeadersVisitor: public BalsaVisitorInterface {
                                        const char* request_uri_input,
                                        size_t request_uri_length,
                                        const char* version_input,
-                                       size_t version_length) {}
+                                       size_t version_length) OVERRIDE {}
   virtual void ProcessResponseFirstLine(const char *line_input,
                                         size_t line_length,
                                         const char *version_input,
@@ -43,15 +44,16 @@ class StoreBodyAndHeadersVisitor: public BalsaVisitorInterface {
                                         const char *status_input,
                                         size_t status_length,
                                         const char *reason_input,
-                                        size_t reason_length) {}
-  virtual void ProcessChunkLength(size_t chunk_length) {}
-  virtual void ProcessChunkExtensions(const char *input, size_t size) {}
-  virtual void HeaderDone() {}
-  virtual void MessageDone() {}
-  virtual void HandleHeaderError(BalsaFrame* framer);
-  virtual void HandleHeaderWarning(BalsaFrame* framer);
-  virtual void HandleChunkingError(BalsaFrame* framer);
-  virtual void HandleBodyError(BalsaFrame* framer);
+                                        size_t reason_length) OVERRIDE {}
+  virtual void ProcessChunkLength(size_t chunk_length) OVERRIDE {}
+  virtual void ProcessChunkExtensions(const char *input,
+                                      size_t size) OVERRIDE {}
+  virtual void HeaderDone() OVERRIDE {}
+  virtual void MessageDone() OVERRIDE {}
+  virtual void HandleHeaderError(BalsaFrame* framer) OVERRIDE;
+  virtual void HandleHeaderWarning(BalsaFrame* framer) OVERRIDE;
+  virtual void HandleChunkingError(BalsaFrame* framer) OVERRIDE;
+  virtual void HandleBodyError(BalsaFrame* framer) OVERRIDE;
 
   BalsaHeaders headers;
   std::string body;

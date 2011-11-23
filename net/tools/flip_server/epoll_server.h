@@ -36,6 +36,7 @@
 #endif
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include <sys/epoll.h>
 
@@ -1033,17 +1034,17 @@ class EpollAlarm : public EpollAlarmCallbackInterface {
 
   // Marks the alarm as unregistered and returns 0.  The return value may be
   // safely ignored by subclasses.
-  virtual int64 OnAlarm();
+  virtual int64 OnAlarm() OVERRIDE;
 
   // Marks the alarm as registered, and stores the token.
   virtual void OnRegistration(const EpollServer::AlarmRegToken& token,
-                              EpollServer* eps);
+                              EpollServer* eps) OVERRIDE;
 
   // Marks the alarm as unregistered.
-  virtual void OnUnregistration();
+  virtual void OnUnregistration() OVERRIDE;
 
   // Marks the alarm as unregistered.
-  virtual void OnShutdown(EpollServer* eps);
+  virtual void OnShutdown(EpollServer* eps) OVERRIDE;
 
   // If the alarm was registered, unregister it.
   void UnregisterIfRegistered();

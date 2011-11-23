@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/threading/simple_thread.h"
 #include "net/tools/flip_server/epoll_server.h"
 #include "net/tools/flip_server/sm_interface.h"
@@ -49,14 +50,16 @@ class SMAcceptorThread : public base::SimpleThread,
   virtual ~SMAcceptorThread();
 
   // EpollCallbackInteface interface
-  virtual void OnRegistration(EpollServer* eps, int fd, int event_mask) {}
-  virtual void OnModification(int fd, int event_mask) {}
-  virtual void OnEvent(int fd, EpollEvent* event);
-  virtual void OnUnregistration(int fd, bool replaced) {}
-  virtual void OnShutdown(EpollServer* eps, int fd) {}
+  virtual void OnRegistration(EpollServer* eps,
+                              int fd,
+                              int event_mask) OVERRIDE {}
+  virtual void OnModification(int fd, int event_mask) OVERRIDE {}
+  virtual void OnEvent(int fd, EpollEvent* event) OVERRIDE;
+  virtual void OnUnregistration(int fd, bool replaced) OVERRIDE {}
+  virtual void OnShutdown(EpollServer* eps, int fd) OVERRIDE {}
 
   // SMConnectionPool interface
-  virtual void SMConnectionDone(SMConnection* sc);
+  virtual void SMConnectionDone(SMConnection* sc) OVERRIDE;
 
   // TODO(mbelshe): figure out if we can move these to private functions.
   SMConnection* NewConnection();
@@ -72,7 +75,7 @@ class SMAcceptorThread : public base::SimpleThread,
   // idle longer than the configured timeout.
   void HandleConnectionIdleTimeout();
 
-  virtual void Run();
+  virtual void Run() OVERRIDE;
 
  private:
   EpollServer epoll_server_;

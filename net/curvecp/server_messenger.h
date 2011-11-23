@@ -9,6 +9,7 @@
 #include <list>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/task.h"
 #include "net/curvecp/messenger.h"
 #include "net/curvecp/packetizer.h"
@@ -33,7 +34,7 @@ class ServerMessenger : public Messenger {
   virtual ~ServerMessenger();
 
   // Override OnConnection to track incoming connections.
-  virtual void OnConnection(ConnectionKey key);
+  virtual void OnConnection(ConnectionKey key) OVERRIDE;
 
  private:
   Acceptor* acceptor_;
