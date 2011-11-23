@@ -1171,6 +1171,66 @@ class FlashTest(BasePerfTest):
           '%s_ScimarkGui-%s-Mem' % ('MB', benchmark), mem)
 
 
+class LiveGamePerfTest(BasePerfTest):
+  """Tests to measure performance of live gaming webapps."""
+
+  def ExtraChromeFlags(self):
+    """Ensures Chrome is launched with custom flags.
+
+    Returns:
+      A list of extra flags to pass to Chrome when it is launched.
+    """
+    # Ensure Chrome enables remote debugging on port 9222.  This is required to
+    # take v8 heap snapshots of tabs in Chrome.
+    return (super(LiveGamePerfTest, self).ExtraChromeFlags() +
+            ['--remote-debugging-port=9222'])
+
+  def _RunLiveGamePerfTest(self, url, url_title_substring,
+                           description):
+    """Measures performance metrics for the specified live gaming webapp.
+
+    This function connects to the specified URL to launch the gaming webapp,
+    waits for a period of time for the webapp to run, then collects some
+    performance metrics about the running webapp.
+
+    Args:
+      url: The string URL of the gaming webapp to analyze.
+      url_title_substring: A string that is expected to be a substring of the
+                           webpage title for the specified gaming webapp.  Used
+                           to verify that the webapp loads correctly.
+      description: A string description for this game, used in the performance
+                   value description.  Should not contain any spaces.
+    """
+    self.NavigateToURL(url)
+    loaded_tab_title = self.GetActiveTabTitle()
+    self.assertTrue(url_title_substring in loaded_tab_title,
+                    msg='Loaded tab title missing "%s": "%s"' %
+                        (url_title_substring, loaded_tab_title))
+    cpu_usage_start = self._GetCPUUsage()
+
+    # Let the app run for 1 minute.
+    time.sleep(60)
+
+    cpu_usage_end = self._GetCPUUsage()
+    fraction_non_idle_time = self._GetFractionNonIdleCPUTime(
+        cpu_usage_start, cpu_usage_end)
+
+    logging.info('Fraction of CPU time spent non-idle: %.2f' %
+                 fraction_non_idle_time)
+    self._OutputPerfGraphValue('Fraction_%sCpuBusy' % description,
+                               fraction_non_idle_time)
+    snapshotter = perf_snapshot.PerformanceSnapshotter()
+    snapshot = snapshotter.HeapSnapshot()[0]
+    v8_heap_size = snapshot['total_heap_size'] / (1024.0 * 1024.0)
+    logging.info('Total v8 heap size: %.2f MB' % v8_heap_size)
+    self._OutputPerfGraphValue('MB_%sV8HeapSize' % description, v8_heap_size)
+
+  def testAngryBirds(self):
+    """Measures performance for Angry Birds."""
+    self._RunLiveGamePerfTest('http://chrome.angrybirds.com', 'Angry Birds',
+                              'AngryBirds')
+
+
 class PerfTestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   """Request handler for the local performance test server."""
 
