@@ -102,7 +102,7 @@ class NaClTest(pyauto.PyUITest):
   def testSurfAwayEarthCC(self):
     self.surfAway('earth_cc.html', 'Globe')
 
-  def testSurfAwayProgressEvents(self):
+  def disabledTestSurfAwayProgressEvents(self):
     self.surfAway('ppapi_progress_events.html', 'PPAPI')
 
   def testSurfAwayPPBCore(self):
@@ -116,26 +116,6 @@ class NaClTest(pyauto.PyUITest):
 
   def testSurfAwayPPBFileSystem(self):
     self.surfAway('ppapi_ppb_file_system.html', 'PPAPI')
-
-  def testSurfAwayPPAPITestsGraphics2D(self):
-    self.surfAway('test_case.html?mode=nacl&testcase=Graphics2D',
-                  'Test Graphics2D')
-
-  def testSurfAwayPPAPITestsImageData(self):
-    self.surfAway('test_case.html?mode=nacl&testcase=ImageData',
-                  'Test ImageData')
-
-  def testSurfAwayPPAPITestsMemory(self):
-    self.surfAway('test_case.html?mode=nacl&testcase=Memory',
-                  'Test Memory')
-
-  def testSurfAwayPPAPITestsPaintAggregator(self):
-    self.surfAway('test_case.html?mode=nacl&testcase=PaintAggregator',
-                  'Test PaintAggregator')
-
-  def testSurfAwayPPAPITestsScrollbar(self):
-    self.surfAway('test_case.html?mode=nacl&testcase=Scrollbar',
-                  'Test Scrollbar')
 
 if __name__ == '__main__':
   pyauto_nacl.Main()

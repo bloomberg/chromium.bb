@@ -79,12 +79,6 @@ ppapi_ppb_image_data_files = CreateDefaultDeps('ppapi_ppb_image_data')
 ppapi_progress_events_files = CreateDefaultDeps('ppapi_progress_events') + [
     env.File('${STAGING_DIR}/ppapi_progress_events.js')]
 ppapi_test_example_files = CreateDefaultDeps('ppapi_test_example')
-ppapi_tests_files = [
-    env.File('${STAGING_DIR}/ppapi_tests_%s${PROGSUFFIX}' % platform),
-    env.Dir('${STAGING_DIR}/test_url_loader_data/'),
-    env.File('${STAGING_DIR}/test_case.html'),
-    env.File('${STAGING_DIR}/test_case.nmf'),
-    env.File('${STAGING_DIR}/test_page.css')]
 srpc_basic_files = [
     env.File('${STAGING_DIR}/' + srpc_test_nexe_name),
     env.File('${STAGING_DIR}/srpc_basic.html'),
@@ -132,7 +126,6 @@ core_test_files = [env.File('${STAGING_DIR}/nacltest.js'),
                    ppapi_ppb_graphics2d_files +
                    ppapi_ppb_image_data_files +
                    ppapi_progress_events_files +
-                   ppapi_tests_files +
                    srpc_basic_files +
                    srpc_hw_files +
                    srpc_nrd_xfer_files]

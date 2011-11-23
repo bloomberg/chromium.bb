@@ -45,12 +45,7 @@ class NaClTest(pyauto.PyUITest):
            # ('ppapi_ppb_image_data.html', 1),
            ('srpc_basic.html', 1),
            ('srpc_hw.html', 1),
-           ('srpc_nrd_xfer.html', 2),
-           ('test_case.html?mode=nacl&testcase=Graphics2D', 1),
-           ('test_case.html?mode=nacl&testcase=ImageData', 1),
-           ('test_case.html?mode=nacl&testcase=Memory', 1),
-           ('test_case.html?mode=nacl&testcase=PaintAggregator', 1),
-           ('test_case.html?mode=nacl&testcase=Scrollbar', 1)]
+           ('srpc_nrd_xfer.html', 2)]
 
   def testLoadNexesInMultipleTabs(self):
     """Load nexes in multiple tabs and surf away from all of them."""
