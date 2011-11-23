@@ -716,14 +716,6 @@
         ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
       ],
     }],
-    ['touchui==1', {
-      'sources/': [
-        ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.cc'],
-        ['exclude', '^browser/renderer_host/gtk_im_context_wrapper.h'],
-        ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.cc'],
-        ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.h'],
-      ],
-    }],
     ['use_aura==1', {
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
