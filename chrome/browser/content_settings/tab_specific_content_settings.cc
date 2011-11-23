@@ -128,11 +128,11 @@ void TabSpecificContentSettings::WebDatabaseAccessed(
 void TabSpecificContentSettings::DOMStorageAccessed(int render_process_id,
                                                     int render_view_id,
                                                     const GURL& url,
-                                                    DOMStorageType storage_type,
+                                                    bool local,
                                                     bool blocked_by_policy) {
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
   if (settings)
-    settings->OnLocalStorageAccessed(url, storage_type, blocked_by_policy);
+    settings->OnLocalStorageAccessed(url, local, blocked_by_policy);
 }
 
 // static
@@ -301,13 +301,12 @@ void TabSpecificContentSettings::OnIndexedDBAccessed(
 
 void TabSpecificContentSettings::OnLocalStorageAccessed(
     const GURL& url,
-    DOMStorageType storage_type,
+    bool local,
     bool blocked_by_policy) {
   LocalSharedObjectsContainer& container = blocked_by_policy ?
       blocked_local_shared_objects_ : allowed_local_shared_objects_;
   CannedBrowsingDataLocalStorageHelper* helper =
-      storage_type == DOM_STORAGE_LOCAL ?
-          container.local_storages() : container.session_storages();
+      local ? container.local_storages() : container.session_storages();
   helper->AddLocalStorage(url);
 
   if (blocked_by_policy)

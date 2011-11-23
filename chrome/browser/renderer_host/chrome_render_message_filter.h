@@ -14,7 +14,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/browser/browser_message_filter.h"
-#include "content/common/dom_storage_common.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class CookieSettings;
@@ -110,7 +109,7 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   void OnAllowDOMStorage(int render_view_id,
                          const GURL& origin_url,
                          const GURL& top_origin_url,
-                         DOMStorageType type,
+                         bool local,
                          bool* allowed);
   void OnAllowFileSystem(int render_view_id,
                          const GURL& origin_url,

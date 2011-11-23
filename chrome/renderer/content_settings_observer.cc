@@ -285,8 +285,7 @@ bool ContentSettingsObserver::AllowStorage(WebFrame* frame, bool local) {
   Send(new ChromeViewHostMsg_AllowDOMStorage(
       routing_id(), GURL(frame->document().securityOrigin().toString()),
       GURL(frame->top()->document().securityOrigin().toString()),
-      local ? DOM_STORAGE_LOCAL : DOM_STORAGE_SESSION,
-      &result));
+      local, &result));
   cached_storage_permissions_[key] = result;
   return result;
 }

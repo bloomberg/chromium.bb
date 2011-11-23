@@ -16,7 +16,6 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/common/dom_storage_common.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -86,7 +85,7 @@ class TabSpecificContentSettings : public TabContentsObserver,
   static void DOMStorageAccessed(int render_process_id,
                                  int render_view_id,
                                  const GURL& url,
-                                 DOMStorageType storage_type,
+                                 bool local,
                                  bool blocked_by_policy);
 
   // Called when a specific indexed db factory in the current page was
@@ -191,7 +190,7 @@ class TabSpecificContentSettings : public TabContentsObserver,
                            const string16& description,
                            bool blocked_by_policy);
   void OnLocalStorageAccessed(const GURL& url,
-                              DOMStorageType storage_type,
+                              bool local,
                               bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url,
                              const string16& name,

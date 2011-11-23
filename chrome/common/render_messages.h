@@ -390,7 +390,7 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowDOMStorage,
                             int /* render_view_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
-                            DOMStorageType /* type */,
+                            bool /* if true local storage, otherwise session */,
                             bool /* allowed */)
 
 // Sent by the renderer process to check whether access to FileSystem is

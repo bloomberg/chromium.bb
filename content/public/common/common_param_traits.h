@@ -17,7 +17,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
 #include "content/common/content_export.h"
-#include "content/common/dom_storage_common.h"
 #include "content/public/common/page_transition_types.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
@@ -229,11 +228,6 @@ struct CONTENT_EXPORT ParamTraits<SkBitmap> {
 
 template <>
 struct SimilarTypeTraits<base::PlatformFileError> {
-  typedef int Type;
-};
-
-template <>
-struct SimilarTypeTraits<DOMStorageType> {
   typedef int Type;
 };
 

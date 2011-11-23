@@ -401,7 +401,7 @@ void ChromeRenderMessageFilter::OnAllowDatabase(int render_view_id,
 void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
                                                   const GURL& origin_url,
                                                   const GURL& top_origin_url,
-                                                  DOMStorageType type,
+                                                  bool local,
                                                   bool* allowed) {
   *allowed = cookie_settings_->IsSettingCookieAllowed(origin_url,
                                                       top_origin_url);
@@ -410,7 +410,7 @@ void ChromeRenderMessageFilter::OnAllowDOMStorage(int render_view_id,
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &TabSpecificContentSettings::DOMStorageAccessed,
-          render_process_id_, render_view_id, origin_url, type, !*allowed));
+          render_process_id_, render_view_id, origin_url, local, !*allowed));
 }
 
 void ChromeRenderMessageFilter::OnAllowFileSystem(int render_view_id,
