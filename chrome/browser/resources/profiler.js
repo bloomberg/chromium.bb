@@ -878,7 +878,7 @@ var MainView = (function() {
         var value = row[key];
         // If the property is a thread name, try to remap it.
         if (key == KEY_BIRTH_THREAD || key == KEY_DEATH_THREAD) {
-          var m = /^(.*)(\d+)$/.exec(value);
+          var m = /^(.*[^\d])(\d+)$/.exec(value);
           if (m)
             value = m[1] + '*';
         }
