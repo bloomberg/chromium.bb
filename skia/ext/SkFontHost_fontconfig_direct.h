@@ -22,6 +22,7 @@
 #include <map>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "SkThread.h"
 #include "SkFontHost_fontconfig_impl.h"
 
@@ -35,8 +36,8 @@ class SK_API FontConfigDirect : public FontConfigInterface {
                      bool filefaceid_valid, unsigned filefaceid,
                      const std::string& family,
                      const void* characters, size_t characters_bytes,
-                     bool* is_bold, bool* is_italic);
-  virtual int Open(unsigned filefaceid);
+                     bool* is_bold, bool* is_italic) OVERRIDE;
+  virtual int Open(unsigned filefaceid) OVERRIDE;
 
  private:
   SkMutex mutex_;

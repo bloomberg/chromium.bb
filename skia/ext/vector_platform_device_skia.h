@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -27,19 +28,26 @@ class VectorPlatformDeviceSkia : public PlatformDevice, public SkPDFDevice {
   virtual ~VectorPlatformDeviceSkia();
 
   // PlatformDevice methods.
-  virtual bool IsNativeFontRenderingAllowed();
+  virtual bool IsNativeFontRenderingAllowed() OVERRIDE;
 
-  virtual PlatformSurface BeginPlatformPaint();
-  virtual void EndPlatformPaint();
+  virtual PlatformSurface BeginPlatformPaint() OVERRIDE;
+  virtual void EndPlatformPaint() OVERRIDE;
 #if defined(OS_WIN)
-  virtual void DrawToNativeContext(HDC dc, int x, int y, const RECT* src_rect);
+  virtual void DrawToNativeContext(HDC dc,
+                                   int x,
+                                   int y,
+                                   const RECT* src_rect) OVERRIDE;
 #elif defined(OS_MACOSX)
-  virtual void DrawToNativeContext(CGContext* context, int x, int y,
-                                   const CGRect* src_rect);
-  virtual CGContextRef GetBitmapContext();
+  virtual void DrawToNativeContext(CGContext* context,
+                                   int x,
+                                   int y,
+                                   const CGRect* src_rect) OVERRIDE;
+  virtual CGContextRef GetBitmapContext() OVERRIDE;
 #elif defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_OPENBSD)
-  virtual void DrawToNativeContext(PlatformSurface surface, int x, int y,
-                                   const PlatformRect* src_rect);
+  virtual void DrawToNativeContext(PlatformSurface surface,
+                                   int x,
+                                   int y,
+                                   const PlatformRect* src_rect) OVERRIDE;
 #endif
 
  private:
