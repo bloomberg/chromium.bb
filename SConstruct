@@ -3332,6 +3332,14 @@ if not (nacl_irt_env.Bit('target_arm')
         or nacl_irt_env.Bit('target_x86_64')):
   nacl_irt_env.ClearBits('bitcode')
 nacl_irt_env.Tool('naclsdk')
+# These are unfortunately clobbered by running Tool, which
+# we needed to do to get the destination directory reset.
+# We want all the same values from nacl_env.
+nacl_irt_env.Replace(EXTRA_CFLAGS=nacl_env['EXTRA_CFLAGS'],
+                     EXTRA_CXXFLAGS=nacl_env['EXTRA_CXXFLAGS'],
+                     CCFLAGS=nacl_env['CCFLAGS'],
+                     CFLAGS=nacl_env['CFLAGS'],
+                     CXXFLAGS=nacl_env['CXXFLAGS'])
 FixWindowsAssembler(nacl_irt_env)
 # Make it find the libraries it builds, rather than the SDK ones.
 nacl_irt_env.Replace(LIBPATH='${LIB_DIR}')
