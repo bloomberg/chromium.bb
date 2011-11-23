@@ -14,6 +14,8 @@ class XmlElement;
 namespace remoting {
 namespace protocol {
 
+class ChannelAuthenticator;
+
 // Authenticator is an abstract interface for authentication protocol
 // implementations. Different implementations of this interface may be
 // used on each side of the connection depending of type of the auth
@@ -37,7 +39,6 @@ class Authenticator {
   // When GetNextMessage() is called:
   //    MESSAGE_READY -> WAITING_MESSAGE
   //    MESSAGE_READY -> ACCEPTED
-  //    MESSAGE_READY -> REJECTED
   enum State {
     // Waiting for the next message from the peer.
     WAITING_MESSAGE,
@@ -59,12 +60,13 @@ class Authenticator {
   virtual State state() const = 0;
 
   // Called in response to incoming message received from the peer.
-  // Should only be called when in WAITING_MESSAGE state.
-  virtual void ProcessMessage(talk_base::XmlElement* message) = 0;
+  // Should only be called when in WAITING_MESSAGE state. Caller
+  // retains ownership of |message|.
+  virtual void ProcessMessage(const buzz::XmlElement* message) = 0;
 
   // Must be called when in MESSAGE_READY state. Returns next
   // authentication message that needs to be sent to the peer.
-  virtual talk_base::XmlElement* GetNextMessage() = 0;
+  virtual buzz::XmlElement* GetNextMessage() = 0;
 
   // Creates new authenticator for a channel. Caller must take
   // ownership of the result. Can be called only in the ACCEPTED
@@ -74,6 +76,10 @@ class Authenticator {
 
 // Factory for Authenticator instances.
 class AuthenticatorFactory {
+ public:
+  AuthenticatorFactory() {}
+  virtual ~AuthenticatorFactory() {}
+
   // Called when session-initiate stanza is received to create
   // authenticator for the new session. |first_message| specifies
   // authentication part of the session-initiate stanza so that
@@ -83,7 +89,8 @@ class AuthenticatorFactory {
   // rejected. ProcessMessage() should be called with |first_message|
   // for the result of this method.
   virtual Authenticator* CreateAuthenticator(
-      const talk_base::XmlElement* first_message) = 0;
+      const std::string& remote_jid,
+      const buzz::XmlElement* first_message) = 0;
 };
 
 }  // namespace protocol

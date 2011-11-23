@@ -814,6 +814,8 @@
         'protocol/transport_config.h',
         'protocol/util.cc',
         'protocol/util.h',
+        'protocol/v1_authenticator.cc',
+        'protocol/v1_authenticator.h',
         'protocol/v1_client_channel_authenticator.cc',
         'protocol/v1_client_channel_authenticator.h',
         'protocol/v1_host_channel_authenticator.cc',
@@ -932,6 +934,7 @@
         'protocol/protocol_mock_objects.h',
         'protocol/rtp_video_reader_unittest.cc',
         'protocol/rtp_video_writer_unittest.cc',
+        'protocol/v1_authenticator_unittest.cc',
         'run_all_unittests.cc',
       ],
       'conditions': [
