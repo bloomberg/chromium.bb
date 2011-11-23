@@ -871,10 +871,13 @@ wlsc_output_set_cursor(struct wlsc_output *output,
 
 	/* Remove always to be on top. */
 	wl_list_remove(&device->sprite->link);
-	if (!use_hardware_cursor && ec->focus)
+	if (!use_hardware_cursor && ec->focus) {
 		wl_list_insert(&ec->surface_list, &device->sprite->link);
-	else
+		device->sprite->output = output;
+	} else {
 		wl_list_init(&device->sprite->link);
+		device->sprite->output = NULL;
+	}
 
 out:
 	pixman_region32_fini(&cursor_region);
