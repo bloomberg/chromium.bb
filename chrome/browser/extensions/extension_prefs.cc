@@ -1679,25 +1679,17 @@ void ExtensionPrefs::InitPrefStore(bool extensions_disabled) {
 
     // Set regular extension controlled prefs.
     const DictionaryValue* prefs = GetExtensionControlledPrefs(*ext_id, false);
-    for (DictionaryValue::key_iterator i = prefs->begin_keys();
-         i != prefs->end_keys(); ++i) {
-      Value* value;
-      if (!prefs->GetWithoutPathExpansion(*i, &value))
-        continue;
+    for (DictionaryValue::Iterator i(*prefs); i.HasNext(); i.Advance()) {
       extension_pref_value_map_->SetExtensionPref(
-          *ext_id, *i, kExtensionPrefsScopeRegular, value->DeepCopy());
+          *ext_id, i.key(), kExtensionPrefsScopeRegular, i.value().DeepCopy());
     }
 
     // Set incognito extension controlled prefs.
     prefs = GetExtensionControlledPrefs(*ext_id, true);
-    for (DictionaryValue::key_iterator i = prefs->begin_keys();
-         i != prefs->end_keys(); ++i) {
-      Value* value;
-      if (!prefs->GetWithoutPathExpansion(*i, &value))
-        continue;
+    for (DictionaryValue::Iterator i(*prefs); i.HasNext(); i.Advance()) {
       extension_pref_value_map_->SetExtensionPref(
-          *ext_id, *i, kExtensionPrefsScopeIncognitoPersistent,
-          value->DeepCopy());
+          *ext_id, i.key(), kExtensionPrefsScopeIncognitoPersistent,
+          i.value().DeepCopy());
     }
 
     // Set content settings.

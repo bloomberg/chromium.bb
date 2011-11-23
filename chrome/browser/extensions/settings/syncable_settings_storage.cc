@@ -148,12 +148,9 @@ SyncError SyncableSettingsStorage::SendLocalSettingsToSync(
   DCHECK(sync_processor_);
 
   SyncChangeList changes;
-  for (DictionaryValue::key_iterator it = settings.begin_keys();
-      it != settings.end_keys(); ++it) {
-    Value* value;
-    settings.GetWithoutPathExpansion(*it, &value);
+  for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
     changes.push_back(
-        settings_sync_util::CreateAdd(extension_id_, *it, *value));
+        settings_sync_util::CreateAdd(extension_id_, it.key(), it.value()));
   }
 
   if (changes.empty()) {
@@ -181,23 +178,21 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
   scoped_ptr<DictionaryValue> new_sync_state(sync_state.DeepCopy());
 
   SettingSyncDataList changes;
-  for (DictionaryValue::key_iterator it = settings.begin_keys();
-      it != settings.end_keys(); ++it) {
+  for (DictionaryValue::Iterator it(settings); it.HasNext(); it.Advance()) {
     Value* orphaned_sync_value = NULL;
-    if (new_sync_state->RemoveWithoutPathExpansion(*it, &orphaned_sync_value)) {
+    if (new_sync_state->RemoveWithoutPathExpansion(
+          it.key(), &orphaned_sync_value)) {
       scoped_ptr<Value> sync_value(orphaned_sync_value);
-      Value* local_value = NULL;
-      settings.GetWithoutPathExpansion(*it, &local_value);
-      if (sync_value->Equals(local_value)) {
+      if (sync_value->Equals(&it.value())) {
         // Sync and local values are the same, no changes to send.
-        synced_keys_.insert(*it);
+        synced_keys_.insert(it.key());
       } else {
         // Sync value is different, update local setting with new value.
         changes.push_back(
             SettingSyncData(
                 SyncChange::ACTION_UPDATE,
                 extension_id_,
-                *it,
+                it.key(),
                 sync_value.release()));
       }
     } else {
@@ -206,7 +201,7 @@ SyncError SyncableSettingsStorage::OverwriteLocalSettingsWithSync(
           SettingSyncData(
               SyncChange::ACTION_DELETE,
               extension_id_,
-              *it,
+              it.key(),
               new DictionaryValue()));
     }
   }
