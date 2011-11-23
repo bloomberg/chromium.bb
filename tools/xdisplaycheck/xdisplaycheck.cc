@@ -15,7 +15,7 @@
 #include <time.h>
 #include <X11/Xlib.h>
 
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
 #include <X11/extensions/XInput2.h>
 #endif
 
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
   // Check for XInput2
   int opcode, event, err;
   if (!XQueryExtension(display, "XInputExtension", &opcode, &event, &err)) {
