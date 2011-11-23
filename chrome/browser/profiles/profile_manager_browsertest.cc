@@ -58,8 +58,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
 // created.
 
 #if defined(OS_MACOSX)
-// See crbug.com/104851
-#define MAYBE_DeleteAllProfiles FLAKY_DeleteAllProfiles
+// Crashes/CHECKs. See crbug.com/104851
+#define MAYBE_DeleteAllProfiles DISABLED_DeleteAllProfiles
 #else
 #define MAYBE_DeleteAllProfiles DeleteAllProfiles
 #endif
