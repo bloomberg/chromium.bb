@@ -1323,8 +1323,6 @@
         'browser/history/history_database.h',
         'browser/history/history_extension_api.cc',
         'browser/history/history_extension_api.h',
-        'browser/history/history_field_trial.cc',
-        'browser/history/history_field_trial.h',
         'browser/history/history_marshaling.h',
         'browser/history/history_notifications.cc',
         'browser/history/history_notifications.h',

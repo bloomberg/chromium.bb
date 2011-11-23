@@ -15,7 +15,6 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
-#include "chrome/browser/history/history_field_trial.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -139,13 +138,7 @@ bool TextDatabase::Init() {
   // have 2-3 of these objects, each with their own 8MB, this adds up very fast.
   // We therefore reduce the size so when there are multiple objects, we're not
   // too big.
-  if (HistoryFieldTrial::IsLowMemFieldTrial()) {
-    // FTS does merges of 16 pages at a time, so we need a working set size
-    // somewhat greater than that to prevent too much thrashing.
-    db_.set_cache_size(128);
-  } else {
-    db_.set_cache_size(512);
-  }
+  db_.set_cache_size(512);
 
   // Run the database in exclusive mode. Nobody else should be accessing the
   // database while we're running, and this will give somewhat improved perf.
