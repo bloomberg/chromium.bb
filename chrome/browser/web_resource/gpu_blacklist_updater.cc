@@ -36,29 +36,8 @@ static const int kStartGpuBlacklistFetchDelay = 6000;
 static const int kCacheUpdateDelay = 48 * 60 * 60 * 1000;
 
 std::string GetChromeVersionString() {
-  CR_DEFINE_STATIC_LOCAL(std::string, cr_version, ());
-  if (!cr_version.empty())
-    return cr_version;
   chrome::VersionInfo version_info;
-  cr_version =  version_info.is_valid() ? version_info.Version() : "0";
-  switch (version_info.GetChannel()) {
-    case chrome::VersionInfo::CHANNEL_STABLE:
-      cr_version += " stable";
-      break;
-    case chrome::VersionInfo::CHANNEL_BETA:
-      cr_version += " beta";
-      break;
-    case chrome::VersionInfo::CHANNEL_DEV:
-      cr_version += " dev";
-      break;
-    case chrome::VersionInfo::CHANNEL_CANARY:
-      cr_version += " canary";
-      break;
-    default:
-      cr_version += " unknown";
-      break;
-  }
-  return cr_version;
+  return version_info.is_valid() ? version_info.Version() : "0";
 }
 
 }  // namespace anonymous
@@ -81,33 +60,17 @@ GpuBlacklistUpdater::GpuBlacklistUpdater()
 GpuBlacklistUpdater::~GpuBlacklistUpdater() { }
 
 // static
-void GpuBlacklistUpdater::SetupOnFileThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+void GpuBlacklistUpdater::Setup() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Initialize GpuDataManager instance, which collects preliminary
-  // graphics information.  This has to happen on FILE thread.
+  // graphics information.
   GpuDataManager::GetInstance();
-
-  // Cache the chrome version string.  This has to happen on FILE thread
-  // because of chrome::VersionInfo::GetChannel().
-  GetChromeVersionString();
 
   // Skip auto updates in tests.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kSkipGpuDataLoading))
     return;
-
-  // Post GpuBlacklistUpdate task on UI thread.  This has to happen
-  // after GpuDataManager is initialized, otherwise it might be
-  // initialzed on UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&GpuBlacklistUpdater::SetupOnUIThread));
-}
-
-// static
-void GpuBlacklistUpdater::SetupOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Initialize GpuBlacklistUpdater, which loads the current blacklist;
   // then Schedule a GPU blacklist auto update.

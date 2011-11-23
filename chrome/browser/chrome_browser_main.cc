@@ -1863,11 +1863,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // ProfileKeyedServiceFactory::ServiceIsCreatedWithProfile() instead?
   CloudPrintProxyServiceFactory::GetForProfile(profile_);
 
-  // Initialize GpuDataManager and collect preliminary gpu info on FILE thread.
-  // Upon completion, it posts GpuBlacklist auto update task on UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&GpuBlacklistUpdater::SetupOnFileThread));
+  // Initialize GpuDataManager and collect preliminary gpu info.
+  GpuBlacklistUpdater::Setup();
 
   // Start watching all browser threads for responsiveness.
   ThreadWatcherList::StartWatchingAll(parsed_command_line());

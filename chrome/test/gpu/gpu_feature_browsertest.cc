@@ -29,7 +29,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
 
   void SetupBlacklist(const std::string& json_blacklist) {
     scoped_ptr<Version> os_version(Version::GetVersionFromString("1.0"));
-    GpuBlacklist* blacklist = new GpuBlacklist("1.0 unknown");
+    GpuBlacklist* blacklist = new GpuBlacklist("1.0");
 
     ASSERT_TRUE(blacklist->LoadGpuBlacklist(
         json_blacklist, GpuBlacklist::kAllOs));

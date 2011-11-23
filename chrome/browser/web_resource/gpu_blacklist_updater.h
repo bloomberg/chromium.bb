@@ -12,8 +12,8 @@ class GpuBlacklistUpdater : public WebResourceService {
  public:
   GpuBlacklistUpdater();
 
-  // Initialize GpuDataManager, and post a SetupOnUIThread task.
-  static void SetupOnFileThread();
+  // Initialize GpuDataManager.
+  static void Setup();
 
   // URL of the up-to-date gpu_blacklist.json file.
   static const char* kDefaultGpuBlacklistURL;
@@ -22,9 +22,6 @@ class GpuBlacklistUpdater : public WebResourceService {
   virtual ~GpuBlacklistUpdater();
 
   virtual void Unpack(const base::DictionaryValue& parsed_json) OVERRIDE;
-
-  // Initialize GpuBlacklistUpdater and schedule an auto update.
-  static void SetupOnUIThread();
 
   void InitializeGpuBlacklist();
 

@@ -182,15 +182,7 @@ bool CollectGraphicsInfo(content::GPUInfo* gpu_info) {
   }
 
   gpu_info->finalized = true;
-  return CollectGraphicsInfoGL(gpu_info);
-}
-
-bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
-  DCHECK(gpu_info);
-
-  bool rt = true;
-  if (!CollectVideoCardInfo(gpu_info))
-    rt = false;
+  bool rt = CollectGraphicsInfoGL(gpu_info);
 
   if (gpu_info->vendor_id == 0x1002) {  // ATI
     std::string ati_driver_version = CollectDriverVersionATI();
@@ -201,6 +193,12 @@ bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
   }
 
   return rt;
+}
+
+bool CollectPreliminaryGraphicsInfo(content::GPUInfo* gpu_info) {
+  DCHECK(gpu_info);
+
+  return CollectVideoCardInfo(gpu_info);
 }
 
 bool CollectVideoCardInfo(content::GPUInfo* gpu_info) {
