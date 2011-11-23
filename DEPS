@@ -29,6 +29,9 @@ vars = {
   "ffmpeg_revision": "109946",
   "sfntly_revision": "98",
   "skia_revision": "2730",
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling Skia
+  # and V8 without interference from each other.
   "v8_revision": "10037",
   "webrtc_revision": "946",
   "jsoncpp_revision": "246",
