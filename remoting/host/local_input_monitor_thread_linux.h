@@ -5,6 +5,7 @@
 #ifndef LOCAL_INPUT_MONITOR_THREAD_LINUX_H_
 #define LOCAL_INPUT_MONITOR_THREAD_LINUX_H_
 
+#include "base/compiler_specific.h"
 #include "base/threading/simple_thread.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
@@ -20,7 +21,7 @@ class LocalInputMonitorThread : public base::SimpleThread {
   virtual ~LocalInputMonitorThread();
 
   void Stop();
-  virtual void Run();
+  virtual void Run() OVERRIDE;
 
   void LocalMouseMoved(const SkIPoint& pos);
   void LocalKeyPressed(int key_code, bool down);
