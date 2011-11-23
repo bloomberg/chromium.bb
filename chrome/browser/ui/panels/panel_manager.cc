@@ -336,6 +336,7 @@ void PanelManager::OnPanelExpansionStateChanged(
       DecrementMinimizedPanels();
       break;
     case Panel::MINIMIZED:
+    case Panel::TITLE_ONLY:
       if (old_state == Panel::EXPANDED)
         IncrementMinimizedPanels();
       break;
@@ -532,11 +533,6 @@ void PanelManager::AdjustWorkAreaForAutoHidingDesktopBars() {
   // Note that we do not care about the desktop bar aligned to the top edge
   // since panels could not reach so high due to size constraint.
   adjusted_work_area_ = work_area_;
-  if (auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM)) {
-    int space = auto_hiding_desktop_bar_->GetThickness(
-        AutoHidingDesktopBar::ALIGN_BOTTOM);
-    adjusted_work_area_.set_height(adjusted_work_area_.height() - space);
-  }
   if (auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_LEFT)) {
     int space = auto_hiding_desktop_bar_->GetThickness(
         AutoHidingDesktopBar::ALIGN_LEFT);
@@ -554,10 +550,10 @@ int PanelManager::GetBottomPositionForExpansionState(
     Panel::ExpansionState expansion_state) const {
   int bottom = adjusted_work_area_.bottom();
   // If there is an auto-hiding desktop bar aligned to the bottom edge, we need
-  // to move the minimize panel down to the bottom edge.
-  if (expansion_state == Panel::MINIMIZED &&
+  // to move the title-only panel above the auto-hiding desktop bar.
+  if (expansion_state == Panel::TITLE_ONLY &&
       auto_hiding_desktop_bar_->IsEnabled(AutoHidingDesktopBar::ALIGN_BOTTOM)) {
-    bottom += auto_hiding_desktop_bar_->GetThickness(
+    bottom -= auto_hiding_desktop_bar_->GetThickness(
         AutoHidingDesktopBar::ALIGN_BOTTOM);
   }
 
@@ -611,7 +607,9 @@ void PanelManager::Rearrange(Panels::iterator iter_to_start,
     Panel* panel = *iter;
     gfx::Rect new_bounds(panel->GetBounds());
     new_bounds.set_x(rightmost_position - new_bounds.width());
-    new_bounds.set_y(adjusted_work_area_.bottom() - new_bounds.height());
+    new_bounds.set_y(
+        GetBottomPositionForExpansionState(panel->expansion_state()) -
+            new_bounds.height());
     if (new_bounds != panel->GetBounds())
       panel->SetPanelBounds(new_bounds);
 

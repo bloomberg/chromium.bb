@@ -175,8 +175,9 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
   // for the purpose of accessing its private members.
   void TestMinimizeAndRestore(bool enable_auto_hiding) {
     PanelManager* panel_manager = PanelManager::GetInstance();
-    int expected_bottom_on_minimized = testing_work_area().height();
-    int expected_bottom_on_unminimized = expected_bottom_on_minimized;
+    int expected_bottom_on_expanded = testing_work_area().height();
+    int expected_bottom_on_title_only = expected_bottom_on_expanded;
+    int expected_bottom_on_minimized = expected_bottom_on_expanded;
 
     // Turn on auto-hiding if requested.
     static const int bottom_thickness = 40;
@@ -185,7 +186,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
         enable_auto_hiding,
         bottom_thickness);
     if (enable_auto_hiding)
-      expected_bottom_on_unminimized -= bottom_thickness;
+      expected_bottom_on_title_only -= bottom_thickness;
 
     // Create and test one panel first.
     Panel* panel1 = CreatePanel("PanelTest1");
@@ -210,7 +211,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     panel1->SetExpansionState(Panel::TITLE_ONLY);
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
-    EXPECT_EQ(expected_bottom_on_unminimized, panel1->GetBounds().bottom());
+    EXPECT_EQ(expected_bottom_on_title_only, panel1->GetBounds().bottom());
     EXPECT_EQ(1, panel_manager->minimized_panel_count());
     WaitTillBoundsAnimationFinished(panel1);
     EXPECT_TRUE(frame_view1->close_button_->IsVisible());
@@ -220,7 +221,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     panel1->SetExpansionState(Panel::EXPANDED);
     EXPECT_EQ(Panel::EXPANDED, panel1->expansion_state());
     EXPECT_EQ(initial_height, panel1->GetBounds().height());
-    EXPECT_EQ(expected_bottom_on_unminimized, panel1->GetBounds().bottom());
+    EXPECT_EQ(expected_bottom_on_expanded, panel1->GetBounds().bottom());
     EXPECT_EQ(0, panel_manager->minimized_panel_count());
     WaitTillBoundsAnimationFinished(panel1);
     EXPECT_TRUE(frame_view1->close_button_->IsVisible());
@@ -237,7 +238,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
     panel1->SetExpansionState(Panel::TITLE_ONLY);
     EXPECT_EQ(Panel::TITLE_ONLY, panel1->expansion_state());
     EXPECT_EQ(titlebar_height, panel1->GetBounds().height());
-    EXPECT_EQ(expected_bottom_on_unminimized, panel1->GetBounds().bottom());
+    EXPECT_EQ(expected_bottom_on_title_only, panel1->GetBounds().bottom());
     EXPECT_EQ(1, panel_manager->minimized_panel_count());
 
     // Create 2 more panels for more testing.
@@ -373,6 +374,9 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
         right_bar_thickness);
 
     Panel* panel = CreatePanel("PanelTest");
+    panel->SetExpansionState(Panel::TITLE_ONLY);
+    WaitTillBoundsAnimationFinished(panel);
+
     EXPECT_EQ(testing_work_area().height() - bottom_bar_thickness,
               panel->GetBounds().bottom());
     EXPECT_GT(testing_work_area().right() - right_bar_thickness,
