@@ -120,7 +120,7 @@ bool ClosePlatformFile(PlatformFile file) {
 #if defined(OS_WIN)
   return !!::CloseHandle(file);
 #elif defined(OS_POSIX)
-  return !::close(file);
+  return !HANDLE_EINTR(::close(file));
 #endif
 }
 
@@ -146,7 +146,7 @@ bool VerifyIsUnsandboxed() {
   if (-1 == fd)
     return false;
 
-  if (::close(fd)) {
+  if (HANDLE_EINTR(::close(fd))) {
     ::remove(file_name);
     return false;
   }
