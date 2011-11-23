@@ -2102,6 +2102,12 @@ void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
                  acknowledge_task));
 }
 
+void RenderWidgetHostViewWin::AcceleratedSurfacePostSubBuffer(
+    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+    int gpu_host_id) {
+  NOTREACHED();
+}
+
 void RenderWidgetHostViewWin::SetAccessibilityFocus(int acc_obj_id) {
   if (!render_widget_host_)
     return;

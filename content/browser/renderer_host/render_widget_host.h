@@ -443,7 +443,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
 
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   // Called by the view in response to AcceleratedSurfaceBuffersSwapped.
-  void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id);
+  static void AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id);
+  static void AcknowledgePostSubBuffer(int32 route_id, int gpu_host_id);
 #endif
 
  protected:

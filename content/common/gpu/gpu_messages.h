@@ -58,6 +58,20 @@ IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
 #endif
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
+  IPC_STRUCT_MEMBER(int32, renderer_id)
+  IPC_STRUCT_MEMBER(int32, render_view_id)
+  IPC_STRUCT_MEMBER(uint64, surface_id)
+  IPC_STRUCT_MEMBER(int32, route_id)
+  IPC_STRUCT_MEMBER(int, x)
+  IPC_STRUCT_MEMBER(int, y)
+  IPC_STRUCT_MEMBER(int, width)
+  IPC_STRUCT_MEMBER(int, height)
+#if defined(OS_MACOSX)
+  IPC_STRUCT_MEMBER(gfx::PluginWindowHandle, window)
+#endif
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(GpuHostMsg_AcceleratedSurfaceRelease_Params)
   IPC_STRUCT_MEMBER(int32, renderer_id)
   IPC_STRUCT_MEMBER(int32, render_view_id)
@@ -151,8 +165,12 @@ IPC_MESSAGE_ROUTED2(AcceleratedSurfaceMsg_NewACK,
                     TransportDIB::Handle /* shared memory buffer */)
 
 // Tells the GPU process that the browser process handled the swap
-// buffers request with the given number.
+// buffers request.
 IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_BuffersSwappedACK)
+
+// Tells the GPU process that the browser process handled the
+// PostSubBuffer command.
+IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_PostSubBufferACK)
 
 // Tells the GPU process to remove all contexts.
 IPC_MESSAGE_CONTROL0(GpuMsg_Clean)
@@ -223,11 +241,15 @@ IPC_MESSAGE_CONTROL4(GpuHostMsg_ResizeView,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceNew,
                      GpuHostMsg_AcceleratedSurfaceNew_Params)
 
-// This message notifies the browser process that the renderer
-// swapped the buffers associated with the given "window", which
-// should cause the browser to redraw the compositor's contents.
+// Same as above with a rect of the part of the surface that changed.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                      GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params)
+
+// This message notifies the browser process that the renderer
+// swapped a portion of the buffers associated with the given "window", which
+// should cause the browser to redraw the compositor's contents.
+IPC_MESSAGE_CONTROL1(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
+                     GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params)
 
 // Tells the browser to release whatever resources are associated with
 // the given surface. The browser must send an ACK once this operation

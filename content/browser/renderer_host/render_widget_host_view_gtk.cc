@@ -1011,6 +1011,12 @@ void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(
   NOTREACHED();
 }
 
+void RenderWidgetHostViewGtk::AcceleratedSurfacePostSubBuffer(
+    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+    int gpu_host_id) {
+  NOTREACHED();
+}
+
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));

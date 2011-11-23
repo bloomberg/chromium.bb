@@ -184,6 +184,11 @@ void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
     int gpu_host_id) {
 }
 
+void TestRenderWidgetHostView::AcceleratedSurfacePostSubBuffer(
+    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+    int gpu_host_id) {
+}
+
 #if defined(OS_MACOSX)
 
 gfx::Rect TestRenderWidgetHostView::GetViewCocoaBounds() const {

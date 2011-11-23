@@ -174,6 +174,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
 
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
+                        OnAcceleratedSurfacePostSubBuffer)
 
 #if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
@@ -338,6 +340,30 @@ void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(
 
   // View must send ACK message after next composite.
   view->AcceleratedSurfaceBuffersSwapped(params, host_id_);
+}
+
+void GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer(
+    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params) {
+  TRACE_EVENT0("renderer",
+      "GpuProcessHostUIShim::OnAcceleratedSurfacePostSubBuffer");
+
+  ScopedSendOnIOThread delayed_send(
+      host_id_,
+      new AcceleratedSurfaceMsg_PostSubBufferACK(params.route_id));
+
+  RenderViewHost* host = RenderViewHost::FromID(params.renderer_id,
+                                                params.render_view_id);
+  if (!host)
+    return;
+
+  RenderWidgetHostView* view = host->view();
+  if (!view)
+    return;
+
+  delayed_send.Cancel();
+
+  // View must send ACK message after next composite.
+  view->AcceleratedSurfacePostSubBuffer(params, host_id_);
 }
 
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)

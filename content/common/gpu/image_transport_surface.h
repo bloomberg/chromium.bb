@@ -22,6 +22,7 @@ class GpuChannelManager;
 
 struct GpuHostMsg_AcceleratedSurfaceNew_Params;
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
 namespace gfx {
@@ -57,6 +58,7 @@ class ImageTransportSurface {
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) = 0;
   virtual void OnBuffersSwappedACK() = 0;
+  virtual void OnPostSubBufferACK() = 0;
   virtual void OnResizeViewACK() = 0;
   virtual void OnResize(gfx::Size size) = 0;
 
@@ -94,6 +96,8 @@ class ImageTransportHelper : public IPC::Channel::Listener {
       GpuHostMsg_AcceleratedSurfaceNew_Params params);
   void SendAcceleratedSurfaceBuffersSwapped(
       GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params);
+  void SendAcceleratedSurfacePostSubBuffer(
+      GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params);
   void SendAcceleratedSurfaceRelease(
       GpuHostMsg_AcceleratedSurfaceRelease_Params params);
   void SendResizeView(const gfx::Size& size);
@@ -113,6 +117,7 @@ class ImageTransportHelper : public IPC::Channel::Listener {
   // IPC::Message handlers.
   void OnNewSurfaceACK(uint64 surface_id, TransportDIB::Handle surface_handle);
   void OnBuffersSwappedACK();
+  void OnPostSubBufferACK();
   void OnResizeViewACK();
 
   // Backbuffer resize callback.
@@ -155,6 +160,7 @@ class PassThroughImageTransportSurface
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnPostSubBufferACK() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 

@@ -34,6 +34,8 @@ class IOSurfaceImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   virtual void Destroy() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
@@ -43,6 +45,7 @@ class IOSurfaceImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   virtual void OnNewSurfaceACK(uint64 surface_id,
                                TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnPostSubBufferACK() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -86,6 +89,7 @@ class TransportDIBImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   virtual void Destroy() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
@@ -93,6 +97,7 @@ class TransportDIBImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
  protected:
   // ImageTransportSurface implementation
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnPostSubBufferACK() OVERRIDE;
   virtual void OnNewSurfaceACK(uint64 surface_id,
                                TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
@@ -226,12 +231,26 @@ bool IOSurfaceImageTransportSurface::SwapBuffers() {
   return true;
 }
 
+bool IOSurfaceImageTransportSurface::PostSubBuffer(
+    int x, int y, int width, int height) {
+  NOTREACHED();
+  return false;
+}
+
+std::string IOSurfaceImageTransportSurface::GetExtensions() {
+  return gfx::GLSurface::GetExtensions();
+}
+
 gfx::Size IOSurfaceImageTransportSurface::GetSize() {
   return size_;
 }
 
 void IOSurfaceImageTransportSurface::OnBuffersSwappedACK() {
   helper_->SetScheduled(true);
+}
+
+void IOSurfaceImageTransportSurface::OnPostSubBufferACK() {
+  NOTREACHED();
 }
 
 void IOSurfaceImageTransportSurface::OnNewSurfaceACK(
@@ -432,12 +451,20 @@ bool TransportDIBImageTransportSurface::SwapBuffers() {
   return true;
 }
 
+std::string TransportDIBImageTransportSurface::GetExtensions() {
+  return gfx::GLSurface::GetExtensions();
+}
+
 gfx::Size TransportDIBImageTransportSurface::GetSize() {
   return size_;
 }
 
 void TransportDIBImageTransportSurface::OnBuffersSwappedACK() {
   helper_->SetScheduled(true);
+}
+
+void TransportDIBImageTransportSurface::OnPostSubBufferACK() {
+  NOTREACHED();
 }
 
 void TransportDIBImageTransportSurface::OnNewSurfaceACK(

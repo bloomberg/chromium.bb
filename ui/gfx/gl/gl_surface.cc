@@ -91,7 +91,9 @@ bool GLSurface::Resize(const gfx::Size& size) {
 }
 
 std::string GLSurface::GetExtensions() {
-  DCHECK_EQ(GetCurrent(), this);
+  // Use of GLSurfaceAdapter class means that we can't compare
+  // GetCurrent() and this directly.
+  DCHECK_EQ(GetCurrent()->GetHandle(), GetHandle());
   return std::string("");
 }
 
@@ -162,6 +164,14 @@ bool GLSurfaceAdapter::IsOffscreen() {
 
 bool GLSurfaceAdapter::SwapBuffers() {
   return surface_->SwapBuffers();
+}
+
+bool GLSurfaceAdapter::PostSubBuffer(int x, int y, int width, int height) {
+  return surface_->PostSubBuffer(x, y, width, height);
+}
+
+std::string GLSurfaceAdapter::GetExtensions() {
+  return surface_->GetExtensions();
 }
 
 gfx::Size GLSurfaceAdapter::GetSize() {

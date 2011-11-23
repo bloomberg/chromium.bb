@@ -884,11 +884,15 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
     [view drawView];
   }
 
-  if (params.renderer_id != 0 || params.route_id != 0) {
-    AcknowledgeSwapBuffers(params.renderer_id,
-                           params.route_id,
-                           gpu_host_id);
+  if (params.route_id != 0) {
+    RenderWidgetHost::AcknowledgeSwapBuffers(params.route_id, gpu_host_id);
   }
+}
+
+void RenderWidgetHostViewMac::AcceleratedSurfacePostSubBuffer(
+    const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+    int gpu_host_id) {
+  NOTIMPLEMENTED();
 }
 
 void RenderWidgetHostViewMac::UpdateRootGpuViewVisibility(
@@ -917,26 +921,6 @@ void RenderWidgetHostViewMac::HandleDelayedGpuViewHiding() {
   if (needs_gpu_visibility_update_after_repaint_) {
     UpdateRootGpuViewVisibility(false);
     needs_gpu_visibility_update_after_repaint_ = false;
-  }
-}
-
-void RenderWidgetHostViewMac::AcknowledgeSwapBuffers(
-    int renderer_id,
-    int32 route_id,
-    int gpu_host_id) {
-  TRACE_EVENT0("gpu", "RenderWidgetHostViewMac::AcknowledgeSwapBuffers");
-  // Called on the display link thread. Hand actual work off to the IO thread,
-  // because |GpuProcessHost::Get()| can only be called there.
-  // Currently, this is never called for plugins.
-  if (render_widget_host_) {
-    DCHECK_EQ(render_widget_host_->process()->GetID(), renderer_id);
-    // |render_widget_host_->routing_id()| and |route_id| are usually not
-    // equal: The former identifies the channel from the RWH in the browser
-    // process to the corresponding render widget in the renderer process, while
-    // the latter identifies the channel from the GpuCommandBufferStub in the
-    // GPU process to the corresponding command buffer client in the renderer.
-    
-    render_widget_host_->AcknowledgeSwapBuffers(route_id, gpu_host_id);
   }
 }
 

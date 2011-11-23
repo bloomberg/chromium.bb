@@ -67,6 +67,8 @@ class EGLImageTransportSurface : public ImageTransportSurface,
   virtual void Destroy() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;
@@ -77,6 +79,7 @@ class EGLImageTransportSurface : public ImageTransportSurface,
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnPostSubBufferACK() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -111,6 +114,7 @@ class GLXImageTransportSurface : public ImageTransportSurface,
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
@@ -120,6 +124,7 @@ class GLXImageTransportSurface : public ImageTransportSurface,
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnPostSubBufferACK() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -162,6 +167,8 @@ class OSMesaImageTransportSurface : public ImageTransportSurface,
   virtual void Destroy() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
 
  protected:
@@ -169,6 +176,7 @@ class OSMesaImageTransportSurface : public ImageTransportSurface,
   virtual void OnNewSurfaceACK(
       uint64 surface_id, TransportDIB::Handle surface_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnPostSubBufferACK() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -363,6 +371,16 @@ bool EGLImageTransportSurface::SwapBuffers() {
   return true;
 }
 
+bool EGLImageTransportSurface::PostSubBuffer(
+    int x, int y, int width, int height) {
+  NOTREACHED();
+  return false;
+}
+
+std::string EGLImageTransportSurface::GetExtensions() {
+  return GLSurface::GetExtensions();
+}
+
 gfx::Size EGLImageTransportSurface::GetSize() {
   return back_surface_->size();
 }
@@ -377,6 +395,9 @@ void EGLImageTransportSurface::OnBuffersSwappedACK() {
   helper_->SetScheduled(true);
 }
 
+void EGLImageTransportSurface::OnPostSubBufferACK() {
+  NOTREACHED();
+}
 
 void EGLImageTransportSurface::OnResizeViewACK() {
   NOTREACHED();
@@ -513,6 +534,34 @@ bool GLXImageTransportSurface::SwapBuffers() {
   return true;
 }
 
+bool GLXImageTransportSurface::PostSubBuffer(
+    int x, int y, int width, int height) {
+  gfx::NativeViewGLSurfaceGLX::PostSubBuffer(x, y, width, height);
+  glFlush();
+
+  if (needs_resize_) {
+    GpuHostMsg_AcceleratedSurfaceNew_Params params;
+    params.width = size_.width();
+    params.height = size_.height();
+    params.surface_id = window_;
+    helper_->SendAcceleratedSurfaceNew(params);
+    bound_ = true;
+    needs_resize_ = false;
+  }
+
+  GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params;
+  params.surface_id = window_;
+  params.x = x;
+  params.y = y;
+  params.width = width;
+  params.height = height;
+
+  helper_->SendAcceleratedSurfacePostSubBuffer(params);
+
+  helper_->SetScheduled(false);
+  return true;
+}
+
 gfx::Size GLXImageTransportSurface::GetSize() {
   return size_;
 }
@@ -544,6 +593,10 @@ void GLXImageTransportSurface::OnNewSurfaceACK(
 }
 
 void GLXImageTransportSurface::OnBuffersSwappedACK() {
+  helper_->SetScheduled(true);
+}
+
+void GLXImageTransportSurface::OnPostSubBufferACK() {
   helper_->SetScheduled(true);
 }
 
@@ -648,8 +701,22 @@ bool OSMesaImageTransportSurface::SwapBuffers() {
   return true;
 }
 
+bool OSMesaImageTransportSurface::PostSubBuffer(
+    int x, int y, int width, int height) {
+  NOTREACHED();
+  return false;
+}
+
+std::string OSMesaImageTransportSurface::GetExtensions() {
+  return GLSurface::GetExtensions();
+}
+
 void OSMesaImageTransportSurface::OnBuffersSwappedACK() {
   helper_->SetScheduled(true);
+}
+
+void OSMesaImageTransportSurface::OnPostSubBufferACK() {
+  NOTREACHED();
 }
 
 gfx::Size OSMesaImageTransportSurface::GetSize() {

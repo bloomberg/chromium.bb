@@ -60,6 +60,8 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BuffersSwappedACK,
                         OnBuffersSwappedACK)
+    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_PostSubBufferACK,
+                        OnPostSubBufferACK)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_NewACK,
                         OnNewSurfaceACK)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_ResizeViewACK, OnResizeViewACK);
@@ -98,6 +100,17 @@ void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
 }
 
+void ImageTransportHelper::SendAcceleratedSurfacePostSubBuffer(
+    GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params params) {
+  params.renderer_id = renderer_id_;
+  params.render_view_id = render_view_id_;
+  params.route_id = route_id_;
+#if defined(OS_MACOSX)
+  params.window = handle_;
+#endif
+  manager_->Send(new GpuHostMsg_AcceleratedSurfacePostSubBuffer(params));
+}
+
 void ImageTransportHelper::SendResizeView(const gfx::Size& size) {
   manager_->Send(new GpuHostMsg_ResizeView(renderer_id_,
                                            render_view_id_,
@@ -122,6 +135,10 @@ void ImageTransportHelper::DeferToFence(base::Closure task) {
 
 void ImageTransportHelper::OnBuffersSwappedACK() {
   surface_->OnBuffersSwappedACK();
+}
+
+void ImageTransportHelper::OnPostSubBufferACK() {
+  surface_->OnPostSubBufferACK();
 }
 
 void ImageTransportHelper::OnNewSurfaceACK(
@@ -229,6 +246,11 @@ void PassThroughImageTransportSurface::OnNewSurfaceACK(
 }
 
 void PassThroughImageTransportSurface::OnBuffersSwappedACK() {
+  NOTREACHED();
+}
+
+void PassThroughImageTransportSurface::OnPostSubBufferACK() {
+  NOTREACHED();
 }
 
 void PassThroughImageTransportSurface::OnResizeViewACK() {

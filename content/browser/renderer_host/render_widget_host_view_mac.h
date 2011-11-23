@@ -260,6 +260,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
       int gpu_host_id) OVERRIDE;
+  virtual void AcceleratedSurfacePostSubBuffer(
+      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+      int gpu_host_id) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetRootWindowBounds() OVERRIDE;
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;
@@ -304,12 +307,6 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // checks if the GPU view needs to be hidden and hides it if necessary. It
   // should be called after the software backing store has been painted to.
   void HandleDelayedGpuViewHiding();
-
-  // This is called from the display link thread, and provides the GPU
-  // process a notion of how quickly the browser is able to keep up with it.
-  void AcknowledgeSwapBuffers(int renderer_id,
-                              int32 route_id,
-                              int gpu_host_id);
 
   // These member variables should be private, but the associated ObjC class
   // needs access to them and can't be made a friend.

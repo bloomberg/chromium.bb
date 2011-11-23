@@ -92,6 +92,9 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
       int gpu_host_id) OVERRIDE;
+  virtual void AcceleratedSurfacePostSubBuffer(
+      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+      int gpu_host_id) OVERRIDE;
 #if defined(OS_MACOSX)
   virtual void SetTakesFocusOnlyOnMouseDown(bool flag) OVERRIDE {}
   virtual gfx::Rect GetViewCocoaBounds() const OVERRIDE;
@@ -136,10 +139,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void AcceleratedSurfaceNew(
       int32 width, int32 height, uint64* surface_id,
       TransportDIB::Handle* surface_handle) { }
-  virtual void AcceleratedSurfaceBuffersSwapped(
-      uint64 surface_id,
-      int32 route_id,
-      int gpu_host_id) OVERRIDE {}
   virtual void AcceleratedSurfaceRelease(uint64 surface_id) { }
 #endif
 

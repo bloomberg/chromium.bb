@@ -43,6 +43,7 @@ class PbufferImageTransportSurface
   virtual void OnNewSurfaceACK(uint64 surface_id,
                                TransportDIB::Handle shm_handle) OVERRIDE;
   virtual void OnBuffersSwappedACK() OVERRIDE;
+  virtual void OnPostSubBufferACK() OVERRIDE;
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size) OVERRIDE;
 
@@ -121,14 +122,18 @@ void PbufferImageTransportSurface::OnBuffersSwappedACK() {
   helper_->SetScheduled(true);
 }
 
+void PbufferImageTransportSurface::OnPostSubBufferACK() {
+  NOTREACHED();
+}
+
 void PbufferImageTransportSurface::OnNewSurfaceACK(
     uint64 surface_id,
     TransportDIB::Handle shm_handle) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void PbufferImageTransportSurface::OnResizeViewACK() {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void PbufferImageTransportSurface::OnResize(gfx::Size size) {

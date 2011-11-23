@@ -1479,9 +1479,18 @@ bool RenderWidgetHost::GotResponseToLockMouseRequest(bool allowed) {
 }
 
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+// static
 void RenderWidgetHost::AcknowledgeSwapBuffers(int32 route_id, int gpu_host_id) {
   GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
   if (ui_shim)
     ui_shim->Send(new AcceleratedSurfaceMsg_BuffersSwappedACK(route_id));
+}
+
+// static
+void RenderWidgetHost::AcknowledgePostSubBuffer(int32 route_id,
+                                                int gpu_host_id) {
+  GpuProcessHostUIShim* ui_shim = GpuProcessHostUIShim::FromID(gpu_host_id);
+  if (ui_shim)
+    ui_shim->Send(new AcceleratedSurfaceMsg_PostSubBufferACK(route_id));
 }
 #endif

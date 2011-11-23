@@ -116,6 +116,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual bool Resize(const gfx::Size& size) OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void* GetHandle() OVERRIDE;
   virtual unsigned int GetBackingFrameBufferObject() OVERRIDE;

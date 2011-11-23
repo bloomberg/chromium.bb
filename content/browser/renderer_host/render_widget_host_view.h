@@ -27,6 +27,7 @@
 #include "ui/gfx/surface/transport_dib.h"
 
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 
 class BackingStore;
 class RenderWidgetHost;
@@ -196,6 +197,11 @@ class RenderWidgetHostView {
   // enforced; this case is currently used for accelerated plugins.
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+      int gpu_host_id) = 0;
+  // Similar to above, except |params.(x|y|width|height)| define the region
+  // of the surface that changed.
+  virtual void AcceleratedSurfacePostSubBuffer(
+      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
       int gpu_host_id) = 0;
 
 #if defined(OS_MACOSX)

@@ -22,6 +22,7 @@
 #include "content/common/message_router.h"
 
 struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 struct GpuHostMsg_AcceleratedSurfaceNew_Params;
 struct GpuHostMsg_AcceleratedSurfaceRelease_Params;
 
@@ -96,6 +97,8 @@ class GpuProcessHostUIShim
 
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
+  void OnAcceleratedSurfacePostSubBuffer(
+      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params);
 
 #if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   void OnAcceleratedSurfaceNew(

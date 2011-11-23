@@ -98,6 +98,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk : public RenderWidgetHostView,
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
       int gpu_host_id) OVERRIDE;
+  virtual void AcceleratedSurfacePostSubBuffer(
+      const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+      int gpu_host_id) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE;
