@@ -363,14 +363,15 @@ void WebUIScreenLocker::SetInputEnabled(bool enabled) {
 }
 
 void WebUIScreenLocker::SetSignoutEnabled(bool enabled) {
-  // TODO(flackr): Implement.
+  // TODO(flackr): Implement (crbug.com/105267).
   NOTIMPLEMENTED();
 }
 
 void WebUIScreenLocker::ShowErrorMessage(const string16& message,
                                          bool sign_out_only) {
   // TODO(flackr): Use login_display_ to show error message (requires either
-  // adding a method to display error strings or strictly passing error ids).
+  // adding a method to display error strings or strictly passing error ids:
+  // crbug.com/105267).
   base::FundamentalValue login_attempts_value(0);
   base::StringValue error_message(message);
   base::StringValue help_link("");

@@ -313,7 +313,8 @@ void ScreenLocker::EnableInput() {
 }
 
 void ScreenLocker::Signout() {
-  // TODO(flackr): For proper functionality, check if (error_info) is NULL.
+  // TODO(flackr): For proper functionality, check if (error_info) is NULL
+  // (crbug.com/105267).
   delegate_->ClearErrors();
   UserMetrics::RecordAction(UserMetricsAction("ScreenLocker_Signout"));
 #if defined(TOOLKIT_USES_GTK)
@@ -358,7 +359,8 @@ void ScreenLocker::Show() {
 #if defined(TOUCH_UI)
     // The views screen locker does not reliably work on TOUCH_UI builds. In
     // order to effectively "lock" the screen we will sign out the user for now.
-    // TODO(flackr): Implement lock screen in WebUI and remove this hack.
+    // TODO(flackr): Implement lock screen in WebUI and remove this hack
+    // (crbug.com/105267).
     if (ScreenLocker::UseWebUILockScreen())
       locker->Init();
     else
@@ -403,8 +405,8 @@ void ScreenLocker::UnlockScreenFailed() {
 
 // static
 bool ScreenLocker::UseWebUILockScreen() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kWebUILockScreen);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableWebUILockScreen);
 }
 
 // static

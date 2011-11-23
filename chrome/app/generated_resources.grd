@@ -4831,11 +4831,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_HTTP_PIPELINING_DESCRIPTION" desc="Description for the flag to enable HTTP pipelining.">
         Enable experimental pipelining of HTTP requests.
       </message>
-      <message name="IDS_FLAGS_WEBUI_LOCK_NAME" desc="Title for the flag to use WebUI lock screen.">
-        Use WebUI lock screen.
+      <message name="IDS_FLAGS_WEBUI_LOCK_NAME" desc="Title for the flag to disable WebUI lock screen.">
+        Disable WebUI lock screen.
       </message>
-      <message name="IDS_FLAGS_WEBUI_LOCK_DESCRIPTION" desc="Description for the flag to use WebUI lock screen.">
-        Use the experimental HTML implementation of the lock screen.
+      <message name="IDS_FLAGS_WEBUI_LOCK_DESCRIPTION" desc="Description for the flag to disable WebUI lock screen.">
+        Disable the new HTML implementation of the lock screen.
       </message>
       <message name="IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_NAME" desc="Title for the flag to enable NTP bookmark features.">
         Enable NTP bookmark features

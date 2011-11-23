@@ -702,7 +702,7 @@ void SigninScreenHandler::HandleLoginRemoveNetworkStateObserver(
 }
 
 void SigninScreenHandler::HandleSignOutUser(const base::ListValue* args) {
-  // TODO(flackr): Deliver this message to the delegate.
+  // TODO(flackr): Deliver this message to the delegate (crbug.com/105267).
   if (ScreenLocker::default_screen_locker())
     ScreenLocker::default_screen_locker()->Signout();
 }

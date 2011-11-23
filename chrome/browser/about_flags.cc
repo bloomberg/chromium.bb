@@ -361,13 +361,15 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kUseMoreWebUI)
   },
+  // TODO(flackr): Remove this flag and views screen locker when the WebUI
+  // locker is mature (crbug.com/105263).
   {
-    "webui-lock-screen",
+    "disable-webui-lock-screen",
     IDS_FLAGS_WEBUI_LOCK_NAME,
     IDS_FLAGS_WEBUI_LOCK_DESCRIPTION,
     kOsCrOS,
 #if defined(OS_CHROMEOS)
-    SINGLE_VALUE_TYPE(switches::kWebUILockScreen)
+    SINGLE_VALUE_TYPE(switches::kDisableWebUILockScreen)
 #else
     SINGLE_VALUE_TYPE("")
 #endif
