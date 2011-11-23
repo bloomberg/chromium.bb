@@ -1575,7 +1575,7 @@ bool WillHandleBrowserAboutURL(GURL* url,
       shim->SimulateHang();
 #if defined(OS_CHROMEOS)
   } else if (host == chrome::kChromeUIRotateHost) {
-    content::ScreenOrientation change;
+    content::ScreenOrientation change = content::SCREEN_ORIENTATION_TOP;
     std::string query(url->query());
     if (query == "left") {
       change = content::SCREEN_ORIENTATION_LEFT;
