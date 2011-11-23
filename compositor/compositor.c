@@ -1983,7 +1983,6 @@ wlsc_output_init(struct wlsc_output *output, struct wlsc_compositor *c,
 
 	wl_list_init(&output->frame_callback_list);
 
-	output->resource.object.interface = &wl_output_interface;
 	wl_display_add_global(c->wl_display,
 			      &wl_output_interface, output, bind_output);
 }

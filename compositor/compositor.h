@@ -64,7 +64,6 @@ struct wlsc_mode {
 };
 
 struct wlsc_output {
-	struct wl_resource resource;
 	struct wl_list link;
 	struct wlsc_compositor *compositor;
 	struct wlsc_matrix matrix;
