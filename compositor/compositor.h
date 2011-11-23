@@ -106,6 +106,7 @@ enum wlsc_pointer_type {
 
 struct wlsc_input_device {
 	struct wl_input_device input_device;
+	struct wlsc_compositor *compositor;
 	struct wlsc_surface *sprite;
 	int32_t hotspot_x, hotspot_y;
 	struct wl_list link;
@@ -173,8 +174,6 @@ enum {
 };
 
 struct wlsc_compositor {
-	struct wl_compositor compositor;
-
 	struct wl_shm *shm;
 	struct wlsc_xserver *wxs;
 

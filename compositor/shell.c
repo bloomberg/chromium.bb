@@ -660,8 +660,7 @@ selection_activate(struct wl_client *client,
 	struct wl_selection *selection = resource->data;
 	struct wlsc_input_device *wd = input_resource->data;
 	struct wl_display *display = wl_client_get_display (client);
-	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) wd->input_device.compositor;
+	struct wlsc_compositor *compositor = wd->compositor;
 
 	selection->input_device = &wd->input_device;
 
@@ -702,8 +701,7 @@ destroy_selection(struct wl_resource *resource)
 		container_of(resource, struct wl_selection, resource);
 	struct wlsc_input_device *wd =
 		(struct wlsc_input_device *) selection->input_device;
-	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) wd->input_device.compositor;
+	struct wlsc_compositor *compositor = wd->compositor;
 
 	if (wd && wd->selection == selection) {
 		wd->selection = NULL;

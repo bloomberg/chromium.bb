@@ -226,8 +226,7 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	struct evdev_motion_accumulator accumulator;
 	uint32_t time;
 
-	ec = (struct wlsc_compositor *)
-		device->master->base.input_device.compositor;
+	ec = device->master->base.compositor;
 	if (!ec->focus)
 		return 1;
 
@@ -344,7 +343,7 @@ evdev_input_device_create(struct evdev_input *master,
 	if (device == NULL)
 		return NULL;
 
-	ec = (struct wlsc_compositor *) master->base.input_device.compositor;
+	ec = master->base.compositor;
 	device->output =
 		container_of(ec->output_list.next, struct wlsc_output, link);
 
@@ -394,7 +393,7 @@ device_added(struct udev_device *udev_device, struct evdev_input *master)
 	if (strcmp(device_seat, master->seat_id))
 		return;
 
-	c = (struct wlsc_compositor *) master->base.input_device.compositor;
+	c = master->base.compositor;
 	devnode = udev_device_get_devnode(udev_device);
 	if (evdev_input_device_create(master, c->wl_display, devnode))
 		fprintf(stderr, "evdev input device: added: %s\n", devnode);
@@ -450,8 +449,7 @@ static int
 evdev_config_udev_monitor(struct udev *udev, struct evdev_input *master)
 {
 	struct wl_event_loop *loop;
-	struct wlsc_compositor *c =
-	    (struct wlsc_compositor *) master->base.input_device.compositor;
+	struct wlsc_compositor *c = master->base.compositor;
 
 	master->udev_monitor = udev_monitor_new_from_netlink(udev, "udev");
 	if (!master->udev_monitor)

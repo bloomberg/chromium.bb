@@ -1230,8 +1230,7 @@ WL_EXPORT void
 wlsc_input_device_set_pointer_image(struct wlsc_input_device *device,
 				    enum wlsc_pointer_type type)
 {
-	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) device->input_device.compositor;
+	struct wlsc_compositor *compositor = device->compositor;
 
 	wlsc_input_device_attach_sprite(device,
 					compositor->pointer_sprites[type],
@@ -1278,8 +1277,8 @@ wlsc_surface_transform(struct wlsc_surface *surface,
 WL_EXPORT struct wlsc_surface *
 pick_surface(struct wl_input_device *device, int32_t *sx, int32_t *sy)
 {
-	struct wlsc_compositor *ec =
-		(struct wlsc_compositor *) device->compositor;
+	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wlsc_compositor *ec = wd->compositor;
 	struct wlsc_surface *es;
 
 	wl_list_for_each(es, &ec->surface_list, link) {
@@ -1388,11 +1387,10 @@ WL_EXPORT void
 notify_motion(struct wl_input_device *device, uint32_t time, int x, int y)
 {
 	struct wlsc_surface *es;
-	struct wlsc_compositor *ec =
-		(struct wlsc_compositor *) device->compositor;
 	struct wlsc_output *output;
 	const struct wl_grab_interface *interface;
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
+	struct wlsc_compositor *ec = wd->compositor;
 	int32_t sx, sy;
 	int x_valid = 0, y_valid = 0;
 	int min_x = INT_MAX, min_y = INT_MAX, max_x = INT_MIN, max_y = INT_MIN;
@@ -1487,8 +1485,7 @@ notify_button(struct wl_input_device *device,
 	      uint32_t time, int32_t button, int32_t state)
 {
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) device->compositor;
+	struct wlsc_compositor *compositor = wd->compositor;
 	struct wlsc_binding *b;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
@@ -1605,8 +1602,7 @@ notify_key(struct wl_input_device *device,
 	   uint32_t time, uint32_t key, uint32_t state)
 {
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) device->compositor;
+	struct wlsc_compositor *compositor = wd->compositor;
 	uint32_t *k, *end;
 	struct wlsc_binding *b;
 
@@ -1647,8 +1643,7 @@ notify_pointer_focus(struct wl_input_device *device,
 		     int32_t x, int32_t y)
 {
 	struct wlsc_input_device *wd = (struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) device->compositor;
+	struct wlsc_compositor *compositor = wd->compositor;
 	struct wlsc_surface *es;
 	int32_t sx, sy;
 
@@ -1680,8 +1675,7 @@ notify_keyboard_focus(struct wl_input_device *device,
 {
 	struct wlsc_input_device *wd =
 		(struct wlsc_input_device *) device;
-	struct wlsc_compositor *compositor =
-		(struct wlsc_compositor *) device->compositor;
+	struct wlsc_compositor *compositor = wd->compositor;
 	struct wlsc_surface *es;
 	uint32_t *k, *end;
 
@@ -1768,7 +1762,7 @@ WL_EXPORT void
 wlsc_input_device_init(struct wlsc_input_device *device,
 		       struct wlsc_compositor *ec)
 {
-	wl_input_device_init(&device->input_device, &ec->compositor);
+	wl_input_device_init(&device->input_device);
 
 	wl_display_add_global(ec->wl_display, &wl_input_device_interface,
 			      device, bind_input_device);
@@ -1778,6 +1772,7 @@ wlsc_input_device_init(struct wlsc_input_device *device,
 					     device->input_device.y, 32, 32);
 	wl_list_insert(&ec->surface_list, &device->sprite->link);
 
+	device->compositor = ec;
 	device->hotspot_x = 16;
 	device->hotspot_y = 16;
 	device->modifier_state = 0;
@@ -2042,6 +2037,16 @@ const static struct wl_shm_callbacks shm_callbacks = {
 	shm_buffer_destroyed
 };
 
+static void
+compositor_bind(struct wl_client *client,
+		void *data, uint32_t version, uint32_t id)
+{
+	struct wlsc_compositor *compositor = data;
+
+	wl_client_add_object(client, &wl_compositor_interface,
+			     &compositor_interface, id, compositor);
+}
+
 WL_EXPORT int
 wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 {
@@ -2050,7 +2055,9 @@ wlsc_compositor_init(struct wlsc_compositor *ec, struct wl_display *display)
 
 	ec->wl_display = display;
 
-	wl_compositor_init(&ec->compositor, &compositor_interface, display);
+	if (!wl_display_add_global(display, &wl_compositor_interface,
+				   ec, compositor_bind))
+		return -1;
 
 	ec->shm = wl_shm_init(display, &shm_callbacks);
 
