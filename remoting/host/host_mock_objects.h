@@ -70,7 +70,9 @@ class MockContinueWindow : public ContinueWindow {
   MockContinueWindow();
   virtual ~MockContinueWindow();
 
-  MOCK_METHOD1(Show, void(remoting::ChromotingHost* host));
+  MOCK_METHOD2(Show, void(
+      remoting::ChromotingHost* host,
+      const remoting::ContinueWindow::ContinueSessionCallback& callback));
   MOCK_METHOD0(Hide, void());
 };
 

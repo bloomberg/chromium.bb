@@ -20,7 +20,8 @@ class ContinueWindowLinux : public remoting::ContinueWindow {
   ContinueWindowLinux();
   virtual ~ContinueWindowLinux();
 
-  virtual void Show(remoting::ChromotingHost* host) OVERRIDE;
+  virtual void Show(remoting::ChromotingHost* host,
+                    const ContinueSessionCallback& callback) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:
@@ -29,6 +30,7 @@ class ContinueWindowLinux : public remoting::ContinueWindow {
   void CreateWindow(const UiStrings& ui_strings);
 
   ChromotingHost* host_;
+  ContinueSessionCallback callback_;
   GtkWidget* continue_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowLinux);
@@ -79,8 +81,10 @@ void ContinueWindowLinux::CreateWindow(const UiStrings& ui_strings) {
   gtk_widget_show_all(content_area);
 }
 
-void ContinueWindowLinux::Show(remoting::ChromotingHost* host) {
+void ContinueWindowLinux::Show(remoting::ChromotingHost* host,
+                               const ContinueSessionCallback& callback) {
   host_ = host;
+  callback_ = callback;
   CreateWindow(host->ui_strings());
   gtk_window_set_urgency_hint(GTK_WINDOW(continue_window_), TRUE);
   gtk_window_present(GTK_WINDOW(continue_window_));
@@ -94,11 +98,7 @@ void ContinueWindowLinux::Hide() {
 }
 
 void ContinueWindowLinux::OnResponse(GtkWidget* dialog, int response_id) {
-  if (response_id == GTK_RESPONSE_OK) {
-    host_->PauseSession(false);
-  } else {
-    host_->Shutdown(base::Closure());
-  }
+  callback_.Run(response_id == GTK_RESPONSE_OK);
   Hide();
 }
 

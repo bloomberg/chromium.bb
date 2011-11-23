@@ -13,15 +13,20 @@
 #include "base/sys_string_conversions.h"
 #include "remoting/host/chromoting_host.h"
 
+typedef remoting::ContinueWindow::ContinueSessionCallback
+    ContinueSessionCallback;
+
 // Handles the ContinueWindow.
 @interface ContinueWindowMacController : NSObject {
  @private
   scoped_nsobject<NSMutableArray> shades_;
   scoped_nsobject<NSAlert> continue_alert_;
   remoting::ChromotingHost* host_;
+  ContinueSessionCallback callback_;
 }
 
-- (id)initWithHost:(remoting::ChromotingHost*)host;
+- (id)initWithHost:(remoting::ChromotingHost*)host
+          callback:(const ContinueSessionCallback&)callback;
 - (void)show;
 - (void)hide;
 - (void)onCancel:(id)sender;
@@ -37,20 +42,24 @@ class ContinueWindowMac : public remoting::ContinueWindow {
   ContinueWindowMac() {}
   virtual ~ContinueWindowMac() {}
 
-  virtual void Show(remoting::ChromotingHost* host) OVERRIDE;
+  virtual void Show(remoting::ChromotingHost* host,
+                    const ContinueSessionCallback& callback) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:
   scoped_nsobject<ContinueWindowMacController> controller_;
+  ContinueSessionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowMac);
 };
 
-void ContinueWindowMac::Show(remoting::ChromotingHost* host) {
+void ContinueWindowMac::Show(remoting::ChromotingHost* host,
+                             const ContinueSessionCallback& callback) {
   base::mac::ScopedNSAutoreleasePool pool;
-  controller_.reset([[ContinueWindowMacController alloc] initWithHost:host]);
+  controller_.reset(
+      [[ContinueWindowMacController alloc] initWithHost:host
+                                               callback:callback]);
   [controller_ show];
-
 }
 
 void ContinueWindowMac::Hide() {
@@ -66,9 +75,11 @@ ContinueWindow* ContinueWindow::Create() {
 
 @implementation ContinueWindowMacController
 
-- (id)initWithHost:(remoting::ChromotingHost*)host {
+- (id)initWithHost:(remoting::ChromotingHost*)host
+          callback:(const ContinueSessionCallback&)callback {
   if ((self = [super init])) {
     host_ = host;
+    callback_ = callback;
   }
   return self;
 }
@@ -143,13 +154,13 @@ ContinueWindow* ContinueWindow::Create() {
 
 - (void)onCancel:(id)sender {
   [self hide];
-  host_->Shutdown(base::Closure());
+  callback_.Run(false);
   host_ = nil;
 }
 
 - (void)onContinue:(id)sender {
   [self hide];
-  host_->PauseSession(false);
+  callback_.Run(true);
   host_ = nil;
 }
 

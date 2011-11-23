@@ -108,8 +108,6 @@ void DesktopEnvironment::OnLastDisconnect() {
 }
 
 void DesktopEnvironment::OnPause(bool pause) {
-  ui_thread_proxy_.PostTask(FROM_HERE, base::Bind(
-      &DesktopEnvironment::ProcessOnPause, base::Unretained(this), pause));
 }
 
 void DesktopEnvironment::ProcessOnConnect(const std::string& username) {
@@ -127,13 +125,6 @@ void DesktopEnvironment::ProcessOnLastDisconnect() {
   ShowDisconnectWindow(false, std::string());
   ShowContinueWindow(false);
   StartContinueWindowTimer(false);
-}
-
-void DesktopEnvironment::ProcessOnPause(bool pause) {
-  if (!pause) {
-    timer_task_.reset();
-    StartContinueWindowTimer(true);
-  }
 }
 
 void DesktopEnvironment::MonitorLocalInputs(bool enable) {
@@ -164,9 +155,22 @@ void DesktopEnvironment::ShowContinueWindow(bool show) {
   DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
 
   if (show) {
-    continue_window_->Show(host_);
+    continue_window_->Show(host_, base::Bind(
+        &DesktopEnvironment::ContinueSession, base::Unretained(this)));
   } else {
     continue_window_->Hide();
+  }
+}
+
+void DesktopEnvironment::ContinueSession(bool continue_session) {
+  DCHECK(context_->ui_message_loop()->BelongsToCurrentThread());
+
+  if (continue_session) {
+    host_->PauseSession(false);
+    timer_task_.reset();
+    StartContinueWindowTimer(true);
+  } else {
+    host_->Shutdown(base::Closure());
   }
 }
 

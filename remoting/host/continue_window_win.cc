@@ -32,7 +32,8 @@ class ContinueWindowWin : public ContinueWindow {
   ContinueWindowWin();
   virtual ~ContinueWindowWin();
 
-  virtual void Show(remoting::ChromotingHost* host) OVERRIDE;
+  virtual void Show(remoting::ChromotingHost* host,
+                    const ContinueSessionCallback& callback) OVERRIDE;
   virtual void Hide() OVERRIDE;
 
  private:
@@ -45,6 +46,7 @@ class ContinueWindowWin : public ContinueWindow {
   void SetStrings(const UiStrings& strings);
 
   remoting::ChromotingHost* host_;
+  ContinueSessionCallback callback_;
   HWND hwnd_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowWin);
@@ -88,14 +90,12 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
         case IDC_CONTINUE_DEFAULT:
-          CHECK(host_);
-          host_->PauseSession(false);
+          callback_.Run(true);
           ::EndDialog(hwnd, LOWORD(wParam));
           hwnd_ = NULL;
           return TRUE;
         case IDC_CONTINUE_CANCEL:
-          CHECK(host_);
-          host_->Shutdown(base::Closure());
+          callback_.Run(false);
           ::EndDialog(hwnd, LOWORD(wParam));
           hwnd_ = NULL;
           return TRUE;
@@ -104,8 +104,10 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
   return FALSE;
 }
 
-void ContinueWindowWin::Show(ChromotingHost* host) {
+void ContinueWindowWin::Show(ChromotingHost* host,
+                             const ContinueSessionCallback& callback) {
   host_ = host;
+  callback_ = callback;
 
   CHECK(!hwnd_);
   hwnd_ = CreateDialogParam(g_hModule, MAKEINTRESOURCE(IDD_CONTINUE), NULL,

@@ -62,7 +62,6 @@ class DesktopEnvironment {
 
   void ProcessOnConnect(const std::string& username);
   void ProcessOnLastDisconnect();
-  void ProcessOnPause(bool pause);
 
   void MonitorLocalInputs(bool enable);
 
@@ -72,6 +71,12 @@ class DesktopEnvironment {
 
   // Show or hide the Continue Sharing window on the UI thread.
   void ShowContinueWindow(bool show);
+
+  // Called by the ContinueWindow implementation (on the UI thread) when the
+  // user dismisses the Continue prompt.
+  // TODO(lambroslambrou): Move this method to the (to be written)
+  // It2MeObserver class.
+  void ContinueSession(bool continue_session);
 
   void StartContinueWindowTimer(bool start);
 
