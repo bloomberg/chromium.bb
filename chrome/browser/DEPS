@@ -63,6 +63,7 @@ include_rules = [
   "-content/common/text_input_client_messages.h",
   "-content/common/utility_messages.h",
   # TODO(jam) "-content/common/view_messages.h",
+  "-content/common/view_message_enums.h",
   "-content/common/webblob_messages.h",
   "-content/common/worker_messages.h",
 

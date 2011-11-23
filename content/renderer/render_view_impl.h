@@ -28,6 +28,7 @@
 #include "content/common/navigation_gesture.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_view.h"
 #include "content/renderer/pepper_plugin_delegate_impl.h"
 #include "content/renderer/render_widget.h"
@@ -832,7 +833,7 @@ class RenderViewImpl : public RenderWidget,
   void OnExitFullscreen();
   void OnShouldClose();
   void OnStop();
-  void OnStopFinding(const ViewMsg_StopFinding_Params& params);
+  void OnStopFinding(content::StopFindAction action);
   void OnSwapOut(const ViewMsg_SwapOut_Params& params);
   void OnThemeChanged();
   void OnUndo();

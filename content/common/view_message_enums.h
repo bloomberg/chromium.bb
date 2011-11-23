@@ -109,19 +109,4 @@ struct ViewMsg_Navigate_Type {
   };
 };
 
-// The user has completed a find-in-page; this type defines what actions the
-// renderer should take next.
-struct ViewMsg_StopFinding_Params {
-  enum Action {
-    kClearSelection,
-    kKeepSelection,
-    kActivateSelection
-  };
-
-  ViewMsg_StopFinding_Params() : action(kClearSelection) {}
-
-  // The action that should be taken when the find is completed.
-  Action action;
-};
-
 #endif  // CONTENT_COMMON_VIEW_MESSAGES_ENUMS_H_

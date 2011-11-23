@@ -3530,7 +3530,7 @@ void RenderViewImpl::OnFind(int request_id, const string16& search_text,
   }
 }
 
-void RenderViewImpl::OnStopFinding(const ViewMsg_StopFinding_Params& params) {
+void RenderViewImpl::OnStopFinding(content::StopFindAction action) {
   WebView* view = webview();
   if (!view)
     return;
@@ -3541,8 +3541,7 @@ void RenderViewImpl::OnStopFinding(const ViewMsg_StopFinding_Params& params) {
     return;
   }
 
-  bool clear_selection =
-      params.action == ViewMsg_StopFinding_Params::kClearSelection;
+  bool clear_selection = action == content::STOP_FIND_ACTION_CLEAR_SELECTION;
   if (clear_selection)
     view->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"));
 
@@ -3552,7 +3551,7 @@ void RenderViewImpl::OnStopFinding(const ViewMsg_StopFinding_Params& params) {
     frame = frame->traverseNext(false);
   }
 
-  if (params.action == ViewMsg_StopFinding_Params::kActivateSelection) {
+  if (action == content::STOP_FIND_ACTION_ACTIVATE_SELECTION) {
     WebFrame* focused_frame = view->focusedFrame();
     if (focused_frame) {
       WebDocument doc = focused_frame->document();

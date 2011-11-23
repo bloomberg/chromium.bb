@@ -17,6 +17,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/stop_find_action.h"
 #include "content/public/common/webkit_param_traits.h"
 #include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel_handle.h"
@@ -53,7 +54,6 @@ IPC_ENUM_TRAITS(CSSColors::CSSColorName)
 IPC_ENUM_TRAITS(NavigationGesture)
 IPC_ENUM_TRAITS(ViewHostMsg_AccEvent::Value)
 IPC_ENUM_TRAITS(ViewMsg_Navigate_Type::Value)
-IPC_ENUM_TRAITS(ViewMsg_StopFinding_Params::Action)
 IPC_ENUM_TRAITS(WebKit::WebContextMenuData::MediaType)
 IPC_ENUM_TRAITS(WebKit::WebMediaPlayerAction::Type)
 IPC_ENUM_TRAITS(WebKit::WebPopupType)
@@ -61,9 +61,10 @@ IPC_ENUM_TRAITS(WebKit::WebTextDirection)
 IPC_ENUM_TRAITS(WebMenuItem::Type)
 IPC_ENUM_TRAITS(WindowContainerType)
 IPC_ENUM_TRAITS(content::FileChooserParams::Mode)
+IPC_ENUM_TRAITS(content::PageZoom)
 IPC_ENUM_TRAITS(content::RendererPreferencesHintingEnum)
 IPC_ENUM_TRAITS(content::RendererPreferencesSubpixelRenderingEnum)
-IPC_ENUM_TRAITS(content::PageZoom)
+IPC_ENUM_TRAITS(content::StopFindAction)
 IPC_ENUM_TRAITS(media::MediaLogEvent::Type)
 IPC_ENUM_TRAITS(ui::TextInputType)
 IPC_ENUM_TRAITS(webkit_glue::WebAccessibility::BoolAttribute)
@@ -115,10 +116,6 @@ IPC_STRUCT_TRAITS_BEGIN(FontDescriptor)
   IPC_STRUCT_TRAITS_MEMBER(font_point_size)
 IPC_STRUCT_TRAITS_END()
 #endif
-
-IPC_STRUCT_TRAITS_BEGIN(ViewMsg_StopFinding_Params)
-  IPC_STRUCT_TRAITS_MEMBER(action)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCompositionUnderline)
   IPC_STRUCT_TRAITS_MEMBER(startOffset)
@@ -799,7 +796,7 @@ IPC_MESSAGE_ROUTED3(ViewMsg_Find,
 // This message notifies the renderer that the user has closed the FindInPage
 // window (and what action to take regarding the selection).
 IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding,
-                    ViewMsg_StopFinding_Params /* action */)
+                    content::StopFindAction /* action */)
 
 // Used to notify the render-view that the browser has received a reply for
 // the Find operation and is interested in receiving the next one. This is

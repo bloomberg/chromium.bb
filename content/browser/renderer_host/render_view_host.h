@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/common/stop_find_action.h"
 #include "content/public/common/window_container_type.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebConsoleMessage.h"
@@ -469,7 +470,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
 
   // Notifies the renderer that the user has closed the FindInPage window
   // (and what action to take regarding the selection).
-  void StopFinding(const ViewMsg_StopFinding_Params& params);
+  void StopFinding(content::StopFindAction action);
 
   SessionStorageNamespace* session_storage_namespace() {
     return session_storage_namespace_.get();

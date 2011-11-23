@@ -1364,8 +1364,8 @@ void RenderViewHost::NotifyMoveOrResizeStarted() {
   Send(new ViewMsg_MoveOrResizeStarted(routing_id()));
 }
 
-void RenderViewHost::StopFinding(const ViewMsg_StopFinding_Params& params) {
-  Send(new ViewMsg_StopFinding(routing_id(), params));
+void RenderViewHost::StopFinding(content::StopFindAction action) {
+  Send(new ViewMsg_StopFinding(routing_id(), action));
 }
 
 void RenderViewHost::OnAccessibilityNotifications(
