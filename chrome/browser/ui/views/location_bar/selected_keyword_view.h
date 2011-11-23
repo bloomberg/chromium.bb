@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "views/controls/label.h"
 
@@ -28,9 +29,9 @@ class SelectedKeywordView : public IconLabelBubbleView {
 
   void SetFont(const gfx::Font& font);
 
-  virtual gfx::Size GetPreferredSize();
-  virtual gfx::Size GetMinimumSize();
-  virtual void Layout();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
   // The current keyword, or an empty string if no keyword is displayed.
   void SetKeyword(const string16& keyword);

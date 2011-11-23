@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "build/build_config.h"
@@ -164,7 +165,7 @@ class BrowserView : public BrowserBubbleHost,
   virtual bool ShouldShowAvatar() const;
 
   // Handle the specified |accelerator| being pressed.
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Provides the containing frame with the accelerator for the specified
   // command id. This can be used to provide menu item shortcut hints etc.
@@ -227,7 +228,7 @@ class BrowserView : public BrowserBubbleHost,
   bool IsPositionInWindowCaption(const gfx::Point& point);
 
   // Returns whether the fullscreen bubble is visible or not.
-  virtual bool IsFullscreenBubbleVisible() const;
+  virtual bool IsFullscreenBubbleVisible() const OVERRIDE;
 
   // Invoked from the frame when the full screen state changes. This is only
   // used on Linux.

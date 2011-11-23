@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BUBBLE_BUBBLE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/models/accelerator.h"
@@ -143,11 +144,11 @@ class Bubble
   }
 
   // Overridden from NativeWidget:
-  virtual void Close();
+  virtual void Close() OVERRIDE;
 
   // Overridden from ui::AnimationDelegate:
-  virtual void AnimationEnded(const ui::Animation* animation);
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
 #ifdef UNIT_TEST
   views::View* contents() const { return contents_; }
@@ -188,7 +189,7 @@ class Bubble
   virtual void OnLostActive() OVERRIDE;
 #elif defined(OS_WIN)
   // Overridden from NativeWidgetWin:
-  virtual void OnActivate(UINT action, BOOL minimized, HWND window);
+  virtual void OnActivate(UINT action, BOOL minimized, HWND window) OVERRIDE;
 #elif defined(TOOLKIT_USES_GTK)
   // Overridden from NativeWidgetGtk:
   virtual void OnActiveChanged() OVERRIDE;
@@ -225,7 +226,7 @@ class Bubble
   void UnregisterEscapeAccelerator();
 
   // Overridden from AcceleratorTarget:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // The delegate, if any.
   BubbleDelegate* delegate_;

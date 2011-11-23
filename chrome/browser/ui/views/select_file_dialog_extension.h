@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/select_file_dialog.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
@@ -75,7 +76,7 @@ class SelectFileDialogExtension
   static bool PendingExists(int32 tab_id);
 
   // Returns if the dialog has mutiple file type choices
-  virtual bool HasMultipleFileTypeChoicesImpl();
+  virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
   bool hasMultipleFileTypeChoices_;
   void* params_;

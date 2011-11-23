@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TAB_CONTENTS_TAB_CONTENTS_VIEW_VIEWS_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
@@ -69,8 +70,8 @@ class TabContentsViewViews : public views::Widget,
   virtual void RestoreFocus() OVERRIDE;
   virtual bool IsDoingDrag() const OVERRIDE;
   virtual void CancelDragAndCloseTab() OVERRIDE;
-  virtual bool IsEventTracking() const;
-  virtual void CloseTabAfterEventTracking();
+  virtual bool IsEventTracking() const OVERRIDE;
+  virtual void CloseTabAfterEventTracking() OVERRIDE;
   virtual void GetViewBounds(gfx::Rect* out) const OVERRIDE;
   virtual void InstallOverlayView(gfx::NativeView view) OVERRIDE;
   virtual void RemoveOverlayView() OVERRIDE;

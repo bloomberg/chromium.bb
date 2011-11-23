@@ -82,7 +82,7 @@ class CreateUrlApplicationShortcutView : public CreateApplicationShortcutView {
   explicit CreateUrlApplicationShortcutView(TabContentsWrapper* tab_contents);
   virtual ~CreateUrlApplicationShortcutView();
 
-  virtual bool Accept();
+  virtual bool Accept() OVERRIDE;
 
  private:
   // Fetch the largest unprocessed icon.
@@ -118,7 +118,7 @@ class CreateChromeApplicationShortcutView
   // it to the "Create Shortcut" dailog box.
   virtual void OnImageLoaded(SkBitmap* image,
                              const ExtensionResource& resource,
-                             int index);
+                             int index) OVERRIDE;
 
  private:
   const Extension* app_;

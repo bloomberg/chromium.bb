@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/layout/layout_manager.h"
 
@@ -51,12 +52,12 @@ class BrowserViewLayout : public views::LayoutManager {
   virtual int NonClientHitTest(const gfx::Point& point);
 
   // views::LayoutManager overrides:
-  virtual void Installed(views::View* host);
-  virtual void Uninstalled(views::View* host);
-  virtual void ViewAdded(views::View* host, views::View* view);
-  virtual void ViewRemoved(views::View* host, views::View* view);
-  virtual void Layout(views::View* host);
-  virtual gfx::Size GetPreferredSize(views::View* host);
+  virtual void Installed(views::View* host) OVERRIDE;
+  virtual void Uninstalled(views::View* host) OVERRIDE;
+  virtual void ViewAdded(views::View* host, views::View* view) OVERRIDE;
+  virtual void ViewRemoved(views::View* host, views::View* view) OVERRIDE;
+  virtual void Layout(views::View* host) OVERRIDE;
+  virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE;
 
  protected:
   Browser* browser();

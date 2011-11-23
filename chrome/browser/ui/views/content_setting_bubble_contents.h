@@ -49,7 +49,7 @@ class ContentSettingBubbleContents : public views::BubbleDelegateView,
       views::BubbleBorder::ArrowLocation arrow_location);
   virtual ~ContentSettingBubbleContents();
 
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // views::BubbleDelegateView:
   virtual gfx::Point GetAnchorPoint() OVERRIDE;

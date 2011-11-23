@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PAGE_ACTION_WITH_BADGE_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "ui/gfx/size.h"
 #include "views/view.h"
 
@@ -27,7 +28,7 @@ class PageActionWithBadgeView : public views::View {
   void UpdateVisibility(TabContents* contents, const GURL& url);
 
  private:
-  virtual void Layout();
+  virtual void Layout() OVERRIDE;
 
   // The button this view contains.
   PageActionImageView* image_view_;

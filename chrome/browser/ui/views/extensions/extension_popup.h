@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/ui/views/browser_bubble.h"
@@ -68,22 +69,22 @@ class ExtensionPopup : public BrowserBubble,
   ExtensionHost* host() const { return extension_host_.get(); }
 
   // BrowserBubble overrides.
-  virtual void Show(bool activate);
+  virtual void Show(bool activate) OVERRIDE;
 
   // BrowserBubble::Delegate methods.
-  virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
-  virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
-  virtual void BubbleGotFocus(BrowserBubble* bubble);
+  virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble) OVERRIDE;
+  virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble) OVERRIDE;
+  virtual void BubbleGotFocus(BrowserBubble* bubble) OVERRIDE;
   virtual void BubbleLostFocus(BrowserBubble* bubble,
-                               bool lost_focus_to_child);
+                               bool lost_focus_to_child) OVERRIDE;
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ExtensionView::Container overrides.
-  virtual void OnExtensionPreferredSizeChanged(ExtensionView* view);
+  virtual void OnExtensionPreferredSizeChanged(ExtensionView* view) OVERRIDE;
 
   // The min/max height of popups.
   static const int kMinWidth;

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/ui/views/tabs/base_tab_strip.h"
@@ -215,11 +216,11 @@ class TabStrip : public BaseTabStrip,
   // animating to their desired position/bounds. This is used by the standard
   // Layout method and other callers like the DraggedTabController that need
   // stable representations of Tab positions.
-  virtual void GenerateIdealBounds();
+  virtual void GenerateIdealBounds() OVERRIDE;
 
   // Starts various types of TabStrip animations.
   void StartResizeLayoutAnimation();
-  virtual void StartMiniTabAnimation();
+  virtual void StartMiniTabAnimation() OVERRIDE;
   void StartMouseInitiatedRemoveTabAnimation(int model_index);
 
   // Returns true if the specified point in TabStrip coords is within the

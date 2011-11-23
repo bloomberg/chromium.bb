@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TAB_ICON_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "views/view.h"
 
 class SkBitmap;
@@ -39,8 +40,8 @@ class TabIconView : public views::View {
   void set_is_light(bool is_light) { is_light_ = is_light; }
 
   // Overridden from View
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual gfx::Size GetPreferredSize();
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
   void PaintThrobber(gfx::Canvas* canvas);

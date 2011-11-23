@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "ui/gfx/size.h"
 #include "views/view.h"
 
@@ -37,11 +38,11 @@ class KeywordHintView : public views::View {
   void SetKeyword(const string16& keyword);
   string16 keyword() const { return keyword_; }
 
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual gfx::Size GetPreferredSize();
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   // The minimum size is just big enough to show the tab.
-  virtual gfx::Size GetMinimumSize();
-  virtual void Layout();
+  virtual gfx::Size GetMinimumSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
 
  private:
   views::Label* CreateLabel();

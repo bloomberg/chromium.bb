@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "views/controls/menu/menu_delegate.h"
@@ -47,31 +48,33 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
   void CancelMenu();
 
   // Overridden from views::MenuDelegate:
-  virtual void ExecuteCommand(int id);
+  virtual void ExecuteCommand(int id) OVERRIDE;
   virtual bool ShowContextMenu(views::MenuItemView* source,
                                int id,
                                const gfx::Point& p,
-                               bool is_mouse_gesture);
-  virtual void DropMenuClosed(views::MenuItemView* menu);
+                               bool is_mouse_gesture) OVERRIDE;
+  virtual void DropMenuClosed(views::MenuItemView* menu) OVERRIDE;
   // These drag functions offer support for dragging icons into the overflow
   // menu.
   virtual bool GetDropFormats(
       views::MenuItemView* menu,
       int* formats,
-      std::set<ui::OSExchangeData::CustomFormat>* custom_formats);
-  virtual bool AreDropTypesRequired(views::MenuItemView* menu);
-  virtual bool CanDrop(views::MenuItemView* menu, const ui::OSExchangeData& data);
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual bool AreDropTypesRequired(views::MenuItemView* menu) OVERRIDE;
+  virtual bool CanDrop(views::MenuItemView* menu,
+                       const ui::OSExchangeData& data) OVERRIDE;
   virtual int GetDropOperation(views::MenuItemView* item,
                                const views::DropTargetEvent& event,
-                               DropPosition* position);
+                               DropPosition* position) OVERRIDE;
   virtual int OnPerformDrop(views::MenuItemView* menu,
                             DropPosition position,
-                            const views::DropTargetEvent& event);
+                            const views::DropTargetEvent& event) OVERRIDE;
   // These three drag functions offer support for dragging icons out of the
   // overflow menu.
-  virtual bool CanDrag(views::MenuItemView* menu);
-  virtual void WriteDragData(views::MenuItemView* sender, ui::OSExchangeData* data);
-  virtual int GetDragOperations(views::MenuItemView* sender);
+  virtual bool CanDrag(views::MenuItemView* menu) OVERRIDE;
+  virtual void WriteDragData(views::MenuItemView* sender,
+                             ui::OSExchangeData* data) OVERRIDE;
+  virtual int GetDragOperations(views::MenuItemView* sender) OVERRIDE;
 
  private:
   // This class manages its own lifetime.

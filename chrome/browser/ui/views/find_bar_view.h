@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FIND_BAR_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
@@ -63,31 +64,32 @@ class FindBarView : public DropdownBarView,
   void ClearMatchCount();
 
   // Claims focus for the text field and selects its contents.
-  virtual void SetFocusAndSelection(bool select_all);
+  virtual void SetFocusAndSelection(bool select_all) OVERRIDE;
 
   // views::View:
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
-                                    views::View* child);
+                                    views::View* child) OVERRIDE;
 
   // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  virtual void ButtonPressed(views::Button* sender,
+                             const views::Event& event) OVERRIDE;
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents);
+                               const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event);
+                              const views::KeyEvent& key_event) OVERRIDE;
 
  private:
   // Update the appearance for the match count label.
   void UpdateMatchCountAppearance(bool no_match);
 
   // Overridden from views::View.
-  virtual void OnThemeChanged();
+  virtual void OnThemeChanged() OVERRIDE;
 
   // We use a hidden view to grab mouse clicks and bring focus to the find
   // text box. This is because although the find text box may look like it
@@ -102,7 +104,7 @@ class FindBarView : public DropdownBarView,
       : view_to_focus_on_mousedown_(view_to_focus_on_mousedown) {}
 
    private:
-    virtual bool OnMousePressed(const views::MouseEvent& event);
+    virtual bool OnMousePressed(const views::MouseEvent& event) OVERRIDE;
 
     views::Textfield* view_to_focus_on_mousedown_;
 
@@ -116,7 +118,7 @@ class FindBarView : public DropdownBarView,
      SearchTextfieldView();
      virtual ~SearchTextfieldView();
 
-     virtual void RequestFocus();
+     virtual void RequestFocus() OVERRIDE;
 
    private:
      DISALLOW_COPY_AND_ASSIGN(SearchTextfieldView);

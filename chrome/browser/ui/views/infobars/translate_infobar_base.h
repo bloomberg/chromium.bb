@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_TRANSLATE_INFOBAR_BASE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
@@ -30,7 +31,9 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
   static const int kButtonInLabelSpacing;
 
   // InfoBarView:
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
 
   // Sets the text of the provided language menu button to reflect the current
   // value from the delegate.
@@ -42,8 +45,8 @@ class TranslateInfoBarBase : public TranslateInfoBarView,
 
  private:
   // InfoBarView:
-  virtual void OnPaintBackground(gfx::Canvas* canvas);
-  virtual void AnimationProgressed(const ui::Animation* animation);
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
   // Returns the background that should be displayed when not animating.
   const views::Background& GetBackground();

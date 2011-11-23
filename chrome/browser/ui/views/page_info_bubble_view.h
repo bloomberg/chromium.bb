@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_BUBBLE_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/page_info_model_observer.h"
 #include "ui/base/animation/slide_animation.h"
@@ -27,7 +28,7 @@ class PageInfoBubbleView : public views::BubbleDelegateView,
   void ShowCertDialog();
 
   // views::View methods:
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // PageInfoModelObserver methods:
   virtual void OnPageInfoModelChanged() OVERRIDE;

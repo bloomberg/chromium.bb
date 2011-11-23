@@ -404,10 +404,12 @@ class BrowserActionsContainer
   static int IconHeight();
 
   // ExtensionToolbarModel::Observer implementation.
-  virtual void BrowserActionAdded(const Extension* extension, int index);
-  virtual void BrowserActionRemoved(const Extension* extension);
-  virtual void BrowserActionMoved(const Extension* extension, int index);
-  virtual void ModelLoaded();
+  virtual void BrowserActionAdded(const Extension* extension,
+                                  int index) OVERRIDE;
+  virtual void BrowserActionRemoved(const Extension* extension) OVERRIDE;
+  virtual void BrowserActionMoved(const Extension* extension,
+                                  int index) OVERRIDE;
+  virtual void ModelLoaded() OVERRIDE;
 
   void LoadImages();
 

@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
@@ -119,8 +120,8 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
 
   // BookmarkContextMenu::Observer methods.
   virtual void WillRemoveBookmarks(
-      const std::vector<const BookmarkNode*>& bookmarks);
-  virtual void DidRemoveBookmarks();
+      const std::vector<const BookmarkNode*>& bookmarks) OVERRIDE;
+  virtual void DidRemoveBookmarks() OVERRIDE;
 
  private:
   typedef std::map<int, const BookmarkNode*> MenuIDToNodeMap;

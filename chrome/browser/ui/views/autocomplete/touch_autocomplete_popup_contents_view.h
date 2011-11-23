@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_AUTOCOMPLETE_TOUCH_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/browser/ui/views/autocomplete/autocomplete_result_view.h"
 
@@ -50,18 +51,18 @@ class TouchAutocompletePopupContentsView
   virtual ~TouchAutocompletePopupContentsView();
 
   // AutocompletePopupContentsView:
-  virtual void UpdatePopupAppearance();
-  virtual void LayoutChildren();
+  virtual void UpdatePopupAppearance() OVERRIDE;
+  virtual void LayoutChildren() OVERRIDE;
 
  protected:
   // AutocompletePopupContentsView:
-  virtual void PaintResultViews(gfx::CanvasSkia* canvas);
-  virtual int CalculatePopupHeight();
+  virtual void PaintResultViews(gfx::CanvasSkia* canvas) OVERRIDE;
+  virtual int CalculatePopupHeight() OVERRIDE;
   virtual AutocompleteResultView* CreateResultView(
       AutocompleteResultViewModel* model,
       int model_index,
       const gfx::Font& font,
-      const gfx::Font& bold_font);
+      const gfx::Font& bold_font) OVERRIDE;
 
  private:
   std::vector<View*> GetVisibleChildren();

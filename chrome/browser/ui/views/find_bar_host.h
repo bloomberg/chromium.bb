@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_FIND_BAR_HOST_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -47,33 +48,34 @@ class FindBarHost : public DropdownBarHost,
   bool MaybeForwardKeyEventToWebpage(const views::KeyEvent& key_event);
 
   // FindBar implementation:
-  virtual FindBarController* GetFindBarController() const;
-  virtual void SetFindBarController(FindBarController* find_bar_controller);
-  virtual void Show(bool animate);
-  virtual void Hide(bool animate);
-  virtual void SetFocusAndSelection();
-  virtual void ClearResults(const FindNotificationDetails& results);
-  virtual void StopAnimation();
+  virtual FindBarController* GetFindBarController() const OVERRIDE;
+  virtual void SetFindBarController(
+      FindBarController* find_bar_controller) OVERRIDE;
+  virtual void Show(bool animate) OVERRIDE;
+  virtual void Hide(bool animate) OVERRIDE;
+  virtual void SetFocusAndSelection() OVERRIDE;
+  virtual void ClearResults(const FindNotificationDetails& results) OVERRIDE;
+  virtual void StopAnimation() OVERRIDE;
   virtual void MoveWindowIfNecessary(const gfx::Rect& selection_rect,
-                                     bool no_redraw);
-  virtual void SetFindText(const string16& find_text);
+                                     bool no_redraw) OVERRIDE;
+  virtual void SetFindText(const string16& find_text) OVERRIDE;
   virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
-                                     const string16& find_text);
-  virtual void AudibleAlert();
-  virtual bool IsFindBarVisible();
-  virtual void RestoreSavedFocus();
-  virtual FindBarTesting* GetFindBarTesting();
+                                     const string16& find_text) OVERRIDE;
+  virtual void AudibleAlert() OVERRIDE;
+  virtual bool IsFindBarVisible() OVERRIDE;
+  virtual void RestoreSavedFocus() OVERRIDE;
+  virtual FindBarTesting* GetFindBarTesting() OVERRIDE;
 
   // Overridden from ui::AcceleratorTarget in DropdownBarHost class:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // FindBarTesting implementation:
   virtual bool GetFindBarWindowInfo(gfx::Point* position,
-                                    bool* fully_visible);
-  virtual string16 GetFindText();
-  virtual string16 GetFindSelectedText();
-  virtual string16 GetMatchCountText();
-  virtual int GetWidth();
+                                    bool* fully_visible) OVERRIDE;
+  virtual string16 GetFindText() OVERRIDE;
+  virtual string16 GetFindSelectedText() OVERRIDE;
+  virtual string16 GetMatchCountText() OVERRIDE;
+  virtual int GetWidth() OVERRIDE;
 
   // Overridden from DropdownBarHost:
   // Returns the rectangle representing where to position the find bar. It uses
@@ -87,13 +89,15 @@ class FindBarHost : public DropdownBarHost,
   // the top of the page area, (it will be converted to coordinates relative to
   // the top of the browser window, when comparing against the dialog
   // coordinates). The returned value is relative to the browser window.
-  virtual gfx::Rect GetDialogPosition(gfx::Rect avoid_overlapping_rect);
+  virtual gfx::Rect GetDialogPosition(
+      gfx::Rect avoid_overlapping_rect) OVERRIDE;
   // Moves the dialog window to the provided location, moves it to top in the
   // z-order (HWND_TOP, not HWND_TOPMOST) and shows the window (if hidden).
   // It then calls UpdateWindowEdges to make sure we don't overwrite the Chrome
   // window border. If |no_redraw| is set, the window is getting moved but not
   // sized, and should not be redrawn to reduce update flicker.
-  virtual void SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw);
+  virtual void SetDialogPosition(const gfx::Rect& new_pos,
+                                 bool no_redraw) OVERRIDE;
 
   // Retrieves the boundaries that the find bar widget has to work with
   // within the Chrome frame window. The resulting rectangle will be a
@@ -106,11 +110,11 @@ class FindBarHost : public DropdownBarHost,
   // window. If the function fails to determine the browser
   // window/client area rectangle or the rectangle for the page area
   // then |bounds| will be an empty rectangle.
-  virtual void GetWidgetBounds(gfx::Rect* bounds);
+  virtual void GetWidgetBounds(gfx::Rect* bounds) OVERRIDE;
 
   // Additional accelerator handling (on top of what DropDownBarHost does).
-  virtual void RegisterAccelerators();
-  virtual void UnregisterAccelerators();
+  virtual void RegisterAccelerators() OVERRIDE;
+  virtual void UnregisterAccelerators() OVERRIDE;
 
  private:
   // Allows implementation to tweak widget position.

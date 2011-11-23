@@ -8,6 +8,7 @@
 
 #include <set>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/views/html_dialog_view.h"
@@ -27,7 +28,7 @@ class KeyboardOverlayDialogView : public HtmlDialogView {
   virtual ~KeyboardOverlayDialogView();
 
   // Overridden from views::View:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator);
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // Shows the keyboard overlay.
   static void ShowDialog(gfx::NativeWindow owning_window, BrowserView* parent);

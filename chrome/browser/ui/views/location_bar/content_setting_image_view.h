@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/common/content_settings_types.h"
@@ -35,7 +36,7 @@ class ContentSettingImageView : public views::ImageView,
   void UpdateFromTabContents(TabContents* tab_contents);
 
   // views::View overrides:
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  private:
   // views::ImageView overrides:

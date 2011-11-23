@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_CONTEXT_MENU_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_context_menu_controller_views.h"
 #include "views/controls/menu/menu_delegate.h"
 
@@ -53,19 +54,19 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
   void SetPageNavigator(PageNavigator* navigator);
 
   // Overridden from views::MenuDelegate:
-  virtual void ExecuteCommand(int command_id);
-  virtual bool IsItemChecked(int command_id) const;
-  virtual bool IsCommandEnabled(int command_id) const;
-  virtual bool ShouldCloseAllMenusOnExecute(int id);
+  virtual void ExecuteCommand(int command_id) OVERRIDE;
+  virtual bool IsItemChecked(int command_id) const OVERRIDE;
+  virtual bool IsCommandEnabled(int command_id) const OVERRIDE;
+  virtual bool ShouldCloseAllMenusOnExecute(int id) OVERRIDE;
 
   // Overridden from BookmarkContextMenuControllerViewsDelegate:
-  virtual void CloseMenu();
-  virtual void AddItemWithStringId(int command_id, int string_id);
-  virtual void AddSeparator();
-  virtual void AddCheckboxItem(int command_id, int string_id);
+  virtual void CloseMenu() OVERRIDE;
+  virtual void AddItemWithStringId(int command_id, int string_id) OVERRIDE;
+  virtual void AddSeparator() OVERRIDE;
+  virtual void AddCheckboxItem(int command_id, int string_id) OVERRIDE;
   virtual void WillRemoveBookmarks(
-      const std::vector<const BookmarkNode*>& bookmarks);
-  virtual void DidRemoveBookmarks();
+      const std::vector<const BookmarkNode*>& bookmarks) OVERRIDE;
+  virtual void DidRemoveBookmarks() OVERRIDE;
 
  private:
   scoped_ptr<BookmarkContextMenuControllerViews> controller_;

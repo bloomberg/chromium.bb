@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_BROWSER_TAB_STRIP_CONTROLLER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
@@ -43,7 +44,7 @@ class BrowserTabStripController : public TabStripController,
   virtual const TabStripSelectionModel& GetSelectionModel() OVERRIDE;
   virtual int GetCount() const OVERRIDE;
   virtual bool IsValidIndex(int model_index) const OVERRIDE;
-  virtual bool IsActiveTab(int model_index) const;
+  virtual bool IsActiveTab(int model_index) const OVERRIDE;
   virtual bool IsTabSelected(int model_index) const OVERRIDE;
   virtual bool IsTabPinned(int model_index) const OVERRIDE;
   virtual bool IsTabCloseable(int model_index) const OVERRIDE;
