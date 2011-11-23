@@ -171,9 +171,11 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
                         OnLogMessage)
-#if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
+
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
+
+#if defined(TOOLKIT_USES_GTK) || defined(OS_WIN)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ResizeView, OnResizeView)
 #endif
 
