@@ -538,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   CloseDevToolsWindow();
 }
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
 #else
 #define MAYBE_InspectSharedWorker FAILS_InspectSharedWorker
@@ -549,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
 }
 
 // http://crbug.com/100538
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_PauseInSharedWorkerInitialization DISABLED_PauseInSharedWorkerInitialization
 #else
 #define MAYBE_PauseInSharedWorkerInitialization FAILS_PauseInSharedWorkerInitialization
