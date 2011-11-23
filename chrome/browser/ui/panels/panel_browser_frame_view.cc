@@ -186,7 +186,7 @@ void PanelBrowserFrameView::MouseWatcher::DidProcessEvent(
       break;
   }
 }
-#elif defined(TOUCH_UI) || defined(USE_AURA)
+#elif defined(USE_AURA)
 base::EventStatus PanelBrowserFrameView::MouseWatcher::WillProcessEvent(
     const base::NativeEvent& event) {
   return base::EVENT_CONTINUE;

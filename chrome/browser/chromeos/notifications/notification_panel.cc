@@ -459,7 +459,7 @@ void NotificationPanel::Show() {
 
     panel_widget_->SetContentsView(scroll_view_.get());
 
-#if defined(USE_AURA) || defined(TOUCH_UI)
+#if defined(USE_AURA)
     native->AttachToView(balloon_container_.get());
 #else
     // Add the view port after scroll_view is attached to the panel widget.

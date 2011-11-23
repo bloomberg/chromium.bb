@@ -20,13 +20,11 @@
 
 namespace views {
 
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#if defined(USE_X11) && !defined(USE_WAYLAND)
+#if defined(USE_AURA) && defined(USE_X11) && !defined(USE_WAYLAND)
 // Dispatch an XEvent to the RootView. Return true if the event was dispatched
 // and handled, false otherwise.
 bool VIEWS_EXPORT DispatchXEvent(XEvent* xevent);
-#endif  // USE_X11 && !USE_WAYLAND
-#endif  // TOUCH_UI || USE_AURA
+#endif  // USE_AURA && USE_X11 && !USE_WAYLAND
 
 // This class delegates the key messages to the associated FocusManager class
 // for the window that is receiving these messages for accelerator processing.
@@ -41,7 +39,7 @@ class VIEWS_EXPORT AcceleratorHandler : public MessageLoop::Dispatcher {
 #elif defined(USE_WAYLAND)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
       base::wayland::WaylandEvent* ev);
-#elif defined(TOUCH_UI) || defined(USE_AURA)
+#elif defined(USE_AURA)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xev);
 #else
   virtual bool Dispatch(GdkEvent* event);

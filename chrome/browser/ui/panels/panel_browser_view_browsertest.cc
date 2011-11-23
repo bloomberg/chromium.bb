@@ -50,7 +50,7 @@ class PanelBrowserViewTest : public BasePanelBrowserTest {
       MSG msg;
       msg.message = WM_MOUSEMOVE;
       DidProcessEvent(msg);
-#elif defined(TOUCH_UI) || defined(USE_AURA)
+#elif defined(USE_AURA)
       NOTIMPLEMENTED();
 #elif defined(TOOLKIT_USES_GTK)
       GdkEvent event;

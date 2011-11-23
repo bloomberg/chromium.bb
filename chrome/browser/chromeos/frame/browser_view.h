@@ -97,7 +97,7 @@ class BrowserView : public ::BrowserView,
   virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
 
   // MessageLoopForUI::Observer overrides.
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
   // MessageLoopForUI::Observer overrides.
   virtual base::EventStatus WillProcessEvent(
       const base::NativeEvent& event) OVERRIDE;

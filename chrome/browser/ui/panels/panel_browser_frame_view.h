@@ -114,7 +114,7 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
     virtual bool IsCursorInViewBounds() const;
 
-  #if defined(OS_WIN) || defined(TOUCH_UI) || defined(USE_AURA)
+  #if defined(OS_WIN) || defined(USE_AURA)
     virtual base::EventStatus WillProcessEvent(
         const base::NativeEvent& event) OVERRIDE;
     virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;

@@ -28,7 +28,7 @@
 #include "ui/views/events/event.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(USE_AURA) || defined(TOUCH_UI)
+#if defined(USE_AURA)
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #elif defined(TOOLKIT_USES_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
@@ -799,7 +799,7 @@ void InputMethodIBus::OnForwardKeyEvent(IBusInputContext* context,
   DCHECK_EQ(context_, context);
 
   ui::KeyboardCode key_code = ui::VKEY_UNKNOWN;
-#if defined(USE_AURA) || defined(TOUCH_UI)
+#if defined(USE_AURA)
   key_code = ui::KeyboardCodeFromXKeysym(keyval);
 #elif defined(TOOLKIT_USES_GTK)
   key_code = ui::WindowsKeyCodeForGdkKeyCode(keyval);

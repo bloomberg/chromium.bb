@@ -267,7 +267,7 @@ bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
   mouse_down_offset_y_ = event.y();
   dragging_ = false;
 
-#if !defined(TOUCH_UI) && !defined(USE_AURA)
+#if defined(TOOLKIT_USES_GTK)
   const GdkEvent* gdk_event = event.gdk_event();
   GdkEventButton last_button_event = gdk_event->button;
   mouse_down_abs_x_ = last_button_event.x_root;

@@ -568,7 +568,7 @@ void BrowserView::ButtonVisibilityChanged(views::View* button_view) {
 
 // BrowserView, MessageLoopForUI::Observer implementation.
 
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
 base::EventStatus BrowserView::WillProcessEvent(
     const base::NativeEvent& event) OVERRIDE {
   return base::EVENT_CONTINUE;

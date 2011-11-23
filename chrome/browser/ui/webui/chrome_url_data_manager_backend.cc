@@ -74,7 +74,7 @@ class ChromeURLContentSecurityPolicyExceptionSet
 #if defined(TOUCH_UI)
     insert(chrome::kChromeUIKeyboardHost);
 #endif
-#if defined(OS_CHROMEOS) || defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(OS_CHROMEOS) || defined(USE_AURA)
     insert(chrome::kChromeUICollectedCookiesHost);
     insert(chrome::kChromeUIHttpAuthHost);
     insert(chrome::kChromeUIRepostFormWarningHost);
