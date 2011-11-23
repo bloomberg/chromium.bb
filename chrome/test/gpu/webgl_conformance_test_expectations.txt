@@ -38,3 +38,5 @@
 // FLAKY TESTS
 // -----------------------------------------------------------------------------
 
+104772 MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_video = PASS FAIL
+
