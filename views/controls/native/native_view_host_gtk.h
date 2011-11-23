@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/gfx/rect.h"
 #include "views/controls/native/native_view_host_wrapper.h"
 
@@ -28,17 +29,17 @@ class NativeViewHostGtk : public NativeViewHostWrapper {
   virtual ~NativeViewHostGtk();
 
   // Overridden from NativeViewHostWrapper:
-  virtual void NativeViewAttached();
-  virtual void NativeViewDetaching(bool destroyed);
-  virtual void AddedToWidget();
-  virtual void RemovedFromWidget();
-  virtual void InstallClip(int x, int y, int w, int h);
-  virtual bool HasInstalledClip();
-  virtual void UninstallClip();
-  virtual void ShowWidget(int x, int y, int w, int h);
-  virtual void HideWidget();
-  virtual void SetFocus();
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible();
+  virtual void NativeViewAttached() OVERRIDE;
+  virtual void NativeViewDetaching(bool destroyed) OVERRIDE;
+  virtual void AddedToWidget() OVERRIDE;
+  virtual void RemovedFromWidget() OVERRIDE;
+  virtual void InstallClip(int x, int y, int w, int h) OVERRIDE;
+  virtual bool HasInstalledClip() OVERRIDE;
+  virtual void UninstallClip() OVERRIDE;
+  virtual void ShowWidget(int x, int y, int w, int h) OVERRIDE;
+  virtual void HideWidget() OVERRIDE;
+  virtual void SetFocus() OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
 
  private:
   // Create and Destroy the GtkFixed that performs clipping on our hosted

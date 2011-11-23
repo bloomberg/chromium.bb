@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "views/views_export.h"
 
@@ -61,7 +62,7 @@ class VIEWS_EXPORT HorizontalPainter : public Painter {
   virtual ~HorizontalPainter() {}
 
   // Paints the images.
-  virtual void Paint(int w, int h, gfx::Canvas* canvas);
+  virtual void Paint(int w, int h, gfx::Canvas* canvas) OVERRIDE;
 
   // Height of the images.
   int height() const { return height_; }

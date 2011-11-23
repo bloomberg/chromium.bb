@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "build/build_config.h"
@@ -242,10 +243,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   int GetCommand() const { return command_; }
 
   // Paints the menu item.
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
   // Returns the preferred size of this item.
-  virtual gfx::Size GetPreferredSize();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Returns the object responsible for controlling showing the menu.
   MenuController* GetMenuController();
@@ -278,7 +279,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   void ChildrenChanged();
 
   // Sizes any child views.
-  virtual void Layout();
+  virtual void Layout() OVERRIDE;
 
   // Returns the amount of space needed to accomodate the accelerator. The
   // space needed for the accelerator is NOT included in the preferred width.

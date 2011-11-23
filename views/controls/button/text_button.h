@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -95,8 +96,8 @@ class VIEWS_EXPORT TextButtonNativeThemeBorder : public Border {
   virtual ~TextButtonNativeThemeBorder();
 
   // Implementation of Border:
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const;
-  virtual void GetInsets(gfx::Insets* insets) const;
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE;
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
  private:
   // The delegate the controls the appearance of this border.

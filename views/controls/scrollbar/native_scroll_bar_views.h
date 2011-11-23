@@ -6,6 +6,7 @@
 #define VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_VIEWS_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/gfx/point.h"
 #include "views/controls/button/button.h"
@@ -34,7 +35,7 @@ class VIEWS_EXPORT NativeScrollBarViews : public BaseScrollBar,
 
  private:
   // View overrides:
-  virtual void Layout();
+  virtual void Layout() OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
@@ -43,17 +44,19 @@ class VIEWS_EXPORT NativeScrollBarViews : public BaseScrollBar,
   virtual int GetLayoutSize() const OVERRIDE;
 
   // BaseScrollBar overrides:
-  virtual void ScrollToPosition(int position);
-  virtual int GetScrollIncrement(bool is_page, bool is_positive);
+  virtual void ScrollToPosition(int position) OVERRIDE;
+  virtual int GetScrollIncrement(bool is_page, bool is_positive) OVERRIDE;
 
   // BaseButton::ButtonListener overrides:
   virtual void ButtonPressed(Button* sender,
                              const views::Event& event) OVERRIDE;
 
   // NativeScrollBarWrapper overrides:
-  virtual int GetPosition() const;
-  virtual View* GetView();
-  virtual void Update(int viewport_size, int content_size, int current_pos);
+  virtual int GetPosition() const OVERRIDE;
+  virtual View* GetView() OVERRIDE;
+  virtual void Update(int viewport_size,
+                      int content_size,
+                      int current_pos) OVERRIDE;
 
   // Returns the area for the track. This is the area of the scrollbar minus
   // the size of the arrow buttons.

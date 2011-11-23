@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/compiler_specific.h"
 #include "views/controls/native/native_view_host.h"
 
 namespace views {
@@ -19,12 +20,14 @@ class NativeControlGtk : public NativeViewHost {
   virtual ~NativeControlGtk();
 
   // Overridden from View:
-  virtual void OnEnabledChanged();
+  virtual void OnEnabledChanged() OVERRIDE;
 
  protected:
-  virtual void ViewHierarchyChanged(bool is_add, View *parent, View *child);
-  virtual void VisibilityChanged(View* starting_from, bool is_visible);
-  virtual void OnFocus();
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View *parent,
+                                    View *child) OVERRIDE;
+  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
 
   // Called when the NativeControlGtk is attached to a View hierarchy with a
   // valid Widget. The NativeControlGtk should use this opportunity to create

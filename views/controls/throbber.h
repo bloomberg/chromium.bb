@@ -9,6 +9,7 @@
 #pragma once
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/time.h"
 #include "base/timer.h"
 #include "views/view.h"
@@ -35,8 +36,8 @@ class VIEWS_EXPORT Throbber : public View {
   void SetFrames(SkBitmap* frames);
 
   // overridden from View
-  virtual gfx::Size GetPreferredSize();
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  protected:
   // Specifies whether the throbber is currently animating or not
@@ -65,8 +66,8 @@ class VIEWS_EXPORT SmoothedThrobber : public Throbber {
   SmoothedThrobber(int frame_delay_ms, SkBitmap* frames);
   virtual ~SmoothedThrobber();
 
-  virtual void Start();
-  virtual void Stop();
+  virtual void Start() OVERRIDE;
+  virtual void Stop() OVERRIDE;
 
   void set_start_delay_ms(int value) { start_delay_ms_ = value; }
   void set_stop_delay_ms(int value) { stop_delay_ms_ = value; }
@@ -106,7 +107,7 @@ class VIEWS_EXPORT CheckmarkThrobber : public Throbber {
   void SetChecked(bool checked);
 
   // Overridden from Throbber:
-  virtual void OnPaint(gfx::Canvas* canvas);
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   static const int kFrameTimeMs = 30;

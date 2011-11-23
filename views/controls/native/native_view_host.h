@@ -76,18 +76,20 @@ class VIEWS_EXPORT NativeViewHost : public View {
   void NativeViewDestroyed();
 
   // Overridden from View:
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual void OnPaint(gfx::Canvas* canvas);
-  virtual void VisibilityChanged(View* starting_from, bool is_visible);
-  virtual void OnFocus();
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible();
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
+  virtual void VisibilityChanged(View* starting_from, bool is_visible) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() OVERRIDE;
 
  protected:
-  virtual bool NeedsNotificationWhenVisibleBoundsChange() const;
-  virtual void OnVisibleBoundsChanged();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual std::string GetClassName() const;
+  virtual bool NeedsNotificationWhenVisibleBoundsChange() const OVERRIDE;
+  virtual void OnVisibleBoundsChanged() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
  private:
   // Detach the native view. |destroyed| is true if the native view is

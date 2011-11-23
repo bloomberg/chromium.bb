@@ -12,6 +12,7 @@
 #include <set>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/timer.h"
@@ -219,14 +220,15 @@ class VIEWS_EXPORT MenuController : public MessageLoop::Dispatcher {
 #if defined(OS_WIN)
   // Dispatcher method. This returns true if the menu was canceled, or
   // if the message is such that the menu should be closed.
-  virtual bool Dispatch(const MSG& msg);
+  virtual bool Dispatch(const MSG& msg) OVERRIDE;
 #elif defined(USE_WAYLAND)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
-      base::wayland::WaylandEvent* event);
+      base::wayland::WaylandEvent* event) OVERRIDE;
 #elif defined(USE_AURA)
-  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xevent);
+  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
+      XEvent* xevent) OVERRIDE;
 #else
-  virtual bool Dispatch(GdkEvent* event);
+  virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 #endif
 
   // Key processing. The return value of this is returned from Dispatch.

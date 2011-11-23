@@ -6,6 +6,7 @@
 #define VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "views/controls/native_control_gtk.h"
 #include "views/controls/scrollbar/native_scroll_bar_wrapper.h"
 
@@ -29,20 +30,22 @@ class NativeScrollBarGtk : public NativeControlGtk,
 
  private:
   // Overridden from View for layout purpose.
-  virtual void Layout();
-  virtual gfx::Size GetPreferredSize();
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // Overridden from View for keyboard UI purpose.
-  virtual bool OnKeyPressed(const KeyEvent& event);
-  virtual bool OnMouseWheel(const MouseWheelEvent& e);
+  virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
 
   // Overridden from NativeControlGtk.
-  virtual void CreateNativeControl();
+  virtual void CreateNativeControl() OVERRIDE;
 
   // Overridden from NativeScrollBarWrapper.
-  virtual int GetPosition() const;
-  virtual View* GetView();
-  virtual void Update(int viewport_size, int content_size, int current_pos);
+  virtual int GetPosition() const OVERRIDE;
+  virtual View* GetView() OVERRIDE;
+  virtual void Update(int viewport_size,
+                      int content_size,
+                      int current_pos) OVERRIDE;
 
   // Moves the scrollbar by the given value. Negative value is allowed.
   // (moves upward)

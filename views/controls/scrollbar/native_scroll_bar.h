@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "views/controls/scrollbar/scroll_bar.h"
 #include "views/view.h"
@@ -36,19 +37,23 @@ class VIEWS_EXPORT NativeScrollBar : public ScrollBar {
   FRIEND_TEST_ALL_PREFIXES(NativeScrollBarTest, Scrolling);
 
   // Overridden from View.
-  virtual gfx::Size GetPreferredSize();
-  virtual void Layout();
-  virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
-  virtual std::string GetClassName() const;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void ViewHierarchyChanged(bool is_add,
+                                    View* parent,
+                                    View* child) OVERRIDE;
+  virtual std::string GetClassName() const OVERRIDE;
 
   // Overrideen from View for keyboard UI purpose.
-  virtual bool OnKeyPressed(const KeyEvent& event);
-  virtual bool OnMouseWheel(const MouseWheelEvent& e);
+  virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
+  virtual bool OnMouseWheel(const MouseWheelEvent& e) OVERRIDE;
 
   // Overridden from ScrollBar.
-  virtual void Update(int viewport_size, int content_size, int current_pos);
-  virtual int GetPosition() const;
-  virtual int GetLayoutSize() const;
+  virtual void Update(int viewport_size,
+                      int content_size,
+                      int current_pos) OVERRIDE;
+  virtual int GetPosition() const OVERRIDE;
+  virtual int GetLayoutSize() const OVERRIDE;
 
   // init border
   NativeScrollBarWrapper* native_wrapper_;

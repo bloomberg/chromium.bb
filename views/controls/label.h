@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
@@ -166,14 +167,14 @@ class VIEWS_EXPORT Label : public View {
   void SetHasFocusBorder(bool has_focus_border);
 
   // Overridden from View:
-  virtual gfx::Insets GetInsets() const;
+  virtual gfx::Insets GetInsets() const OVERRIDE;
   virtual int GetBaseline() const OVERRIDE;
   // Overridden to compute the size required to display this label.
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   // Return the height necessary to display this label with the provided width.
   // This method is used to layout multi-line labels. It is equivalent to
   // GetPreferredSize().height() if the receiver is not multi-line.
-  virtual int GetHeightForWidth(int w);
+  virtual int GetHeightForWidth(int w) OVERRIDE;
   virtual std::string GetClassName() const OVERRIDE;
   virtual bool HitTest(const gfx::Point& l) const OVERRIDE;
   // Mouse enter/exit are overridden to render mouse over background color.

@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_TABLE_NATIVE_TABLE_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/controls/table/native_table_wrapper.h"
@@ -27,31 +28,31 @@ class NativeTableGtk : public NativeControlGtk, public NativeTableWrapper {
   virtual ~NativeTableGtk();
 
   // NativeTableWrapper implementation:
-  virtual int GetRowCount() const;
-  virtual View* GetView();
-  virtual void SetFocus();
-  virtual gfx::NativeView GetTestingHandle() const;
-  virtual void InsertColumn(const ui::TableColumn& column, int index);
-  virtual void RemoveColumn(int index);
-  virtual int GetColumnWidth(int column_index) const;
-  virtual void SetColumnWidth(int column_index, int width);
-  virtual int GetSelectedRowCount() const;
-  virtual int GetFirstSelectedRow() const;
-  virtual int GetFirstFocusedRow() const;
-  virtual void ClearSelection();
-  virtual void ClearRowFocus();
-  virtual void SetSelectedState(int model_row, bool state);
-  virtual void SetFocusState(int model_row, bool state);
-  virtual bool IsRowSelected(int model_row) const;
-  virtual bool IsRowFocused(int model_row) const;
-  virtual void OnRowsChanged(int start, int length);
-  virtual void OnRowsAdded(int start, int length);
-  virtual void OnRowsRemoved(int start, int length);
-  virtual gfx::Rect GetBounds() const;
+  virtual int GetRowCount() const OVERRIDE;
+  virtual View* GetView() OVERRIDE;
+  virtual void SetFocus() OVERRIDE;
+  virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
+  virtual void InsertColumn(const ui::TableColumn& column, int index) OVERRIDE;
+  virtual void RemoveColumn(int index) OVERRIDE;
+  virtual int GetColumnWidth(int column_index) const OVERRIDE;
+  virtual void SetColumnWidth(int column_index, int width) OVERRIDE;
+  virtual int GetSelectedRowCount() const OVERRIDE;
+  virtual int GetFirstSelectedRow() const OVERRIDE;
+  virtual int GetFirstFocusedRow() const OVERRIDE;
+  virtual void ClearSelection() OVERRIDE;
+  virtual void ClearRowFocus() OVERRIDE;
+  virtual void SetSelectedState(int model_row, bool state) OVERRIDE;
+  virtual void SetFocusState(int model_row, bool state) OVERRIDE;
+  virtual bool IsRowSelected(int model_row) const OVERRIDE;
+  virtual bool IsRowFocused(int model_row) const OVERRIDE;
+  virtual void OnRowsChanged(int start, int length) OVERRIDE;
+  virtual void OnRowsAdded(int start, int length) OVERRIDE;
+  virtual void OnRowsRemoved(int start, int length) OVERRIDE;
+  virtual gfx::Rect GetBounds() const OVERRIDE;
 
  protected:
   // NativeControlGtk implementation:
-  virtual void CreateNativeControl();
+  virtual void CreateNativeControl() OVERRIDE;
 
  private:
   void InsertTextColumn(const ui::TableColumn& column, int index);

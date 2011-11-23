@@ -6,6 +6,7 @@
 #define VIEWS_CONTROLS_MENU_NESTED_DISPATCHER_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 
 namespace views {
@@ -34,7 +35,7 @@ class NestedDispatcherGtk : public MessageLoopForUI::Dispatcher {
   virtual ~NestedDispatcherGtk() {}
 
   // Overriden from MessageLoopForUI::Dispatcher:
-  virtual bool Dispatch(GdkEvent* event);
+  virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 
   // Creator of the nested loop.
   MessageLoopForUI::Dispatcher* creator_;

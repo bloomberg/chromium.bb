@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/view.h"
 
@@ -104,7 +105,7 @@ class VIEWS_EXPORT SubmenuView : public View {
   void ReleaseCapture();
 
   // Overriden from View to prevent tab from doing anything.
-  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
+  virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e) OVERRIDE;
 
   // Returns the parent menu item we're showing children for.
   MenuItemView* GetMenuItem() const;

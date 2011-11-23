@@ -135,10 +135,10 @@ class VIEWS_EXPORT TableView2 : public View, public ui::TableModelObserver {
   iterator SelectionEnd();
 
   // ui::TableModelObserver methods.
-  virtual void OnModelChanged();
-  virtual void OnItemsChanged(int start, int length);
-  virtual void OnItemsAdded(int start, int length);
-  virtual void OnItemsRemoved(int start, int length);
+  virtual void OnModelChanged() OVERRIDE;
+  virtual void OnItemsChanged(int start, int length) OVERRIDE;
+  virtual void OnItemsAdded(int start, int length) OVERRIDE;
+  virtual void OnItemsRemoved(int start, int length) OVERRIDE;
 
   void SetObserver(TableViewObserver* observer) {
     table_view_observer_ = observer;
@@ -189,9 +189,9 @@ class VIEWS_EXPORT TableView2 : public View, public ui::TableModelObserver {
     return vertical_lines_;
   }
 
-  virtual void Layout();
+  virtual void Layout() OVERRIDE;
 
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas);
+  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Used by tests.
   virtual gfx::NativeView GetTestingHandle();
