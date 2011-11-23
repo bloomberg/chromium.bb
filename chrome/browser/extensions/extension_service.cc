@@ -2438,7 +2438,8 @@ void ExtensionService::SetHasUsedWebRequest(const Extension* extension,
   extension_runtime_data_[extension->id()].has_used_webrequest = value;
 }
 
-PropertyBag* ExtensionService::GetPropertyBag(const Extension* extension) {
+base::PropertyBag* ExtensionService::GetPropertyBag(
+    const Extension* extension) {
   return &extension_runtime_data_[extension->id()].property_bag;
 }
 

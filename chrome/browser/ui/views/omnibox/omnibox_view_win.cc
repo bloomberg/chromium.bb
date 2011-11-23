@@ -366,8 +366,8 @@ BOOL WINAPI EndPaintIntercept(HWND hWnd, const PAINTSTRUCT* lpPaint) {
 
 // Returns a lazily initialized property bag accessor for saving our state in a
 // TabContents.
-PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
-  static PropertyAccessor<AutocompleteEditState> state;
+base::PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
+  static base::PropertyAccessor<AutocompleteEditState> state;
   return &state;
 }
 

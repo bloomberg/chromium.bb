@@ -65,7 +65,7 @@
 
 namespace {
 
-static base::LazyInstance<PropertyAccessor<TabContentsWrapper*> >
+static base::LazyInstance<base::PropertyAccessor<TabContentsWrapper*> >
     g_tab_contents_wrapper_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
 // The list of prefs we want to observe.
@@ -362,7 +362,8 @@ TabContentsWrapper::~TabContentsWrapper() {
   infobar_tab_helper_.reset();
 }
 
-PropertyAccessor<TabContentsWrapper*>* TabContentsWrapper::property_accessor() {
+base::PropertyAccessor<TabContentsWrapper*>*
+    TabContentsWrapper::property_accessor() {
   return g_tab_contents_wrapper_property_accessor.Pointer();
 }
 

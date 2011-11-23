@@ -103,8 +103,9 @@ struct OmniboxViewMacState {
 // state in a TabContents.  When constructed |accessor| generates a
 // globally-unique id used to index into the per-tab PropertyBag used
 // to store the state data.
-PropertyAccessor<OmniboxViewMacState>* GetStateAccessor() {
-  CR_DEFINE_STATIC_LOCAL(PropertyAccessor<OmniboxViewMacState>, accessor, ());
+base::PropertyAccessor<OmniboxViewMacState>* GetStateAccessor() {
+  CR_DEFINE_STATIC_LOCAL(
+      base::PropertyAccessor<OmniboxViewMacState>, accessor, ());
   return &accessor;
 }
 

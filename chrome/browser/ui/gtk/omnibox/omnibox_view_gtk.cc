@@ -105,8 +105,9 @@ struct AutocompleteEditState {
 
 // Returns a lazily initialized property bag accessor for saving our state in a
 // TabContents.
-PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
-  CR_DEFINE_STATIC_LOCAL(PropertyAccessor<AutocompleteEditState>, state, ());
+base::PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
+  CR_DEFINE_STATIC_LOCAL(
+      base::PropertyAccessor<AutocompleteEditState>, state, ());
   return &state;
 }
 

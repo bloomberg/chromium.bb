@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/property_bag.h"
 #include "base/string16.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/javascript_dialogs.h"
@@ -26,7 +27,6 @@
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/browser/webui/web_ui.h"
 #include "content/common/content_export.h"
-#include "content/common/property_bag.h"
 #include "content/public/common/renderer_preferences.h"
 #include "net/base/load_states.h"
 #include "ui/gfx/native_widget_types.h"
@@ -87,8 +87,8 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   // Returns the property bag for this tab contents, where callers can add
   // extra data they may wish to associate with the tab. Returns a pointer
   // rather than a reference since the PropertyAccessors expect this.
-  const PropertyBag* property_bag() const { return &property_bag_; }
-  PropertyBag* property_bag() { return &property_bag_; }
+  const base::PropertyBag* property_bag() const { return &property_bag_; }
+  base::PropertyBag* property_bag() { return &property_bag_; }
 
   TabContentsDelegate* delegate() const { return delegate_; }
   void set_delegate(TabContentsDelegate* delegate);
@@ -734,7 +734,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
 
   // Stores random bits of data for others to associate with this object.
   // WARNING: this needs to be deleted after NavigationController.
-  PropertyBag property_bag_;
+  base::PropertyBag property_bag_;
 
   // Data for core operation ---------------------------------------------------
 

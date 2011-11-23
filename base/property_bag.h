@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_PROPERTY_BAG_H_
-#define CONTENT_COMMON_PROPERTY_BAG_H_
+#ifndef BASE_PROPERTY_BAG_H_
+#define BASE_PROPERTY_BAG_H_
 #pragma once
 
 #include <map>
 
 #include "base/basictypes.h"
-#include "content/common/content_export.h"
+#include "base/base_export.h"
 
-template <typename T>
-class linked_ptr;
+template <typename T> class linked_ptr;
+
+namespace base {
+
 class PropertyAccessorBase;
 
 // A property bag holds a generalized list of arbitrary metadata called
@@ -43,7 +45,7 @@ class PropertyAccessorBase;
 //
 //     accessor->SetProperty(object, 22);
 //   }
-class CONTENT_EXPORT PropertyBag {
+class BASE_EXPORT PropertyBag {
  public:
   // The type that uniquely identifies a property type.
   typedef int PropID;
@@ -94,7 +96,7 @@ class CONTENT_EXPORT PropertyBag {
 
 // Manages getting the unique IDs to identify a property. Callers should use
 // PropertyAccessor below instead.
-class CONTENT_EXPORT PropertyAccessorBase {
+class BASE_EXPORT PropertyAccessorBase {
  public:
   PropertyAccessorBase();
   virtual ~PropertyAccessorBase() {}
@@ -173,4 +175,6 @@ class PropertyAccessor : public PropertyAccessorBase {
   DISALLOW_COPY_AND_ASSIGN(PropertyAccessor);
 };
 
-#endif  // CONTENT_COMMON_PROPERTY_BAG_H_
+}  // namespace base
+
+#endif  // BASE_PROPERTY_BAG_H_

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/property_bag.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -17,7 +18,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 
-static base::LazyInstance<PropertyAccessor<ConstrainedHtmlUIDelegate*> >
+static base::LazyInstance<base::PropertyAccessor<ConstrainedHtmlUIDelegate*> >
     g_constrained_html_ui_property_accessor = LAZY_INSTANCE_INITIALIZER;
 
 ConstrainedHtmlUI::ConstrainedHtmlUI(TabContents* contents)
@@ -73,7 +74,7 @@ ConstrainedHtmlUIDelegate* ConstrainedHtmlUI::GetConstrainedDelegate() {
 }
 
 // static
-PropertyAccessor<ConstrainedHtmlUIDelegate*>&
+base::PropertyAccessor<ConstrainedHtmlUIDelegate*>&
     ConstrainedHtmlUI::GetPropertyAccessor() {
   return g_constrained_html_ui_property_accessor.Get();
 }

@@ -19,6 +19,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/property_bag.h"
 #include "base/time.h"
 #include "base/tuple.h"
 #include "chrome/browser/extensions/apps_promo.h"
@@ -40,7 +41,6 @@
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/common/property_bag.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -243,7 +243,7 @@ class ExtensionService
   void SetHasUsedWebRequest(const Extension* extension, bool value);
 
   // Getter for the extension's runtime data PropertyBag.
-  PropertyBag* GetPropertyBag(const Extension* extension);
+  base::PropertyBag* GetPropertyBag(const Extension* extension);
 
   // Initialize and start all installed extensions.
   void Init();
@@ -575,7 +575,7 @@ class ExtensionService
     bool has_used_webrequest;
 
     // Generic bag of runtime data that users can associate with extensions.
-    PropertyBag property_bag;
+    base::PropertyBag property_bag;
 
     ExtensionRuntimeData();
     ~ExtensionRuntimeData();

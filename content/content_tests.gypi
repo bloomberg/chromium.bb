@@ -227,7 +227,6 @@
         'common/net/url_fetcher_impl_unittest.cc',
         'common/page_zoom_unittest.cc',
         'common/process_watcher_unittest.cc',
-        'common/property_bag_unittest.cc',
         'common/resource_dispatcher_unittest.cc',
         'gpu/gpu_info_collector_unittest.cc',
         'gpu/gpu_info_collector_unittest_win.cc',

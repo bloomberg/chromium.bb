@@ -14,10 +14,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process_util.h"
+#include "base/property_bag.h"
 #include "base/string16.h"
 #include "base/timer.h"
 #include "content/common/content_export.h"
-#include "content/common/property_bag.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/page_zoom.h"
 #include "ipc/ipc_channel.h"
@@ -166,8 +166,8 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   // Returns the property bag for this widget, where callers can add extra data
   // they may wish to associate with it. Returns a pointer rather than a
   // reference since the PropertyAccessors expect this.
-  const PropertyBag* property_bag() const { return &property_bag_; }
-  PropertyBag* property_bag() { return &property_bag_; }
+  const base::PropertyBag* property_bag() const { return &property_bag_; }
+  base::PropertyBag* property_bag() { return &property_bag_; }
 
   // Called when a renderer object already been created for this host, and we
   // just need to be attached to it. Used for window.open, <select> dropdown
@@ -631,7 +631,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   content::RenderProcessHost* process_;
 
   // Stores random bits of data for others to associate with this object.
-  PropertyBag property_bag_;
+  base::PropertyBag property_bag_;
 
   // The ID of the corresponding object in the Renderer Instance.
   int routing_id_;

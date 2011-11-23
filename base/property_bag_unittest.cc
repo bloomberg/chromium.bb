@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/property_bag.h"
+#include "base/property_bag.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
 
 TEST(PropertyBagTest, AddQueryRemove) {
   PropertyBag bag;
@@ -60,3 +62,5 @@ TEST(PropertyBagTest, Copy) {
   EXPECT_TRUE(adaptor1.GetProperty(&copy) == NULL);
   EXPECT_TRUE(adaptor2.GetProperty(&copy) == NULL);
 }
+
+}  // namespace base

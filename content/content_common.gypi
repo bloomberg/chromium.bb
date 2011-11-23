@@ -209,8 +209,6 @@
     'common/process_watcher_mac.cc',
     'common/process_watcher_posix.cc',
     'common/process_watcher_win.cc',
-    'common/property_bag.cc',
-    'common/property_bag.h',
     'common/quota_messages.h',
     'common/quota_dispatcher.cc',
     'common/quota_dispatcher.h',

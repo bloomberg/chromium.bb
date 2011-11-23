@@ -90,7 +90,7 @@ class TabContentsWrapper : public TabContentsObserver,
 
   // Used to retrieve this object from |tab_contents_|, which is placed in
   // its property bag to avoid adding additional interfaces.
-  static PropertyAccessor<TabContentsWrapper*>* property_accessor();
+  static base::PropertyAccessor<TabContentsWrapper*>* property_accessor();
 
   static void RegisterUserPrefs(PrefService* prefs);
 

@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/property_bag.h"
+
 #include "base/memory/linked_ptr.h"
-#include "content/common/property_bag.h"
+
+namespace base {
 
 PropertyBag::PropertyBag() {
 }
@@ -54,3 +57,5 @@ PropertyAccessorBase::PropertyAccessorBase() {
   static PropertyBag::PropID next_id = 1;
   prop_id_ = next_id++;
 }
+
+}  // namespace base

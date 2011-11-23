@@ -11,6 +11,7 @@
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/property_bag.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_split.h"
@@ -31,7 +32,6 @@
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/property_bag.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
@@ -256,8 +256,8 @@ class TabStripModelTest : public ChromeRenderViewHostTestHarness {
   }
 
  private:
-  PropertyAccessor<int>* GetIDAccessor() {
-    static PropertyAccessor<int> accessor;
+  base::PropertyAccessor<int>* GetIDAccessor() {
+    static base::PropertyAccessor<int> accessor;
     return &accessor;
   }
 
