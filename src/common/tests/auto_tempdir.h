@@ -1,4 +1,4 @@
-// Copyright (c) 2010, Google Inc.
+// Copyright (c) 2011, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,25 +29,42 @@
 
 // Utility class for creating a temporary directory for unit tests
 // that is deleted in the destructor.
-#ifndef GOOGLE_BREAKPAD_CLIENT_MAC_TESTS_AUTO_TEMPDIR
-#define GOOGLE_BREAKPAD_CLIENT_MAC_TESTS_AUTO_TEMPDIR
+#ifndef GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
+#define GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR
 
 #include <dirent.h>
 #include <sys/types.h>
 
 #include <string>
 
+#include "breakpad_googletest_includes.h"
+
+#if !defined(__ANDROID__)
+#define TEMPDIR "/tmp"
+#else
+#define TEMPDIR "/data/local/tmp"
+#endif
+
 namespace google_breakpad {
 
 class AutoTempDir {
  public:
   AutoTempDir() {
-    char tempDir[16] = "/tmp/XXXXXXXXXX";
-    mkdtemp(tempDir);
-    path = tempDir;
+    char temp_dir[] = TEMPDIR "/breakpad.XXXXXXXXXX";
+    EXPECT_TRUE(mkdtemp(temp_dir) != NULL);
+    path_.assign(temp_dir);
   }
 
   ~AutoTempDir() {
+    DeleteRecursively(path_);
+  }
+
+ const std::string& path() {
+   return path_;
+ }
+
+ private:
+  void DeleteRecursively(const std::string& path) {
     // First remove any files in the dir
     DIR* dir = opendir(path.c_str());
     if (!dir)
@@ -56,17 +73,26 @@ class AutoTempDir {
     dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
       if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-	continue;
-      std::string entryPath = path + "/" + entry->d_name;
-      unlink(entryPath.c_str());
+        continue;
+      std::string entry_path = path + "/" + entry->d_name;
+      struct stat stats;
+      EXPECT_TRUE(lstat(entry_path.c_str(), &stats) == 0);
+      if (S_ISDIR(stats.st_mode))
+        DeleteRecursively(entry_path);
+      else
+        EXPECT_TRUE(unlink(entry_path.c_str()) == 0);
     }
-    closedir(dir);
-    rmdir(path.c_str());
+    EXPECT_TRUE(closedir(dir) == 0);
+    EXPECT_TRUE(rmdir(path.c_str()) == 0);
   }
 
-  std::string path;
+  // prevent copy construction and assignment
+  AutoTempDir(const AutoTempDir&);
+  AutoTempDir& operator=(const AutoTempDir&);
+
+  std::string path_;
 };
 
 }  // namespace google_breakpad
 
-#endif  // GOOGLE_BREAKPAD_CLIENT_MAC_TESTS_AUTO_TEMPDIR
+#endif  // GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TEMPDIR

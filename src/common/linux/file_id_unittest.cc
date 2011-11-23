@@ -35,6 +35,7 @@
 #include "common/linux/file_id.h"
 #include "common/linux/synth_elf.h"
 #include "common/test_assembler.h"
+#include "common/tests/auto_tempdir.h"
 #include "breakpad_googletest_includes.h"
 
 using namespace google_breakpad;
@@ -65,19 +66,19 @@ TEST(FileIDStripTest, StripSelf) {
   exe_name[len] = '\0';
 
   // copy our binary to a temp file, and strip it
-  char templ[] = "/tmp/file-id-unittest-XXXXXX";
-  mktemp(templ);
+  AutoTempDir temp_dir;
+  std::string templ = temp_dir.path() + "/file-id-unittest";
   char cmdline[4096];
-  sprintf(cmdline, "cp \"%s\" \"%s\"", exe_name, templ);
+  sprintf(cmdline, "cp \"%s\" \"%s\"", exe_name, templ.c_str());
   ASSERT_EQ(system(cmdline), 0);
-  sprintf(cmdline, "strip \"%s\"", templ);
+  sprintf(cmdline, "strip \"%s\"", templ.c_str());
   ASSERT_EQ(system(cmdline), 0);
 
   uint8_t identifier1[sizeof(MDGUID)];
   uint8_t identifier2[sizeof(MDGUID)];
   FileID fileid1(exe_name);
   EXPECT_TRUE(fileid1.ElfFileIdentifier(identifier1));
-  FileID fileid2(templ);
+  FileID fileid2(templ.c_str());
   EXPECT_TRUE(fileid2.ElfFileIdentifier(identifier2));
   char identifier_string1[37];
   char identifier_string2[37];
@@ -86,7 +87,6 @@ TEST(FileIDStripTest, StripSelf) {
   FileID::ConvertIdentifierToString(identifier2, identifier_string2,
                                     37);
   EXPECT_STREQ(identifier_string1, identifier_string2);
-  unlink(templ);
 }
 
 class FileIDTest : public testing::Test {

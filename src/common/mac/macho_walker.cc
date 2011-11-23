@@ -105,9 +105,11 @@ bool MachoWalker::WalkHeader(int cpu_type) {
 
 bool MachoWalker::ReadBytes(void *buffer, size_t size, off_t offset) {
   if (memory_) {
+    if (offset < 0)
+      return false;
     bool result = true;
     if (offset + size > memory_size_) {
-      if (offset >= memory_size_)
+      if (static_cast<size_t>(offset) >= memory_size_)
         return false;
       size = memory_size_ - offset;
       result = false;
