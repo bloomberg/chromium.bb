@@ -560,7 +560,7 @@ class Plugin : public pp::InstancePrivate {
   // downloaded.
   const FileDownloader* FindFileDownloader(PP_Resource url_loader) const;
 
-  int64_t last_event_bytes_received_;
+  int64_t time_of_last_progress_event_;
 };
 
 }  // namespace plugin
