@@ -248,7 +248,7 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 {
 	struct wlsc_surface *surface;
 
-	surface = malloc(sizeof *surface);
+	surface = calloc(1, sizeof *surface);
 	if (surface == NULL)
 		return NULL;
 
