@@ -2143,7 +2143,7 @@ gboolean TabStripGtk::OnDragDataReceived(GtkWidget* widget,
     success = CompleteDrop(data->data, info == ui::TEXT_PLAIN);
   }
 
-  gtk_drag_finish(context, success, success, time);
+  gtk_drag_finish(context, success, FALSE, time);
   return TRUE;
 }
 
