@@ -4,9 +4,7 @@
 
 #include "chrome/browser/omnibox_search_hint.h"
 
-#include "base/bind.h"
 #include "base/command_line.h"
-#include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/task.h"
 // TODO(avi): remove when conversions not needed any more
@@ -81,7 +79,7 @@ class HintInfoBar : public ConfirmInfoBarDelegate {
   bool should_expire_;
 
   // Used to delay the expiration of the info-bar.
-  base::WeakPtrFactory<HintInfoBar> weak_factory_;
+  ScopedRunnableMethodFactory<HintInfoBar> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HintInfoBar);
 };
@@ -91,12 +89,11 @@ HintInfoBar::HintInfoBar(OmniboxSearchHint* omnibox_hint)
       omnibox_hint_(omnibox_hint),
       action_taken_(false),
       should_expire_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   // We want the info-bar to stick-around for few seconds and then be hidden
   // on the next navigation after that.
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&HintInfoBar::AllowExpiry, weak_factory_.GetWeakPtr()),
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(&HintInfoBar::AllowExpiry),
       8000);  // 8 seconds.
 }
 

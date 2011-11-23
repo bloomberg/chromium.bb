@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/process.h"
 #include "base/process_util.h"
 #include "base/string16.h"
@@ -182,8 +181,8 @@ void OomPriorityManager::AdjustFocusedTabScoreOnFileThread() {
 void OomPriorityManager::OnFocusTabScoreAdjustmentTimeout() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(
-          &OomPriorityManager::AdjustFocusedTabScoreOnFileThread, this));
+      NewRunnableMethod(
+          this, &OomPriorityManager::AdjustFocusedTabScoreOnFileThread));
 }
 
 void OomPriorityManager::Observe(int type,
@@ -252,8 +251,9 @@ void OomPriorityManager::AdjustOomPriorities() {
   TabStatsList stats_list = GetTabStatsOnUIThread();
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&OomPriorityManager::AdjustOomPrioritiesOnFileThread,
-                 this, stats_list));
+      NewRunnableMethod(this,
+                        &OomPriorityManager::AdjustOomPrioritiesOnFileThread,
+                        stats_list));
 }
 
 OomPriorityManager::TabStatsList OomPriorityManager::GetTabStatsOnUIThread() {
