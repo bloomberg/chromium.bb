@@ -141,6 +141,17 @@ class CONTENT_EXPORT ChildProcessSecurityPolicy {
   // Returns true if the specified child_id has been granted ReadRawCookies.
   bool CanReadRawCookies(int child_id);
 
+  // Returns true if the process is permitted to see and use the cookies for
+  // the given origin.
+  // Only might return false if the very experimental
+  // --enable-strict-site-isolation is used.
+  bool CanUseCookiesForOrigin(int child_id, const GURL& gurl);
+
+  // Sets the process as only permitted to use and see the cookies for the
+  // given origin.
+  // Only used if the very experimental --enable-strict-site-isolation is used.
+  void LockToOrigin(int child_id, const GURL& gurl);
+
  private:
   friend class ChildProcessSecurityPolicyInProcessBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(ChildProcessSecurityPolicyInProcessBrowserTest,

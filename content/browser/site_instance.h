@@ -172,6 +172,9 @@ class CONTENT_EXPORT SiteInstance : public base::RefCounted<SiteInstance>,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Used to restrict a process' origin access rights.
+  void LockToOrigin();
+
   // The next available SiteInstance ID.
   static int32 next_site_instance_id_;
 

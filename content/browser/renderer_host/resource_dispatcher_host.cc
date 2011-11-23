@@ -544,11 +544,18 @@ void ResourceDispatcherHost::BeginRequest(
   if (sync_result)
     load_flags |= net::LOAD_IGNORE_LIMITS;
 
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  if (!policy->CanUseCookiesForOrigin(child_id, request_data.url)) {
+    load_flags |= (net::LOAD_DO_NOT_SEND_COOKIES |
+                   net::LOAD_DO_NOT_SEND_AUTH_DATA |
+                   net::LOAD_DO_NOT_SAVE_COOKIES);
+  }
+
   // Raw headers are sensitive, as they inclide Cookie/Set-Cookie, so only
   // allow requesting them if requestor has ReadRawCookies permission.
   if ((load_flags & net::LOAD_REPORT_RAW_HEADERS)
-      && !ChildProcessSecurityPolicy::GetInstance()->
-              CanReadRawCookies(child_id)) {
+      && !policy->CanReadRawCookies(child_id)) {
     VLOG(1) << "Denied unathorized request for raw headers";
     load_flags &= ~net::LOAD_REPORT_RAW_HEADERS;
   }

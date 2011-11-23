@@ -413,6 +413,11 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
                                       const GURL& url,
                                       const GURL& first_party_for_cookies,
                                       const std::string& cookie) {
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  if (!policy->CanUseCookiesForOrigin(render_process_id_, url))
+    return;
+
   net::CookieOptions options;
   if (content::GetContentClient()->browser()->AllowSetCookie(
           url, first_party_for_cookies, cookie,
@@ -428,6 +433,13 @@ void RenderMessageFilter::OnSetCookie(const IPC::Message& message,
 void RenderMessageFilter::OnGetCookies(const GURL& url,
                                        const GURL& first_party_for_cookies,
                                        IPC::Message* reply_msg) {
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  if (!policy->CanUseCookiesForOrigin(render_process_id_, url)) {
+    SendGetCookiesResponse(reply_msg, std::string());
+    return;
+  }
+
   net::URLRequestContext* context = GetRequestContextForURL(url);
   net::CookieMonster* cookie_monster =
       context->cookie_store()->GetCookieMonster();
@@ -440,13 +452,16 @@ void RenderMessageFilter::OnGetRawCookies(
     const GURL& url,
     const GURL& first_party_for_cookies,
     IPC::Message* reply_msg) {
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
   // Only return raw cookies to trusted renderers or if this request is
   // not targeted to an an external host like ChromeFrame.
   // TODO(ananta) We need to support retreiving raw cookies from external
   // hosts.
-  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadRawCookies(
-          render_process_id_)) {
+  if (!policy->CanReadRawCookies(render_process_id_) ||
+      !policy->CanUseCookiesForOrigin(render_process_id_, url)) {
     SendGetRawCookiesResponse(reply_msg, net::CookieList());
+    return;
   }
 
   // We check policy here to avoid sending back cookies that would not normally
@@ -462,6 +477,11 @@ void RenderMessageFilter::OnGetRawCookies(
 
 void RenderMessageFilter::OnDeleteCookie(const GURL& url,
                                          const std::string& cookie_name) {
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  if (!policy->CanUseCookiesForOrigin(render_process_id_, url))
+    return;
+
   net::URLRequestContext* context = GetRequestContextForURL(url);
   context->cookie_store()->DeleteCookieAsync(url, cookie_name, base::Closure());
 }

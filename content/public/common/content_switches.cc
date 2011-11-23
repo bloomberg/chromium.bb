@@ -245,7 +245,13 @@ const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 
-// Experimentally ensure each renderer process has pages from only one site.
+// Experimentally ensures that each renderer process:
+// 1) Only handles rendering for a single page.
+// (Note that a page can reference content from multiple origins due to images,
+// iframes, etc).
+// 2) Only has authority to see or use cookies for the page's top-level origin.
+// (So if a.com iframe's b.com, the b.com network request will be sent without
+// cookies).
 // This is expected to break compatibility with many pages for now.
 const char kEnableStrictSiteIsolation[]     = "enable-strict-site-isolation";
 

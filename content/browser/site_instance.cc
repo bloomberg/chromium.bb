@@ -4,13 +4,16 @@
 
 #include "content/browser/site_instance.h"
 
+#include "base/command_line.h"
 #include "content/browser/browsing_instance.h"
+#include "content/browser/child_process_security_policy.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/webui/web_ui_factory.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host_factory.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domain.h"
 
@@ -87,6 +90,9 @@ content::RenderProcessHost* SiteInstance::GetProcess() {
     // Make sure the process starts at the right max_page_id, and ensure that
     // we send an update to the renderer process.
     process_->UpdateAndSendMaxPageID(max_page_id_);
+
+    if (has_site_)
+      LockToOrigin();
   }
   DCHECK(process_);
 
@@ -111,6 +117,9 @@ void SiteInstance::SetSite(const GURL& url) {
   // the same BrowsingInstance, because all same-site pages within a
   // BrowsingInstance can script each other.
   browsing_instance_->RegisterSiteInstance(this);
+
+  if (process_)
+    LockToOrigin();
 }
 
 bool SiteInstance::HasRelatedSiteInstance(const GURL& url) {
@@ -230,3 +239,13 @@ void SiteInstance::Observe(int type,
   if (rph == process_)
     process_ = NULL;
 }
+
+void SiteInstance::LockToOrigin() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation)) {
+    ChildProcessSecurityPolicy* policy =
+        ChildProcessSecurityPolicy::GetInstance();
+    policy->LockToOrigin(process_->GetID(), site_);
+  }
+}
+

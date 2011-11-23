@@ -1990,11 +1990,17 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
   // boundaries.  This is currently expected to break some script calls and
   // navigations, such as form submissions.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!frame->parent() && (is_content_initiated || is_redirect) &&
-      command_line.HasSwitch(switches::kEnableStrictSiteIsolation)) {
-    GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
-    OpenURL(frame, url, referrer, default_policy);
-    return WebKit::WebNavigationPolicyIgnore;
+  if (command_line.HasSwitch(switches::kEnableStrictSiteIsolation) &&
+      !frame->parent() && (is_content_initiated || is_redirect)) {
+    WebString origin_str = frame->document().securityOrigin().toString();
+    GURL frame_url(origin_str.utf8().data());
+    // TODO(cevans): revisit whether this origin check is still necessary once
+    // crbug.com/101395 is fixed.
+    if (frame_url.GetOrigin() != url.GetOrigin()) {
+      GURL referrer(request.httpHeaderField(WebString::fromUTF8("Referer")));
+      OpenURL(frame, url, referrer, default_policy);
+      return WebKit::WebNavigationPolicyIgnore;
+    }
   }
 
   // If the browser is interested, then give it a chance to look at top level
