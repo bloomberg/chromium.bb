@@ -408,13 +408,6 @@ enum NotificationType {
   // in a Details<ChildProcessInfo>.
   NOTIFICATION_CHILD_INSTANCE_CREATED,
 
-  // Download Notifications --------------------------------------------------
-
-  // Sent when a page generation to MHTML has finished.
-  // The source is the corresponding RenderViewHost. The details is a
-  // MHTMLGenerationManager::NotificationDetails.
-  NOTIFICATION_MHTML_GENERATED,
-
   // Saved Pages -------------------------------------------------------------
 
   // Sent when a SavePackage finishes successfully. The source is the

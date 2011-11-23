@@ -24,24 +24,24 @@ class CONTENT_EXPORT MHTMLGenerationManager
   MHTMLGenerationManager();
   ~MHTMLGenerationManager();
 
+  typedef base::Callback<void(const FilePath& /* path to the MHTML file */,
+      int64 /* size of the file */)> GenerateMHTMLCallback;
+
   // Instructs the render view to generate a MHTML representation of the current
   // page for |tab_contents|.
-  void GenerateMHTML(TabContents* tab_contents, const FilePath& file);
+  void GenerateMHTML(TabContents* tab_contents,
+                     const FilePath& file,
+                     const GenerateMHTMLCallback& callback);
 
   // Notification from the renderer that the MHTML generation finished.
   // |mhtml_data_size| contains the size in bytes of the generated MHTML data,
   // or -1 in case of failure.
   void MHTMLGenerated(int job_id, int64 mhtml_data_size);
 
-  // The details sent along with the MHTML_GENERATED notification.
-  struct NotificationDetails {
-    FilePath file_path;
-    int64 file_size;
-  };
-
  private:
   struct Job{
     Job();
+    ~Job();
 
     FilePath file_path;
 
@@ -53,6 +53,9 @@ class CONTENT_EXPORT MHTMLGenerationManager
     // The IDs mapping to a specific tab.
     int process_id;
     int routing_id;
+
+    // The callback to call once generation is complete.
+    GenerateMHTMLCallback callback;
   };
 
   // Called on the file thread to create |file|.

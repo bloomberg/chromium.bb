@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_save_page_api.h"
 
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -105,46 +106,27 @@ void SavePageAsMHTMLFunction::TemporaryFileCreated(bool success) {
     return;
   }
 
-  registrar_.Add(
-      this, content::NOTIFICATION_MHTML_GENERATED,
-      content::Source<RenderViewHost>(tab_contents->render_view_host()));
-  // TODO(jcivelli): we should listen for navigation in the tab, tab closed,
-  //                 renderer died.
+  MHTMLGenerationManager::GenerateMHTMLCallback callback =
+      base::Bind(&SavePageAsMHTMLFunction::MHTMLGenerated, this);
+
   g_browser_process->mhtml_generation_manager()->GenerateMHTML(
-      tab_contents, mhtml_path_);
+      tab_contents, mhtml_path_, callback);
 }
 
-void SavePageAsMHTMLFunction::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK(type == content::NOTIFICATION_MHTML_GENERATED);
-
-  const MHTMLGenerationManager::NotificationDetails* save_details =
-      content::Details<MHTMLGenerationManager::NotificationDetails>(details).
-          ptr();
-
-  if (mhtml_path_ != save_details->file_path) {
-    // This could happen if there are concurrent MHTML generations going on for
-    // the same tab.
-    LOG(WARNING) << "Received a notification that MHTML was generated but for a"
-        " different file.";
-    return;
-  }
-
-  registrar_.RemoveAll();
-
-  if (save_details->file_size <= 0) {
+void SavePageAsMHTMLFunction::MHTMLGenerated(const FilePath& file_path,
+                                             int64 mhtml_file_size) {
+  DCHECK(mhtml_path_ == file_path);
+  if (mhtml_file_size <= 0) {
     ReturnFailure(kMHTMLGenerationFailedError);
     return;
   }
 
-  if (save_details->file_size > std::numeric_limits<int>::max()) {
+  if (mhtml_file_size > std::numeric_limits<int>::max()) {
     ReturnFailure(kFileTooBigError);
     return;
   }
 
-  ReturnSuccess(save_details->file_size);
+  ReturnSuccess(mhtml_file_size);
 }
 
 void SavePageAsMHTMLFunction::ReturnFailure(const std::string& error) {
