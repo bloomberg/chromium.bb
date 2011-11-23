@@ -1,9 +1,11 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-'''This script builds and runs the Chrome Frame unit and integration tests,
+"""Builds and runs the Chrome Frame unit and integration tests,
 the exit status of the scrip is the number of failed tests.
-'''
+"""
+
 import os.path
 import sys
 import win32com.client

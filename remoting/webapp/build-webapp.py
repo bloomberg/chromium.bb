@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -183,7 +183,7 @@ def main():
     print ('Usage: build-webapp.py '
            '<build-type> <mime-type> <dst> <zip-path> <plugin> '
            '<other files...> --locales <locales...>')
-    sys.exit(1)
+    return 1
 
   reading_locales = False
   files = []
@@ -198,7 +198,8 @@ def main():
 
   buildWebApp(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5],
               files, locales)
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

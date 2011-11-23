@@ -1,5 +1,4 @@
-#!/usr/bin/python
-#
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -482,6 +481,7 @@ FUNCTION_SETS = [
     '../../../third_party/mesa/MesaLib/include/GL/glxext.h']],
 ]
 
+
 def GenerateHeader(file, functions, set_name, used_extension_functions):
   """Generates gl_binding_autogen_x.h"""
 
@@ -754,6 +754,7 @@ def GenerateMockSource(file, functions):
   file.write('\n')
   file.write('}  // namespace gfx\n')
 
+
 def ParseExtensionFunctionsFromHeader(header_file):
   """Parse a C extension header file and return a map from extension names to
   a list of functions.
@@ -790,6 +791,7 @@ def ParseExtensionFunctionsFromHeader(header_file):
       extensions[current_extension].append(match.group(1))
   return extensions
 
+
 def GetExtensionFunctions(extension_headers):
   """Parse extension functions from a list of header files.
 
@@ -802,6 +804,7 @@ def GetExtensionFunctions(extension_headers):
   for header in extension_headers:
     extensions.update(ParseExtensionFunctionsFromHeader(open(header)))
   return extensions
+
 
 def GetFunctionToExtensionMap(extensions):
   """Construct map from a function names to extensions which define the
@@ -820,11 +823,13 @@ def GetFunctionToExtensionMap(extensions):
       function_to_extension[function] = extension
   return function_to_extension
 
+
 def LooksLikeExtensionFunction(function):
   """Heuristic to see if a function name is consistent with extension function
   naming."""
   vendor = re.match(r'\w+?([A-Z][A-Z]+)$', function)
   return vendor is not None and not vendor.group(1) in ['GL', 'API', 'DC']
+
 
 def GetUsedExtensionFunctions(functions, extension_headers):
   """Determine which functions belong to extensions.
@@ -863,6 +868,7 @@ def GetUsedExtensionFunctions(functions, extension_headers):
       key = lambda item: ExtensionSortKey(item[0]))
   return used_extension_functions
 
+
 def main(argv):
   """This is the main function."""
 
@@ -888,7 +894,8 @@ def main(argv):
   source_file = open(os.path.join(dir, 'gl_bindings_autogen_mock.cc'), 'wb')
   GenerateMockSource(source_file, GL_FUNCTIONS)
   source_file.close()
+  return 0
 
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+  sys.exit(main(sys.argv[1:]))

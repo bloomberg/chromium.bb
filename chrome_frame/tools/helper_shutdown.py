@@ -1,13 +1,17 @@
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-'''This is a simple helper script to shut down the Chrome Frame helper process.
-It needs the Python Win32 extensions.'''
+"""This is a simple helper script to shut down the Chrome Frame helper process.
+
+Requires Python Win32 extensions.
+"""
 
 import pywintypes
 import sys
 import win32gui
 import win32con
+
 
 def main():
   exit_code = 0
@@ -23,8 +27,8 @@ def main():
       print 'Failed to shutdown Chrome Frame helper process: '
       print ex
       exit_code = 1
-
   return exit_code
+
 
 if __name__ == '__main__':
   sys.exit(main())

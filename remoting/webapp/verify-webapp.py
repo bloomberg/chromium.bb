@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -78,7 +78,7 @@ def CheckFileForUnknownTag(filename, messages):
 def main():
   if len(sys.argv) < 4:
     print 'Usage: verify-webapp.py <touch> <messages> <message_users...>'
-    sys.exit(1)
+    return 1
 
   touch_file = sys.argv[1]
   messages = json.load(open(sys.argv[2], 'r'))
@@ -101,8 +101,8 @@ def main():
     f.close()
     os.utime(touch_file, None)
 
-  sys.exit(exit_code)
+  return exit_code
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

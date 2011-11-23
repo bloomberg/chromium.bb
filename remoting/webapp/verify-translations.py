@@ -1,11 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Verifies that the message tags in the 2nd and subsequent JSON message files
-match those specified in the first.  This is typically run when the
-translations are updated before a release, to check that nothing got missed.
+match those specified in the first.
+
+This is typically run when the translations are updated before a release, to
+check that nothing got missed.
 """
 
 import json
@@ -31,10 +33,11 @@ def CheckTranslation(filename, translation, messages):
 
   return False
 
+
 def main():
   if len(sys.argv) < 3:
     print 'Usage: verify-translations.py <messages> <translation-files...>'
-    sys.exit(1)
+    return 1
 
   en_messages = json.load(open(sys.argv[1], 'r'))
   exit_code = 0
@@ -43,7 +46,8 @@ def main():
     if not CheckTranslation(f, translation, en_messages):
       exit_code = 1
 
-  sys.exit(exit_code)
+  return exit_code
+
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
