@@ -428,12 +428,6 @@
       'nacl_sdk',
       'translate',
 
-      # crbug.com/103427 has been fixed on trunk.
-      # Disabled until r110327 reaches Google Chrome builds.
-      # Re-enable on 11/17/2011
-      '-notifications.NotificationsTest.testIncognitoNotification',
-      '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
-
       # ===========================
       # Permanently-disabled tests.
       # ===========================
