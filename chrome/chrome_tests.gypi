@@ -1879,7 +1879,6 @@
         'browser/ui/toolbar/encoding_menu_controller_unittest.cc',
         'browser/ui/toolbar/toolbar_model_unittest.cc',
         'browser/ui/toolbar/wrench_menu_model_unittest.cc',
-        'browser/ui/touch/tabs/touch_tab_strip_unittest.cc',
         'browser/ui/views/accessibility_event_router_views_unittest.cc',
         'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',

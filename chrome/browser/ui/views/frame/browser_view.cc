@@ -1949,11 +1949,8 @@ void BrowserView::Init() {
   contents_split_->set_id(VIEW_ID_CONTENTS_SPLIT);
   contents_split_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_WEB_CONTENTS));
-#if !defined(TOUCH_UI)
-  // In TOUCH_UI we paint the background in native_tab_contents_view.
   contents_split_->set_background(
       views::Background::CreateSolidBackground(bg_color));
-#endif
   AddChildView(contents_split_);
   set_contents_view(contents_split_);
 

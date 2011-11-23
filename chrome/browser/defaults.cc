@@ -78,30 +78,14 @@ const bool kBrowserAliveWithNoWindows = true;
 const bool kBrowserAliveWithNoWindows = false;
 #endif
 
-#ifdef TOUCH_UI
-const int kBookmarkBarHeight = 50;
-const int kNewtabBookmarkBarHeight = 72;
-// TouchUI issue with opening too many tabs.
-const int kMaxTabCount = 4;
-#else
 const int kBookmarkBarHeight = 28;
 const int kNewtabBookmarkBarHeight = 57;
 const int kMaxTabCount = INT_MAX;
-#endif
 
-#ifdef TOUCH_UI
-const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
-    ui::ResourceBundle::LargeBoldFont;
-#else
 const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle =
     ui::ResourceBundle::BoldFont;
-#endif
 
-#ifdef TOUCH_UI
-const int kInfoBarBorderPaddingVertical = 12;
-#else
 const int kInfoBarBorderPaddingVertical = 5;
-#endif
 
 bool bookmarks_enabled = true;
 

@@ -653,14 +653,7 @@ std::string ChromeContentBrowserClient::GetAcceptLangs(
 
 SkBitmap* ChromeContentBrowserClient::GetDefaultFavicon() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-#if defined(TOUCH_UI)
-  // In touch builds, we want large default favicons for the tabstrip, but in
-  // other places (such as bookmark, manage search engines, homepage) we assume
-  // default favicons are 16x16.
-  return rb.GetBitmapNamed(IDR_DEFAULT_LARGE_FAVICON);
-#else
   return rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
-#endif
 }
 
 bool ChromeContentBrowserClient::AllowAppCache(

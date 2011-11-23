@@ -89,15 +89,7 @@ class SavePageBrowserTest : public InProcessBrowserTest {
         GetOriginalUrl();
   }
 
-#if defined(OS_CHROMEOS) && defined(TOUCH_UI)
-  const ActiveDownloadsUI::DownloadList& GetDownloads() const {
-    TabContents* download_contents = ActiveDownloadsUI::GetPopup(NULL);
-    ActiveDownloadsUI* downloads_ui = static_cast<ActiveDownloadsUI*>(
-        download_contents->web_ui());
-    EXPECT_TRUE(downloads_ui);
-    return downloads_ui->GetDownloads();
-  }
-#elif defined(OS_CHROMEOS) && !defined(USE_AURA)
+#if defined(OS_CHROMEOS) && !defined(USE_AURA)
   const ActiveDownloadsUI::DownloadList& GetDownloads() const {
     Browser* popup = ActiveDownloadsUI::GetPopup();
     EXPECT_TRUE(popup);
