@@ -58,17 +58,23 @@ struct wl_shell {
 	struct wl_list hidden_surface_list;
 };
 
-enum shell_surface_purpose {
+enum shell_surface_type {
 	SHELL_SURFACE_NORMAL,
+
 	SHELL_SURFACE_PANEL,
 	SHELL_SURFACE_BACKGROUND,
 	SHELL_SURFACE_LOCK,
+
+	SHELL_SURFACE_TOPLEVEL,
+	SHELL_SURFACE_TRANSIENT,
+	SHELL_SURFACE_FULLSCREEN
 };
 
 struct shell_surface {
 	struct wl_listener destroy_listener;
 
-	enum shell_surface_purpose purpose;
+	enum shell_surface_type type;
+	int32_t saved_x, saved_y;
 };
 
 struct wlsc_move_grab {
@@ -111,7 +117,7 @@ get_shell_surface(struct wlsc_surface *surface)
 
 	surface->shell_priv = priv;
 
-	priv->purpose = SHELL_SURFACE_NORMAL;
+	priv->type = SHELL_SURFACE_NORMAL;
 
 	return priv;
 }
@@ -326,14 +332,16 @@ shell_set_toplevel(struct wl_client *client,
 
 {
 	struct wlsc_surface *es = surface_resource->data;
+	struct shell_surface *priv;
 
-	if (es->map_type == WLSC_SURFACE_MAP_FULLSCREEN) {
-		es->x = es->saved_x;
-		es->y = es->saved_y;
+	priv = get_shell_surface(es);
+	if (priv->type == SHELL_SURFACE_FULLSCREEN) {
+		es->x = priv->saved_x;
+		es->y = priv->saved_y;
 	}
 
 	wlsc_surface_damage(es);
-	es->map_type = WLSC_SURFACE_MAP_TOPLEVEL;
+	priv->type = SHELL_SURFACE_TOPLEVEL;
 	es->fullscreen_output = NULL;
 }
 
@@ -346,6 +354,9 @@ shell_set_transient(struct wl_client *client,
 {
 	struct wlsc_surface *es = surface_resource->data;
 	struct wlsc_surface *pes = parent_resource->data;
+	struct shell_surface *priv;
+
+	priv = get_shell_surface(es);
 
 	/* assign to parents output  */
 	es->output = pes->output;
@@ -354,7 +365,7 @@ shell_set_transient(struct wl_client *client,
 	es->y = pes->y + y;
 
 	wlsc_surface_damage(es);
-	es->map_type = WLSC_SURFACE_MAP_TRANSIENT;
+	priv->type = SHELL_SURFACE_TRANSIENT;
 }
 
 static void
@@ -365,6 +376,9 @@ shell_set_fullscreen(struct wl_client *client,
 {
 	struct wlsc_surface *es = surface_resource->data;
 	struct wlsc_output *output;
+	struct shell_surface *priv;
+
+	priv = get_shell_surface(es);
 
 	/* FIXME: Fullscreen on first output */
 	/* FIXME: Handle output going away */
@@ -372,13 +386,13 @@ shell_set_fullscreen(struct wl_client *client,
 			      struct wlsc_output, link);
 	es->output = output;
 
-	es->saved_x = es->x;
-	es->saved_y = es->y;
+	priv->saved_x = es->x;
+	priv->saved_y = es->y;
 	es->x = (output->current->width - es->width) / 2;
 	es->y = (output->current->height - es->height) / 2;
 	es->fullscreen_output = output;
 	wlsc_surface_damage(es);
-	es->map_type = WLSC_SURFACE_MAP_FULLSCREEN;
+	priv->type = SHELL_SURFACE_FULLSCREEN;
 }
 
 static void
@@ -840,7 +854,7 @@ desktop_shell_set_background(struct wl_client *client,
 		       &shell->background_listener.link);
 
 	priv = get_shell_surface(surface);
-	priv->purpose = SHELL_SURFACE_BACKGROUND;
+	priv->type = SHELL_SURFACE_BACKGROUND;
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
@@ -878,7 +892,7 @@ desktop_shell_set_panel(struct wl_client *client,
 		       &shell->panel_listener.link);
 
 	priv = get_shell_surface(shell->panel);
-	priv->purpose = SHELL_SURFACE_PANEL;
+	priv->type = SHELL_SURFACE_PANEL;
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
@@ -918,7 +932,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 		       &shell->lock_surface_listener.link);
 
 	priv = get_shell_surface(shell->lock_surface);
-	priv->purpose = SHELL_SURFACE_LOCK;
+	priv->type = SHELL_SURFACE_LOCK;
 }
 
 static void
@@ -965,9 +979,12 @@ move_binding(struct wl_input_device *device, uint32_t time,
 	struct wl_shell *shell = data;
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
+	struct shell_surface *priv;
+
+	priv = get_shell_surface(surface);
 
 	if (surface == NULL ||
-	    surface->map_type == WLSC_SURFACE_MAP_FULLSCREEN)
+	    priv->type == SHELL_SURFACE_FULLSCREEN)
 		return;
 	if (surface == shell->panel)
 		return;
@@ -987,9 +1004,12 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 	struct wl_resource *resource;
 	uint32_t edges = 0;
 	int32_t x, y;
+	struct shell_surface *priv;
+
+	priv = get_shell_surface(surface);
 
 	if (surface == NULL ||
-	    surface->map_type == WLSC_SURFACE_MAP_FULLSCREEN)
+	    priv->type == SHELL_SURFACE_FULLSCREEN)
 	if (surface == shell->panel)
 		return;
 	if (surface == shell->background)
@@ -1035,7 +1055,7 @@ activate(struct wlsc_shell *base, struct wlsc_surface *es,
 	if (compositor->wxs)
 		wlsc_xserver_surface_activate(es);
 
-	switch (priv->purpose) {
+	switch (priv->type) {
 	case SHELL_SURFACE_BACKGROUND:
 		/* put background back to bottom */
 		wl_list_remove(&es->link);
@@ -1086,7 +1106,7 @@ lock(struct wlsc_shell *base)
 			continue;
 
 		priv = get_shell_surface(cur);
-		if (priv->purpose == SHELL_SURFACE_BACKGROUND)
+		if (priv->type == SHELL_SURFACE_BACKGROUND)
 			continue;
 
 		cur->output = NULL;
@@ -1150,7 +1170,7 @@ map(struct wlsc_shell *base,
 		list = &compositor->surface_list;
 
 	/* surface stacking order, see also activate() */
-	switch (priv->purpose) {
+	switch (priv->type) {
 	case SHELL_SURFACE_BACKGROUND:
 		/* background always visible, at the bottom */
 		wl_list_insert(compositor->surface_list.prev, &surface->link);
@@ -1174,14 +1194,14 @@ map(struct wlsc_shell *base,
 			wl_list_insert(list, &surface->link);
 	}
 
-	if (surface->map_type == WLSC_SURFACE_MAP_TOPLEVEL) {
+	if (priv->type == SHELL_SURFACE_TOPLEVEL) {
 		surface->x = 10 + random() % 400;
 		surface->y = 10 + random() % 400;
 	}
 
 	surface->width = width;
 	surface->height = height;
-	if (!shell->locked || priv->purpose == SHELL_SURFACE_LOCK)
+	if (!shell->locked || priv->type == SHELL_SURFACE_LOCK)
 		wlsc_surface_configure(surface,
 				       surface->x, surface->y, width, height);
 }
@@ -1191,11 +1211,17 @@ configure(struct wlsc_shell *shell, struct wlsc_surface *surface,
 	  int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct wlsc_mode *current;
+	struct shell_surface *priv;
 
-	if (surface->map_type == WLSC_SURFACE_MAP_FULLSCREEN) {
+	priv = get_shell_surface(surface);
+	switch (priv->type) {
+	case SHELL_SURFACE_FULLSCREEN:
 		current = surface->fullscreen_output->current;
 		x = (current->width - surface->width) / 2;
 		y = (current->height - surface->height) / 2;
+		break;
+	default:
+		break;
 	}
 
 	wlsc_surface_configure(surface, x, y, width, height);

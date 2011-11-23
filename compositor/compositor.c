@@ -254,7 +254,6 @@ wlsc_surface_create(struct wlsc_compositor *compositor,
 
 	wl_list_init(&surface->link);
 	wl_list_init(&surface->buffer_link);
-	surface->map_type = WLSC_SURFACE_MAP_UNMAPPED;
 
 	glGenTextures(1, &surface->texture);
 	glBindTexture(GL_TEXTURE_2D, surface->texture);

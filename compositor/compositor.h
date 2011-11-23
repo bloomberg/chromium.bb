@@ -241,13 +241,6 @@ struct wlsc_vector {
 	GLfloat f[4];
 };
 
-enum wlsc_surface_map_type {
-	WLSC_SURFACE_MAP_UNMAPPED,
-	WLSC_SURFACE_MAP_TOPLEVEL,
-	WLSC_SURFACE_MAP_TRANSIENT,
-	WLSC_SURFACE_MAP_FULLSCREEN
-};
-
 struct wlsc_surface {
 	struct wl_surface surface;
 	struct wlsc_compositor *compositor;
@@ -256,13 +249,11 @@ struct wlsc_surface {
 	pixman_region32_t opaque;
 	int32_t x, y, width, height;
 	int32_t pitch;
-	int32_t saved_x, saved_y;
 	struct wl_list link;
 	struct wl_list buffer_link;
 	struct wlsc_transform *transform;
 	uint32_t visual;
 	struct wlsc_output *output;
-	enum wlsc_surface_map_type map_type;
 	struct wlsc_output *fullscreen_output;
 	struct wl_list frame_callback_list;
 
