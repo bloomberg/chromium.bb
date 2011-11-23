@@ -243,7 +243,6 @@ class BrowsingDataRemoverTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
         profile_(new TestingProfile()) {
-    profile_->GetPrefs()->SetBoolean(prefs::kClearPluginLSODataEnabled, false);
   }
 
   virtual ~BrowsingDataRemoverTest() {
