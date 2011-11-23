@@ -10,6 +10,7 @@ import sys
 
 import pyauto_functional  # Must be imported before pyauto
 import pyauto
+import test_utils
 
 
 class PrefsTest(pyauto.PyUITest):
@@ -26,22 +27,35 @@ class PrefsTest(pyauto.PyUITest):
 
   def testSessionRestore(self):
     """Test session restore preference."""
+
+    pref_url = 'chrome://settings/browser'
     url1 = 'http://www.google.com/'
     url2 = 'http://news.google.com/'
+
+    self.NavigateToURL(pref_url)
+    # Set pref to restore session on startup.
+    driver = self.NewWebDriver()
+    restore_elem = driver.find_element_by_xpath(
+        '//input[@metric="Options_Startup_LastSession"]')
+    restore_elem.click()
+    self.assertTrue(restore_elem.is_selected())
+    self.RestartBrowser(clear_profile=False)
     self.NavigateToURL(url1)
     self.AppendTab(pyauto.GURL(url2))
     num_tabs = self.GetTabCount()
-    # Set pref to restore session on startup
-    self.SetPrefs(pyauto.kRestoreOnStartup, 1)
-    logging.debug('Setting %s to 1' % pyauto.kRestoreOnStartup)
     self.RestartBrowser(clear_profile=False)
-    # Verify
+    # Verify tabs are properly restored.
     self.assertEqual(self.GetPrefsInfo().Prefs(pyauto.kRestoreOnStartup), 1)
     self.assertEqual(num_tabs, self.GetTabCount())
     self.ActivateTab(0)
     self.assertEqual(url1, self.GetActiveTabURL().spec())
     self.ActivateTab(1)
     self.assertEqual(url2, self.GetActiveTabURL().spec())
+    # Verify session restore option is still selected.
+    self.NavigateToURL(pref_url, 0, 0)
+    driver = self.NewWebDriver()
+    self.assertTrue(driver.find_element_by_xpath(
+        '//input[@metric="Options_Startup_LastSession"]').is_selected())
 
   def testNavigationStateOnSessionRestore(self):
     """Verify navigation state is preserved on session restore."""
