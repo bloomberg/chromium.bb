@@ -90,6 +90,19 @@ bool IsSameAsPNGFile(const SkBitmap& gen_bmp, FilePath ref_img_path) {
   return true;
 }
 
+// Returns a comma-separated list of the names of |layer|'s children in
+// bottom-to-top stacking order.
+std::string GetLayerChildrenNames(const Layer& layer) {
+  std::string names;
+  for (std::vector<Layer*>::const_iterator it = layer.children().begin();
+       it != layer.children().end(); ++it) {
+    if (!names.empty())
+      names += ",";
+    names += (*it)->name();
+  }
+  return names;
+}
+
 
 // There are three test classes in here that configure the Compositor and
 // Layer's slightly differently:
@@ -1045,6 +1058,41 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
 #if defined(USE_WEBKIT_COMPOSITOR)
   EXPECT_EQ(1.f, l1->web_layer().opacity());
 #endif
+}
+
+// Checks that stacking-related methods behave as advertised.
+TEST_F(LayerWithNullDelegateTest, Stacking) {
+  scoped_ptr<Layer> root(new Layer(Layer::LAYER_HAS_NO_TEXTURE));
+  scoped_ptr<Layer> l1(new Layer(Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l2(new Layer(Layer::LAYER_HAS_TEXTURE));
+  scoped_ptr<Layer> l3(new Layer(Layer::LAYER_HAS_TEXTURE));
+  l1->set_name("1");
+  l2->set_name("2");
+  l3->set_name("3");
+  root->Add(l3.get());
+  root->Add(l2.get());
+  root->Add(l1.get());
+
+  // Layers' children are stored in bottom-to-top order.
+  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackAtTop(l3.get());
+  EXPECT_EQ("2,1,3", GetLayerChildrenNames(*root.get()));
+
+  root->StackAtTop(l1.get());
+  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackAtTop(l1.get());
+  EXPECT_EQ("2,3,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackAbove(l2.get(), l3.get());
+  EXPECT_EQ("3,2,1", GetLayerChildrenNames(*root.get()));
+
+  root->StackAbove(l1.get(), l3.get());
+  EXPECT_EQ("3,1,2", GetLayerChildrenNames(*root.get()));
+
+  root->StackAbove(l2.get(), l1.get());
+  EXPECT_EQ("3,1,2", GetLayerChildrenNames(*root.get()));
 }
 
 // Checks that the invalid rect assumes correct values when setting bounds.

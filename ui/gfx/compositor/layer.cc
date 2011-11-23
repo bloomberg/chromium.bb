@@ -135,22 +135,23 @@ void Layer::StackAbove(Layer* child, Layer* other) {
   DCHECK_NE(child, other);
   DCHECK_EQ(this, child->parent());
   DCHECK_EQ(this, other->parent());
-  size_t child_i =
-      std::find(children_.begin(), children_.end(), child) - children_.begin();
-  size_t other_i =
-      std::find(children_.begin(), children_.end(), other) - children_.begin();
-  if (child_i > other_i)
-    return;  // Already in front of |other|.
 
-  // Reorder children.
+  const size_t child_i =
+      std::find(children_.begin(), children_.end(), child) - children_.begin();
+  const size_t other_i =
+      std::find(children_.begin(), children_.end(), other) - children_.begin();
+  if (child_i == other_i + 1)
+    return;
+
+  const size_t dest_i = child_i < other_i ? other_i : other_i + 1;
   children_.erase(children_.begin() + child_i);
-  children_.insert(children_.begin() + other_i, child);
+  children_.insert(children_.begin() + dest_i, child);
 
   SetNeedsToRecomputeHole();
 
 #if defined(USE_WEBKIT_COMPOSITOR)
   child->web_layer_.removeFromParent();
-  web_layer_.insertChild(child->web_layer_, other_i);
+  web_layer_.insertChild(child->web_layer_, dest_i);
 #endif
 }
 

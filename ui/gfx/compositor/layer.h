@@ -72,8 +72,9 @@ class COMPOSITOR_EXPORT Layer :
   // Stacks |child| above all other children.
   void StackAtTop(Layer* child);
 
-  // Stacks |child| above |other|, both of which must be children of this layer.
-  // Does nothing if |other| is already above |child|.
+  // Stacks |child| directly above |other|.  Both must be children of this
+  // layer.  Note that if |child| is initially stacked even higher, calling this
+  // method will result in |child| being lowered in the stacking order.
   void StackAbove(Layer* child, Layer* other);
 
   // Returns the child Layers.
@@ -301,6 +302,7 @@ class COMPOSITOR_EXPORT Layer :
 
   Layer* parent_;
 
+  // This layer's children, in bottom-to-top stacking order.
   std::vector<Layer*> children_;
 
   ui::Transform transform_;

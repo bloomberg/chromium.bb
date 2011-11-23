@@ -196,18 +196,17 @@ void Window::StackChildAbove(Window* child, Window* other) {
   DCHECK_EQ(this, child->parent());
   DCHECK_EQ(this, other->parent());
 
-  size_t child_i =
+  const size_t child_i =
       std::find(children_.begin(), children_.end(), child) - children_.begin();
-  size_t other_i =
+  const size_t other_i =
       std::find(children_.begin(), children_.end(), other) - children_.begin();
-  if (child_i > other_i)
-    return;  // Already in front of |other|.
+  if (child_i == other_i + 1)
+    return;
 
-  // Reorder children.
+  const size_t dest_i = child_i < other_i ? other_i : other_i + 1;
   children_.erase(children_.begin() + child_i);
-  children_.insert(children_.begin() + other_i, child);
+  children_.insert(children_.begin() + dest_i, child);
 
-  // Reorder the layer.
   layer()->StackAbove(child->layer(), other->layer());
 
   // Stack any transient children that share the same parent to be in front of

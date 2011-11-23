@@ -271,8 +271,8 @@ TEST_F(WindowTest, StackChildAtTop) {
   EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
 }
 
-// Various assertions for StackAtTop.
-TEST_F(WindowTest, StackAtTop) {
+// Various assertions for StackChildAbove.
+TEST_F(WindowTest, StackChildAbove) {
   Window parent(NULL);
   parent.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
   Window child1(NULL);
@@ -307,7 +307,7 @@ TEST_F(WindowTest, StackAtTop) {
   EXPECT_EQ(child2.layer(), parent.layer()->children()[1]);
   EXPECT_EQ(child3.layer(), parent.layer()->children()[2]);
 
-  // Move 1 in front of 3, resulting in [2 3 1].
+  // Move 1 in front of 3, resulting in [2, 3, 1].
   parent.StackChildAbove(&child1, &child3);
   ASSERT_EQ(3u, parent.children().size());
   EXPECT_EQ(&child2, parent.children()[0]);
@@ -317,6 +317,17 @@ TEST_F(WindowTest, StackAtTop) {
   EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
   EXPECT_EQ(child3.layer(), parent.layer()->children()[1]);
   EXPECT_EQ(child1.layer(), parent.layer()->children()[2]);
+
+  // Moving 1 in front of 2 should lower it, resulting in [2, 1, 3].
+  parent.StackChildAbove(&child1, &child2);
+  ASSERT_EQ(3u, parent.children().size());
+  EXPECT_EQ(&child2, parent.children()[0]);
+  EXPECT_EQ(&child1, parent.children()[1]);
+  EXPECT_EQ(&child3, parent.children()[2]);
+  ASSERT_EQ(3u, parent.layer()->children().size());
+  EXPECT_EQ(child2.layer(), parent.layer()->children()[0]);
+  EXPECT_EQ(child1.layer(), parent.layer()->children()[1]);
+  EXPECT_EQ(child3.layer(), parent.layer()->children()[2]);
 }
 
 // Various destruction assertions.
