@@ -16,12 +16,12 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/models/tree_node_model.h"
+#include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/context_menu_controller.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/textfield/textfield_controller.h"
-#include "views/controls/tree/tree_view.h"
 
 namespace views {
 class Label;

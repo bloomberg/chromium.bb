@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_TABLE_TABLE_VIEW2_H_
-#define VIEWS_CONTROLS_TABLE_TABLE_VIEW2_H_
+#ifndef UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW2_H_
+#define UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW2_H_
 #pragma once
 
 #include <map>
@@ -14,8 +14,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/canvas.h"
-#include "views/controls/table/native_table_wrapper.h"
-#include "views/controls/table/table_view.h"
+#include "ui/views/controls/table/native_table_wrapper.h"
+#include "ui/views/controls/table/table_view.h"
 #include "views/view.h"
 
 namespace ui {
@@ -265,4 +265,4 @@ class VIEWS_EXPORT TableView2 : public View, public ui::TableModelObserver {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_TABLE_TABLE_VIEW2_H_
+#endif  // UI_VIEWS_CONTROLS_TABLE_TABLE_VIEW2_H_

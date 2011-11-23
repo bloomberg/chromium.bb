@@ -10,9 +10,9 @@
 #include "chrome/common/content_settings.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/tabbed_pane/tabbed_pane_listener.h"
-#include "views/controls/tree/tree_view.h"
 
 class ConstrainedWindow;
 class CookieInfoView;

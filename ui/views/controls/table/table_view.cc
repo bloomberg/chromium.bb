@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/table/table_view.h"
+#include "ui/views/controls/table/table_view.h"
 
 #include <commctrl.h>
 #include <windowsx.h>
@@ -24,8 +24,8 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/views/controls/table/table_view_observer.h"
 #include "views/controls/native/native_view_host.h"
-#include "views/controls/table/table_view_observer.h"
 
 namespace {
 

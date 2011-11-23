@@ -15,9 +15,9 @@
 
 #include "base/memory/singleton.h"
 #include "ipc/ipc_logging.h"
+#include "ui/views/controls/table/table_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/button/button.h"
-#include "views/controls/table/table_view.h"
 
 namespace views {
 class NativeViewHost;

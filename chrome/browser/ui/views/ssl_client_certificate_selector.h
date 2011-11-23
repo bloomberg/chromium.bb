@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
+#include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/button/button.h"
-#include "views/controls/table/table_view_observer.h"
 #include "views/view.h"
 
 // This header file exists only for testing.  Chrome should access the
