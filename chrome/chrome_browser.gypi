@@ -4149,24 +4149,9 @@
         }],
         ['touchui==0', {
           'sources/': [
-            ['exclude', '^browser/chromeos/login/touch_*'],
             ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
             ['exclude', '^browser/extensions/extension_input_ui_api.h'],
-            ['exclude', '^browser/renderer_host/render_widget_host_view_views_touch.cc'],
             ['exclude', '^browser/ui/touch/*'],
-          ],
-        }],
-        ['touchui==1', {
-          'sources/': [
-            ['include', '^browser/ui/touch/*'],
-            ['exclude', '^browser/chromeos/frame/browser_non_client_frame_view_factory_chromeos.cc'],
-            ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.cc'],
-            ['exclude', '^browser/renderer_host/render_widget_host_view_gtk.h'],
-            ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_x11.cc'],
-            ['exclude', '^browser/ui/views/handle_web_keyboard_event_gtk.cc'],
-            ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_view_gtk.*'],
-            ['exclude', '^browser/chromeos/input_method/candidate_window.cc'],
-            ['exclude', '^browser/chromeos/input_method/candidate_window.h'],
           ],
         }],
         # linux/chromeos only status area button.
@@ -5038,29 +5023,6 @@
               ],
               'sources!': [
                 'browser/ui/toolbar/bookmark_sub_menu_model.cc',
-              ],
-            }],
-            # Touch build only
-            ['OS=="linux" and toolkit_views==1 and touchui==1', {
-              'sources/': [
-                ['include', '^browser/ui/views/constrained_html_delegate_views.cc'],
-                ['include', '^browser/ui/views/constrained_window_views.cc'],
-                ['include', '^browser/ui/views/constrained_window_views.h'],
-                ['include', '^browser/ui/views/constrained_html_delegate_views.cc'],
-                ['include', '^browser/ui/views/constrained_window_views.cc'],
-                ['include', '^browser/ui/views/constrained_window_views.h'],
-                ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.cc'],
-                ['include', '^browser/ui/views/tab_contents/tab_contents_container_views.h'],
-                ['exclude', '^browser/ui/gtk/collected_cookies_gtk.cc'],
-                ['exclude', '^browser/ui/gtk/constrained_window_gtk.cc'],
-                ['exclude', '^browser/ui/gtk/constrained_window_gtk.h'],
-                ['exclude', '^browser/ui/gtk/repost_form_warning_gtk.cc'],
-                ['exclude', '^browser/ui/gtk/repost_form_warning_gtk.h'],
-                ['exclude', '^browser/ui/gtk/ssl_client_certificate_selector.cc'],
-                ['exclude', '^browser/ui/views/constrained_html_delegate_gtk.cc'],
-                ['exclude', '^browser/ui/views/frame/browser_non_client_frame_view_factory_x11.cc'],
-                ['exclude', '^browser/ui/views/tabs/tab_strip_factory.cc'],
-                ['exclude', '^browser/ui/views/tab_contents/native_tab_contents_view_gtk.*'],
               ],
             }],
             # chromeos notifications are not used in aura.

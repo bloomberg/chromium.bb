@@ -25,11 +25,7 @@ const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
 namespace gfx {
 
 unsigned int NativeThemeBase::button_length_ = 14;
-#if defined(TOUCH_UI)
-unsigned int NativeThemeBase::scrollbar_width_ = 0;
-#else
 unsigned int NativeThemeBase::scrollbar_width_ = 15;
-#endif
 
 // These are the default dimensions of radio buttons and checkboxes.
 static const int kCheckboxAndRadioWidth = 13;

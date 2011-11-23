@@ -122,14 +122,7 @@ TEST(BookmarkUtilsTest, DoesBookmarkContainText) {
 }
 
 #if !defined(OS_MACOSX)
-#if defined(TOUCH_UI)
-// TODO(wyck): Functionality disabled on TOUCH_UI to work around clipboard hang
-// in http://crbug.com/96448
-#define MAYBE_CopyPaste FAILS_CopyPaste
-#else
-#define MAYBE_CopyPaste CopyPaste
-#endif
-TEST(BookmarkUtilsTest, MAYBE_CopyPaste) {
+TEST(BookmarkUtilsTest, CopyPaste) {
   // Clipboard requires a message loop.
   MessageLoopForUI loop;
 

@@ -19,7 +19,6 @@ const int kRightInsetSize = 4;
 // Color settings for border.
 // These are tentative, and should be derived from theme, system
 // settings and current settings.
-// TODO(saintlou): understand why this is not factored/shared somewhere
 const SkColor kFocusedBorderColor = SK_ColorCYAN;
 const SkColor kDefaultBorderColor = SK_ColorGRAY;
 

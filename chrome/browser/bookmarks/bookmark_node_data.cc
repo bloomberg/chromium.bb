@@ -193,15 +193,8 @@ bool BookmarkNodeData::ReadFromClipboard() {
 }
 
 bool BookmarkNodeData::ClipboardContainsBookmarks() {
-#if defined(TOUCH_UI)
-  // Temporarily disabling clipboard due to bug 96448.
-  // TODO(wyck): Reenable when cause of message loop hang in
-  // gtk_clipboard_wait_for_contents is determined and fixed.
-  return false;
-#else
   return g_browser_process->clipboard()->IsFormatAvailableByString(
       BookmarkNodeData::kClipboardFormatString, ui::Clipboard::BUFFER_STANDARD);
-#endif
 }
 #else
 void BookmarkNodeData::WriteToClipboard(Profile* profile) const {

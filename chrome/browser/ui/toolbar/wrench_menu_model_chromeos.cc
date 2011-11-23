@@ -16,7 +16,6 @@
 #include "ui/base/resource/resource_bundle.h"
 
 void WrenchMenuModel::Build() {
-#if !defined(TOUCH_UI)
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kGuestSession))
@@ -30,7 +29,6 @@ void WrenchMenuModel::Build() {
 
   AddSeparator();
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
-#endif // !TOUCH_UI
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
 
@@ -44,9 +42,8 @@ void WrenchMenuModel::Build() {
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,
       bookmark_sub_menu_model_.get());
   AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
-#if !defined(TOUCH_UI)
   AddItemWithStringId(IDC_SHOW_DOWNLOADS, IDS_SHOW_DOWNLOADS);
-#endif // !TOUCH_UI
+
   AddSeparator();
 
   AddItemWithStringId(IDC_OPTIONS, IDS_SETTINGS);

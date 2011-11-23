@@ -181,11 +181,8 @@ void ToolsMenuModel::Build(Browser* browser) {
   AddSubMenuWithStringId(IDC_ENCODING_MENU, IDS_ENCODING_MENU,
                          encoding_menu_model_.get());
   AddItemWithStringId(IDC_VIEW_SOURCE, IDS_VIEW_SOURCE);
-#if !defined(TOUCH_UI)
-  // Disable dev-tools/console since it isn't touch-friendly yet.
   AddItemWithStringId(IDC_DEV_TOOLS, IDS_DEV_TOOLS);
   AddItemWithStringId(IDC_DEV_TOOLS_CONSOLE, IDS_DEV_TOOLS_CONSOLE);
-#endif
 
 #if defined(ENABLE_PROFILING) && !defined(NO_TCMALLOC)
   AddSeparator();
