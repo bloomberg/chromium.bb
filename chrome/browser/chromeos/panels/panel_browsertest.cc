@@ -75,8 +75,15 @@ IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenSmall) {
 #endif
 }
 
+#if defined(USE_AURA)
+// crbug.com/105129.
+#define MAYBE_PanelOpenLarge DISABLED_PanelOpenLarge
+#else
+#define MAYBE_PanelOpenLarge PanelOpenLarge
+#endif
+
 // Large popups should open as new tab.
-IN_PROC_BROWSER_TEST_F(PanelTest, PanelOpenLarge) {
+IN_PROC_BROWSER_TEST_F(PanelTest, MAYBE_PanelOpenLarge) {
   const std::string HTML =
       "<html><head><title>PanelOpen</title></head>"
       "<body onload='window.setTimeout(run_tests, 0)'>"

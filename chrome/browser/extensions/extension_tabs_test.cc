@@ -255,7 +255,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest,
       extension_tabs_module_constants::kIncognitoModeIsDisabled));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, InvalidUpdateWindowState) {
+#if defined(USE_AURA)
+// crbug.com/105173.
+#define MAYBE_InvalidUpdateWindowState DISABLED_InvalidUpdateWindowState
+#else
+#define MAYBE_InvalidUpdateWindowState InvalidUpdateWindowState
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_InvalidUpdateWindowState) {
   static const char kArgsMinimizedWithFocus[] =
       "[%u, {\"state\": \"minimized\", \"focused\": true}]";
   static const char kArgsMaximizedWithoutFocus[] =
