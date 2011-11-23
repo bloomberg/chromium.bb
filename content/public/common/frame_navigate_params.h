@@ -31,6 +31,13 @@ struct CONTENT_EXPORT FrameNavigateParams {
   // URL of the page being loaded.
   GURL url;
 
+  // The base URL for the page's document when the frame was committed. Empty if
+  // similar to 'url' above. Note that any base element in the page has not been
+  // parsed yet and is therefore not reflected.
+  // This is of interest when a MHTML file is loaded, as the base URL has been
+  // set to original URL of the site the MHTML represents.
+  GURL base_url;
+
   // URL of the referrer of this load. WebKit generates this based on the
   // source of the event that caused the load.
   GURL referrer;

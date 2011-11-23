@@ -14,6 +14,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_types.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/net_util.h"
 #include "net/test/test_server.h"
 
 class RenderViewHostTest : public InProcessBrowserTest {
@@ -171,6 +172,7 @@ class RenderViewHostTestTabContentsObserver : public TabContentsObserver {
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE {
     observed_socket_address_ = params.socket_address;
+    base_url_ = params.base_url;
     ++navigation_count_;
   }
 
@@ -178,10 +180,15 @@ class RenderViewHostTestTabContentsObserver : public TabContentsObserver {
     return observed_socket_address_;
   }
 
+  GURL base_url() const {
+    return base_url_;
+  }
+
   int navigation_count() const { return navigation_count_; }
 
  private:
   net::HostPortPair observed_socket_address_;
+  GURL base_url_;
   int navigation_count_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestTabContentsObserver);
@@ -198,4 +205,24 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
   EXPECT_EQ(test_server()->host_port_pair().ToString(),
             observer.observed_socket_address().ToString());
   EXPECT_EQ(1, observer.navigation_count());
+}
+
+// TODO(jcivelli): temporarily disabled while I figure-out why the EOL is
+//                 getting messed-up in google.mht (causing it to fail to load).
+IN_PROC_BROWSER_TEST_F(RenderViewHostTest, DISABLED_BaseURLParam) {
+  ASSERT_TRUE(test_server()->Start());
+  RenderViewHostTestTabContentsObserver observer(
+      browser()->GetSelectedTabContents());
+
+  // Base URL is not set if it is the same as the URL.
+  GURL test_url = test_server()->GetURL("files/simple.html");
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  EXPECT_TRUE(observer.base_url().is_empty());
+  EXPECT_EQ(1, observer.navigation_count());
+
+  // But should be set to the original page when reading MHTML.
+  test_url = net::FilePathToFileURL(test_server()->document_root().Append(
+      FILE_PATH_LITERAL("google.mht")));
+  ui_test_utils::NavigateToURL(browser(), test_url);
+  EXPECT_EQ("http://www.google.com/", observer.base_url().spec());
 }

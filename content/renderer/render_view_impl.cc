@@ -1059,6 +1059,9 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     params.url = request.url();
   }
 
+  if (frame->document().baseURL() != params.url)
+    params.base_url = frame->document().baseURL();
+
   GetRedirectChain(ds, &params.redirects);
   params.should_update_history = !ds->hasUnreachableURL() &&
       !response.isMultipartPayload() && (response.httpStatusCode() != 404);
