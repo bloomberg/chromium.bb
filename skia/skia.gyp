@@ -692,6 +692,8 @@
         'ext/platform_device_mac.cc',
         'ext/platform_device_win.cc',
         'ext/SkMemory_new_handler.cpp',
+        'ext/skia_sandbox_support_win.h',
+        'ext/skia_sandbox_support_win.cc',
         'ext/skia_utils_mac.mm',
         'ext/skia_utils_mac.h',
         'ext/skia_utils_win.cc',
@@ -876,6 +878,7 @@
           'sources!': [
             '../third_party/skia/src/core/SkMMapStream.cpp',
             '../third_party/skia/src/ports/SkTime_Unix.cpp',
+            '../third_party/skia/src/ports/SkFontHost_sandbox_none.cpp',
             'ext/SkThread_chrome.cc',
           ],
           'include_dirs': [
