@@ -12,7 +12,8 @@ function filtersForPage(pageName, isRTL) {
   // For additional info about BidiChecker go to
   // http://code.google.com/p/bidichecker
   // For specific info about filters, check out the following links:
-  // http://bidichecker.googlecode.com/svn/trunk/docs/users_guide.html#TOC-Error-descriptions
+  // http://bidichecker.googlecode.com/svn/trunk/docs/users_guide.html
+  // #TOC-Error-descriptions
   // http://bidichecker.googlecode.com/svn/trunk/docs/jsdoc/index.html
   // TODO(ofri): Link to more comprehensive documentation when available.
   var filters = {
@@ -20,12 +21,12 @@ function filtersForPage(pageName, isRTL) {
     "chrome://history" : {
       // Filters for LTR UI
       "LTR" : [
-        // BUG: http://code.google.com/p/chromium/issues/detail?id=80791
+        // BUG: http://crbug.com/80791
         bidichecker.FilterFactory.atText("בדיקה")
       ],
       // Filters for RTL UI
       "RTL" : [
-        // BUG: http://code.google.com/p/chromium/issues/detail?id=80791
+        // BUG: http://crbug.com/80791
         bidichecker.FilterFactory.atText("Google"),
         bidichecker.FilterFactory.atText("www.google.com"),
         // The following two are probably false positives since we can't
@@ -37,11 +38,11 @@ function filtersForPage(pageName, isRTL) {
     },
     "chrome://settings/autofill" : {
       "LTR" : [
-        // BUG: http://code.google.com/p/chromium/issues/detail?id=82267
+        // BUG: http://crbug.com/82267
         bidichecker.FilterFactory.atText("משה ב כהן, דרך מנחם בגין")
       ],
       "RTL" : [
-        // BUG: http://code.google.com/p/chromium/issues/detail?id=90322
+        // BUG: http://crbug.com/90322
         bidichecker.FilterFactory.atText(
             "Milton C. Waddams, 4120 Freidrich Lane")
       ]
@@ -57,9 +58,59 @@ function filtersForPage(pageName, isRTL) {
     },
     "chrome://newtab" : {
       "RTL" : [
-        // BUG: http://code.google.com/p/chromium/issues/detail?id=93339
+        // BUG: http://crbug.com/93339
         bidichecker.FilterFactory.atText("Chrome Web Store"),
         bidichecker.FilterFactory.atText("File Manager")
+      ]
+    },
+"chrome://bugreport#0?description=%D7%91%D7%93%D7%99%D7%A7%D7%94&issueType=1" :
+    {
+      "LTR" : [
+        // BUG: http://crbug.com/90835
+        bidichecker.FilterFactory.atText("בדיקה")
+      ]
+    },
+    "chrome://bugreport#0?description=test&issueType=1" : {
+      "RTL" : [
+        // BUG: http://crbug.com/90835
+        bidichecker.FilterFactory.atText("test"),
+        bidichecker.FilterFactory.atText("stub-user@example.com")
+      ]
+    },
+    "chrome://settings/browser" : {
+      "LTR" : [
+        // BUG: http://crbug.com/93702
+        bidichecker.FilterFactory.atText(
+            "חדשות תוכן ועדכונים - ידיעות אחרונות")
+      ]
+    },
+    "chrome://settings/clearBrowserData" : {
+      "RTL" : [
+        // BUG: http://crbug.com/94070
+        bidichecker.FilterFactory.atText("Google Cloud Print")
+      ]
+    },
+    "chrome://settings/content" : {
+      "RTL" : [
+        // BUG: http://crbug.com/94070
+        bidichecker.FilterFactory.atText("Google Cloud Print")
+      ]
+    },
+    "chrome://settings/languages" : {
+      "RTL" : [
+        // BUG: http://crbug.com/94070
+        bidichecker.FilterFactory.atText("Google Cloud Print"),
+        bidichecker.FilterFactory.atText("Hebrew"),
+        bidichecker.FilterFactory.atText("English (United States"),
+        bidichecker.FilterFactory.atText("English"),
+        // Items in timezone dropdown:
+        bidichecker.FilterFactory.precededByText("(")
+      ]
+    },
+    "chrome://settings/contentExceptions" : {
+      "RTL" : [
+        // BUG: http://crbug.com/94070
+        bidichecker.FilterFactory.atText("Google Cloud Print")
       ]
     }
   };
