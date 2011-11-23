@@ -4,7 +4,17 @@
 
 #include "ui/gfx/native_theme_gtk.h"
 
+#include <gtk/gtk.h>
+
 #include "base/basictypes.h"
+#include "base/logging.h"
+#include "ui/gfx/skia_utils_gtk.h"
+
+namespace {
+
+const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
+
+}  // namespace
 
 namespace gfx {
 
@@ -17,6 +27,21 @@ const NativeTheme* NativeTheme::instance() {
 const NativeThemeGtk* NativeThemeGtk::instance() {
   CR_DEFINE_STATIC_LOCAL(NativeThemeGtk, s_native_theme, ());
   return &s_native_theme;
+}
+
+SkColor NativeThemeGtk::GetSystemColor(ColorId color_id) const {
+  switch (color_id) {
+    case kColorId_DialogBackground:
+      // TODO(benrg): This code used to call gtk_widget_get_style() on the
+      // widget being styled. After refactoring, that widget is not available
+      // and we have to call gtk_widget_get_default_style(). Does it matter?
+      return gfx::GdkColorToSkColor(
+                     gtk_widget_get_default_style()->bg[GTK_STATE_NORMAL]);
+    default:
+      NOTREACHED() << "Invalid color_id: " << color_id;
+      break;
+  }
+  return kInvalidColorIdColor;
 }
 
 NativeThemeGtk::NativeThemeGtk() {

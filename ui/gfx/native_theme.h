@@ -19,11 +19,13 @@ class Size;
 
 // This class supports drawing UI controls (like buttons, text fields, lists,
 // comboboxes, etc) that look like the native UI controls of the underlying
-// platform, such as Windows or Linux.
+// platform, such as Windows or Linux. It also supplies default colors for
+// dialog box backgrounds, etc., which are obtained from the system theme where
+// possible.
 //
 // The supported control types are listed in the Part enum.  These parts can be
-// in any state given by the State enum, where the actual definititon of the
-// state is part-specific.
+// in any state given by the State enum, where the actual definition of the
+// state is part-specific. The supported colors are listed in the ColorId enum.
 //
 // Some parts require more information than simply the state in order to be
 // drawn correctly, and this information is given to the Paint() method via the
@@ -211,6 +213,15 @@ class UI_EXPORT NativeTheme {
   void SetScrollbarColors(unsigned inactive_color,
                           unsigned active_color,
                           unsigned track_color) const;
+
+  // Colors for GetSystemColor().
+  enum ColorId {
+    kColorId_DialogBackground
+    // TODO(benrg): move other hardcoded colors here.
+  };
+
+  // Return a color from the system theme.
+  virtual SkColor GetSystemColor(ColorId color_id) const = 0;
 
   // Returns a shared instance of the native theme.
   // The returned object should not be deleted by the caller.  This function

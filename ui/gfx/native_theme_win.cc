@@ -27,6 +27,12 @@
 
 namespace {
 
+const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
+
+SkColor WinColorToSkColor(COLORREF color) {
+  return SkColorSetRGB(GetRValue(color), GetGValue(color), GetBValue(color));
+}
+
 void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
   // Create a 2x2 checkerboard pattern using the 3D face and highlight colors.
   SkColor face = skia::COLORREFToSkColor(GetSysColor(COLOR_3DFACE));
@@ -313,6 +319,19 @@ void NativeThemeWin::Paint(SkCanvas* canvas,
       // unsupported parts will DCHECK here.
       DCHECK(false);
   }
+}
+
+SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
+  switch (color_id) {
+    case kColorId_DialogBackground:
+      // TODO(benrg): Should this use the new Windows theme functions? The old
+      // code in DialogClientView::OnPaint used GetSysColor(COLOR_3DFACE).
+      return WinColorToSkColor(GetSysColor(COLOR_3DFACE));
+    default:
+      NOTREACHED() << "Invalid color_id: " << color_id;
+      break;
+  }
+  return kInvalidColorIdColor;
 }
 
 HRESULT NativeThemeWin::PaintScrollbarArrow(

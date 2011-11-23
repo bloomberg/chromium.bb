@@ -16,6 +16,7 @@
 #include <uxtheme.h>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/gfx/size.h"
@@ -103,12 +104,13 @@ class UI_EXPORT NativeThemeWin : public NativeTheme {
   // NativeTheme Implementation:
   virtual gfx::Size GetPartSize(Part part,
                                 State state,
-                                const ExtraParams& extra) const;
+                                const ExtraParams& extra) const OVERRIDE;
   virtual void Paint(SkCanvas* canvas,
                      Part part,
                      State state,
                      const gfx::Rect& rect,
-                     const ExtraParams& extra) const;
+                     const ExtraParams& extra) const OVERRIDE;
+  virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
 
   void PaintToNonPlatformCanvas(SkCanvas* canvas,
                                 Part part,

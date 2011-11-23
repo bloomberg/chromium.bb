@@ -14,6 +14,14 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
+namespace {
+
+// Hardcoded colors for use when there is no system theme (Aura, ChromeOS).
+const SkColor kDefaultDialogBackgroundColor = SkColorSetRGB(200, 200, 200);
+const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
+
+}  // namespace
+
 namespace gfx {
 
 unsigned int NativeThemeBase::button_length_ = 14;
@@ -332,6 +340,19 @@ void NativeThemeBase::Paint(SkCanvas* canvas,
       NOTREACHED() << "Unknown theme part: " << part;
       break;
   }
+}
+
+SkColor NativeThemeBase::GetSystemColor(ColorId color_id) const {
+  // This implementation returns hardcoded colors. It's used by NativeThemeAura
+  // and NativeThemeChromeos and overridden by NativeThemeGtk.
+  switch (color_id) {
+    case kColorId_DialogBackground:
+      return kDefaultDialogBackgroundColor;
+    default:
+      NOTREACHED() << "Invalid color_id: " << color_id;
+      break;
+  }
+  return kInvalidColorIdColor;
 }
 
 void NativeThemeBase::PaintScrollbarTrack(SkCanvas* canvas,

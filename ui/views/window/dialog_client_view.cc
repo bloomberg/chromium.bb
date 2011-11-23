@@ -10,8 +10,6 @@
 #include <windows.h>
 #include <uxtheme.h>
 #include <vsstyle.h>
-#elif defined(TOOLKIT_USES_GTK)
-#include <gtk/gtk.h>
 #endif
 
 #include <algorithm>
@@ -49,14 +47,6 @@ void UpdateButtonHelper(NativeTextButton* button_view,
   button_view->SetEnabled(delegate->IsDialogButtonEnabled(button));
   button_view->SetVisible(delegate->IsDialogButtonVisible(button));
 }
-
-#if defined(OS_WIN)
-void FillViewWithSysColor(gfx::Canvas* canvas, View* view, COLORREF color) {
-  SkColor sk_color =
-      SkColorSetRGB(GetRValue(color), GetGValue(color), GetBValue(color));
-  canvas->FillRect(sk_color, view->GetLocalBounds());
-}
-#endif
 
 // DialogButton ----------------------------------------------------------------
 
@@ -314,19 +304,9 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 // DialogClientView, View overrides:
 
 void DialogClientView::OnPaint(gfx::Canvas* canvas) {
-#if defined(OS_WIN)
-  FillViewWithSysColor(canvas, this, GetSysColor(COLOR_3DFACE));
-#elif defined(USE_WAYLAND) || defined(USE_AURA)
-  SkColor sk_color = SkColorSetARGB(200, 255, 255, 255);
-  canvas->FillRect(sk_color, GetLocalBounds());
-#else
-  GtkWidget* widget = GetWidget()->GetNativeView();
-  if (GTK_IS_WINDOW(widget)) {
-    GtkStyle* window_style = gtk_widget_get_style(widget);
-    canvas->FillRect(gfx::GdkColorToSkColor(window_style->bg[GTK_STATE_NORMAL]),
-                     GetLocalBounds());
-  }
-#endif
+  SkColor bg_color = gfx::NativeTheme::instance()->GetSystemColor(
+                         gfx::NativeTheme::kColorId_DialogBackground);
+  canvas->FillRect(bg_color, GetLocalBounds());
 }
 
 void DialogClientView::PaintChildren(gfx::Canvas* canvas) {

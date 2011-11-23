@@ -26,6 +26,7 @@ class NativeThemeBase : public NativeTheme {
                      State state,
                      const gfx::Rect& rect,
                      const ExtraParams& extra) const OVERRIDE;
+  virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
 
  protected:
   NativeThemeBase();

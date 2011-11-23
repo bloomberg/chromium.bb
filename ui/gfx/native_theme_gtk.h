@@ -15,6 +15,8 @@ class NativeThemeGtk : public NativeThemeBase {
  public:
   static const NativeThemeGtk* instance();
 
+  virtual SkColor GetSystemColor(ColorId color_id) const OVERRIDE;
+
  private:
   NativeThemeGtk();
   virtual ~NativeThemeGtk();
