@@ -1416,6 +1416,7 @@ var MainView = (function() {
     getVisibleColumnKeys_: function() {
       // Figure out what columns to include, based on the selected checkboxes.
       var columns = this.getSelectionColumns_();
+      columns = columns.slice(0);
 
       // Eliminate columns which we are merging on.
       deleteValuesFromArray(columns, this.getMergeColumns_());
@@ -1431,9 +1432,13 @@ var MainView = (function() {
 
         for (var i = 0; i < randomGroupKey.length; ++i)
           keysToExclude.push(randomGroupKey[i].key);
-        columns = columns.slice(0);
         deleteValuesFromArray(columns, keysToExclude);
       }
+
+      // If we are currently showing a "diff", hide the max columns, since we
+      // are not populating it correctly. See the TODO at the top of this file.
+      if (this.getSelectedSnapshotIndexes_().length > 1)
+        deleteValuesFromArray(columns, [KEY_MAX_RUN_TIME, KEY_MAX_QUEUE_TIME]);
 
       return columns;
     },
