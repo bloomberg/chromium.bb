@@ -309,6 +309,16 @@
       ],
     },
     {
+      'target_name': 'ppapi_example_audio_input',
+      'dependencies': [
+        'ppapi_example_skeleton',
+        'ppapi.gyp:ppapi_cpp',
+      ],
+      'sources': [
+        'examples/audio_input/audio_input.cc',
+      ],
+    },
+    {
       'target_name': 'ppapi_example_file_chooser',
       'dependencies': [
         'ppapi_example_skeleton',
