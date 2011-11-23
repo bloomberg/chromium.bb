@@ -1045,7 +1045,7 @@
    bug_11139
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN14ProcessWatcher23EnsureProcessTerminatedEi
+   fun:_ZN4base23EnsureProcessTerminatedEi
 }
 {
    # very common in ui tests
