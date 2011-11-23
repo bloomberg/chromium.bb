@@ -32,10 +32,6 @@
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
-#define FD_TO_EGL_NATIVE_DPY(fd) ((EGLNativeDisplayType)(intptr_t)(fd))
-
 struct wlsc_matrix {
 	GLfloat d[16];
 };
