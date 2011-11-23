@@ -2973,6 +2973,10 @@ if nacl_env.Bit('bitcode'):
   # optimizations at link time
   nacl_env.Append(LINKFLAGS=['-O3'])
 
+# When the compiler is clang, base/ code uses the "override" keyword.
+if nacl_env['PNACL_FRONTEND'] == 'clang':
+  nacl_env.Append(CXXFLAGS=['-Wno-c++11-extensions'])
+
 # We use a special environment for building the IRT image because it must
 # always use the newlib toolchain, regardless of --nacl_glibc.  We clone
 # it from nacl_env here, before too much other cruft has been added.
