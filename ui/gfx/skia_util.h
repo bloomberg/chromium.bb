@@ -22,6 +22,7 @@ class Rect;
 
 // Convert between Skia and gfx rect types.
 UI_EXPORT SkRect RectToSkRect(const gfx::Rect& rect);
+UI_EXPORT SkIRect RectToSkIRect(const gfx::Rect& rect);
 UI_EXPORT gfx::Rect SkRectToRect(const SkRect& rect);
 
 // Creates a vertical gradient shader. The caller owns the shader.

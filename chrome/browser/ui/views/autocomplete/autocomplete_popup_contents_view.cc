@@ -173,14 +173,12 @@ class AutocompletePopupContentsView::InstantOptInView
   }
 
   virtual void OnPaint(gfx::Canvas* canvas) {
+    gfx::Rect paint_rect(GetLocalBounds());
+    paint_rect.Inset(kOptInBackgroundHInset, kOptInBackgroundVInset);
     canvas->Save();
-    canvas->Translate(gfx::Point(kOptInBackgroundHInset,
-                                 kOptInBackgroundVInset));
-    bg_painter_->Paint(width() - kOptInBackgroundHInset * 2,
-                       height() - kOptInBackgroundVInset * 2, canvas);
-    canvas->DrawRectInt(ResourceBundle::toolbar_separator_color, 0, 0,
-                        width() - kOptInBackgroundHInset * 2,
-                        height() - kOptInBackgroundVInset * 2);
+    canvas->Translate(paint_rect.origin());
+    bg_painter_->Paint(paint_rect.width(), paint_rect.height(), canvas);
+    canvas->DrawRect(paint_rect, ResourceBundle::toolbar_separator_color);
     canvas->Restore();
   }
 

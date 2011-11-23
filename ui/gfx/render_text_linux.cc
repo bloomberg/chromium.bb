@@ -89,13 +89,8 @@ void RenderTextLinux::Draw(Canvas* canvas) {
   cairo_restore(cr);
 
   // Paint cursor.
-  bounds = GetUpdatedCursorBounds();
   if (cursor_visible() && focused())
-      canvas->DrawRectInt(kCursorColor,
-                          bounds.x(),
-                          bounds.y(),
-                          bounds.width(),
-                          bounds.height());
+    canvas->DrawRect(GetUpdatedCursorBounds(), kCursorColor);
 }
 
 SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {

@@ -415,10 +415,11 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
 
   // Create a temporary buffer filled with the halo color. It must leave room
   // for the 1-pixel border around the text.
-  CanvasSkia text_canvas(w + 2, h + 2, true);
+  gfx::Rect rect(gfx::Point(), gfx::Size(w + 2, h + 2));
+  CanvasSkia text_canvas(rect.width(), rect.height(), true);
   SkPaint bkgnd_paint;
   bkgnd_paint.setColor(halo_color);
-  text_canvas.DrawRectInt(0, 0, w + 2, h + 2, bkgnd_paint);
+  text_canvas.DrawRect(rect, bkgnd_paint);
 
   // Draw the text into the temporary buffer. This will have correct
   // ClearType since the background color is the same as the halo color.
@@ -428,7 +429,8 @@ void CanvasSkia::DrawStringWithHalo(const string16& text,
   // opaque. We have to do this first since pixelShouldGetHalo will check for
   // 0 to see if a pixel has been modified to transparent, and black text that
   // Windows draw will look transparent to it!
-  skia::MakeOpaque(text_canvas.sk_canvas(), 0, 0, w + 2, h + 2);
+  skia::MakeOpaque(text_canvas.sk_canvas(), rect.x(), rect.y(), rect.width(),
+                   rect.height());
 
   uint32_t halo_premul = SkPreMultiplyColor(halo_color);
   SkBitmap& text_bitmap = const_cast<SkBitmap&>(
