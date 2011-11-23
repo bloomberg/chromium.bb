@@ -392,6 +392,14 @@
    fun:base::StatisticsRecorder::FindHistogram
    fun:base::*Histogram::FactoryGet
 }
+{
+  bug_79050 Test to detect read contention & benign race
+  ThreadSanitizer:Race
+  fun:Replace_memcpy
+  fun:memcpy
+  fun:::MockDataFetcher::GetGamepadData
+  fun:gamepad::Provider::DoPoll
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 ############################
