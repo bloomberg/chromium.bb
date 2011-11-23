@@ -117,30 +117,6 @@ using content::BrowserThread;
 
 namespace {
 
-// SetAsDefaultBrowserTask ----------------------------------------------------
-
-class SetAsDefaultBrowserTask : public Task {
- public:
-  SetAsDefaultBrowserTask();
-  virtual ~SetAsDefaultBrowserTask();
-
- private:
-  virtual void Run();
-
-  DISALLOW_COPY_AND_ASSIGN(SetAsDefaultBrowserTask);
-};
-
-SetAsDefaultBrowserTask::SetAsDefaultBrowserTask() {
-}
-
-SetAsDefaultBrowserTask::~SetAsDefaultBrowserTask() {
-}
-
-void SetAsDefaultBrowserTask::Run() {
-  ShellIntegration::SetAsDefaultBrowser();
-}
-
-
 // DefaultBrowserInfoBarDelegate ----------------------------------------------
 
 // The delegate for the infobar shown when Chrome is not the default browser.
@@ -228,8 +204,10 @@ bool DefaultBrowserInfoBarDelegate::NeedElevation(InfoBarButton button) const {
 bool DefaultBrowserInfoBarDelegate::Accept() {
   action_taken_ = true;
   UMA_HISTOGRAM_COUNTS("DefaultBrowserWarning.SetAsDefault", 1);
-  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-      new SetAsDefaultBrowserTask());
+  g_browser_process->file_thread()->message_loop()->PostTask(
+      FROM_HERE,
+      base::IgnoreReturn<bool>(
+          base::Bind(&ShellIntegration::SetAsDefaultBrowser)));
   return true;
 }
 
