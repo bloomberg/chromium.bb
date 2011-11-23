@@ -2092,8 +2092,17 @@
           ],
         }],
         ['use_aura==1', {
+          'dependencies': [
+            '../ui/aura/aura.gyp:test_support_aura',
+          ],
           'sources/': [
             ['exclude', '^browser/automation/automation_provider_unittest.cc'],
+            ['exclude', '^browser/accessibility/browser_accessibility_win_unittest.cc'],
+            ['exclude', '^browser/ui/views/extensions/browser_action_drag_data_unittest.cc'],
+            ['exclude', '^browser/ui/views/select_file_dialog_win_unittest.cc'],
+            ['exclude', '^browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc'],
+            ['exclude', '^browser/ui/panels/auto_hiding_desktop_bar_win_unittest.cc'],
+            ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
           ],
         }],
         ['touchui==0', {

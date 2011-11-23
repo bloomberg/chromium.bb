@@ -43,6 +43,17 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
+#if defined(USE_AURA) && defined(OS_WIN)
+// http://crbug.com/105200
+#define MAYBE_StartDownload DISABLED_StartDownload
+#define MAYBE_DownloadOverwriteTest DISABLED_DownloadOverwriteTest
+#define MAYBE_DownloadRemoveTest DISABLED_DownloadRemoveTest
+#else
+#define MAYBE_StartDownload StartDownload
+#define MAYBE_DownloadOverwriteTest DownloadOverwriteTest
+#define MAYBE_DownloadRemoveTest DownloadRemoveTest
+#endif
+
 using content::BrowserThread;
 
 DownloadId::Domain kValidIdDomain = "valid DownloadId::Domain";
@@ -348,7 +359,7 @@ class ItemObserver : public DownloadItem::Observer {
 
 }  // namespace
 
-TEST_F(DownloadManagerTest, StartDownload) {
+TEST_F(DownloadManagerTest, MAYBE_StartDownload) {
   content::TestBrowserThread io_thread(BrowserThread::IO, &message_loop_);
   PrefService* prefs = profile_->GetPrefs();
   prefs->SetFilePath(prefs::kDownloadDefaultDirectory, FilePath());
@@ -681,7 +692,7 @@ TEST_F(DownloadManagerTest, DownloadCancelTest) {
   EXPECT_FALSE(file_util::PathExists(cr_path));
 }
 
-TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
+TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   using ::testing::_;
   using ::testing::CreateFunctor;
   using ::testing::Invoke;
@@ -771,7 +782,7 @@ TEST_F(DownloadManagerTest, DownloadOverwriteTest) {
   EXPECT_EQ(std::string(kTestData), file_contents);
 }
 
-TEST_F(DownloadManagerTest, DownloadRemoveTest) {
+TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   using ::testing::_;
   using ::testing::CreateFunctor;
   using ::testing::Invoke;

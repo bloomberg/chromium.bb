@@ -18,6 +18,25 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 
+// Test crashes on Aura due to initiator tab's native view having no parent.
+// http://crbug.com/104284
+#if defined(USE_AURA)
+#define MAYBE_StickyMarginsCustom DISABLED_StickyMarginsCustom
+#define MAYBE_StickyMarginsDefault DISABLED_StickyMarginsDefault
+#define MAYBE_StickyMarginsCustomThenDefault \
+    DISABLED_StickyMarginsCustomThenDefault
+#define MAYBE_GetLastUsedMarginSettingsCustom \
+    DISABLED_GetLastUsedMarginSettingsCustom
+#define MAYBE_GetLastUsedMarginSettingsDefault \
+    DISABLED_GetLastUsedMarginSettingsDefault
+#else
+#define MAYBE_StickyMarginsCustom StickyMarginsCustom
+#define MAYBE_StickyMarginsDefault StickyMarginsDefault
+#define MAYBE_StickyMarginsCustomThenDefault StickyMarginsCustomThenDefault
+#define MAYBE_GetLastUsedMarginSettingsCustom GetLastUsedMarginSettingsCustom
+#define MAYBE_GetLastUsedMarginSettingsDefault GetLastUsedMarginSettingsDefault
+#endif
+
 namespace {
 
 DictionaryValue* GetCustomMarginsDictionary(
@@ -149,15 +168,6 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
   }
 };
 
-// Test crashs on TouchUI due to initiator tab's native view having no parent.
-// http://crbug.com/104284
-// Crashes on Aura due to no FocusManager.
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#define MAYBE_StickyMarginsCustom DISABLED_StickyMarginsCustom
-#else
-#define MAYBE_StickyMarginsCustom StickyMarginsCustom
-#endif
 // Tests that margin settings are saved correctly when printing with custom
 // margins selected.
 TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustom) {
@@ -177,13 +187,6 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustom) {
   CheckCustomMargins(kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
 }
 
-// http://crbug.com/104284
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#define MAYBE_StickyMarginsDefault DISABLED_StickyMarginsDefault
-#else
-#define MAYBE_StickyMarginsDefault StickyMarginsDefault
-#endif
 // Tests that margin settings are saved correctly when printing with default
 // margins selected.
 TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsDefault) {
@@ -197,14 +200,6 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsDefault) {
   ASSERT_FALSE(PrintPreviewHandler::last_used_page_size_margins_);
 }
 
-// http://crbug.com/104284
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#define MAYBE_StickyMarginsCustomThenDefault \
-    DISABLED_StickyMarginsCustomThenDefault
-#else
-#define MAYBE_StickyMarginsCustomThenDefault StickyMarginsCustomThenDefault
-#endif
 // Tests that margin settings are saved correctly when printing with custom
 // margins selected and then again with default margins selected.
 TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustomThenDefault) {
@@ -232,14 +227,6 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustomThenDefault) {
   CheckCustomMargins(kMarginTop, kMarginRight, kMarginBottom, kMarginLeft);
 }
 
-// http://crbug.com/104284
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#define MAYBE_GetLastUsedMarginSettingsCustom \
-    DISABLED_GetLastUsedMarginSettingsCustom
-#else
-#define MAYBE_GetLastUsedMarginSettingsCustom GetLastUsedMarginSettingsCustom
-#endif
 // Tests that margin settings are retrieved correctly after printing with custom
 // margins.
 TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsCustom) {
@@ -270,14 +257,6 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsCustom) {
   EXPECT_EQ(kMarginLeft, margin_value);
 }
 
-// http://crbug.com/104284
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#define MAYBE_GetLastUsedMarginSettingsDefault \
-    DISABLED_GetLastUsedMarginSettingsDefault
-#else
-#define MAYBE_GetLastUsedMarginSettingsDefault GetLastUsedMarginSettingsDefault
-#endif
 // Tests that margin settings are retrieved correctly after printing with
 // default margins.
 TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsDefault) {

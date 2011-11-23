@@ -17,6 +17,13 @@
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_AURA) && defined(OS_WIN)
+// http://crbug.com/105200
+#define MAYBE_ExpectAsynchronousListenerCall DISABLED_ExpectAsynchronousListenerCall
+#else
+#define MAYBE_ExpectAsynchronousListenerCall ExpectAsynchronousListenerCall
+#endif
+
 using content::BrowserThread;
 
 class FileSelectionUser : public SelectFileDialog::Listener {
@@ -74,7 +81,7 @@ typedef testing::Test FileSelectionDialogTest;
 
 // Tests if SelectFileDialog::SelectFile returns asynchronously with
 // file-selection dialogs disabled by policy.
-TEST_F(FileSelectionDialogTest, ExpectAsynchronousListenerCall) {
+TEST_F(FileSelectionDialogTest, MAYBE_ExpectAsynchronousListenerCall) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &message_loop);
 

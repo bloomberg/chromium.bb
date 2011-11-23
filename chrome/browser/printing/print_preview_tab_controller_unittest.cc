@@ -17,17 +17,20 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
 
-typedef BrowserWithTestWindowTest PrintPreviewTabControllerUnitTest;
-
-// Test crashs on TouchUI due to initiator tab's native view having no parent.
+// Test crashes on Aura due to initiator tab's native view having no parent.
 // http://crbug.com/104284
-// Crashes on Aura due to no FocusManager.
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
 #define MAYBE_GetOrCreatePreviewTab DISABLED_GetOrCreatePreviewTab
+#define MAYBE_MultiplePreviewTabs DISABLED_MultiplePreviewTabs
+#define MAYBE_ClearInitiatorTabDetails DISABLED_ClearInitiatorTabDetails
 #else
 #define MAYBE_GetOrCreatePreviewTab GetOrCreatePreviewTab
+#define MAYBE_MultiplePreviewTabs MultiplePreviewTabs
+#define MAYBE_ClearInitiatorTabDetails ClearInitiatorTabDetails
 #endif
+
+typedef BrowserWithTestWindowTest PrintPreviewTabControllerUnitTest;
+
 // Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
   ASSERT_TRUE(browser());
@@ -68,13 +71,6 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
   EXPECT_EQ(new_preview_tab, preview_tab);
 }
 
-// http://crbug.com/104284
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#define MAYBE_MultiplePreviewTabs DISABLED_MultiplePreviewTabs
-#else
-#define MAYBE_MultiplePreviewTabs MultiplePreviewTabs
-#endif
 // To show multiple print preview tabs exist in the same browser for
 // different initiator tabs. If preview tab already exists for an initiator, it
 // gets focused.
@@ -138,13 +134,6 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
   EXPECT_EQ(tab_1_index, browser()->active_index());
 }
 
-// http://crbug.com/104284
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#define MAYBE_ClearInitiatorTabDetails DISABLED_ClearInitiatorTabDetails
-#else
-#define MAYBE_ClearInitiatorTabDetails ClearInitiatorTabDetails
-#endif
 // Clear the initiator tab details associated with preview tab.
 TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_ClearInitiatorTabDetails) {
   ASSERT_TRUE(browser());

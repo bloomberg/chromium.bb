@@ -31,7 +31,7 @@
 #include <glib.h>
 #endif
 
-#if defined(TOUCH_UI)
+#if defined(USE_AURA)
 // This test fails http://crbug.com/84854, and is very flaky on CrOS and
 // somewhat flaky on other Linux.
 #define MAYBE_ForceShutdown FAILS_ForceShutdown

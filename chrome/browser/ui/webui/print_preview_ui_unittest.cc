@@ -31,14 +31,16 @@ size_t GetConstrainedWindowCount(TabContentsWrapper* tab) {
 
 typedef BrowserWithTestWindowTest PrintPreviewUIUnitTest;
 
-// Test crashs on TouchUI due to initiator tab's native view having no parent.
+// Test crashes on Aura due to initiator tab's native view having no parent.
 // http://crbug.com/104284
-// Crashes on Aura due to no FocusManager.
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
+#if defined(USE_AURA)
+#define MAYBE_PrintPreviewDraftPages DISABLED_PrintPreviewDraftPages
 #define MAYBE_PrintPreviewData DISABLED_PrintPreviewData
+#define MAYBE_GetCurrentPrintPreviewStatus DISABLED_GetCurrentPrintPreviewStatus
 #else
 #define MAYBE_PrintPreviewData PrintPreviewData
+#define MAYBE_PrintPreviewDraftPages PrintPreviewDraftPages
+#define MAYBE_GetCurrentPrintPreviewStatus GetCurrentPrintPreviewStatus
 #endif
 // Create/Get a preview tab for initiator tab.
 TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewData) {
@@ -101,13 +103,6 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewData) {
   EXPECT_EQ(NULL, data.get());
 }
 
-// http://crbug.com/104284
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#define MAYBE_PrintPreviewDraftPages DISABLED_PrintPreviewDraftPages
-#else
-#define MAYBE_PrintPreviewDraftPages PrintPreviewDraftPages
-#endif
 // Set and get the individual draft pages.
 TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewDraftPages) {
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
@@ -177,13 +172,6 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewDraftPages) {
   EXPECT_EQ(NULL, data.get());
 }
 
-// http://crbug.com/104284
-// http://crbug.com/105186
-#if defined(TOUCH_UI) || defined(USE_AURA)
-#define MAYBE_GetCurrentPrintPreviewStatus DISABLED_GetCurrentPrintPreviewStatus
-#else
-#define MAYBE_GetCurrentPrintPreviewStatus GetCurrentPrintPreviewStatus
-#endif
 // Test the browser-side print preview cancellation functionality.
 TEST_F(PrintPreviewUIUnitTest, MAYBE_GetCurrentPrintPreviewStatus) {
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_CHROMEOS)
