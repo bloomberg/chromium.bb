@@ -20,7 +20,9 @@ typedef BrowserWithTestWindowTest PrintPreviewTabControllerUnitTest;
 
 // Test crashs on TouchUI due to initiator tab's native view having no parent.
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// Crashes on Aura due to no FocusManager.
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_GetOrCreatePreviewTab DISABLED_GetOrCreatePreviewTab
 #else
 #define MAYBE_GetOrCreatePreviewTab GetOrCreatePreviewTab
@@ -65,7 +67,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_GetOrCreatePreviewTab) {
 }
 
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_MultiplePreviewTabs DISABLED_MultiplePreviewTabs
 #else
 #define MAYBE_MultiplePreviewTabs MultiplePreviewTabs
@@ -132,7 +135,8 @@ TEST_F(PrintPreviewTabControllerUnitTest, MAYBE_MultiplePreviewTabs) {
 }
 
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_ClearInitiatorTabDetails DISABLED_ClearInitiatorTabDetails
 #else
 #define MAYBE_ClearInitiatorTabDetails ClearInitiatorTabDetails

@@ -904,12 +904,7 @@
             }],
           ],
         }],
-        ['chromeos==1', {
-          'sources!': [
-              # TODO(thestig): Enable when print preview is ready for CrOS.
-             'browser/ui/webui/print_preview_ui_uitest.cc',
-          ],
-        }, { # else: chromeos == 0
+        ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/ui/webui/options/chromeos/'],
           ],
@@ -2149,9 +2144,6 @@
             ['exclude', '^browser/password_manager/native_backend_kwallet_x_unittest.cc'],
             ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
             ['exclude', '^../content/browser/geolocation/wifi_data_provider_linux_unittest.cc'],
-            # TODO(thestig) Enable PrintPreviewUI tests on CrOS when
-            # print preview is enabled on CrOS.
-            ['exclude', '^browser/ui/webui/print_preview_ui_unittest.cc'],
           ],
           'conditions': [
             ['use_aura==1', {
@@ -2769,7 +2761,7 @@
         '../content/browser/renderer_host/render_view_host_manager_browsertest.cc',
         '../content/browser/renderer_host/resource_dispatcher_host_browsertest.cc',
         '../content/browser/speech/speech_input_browsertest.cc',
-	'../content/browser/webkit_browsertest.cc',
+        '../content/browser/webkit_browsertest.cc',
         '../content/renderer/render_view_browsertest.cc',
         '../content/renderer/render_view_browsertest_mac.mm',
         '../content/test/render_widget_browsertest.cc',

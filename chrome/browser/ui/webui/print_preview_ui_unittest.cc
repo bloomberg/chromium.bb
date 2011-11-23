@@ -32,7 +32,9 @@ typedef BrowserWithTestWindowTest PrintPreviewUIUnitTest;
 
 // Test crashs on TouchUI due to initiator tab's native view having no parent.
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// Crashes on Aura due to no FocusManager.
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_PrintPreviewData DISABLED_PrintPreviewData
 #else
 #define MAYBE_PrintPreviewData PrintPreviewData
@@ -98,7 +100,8 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewData) {
 }
 
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_PrintPreviewDraftPages DISABLED_PrintPreviewDraftPages
 #else
 #define MAYBE_PrintPreviewDraftPages PrintPreviewDraftPages
@@ -172,7 +175,8 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewDraftPages) {
 }
 
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_GetCurrentPrintPreviewStatus DISABLED_GetCurrentPrintPreviewStatus
 #else
 #define MAYBE_GetCurrentPrintPreviewStatus GetCurrentPrintPreviewStatus

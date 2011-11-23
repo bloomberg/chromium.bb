@@ -149,7 +149,9 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
 
 // Test crashs on TouchUI due to initiator tab's native view having no parent.
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// Crashes on Aura due to no FocusManager.
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_StickyMarginsCustom DISABLED_StickyMarginsCustom
 #else
 #define MAYBE_StickyMarginsCustom StickyMarginsCustom
@@ -174,7 +176,8 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustom) {
 }
 
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_StickyMarginsDefault DISABLED_StickyMarginsDefault
 #else
 #define MAYBE_StickyMarginsDefault StickyMarginsDefault
@@ -193,7 +196,8 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsDefault) {
 }
 
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_StickyMarginsCustomThenDefault \
     DISABLED_StickyMarginsCustomThenDefault
 #else
@@ -227,7 +231,8 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_StickyMarginsCustomThenDefault) {
 }
 
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_GetLastUsedMarginSettingsCustom \
     DISABLED_GetLastUsedMarginSettingsCustom
 #else
@@ -264,7 +269,8 @@ TEST_F(PrintPreviewHandlerTest, MAYBE_GetLastUsedMarginSettingsCustom) {
 }
 
 // http://crbug.com/104284
-#if defined(TOUCH_UI)
+// http://crbug.com/105186
+#if defined(TOUCH_UI) || defined(USE_AURA)
 #define MAYBE_GetLastUsedMarginSettingsDefault \
     DISABLED_GetLastUsedMarginSettingsDefault
 #else
