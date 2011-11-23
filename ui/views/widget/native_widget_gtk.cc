@@ -42,14 +42,8 @@
 #include "ui/views/widget/gtk_views_fixed.h"
 #include "ui/views/widget/gtk_views_window.h"
 #include "ui/views/widget/root_view.h"
-#include "ui/views/widget/widget_delegate.h"
-
-#if defined(TOUCH_UI)
-#include "ui/base/touch/touch_factory.h"
-#include "ui/views/widget/tooltip_manager_views.h"
-#else
 #include "ui/views/widget/tooltip_manager_gtk.h"
-#endif
+#include "ui/views/widget/widget_delegate.h"
 
 #if defined(HAVE_IBUS)
 #include "ui/views/ime/input_method_ibus.h"
@@ -263,15 +257,7 @@ class NativeWidgetGtk::DropObserver : public MessageLoopForUI::Observer {
   static DropObserver* GetInstance() {
     return Singleton<DropObserver>::get();
   }
-#if defined(TOUCH_UI)
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE {
-    return base::EVENT_CONTINUE;
-  }
 
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE {
-  }
-#else
   virtual void WillProcessEvent(GdkEvent* event) {
     if (event->type == GDK_DROP_START) {
       NativeWidgetGtk* widget = GetNativeWidgetGtkForEvent(event);
@@ -282,7 +268,6 @@ class NativeWidgetGtk::DropObserver : public MessageLoopForUI::Observer {
 
   virtual void DidProcessEvent(GdkEvent* event) {
   }
-#endif
 
  private:
   NativeWidgetGtk* GetNativeWidgetGtkForEvent(GdkEvent* event) {
@@ -390,11 +375,6 @@ NativeWidgetGtk::NativeWidgetGtk(internal::NativeWidgetDelegate* delegate)
       grab_notify_signal_id_(0),
       is_menu_(false),
       signal_registrar_(new ui::GtkSignalRegistrar) {
-#if defined(TOUCH_UI)
-  // Make sure the touch factory is initialized so that it can setup XInput2 for
-  // the widget.
-  ui::TouchFactory::GetInstance();
-#endif
   static bool installed_message_loop_observer = false;
   if (!installed_message_loop_observer) {
     installed_message_loop_observer = true;
@@ -803,15 +783,7 @@ void NativeWidgetGtk::InitNativeWidget(const Widget::InitParams& params) {
   ui::GObjectDestructorFILO::GetInstance()->Connect(
       G_OBJECT(widget_), &OnDestroyedThunk, this);
 
-#if defined(TOUCH_UI)
-  if (params.type != Widget::InitParams::TYPE_TOOLTIP) {
-    views::TooltipManagerViews* manager = new views::TooltipManagerViews(
-        static_cast<internal::RootView*>(GetWidget()->GetRootView()));
-    tooltip_manager_.reset(manager);
-  }
-#else
   tooltip_manager_.reset(new TooltipManagerGtk(this));
-#endif
 
   // Register for tooltips.
   g_object_set(G_OBJECT(window_contents_), "has-tooltip", TRUE, NULL);
@@ -951,16 +923,6 @@ void NativeWidgetGtk::SetMouseCapture() {
     // that case.
     DCHECK_EQ(GDK_GRAB_SUCCESS, pointer_grab_status);
     has_pointer_grab_ = pointer_grab_status == GDK_GRAB_SUCCESS;
-
-#if defined(TOUCH_UI)
-    ::Window window = GDK_WINDOW_XID(window_contents()->window);
-    Display* display = GDK_WINDOW_XDISPLAY(window_contents()->window);
-    bool xi2grab =
-        ui::TouchFactory::GetInstance()->GrabTouchDevices(display, window);
-    // xi2grab should always succeed if has_pointer_grab_ succeeded.
-    DCHECK(xi2grab);
-    has_pointer_grab_ = has_pointer_grab_ && xi2grab;
-#endif
   }
 }
 
@@ -975,10 +937,6 @@ void NativeWidgetGtk::ReleaseMouseCapture() {
   if (has_pointer_grab_) {
     has_pointer_grab_ = false;
     gdk_pointer_ungrab(GDK_CURRENT_TIME);
-#if defined(TOUCH_UI)
-    ui::TouchFactory::GetInstance()->UngrabTouchDevices(
-        GDK_WINDOW_XDISPLAY(window_contents()->window));
-#endif
   }
   if (delegate_lost_capture)
     delegate_->OnMouseCaptureLost();
@@ -1236,17 +1194,7 @@ void NativeWidgetGtk::SetAlwaysOnTop(bool on_top) {
 }
 
 void NativeWidgetGtk::Maximize() {
-#if defined(TOUCH_UI)
-  // There may not be a window manager. So maximize ourselves: move to the
-  // top-left corner and resize to the entire bounds of the screen.
-  gfx::Rect screen = gfx::Screen::GetMonitorAreaNearestWindow(GetNativeView());
-  gtk_window_move(GTK_WINDOW(GetNativeWindow()), screen.x(), screen.y());
-  // TODO(backer): Remove this driver bug workaround once it is fixed.
-  gtk_window_resize(GTK_WINDOW(GetNativeWindow()),
-                    screen.width() - 1, screen.height());
-#else
   gtk_window_maximize(GetNativeWindow());
-#endif
 }
 
 void NativeWidgetGtk::Minimize() {
@@ -1320,10 +1268,6 @@ void NativeWidgetGtk::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void NativeWidgetGtk::SetCursor(gfx::NativeCursor cursor) {
-#if defined(TOUCH_UI)
-  if (!ui::TouchFactory::GetInstance()->is_cursor_visible())
-    cursor = gfx::GetCursor(GDK_BLANK_CURSOR);
-#endif
   // |window_contents_| is placed on top of |widget_|. So the cursor needs to be
   // set on |window_contents_| instead of |widget_|.
   if (window_contents_)
@@ -1716,12 +1660,8 @@ gboolean NativeWidgetGtk::OnQueryTooltip(GtkWidget* widget,
                                          gint y,
                                          gboolean keyboard_mode,
                                          GtkTooltip* tooltip) {
-#if defined(TOUCH_UI)
-  return false; // Tell GTK not to draw tooltips as we draw tooltips in views
-#else
   return static_cast<TooltipManagerGtk*>(tooltip_manager_.get())->
       ShowTooltip(x, y, keyboard_mode, tooltip);
-#endif
 }
 
 gboolean NativeWidgetGtk::OnVisibilityNotify(GtkWidget* widget,
@@ -1756,10 +1696,6 @@ gboolean NativeWidgetGtk::OnGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
   }
   ReleaseMouseCapture();
 
-#if defined(TOUCH_UI)
-  ui::TouchFactory::GetInstance()->UngrabTouchDevices(
-      GDK_WINDOW_XDISPLAY(window_contents()->window));
-#endif
   return false;  // To let other widgets get the event.
 }
 
@@ -1797,16 +1733,6 @@ void NativeWidgetGtk::OnShow(GtkWidget* widget) {
 }
 
 void NativeWidgetGtk::OnMap(GtkWidget* widget) {
-#if defined(TOUCH_UI)
-  // Force an expose event to trigger OnPaint for touch. This is
-  // a workaround for a bug that X Expose event does not trigger
-  // Gdk's expose signal. This happens when you try to open views menu
-  // while a virtual keyboard gets kicked in or out. This seems to be
-  // a bug in message_pump_x.cc as we do get X Expose event but
-  // it doesn't trigger gtk's expose signal. We're not going to fix this
-  // as we're removing gtk and migrating to new compositor.
-  gdk_window_process_all_updates();
-#endif
 }
 
 void NativeWidgetGtk::OnHide(GtkWidget* widget) {
