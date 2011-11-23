@@ -9,7 +9,7 @@ vars = {
 
 deps = {
     'base':
-        Var('git_url') + '/chromium/src/base.git@4583637714ec8a6425cfc46171e7135d4285591e',
+        Var('git_url') + '/chromium/src/base.git@3203e181d57c61d15717efc973d5f6b19d6143fb',
     'build':
         Var('git_url') + '/chromium/src/build.git@0fff30ce7f7f927fbea65efb6059afbbbe4e9ea2',
     'chrome/test/pyautolib':
@@ -21,7 +21,7 @@ deps = {
     'net/tools/testserver':
         Var('git_url') + '/chromium/src/net/tools/testserver.git@6b3c1aa2a56486f685cd0e5472a54c818cef8654',
     'ppapi':
-        Var('git_url') + '/chromium/src/ppapi.git@7a79a1fc9ed8f84561ca9d3df1882805dc785391',
+        Var('git_url') + '/chromium/src/ppapi.git@9f3e019194bbfcb37ea2acd6c780d24c9b664051',
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@a2965825b1953c7b8ad292f726eb5c3f2659d5d3',
     'third_party':
@@ -49,11 +49,11 @@ deps = {
     'third_party/tlslite':
         Var('git_url') + '/chromium/src/third_party/tlslite.git@43d97b2c5a7b640e0909bfa83124055180fde4cd',
     'tools/clang':
-        Var('git_url') + '/chromium/src/tools/clang.git@1ced74b6b283a6ced65c8ae5b1cf5407604526d2',
+        Var('git_url') + '/chromium/src/tools/clang.git@b65dd49380b5c724e8f53cb1b77b621db02a04a0',
     'tools/gyp':
         Var('git_url') + '/external/gyp.git@9a04900954d1a571238c4feacc916c2a58cf862a',
     'tools/valgrind':
-        Var('git_url') + '/chromium/src/tools/valgrind.git@1e59b3e9118e6dfa0804aad104b51f437729b01c',
+        Var('git_url') + '/chromium/src/tools/valgrind.git@6cef3e96f6a66ea8caf54f83d19dfd6fc2ecda61',
 }
 
 deps_os = {
