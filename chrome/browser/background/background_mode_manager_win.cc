@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/base_paths.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/logging.h"
@@ -22,22 +23,12 @@ using content::BrowserThread;
 
 namespace {
 
-class DisableLaunchOnStartupTask : public Task {
- public:
-  virtual void Run();
-};
-
-class EnableLaunchOnStartupTask : public Task {
- public:
-  virtual void Run();
-};
-
 const HKEY kBackgroundModeRegistryRootKey = HKEY_CURRENT_USER;
 const wchar_t* kBackgroundModeRegistrySubkey =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 const wchar_t* kBackgroundModeRegistryKeyName = L"chromium";
 
-void DisableLaunchOnStartupTask::Run() {
+void DisableLaunchOnStartupCallback() {
   const wchar_t* key_name = kBackgroundModeRegistryKeyName;
   base::win::RegKey read_key(kBackgroundModeRegistryRootKey,
                              kBackgroundModeRegistrySubkey, KEY_READ);
@@ -50,7 +41,7 @@ void DisableLaunchOnStartupTask::Run() {
   }
 }
 
-void EnableLaunchOnStartupTask::Run() {
+void EnableLaunchOnStartupCallback() {
   // TODO(rickcam): Bug 53597: Make RegKey mockable.
   // TODO(rickcam): Bug 53600: Use distinct registry keys per flavor+profile.
   const wchar_t* key_name = kBackgroundModeRegistryKeyName;
@@ -83,10 +74,10 @@ void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
     return;
   if (should_launch) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            new EnableLaunchOnStartupTask());
+                            base::Bind(EnableLaunchOnStartupCallback));
   } else {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            new DisableLaunchOnStartupTask());
+                            base::Bind(DisableLaunchOnStartupCallback));
   }
 }
 

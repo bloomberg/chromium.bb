@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -25,40 +26,8 @@ using content::BrowserThread;
 
 namespace {
 
-class DisableLaunchOnStartupTask : public Task {
- public:
-  virtual void Run();
-};
-
-class EnableLaunchOnStartupTask : public Task {
- public:
-  virtual void Run();
-};
-
-}  // namespace
-
-void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
-  // This functionality is only defined for default profile, currently.
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
-    return;
-  if (should_launch) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            new EnableLaunchOnStartupTask());
-  } else {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            new DisableLaunchOnStartupTask());
-  }
-}
-
-void DisableLaunchOnStartupTask::Run() {
-  scoped_ptr<base::Environment> environment(base::Environment::Create());
-  if (!AutoStart::Remove(ShellIntegration::GetDesktopName(environment.get()))) {
-    NOTREACHED() << "Failed to deregister launch on login.";
-  }
-}
-
 // TODO(rickcam): Bug 56280: Share implementation with ShellIntegration
-void EnableLaunchOnStartupTask::Run() {
+void EnableLaunchOnStartupCallback() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<base::Environment> environment(base::Environment::Create());
   scoped_ptr<chrome::VersionInfo> version_info(new chrome::VersionInfo());
@@ -77,6 +46,28 @@ void EnableLaunchOnStartupTask::Run() {
           command_line,
           false)) {
     NOTREACHED() << "Failed to register launch on login.";
+  }
+}
+
+void DisableLaunchOnStartupCallback() {
+  scoped_ptr<base::Environment> environment(base::Environment::Create());
+  if (!AutoStart::Remove(ShellIntegration::GetDesktopName(environment.get()))) {
+    NOTREACHED() << "Failed to deregister launch on login.";
+  }
+}
+
+}  // namespace
+
+void BackgroundModeManager::EnableLaunchOnStartup(bool should_launch) {
+  // This functionality is only defined for default profile, currently.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kUserDataDir))
+    return;
+  if (should_launch) {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(EnableLaunchOnStartupCallback));
+  } else {
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(DisableLaunchOnStartupCallback));
   }
 }
 
