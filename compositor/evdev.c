@@ -207,16 +207,13 @@ static void
 evdev_flush_motion(struct wl_input_device *device, uint32_t time,
 		   struct evdev_motion_accumulator *accum)
 {
-	if (accum->type == EVDEV_RELATIVE_MOTION) {
-		accum->dx += device->x;
-		accum->dy += device->y;
-		notify_motion(device, time, accum->dx, accum->dy);
-		accum->dx = accum->dy = 0;
-	}
+	if (accum->type == EVDEV_RELATIVE_MOTION)
+		notify_motion(device, time,
+			      device->x + accum->dx, device->y + accum->dy);
 	if (accum->type == EVDEV_ABSOLUTE_MOTION)
 		notify_motion(device, time, accum->x, accum->y);
 
-	accum->type = 0;
+	memset(accum, 0, sizeof *accum);
 }
 
 static int
