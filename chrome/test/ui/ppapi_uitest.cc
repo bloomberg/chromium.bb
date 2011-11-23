@@ -12,6 +12,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
@@ -104,6 +105,16 @@ class PPAPITestBase : public UITest {
     ASSERT_TRUE(test_server.Start());
     std::string query = BuildQuery("files/test_case.html?", test_case);
     RunTestURL(test_server.GetURL(query));
+  }
+
+  void RunTestWithWebSocketServer(const std::string& test_case) {
+    FilePath websocket_root_dir;
+    ASSERT_TRUE(
+        PathService::Get(chrome::DIR_LAYOUT_TESTS, &websocket_root_dir));
+
+    ui_test_utils::TestWebSocketServer server;
+    ASSERT_TRUE(server.Start(websocket_root_dir));
+    RunTest(test_case);
   }
 
  private:
