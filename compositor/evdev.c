@@ -42,10 +42,22 @@ struct evdev_input_device {
 	struct wl_event_source *source;
 	struct wlsc_output *output;
 	char *devnode;
-	int tool;
 	int fd;
-	int min_x, max_x, min_y, max_y;
-	int is_touchpad, old_x_value, old_y_value, reset_x_value, reset_y_value;
+	struct {
+		int min_x, max_x, min_y, max_y;
+		int old_x, old_y, reset_x, reset_y;
+	} abs;
+	int is_touchpad;
+};
+
+/* event type flags */
+#define EVDEV_ABSOLUTE_MOTION	(1 << 0)
+#define EVDEV_RELATIVE_MOTION	(1 << 1)
+
+struct evdev_motion_accumulator {
+	int x, y;
+	int dx, dy;
+	int type; /* event type flags */
 };
 
 static inline void
@@ -64,11 +76,10 @@ evdev_process_key(struct evdev_input_device *device,
 	case BTN_TOOL_FINGER:
 	case BTN_TOOL_MOUSE:
 	case BTN_TOOL_LENS:
-		device->tool = e->value ? e->code : 0;
 		if (device->is_touchpad)
 		{
-			device->reset_x_value = 1;
-			device->reset_y_value = 1;
+			device->abs.reset_x = 1;
+			device->abs.reset_y = 1;
 		}
 		break;
 
@@ -98,67 +109,75 @@ evdev_process_key(struct evdev_input_device *device,
 
 static inline void
 evdev_process_absolute_motion(struct evdev_input_device *device,
-			struct input_event *e, int *x, int *y,
-			int *absolute_event)
+		struct input_event *e, struct evdev_motion_accumulator *accum)
 {
 	const int screen_width = device->output->current->width;
 	const int screen_height = device->output->current->height;
 
 	switch (e->code) {
 	case ABS_X:
-		*absolute_event = device->tool;
-		*x = (e->value - device->min_x) * screen_width /
-			(device->max_x - device->min_x) + device->output->x;
+		accum->x = (e->value - device->abs.min_x) * screen_width /
+			(device->abs.max_x - device->abs.min_x) +
+			device->output->x;
+		accum->type = EVDEV_ABSOLUTE_MOTION;
 		break;
 	case ABS_Y:
-		*absolute_event = device->tool;
-		*y = (e->value - device->min_y) * screen_height /
-			(device->max_y - device->min_y) + device->output->y;
+		accum->y = (e->value - device->abs.min_y) * screen_height /
+			(device->abs.max_y - device->abs.min_y) +
+			device->output->y;
+		accum->type = EVDEV_ABSOLUTE_MOTION;
 		break;
 	}
 }
 
 static inline void
 evdev_process_absolute_motion_touchpad(struct evdev_input_device *device,
-			struct input_event *e, int *dx, int *dy)
+		struct input_event *e, struct evdev_motion_accumulator *accum)
 {
 	/* FIXME: Make this configurable somehow. */
 	const int touchpad_speed = 700;
 
 	switch (e->code) {
 	case ABS_X:
-		e->value -= device->min_x;
-		if (device->reset_x_value)
-			device->reset_x_value = 0;
+		e->value -= device->abs.min_x;
+		if (device->abs.reset_x)
+			device->abs.reset_x = 0;
 		else {
-			*dx = (e->value - device->old_x_value) * touchpad_speed /
-				(device->max_x - device->min_x);
+			accum->dx = (e->value - device->abs.old_x) *
+				touchpad_speed /
+				(device->abs.max_x - device->abs.min_x);
 		}
-		device->old_x_value = e->value;
+		device->abs.old_x = e->value;
+		accum->type = EVDEV_RELATIVE_MOTION;
 		break;
 	case ABS_Y:
-		e->value -= device->min_y;
-		if (device->reset_y_value)
-			device->reset_y_value = 0;
+		e->value -= device->abs.min_y;
+		if (device->abs.reset_y)
+			device->abs.reset_y = 0;
 		else {
-			*dy = (e->value - device->old_y_value) * touchpad_speed /
+			accum->dy = (e->value - device->abs.old_y) *
+				touchpad_speed /
 				/* maybe use x size here to have the same scale? */
-				(device->max_y - device->min_y);
+				(device->abs.max_y - device->abs.min_y);
 		}
-		device->old_y_value = e->value;
+		device->abs.old_y = e->value;
+		accum->type = EVDEV_RELATIVE_MOTION;
 		break;
 	}
 }
 
 static inline void
-evdev_process_relative_motion(struct input_event *e, int *dx, int *dy)
+evdev_process_relative_motion(struct input_event *e,
+			      struct evdev_motion_accumulator *accum)
 {
 	switch (e->code) {
 	case REL_X:
-		*dx += e->value;
+		accum->dx += e->value;
+		accum->type = EVDEV_RELATIVE_MOTION;
 		break;
 	case REL_Y:
-		*dy += e->value;
+		accum->dy += e->value;
+		accum->type = EVDEV_RELATIVE_MOTION;
 		break;
 	}
 }
@@ -185,13 +204,19 @@ is_motion_event(struct input_event *e)
 }
 
 static void
-evdev_flush_motion(struct wl_input_device *device, uint32_t time, int x, int y,
-		   int dx, int dy, int absolute_event)
+evdev_flush_motion(struct wl_input_device *device, uint32_t time,
+		   struct evdev_motion_accumulator *accum)
 {
-	if (dx != 0 || dy != 0)
-		notify_motion(device, time, x + dx, y + dy);
-	if (absolute_event)
-		notify_motion(device, time, x, y);
+	if (accum->type == EVDEV_RELATIVE_MOTION) {
+		accum->dx += device->x;
+		accum->dy += device->y;
+		notify_motion(device, time, accum->dx, accum->dy);
+		accum->dx = accum->dy = 0;
+	}
+	if (accum->type == EVDEV_ABSOLUTE_MOTION)
+		notify_motion(device, time, accum->x, accum->y);
+
+	accum->type = 0;
 }
 
 static int
@@ -200,8 +225,8 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	struct wlsc_compositor *ec;
 	struct evdev_input_device *device = data;
 	struct input_event ev[8], *e, *end;
-	int len, dx, dy, absolute_event;
-	int x, y;
+	int len;
+	struct evdev_motion_accumulator accumulator;
 	uint32_t time;
 
 	ec = (struct wlsc_compositor *)
@@ -209,17 +234,13 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 	if (!ec->focus)
 		return 1;
 
-	dx = 0;
-	dy = 0;
-	absolute_event = 0;
-	x = device->master->base.input_device.x;
-	y = device->master->base.input_device.y;
-
 	len = read(fd, &ev, sizeof ev);
 	if (len < 0 || len % sizeof e[0] != 0) {
 		/* FIXME: call device_removed when errno is ENODEV. */;
 		return 1;
 	}
+
+	memset(&accumulator, 0, sizeof accumulator);
 
 	e = ev;
 	end = (void *) ev + len;
@@ -229,25 +250,20 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		/* we try to minimize the amount of notifications to be
 		 * forwarded to the compositor, so we accumulate motion
 		 * events and send as a bunch */
-		if (!is_motion_event(e)) {
+		if (!is_motion_event(e))
 			evdev_flush_motion(&device->master->base.input_device,
-					   time, x, y, dx, dy, absolute_event);
-			dx = 0;
-			dy = 0;
-			absolute_event = 0;
-		}
-			
+					   time, &accumulator);
 		switch (e->type) {
 		case EV_REL:
-			evdev_process_relative_motion(e, &dx, &dy);
+			evdev_process_relative_motion(e, &accumulator);
 			break;
 		case EV_ABS:
 			if (device->is_touchpad)
 				evdev_process_absolute_motion_touchpad(device,
-					e, &dx, &dy);
+					e, &accumulator);
 			else
 				evdev_process_absolute_motion(device, e,
-					&x, &y, &absolute_event);
+					&accumulator);
 			break;
 		case EV_KEY:
 			evdev_process_key(device, e, time);
@@ -255,8 +271,8 @@ evdev_input_device_data(int fd, uint32_t mask, void *data)
 		}
 	}
 
-	evdev_flush_motion(&device->master->base.input_device, time, x, y, dx,
-			   dy, absolute_event);
+	evdev_flush_motion(&device->master->base.input_device, time,
+			   &accumulator);
 
 	return 1;
 }
@@ -287,17 +303,18 @@ evdev_configure_device(struct evdev_input_device *device)
 	ioctl(device->fd, EVIOCGBIT(0, sizeof(ev_bits)), ev_bits);
 	if (TEST_BIT(ev_bits, EV_ABS)) {
 		has_abs = 1;
+
 		ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)),
 		      abs_bits);
 		if (TEST_BIT(abs_bits, ABS_X)) {
 			ioctl(device->fd, EVIOCGABS(ABS_X), &absinfo);
-			device->min_x = absinfo.minimum;
-			device->max_x = absinfo.maximum;
+			device->abs.min_x = absinfo.minimum;
+			device->abs.max_x = absinfo.maximum;
 		}
 		if (TEST_BIT(abs_bits, ABS_Y)) {
 			ioctl(device->fd, EVIOCGABS(ABS_Y), &absinfo);
-			device->min_y = absinfo.minimum;
-			device->max_y = absinfo.maximum;
+			device->abs.min_y = absinfo.minimum;
+			device->abs.max_y = absinfo.maximum;
 		}
 	}
 	if (TEST_BIT(ev_bits, EV_KEY)) {
@@ -334,7 +351,6 @@ evdev_input_device_create(struct evdev_input *master,
 	device->output =
 		container_of(ec->output_list.next, struct wlsc_output, link);
 
-	device->tool = 1;
 	device->master = master;
 	device->is_touchpad = 0;
 	device->devnode = strdup(path);
