@@ -155,6 +155,13 @@ remoting::DisconnectWindow* remoting::DisconnectWindow::Create() {
     [connectedToField_ setFrame:connectedToFrame];
     [disconnectButton_ setFrame:disconnectFrame];
   }
+
+  // Center the window at the bottom of the screen, above the dock (if present).
+  NSRect desktopRect = [[NSScreen mainScreen] visibleFrame];
+  NSRect windowRect = [[self window] frame];
+  CGFloat x = (NSWidth(desktopRect) - NSWidth(windowRect)) / 2;
+  CGFloat y = NSMinY(desktopRect);
+  [[self window] setFrameOrigin:NSMakePoint(x, y)];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
