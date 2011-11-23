@@ -142,29 +142,38 @@ using base::TimeDelta;
 using views::ColumnSet;
 using views::GridLayout;
 
+namespace {
 // The height of the status bubble.
-static const int kStatusBubbleHeight = 20;
+const int kStatusBubbleHeight = 20;
 // The name of a key to store on the window handle so that other code can
 // locate this object using just the handle.
-static const char* const kBrowserViewKey = "__BROWSER_VIEW__";
+const char* const kBrowserViewKey = "__BROWSER_VIEW__";
 // How frequently we check for hung plugin windows.
-static const int kDefaultHungPluginDetectFrequency = 2000;
+const int kDefaultHungPluginDetectFrequency = 2000;
 
 // Minimal height of devtools pane or content pane when devtools are docked
 // to the browser window.
 const int kMinDevToolsHeight = 50;
 const int kMinContentsHeight = 50;
 
+#if defined(USE_AURA) && defined(OS_CHROMEOS)
+// If a popup window is larger than this fraction of the screen, create a tab.
+const float kPopupMaxWidthFactor = 0.5;
+const float kPopupMaxHeightFactor = 0.6;
+#endif
+
 // How long do we wait before we consider a window hung (in ms).
-static const int kDefaultPluginMessageResponseTimeout = 30000;
+const int kDefaultPluginMessageResponseTimeout = 30000;
 // The number of milliseconds between loading animation frames.
-static const int kLoadingAnimationFrameTimeMs = 30;
+const int kLoadingAnimationFrameTimeMs = 30;
 // The amount of space we expect the window border to take up.
-static const int kWindowBorderWidth = 5;
+const int kWindowBorderWidth = 5;
 
 // How round the 'new tab' style bookmarks bar is.
-static const int kNewtabBarRoundness = 5;
+const int kNewtabBarRoundness = 5;
 // ------------
+
+}  // namespace
 
 // Returned from BrowserView::GetClassName.
 const char BrowserView::kViewClassName[] = "browser/ui/views/BrowserView";
@@ -1313,9 +1322,12 @@ WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
   // indicate a tab sized popup window.
   gfx::Size size = gfx::Screen::GetMonitorAreaNearestWindow(
       GetWidget()->GetNativeView()).size();
-  if (bounds.width() > size.width() ||
+  int max_width = size.width() * kPopupMaxWidthFactor;
+  int max_height = size.height() * kPopupMaxHeightFactor;
+
+  if (bounds.width() > max_width ||
       bounds.width() == 0 ||
-      bounds.height() > size.height() ||
+      bounds.height() > max_height ||
       bounds.height() == 0) {
     return NEW_FOREGROUND_TAB;
   }

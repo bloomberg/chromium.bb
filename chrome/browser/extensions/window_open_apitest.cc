@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
+#include "base/stringprintf.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
@@ -11,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "net/base/mock_host_resolver.h"
 
 // Disabled, http://crbug.com/64899.
@@ -28,6 +30,9 @@ void WaitForTabsAndPopups(Browser* browser,
                           int num_tabs,
                           int num_popups,
                           int num_panels) {
+  SCOPED_TRACE(
+      StringPrintf("WaitForTabsAndPopups tabs:%d, popups:%d, panels:%d",
+                   num_tabs, num_popups, num_panels));
   // We start with one tab and one browser already open.
   ++num_tabs;
   size_t num_browsers = static_cast<size_t>(num_popups + num_panels) + 1;
@@ -39,7 +44,7 @@ void WaitForTabsAndPopups(Browser* browser,
         browser->tab_count() == num_tabs)
       break;
 
-    MessageLoopForUI::current()->RunAllPending();
+    ui_test_utils::RunAllPendingInMessageLoop();
   }
 
   EXPECT_EQ(num_browsers, BrowserList::GetBrowserCount(browser->profile()));
