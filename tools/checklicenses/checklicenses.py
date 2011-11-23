@@ -169,7 +169,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'third_party/WebKit/Source/ThirdParty/ANGLE/src/compiler': [
+        # http://crbug.com/105232
         'GPL',
+        'GPL (v3 or later)',
     ],
     'third_party/WebKit/Source/JavaScriptCore/tests/mozilla': [
         'GPL',
@@ -185,7 +187,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     ],
 
     'third_party/angle/src/compiler': [
+        # http://crbug.com/105232
         'GPL',
+        'GPL (v3 or later)',
     ],
     'third_party/ashmem/ashmem.h': [  # http://crbug.com/98116
         'UNKNOWN',
