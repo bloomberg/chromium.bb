@@ -63,9 +63,11 @@ XIValuatorClassInfo* FindTPValuator(Display* display,
     XIValuatorClassInfo* v =
         reinterpret_cast<XIValuatorClassInfo*>(info->classes[i]);
 
-    const char* atom = XGetAtomName(display, v->label);
-    if (atom && strcmp(atom, atom_tp) == 0)
-      return v;
+    if (v->label) {
+      const char* atom = XGetAtomName(display, v->label);
+      if (atom && strcmp(atom, atom_tp) == 0)
+        return v;
+    }
   }
 
   return NULL;
@@ -270,7 +272,7 @@ bool TouchFactory::IsTouchDevice(unsigned deviceid) const {
       touch_device_lookup_[deviceid] : false;
 }
 
-bool TouchFactory::IsRealTouchDevice(unsigned int deviceid) const {
+bool TouchFactory::IsMultiTouchDevice(unsigned int deviceid) const {
   return (deviceid < touch_device_lookup_.size() &&
           touch_device_lookup_[deviceid]) ?
           touch_device_list_.find(deviceid)->second :
@@ -430,6 +432,19 @@ void TouchFactory::SetupValuator() {
         touch_param_max_[info->deviceid][j] = valuator->max;
       }
     }
+
+#if !defined(USE_XI_MT)
+    // In order to support multi-touch with XI2.0, we need both a slot_id and
+    // tracking_id valuator.  Without these we'll treat the device as a
+    // single-touch device (like a mouse).
+    if (valuator_lookup_[info->deviceid][TP_SLOT_ID] == -1 ||
+        valuator_lookup_[info->deviceid][TP_TRACKING_ID] == -1) {
+      DVLOG(1) << "Touch device " << info->deviceid <<
+        " does not provide enough information for multi-touch, treating as "
+        "a single-touch device.";
+      touch_device_list_[info->deviceid] = false;
+    }
+#endif
   }
 
   if (info_list)

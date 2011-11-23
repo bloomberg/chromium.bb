@@ -97,8 +97,11 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
 #else
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
 
-  // Check to see if we are treating a mouse-event as a touch-device.
-  if (!factory->IsRealTouchDevice(event->sourceid)) {
+  // If this device doesn't support multi-touch, then just use the normal
+  // pressed/release events to indicate touch start/end.  With multi-touch,
+  // these events are sent only for the first (pressed) or last (released)
+  // touch point, and so we must infer start/end from motion events.
+  if (!factory->IsMultiTouchDevice(event->sourceid)) {
     switch (event->evtype) {
       case XI_ButtonPress:
         return ui::ET_TOUCH_PRESSED;
@@ -311,9 +314,9 @@ int GetTouchId(const base::NativeEvent& xev) {
   float slot = 0;
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  if (!factory->IsRealTouchDevice(xievent->sourceid)) {
+  if (!factory->IsMultiTouchDevice(xievent->sourceid)) {
     // TODO(sad): Come up with a way to generate touch-ids for multi-touch
-    // events when touch-events are generated from a mouse.
+    // events when touch-events are generated from a single-touch device.
     return slot;
   }
 
