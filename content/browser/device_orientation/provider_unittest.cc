@@ -248,8 +248,13 @@ TEST_F(DeviceOrientationProviderTest, MultipleObserversPushTest) {
   provider_->RemoveObserver(checker_c.get());
 }
 
-// Flaky. See crbug.com/104950.
-TEST_F(DeviceOrientationProviderTest, FLAKY_ObserverNotRemoved) {
+#if defined(OS_LINUX)
+// Flakily DCHECKs on Linux. See crbug.com/104950.
+#define MAYBE_ObserverNotRemoved DISABLED_ObserverNotRemoved
+#else
+#define MAYBE_ObserverNotRemoved ObserverNotRemoved
+#endif
+TEST_F(DeviceOrientationProviderTest, MAYBE_ObserverNotRemoved) {
   scoped_refptr<MockOrientationFactory> orientation_factory(
       new MockOrientationFactory());
   Init(MockOrientationFactory::CreateDataFetcher);
