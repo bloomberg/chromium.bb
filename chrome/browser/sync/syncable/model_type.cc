@@ -229,7 +229,7 @@ bool ShouldMaintainPosition(ModelType model_type) {
   return model_type == BOOKMARKS;
 }
 
-std::string ModelTypeToString(ModelType model_type) {
+const char* ModelTypeToString(ModelType model_type) {
   // This is used in serialization routines as well as for displaying debug
   // information.  Do not attempt to change these string values unless you know
   // what you're doing.

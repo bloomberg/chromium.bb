@@ -1214,7 +1214,6 @@ class BaseTransaction {
   WriterTag writer_;
   Directory* const directory_;
   Directory::Kernel* const dirkernel_;  // for brevity
-  base::TimeTicks time_acquired_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BaseTransaction);

@@ -121,8 +121,9 @@ int GetExtensionFieldNumberFromModelType(ModelType model_type);
 
 // TODO(sync): The functions below badly need some cleanup.
 
-// Returns a string that represents the name of |model_type|.
-std::string ModelTypeToString(ModelType model_type);
+// Returns a pointer to a string with application lifetime that represents
+// the name of |model_type|.
+const char* ModelTypeToString(ModelType model_type);
 
 // Handles all model types, and not just real ones.
 //

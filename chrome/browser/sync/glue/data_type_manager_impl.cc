@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -293,6 +294,8 @@ void DataTypeManagerImpl::StartNextType() {
   // front of the list.
   if (!needs_start_.empty()) {
     VLOG(1) << "Starting " << needs_start_[0]->name();
+    TRACE_EVENT_BEGIN1("sync", "ModelAssociation",
+                       "DataType", ModelTypeToString(needs_start_[0]->type()));
     needs_start_[0]->Start(
         NewCallback(this, &DataTypeManagerImpl::TypeStartCallback));
     return;
@@ -331,6 +334,8 @@ void DataTypeManagerImpl::TypeStartCallback(
   // When the data type controller invokes this callback, it must be
   // on the UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  TRACE_EVENT_END0("sync", "ModelAssociation");
 
   if (state_ == STOPPING) {
     // If we reach this callback while stopping, this means that

@@ -4,7 +4,9 @@
 
 #include "chrome/browser/sync/engine/syncer.h"
 
+#include "base/debug/trace_event.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/sync/engine/apply_updates_command.h"
@@ -54,6 +56,32 @@ using sessions::StatusController;
 using sessions::SyncSession;
 using sessions::ConflictProgress;
 
+#define ENUM_CASE(x) case x: return #x
+const char* SyncerStepToString(const SyncerStep step)
+{
+  switch (step) {
+    ENUM_CASE(SYNCER_BEGIN);
+    ENUM_CASE(CLEANUP_DISABLED_TYPES);
+    ENUM_CASE(DOWNLOAD_UPDATES);
+    ENUM_CASE(PROCESS_CLIENT_COMMAND);
+    ENUM_CASE(VERIFY_UPDATES);
+    ENUM_CASE(PROCESS_UPDATES);
+    ENUM_CASE(STORE_TIMESTAMPS);
+    ENUM_CASE(APPLY_UPDATES);
+    ENUM_CASE(BUILD_COMMIT_REQUEST);
+    ENUM_CASE(POST_COMMIT_MESSAGE);
+    ENUM_CASE(PROCESS_COMMIT_RESPONSE);
+    ENUM_CASE(BUILD_AND_PROCESS_CONFLICT_SETS);
+    ENUM_CASE(RESOLVE_CONFLICTS);
+    ENUM_CASE(APPLY_UPDATES_TO_RESOLVE_CONFLICTS);
+    ENUM_CASE(CLEAR_PRIVATE_DATA);
+    ENUM_CASE(SYNCER_END);
+  }
+  NOTREACHED();
+  return "";
+}
+#undef ENUM_CASE
+
 Syncer::ScopedSyncStartStopTracker::ScopedSyncStartStopTracker(
     sessions::SyncSession* session) : session_(session) {
   session_->status_controller()->SetSyncInProgressAndUpdateStartTime(true);
@@ -98,9 +126,12 @@ void Syncer::SyncShare(sessions::SyncSession* session,
 
   SyncerStep next_step = current_step;
   while (!ExitRequested()) {
+    TRACE_EVENT1("sync", "SyncerStateMachine",
+                 "state", SyncerStepToString(current_step));
+    VLOG(1) << "Syncer step:" << SyncerStepToString(current_step);
+
     switch (current_step) {
       case SYNCER_BEGIN:
-        VLOG(1) << "Syncer Begin";
         // This isn't perfect, as we can end up bundling extensions activity
         // intended for the next session into the current one.  We could do a
         // test-and-reset as with the source, but note that also falls short if
@@ -115,41 +146,35 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         next_step = CLEANUP_DISABLED_TYPES;
         break;
       case CLEANUP_DISABLED_TYPES: {
-        VLOG(1) << "Cleaning up disabled types";
         CleanupDisabledTypesCommand cleanup;
         cleanup.Execute(session);
         next_step = DOWNLOAD_UPDATES;
         break;
       }
       case DOWNLOAD_UPDATES: {
-        VLOG(1) << "Downloading Updates";
         DownloadUpdatesCommand download_updates;
         download_updates.Execute(session);
         next_step = PROCESS_CLIENT_COMMAND;
         break;
       }
       case PROCESS_CLIENT_COMMAND: {
-        VLOG(1) << "Processing Client Command";
         ProcessClientCommand(session);
         next_step = VERIFY_UPDATES;
         break;
       }
       case VERIFY_UPDATES: {
-        VLOG(1) << "Verifying Updates";
         VerifyUpdatesCommand verify_updates;
         verify_updates.Execute(session);
         next_step = PROCESS_UPDATES;
         break;
       }
       case PROCESS_UPDATES: {
-        VLOG(1) << "Processing Updates";
         ProcessUpdatesCommand process_updates;
         process_updates.Execute(session);
         next_step = STORE_TIMESTAMPS;
         break;
       }
       case STORE_TIMESTAMPS: {
-        VLOG(1) << "Storing timestamps";
         StoreTimestampsCommand store_timestamps;
         store_timestamps.Execute(session);
         // We should download all of the updates before attempting to process
@@ -163,7 +188,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case APPLY_UPDATES: {
-        VLOG(1) << "Applying Updates";
         ApplyUpdatesCommand apply_updates;
         apply_updates.Execute(session);
         if (last_step == APPLY_UPDATES) {
@@ -179,7 +203,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       // These two steps are combined since they are executed within the same
       // write transaction.
       case BUILD_COMMIT_REQUEST: {
-        VLOG(1) << "Processing Commit Request";
         ScopedDirLookup dir(session->context()->directory_manager(),
                             session->context()->account_name());
         if (!dir.good()) {
@@ -207,14 +230,12 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case POST_COMMIT_MESSAGE: {
-        VLOG(1) << "Posting a commit request";
         PostCommitMessageCommand post_commit_command;
         post_commit_command.Execute(session);
         next_step = PROCESS_COMMIT_RESPONSE;
         break;
       }
       case PROCESS_COMMIT_RESPONSE: {
-        VLOG(1) << "Processing the commit response";
         session->status_controller()->reset_num_conflicting_commits();
         ProcessCommitResponseCommand process_response_command;
         process_response_command.Execute(session);
@@ -222,7 +243,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case BUILD_AND_PROCESS_CONFLICT_SETS: {
-        VLOG(1) << "Building and Processing Conflict Sets";
         BuildAndProcessConflictSetsCommand build_process_conflict_sets;
         build_process_conflict_sets.Execute(session);
         if (session->status_controller()->conflict_sets_built())
@@ -232,7 +252,6 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case RESOLVE_CONFLICTS: {
-        VLOG(1) << "Resolving Conflicts";
 
         // Trigger the pre_conflict_resolution_closure_, which is a testing
         // hook for the unit tests, if it is non-NULL.
@@ -275,14 +294,12 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case CLEAR_PRIVATE_DATA: {
-        VLOG(1) << "Clear Private Data";
         ClearDataCommand clear_data_command;
         clear_data_command.Execute(session);
         next_step = SYNCER_END;
         break;
       }
       case SYNCER_END: {
-        VLOG(1) << "Syncer End";
         SyncerEndCommand syncer_end_command;
         syncer_end_command.Execute(session);
         next_step = SYNCER_END;
@@ -291,10 +308,10 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       default:
         LOG(ERROR) << "Unknown command: " << current_step;
     }
-    VLOG(2) << "last step: " << last_step << ", current step: "
-            << current_step << ", next step: "
-            << next_step << ", snapshot: "
-            << session->TakeSnapshot().ToString();
+    VLOG(2) << "last step: " << SyncerStepToString(last_step) << ", "
+        << "current step: " << SyncerStepToString(current_step) << ", "
+        << "next step: " << SyncerStepToString(next_step) << ", "
+        << "snapshot: " << session->TakeSnapshot().ToString();
     if (last_step == current_step)
       break;
     current_step = next_step;

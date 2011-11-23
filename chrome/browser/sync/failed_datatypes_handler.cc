@@ -51,7 +51,7 @@ std::string FailedDatatypesHandler::GetErrorString() const {
       message += ", ";
     }
     message += "Sync configuration failed when starting "
-        + syncable::ModelTypeToString(it->type())
+        + std::string(syncable::ModelTypeToString(it->type()))
         + ": " + it->message();
   }
   return message;

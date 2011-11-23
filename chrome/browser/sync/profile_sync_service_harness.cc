@@ -902,7 +902,8 @@ const SyncSessionSnapshot*
 bool ProfileSyncServiceHarness::EnableSyncForDatatype(
     syncable::ModelType datatype) {
   VLOG(1) << GetClientInfoString(
-      "EnableSyncForDatatype(" + syncable::ModelTypeToString(datatype) + ")");
+      "EnableSyncForDatatype("
+      + std::string(syncable::ModelTypeToString(datatype)) + ")");
 
   syncable::ModelTypeSet synced_datatypes;
   if (wait_state_ == SYNC_DISABLED) {
@@ -940,7 +941,8 @@ bool ProfileSyncServiceHarness::EnableSyncForDatatype(
 bool ProfileSyncServiceHarness::DisableSyncForDatatype(
     syncable::ModelType datatype) {
   VLOG(1) << GetClientInfoString(
-      "DisableSyncForDatatype(" + syncable::ModelTypeToString(datatype) + ")");
+      "DisableSyncForDatatype("
+      + std::string(syncable::ModelTypeToString(datatype)) + ")");
 
   syncable::ModelTypeSet synced_datatypes;
   if (service() == NULL) {

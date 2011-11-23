@@ -13,6 +13,7 @@
 #include <set>
 #include <string>
 
+#include "base/debug/trace_event.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
@@ -1174,23 +1175,15 @@ ScopedKernelLock::ScopedKernelLock(const Directory* dir)
 // Transactions
 
 void BaseTransaction::Lock() {
-  base::TimeTicks start_time = base::TimeTicks::Now();
+  TRACE_EVENT2("sync_lock_contention", "AcquireLock",
+               "src_file", from_here_.file_name(),
+               "src_func", from_here_.function_name());
 
   dirkernel_->transaction_mutex.Acquire();
-
-  time_acquired_ = base::TimeTicks::Now();
-  const base::TimeDelta elapsed = time_acquired_ - start_time;
-  VLOG_LOC(from_here_, 2)
-      << name_ << " transaction waited "
-      << elapsed.InSecondsF() << " seconds.";
 }
 
 void BaseTransaction::Unlock() {
   dirkernel_->transaction_mutex.Release();
-  const base::TimeDelta elapsed = base::TimeTicks::Now() - time_acquired_;
-  VLOG_LOC(from_here_, 2)
-        << name_ << " transaction completed in " << elapsed.InSecondsF()
-        << " seconds.";
 }
 
 BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
@@ -1199,6 +1192,9 @@ BaseTransaction::BaseTransaction(const tracked_objects::Location& from_here,
                                  Directory* directory)
     : from_here_(from_here), name_(name), writer_(writer),
       directory_(directory), dirkernel_(directory->kernel_) {
+  TRACE_EVENT_BEGIN2("sync", name_,
+                     "src_file", from_here_.file_name(),
+                     "src_func", from_here_.function_name());
   dirkernel_->transaction_observer.Call(FROM_HERE,
       &TransactionObserver::OnTransactionStart, from_here_, writer_);
 }
@@ -1208,17 +1204,19 @@ BaseTransaction::~BaseTransaction() {
     dirkernel_->transaction_observer.Call(FROM_HERE,
         &TransactionObserver::OnTransactionEnd, from_here_, writer_);
   }
+  TRACE_EVENT_END0("sync", name_);
 }
 
 ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
                                  Directory* directory)
-    : BaseTransaction(location, "Read", INVALID, directory) {
+    : BaseTransaction(location, "ReadTransaction", INVALID, directory) {
   Lock();
 }
 
 ReadTransaction::ReadTransaction(const tracked_objects::Location& location,
                                  const ScopedDirLookup& scoped_dir)
-    : BaseTransaction(location, "Read", INVALID, scoped_dir.operator->()) {
+    : BaseTransaction(location, "ReadTransaction",
+                      INVALID, scoped_dir.operator->()) {
   Lock();
 }
 
@@ -1228,14 +1226,15 @@ ReadTransaction::~ReadTransaction() {
 
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer, Directory* directory)
-    : BaseTransaction(location, "Write", writer, directory) {
+    : BaseTransaction(location, "WriteTransaction", writer, directory) {
   Lock();
 }
 
 WriteTransaction::WriteTransaction(const tracked_objects::Location& location,
                                    WriterTag writer,
                                    const ScopedDirLookup& scoped_dir)
-    : BaseTransaction(location, "Write", writer, scoped_dir.operator->()) {
+    : BaseTransaction(location, "WriteTransaction",
+                      writer, scoped_dir.operator->()) {
   Lock();
 }
 
