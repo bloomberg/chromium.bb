@@ -45,7 +45,7 @@ class PhishingClassifier {
   // is true, the page is considered phishy by the client-side model,
   // and the browser should ping back to get a final verdict.  The
   // verdict.client_score() is set to kInvalidScore if classification failed.
-  typedef Callback1<const ClientPhishingRequest& /* verdict */>::Type
+  typedef base::Callback<void(const ClientPhishingRequest& /* verdict */)>
       DoneCallback;
 
   static const float kInvalidScore;
@@ -84,7 +84,7 @@ class PhishingClassifier {
   // It is an error to call BeginClassification if the classifier is not yet
   // ready.
   virtual void BeginClassification(const string16* page_text,
-                                   DoneCallback* callback);
+                                   const DoneCallback& callback);
 
   // Called by the RenderView (on the render thread) when a page is unloading
   // or the RenderView is being destroyed.  This cancels any extraction that
@@ -136,7 +136,7 @@ class PhishingClassifier {
   // State for any in-progress extraction.
   scoped_ptr<FeatureMap> features_;
   const string16* page_text_;  // owned by the caller
-  scoped_ptr<DoneCallback> done_callback_;
+  DoneCallback done_callback_;
 
   // Used in scheduling BeginFeatureExtraction tasks.
   // These pointers are invalidated if classification is cancelled.

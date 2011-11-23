@@ -19,7 +19,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/hash_tables.h"
 #include "base/memory/mru_cache.h"
 #include "base/memory/scoped_ptr.h"
@@ -35,7 +35,7 @@ class PhishingTermFeatureExtractor {
  public:
   // Callback to be run when feature extraction finishes.  The callback
   // argument is true if extraction was successful, false otherwise.
-  typedef Callback1<bool>::Type DoneCallback;
+  typedef base::Callback<void(bool)> DoneCallback;
 
   // Creates a PhishingTermFeatureExtractor which will extract features for
   // all of the terms whose SHA-256 hashes are in |page_term_hashes|.  These
@@ -72,7 +72,7 @@ class PhishingTermFeatureExtractor {
   // CancelPendingExtraction() is called.
   void ExtractFeatures(const string16* page_text,
                        FeatureMap* features,
-                       DoneCallback* done_callback);
+                       const DoneCallback& done_callback);
 
   // Cancels any pending feature extraction.  The DoneCallback will not be run.
   // Must be called if there is a feature extraction in progress when the page
@@ -148,7 +148,7 @@ class PhishingTermFeatureExtractor {
   // The output parameters from the most recent call to ExtractFeatures().
   const string16* page_text_;  // The caller keeps ownership of this.
   FeatureMap* features_;  // The caller keeps ownership of this.
-  scoped_ptr<DoneCallback> done_callback_;
+  DoneCallback done_callback_;
 
   // Stores the current state of term extraction from |page_text_|.
   scoped_ptr<ExtractionState> state_;

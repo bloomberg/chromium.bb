@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/utf_string_conversions.h"
@@ -99,7 +100,8 @@ class PhishingClassifierTest : public RenderViewFakeResourcesTest {
 
     classifier_->BeginClassification(
         page_text,
-        NewCallback(this, &PhishingClassifierTest::ClassificationFinished));
+        base::Bind(&PhishingClassifierTest::ClassificationFinished,
+                   base::Unretained(this)));
     message_loop_.Run();
 
     *phishy_score = verdict_.client_score();

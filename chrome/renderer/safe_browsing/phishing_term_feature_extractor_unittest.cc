@@ -83,7 +83,8 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
     extractor_->ExtractFeatures(
         page_text,
         features,
-        NewCallback(this, &PhishingTermFeatureExtractorTest::ExtractionDone));
+        base::Bind(&PhishingTermFeatureExtractorTest::ExtractionDone,
+                   base::Unretained(this)));
     msg_loop_.Run();
     return success_;
   }
@@ -92,7 +93,8 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
     extractor_->ExtractFeatures(
         page_text,
         features,
-        NewCallback(this, &PhishingTermFeatureExtractorTest::ExtractionDone));
+        base::Bind(&PhishingTermFeatureExtractorTest::ExtractionDone,
+                   base::Unretained(this)));
     msg_loop_.PostTask(
         FROM_HERE,
         base::Bind(&PhishingTermFeatureExtractorTest::QuitExtraction,

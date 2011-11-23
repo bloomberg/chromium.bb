@@ -120,8 +120,8 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     extractor_->ExtractFeatures(
         browse_info_.get(),
         request,
-        NewCallback(this,
-                    &BrowserFeatureExtractorTest::ExtractFeaturesDone));
+        base::Bind(&BrowserFeatureExtractorTest::ExtractFeaturesDone,
+                   base::Unretained(this)));
   }
 
   void GetFeatureMap(const ClientPhishingRequest& request,

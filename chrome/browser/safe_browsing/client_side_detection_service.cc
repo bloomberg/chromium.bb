@@ -60,7 +60,7 @@ const char ClientSideDetectionService::kClientModelUrl[] =
     "https://ssl.gstatic.com/safebrowsing/csd/client_model_v4.pb";
 
 struct ClientSideDetectionService::ClientReportInfo {
-  scoped_ptr<ClientReportPhishingRequestCallback> callback;
+  ClientReportPhishingRequestCallback callback;
   GURL phishing_url;
 };
 
@@ -118,8 +118,8 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
              client_phishing_reports_.begin();
          it != client_phishing_reports_.end(); ++it) {
       ClientReportInfo* info = it->second;
-      if (info->callback.get())
-        info->callback->Run(info->phishing_url, false);
+      if (!info->callback.is_null())
+        info->callback.Run(info->phishing_url, false);
     }
     STLDeleteContainerPairPointers(client_phishing_reports_.begin(),
                                    client_phishing_reports_.end());
@@ -130,7 +130,7 @@ void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
 
 void ClientSideDetectionService::SendClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
-    ClientReportPhishingRequestCallback* callback) {
+    const ClientReportPhishingRequestCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -289,14 +289,13 @@ void ClientSideDetectionService::EndFetchModel(ClientModelStatus status) {
 
 void ClientSideDetectionService::StartClientReportPhishingRequest(
     ClientPhishingRequest* verdict,
-    ClientReportPhishingRequestCallback* callback) {
+    const ClientReportPhishingRequestCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_ptr<ClientPhishingRequest> request(verdict);
-  scoped_ptr<ClientReportPhishingRequestCallback> cb(callback);
 
   if (!enabled_) {
-    if (cb.get())
-      cb->Run(GURL(request->url()), false);
+    if (!callback.is_null())
+      callback.Run(GURL(request->url()), false);
     return;
   }
 
@@ -304,9 +303,8 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   if (!request->SerializeToString(&request_data)) {
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSerialized", 1);
     VLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
-    if (cb.get()) {
-      cb->Run(GURL(request->url()), false);
-    }
+    if (!callback.is_null())
+      callback.Run(GURL(request->url()), false);
     return;
   }
 
@@ -316,7 +314,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
 
   // Remember which callback and URL correspond to the current fetcher object.
   ClientReportInfo* info = new ClientReportInfo;
-  info->callback.swap(cb);  // takes ownership of the callback.
+  info->callback = callback;
   info->phishing_url = GURL(request->url());
   client_phishing_reports_[fetcher] = info;
 
@@ -392,9 +390,8 @@ void ClientSideDetectionService::HandlePhishingVerdict(
                 << info->phishing_url << " status: " << status.status() << " "
                 << "response_code:" << response_code;
   }
-  if (info->callback.get()) {
-    info->callback->Run(info->phishing_url, is_phishing);
-  }
+  if (!info->callback.is_null())
+    info->callback.Run(info->phishing_url, is_phishing);
   client_phishing_reports_.erase(source);
   delete source;
 }

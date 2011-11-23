@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -285,7 +286,8 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   is_classifying_ = true;
   classifier_->BeginClassification(
       &classifier_page_text_,
-      NewCallback(this, &PhishingClassifierDelegate::ClassificationDone));
+      base::Bind(&PhishingClassifierDelegate::ClassificationDone,
+                 base::Unretained(this)));
 }
 
 }  // namespace safe_browsing

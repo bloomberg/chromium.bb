@@ -115,9 +115,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &ShouldClassifyUrlRequest::CheckCsdWhitelist,
-                          params_.url));
+        base::Bind(&ShouldClassifyUrlRequest::CheckCsdWhitelist,
+                   this, params_.url));
   }
 
   void Cancel() {
@@ -164,8 +163,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &ShouldClassifyUrlRequest::CheckCache));
+        base::Bind(&ShouldClassifyUrlRequest::CheckCache, this));
   }
 
   void CheckCache() {
@@ -260,7 +258,7 @@ ClientSideDetectionHost* ClientSideDetectionHost::Create(
 ClientSideDetectionHost::ClientSideDetectionHost(TabContents* tab)
     : TabContentsObserver(tab),
       csd_service_(NULL),
-      cb_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       unsafe_unique_page_id_(-1) {
   DCHECK(tab);
   csd_service_ = g_browser_process->safe_browsing_detection_service();
@@ -307,7 +305,7 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
   // an interstitial for the wrong page.  Note that this won't cancel
   // the server ping back but only cancel the showing of the
   // interstial.
-  cb_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 
   if (!csd_service_) {
     return;
@@ -378,14 +376,14 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
   DCHECK(csd_service_);
   // There shouldn't be any pending requests because we revoke them everytime
   // we navigate away.
-  DCHECK(!cb_factory_.HasPendingCallbacks());
+  DCHECK(!weak_factory_.HasWeakPtrs());
   DCHECK(browse_info_.get());
 
   // We parse the protocol buffer here.  If we're unable to parse it we won't
   // send the verdict further.
   scoped_ptr<ClientPhishingRequest> verdict(new ClientPhishingRequest);
   if (csd_service_ &&
-      !cb_factory_.HasPendingCallbacks() &&
+      !weak_factory_.HasWeakPtrs() &&
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized() &&
@@ -402,7 +400,8 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
     feature_extractor_->ExtractFeatures(
         browse_info_.get(),
         verdict.release(),
-        NewCallback(this, &ClientSideDetectionHost::FeatureExtractionDone));
+        base::Bind(&ClientSideDetectionHost::FeatureExtractionDone,
+                   weak_factory_.GetWeakPtr()));
   }
   browse_info_.reset();
 }
@@ -444,17 +443,17 @@ void ClientSideDetectionHost::FeatureExtractionDone(
   }
   VLOG(2) << "Feature extraction done (success:" << success << ") for URL: "
           << request->url() << ". Start sending client phishing request.";
-  ClientSideDetectionService::ClientReportPhishingRequestCallback* cb = NULL;
+  ClientSideDetectionService::ClientReportPhishingRequestCallback callback;
   // If the client-side verdict isn't phishing we don't care about the server
   // response because we aren't going to display a warning.
   if (request->is_phishing()) {
-    cb = cb_factory_.NewCallback(
-        &ClientSideDetectionHost::MaybeShowPhishingWarning);
+    callback = base::Bind(&ClientSideDetectionHost::MaybeShowPhishingWarning,
+                          weak_factory_.GetWeakPtr());
   }
   // Send ping even if the browser feature extraction failed.
   csd_service_->SendClientReportPhishingRequest(
       request,  // The service takes ownership of the request object.
-      cb);
+      callback);
 }
 
 void ClientSideDetectionHost::Observe(

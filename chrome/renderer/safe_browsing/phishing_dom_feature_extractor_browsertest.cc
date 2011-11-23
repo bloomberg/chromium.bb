@@ -64,7 +64,8 @@ class PhishingDOMFeatureExtractorTest : public RenderViewFakeResourcesTest {
     success_ = false;
     extractor_->ExtractFeatures(
         features,
-        NewCallback(this, &PhishingDOMFeatureExtractorTest::ExtractionDone));
+        base::Bind(&PhishingDOMFeatureExtractorTest::ExtractionDone,
+                   base::Unretained(this)));
     message_loop_.Run();
     return success_;
   }

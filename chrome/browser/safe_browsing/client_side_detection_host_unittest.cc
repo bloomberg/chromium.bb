@@ -57,6 +57,11 @@ MATCHER_P(PartiallyEqualVerdict, other, "") {
           other.is_phishing() == arg.is_phishing());
 }
 
+// Test that the callback is NULL when the verdict is not phishing.
+MATCHER(CallbackIsNull, "") {
+  return arg.is_null();
+}
+
 ACTION(QuitUIMessageLoop) {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
   MessageLoopForUI::current()->Quit();
@@ -67,9 +72,7 @@ ACTION(QuitUIMessageLoop) {
 ACTION_TEMPLATE(InvokeCallbackArgument,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_2_VALUE_PARAMS(p0, p1)) {
-  ::std::tr1::get<k>(args)->Run(p0, p1);
-  // This is an old callback, so it needs to be deleted explicitly.
-  delete ::std::tr1::get<k>(args);
+  ::std::tr1::get<k>(args).Run(p0, p1);
 }
 
 class MockClientSideDetectionService : public ClientSideDetectionService {
@@ -79,7 +82,7 @@ class MockClientSideDetectionService : public ClientSideDetectionService {
 
   MOCK_METHOD2(SendClientReportPhishingRequest,
                void(ClientPhishingRequest*,
-                    ClientReportPhishingRequestCallback*));
+                    const ClientReportPhishingRequestCallback&));
   MOCK_CONST_METHOD1(IsPrivateIPAddress, bool(const std::string&));
   MOCK_METHOD2(GetValidCachedResult, bool(const GURL&, bool*));
   MOCK_METHOD1(IsInCache, bool(const GURL&));
@@ -127,9 +130,10 @@ class MockBrowserFeatureExtractor : public BrowserFeatureExtractor {
       : BrowserFeatureExtractor(tab, service) {}
   virtual ~MockBrowserFeatureExtractor() {}
 
-  MOCK_METHOD3(ExtractFeatures, void(const BrowseInfo* info,
-                                     ClientPhishingRequest*,
-                                     BrowserFeatureExtractor::DoneCallback*));
+  MOCK_METHOD3(ExtractFeatures,
+               void(const BrowseInfo* info,
+                    ClientPhishingRequest*,
+                    const BrowserFeatureExtractor::DoneCallback&));
 };
 
 // Helper function which quits the UI message loop from the IO message loop.
@@ -195,7 +199,7 @@ class ClientSideDetectionHostTest : public TabContentsWrapperTestHarness {
     // we put the quit message there.
     BrowserThread::PostTask(BrowserThread::IO,
                             FROM_HERE,
-                            NewRunnableFunction(&QuitUIMessageLoopFromIO));
+                            base::Bind(&QuitUIMessageLoopFromIO));
     MessageLoop::current()->Run();
   }
 
@@ -316,7 +320,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
       csd_service_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
-  ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
+  ClientSideDetectionService::ClientReportPhishingRequestCallback cb;
   ClientPhishingRequest verdict;
   verdict.set_url("http://phishingurl.com/");
   verdict.set_client_score(1.0f);
@@ -331,12 +335,11 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
       .WillOnce(SaveArg<1>(&cb));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
-  ASSERT_TRUE(cb);
+  ASSERT_FALSE(cb.is_null());
 
   // Make sure DoDisplayBlockingPage is not going to be called.
   EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_)).Times(0);
-  cb->Run(GURL(verdict.url()), false);
-  delete cb;
+  cb.Run(GURL(verdict.url()), false);
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
 }
@@ -349,7 +352,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
       csd_service_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
-  ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
+  ClientSideDetectionService::ClientReportPhishingRequestCallback cb;
   ClientPhishingRequest verdict;
   verdict.set_url("http://phishingurl.com/");
   verdict.set_client_score(1.0f);
@@ -364,12 +367,11 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
       .WillOnce(SaveArg<1>(&cb));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
-  ASSERT_TRUE(cb);
+  ASSERT_FALSE(cb.is_null());
 
   // Make sure DoDisplayBlockingPage is not going to be called.
   EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_)).Times(0);
-  cb->Run(GURL(verdict.url()), false);
-  delete cb;
+  cb.Run(GURL(verdict.url()), false);
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
 }
@@ -382,7 +384,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
       csd_service_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
-  ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
+  ClientSideDetectionService::ClientReportPhishingRequestCallback cb;
   GURL phishing_url("http://phishingurl.com/");
   ClientPhishingRequest verdict;
   verdict.set_url(phishing_url.spec());
@@ -398,13 +400,12 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
       .WillOnce(SaveArg<1>(&cb));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
-  ASSERT_TRUE(cb);
+  ASSERT_FALSE(cb.is_null());
 
   SafeBrowsingService::UnsafeResource resource;
   EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_))
       .WillOnce(SaveArg<0>(&resource));
-  cb->Run(phishing_url, true);
-  delete cb;
+  cb.Run(phishing_url, true);
 
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
@@ -422,10 +423,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(
-          sb_service_.get(),
-          &MockSafeBrowsingService::InvokeOnBlockingPageComplete,
-          resource.client));
+      base::Bind(&MockSafeBrowsingService::InvokeOnBlockingPageComplete,
+                 sb_service_.get(), resource.client));
   // Since the CsdClient object will be deleted on the UI thread I need
   // to run the UI message loop.  Post a task to stop the UI message loop
   // after the client object destructor is called.
@@ -443,7 +442,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
       csd_service_.get());
   SetFeatureExtractor(mock_extractor);  // The host class takes ownership.
 
-  ClientSideDetectionService::ClientReportPhishingRequestCallback* cb;
+  ClientSideDetectionService::ClientReportPhishingRequestCallback cb;
   GURL phishing_url("http://phishingurl.com/");
   ClientPhishingRequest verdict;
   verdict.set_url(phishing_url.spec());
@@ -459,7 +458,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
       .WillOnce(SaveArg<1>(&cb));
   OnPhishingDetectionDone(verdict.SerializeAsString());
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
-  ASSERT_TRUE(cb);
+  ASSERT_FALSE(cb.is_null());
 
   // Set this back to a normal browser feature extractor since we're using
   // NavigateAndCommit() and it's easier to use the real thing than setting up
@@ -474,7 +473,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   // Wait for the pre-classification checks to finish for other_phishing_url.
   WaitAndCheckPreClassificationChecks();
 
-  ClientSideDetectionService::ClientReportPhishingRequestCallback* cb_other;
+  ClientSideDetectionService::ClientReportPhishingRequestCallback cb_other;
   verdict.set_url(other_phishing_url.spec());
   verdict.set_client_score(0.8f);
   EXPECT_CALL(*csd_service_,
@@ -489,7 +488,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   OnPhishingDetectionDone(verdict.SerializeAsString());
   MessageLoop::current()->Run();
   EXPECT_TRUE(Mock::VerifyAndClear(csd_service_.get()));
-  ASSERT_TRUE(cb_other);
+  ASSERT_FALSE(cb_other.is_null());
 
   // We expect that the interstitial is shown for the second phishing URL and
   // not for the first phishing URL.
@@ -497,10 +496,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   EXPECT_CALL(*sb_service_, DoDisplayBlockingPage(_))
       .WillOnce(SaveArg<0>(&resource));
 
-  cb->Run(phishing_url, true);  // Should have no effect.
-  delete cb;
-  cb_other->Run(other_phishing_url, true);  // Should show interstitial.
-  delete cb_other;
+  cb.Run(phishing_url, true);  // Should have no effect.
+  cb_other.Run(other_phishing_url, true);  // Should show interstitial.
 
   MessageLoop::current()->RunAllPending();
   EXPECT_TRUE(Mock::VerifyAndClear(sb_service_.get()));
@@ -518,10 +515,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      NewRunnableMethod(
-          sb_service_.get(),
-          &MockSafeBrowsingService::InvokeOnBlockingPageComplete,
-          resource.client));
+      base::Bind(&MockSafeBrowsingService::InvokeOnBlockingPageComplete,
+                 sb_service_.get(), resource.client));
   // Since the CsdClient object will be deleted on the UI thread I need
   // to run the UI message loop.  Post a task to stop the UI message loop
   // after the client object destructor is called.
@@ -564,7 +559,7 @@ TEST_F(ClientSideDetectionHostTest,
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
-                  Pointee(PartiallyEqualVerdict(verdict)), IsNull()))
+                  Pointee(PartiallyEqualVerdict(verdict)), CallbackIsNull()))
       .WillOnce(DoAll(DeleteArg<0>(), QuitUIMessageLoop()));
   std::vector<GURL> redirect_chain;
   redirect_chain.push_back(url);

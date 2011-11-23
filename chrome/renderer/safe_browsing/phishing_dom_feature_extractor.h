@@ -13,7 +13,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebDocument.h"
@@ -36,7 +36,7 @@ class PhishingDOMFeatureExtractor {
  public:
   // Callback to be run when feature extraction finishes.  The callback
   // argument is true if extraction was successful, false otherwise.
-  typedef Callback1<bool>::Type DoneCallback;
+  typedef base::Callback<void(bool)> DoneCallback;
 
   // Creates a PhishingDOMFeatureExtractor for the specified RenderView.
   // The PhishingDOMFeatureExtrator should be destroyed prior to destroying
@@ -54,7 +54,7 @@ class PhishingDOMFeatureExtractor {
   // processing.  Once feature extraction is complete, |done_callback|
   // is run on the current thread.  PhishingDOMFeatureExtractor takes
   // ownership of the callback.
-  void ExtractFeatures(FeatureMap* features, DoneCallback* done_callback);
+  void ExtractFeatures(FeatureMap* features, const DoneCallback& done_callback);
 
   // Cancels any pending feature extraction.  The DoneCallback will not be run.
   // Must be called if there is a feature extraction in progress when the page
@@ -131,7 +131,7 @@ class PhishingDOMFeatureExtractor {
 
   // The output parameters from the most recent call to ExtractFeatures().
   FeatureMap* features_;  // The caller keeps ownership of this.
-  scoped_ptr<DoneCallback> done_callback_;
+  DoneCallback done_callback_;
 
   // The current (sub-)document that we are processing.  May be a null document
   // (isNull()) if we are not currently extracting features.

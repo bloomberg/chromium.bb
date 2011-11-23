@@ -59,8 +59,8 @@ class ClientSideModel;
 class ClientSideDetectionService : public content::URLFetcherDelegate,
                                    public content::NotificationObserver {
  public:
-  typedef Callback2<GURL /* phishing URL */, bool /* is phishing */>::Type
-      ClientReportPhishingRequestCallback;
+  // void(GURL phishing_url, bool is_phishing).
+  typedef base::Callback<void(GURL, bool)> ClientReportPhishingRequestCallback;
 
   virtual ~ClientSideDetectionService();
 
@@ -102,7 +102,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   // NULL if you don't care about the server verdict.
   virtual void SendClientReportPhishingRequest(
       ClientPhishingRequest* verdict,
-      ClientReportPhishingRequestCallback* callback);
+      const ClientReportPhishingRequestCallback& callback);
 
   // Returns true if the given IP address string falls within a private
   // (unroutable) network block.  Pages which are hosted on these IP addresses
@@ -206,7 +206,7 @@ class ClientSideDetectionService : public content::URLFetcherDelegate,
   // This method takes ownership of both pointers.
   void StartClientReportPhishingRequest(
       ClientPhishingRequest* verdict,
-      ClientReportPhishingRequestCallback* callback);
+      const ClientReportPhishingRequestCallback& callback);
 
   // Called by OnURLFetchComplete to handle the response from fetching the
   // model.

@@ -118,8 +118,9 @@ BrowserFeatureExtractor::BrowserFeatureExtractor(
 BrowserFeatureExtractor::~BrowserFeatureExtractor() {
   weak_factory_.InvalidateWeakPtrs();
   // Delete all the pending extractions (delete callback and request objects).
-  STLDeleteContainerPairPointers(pending_extractions_.begin(),
-                                 pending_extractions_.end());
+  STLDeleteContainerPairFirstPointers(pending_extractions_.begin(),
+                                      pending_extractions_.end());
+
   // Also cancel all the pending history service queries.
   HistoryService* history;
   bool success = GetHistoryService(&history);
@@ -132,20 +133,19 @@ BrowserFeatureExtractor::~BrowserFeatureExtractor() {
     }
     ExtractionData& extraction = it->second;
     delete extraction.first;  // delete request
-    delete extraction.second;  // delete callback
   }
   pending_queries_.clear();
 }
 
 void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
                                               ClientPhishingRequest* request,
-                                              DoneCallback* callback) {
+                                              const DoneCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(request);
   DCHECK(info);
   DCHECK_EQ(0U, request->url().find("http:"));
-  DCHECK(callback);
-  if (!callback) {
+  DCHECK(!callback.is_null());
+  if (callback.is_null()) {
     DLOG(ERROR) << "ExtractFeatures called without a callback object";
     return;
   }
@@ -198,7 +198,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   }
 
   ExtractBrowseInfoFeatures(*info, request);
-  pending_extractions_.insert(std::make_pair(request, callback));
+  pending_extractions_[request] = callback;
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&BrowserFeatureExtractor::StartExtractFeatures,
@@ -240,15 +240,13 @@ void BrowserFeatureExtractor::ExtractBrowseInfoFeatures(
 
 void BrowserFeatureExtractor::StartExtractFeatures(
     ClientPhishingRequest* request,
-    DoneCallback* callback) {
+    const DoneCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ExtractionData extraction = std::make_pair(request, callback);
-  size_t removed = pending_extractions_.erase(extraction);
+  size_t removed = pending_extractions_.erase(request);
   DCHECK_EQ(1U, removed);
   HistoryService* history;
   if (!request || !request->IsInitialized() || !GetHistoryService(&history)) {
-    callback->Run(false, request);
-    delete callback;
+    callback.Run(false, request);
     return;
   }
   CancelableRequestProvider::Handle handle = history->QueryURL(
@@ -268,19 +266,18 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
     history::VisitVector* visits) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ClientPhishingRequest* request;
-  DoneCallback* callback;
+  DoneCallback callback;
   if (!GetPendingQuery(handle, &request, &callback)) {
     DLOG(FATAL) << "No pending history query found";
     return;
   }
   DCHECK(request);
-  DCHECK(callback);
+  DCHECK(!callback.is_null());
   if (!success) {
     // URL is not found in the history.  In practice this should not
     // happen (unless there is a real error) because we just visited
     // that URL.
-    callback->Run(false, request);
-    delete callback;
+    callback.Run(false, request);
     return;
   }
   AddFeature(features::kUrlHistoryVisitCount,
@@ -320,8 +317,7 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
   // Issue next history lookup for host visits.
   HistoryService* history;
   if (!GetHistoryService(&history)) {
-    callback->Run(false, request);
-    delete callback;
+    callback.Run(false, request);
     return;
   }
   CancelableRequestProvider::Handle next_handle =
@@ -340,16 +336,15 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
     base::Time first_visit) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ClientPhishingRequest* request;
-  DoneCallback* callback;
+  DoneCallback callback;
   if (!GetPendingQuery(handle, &request, &callback)) {
     DLOG(FATAL) << "No pending history query found";
     return;
   }
   DCHECK(request);
-  DCHECK(callback);
+  DCHECK(!callback.is_null());
   if (!success) {
-    callback->Run(false, request);
-    delete callback;
+    callback.Run(false, request);
     return;
   }
   SetHostVisitsFeatures(num_visits, first_visit, true, request);
@@ -357,8 +352,7 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
   // Same lookup but for the HTTPS URL.
   HistoryService* history;
   if (!GetHistoryService(&history)) {
-    callback->Run(false, request);
-    delete callback;
+    callback.Run(false, request);
     return;
   }
   std::string https_url = request->url();
@@ -378,21 +372,19 @@ void BrowserFeatureExtractor::QueryHttpsHostVisitsDone(
     base::Time first_visit) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   ClientPhishingRequest* request;
-  DoneCallback* callback;
+  DoneCallback callback;
   if (!GetPendingQuery(handle, &request, &callback)) {
     DLOG(FATAL) << "No pending history query found";
     return;
   }
   DCHECK(request);
-  DCHECK(callback);
+  DCHECK(!callback.is_null());
   if (!success) {
-    callback->Run(false, request);
-    delete callback;
+    callback.Run(false, request);
     return;
   }
   SetHostVisitsFeatures(num_visits, first_visit, false, request);
-  callback->Run(true, request);  // We're done with all the history lookups.
-  delete callback;
+  callback.Run(true, request);  // We're done with all the history lookups.
 }
 
 void BrowserFeatureExtractor::SetHostVisitsFeatures(
@@ -419,7 +411,7 @@ void BrowserFeatureExtractor::SetHostVisitsFeatures(
 void BrowserFeatureExtractor::StorePendingQuery(
     CancelableRequestProvider::Handle handle,
     ClientPhishingRequest* request,
-    DoneCallback* callback) {
+    const DoneCallback& callback) {
   DCHECK_EQ(0U, pending_queries_.count(handle));
   pending_queries_[handle] = std::make_pair(request, callback);
 }
@@ -427,7 +419,7 @@ void BrowserFeatureExtractor::StorePendingQuery(
 bool BrowserFeatureExtractor::GetPendingQuery(
     CancelableRequestProvider::Handle handle,
     ClientPhishingRequest** request,
-    DoneCallback** callback) {
+    DoneCallback* callback) {
   PendingQueriesMap::iterator it = pending_queries_.find(handle);
   DCHECK(it != pending_queries_.end());
   if (it != pending_queries_.end()) {

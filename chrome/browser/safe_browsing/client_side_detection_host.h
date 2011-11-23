@@ -121,7 +121,7 @@ class ClientSideDetectionHost : public TabContentsObserver,
   // Handles registering notifications with the NotificationService.
   content::NotificationRegistrar registrar_;
 
-  base::ScopedCallbackFactory<ClientSideDetectionHost> cb_factory_;
+  base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_;
 
   // Unique page ID of the most recent unsafe site that was loaded in this tab
   // as well as the UnsafeResource.

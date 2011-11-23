@@ -115,7 +115,7 @@ PhishingDOMFeatureExtractor::~PhishingDOMFeatureExtractor() {
 
 void PhishingDOMFeatureExtractor::ExtractFeatures(
     FeatureMap* features,
-    DoneCallback* done_callback) {
+    const DoneCallback& done_callback) {
   // The RenderView should have called CancelPendingExtraction() before
   // starting a new extraction, so DCHECK this.
   CheckNoPendingExtraction();
@@ -124,7 +124,7 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(
   CancelPendingExtraction();
 
   features_ = features;
-  done_callback_.reset(done_callback);
+  done_callback_ = done_callback;
 
   page_feature_state_.reset(new PageFeatureState(clock_->Now()));
   WebKit::WebView* web_view = render_view_->GetWebView();
@@ -348,10 +348,10 @@ void PhishingDOMFeatureExtractor::HandleScript(
 }
 
 void PhishingDOMFeatureExtractor::CheckNoPendingExtraction() {
-  DCHECK(!done_callback_.get());
+  DCHECK(done_callback_.is_null());
   DCHECK(!cur_frame_data_.get());
   DCHECK(cur_document_.isNull());
-  if (done_callback_.get() || cur_frame_data_.get() ||
+  if (!done_callback_.is_null() || cur_frame_data_.get() ||
       !cur_document_.isNull()) {
     LOG(ERROR) << "Extraction in progress, missing call to "
                << "CancelPendingExtraction";
@@ -367,14 +367,14 @@ void PhishingDOMFeatureExtractor::RunCallback(bool success) {
   UMA_HISTOGRAM_TIMES("SBClientPhishing.DOMFeatureTotalTime",
                       clock_->Now() - page_feature_state_->start_time);
 
-  DCHECK(done_callback_.get());
-  done_callback_->Run(success);
+  DCHECK(!done_callback_.is_null());
+  done_callback_.Run(success);
   Clear();
 }
 
 void PhishingDOMFeatureExtractor::Clear() {
   features_ = NULL;
-  done_callback_.reset(NULL);
+  done_callback_.Reset();
   cur_frame_data_.reset(NULL);
   cur_document_.reset();
 }

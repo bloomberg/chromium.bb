@@ -6,6 +6,7 @@
 #include <queue>
 #include <string>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -86,7 +87,8 @@ class ClientSideDetectionServiceTest : public testing::Test {
     request->set_is_phishing(true);  // client thinks the URL is phishing.
     csd_service_->SendClientReportPhishingRequest(
         request,
-        NewCallback(this, &ClientSideDetectionServiceTest::SendRequestDone));
+        base::Bind(&ClientSideDetectionServiceTest::SendRequestDone,
+                   base::Unretained(this)));
     phishing_url_ = phishing_url;
     msg_loop_.Run();  // Waits until callback is called.
     return is_phishing_;
