@@ -34,6 +34,7 @@ extern const char kAllowWebUICompositing[];
 extern const char kAlwaysAuthorizePlugins[];
 extern const char kAppId[];
 extern const char kApp[];
+extern const char kAppNotifyChannelServerURL[];
 extern const char kAppsCheckoutURL[];
 extern const char kAppsGalleryReturnTokens[];
 extern const char kAppsGalleryURL[];

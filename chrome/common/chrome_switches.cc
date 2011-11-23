@@ -60,6 +60,10 @@ const char kApp[]                           = "app";
 // according to its configuration.
 const char kAppId[]                         = "app-id";
 
+// A URL for the server which assigns channel ids for server pushed app
+// notifications.
+const char kAppNotifyChannelServerURL[] = "app-notify-channel-server-url";
+
 // Overrides the apps checkout URL, which is used to determine when to expose
 // some private APIs.
 const char kAppsCheckoutURL[]               = "apps-checkout-url";

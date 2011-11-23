@@ -38,7 +38,7 @@ static const char kChannelSetupCanceledByUser[] = "canceled_by_user";
 static const char kAuthorizationHeaderFormat[] =
     "Authorization: GoogleLogin auth=%s";
 static const char kOAuth2IssueTokenURL[] =
-    "https://www-googleapis-staging.sandbox.google.com/oauth2/v2/IssueToken";
+    "https://www.googleapis.com/oauth2/v2/IssueToken";
 static const char kOAuth2IssueTokenBodyFormat[] =
     "force=true"
     "&response_type=token"
@@ -48,8 +48,8 @@ static const char kOAuth2IssueTokenBodyFormat[] =
 static const char kOAuth2IssueTokenScope[] =
     "https://www.googleapis.com/auth/chromewebstore.notification";
 static const char kCWSChannelServiceURL[] =
-    "https://www-googleapis-staging.sandbox.google.com/chromewebstore/"
-    "v1internal/channels/app_id/oauth_client_id";
+    "https://www.googleapis.com/chromewebstore/"
+    "v1.1/channels/id";
 static const char* kRelevantGaiaServices[] = {
   GaiaConstants::kCWSService,
   GaiaConstants::kLSOService,
@@ -325,6 +325,18 @@ void AppNotifyChannelSetup::ReportResult(
 
 // static
 GURL AppNotifyChannelSetup::GetCWSChannelServiceURL() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAppNotifyChannelServerURL)) {
+    std::string switch_value = command_line->GetSwitchValueASCII(
+        switches::kAppNotifyChannelServerURL);
+    GURL result(switch_value);
+    if (result.is_valid()) {
+      return result;
+    } else {
+      LOG(ERROR) << "Invalid value for " <<
+          switches::kAppNotifyChannelServerURL;
+    }
+  }
   return GURL(kCWSChannelServiceURL);
 }
 
