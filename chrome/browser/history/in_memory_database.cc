@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/history/history_field_trial.h"
 
 namespace history {
 
@@ -91,8 +92,9 @@ bool InMemoryDatabase::InitFromDisk(const FilePath& history_name) {
     // just not exist yet.
   }
   base::TimeTicks end_load = base::TimeTicks::Now();
-  UMA_HISTOGRAM_MEDIUM_TIMES("History.InMemoryDBPopulate",
-                             end_load - begin_load);
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "History.InMemoryDBPopulate" + HistoryFieldTrial::GetGroupSuffix(),
+      end_load - begin_load);
   UMA_HISTOGRAM_COUNTS("History.InMemoryDBItemCount", db_.GetLastChangeCount());
 
   {

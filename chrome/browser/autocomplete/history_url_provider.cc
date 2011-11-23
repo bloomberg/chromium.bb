@@ -16,6 +16,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
+#include "chrome/browser/history/history_field_trial.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -351,7 +352,8 @@ void HistoryURLProvider::ExecuteWithDB(history::HistoryBackend* backend,
 
     DoAutocomplete(backend, db, params);
 
-    UMA_HISTOGRAM_TIMES("Autocomplete.HistoryAsyncQueryTime",
+    UMA_HISTOGRAM_TIMES("Autocomplete.HistoryAsyncQueryTime" +
+                            history::HistoryFieldTrial::GetGroupSuffix(),
                         base::TimeTicks::Now() - beginning_time);
   }
 

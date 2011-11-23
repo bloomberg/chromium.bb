@@ -19,6 +19,7 @@
 #include "base/time.h"
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
+#include "chrome/browser/history/history_field_trial.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_publisher.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
@@ -373,6 +374,8 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
   if (!db_.get())
     return;
 
+  TimeTicks beginning_time = TimeTicks::Now();
+
   // Will be filled with the URL ID and the visit ID of the last addition.
   std::pair<URLID, VisitID> last_ids(0, tracker_.GetLastVisit(
       request->id_scope, request->page_id, request->referrer));
@@ -544,6 +547,10 @@ void HistoryBackend::AddPage(scoped_refptr<HistoryAddPageArgs> request) {
   }
 
   ScheduleCommit();
+
+  UMA_HISTOGRAM_TIMES(
+      "History.AddPage" + HistoryFieldTrial::GetGroupSuffix(),
+      TimeTicks::Now() - beginning_time);
 }
 
 void HistoryBackend::InitImpl(const std::string& languages) {
@@ -552,6 +559,8 @@ void HistoryBackend::InitImpl(const std::string& languages) {
   // the blocks the caller, yet allows other messages through. For this reason
   // we only set db_ to the created database if creation is successful. That
   // way other methods won't do anything as db_ is still NULL.
+
+  HistoryFieldTrial::Activate();
 
   TimeTicks beginning_time = TimeTicks::Now();
 
@@ -1223,8 +1232,9 @@ void HistoryBackend::QueryHistory(scoped_refptr<QueryHistoryRequest> request,
 
   request->ForwardResult(request->handle(), &request->value);
 
-  UMA_HISTOGRAM_TIMES("History.QueryHistory",
-                      TimeTicks::Now() - beginning_time);
+  UMA_HISTOGRAM_TIMES(
+      "History.QueryHistory" + HistoryFieldTrial::GetGroupSuffix(),
+      TimeTicks::Now() - beginning_time);
 }
 
 // Basic time-based querying of history.
