@@ -39,6 +39,7 @@ clobber() {
 
 # Make up for the toolchain tarballs not quite being a full SDK
 build-prerequsites() {
+  echo "@@@BUILD_STEP build prerequisites [$*] @@@"
   pushd ${SPEC_BASE}
   ./run_all.sh BuildPrerequisites "$@"
   popd
