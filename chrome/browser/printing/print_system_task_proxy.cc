@@ -331,7 +331,7 @@ void PrintSystemTaskProxy::GetDefaultPrinter() {
         *PrintPreviewHandler::last_used_printer_name_);
   }
   VLOG(1) << "Get default printer finished, found: "
-          << default_printer;
+          << *default_printer;
 
   std::string* cloud_print_data = NULL;
   if (PrintPreviewHandler::last_used_printer_cloud_print_data_ != NULL) {
@@ -379,6 +379,8 @@ void PrintSystemTaskProxy::EnumeratePrinters() {
 #endif
     printer_info->SetString(printing::kSettingPrinterName, printerName);
     printer_info->SetString(printing::kSettingDeviceName, iter->printer_name);
+    VLOG(1) << "Found printer " << printerName
+            << " with device name " << iter->printer_name;
     printers->Append(printer_info);
   }
   VLOG(1) << "Enumerate printers finished, found " << i << " printers";
