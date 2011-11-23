@@ -6142,6 +6142,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ANY_OTHER" desc="A child row in the Geolocation Exceptions page view. Sets the default permission for the parent page when embedded on any other site.">
         embedded on any other site
       </message>
+      <message name="IDS_MOUSE_LOCK_TAB_LABEL" desc="Label for Mouse Lock tab on Content Settings dialog">
+        Mouse Cursor
+      </message>
+      <message name="IDS_MOUSE_LOCK_HEADER" desc="Label for Mouse Lock exception management page on Content Settings dialog">
+        Mouse Cursor Exceptions
+      </message>
+      <message name="IDS_MOUSE_LOCK_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing all sites ability to hide the mouse cursor.">
+        Allow all sites to hide the mouse cursor
+      </message>
+      <message name="IDS_MOUSE_LOCK_ASK_RADIO" desc="A radio button in the Content Settings dialog for asking before allowing sites to hide the mouse cursor.">
+        Ask me when a site tries to hide the mouse cursor (recommended)
+      </message>
+      <message name="IDS_MOUSE_LOCK_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking all sites ability to hide the mouse cursor.">
+        Do not allow any site to hide the mouse cursor
+      </message>
 
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_EXCEPTIONS_MANAGE" desc="The label on the button that launches the exceptions management page for a given content type">

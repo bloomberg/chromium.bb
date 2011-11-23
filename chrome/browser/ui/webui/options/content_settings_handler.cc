@@ -266,6 +266,12 @@ void ContentSettingsHandler::GetLocalizedValues(
     // Fullscreen filter.
     { "fullscreen_tab_label", IDS_FULLSCREEN_TAB_LABEL },
     { "fullscreen_header", IDS_FULLSCREEN_HEADER },
+    // Mouse Lock filter.
+    { "mouselock_tab_label", IDS_MOUSE_LOCK_TAB_LABEL },
+    { "mouselock_header", IDS_MOUSE_LOCK_HEADER },
+    { "mouselock_allow", IDS_MOUSE_LOCK_ALLOW_RADIO },
+    { "mouselock_ask", IDS_MOUSE_LOCK_ASK_RADIO },
+    { "mouselock_block", IDS_MOUSE_LOCK_BLOCK_RADIO },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -415,9 +421,6 @@ void ContentSettingsHandler::UpdateAllExceptionsViewsFromModel() {
     // is supposed to be set by policy only. Hence there is no user facing UI
     // for this content type and we skip it here.
     if (type == CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE)
-      continue;
-    // TODO(scheib): Mouse lock content settings UI. http://crbug.com/97768
-    if (type == CONTENT_SETTINGS_TYPE_MOUSELOCK)
       continue;
     UpdateExceptionsViewFromModel(static_cast<ContentSettingsType>(type));
   }

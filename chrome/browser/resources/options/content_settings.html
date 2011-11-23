@@ -219,6 +219,32 @@
             i18n-content="manage_exceptions"></button>
       </div>
     </section>
+    <!-- Mouse Lock filter -->
+    <section>
+      <h3 i18n-content="mouselock_tab_label"></h3>
+      <div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="mouselock" value="allow">
+            <span i18n-content="mouselock_allow"></span>
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="mouselock" value="ask">
+            <span i18n-content="mouselock_ask"></span>
+          </label>
+        </div>
+        <div class="radio">
+          <label>
+            <input type="radio" name="mouselock" value="block">
+            <span i18n-content="mouselock_block"></span>
+          </label>
+        </div>
+        <button class="exceptions-list-button" contentType="mouselock"
+            i18n-content="manage_exceptions"></button>
+      </div>
+    </section>
     <!-- Intent registration filter tab contents -->
     <if expr="pp_ifdef('enable_web_intents')">
       <section id="intents-section">
