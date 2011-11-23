@@ -124,10 +124,6 @@ struct wl_shm_callbacks {
 	void (*buffer_destroyed)(struct wl_buffer *buffer);
 };
 
-struct wl_compositor {
-	const struct wl_compositor_interface *interface;
-};
-
 struct wl_buffer {
 	struct wl_resource resource;
 	int32_t width, height;
@@ -161,7 +157,6 @@ struct wl_grab {
 
 struct wl_input_device {
 	struct wl_list resource_list;
-	struct wl_compositor *compositor;
 	struct wl_resource *pointer_focus_resource;
 	struct wl_surface *pointer_focus;
 	struct wl_resource *keyboard_focus_resource;
@@ -242,8 +237,7 @@ void
 wl_resource_destroy(struct wl_resource *resource, uint32_t time);
 
 void
-wl_input_device_init(struct wl_input_device *device,
-		     struct wl_compositor *compositor);
+wl_input_device_init(struct wl_input_device *device);
 
 void
 wl_input_device_set_pointer_focus(struct wl_input_device *device,

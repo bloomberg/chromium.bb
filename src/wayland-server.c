@@ -387,8 +387,7 @@ lose_keyboard_focus(struct wl_listener *listener,
 }
 
 WL_EXPORT void
-wl_input_device_init(struct wl_input_device *device,
-		     struct wl_compositor *compositor)
+wl_input_device_init(struct wl_input_device *device)
 {
 	memset(device, 0, sizeof *device);
 	wl_list_init(&device->resource_list);
@@ -397,7 +396,6 @@ wl_input_device_init(struct wl_input_device *device,
 
 	device->x = 100;
 	device->y = 100;
-	device->compositor = compositor;
 }
 
 static struct wl_resource *
@@ -875,33 +873,4 @@ wl_client_add_object(struct wl_client *client,
 	}
 
 	return resource;
-}
-
-static void
-compositor_bind(struct wl_client *client,
-		void *data, uint32_t version, uint32_t id)
-{
-	struct wl_compositor *compositor = data;
-	struct wl_resource *resource;
-
-	resource = wl_client_add_object(client, &wl_compositor_interface,
-					compositor->interface, id, compositor);
-	if (resource == NULL)
-		return;
-}
-
-WL_EXPORT int
-wl_compositor_init(struct wl_compositor *compositor,
-		   const struct wl_compositor_interface *interface,
-		   struct wl_display *display)
-{
-	struct wl_global *global;
-
-	compositor->interface = interface;
-	global = wl_display_add_global(display, &wl_compositor_interface,
-				       compositor, compositor_bind);
-	if (!global)
-		return -1;
-
-	return 0;
 }
