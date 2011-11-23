@@ -9,9 +9,12 @@
 #include "testing/gmock_mutant.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
 
 using testing::_;
+using testing::DeleteArg;
 using testing::InSequence;
+using testing::Return;
 
 namespace remoting {
 
@@ -43,7 +46,8 @@ TEST_F(LogToServerTest, SendNow) {
     InSequence s;
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
-    EXPECT_CALL(signal_strategy_, SendStanza(_));
+    EXPECT_CALL(signal_strategy_, SendStanza(_))
+        .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
@@ -60,7 +64,8 @@ TEST_F(LogToServerTest, SendLater) {
     InSequence s;
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
-    EXPECT_CALL(signal_strategy_, SendStanza(_));
+    EXPECT_CALL(signal_strategy_, SendStanza(_))
+        .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
@@ -77,7 +82,8 @@ TEST_F(LogToServerTest, SendTwoEntriesLater) {
     InSequence s;
     EXPECT_CALL(signal_strategy_, AddListener(_));
     EXPECT_CALL(signal_strategy_, GetNextId());
-    EXPECT_CALL(signal_strategy_, SendStanza(_));
+    EXPECT_CALL(signal_strategy_, SendStanza(_))
+        .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
         .WillOnce(QuitMainMessageLoop(&message_loop_))
         .RetiresOnSaturation();
