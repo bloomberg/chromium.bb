@@ -122,18 +122,20 @@ class UI_EXPORT Canvas {
   // color, using a transfer mode of SkXfermode::kSrcOver_Mode.
   //
   // NOTE: if you need a single pixel line, use DrawLineInt.
-  virtual void DrawRect(const gfx::Rect& rect, const SkColor& color) = 0;
+  virtual void DrawRectInt(const SkColor& color,
+                           int x, int y, int w, int h) = 0;
 
   // Draws a single pixel rect in the specified region with the specified
   // color and transfer mode.
   //
   // NOTE: if you need a single pixel line, use DrawLineInt.
-  virtual void DrawRect(const gfx::Rect& rect,
-                        const SkColor& color,
-                        SkXfermode::Mode mode) = 0;
+  virtual void DrawRectInt(const SkColor& color,
+                           int x, int y, int w, int h,
+                           SkXfermode::Mode mode) = 0;
 
   // Draws the given rectangle with the given paint's parameters.
-  virtual void DrawRect(const gfx::Rect& rect, const SkPaint& paint) = 0;
+  virtual void DrawRectInt(int x, int y, int w, int h,
+                           const SkPaint& paint) = 0;
 
   // Draws a single pixel line with the specified color.
   virtual void DrawLineInt(const SkColor& color,

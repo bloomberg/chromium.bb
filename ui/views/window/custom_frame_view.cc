@@ -484,10 +484,9 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       client_area_top, left->width(), client_area_height);
 
   // Draw the toolbar color to fill in the edges.
-  canvas->DrawRect(gfx::Rect(client_area_bounds.x() - 1, client_area_top - 1,
-                             client_area_bounds.width() + 1,
-                             client_area_bottom - client_area_top + 1),
-                   ui::ResourceBundle::toolbar_color);
+  canvas->DrawRectInt(ResourceBundle::toolbar_color,
+    client_area_bounds.x() - 1, client_area_top - 1,
+    client_area_bounds.width() + 1, client_area_bottom - client_area_top + 1);
 }
 
 void CustomFrameView::LayoutWindowControls() {

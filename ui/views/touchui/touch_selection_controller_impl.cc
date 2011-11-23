@@ -276,7 +276,7 @@ class TouchSelectionControllerImpl::TouchContextMenuView
     paint.setStyle(SkPaint::kFill_Style);
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
 
-    canvas->DrawRect(GetLocalBounds(), paint);
+    canvas->DrawRectInt(0, 0, width(), height(), paint);
 #else
     // This is the same as COLOR_TOOLBAR.
     canvas->GetSkCanvas()->drawColor(SkColorSetRGB(210, 225, 246),

@@ -334,8 +334,9 @@ void TabStrip::PaintChildren(gfx::Canvas* canvas) {
                        multiple_tabs_selected ? 150 : 200, 255, 255, 255));
     paint.setXfermodeMode(SkXfermode::kDstIn_Mode);
     paint.setStyle(SkPaint::kFill_Style);
-    // The tabstrip area overlaps the toolbar area by 2 px.
-    canvas->DrawRect(gfx::Rect(0, 0, width(), height() - 2), paint);
+    canvas->DrawRectInt(0, 0, width(),
+        height() - 2,  // Visible region that overlaps the toolbar.
+        paint);
   }
 
   // Now selected but not active. We don't want these dimmed if using native

@@ -133,7 +133,7 @@ void CanvasSkia::FillRect(const SkColor& color,
   paint.setColor(color);
   paint.setStyle(SkPaint::kFill_Style);
   paint.setXfermodeMode(mode);
-  DrawRect(rect, paint);
+  DrawRectInt(rect.x(), rect.y(), rect.width(), rect.height(), paint);
 }
 
 void CanvasSkia::FillRect(const gfx::Brush* brush, const gfx::Rect& rect) {
@@ -141,16 +141,16 @@ void CanvasSkia::FillRect(const gfx::Brush* brush, const gfx::Rect& rect) {
   SkPaint paint;
   paint.setShader(shader->shader());
   // TODO(beng): set shader transform to match canvas transform.
-  DrawRect(rect, paint);
+  DrawRectInt(rect.x(), rect.y(), rect.width(), rect.height(), paint);
 }
 
-void CanvasSkia::DrawRect(const gfx::Rect& rect, const SkColor& color) {
-  DrawRect(rect, color, SkXfermode::kSrcOver_Mode);
+void CanvasSkia::DrawRectInt(const SkColor& color, int x, int y, int w, int h) {
+  DrawRectInt(color, x, y, w, h, SkXfermode::kSrcOver_Mode);
 }
 
-void CanvasSkia::DrawRect(const gfx::Rect& rect,
-                          const SkColor& color,
-                          SkXfermode::Mode mode) {
+void CanvasSkia::DrawRectInt(const SkColor& color,
+                             int x, int y, int w, int h,
+                             SkXfermode::Mode mode) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStyle(SkPaint::kStroke_Style);
@@ -160,11 +160,12 @@ void CanvasSkia::DrawRect(const gfx::Rect& rect,
   paint.setStrokeWidth(SkIntToScalar(0));
   paint.setXfermodeMode(mode);
 
-  DrawRect(rect, paint);
+  DrawRectInt(x, y, w, h, paint);
 }
 
-void CanvasSkia::DrawRect(const gfx::Rect& rect, const SkPaint& paint) {
-  canvas_->drawIRect(RectToSkIRect(rect), paint);
+void CanvasSkia::DrawRectInt(int x, int y, int w, int h, const SkPaint& paint) {
+  SkIRect rc = { x, y, x + w, y + h };
+  canvas_->drawIRect(rc, paint);
 }
 
 void CanvasSkia::DrawLineInt(const SkColor& color,
@@ -213,12 +214,10 @@ void CanvasSkia::DrawFocusRect(const gfx::Rect& rect) {
   paint.setShader(shader);
   shader->unref();
 
-  DrawRect(gfx::Rect(rect.x(), rect.y(), rect.width(), 1), paint);
-  DrawRect(gfx::Rect(rect.x(), rect.y() + rect.height() - 1, rect.width(), 1),
-           paint);
-  DrawRect(gfx::Rect(rect.x(), rect.y(), 1, rect.height()), paint);
-  DrawRect(gfx::Rect(rect.x() + rect.width() - 1, rect.y(), 1, rect.height()),
-           paint);
+  DrawRectInt(rect.x(), rect.y(), rect.width(), 1, paint);
+  DrawRectInt(rect.x(), rect.y() + rect.height() - 1, rect.width(), 1, paint);
+  DrawRectInt(rect.x(), rect.y(), 1, rect.height(), paint);
+  DrawRectInt(rect.x() + rect.width() - 1, rect.y(), 1, rect.height(), paint);
 }
 
 void CanvasSkia::DrawBitmapInt(const SkBitmap& bitmap, int x, int y) {

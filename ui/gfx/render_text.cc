@@ -391,8 +391,10 @@ void RenderText::Draw(Canvas* canvas) {
   }
 
   // Paint cursor. Replace cursor is drawn as rectangle for now.
+  Rect cursor(GetUpdatedCursorBounds());
   if (cursor_visible() && focused())
-    canvas->DrawRect(GetUpdatedCursorBounds(), kCursorColor);
+    canvas->DrawRectInt(kCursorColor, cursor.x(), cursor.y(),
+                        cursor.width(), cursor.height());
 }
 
 SelectionModel RenderText::FindCursorPosition(const Point& point) {

@@ -20,11 +20,6 @@ SkRect RectToSkRect(const gfx::Rect& rect) {
   return r;
 }
 
-SkIRect RectToSkIRect(const gfx::Rect& rect) {
-  SkIRect r = { rect.x(), rect.y(), rect.right(), rect.bottom() };
-  return r;
-}
-
 gfx::Rect SkRectToRect(const SkRect& rect) {
   return gfx::Rect(static_cast<int>(rect.fLeft),
                    static_cast<int>(rect.fTop),
