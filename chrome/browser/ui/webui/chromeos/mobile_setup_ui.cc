@@ -296,15 +296,15 @@ class MobileSetupHandler
                    const std::string& error_description);
   // Prepares network devices for cellular activation process.
   void SetupActivationProcess(chromeos::CellularNetwork* network);
-  // Disables ethernet and wifi newtorks since they interefere with
-  // detection of restricted pool on cellular side.
-  void DisableOtherNetworks();
   // Resets network devices after cellular activation process.
   // |network| should be NULL if the activation process failed.
   void CompleteActivation(chromeos::CellularNetwork* network);
-  // Control routines for handling other types of connections during
-  // cellular activation.
-  void ReEnableOtherConnections();
+  // Disables SSL certificate revocation checking mechanism. In the case
+  // where captive portal connection is the only one present, such revocation
+  // checks could prevent payment portal page from loading.
+  void DisableCertRevocationChecking();
+  // Reenables SSL certificate revocation checking mechanism.
+  void ReEnableCertRevocationChecking();
   // Return error message for a given code.
   std::string GetErrorMessage(const std::string& code);
 
@@ -329,10 +329,8 @@ class MobileSetupHandler
   // Internal handler state.
   PlanActivationState state_;
   std::string service_path_;
-  // Flags that control if wifi and ethernet connection needs to be restored
+  // Flags that controls if cert_checks needs to be restored
   // after the activation of cellular network.
-  bool reenable_wifi_;
-  bool reenable_ethernet_;
   bool reenable_cert_check_;
   bool evaluating_;
   // True if we think that another tab is already running activation.
@@ -492,8 +490,6 @@ MobileSetupHandler::MobileSetupHandler(const std::string& service_path)
       tab_contents_(NULL),
       state_(PLAN_ACTIVATION_PAGE_LOADING),
       service_path_(service_path),
-      reenable_wifi_(false),
-      reenable_ethernet_(false),
       reenable_cert_check_(false),
       evaluating_(false),
       already_running_(false),
@@ -511,7 +507,7 @@ MobileSetupHandler::~MobileSetupHandler() {
   lib->RemoveObserverForAllNetworks(this);
   if (lib->IsLocked())
     lib->Unlock();
-  ReEnableOtherConnections();
+  ReEnableCertRevocationChecking();
 }
 
 WebUIMessageHandler* MobileSetupHandler::Attach(WebUI* web_ui) {
@@ -915,9 +911,6 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     case PLAN_ACTIVATION_RECONNECTING_PAYMENT:
     case PLAN_ACTIVATION_RECONNECTING: {
       if (network->connected()) {
-        // Make sure other networks are not interfering with our detection of
-        // restricted pool.
-        DisableOtherNetworks();
         // Wait until the service shows up and gets activated.
         switch (network->activation_state()) {
           case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
@@ -962,9 +955,6 @@ void MobileSetupHandler::EvaluateCellularNetwork(
     }
     case PLAN_ACTIVATION_RECONNECTING_OTASP: {
       if (network->connected()) {
-        // Make sure other networks are not interfering with our detection of
-        // restricted pool.
-        DisableOtherNetworks();
         // Wait until the service shows up and gets activated.
         switch (network->activation_state()) {
           case chromeos::ACTIVATION_STATE_PARTIALLY_ACTIVATED:
@@ -1134,7 +1124,7 @@ void MobileSetupHandler::CompleteActivation(
     network->SetAutoConnect(true);
   // Reactivate other types of connections if we have
   // shut them down previously.
-  ReEnableOtherConnections();
+  ReEnableCertRevocationChecking();
 }
 
 void MobileSetupHandler::UpdatePage(
@@ -1246,18 +1236,7 @@ void MobileSetupHandler::ChangeState(chromeos::CellularNetwork* network,
   }
 }
 
-void MobileSetupHandler::ReEnableOtherConnections() {
-  chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
-      GetNetworkLibrary();
-  if (reenable_ethernet_) {
-    reenable_ethernet_ = false;
-    lib->EnableEthernetNetworkDevice(true);
-  }
-  if (reenable_wifi_) {
-    reenable_wifi_ = false;
-    lib->EnableWifiNetworkDevice(true);
-  }
-
+void MobileSetupHandler::ReEnableCertRevocationChecking() {
   PrefService* prefs = g_browser_process->local_state();
   if (reenable_cert_check_) {
     prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled,
@@ -1266,12 +1245,8 @@ void MobileSetupHandler::ReEnableOtherConnections() {
   }
 }
 
-void MobileSetupHandler::SetupActivationProcess(
-    chromeos::CellularNetwork* network) {
-  if (!network)
-    return;
-
-  // Disable SSL cert checks since we will be doing this in
+void MobileSetupHandler::DisableCertRevocationChecking() {
+  // Disable SSL cert checks since we might be performin activation in the
   // restricted pool.
   PrefService* prefs = g_browser_process->local_state();
   if (!reenable_cert_check_ &&
@@ -1280,29 +1255,20 @@ void MobileSetupHandler::SetupActivationProcess(
     reenable_cert_check_ = true;
     prefs->SetBoolean(prefs::kCertRevocationCheckingEnabled, false);
   }
+}
 
+void MobileSetupHandler::SetupActivationProcess(
+    chromeos::CellularNetwork* network) {
+  if (!network)
+    return;
+
+  DisableCertRevocationChecking();
   chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
       GetNetworkLibrary();
   // Disable autoconnect to cellular network.
   network->SetAutoConnect(false);
 
-  // Prevent any other network interference.
-  DisableOtherNetworks();
   lib->Lock();
-}
-
-void MobileSetupHandler::DisableOtherNetworks() {
-  chromeos::NetworkLibrary* lib = chromeos::CrosLibrary::Get()->
-      GetNetworkLibrary();
-  // Disable ethernet and wifi.
-  if (lib->ethernet_enabled()) {
-    reenable_ethernet_ = true;
-    lib->EnableEthernetNetworkDevice(false);
-  }
-  if (lib->wifi_enabled()) {
-    reenable_wifi_ = true;
-    lib->EnableWifiNetworkDevice(false);
-  }
 }
 
 bool MobileSetupHandler::GotActivationError(
