@@ -26,9 +26,11 @@ class WriteTransaction;
 }  // namespace syncable
 
 namespace browser_sync {
+
 namespace sessions {
+class ConflictProgress;
 class StatusController;
-}
+}  // namespace sessions
 
 class ConflictResolver {
   friend class SyncerTest;
@@ -40,6 +42,7 @@ class ConflictResolver {
   // Called by the syncer at the end of a update/commit cycle.
   // Returns true if the syncer should try to apply its updates again.
   bool ResolveConflicts(const syncable::ScopedDirLookup& dir,
+                        const sessions::ConflictProgress& progress,
                         sessions::StatusController* status);
 
  private:
@@ -70,6 +73,7 @@ class ConflictResolver {
       sessions::StatusController* status);
 
   bool ResolveSimpleConflicts(const syncable::ScopedDirLookup& dir,
+                              const sessions::ConflictProgress& progress,
                               sessions::StatusController* status);
 
   bool ProcessConflictSet(syncable::WriteTransaction* trans,

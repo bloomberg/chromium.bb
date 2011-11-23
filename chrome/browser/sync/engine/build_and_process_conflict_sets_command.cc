@@ -32,7 +32,7 @@ BuildAndProcessConflictSetsCommand::~BuildAndProcessConflictSetsCommand() {}
 
 void BuildAndProcessConflictSetsCommand::ModelChangingExecuteImpl(
     SyncSession* session) {
-  session->status_controller()->update_conflict_sets_built(
+  session->mutable_status_controller()->update_conflict_sets_built(
       BuildAndProcessConflictSets(session));
 }
 
@@ -46,11 +46,11 @@ bool BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSets(
   {  // Scope for transaction.
     syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
     BuildConflictSets(&trans,
-        session->status_controller()->mutable_conflict_progress());
+        session->mutable_status_controller()->mutable_conflict_progress());
     had_single_direction_sets = ProcessSingleDirectionConflictSets(&trans,
         session->context()->resolver(),
         session->context()->directory_manager()->GetCryptographer(&trans),
-        session->status_controller(), session->routing_info());
+        session->mutable_status_controller(), session->routing_info());
     // We applied some updates transactionally, lets try syncing again.
     if (had_single_direction_sets)
       return true;
@@ -62,10 +62,12 @@ bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
     syncable::WriteTransaction* trans, ConflictResolver* resolver,
     Cryptographer* cryptographer, StatusController* status,
     const ModelSafeRoutingInfo& routes) {
+  if (!status->conflict_progress())
+    return false;
   bool rv = false;
   set<ConflictSet*>::const_iterator all_sets_iterator;
-  for (all_sets_iterator = status->conflict_progress().ConflictSetsBegin();
-       all_sets_iterator != status->conflict_progress().ConflictSetsEnd();) {
+  for (all_sets_iterator = status->conflict_progress()->ConflictSetsBegin();
+       all_sets_iterator != status->conflict_progress()->ConflictSetsEnd();) {
     const ConflictSet* conflict_set = *all_sets_iterator;
     CHECK_GE(conflict_set->size(), 2U);
     // We scan the set to see if it consists of changes of only one type.
@@ -227,7 +229,8 @@ void BuildAndProcessConflictSetsCommand::BuildConflictSets(
     syncable::BaseTransaction* trans,
     ConflictProgress* conflict_progress) {
   conflict_progress->CleanupSets();
-  set<syncable::Id>::iterator i = conflict_progress->ConflictingItemsBegin();
+  set<syncable::Id>::const_iterator i =
+      conflict_progress->ConflictingItemsBegin();
   while (i != conflict_progress->ConflictingItemsEnd()) {
     syncable::Entry entry(trans, syncable::GET_BY_ID, *i);
     if (!entry.good() ||

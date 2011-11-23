@@ -20,14 +20,14 @@ PostCommitMessageCommand::PostCommitMessageCommand() {}
 PostCommitMessageCommand::~PostCommitMessageCommand() {}
 
 void PostCommitMessageCommand::ExecuteImpl(sessions::SyncSession* session) {
-  if (session->status_controller()->commit_ids().empty())
+  if (session->status_controller().commit_ids().empty())
     return;  // Nothing to commit.
   ClientToServerResponse response;
   syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                 session->context()->account_name());
   if (!dir.good())
     return;
-  sessions::StatusController* status = session->status_controller();
+  sessions::StatusController* status = session->mutable_status_controller();
   if (!SyncerProtoUtil::PostClientToServerMessage(status->commit_message(),
           &response, session)) {
     // None of our changes got through.  Clear the SYNCING bit which was

@@ -228,12 +228,8 @@ ConflictProgress::ConflictSetsSize() const {
   return conflict_sets_.size();
 }
 
-std::set<syncable::Id>::iterator
-ConflictProgress::ConflictingItemsBegin() {
-  return conflicting_item_ids_.begin();
-}
 std::set<syncable::Id>::const_iterator
-ConflictProgress::ConflictingItemsBeginConst() const {
+ConflictProgress::ConflictingItemsBegin() const {
   return conflicting_item_ids_.begin();
 }
 std::set<syncable::Id>::const_iterator

@@ -82,7 +82,7 @@ class SyncSessionTest : public testing::Test,
     out->swap(routes_);
   }
 
-  StatusController* status() { return session_->status_controller(); }
+  StatusController* status() { return session_->mutable_status_controller(); }
  protected:
   void FailControllerInvocationIfDisabled(const std::string& msg) {
     if (!controller_invocations_allowed_)

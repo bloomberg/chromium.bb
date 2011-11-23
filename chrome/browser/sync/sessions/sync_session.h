@@ -125,10 +125,16 @@ class SyncSession {
   // SyncShare (e.g., HasMoreToSync returned true).
   void ResetTransientState();
 
+  // TODO(akalin): Split this into context() and mutable_context().
   SyncSessionContext* context() const { return context_; }
   Delegate* delegate() const { return delegate_; }
   syncable::WriteTransaction* write_transaction() { return write_transaction_; }
-  StatusController* status_controller() { return status_controller_.get(); }
+  const StatusController& status_controller() const {
+    return *status_controller_.get();
+  }
+  StatusController* mutable_status_controller() {
+    return status_controller_.get();
+  }
 
   const ExtensionsActivityMonitor::Records& extensions_activity() const {
     return extensions_activity_;

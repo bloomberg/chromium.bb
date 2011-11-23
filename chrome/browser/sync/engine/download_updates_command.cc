@@ -97,7 +97,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   VLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
       update_response);
 
-  StatusController* status = session->status_controller();
+  StatusController* status = session->mutable_status_controller();
   status->set_updates_request_types(enabled_types);
   if (!ok) {
     status->increment_num_consecutive_errors();
@@ -115,36 +115,19 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
           << " updates left on server.";
 }
 
-void DownloadUpdatesCommand::SetRequestedTypes(
-    const syncable::ModelTypeBitSet& target_datatypes,
-    sync_pb::EntitySpecifics* filter_protobuf) {
-  // The datatypes which should be synced are dictated by the value of the
-  // ModelSafeRoutingInfo.  If a datatype is in the routing info map, it
-  // should be synced (even if it's GROUP_PASSIVE).
-  int requested_type_count = 0;
-  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
-    if (target_datatypes[i]) {
-      requested_type_count++;
-      syncable::AddDefaultExtensionValue(syncable::ModelTypeFromInt(i),
-                                         filter_protobuf);
-    }
-  }
-  DCHECK_LT(0, requested_type_count) << "Doing GetUpdates with empty filter.";
-}
-
 void DownloadUpdatesCommand::AppendClientDebugInfoIfNeeded(
     sessions::SyncSession* session,
     DebugInfo* debug_info) {
   // We want to send the debug info only once per sync cycle. Check if it has
   // already been sent.
-  if (!session->status_controller()->debug_info_sent()) {
+  if (!session->status_controller().debug_info_sent()) {
     VLOG(1) << "Sending client debug info ...";
     // could be null in some unit tests.
     if (session->context()->debug_info_getter()) {
       session->context()->debug_info_getter()->GetAndClearDebugInfo(
           debug_info);
     }
-    session->status_controller()->set_debug_info_sent();
+    session->mutable_status_controller()->set_debug_info_sent();
   }
 }
 

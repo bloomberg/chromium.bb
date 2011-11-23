@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,7 @@ void SyncerCommand::SendNotifications(SyncSession* session) {
     return;
   }
 
-  if (session->status_controller()->TestAndClearIsDirty()) {
+  if (session->mutable_status_controller()->TestAndClearIsDirty()) {
     SyncEngineEvent event(SyncEngineEvent::STATUS_CHANGED);
     const sessions::SyncSessionSnapshot& snapshot(session->TakeSnapshot());
     event.snapshot = &snapshot;

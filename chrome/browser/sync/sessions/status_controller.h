@@ -36,6 +36,7 @@
 #include <vector>
 #include <map>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/time.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
@@ -53,28 +54,17 @@ class StatusController {
   // since it was created or was last reset.
   bool TestAndClearIsDirty();
 
-  // Progress counters.
-  const ConflictProgress& conflict_progress() {
-    return GetOrCreateModelSafeGroupState(true,
-        group_restriction_)->conflict_progress;
-  }
-  ConflictProgress* mutable_conflict_progress() {
-    return &GetOrCreateModelSafeGroupState(true,
-        group_restriction_)->conflict_progress;
-  }
-  const UpdateProgress& update_progress() {
-    return GetOrCreateModelSafeGroupState(true,
-        group_restriction_)->update_progress;
-  }
-  UpdateProgress* mutable_update_progress() {
-    return &GetOrCreateModelSafeGroupState(true,
-        group_restriction_)->update_progress;
-  }
-  // Some unrestricted, non-ModelChangingSyncerCommand commands need to store
-  // meta information about updates.
-  UpdateProgress* GetUnrestrictedUpdateProgress(ModelSafeGroup group) {
-    return &GetOrCreateModelSafeGroupState(false, group)->update_progress;
-  }
+  // Progress counters.  All const methods may return NULL if the
+  // progress structure doesn't exist, but all non-const methods
+  // auto-create.
+  const ConflictProgress* conflict_progress() const;
+  ConflictProgress* mutable_conflict_progress();
+  const UpdateProgress* update_progress() const;
+  UpdateProgress* mutable_update_progress();
+  const ConflictProgress* GetUnrestrictedConflictProgress(
+      ModelSafeGroup group) const;
+  const UpdateProgress* GetUnrestrictedUpdateProgress(
+      ModelSafeGroup group) const;
 
   // ClientToServer messages.
   const ClientToServerMessage& commit_message() {
@@ -129,8 +119,12 @@ class StatusController {
     DCHECK(CurrentCommitIdProjectionHasIndex(index));
     return shared_.commit_set.GetCommitIdAt(index);
   }
-  syncable::ModelType GetCommitIdModelTypeAt(size_t index) {
+  syncable::ModelType GetCommitModelTypeAt(size_t index) {
     DCHECK(CurrentCommitIdProjectionHasIndex(index));
+    return shared_.commit_set.GetModelTypeAt(index);
+  }
+  syncable::ModelType GetUnrestrictedCommitModelTypeAt(size_t index) const {
+    DCHECK(!group_restriction_in_effect_) << "Group restriction in effect!";
     return shared_.commit_set.GetModelTypeAt(index);
   }
   const std::vector<int64>& unsynced_handles() const {
@@ -241,7 +235,7 @@ class StatusController {
 
   void set_debug_info_sent();
 
-  bool debug_info_sent();
+  bool debug_info_sent() const;
 
  private:
   friend class ScopedModelSafeGroupRestriction;
@@ -250,9 +244,13 @@ class StatusController {
   // references position |index| into the full set of commit ids in play.
   bool CurrentCommitIdProjectionHasIndex(size_t index);
 
+  // Returns the state, if it exists, or NULL otherwise.
+  const PerModelSafeGroupState* GetModelSafeGroupState(
+      bool restrict, ModelSafeGroup group) const;
+
   // Helper to lazily create objects for per-ModelSafeGroup state.
-  PerModelSafeGroupState* GetOrCreateModelSafeGroupState(bool restrict,
-                                                         ModelSafeGroup group);
+  PerModelSafeGroupState* GetOrCreateModelSafeGroupState(
+      bool restrict, ModelSafeGroup group);
 
   AllModelTypeState shared_;
   std::map<ModelSafeGroup, PerModelSafeGroupState*> per_model_group_;

@@ -10,7 +10,7 @@ namespace test_util {
 
 void SimulateHasMoreToSync(sessions::SyncSession* session,
                            SyncerStep begin, SyncerStep end) {
-  session->status_controller()->update_conflicts_resolved(true);
+  session->mutable_status_controller()->update_conflicts_resolved(true);
   ASSERT_TRUE(session->HasMoreToSync());
 }
 
@@ -19,7 +19,7 @@ void SimulateDownloadUpdatesFailed(sessions::SyncSession* session,
   // Note that a non-zero value of changes_remaining once a session has
   // completed implies that the Syncer was unable to exhaust this count during
   // the GetUpdates cycle.  This is an indication that an error occurred.
-  session->status_controller()->set_num_server_changes_remaining(1);
+  session->mutable_status_controller()->set_num_server_changes_remaining(1);
 }
 
 void SimulateCommitFailed(sessions::SyncSession* session,
@@ -30,7 +30,7 @@ void SimulateCommitFailed(sessions::SyncSession* session,
   // See implementation of SyncSession::HasMoreToSync.
   std::vector<int64> handles;
   handles.push_back(1);
-  session->status_controller()->set_unsynced_handles(handles);
+  session->mutable_status_controller()->set_unsynced_handles(handles);
 }
 
 void SimulateSuccess(sessions::SyncSession* session,
@@ -38,8 +38,8 @@ void SimulateSuccess(sessions::SyncSession* session,
   if (session->HasMoreToSync()) {
     ADD_FAILURE() << "Shouldn't have more to sync";
   }
-  ASSERT_EQ(0U, session->status_controller()->num_server_changes_remaining());
-  ASSERT_EQ(0U, session->status_controller()->unsynced_handles().size());
+  ASSERT_EQ(0U, session->status_controller().num_server_changes_remaining());
+  ASSERT_EQ(0U, session->status_controller().unsynced_handles().size());
 }
 
 void SimulateThrottledImpl(sessions::SyncSession* session,

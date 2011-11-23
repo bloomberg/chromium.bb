@@ -28,7 +28,7 @@ ProcessUpdatesCommand::~ProcessUpdatesCommand() {}
 
 bool ProcessUpdatesCommand::ModelNeutralExecuteImpl(SyncSession* session) {
   const GetUpdatesResponse& updates =
-      session->status_controller()->updates_response().get_updates();
+      session->status_controller().updates_response().get_updates();
   const int update_count = updates.entries_size();
 
   // Don't bother processing updates if there were none.
@@ -43,13 +43,15 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
     return;
   }
 
-  StatusController* status = session->status_controller();
+  const sessions::UpdateProgress* progress =
+      session->status_controller().update_progress();
+  if (!progress)
+    return;  // Nothing to do.
 
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
-  const sessions::UpdateProgress& progress(status->update_progress());
   vector<sessions::VerifiedUpdate>::const_iterator it;
-  for (it = progress.VerifiedUpdatesBegin();
-       it != progress.VerifiedUpdatesEnd();
+  for (it = progress->VerifiedUpdatesBegin();
+       it != progress->VerifiedUpdatesEnd();
        ++it) {
     const sync_pb::SyncEntity& update = it->second;
 
@@ -65,10 +67,9 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
     }
   }
 
+  StatusController* status = session->mutable_status_controller();
   status->set_num_consecutive_errors(0);
-
   status->mutable_update_progress()->ClearVerifiedUpdates();
-  return;
 }
 
 namespace {

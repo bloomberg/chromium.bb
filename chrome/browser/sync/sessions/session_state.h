@@ -177,8 +177,7 @@ class ConflictProgress {
   void AddConflictingItemById(const syncable::Id& the_id);
   void EraseConflictingItemById(const syncable::Id& the_id);
   int ConflictingItemsSize() const { return conflicting_item_ids_.size(); }
-  std::set<syncable::Id>::iterator ConflictingItemsBegin();
-  std::set<syncable::Id>::const_iterator ConflictingItemsBeginConst() const;
+  std::set<syncable::Id>::const_iterator ConflictingItemsBegin() const;
   std::set<syncable::Id>::const_iterator ConflictingItemsEnd() const;
 
   // Mutators for nonblocking conflicting items (see description below).

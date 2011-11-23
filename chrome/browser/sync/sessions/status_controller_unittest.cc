@@ -154,19 +154,19 @@ TEST_F(StatusControllerTest, HasConflictingUpdates) {
   EXPECT_FALSE(status.HasConflictingUpdates());
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
-    EXPECT_FALSE(status.update_progress().HasConflictingUpdates());
+    EXPECT_FALSE(status.update_progress());
     status.mutable_update_progress()->AddAppliedUpdate(SUCCESS,
         syncable::Id());
     status.mutable_update_progress()->AddAppliedUpdate(CONFLICT,
         syncable::Id());
-    EXPECT_TRUE(status.update_progress().HasConflictingUpdates());
+    EXPECT_TRUE(status.update_progress()->HasConflictingUpdates());
   }
 
   EXPECT_TRUE(status.HasConflictingUpdates());
 
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_PASSIVE);
-    EXPECT_FALSE(status.update_progress().HasConflictingUpdates());
+    EXPECT_FALSE(status.update_progress());
   }
 }
 
@@ -186,17 +186,18 @@ TEST_F(StatusControllerTest, TotalNumConflictingItems) {
   TestIdFactory f;
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
+    EXPECT_FALSE(status.conflict_progress());
     status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
     status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
-    EXPECT_EQ(2, status.conflict_progress().ConflictingItemsSize());
+    EXPECT_EQ(2, status.conflict_progress()->ConflictingItemsSize());
   }
   EXPECT_EQ(2, status.TotalNumConflictingItems());
   {
     ScopedModelSafeGroupRestriction r(&status, GROUP_DB);
-    EXPECT_EQ(0, status.conflict_progress().ConflictingItemsSize());
+    EXPECT_FALSE(status.conflict_progress());
     status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
     status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
-    EXPECT_EQ(2, status.conflict_progress().ConflictingItemsSize());
+    EXPECT_EQ(2, status.conflict_progress()->ConflictingItemsSize());
   }
   EXPECT_EQ(4, status.TotalNumConflictingItems());
 }
@@ -204,8 +205,9 @@ TEST_F(StatusControllerTest, TotalNumConflictingItems) {
 // Basic test that non group-restricted state accessors don't cause violations.
 TEST_F(StatusControllerTest, Unrestricted) {
   StatusController status(routes_);
-  status.GetUnrestrictedUpdateProgress(
-      GROUP_UI)->SuccessfullyAppliedUpdateCount();
+  const UpdateProgress* progress =
+      status.GetUnrestrictedUpdateProgress(GROUP_UI);
+  EXPECT_FALSE(progress);
   status.mutable_commit_message();
   status.commit_response();
   status.mutable_commit_response();

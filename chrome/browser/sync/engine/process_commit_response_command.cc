@@ -68,14 +68,14 @@ bool ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
     return false;
   }
 
-  StatusController* status = session->status_controller();
-  const ClientToServerResponse& response(status->commit_response());
-  const vector<syncable::Id>& commit_ids(status->commit_ids());
+  const StatusController& status = session->status_controller();
+  const ClientToServerResponse& response(status.commit_response());
+  const vector<syncable::Id>& commit_ids(status.commit_ids());
 
   if (!response.has_commit()) {
     // TODO(sync): What if we didn't try to commit anything?
     LOG(WARNING) << "Commit response has no commit body!";
-    IncrementErrorCounters(status);
+    IncrementErrorCounters(session->mutable_status_controller());
     return false;
   }
 
@@ -90,7 +90,7 @@ bool ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
       if (cr.entryresponse(i).has_error_message())
         LOG(ERROR) << "  " << cr.entryresponse(i).error_message();
     }
-    IncrementErrorCounters(status);
+    IncrementErrorCounters(session->mutable_status_controller());
     return false;
   }
   return true;
@@ -100,8 +100,8 @@ void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
     SyncSession* session) {
   ProcessCommitResponse(session);
   ExtensionsActivityMonitor* monitor = session->context()->extensions_monitor();
-  if (session->status_controller()->HasBookmarkCommitActivity() &&
-      session->status_controller()->syncer_status()
+  if (session->status_controller().HasBookmarkCommitActivity() &&
+      session->status_controller().syncer_status()
           .num_successful_bookmark_commits == 0) {
     monitor->PutRecords(session->extensions_activity());
     session->mutable_extensions_activity()->clear();
@@ -119,7 +119,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
     return;
   }
 
-  StatusController* status = session->status_controller();
+  StatusController* status = session->mutable_status_controller();
   const ClientToServerResponse& response(status->commit_response());
   const CommitResponse& cr = response.commit();
   const sync_pb::CommitMessage& commit_message =
@@ -159,7 +159,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
         case CommitResponse::SUCCESS:
           // TODO(sync): worry about sync_rate_ rate calc?
           ++successes;
-          if (status->GetCommitIdModelTypeAt(proj[i]) == syncable::BOOKMARKS)
+          if (status->GetCommitModelTypeAt(proj[i]) == syncable::BOOKMARKS)
             status->increment_num_successful_bookmark_commits();
           status->increment_num_successful_commits();
           break;

@@ -45,7 +45,8 @@ void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
       continue;
     }
 
-    sessions::StatusController* status = work_session_->status_controller();
+    sessions::StatusController* status =
+        work_session_->mutable_status_controller();
     sessions::ScopedModelSafeGroupRestriction r(status, group);
     WorkCallback c = base::Bind(
         &ModelChangingSyncerCommand::StartChangingModel,

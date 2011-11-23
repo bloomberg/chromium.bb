@@ -843,9 +843,9 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
   // forward progress was possible at this time (an error, such as an HTTP
   // 500, is likely to have occurred during commit).
   int num_server_changes_remaining =
-      old_job.session->status_controller()->num_server_changes_remaining();
+      old_job.session->status_controller().num_server_changes_remaining();
   size_t num_unsynced_handles =
-      old_job.session->status_controller()->unsynced_handles().size();
+      old_job.session->status_controller().unsynced_handles().size();
   const bool work_to_do =
       num_server_changes_remaining > 0 || num_unsynced_handles > 0;
   SVLOG(2) << "num server changes remaining: " << num_server_changes_remaining

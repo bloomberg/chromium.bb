@@ -83,7 +83,7 @@ class SyncSessionContext {
     DCHECK(account_name_.empty());
     account_name_ = name;
   }
-  const std::string& account_name() { return account_name_; }
+  const std::string& account_name() const { return account_name_; }
 
   void set_max_commit_batch_size(int batch_size) {
     max_commit_batch_size_ = batch_size;

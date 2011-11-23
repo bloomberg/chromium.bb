@@ -49,7 +49,7 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
   FilterUnreadyEntries(session->write_transaction(),
                        &all_unsynced_handles);
 
-  StatusController* status = session->status_controller();
+  StatusController* status = session->mutable_status_controller();
   status->set_unsynced_handles(all_unsynced_handles);
   BuildCommitIds(status->unsynced_handles(), session->write_transaction(),
                  session->routing_info());

@@ -84,11 +84,13 @@ const char* SyncerStepToString(const SyncerStep step)
 
 Syncer::ScopedSyncStartStopTracker::ScopedSyncStartStopTracker(
     sessions::SyncSession* session) : session_(session) {
-  session_->status_controller()->SetSyncInProgressAndUpdateStartTime(true);
+  session_->mutable_status_controller()->
+      SetSyncInProgressAndUpdateStartTime(true);
 }
 
 Syncer::ScopedSyncStartStopTracker::~ScopedSyncStartStopTracker() {
-  session_->status_controller()->SetSyncInProgressAndUpdateStartTime(false);
+  session_->mutable_status_controller()->
+      SetSyncInProgressAndUpdateStartTime(false);
 }
 
 Syncer::Syncer()
@@ -179,8 +181,8 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         store_timestamps.Execute(session);
         // We should download all of the updates before attempting to process
         // them.
-        if (session->status_controller()->ServerSaysNothingMoreToDownload() ||
-            !session->status_controller()->download_updates_succeeded()) {
+        if (session->status_controller().ServerSaysNothingMoreToDownload() ||
+            !session->status_controller().download_updates_succeeded()) {
           next_step = APPLY_UPDATES;
         } else {
           next_step = DOWNLOAD_UPDATES;
@@ -217,7 +219,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
             session->context()->max_commit_batch_size());
         get_commit_ids_command.Execute(session);
 
-        if (!session->status_controller()->commit_ids().empty()) {
+        if (!session->status_controller().commit_ids().empty()) {
           VLOG(1) << "Building a commit message";
           BuildCommitCommand build_commit_command;
           build_commit_command.Execute(session);
@@ -236,7 +238,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case PROCESS_COMMIT_RESPONSE: {
-        session->status_controller()->reset_num_conflicting_commits();
+        session->mutable_status_controller()->reset_num_conflicting_commits();
         ProcessCommitResponseCommand process_response_command;
         process_response_command.Execute(session);
         next_step = BUILD_AND_PROCESS_CONFLICT_SETS;
@@ -245,7 +247,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       case BUILD_AND_PROCESS_CONFLICT_SETS: {
         BuildAndProcessConflictSetsCommand build_process_conflict_sets;
         build_process_conflict_sets.Execute(session);
-        if (session->status_controller()->conflict_sets_built())
+        if (session->status_controller().conflict_sets_built())
           next_step = SYNCER_END;
         else
           next_step = RESOLVE_CONFLICTS;
@@ -259,7 +261,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
           pre_conflict_resolution_closure_->Run();
         }
 
-        StatusController* status = session->status_controller();
+        StatusController* status = session->mutable_status_controller();
         status->reset_conflicts_resolved();
         ResolveConflictsCommand resolve_conflicts_command;
         resolve_conflicts_command.Execute(session);
@@ -273,7 +275,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         break;
       }
       case APPLY_UPDATES_TO_RESOLVE_CONFLICTS: {
-        StatusController* status = session->status_controller();
+        StatusController* status = session->mutable_status_controller();
         VLOG(1) << "Applying updates to resolve conflicts";
         ApplyUpdatesCommand apply_updates;
 
@@ -320,7 +322,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
 
 void Syncer::ProcessClientCommand(sessions::SyncSession* session) {
   const ClientToServerResponse& response =
-      session->status_controller()->updates_response();
+      session->status_controller().updates_response();
   if (!response.has_client_command())
     return;
   const ClientCommand& command = response.client_command();

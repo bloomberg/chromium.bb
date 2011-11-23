@@ -37,7 +37,7 @@ void VerifyUpdatesCommand::ModelChangingExecuteImpl(
     return;
   }
   WriteTransaction trans(FROM_HERE, SYNCER, dir);
-  sessions::StatusController* status = session->status_controller();
+  sessions::StatusController* status = session->mutable_status_controller();
   const GetUpdatesResponse& updates = status->updates_response().get_updates();
   int update_count = updates.entries().size();
 

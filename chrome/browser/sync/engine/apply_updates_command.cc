@@ -32,16 +32,16 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
       session->context()->resolver(),
       session->context()->directory_manager()->GetCryptographer(&trans),
       handles.begin(), handles.end(), session->routing_info(),
-      session->status_controller()->group_restriction());
+      session->status_controller().group_restriction());
   while (applicator.AttemptOneApplication(&trans)) {}
   applicator.SaveProgressIntoSessionState(
-      session->status_controller()->mutable_conflict_progress(),
-      session->status_controller()->mutable_update_progress());
+      session->mutable_status_controller()->mutable_conflict_progress(),
+      session->mutable_status_controller()->mutable_update_progress());
 
   // This might be the first time we've fully completed a sync cycle, for
   // some subset of the currently synced datatypes.
-  sessions::StatusController* status(session->status_controller());
-  if (status->ServerSaysNothingMoreToDownload()) {
+  const sessions::StatusController& status(session->status_controller());
+  if (status.ServerSaysNothingMoreToDownload()) {
     syncable::ScopedDirLookup dir(session->context()->directory_manager(),
                                   session->context()->account_name());
     if (!dir.good()) {
@@ -52,7 +52,7 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
     for (int i = syncable::FIRST_REAL_MODEL_TYPE;
          i < syncable::MODEL_TYPE_COUNT; ++i) {
       syncable::ModelType model_type = syncable::ModelTypeFromInt(i);
-      if (status->updates_request_types()[i]) {
+      if (status.updates_request_types()[i]) {
         // This gets persisted to the directory's backing store.
         dir->set_initial_sync_ended_for_type(model_type, true);
       }

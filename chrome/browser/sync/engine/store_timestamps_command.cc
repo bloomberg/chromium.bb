@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,9 +25,9 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
   }
 
   const GetUpdatesResponse& updates =
-      session->status_controller()->updates_response().get_updates();
+      session->status_controller().updates_response().get_updates();
 
-  sessions::StatusController* status = session->status_controller();
+  sessions::StatusController* status = session->mutable_status_controller();
 
   // Update the progress marker tokens from the server result.  If a marker
   // was omitted for any one type, that indicates no change from the previous

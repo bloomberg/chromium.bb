@@ -33,15 +33,60 @@ bool StatusController::TestAndClearIsDirty() {
   return is_dirty;
 }
 
+const UpdateProgress* StatusController::update_progress() const {
+  const PerModelSafeGroupState* state =
+      GetModelSafeGroupState(true, group_restriction_);
+  return state ? &state->update_progress : NULL;
+}
+
+UpdateProgress* StatusController::mutable_update_progress() {
+  return &GetOrCreateModelSafeGroupState(
+      true, group_restriction_)->update_progress;
+}
+
+const ConflictProgress* StatusController::conflict_progress() const {
+  const PerModelSafeGroupState* state =
+      GetModelSafeGroupState(true, group_restriction_);
+  return state ? &state->conflict_progress : NULL;
+}
+
+ConflictProgress* StatusController::mutable_conflict_progress() {
+  return &GetOrCreateModelSafeGroupState(
+      true, group_restriction_)->conflict_progress;
+}
+
+const ConflictProgress* StatusController::GetUnrestrictedConflictProgress(
+    ModelSafeGroup group) const {
+  const PerModelSafeGroupState* state =
+      GetModelSafeGroupState(false, group);
+  return state ? &state->conflict_progress : NULL;
+}
+
+const UpdateProgress* StatusController::GetUnrestrictedUpdateProgress(
+    ModelSafeGroup group) const {
+  const PerModelSafeGroupState* state =
+      GetModelSafeGroupState(false, group);
+  return state ? &state->update_progress : NULL;
+}
+
+const PerModelSafeGroupState* StatusController::GetModelSafeGroupState(
+    bool restrict, ModelSafeGroup group) const {
+  DCHECK_EQ(restrict, group_restriction_in_effect_);
+  std::map<ModelSafeGroup, PerModelSafeGroupState*>::const_iterator it =
+      per_model_group_.find(group);
+  return (it == per_model_group_.end()) ? NULL : it->second;
+}
+
 PerModelSafeGroupState* StatusController::GetOrCreateModelSafeGroupState(
     bool restrict, ModelSafeGroup group) {
-  DCHECK(restrict == group_restriction_in_effect_) << "Group violation!";
-  if (per_model_group_.find(group) == per_model_group_.end()) {
+  DCHECK_EQ(restrict, group_restriction_in_effect_);
+  std::map<ModelSafeGroup, PerModelSafeGroupState*>::iterator it =
+      per_model_group_.find(group);
+  if (it == per_model_group_.end()) {
     PerModelSafeGroupState* state = new PerModelSafeGroupState(&is_dirty_);
-    per_model_group_[group] = state;
-    return state;
+    it = per_model_group_.insert(std::make_pair(group, state)).first;
   }
-  return per_model_group_[group];
+  return it->second;
 }
 
 void StatusController::increment_num_conflicting_commits_by(int value) {
@@ -246,7 +291,7 @@ void StatusController::set_debug_info_sent() {
   shared_.control_params.debug_info_sent = true;
 }
 
-bool StatusController::debug_info_sent() {
+bool StatusController::debug_info_sent() const {
   return shared_.control_params.debug_info_sent;
 }
 

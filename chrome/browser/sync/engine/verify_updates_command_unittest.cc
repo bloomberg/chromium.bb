@@ -81,7 +81,7 @@ TEST_F(VerifyUpdatesCommandTest, AllVerified) {
   CreateLocalItem("p1", root, syncable::PREFERENCES);
   CreateLocalItem("a1", root, syncable::AUTOFILL);
 
-  GetUpdatesResponse* updates = session()->status_controller()->
+  GetUpdatesResponse* updates = session()->mutable_status_controller()->
       mutable_updates_response()->mutable_get_updates();
   AddUpdate(updates, "b1", root, syncable::BOOKMARKS);
   AddUpdate(updates, "b2", root, syncable::BOOKMARKS);
@@ -90,18 +90,20 @@ TEST_F(VerifyUpdatesCommandTest, AllVerified) {
 
   command_.ExecuteImpl(session());
 
-  StatusController* status = session()->status_controller();
+  StatusController* status = session()->mutable_status_controller();
   {
     sessions::ScopedModelSafeGroupRestriction r(status, GROUP_UI);
-    EXPECT_EQ(3, status->update_progress().VerifiedUpdatesSize());
+    ASSERT_TRUE(status->update_progress());
+    EXPECT_EQ(3, status->update_progress()->VerifiedUpdatesSize());
   }
   {
     sessions::ScopedModelSafeGroupRestriction r(status, GROUP_DB);
-    EXPECT_EQ(1, status->update_progress().VerifiedUpdatesSize());
+    ASSERT_TRUE(status->update_progress());
+    EXPECT_EQ(1, status->update_progress()->VerifiedUpdatesSize());
   }
   {
     sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
-    EXPECT_EQ(0, status->update_progress().VerifiedUpdatesSize());
+    EXPECT_FALSE(status->update_progress());
   }
 }
 

@@ -126,7 +126,8 @@ class ProcessCommitResponseCommandTestWithParam
                                      const Id& parent_id,
                                      const string& name,
                                      syncable::ModelType model_type) {
-    sessions::StatusController* sync_state = session()->status_controller();
+    sessions::StatusController* sync_state =
+        session()->mutable_status_controller();
     bool is_folder = true;
     int64 metahandle = 0;
     CreateUnsyncedItem(item_id, parent_id, name, is_folder, model_type,
@@ -187,7 +188,8 @@ class ProcessCommitResponseCommandTestWithParam
   }
 
   void SetLastErrorCode(CommitResponse::ResponseType error_code) {
-    sessions::StatusController* sync_state = session()->status_controller();
+    sessions::StatusController* sync_state =
+        session()->mutable_status_controller();
     sync_pb::ClientToServerResponse* response =
         sync_state->mutable_commit_response();
     sync_pb::CommitResponse_EntryResponse* entry_response =

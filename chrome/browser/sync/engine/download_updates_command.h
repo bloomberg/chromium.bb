@@ -46,9 +46,6 @@ class DownloadUpdatesCommand : public SyncerCommand {
   // SyncerCommand implementation.
   virtual void ExecuteImpl(sessions::SyncSession* session) OVERRIDE;
 
-  void SetRequestedTypes(const syncable::ModelTypeBitSet& target_datatypes,
-                         sync_pb::EntitySpecifics* filter_protobuf);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(DownloadUpdatesCommandTest, VerifyAppendDebugInfo);
   void AppendClientDebugInfoIfNeeded(sessions::SyncSession* session,

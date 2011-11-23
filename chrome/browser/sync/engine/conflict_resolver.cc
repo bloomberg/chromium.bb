@@ -455,14 +455,15 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
   // that's obviously not working.
 }
 
-bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
-                                              StatusController* status) {
+bool ConflictResolver::ResolveSimpleConflicts(
+    const ScopedDirLookup& dir,
+    const ConflictProgress& progress,
+    sessions::StatusController* status) {
   WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   bool forward_progress = false;
-  const ConflictProgress& progress = status->conflict_progress();
   // First iterate over simple conflict items (those that belong to no set).
   set<Id>::const_iterator conflicting_item_it;
-  for (conflicting_item_it = progress.ConflictingItemsBeginConst();
+  for (conflicting_item_it = progress.ConflictingItemsBegin();
        conflicting_item_it != progress.ConflictingItemsEnd();
        ++conflicting_item_it) {
     Id id = *conflicting_item_it;
@@ -497,10 +498,10 @@ bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
 }
 
 bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
-                                        StatusController* status) {
-  const ConflictProgress& progress = status->conflict_progress();
+                                        const ConflictProgress& progress,
+                                        sessions::StatusController* status) {
   bool rv = false;
-  if (ResolveSimpleConflicts(dir, status))
+  if (ResolveSimpleConflicts(dir, progress, status))
     rv = true;
   WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   set<ConflictSet*>::const_iterator set_it;

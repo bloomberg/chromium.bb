@@ -93,7 +93,8 @@ void SyncerProtoUtil::HandleMigrationDoneResponse(
         response->migrated_data_type_id(i)));
   }
   // TODO(akalin): This should be a set union.
-  session->status_controller()->set_types_needing_local_migration(to_migrate);
+  session->mutable_status_controller()->
+      set_types_needing_local_migration(to_migrate);
 }
 
 // static
@@ -313,7 +314,7 @@ bool SyncerProtoUtil::PostClientToServerMessage(
   }
 
   // Now set the error into the status so the layers above us could read it.
-  sessions::StatusController* status = session->status_controller();
+  sessions::StatusController* status = session->mutable_status_controller();
   status->set_sync_protocol_error(sync_protocol_error);
 
   // Inform the delegate of the error we got.

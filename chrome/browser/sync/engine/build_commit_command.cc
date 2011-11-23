@@ -57,7 +57,7 @@ void BuildCommitCommand::AddExtensionsActivityToMessage(
   // We only send ExtensionsActivity to the server if bookmarks are being
   // committed.
   ExtensionsActivityMonitor* monitor = session->context()->extensions_monitor();
-  if (!session->status_controller()->HasBookmarkCommitActivity()) {
+  if (!session->status_controller().HasBookmarkCommitActivity()) {
     // Return the records to the activity monitor.
     monitor->PutRecords(session->extensions_activity());
     session->mutable_extensions_activity()->clear();
@@ -105,7 +105,7 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   // whose ID is the map's key.
   std::map<Id, std::pair<int64, int64> > position_map;
 
-  const vector<Id>& commit_ids = session->status_controller()->commit_ids();
+  const vector<Id>& commit_ids = session->status_controller().commit_ids();
   for (size_t i = 0; i < commit_ids.size(); i++) {
     Id id = commit_ids[i];
     SyncEntity* sync_entry =
@@ -208,7 +208,8 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
       SetEntrySpecifics(&meta_entry, sync_entry);
     }
   }
-  session->status_controller()->mutable_commit_message()->CopyFrom(message);
+  session->mutable_status_controller()->
+      mutable_commit_message()->CopyFrom(message);
 }
 
 int64 BuildCommitCommand::FindAnchorPosition(syncable::IdField direction,

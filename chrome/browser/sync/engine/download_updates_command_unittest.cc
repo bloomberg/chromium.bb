@@ -42,68 +42,6 @@ class DownloadUpdatesCommandTest : public SyncerCommandTest {
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommandTest);
 };
 
-TEST_F(DownloadUpdatesCommandTest, SetRequestedTypes) {
-  {
-    SCOPED_TRACE("Several enabled datatypes, spread out across groups.");
-    syncable::ModelTypeBitSet enabled_types;
-    enabled_types[syncable::BOOKMARKS] = true;
-    enabled_types[syncable::AUTOFILL] = true;
-    enabled_types[syncable::PREFERENCES] = true;
-    sync_pb::EntitySpecifics get_updates_filter;
-    command_.SetRequestedTypes(enabled_types, &get_updates_filter);
-    ProtoExtensionValidator<sync_pb::EntitySpecifics> v(get_updates_filter);
-    v.ExpectHasExtension(sync_pb::autofill);
-    v.ExpectHasExtension(sync_pb::preference);
-    v.ExpectHasExtension(sync_pb::bookmark);
-    v.ExpectNoOtherFieldsOrExtensions();
-  }
-
-  {
-    SCOPED_TRACE("Top level folders.");
-    syncable::ModelTypeBitSet enabled_types;
-    enabled_types[syncable::TOP_LEVEL_FOLDER] = true;
-    enabled_types[syncable::BOOKMARKS] = true;
-    sync_pb::EntitySpecifics get_updates_filter;
-    command_.SetRequestedTypes(enabled_types, &get_updates_filter);
-    ProtoExtensionValidator<sync_pb::EntitySpecifics> v(get_updates_filter);
-    v.ExpectHasExtension(sync_pb::bookmark);
-    v.ExpectNoOtherFieldsOrExtensions();
-  }
-
-  {
-    SCOPED_TRACE("Bookmarks only.");
-    syncable::ModelTypeBitSet enabled_types;
-    enabled_types[syncable::BOOKMARKS] = true;
-    sync_pb::EntitySpecifics get_updates_filter;
-    command_.SetRequestedTypes(enabled_types, &get_updates_filter);
-    ProtoExtensionValidator<sync_pb::EntitySpecifics> v(get_updates_filter);
-    v.ExpectHasExtension(sync_pb::bookmark);
-    v.ExpectNoOtherFieldsOrExtensions();
-  }
-
-  {
-    SCOPED_TRACE("Autofill only.");
-    syncable::ModelTypeBitSet enabled_types;
-    enabled_types[syncable::AUTOFILL] = true;
-    sync_pb::EntitySpecifics get_updates_filter;
-    command_.SetRequestedTypes(enabled_types, &get_updates_filter);
-    ProtoExtensionValidator<sync_pb::EntitySpecifics> v(get_updates_filter);
-    v.ExpectHasExtension(sync_pb::autofill);
-    v.ExpectNoOtherFieldsOrExtensions();
-  }
-
-  {
-    SCOPED_TRACE("Preferences only.");
-    syncable::ModelTypeBitSet enabled_types;
-    enabled_types[syncable::PREFERENCES] = true;
-    sync_pb::EntitySpecifics get_updates_filter;
-    command_.SetRequestedTypes(enabled_types, &get_updates_filter);
-    ProtoExtensionValidator<sync_pb::EntitySpecifics> v(get_updates_filter);
-    v.ExpectHasExtension(sync_pb::preference);
-    v.ExpectNoOtherFieldsOrExtensions();
-  }
-}
-
 TEST_F(DownloadUpdatesCommandTest, ExecuteNoPayloads) {
   ConfigureMockServerConnection();
   mock_server()->ExpectGetUpdatesRequestTypes(
