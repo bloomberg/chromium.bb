@@ -806,8 +806,6 @@ class ArchiveStage(NonHaltingBuilderStage):
     Arguments:
       success: True to indicate the symbols were generated, else False.
     """
-    if not success:
-      cros_lib.Warning('Failed to generate breakpad symbols.')
     self._breakpad_symbols_queue.put(success)
 
   def _WaitForBreakpadSymbols(self):
@@ -960,6 +958,8 @@ class ArchiveStage(NonHaltingBuilderStage):
             buildroot, board, archive_path, config['archive_build_debug'])
         upload_queue.put(filename)
         debug_tarball_queue.put(filename)
+      else:
+        self._BreakpadSymbolsGenerated(False)
 
     def UploadDebugSymbols():
       if not debug and config['upload_symbols']:
