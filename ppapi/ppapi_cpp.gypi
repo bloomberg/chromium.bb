@@ -333,6 +333,7 @@
             'nlib_target': 'libppapi_cpp.a',
             'build_glibc': 0,
             'build_newlib': 1,
+            'inst_dir': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib',
             'sources': [
               'cpp/audio.cc',
               'cpp/audio.h',

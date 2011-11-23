@@ -444,12 +444,12 @@
               '-lppapi',
             ],
             'extra_deps64': [
-              '<(PRODUCT_DIR)/obj/gen/tc_newlib/lib64/libppapi_cpp.a',
-              '<(PRODUCT_DIR)/obj/gen/tc_newlib/lib64/libppapi.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi_cpp.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib64/libppapi.a',
             ],
             'extra_deps32': [
-              '<(PRODUCT_DIR)/obj/gen/tc_newlib/lib32/libppapi_cpp.a',
-              '<(PRODUCT_DIR)/obj/gen/tc_newlib/lib32/libppapi.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi_cpp.a',
+              '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/lib32/libppapi.a',
             ],
             'sources': [
               # Common test files
