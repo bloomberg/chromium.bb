@@ -842,6 +842,15 @@ desktop_shell_set_background(struct wl_client *client,
 	struct wlsc_surface *surface = surface_resource->data;
 	struct shell_surface *priv;
 
+	wl_list_for_each(priv, &shell->backgrounds, link) {
+		if (priv->output == output_resource->data) {
+			priv->surface->output = NULL;
+			wl_list_remove(&priv->surface->link);
+			wl_list_remove(&priv->link);
+			break;
+		}
+	}
+
 	priv = get_shell_surface(surface);
 	priv->type = SHELL_SURFACE_BACKGROUND;
 	priv->output = output_resource->data;
@@ -867,6 +876,15 @@ desktop_shell_set_panel(struct wl_client *client,
 	struct wl_shell *shell = resource->data;
 	struct wlsc_surface *surface = surface_resource->data;
 	struct shell_surface *priv;
+
+	wl_list_for_each(priv, &shell->panels, link) {
+		if (priv->output == output_resource->data) {
+			priv->surface->output = NULL;
+			wl_list_remove(&priv->surface->link);
+			wl_list_remove(&priv->link);
+			break;
+		}
+	}
 
 	priv = get_shell_surface(surface);
 	priv->type = SHELL_SURFACE_PANEL;
