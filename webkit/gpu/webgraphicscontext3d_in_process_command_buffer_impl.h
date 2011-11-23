@@ -16,7 +16,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if !defined(OS_MACOSX)
+#if defined(USE_SKIA)
 #define FLIP_FRAMEBUFFER_VERTICALLY
 #endif
 

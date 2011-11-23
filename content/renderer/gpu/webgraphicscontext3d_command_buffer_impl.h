@@ -21,7 +21,7 @@
 #include "ui/gfx/gl/gpu_preference.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if !defined(OS_MACOSX)
+#if defined(USE_SKIA)
 #define FLIP_FRAMEBUFFER_VERTICALLY
 #endif
 

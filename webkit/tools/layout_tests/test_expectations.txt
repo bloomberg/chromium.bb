@@ -6,3 +6,7 @@
 // until the changes can be landed upstream.
 
 // PLEASE DO NOT LEAVE ENTRIES IN THIS FILE FOR MORE THAN 24 HRS.
+
+// These can be removed once http://trac.webkit.org/changeset/101075 has been rolled into Chrome.
+BUGCR105025 MAC CPU GPU : fast/canvas/webgl/css-webkit-canvas.html = IMAGE 
+BUGCR105025 MAC CPU GPU : fast/canvas/webgl/css-webkit-canvas-repaint.html = IMAGE
