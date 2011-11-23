@@ -97,10 +97,6 @@ ProfileInfoCache* TestingProfileManager::profile_info_cache() {
   return &profile_manager_->GetProfileInfoCache();
 }
 
-void TestingProfileManager::DeleteProfileInfoCache() {
-  profile_manager_->profile_info_cache_.reset(NULL);
-}
-
 void TestingProfileManager::SetUpInternal() {
   ASSERT_FALSE(browser_process_->profile_manager())
       << "ProfileManager already exists";

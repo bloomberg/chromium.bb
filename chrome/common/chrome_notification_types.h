@@ -929,10 +929,6 @@ enum NotificationType {
   // Sent when the cached profile info has changed.
   NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
 
-  // Sent when the cached profile has finished writing a profile picture to
-  // disk.
-  NOTIFICATION_PROFILE_CACHE_PICTURE_SAVED,
-
   // Sent when the browser enters or exits fullscreen mode.
   NOTIFICATION_FULLSCREEN_CHANGED,
 

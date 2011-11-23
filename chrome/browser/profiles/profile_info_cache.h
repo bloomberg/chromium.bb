@@ -6,14 +6,12 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_H_
 #pragma once
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
-#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/string16.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
@@ -32,8 +30,7 @@ class PrefService;
 // This class saves various information about profiles to local preferences.
 // This cache can be used to display a list of profiles without having to
 // actually load the profiles from disk.
-class ProfileInfoCache : public ProfileInfoInterface,
-                         public base::SupportsWeakPtr<ProfileInfoCache> {
+class ProfileInfoCache : public ProfileInfoInterface {
  public:
   ProfileInfoCache(PrefService* prefs, const FilePath& user_data_dir);
   virtual ~ProfileInfoCache();
@@ -57,12 +54,6 @@ class ProfileInfoCache : public ProfileInfoInterface,
       size_t index) const OVERRIDE;
   virtual bool GetBackgroundStatusOfProfileAtIndex(
       size_t index) const OVERRIDE;
-  virtual string16 GetGAIANameOfProfileAtIndex(size_t index) const OVERRIDE;
-  virtual bool IsUsingGAIANameOfProfileAtIndex(size_t index) const OVERRIDE;
-  virtual const gfx::Image& GetGAIAPictureOfProfileAtIndex(
-      size_t index) const OVERRIDE;
-  virtual bool IsUsingGAIAPictureOfProfileAtIndex(
-      size_t index) const OVERRIDE;
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
@@ -71,23 +62,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetBackgroundStatusOfProfileAtIndex(size_t index,
                                            bool running_background_apps);
-  void SetGAIANameOfProfileAtIndex(size_t index, const string16& name);
-  void SetIsUsingGAIANameOfProfileAtIndex(size_t index, bool value);
-  void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image& image);
-  void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
 
   // Returns unique name that can be assigned to a newly created profile.
   string16 ChooseNameForNewProfile(size_t icon_index);
-
-  // Checks if the given profile has switched to using GAIA information
-  // for the profile name and picture. This pref is used to switch over
-  // to GAIA info the first time it is available. Afterwards this pref is
-  // checked to prevent clobbering the user's custom settings.
-  bool GetHasMigratedToGAIAInfoOfProfileAtIndex(size_t index) const;
-
-  // Marks the given profile as having switched to using GAIA information
-  // for the profile name and picture.
-  void SetHasMigratedToGAIAInfoOfProfileAtIndex(size_t index, bool value);
 
   // Returns an avatar icon index that can be assigned to a newly created
   // profile. Note that the icon may not be unique since there are a limited
@@ -139,22 +116,11 @@ class ProfileInfoCache : public ProfileInfoInterface,
                                           bool must_be_unique,
                                           size_t* out_icon_index) const;
 
-  // Updates the position of the profile at the given index so that the list
-  // of profiles is still sorted.
-  void UpdateSortForProfileIndex(size_t index);
-
-  void OnGAIAPictureLoaded(FilePath path, gfx::Image** image) const;
-  void OnGAIAPictureSaved(FilePath path, bool* success) const;
-
   PrefService* prefs_;
   std::vector<std::string> sorted_keys_;
   FilePath user_data_dir_;
 
   ObserverList<ProfileInfoCacheObserver> observer_list_;
-
-  // A cache of gaia profile pictures. This cache is updated lazily so it needs
-  // to be mutable.
-  mutable std::map<std::string, gfx::Image*> gaia_pictures_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };

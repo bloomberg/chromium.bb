@@ -212,7 +212,7 @@ class UserManager : public ProfileDownloaderDelegate,
   void CheckOwnership();
 
   // ProfileDownloaderDelegate implementation.
-  virtual int GetDesiredImageSize() OVERRIDE;
+  virtual int GetDesiredImageSideLength() OVERRIDE;
   virtual Profile* GetBrowserProfile() OVERRIDE;
   virtual void OnDownloadComplete(ProfileDownloader* downloader,
                                   bool success) OVERRIDE;
