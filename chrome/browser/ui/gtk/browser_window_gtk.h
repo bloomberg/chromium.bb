@@ -301,9 +301,6 @@ class BrowserWindowGtk : public BrowserWindow,
 
   scoped_ptr<Browser> browser_;
 
-  // The download shelf view (view at the bottom of the page).
-  scoped_ptr<DownloadShelfGtk> download_shelf_;
-
  private:
   // Show or hide the bookmark bar.
   void MaybeShowBookmarkBar(bool animate);
@@ -465,6 +462,9 @@ class BrowserWindowGtk : public BrowserWindow,
   // The object that manages the bookmark bar. This will be NULL if the
   // bookmark bar is not supported.
   scoped_ptr<BookmarkBarGtk> bookmark_bar_;
+
+  // The download shelf view (view at the bottom of the page).
+  scoped_ptr<DownloadShelfGtk> download_shelf_;
 
   // The status bubble manager.  Always non-NULL.
   scoped_ptr<StatusBubbleGtk> status_bubble_;
