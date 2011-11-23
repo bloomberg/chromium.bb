@@ -1,4 +1,5 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,7 +9,7 @@ The page cycler automates IE and navigates it to a series of URLs. It is
 designed to be run with Chrome Frame configured to load every URL inside
 CF full tab mode.
 
-TODO(robertshield): Make use of the python unittest module as per 
+TODO(robertshield): Make use of the python unittest module as per
 review comments.
 """
 
@@ -22,7 +23,7 @@ def LoadSiteList(path):
   """Loads a list of URLs from |path|.
 
   Expects the URLs to be separated by newlines, with no leading or trailing
-  whitespace. 
+  whitespace.
 
   Args:
     path: The path to a file containing a list of new-line separated URLs.
@@ -36,9 +37,9 @@ def LoadSiteList(path):
   return urls
 
 def LaunchIE():
-  """Starts up IE, makes it visible and returns the automation object. 
+  """Starts up IE, makes it visible and returns the automation object.
 
-  Returns: 
+  Returns:
     The IE automation object.
   """
   ie = win32com.client.Dispatch("InternetExplorer.Application")
@@ -84,10 +85,10 @@ def main():
   parser = optparse.OptionParser()
   parser.add_option('-u', '--url_list', default='urllist',
                     help='The path to the list of URLs')
-  (opts, args) = parser.parse_args()  
+  (opts, args) = parser.parse_args()
 
   urls = LoadSiteList(opts.url_list)
-  ie = LaunchIE()  
+  ie = LaunchIE()
   for url in urls:
     RunTest(url, ie)
     time.sleep(1)
