@@ -27,12 +27,6 @@ class TextureManagerTest : public testing::Test {
   static const GLint kMaxCubeMapLevels = 4;
   static const GLint kMaxExternalLevels = 1;
 
-  static const GLuint kServiceBlackTexture2dId = 701;
-  static const GLuint kServiceBlackTextureCubemapId = 702;
-  static const GLuint kServiceDefaultTexture2dId = 703;
-  static const GLuint kServiceDefaultTextureCubemapId = 704;
-
-
   TextureManagerTest()
       : manager_(kMaxTextureSize, kMaxCubeMapTextureSize) {
   }
@@ -69,10 +63,6 @@ const GLint TextureManagerTest::kMaxExternalTextureSize;
 const GLint TextureManagerTest::kMax2dLevels;
 const GLint TextureManagerTest::kMaxCubeMapLevels;
 const GLint TextureManagerTest::kMaxExternalLevels;
-const GLuint TextureManagerTest::kServiceBlackTexture2dId;
-const GLuint TextureManagerTest::kServiceBlackTextureCubemapId;
-const GLuint TextureManagerTest::kServiceDefaultTexture2dId;
-const GLuint TextureManagerTest::kServiceDefaultTextureCubemapId;
 #endif
 
 TEST_F(TextureManagerTest, Basic) {

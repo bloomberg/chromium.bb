@@ -1401,6 +1401,41 @@ GL_APICALL void GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLuint shader, GLs
 typedef void (GL_APIENTRYP PFNGLGETTRANSLATEDSHADERSOURCEANGLEPROC) (GLuint shader, GLsizei bufsize, GLsizei* length, GLchar* source);
 #endif
 
+/* GL_ARB_texture_rectangle */
+/* Exposes only the subset necessary to support GL_CHROMIUM_iosurface.
+ */
+#ifndef GL_ARB_texture_rectangle
+#define GL_ARB_texture_rectangle 1
+#ifndef GL_TEXTURE_RECTANGLE_ARB
+#define GL_TEXTURE_RECTANGLE_ARB 0x84F5
+#endif
+#ifndef GL_TEXTURE_BINDING_RECTANGLE_ARB
+#define GL_TEXTURE_BINDING_RECTANGLE_ARB 0x84F6
+#endif
+#ifndef GL_SAMPLER_2D_RECT_ARB
+#define GL_SAMPLER_2D_RECT_ARB 0x8B63
+#endif
+#endif
+
+/* GL_CHROMIUM_iosurface */
+/* Exposes the Mac OS-specfic CGLTexImageIOSurface2D entry point as a
+ * Chromium extension in the cross-platform API. Binds the IOSurface with
+ * the given ID (an IOSurfaceID) to the texture bound to the given target.
+ * To avoid needing to expose extraneous enums, assumes internal format
+ * RGBA, format BGRA, and type UNSIGNED_INT_8_8_8_8_REV.
+ */
+#ifndef GL_CHROMIUM_iosurface
+#define GL_CHROMIUM_iosurface 1
+#ifdef GL_GLEXT_PROTOTYPES
+#define glTexImageIOSurface2DCHROMIUM GLES2_GET_FUN(TexImageIOSurface2DCHROMIUM)
+#if !defined(GLES2_USE_CPP_BINDINGS)
+GL_APICALL void GL_APIENTRY glTexImageIOSurface2DCHROMIUM (GLenum target, GLsizei width, GLsizei height, GLuint ioSurfaceId, GLuint plane);
+#endif
+#else
+typedef void (GL_APIENTRYP PFNGLTEXIMAGEIOSURFACE2DCHROMIUM) (GLenum target, GLsizei width, GLsizei height, GLuint ioSurfaceId, GLuint plane);
+#endif
+#endif
+
 #ifdef __cplusplus
 }
 #endif

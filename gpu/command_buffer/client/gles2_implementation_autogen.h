@@ -1305,5 +1305,21 @@ void GetTranslatedShaderSourceANGLE(
 }
 void PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height);
 
+void TexImageIOSurface2DCHROMIUM(
+    GLenum target, GLsizei width, GLsizei height, GLuint ioSurfaceId,
+    GLuint plane) {
+  GPU_CLIENT_LOG("[" << this << "] glTexImageIOSurface2DCHROMIUM(" << GLES2Util::GetStringTextureBindTarget(target) << ", " << width << ", " << height << ", " << ioSurfaceId << ", " << plane << ")");  // NOLINT
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM: width < 0");
+    return;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM: height < 0");
+    return;
+  }
+  helper_->TexImageIOSurface2DCHROMIUM(
+      target, width, height, ioSurfaceId, plane);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_
 

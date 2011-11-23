@@ -9211,6 +9211,61 @@ COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, width) == 12,
 COMPILE_ASSERT(offsetof(PostSubBufferCHROMIUM, height) == 16,
                OffsetOf_PostSubBufferCHROMIUM_height_not_16);
 
+struct TexImageIOSurface2DCHROMIUM {
+  typedef TexImageIOSurface2DCHROMIUM ValueType;
+  static const CommandId kCmdId = kTexImageIOSurface2DCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLsizei _width, GLsizei _height, GLuint _ioSurfaceId,
+      GLuint _plane) {
+    SetHeader();
+    target = _target;
+    width = _width;
+    height = _height;
+    ioSurfaceId = _ioSurfaceId;
+    plane = _plane;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLsizei _width, GLsizei _height,
+      GLuint _ioSurfaceId, GLuint _plane) {
+    static_cast<ValueType*>(
+        cmd)->Init(_target, _width, _height, _ioSurfaceId, _plane);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 width;
+  int32 height;
+  uint32 ioSurfaceId;
+  uint32 plane;
+};
+
+COMPILE_ASSERT(sizeof(TexImageIOSurface2DCHROMIUM) == 24,
+               Sizeof_TexImageIOSurface2DCHROMIUM_is_not_24);
+COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, header) == 0,
+               OffsetOf_TexImageIOSurface2DCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, target) == 4,
+               OffsetOf_TexImageIOSurface2DCHROMIUM_target_not_4);
+COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, width) == 8,
+               OffsetOf_TexImageIOSurface2DCHROMIUM_width_not_8);
+COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, height) == 12,
+               OffsetOf_TexImageIOSurface2DCHROMIUM_height_not_12);
+COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, ioSurfaceId) == 16,
+               OffsetOf_TexImageIOSurface2DCHROMIUM_ioSurfaceId_not_16);
+COMPILE_ASSERT(offsetof(TexImageIOSurface2DCHROMIUM, plane) == 20,
+               OffsetOf_TexImageIOSurface2DCHROMIUM_plane_not_20);
+
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
 

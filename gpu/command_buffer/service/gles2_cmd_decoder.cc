@@ -15,6 +15,9 @@
 #include "base/atomicops.h"
 #include "base/at_exit.h"
 #include "base/bind.h"
+#if defined(OS_MACOSX)
+#include "base/mac/scoped_cftyperef.h"
+#endif
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -41,6 +44,9 @@
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
 #include "ui/gfx/gl/gl_surface.h"
+#if defined(OS_MACOSX)
+#include "ui/gfx/surface/io_surface_support_mac.h"
+#endif
 
 #if !defined(GL_DEPTH24_STENCIL8)
 #define GL_DEPTH24_STENCIL8 0x88F0
@@ -560,12 +566,26 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     // glBindTexture
     TextureManager::TextureInfo::Ref bound_texture_external_oes;
 
+    // texture currently bound to this unit's GL_TEXTURE_RECTANGLE_ARB with
+    // glBindTexture
+    TextureManager::TextureInfo::Ref bound_texture_rectangle_arb;
+
     TextureManager::TextureInfo::Ref GetInfoForSamplerType(GLenum type) {
       DCHECK(type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
-             type == GL_SAMPLER_EXTERNAL_OES);
-      return type == GL_SAMPLER_2D ? bound_texture_2d :
-          (type == GL_SAMPLER_EXTERNAL_OES ? bound_texture_external_oes :
-              bound_texture_cube_map);
+             type == GL_SAMPLER_EXTERNAL_OES || type == GL_SAMPLER_2D_RECT_ARB);
+      switch (type) {
+        case GL_SAMPLER_2D:
+          return bound_texture_2d;
+        case GL_SAMPLER_CUBE:
+          return bound_texture_cube_map;
+        case GL_SAMPLER_EXTERNAL_OES:
+          return bound_texture_external_oes;
+        case GL_SAMPLER_2D_RECT_ARB:
+          return bound_texture_rectangle_arb;
+      }
+
+      NOTREACHED();
+      return NULL;
     }
 
     void Unbind(TextureManager::TextureInfo* texture) {
@@ -722,6 +742,14 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
     GLenum format,
     GLenum type,
     const void * data);
+
+  // Wrapper for TexImageIOSurface2DCHROMIUM.
+  void DoTexImageIOSurface2DCHROMIUM(
+    GLenum target,
+    GLsizei width,
+    GLsizei height,
+    GLuint io_surface_id,
+    GLuint plane);
 
   // Creates a ProgramInfo for the given program.
   ProgramManager::ProgramInfo* CreateProgramInfo(
@@ -1181,10 +1209,9 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
       case GL_TEXTURE_EXTERNAL_OES:
         info = unit.bound_texture_external_oes;
         break;
-      // Note: If we ever support TEXTURE_RECTANGLE as a target, be sure to
-      // track |texture_| with the currently bound TEXTURE_RECTANGLE texture,
-      // because |texture_| is used by the FBO rendering mechanism for readback
-      // to the bits that get sent to the browser.
+      case GL_TEXTURE_RECTANGLE_ARB:
+        info = unit.bound_texture_rectangle_arb;
+        break;
       default:
         NOTREACHED();
         return NULL;
@@ -1194,10 +1221,20 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   GLenum GetBindTargetForSamplerType(GLenum type) {
     DCHECK(type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE ||
-           type == GL_SAMPLER_EXTERNAL_OES);
-    return type == GL_SAMPLER_2D ? GL_TEXTURE_2D :
-        (type == GL_SAMPLER_EXTERNAL_OES ? GL_TEXTURE_EXTERNAL_OES :
-            GL_TEXTURE_CUBE_MAP);
+           type == GL_SAMPLER_EXTERNAL_OES || type == GL_SAMPLER_2D_RECT_ARB);
+    switch (type) {
+      case GL_SAMPLER_2D:
+        return GL_TEXTURE_2D;
+      case GL_SAMPLER_CUBE:
+        return GL_TEXTURE_CUBE_MAP;
+      case GL_SAMPLER_EXTERNAL_OES:
+        return GL_TEXTURE_EXTERNAL_OES;
+      case GL_SAMPLER_2D_RECT_ARB:
+        return GL_TEXTURE_RECTANGLE_ARB;
+    }
+
+    NOTREACHED();
+    return 0;
   }
 
   // Gets the framebuffer info for a particular target.
@@ -1244,6 +1281,10 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
 
   // Returns true if the context was just lost due to e.g. GL_ARB_robustness.
   bool WasContextLost();
+
+#if defined(OS_MACOSX)
+  void ReleaseIOSurfaceForTexture(GLuint texture_id);
+#endif
 
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
@@ -1421,6 +1462,11 @@ class GLES2DecoderImpl : public base::SupportsWeakPtr<GLES2DecoderImpl>,
   // WebGL semantics.
   bool force_webgl_glsl_validation_;
   bool derivatives_explicitly_enabled_;
+
+#if defined(OS_MACOSX)
+  typedef std::map<GLuint, CFTypeRef> TextureToIOSurfaceMap;
+  TextureToIOSurfaceMap texture_to_io_surface_map_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -1883,6 +1929,11 @@ bool GLES2DecoderImpl::Initialize(
       texture_units_[tt].bound_texture_external_oes = info;
       glBindTexture(GL_TEXTURE_EXTERNAL_OES, info->service_id());
     }
+    if (feature_info_->feature_flags().arb_texture_rectangle) {
+      info = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_RECTANGLE_ARB);
+      texture_units_[tt].bound_texture_rectangle_arb = info;
+      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, info->service_id());
+    }
     info = texture_manager()->GetDefaultTextureInfo(GL_TEXTURE_CUBE_MAP);
     texture_units_[tt].bound_texture_cube_map = info;
     glBindTexture(GL_TEXTURE_CUBE_MAP, info->service_id());
@@ -2103,6 +2154,8 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
   } else {
     resources.OES_standard_derivatives =
         feature_info_->feature_flags().oes_standard_derivatives ? 1 : 0;
+    resources.ARB_texture_rectangle =
+        feature_info_->feature_flags().arb_texture_rectangle ? 1 : 0;
   }
 
   vertex_translator_.reset(new ShaderTranslator);
@@ -2306,6 +2359,11 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
       if (texture->IsStreamTexture() && stream_texture_manager_) {
         stream_texture_manager_->DestroyStreamTexture(service_id);
       }
+#if defined(OS_MACOSX)
+      if (texture->target() == GL_TEXTURE_RECTANGLE_ARB) {
+        ReleaseIOSurfaceForTexture(service_id);
+      }
+#endif
       glDeleteTextures(1, &service_id);
       RemoveTextureInfo(client_ids[ii]);
     }
@@ -2618,6 +2676,14 @@ void GLES2DecoderImpl::Destroy() {
   offscreen_saved_color_texture_.reset();
   offscreen_resolved_frame_buffer_.reset();
   offscreen_resolved_color_texture_.reset();
+
+#if defined(OS_MACOSX)
+  for (TextureToIOSurfaceMap::iterator it = texture_to_io_surface_map_.begin();
+       it != texture_to_io_surface_map_.end(); ++it) {
+    CFRelease(it->second);
+  }
+  texture_to_io_surface_map_.clear();
+#endif
 }
 
 bool GLES2DecoderImpl::SetParent(GLES2Decoder* new_parent,
@@ -3131,6 +3197,9 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
           stream_tex->Update();
       }
       break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      unit.bound_texture_rectangle_arb = info;
+      break;
     default:
       NOTREACHED();  // Validation should prevent us getting here.
       break;
@@ -3467,6 +3536,20 @@ bool GLES2DecoderImpl::GetHelper(
           GLuint client_id = 0;
           texture_manager()->GetClientId(
               unit.bound_texture_external_oes->service_id(), &client_id);
+          *params = client_id;
+        } else {
+          *params = 0;
+        }
+      }
+      return true;
+    case GL_TEXTURE_BINDING_RECTANGLE_ARB:
+      *num_written = 1;
+      if (params) {
+        TextureUnit& unit = texture_units_[active_texture_unit_];
+        if (unit.bound_texture_rectangle_arb) {
+          GLuint client_id = 0;
+          texture_manager()->GetClientId(
+              unit.bound_texture_rectangle_arb->service_id(), &client_id);
           *params = client_id;
         } else {
           *params = 0;
@@ -7485,6 +7568,112 @@ error::Error GLES2DecoderImpl::HandleDestroyStreamTextureCHROMIUM(
 
   return error::kNoError;
 }
+
+#if defined(OS_MACOSX)
+void GLES2DecoderImpl::ReleaseIOSurfaceForTexture(GLuint texture_id) {
+  TextureToIOSurfaceMap::iterator it = texture_to_io_surface_map_.find(
+      texture_id);
+  if (it != texture_to_io_surface_map_.end()) {
+    // Found a previous IOSurface bound to this texture; release it.
+    CFTypeRef surface = it->second;
+    CFRelease(surface);
+    texture_to_io_surface_map_.erase(it);
+  }
+}
+#endif
+
+void GLES2DecoderImpl::DoTexImageIOSurface2DCHROMIUM(
+    GLenum target, GLsizei width, GLsizei height,
+    GLuint io_surface_id, GLuint plane) {
+#if defined(OS_MACOSX)
+  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexImageIOSurface2DCHROMIUM: only supported on desktop GL.");
+    return;
+  }
+
+  IOSurfaceSupport* surface_support = IOSurfaceSupport::Initialize();
+  if (!surface_support) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexImageIOSurface2DCHROMIUM: only supported on 10.6.");
+    return;
+  }
+
+  if (target != GL_TEXTURE_RECTANGLE_ARB) {
+    // This might be supported in the future, and if we could require
+    // support for binding an IOSurface to a NPOT TEXTURE_2D texture, we
+    // could delete a lot of code. For now, perform strict validation so we
+    // know what's going on.
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glTexImageIOSurface2DCHROMIUM: requires TEXTURE_RECTANGLE_ARB target");
+    return;
+  }
+
+  TextureManager::TextureInfo* info = GetTextureInfoForTarget(target);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexImageIOSurface2DCHROMIUM: no rectangle texture bound");
+    return;
+  }
+  if (info == texture_manager()->GetDefaultTextureInfo(target)) {
+    // Maybe this is conceptually valid, but disallow it to avoid accidents.
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexImageIOSurface2DCHROMIUM: can't bind default texture");
+    return;
+  }
+
+  // Look up the new IOSurface. Note that because of asynchrony
+  // between processes this might fail; during live resizing the
+  // plugin process might allocate and release an IOSurface before
+  // this process gets a chance to look it up. Hold on to any old
+  // IOSurface in this case.
+  CFTypeRef surface = surface_support->IOSurfaceLookup(io_surface_id);
+  if (!surface) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glTexImageIOSurface2DCHROMIUM: no IOSurface with the given ID");
+    return;
+  }
+
+  // Release any IOSurface previously bound to this texture.
+  ReleaseIOSurfaceForTexture(info->service_id());
+
+  // Make sure we release the IOSurface even if CGLTexImageIOSurface2D fails.
+  texture_to_io_surface_map_.insert(
+      std::make_pair(info->service_id(), surface));
+
+  CGLContextObj context =
+      static_cast<CGLContextObj>(context_->GetHandle());
+
+  CGLError err = surface_support->CGLTexImageIOSurface2D(
+      context,
+      target,
+      GL_RGBA,
+      width,
+      height,
+      GL_BGRA,
+      GL_UNSIGNED_INT_8_8_8_8_REV,
+      surface,
+      plane);
+
+  if (err != kCGLNoError) {
+    SetGLError(
+        GL_INVALID_OPERATION,
+        "glTexImageIOSurface2DCHROMIUM: error in CGLTexImageIOSurface2D");
+    return;
+  }
+
+  texture_manager()->SetLevelInfo(
+      feature_info_, info,
+      target, 0, GL_RGBA, width, height, 1, 0,
+      GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, true);
+
+#else
+  SetGLError(GL_INVALID_OPERATION,
+             "glTexImageIOSurface2DCHROMIUM: not supported.");
+#endif
+}
+
 
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file

@@ -15,11 +15,13 @@ struct DisallowedFeatures;
 class TestHelper {
  public:
   static const GLuint kServiceBlackTexture2dId = 701;
-  static const GLuint kServiceBlackTextureCubemapId = 702;
-  static const GLuint kServiceDefaultTexture2dId = 703;
+  static const GLuint kServiceDefaultTexture2dId = 702;
+  static const GLuint kServiceBlackTextureCubemapId = 703;
   static const GLuint kServiceDefaultTextureCubemapId = 704;
-  static const GLuint kServiceDefaultExternalTextureId = 705;
-  static const GLuint kServiceBlackExternalTextureId = 706;
+  static const GLuint kServiceBlackExternalTextureId = 705;
+  static const GLuint kServiceDefaultExternalTextureId = 706;
+  static const GLuint kServiceBlackRectangleTextureId = 707;
+  static const GLuint kServiceDefaultRectangleTextureId = 708;
 
   static const GLint kMaxSamples = 4;
   static const GLint kMaxRenderbufferSize = 1024;
@@ -45,6 +47,9 @@ class TestHelper {
       ::gfx::MockGLInterface* gl, const char* extensions);
   static void SetupTextureManagerInitExpectations(::gfx::MockGLInterface* gl,
                                                   const char* extensions);
+ private:
+  static void SetupTextureInitializationExpectations(::gfx::MockGLInterface* gl,
+                                                     GLenum target);
 };
 
 }  // namespace gles2

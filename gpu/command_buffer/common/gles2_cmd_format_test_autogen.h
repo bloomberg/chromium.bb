@@ -3578,5 +3578,27 @@ TEST_F(GLES2FormatTest, PostSubBufferCHROMIUM) {
       next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, TexImageIOSurface2DCHROMIUM) {
+  TexImageIOSurface2DCHROMIUM& cmd =
+      *GetBufferAs<TexImageIOSurface2DCHROMIUM>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLsizei>(12),
+      static_cast<GLsizei>(13),
+      static_cast<GLuint>(14),
+      static_cast<GLuint>(15));
+  EXPECT_EQ(static_cast<uint32>(TexImageIOSurface2DCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(13), cmd.height);
+  EXPECT_EQ(static_cast<GLuint>(14), cmd.ioSurfaceId);
+  EXPECT_EQ(static_cast<GLuint>(15), cmd.plane);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_
 

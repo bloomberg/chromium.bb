@@ -212,6 +212,7 @@
   OP(GetProgramInfoCHROMIUM)                                   /* 455 */ \
   OP(GetTranslatedShaderSourceANGLE)                           /* 456 */ \
   OP(PostSubBufferCHROMIUM)                                    /* 457 */ \
+  OP(TexImageIOSurface2DCHROMIUM)                              /* 458 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

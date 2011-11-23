@@ -20,6 +20,7 @@ static size_t GLTargetToFaceIndex(GLenum target) {
   switch (target) {
     case GL_TEXTURE_2D:
     case GL_TEXTURE_EXTERNAL_OES:
+    case GL_TEXTURE_RECTANGLE_ARB:
       return 0;
     case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
       return 0;
@@ -92,7 +93,8 @@ bool TextureManager::TextureInfo::CanRender(
     return false;
   }
   bool needs_mips = NeedsMips();
-  if (npot() && !feature_info->feature_flags().npot_ok) {
+  if ((npot() && !feature_info->feature_flags().npot_ok) ||
+      (target_ == GL_TEXTURE_RECTANGLE_ARB)) {
     return !needs_mips &&
            wrap_s_ == GL_CLAMP_TO_EDGE &&
            wrap_t_ == GL_CLAMP_TO_EDGE;
@@ -151,7 +153,7 @@ void TextureManager::TextureInfo::SetTarget(GLenum target, GLint max_levels) {
     level_infos_[ii].resize(max_levels);
   }
 
-  if (target == GL_TEXTURE_EXTERNAL_OES) {
+  if (target == GL_TEXTURE_EXTERNAL_OES || target == GL_TEXTURE_RECTANGLE_ARB) {
     min_filter_ = GL_LINEAR;
     wrap_s_ = wrap_t_ = GL_CLAMP_TO_EDGE;
   }
@@ -161,7 +163,8 @@ bool TextureManager::TextureInfo::CanGenerateMipmaps(
     const FeatureInfo* feature_info) const {
   if ((npot() && !feature_info->feature_flags().npot_ok) ||
       level_infos_.empty() ||
-      target_ == GL_TEXTURE_EXTERNAL_OES) {
+      target_ == GL_TEXTURE_EXTERNAL_OES ||
+      target_ == GL_TEXTURE_RECTANGLE_ARB) {
     return false;
   }
   const TextureInfo::LevelInfo& first = level_infos_[0][0];
@@ -327,7 +330,8 @@ bool TextureManager::TextureInfo::SetParameter(
     const FeatureInfo* feature_info, GLenum pname, GLint param) {
   DCHECK(feature_info);
 
-  if (target_ == GL_TEXTURE_EXTERNAL_OES) {
+  if (target_ == GL_TEXTURE_EXTERNAL_OES ||
+      target_ == GL_TEXTURE_RECTANGLE_ARB) {
     if (pname == GL_TEXTURE_MIN_FILTER &&
         (param != GL_NEAREST && param != GL_LINEAR))
       return false;
@@ -540,7 +544,9 @@ TextureManager::TextureManager(
       num_unsafe_textures_(0),
       num_uncleared_mips_(0),
       black_2d_texture_id_(0),
-      black_cube_texture_id_(0) {
+      black_cube_texture_id_(0),
+      black_oes_external_texture_id_(0),
+      black_arb_texture_rectangle_id_(0) {
 }
 
 bool TextureManager::Initialize(const FeatureInfo* feature_info) {
@@ -549,65 +555,86 @@ bool TextureManager::Initialize(const FeatureInfo* feature_info) {
   // resources and all contexts that share resource share the same default
   // texture.
 
-  // Make default textures and texture for replacing non-renderable textures.
-  GLuint ids[4];
-  glGenTextures(arraysize(ids), ids);
-  static uint8 black[] = {0, 0, 0, 255};
-  for (int ii = 0; ii < 2; ++ii) {
-    glBindTexture(GL_TEXTURE_2D, ids[ii]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, black);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, ids[2 + ii]);
-    for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
-      glTexImage2D(GLES2Util::IndexToGLFaceTarget(ii), 0, GL_RGBA, 1, 1, 0,
-                   GL_RGBA, GL_UNSIGNED_BYTE, black);
-    }
-  }
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-  // Since we are manually setting up these textures
-  // we need to manually manipulate some of the their bookkeeping.
-  num_unrenderable_textures_ += 2;
-  FeatureInfo temp_feature_info;
-  default_texture_2d_ = TextureInfo::Ref(new TextureInfo(ids[1]));
-  SetInfoTarget(feature_info, default_texture_2d_, GL_TEXTURE_2D);
-  SetLevelInfo(&temp_feature_info, default_texture_2d_,
-      GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  default_texture_cube_map_ = TextureInfo::Ref(new TextureInfo(ids[3]));
-  SetInfoTarget(feature_info, default_texture_cube_map_, GL_TEXTURE_CUBE_MAP);
-  for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
-    SetLevelInfo(
-        &temp_feature_info, default_texture_cube_map_,
-        GLES2Util::IndexToGLFaceTarget(ii),
-        0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
-  }
-
-  black_2d_texture_id_ = ids[0];
-  black_cube_texture_id_ = ids[2];
+  default_texture_2d_ = CreateDefaultAndBlackTextures(
+      feature_info, GL_TEXTURE_2D, &black_2d_texture_id_);
+  default_texture_cube_map_ = CreateDefaultAndBlackTextures(
+      feature_info, GL_TEXTURE_CUBE_MAP, &black_cube_texture_id_);
 
   if (feature_info->feature_flags().oes_egl_image_external) {
-    // Since we are manually setting up these textures
-    // we need to manually manipulate some of the their bookkeeping.
-    num_unrenderable_textures_ += 1;
-    GLuint external_ids[2];
-    glGenTextures(arraysize(external_ids), external_ids);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
-    default_texture_external_oes_ = TextureInfo::Ref(
-        new TextureInfo(external_ids[0]));
-    SetInfoTarget(feature_info,
-                  default_texture_external_oes_,
-                  GL_TEXTURE_EXTERNAL_OES);
-    default_texture_external_oes_->SetLevelInfo(
-        &temp_feature_info, GL_TEXTURE_EXTERNAL_OES, 0,
-        GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
+    default_texture_external_oes_ = CreateDefaultAndBlackTextures(
+        feature_info, GL_TEXTURE_EXTERNAL_OES,
+        &black_oes_external_texture_id_);
+  }
 
-    // Sampling a texture not associated with any EGLImage sibling will return
-    // black values according to the spec.
-    black_oes_external_texture_id_ = external_ids[1];
+  if (feature_info->feature_flags().arb_texture_rectangle) {
+    default_texture_rectangle_arb_ = CreateDefaultAndBlackTextures(
+        feature_info, GL_TEXTURE_RECTANGLE_ARB,
+        &black_arb_texture_rectangle_id_);
   }
 
   return true;
+}
+
+TextureManager::TextureInfo::Ref TextureManager::CreateDefaultAndBlackTextures(
+    const FeatureInfo* feature_info,
+    GLenum target,
+    GLuint* black_texture) {
+  static uint8 black[] = {0, 0, 0, 255};
+
+  // Sampling a texture not associated with any EGLImage sibling will return
+  // black values according to the spec.
+  bool needs_initialization = (target != GL_TEXTURE_EXTERNAL_OES);
+  bool needs_faces = (target == GL_TEXTURE_CUBE_MAP);
+
+  // Make default textures and texture for replacing non-renderable textures.
+  GLuint ids[2];
+  glGenTextures(arraysize(ids), ids);
+  for (unsigned long ii = 0; ii < arraysize(ids); ++ii) {
+    glBindTexture(target, ids[ii]);
+    if (needs_initialization) {
+      if (needs_faces) {
+        for (int jj = 0; jj < GLES2Util::kNumFaces; ++jj) {
+          glTexImage2D(GLES2Util::IndexToGLFaceTarget(jj), 0, GL_RGBA, 1, 1, 0,
+                       GL_RGBA, GL_UNSIGNED_BYTE, black);
+        }
+      } else {
+        glTexImage2D(target, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                     GL_UNSIGNED_BYTE, black);
+      }
+    }
+  }
+  glBindTexture(target, 0);
+
+  // Since we are manually setting up these textures
+  // we need to manually manipulate some of the their bookkeeping.
+  ++num_unrenderable_textures_;
+  TextureInfo::Ref default_texture = TextureInfo::Ref(new TextureInfo(ids[1]));
+  SetInfoTarget(feature_info, default_texture, target);
+  FeatureInfo temp_feature_info;
+  if (needs_faces) {
+    for (int ii = 0; ii < GLES2Util::kNumFaces; ++ii) {
+      SetLevelInfo(
+          &temp_feature_info, default_texture,
+          GLES2Util::IndexToGLFaceTarget(ii),
+          0, GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
+    }
+  } else {
+    // TODO(kbr): previous code called SetLevelInfo directly on the
+    // TextureInfo object for the GL_TEXTURE_EXTERNAL_OES case.
+    // Unclear whether this was deliberate.
+    if (needs_initialization) {
+      SetLevelInfo(&temp_feature_info, default_texture,
+                   GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 1, 0,
+                   GL_RGBA, GL_UNSIGNED_BYTE, true);
+    } else {
+      default_texture->SetLevelInfo(
+          &temp_feature_info, GL_TEXTURE_EXTERNAL_OES, 0,
+          GL_RGBA, 1, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, true);
+    }
+  }
+
+  *black_texture = ids[0];
+  return default_texture;
 }
 
 bool TextureManager::ValidForTarget(

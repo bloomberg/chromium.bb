@@ -121,6 +121,13 @@ void GLES2DecoderTestBase::InitDecoder(
           .Times(1)
           .RetiresOnSaturation();
     }
+    if (group_->feature_info()->feature_flags().arb_texture_rectangle) {
+      EXPECT_CALL(*gl_, BindTexture(
+              GL_TEXTURE_RECTANGLE_ARB,
+              TestHelper::kServiceDefaultRectangleTextureId))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
     EXPECT_CALL(*gl_, BindTexture(
         GL_TEXTURE_CUBE_MAP, TestHelper::kServiceDefaultTextureCubemapId))
         .Times(1)

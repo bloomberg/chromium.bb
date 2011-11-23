@@ -225,6 +225,7 @@ GL_APICALL void         GL_APIENTRY glDestroyStreamTextureCHROMIUM (GLuint textu
 GL_APICALL void         GL_APIENTRY glPlaceholder453CHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glGetTranslatedShaderSourceANGLE (GLidShader shader, GLsizeiNotNegative bufsize, GLsizei* length, char* source);
 GL_APICALL void         GL_APIENTRY glPostSubBufferCHROMIUM (GLint x, GLint y, GLint width, GLint height);
+GL_APICALL void         GL_APIENTRY glTexImageIOSurface2DCHROMIUM (GLenumTextureBindTarget target, GLsizei width, GLsizei height, GLuint ioSurfaceId, GLuint plane);
 """
 
 # This is the list of all commmands that will be generated and their Id.
@@ -435,6 +436,7 @@ _CMD_ID_TABLE = {
   'GetProgramInfoCHROMIUM':                                    455,
   'GetTranslatedShaderSourceANGLE':                            456,
   'PostSubBufferCHROMIUM':                                     457,
+  'TexImageIOSurface2DCHROMIUM':                               458,
 }
 
 # This is a list of enum names and their valid values. It is used to map
@@ -1790,6 +1792,12 @@ _FUNCTION_INFO = {
    },
   'Placeholder453CHROMIUM': {
     'type': 'UnknownCommand',
+    'extension': True,
+    'chromium': True,
+  },
+  'TexImageIOSurface2DCHROMIUM': {
+    'decoder_func': 'DoTexImageIOSurface2DCHROMIUM',
+    'unit_test': False,
     'extension': True,
     'chromium': True,
   },

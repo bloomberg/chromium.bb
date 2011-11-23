@@ -29,11 +29,13 @@ namespace gles2 {
 // GCC requires these declarations, but MSVC requires they not be present
 #ifndef COMPILER_MSVC
 const GLuint TestHelper::kServiceBlackTexture2dId;
-const GLuint TestHelper::kServiceBlackTextureCubemapId;
 const GLuint TestHelper::kServiceDefaultTexture2dId;
+const GLuint TestHelper::kServiceBlackTextureCubemapId;
 const GLuint TestHelper::kServiceDefaultTextureCubemapId;
-const GLuint TestHelper::kServiceDefaultExternalTextureId;
 const GLuint TestHelper::kServiceBlackExternalTextureId;
+const GLuint TestHelper::kServiceDefaultExternalTextureId;
+const GLuint TestHelper::kServiceBlackRectangleTextureId;
+const GLuint TestHelper::kServiceDefaultRectangleTextureId;
 
 const GLint TestHelper::kMaxSamples;
 const GLint TestHelper::kMaxRenderbufferSize;
@@ -51,74 +53,110 @@ const GLint TestHelper::kMaxVertexUniformVectors;
 const GLint TestHelper::kMaxVertexUniformComponents;
 #endif
 
+void TestHelper::SetupTextureInitializationExpectations(
+    ::gfx::MockGLInterface* gl, GLenum target) {
+  InSequence sequence;
+
+  bool needs_initialization = (target != GL_TEXTURE_EXTERNAL_OES);
+  bool needs_faces = (target == GL_TEXTURE_CUBE_MAP);
+
+  static GLuint texture_2d_ids[] = {
+    kServiceBlackTexture2dId,
+    kServiceDefaultTexture2dId };
+  static GLuint texture_cube_map_ids[] = {
+    kServiceBlackTextureCubemapId,
+    kServiceDefaultTextureCubemapId };
+  static GLuint texture_external_oes_ids[] = {
+    kServiceBlackExternalTextureId,
+    kServiceDefaultExternalTextureId };
+  static GLuint texture_rectangle_arb_ids[] = {
+    kServiceBlackRectangleTextureId,
+    kServiceDefaultRectangleTextureId };
+
+  const GLuint* texture_ids = NULL;
+  switch (target) {
+    case GL_TEXTURE_2D:
+      texture_ids = &texture_2d_ids[0];
+      break;
+    case GL_TEXTURE_CUBE_MAP:
+      texture_ids = &texture_cube_map_ids[0];
+      break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      texture_ids = &texture_external_oes_ids[0];
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      texture_ids = &texture_rectangle_arb_ids[0];
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  int array_size = 2;
+
+  EXPECT_CALL(*gl, GenTextures(array_size, _))
+      .WillOnce(SetArrayArgument<1>(texture_ids,
+                                    texture_ids + array_size))
+          .RetiresOnSaturation();
+  for (int ii = 0; ii < array_size; ++ii) {
+    EXPECT_CALL(*gl, BindTexture(target, texture_ids[ii]))
+        .Times(1)
+        .RetiresOnSaturation();
+    if (needs_initialization) {
+      if (needs_faces) {
+        static GLenum faces[] = {
+          GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+          GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+          GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+          GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+          GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+          GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+        };
+        for (size_t ii = 0; ii < arraysize(faces); ++ii) {
+          EXPECT_CALL(*gl, TexImage2D(faces[ii], 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                                      GL_UNSIGNED_BYTE, _))
+              .Times(1)
+              .RetiresOnSaturation();
+        }
+      } else {
+        EXPECT_CALL(*gl, TexImage2D(target, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
+                                    GL_UNSIGNED_BYTE, _))
+            .Times(1)
+            .RetiresOnSaturation();
+      }
+    }
+  }
+  EXPECT_CALL(*gl, BindTexture(target, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+}
+
 void TestHelper::SetupTextureManagerInitExpectations(
     ::gfx::MockGLInterface* gl,
     const char* extensions) {
-  static GLuint texture_ids[] = {
-    kServiceBlackTexture2dId,
-    kServiceDefaultTexture2dId,
-    kServiceBlackTextureCubemapId,
-    kServiceDefaultTextureCubemapId,
-  };
-  EXPECT_CALL(*gl, GenTextures(arraysize(texture_ids), _))
-      .WillOnce(SetArrayArgument<1>(texture_ids,
-                                    texture_ids + arraysize(texture_ids)))
-      .RetiresOnSaturation();
-  for (int ii = 0; ii < 2; ++ii) {
-    EXPECT_CALL(*gl, BindTexture(GL_TEXTURE_2D, texture_ids[ii]))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl, TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                               GL_UNSIGNED_BYTE, _))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl, BindTexture(GL_TEXTURE_CUBE_MAP, texture_ids[2 + ii]))
-        .Times(1)
-        .RetiresOnSaturation();
-    static GLenum faces[] = {
-        GL_TEXTURE_CUBE_MAP_POSITIVE_X,
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-        GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-        GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
-    };
-    for (size_t ii = 0; ii < arraysize(faces); ++ii) {
-      EXPECT_CALL(*gl, TexImage2D(faces[ii], 0, GL_RGBA, 1, 1, 0, GL_RGBA,
-                                 GL_UNSIGNED_BYTE, _))
-          .Times(1)
-          .RetiresOnSaturation();
-    }
-  }
-  EXPECT_CALL(*gl, BindTexture(GL_TEXTURE_2D, 0))
-      .Times(1)
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl, BindTexture(GL_TEXTURE_CUBE_MAP, 0))
-      .Times(1)
-      .RetiresOnSaturation();
+  InSequence sequence;
+
+  SetupTextureInitializationExpectations(gl, GL_TEXTURE_2D);
+  SetupTextureInitializationExpectations(gl, GL_TEXTURE_CUBE_MAP);
 
   bool ext_image_external = false;
+  bool arb_texture_rectangle = false;
   CStringTokenizer t(extensions, extensions + strlen(extensions), " ");
   while (t.GetNext()) {
     if (t.token() == "GL_OES_EGL_image_external") {
       ext_image_external = true;
       break;
     }
+    if (t.token() == "GL_ARB_texture_rectangle") {
+      arb_texture_rectangle = true;
+      break;
+    }
   }
 
   if (ext_image_external) {
-    static GLuint external_texture_ids[] = {
-      kServiceDefaultExternalTextureId,
-      kServiceBlackExternalTextureId,
-    };
-    EXPECT_CALL(*gl, GenTextures(arraysize(external_texture_ids), _))
-        .WillOnce(SetArrayArgument<1>(
-            external_texture_ids,
-            external_texture_ids + arraysize(external_texture_ids)))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl, BindTexture(GL_TEXTURE_EXTERNAL_OES, 0))
-        .Times(1)
-        .RetiresOnSaturation();
+    SetupTextureInitializationExpectations(gl, GL_TEXTURE_EXTERNAL_OES);
+  }
+  if (arb_texture_rectangle) {
+    SetupTextureInitializationExpectations(gl, GL_TEXTURE_RECTANGLE_ARB);
   }
 }
 

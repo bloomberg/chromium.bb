@@ -1663,6 +1663,9 @@ WGC3Denum WebGraphicsContext3DInProcessCommandBufferImpl::
   return context_lost_reason_;
 }
 
+DELEGATE_TO_GL_5(texImageIOSurface2DCHROMIUM, TexImageIOSurface2DCHROMIUM,
+                 WGC3Denum, WGC3Dint, WGC3Dint, WGC3Duint, WGC3Duint)
+
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
     onCreateGrGLInterface() {

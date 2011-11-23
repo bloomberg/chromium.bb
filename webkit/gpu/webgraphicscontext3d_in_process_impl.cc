@@ -1611,6 +1611,11 @@ WGC3Denum WebGraphicsContext3DInProcessImpl::getGraphicsResetStatusARB() {
   return GL_NO_ERROR;
 }
 
+void WebGraphicsContext3DInProcessImpl::texImageIOSurface2DCHROMIUM(
+    WGC3Denum target, WGC3Dint width, WGC3Dint height,
+    WGC3Duint ioSurfaceId, WGC3Duint plane) {
+}
+
 #if WEBKIT_USING_SKIA
 GrGLInterface* WebGraphicsContext3DInProcessImpl::onCreateGrGLInterface() {
   return gfx::CreateInProcessSkiaGLBinding();

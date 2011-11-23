@@ -4874,6 +4874,214 @@ TEST_F(GLES2DecoderManualInitTest, StreamTextureCHROMIUMNullMgr) {
   GetGLError(); // ignore internal error
 }
 
+TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleBindTexture) {
+  InitDecoder(
+      "GL_ARB_texture_rectangle",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_RECTANGLE_ARB, kNewServiceId));
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+     .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  BindTexture cmd;
+  cmd.Init(GL_TEXTURE_RECTANGLE_ARB, kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  TextureManager::TextureInfo* info = GetTextureInfo(kNewClientId);
+  EXPECT_TRUE(info != NULL);
+  EXPECT_TRUE(info->target() == GL_TEXTURE_RECTANGLE_ARB);
+}
+
+TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleGetBinding) {
+  InitDecoder(
+      "GL_ARB_texture_rectangle",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+  DoBindTexture(
+      GL_TEXTURE_RECTANGLE_ARB, client_texture_id_, kServiceTextureId);
+
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  typedef GetIntegerv::Result Result;
+  Result* result = static_cast<Result*>(shared_memory_address_);
+  EXPECT_CALL(*gl_, GetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB,
+                                result->GetData()))
+      .Times(0);
+  result->size = 0;
+  GetIntegerv cmd;
+  cmd.Init(GL_TEXTURE_BINDING_RECTANGLE_ARB,
+           shared_memory_id_,
+           shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(decoder_->GetGLES2Util()->GLGetNumValuesReturned(
+      GL_TEXTURE_BINDING_RECTANGLE_ARB), result->GetNumResults());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(client_texture_id_, (uint32)result->GetData()[0]);
+}
+
+TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureDefaults) {
+  InitDecoder(
+      "GL_ARB_texture_rectangle",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+  DoBindTexture(
+      GL_TEXTURE_RECTANGLE_ARB, client_texture_id_, kServiceTextureId);
+
+  TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id_);
+  EXPECT_TRUE(info != NULL);
+  EXPECT_TRUE(info->target() == GL_TEXTURE_RECTANGLE_ARB);
+  EXPECT_TRUE(info->min_filter() == GL_LINEAR);
+  EXPECT_TRUE(info->wrap_s() == GL_CLAMP_TO_EDGE);
+  EXPECT_TRUE(info->wrap_t() == GL_CLAMP_TO_EDGE);
+}
+
+TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParam) {
+  InitDecoder(
+      "GL_ARB_texture_rectangle",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  DoBindTexture(
+      GL_TEXTURE_RECTANGLE_ARB, client_texture_id_, kServiceTextureId);
+
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_RECTANGLE_ARB,
+                                  GL_TEXTURE_MIN_FILTER,
+                                  GL_NEAREST));
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_RECTANGLE_ARB,
+                                  GL_TEXTURE_MIN_FILTER,
+                                  GL_LINEAR));
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_RECTANGLE_ARB,
+                                  GL_TEXTURE_WRAP_S,
+                                  GL_CLAMP_TO_EDGE));
+  EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_RECTANGLE_ARB,
+                                  GL_TEXTURE_WRAP_T,
+                                  GL_CLAMP_TO_EDGE));
+  TexParameteri cmd;
+  cmd.Init(GL_TEXTURE_RECTANGLE_ARB,
+           GL_TEXTURE_MIN_FILTER,
+           GL_NEAREST);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  cmd.Init(GL_TEXTURE_RECTANGLE_ARB,
+           GL_TEXTURE_MIN_FILTER,
+           GL_LINEAR);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  cmd.Init(GL_TEXTURE_RECTANGLE_ARB,
+           GL_TEXTURE_WRAP_S,
+           GL_CLAMP_TO_EDGE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  cmd.Init(GL_TEXTURE_RECTANGLE_ARB,
+           GL_TEXTURE_WRAP_T,
+           GL_CLAMP_TO_EDGE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id_);
+  EXPECT_TRUE(info != NULL);
+  EXPECT_TRUE(info->target() == GL_TEXTURE_RECTANGLE_ARB);
+  EXPECT_TRUE(info->min_filter() == GL_LINEAR);
+  EXPECT_TRUE(info->wrap_s() == GL_CLAMP_TO_EDGE);
+  EXPECT_TRUE(info->wrap_t() == GL_CLAMP_TO_EDGE);
+}
+
+TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTextureParamInvalid) {
+  InitDecoder(
+      "GL_ARB_texture_rectangle",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  DoBindTexture(
+      GL_TEXTURE_RECTANGLE_ARB, client_texture_id_, kServiceTextureId);
+
+  TexParameteri cmd;
+  cmd.Init(GL_TEXTURE_RECTANGLE_ARB,
+           GL_TEXTURE_MIN_FILTER,
+           GL_NEAREST_MIPMAP_NEAREST);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+
+  cmd.Init(GL_TEXTURE_RECTANGLE_ARB,
+           GL_TEXTURE_WRAP_S,
+           GL_REPEAT);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+
+  cmd.Init(GL_TEXTURE_RECTANGLE_ARB,
+           GL_TEXTURE_WRAP_T,
+           GL_REPEAT);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+
+  TextureManager::TextureInfo* info = GetTextureInfo(client_texture_id_);
+  EXPECT_TRUE(info != NULL);
+  EXPECT_TRUE(info->target() == GL_TEXTURE_RECTANGLE_ARB);
+  EXPECT_TRUE(info->min_filter() == GL_LINEAR);
+  EXPECT_TRUE(info->wrap_s() == GL_CLAMP_TO_EDGE);
+  EXPECT_TRUE(info->wrap_t() == GL_CLAMP_TO_EDGE);
+}
+
+TEST_F(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DError) {
+  InitDecoder(
+      "GL_ARB_texture_rectangle",  // extensions
+      false,   // has alpha
+      false,   // has depth
+      false,   // has stencil
+      false,   // request alpha
+      false,   // request depth
+      false,   // request stencil
+      true);   // bind generates resource
+
+  GLenum target = GL_TEXTURE_RECTANGLE_ARB;
+  GLint level = 0;
+  GLenum internal_format = GL_RGBA;
+  GLsizei width = 2;
+  GLsizei height = 4;
+  GLint border = 0;
+  GLenum format = GL_RGBA;
+  GLenum type = GL_UNSIGNED_BYTE;
+  DoBindTexture(
+      GL_TEXTURE_RECTANGLE_ARB, client_texture_id_, kServiceTextureId);
+  ASSERT_TRUE(GetTextureInfo(client_texture_id_) != NULL);
+  TexImage2D cmd;
+  cmd.Init(target, level, internal_format, width, height, border, format,
+           type, kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  // TexImage2D is not allowed with GL_TEXTURE_RECTANGLE_ARB targets.
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
 TEST_F(GLES2DecoderTest, EnableFeatureCHROMIUMBadBucket) {
   const uint32 kBadBucketId = 123;
   EnableFeatureCHROMIUM cmd;

@@ -195,6 +195,8 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_TEXTURE_BINDING_EXTERNAL_OES:
       return 1;
+    case GL_TEXTURE_BINDING_RECTANGLE_ARB:
+      return 1;
     case GL_UNPACK_ALIGNMENT:
       return 1;
     case GL_VIEWPORT:

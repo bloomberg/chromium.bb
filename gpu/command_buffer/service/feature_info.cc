@@ -8,6 +8,9 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_implementation.h"
+#if defined(OS_MACOSX)
+#include "ui/gfx/surface/io_surface_support_mac.h"
+#endif
 
 namespace gpu {
 namespace gles2 {
@@ -353,6 +356,30 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
     AddExtensionString("GL_CHROMIUM_stream_texture");
     feature_flags_.chromium_stream_texture = true;
   }
+
+  // Ideally we would only expose this extension on Mac OS X, to
+  // support GL_CHROMIUM_iosurface and the compositor. We don't want
+  // applications to start using it; they should use ordinary non-
+  // power-of-two textures. However, for unit testing purposes we
+  // expose it on all supported platforms.
+  if (ext.HaveAndDesire("GL_ARB_texture_rectangle")) {
+    AddExtensionString("GL_ARB_texture_rectangle");
+    feature_flags_.arb_texture_rectangle = true;
+    validators_.texture_bind_target.AddValue(GL_TEXTURE_RECTANGLE_ARB);
+    // For the moment we don't add this enum to the texture_target
+    // validator. This implies that the only way to get image data into a
+    // rectangular texture is via glTexImageIOSurface2DCHROMIUM, which is
+    // just fine since again we don't want applications depending on this
+    // extension.
+    validators_.get_tex_param_target.AddValue(GL_TEXTURE_RECTANGLE_ARB);
+    validators_.g_l_state.AddValue(GL_TEXTURE_BINDING_RECTANGLE_ARB);
+  }
+
+#if defined(OS_MACOSX)
+  if (IOSurfaceSupport::Initialize()) {
+    AddExtensionString("GL_CHROMIUM_iosurface");
+  }
+#endif
 
   // TODO(gman): Add support for these extensions.
   //     GL_OES_depth32

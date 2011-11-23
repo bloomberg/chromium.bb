@@ -2576,5 +2576,30 @@ error::Error GLES2DecoderImpl::HandlePlaceholder453CHROMIUM(
     uint32 immediate_data_size, const gles2::Placeholder453CHROMIUM& c) {
   return error::kUnknownCommand;
 }
+error::Error GLES2DecoderImpl::HandleTexImageIOSurface2DCHROMIUM(
+    uint32 immediate_data_size, const gles2::TexImageIOSurface2DCHROMIUM& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLuint ioSurfaceId = static_cast<GLuint>(c.ioSurfaceId);
+  GLuint plane = static_cast<GLuint>(c.plane);
+  if (!validators_->texture_bind_target.IsValid(target)) {
+    SetGLError(
+        GL_INVALID_ENUM,
+        "glTexImageIOSurface2DCHROMIUM: target GL_INVALID_ENUM");
+    return error::kNoError;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM: width < 0");
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM: height < 0");
+    return error::kNoError;
+  }
+  DoTexImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId, plane);
+  return error::kNoError;
+}
+
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_AUTOGEN_H_
 

@@ -1253,5 +1253,13 @@
     c.Init(x, y, width, height);
   }
 
+  void TexImageIOSurface2DCHROMIUM(
+      GLenum target, GLsizei width, GLsizei height, GLuint ioSurfaceId,
+      GLuint plane) {
+    gles2::TexImageIOSurface2DCHROMIUM& c =
+        GetCmdSpace<gles2::TexImageIOSurface2DCHROMIUM>();
+    c.Init(target, width, height, ioSurfaceId, plane);
+  }
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_
 

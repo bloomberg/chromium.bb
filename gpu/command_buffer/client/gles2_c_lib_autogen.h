@@ -589,6 +589,12 @@ void GLES2GetTranslatedShaderSourceANGLE(
 void GLES2PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height) {
   gles2::GetGLContext()->PostSubBufferCHROMIUM(x, y, width, height);
 }
+void GLES2TexImageIOSurface2DCHROMIUM(
+    GLenum target, GLsizei width, GLsizei height, GLuint ioSurfaceId,
+    GLuint plane) {
+  gles2::GetGLContext()->TexImageIOSurface2DCHROMIUM(
+      target, width, height, ioSurfaceId, plane);
+}
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_C_LIB_AUTOGEN_H_
 

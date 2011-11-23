@@ -457,6 +457,10 @@ class WebGraphicsContext3DCommandBufferImpl
       WebGraphicsContext3D::
           WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
 
+  virtual void texImageIOSurface2DCHROMIUM(
+      WGC3Denum target, WGC3Dint width, WGC3Dint height,
+      WGC3Duint ioSurfaceId, WGC3Duint plane);
+
  protected:
 #if WEBKIT_USING_SKIA
   virtual GrGLInterface* onCreateGrGLInterface();

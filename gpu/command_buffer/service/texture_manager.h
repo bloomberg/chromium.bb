@@ -253,7 +253,7 @@ class TextureManager {
     // Sets the TextureInfo's target
     // Parameters:
     //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP or
-    //           GL_TEXTURE_EXTERNAL_OES
+    //           GL_TEXTURE_EXTERNAL_OES or GL_TEXTURE_RECTANGLE_ARB
     //   max_levels: The maximum levels this type of target can have.
     void SetTarget(GLenum target, GLint max_levels);
 
@@ -415,6 +415,8 @@ class TextureManager {
         return default_texture_cube_map_;
       case GL_TEXTURE_EXTERNAL_OES:
         return default_texture_external_oes_;
+      case GL_TEXTURE_RECTANGLE_ARB:
+        return default_texture_rectangle_arb_;
       default:
         NOTREACHED();
         return NULL;
@@ -441,6 +443,8 @@ class TextureManager {
         return black_cube_texture_id_;
       case GL_SAMPLER_EXTERNAL_OES:
         return black_oes_external_texture_id_;
+      case GL_SAMPLER_2D_RECT_ARB:
+        return black_arb_texture_rectangle_id_;
       default:
         NOTREACHED();
         return 0;
@@ -448,6 +452,12 @@ class TextureManager {
   }
 
  private:
+  // Helper for Initialize().
+  TextureInfo::Ref CreateDefaultAndBlackTextures(
+      const FeatureInfo* feature_info,
+      GLenum target,
+      GLuint* black_texture);
+
   // Info for each texture in the system.
   typedef base::hash_map<GLuint, TextureInfo::Ref> TextureInfoMap;
   TextureInfoMap texture_infos_;
@@ -467,11 +477,13 @@ class TextureManager {
   GLuint black_2d_texture_id_;
   GLuint black_cube_texture_id_;
   GLuint black_oes_external_texture_id_;
+  GLuint black_arb_texture_rectangle_id_;
 
   // The default textures for each target (texture name = 0)
   TextureInfo::Ref default_texture_2d_;
   TextureInfo::Ref default_texture_cube_map_;
   TextureInfo::Ref default_texture_external_oes_;
+  TextureInfo::Ref default_texture_rectangle_arb_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };
