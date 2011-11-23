@@ -11,21 +11,17 @@
 //
 // Note: THIS IS NOT THE AUDIO RENDERER USED IN CHROME.
 //
-// See src/chrome/renderer/media/audio_renderer_impl.h for chrome's
+// See src/content/renderer/media/audio_renderer_impl.h for chrome's
 // implementation.
 
-#include <deque>
-
-#include "media/audio/audio_io.h"
-#include "media/base/buffers.h"
-#include "media/base/filters.h"
+#include "media/audio/audio_output_controller.h"
 #include "media/filters/audio_renderer_base.h"
 
 namespace media {
 
 class MEDIA_EXPORT ReferenceAudioRenderer
     : public AudioRendererBase,
-      public AudioOutputStream::AudioSourceCallback {
+      public AudioOutputController::EventHandler {
  public:
   ReferenceAudioRenderer();
   virtual ~ReferenceAudioRenderer();
@@ -36,12 +32,14 @@ class MEDIA_EXPORT ReferenceAudioRenderer
   // AudioRenderer implementation.
   virtual void SetVolume(float volume) OVERRIDE;
 
-  // AudioSourceCallback implementation.
-  virtual uint32 OnMoreData(AudioOutputStream* stream, uint8* dest,
-                            uint32 len,
-                            AudioBuffersState buffers_state) OVERRIDE;
-  virtual void OnClose(AudioOutputStream* stream);
-  virtual void OnError(AudioOutputStream* stream, int code) OVERRIDE;
+  // AudioController::EventHandler implementation.
+  virtual void OnCreated(AudioOutputController* controller) OVERRIDE;
+  virtual void OnPlaying(AudioOutputController* controller) OVERRIDE;
+  virtual void OnPaused(AudioOutputController* controller) OVERRIDE;
+  virtual void OnError(AudioOutputController* controller,
+                       int error_code) OVERRIDE;
+  virtual void OnMoreData(AudioOutputController* controller,
+                          AudioBuffersState buffers_state) OVERRIDE;
 
  protected:
   // AudioRendererBase implementation.
@@ -51,9 +49,17 @@ class MEDIA_EXPORT ReferenceAudioRenderer
   virtual void OnStop() OVERRIDE;
 
  private:
-  // Audio output stream device.
-  AudioOutputStream* stream_;
   int bytes_per_second_;
+
+  // AudioOutputController::Close callback.
+  virtual void OnClose();
+
+  // Audio output controller.
+  scoped_refptr<media::AudioOutputController> controller_;
+
+  // Audio buffer.
+  int buffer_capacity_;
+  scoped_array<uint8> buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(ReferenceAudioRenderer);
 };

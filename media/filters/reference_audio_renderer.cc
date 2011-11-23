@@ -6,51 +6,53 @@
 
 #include <math.h>
 
-#include "base/logging.h"
-#include "media/base/filter_host.h"
-#include "media/audio/audio_manager.h"
+#include "base/bind.h"
 
 namespace media {
 
-// This is an arbitrary number, ~184ms in a 44.1kHz stream, assuming a playback
-// rate of 1.0.
-static const size_t kSamplesPerBuffer = 8 * 1024;
-
 ReferenceAudioRenderer::ReferenceAudioRenderer()
     : AudioRendererBase(),
-      stream_(NULL),
       bytes_per_second_(0) {
 }
 
 ReferenceAudioRenderer::~ReferenceAudioRenderer() {
   // Close down the audio device.
-  if (stream_) {
-    stream_->Stop();
-    stream_->Close();
-  }
+  if (controller_)
+    controller_->Close(base::Bind(&ReferenceAudioRenderer::OnClose, this));
 }
 
 void ReferenceAudioRenderer::SetPlaybackRate(float rate) {
   // TODO(fbarchard): limit rate to reasonable values
   AudioRendererBase::SetPlaybackRate(rate);
 
-  static bool started = false;
-  if (rate > 0.0f && !started && stream_)
-    stream_->Start(this);
+  if (controller_ && rate > 0.0f)
+    controller_->Play();
 }
 
 void ReferenceAudioRenderer::SetVolume(float volume) {
-  if (stream_)
-    stream_->SetVolume(volume);
+  if (controller_)
+    controller_->SetVolume(volume);
 }
 
-uint32 ReferenceAudioRenderer::OnMoreData(
-    AudioOutputStream* stream, uint8* dest, uint32 len,
-    AudioBuffersState buffers_state) {
-  // TODO(scherkus): handle end of stream.
-  if (!stream_)
-    return 0;
+void ReferenceAudioRenderer::OnCreated(AudioOutputController* controller) {
+  NOTIMPLEMENTED();
+}
 
+void ReferenceAudioRenderer::OnPlaying(AudioOutputController* controller) {
+  NOTIMPLEMENTED();
+}
+
+void ReferenceAudioRenderer::OnPaused(AudioOutputController* controller) {
+  NOTIMPLEMENTED();
+}
+
+void ReferenceAudioRenderer::OnError(AudioOutputController* controller,
+                                     int error_code) {
+  NOTIMPLEMENTED();
+}
+
+void ReferenceAudioRenderer::OnMoreData(AudioOutputController* controller,
+                                        AudioBuffersState buffers_state) {
   // TODO(fbarchard): Waveout_output_win.h should handle zero length buffers
   //                  without clicking.
   uint32 pending_bytes = static_cast<uint32>(ceil(buffers_state.total_bytes() *
@@ -59,42 +61,37 @@ uint32 ReferenceAudioRenderer::OnMoreData(
       base::Time::kMicrosecondsPerSecond * pending_bytes /
       bytes_per_second_);
   bool buffers_empty = buffers_state.pending_bytes == 0;
-  return FillBuffer(dest, len, delay, buffers_empty);
-}
-
-void ReferenceAudioRenderer::OnClose(AudioOutputStream* stream) {
-  // TODO(scherkus): implement OnClose.
-  NOTIMPLEMENTED();
-}
-
-void ReferenceAudioRenderer::OnError(AudioOutputStream* stream, int code) {
-  // TODO(scherkus): implement OnError.
-  NOTIMPLEMENTED();
+  uint32 read = FillBuffer(buffer_.get(), buffer_capacity_, delay,
+                           buffers_empty);
+  controller->EnqueueData(buffer_.get(), read);
 }
 
 bool ReferenceAudioRenderer::OnInitialize(int bits_per_channel,
-                                              ChannelLayout channel_layout,
-                                              int sample_rate) {
-  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, channel_layout,
-                         sample_rate, bits_per_channel, kSamplesPerBuffer);
+                                          ChannelLayout channel_layout,
+                                          int sample_rate) {
+  int samples_per_packet = sample_rate / 10;
+  int hardware_buffer_size = samples_per_packet *
+    ChannelLayoutToChannelCount(channel_layout) * bits_per_channel / 8;
 
+  // Allocate audio buffer based on hardware buffer size.
+  buffer_capacity_ = 3 * hardware_buffer_size;
+  buffer_.reset(new uint8[buffer_capacity_]);
+
+  AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, channel_layout,
+                         sample_rate, bits_per_channel, samples_per_packet);
   bytes_per_second_ = params.GetBytesPerSecond();
 
-  // Create our audio stream.
-  stream_ = AudioManager::GetAudioManager()->MakeAudioOutputStream(params);
-  if (!stream_)
-    return false;
-
-  if (!stream_->Open()) {
-    stream_->Close();
-    stream_ = NULL;
-  }
-  return true;
+  controller_ = AudioOutputController::Create(this, params, buffer_capacity_);
+  return controller_ != NULL;
 }
 
 void ReferenceAudioRenderer::OnStop() {
-  if (stream_)
-    stream_->Stop();
+  if (controller_)
+    controller_->Pause();
+}
+
+void ReferenceAudioRenderer::OnClose() {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace media
