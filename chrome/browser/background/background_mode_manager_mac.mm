@@ -28,6 +28,11 @@ void DisableLaunchOnStartupCallback() {
   base::mac::RemoveFromLoginItems();
 }
 
+void SetUserCreatedLoginItemPrefCallback() {
+  PrefService* service = g_browser_process->local_state();
+  service->SetBoolean(prefs::kUserCreatedLoginItem, true);
+}
+
 void EnableLaunchOnStartupCallback() {
   // Return if Chrome is already a Login Item (avoid overriding user choice).
   if (base::mac::CheckLoginItemStatus(NULL)) {
@@ -42,11 +47,6 @@ void EnableLaunchOnStartupCallback() {
   }
 
   base::mac::AddToLoginItems(true);  // Hide on startup.
-}
-
-void SetUserCreatedLoginItemPrefCallback() {
-  PrefService* service = g_browser_process->local_state();
-  service->SetBoolean(prefs::kUserCreatedLoginItem, true);
 }
 
 }  // namespace
