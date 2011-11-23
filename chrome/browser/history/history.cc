@@ -25,6 +25,7 @@
 #include "chrome/browser/history/history.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
+#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -44,6 +46,7 @@
 #include "chrome/browser/visitedlink/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/url_constants.h"
@@ -151,6 +154,15 @@ HistoryService::HistoryService(Profile* profile)
       no_db_(false),
       needs_top_sites_migration_(false) {
   DCHECK(profile_);
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHistoryQuickProvider)) {
+    in_memory_url_index_.reset(
+        new history::InMemoryURLIndex(profile_, history_dir_));
+    std::string languages;
+    PrefService* prefs = profile_->GetPrefs();
+    languages = prefs->GetString(prefs::kAcceptLanguages);
+    in_memory_url_index_->Init(languages);
+  }
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_TEMPLATE_URL_REMOVED,
@@ -217,6 +229,10 @@ void HistoryService::Cleanup() {
     return;
   }
 
+  // Give the InMemoryURLIndex a chance to shutdown.
+  if (in_memory_url_index_.get())
+    in_memory_url_index_->ShutDown();
+
   // Unload the backend.
   UnloadBackend();
 
@@ -243,14 +259,12 @@ history::URLDatabase* HistoryService::InMemoryDatabase() {
   return NULL;
 }
 
+history::URLDatabase* HistoryService::HistoryDatabase() {
+  return history_backend_->database();
+}
+
 history::InMemoryURLIndex* HistoryService::InMemoryIndex() {
-  // NOTE: See comments in BackendLoaded() as to why we call
-  // LoadBackendIfNecessary() here even though it won't affect the return value
-  // for this call.
-  LoadBackendIfNecessary();
-  if (in_memory_backend_.get())
-    return in_memory_backend_->InMemoryIndex();
-  return NULL;
+  return in_memory_url_index_.get();
 }
 
 void HistoryService::SetSegmentPresentationIndex(int64 segment_id, int index) {

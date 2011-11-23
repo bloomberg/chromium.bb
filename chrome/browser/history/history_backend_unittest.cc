@@ -19,6 +19,7 @@
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
+#include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/thumbnail_score.h"
@@ -146,7 +147,6 @@ class HistoryBackendTest : public testing::Test {
 
   BookmarkModel bookmark_model_;
 
- protected:
   bool loaded_;
 
  private:

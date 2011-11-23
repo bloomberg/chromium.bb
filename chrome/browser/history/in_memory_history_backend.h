@@ -69,9 +69,6 @@ class InMemoryHistoryBackend : public content::NotificationObserver {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Return the quick history index.
-  history::InMemoryURLIndex* InMemoryIndex() const { return index_.get(); }
-
  private:
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, DeleteAll);
 
@@ -94,9 +91,6 @@ class InMemoryHistoryBackend : public content::NotificationObserver {
   // The profile that this object is attached. May be NULL before
   // initialization.
   Profile* profile_;
-
-  // The index used for quick history lookups.
-  scoped_ptr<history::InMemoryURLIndex> index_;
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryHistoryBackend);
 };

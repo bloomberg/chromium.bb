@@ -143,8 +143,8 @@ class HistoryService : public CancelableRequestProvider,
   // TODO(brettw) this should return the InMemoryHistoryBackend.
   history::URLDatabase* InMemoryDatabase();
 
-  // Return the quick history index.
-  history::InMemoryURLIndex* InMemoryIndex();
+  // Returns the history database if it has been set, otherwise NULL.
+  history::URLDatabase* HistoryDatabase();
 
   // Navigation ----------------------------------------------------------------
 
@@ -502,6 +502,11 @@ class HistoryService : public CancelableRequestProvider,
       CancelableRequestConsumerBase* consumer,
       const GetMostRecentKeywordSearchTermsCallback& callback);
 
+  // InMemoryURLIndex ----------------------------------------------------------
+
+  // Returns the quick history index.
+  history::InMemoryURLIndex* InMemoryIndex();
+
   // Bookmarks -----------------------------------------------------------------
 
   // Notification that a URL is no longer bookmarked.
@@ -844,6 +849,9 @@ class HistoryService : public CancelableRequestProvider,
   // autocomplete system. This will be NULL until the database has been created
   // on the background thread.
   scoped_ptr<history::InMemoryHistoryBackend> in_memory_backend_;
+
+  // The index used for quick history lookups.
+  scoped_ptr<history::InMemoryURLIndex> in_memory_url_index_;
 
   // The profile, may be null when testing.
   Profile* profile_;

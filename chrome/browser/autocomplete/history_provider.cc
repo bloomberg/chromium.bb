@@ -34,8 +34,10 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(history_service);
   DCHECK(match.destination_url.is_valid());
   history_service->DeleteURL(match.destination_url);
+  DeleteMatchFromMatches(match);
+}
 
-  // Delete the match from the current set of matches.
+void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
   bool found = false;
   for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
     if (i->destination_url == match.destination_url && i->type == match.type) {

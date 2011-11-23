@@ -283,6 +283,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Generic operations --------------------------------------------------------
 
+  // Returns our database if it has been set, otherwise NULL.
+  URLDatabase* database() { return db_.get(); }
+
   void ProcessDBTask(scoped_refptr<HistoryDBTaskRequest> request);
 
   virtual bool GetAllTypedURLs(std::vector<history::URLRow>* urls);
