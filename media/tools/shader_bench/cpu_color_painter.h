@@ -5,6 +5,7 @@
 #ifndef MEDIA_TOOLS_SHADER_BENCH_CPU_COLOR_PAINTER_H_
 #define MEDIA_TOOLS_SHADER_BENCH_CPU_COLOR_PAINTER_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/video_frame.h"
 #include "media/tools/shader_bench/gpu_painter.h"
@@ -16,8 +17,8 @@ class CPUColorPainter : public GPUPainter {
   virtual ~CPUColorPainter();
 
   // Painter interface.
-  virtual void Initialize(int width, int height);
-  virtual void Paint(scoped_refptr<media::VideoFrame> video_frame);
+  virtual void Initialize(int width, int height) OVERRIDE;
+  virtual void Paint(scoped_refptr<media::VideoFrame> video_frame) OVERRIDE;
 
  private:
   // Shader program id.

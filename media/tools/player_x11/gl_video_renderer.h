@@ -5,6 +5,7 @@
 #ifndef MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 #define MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/filters/video_renderer_base.h"
 #include "ui/gfx/gl/gl_bindings.h"
@@ -18,9 +19,9 @@ class GlVideoRenderer : public media::VideoRendererBase {
 
  protected:
   // VideoRendererBase implementation.
-  virtual bool OnInitialize(media::VideoDecoder* decoder);
-  virtual void OnStop(const base::Closure& callback);
-  virtual void OnFrameAvailable();
+  virtual bool OnInitialize(media::VideoDecoder* decoder) OVERRIDE;
+  virtual void OnStop(const base::Closure& callback) OVERRIDE;
+  virtual void OnFrameAvailable() OVERRIDE;
 
  private:
   // Only allow to be deleted by reference counting.

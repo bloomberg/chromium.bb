@@ -7,6 +7,7 @@
 
 #include <X11/Xlib.h>
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/filters/video_renderer_base.h"
 
@@ -19,9 +20,9 @@ class X11VideoRenderer : public media::VideoRendererBase {
 
  protected:
   // VideoRendererBase implementation.
-  virtual bool OnInitialize(media::VideoDecoder* decoder);
-  virtual void OnStop(const base::Closure& callback);
-  virtual void OnFrameAvailable();
+  virtual bool OnInitialize(media::VideoDecoder* decoder) OVERRIDE;
+  virtual void OnStop(const base::Closure& callback) OVERRIDE;
+  virtual void OnFrameAvailable() OVERRIDE;
 
  private:
   // Only allow to be deleted by reference counting.
