@@ -17,6 +17,7 @@
 
 namespace net {
 class AuthChallengeInfo;
+class HttpNetworkSession;
 class URLRequest;
 }  // namespace net
 
@@ -132,6 +133,9 @@ class LoginHandler : public ResourceDispatcherHostLoginDelegate,
   // The request that wants login data.
   // This should only be accessed on the IO loop.
   net::URLRequest* request_;
+
+  // The HttpNetworkSession |request_| is associated with.
+  const net::HttpNetworkSession* http_network_session_;
 
   // The PasswordForm sent to the PasswordManager. This is so we can refer to it
   // when later notifying the password manager if the credentials were accepted

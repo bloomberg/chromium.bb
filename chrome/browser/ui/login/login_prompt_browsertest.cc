@@ -31,6 +31,7 @@ class LoginPromptBrowserTest : public InProcessBrowserTest {
 
     auth_map_["foo"] = AuthInfo("testuser", "foopassword");
     auth_map_["bar"] = AuthInfo("testuser", "barpassword");
+    auth_map_["testrealm"] = AuthInfo("basicuser", "secret");
   }
 
  protected:
@@ -645,6 +646,213 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, BlockCrossdomainPrompt) {
   }
 
   EXPECT_EQ(1, observer.auth_needed_count_);
+  EXPECT_TRUE(test_server()->Stop());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, SupplyRedundantAuths) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // Get NavigationController for tab 1.
+  TabContentsWrapper* contents_1 =
+      browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(contents_1);
+  NavigationController* controller_1 = &contents_1->controller();
+
+  // Open a new tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("about:blank"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  // Get NavigationController for tab 2.
+  TabContentsWrapper* contents_2 =
+      browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(contents_2);
+  ASSERT_NE(contents_1, contents_2);
+  NavigationController* controller_2 = &contents_2->controller();
+
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller_1));
+  observer.Register(content::Source<NavigationController>(controller_2));
+
+  {
+    // Open different auth urls in each tab.
+    WindowedAuthNeededObserver auth_needed_waiter_1(controller_1);
+    WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
+    contents_1->tab_contents()->OpenURL(OpenURLParams(
+        test_server()->GetURL("auth-basic/1"),
+        GURL(),
+        CURRENT_TAB,
+        content::PAGE_TRANSITION_TYPED,
+        false));
+    contents_2->tab_contents()->OpenURL(OpenURLParams(
+        test_server()->GetURL("auth-basic/2"),
+        GURL(),
+        CURRENT_TAB,
+        content::PAGE_TRANSITION_TYPED,
+        false));
+    auth_needed_waiter_1.Wait();
+    auth_needed_waiter_2.Wait();
+
+    ASSERT_EQ(2U, observer.handlers_.size());
+
+    // Supply auth in one of the tabs.
+    WindowedAuthSuppliedObserver auth_supplied_waiter_1(controller_1);
+    WindowedAuthSuppliedObserver auth_supplied_waiter_2(controller_2);
+    LoginHandler* handler_1 = *observer.handlers_.begin();
+    ASSERT_TRUE(handler_1);
+    SetAuthFor(handler_1);
+
+    // Both tabs should be authenticated.
+    auth_supplied_waiter_1.Wait();
+    auth_supplied_waiter_2.Wait();
+  }
+
+  EXPECT_EQ(2, observer.auth_needed_count_);
+  EXPECT_EQ(2, observer.auth_supplied_count_);
+  EXPECT_EQ(0, observer.auth_cancelled_count_);
+  EXPECT_TRUE(test_server()->Stop());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, CancelRedundantAuths) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // Get NavigationController for tab 1.
+  TabContentsWrapper* contents_1 =
+      browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(contents_1);
+  NavigationController* controller_1 = &contents_1->controller();
+
+  // Open a new tab.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(),
+      GURL("about:blank"),
+      NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  // Get NavigationController for tab 2.
+  TabContentsWrapper* contents_2 =
+      browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(contents_2);
+  ASSERT_NE(contents_1, contents_2);
+  NavigationController* controller_2 = &contents_2->controller();
+
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller_1));
+  observer.Register(content::Source<NavigationController>(controller_2));
+
+  {
+    // Open different auth urls in each tab.
+    WindowedAuthNeededObserver auth_needed_waiter_1(controller_1);
+    WindowedAuthNeededObserver auth_needed_waiter_2(controller_2);
+    contents_1->tab_contents()->OpenURL(OpenURLParams(
+        test_server()->GetURL("auth-basic/1"),
+        GURL(),
+        CURRENT_TAB,
+        content::PAGE_TRANSITION_TYPED,
+        false));
+    contents_2->tab_contents()->OpenURL(OpenURLParams(
+        test_server()->GetURL("auth-basic/2"),
+        GURL(),
+        CURRENT_TAB,
+        content::PAGE_TRANSITION_TYPED,
+        false));
+    auth_needed_waiter_1.Wait();
+    auth_needed_waiter_2.Wait();
+
+    ASSERT_EQ(2U, observer.handlers_.size());
+
+    // Cancel auth in one of the tabs.
+    WindowedAuthCancelledObserver auth_cancelled_waiter_1(controller_1);
+    WindowedAuthCancelledObserver auth_cancelled_waiter_2(controller_2);
+    LoginHandler* handler_1 = *observer.handlers_.begin();
+    ASSERT_TRUE(handler_1);
+    handler_1->CancelAuth();
+
+    // Both tabs should cancel auth.
+    auth_cancelled_waiter_1.Wait();
+    auth_cancelled_waiter_2.Wait();
+  }
+
+  EXPECT_EQ(2, observer.auth_needed_count_);
+  EXPECT_EQ(0, observer.auth_supplied_count_);
+  EXPECT_EQ(2, observer.auth_cancelled_count_);
+  EXPECT_TRUE(test_server()->Stop());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
+                       SupplyRedundantAuthsMultiProfile) {
+  ASSERT_TRUE(test_server()->Start());
+
+  // Get NavigationController for regular tab.
+  TabContentsWrapper* contents =
+      browser()->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(contents);
+  NavigationController* controller = &contents->controller();
+
+  // Open an incognito window.
+  Browser* browser_incognito = CreateIncognitoBrowser();
+
+  // Get NavigationController for incognito tab.
+  TabContentsWrapper* contents_incognito =
+      browser_incognito->GetSelectedTabContentsWrapper();
+  ASSERT_TRUE(contents_incognito);
+  ASSERT_NE(contents, contents_incognito);
+  NavigationController* controller_incognito =
+      &contents_incognito->controller();
+
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(controller));
+  LoginPromptBrowserTestObserver observer_incognito;
+  observer_incognito.Register(
+      content::Source<NavigationController>(controller_incognito));
+
+  {
+    // Open an auth url in each window.
+    WindowedAuthNeededObserver auth_needed_waiter(controller);
+    WindowedAuthNeededObserver auth_needed_waiter_incognito(
+        controller_incognito);
+    contents->tab_contents()->OpenURL(OpenURLParams(
+        test_server()->GetURL("auth-basic/1"),
+        GURL(),
+        CURRENT_TAB,
+        content::PAGE_TRANSITION_TYPED,
+        false));
+    contents_incognito->tab_contents()->OpenURL(OpenURLParams(
+        test_server()->GetURL("auth-basic/2"),
+        GURL(),
+        CURRENT_TAB,
+        content::PAGE_TRANSITION_TYPED,
+        false));
+    auth_needed_waiter.Wait();
+    auth_needed_waiter_incognito.Wait();
+
+    ASSERT_EQ(1U, observer.handlers_.size());
+    ASSERT_EQ(1U, observer_incognito.handlers_.size());
+
+    // Supply auth in regular tab.
+    WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
+    LoginHandler* handler = *observer.handlers_.begin();
+    ASSERT_TRUE(handler);
+    SetAuthFor(handler);
+
+    // Regular tab should be authenticated.
+    auth_supplied_waiter.Wait();
+
+    // There's not really a way to wait for the incognito window to "do
+    // nothing".  Run anything pending in the message loop just to be sure.
+    // (This shouldn't be necessary since notifications are synchronous, but
+    // maybe it will help avoid flake someday in the future..)
+    ui_test_utils::RunAllPendingInMessageLoop();
+  }
+
+  EXPECT_EQ(1, observer.auth_needed_count_);
+  EXPECT_EQ(1, observer.auth_supplied_count_);
+  EXPECT_EQ(0, observer.auth_cancelled_count_);
+  EXPECT_EQ(1, observer_incognito.auth_needed_count_);
+  EXPECT_EQ(0, observer_incognito.auth_supplied_count_);
+  EXPECT_EQ(0, observer_incognito.auth_cancelled_count_);
   EXPECT_TRUE(test_server()->Stop());
 }
 

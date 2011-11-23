@@ -25,7 +25,9 @@
 #include "grit/generated_resources.h"
 #include "net/base/auth.h"
 #include "net/base/net_util.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/text_elider.h"
 
@@ -79,6 +81,8 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
       dialog_(NULL),
       auth_info_(auth_info),
       request_(request),
+      http_network_session_(
+          request_->context()->http_transaction_factory()->GetSession()),
       password_manager_(NULL),
       login_model_(NULL) {
   // This constructor is called on the I/O thread, so we cannot load the nib
@@ -237,6 +241,11 @@ void LoginHandler::Observe(int type,
 
   // Only handle notification for the identical auth info.
   if (!login_details->handler()->auth_info()->Equals(*auth_info()))
+    return;
+
+  // Ignore login notification events from other profiles.
+  if (login_details->handler()->http_network_session_ !=
+      http_network_session_)
     return;
 
   // Set or cancel the auth in this handler.
