@@ -58,8 +58,17 @@ struct wl_shell {
 	struct wl_list hidden_surface_list;
 };
 
+enum shell_surface_purpose {
+	SHELL_SURFACE_NORMAL,
+	SHELL_SURFACE_PANEL,
+	SHELL_SURFACE_BACKGROUND,
+	SHELL_SURFACE_LOCK,
+};
+
 struct shell_surface {
 	struct wl_listener destroy_listener;
+
+	enum shell_surface_purpose purpose;
 };
 
 struct wlsc_move_grab {
@@ -101,6 +110,8 @@ get_shell_surface(struct wlsc_surface *surface)
 		       &priv->destroy_listener.link);
 
 	surface->shell_priv = priv;
+
+	priv->purpose = SHELL_SURFACE_NORMAL;
 
 	return priv;
 }
@@ -823,11 +834,15 @@ desktop_shell_set_background(struct wl_client *client,
 	struct wlsc_output *output =
 		container_of(shell->compositor->output_list.next,
 			     struct wlsc_output, link);
+	struct shell_surface *priv;
 
 	shell->background = surface_resource->data;
 	shell->background_listener.func = handle_background_surface_destroy;
 	wl_list_insert(&surface_resource->destroy_listener_list,
 		       &shell->background_listener.link);
+
+	priv = get_shell_surface(surface);
+	priv->purpose = SHELL_SURFACE_BACKGROUND;
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
@@ -856,12 +871,16 @@ desktop_shell_set_panel(struct wl_client *client,
 	struct wlsc_output *output =
 		container_of(shell->compositor->output_list.next,
 			     struct wlsc_output, link);
+	struct shell_surface *priv;
 
 	shell->panel = surface_resource->data;
 
 	shell->panel_listener.func = handle_panel_surface_destroy;
 	wl_list_insert(&surface_resource->destroy_listener_list,
 		       &shell->panel_listener.link);
+
+	priv = get_shell_surface(shell->panel);
+	priv->purpose = SHELL_SURFACE_PANEL;
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
@@ -887,6 +906,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 			       struct wl_resource *surface_resource)
 {
 	struct wl_shell *shell = resource->data;
+	struct shell_surface *priv;
 
 	shell->prepare_event_sent = false;
 
@@ -898,6 +918,9 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 	shell->lock_surface_listener.func = handle_lock_surface_destroy;
 	wl_list_insert(&surface_resource->destroy_listener_list,
 		       &shell->lock_surface_listener.link);
+
+	priv = get_shell_surface(shell->lock_surface);
+	priv->purpose = SHELL_SURFACE_LOCK;
 }
 
 static void
@@ -1005,18 +1028,31 @@ activate(struct wlsc_shell *base, struct wlsc_surface *es,
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct wlsc_compositor *compositor = shell->compositor;
+	struct shell_surface *priv;
+
+	priv = get_shell_surface(es);
 
 	wlsc_surface_activate(es, device, time);
 
 	if (compositor->wxs)
 		wlsc_xserver_surface_activate(es);
 
-	if (es == shell->background) {
+	switch (priv->purpose) {
+	case SHELL_SURFACE_BACKGROUND:
+		/* put background back to bottom */
 		wl_list_remove(&es->link);
 		wl_list_insert(compositor->surface_list.prev, &es->link);
-	} else if (shell->panel && !shell->locked) {
-		wl_list_remove(&shell->panel->link);
-		wl_list_insert(&compositor->surface_list, &shell->panel->link);
+		break;
+	case SHELL_SURFACE_PANEL:
+		/* already put on top */
+		break;
+	default:
+		if (shell->panel && !shell->locked) {
+			/* bring panel back to top */
+			wl_list_remove(&shell->panel->link);
+			wl_list_insert(&compositor->surface_list,
+				       &shell->panel->link);
+		}
 	}
 }
 
@@ -1027,6 +1063,7 @@ lock(struct wlsc_shell *base)
 	struct wl_list *surface_list = &shell->compositor->surface_list;
 	struct wlsc_surface *cur;
 	struct wlsc_surface *tmp;
+	struct shell_surface *priv;
 	struct wlsc_input_device *device;
 	uint32_t time;
 
@@ -1050,7 +1087,8 @@ lock(struct wlsc_shell *base)
 		if (cur->surface.resource.client == NULL)
 			continue;
 
-		if (cur == shell->background)
+		priv = get_shell_surface(cur);
+		if (priv->purpose == SHELL_SURFACE_BACKGROUND)
 			continue;
 
 		cur->output = NULL;
@@ -1104,6 +1142,9 @@ map(struct wlsc_shell *base,
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct wlsc_compositor *compositor = shell->compositor;
 	struct wl_list *list;
+	struct shell_surface *priv;
+
+	priv = get_shell_surface(surface);
 
 	if (shell->locked)
 		list = &shell->hidden_surface_list;
@@ -1111,23 +1152,28 @@ map(struct wlsc_shell *base,
 		list = &compositor->surface_list;
 
 	/* surface stacking order, see also activate() */
-	if (surface == shell->background) {
+	switch (priv->purpose) {
+	case SHELL_SURFACE_BACKGROUND:
 		/* background always visible, at the bottom */
 		wl_list_insert(compositor->surface_list.prev, &surface->link);
-
-	} else if (surface == shell->panel) {
+		break;
+	case SHELL_SURFACE_PANEL:
 		/* panel always on top, hidden while locked */
 		wl_list_insert(list, &surface->link);
-
-	} else if (surface == shell->lock_surface) {
+		break;
+	case SHELL_SURFACE_LOCK:
 		/* lock surface always visible, on top */
 		wl_list_insert(&compositor->surface_list, &surface->link);
 
 		wlsc_compositor_repick(compositor);
-		wlsc_compositor_wake(compositor);		
-	} else {
+		wlsc_compositor_wake(compositor);
+		break;
+	default:
 		/* everything else just below the panel */
-		wl_list_insert(&shell->panel->link, &surface->link);
+		if (shell->panel)
+			wl_list_insert(&shell->panel->link, &surface->link);
+		else
+			wl_list_insert(list, &surface->link);
 	}
 
 	if (surface->map_type == WLSC_SURFACE_MAP_TOPLEVEL) {
@@ -1137,7 +1183,7 @@ map(struct wlsc_shell *base,
 
 	surface->width = width;
 	surface->height = height;
-	if (!shell->locked || surface == shell->lock_surface)
+	if (!shell->locked || priv->purpose == SHELL_SURFACE_LOCK)
 		wlsc_surface_configure(surface,
 				       surface->x, surface->y, width, height);
 }
