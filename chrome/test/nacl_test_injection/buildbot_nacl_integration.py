@@ -58,6 +58,11 @@ def Main(args):
         'run_fault_pq_dep_pm_nameservice_chrome_browser_test',
         ])
 
+    if sys.platform == 'darwin':
+      # TODO(mseaborn) fix
+      # http://code.google.com/p/nativeclient/issues/detail?id=1835
+      tests_to_disable.append('run_ppapi_crash_browser_test')
+
   if sys.platform in ('win32', 'cygwin'):
     tests_to_disable.append('run_ppapi_ppp_input_event_browser_test')
 
