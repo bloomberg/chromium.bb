@@ -56,15 +56,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
 
 // Delete all profiles in a multi profile setup and make sure a new one is
 // created.
-
-#if defined(OS_MACOSX)
-// See crbug.com/104851
-#define MAYBE_DeleteAllProfiles FLAKY_DeleteAllProfiles
-#else
-#define MAYBE_DeleteAllProfiles DeleteAllProfiles
-#endif
-
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_DeleteAllProfiles) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteAllProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
 
