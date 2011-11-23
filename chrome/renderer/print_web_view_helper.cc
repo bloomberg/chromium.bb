@@ -462,7 +462,11 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
 
   if (is_preview_enabled_) {
     print_preview_context_.InitWithFrame(frame);
-    RequestPrintPreview();
+
+    old_print_pages_params_.reset();  // Same as in RequestPrintPreview().
+    IPC::SyncMessage* msg = new PrintHostMsg_ScriptedPrintPreview(routing_id());
+    msg->EnableMessagePumping();
+    Send(msg);
   } else {
     Print(frame, WebNode());
   }

@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/print_view_manager.h"
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -50,6 +51,13 @@ void ReleasePrinterQuery(int cookie) {
   }
 }
 
+// Keeps track of pending scripted print preview closures.
+// No locking, only access on the UI thread.
+typedef std::map<content::RenderProcessHost*, base::Closure>
+    ScriptedPrintPreviewClosureMap;
+static base::LazyInstance<ScriptedPrintPreviewClosureMap>
+    g_scripted_print_preview_closure_map = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
 namespace printing {
@@ -61,13 +69,16 @@ PrintViewManager::PrintViewManager(TabContentsWrapper* tab)
       printing_succeeded_(false),
       inside_inner_message_loop_(false),
       observer_(NULL),
-      cookie_(0) {
+      cookie_(0),
+      print_preview_state_(NOT_PREVIEWING),
+      scripted_print_preview_rph_(NULL) {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   expecting_first_page_ = true;
 #endif
 }
 
 PrintViewManager::~PrintViewManager() {
+  DCHECK_EQ(NOT_PREVIEWING, print_preview_state_);
   ReleasePrinterQuery(cookie_);
   DisconnectFromCurrentPrintJob();
 }
@@ -85,10 +96,8 @@ bool PrintViewManager::AdvancedPrintNow() {
       PrintPreviewTabController::GetInstance();
   if (!tab_controller)
     return false;
-  TabContentsWrapper* wrapper =
-      TabContentsWrapper::GetCurrentWrapperForContents(tab_contents());
   TabContentsWrapper* print_preview_tab =
-      tab_controller->GetPrintPreviewForTab(wrapper);
+      tab_controller->GetPrintPreviewForTab(tab_);
   if (print_preview_tab) {
     // Preview tab exist for current tab or current tab is preview tab.
     if (!print_preview_tab->web_ui())
@@ -103,7 +112,29 @@ bool PrintViewManager::AdvancedPrintNow() {
 }
 
 bool PrintViewManager::PrintPreviewNow() {
+  if (print_preview_state_ != NOT_PREVIEWING) {
+    NOTREACHED();
+    return false;
+  }
+  print_preview_state_ = USER_INITIATED_PREVIEW;
   return PrintNowInternal(new PrintMsg_InitiatePrintPreview(routing_id()));
+}
+
+void PrintViewManager::PrintPreviewDone() {
+  BrowserThread::CurrentlyOn(BrowserThread::UI);
+  DCHECK_NE(NOT_PREVIEWING, print_preview_state_);
+
+  if (print_preview_state_ == SCRIPTED_PREVIEW) {
+    ScriptedPrintPreviewClosureMap& map =
+        g_scripted_print_preview_closure_map.Get();
+    ScriptedPrintPreviewClosureMap::iterator it =
+        map.find(scripted_print_preview_rph_);
+    CHECK(it != map.end());
+    it->second.Run();
+    map.erase(scripted_print_preview_rph_);
+    scripted_print_preview_rph_ = NULL;
+  }
+  print_preview_state_ = NOT_PREVIEWING;
 }
 
 void PrintViewManager::PreviewPrintingRequestCancelled() {
@@ -227,6 +258,43 @@ void PrintViewManager::OnPrintingFailed(int cookie) {
       content::NotificationService::NoDetails());
 }
 
+void PrintViewManager::OnScriptedPrintPreview(IPC::Message* reply_msg) {
+  BrowserThread::CurrentlyOn(BrowserThread::UI);
+  ScriptedPrintPreviewClosureMap& map =
+      g_scripted_print_preview_closure_map.Get();
+  content::RenderProcessHost* rph =
+      tab_contents()->render_view_host()->process();
+
+  // This should always be 0 once we get modal window.print().
+  if (map.count(rph) != 0) {
+    // Renderer already handling window.print() in another View.
+    Send(reply_msg);
+    return;
+  }
+  if (print_preview_state_ != NOT_PREVIEWING) {
+    // If a user initiated print dialog is already open, ignore the scripted
+    // print message.
+    DCHECK_EQ(USER_INITIATED_PREVIEW, print_preview_state_);
+    Send(reply_msg);
+    return;
+  }
+
+  print_preview_state_ = SCRIPTED_PREVIEW;
+  base::Closure callback =
+      base::Bind(&PrintViewManager::OnScriptedPrintPreviewReply,
+                 base::Unretained(this),
+                 reply_msg);
+  map[rph] = callback;
+  scripted_print_preview_rph_ = rph;
+
+  PrintPreviewTabController::PrintPreview(tab_);
+}
+
+void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {
+  BrowserThread::CurrentlyOn(BrowserThread::UI);
+  Send(reply_msg);
+}
+
 bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintViewManager, message)
@@ -237,6 +305,8 @@ bool PrintViewManager::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidShowPrintDialog, OnDidShowPrintDialog)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintPage, OnDidPrintPage)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintingFailed, OnPrintingFailed)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrintPreview,
+                                    OnScriptedPrintPreview)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

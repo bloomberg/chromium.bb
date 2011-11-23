@@ -13,6 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
@@ -258,6 +259,11 @@ void PrintPreviewMessageHandler::NavigateToPendingEntry(
     DCHECK_EQ(NavigationController::RELOAD, reload_type);
     return;
   }
+  // If |tab| is navigating and it has a print preview tab, notify |tab| to
+  // consider print preview done so it unfreezes the renderer in the case of
+  // window.print().
+  if (preview_tab)
+    tab->print_view_manager()->PrintPreviewDone();
 }
 
 }  // namespace printing

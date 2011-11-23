@@ -368,10 +368,10 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
                        regenerate_preview_request_count_);
 
   TabContentsWrapper* initiator_tab = GetInitiatorTab();
-  if (initiator_tab) {
-    RenderViewHost* rvh = initiator_tab->render_view_host();
-    rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->routing_id()));
-  }
+  CHECK(initiator_tab);
+
+  RenderViewHost* init_rvh = initiator_tab->render_view_host();
+  init_rvh->Send(new PrintMsg_ResetScriptedPrintCount(init_rvh->routing_id()));
 
   scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
@@ -439,6 +439,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     RenderViewHost* rvh = web_ui_->tab_contents()->render_view_host();
     rvh->Send(new PrintMsg_PrintForPrintPreview(rvh->routing_id(), *settings));
   }
+  initiator_tab->print_view_manager()->PrintPreviewDone();
 }
 
 void PrintPreviewHandler::HandlePrintToPdf(

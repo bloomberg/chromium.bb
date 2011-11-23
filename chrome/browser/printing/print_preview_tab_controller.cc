@@ -252,7 +252,7 @@ void PrintPreviewTabController::OnRendererProcessClosed(
   }
 
   for (size_t i = 0; i < closed_initiator_tabs.size(); ++i)
-    RemoveInitiatorTab(closed_initiator_tabs[i]);
+    RemoveInitiatorTab(closed_initiator_tabs[i], false);
 }
 
 void PrintPreviewTabController::OnTabContentsDestroyed(
@@ -266,7 +266,7 @@ void PrintPreviewTabController::OnTabContentsDestroyed(
   if (tab == preview_tab)
     RemovePreviewTab(tab);
   else
-    RemoveInitiatorTab(tab);
+    RemoveInitiatorTab(tab, false);
 }
 
 void PrintPreviewTabController::OnNavEntryCommitted(
@@ -310,7 +310,7 @@ void PrintPreviewTabController::OnNavEntryCommitted(
   }
 
   // Initiator tab navigated.
-  RemoveInitiatorTab(tab);
+  RemoveInitiatorTab(tab, true);
 }
 
 // static
@@ -436,7 +436,7 @@ void PrintPreviewTabController::RemoveObservers(TabContentsWrapper* tab) {
 }
 
 void PrintPreviewTabController::RemoveInitiatorTab(
-    TabContentsWrapper* initiator_tab) {
+    TabContentsWrapper* initiator_tab, bool is_navigation) {
   TabContentsWrapper* preview_tab = GetPrintPreviewForTab(initiator_tab);
   DCHECK(preview_tab);
   // Update the map entry first, so when the print preview tab gets destroyed
@@ -444,6 +444,11 @@ void PrintPreviewTabController::RemoveInitiatorTab(
   // initiator tab's observers.
   preview_tab_map_[preview_tab] = NULL;
   RemoveObservers(initiator_tab);
+
+  // For the navigation case, PrintPreviewDone() has already been called in
+  // PrintPreviewMessageHandler::NavigateToPendingEntry().
+  if (!is_navigation)
+    initiator_tab->print_view_manager()->PrintPreviewDone();
 
   // Initiator tab is closed. Close the print preview tab too.
   PrintPreviewUI* print_preview_ui =
@@ -456,8 +461,10 @@ void PrintPreviewTabController::RemovePreviewTab(
     TabContentsWrapper* preview_tab) {
   // Remove the initiator tab's observers before erasing the mapping.
   TabContentsWrapper* initiator_tab = GetInitiatorTab(preview_tab);
-  if (initiator_tab)
+  if (initiator_tab) {
     RemoveObservers(initiator_tab);
+    initiator_tab->print_view_manager()->PrintPreviewDone();
+  }
 
   // Print preview TabContents is destroyed. Notify |PrintPreviewUI| to abort
   // the initiator tab preview request.

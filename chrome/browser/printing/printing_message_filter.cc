@@ -21,9 +21,6 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
-#else
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
 #endif
 
 using content::BrowserThread;

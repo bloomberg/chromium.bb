@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/print_preview_handler.h"
@@ -63,6 +64,7 @@ class PrintPreviewHandlerTest : public BrowserWithTestWindowTest {
         printing::PrintPreviewTabController::GetInstance();
     ASSERT_TRUE(controller);
 
+    initiator_tab->print_view_manager()->PrintPreviewNow();
     preview_tab_ = controller->GetOrCreatePreviewTab(initiator_tab);
     ASSERT_TRUE(preview_tab_);
 

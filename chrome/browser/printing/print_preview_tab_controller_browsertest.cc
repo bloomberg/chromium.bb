@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -69,6 +70,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
+  initiator_tab->print_view_manager()->PrintPreviewNow();
   TabContentsWrapper* preview_tab =
     tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -85,6 +87,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(observer.tab_destroyed());
 
   // Get the print preview tab for initiator tab.
+  initiator_tab->print_view_manager()->PrintPreviewNow();
   TabContentsWrapper* new_preview_tab =
      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -115,6 +118,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(tab_controller);
 
   // Get the preview tab for initiator tab.
+  initiator_tab->print_view_manager()->PrintPreviewNow();
   TabContentsWrapper* preview_tab =
     tab_controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -134,6 +138,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTabControllerBrowserTest,
   ASSERT_TRUE(tab_destroyed_observer.tab_destroyed());
 
   // Get the print preview tab for initiator tab.
+  initiator_tab->print_view_manager()->PrintPreviewNow();
   TabContentsWrapper* new_preview_tab =
      tab_controller->GetOrCreatePreviewTab(initiator_tab);
 

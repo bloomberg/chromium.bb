@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "content/browser/browser_message_filter.h"
 
 #if defined(OS_WIN)

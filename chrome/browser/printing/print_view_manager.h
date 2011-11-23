@@ -16,6 +16,10 @@
 class TabContentsWrapper;
 struct PrintHostMsg_DidPrintPage_Params;
 
+namespace content {
+class RenderProcessHost;
+}
+
 namespace printing {
 
 class JobEventDetails;
@@ -52,6 +56,10 @@ class PrintViewManager : public content::NotificationObserver,
   // print preview is impossible at the moment.
   bool PrintPreviewNow();
 
+  // Notify PrintViewManager that print preview has finished. Unfreeze the
+  // renderer in the case of scripted print preview.
+  void PrintPreviewDone();
+
   // Handles cancelled preview printing request.
   void PreviewPrintingRequestCancelled();
 
@@ -78,12 +86,21 @@ class PrintViewManager : public content::NotificationObserver,
   virtual void StopNavigation() OVERRIDE;
 
  private:
+  enum PrintPreviewState {
+    NOT_PREVIEWING,
+    USER_INITIATED_PREVIEW,
+    SCRIPTED_PREVIEW,
+  };
+
   // IPC Message handlers.
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidGetDocumentCookie(int cookie);
   void OnDidShowPrintDialog();
   void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
   void OnPrintingFailed(int cookie);
+
+  void OnScriptedPrintPreview(IPC::Message* reply_msg);
+  void OnScriptedPrintPreviewReply(IPC::Message* reply_msg);
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.
   void OnNotifyPrintJobEvent(const JobEventDetails& event_details);
@@ -166,6 +183,12 @@ class PrintViewManager : public content::NotificationObserver,
 
   // The document cookie of the current PrinterQuery.
   int cookie_;
+
+  // Current state of print preview for this view.
+  PrintPreviewState print_preview_state_;
+
+  // Keeps track of the pending callback during scripted print preview.
+  content::RenderProcessHost* scripted_print_preview_rph_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintViewManager);
 };

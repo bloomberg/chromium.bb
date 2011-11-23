@@ -106,7 +106,8 @@ class PrintPreviewTabController
   void RemoveObservers(TabContentsWrapper* tab);
 
   // Removes tabs when they close/crash/navigate.
-  void RemoveInitiatorTab(TabContentsWrapper* initiator_tab);
+  void RemoveInitiatorTab(TabContentsWrapper* initiator_tab,
+                          bool is_navigation);
   void RemovePreviewTab(TabContentsWrapper* preview_tab);
 
   // Mapping between print preview tab and the corresponding initiator tab.

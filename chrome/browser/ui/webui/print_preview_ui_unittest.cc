@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -56,6 +57,7 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewData) {
       printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(controller);
 
+  initiator_tab->print_view_manager()->PrintPreviewNow();
   TabContentsWrapper* preview_tab =
       controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -120,10 +122,11 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_PrintPreviewDraftPages) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
-  scoped_refptr<printing::PrintPreviewTabController>
-      controller(new printing::PrintPreviewTabController());
+  printing::PrintPreviewTabController* controller =
+      printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(controller);
 
+  initiator_tab->print_view_manager()->PrintPreviewNow();
   TabContentsWrapper* preview_tab =
       controller->GetOrCreatePreviewTab(initiator_tab);
 
@@ -195,10 +198,11 @@ TEST_F(PrintPreviewUIUnitTest, MAYBE_GetCurrentPrintPreviewStatus) {
       browser()->GetSelectedTabContentsWrapper();
   ASSERT_TRUE(initiator_tab);
 
-  scoped_refptr<printing::PrintPreviewTabController>
-      controller(new printing::PrintPreviewTabController());
+  printing::PrintPreviewTabController* controller =
+      printing::PrintPreviewTabController::GetInstance();
   ASSERT_TRUE(controller);
 
+  initiator_tab->print_view_manager()->PrintPreviewNow();
   TabContentsWrapper* preview_tab =
       controller->GetOrCreatePreviewTab(initiator_tab);
 
