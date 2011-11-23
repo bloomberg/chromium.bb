@@ -377,6 +377,7 @@
   "8d0a50b57c26bb498be592e871001ffed91541b4": "PAGE ACTION BY CONTENT SHOWS A PAGE ACTION FOR HTML PAGES CONTAINING THE WORD SANDWICH BACKGROUND_PAGE PAGE_ACTION CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.PAGEACTION.SHOW",
   "80b86ccc6e8520660fa591caa565826f0ed1b12c": "PAGE ACTION BY URL SHOWS A PAGE ACTION FOR URLS WHICH HAVE THE LETTER G IN THEM. BACKGROUND_PAGE PAGE_ACTION TABS CHROME.PAGEACTION.SHOW CHROME.TABS.ONUPDATED",
   "d74c3c18a1c1dd18b035149105a306f837c8823e": "PAGE BENCHMARKER CHROMIUM PAGE BENCHMARKER. BACKGROUND_PAGE BROWSER_ACTION OPTIONS_PAGE TABS CHROME.BROWSERACTION.ONCLICKED CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.CONNECT CHROME.EXTENSION.GETBACKGROUNDPAGE CHROME.EXTENSION.GETEXTENSIONTABS CHROME.EXTENSION.GETURL CHROME.EXTENSION.ONCONNECT CHROME.TABS.CREATE CHROME.TABS.EXECUTESCRIPT CHROME.TABS.GET CHROME.TABS.GETALLINWINDOW CHROME.TABS.GETSELECTED CHROME.TABS.REMOVE CHROME.TABS.UPDATE CHROME.WINDOWS.GET CHROME.WINDOWS.GETCURRENT",
+  "ab4b9e00a673701b355db9eb8f9ebf2c850cd784": "PER-PLUGIN CONTENT SETTINGS CUSTOMIZE YOUR CONTENT SETTING FOR DIFFERENT PLUG-INS. CONTENTSETTINGS OPTIONS_PAGE CHROME.I18N.GETMESSAGE",
   "e6ae17ab4ccfd7e059c8c01f25760ca5d894c7fd": "PRINT THIS PAGE ADDS A PRINT BUTTON TO THE BROWSER. BACKGROUND_PAGE BROWSER_ACTION TABS CHROME.BROWSERACTION.ONCLICKED CHROME.TABS.UPDATE",
   "beff6ecd9677dea0a7c648c5042165b48bb66f09": "PROCESS MONITOR ADDS A BROWSER ACTION THAT MONITORS RESOURCE USAGE OF ALL BROWSER PROCESSES. BROWSER_ACTION EXPERIMENTAL POPUP TABS",
   "3e8e226d87e431296bb110b4f6eb7eec2ca7a826": "PROXY EXTENSION API SAMPLE SET CHROME-SPECIFIC PROXIES; A DEMONSTRATION OF CHROMES PROXY API BACKGROUND_PAGE BROWSER_ACTION POPUP PROXY CHROME.BROWSERACTION.SETBADGEBACKGROUNDCOLOR CHROME.BROWSERACTION.SETBADGETEXT CHROME.BROWSERACTION.SETTITLE CHROME.EXTENSION.ISALLOWEDINCOGNITOACCESS CHROME.EXTENSION.ONREQUEST CHROME.EXTENSION.SENDREQUEST CHROME.I18N.GETMESSAGE CHROME.PROXY.ONPROXYERROR",
@@ -3343,6 +3344,95 @@
   <div>
     <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/benchmark/">Browse source</a>
     - <a href="examples/extensions/benchmark.zip">Download source</a>
+    <!-- Only show the Install CRX link if a CRX file is provided -->
+    <span style="display: none; ">
+    - <a>Install extension</a>
+    </span>
+  </div>
+</div><div class="sample" id="ab4b9e00a673701b355db9eb8f9ebf2c850cd784">
+  <img class="icon" src="examples/extensions/plugin_settings/bunny128.png">
+  <img class="icon" src="images/sample-default-icon.png" style="display: none; ">
+  <h2 class="name">
+    <a href="#ab4b9e00a673701b355db9eb8f9ebf2c850cd784">Per-plugin content settings</a>
+    <span style="display: none; ">(packaged app)</span>
+  </h2>
+  <p class="metadata features">Uses
+    <span>
+      <strong>contentSettings</strong><span style="display: none; ">, </span>
+      <span> and</span>
+    </span><span>
+      <strong>options_page</strong><span style="display: none; ">, </span>
+      <span style="display: none; "> and</span>
+    </span>
+  </p>
+  <p>Customize your content setting for different plug-ins.</p>
+  <div class="apicalls"><strong>Calls:</strong>
+    <ul>
+      <li>
+        <code><a href="i18n.html#method-getMessage">chrome.i18n.getMessage</a></code>
+      </li>
+    </ul>
+  </div>
+  <div class="sourcefiles"><strong>Source files:</strong>
+    <ul>
+      <li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/_locales/en/messages.json?content-type=text/plain">_locales/en/messages.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/css/plugin_list.css?content-type=text/plain">css/plugin_list.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/css/rule_list.css?content-type=text/plain">css/rule_list.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/css/button.css?content-type=text/plain">domui/css/button.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/css/chrome_shared.css?content-type=text/plain">domui/css/chrome_shared.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/css/list.css?content-type=text/plain">domui/css/list.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/css/select.css?content-type=text/plain">domui/css/select.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/cr.js?content-type=text/plain">domui/js/cr.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/cr/event_target.js?content-type=text/plain">domui/js/cr/event_target.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/cr/ui.js?content-type=text/plain">domui/js/cr/ui.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/cr/ui/array_data_model.js?content-type=text/plain">domui/js/cr/ui/array_data_model.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/cr/ui/list.js?content-type=text/plain">domui/js/cr/ui/list.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/cr/ui/list_item.js?content-type=text/plain">domui/js/cr/ui/list_item.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/cr/ui/list_selection_controller.js?content-type=text/plain">domui/js/cr/ui/list_selection_controller.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/cr/ui/list_selection_model.js?content-type=text/plain">domui/js/cr/ui/list_selection_model.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/cr/ui/list_single_selection_model.js?content-type=text/plain">domui/js/cr/ui/list_single_selection_model.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/domui/js/util.js?content-type=text/plain">domui/js/util.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/js/main.js?content-type=text/plain">js/main.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/js/plugin_list.js?content-type=text/plain">js/plugin_list.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/js/plugin_settings.js?content-type=text/plain">js/plugin_settings.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/js/rule_list.js?content-type=text/plain">js/rule_list.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/manifest.json?content-type=text/plain">manifest.json</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/options.html?content-type=text/plain">options.html</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/options/css/list.css?content-type=text/plain">options/css/list.css</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/options/js/deletable_item_list.js?content-type=text/plain">options/js/deletable_item_list.js</a></code>
+      </li><li>
+        <code><a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/options/js/inline_editable_list.js?content-type=text/plain">options/js/inline_editable_list.js</a></code>
+      </li>
+    </ul>
+  </div>
+  <div>
+    <a target="_blank" href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/plugin_settings/">Browse source</a>
+    - <a href="examples/extensions/plugin_settings.zip">Download source</a>
     <!-- Only show the Install CRX link if a CRX file is provided -->
     <span style="display: none; ">
     - <a>Install extension</a>

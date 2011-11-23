@@ -1845,6 +1845,54 @@
     },
     {
       "api_calls": [
+        "chrome.i18n.getMessage"
+      ],
+      "crx_path": null,
+      "description": "Customize your content setting for different plug-ins.",
+      "features": [
+        "contentSettings",
+        "options_page"
+      ],
+      "icon": "bunny128.png",
+      "id": "ab4b9e00a673701b355db9eb8f9ebf2c850cd784",
+      "name": "Per-plugin content settings",
+      "packaged_app": false,
+      "path": "examples\/extensions\/plugin_settings\/",
+      "protocols": [],
+      "search_string": "PER-PLUGIN CONTENT SETTINGS CUSTOMIZE YOUR CONTENT SETTING FOR DIFFERENT PLUG-INS. CONTENTSETTINGS OPTIONS_PAGE CHROME.I18N.GETMESSAGE",
+      "source_files": [
+        "_locales\/en\/messages.json",
+        "css\/plugin_list.css",
+        "css\/rule_list.css",
+        "domui\/css\/button.css",
+        "domui\/css\/chrome_shared.css",
+        "domui\/css\/list.css",
+        "domui\/css\/select.css",
+        "domui\/js\/cr.js",
+        "domui\/js\/cr\/event_target.js",
+        "domui\/js\/cr\/ui.js",
+        "domui\/js\/cr\/ui\/array_data_model.js",
+        "domui\/js\/cr\/ui\/list.js",
+        "domui\/js\/cr\/ui\/list_item.js",
+        "domui\/js\/cr\/ui\/list_selection_controller.js",
+        "domui\/js\/cr\/ui\/list_selection_model.js",
+        "domui\/js\/cr\/ui\/list_single_selection_model.js",
+        "domui\/js\/util.js",
+        "js\/main.js",
+        "js\/plugin_list.js",
+        "js\/plugin_settings.js",
+        "js\/rule_list.js",
+        "manifest.json",
+        "options.html",
+        "options\/css\/list.css",
+        "options\/js\/deletable_item_list.js",
+        "options\/js\/inline_editable_list.js"
+      ],
+      "source_hash": "1e2765f821fa09cf0db9cce20ae61d964565986b",
+      "zip_path": "examples\/extensions\/plugin_settings.zip"
+    },
+    {
+      "api_calls": [
         "chrome.browserAction.onClicked",
         "chrome.tabs.update"
       ],

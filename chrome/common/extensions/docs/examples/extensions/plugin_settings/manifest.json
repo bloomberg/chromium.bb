@@ -1,0 +1,16 @@
+{
+  "name" : "__MSG_extName__",
+  "version" : "0.6",
+  "description" : "__MSG_extDescription__",
+  "options_page": "options.html",
+  "permissions": [
+    "contentSettings"
+  ],
+  "icons": {
+    "128": "bunny128.png",
+    "48": "bunny48.png"
+  },
+  "minimum_chrome_version": "16.0.912",
+  "content_security_policy": "default-src 'none'; script-src 'self'; img-src 'self'; style-src 'self'",
+  "default_locale": "en"
+}
