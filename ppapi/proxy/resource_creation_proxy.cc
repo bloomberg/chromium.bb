@@ -87,7 +87,7 @@ PP_Resource ResourceCreationProxy::CreateAudioTrusted(PP_Instance instance) {
 PP_Resource ResourceCreationProxy::CreateAudioInput(
     PP_Instance instance,
     PP_Resource config_id,
-    PPB_Audio_Callback audio_input_callback,
+    PPB_AudioInput_Callback audio_input_callback,
     void* user_data) {
   return PPB_AudioInput_Proxy::CreateProxyResource(instance, config_id,
                                                    audio_input_callback,

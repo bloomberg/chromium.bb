@@ -15,9 +15,9 @@ label Chrome {
 /**
  * <code>PPB_AudioInput_Callback</code> defines the type of an audio callback
  * function used to provide the audio buffer with data. This callback will be
- * called on a separate thread to the creation thread.
+ * called on a separate thread from the creation thread.
  */
-typedef void PPB_AudioInput_Callback([out] mem_t sample_buffer,
+typedef void PPB_AudioInput_Callback([in] mem_t sample_buffer,
                                      [in] uint32_t buffer_size_in_bytes,
                                      [inout] mem_t user_data);
 

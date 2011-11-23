@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_audio_input_dev.idl modified Mon Nov 14 17:58:16 2011. */
+/* From dev/ppb_audio_input_dev.idl modified Wed Nov 23 09:26:09 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
 #define PPAPI_C_DEV_PPB_AUDIO_INPUT_DEV_H_
@@ -31,9 +31,9 @@
 /**
  * <code>PPB_AudioInput_Callback</code> defines the type of an audio callback
  * function used to provide the audio buffer with data. This callback will be
- * called on a separate thread to the creation thread.
+ * called on a separate thread from the creation thread.
  */
-typedef void (*PPB_AudioInput_Callback)(void* sample_buffer,
+typedef void (*PPB_AudioInput_Callback)(const void* sample_buffer,
                                         uint32_t buffer_size_in_bytes,
                                         void* user_data);
 /**
