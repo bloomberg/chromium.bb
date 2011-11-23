@@ -292,34 +292,24 @@ void NativeTextfieldViews::ShowContextMenuForView(View* source,
 void NativeTextfieldViews::WriteDragDataForView(views::View* sender,
                                                 const gfx::Point& press_pt,
                                                 OSExchangeData* data) {
-#if !defined(TOUCH_UI)
   DCHECK_NE(ui::DragDropTypes::DRAG_NONE,
             GetDragOperationsForView(sender, press_pt));
-#endif
   data->SetString(GetSelectedText());
 }
 
 int NativeTextfieldViews::GetDragOperationsForView(views::View* sender,
                                                    const gfx::Point& p) {
-#if defined(TOUCH_UI)
-  return ui::DragDropTypes::DRAG_NONE;
-#else
   if (!textfield_->IsEnabled() || !GetRenderText()->IsPointInSelection(p))
     return ui::DragDropTypes::DRAG_NONE;
   if (sender == this && !textfield_->read_only())
     return ui::DragDropTypes::DRAG_MOVE | ui::DragDropTypes::DRAG_COPY;
   return ui::DragDropTypes::DRAG_COPY;
-#endif
 }
 
 bool NativeTextfieldViews::CanStartDragForView(View* sender,
                                                const gfx::Point& press_pt,
                                                const gfx::Point& p) {
-#if defined(TOUCH_UI)
-  return false;
-#else
   return GetRenderText()->IsPointInSelection(press_pt);
-#endif
 }
 
 /////////////////////////////////////////////////////////////////
@@ -1050,10 +1040,7 @@ void NativeTextfieldViews::HandleMousePressEvent(const MouseEvent& event) {
 
     initiating_drag_ = false;
     bool can_drag = true;
-#if defined(TOUCH_UI)
-    // Temporarily disable drag and drop on touch builds; see crbug.com/97845.
-    can_drag = false;
-#endif
+
     switch(aggregated_clicks_) {
       case 0:
         if (can_drag && GetRenderText()->IsPointInSelection(event.location()))

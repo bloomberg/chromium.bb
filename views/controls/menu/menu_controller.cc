@@ -26,14 +26,8 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"
-#endif
-
-#if defined(TOOLKIT_USES_GTK)
+#elif defined(TOOLKIT_USES_GTK)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
-#endif
-
-#if defined(TOUCH_UI)
-#include "ui/views/focus/accelerator_handler.h"
 #endif
 
 using base::Time;
@@ -913,16 +907,6 @@ base::MessagePumpDispatcher::DispatchStatus
   if (aura::Desktop::GetInstance()->GetDispatcher()->Dispatch(xev) ==
       base::MessagePumpDispatcher::EVENT_IGNORED)
     return EVENT_IGNORED;
-  return exit_type_ != EXIT_NONE ?
-      base::MessagePumpDispatcher::EVENT_QUIT :
-      base::MessagePumpDispatcher::EVENT_PROCESSED;
-}
-#elif defined(TOUCH_UI)
-base::MessagePumpDispatcher::DispatchStatus
-    MenuController::Dispatch(XEvent* xev) {
-  if (!DispatchXEvent(xev))
-    return EVENT_IGNORED;
-
   return exit_type_ != EXIT_NONE ?
       base::MessagePumpDispatcher::EVENT_QUIT :
       base::MessagePumpDispatcher::EVENT_PROCESSED;
