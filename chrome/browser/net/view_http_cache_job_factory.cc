@@ -4,11 +4,15 @@
 
 #include "chrome/browser/net/view_http_cache_job_factory.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/task.h"
 #include "chrome/common/url_constants.h"
+#include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -23,20 +27,23 @@ class ViewHttpCacheJob : public net::URLRequestJob {
   explicit ViewHttpCacheJob(net::URLRequest* request)
       : net::URLRequestJob(request),
         core_(new Core),
-        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
         ALLOW_THIS_IN_INITIALIZER_LIST(
-            callback_(NewCallback(this,
-                                  &ViewHttpCacheJob::OnStartCompleted))) {}
+            callback_(base::Bind(&ViewHttpCacheJob::OnStartCompleted,
+                                 base::Unretained(this)))) {
+  }
 
-  virtual void Start();
-  virtual void Kill();
-  virtual bool GetMimeType(std::string* mime_type) const {
+  // net::URLRequestJob implementation.
+  virtual void Start() OVERRIDE;
+  virtual void Kill() OVERRIDE;
+  virtual bool GetMimeType(std::string* mime_type) const OVERRIDE{
     return core_->GetMimeType(mime_type);
   }
-  virtual bool GetCharset(std::string* charset) {
+  virtual bool GetCharset(std::string* charset) OVERRIDE{
     return core_->GetCharset(charset);
   }
-  virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int *bytes_read) {
+  virtual bool ReadRawData(net::IOBuffer* buf,
+                           int buf_size, int *bytes_read) OVERRIDE{
     return core_->ReadRawData(buf, buf_size, bytes_read);
   }
 
@@ -45,15 +52,15 @@ class ViewHttpCacheJob : public net::URLRequestJob {
    public:
     Core()
         : data_offset_(0),
-          ALLOW_THIS_IN_INITIALIZER_LIST(
-              callback_(this, &Core::OnIOComplete)),
-          user_callback_(NULL) {}
+          ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
+              base::Bind(&Core::OnIOComplete, this))) {
+    }
 
-    int Start(const net::URLRequest& request, Callback0::Type* callback);
+    int Start(const net::URLRequest& request, const base::Closure& callback);
 
     // Prevents it from invoking its callback. It will self-delete.
     void Orphan() {
-      user_callback_ = NULL;
+      user_callback_.Reset();
     }
 
     bool GetMimeType(std::string* mime_type) const;
@@ -71,8 +78,8 @@ class ViewHttpCacheJob : public net::URLRequestJob {
     std::string data_;
     int data_offset_;
     net::ViewCacheHelper cache_helper_;
-    net::OldCompletionCallbackImpl<Core> callback_;
-    Callback0::Type* user_callback_;
+    net::CompletionCallback callback_;
+    base::Closure user_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -83,8 +90,8 @@ class ViewHttpCacheJob : public net::URLRequestJob {
   void OnStartCompleted();
 
   scoped_refptr<Core> core_;
-  ScopedRunnableMethodFactory<ViewHttpCacheJob> method_factory_;
-  scoped_ptr<Callback0::Type> callback_;
+  base::WeakPtrFactory<ViewHttpCacheJob> weak_factory_;
+  base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewHttpCacheJob);
 };
@@ -92,11 +99,11 @@ class ViewHttpCacheJob : public net::URLRequestJob {
 void ViewHttpCacheJob::Start() {
   MessageLoop::current()->PostTask(
       FROM_HERE,
-      method_factory_.NewRunnableMethod(&ViewHttpCacheJob::StartAsync));
+      base::Bind(&ViewHttpCacheJob::StartAsync, weak_factory_.GetWeakPtr()));
 }
 
 void ViewHttpCacheJob::Kill() {
-  method_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   if (core_) {
     core_->Orphan();
     core_ = NULL;
@@ -110,7 +117,7 @@ void ViewHttpCacheJob::StartAsync() {
   if (!request())
     return;
 
-  int rv = core_->Start(*request(), callback_.get());
+  int rv = core_->Start(*request(), callback_);
   if (rv != net::ERR_IO_PENDING) {
     DCHECK_EQ(net::OK, rv);
     OnStartCompleted();
@@ -122,9 +129,9 @@ void ViewHttpCacheJob::OnStartCompleted() {
 }
 
 int ViewHttpCacheJob::Core::Start(const net::URLRequest& request,
-                                  Callback0::Type* callback) {
-  DCHECK(callback);
-  DCHECK(!user_callback_);
+                                  const base::Closure& callback) {
+  DCHECK(!callback.is_null());
+  DCHECK(user_callback_.is_null());
 
   AddRef();  // Released on OnIOComplete().
   std::string cache_key =
@@ -134,11 +141,10 @@ int ViewHttpCacheJob::Core::Start(const net::URLRequest& request,
   if (cache_key.empty()) {
     rv = cache_helper_.GetContentsHTML(request.context(),
                                        chrome::kChromeUINetworkViewCacheURL,
-                                       &data_,
-                                       &callback_);
+                                       &data_, callback_);
   } else {
     rv = cache_helper_.GetEntryInfoHTML(cache_key, request.context(),
-                                        &data_, &callback_);
+                                        &data_, callback_);
   }
 
   if (rv == net::ERR_IO_PENDING)
@@ -173,8 +179,8 @@ bool ViewHttpCacheJob::Core::ReadRawData(net::IOBuffer* buf,
 void ViewHttpCacheJob::Core::OnIOComplete(int result) {
   DCHECK_EQ(net::OK, result);
 
-  if (user_callback_)
-    user_callback_->Run();
+  if (!user_callback_.is_null())
+    user_callback_.Run();
 
   // We may be holding the last reference to this job. Do not access |this|
   // after Release().
