@@ -38,13 +38,16 @@ int pthread_mutex_validate(pthread_mutex_t *mutex) {
 
 int pthread_mutex_init (pthread_mutex_t *mutex,
                         pthread_mutexattr_t *mutex_attr) {
-  nc_token_init(&mutex->token);
+  int retval;
+  nc_token_init(&mutex->token, 1);
   if (mutex_attr != NULL) {
     mutex->mutex_type = mutex_attr->kind;
   } else {
     mutex->mutex_type = PTHREAD_MUTEX_FAST_NP;
   }
-  return nc_thread_mutex_init(mutex);
+  retval = nc_thread_mutex_init(mutex);
+  nc_token_release(&mutex->token);
+  return retval;
 }
 
 int pthread_mutex_destroy (pthread_mutex_t *mutex) {

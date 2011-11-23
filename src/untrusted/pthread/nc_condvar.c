@@ -36,8 +36,11 @@ void pthread_cond_validate(pthread_cond_t* cond) {
  */
 int pthread_cond_init (pthread_cond_t *cond,
                        pthread_condattr_t *cond_attr) {
-  nc_token_init(&cond->token);
-  if (0 != nc_thread_cond_init(cond, cond_attr))
+  int retval;
+  nc_token_init(&cond->token, 1);
+  retval = nc_thread_cond_init(cond, cond_attr);
+  nc_token_release(&cond->token);
+  if (0 != retval)
     return EAGAIN;
   return 0;
 }
@@ -92,7 +95,7 @@ int pthread_cond_timedwait_abs(pthread_cond_t *cond,
 }
 
 int nc_pthread_condvar_ctor(pthread_cond_t *cond) {
-  nc_token_init(&cond->token);
+  nc_token_init(&cond->token, 0);
   cond->handle = NC_INVALID_HANDLE;
   return 1;
 }

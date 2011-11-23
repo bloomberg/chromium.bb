@@ -29,8 +29,8 @@
 #define EXCHANGE_TOKEN(_token, _old, _new) \
     (__sync_val_compare_and_swap((_token), (_old), (_new)))
 
-void nc_token_init(volatile int *token) {
-  *token = NACL_TOKEN_FREE;
+void nc_token_init(volatile int *token, int acquire) {
+  *token = acquire ? NACL_TOKEN_ACQUIRED : NACL_TOKEN_FREE;
   __sync_synchronize();
 }
 

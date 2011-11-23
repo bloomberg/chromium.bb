@@ -189,3 +189,10 @@ env.AddNodeToTestSuite(node,
                        ['small_tests'],
                        'run_many_threads_sequential_test',
                        is_broken=arm_qemu)
+
+mutex_leak_nexe = env.ComponentProgram('mutex_leak', ['mutex_leak.c'],
+                                       EXTRA_LIBS=['${PTHREAD_LIBS}',
+                                                   '${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl('mutex_leak.out', mutex_leak_nexe)
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_mutex_leak_test')
