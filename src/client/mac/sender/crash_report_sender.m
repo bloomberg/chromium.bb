@@ -35,7 +35,7 @@
 #import <SystemConfiguration/SystemConfiguration.h>
 #import <unistd.h>
 
-#import "client/mac/Framework/BreakpadDefines.h"
+#import "client/apple/Framework/BreakpadDefines.h"
 #import "common/mac/GTMLogger.h"
 #import "common/mac/HTTPMultipartUpload.h"
 

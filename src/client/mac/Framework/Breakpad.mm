@@ -47,7 +47,7 @@
 
 #import "client/mac/crash_generation/Inspector.h"
 #import "client/mac/handler/exception_handler.h"
-#import "client/mac/Framework/BreakpadDefines.h"
+#import "client/mac/Framework/Breakpad.h"
 #import "client/mac/Framework/OnDemandServer.h"
 #import "client/mac/handler/protected_memory_allocator.h"
 #import "common/mac/MachIPC.h"

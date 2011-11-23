@@ -38,7 +38,7 @@
 		163201D61443019E00C4DBF5 /* ConfigFile.h in Headers */ = {isa = PBXBuildFile; fileRef = 163201D41443019E00C4DBF5 /* ConfigFile.h */; };
 		163201D71443019E00C4DBF5 /* ConfigFile.mm in Sources */ = {isa = PBXBuildFile; fileRef = 163201D51443019E00C4DBF5 /* ConfigFile.mm */; };
 		163201E31443029300C4DBF5 /* ConfigFile.mm in Sources */ = {isa = PBXBuildFile; fileRef = 163201D51443019E00C4DBF5 /* ConfigFile.mm */; };
-		1632058314442E9000C4DBF5 /* BreakpadDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 1632058214442E9000C4DBF5 /* BreakpadDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		16C7C918147D45AE00776EAD /* BreakpadDefines.h in Headers */ = {isa = PBXBuildFile; fileRef = 16C7C917147D45AE00776EAD /* BreakpadDefines.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		16E02DB8147410F0008C604D /* uploader.mm in Sources */ = {isa = PBXBuildFile; fileRef = 16E02DB4147410D4008C604D /* uploader.mm */; };
 		3329D4ED0FA16D820007BBC5 /* Breakpad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 3329D4EC0FA16D820007BBC5 /* Breakpad.xib */; };
 		33880C800F9E097100817F82 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 33880C7E0F9E097100817F82 /* InfoPlist.strings */; };
@@ -552,7 +552,7 @@
 		163201D41443019E00C4DBF5 /* ConfigFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ConfigFile.h; path = crash_generation/ConfigFile.h; sourceTree = "<group>"; };
 		163201D51443019E00C4DBF5 /* ConfigFile.mm */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = ConfigFile.mm; path = crash_generation/ConfigFile.mm; sourceTree = "<group>"; };
 		163202431443201300C4DBF5 /* uploader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = uploader.h; path = sender/uploader.h; sourceTree = "<group>"; };
-		1632058214442E9000C4DBF5 /* BreakpadDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BreakpadDefines.h; path = Framework/BreakpadDefines.h; sourceTree = "<group>"; };
+		16C7C917147D45AE00776EAD /* BreakpadDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BreakpadDefines.h; sourceTree = "<group>"; };
 		16E02DB4147410D4008C604D /* uploader.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = uploader.mm; path = sender/uploader.mm; sourceTree = "<group>"; };
 		32DBCF5E0370ADEE00C91783 /* Breakpad_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Breakpad_Prefix.pch; path = Framework/Breakpad_Prefix.pch; sourceTree = "<group>"; };
 		3329D4EC0FA16D820007BBC5 /* Breakpad.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Breakpad.xib; path = sender/Breakpad.xib; sourceTree = "<group>"; };
@@ -858,6 +858,23 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		16C7C915147D45AE00776EAD /* apple */ = {
+			isa = PBXGroup;
+			children = (
+				16C7C916147D45AE00776EAD /* Framework */,
+			);
+			name = apple;
+			path = ../apple;
+			sourceTree = SOURCE_ROOT;
+		};
+		16C7C916147D45AE00776EAD /* Framework */ = {
+			isa = PBXGroup;
+			children = (
+				16C7C917147D45AE00776EAD /* BreakpadDefines.h */,
+			);
+			path = Framework;
+			sourceTree = "<group>";
+		};
 		D244536912426EE7009BBCE0 /* processor */ = {
 			isa = PBXGroup;
 			children = (
@@ -943,6 +960,7 @@
 		F92C538D0ECCE6F2009BE4BA /* client */ = {
 			isa = PBXGroup;
 			children = (
+				16C7C915147D45AE00776EAD /* apple */,
 				F92C53990ECCE78E009BE4BA /* mac */,
 				F92C538E0ECCE70A009BE4BA /* minidump_file_writer-inl.h */,
 				F92C538F0ECCE70A009BE4BA /* minidump_file_writer.cc */,
@@ -985,7 +1003,6 @@
 		F92C55CD0ECD0053009BE4BA /* Framework */ = {
 			isa = PBXGroup;
 			children = (
-				1632058214442E9000C4DBF5 /* BreakpadDefines.h */,
 				F945859D0F78241E009A47BF /* Info.plist */,
 				F92C56310ECD0DF1009BE4BA /* OnDemandServer.h */,
 				F92C56320ECD0DF1009BE4BA /* OnDemandServer.mm */,
@@ -1108,13 +1125,13 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1632058314442E9000C4DBF5 /* BreakpadDefines.h in Headers */,
 				F92C55D00ECD0064009BE4BA /* Breakpad.h in Headers */,
 				F92C56330ECD0DF1009BE4BA /* OnDemandServer.h in Headers */,
 				D2F9A4C9121336C7002747C1 /* client_info.h in Headers */,
 				D2F9A4CA121336C7002747C1 /* crash_generation_client.h in Headers */,
 				D2F9A4CC121336C7002747C1 /* crash_generation_server.h in Headers */,
 				163201D61443019E00C4DBF5 /* ConfigFile.h in Headers */,
+				16C7C918147D45AE00776EAD /* BreakpadDefines.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1359,6 +1376,7 @@
 			isa = PBXProject;
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "Breakpad" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,

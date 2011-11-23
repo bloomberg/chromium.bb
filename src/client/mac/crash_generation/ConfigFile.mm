@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#import "client/mac/Framework/BreakpadDefines.h"
+#import "client/apple/Framework/BreakpadDefines.h"
 #import "common/mac/SimpleStringDictionary.h"
 #import "GTMDefines.h"
 

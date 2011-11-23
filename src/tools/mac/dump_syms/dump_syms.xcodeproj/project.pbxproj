@@ -270,7 +270,7 @@
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* dump_syms.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = dump_syms.mm; path = ../../../common/mac/dump_syms.mm; sourceTree = "<group>"; };
 		08FB779EFE84155DC02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
-		4D72CAF413DFBAC2006CABE3 /* md5.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = md5.cc; path = ../../../common/md5.cc; sourceTree = SOURCE_ROOT; };
+		4D72CAF413DFBAC2006CABE3 /* md5.cc */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; name = md5.cc; path = ../../../common/md5.cc; sourceTree = SOURCE_ROOT; };
 		557800890BE1F3AB00EC23E0 /* macho_utilities.cc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = macho_utilities.cc; path = ../../../common/mac/macho_utilities.cc; sourceTree = SOURCE_ROOT; };
 		5578008A0BE1F3AB00EC23E0 /* macho_utilities.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = macho_utilities.h; path = ../../../common/mac/macho_utilities.h; sourceTree = SOURCE_ROOT; };
 		8B31023E11F0CF1C00FCF3E4 /* Breakpad.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Breakpad.xcconfig; path = ../../../common/mac/Breakpad.xcconfig; sourceTree = SOURCE_ROOT; };
@@ -883,6 +883,7 @@
 			isa = PBXProject;
 			buildConfigurationList = 1DEB927808733DD40010E9CD /* Build configuration list for PBXProject "dump_syms" */;
 			compatibilityVersion = "Xcode 3.1";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
 			knownRegions = (
 				English,
