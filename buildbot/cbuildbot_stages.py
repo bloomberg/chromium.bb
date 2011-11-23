@@ -927,8 +927,9 @@ class ArchiveStage(NonHaltingBuilderStage):
 
     def UploadTestResults():
       """Upload test results when they are ready."""
+      got_symbols = self._WaitForBreakpadSymbols()
       for test_results in self._GetTestResults():
-        if self._WaitForBreakpadSymbols():
+        if got_symbols:
           filenames = commands.GenerateMinidumpStackTraces(buildroot,
                                                            board, test_results,
                                                            archive_path)
