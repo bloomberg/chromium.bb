@@ -45,6 +45,10 @@ int xiopcode = -1;
 // The message-pump opens a connection to the display and owns it.
 Display* g_xdisplay = NULL;
 
+// The default dispatcher to process native events when no dispatcher
+// is specified.
+base::MessagePumpDispatcher* g_default_dispatcher = NULL;
+
 void InitializeXInput2(void) {
   Display* display = base::MessagePumpX::GetDefaultXDisplay();
   if (!display)
@@ -108,6 +112,12 @@ bool MessagePumpX::HasXInput2() {
   return xiopcode != -1;
 }
 
+// static
+void MessagePumpX::SetDefaultDispatcher(MessagePumpDispatcher* dispatcher) {
+  DCHECK(!g_default_dispatcher || !dispatcher);
+  g_default_dispatcher = dispatcher;
+}
+
 void MessagePumpX::InitXSource() {
   DCHECK(!x_source_);
   GPollFD* x_poll = new GPollFD();
@@ -122,7 +132,8 @@ void MessagePumpX::InitXSource() {
   g_source_attach(x_source_, g_main_context_default());
 }
 
-bool MessagePumpX::ProcessXEvent(XEvent* xev) {
+bool MessagePumpX::ProcessXEvent(MessagePumpDispatcher* dispatcher,
+                                 XEvent* xev) {
   bool should_quit = false;
 
   bool have_cookie = false;
@@ -133,7 +144,7 @@ bool MessagePumpX::ProcessXEvent(XEvent* xev) {
 
   if (WillProcessXEvent(xev) == EVENT_CONTINUE) {
     MessagePumpDispatcher::DispatchStatus status =
-        GetDispatcher()->Dispatch(xev);
+        dispatcher->Dispatch(xev);
 
     if (status == MessagePumpDispatcher::EVENT_QUIT) {
       should_quit = true;
@@ -153,7 +164,10 @@ bool MessagePumpX::ProcessXEvent(XEvent* xev) {
 
 bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
   Display* display = GetDefaultXDisplay();
-  if (!display || !GetDispatcher())
+  MessagePumpDispatcher* dispatcher =
+      GetDispatcher() ? GetDispatcher() : g_default_dispatcher;
+
+  if (!display || !dispatcher)
     return g_main_context_iteration(context, block);
 
   // In the general case, we want to handle all pending events before running
@@ -161,7 +175,7 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
   while (XPending(display)) {
     XEvent xev;
     XNextEvent(display, &xev);
-    if (ProcessXEvent(&xev))
+    if (ProcessXEvent(dispatcher, &xev))
       return true;
   }
 

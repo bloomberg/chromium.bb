@@ -42,7 +42,7 @@ AuraTestBase::~AuraTestBase() {
 
   // Ensure that we don't use the previously-allocated static Desktop object
   // later -- on Linux, it holds a reference to our message loop's X connection.
-  aura::Desktop::DeleteInstanceForTesting();
+  aura::Desktop::DeleteInstance();
 }
 
 TestStackingClient* AuraTestBase::GetTestStackingClient() {

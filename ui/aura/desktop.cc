@@ -32,6 +32,10 @@
 #include "ui/gfx/compositor/compositor_cc.h"
 #endif
 
+#if defined(USE_X11)
+#include "base/message_pump_x.h"
+#endif
+
 using std::string;
 using std::vector;
 
@@ -101,48 +105,8 @@ void GetEventFiltersToNotify(Window* target, EventFilters* filters) {
 Desktop* Desktop::instance_ = NULL;
 bool Desktop::use_fullscreen_host_window_ = false;
 
-Desktop::Desktop()
-    : Window(NULL),
-      host_(aura::DesktopHost::Create(GetInitialHostWindowBounds())),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          stacking_client_(new DefaultStackingClient(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
-      active_window_(NULL),
-      mouse_button_flags_(0),
-      last_cursor_(kCursorNull),
-      in_destructor_(false),
-      screen_(new ScreenAura),
-      capture_window_(NULL),
-      mouse_pressed_handler_(NULL),
-      mouse_moved_handler_(NULL),
-      focused_window_(NULL),
-      touch_event_handler_(NULL) {
-  set_name("RootWindow");
-  gfx::Screen::SetInstance(screen_);
-  host_->SetDesktop(this);
-  last_mouse_location_ = host_->QueryMouseLocation();
-
-  if (ui::Compositor::compositor_factory()) {
-    compositor_ = (*ui::Compositor::compositor_factory())(this);
-  } else {
-#ifdef USE_WEBKIT_COMPOSITOR
-    ui::CompositorCC::Initialize(false);
-#endif
-    compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
-                                         host_->GetSize());
-  }
-  DCHECK(compositor_.get());
-}
-
-Desktop::~Desktop() {
-  in_destructor_ = true;
-#ifdef USE_WEBKIT_COMPOSITOR
-  if (!ui::Compositor::compositor_factory())
-    ui::CompositorCC::Terminate();
-#endif
-  if (instance_ == this)
-    instance_ = NULL;
-}
+////////////////////////////////////////////////////////////////////////////////
+// Desktop, public:
 
 // static
 Desktop* Desktop::GetInstance() {
@@ -154,7 +118,7 @@ Desktop* Desktop::GetInstance() {
 }
 
 // static
-void Desktop::DeleteInstanceForTesting() {
+void Desktop::DeleteInstance() {
   delete instance_;
   instance_ = NULL;
 }
@@ -188,7 +152,7 @@ void Desktop::SetCursor(gfx::NativeCursor cursor) {
 
 void Desktop::Run() {
   ShowDesktop();
-  MessageLoopForUI::current()->RunWithDispatcher(host_.get());
+  MessageLoopForUI::current()->Run();
 }
 
 void Desktop::Draw() {
@@ -425,6 +389,59 @@ void Desktop::ToggleFullScreen() {
   host_->ToggleFullScreen();
 }
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+// Desktop, private:
+
+Desktop::Desktop()
+    : Window(NULL),
+      host_(aura::DesktopHost::Create(GetInitialHostWindowBounds())),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          stacking_client_(new DefaultStackingClient(this))),
+      ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
+      active_window_(NULL),
+      mouse_button_flags_(0),
+      last_cursor_(kCursorNull),
+      in_destructor_(false),
+      screen_(new ScreenAura),
+      capture_window_(NULL),
+      mouse_pressed_handler_(NULL),
+      mouse_moved_handler_(NULL),
+      focused_window_(NULL),
+      touch_event_handler_(NULL) {
+  set_name("RootWindow");
+  gfx::Screen::SetInstance(screen_);
+  host_->SetDesktop(this);
+  last_mouse_location_ = host_->QueryMouseLocation();
+
+  if (ui::Compositor::compositor_factory()) {
+    compositor_ = (*ui::Compositor::compositor_factory())(this);
+  } else {
+#ifdef USE_WEBKIT_COMPOSITOR
+    ui::CompositorCC::Initialize(false);
+#endif
+    compositor_ = ui::Compositor::Create(this, host_->GetAcceleratedWidget(),
+                                         host_->GetSize());
+  }
+  DCHECK(compositor_.get());
+#if defined(USE_X11)
+  base::MessagePumpX::SetDefaultDispatcher(host_.get());
+#endif
+}
+
+Desktop::~Desktop() {
+#if defined(USE_X11)
+  base::MessagePumpX::SetDefaultDispatcher(NULL);
+#endif
+
+  in_destructor_ = true;
+#ifdef USE_WEBKIT_COMPOSITOR
+  if (!ui::Compositor::compositor_factory())
+    ui::CompositorCC::Terminate();
+#endif
+  if (instance_ == this)
+    instance_ = NULL;
+}
 
 void Desktop::HandleMouseMoved(const MouseEvent& event, Window* target) {
   if (target == mouse_moved_handler_)

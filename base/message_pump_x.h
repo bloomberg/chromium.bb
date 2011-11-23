@@ -54,13 +54,16 @@ class BASE_EXPORT MessagePumpX : public MessagePumpGlib {
   // Returns true if the system supports XINPUT2.
   static bool HasXInput2();
 
+  // Sets the default dispatcher to process native events.
+  static void SetDefaultDispatcher(MessagePumpDispatcher* dispatcher);
+
  private:
   // Initializes the glib event source for X.
   void InitXSource();
 
   // Dispatches the XEvent and returns true if we should exit the current loop
   // of message processing.
-  bool ProcessXEvent(XEvent* event);
+  bool ProcessXEvent(MessagePumpDispatcher* dispatcher, XEvent* event);
 
   // Sends the event to the observers. If an observer returns true, then it does
   // not send the event to any other observers and returns true. Returns false

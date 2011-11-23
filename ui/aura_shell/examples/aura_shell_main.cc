@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 
   aura::Desktop::GetInstance()->Run();
 
-  delete aura::Desktop::GetInstance();
+  aura::Desktop::DeleteInstance();
 
   ui::CompositorTestSupport::Terminate();
 
