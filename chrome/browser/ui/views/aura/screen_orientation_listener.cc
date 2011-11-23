@@ -40,7 +40,7 @@ ScreenOrientationListener::~ScreenOrientationListener() {
 }
 
 void ScreenOrientationListener::OnScreenOrientationChanged(
-    const sensors::ScreenOrientation& change) {
+    content::ScreenOrientation change) {
   ui::Layer* to_rotate = NULL;
   ui::LayerAnimationObserver* observer = NULL;
   // Desktop is initialized before the listener, so this will not return NULL.
@@ -53,11 +53,11 @@ void ScreenOrientationListener::OnScreenOrientationChanged(
 
   bool should_rotate = true;
   int new_degrees = 0;
-  switch (change.upward) {
-    case sensors::ScreenOrientation::TOP: break;
-    case sensors::ScreenOrientation::RIGHT: new_degrees = 90; break;
-    case sensors::ScreenOrientation::LEFT: new_degrees = -90; break;
-    case sensors::ScreenOrientation::BOTTOM: new_degrees = 180; break;
+  switch (change) {
+    case content::SCREEN_ORIENTATION_TOP: break;
+    case content::SCREEN_ORIENTATION_RIGHT: new_degrees = 90; break;
+    case content::SCREEN_ORIENTATION_LEFT: new_degrees = -90; break;
+    case content::SCREEN_ORIENTATION_BOTTOM: new_degrees = 180; break;
     // Ignore front and back orientations.
     default: should_rotate = false;
   }

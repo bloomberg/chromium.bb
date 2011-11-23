@@ -49,7 +49,7 @@ class SensorsClientImpl : public SensorsClient {
   void OrientationChangedReceived(dbus::Signal* signal) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    sensors::ScreenOrientation orientation;
+    content::ScreenOrientation orientation;
 
     dbus::MessageReader reader(signal);
     int32 upward = 0;
@@ -59,7 +59,7 @@ class SensorsClientImpl : public SensorsClient {
       return;
     }
     VLOG(1) << "Orientation changed to upward " << upward;
-    orientation.upward = static_cast<sensors::ScreenOrientation::Side>(upward);
+    orientation = static_cast<content::ScreenOrientation>(upward);
 
     sensors::Provider::GetInstance()->ScreenOrientationChanged(orientation);
   }

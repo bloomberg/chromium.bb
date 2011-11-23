@@ -8,10 +8,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
-#include "content/common/sensors_listener.h"
+#include "content/public/browser/sensors_listener.h"
 
 // A singleton object to manage screen orientation.
-class ScreenOrientationListener : public sensors::Listener {
+class ScreenOrientationListener : public content::SensorsListener {
  public:
   // Returns the singleton object.
   static ScreenOrientationListener* GetInstance();
@@ -24,7 +24,7 @@ class ScreenOrientationListener : public sensors::Listener {
 
   // sensors::Listener implementation
   virtual void OnScreenOrientationChanged(
-      const sensors::ScreenOrientation& change) OVERRIDE;
+      content::ScreenOrientation change) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationListener);
 };

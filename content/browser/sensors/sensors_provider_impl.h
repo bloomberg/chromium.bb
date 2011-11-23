@@ -20,10 +20,10 @@ class ProviderImpl : public Provider {
   static ProviderImpl* GetInstance();
 
   // Provider implementation
-  virtual void AddListener(Listener* listener) OVERRIDE;
-  virtual void RemoveListener(Listener* listener) OVERRIDE;
+  virtual void AddListener(content::SensorsListener* listener) OVERRIDE;
+  virtual void RemoveListener(content::SensorsListener* listener) OVERRIDE;
   virtual void ScreenOrientationChanged(
-      const ScreenOrientation& change) OVERRIDE;
+      content::ScreenOrientation change) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<ProviderImpl>;
@@ -31,7 +31,7 @@ class ProviderImpl : public Provider {
   ProviderImpl();
   virtual ~ProviderImpl();
 
-  typedef ObserverListThreadSafe<Listener> ListenerList;
+  typedef ObserverListThreadSafe<content::SensorsListener> ListenerList;
   scoped_refptr<ListenerList> listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(ProviderImpl);

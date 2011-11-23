@@ -1575,16 +1575,16 @@ bool WillHandleBrowserAboutURL(GURL* url,
       shim->SimulateHang();
 #if defined(OS_CHROMEOS)
   } else if (host == chrome::kChromeUIRotateHost) {
-    sensors::ScreenOrientation change;
+    content::ScreenOrientation change;
     std::string query(url->query());
     if (query == "left") {
-      change.upward = sensors::ScreenOrientation::LEFT;
+      change = content::SCREEN_ORIENTATION_LEFT;
     } else if (query == "right") {
-      change.upward = sensors::ScreenOrientation::RIGHT;
+      change = content::SCREEN_ORIENTATION_RIGHT;
     } else if (query == "top") {
-      change.upward = sensors::ScreenOrientation::TOP;
+      change = content::SCREEN_ORIENTATION_TOP;
     } else if (query == "bottom") {
-      change.upward = sensors::ScreenOrientation::BOTTOM;
+      change = content::SCREEN_ORIENTATION_BOTTOM;
     } else {
       NOTREACHED() << "Unknown orientation";
     }

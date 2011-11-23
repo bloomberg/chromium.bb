@@ -6,6 +6,8 @@
 
 #include "base/memory/singleton.h"
 
+using content::SensorsListener;
+
 namespace sensors {
 
 ProviderImpl* ProviderImpl::GetInstance() {
@@ -19,17 +21,17 @@ ProviderImpl::ProviderImpl()
 ProviderImpl::~ProviderImpl() {
 }
 
-void ProviderImpl::AddListener(Listener* listener) {
+void ProviderImpl::AddListener(SensorsListener* listener) {
   listeners_->AddObserver(listener);
 }
 
-void ProviderImpl::RemoveListener(Listener* listener) {
+void ProviderImpl::RemoveListener(SensorsListener* listener) {
   listeners_->RemoveObserver(listener);
 }
 
 void ProviderImpl::ScreenOrientationChanged(
-    const ScreenOrientation& change) {
-  listeners_->Notify(&Listener::OnScreenOrientationChanged, change);
+    content::ScreenOrientation change) {
+  listeners_->Notify(&SensorsListener::OnScreenOrientationChanged, change);
 }
 
 }  // namespace sensors

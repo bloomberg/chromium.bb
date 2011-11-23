@@ -226,8 +226,6 @@
     'common/sandbox_policy.h',
     'common/section_util_win.cc',
     'common/section_util_win.h',
-    'common/sensors.h',
-    'common/sensors_listener.h',
     'common/set_process_title.cc',
     'common/set_process_title.h',
     'common/set_process_title_linux.cc',
