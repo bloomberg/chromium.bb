@@ -5,6 +5,7 @@
 #include "content/shell/shell_browser_main.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -19,6 +20,15 @@
 #include "ui/base/clipboard/clipboard.h"
 
 namespace content {
+
+static GURL GetStartupURL() {
+  const CommandLine::StringVector& args =
+      CommandLine::ForCurrentProcess()->GetArgs();
+  if (args.empty())
+    return GURL("http://www.google.com/");
+
+  return GURL(args[0]);
+}
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
@@ -71,7 +81,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
 
   Shell::CreateNewWindow(browser_context_.get(),
-                         GURL("http://www.google.com"),
+                         GetStartupURL(),
                          NULL,
                          MSG_ROUTING_NONE,
                          NULL);
