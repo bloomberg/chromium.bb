@@ -135,6 +135,7 @@
                 'linux/sel_memory.c',
                 'linux/nacl_oop_debugger_hooks.c',
                 'linux/nacl_thread_nice.c',
+                'linux/r_debug.c',
               ],
               'conditions': [
                 ['target_arch=="ia32" or target_arch=="x64"', {
