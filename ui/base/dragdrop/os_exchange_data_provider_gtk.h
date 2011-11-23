@@ -11,6 +11,7 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/pickle.h"
 #include "base/string16.h"
@@ -58,20 +59,21 @@ class UI_EXPORT OSExchangeDataProviderGtk : public OSExchangeData::Provider {
                               GtkSelectionData* selection) const;
 
   // Provider methods.
-  virtual void SetString(const string16& data);
-  virtual void SetURL(const GURL& url, const string16& title);
-  virtual void SetFilename(const FilePath& path);
+  virtual void SetString(const string16& data) OVERRIDE;
+  virtual void SetURL(const GURL& url, const string16& title) OVERRIDE;
+  virtual void SetFilename(const FilePath& path) OVERRIDE;
   virtual void SetPickledData(OSExchangeData::CustomFormat format,
-                              const Pickle& data);
-  virtual bool GetString(string16* data) const;
-  virtual bool GetURLAndTitle(GURL* url, string16* title) const;
-  virtual bool GetFilename(FilePath* path) const;
+                              const Pickle& data) OVERRIDE;
+  virtual bool GetString(string16* data) const OVERRIDE;
+  virtual bool GetURLAndTitle(GURL* url, string16* title) const OVERRIDE;
+  virtual bool GetFilename(FilePath* path) const OVERRIDE;
   virtual bool GetPickledData(OSExchangeData::CustomFormat format,
-                              Pickle* data) const;
-  virtual bool HasString() const;
-  virtual bool HasURL() const;
-  virtual bool HasFile() const;
-  virtual bool HasCustomFormat(OSExchangeData::CustomFormat format) const;
+                              Pickle* data) const OVERRIDE;
+  virtual bool HasString() const OVERRIDE;
+  virtual bool HasURL() const OVERRIDE;
+  virtual bool HasFile() const OVERRIDE;
+  virtual bool HasCustomFormat(
+      OSExchangeData::CustomFormat format) const OVERRIDE;
 
   // Set the image and cursor offset data for this drag.  Will
   // increment the ref count of pixbuf.

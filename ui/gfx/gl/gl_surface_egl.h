@@ -10,6 +10,7 @@
 #include <windows.h>
 #endif
 
+#include "base/compiler_specific.h"
 #include "ui/gfx/gl/gl_surface.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -37,8 +38,8 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   virtual ~GLSurfaceEGL();
 
   // Implement GLSurface.
-  virtual EGLDisplay GetDisplay();
-  virtual EGLConfig GetConfig();
+  virtual EGLDisplay GetDisplay() OVERRIDE;
+  virtual EGLConfig GetConfig() OVERRIDE;
 
   static bool InitializeOneOff();
   static EGLDisplay GetHardwareDisplay();
@@ -59,14 +60,14 @@ class NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual ~NativeViewGLSurfaceEGL();
 
   // Implement GLSurface.
-  virtual bool Initialize();
-  virtual void Destroy();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
-  virtual EGLSurface GetHandle();
-  virtual std::string GetExtensions();
-  virtual bool PostSubBuffer(int x, int y, int width, int height);
+  virtual bool Initialize() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual bool IsOffscreen() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+  virtual gfx::Size GetSize() OVERRIDE;
+  virtual EGLSurface GetHandle() OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
 
  private:
   gfx::PluginWindowHandle window_;
@@ -83,14 +84,14 @@ class GL_EXPORT PbufferGLSurfaceEGL : public GLSurfaceEGL {
   virtual ~PbufferGLSurfaceEGL();
 
   // Implement GLSurface.
-  virtual bool Initialize();
-  virtual void Destroy();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
-  virtual gfx::Size GetSize();
-  virtual bool Resize(const gfx::Size& size);
-  virtual EGLSurface GetHandle();
-  virtual void* GetShareHandle();
+  virtual bool Initialize() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual bool IsOffscreen() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+  virtual gfx::Size GetSize() OVERRIDE;
+  virtual bool Resize(const gfx::Size& size) OVERRIDE;
+  virtual EGLSurface GetHandle() OVERRIDE;
+  virtual void* GetShareHandle() OVERRIDE;
 
  private:
   gfx::Size size_;

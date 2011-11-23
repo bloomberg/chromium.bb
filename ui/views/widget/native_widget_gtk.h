@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
@@ -309,7 +310,7 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   friend class DropObserver;
 
   // Overridden from ui::CompositorDelegate
-  virtual void ScheduleDraw();
+  virtual void ScheduleDraw() OVERRIDE;
 
   // Overridden from internal::InputMethodDelegate
   virtual void DispatchKeyEventPostIME(const KeyEvent& key) OVERRIDE;

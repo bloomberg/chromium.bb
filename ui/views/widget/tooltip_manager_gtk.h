@@ -8,6 +8,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/compiler_specific.h"
 #include "ui/base/gtk/tooltip_window_gtk.h"
 #include "ui/views/widget/tooltip_manager.h"
 
@@ -26,10 +27,10 @@ class TooltipManagerGtk : public TooltipManager {
   bool ShowTooltip(int x, int y, bool for_keyboard, GtkTooltip* gtk_tooltip);
 
   // TooltipManager.
-  virtual void UpdateTooltip();
-  virtual void TooltipTextChanged(View* view);
-  virtual void ShowKeyboardTooltip(View* view);
-  virtual void HideKeyboardTooltip();
+  virtual void UpdateTooltip() OVERRIDE;
+  virtual void TooltipTextChanged(View* view) OVERRIDE;
+  virtual void ShowKeyboardTooltip(View* view) OVERRIDE;
+  virtual void HideKeyboardTooltip() OVERRIDE;
 
  private:
   // Sends the show_help signal to widget_. This signal triggers showing the

@@ -15,6 +15,7 @@
 #include <set>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "views/views_export.h"
 
@@ -35,14 +36,15 @@ class VIEWS_EXPORT AcceleratorHandler : public MessageLoop::Dispatcher {
   // Dispatcher method. This returns true if an accelerator was processed by the
   // focus manager
 #if defined(OS_WIN)
-  virtual bool Dispatch(const MSG& msg);
+  virtual bool Dispatch(const MSG& msg) OVERRIDE;
 #elif defined(USE_WAYLAND)
   virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
-      base::wayland::WaylandEvent* ev);
+      base::wayland::WaylandEvent* ev) OVERRIDE;
 #elif defined(USE_AURA)
-  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(XEvent* xev);
+  virtual base::MessagePumpDispatcher::DispatchStatus Dispatch(
+      XEvent* xev) OVERRIDE;
 #else
-  virtual bool Dispatch(GdkEvent* event);
+  virtual bool Dispatch(GdkEvent* event) OVERRIDE;
 #endif
 
  private:

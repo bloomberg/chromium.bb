@@ -6,6 +6,7 @@
 #define UI_VIEWS_LAYOUT_FILL_LAYOUT_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "ui/views/layout/layout_manager.h"
 #include "views/view.h"
 
@@ -24,8 +25,8 @@ class VIEWS_EXPORT FillLayout : public LayoutManager {
   virtual ~FillLayout();
 
   // Overridden from LayoutManager:
-  virtual void Layout(View* host);
-  virtual gfx::Size GetPreferredSize(View* host);
+  virtual void Layout(View* host) OVERRIDE;
+  virtual gfx::Size GetPreferredSize(View* host) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FillLayout);

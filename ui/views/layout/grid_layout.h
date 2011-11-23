@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "ui/views/layout/layout_manager.h"
 #include "views/view.h"
 
@@ -162,25 +163,25 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
 
   // Notification we've been installed on a particular host. Checks that host
   // is the same as the View supplied in the constructor.
-  virtual void Installed(View* host);
+  virtual void Installed(View* host) OVERRIDE;
 
   // Notification we've been uninstalled on a particular host. Checks that host
   // is the same as the View supplied in the constructor.
-  virtual void Uninstalled(View* host);
+  virtual void Uninstalled(View* host) OVERRIDE;
 
   // Notification that a view has been added.
-  virtual void ViewAdded(View* host, View* view);
+  virtual void ViewAdded(View* host, View* view) OVERRIDE;
 
   // Notification that a view has been removed.
-  virtual void ViewRemoved(View* host, View* view);
+  virtual void ViewRemoved(View* host, View* view) OVERRIDE;
 
   // Layouts out the components.
-  virtual void Layout(View* host);
+  virtual void Layout(View* host) OVERRIDE;
 
   // Returns the preferred size for the GridLayout.
-  virtual gfx::Size GetPreferredSize(View* host);
+  virtual gfx::Size GetPreferredSize(View* host) OVERRIDE;
 
-  virtual int GetPreferredHeightForWidth(View* host, int width);
+  virtual int GetPreferredHeightForWidth(View* host, int width) OVERRIDE;
 
  private:
   // As both Layout and GetPreferredSize need to do nearly the same thing,

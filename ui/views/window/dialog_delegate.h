@@ -6,6 +6,7 @@
 #define UI_VIEWS_WINDOW_DIALOG_DELEGATE_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
@@ -28,7 +29,7 @@ class View;
 ///////////////////////////////////////////////////////////////////////////////
 class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
  public:
-  virtual DialogDelegate* AsDialogDelegate();
+  virtual DialogDelegate* AsDialogDelegate() OVERRIDE;
 
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog. Note: If an OK button is provided, you should provide a

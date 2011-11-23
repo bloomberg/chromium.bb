@@ -6,6 +6,7 @@
 #define UI_VIEWS_BUBBLE_BUBBLE_BORDER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "views/background.h"
 #include "views/border.h"
 
@@ -113,7 +114,7 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   int SetArrowOffset(int offset, const gfx::Size& contents_size);
 
   // Overridden from views::Border:
-  virtual void GetInsets(gfx::Insets* insets) const;
+  virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
  private:
   struct BorderImages;
@@ -124,7 +125,8 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   virtual ~BubbleBorder();
 
   // Overridden from views::Border:
-  virtual void Paint(const views::View& view, gfx::Canvas* canvas) const;
+  virtual void Paint(const views::View& view,
+                     gfx::Canvas* canvas) const OVERRIDE;
 
   void DrawEdgeWithArrow(gfx::Canvas* canvas,
                          bool is_horizontal,
@@ -170,7 +172,7 @@ class VIEWS_EXPORT BubbleBackground : public views::Background {
   explicit BubbleBackground(BubbleBorder* border) : border_(border) {}
 
   // Background overrides.
-  virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
+  virtual void Paint(gfx::Canvas* canvas, views::View* view) const OVERRIDE;
 
  private:
   BubbleBorder* border_;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "ui/base/theme_provider.h"
 #include "views/views_export.h"
 
@@ -27,13 +28,13 @@ class VIEWS_EXPORT DefaultThemeProvider : public ui::ThemeProvider {
   virtual ~DefaultThemeProvider();
 
   // Overridden from ui::ThemeProvider.
-  virtual void Init(Profile* profile);
-  virtual SkBitmap* GetBitmapNamed(int id) const;
-  virtual SkColor GetColor(int id) const;
-  virtual bool GetDisplayProperty(int id, int* result) const;
-  virtual bool ShouldUseNativeFrame() const;
-  virtual bool HasCustomImage(int id) const;
-  virtual RefCountedMemory* GetRawData(int id) const;
+  virtual void Init(Profile* profile) OVERRIDE;
+  virtual SkBitmap* GetBitmapNamed(int id) const OVERRIDE;
+  virtual SkColor GetColor(int id) const OVERRIDE;
+  virtual bool GetDisplayProperty(int id, int* result) const OVERRIDE;
+  virtual bool ShouldUseNativeFrame() const OVERRIDE;
+  virtual bool HasCustomImage(int id) const OVERRIDE;
+  virtual RefCountedMemory* GetRawData(int id) const OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultThemeProvider);

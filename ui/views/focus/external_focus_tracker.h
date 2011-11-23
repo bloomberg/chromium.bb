@@ -6,6 +6,7 @@
 #define UI_VIEWS_FOCUS_EXTERNAL_FOCUS_TRACKER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "ui/views/focus/focus_manager.h"
 
 namespace views {
@@ -32,8 +33,10 @@ class VIEWS_EXPORT ExternalFocusTracker : public FocusChangeListener {
 
   virtual ~ExternalFocusTracker();
   // FocusChangeListener implementation.
-  virtual void OnWillChangeFocus(View* focused_before, View* focused_now);
-  virtual void OnDidChangeFocus(View* focused_before, View* focused_now);
+  virtual void OnWillChangeFocus(View* focused_before,
+                                 View* focused_now) OVERRIDE;
+  virtual void OnDidChangeFocus(View* focused_before,
+                                View* focused_now) OVERRIDE;
 
   // Focuses last focused view which is not a child of parent view and is not
   // parent view itself. Returns true if focus for a view was requested, false

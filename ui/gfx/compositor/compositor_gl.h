@@ -36,7 +36,7 @@ class COMPOSITOR_EXPORT SharedResourcesGL : public SharedResources {
   // Creates a context that shares the resources hosted by this singleton.
   scoped_refptr<gfx::GLContext> CreateContext(gfx::GLSurface* surface);
 
-  virtual void* GetDisplay();
+  virtual void* GetDisplay() OVERRIDE;
 
   ui::TextureProgramGL* program_no_swizzle() {
     return program_no_swizzle_.get();

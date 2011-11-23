@@ -8,6 +8,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "ui/base/animation/animation_container_observer.h"
 #include "ui/base/animation/animation_delegate.h"
@@ -151,13 +152,15 @@ class VIEWS_EXPORT BoundsAnimator : public ui::AnimationDelegate,
                                 AnimationEndType type);
 
   // ui::AnimationDelegate overrides.
-  virtual void AnimationProgressed(const ui::Animation* animation);
-  virtual void AnimationEnded(const ui::Animation* animation);
-  virtual void AnimationCanceled(const ui::Animation* animation);
+  virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationEnded(const ui::Animation* animation) OVERRIDE;
+  virtual void AnimationCanceled(const ui::Animation* animation) OVERRIDE;
 
   // ui::AnimationContainerObserver overrides.
-  virtual void AnimationContainerProgressed(ui::AnimationContainer* container);
-  virtual void AnimationContainerEmpty(ui::AnimationContainer* container);
+  virtual void AnimationContainerProgressed(
+      ui::AnimationContainer* container) OVERRIDE;
+  virtual void AnimationContainerEmpty(
+      ui::AnimationContainer* container) OVERRIDE;
 
   // Parent of all views being animated.
   View* parent_;
