@@ -58,11 +58,52 @@ struct wl_shell {
 	struct wl_list hidden_surface_list;
 };
 
+struct shell_surface {
+	struct wl_listener destroy_listener;
+};
+
 struct wlsc_move_grab {
 	struct wl_grab grab;
 	struct wlsc_surface *surface;
 	int32_t dx, dy;
 };
+
+static void
+destroy_shell_surface(struct shell_surface *priv)
+{
+	wl_list_remove(&priv->destroy_listener.link);
+	free(priv);
+}
+
+static void
+handle_shell_surface_destroy(struct wl_listener *listener,
+			     struct wl_resource *resource, uint32_t time)
+{
+	struct shell_surface *priv =
+		container_of(listener, struct shell_surface, destroy_listener);
+	destroy_shell_surface(priv);
+}
+
+static struct shell_surface *
+get_shell_surface(struct wlsc_surface *surface)
+{
+	struct shell_surface *priv;
+
+	if (surface->shell_priv)
+		return surface->shell_priv;
+
+	priv = calloc(1, sizeof *priv);
+	if (!priv)
+		return NULL;
+
+	priv->destroy_listener.func = handle_shell_surface_destroy;
+	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
+		       &priv->destroy_listener.link);
+
+	surface->shell_priv = priv;
+
+	return priv;
+}
 
 static void
 move_grab_motion(struct wl_grab *grab,
