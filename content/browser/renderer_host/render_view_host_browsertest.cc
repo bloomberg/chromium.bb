@@ -207,9 +207,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, FrameNavigateSocketAddress) {
   EXPECT_EQ(1, observer.navigation_count());
 }
 
-// TODO(jcivelli): temporarily disabled while I figure-out why the EOL is
-//                 getting messed-up in google.mht (causing it to fail to load).
-IN_PROC_BROWSER_TEST_F(RenderViewHostTest, DISABLED_BaseURLParam) {
+IN_PROC_BROWSER_TEST_F(RenderViewHostTest, BaseURLParam) {
   ASSERT_TRUE(test_server()->Start());
   RenderViewHostTestTabContentsObserver observer(
       browser()->GetSelectedTabContents());
