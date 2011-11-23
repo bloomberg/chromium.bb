@@ -41,7 +41,7 @@ html[dir=rtl] .touchpad-sensitivity-more {
 
 #bluetooth-scanning-label,
 #bluetooth-scanning-icon {
-  -webkit-transition: 0.25s opacity;
+  -webkit-transition: 250ms opacity;
 }
 
 #bluetooth-scanning-label {

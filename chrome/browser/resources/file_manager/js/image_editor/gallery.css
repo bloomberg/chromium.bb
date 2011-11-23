@@ -246,7 +246,7 @@ body {
   -webkit-box-pack: left;
 
   max-width: 100%;
-  -webkit-transition: max-width 0.5s ease-in-out;
+  -webkit-transition: max-width 500ms ease-in-out;
   z-index: 0;
 }
 
@@ -271,7 +271,7 @@ body {
   border: 2px solid rgba(255,255,255,0); /* transparent white */
 
   margin-left: 2px;
-  -webkit-transition: opacity 0.2s linear;
+  -webkit-transition: opacity 200ms linear;
 }
 
 .gallery .ribbon-image[inactive] {
@@ -300,7 +300,7 @@ body {
   height: 100%;
   pointer-events: none;
   opacity: 0;
-  -webkit-transition: opacity 0.2s linear;
+  -webkit-transition: opacity 200ms linear;
 }
 
 .gallery .toolbar .fade[active] {
@@ -332,7 +332,7 @@ body {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
-  -webkit-transition: width 0.5s ease-in-out;
+  -webkit-transition: width 500ms ease-in-out;
   }
 
 .gallery[editing] .toolbar .edit-bar {
@@ -343,7 +343,7 @@ body {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   opacity: 0;
-  -webkit-transition: opacity 0.25s ease-in-out;
+  -webkit-transition: opacity 250ms ease-in-out;
 }
 
 .gallery[editing] .edit-main {
@@ -666,7 +666,7 @@ body {
   bottom: 60px;
   background-color: white;
   opacity: 1.0;
-  -webkit-transition: opacity 0.5s ease-in-out;
+  -webkit-transition: opacity 500ms ease-in-out;
   padding: 8px;
   display: -webkit-box;
   -webkit-box-orient: vertical;

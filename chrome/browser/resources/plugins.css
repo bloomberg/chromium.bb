@@ -112,7 +112,7 @@ body.hideTmiModeInitial .showInTmiMode {
 body.hideTmiMode .showInTmiMode {
   height: 0 !important;
   opacity: 0;
-  -webkit-transition: all .1s ease-out;
+  -webkit-transition: all 100ms ease-out;
 }
 
 body.showTmiModeInitial .showInTmiMode {
@@ -121,7 +121,7 @@ body.showTmiModeInitial .showInTmiMode {
 
 body.showTmiMode .showInTmiMode {
   opacity: 1;
-  -webkit-transition: all .1s ease-in;
+  -webkit-transition: all 100ms ease-in;
 }
 
 .wbox-tmi-mode {

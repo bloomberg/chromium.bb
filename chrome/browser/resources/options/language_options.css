@@ -165,7 +165,7 @@ html[os=chromeos] #add-language-overlay-page ul {
   font-weight: bold;
   opacity: 0;
   pointer-events: none;
-  -webkit-transition: opacity .15s;
+  -webkit-transition: opacity 150ms;
   z-index: 1;
   color: black;
 }

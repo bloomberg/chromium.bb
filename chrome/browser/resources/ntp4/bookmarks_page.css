@@ -27,7 +27,7 @@
   right: 0;
   top: 0;
   z-index: 5;
-  -webkit-transition: opacity 0.15s;
+  -webkit-transition: opacity 150ms;
 }
 
 .bookmark .close-button {
@@ -41,7 +41,7 @@ html[dir=rtl] .bookmark .close-button {
 
 .bookmark:hover .close-button {
   opacity: 1;
-  -webkit-transition-delay: 0.5s;
+  -webkit-transition-delay: 500ms;
 }
 
 .bookmark .favicon {
@@ -82,7 +82,7 @@ html[dir=rtl] .bookmark .close-button {
   position: relative;
   z-index: 5;
   -webkit-box-flex: 1;
-  -webkit-transition: background-color .15s;  
+  -webkit-transition: background-color 150ms;
 }
 
 .bookmark:hover .button {

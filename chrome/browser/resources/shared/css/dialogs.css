@@ -16,7 +16,7 @@
                                       rgba(127, 127, 127, 0.5) 35%,
                                       rgba(0, 0, 0, 0.7));
   opacity: 0;
-  -webkit-transition: opacity 0.25s linear;
+  -webkit-transition: opacity 250ms linear;
   overflow: hidden;
 
   z-index: 9999;
@@ -28,7 +28,7 @@
   -webkit-box-orient: vertical;
   -webkit-box-shadow: 5px 5px 5px rgba(100, 100, 100, 0.5);
 
-  -webkit-transition-duration:  0.25s;
+  -webkit-transition-duration: 250ms;
   -webkit-transition-property: none;
 
   min-width: 25%;

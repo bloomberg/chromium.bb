@@ -33,13 +33,13 @@ body {
   position: relative;
   text-align: center;
   z-index: 100;
-  -webkit-transition-duration: 0.1s;
+  -webkit-transition-duration: 100ms;
   -webkit-transition-property: opacity;
 }
 
 #notification-container.inactive {
   opacity: 0;
-  -webkit-transition-duration: 0.2s;
+  -webkit-transition-duration: 200ms;
 }
 
 #notification {
@@ -234,8 +234,8 @@ html[dir='rtl'] #login-container {
   opacity: 0;
   right: 0;
   top: 50px;
-  -webkit-transition: top 0.2s, opacity 0;
-  -webkit-transition-delay: 0, 0.2s;
+  -webkit-transition: top 200ms, opacity 0;
+  -webkit-transition-delay: 0, 200ms;
 }
 
 #footer.showing-trash-mode #trash {

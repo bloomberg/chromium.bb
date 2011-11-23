@@ -119,7 +119,7 @@ html[dir='rtl'] #sync-setup-login-content-column {
 }
 
 #promo-info-pane > * {
-  -webkit-transition: opacity .2s linear;
+  -webkit-transition: opacity 200ms linear;
   opacity: 1;
   position: absolute;
 }

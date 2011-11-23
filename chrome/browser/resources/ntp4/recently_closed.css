@@ -15,8 +15,8 @@
   padding-bottom: 8px;
   padding-top: 8px;
   -webkit-appearance: none;
-  -webkit-transition: opacity 0.2s;
-  -webkit-transition-delay: 0.1s;
+  -webkit-transition: opacity 200ms;
+  -webkit-transition-delay: 100ms;
 }
 
 /* Reserve space for the menu button even when it's hidden. */

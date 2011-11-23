@@ -43,7 +43,7 @@
   right: 0;
   top: 0;
   z-index: 5;
-  -webkit-transition: opacity 0.15s;
+  -webkit-transition: opacity 150ms;
 }
 
 html[dir=rtl] .most-visited .close-button {
@@ -53,7 +53,7 @@ html[dir=rtl] .most-visited .close-button {
 
 .most-visited:hover .close-button {
   opacity: 1;
-  -webkit-transition-delay: 0.5s;
+  -webkit-transition-delay: 500ms;
 }
 
 .most-visited .close-button:hover {
@@ -102,7 +102,7 @@ html[dir=rtl] .most-visited .close-button {
    * to scale a thumbnail larger than this size. */
   max-height: 132px;
   max-width: 212px;
-  -webkit-transition: opacity 0.15s;
+  -webkit-transition: opacity 150ms;
 }
 
 .filler .thumbnail {
@@ -151,7 +151,7 @@ html[dir=rtl] .most-visited .close-button {
   position: relative;
   z-index: 5;
   -webkit-box-flex: 1;
-  -webkit-transition: background-color .15s;
+  -webkit-transition: background-color 150ms;
 }
 
 .filler .thumbnail-wrapper {

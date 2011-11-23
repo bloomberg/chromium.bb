@@ -78,7 +78,7 @@
   pointer-events: none;
   position: fixed;
   z-index: 3;
-  -webkit-transition: opacity 0.2s;
+  -webkit-transition: opacity 200ms;
 }
 
 .tile.drag-representation.placing > * {
@@ -124,7 +124,7 @@
 }
 
 .tile > .new-tile-contents {
-  -webkit-animation: bounce 0.5s ease-in-out;
+  -webkit-animation: bounce 500ms ease-in-out;
 }
 
 @-webkit-keyframes blipout {
@@ -153,7 +153,7 @@
 
 .tile > .removing-tile-contents {
   pointer-events: none;
-  -webkit-animation: blipout 0.3s;
+  -webkit-animation: blipout 300ms;
 }
 
 .tile-page:not(.selected-card) * {

@@ -34,7 +34,7 @@
   opacity: 0;
   padding-left: 14px;
   text-decoration: underline;
-  -webkit-transition: 0.15s opacity;
+  -webkit-transition: 150ms opacity;
 }
 
 div > .handlers-remove-column {

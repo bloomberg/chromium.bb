@@ -17,7 +17,7 @@ html[mode=app-launcher] {
 
 #main {
   box-sizing: border-box;
-  -webkit-transition: width .15s;
+  -webkit-transition: width 150ms;
   margin: 0 auto;
   min-height: 100%;
 }
@@ -81,7 +81,7 @@ html[anim=false] *,
 }
 
 #notification {
-  -webkit-transition: opacity .15s;
+  -webkit-transition: opacity 150ms;
   position: relative;
   background-color: hsl(52, 100%, 80%);
   border: 1px solid rgb(211, 211, 211);
@@ -357,7 +357,7 @@ body.noscroll {
 }
 
 html[anim=true][enable-section-animations=true] .section {
-  -webkit-transition: top .15s;
+  -webkit-transition: top 150ms;
 }
 
 #login-container {
@@ -410,7 +410,7 @@ html[dir=rtl] .section > h2 > .disclosure {
 }
 
 html[anim=true] .section > h2 > .disclosure {
-  -webkit-transition: -webkit-transform .15s;
+  -webkit-transition: -webkit-transform 150ms;
 }
 
 .section:not(.collapsed) > h2 > .disclosure {
@@ -434,7 +434,7 @@ html[anim=true] .section > h2 > .disclosure {
 
 .section-close-button {
   -webkit-appearance: none;
-  -webkit-transition: opacity .15s;
+  -webkit-transition: opacity 150ms;
   background-color: transparent;
   background-image: url(chrome://theme/IDR_CLOSE_BAR);
   background-position: center center;
@@ -523,11 +523,11 @@ it goes right under the sections. */
 }
 
 html[anim=true][enable-section-animations=true] .maxiview {
-  -webkit-transition: opacity .10s, top .15s;
+  -webkit-transition: opacity 100ms, top 150ms;
 }
 
 html[anim=true][enable-section-animations=true] .miniview {
-  -webkit-transition: opacity .15s;
+  -webkit-transition: opacity 150ms;
 }
 
 .section > .miniview {

@@ -10,7 +10,7 @@
 }
 
 .app-contents {
-  -webkit-transition: -webkit-transform 0.1s;
+  -webkit-transition: -webkit-transform 100ms;
 }
 
 .app-contents:active:not(.suppress-active),
@@ -96,7 +96,7 @@
   display: block;
   font-size: 11px;
   white-space: nowrap;
-  -webkit-transition: color .15s linear;
+  -webkit-transition: color 150ms linear;
 }
 
 .app-notification:hover {

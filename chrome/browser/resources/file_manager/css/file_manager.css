@@ -8,7 +8,7 @@
 body {
    -webkit-box-flex: 1;
    -webkit-box-orient: vertical;
-   -webkit-transition: opacity 0.07s linear;
+   -webkit-transition: opacity 70ms linear;
    -webkit-user-select: none;
    display: -webkit-box;
    height: 100%;
@@ -65,7 +65,7 @@ input[type='submit'][disabled]:hover {
 
 .butter-bar {
   -webkit-transition-property: opacity, top;
-  -webkit-transition-duration: 0.3s;
+  -webkit-transition-duration: 300ms;
   padding-top: 2px;
   padding-bottom: 2px;
   padding-left: 1em;
@@ -191,7 +191,7 @@ button.thumbnail-view > img {
   color: #666;
   -webkit-box-align: center;
   overflow: hidden;
-  -webkit-transition: height 0.07s linear;
+  -webkit-transition: height 70ms linear;
 }
 
 .downloads-warning[hidden] {
@@ -539,7 +539,7 @@ li.thumbnail-item[selected] .file-checkbox {
 }
 
 .task-button > img {
-  -webkit-margin-end: 5px;  
+  -webkit-margin-end: 5px;
 }
 
 /* The selection summary text at the bottom of the preview pane. */

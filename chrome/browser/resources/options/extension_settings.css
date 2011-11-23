@@ -171,23 +171,23 @@ found in the LICENSE file.
 }
 
 .extension-zippy-collapsed {
-  -webkit-transition: -webkit-transform .1s;
+  -webkit-transition: -webkit-transform 100ms;
   -webkit-transform: rotate(0deg);
 }
 
 .extension-zippy-collapsed:hover {
   opacity: .5;
   -webkit-transform: rotate(5deg);
-  -webkit-transition: -webkit-transform .1s, opacity .1s;
+  -webkit-transition: -webkit-transform 100ms, opacity 100ms;
 }
 
 .extension-zippy-expanded {
-  -webkit-transition: -webkit-transform .1s;
+  -webkit-transition: -webkit-transform 100ms;
   -webkit-transform: rotate(90deg);
 }
 
 .extension-zippy-expanded:hover {
-  -webkit-transition: -webkit-transform .1s;
+  -webkit-transition: -webkit-transform 100ms;
   -webkit-transform: rotate(85deg);
 }
 

@@ -178,7 +178,7 @@
 }
 
 #top-blurb-error {
-  -webkit-transition: margin-top .33s ease-out, opacity .66s ease-out;
+  -webkit-transition: margin-top 330ms ease-out, opacity 660ms ease-out;
   background: #f9edbe;
   border: 1px solid #f0c36d;
   display: block;
@@ -279,7 +279,7 @@ html[dir='rtl'] #learn-more-link {
 }
 
 #customize-link, #use-default-link {
-  -webkit-transition: opacity .25s;
+  -webkit-transition: opacity 250ms;
 }
 
 
@@ -328,7 +328,7 @@ html[dir='rtl'] #signin-header-logo {
 /* Sign in buttons. */
 
 .signin-box input[type=submit] {
-  -webkit-transition: all 0.218s;
+  -webkit-transition: all 218ms;
   -webkit-user-select: none;
   background-image: -webkit-linear-gradient(top, #4d90fe, #4787ed);
   border: 1px solid #3079ed;
@@ -350,7 +350,7 @@ html[dir='rtl'] .signin-box input[type=submit] {
 
 .signin-box input[type=submit]:hover {
   -webkit-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
-  -webkit-transition: all 0.0s;
+  -webkit-transition: all 0;
   background-image: -webkit-linear-gradient(top, #4d90fe, #357ae8);
   border: 1px solid #2f5bb7;
   color: #fff;

@@ -40,7 +40,7 @@ button {
 }
 
 #inner-container {
-  -webkit-transition: height .2s ease-in-out;
+  -webkit-transition: height 200ms ease-in-out;
   height: 294px;
   padding: 20px;
   position: relative;
@@ -116,14 +116,14 @@ hr.bottom {
 }
 
 .header-section {
-  -webkit-transition: left .2s, opacity .2s ease-in-out;
+  -webkit-transition: left 200ms, opacity 200ms ease-in-out;
   position: absolute;
   text-transform: lowercase;
   width: 20em;
 }
 
 html[dir=rtl] .header-section {
-  -webkit-transition: right .2s, opacity .2s ease-in-out;
+  -webkit-transition: right 200ms, opacity 200ms ease-in-out;
 }
 
 .header-section.right {
@@ -150,12 +150,12 @@ html[dir=rtl]  .header-section.left {
 }
 
 html[dir=ltr] .step {
-  -webkit-transition: left .2s, opacity .2s, visibility .2s ease-in-out;
+  -webkit-transition: left 200ms, opacity 200ms, visibility 200ms ease-in-out;
   left: 0;
 }
 
 html[dir=rtl] .step {
-  -webkit-transition: right .2s, opacity .2s, visibility .2s ease-in-out;
+  -webkit-transition: right 200ms, opacity 200ms, visibility 200ms ease-in-out;
   right: 0;
 }
 
@@ -513,7 +513,7 @@ button {
 #popup-overlay {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  -webkit-transition: 0.25s opacity;
+  -webkit-transition: 250ms opacity;
   background: rgba(255, 255, 255, .75);
   bottom: 0;
   display: -webkit-box;
@@ -659,7 +659,7 @@ button {
 }
 
 #bubble {
-  -webkit-transition: 0.25s opacity;
+  -webkit-transition: 250ms opacity;
 }
 
 html[dir=rtl] #header {
@@ -667,7 +667,7 @@ html[dir=rtl] #header {
 }
 
 body.login-display #oobe hr.shadow {
-  -webkit-transition: all .8s ease;
+  -webkit-transition: all 800ms ease;
   width: 1100px;  /* Necessary. Otherwise hr shrinks to 0 first when switching
                      from 640px to full width. */
 }
@@ -721,7 +721,7 @@ html[dir=rtl] .error-message {
 }
 
 #version-labels {
-  -webkit-transition: all .5s linear;
+  -webkit-transition: all 500ms linear;
   bottom: 10px;
   color: #999;
   font-size: 11px;

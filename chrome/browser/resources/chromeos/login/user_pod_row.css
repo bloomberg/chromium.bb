@@ -8,14 +8,14 @@
 podrow {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  -webkit-transition: all .2s ease-in-out;
+  -webkit-transition: all 200ms ease-in-out;
   display: -webkit-box;
   height: 225px;
   position: relative;
 }
 
 .pod {
-  -webkit-transition: all .23s ease;
+  -webkit-transition: all 230ms ease;
   border-radius: 2px;
   cursor: pointer;
   margin: 0 10px;
@@ -27,7 +27,7 @@ podrow {
 
 .pod .user-image {
   -webkit-box-shadow: 0 3px 12px #ccc;
-  -webkit-transition: all .14s ease;
+  -webkit-transition: all 140ms ease;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 2px;
@@ -72,7 +72,7 @@ podrow {
 }
 
 .name {
-  -webkit-transition: opacity .8s ease;
+  -webkit-transition: opacity 800ms ease;
   color: #565656;
   font-weight: bold;
   font-size: 15px;
@@ -183,7 +183,7 @@ html[dir=rtl] .pod .capslock-hint {
 }
 
 .remove-user-button {
-  -webkit-transition: width .1s ease-in-out, background .2s ease-in-out;
+  -webkit-transition: width 100ms ease-in-out, background 200ms ease-in-out;
   -webkit-box-shadow: none;
   background: url('chrome://theme/IDR_CLOSE_BAR') center center no-repeat;
   border: 0;
@@ -214,7 +214,7 @@ html[dir=rtl] .pod .capslock-hint {
 }
 
 .signed-in-indicator {
-  -webkit-transition: all .14s ease;
+  -webkit-transition: all 140ms ease;
   background: rgba(0, 0, 0, 0.5);
   color: white;
   font-size: small;
