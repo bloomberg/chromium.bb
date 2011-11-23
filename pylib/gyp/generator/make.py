@@ -37,8 +37,8 @@ generator_default_variables = {
   'STATIC_LIB_PREFIX': 'lib',
   'SHARED_LIB_PREFIX': 'lib',
   'STATIC_LIB_SUFFIX': '.a',
-  'INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/geni',
-  'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
+  'INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/$(TARGET)/geni',
+  'SHARED_INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/gen',
   'PRODUCT_DIR': '$(builddir)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
   'RULE_INPUT_DIRNAME': '%(INPUT_DIRNAME)s',  # This gets expanded by Python.
@@ -1497,6 +1497,12 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
 
       cd_action = 'cd %s; ' % Sourceify(self.path or '.')
 
+      # command and cd_action get written to a toplevel variable called
+      # cmd_foo. Toplevel variables can't handle things that change per
+      # makefile like $(TARGET), so hardcode the target.
+      command = command.replace('$(TARGET)', self.target)
+      cd_action = cd_action.replace('$(TARGET)', self.target)
+
       # Set LD_LIBRARY_PATH in case the action runs an executable from this
       # build which links to shared libs from this build.
       # actions run on the host, so they should in theory only use host
@@ -1616,6 +1622,15 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
         if len(dirs) > 0:
           mkdirs = 'mkdir -p %s; ' % ' '.join(dirs)
         cd_action = 'cd %s; ' % Sourceify(self.path or '.')
+
+        # action, cd_action, and mkdirs get written to a toplevel variable
+        # called cmd_foo. Toplevel variables can't handle things that change
+        # per makefile like $(TARGET), so hardcode the target.
+        action = gyp.common.EncodePOSIXShellList(action)
+        action = action.replace('$(TARGET)', self.target)
+        cd_action = cd_action.replace('$(TARGET)', self.target)
+        mkdirs = mkdirs.replace('$(TARGET)', self.target)
+
         # Set LD_LIBRARY_PATH in case the rule runs an executable from this
         # build which links to shared libs from this build.
         # rules run on the host, so they should in theory only use host
@@ -1627,7 +1642,7 @@ $(obj).$(TOOLSET)/$(TARGET)/%%.o: $(obj)/%%%s FORCE_DO_CMD
               "$(builddir)/lib.host:$(builddir)/lib.target:$$LD_LIBRARY_PATH; "
               "export LD_LIBRARY_PATH; "
               "%(cd_action)s%(mkdirs)s%(action)s" % {
-          'action': gyp.common.EncodePOSIXShellList(action),
+          'action': action,
           'cd_action': cd_action,
           'count': count,
           'mkdirs': mkdirs,
