@@ -347,9 +347,11 @@ Download.prototype.update = function(download) {
     if (this.dangerType_ == Download.DangerType.DANGEROUS_FILE) {
       this.dangerDesc_.textContent = localStrings.getStringF('danger_file_desc',
                                                              this.fileName_);
-    } else {
-      // This is used by both DANGEROUS_URL and DANGEROUS_CONTENT.
+    } else if (this.dangerType_ == Download.DangerType.DANGEROUS_URL) {
       this.dangerDesc_.textContent = localStrings.getString('danger_url_desc');
+    } else if (this.dangerType_ == Download.DangerType.DANGEROUS_CONTENT) {
+      this.dangerDesc_.textContent = localStrings.getStringF(
+          'danger_content_desc', this.fileName_);
     }
     this.danger_.style.display = 'block';
     this.safe_.style.display = 'none';

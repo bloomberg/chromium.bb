@@ -175,10 +175,11 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     // different cases.
     if (downloadModel->download()->GetDangerType() ==
         DownloadStateInfo::DANGEROUS_URL) {
+      // TODO(noelutz): add support for malicious content.
       // Safebrowsing shows the download URL leads to malicious file.
       alertIcon = rb.GetNativeImageNamed(IDR_SAFEBROWSING_WARNING);
       dangerousWarning = l10n_util::GetNSStringWithFixup(
-          IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
+          IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
       confirmButtonTitle = l10n_util::GetNSStringWithFixup(
           IDS_CONFIRM_DOWNLOAD);
     } else {

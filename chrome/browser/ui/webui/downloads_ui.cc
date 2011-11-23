@@ -49,7 +49,10 @@ ChromeWebUIDataSource* CreateDownloadsUIHTMLSource() {
 
   // Dangerous file.
   source->AddLocalizedString("danger_file_desc", IDS_PROMPT_DANGEROUS_DOWNLOAD);
-  source->AddLocalizedString("danger_url_desc", IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
+  source->AddLocalizedString("danger_url_desc",
+                             IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
+  source->AddLocalizedString("danger_content_desc",
+                             IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT);
   source->AddLocalizedString("danger_save", IDS_CONFIRM_DOWNLOAD);
   source->AddLocalizedString("danger_discard", IDS_DISCARD_DOWNLOAD);
 

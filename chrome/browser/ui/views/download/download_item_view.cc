@@ -982,31 +982,37 @@ void DownloadItemView::EnterDangerousMode() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   // The dangerous download label text and icon are different
   // under different cases.
-  string16 dangerous_label;
   if (download_->GetDangerType() == DownloadStateInfo::DANGEROUS_URL ||
-    download_->GetDangerType() == DownloadStateInfo::DANGEROUS_CONTENT) {
-    // TODO(noelutz): add the target filename to the warning message in the
-    // case of a dangerous content warning.
-    // Safebrowsing shows the download URL or content leads to malicious file.
+      download_->GetDangerType() == DownloadStateInfo::DANGEROUS_CONTENT) {
     warning_icon_ = rb.GetBitmapNamed(IDR_SAFEBROWSING_WARNING);
-    dangerous_label =
-        l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
   } else {
-    // The download file has dangerous file type (e.g.: an executable).
     DCHECK(download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE);
     warning_icon_ = rb.GetBitmapNamed(IDR_WARNING);
-    if (ChromeDownloadManagerDelegate::IsExtensionDownload(download_)) {
-      dangerous_label =
-          l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
-    } else {
-      ui::ElideString(rootname,
-                      kFileNameMaxLength - extension.length(),
-                      &rootname);
-      string16 filename = rootname + ASCIIToUTF16(".") + extension;
-      filename = base::i18n::GetDisplayStringInLTRDirectionality(filename);
-      dangerous_label =
-          l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD, filename);
-    }
+  }
+  string16 dangerous_label;
+  if (download_->GetDangerType() == DownloadStateInfo::DANGEROUS_URL) {
+    // Safebrowsing shows the download URL or content leads to malicious file.
+    dangerous_label = l10n_util::GetStringUTF16(
+        IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
+  } else if (download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE &&
+             ChromeDownloadManagerDelegate::IsExtensionDownload(download_)) {
+    dangerous_label =
+        l10n_util::GetStringUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
+  } else {
+    // The download file has dangerous file type (e.g.: an executable) or the
+    // file content is known to be malicious.
+    DCHECK(download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ||
+           download_->GetDangerType() == DownloadStateInfo::DANGEROUS_CONTENT);
+    ui::ElideString(rootname,
+                    kFileNameMaxLength - extension.length(),
+                    &rootname);
+    string16 filename = rootname + ASCIIToUTF16(".") + extension;
+    filename = base::i18n::GetDisplayStringInLTRDirectionality(filename);
+    dangerous_label = l10n_util::GetStringFUTF16(
+        download_->GetDangerType() == DownloadStateInfo::DANGEROUS_FILE ?
+            IDS_PROMPT_DANGEROUS_DOWNLOAD :
+            IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+        filename);
   }
 
   dangerous_download_label_ = new views::Label(dangerous_label);

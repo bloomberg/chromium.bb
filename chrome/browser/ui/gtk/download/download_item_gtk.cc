@@ -561,9 +561,10 @@ void DownloadItemGtk::UpdateDangerWarning() {
 
     // The dangerous download label text is different for different cases.
     if (get_download()->GetDangerType() == DownloadStateInfo::DANGEROUS_URL) {
+      // TODO(noelutz): handle malicious content warning.
       // Safebrowsing shows the download URL leads to malicious file.
       dangerous_warning =
-          l10n_util::GetStringUTF16(IDS_PROMPT_UNSAFE_DOWNLOAD_URL);
+          l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
     } else {
       // It's a dangerous file type (e.g.: an executable).
       DCHECK(get_download()->GetDangerType() ==

@@ -2303,7 +2303,6 @@ are declared in build/common.gypi.
       <message name="IDS_DOWNLOAD_UNCONFIRMED_PREFIX" desc="The prefix used in the unconfirmed download file.">
         Unconfirmed
       </message>
-
       <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD"
                desc="Message shown to the user to validate the download of a dangerous file.">
         This type of file can harm your computer. Do you want to keep <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> anyway?
@@ -2312,9 +2311,13 @@ are declared in build/common.gypi.
          desc="Message shown to the user to validate the download of an extension file.">
         Extensions, apps, and themes can harm your computer. Are you sure you want to continue?
       </message>
-      <message name="IDS_PROMPT_UNSAFE_DOWNLOAD_URL"
+      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_URL"
          desc="Message shown to the user to validate the download when the download url is classified to lead to malware by the safebrowsing database.">
         This file is malicious. Do you want to keep it anyway?
+      </message>
+      <message name="IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT"
+         desc="Message shown to the user to validate the download when the download content is classified to lead to malware by safebrowsing.">
+        This file is malicious. Do you want to keep <ph name="FILE_NAME">$1<ex>malware.exe</ex></ph> anyway?
       </message>
       <message name="IDS_CONFIRM_DOWNLOAD"
                desc="Text for the button used to validate the downloading of a dangerous download.">
