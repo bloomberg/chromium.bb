@@ -152,10 +152,9 @@ remoting.HostTableEntry.prototype.commitRename_ = function() {
   if (editBox) {
     if (this.host.hostName != editBox.value) {
       this.host.hostName = editBox.value;
-      this.removeEditBox_();
       this.onRename_();
-      return;
     }
+    this.removeEditBox_();
   }
 };
 
