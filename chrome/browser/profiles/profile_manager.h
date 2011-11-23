@@ -13,6 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
@@ -212,7 +213,7 @@ class ProfileManager : public base::NonThreadSafe,
 
  private:
   friend class TestingProfileManager;
-  FRIEND_TEST(ProfileManagerBrowserTest, DeleteAllProfiles);
+  FRIEND_TEST_ALL_PREFIXES(ProfileManagerBrowserTest, DeleteAllProfiles);
 
   // This struct contains information about profiles which are being loaded or
   // were loaded.
