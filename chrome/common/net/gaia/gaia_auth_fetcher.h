@@ -7,7 +7,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -30,7 +29,6 @@ class GaiaAuthFetcherTest;
 namespace net {
 class URLRequestContextGetter;
 class URLRequestStatus;
-typedef std::vector<std::string> ResponseCookies;
 }
 
 class GaiaAuthFetcher : public content::URLFetcherDelegate {
@@ -67,12 +65,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   void StartIssueAuthToken(const std::string& sid,
                            const std::string& lsid,
                            const char* const service);
-
-  // Start fetching OAuth login scoped token from the given ClientLogin token
-  // for "lso" service.
-  // Either OnOAuthLoginTokenSuccess or OnOAuthLoginTokenFailure method will be
-  // called on the consumer with results.
-  void StartOAuthLoginTokenFetch(const std::string& auth_token);
 
   // Start a request to get a particular key from user info.
   // GaiaAuthConsumer will be called back on the same thread when
@@ -117,10 +109,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   static const char kClientLoginCaptchaFormat[];
   // The format of the POST body for IssueAuthToken.
   static const char kIssueAuthTokenFormat[];
-  // The format of the POST body to get OAuth2 auth code from auth token.
-  static const char kClientLoginToOAuth2BodyFormat[];
-  // The format of the POST body to get OAuth2 token pair from auth code.
-  static const char kOAuth2CodeToTokenPairBodyFormat[];
   // The format of the POST body for GetUserInfo.
   static const char kGetUserInfoFormat[];
   // The format of the POST body for TokenAuth.
@@ -144,16 +132,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   static const char kCaptchaUrlParam[];
   static const char kCaptchaTokenParam[];
 
-  // Constants for request/response for OAuth2 requests.
-  static const char kAuthHeaderFormat[];
-  static const char kClientLoginToOAuth2CookiePartSecure[];
-  static const char kClientLoginToOAuth2CookiePartHttpOnly[];
-  static const char kClientLoginToOAuth2CookiePartCodePrefix[];
-  static const int kClientLoginToOAuth2CookiePartCodePrefixLength;
-  static const char kOAuth2RefreshTokenKey[];
-  static const char kOAuth2AccessTokenKey[];
-  static const char kOAuth2ExpiresInKey[];
-
   // Process the results of a ClientLogin fetch.
   void OnClientLoginFetched(const std::string& data,
                             const net::URLRequestStatus& status,
@@ -162,15 +140,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   void OnIssueAuthTokenFetched(const std::string& data,
                                const net::URLRequestStatus& status,
                                int response_code);
-
-  void OnClientLoginToOAuth2Fetched(const std::string& data,
-                                    const net::ResponseCookies& cookies,
-                                    const net::URLRequestStatus& status,
-                                    int response_code);
-
-  void OnOAuth2TokenPairFetched(const std::string& data,
-                                const net::URLRequestStatus& status,
-                                int response_code);
 
   void OnGetUserInfoFetched(const std::string& data,
                             const net::URLRequestStatus& status,
@@ -196,20 +165,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
                                       std::string* captcha_url,
                                       std::string* captcha_token);
 
-  // Parse ClientLogin to OAuth2 response.
-  static bool ParseClientLoginToOAuth2Response(
-      const net::ResponseCookies& cookies,
-      std::string* auth_code);
-
-  // Parse OAuth2 token pairresponse.
-  static bool ParseOAuth2TokenPairResponse(const std::string& data,
-                                           std::string* refresh_token,
-                                           std::string* access_token,
-                                           int* expires_in_secs);
-
-  static bool ParseClientLoginToOAuth2Cookie(const std::string& cookie,
-                                             std::string* auth_code);
-
   // Is this a special case Gaia error for TwoFactor auth?
   static bool IsSecondFactorSuccess(const std::string& alleged_error);
 
@@ -227,10 +182,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   static std::string MakeIssueAuthTokenBody(const std::string& sid,
                                             const std::string& lsid,
                                             const char* const service);
-  // Create body to get OAuth2 auth code.
-  static std::string MakeGetAuthCodeBody();
-  // Given auth code, create body to get OAuth2 token pair.
-  static std::string MakeGetTokenPairBody(const std::string& auth_code);
   // Supply the lsid returned from ClientLogin in order to fetch
   // user information.
   static std::string MakeGetUserInfoBody(const std::string& lsid);
@@ -245,17 +196,12 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
                                        const std::string& continue_url,
                                        const std::string& source);
 
-  static std::string MakeGetAuthCodeHeader(const std::string& auth_token);
-
-  void StartOAuth2TokenPairFetch(const std::string& auth_code);
-
   // Create a fetcher useable for making any Gaia request.
   static content::URLFetcher* CreateGaiaFetcher(
       net::URLRequestContextGetter* getter,
       const std::string& body,
-      const std::string& headers,
       const GURL& gaia_gurl,
-      bool use_cookies,
+      bool send_cookies,
       content::URLFetcherDelegate* delegate);
 
   // From a URLFetcher result, generate an appropriate error.
@@ -271,8 +217,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   std::string source_;
   const GURL client_login_gurl_;
   const GURL issue_auth_token_gurl_;
-  const GURL client_login_to_oauth2_gurl_;
-  const GURL oauth2_token_gurl_;
   const GURL get_user_info_gurl_;
   const GURL token_auth_gurl_;
   const GURL merge_session_gurl_;
@@ -294,9 +238,6 @@ class GaiaAuthFetcher : public content::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CheckNormalErrorCode);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, CheckTwoFactorResponse);
   FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, LoginNetFailure);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest,
-      ParseClientLoginToOAuth2Response);
-  FRIEND_TEST_ALL_PREFIXES(GaiaAuthFetcherTest, ParseOAuth2TokenPairResponse);
 
   DISALLOW_COPY_AND_ASSIGN(GaiaAuthFetcher);
 };

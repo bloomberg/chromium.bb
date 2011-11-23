@@ -24,20 +24,6 @@ const char kOAuthWrapBridgeUrlSuffix[] = "/accounts/OAuthWrapBridge";
 const char kOAuth1LoginUrlSuffix[] = "/accounts/OAuthLogin";
 const char kOAuthRevokeTokenUrlSuffix[] = "/accounts/AuthSubRevokeToken";
 
-// OAuth2 client id for Google Chrome which is registered as an
-// installed application.
-static const char kOAuth2ChromeClientId[] =
-    "77185425430.apps.googleusercontent.com";
-// For an installed application, client secret is not really a secret since
-// it is expected to be embeeded in the application.
-// See documentation at
-// http://code.google.com/apis/accounts/docs/OAuth2InstalledApp.html
-static const char kOAuth2ChromeClientSecret[] =
-    "OTJgUOQcT7lO7GsGZq2G4IlT";
-const char kClientLoginToOAuth2Url[] =
-    "https://accounts.google.com/o/oauth2/programmatic_auth";
-const char kOAuth2TokenUrl[] =
-    "https://accounts.google.com/o/oauth2/token";
 }  // namespacce
 
 GaiaUrls* GaiaUrls::GetInstance() {
@@ -75,11 +61,6 @@ GaiaUrls::GaiaUrls() {
   oauth_user_info_url_ = "https://www.googleapis.com/oauth2/v1/userinfo";
   oauth_wrap_bridge_user_info_scope_ =
       "https://www.googleapis.com/auth/userinfo.email";
-
-  oauth2_chrome_client_id_ = kOAuth2ChromeClientId;
-  oauth2_chrome_client_secret_ = kOAuth2ChromeClientSecret;
-  client_login_to_oauth2_url_ = kClientLoginToOAuth2Url;
-  oauth2_token_url_ = kOAuth2TokenUrl;
 }
 
 GaiaUrls::~GaiaUrls() {
@@ -143,20 +124,4 @@ const std::string& GaiaUrls::oauth1_login_scope() {
 
 const std::string& GaiaUrls::oauth_wrap_bridge_user_info_scope() {
   return oauth_wrap_bridge_user_info_scope_;
-}
-
-const std::string& GaiaUrls::oauth2_chrome_client_id() {
-  return oauth2_chrome_client_id_;
-}
-
-const std::string& GaiaUrls::oauth2_chrome_client_secret() {
-  return oauth2_chrome_client_secret_;
-}
-
-const std::string& GaiaUrls::client_login_to_oauth2_url() {
-  return client_login_to_oauth2_url_;
-}
-
-const std::string& GaiaUrls::oauth2_token_url() {
-  return oauth2_token_url_;
 }
