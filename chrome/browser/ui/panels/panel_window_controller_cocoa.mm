@@ -249,11 +249,13 @@ enum {
 
 - (void)tabInserted:(TabContents*)contents {
   [contentsController_ changeTabContents:contents];
+  DCHECK(![[contentsController_ view] isHidden]);
 }
 
 - (void)tabDetached:(TabContents*)contents {
   DCHECK(contents == [contentsController_ tabContents]);
   [contentsController_ changeTabContents:NULL];
+  [[contentsController_ view] setHidden:YES];
 }
 
 - (PanelTitlebarViewCocoa*)titlebarView {
