@@ -102,9 +102,11 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, AcceleratedCompositingBlocked) {
 
 #if defined(OS_LINUX)
 // http://crbug.com/104142
-#define WebGLAllowed FLAKY_WebGLAllowed
+#define MAYBE_WebGLAllowed DISABLED_WebGLAllowed
+#else
+#define MAYBE_WebGLAllowed WebGLAllowed
 #endif
-IN_PROC_BROWSER_TEST_F(GpuFeatureTest, WebGLAllowed) {
+IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MAYBE_WebGLAllowed) {
   GpuFeatureFlags flags = GpuDataManager::GetInstance()->GetGpuFeatureFlags();
   EXPECT_EQ(flags.flags(), 0u);
 
