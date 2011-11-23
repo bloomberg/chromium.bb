@@ -1853,16 +1853,6 @@
    fun:_ZN3net25DiskCacheBasedSSLHostInfo22DoWaitForDataReadyDoneEv
    fun:_ZN3net25DiskCacheBasedSSLHostInfo6DoLoopEi
    fun:_ZN3net25DiskCacheBasedSSLHostInfo12OnIOCompleteEi
-   fun:_Z16DispatchToMethodIN3net25DiskCacheBasedSSLHostInfoEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN3net25DiskCacheBasedSSLHostInfo12CallbackImpl13RunWithParamsERK6Tuple1IiE
-   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
-   fun:_ZN3net9HttpCache8WorkItem10DoCallbackEiPN10disk_cache7BackendE
-   fun:_ZN3net9HttpCache16OnBackendCreatedEiPNS0_9PendingOpE
-   fun:_ZN3net9HttpCache12OnIOCompleteEiPNS0_9PendingOpE
-   fun:_ZN3net9HttpCache15BackendCallback13RunWithParamsERK6Tuple1IiE
-   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
-   fun:_ZN12_GLOBAL__N_126MockBlockingBackendFactory14FinishCreationEv
-   fun:_ZN47DiskCacheBasedSSLHostInfo_DeleteInCallback_Test8TestBodyEv
 }
 {
    bug_97818
