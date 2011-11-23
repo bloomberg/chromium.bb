@@ -410,6 +410,7 @@ unlock_dialog_create(struct desktop *desktop)
 
 	dialog->window = window_create(display, 260, 230);
 	window_set_title(dialog->window, "Unlock your desktop");
+	window_set_custom(dialog->window);
 
 	window_set_user_data(dialog->window, dialog);
 	window_set_redraw_handler(dialog->window, unlock_dialog_redraw_handler);
