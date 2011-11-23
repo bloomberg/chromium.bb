@@ -350,16 +350,16 @@ class CBuildBotTest(mox.MoxTestBase):
     buildroot = '/bob'
     board = 'board_name'
     branch_name = 'branch_name'
-    archive_dir = '/archive/dir'
+    archive_url = 'gs://archive/url'
 
     cros_lib.RunCommand(['./pushimage',
                          '--board=board_name',
                          '--branch=branch_name',
-                         '/archive/dir'],
+                         archive_url],
                         cwd=mox.StrContains('crostools'))
 
     self.mox.ReplayAll()
-    commands.PushImages(buildroot, board, branch_name, archive_dir, None)
+    commands.PushImages(buildroot, board, branch_name, archive_url, None)
     self.mox.VerifyAll()
 
   def testPushImages2(self):
@@ -368,17 +368,17 @@ class CBuildBotTest(mox.MoxTestBase):
     board = 'board_name'
     branch_name = 'branch_name'
     profile_name = 'profile_name'
-    archive_dir = '/archive/dir'
+    archive_url = 'gs://archive/url'
 
     cros_lib.RunCommand(['./pushimage',
                          '--board=board_name',
                          '--profile=profile_name',
                          '--branch=branch_name',
-                         '/archive/dir'],
+                         archive_url],
                         cwd=mox.StrContains('crostools'))
 
     self.mox.ReplayAll()
-    commands.PushImages(buildroot, board, branch_name, archive_dir,
+    commands.PushImages(buildroot, board, branch_name, archive_url,
                         profile=profile_name)
     self.mox.VerifyAll()
 

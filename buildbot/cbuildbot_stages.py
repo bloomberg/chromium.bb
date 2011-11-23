@@ -915,13 +915,11 @@ class ArchiveStage(NonHaltingBuilderStage):
     # \- BuildAndArchiveArtifacts
     #    \- ArchivePayloads
     #    \- ArchiveTestResults
-    #    \- BuildAndArchiveReleaseArtifacts
-    #       (runs below steps first, then runs push_image)
-    #       \- ArchiveDebugSymbols
-    #       \- BuildAndArchiveAllImages
-    #          (builds recovery image first, then launches functions below)
-    #          \- BuildAndArchiveFactoryImages
-    #          \- ArchiveRegularImages
+    #    \- ArchiveDebugSymbols
+    #    \- BuildAndArchiveAllImages
+    #       (builds recovery image first, then launches functions below)
+    #       \- BuildAndArchiveFactoryImages
+    #       \- ArchiveRegularImages
     # \- UploadDebugSymbols
     # \- UploadArtifacts
 
@@ -1035,32 +1033,13 @@ class ArchiveStage(NonHaltingBuilderStage):
           break
         commands.UploadArchivedFile(archive_path, upload_url, filename, debug)
 
-    def BuildAndArchiveReleaseArtifacts():
-      # Archive debug symbols in parallel with our process for creating
-      # images.
-      background.RunParallelSteps([ArchiveDebugSymbols,
-                                   BuildAndArchiveAllImages])
-
-      # Now that all data has been generated, we can upload the final result to
-      # the image server.
-      # TODO: When we support branches fully, the friendly name of the branch
-      # needs to be used with PushImages
-      if not debug and config['push_image']:
-        commands.PushImages(buildroot,
-                            board=board,
-                            branch_name='master',
-                            archive_dir=archive_path,
-                            profile=self._options.profile or
-                              self._build_config['profile'])
-
-
     def BuildAndArchiveArtifacts():
       try:
         # Run archiving steps in parallel.
         steps = []
         if self._options.tests:
           steps += [ArchivePayloads, ArchiveTestResults]
-        steps += [BuildAndArchiveReleaseArtifacts]
+        steps += [ArchiveDebugSymbols, BuildAndArchiveAllImages]
         background.RunParallelSteps(steps)
       finally:
         # Shut down upload queues.
@@ -1072,6 +1051,18 @@ class ArchiveStage(NonHaltingBuilderStage):
     background.RunParallelSteps([BuildAndArchiveArtifacts] +
                                 [UploadDebugSymbols] +
                                 [UploadArtifacts]*16)
+
+    # Now that all data has been generated, we can upload the final result to
+    # the image server.
+    # TODO: When we support branches fully, the friendly name of the branch
+    # needs to be used with PushImages
+    if not debug and config['push_image']:
+      commands.PushImages(buildroot,
+                          board=board,
+                          branch_name='master',
+                          archive_url=upload_url,
+                          profile=self._options.profile or
+                            self._build_config['profile'])
 
     # Update and upload LATEST file.
     commands.UpdateLatestFile(self._bot_archive_root, self._set_version)
