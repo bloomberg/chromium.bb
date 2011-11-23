@@ -5,15 +5,17 @@
 var g_browserBridge;
 var g_mainView;
 
+// TODO(eroman): The handling of "max" across snapshots is not correct.
+// For starters the browser needs to be aware to generate new maximums.
+// Secondly, we need to take into account the "max" of intermediary snapshots,
+// not just the terminal ones.
+
 /**
  * Main entry point called once the page has loaded.
  */
 function onLoad() {
   g_browserBridge = new BrowserBridge();
   g_mainView = new MainView();
-
-  // Ask the browser to send us the current data.
-  g_browserBridge.sendGetData();
 }
 
 document.addEventListener('DOMContentLoaded', onLoad);
@@ -49,7 +51,9 @@ var BrowserBridge = (function() {
     //--------------------------------------------------------------------------
 
     receivedData: function(data) {
-      g_mainView.addData(data);
+      // TODO(eroman): The browser should give an indication of which snapshot
+      // this data belongs to. For now we always assume it is for the latest.
+      g_mainView.addDataToSnapshot(data);
     },
   };
 
@@ -96,6 +100,11 @@ var MainView = (function() {
   var MERGE_SIMILAR_THREADS_CHECKBOX_ID = 'merge-similar-threads-checkbox';
 
   var RESET_DATA_LINK_ID = 'reset-data-link';
+
+  var TOGGLE_SNAPSHOTS_LINK_ID = 'snapshots-link';
+  var SNAPSHOTS_ROW = 'snapshots-row';
+  var SNAPSHOT_SELECTION_SUMMARY_ID = 'snapshot-selection-summary';
+  var TAKE_SNAPSHOT_BUTTON_ID = 'snapshot-button';
 
   // --------------------------------------------------------------------------
   // Row keys
@@ -277,6 +286,14 @@ var MainView = (function() {
           'Still_Alive',
       ]);
 
+  function diffFuncForCount(a, b) {
+    return b - a;
+  }
+
+  function diffFuncForMax(a, b) {
+    return b;
+  }
+
   /**
    * Enumerates information about various keys. Such as whether their data is
    * expected to be numeric or is a string, a descriptive name (title) for the
@@ -309,6 +326,11 @@ var MainView = (function() {
    *   [sortDescending]: When first clicking on this column, we will default to
    *                     sorting by |comparator| in ascending order. If this
    *                     property is true, we will reverse that to descending.
+   *   [diff]: Function to call to compute a "difference" value between
+   *           parameters (a, b). This is used when calculating the difference
+   *           between two snapshots. Diffing numeric quantities generally
+   *           involves subtracting, but some fields like max may need to do
+   *           something different.
    */
   var KEY_PROPERTIES = [];
 
@@ -363,6 +385,7 @@ var MainView = (function() {
     textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.count',
     aggregator: SumAggregator,
+    diff: diffFuncForCount,
   };
 
   KEY_PROPERTIES[KEY_QUEUE_TIME] = {
@@ -372,6 +395,7 @@ var MainView = (function() {
     textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.queue_ms',
     aggregator: SumAggregator,
+    diff: diffFuncForCount,
   };
 
   KEY_PROPERTIES[KEY_MAX_QUEUE_TIME] = {
@@ -381,6 +405,7 @@ var MainView = (function() {
     textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.queue_ms_max',
     aggregator: MaxAggregator,
+    diff: diffFuncForMax,
   };
 
   KEY_PROPERTIES[KEY_RUN_TIME] = {
@@ -390,6 +415,7 @@ var MainView = (function() {
     textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.run_ms',
     aggregator: SumAggregator,
+    diff: diffFuncForCount,
   };
 
   KEY_PROPERTIES[KEY_AVG_RUN_TIME] = {
@@ -407,6 +433,7 @@ var MainView = (function() {
     textPrinter: formatNumberAsText,
     inputJsonKey: 'death_data.run_ms_max',
     aggregator: MaxAggregator,
+    diff: diffFuncForMax,
   };
 
   KEY_PROPERTIES[KEY_AVG_QUEUE_TIME] = {
@@ -761,6 +788,17 @@ var MainView = (function() {
     return (new Date()).getTime();
   }
 
+  /**
+   * Toggle a node between hidden/invisible.
+   */
+  function toggleNodeDisplay(n) {
+    if (n.style.display == '') {
+      n.style.display = 'none';
+    } else {
+      n.style.display = '';
+    }
+  }
+
   // --------------------------------------------------------------------------
   // Functions that augment, bucket, and compute aggregates for the input data.
   // --------------------------------------------------------------------------
@@ -769,9 +807,13 @@ var MainView = (function() {
    * Adds new derived properties to row. Mutates the provided dictionary |e|.
    */
   function augmentDataRow(e) {
+    computeDataRowAverages(e);
+    e[KEY_SOURCE_LOCATION] = e[KEY_FILE_NAME] + ' [' + e[KEY_LINE_NUMBER] + ']';
+  }
+
+  function computeDataRowAverages(e) {
     e[KEY_AVG_QUEUE_TIME] = e[KEY_QUEUE_TIME] / e[KEY_COUNT];
     e[KEY_AVG_RUN_TIME] = e[KEY_RUN_TIME] / e[KEY_COUNT];
-    e[KEY_SOURCE_LOCATION] = e[KEY_FILE_NAME] + ' [' + e[KEY_LINE_NUMBER] + ']';
   }
 
   /**
@@ -794,6 +836,26 @@ var MainView = (function() {
   function consumeAggregates(aggregates, row) {
     for (var key in aggregates)
       aggregates[key].consume(row);
+  }
+
+  function bucketIdenticalRows(rows, identityKeys, propertyGetterFunc) {
+    var identicalRows = {};
+    for (var i = 0; i < rows.length; ++i) {
+      var r = rows[i];
+
+      var rowIdentity = [];
+      for (var j = 0; j < identityKeys.length; ++j)
+        rowIdentity.push(propertyGetterFunc(r, identityKeys[j]));
+      rowIdentity = rowIdentity.join('\n');
+
+      var l = identicalRows[rowIdentity];
+      if (!l) {
+        l = [];
+        identicalRows[rowIdentity] = l;
+      }
+      l.push(r);
+    }
+    return identicalRows;
   }
 
   /**
@@ -837,22 +899,8 @@ var MainView = (function() {
     deleteValuesFromArray(aggregateKeys, IDENTITY_KEYS);
 
     // Group all the identical rows together, bucketed into |identicalRows|.
-    var identicalRows = {};
-    for (var i = 0; i < origRows.length; ++i) {
-      var e = origRows[i];
-
-      var rowIdentity = [];
-      for (var j = 0; j < identityKeys.length; ++j)
-        rowIdentity.push(propertyGetterFunc(e, identityKeys[j]));
-      rowIdentity = rowIdentity.join('\n');
-
-      var l = identicalRows[rowIdentity];
-      if (!l) {
-        l = [];
-        identicalRows[rowIdentity] = l;
-      }
-      l.push(e);
-    }
+    var identicalRows =
+        bucketIdenticalRows(origRows, identityKeys, propertyGetterFunc);
 
     var mergedRows = [];
 
@@ -882,6 +930,85 @@ var MainView = (function() {
     }
 
     return mergedRows;
+  }
+
+  /**
+   * Takes two flat lists data1 and data2, and returns a new flat list which
+   * represents the difference between them. The exact meaning of "difference"
+   * is column specific, but for most numeric fields (like the count, or total
+   * time), it is found by subtracting.
+   *
+   * TODO(eroman): Some of this code is duplicated from mergeRows().
+   */
+  function subtractSnapshots(data1, data2) {
+    // These columns are computed from the other columns. We won't bother
+    // diffing/aggregating these, but rather will derive them again from the
+    // final row.
+    var COMPUTED_AGGREGATE_KEYS = [KEY_AVG_QUEUE_TIME, KEY_AVG_RUN_TIME];
+
+    // These are the keys which determine row equality. Since we are not doing
+    // any merging yet at this point, it is simply the list of all identity
+    // columns.
+    var identityKeys = IDENTITY_KEYS;
+
+    // The columns to compute via aggregation is everything else.
+    var aggregateKeys = ALL_KEYS.slice(0);
+    deleteValuesFromArray(aggregateKeys, IDENTITY_KEYS);
+    deleteValuesFromArray(aggregateKeys, COMPUTED_AGGREGATE_KEYS);
+
+    // Group all the identical rows for each list together.
+    var propertyGetterFunc = function(row, key) { return row[key]; };
+    var identicalRows1 =
+        bucketIdenticalRows(data1, identityKeys, propertyGetterFunc);
+    var identicalRows2 =
+        bucketIdenticalRows(data2, identityKeys, propertyGetterFunc);
+
+    var diffedRows = [];
+
+    for (var k in identicalRows2) {
+      var rows2 = identicalRows2[k];
+      var rows1 = identicalRows1[k];
+      if (rows1 == undefined)
+        rows1 = [];
+
+      var newRow = [];
+
+      // Copy over all the identity columns to the new row (since they
+      // were the same for each row matched).
+      for (var i = 0; i < identityKeys.length; ++i)
+        newRow[identityKeys[i]] = propertyGetterFunc(rows2[0], identityKeys[i]);
+
+      // The raw data for each snapshot *may* have contained duplicate rows, so
+      // smash them down into a single row using our aggregation functions.
+      var aggregates1 = initializeAggregates(aggregateKeys);
+      var aggregates2 = initializeAggregates(aggregateKeys);
+      for (var i = 0; i < rows1.length; ++i)
+        consumeAggregates(aggregates1, rows1[i]);
+      for (var i = 0; i < rows2.length; ++i)
+        consumeAggregates(aggregates2, rows2[i]);
+
+      // Finally, diff the two merged rows.
+      for (var aggregateKey in aggregates2) {
+        var a = aggregates1[aggregateKey].getValue();
+        var b = aggregates2[aggregateKey].getValue();
+
+        var diffFunc =  KEY_PROPERTIES[aggregateKey].diff;
+        newRow[aggregateKey] = diffFunc(a, b);
+      }
+
+      if (newRow[KEY_COUNT] == 0) {
+        // If a row's count has gone to zero, it means there were no new
+        // occurrences of it in the second snapshot, so remove it.
+        continue;
+      }
+
+      // Since we excluded the averages during diffing phase, re-compute them
+      // using the diffed totals.
+      computeDataRowAverages(newRow);
+      diffedRows.push(newRow);
+    }
+
+    return diffedRows;
   }
 
   // --------------------------------------------------------------------------
@@ -1060,7 +1187,13 @@ var MainView = (function() {
   }
 
   MainView.prototype = {
-    addData: function(data) {
+    addDataToSnapshot: function(data) {
+      // TODO(eroman): We need to know which snapshot this data belongs to!
+      // For now we assume it is the most recent snapshot.
+      var snapshotIndex = this.snapshots_.length - 1;
+
+      var snapshot = this.snapshots_[snapshotIndex];
+
       var pid = data.process_id;
       var ptype = data.process_type;
 
@@ -1094,40 +1227,118 @@ var MainView = (function() {
         // Add our computed properties.
         augmentDataRow(newRow);
 
-        this.flatData_.push(newRow);
+        snapshot.flatData.push(newRow);
       }
 
-      // We may end up calling addData() repeatedly (once for each process).
-      // To avoid this from slowing us down we do bulk updates on a timer.
-      this.updateMergedDataSoon_();
+      if (!arrayToSet(this.getSelectedSnapshotIndexes_())[snapshotIndex]) {
+        // Optimization: If this snapshot is not a data dependency for the
+        // current display, then don't bother updating anything.
+        return;
+      }
+
+      // We may end up calling addDataToSnapshot_() repeatedly (once for each
+      // process). To avoid this from slowing us down we do bulk updates on a
+      // timer.
+      this.updateFlatDataSoon_();
     },
 
-    updateMergedDataSoon_: function() {
-      if (this.updateMergedDataPending_) {
+    updateFlatDataSoon_: function() {
+      if (this.updateFlatDataPending_) {
         // If a delayed task has already been posted to re-merge the data,
         // then we don't need to do anything extra.
         return;
       }
 
-      // Otherwise schedule updateMergeData_() to be called later. We want it to
+      // Otherwise schedule updateFlatData_() to be called later. We want it to
       // be called no more than once every PROCESS_DATA_DELAY_MS milliseconds.
 
-      if (this.lastUpdateMergedDataTime_ == undefined)
-        this.lastUpdateMergedDataTime_ = 0;
+      if (this.lastUpdateFlatDataTime_ == undefined)
+        this.lastUpdateFlatDataTime_ = 0;
 
-      var timeSinceLastMerge = getTimeMillis() - this.lastUpdateMergedDataTime_;
+      var timeSinceLastMerge = getTimeMillis() - this.lastUpdateFlatDataTime_;
       var timeToWait = Math.max(0, PROCESS_DATA_DELAY_MS - timeSinceLastMerge);
 
       var functionToRun = function() {
         // Do the actual update.
-        this.updateMergedData_();
+        this.updateFlatData_();
         // Keep track of when we last ran.
-        this.lastUpdateMergedDataTime_ = getTimeMillis();
-        this.updateMergedDataPending_ = false;
+        this.lastUpdateFlatDataTime_ = getTimeMillis();
+        this.updateFlatDataPending_ = false;
       }.bind(this);
 
-      this.updateMergedDataPending_ = true;
+      this.updateFlatDataPending_ = true;
       window.setTimeout(functionToRun, timeToWait);
+    },
+
+    /**
+     * Returns a list of the currently selected snapshots. This list is
+     * guaranteed to be of length 1 or 2.
+     */
+    getSelectedSnapshotIndexes_: function() {
+      var indexes = this.getSelectedSnapshotBoxes_();
+      for (var i = 0; i < indexes.length; ++i)
+        indexes[i] = indexes[i].__index;
+      return indexes;
+    },
+
+    /**
+     * Same as getSelectedSnapshotIndexes_(), only it returns the actual
+     * checkbox input DOM nodes rather than the snapshot ID.
+     */
+    getSelectedSnapshotBoxes_: function() {
+      // Figure out which snaphots to use for our data.
+      var boxes = [];
+      for (var i = 0; i < this.snapshots_.length; ++i) {
+        var box = this.getSnapshotCheckbox_(i);
+        if (box.checked)
+          boxes.push(box);
+      }
+      return boxes;
+    },
+
+    /**
+     * This function should be called any time a snapshot dependency for what is
+     * being displayed on the screen has changed. It will re-calculate the
+     * difference between the two snapshots and update flatData_.
+     */
+    updateFlatData_: function() {
+      var summaryDiv = $(SNAPSHOT_SELECTION_SUMMARY_ID);
+
+      var selectedSnapshots = this.getSelectedSnapshotIndexes_();
+      if (selectedSnapshots.length == 1) {
+        // If only one snapshot is chosen then we will display that snapshot's
+        // data in its entirety.
+        this.flatData_ = this.snapshots_[selectedSnapshots[0]].flatData;
+
+        // Don't bother displaying any text when just 1 snapshot is selected,
+        // since it is obvious what this should do.
+        summaryDiv.innerText = '';
+      } else if (selectedSnapshots.length == 2) {
+        // Otherwise if two snapshots were chosen, show the difference between
+        // them.
+        var snapshot1 = this.snapshots_[selectedSnapshots[0]];
+        var snapshot2 = this.snapshots_[selectedSnapshots[1]];
+
+        this.flatData_ =
+            subtractSnapshots(snapshot1.flatData, snapshot2.flatData);
+
+        var timeDeltaInSeconds =
+            ((snapshot2.time - snapshot1.time) / 1000).toFixed(0);
+
+        // Explain that what is being shown is the difference between two
+        // snapshots.
+        summaryDiv.innerText =
+            'Showing the difference between snapshots #' +
+            selectedSnapshots[0] + ' and #' +
+            selectedSnapshots[1] + ' (' + timeDeltaInSeconds +
+            ' seconds worth of data)';
+      } else {
+        // This shouldn't be possible...
+        throw 'Unexpected number of selected snapshots';
+      }
+
+      // Recompute mergedData_ (since it is derived from flatData_)
+      this.updateMergedData_();
     },
 
     updateMergedData_: function() {
@@ -1443,6 +1654,11 @@ var MainView = (function() {
     },
 
     init_: function() {
+      this.snapshots_ = [];
+
+      // Start fetching the data from the browser; this will be our snapshot #0.
+      this.takeSnapshot_();
+
       // Data goes through the following pipeline:
       // (1) Raw data received from browser, and transformed into our own
       //     internal row format (where properties are indexed by KEY_*
@@ -1475,22 +1691,106 @@ var MainView = (function() {
       this.fillGroupingDropdowns_();
       this.fillSortingDropdowns_();
 
-      $(EDIT_COLUMNS_LINK_ID).onclick = this.toggleEditColumns_.bind(this);
+      $(EDIT_COLUMNS_LINK_ID).onclick =
+          toggleNodeDisplay.bind(null, $(EDIT_COLUMNS_ROW));
+
+      $(TOGGLE_SNAPSHOTS_LINK_ID).onclick =
+          toggleNodeDisplay.bind(null, $(SNAPSHOTS_ROW));
 
       $(MERGE_SIMILAR_THREADS_CHECKBOX_ID).onchange =
           this.onMergeSimilarThreadsCheckboxChanged_.bind(this);
 
       $(RESET_DATA_LINK_ID).onclick =
           g_browserBridge.sendResetData.bind(g_browserBridge);
+
+      $(TAKE_SNAPSHOT_BUTTON_ID).onclick = this.takeSnapshot_.bind(this);
     },
 
-    toggleEditColumns_: function() {
-      var n = $(EDIT_COLUMNS_ROW);
-      if (n.style.display == '') {
-        n.style.display = 'none';
-      } else {
-        n.style.display = '';
+    takeSnapshot_: function() {
+      // Start a new empty snapshot. Make note of the current time, so we know
+      // when the snaphot was taken.
+      this.snapshots_.push({flatData: [], time: getTimeMillis()});
+
+      // Update the UI to reflect the new snapshot.
+      this.addSnapshotToList_(this.snapshots_.length - 1);
+
+      // Ask the browser for the profiling data. We will receive the data
+      // later through a callback to addDataToSnapshot_().
+      g_browserBridge.sendGetData();
+    },
+
+    getSnapshotCheckbox_: function(i) {
+      return $(this.getSnapshotCheckboxId_(i));
+    },
+
+    getSnapshotCheckboxId_: function(i) {
+      return 'snapshotCheckbox-' + i;
+    },
+
+    addSnapshotToList_: function(i) {
+      var tbody = $('snapshots-tbody');
+
+      var tr = addNode(tbody, 'tr');
+
+      var id = this.getSnapshotCheckboxId_(i);
+
+      var checkboxCell = addNode(tr, 'td');
+      var checkbox = addNode(checkboxCell, 'input');
+      checkbox.type = 'checkbox';
+      checkbox.id = id;
+      checkbox.__index = i;
+      checkbox.onclick = this.onSnapshotCheckboxChanged_.bind(this);
+
+      addNode(tr, 'td', '#' + i);
+
+      var labelCell = addNode(tr, 'td');
+      var l = addNode(labelCell, 'label');
+
+      var dateString = new Date(this.snapshots_[i].time).toLocaleString();
+      addText(l, dateString);
+      l.htmlFor = id;
+
+      // If we are on snapshot 0, make it the default.
+      if (i == 0) {
+        checkbox.checked = true;
+        checkbox.__time = getTimeMillis();
+        this.updateSnapshotCheckboxStyling_();
       }
+    },
+
+    updateSnapshotCheckboxStyling_: function() {
+      for (var i = 0; i < this.snapshots_.length; ++i) {
+        var checkbox = this.getSnapshotCheckbox_(i);
+        checkbox.parentNode.parentNode.className =
+            checkbox.checked ? 'selected_snapshot' : '';
+      }
+    },
+
+    onSnapshotCheckboxChanged_: function(event) {
+      // Keep track of when we clicked this box (for when we need to uncheck
+      // older boxes).
+      event.target.__time = getTimeMillis();
+
+      // Find all the checked boxes. Either 1 or 2 can be checked. If a third
+      // was just checked, then uncheck one of the earlier ones so we only have
+      // 2.
+      var checked = this.getSelectedSnapshotBoxes_();
+      checked.sort(function(a, b) { return b.__time - a.__time; });
+      if (checked.length > 2) {
+        for (var i = 2; i < checked.length; ++i)
+          checked[i].checked = false;
+        checked.length = 2;
+      }
+
+      // We should always have at least 1 selection. Prevent the user from
+      // unselecting the final box.
+      if (checked.length == 0)
+        event.target.checked = true;
+
+      this.updateSnapshotCheckboxStyling_();
+
+      // Recompute flatData_ (since it is derived from selected snapshots).
+      this.updateFlatData_();
     },
 
     fillSelectionCheckboxes_: function(parent) {

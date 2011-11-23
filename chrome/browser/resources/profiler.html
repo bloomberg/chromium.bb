@@ -85,6 +85,18 @@ table.results-table,
   text-decoration: underline;
 }
 
+.selected_snapshot {
+  font-weight: bold;
+  color: purple;
+}
+
+#snapshot-selection-summary {
+  margin-top: 1ex;
+  font-weight: bold;
+  font-style: italic;
+  color: green;
+}
+
 </style>
 </head>
 <body>
@@ -95,7 +107,8 @@ table.results-table,
         <b>Sort by: </b> <span id=sort-by-container></span> 
       </td>
       <td align=right>
-        <span id=edit-columns-link class=pseudo-link>[Edit columns]</span>
+        <span id=snapshots-link class=pseudo-link>[snapshots]</span>
+        <span id=edit-columns-link class=pseudo-link>[columns]</span>
         <input type='search' incremental id='filter-search' />
       </td>
     </tr>
@@ -109,6 +122,13 @@ table.results-table,
         <div>
           <b>Show: </b><span id=column-toggles-container></span>
         </div>
+      </td>
+    </tr>
+    <tr id=snapshots-row style='display:none'>
+      <td colspan=2>
+        <button id=snapshot-button>Add snapshot</button>
+        <table><tbody id=snapshots-tbody></tbody></table>
+        <div id=snapshot-selection-summary></div>
       </td>
     </tr>
   </table>
