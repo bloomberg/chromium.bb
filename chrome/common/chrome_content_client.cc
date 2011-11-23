@@ -229,11 +229,7 @@ bool LoadFlashBroker(const FilePath& plugin_path, CommandLine* cmd_line) {
   // terminates the job object is destroyed (by the OS) and the flash broker
   // is terminated.
   HANDLE job = ::CreateJobObjectW(NULL, NULL);
-  JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_limits = {0};
-  job_limits.BasicLimitInformation.LimitFlags =
-      JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-  if (::SetInformationJobObject(job, JobObjectExtendedLimitInformation,
-                                &job_limits, sizeof(job_limits))) {
+  if (base::SetJobObjectAsKillOnJobClose(job)) {
     ::AssignProcessToJobObject(job, process);
     // Yes, we are leaking the object here. Read comment above.
   } else {

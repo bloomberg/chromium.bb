@@ -13,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
@@ -132,11 +133,7 @@ bool TestServer::LaunchPython(const FilePath& testserver_path) {
     return false;
   }
 
-  JOBOBJECT_EXTENDED_LIMIT_INFORMATION limit_info = {0};
-  limit_info.BasicLimitInformation.LimitFlags =
-      JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-  if (0 == SetInformationJobObject(job_handle_.Get(),
-    JobObjectExtendedLimitInformation, &limit_info, sizeof(limit_info))) {
+  if (!base::SetJobObjectAsKillOnJobClose(job_handle_.Get())) {
     LOG(ERROR) << "Could not SetInformationJobObject.";
     return false;
   }

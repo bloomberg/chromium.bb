@@ -52,11 +52,7 @@ void UITestSuite::LoadCrashService() {
     return;
   }
 
-  JOBOBJECT_EXTENDED_LIMIT_INFORMATION limit_info = {0};
-  limit_info.BasicLimitInformation.LimitFlags =
-      JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-  if (0 == SetInformationJobObject(job_handle_.Get(),
-    JobObjectExtendedLimitInformation, &limit_info, sizeof(limit_info))) {
+  if (!base::SetJobObjectAsKillOnJobClose(job_handle_.Get())) {
     LOG(ERROR) << "Could not SetInformationJobObject.";
     return;
   }
