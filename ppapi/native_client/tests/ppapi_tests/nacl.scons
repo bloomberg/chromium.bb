@@ -6,7 +6,17 @@
 Import('env')
 import os
 
-ppapi_tests_target = 'ppapi_tests_${TARGET_FULLARCH}'
+if env.Bit('nacl_glibc'):
+  Return()
+
+fullarch_map = {
+    'x86-64': 'x64',
+    'x86-32': 'x32',
+    'arm': 'arm',
+    }
+
+ppapi_tests_target = ('ppapi_tests_newlib_%s' %
+                      fullarch_map[env['TARGET_FULLARCH']])
 
 ppapi_tests_sources = [
     # Common test files
