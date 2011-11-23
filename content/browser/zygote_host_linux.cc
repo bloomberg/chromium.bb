@@ -26,7 +26,6 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
-#include "content/common/process_watcher.h"
 #include "content/common/unix_domain_socket_posix.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
@@ -203,7 +202,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
 
     if (process != pid_) {
       // Reap the sandbox.
-      ProcessWatcher::EnsureProcessGetsReaped(process);
+      base::EnsureProcessGetsReaped(process);
     }
   } else {
     // Not using the SUID sandbox.
@@ -379,7 +378,7 @@ void ZygoteHost::AdjustRendererOOMScore(base::ProcessHandle pid, int score) {
     base::ProcessHandle sandbox_helper_process;
     if (base::LaunchProcess(adj_oom_score_cmdline, base::LaunchOptions(),
                             &sandbox_helper_process)) {
-      ProcessWatcher::EnsureProcessGetsReaped(sandbox_helper_process);
+      base::EnsureProcessGetsReaped(sandbox_helper_process);
     }
   } else if (!using_suid_sandbox_) {
     if (!base::AdjustOOMScore(pid, score))

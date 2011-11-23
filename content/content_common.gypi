@@ -205,10 +205,6 @@
     'common/plugin_carbon_interpose_constants_mac.cc',
     'common/plugin_carbon_interpose_constants_mac.h',
     'common/plugin_messages.h',
-    'common/process_watcher.h',
-    'common/process_watcher_mac.cc',
-    'common/process_watcher_posix.cc',
-    'common/process_watcher_win.cc',
     'common/quota_messages.h',
     'common/quota_dispatcher.cc',
     'common/quota_dispatcher.h',
@@ -276,9 +272,6 @@
       ],
     }],
     ['OS=="mac"', {
-      'sources!': [
-        'common/process_watcher_posix.cc',
-      ],
       'link_settings': {
         'mac_bundle_resources': [
           'common/common.sb',

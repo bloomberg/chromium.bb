@@ -31,7 +31,6 @@
 #include "content/common/chrome_descriptors.h"
 #include "content/common/font_config_ipc_linux.h"
 #include "content/common/pepper_plugin_registry.h"
-#include "content/common/process_watcher.h"
 #include "content/common/sandbox_methods_linux.h"
 #include "content/common/seccomp_sandbox.h"
 #include "content/common/set_process_title.h"
@@ -220,7 +219,7 @@ class Zygote {
       actual_child = child;
     }
 
-    ProcessWatcher::EnsureProcessTerminated(actual_child);
+    base::EnsureProcessTerminated(actual_child);
   }
 
   void HandleGetTerminationStatus(int fd, const Pickle& pickle, void* iter) {

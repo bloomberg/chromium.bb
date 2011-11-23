@@ -14,7 +14,6 @@
 #include "base/process_util.h"
 #include "base/string_util.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/process_watcher.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -84,7 +83,7 @@ bool StartProxyConfigUtil(TabContents* tab_contents, const char* command[]) {
     LOG(ERROR) << "StartProxyConfigUtil failed to start " << command[0];
     return false;
   }
-  ProcessWatcher::EnsureProcessGetsReaped(handle);
+  base::EnsureProcessGetsReaped(handle);
   return true;
 }
 

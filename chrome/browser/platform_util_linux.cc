@@ -10,7 +10,6 @@
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/utf_string_conversions.h"
-#include "content/common/process_watcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "googleurl/src/gurl.h"
 
@@ -43,7 +42,7 @@ void XDGUtil(const std::string& util, const std::string& arg) {
   base::LaunchOptions options;
   options.environ = &env;
   if (base::LaunchProcess(argv, options, &handle))
-    ProcessWatcher::EnsureProcessGetsReaped(handle);
+    base::EnsureProcessGetsReaped(handle);
 }
 
 void XDGOpen(const std::string& path) {

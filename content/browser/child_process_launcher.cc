@@ -11,10 +11,10 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/process_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "content/common/chrome_descriptors.h"
-#include "content/common/process_watcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
@@ -280,7 +280,7 @@ class ChildProcessLauncher::Context
     } else
 #endif  // !OS_MACOSX
     {
-      ProcessWatcher::EnsureProcessTerminated(handle);
+      base::EnsureProcessTerminated(handle);
     }
 #endif  // OS_POSIX
     process.Close();
