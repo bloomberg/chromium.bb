@@ -82,7 +82,7 @@ class TestService : public base::Thread {
                   bool success);
 
   // base::Thread override.
-  virtual void Run(MessageLoop* message_loop);
+  virtual void Run(MessageLoop* message_loop) OVERRIDE;
 
   //
   // Exported methods.
