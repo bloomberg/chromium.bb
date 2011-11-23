@@ -60,7 +60,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
   push {lr}
 
   /* this accesses the data item immediately after the halt */
-  ldr r0, syscall_seg_addr
+  ldr r0, NaCl_trampoline_syscall_seg_addr
   /* NOTE: we use the blx instead of bx because the return address */
   /*       is used to determine which trampoline was used */
 
@@ -68,8 +68,8 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
   /* NORETURN */
   /* 4-byte constants need to be properly aligned for loading. */
 .p2align 2
-syscall_seg_addr:
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_syscall_seg_addr):
   /* a DATA item will be patched in here */
-  .word   NaClSyscallSeg
+  .word   0
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_end):

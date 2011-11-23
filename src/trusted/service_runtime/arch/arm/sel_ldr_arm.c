@@ -25,12 +25,13 @@
 void  NaClPatchOneTrampoline(struct NaClApp *nap,
                              uintptr_t      target_addr) {
   struct NaClPatchInfo  patch_info;
+  struct NaClPatch      patch_syscall_seg;
 
   UNREFERENCED_PARAMETER(nap);
+
   /*
-   * in ARM we do not need to patch ds, cs segments.
-   * by default we initialize the target for trampoline code as NaClSyscallSeg,
-   * so there is no point to patch address of NaClSyscallSeg
+   * For ARM we only need to patch in the address of NaClSyscallSeg.
+   * We only do even that in case we're PIC (to avoid a TEXTREL).
    */
 
   NaClPatchInfoCtor(&patch_info);
@@ -38,7 +39,12 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
   patch_info.dst = target_addr;
   patch_info.src = (uintptr_t) &NaCl_trampoline_seg_code;
   patch_info.nbytes = ((uintptr_t) &NaCl_trampoline_seg_end
-                       - (uintptr_t) &NaCl_trampoline_seg_code);
+                       - (uintptr_t) &NaCl_trampoline_seg_code) - 4;
+
+  patch_info.num_abs32 = 1;
+  patch_info.abs32 = &patch_syscall_seg;
+  patch_syscall_seg.target = (uintptr_t) &NaCl_trampoline_syscall_seg_addr;
+  patch_syscall_seg.value = (uintptr_t) &NaClSyscallSeg;
 
   NaClApplyPatchToMemory(&patch_info);
 }

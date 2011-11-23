@@ -1,7 +1,7 @@
 /*
- * Copyright 2009 The Native Client Authors.  All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2011 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -53,7 +53,7 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
   push {lr}
 
   /* this accesses the data item immediately after the halt */
-  ldr r0, [pc, #4]
+  ldr r0, NaCl_trampoline_syscall_seg_addr
   /* NOTE: we use the blx instead of bx because the return addres */
   /*       is used to determine which trampoline was used */
 
@@ -61,10 +61,8 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
 
   /* NORETURN */
   NACL_HALT
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_syscall_seg_addr):
   /* a DATA item will be patched in here */
-
-  .word   NaClSyscallSeg
+  .word   0
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_end):
-
-

@@ -37,7 +37,14 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
    * available is the full-word one, not one that can go inside an
    * immediate (and there's no assembly syntax to permit it either).
    */
+#ifdef __PIC__
+  ldr  r3, .L.gNaClThreadIdxPIC
+.LPIC0:
+  add  r3, pc
+  ldr  r3, [r3]
+#else
   ldr  r3, .L.gNaClThreadIdx
+#endif
 
   push {lr}
 
@@ -57,14 +64,27 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   bl  __aeabi_read_tp
   ldr  r0, [r0, r3]
 
+#ifdef __PIC__
+  ldr  r3, .L.GOT
+  ldr  r1, .L.nacl_user
+  ldr  r2, .L.nacl_sys
+.LPIC1:
+  add  r3, pc
+  ldr  r1, [r3, r1]
+#else
   ldr  r1, =nacl_user
+#endif
   ldr  r1, [r1, r0, lsl #2]
   /* r1 = nacl_user[r0*4], r1 points to the nacl_user entry of this thread */
 
   /* store thread state to the nacl_user entry */
   stmia r1, NACL_CALLEE_SAVE_LIST
 
+#ifdef __PIC__
+  ldr r1, [r3, r2]
+#else
   ldr r1, =nacl_sys
+#endif
   ldr r1, [r1, r0, lsl #2]
   /* r1 = nacl_sys[r0*4], r1 points to the nacl_sys entry of this thread */
 
@@ -83,5 +103,16 @@ DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
   NACL_HALT
 
   .balign 4
+#ifdef __PIC__
+.L.gNaClThreadIdxPIC:
+  .word  gNaClThreadIdx(gottpoff) + (. - .LPIC0 - 8)
+.L.GOT:
+  .word  _GLOBAL_OFFSET_TABLE_ - (.LPIC1 + 8)
+.L.nacl_user:
+  .word  nacl_user(GOT)
+.L.nacl_sys:
+  .word  nacl_sys(GOT)
+#else
 .L.gNaClThreadIdx:
   .word  gNaClThreadIdx(tpoff)
+#endif
