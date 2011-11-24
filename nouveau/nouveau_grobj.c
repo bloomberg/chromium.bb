@@ -100,12 +100,13 @@ nouveau_grobj_free(struct nouveau_grobj **grobj)
 		struct drm_nouveau_gpuobj_free f;
 
 		FIRE_RING(&chan->base);
-
 		f.channel = chan->drm.channel;
 		f.handle  = nvgrobj->base.handle;
 		drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GPUOBJ_FREE,
 				&f, sizeof(f));	
 	}
+	if (nvgrobj->base.bound != NOUVEAU_GROBJ_UNBOUND)
+		chan->base.subc[nvgrobj->base.subc].gr = NULL;
 	free(nvgrobj);
 }
 
