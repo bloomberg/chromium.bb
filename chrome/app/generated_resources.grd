@@ -1205,13 +1205,13 @@ are declared in build/common.gypi.
 
       <!-- Protector error messages -->
       <message name="IDS_SEARCH_ENGINE_CHANGE_TITLE" desc="The title of the bubble and the wrench menu item with a search engine change notification.">
-        Attempted search engine change
+        Attempted default search change
       </message>
       <message name="IDS_SEARCH_ENGINE_CHANGE_MESSAGE" desc="The text of the search engine change notification.">
-        Arrr! Something tried to commandeer <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s default search engine!
+        Arrr! Something tried to commandeer your default search setting!
       </message>
       <message name="IDS_SEARCH_ENGINE_CHANGE_NO_BACKUP_MESSAGE" desc="The text of the search engine change notification when the previous setting is lost.">
-        Arrr! Something tried to commandeer <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s default search engine! We weren't sure what to do, so we set it to <ph name="PREPOPULATED_ENGINE">$2<ex>DefaultSearchEngine</ex></ph>.
+        Arrr! Something tried to commandeer your default search setting! We weren't sure what to do, so we set it to <ph name="PREPOPULATED_ENGINE">$1<ex>DefaultSearchEngine</ex></ph>.
       </message>
       <message name="IDS_KEEP_SEARCH_ENGINE" desc="The title of the button that confirms staying with the previous search engine setting.">
         Keep using <ph name="PREV_ENGINE">$1<ex>PreviousSearchEngine</ex></ph>
@@ -1220,20 +1220,20 @@ are declared in build/common.gypi.
         Change to <ph name="NEW_ENGINE">$1<ex>NewSearchEngine</ex></ph>
       </message>
       <message name="IDS_CHANGE_SEARCH_ENGINE_NO_NAME" desc="The title of the button that accepts new default search engine setting when the search engine name is too long.">
-        Change search engine
+        Change search setting
       </message>
       <message name="IDS_SELECT_SEARCH_ENGINE" desc="The title of the button that opens a settings page, allowing user to select the default search engine to use.">
-        Select search engine...
+        Select search setting...
       </message>
 
       <message name="IDS_HOMEPAGE_CHANGE_TITLE" desc="The title of the bubble and the wrench menu item with a home page change notification.">
         Attempted home page change
       </message>
       <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_MESSAGE" desc="The text of the home page change notification.">
-        Arrr! Something tried to commandeer <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> home page!
+        Arrr! Something tried to commandeer your home page!
       </message>
       <message name="IDS_HOMEPAGE_CHANGE_BUBBLE_NO_BACKUP_MESSAGE" desc="The text of the home page change notification when the previous setting is lost.">
-        Arrr! Something tried to commandeer <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> home page! We weren't sure what to do, so we set it to the New Tab page.
+        Arrr! Something tried to commandeer your home page! We weren't sure what to do, so we set it to the New Tab page.
       </message>
       <message name="IDS_KEEP_HOMEPAGE" desc="The title of the button that confirms staying with the previous home page setting.">
         Keep using <ph name="PREV_HOMEPAGE">$1<ex>My Awesome Blog</ex></ph>

@@ -69,7 +69,6 @@ class DefaultSearchProviderChange : public BaseSettingChange,
   string16 new_name_;
   // Name of the search engine that we fall back to if the backup is lost.
   string16 fallback_name_;
-  string16 product_name_;
   // Histogram ID of the new search provider.
   int new_histogram_id_;
   // Default search provider set by |Init| for the period until user makes a
@@ -88,7 +87,6 @@ DefaultSearchProviderChange::DefaultSearchProviderChange(
     : old_id_(0),
       new_id_(0),
       fallback_id_(0),
-      product_name_(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)),
       new_histogram_id_(GetSearchProviderHistogramID(new_url)),
       default_search_provider_(NULL) {
   if (new_url) {
@@ -125,6 +123,8 @@ bool DefaultSearchProviderChange::Init(Protector* protector) {
     VLOG(1) << "Fallback to " << fallback_name_;
   }
 
+  // This must be called after the initial |SetDefaultSearchProvider| call
+  // because the latter will remove the observer.
   protector->GetTemplateURLService()->AddObserver(this);
 
   return true;
@@ -175,12 +175,10 @@ string16 DefaultSearchProviderChange::GetBubbleTitle() const {
 
 string16 DefaultSearchProviderChange::GetBubbleMessage() const {
   if (fallback_name_.empty())
-    return l10n_util::GetStringFUTF16(
-        IDS_SEARCH_ENGINE_CHANGE_MESSAGE, product_name_);
+    return l10n_util::GetStringUTF16(IDS_SEARCH_ENGINE_CHANGE_MESSAGE);
   else
     return l10n_util::GetStringFUTF16(
-        IDS_SEARCH_ENGINE_CHANGE_NO_BACKUP_MESSAGE,
-        product_name_, fallback_name_);
+        IDS_SEARCH_ENGINE_CHANGE_NO_BACKUP_MESSAGE, fallback_name_);
 }
 
 string16 DefaultSearchProviderChange::GetApplyButtonText() const {
@@ -249,8 +247,13 @@ const TemplateURL* DefaultSearchProviderChange::SetDefaultSearchProvider(
     DCHECK(url);
   }
   if (url) {
+    // Remove ourselves from the observer list to prevent from catching our own
+    // change. It is safe to do this multiple times or before adding ourselves.
+    url_service->RemoveObserver(this);
     url_service->SetDefaultSearchProvider(url);
     VLOG(1) << "Default search provider set to: " << url->short_name();
+    // No need to re-add observer again because any further changes to the
+    // default search provider are of no interest.
   }
   return url;
 }
