@@ -6,6 +6,7 @@
 // and a test protocol manager. It is used to test logics in safebrowsing
 // service.
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
@@ -218,9 +219,8 @@ class TestProtocolManager :  public SafeBrowsingProtocolManager {
     bool cancache = true;
     BrowserThread::PostDelayedTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            sb_service_, &SafeBrowsingService::HandleGetHashResults,
-            check, full_hashes_, cancache),
+        base::Bind(&SafeBrowsingService::HandleGetHashResults,
+                   sb_service_, check, full_hashes_, cancache),
         delay_ms_);
   }
 
@@ -290,7 +290,7 @@ void QuitUIThread() {
 
 void QuitFromIOThread() {
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, NewRunnableFunction(&QuitUIThread));
+      BrowserThread::UI, FROM_HERE, base::Bind(&QuitUIThread));
 }
 
 }  // namespace
@@ -422,7 +422,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   // to wait for the SafeBrowsingService to finish loading/stopping.
   void WaitForIOThread() {
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, NewRunnableFunction(&QuitFromIOThread));
+        BrowserThread::IO, FROM_HERE, base::Bind(&QuitFromIOThread));
     ui_test_utils::RunMessageLoop();  // Will stop from |QuitUIThread|.
   }
 
@@ -526,18 +526,16 @@ class TestSBClient
   void CheckDownloadUrl(const std::vector<GURL>& url_chain) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &TestSBClient::CheckDownloadUrlOnIOThread,
-                          url_chain));
+        base::Bind(&TestSBClient::CheckDownloadUrlOnIOThread,
+                   this, url_chain));
     ui_test_utils::RunMessageLoop();  // Will stop in OnDownloadUrlCheckResult.
   }
 
   void CheckDownloadHash(const std::string& full_hash) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        NewRunnableMethod(this,
-                          &TestSBClient::CheckDownloadHashOnIOThread,
-                          full_hash));
+        base::Bind(&TestSBClient::CheckDownloadHashOnIOThread,
+                   this, full_hash));
     ui_test_utils::RunMessageLoop();  // Will stop in OnDownloadHashCheckResult.
   }
 
@@ -555,7 +553,7 @@ class TestSBClient
                                 SafeBrowsingService::UrlCheckResult result) {
     result_ = result;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &TestSBClient::DownloadCheckDone));
+                            base::Bind(&TestSBClient::DownloadCheckDone, this));
   }
 
   // Called when the result of checking a download hash is known.
@@ -563,7 +561,7 @@ class TestSBClient
                                  SafeBrowsingService::UrlCheckResult result) {
     result_ = result;
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &TestSBClient::DownloadCheckDone));
+                            base::Bind(&TestSBClient::DownloadCheckDone, this));
   }
 
   void DownloadCheckDone() {
