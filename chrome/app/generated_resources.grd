@@ -1198,8 +1198,8 @@ are declared in build/common.gypi.
         <message name="IDS_SIGN_OUT" desc="The text label of the Sign Out menu item">
           Sign out
         </message>
-        <message name="IDS_EXIT_GUEST_MODE" desc="The text label of the Exit guest session menu item">
-          Exit guest session
+        <message name="IDS_EXIT_GUEST_MODE" desc="The text label of the Exit guest session menu item. Note: translations should assume that it's a Exit Guest (session). So word session may be added to translation if it's a better looking phrase.">
+          Exit Guest
         </message>
       </if>
 
@@ -8914,7 +8914,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
           desc="Used when a person enters Guest Session">
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
         <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;</ph>
-        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about guest mode.
+        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph> about Guest browsing.
       </message>
       <message name="IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE"
                desc="Title of recently closed windows in the recently closed section of the new tab page when the window has a single tab">
@@ -13441,7 +13441,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Signing in.
       </message>
       <message name="IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD" desc="Status when signing in incognito.">
-        Signing in guest mode.
+        Entering as Guest.
       </message>
       <message name="IDS_CHROMEOS_ACC_ACCOUNT_PICTURE" desc="Tooltip for the take account picture button.">
         Take picture.
@@ -14203,10 +14203,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Caps Lock is on
       </message>
       <message name="IDS_LOGIN_ERROR_CAPTIVE_PORTAL" desc="An error message shown when we suggest that user may be behind the captive portal.">
-        Before signing in, please start a Guest session to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
+        Before signing in, please enter as Guest to activate the network <ph name="NETWORK_ID">$1<ex>Public Wifi</ex></ph>
       </message>
       <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
-        Start a Guest session
+        Enter as Guest
       </message>
       <message name="IDS_LOGIN_PROXY_ERROR_MESSAGE" desc="An offline message shown when a proxy error has appeared.">
         The sign-in page failed to load using the current proxy settings. Please <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>try to sign in again<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> or use different proxy settings.
@@ -14214,8 +14214,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_TITLE" desc="An offline message title shown when we suggest that user may be behind the captive portal.">
        Tips for accessing this network
       </message>
-      <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL" desc="An offline message shown when we suggest that user may be behind the captive portal.">
-        To use <ph name="NETWORK_ID">$1<ex>&gt;b&lt;Public Wifi&gt;/b&lt;</ex></ph> you may first need to visit the network's sign-in page. To do so, <ph name="LINK_START">$2<ex>&gt;a&lt;</ex></ph>start a Guest session<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph> and visit any webpage. Once you can access the network, you may exit the Guest session and try signing in again.
+      <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL" desc="An offline message shown when we suggest that user may be behind the captive portal. Translation note: exit Guest - should be assumed as exit Guest session. Word session may be added to the translation if needed.">
+        To use <ph name="NETWORK_ID">$1<ex>&gt;b&lt;Public Wifi&gt;/b&lt;</ex></ph> you may first need to visit the network's sign-in page. To do so, <ph name="LINK_START">$2<ex>&gt;a&lt;</ex></ph>enter as Guest<ph name="LINK_END">$3<ex>&gt;/a&lt;</ex></ph> and visit any web page. Once you can access the network, you may exit Guest and try signing in again.
       </message>
       <message name="IDS_LOGIN_MAYBE_CAPTIVE_PORTAL_NETWORK_SELECT" desc="An offline message shown when we suggest that user may select other network.">
         You may also select another network.
