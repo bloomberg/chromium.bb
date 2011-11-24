@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_old.h"
 #include "base/time.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/sessions/base_session_service.h"

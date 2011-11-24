@@ -8,6 +8,8 @@
 #include <iterator>
 #include <map>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/histogram.h"
@@ -439,7 +441,8 @@ void TabRestoreService::LoadTabsFromLastSession() {
   // crash (the call to GetLastSession above requests those).
   ScheduleGetLastSessionCommands(
       new InternalGetCommandsRequest(
-          NewCallback(this, &TabRestoreService::OnGotLastSessionCommands)),
+          base::Bind(&TabRestoreService::OnGotLastSessionCommands,
+                     base::Unretained(this))),
       &load_consumer_);
 }
 

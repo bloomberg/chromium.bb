@@ -7,9 +7,10 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "content/browser/cancelable_request.h"
@@ -55,7 +56,8 @@ class BaseSessionService : public CancelableRequestProvider,
 
   class InternalGetCommandsRequest;
 
-  typedef Callback2<Handle, scoped_refptr<InternalGetCommandsRequest> >::Type
+  typedef base::Callback<void(Handle,
+                              scoped_refptr<InternalGetCommandsRequest>)>
       InternalGetCommandsCallback;
 
   // Callback used when fetching the last session. The last session consists
@@ -63,7 +65,7 @@ class BaseSessionService : public CancelableRequestProvider,
   class InternalGetCommandsRequest :
       public CancelableRequest<InternalGetCommandsCallback> {
    public:
-    explicit InternalGetCommandsRequest(CallbackType* callback)
+    explicit InternalGetCommandsRequest(const CallbackType& callback)
         : CancelableRequest<InternalGetCommandsCallback>(callback) {
     }
 
@@ -172,7 +174,7 @@ class BaseSessionService : public CancelableRequestProvider,
   base::Thread* backend_thread_;
 
   // Used to invoke Save.
-  ScopedRunnableMethodFactory<BaseSessionService> save_factory_;
+  base::WeakPtrFactory<BaseSessionService> weak_factory_;
 
   // Commands we need to send over to the backend.
   std::vector<SessionCommand*>  pending_commands_;

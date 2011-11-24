@@ -244,9 +244,7 @@ void SessionBackend::ReadLastSessionCommands(
     return;
   Init();
   ReadLastSessionCommandsImpl(&(request->commands));
-  request->ForwardResult(
-      BaseSessionService::InternalGetCommandsRequest::TupleType(
-          request->handle(), request));
+  request->ForwardResult(request->handle(), request);
 }
 
 bool SessionBackend::ReadLastSessionCommandsImpl(
@@ -297,9 +295,7 @@ void SessionBackend::ReadCurrentSessionCommands(
     return;
   Init();
   ReadCurrentSessionCommandsImpl(&(request->commands));
-  request->ForwardResult(
-      BaseSessionService::InternalGetCommandsRequest::TupleType(
-          request->handle(), request));
+  request->ForwardResult(request->handle(), request);
 }
 
 bool SessionBackend::ReadCurrentSessionCommandsImpl(

@@ -9,6 +9,8 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
@@ -76,7 +78,7 @@ class InternalSessionRequest
     : public BaseSessionService::InternalGetCommandsRequest {
  public:
   InternalSessionRequest(
-      CallbackType* callback,
+      const CallbackType& callback,
       SessionService::SessionCallback* real_callback)
       : BaseSessionService::InternalGetCommandsRequest(callback),
         real_callback(real_callback) {
@@ -183,8 +185,9 @@ void SessionService::MoveCurrentSessionToLastSession() {
   if (!backend_thread()) {
     backend()->MoveCurrentSessionToLastSession();
   } else {
-    backend_thread()->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        backend(), &SessionBackend::MoveCurrentSessionToLastSession));
+    backend_thread()->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&SessionBackend::MoveCurrentSessionToLastSession,
+                              backend()));
   }
 }
 
@@ -419,8 +422,10 @@ SessionService::Handle SessionService::GetLastSession(
     SessionCallback* callback) {
   return ScheduleGetLastSessionCommands(
       new InternalSessionRequest(
-          NewCallback(this, &SessionService::OnGotSessionCommands),
-          callback), consumer);
+          base::Bind(&SessionService::OnGotSessionCommands,
+                     base::Unretained(this)),
+          callback),
+      consumer);
 }
 
 SessionService::Handle SessionService::GetCurrentSession(
@@ -430,7 +435,8 @@ SessionService::Handle SessionService::GetCurrentSession(
     // If there are no pending window closes, we can get the current session
     // from memory.
     scoped_refptr<InternalSessionRequest> request(new InternalSessionRequest(
-        NewCallback(this, &SessionService::OnGotSessionCommands),
+        base::Bind(&SessionService::OnGotSessionCommands,
+                   base::Unretained(this)),
         callback));
     AddRequest(request, consumer);
     IdToRange tab_to_available_range;
@@ -438,16 +444,16 @@ SessionService::Handle SessionService::GetCurrentSession(
     BuildCommandsFromBrowsers(&(request->commands),
                               &tab_to_available_range,
                               &windows_to_track);
-    request->ForwardResult(
-        BaseSessionService::InternalGetCommandsRequest::TupleType(
-            request->handle(), request));
+    request->ForwardResult(request->handle(), request);
     return request->handle();
   } else {
     // If there are pending window closes, read the current session from disk.
     return ScheduleGetCurrentSessionCommands(
         new InternalSessionRequest(
-            NewCallback(this, &SessionService::OnGotSessionCommands),
-            callback), consumer);
+            base::Bind(&SessionService::OnGotSessionCommands,
+                       base::Unretained(this)),
+            callback),
+        consumer);
   }
 }
 

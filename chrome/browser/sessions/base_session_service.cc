@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sessions/base_session_service.h"
 
+#include "base/bind.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/threading/thread.h"
@@ -66,7 +67,7 @@ BaseSessionService::BaseSessionService(SessionType type,
     : profile_(profile),
       path_(path),
       backend_thread_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(save_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       pending_reset_(false),
       commands_since_reset_(0) {
   if (profile) {
@@ -89,8 +90,8 @@ void BaseSessionService::DeleteLastSession() {
   if (!backend_thread()) {
     backend()->DeleteLastSession();
   } else {
-    backend_thread()->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        backend(), &SessionBackend::DeleteLastSession));
+    backend_thread()->message_loop()->PostTask(
+        FROM_HERE, base::Bind(&SessionBackend::DeleteLastSession, backend()));
   }
 }
 
@@ -104,9 +105,10 @@ void BaseSessionService::ScheduleCommand(SessionCommand* command) {
 void BaseSessionService::StartSaveTimer() {
   // Don't start a timer when testing (profile == NULL or
   // MessageLoop::current() is NULL).
-  if (MessageLoop::current() && profile() && save_factory_.empty()) {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        save_factory_.NewRunnableMethod(&BaseSessionService::Save),
+  if (MessageLoop::current() && profile() && !weak_factory_.HasWeakPtrs()) {
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&BaseSessionService::Save, weak_factory_.GetWeakPtr()),
         kSaveDelayMS);
   }
 }
@@ -121,10 +123,11 @@ void BaseSessionService::Save() {
     backend()->AppendCommands(
         new std::vector<SessionCommand*>(pending_commands_), pending_reset_);
   } else {
-    backend_thread()->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        backend(), &SessionBackend::AppendCommands,
-        new std::vector<SessionCommand*>(pending_commands_),
-        pending_reset_));
+    backend_thread()->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&SessionBackend::AppendCommands, backend(),
+                   new std::vector<SessionCommand*>(pending_commands_),
+                   pending_reset_));
   }
   // Backend took ownership of commands.
   pending_commands_.clear();
@@ -259,8 +262,10 @@ BaseSessionService::Handle BaseSessionService::ScheduleGetLastSessionCommands(
   scoped_refptr<InternalGetCommandsRequest> request_wrapper(request);
   AddRequest(request, consumer);
   if (backend_thread()) {
-    backend_thread()->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        backend(), &SessionBackend::ReadLastSessionCommands, request_wrapper));
+    backend_thread()->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&SessionBackend::ReadLastSessionCommands, backend(),
+                   request_wrapper));
   } else {
     backend()->ReadLastSessionCommands(request);
   }
@@ -274,10 +279,10 @@ BaseSessionService::Handle
   scoped_refptr<InternalGetCommandsRequest> request_wrapper(request);
   AddRequest(request, consumer);
   if (backend_thread()) {
-    backend_thread()->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(backend(),
-                          &SessionBackend::ReadCurrentSessionCommands,
-                          request_wrapper));
+    backend_thread()->message_loop()->PostTask(
+        FROM_HERE,
+        base::Bind(&SessionBackend::ReadCurrentSessionCommands, backend(),
+                   request_wrapper));
   } else {
     backend()->ReadCurrentSessionCommands(request);
   }
