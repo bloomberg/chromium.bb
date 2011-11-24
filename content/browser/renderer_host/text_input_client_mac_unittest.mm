@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/threading/thread.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/text_input_client_message_filter.h"
 #include "content/common/text_input_client_messages.h"
+#include "content/test//test_browser_context.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -28,9 +28,9 @@ class TextInputClientMacTest : public testing::Test {
  public:
   TextInputClientMacTest()
       : message_loop_(MessageLoop::TYPE_UI),
-        profile_(),
+        browser_context_(),
         process_factory_(),
-        widget_(process_factory_.CreateRenderProcessHost(&profile_), 1),
+        widget_(process_factory_.CreateRenderProcessHost(&browser_context_), 1),
         thread_("TextInputClientMacTestThread") {}
 
   // Accessor for the TextInputClientMac instance.
@@ -57,7 +57,7 @@ class TextInputClientMacTest : public testing::Test {
   friend class ScopedTestingThread;
 
   MessageLoop message_loop_;
-  TestingProfile profile_;
+  TestBrowserContext browser_context_;
 
   // Gets deleted when the last RWH in the "process" gets destroyed.
   MockRenderProcessHostFactory process_factory_;

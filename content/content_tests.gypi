@@ -209,6 +209,7 @@
         'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
         'browser/renderer_host/resource_dispatcher_host_unittest.cc',
         'browser/renderer_host/resource_queue_unittest.cc',
+        'browser/renderer_host/text_input_client_mac_unittest.mm',
         'browser/resolve_proxy_msg_helper_unittest.cc',
         'browser/site_instance_unittest.cc',
         'browser/speech/endpointer/endpointer_unittest.cc',
