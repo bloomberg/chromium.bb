@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/string_util.h"
-#include "base/utf_string_conversion_utils.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -881,7 +880,9 @@ int OmniboxViewGtk::OnPerformDrop(
     if (data.GetURLAndTitle(&url, &title))
       text = UTF8ToUTF16(url.spec());
   } else {
-    data.GetString(&text);
+    string16 data_string;
+    if (data.GetString(&data_string))
+      text = CollapseWhitespace(data_string, true);
   }
 
   if (!text.empty() && OnPerformDropImpl(text))
@@ -1445,14 +1446,10 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
   // back after shutdown, and similar issues.
   GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
   gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
-  string16 sanitized_text(text ?
-      StripJavascriptSchemas(CollapseWhitespace(UTF8ToUTF16(text), true)) :
-      string16());
+  string16 text_wstr = UTF8ToUTF16(text ? text : "");
   g_free(text);
 
-  // Paste and Go menu item. Note that CanPasteAndGo() needs to be called
-  // before is_paste_and_search() in order to set up the paste-and-go state.
-  bool can_paste_and_go = model_->CanPasteAndGo(sanitized_text);
+  // Paste and Go menu item.
   GtkWidget* paste_go_menuitem = gtk_menu_item_new_with_mnemonic(
       gfx::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(model_->is_paste_and_search() ?
@@ -1460,7 +1457,8 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), paste_go_menuitem);
   g_signal_connect(paste_go_menuitem, "activate",
                    G_CALLBACK(HandlePasteAndGoThunk), this);
-  gtk_widget_set_sensitive(paste_go_menuitem, can_paste_and_go);
+  gtk_widget_set_sensitive(paste_go_menuitem,
+                           model_->CanPasteAndGo(text_wstr));
   gtk_widget_show(paste_go_menuitem);
 
   g_signal_connect(menu, "deactivate",
@@ -1636,7 +1634,7 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
                                       GtkTextIter* location,
                                       const gchar* text,
                                       gint len) {
-  string16 filtered_text;
+  std::string filtered_text;
   filtered_text.reserve(len);
 
   // Filter out new line and tab characters.
@@ -1650,31 +1648,29 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
   if (len == 1 && (text[0] == '\n' || text[0] == '\r'))
     enter_was_inserted_ = true;
 
-  for (const gchar* p = text; *p && (p - text) < len;
-       p = g_utf8_next_char(p)) {
+  const gchar* p = text;
+  while (*p && (p - text) < len) {
     gunichar c = g_utf8_get_char(p);
+    const gchar* next = g_utf8_next_char(p);
 
     // 0x200B is Zero Width Space, which is inserted just before the instant
     // anchor for working around the GtkTextView's misalignment bug.
     // This character might be captured and inserted into the content by undo
     // manager, so we need to filter it out here.
-    if (c != 0x200B)
-      base::WriteUnicodeCharacter(c, &filtered_text);
+    if (c != L'\n' && c != L'\r' && c != L'\t' && c != 0x200B)
+      filtered_text.append(p, next);
+
+    p = next;
   }
 
-  if (model_->is_pasting())
-    filtered_text = StripJavascriptSchemas(
-        CollapseWhitespace(filtered_text, true));
-
-  if (!filtered_text.empty()) {
+  if (filtered_text.length()) {
     // Avoid inserting the text after the instant anchor.
     ValidateTextBufferIter(location);
 
     // Call the default handler to insert filtered text.
     GtkTextBufferClass* klass = GTK_TEXT_BUFFER_GET_CLASS(buffer);
-    std::string utf8_text = UTF16ToUTF8(filtered_text);
-    klass->insert_text(buffer, location, utf8_text.data(),
-                       static_cast<gint>(utf8_text.length()));
+    klass->insert_text(buffer, location, filtered_text.data(),
+                       static_cast<gint>(filtered_text.length()));
   }
 
   // Stop propagating the signal emission to prevent the default handler from
@@ -1801,8 +1797,7 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
 }
 
 bool OmniboxViewGtk::OnPerformDropImpl(const string16& text) {
-  if (model_->CanPasteAndGo(StripJavascriptSchemas(
-      CollapseWhitespace(text, true)))) {
+  if (model_->CanPasteAndGo(CollapseWhitespace(text, true))) {
     model_->PasteAndGo();
     return true;
   }
