@@ -68,7 +68,8 @@
       <include name="IDR_INFOBAR_AUTOLOGIN" file="large_infobar_autologin.png" type="BINDATA" />
       <include name="IDR_INFOBAR_COOKIE" file="large_infobar_cookie.png" type="BINDATA" />
       <include name="IDR_INFOBAR_INCOMPLETE" file="large_infobar_incomplete.png" type="BINDATA" />
-      <include name="IDR_INFOBAR_MEDIA_STREAM" file="large_infobar_media_stream.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_MEDIA_STREAM_CAMERA" file="large_infobar_camera.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_MEDIA_STREAM_MIC" file="large_infobar_microphone.png" type="BINDATA" />
       <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="large_infobar_multiple_downloads.png" type="BINDATA" />
       <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="large_infobar_plugin_crashed.png" type="BINDATA" />
       <include name="IDR_INFOBAR_PLUGIN_INSTALL" file="large_infobar_plugin.png" type="BINDATA" />
