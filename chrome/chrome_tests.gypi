@@ -1149,6 +1149,7 @@
         '<@(chromium_dependencies)',
         # 2) test-specific support libraries:
         '../gpu/gpu.gyp:gpu_unittest_utils',
+        '../jingle/jingle.gyp:jingle_glue_test_util',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
@@ -2079,6 +2080,15 @@
           'dependencies': [
             # build time dependency.
             '../v8/tools/gyp/v8.gyp:v8_shell#host',
+          ],
+        }],
+        ['p2p_apis==1', {
+          'sources': [
+            '../content/browser/renderer_host/p2p/socket_host_test_utils.h',
+            '../content/browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
+            '../content/browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
+            '../content/browser/renderer_host/p2p/socket_host_udp_unittest.cc',
+            '../content/renderer/p2p/p2p_transport_impl_unittest.cc',
           ],
         }],
         ['use_aura==1', {
