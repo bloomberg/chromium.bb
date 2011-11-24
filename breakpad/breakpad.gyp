@@ -40,7 +40,7 @@
             'src/common/mac/SimpleStringDictionary.mm',
             'src/common/string_conversion.cc',
             'src/common/mac/string_utilities.cc',
-            'src/common/md5.c',
+            'src/common/md5.cc',
           ],
         },
         {
@@ -131,7 +131,7 @@
             'src/common/stabs_reader.cc',
             'src/common/stabs_to_module.cc',
             'src/tools/mac/dump_syms/dump_syms_tool.mm',
-            'src/common/md5.c',
+            'src/common/md5.cc',
           ],
           'defines': [
             # For src/common/stabs_reader.h.
