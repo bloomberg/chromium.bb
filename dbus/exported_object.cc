@@ -224,13 +224,12 @@ DBusHandlerResult ExportedObject::HandleMessage(
                                             method_call.release(),
                                             start_time));
   } else {
-    // If the D-Bus thread is not used, just call the method directly.
-    MethodCall* released_method_call = method_call.release();
-    iter->second.Run(released_method_call,
-                     base::Bind(&ExportedObject::SendResponse,
-                                this,
-                                start_time,
-                                released_method_call));
+    // If the D-Bus thread is not used, just call the method directly. We
+    // don't need the complicated logic to wait for the method call to be
+    // complete.
+    // |response| will be deleted in OnMethodCompleted().
+    Response* response = iter->second.Run(method_call.get());
+    OnMethodCompleted(method_call.release(), response, start_time);
   }
 
   // It's valid to say HANDLED here, and send a method response at a later
@@ -242,27 +241,14 @@ void ExportedObject::RunMethod(MethodCallCallback method_call_callback,
                                MethodCall* method_call,
                                base::TimeTicks start_time) {
   bus_->AssertOnOriginThread();
-  method_call_callback.Run(method_call,
-                           base::Bind(&ExportedObject::SendResponse,
-                                      this,
-                                      start_time,
-                                      method_call));
-}
 
-void ExportedObject::SendResponse(base::TimeTicks start_time,
-                                  MethodCall* method_call,
-                                  Response* response) {
-  DCHECK(method_call);
-  if (bus_->HasDBusThread()) {
-    bus_->PostTaskToDBusThread(FROM_HERE,
-                               base::Bind(&ExportedObject::OnMethodCompleted,
-                                          this,
-                                          method_call,
-                                          response,
-                                          start_time));
-  } else {
-    OnMethodCompleted(method_call, response, start_time);
-  }
+  Response* response = method_call_callback.Run(method_call);
+  bus_->PostTaskToDBusThread(FROM_HERE,
+                             base::Bind(&ExportedObject::OnMethodCompleted,
+                                        this,
+                                        method_call,
+                                        response,
+                                        start_time));
 }
 
 void ExportedObject::OnMethodCompleted(MethodCall* method_call,

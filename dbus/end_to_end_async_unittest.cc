@@ -223,24 +223,6 @@ TEST_F(EndToEndAsyncTest, Timeout) {
   ASSERT_EQ("", response_strings_[0]);
 }
 
-// Tests calling a method that sends its reply asynchronously.
-TEST_F(EndToEndAsyncTest, AsyncEcho) {
-  const char* kHello = "hello";
-
-  // Create the method call.
-  dbus::MethodCall method_call("org.chromium.TestInterface", "AsyncEcho");
-  dbus::MessageWriter writer(&method_call);
-  writer.AppendString(kHello);
-
-  // Call the method.
-  const int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT;
-  CallMethod(&method_call, timeout_ms);
-
-  // Check the response.
-  WaitForResponses(1);
-  EXPECT_EQ(kHello, response_strings_[0]);
-}
-
 TEST_F(EndToEndAsyncTest, NonexistentMethod) {
   dbus::MethodCall method_call("org.chromium.TestInterface", "Nonexistent");
 

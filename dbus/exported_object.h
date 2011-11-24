@@ -38,15 +38,9 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
                  const std::string& service_name,
                  const std::string& object_path);
 
-  // Called to send a response from an exported method. Response* is the
-  // response message. Callers should pass a NULL Response* in the event
-  // of an error that prevents the sending of a response.
-  typedef base::Callback<void (Response*)> ResponseSender;
-
   // Called when an exported method is called. MethodCall* is the request
-  // message. ResponseSender is the callback that should be used to send a
-  // response.
-  typedef base::Callback<void (MethodCall*, ResponseSender)> MethodCallCallback;
+  // message.
+  typedef base::Callback<Response* (MethodCall*)> MethodCallCallback;
 
   // Called when method exporting is done.
   // Parameters:
@@ -130,14 +124,7 @@ class ExportedObject : public base::RefCountedThreadSafe<ExportedObject> {
                  MethodCall* method_call,
                  base::TimeTicks start_time);
 
-  // Callback invoked by service provider to send a response to a method call.
-  // Can be called immediately from a MethodCallCallback to implement a
-  // synchronous service or called later to implement an asynchronous service.
-  void SendResponse(base::TimeTicks start_time,
-                    MethodCall* method_call,
-                    Response* response);
-
-  // Called on completion of the method run from SendResponse().
+  // Called on completion of the method run from RunMethod().
   // Takes ownership of |method_call| and |response|.
   void OnMethodCompleted(MethodCall* method_call,
                          Response* response,

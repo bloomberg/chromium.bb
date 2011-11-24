@@ -224,9 +224,8 @@ bool ProxyResolutionServiceProvider::OnOriginThread() {
   return base::PlatformThread::CurrentId() == origin_thread_id_;
 }
 
-void ProxyResolutionServiceProvider::ResolveProxyHandler(
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
+dbus::Response* ProxyResolutionServiceProvider::ResolveProxyHandler(
+    dbus::MethodCall* method_call) {
   DCHECK(OnOriginThread());
   VLOG(1) << "Handing method call: " << method_call->ToString();
   // The method call should contain the three string parameters.
@@ -238,8 +237,7 @@ void ProxyResolutionServiceProvider::ResolveProxyHandler(
       !reader.PopString(&signal_interface) ||
       !reader.PopString(&signal_name)) {
     LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
-    response_sender.Run(NULL);
-    return;
+    return NULL;
   }
 
   resolver_->ResolveProxy(source_url,
@@ -250,20 +248,18 @@ void ProxyResolutionServiceProvider::ResolveProxyHandler(
   // Return an empty response for now. We'll send a signal once the
   // network proxy resolution is completed.
   dbus::Response* response = dbus::Response::FromMethodCall(method_call);
-  response_sender.Run(response);
+  return response;
 }
 
 // static
-void ProxyResolutionServiceProvider::CallResolveProxyHandler(
+dbus::Response* ProxyResolutionServiceProvider::CallResolveProxyHandler(
     base::WeakPtr<ProxyResolutionServiceProvider> provider_weak_ptr,
-    dbus::MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
+    dbus::MethodCall* method_call) {
   if (!provider_weak_ptr) {
     LOG(WARNING) << "Called after the object is deleted";
-    response_sender.Run(NULL);
-    return;
+    return NULL;
   }
-  provider_weak_ptr->ResolveProxyHandler(method_call, response_sender);
+  return provider_weak_ptr->ResolveProxyHandler(method_call);
 }
 
 ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::Create() {

@@ -13,8 +13,8 @@
 
 namespace dbus {
 
-// Echo, SlowEcho, AsyncEcho, BrokenMethod.
-const int TestService::kNumMethodsToExport = 4;
+// Echo, SlowEcho, BrokenMethod.
+const int TestService::kNumMethodsToExport = 3;
 
 TestService::Options::Options() {
 }
@@ -148,15 +148,6 @@ void TestService::Run(MessageLoop* message_loop) {
 
   exported_object_->ExportMethod(
       "org.chromium.TestInterface",
-      "AsyncEcho",
-      base::Bind(&TestService::AsyncEcho,
-                 base::Unretained(this)),
-      base::Bind(&TestService::OnExported,
-                 base::Unretained(this)));
-  ++num_methods;
-
-  exported_object_->ExportMethod(
-      "org.chromium.TestInterface",
       "BrokenMethod",
       base::Bind(&TestService::BrokenMethod,
                  base::Unretained(this)),
@@ -172,44 +163,25 @@ void TestService::Run(MessageLoop* message_loop) {
   message_loop->Run();
 }
 
-void TestService::Echo(MethodCall* method_call,
-                       dbus::ExportedObject::ResponseSender response_sender) {
+Response* TestService::Echo(MethodCall* method_call) {
   MessageReader reader(method_call);
   std::string text_message;
-  if (!reader.PopString(&text_message)) {
-    response_sender.Run(NULL);
-    return;
-  }
+  if (!reader.PopString(&text_message))
+    return NULL;
 
   Response* response = Response::FromMethodCall(method_call);
   MessageWriter writer(response);
   writer.AppendString(text_message);
-  response_sender.Run(response);
+  return response;
 }
 
-void TestService::SlowEcho(
-    MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
+Response* TestService::SlowEcho(MethodCall* method_call) {
   base::PlatformThread::Sleep(TestTimeouts::tiny_timeout_ms());
-  Echo(method_call, response_sender);
+  return Echo(method_call);
 }
 
-void TestService::AsyncEcho(
-    MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
-  // Schedule a call to Echo() to send an asynchronous response after we return.
-  message_loop()->PostDelayedTask(FROM_HERE,
-                                  base::Bind(&TestService::Echo,
-                                             base::Unretained(this),
-                                             method_call,
-                                             response_sender),
-                                  TestTimeouts::tiny_timeout_ms());
-}
-
-void TestService::BrokenMethod(
-    MethodCall* method_call,
-    dbus::ExportedObject::ResponseSender response_sender) {
-  response_sender.Run(NULL);
+Response* TestService::BrokenMethod(MethodCall* method_call) {
+  return NULL;
 }
 
 }  // namespace dbus

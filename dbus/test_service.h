@@ -10,7 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "base/synchronization/waitable_event.h"
-#include "dbus/exported_object.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -19,6 +18,7 @@ class MessageLoopProxy;
 namespace dbus {
 
 class Bus;
+class ExportedObject;
 class MethodCall;
 class Response;
 
@@ -89,22 +89,14 @@ class TestService : public base::Thread {
   //
 
   // Echos the text message received from the method call.
-  void Echo(MethodCall* method_call,
-            dbus::ExportedObject::ResponseSender response_sender);
+  Response* Echo(MethodCall* method_call);
 
   // Echos the text message received from the method call, but sleeps for
   // TestTimeouts::tiny_timeout_ms() before returning the response.
-  void SlowEcho(MethodCall* method_call,
-                dbus::ExportedObject::ResponseSender response_sender);
-
-  // Echos the text message received from the method call, but sends its
-  // response asynchronously after this callback has returned.
-  void AsyncEcho(MethodCall* method_call,
-                 dbus::ExportedObject::ResponseSender response_sender);
+  Response* SlowEcho(MethodCall* method_call);
 
   // Returns NULL, instead of a valid Response.
-  void BrokenMethod(MethodCall* method_call,
-                    dbus::ExportedObject::ResponseSender response_sender);
+  Response* BrokenMethod(MethodCall* method_call);
 
   scoped_refptr<base::MessageLoopProxy> dbus_thread_message_loop_proxy_;
   base::WaitableEvent on_all_methods_exported_;

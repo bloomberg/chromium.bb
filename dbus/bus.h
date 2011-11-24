@@ -100,15 +100,11 @@ class ObjectProxy;
 //
 // Exporting a method:
 //
-//   void Echo(dbus::MethodCall* method_call,
-//             dbus::ExportedObject::ResponseSender response_sender) {
+//   Response* Echo(dbus::MethodCall* method_call) {
 //     // Do something with method_call.
 //     Response* response = Response::FromMethodCall(method_call);
 //     // Build response here.
-//     // Can send an immediate response here to implement a synchronous service
-//     // or store the response_sender and send a response later to implement an
-//     // asynchronous service.
-//     response_sender.Run(response);
+//     return response;
 //   }
 //
 //   void OnExported(const std::string& interface_name,
