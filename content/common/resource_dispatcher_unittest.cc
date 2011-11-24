@@ -12,7 +12,7 @@
 #include "content/common/request_extra_data.h"
 #include "content/common/resource_dispatcher.h"
 #include "content/common/resource_messages.h"
-#include "content/common/resource_response.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -114,7 +114,7 @@ class ResourceDispatcherTest : public testing::Test,
       EXPECT_EQ(test_page_url, request.url.spec());
 
       // received response message
-      ResourceResponseHead response;
+      content::ResourceResponseHead response;
       std::string raw_headers(test_page_headers);
       std::replace(raw_headers.begin(), raw_headers.end(), '\n', '\0');
       response.headers = new net::HttpResponseHeaders(raw_headers);
@@ -242,7 +242,7 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   void InitMessages() {
     set_defer_loading(true);
 
-    ResourceResponseHead response_head;
+    content::ResourceResponseHead response_head;
     response_head.status.set_status(net::URLRequestStatus::SUCCESS);
 
     IPC::Message* response_message =

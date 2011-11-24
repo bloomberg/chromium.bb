@@ -12,7 +12,7 @@
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
-#include "content/common/resource_response.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -70,7 +70,7 @@ bool SafeBrowsingResourceHandler::OnUploadProgress(int request_id,
 bool SafeBrowsingResourceHandler::OnRequestRedirected(
     int request_id,
     const GURL& new_url,
-    ResourceResponse* response,
+    content::ResourceResponse* response,
     bool* defer) {
   CHECK(state_ == STATE_NONE);
   CHECK(defer_state_ == DEFERRED_NONE);
@@ -98,7 +98,7 @@ bool SafeBrowsingResourceHandler::OnRequestRedirected(
 }
 
 bool SafeBrowsingResourceHandler::OnResponseStarted(
-    int request_id, ResourceResponse* response) {
+    int request_id, content::ResourceResponse* response) {
   CHECK(state_ == STATE_NONE);
   CHECK(defer_state_ == DEFERRED_NONE);
   return next_handler_->OnResponseStarted(request_id, response);
@@ -334,7 +334,7 @@ void SafeBrowsingResourceHandler::ResumeRedirect() {
   // Retrieve the details for the paused OnReceivedRedirect().
   int request_id = deferred_request_id_;
   GURL redirect_url = deferred_url_;
-  scoped_refptr<ResourceResponse> redirect_response =
+  scoped_refptr<content::ResourceResponse> redirect_response =
       deferred_redirect_response_;
 
   ClearDeferredRequestInfo();

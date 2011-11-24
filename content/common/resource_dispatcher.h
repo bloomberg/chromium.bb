@@ -19,10 +19,9 @@
 #include "ipc/ipc_channel.h"
 #include "webkit/glue/resource_loader_bridge.h"
 
-struct ResourceResponseHead;
-
 namespace content {
 class ResourceDispatcherDelegate;
+struct ResourceResponseHead;
 }
 
 // This class serves as a communication interface between the
@@ -105,7 +104,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Channel::Listener {
       int request_id,
       int64 position,
       int64 size);
-  void OnReceivedResponse(int request_id, const ResourceResponseHead&);
+  void OnReceivedResponse(int request_id, const content::ResourceResponseHead&);
   void OnReceivedCachedMetadata(int request_id, const std::vector<char>& data);
   void OnReceivedRedirect(
       const IPC::Message& message,

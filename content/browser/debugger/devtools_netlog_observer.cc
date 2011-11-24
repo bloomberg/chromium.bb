@@ -7,9 +7,9 @@
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "content/common/resource_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_net_log_params.h"
 #include "net/http/http_response_headers.h"
@@ -260,8 +260,9 @@ DevToolsNetLogObserver* DevToolsNetLogObserver::GetInstance() {
 }
 
 // static
-void DevToolsNetLogObserver::PopulateResponseInfo(net::URLRequest* request,
-                                                  ResourceResponse* response) {
+void DevToolsNetLogObserver::PopulateResponseInfo(
+    net::URLRequest* request,
+    content::ResourceResponse* response) {
   if (!(request->load_flags() & net::LOAD_REPORT_RAW_HEADERS))
     return;
 
@@ -270,7 +271,7 @@ void DevToolsNetLogObserver::PopulateResponseInfo(net::URLRequest* request,
       DevToolsNetLogObserver::GetInstance();
   if (dev_tools_net_log_observer == NULL)
     return;
-  response->response_head.devtools_info =
+  response->devtools_info =
       dev_tools_net_log_observer->GetResourceInfo(source_id);
 }
 

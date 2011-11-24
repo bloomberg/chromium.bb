@@ -33,16 +33,18 @@ bool SaveFileResourceHandler::OnUploadProgress(int request_id,
   return true;
 }
 
-bool SaveFileResourceHandler::OnRequestRedirected(int request_id,
-                                                  const GURL& url,
-                                                  ResourceResponse* response,
-                                                  bool* defer) {
+bool SaveFileResourceHandler::OnRequestRedirected(
+    int request_id,
+    const GURL& url,
+    content::ResourceResponse* response,
+    bool* defer) {
   final_url_ = url;
   return true;
 }
 
-bool SaveFileResourceHandler::OnResponseStarted(int request_id,
-                                                ResourceResponse* response) {
+bool SaveFileResourceHandler::OnResponseStarted(
+    int request_id,
+    content::ResourceResponse* response) {
   save_id_ = save_manager_->GetNextId();
   // |save_manager_| consumes (deletes):
   SaveFileCreateInfo* info = new SaveFileCreateInfo;

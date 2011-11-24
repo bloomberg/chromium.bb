@@ -54,10 +54,10 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   virtual bool OnUploadProgress(
       int request_id, uint64 position, uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(
-      int request_id, const GURL& new_url, ResourceResponse* response,
+      int request_id, const GURL& new_url, content::ResourceResponse* response,
       bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(
-      int request_id, ResourceResponse* response) OVERRIDE;
+      int request_id, content::ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(
       int request_id, const GURL& url, bool* defer) OVERRIDE;
   virtual bool OnWillRead(
@@ -152,7 +152,7 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   // valid to access these members when defer_state_ != DEFERRED_NONE.
   GURL deferred_url_;
   int deferred_request_id_;
-  scoped_refptr<ResourceResponse> deferred_redirect_response_;
+  scoped_refptr<content::ResourceResponse> deferred_redirect_response_;
 
   scoped_refptr<ResourceHandler> next_handler_;
   int render_process_host_id_;

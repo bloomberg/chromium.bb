@@ -306,7 +306,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(
 
 void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
-    ResourceResponse* response,
+    content::ResourceResponse* response,
     ResourceMessageFilter* filter) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 
@@ -339,7 +339,7 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
 
 void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     net::URLRequest* request,
-    ResourceResponse* response,
+    content::ResourceResponse* response,
     ResourceMessageFilter* filter) {
   LoadTimingObserver::PopulateTimingInfo(request, response);
 }

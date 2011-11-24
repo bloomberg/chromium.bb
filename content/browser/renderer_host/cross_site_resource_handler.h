@@ -30,10 +30,10 @@ class CrossSiteResourceHandler : public ResourceHandler {
                                 uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& new_url,
-                                   ResourceResponse* response,
+                                   content::ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(int request_id,
                            const GURL& url,
                            bool* defer) OVERRIDE;
@@ -59,7 +59,7 @@ class CrossSiteResourceHandler : public ResourceHandler {
   // telling the old RenderViewHost to run its onunload handler.
   void StartCrossSiteTransition(
       int request_id,
-      ResourceResponse* response,
+      content::ResourceResponse* response,
       const GlobalRequestID& global_id);
 
   scoped_refptr<ResourceHandler> next_handler_;
@@ -71,7 +71,7 @@ class CrossSiteResourceHandler : public ResourceHandler {
   bool completed_during_transition_;
   net::URLRequestStatus completed_status_;
   std::string completed_security_info_;
-  ResourceResponse* response_;
+  content::ResourceResponse* response_;
   ResourceDispatcherHost* rdh_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossSiteResourceHandler);

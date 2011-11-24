@@ -11,7 +11,7 @@
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/resource_context.h"
-#include "content/common/resource_response.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 
@@ -65,7 +65,7 @@ bool DownloadThrottlingResourceHandler::OnUploadProgress(int request_id,
 bool DownloadThrottlingResourceHandler::OnRequestRedirected(
     int request_id,
     const GURL& url,
-    ResourceResponse* response,
+    content::ResourceResponse* response,
     bool* defer) {
   DCHECK(!request_closed_);
   if (request_allowed_) {
@@ -77,7 +77,7 @@ bool DownloadThrottlingResourceHandler::OnRequestRedirected(
 
 bool DownloadThrottlingResourceHandler::OnResponseStarted(
     int request_id,
-    ResourceResponse* response) {
+    content::ResourceResponse* response) {
   DCHECK(!request_closed_);
   if (request_allowed_)
     return next_handler_->OnResponseStarted(request_id, response);

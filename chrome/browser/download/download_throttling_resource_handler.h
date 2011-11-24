@@ -46,10 +46,10 @@ class DownloadThrottlingResourceHandler
                                 uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& url,
-                                   ResourceResponse* response,
+                                   content::ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(int request_id,
                            const GURL& url,
                            bool* defer) OVERRIDE;
@@ -87,7 +87,7 @@ class DownloadThrottlingResourceHandler
 
   // Response supplied to OnResponseStarted. Only non-null if OnResponseStarted
   // is invoked.
-  scoped_refptr<ResourceResponse> response_;
+  scoped_refptr<content::ResourceResponse> response_;
 
   // If we're created by way of BufferedEventHandler we'll get one request for
   // a buffer. This is that buffer.

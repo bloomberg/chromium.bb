@@ -56,12 +56,12 @@ class DownloadResourceHandler : public ResourceHandler {
   // Not needed, as this event handler ought to be the final resource.
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& url,
-                                   ResourceResponse* response,
+                                   content::ResourceResponse* response,
                                    bool* defer) OVERRIDE;
 
   // Send the download creation information to the download thread.
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response) OVERRIDE;
 
   // Pass-through implementation.
   virtual bool OnWillStart(int request_id,

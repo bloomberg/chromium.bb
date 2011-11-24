@@ -11,8 +11,8 @@
 #include "base/time.h"
 #include "content/common/dom_storage_common.h"
 #include "content/common/resource_messages.h"
-#include "content/common/resource_response.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/resource_response.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/test/mock_render_process.h"
@@ -150,7 +150,7 @@ void RenderViewFakeResourcesTest::OnRequestResource(
     body = it->second;
   }
 
-  ResourceResponseHead response_head;
+  content::ResourceResponseHead response_head;
   response_head.headers = new net::HttpResponseHeaders(headers);
   response_head.mime_type = "text/html";
   ASSERT_TRUE(channel_->Send(new ResourceMsg_ReceivedResponse(

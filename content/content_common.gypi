@@ -215,8 +215,6 @@
     'common/resource_dispatcher.cc',
     'common/resource_dispatcher.h',
     'common/resource_messages.h',
-    'common/resource_response.cc',
-    'common/resource_response.h',
     'common/sandbox_init_mac.cc',
     'common/sandbox_init_win.cc',
     'common/sandbox_mac.h',

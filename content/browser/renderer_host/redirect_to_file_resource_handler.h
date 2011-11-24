@@ -39,10 +39,10 @@ class RedirectToFileResourceHandler : public ResourceHandler {
                                 uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& new_url,
-                                   ResourceResponse* response,
+                                   content::ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(int request_id,
                            const GURL& url,
                            bool* defer) OVERRIDE;

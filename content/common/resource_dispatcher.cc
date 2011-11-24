@@ -15,8 +15,8 @@
 #include "base/string_util.h"
 #include "content/common/request_extra_data.h"
 #include "content/common/resource_messages.h"
-#include "content/common/resource_response.h"
 #include "content/public/common/resource_dispatcher_delegate.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/upload_data.h"
@@ -215,7 +215,7 @@ void IPCResourceLoaderBridge::SyncLoad(SyncLoadResponse* response) {
 
   request_id_ = MakeRequestID();
 
-  SyncLoadResult result;
+  content::SyncLoadResult result;
   IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(routing_id_, request_id_,
                                                        request_, &result);
   // NOTE: This may pump events (see RenderThread::Send).
@@ -332,7 +332,7 @@ void ResourceDispatcher::OnUploadProgress(
 }
 
 void ResourceDispatcher::OnReceivedResponse(
-    int request_id, const ResourceResponseHead& response_head) {
+    int request_id, const content::ResourceResponseHead& response_head) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;

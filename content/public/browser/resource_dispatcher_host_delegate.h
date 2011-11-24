@@ -15,10 +15,10 @@ class GURL;
 class ResourceDispatcherHostLoginDelegate;
 class ResourceHandler;
 class ResourceMessageFilter;
-struct ResourceResponse;
 
 namespace content {
 class ResourceContext;
+struct ResourceResponse;
 }
 
 namespace net {

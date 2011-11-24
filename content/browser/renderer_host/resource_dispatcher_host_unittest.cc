@@ -22,8 +22,8 @@
 #include "content/browser/renderer_host/resource_handler.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/common/resource_messages.h"
-#include "content/common/resource_response.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_util.h"
@@ -43,7 +43,7 @@ namespace {
 
 // Returns the resource response header structure for this request.
 void GetResponseHead(const std::vector<IPC::Message>& messages,
-                     ResourceResponseHead* response_head) {
+                     content::ResourceResponseHead* response_head) {
   ASSERT_GE(messages.size(), 2U);
 
   // The first messages should be received response.
@@ -1007,7 +1007,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniffed) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
 
-  ResourceResponseHead response_head;
+  content::ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("text/html", response_head.mime_type);
 }
@@ -1036,7 +1036,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
 
-  ResourceResponseHead response_head;
+  content::ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("image/jpeg", response_head.mime_type);
 }
@@ -1064,7 +1064,7 @@ TEST_F(ResourceDispatcherHostTest, MimeNotSniffed2) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
 
-  ResourceResponseHead response_head;
+  content::ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("", response_head.mime_type);
 }
@@ -1091,7 +1091,7 @@ TEST_F(ResourceDispatcherHostTest, MimeSniff204) {
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
 
-  ResourceResponseHead response_head;
+  content::ResourceResponseHead response_head;
   GetResponseHead(msgs[0], &response_head);
   ASSERT_EQ("text/plain", response_head.mime_type);
 }

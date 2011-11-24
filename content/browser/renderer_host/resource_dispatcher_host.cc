@@ -83,6 +83,7 @@ using base::Time;
 using base::TimeDelta;
 using base::TimeTicks;
 using content::BrowserThread;
+using content::ResourceResponse;
 using webkit_blob::DeletableFileReference;
 
 // ----------------------------------------------------------------------------
@@ -141,7 +142,7 @@ void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
   net::URLRequestStatus status(net::URLRequestStatus::FAILED,
                                net::ERR_ABORTED);
   if (sync_result) {
-    SyncLoadResult result;
+    content::SyncLoadResult result;
     result.status = status;
     ResourceHostMsg_SyncLoad::WriteReplyParams(sync_result, result);
     filter->Send(sync_result);
@@ -202,23 +203,21 @@ bool ShouldServiceRequest(ChildProcessInfo::ProcessType process_type,
 
 void PopulateResourceResponse(net::URLRequest* request,
                               ResourceResponse* response) {
-  response->response_head.status = request->status();
-  response->response_head.request_time = request->request_time();
-  response->response_head.response_time = request->response_time();
-  response->response_head.headers = request->response_headers();
-  request->GetCharset(&response->response_head.charset);
-  response->response_head.content_length = request->GetExpectedContentSize();
-  request->GetMimeType(&response->response_head.mime_type);
-  response->response_head.was_fetched_via_spdy =
-      request->was_fetched_via_spdy();
-  response->response_head.was_npn_negotiated = request->was_npn_negotiated();
-  response->response_head.was_fetched_via_proxy =
-      request->was_fetched_via_proxy();
-  response->response_head.socket_address = request->GetSocketAddress();
+  response->status = request->status();
+  response->request_time = request->request_time();
+  response->response_time = request->response_time();
+  response->headers = request->response_headers();
+  request->GetCharset(&response->charset);
+  response->content_length = request->GetExpectedContentSize();
+  request->GetMimeType(&response->mime_type);
+  response->was_fetched_via_spdy = request->was_fetched_via_spdy();
+  response->was_npn_negotiated = request->was_npn_negotiated();
+  response->was_fetched_via_proxy = request->was_fetched_via_proxy();
+  response->socket_address = request->GetSocketAddress();
   appcache::AppCacheInterceptor::GetExtraResponseInfo(
       request,
-      &response->response_head.appcache_id,
-      &response->response_head.appcache_manifest_url);
+      &response->appcache_id,
+      &response->appcache_manifest_url);
 }
 
 void RemoveDownloadFileFromChildSecurityPolicy(int child_id,
@@ -1403,7 +1402,7 @@ bool ResourceDispatcherHost::CompleteResponseStarted(net::URLRequest* request) {
     int cert_id =
         CertStore::GetInstance()->StoreCert(request->ssl_info().cert,
                                             info->child_id());
-    response->response_head.security_info =
+    response->security_info =
         SSLManager::SerializeSecurityInfo(
             cert_id, request->ssl_info().cert_status,
             request->ssl_info().security_bits,

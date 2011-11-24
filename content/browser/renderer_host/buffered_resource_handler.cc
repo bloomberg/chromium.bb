@@ -18,10 +18,10 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/x509_user_cert_resource_handler.h"
 #include "content/browser/resource_context.h"
-#include "content/common/resource_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
@@ -78,16 +78,18 @@ bool BufferedResourceHandler::OnUploadProgress(int request_id,
   return real_handler_->OnUploadProgress(request_id, position, size);
 }
 
-bool BufferedResourceHandler::OnRequestRedirected(int request_id,
-                                                  const GURL& new_url,
-                                                  ResourceResponse* response,
-                                                  bool* defer) {
+bool BufferedResourceHandler::OnRequestRedirected(
+    int request_id,
+    const GURL& new_url,
+    content::ResourceResponse* response,
+    bool* defer) {
   return real_handler_->OnRequestRedirected(
       request_id, new_url, response, defer);
 }
 
-bool BufferedResourceHandler::OnResponseStarted(int request_id,
-                                                ResourceResponse* response) {
+bool BufferedResourceHandler::OnResponseStarted(
+    int request_id,
+    content::ResourceResponse* response) {
   response_ = response;
   if (!DelayResponse())
     return CompleteResponseStarted(request_id, false);
@@ -175,8 +177,7 @@ bool BufferedResourceHandler::DelayResponse() {
   const bool sniffing_blocked =
       LowerCaseEqualsASCII(content_type_options, "nosniff");
   const bool not_modified_status =
-      response_->response_head.headers &&
-      response_->response_head.headers->response_code() == 304;
+      response_->headers && response_->headers->response_code() == 304;
   const bool we_would_like_to_sniff = not_modified_status ?
       false : net::ShouldSniffMimeType(request_->url(), mime_type);
 
@@ -196,7 +197,7 @@ bool BufferedResourceHandler::DelayResponse() {
     // mime type.  What's a browser to do?  Turns out, we're supposed to treat
     // the response as "text/plain".  This is the most secure option.
     mime_type.assign("text/plain");
-    response_->response_head.mime_type.assign(mime_type);
+    response_->mime_type.assign(mime_type);
   }
 
   if (mime_type == "application/rss+xml" ||
@@ -209,7 +210,7 @@ bool BufferedResourceHandler::DelayResponse() {
     // response.  In the future, when we have an RSS feed previewer, we can
     // remove this logic.
     mime_type.assign("text/plain");
-    response_->response_head.mime_type.assign(mime_type);
+    response_->mime_type.assign(mime_type);
   }
 
   if (!not_modified_status && ShouldWaitForPlugins()) {
@@ -256,7 +257,7 @@ bool BufferedResourceHandler::KeepBuffering(int bytes_read) {
       }
     }
     sniff_content_ = false;
-    response_->response_head.mime_type.assign(new_type);
+    response_->mime_type.assign(new_type);
 
     // We just sniffed the mime type, maybe there is a doctype to process.
     if (ShouldWaitForPlugins())
@@ -284,8 +285,8 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
     // This is entirely similar to how DownloadThrottlingResourceHandler
     // works except we are doing it for an X.509 client certificates.
 
-    if (response_->response_head.headers &&  // Can be NULL if FTP.
-        response_->response_head.headers->response_code() / 100 != 2) {
+    if (response_->headers &&  // Can be NULL if FTP.
+        response_->headers->response_code() / 100 != 2) {
       // The response code indicates that this is an error page, but we are
       // expecting an X.509 user certificate. We follow Firefox here and show
       // our own error page instead of handling the error page as a
@@ -306,8 +307,8 @@ bool BufferedResourceHandler::CompleteResponseStarted(int request_id,
   // download thread.
   // TODO(paulg): Only download if the context from the renderer allows it.
   if (info->allow_download() && ShouldDownload(NULL)) {
-    if (response_->response_head.headers &&  // Can be NULL if FTP.
-        response_->response_head.headers->response_code() / 100 != 2) {
+    if (response_->headers &&  // Can be NULL if FTP.
+        response_->headers->response_code() / 100 != 2) {
       // The response code indicates that this is an error page, but we don't
       // know how to display the content.  We follow Firefox here and show our
       // own error page instead of triggering a download.
@@ -366,7 +367,7 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
 bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
   if (need_plugin_list)
     *need_plugin_list = false;
-  std::string type = StringToLowerASCII(response_->response_head.mime_type);
+  std::string type = StringToLowerASCII(response_->mime_type);
   std::string disposition;
   request_->GetResponseHeaderByName("content-disposition", &disposition);
   disposition = StringToLowerASCII(disposition);

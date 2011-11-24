@@ -39,12 +39,12 @@ class X509UserCertResourceHandler : public ResourceHandler {
   // Not needed, as this event handler ought to be the final resource.
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& url,
-                                   ResourceResponse* resp,
+                                   content::ResourceResponse* resp,
                                    bool* defer) OVERRIDE;
 
   // Check if this indeed an X509 cert.
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* resp) OVERRIDE;
+                                 content::ResourceResponse* resp) OVERRIDE;
 
   // Pass-through implementation.
   virtual bool OnWillStart(int request_id,

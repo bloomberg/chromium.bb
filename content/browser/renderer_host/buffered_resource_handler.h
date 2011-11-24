@@ -33,10 +33,10 @@ class BufferedResourceHandler : public ResourceHandler {
                                 uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& new_url,
-                                   ResourceResponse* response,
+                                   content::ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(int request_id,
                            const GURL& url,
                            bool* defer) OVERRIDE;
@@ -85,7 +85,7 @@ class BufferedResourceHandler : public ResourceHandler {
   void OnPluginsLoaded(const std::vector<webkit::WebPluginInfo>& plugins);
 
   scoped_refptr<ResourceHandler> real_handler_;
-  scoped_refptr<ResourceResponse> response_;
+  scoped_refptr<content::ResourceResponse> response_;
   ResourceDispatcherHost* host_;
   net::URLRequest* request_;
   scoped_refptr<net::IOBuffer> read_buffer_;

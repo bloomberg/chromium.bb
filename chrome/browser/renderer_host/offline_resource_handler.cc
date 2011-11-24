@@ -54,16 +54,18 @@ bool OfflineResourceHandler::OnUploadProgress(int request_id,
   return next_handler_->OnUploadProgress(request_id, position, size);
 }
 
-bool OfflineResourceHandler::OnRequestRedirected(int request_id,
-                                                 const GURL& new_url,
-                                                 ResourceResponse* response,
-                                                 bool* defer) {
+bool OfflineResourceHandler::OnRequestRedirected(
+    int request_id,
+    const GURL& new_url,
+    content::ResourceResponse* response,
+    bool* defer) {
   return next_handler_->OnRequestRedirected(
       request_id, new_url, response, defer);
 }
 
-bool OfflineResourceHandler::OnResponseStarted(int request_id,
-                                                ResourceResponse* response) {
+bool OfflineResourceHandler::OnResponseStarted(
+    int request_id,
+    content::ResourceResponse* response) {
   return next_handler_->OnResponseStarted(request_id, response);
 }
 

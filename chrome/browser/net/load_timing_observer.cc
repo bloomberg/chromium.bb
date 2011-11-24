@@ -6,7 +6,7 @@
 
 #include "base/time.h"
 #include "chrome/browser/net/chrome_net_log.h"
-#include "content/common/resource_response.h"
+#include "content/public/common/resource_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
@@ -99,8 +99,9 @@ void LoadTimingObserver::OnAddEntry(net::NetLog::EventType type,
 }
 
 // static
-void LoadTimingObserver::PopulateTimingInfo(net::URLRequest* request,
-                                            ResourceResponse* response) {
+void LoadTimingObserver::PopulateTimingInfo(
+    net::URLRequest* request,
+    content::ResourceResponse* response) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!(request->load_flags() & net::LOAD_ENABLE_LOAD_TIMING))
     return;
@@ -115,9 +116,9 @@ void LoadTimingObserver::PopulateTimingInfo(net::URLRequest* request,
   LoadTimingObserver::URLRequestRecord* record =
       observer->GetURLRequestRecord(source_id);
   if (record) {
-    response->response_head.connection_id = record->socket_log_id;
-    response->response_head.connection_reused = record->socket_reused;
-    response->response_head.load_timing = record->timing;
+    response->connection_id = record->socket_log_id;
+    response->connection_reused = record->socket_reused;
+    response->load_timing = record->timing;
   }
 }
 

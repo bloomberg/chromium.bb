@@ -17,10 +17,10 @@
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/resource_context.h"
-#include "content/common/resource_response.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_log.h"
@@ -98,10 +98,11 @@ bool AsyncResourceHandler::OnUploadProgress(int request_id,
                                                       position, size));
 }
 
-bool AsyncResourceHandler::OnRequestRedirected(int request_id,
-                                               const GURL& new_url,
-                                               ResourceResponse* response,
-                                               bool* defer) {
+bool AsyncResourceHandler::OnRequestRedirected(
+    int request_id,
+    const GURL& new_url,
+    content::ResourceResponse* response,
+    bool* defer) {
   *defer = true;
   net::URLRequest* request = rdh_->GetURLRequest(
       GlobalRequestID(filter_->child_id(), request_id));
@@ -110,11 +111,12 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
 
   DevToolsNetLogObserver::PopulateResponseInfo(request, response);
   return filter_->Send(new ResourceMsg_ReceivedRedirect(
-      routing_id_, request_id, new_url, response->response_head));
+      routing_id_, request_id, new_url, *response));
 }
 
-bool AsyncResourceHandler::OnResponseStarted(int request_id,
-                                             ResourceResponse* response) {
+bool AsyncResourceHandler::OnResponseStarted(
+    int request_id,
+    content::ResourceResponse* response) {
   // For changes to the main frame, inform the renderer of the new URL's
   // per-host settings before the request actually commits.  This way the
   // renderer will be able to set these precisely at the time the
@@ -142,7 +144,7 @@ bool AsyncResourceHandler::OnResponseStarted(int request_id,
   }
 
   filter_->Send(new ResourceMsg_ReceivedResponse(
-      routing_id_, request_id, response->response_head));
+      routing_id_, request_id, *response));
 
   if (request->response_info().metadata) {
     std::vector<char> copy(request->response_info().metadata->data(),

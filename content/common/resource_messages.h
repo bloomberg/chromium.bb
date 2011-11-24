@@ -6,14 +6,25 @@
 
 // Multiply-included message file, hence no include guard.
 #include "base/shared_memory.h"
-#include "content/common/resource_response.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/upload_data.h"
 
 #define IPC_MESSAGE_START ResourceMsgStart
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
+
+IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseHead)
+  IPC_STRUCT_TRAITS_PARENT(webkit_glue::ResourceResponseInfo)
+  IPC_STRUCT_TRAITS_MEMBER(status)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::SyncLoadResult)
+  IPC_STRUCT_TRAITS_PARENT(content::ResourceResponseHead)
+  IPC_STRUCT_TRAITS_MEMBER(final_url)
+  IPC_STRUCT_TRAITS_MEMBER(data)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(webkit_glue::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(request_time)
@@ -36,17 +47,6 @@ IPC_STRUCT_TRAITS_BEGIN(webkit_glue::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(was_alternate_protocol_available)
   IPC_STRUCT_TRAITS_MEMBER(was_fetched_via_proxy)
   IPC_STRUCT_TRAITS_MEMBER(socket_address)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ResourceResponseHead)
-  IPC_STRUCT_TRAITS_PARENT(webkit_glue::ResourceResponseInfo)
-  IPC_STRUCT_TRAITS_MEMBER(status)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(SyncLoadResult)
-  IPC_STRUCT_TRAITS_PARENT(ResourceResponseHead)
-  IPC_STRUCT_TRAITS_MEMBER(final_url)
-  IPC_STRUCT_TRAITS_MEMBER(data)
 IPC_STRUCT_TRAITS_END()
 
 // Parameters for a resource request.
@@ -118,7 +118,7 @@ IPC_STRUCT_END()
 // Sent when the headers are available for a resource request.
 IPC_MESSAGE_ROUTED2(ResourceMsg_ReceivedResponse,
                     int /* request_id */,
-                    ResourceResponseHead)
+                    content::ResourceResponseHead)
 
 // Sent when cached metadata from a resource request is ready.
 IPC_MESSAGE_ROUTED2(ResourceMsg_ReceivedCachedMetadata,
@@ -137,7 +137,7 @@ IPC_MESSAGE_ROUTED3(ResourceMsg_UploadProgress,
 IPC_MESSAGE_ROUTED3(ResourceMsg_ReceivedRedirect,
                     int /* request_id */,
                     GURL /* new_url */,
-                    ResourceResponseHead)
+                    content::ResourceResponseHead)
 
 // Sent when some data from a resource request is ready. The handle should
 // already be mapped into the process that receives this message.
@@ -190,7 +190,7 @@ IPC_MESSAGE_ROUTED3(ResourceHostMsg_FollowRedirect,
 IPC_SYNC_MESSAGE_ROUTED2_1(ResourceHostMsg_SyncLoad,
                            int /* request_id */,
                            ResourceHostMsg_Request,
-                           SyncLoadResult)
+                           content::SyncLoadResult)
 
 // Sent when the renderer process is done processing a DataReceived
 // message.

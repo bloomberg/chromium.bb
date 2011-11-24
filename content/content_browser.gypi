@@ -44,6 +44,7 @@
     'public/browser/render_process_host.h',
     'public/browser/render_process_host_factory.h',
     'public/browser/resource_dispatcher_host_delegate.h',
+    'public/browser/resource_response.h',
     'public/browser/sensors.h',
     'public/browser/sensors_listener.h',
     'browser/accessibility/browser_accessibility.cc',

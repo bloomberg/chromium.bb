@@ -30,12 +30,12 @@ class SaveFileResourceHandler : public ResourceHandler {
   // URL to match original request.
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& url,
-                                   ResourceResponse* response,
+                                   content::ResourceResponse* response,
                                    bool* defer) OVERRIDE;
 
   // Sends the download creation information to the download thread.
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response) OVERRIDE;
 
   // Pass-through implementation.
   virtual bool OnWillStart(int request_id,

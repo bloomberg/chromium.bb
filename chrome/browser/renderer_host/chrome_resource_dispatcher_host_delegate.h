@@ -74,11 +74,11 @@ class ChromeResourceDispatcherHostDelegate
       const GURL& url, const std::string& mime_type) OVERRIDE;
   virtual void OnResponseStarted(
       net::URLRequest* request,
-      ResourceResponse* response,
+      content::ResourceResponse* response,
       ResourceMessageFilter* filter) OVERRIDE;
   virtual void OnRequestRedirected(
       net::URLRequest* request,
-      ResourceResponse* response,
+      content::ResourceResponse* response,
       ResourceMessageFilter* filter) OVERRIDE;
 
  private:

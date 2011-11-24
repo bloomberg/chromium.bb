@@ -8,8 +8,8 @@
 #include "content/browser/download/download_types.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/common/resource_response.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/mime_util.h"
@@ -36,17 +36,19 @@ bool X509UserCertResourceHandler::OnUploadProgress(int request_id,
   return true;
 }
 
-bool X509UserCertResourceHandler::OnRequestRedirected(int request_id,
-                                                      const GURL& url,
-                                                      ResourceResponse* resp,
-                                                      bool* defer) {
+bool X509UserCertResourceHandler::OnRequestRedirected(
+    int request_id,
+    const GURL& url,
+    content::ResourceResponse* resp,
+    bool* defer) {
   url_ = url;
   return true;
 }
 
-bool X509UserCertResourceHandler::OnResponseStarted(int request_id,
-                                                    ResourceResponse* resp) {
-  return (resp->response_head.mime_type == "application/x-x509-user-cert");
+bool X509UserCertResourceHandler::OnResponseStarted(
+    int request_id,
+    content::ResourceResponse* resp) {
+  return (resp->mime_type == "application/x-x509-user-cert");
 }
 
 bool X509UserCertResourceHandler::OnWillStart(int request_id,

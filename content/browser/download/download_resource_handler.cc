@@ -21,8 +21,8 @@
 #include "content/browser/renderer_host/global_request_id.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "content/common/resource_response.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -65,16 +65,18 @@ bool DownloadResourceHandler::OnUploadProgress(int request_id,
 }
 
 // Not needed, as this event handler ought to be the final resource.
-bool DownloadResourceHandler::OnRequestRedirected(int request_id,
-                                                  const GURL& url,
-                                                  ResourceResponse* response,
-                                                  bool* defer) {
+bool DownloadResourceHandler::OnRequestRedirected(
+    int request_id,
+    const GURL& url,
+    content::ResourceResponse* response,
+    bool* defer) {
   return true;
 }
 
 // Send the download creation information to the download thread.
-bool DownloadResourceHandler::OnResponseStarted(int request_id,
-                                                ResourceResponse* response) {
+bool DownloadResourceHandler::OnResponseStarted(
+    int request_id,
+    content::ResourceResponse* response) {
   DCHECK(download_id_.IsValid());
   VLOG(20) << __FUNCTION__ << "()" << DebugString()
            << " request_id = " << request_id;
@@ -87,7 +89,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   request_->GetResponseHeaderByName("content-disposition",
                                     &content_disposition);
   set_content_disposition(content_disposition);
-  set_content_length(response->response_head.content_length);
+  set_content_length(response->content_length);
 
   const ResourceDispatcherHostRequestInfo* request_info =
     ResourceDispatcherHost::InfoForRequest(request_);
@@ -106,7 +108,7 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->download_id = download_id_;
   info->has_user_gesture = request_info->has_user_gesture();
   info->content_disposition = content_disposition_;
-  info->mime_type = response->response_head.mime_type;
+  info->mime_type = response->mime_type;
   download_stats::RecordDownloadMimeType(info->mime_type);
 
   DownloadRequestHandle request_handle(rdh_, global_id_.child_id,
@@ -118,8 +120,8 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   CallStartedCB(net::OK);
 
   std::string content_type_header;
-  if (!response->response_head.headers ||
-      !response->response_head.headers->GetMimeType(&content_type_header))
+  if (!response->headers ||
+      !response->headers->GetMimeType(&content_type_header))
     content_type_header = "";
   info->original_mime_type = content_type_header;
 

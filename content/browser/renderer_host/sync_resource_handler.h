@@ -9,7 +9,7 @@
 #include <string>
 
 #include "content/browser/renderer_host/resource_handler.h"
-#include "content/common/resource_response.h"
+#include "content/public/common/resource_response.h"
 
 class ResourceDispatcherHost;
 class ResourceMessageFilter;
@@ -36,10 +36,10 @@ class SyncResourceHandler : public ResourceHandler {
                                 uint64 size) OVERRIDE;
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& new_url,
-                                   ResourceResponse* response,
+                                   content::ResourceResponse* response,
                                    bool* defer) OVERRIDE;
   virtual bool OnResponseStarted(int request_id,
-                                 ResourceResponse* response) OVERRIDE;
+                                 content::ResourceResponse* response) OVERRIDE;
   virtual bool OnWillStart(int request_id,
                            const GURL& url,
                            bool* defer) OVERRIDE;
@@ -61,7 +61,7 @@ class SyncResourceHandler : public ResourceHandler {
 
   scoped_refptr<net::IOBuffer> read_buffer_;
 
-  SyncLoadResult result_;
+  content::SyncLoadResult result_;
   ResourceMessageFilter* filter_;
   IPC::Message* result_message_;
   ResourceDispatcherHost* rdh_;
