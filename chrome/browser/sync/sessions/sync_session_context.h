@@ -22,6 +22,7 @@
 #include <map>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
@@ -109,13 +110,23 @@ class SyncSessionContext {
   }
 
   // This is virtual for unit tests.
-  // TODO(lipalani)  Consult the unthrottle times before committing data to
-  // the server.
   virtual void SetUnthrottleTime(const syncable::ModelTypeSet& types,
                                  const base::TimeTicks& time);
 
+  // This prunes the |unthrottle_time_| map based on the |time| passed in. This
+  // is called by syncer at the SYNCER_BEGIN stage.
+  void PruneUnthrottledTypes(const base::TimeTicks& time);
+
+  // This returns the list of currently throttled types. Unless server returns
+  // new throttled types this will remain constant through out the sync cycle.
+  syncable::ModelTypeSet GetThrottledTypes() const;
+
  private:
   typedef std::map<syncable::ModelType, base::TimeTicks> UnthrottleTimes;
+
+  FRIEND_TEST_ALL_PREFIXES(SyncSessionContextTest, AddUnthrottleTimeTest);
+  FRIEND_TEST_ALL_PREFIXES(SyncSessionContextTest,
+                           GetCurrentlyThrottledTypesTest);
 
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this

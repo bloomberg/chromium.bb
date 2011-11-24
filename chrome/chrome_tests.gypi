@@ -3305,6 +3305,7 @@
         'browser/sync/sessions/ordered_commit_set_unittest.cc',
         'browser/sync/sessions/session_state_unittest.cc',
         'browser/sync/sessions/status_controller_unittest.cc',
+        'browser/sync/sessions/sync_session_context_unittest.cc',
         'browser/sync/sessions/sync_session_unittest.cc',
         'browser/sync/sessions/test_util.cc',
         'browser/sync/sessions/test_util.h',

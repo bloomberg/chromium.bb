@@ -371,7 +371,7 @@ class SyncerTest : public testing::Test,
       GetCommitIdsCommand command(limit);
       command.BuildCommitIds(
           session_->status_controller().unsynced_handles(),
-          session_->write_transaction(), routes);
+          session_->write_transaction(), routes, syncable::ModelTypeSet());
       vector<syncable::Id> output =
           command.ordered_commit_set_->GetAllCommitIds();
       size_t truncated_size = std::min(limit, expected_id_order.size());
@@ -554,6 +554,55 @@ TEST_F(SyncerTest, GetCommitIdsCommandTruncates) {
   expected_order.push_back(ids_.MakeLocal("c"));
   expected_order.push_back(ids_.MakeLocal("e"));
   DoTruncationTest(dir, unsynced_handle_view, expected_order);
+}
+
+TEST_F(SyncerTest, GetCommitIdsFiltersThrottledEntries) {
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  ASSERT_TRUE(dir.good());
+  syncable::ModelTypeSet throttled_types;
+  throttled_types.insert(syncable::BOOKMARKS);
+  KeyParams key_params = {"localhost", "dummy", "foobar"};
+  sync_pb::EntitySpecifics bookmark_data;
+  AddDefaultExtensionValue(syncable::BOOKMARKS, &bookmark_data);
+
+  mock_server_->AddUpdateDirectory(1, 0, "A", 10, 10);
+  SyncShareAsDelegate();
+
+  {
+    WriteTransaction wtrans(FROM_HERE, UNITTEST, dir);
+    MutableEntry A(&wtrans, GET_BY_ID, ids_.FromNumber(1));
+    ASSERT_TRUE(A.good());
+    A.Put(IS_UNSYNCED, true);
+    A.Put(SPECIFICS, bookmark_data);
+    A.Put(NON_UNIQUE_NAME, "bookmark");
+  }
+
+  // Now set the throttled types.
+  context_->SetUnthrottleTime(
+      throttled_types,
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1200));
+  SyncShareAsDelegate();
+
+  {
+    // Nothing should have been committed as bookmarks is throttled.
+    ReadTransaction rtrans(FROM_HERE, dir);
+    Entry entryA(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    ASSERT_TRUE(entryA.good());
+    EXPECT_TRUE(entryA.Get(IS_UNSYNCED));
+  }
+
+  // Now unthrottle.
+  context_->SetUnthrottleTime(
+      throttled_types,
+      base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1200));
+  SyncShareAsDelegate();
+  {
+    // It should have been committed.
+    ReadTransaction rtrans(FROM_HERE, dir);
+    Entry entryA(&rtrans, syncable::GET_BY_ID, ids_.FromNumber(1));
+    ASSERT_TRUE(entryA.good());
+    EXPECT_FALSE(entryA.Get(IS_UNSYNCED));
+  }
 }
 
 TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {

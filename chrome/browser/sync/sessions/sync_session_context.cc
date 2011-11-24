@@ -58,5 +58,32 @@ void SyncSessionContext::SetUnthrottleTime(const syncable::ModelTypeSet& types,
   }
 }
 
+void SyncSessionContext::PruneUnthrottledTypes(const base::TimeTicks& time) {
+  UnthrottleTimes::iterator it = unthrottle_times_.begin();
+  while (it != unthrottle_times_.end()) {
+    if (it->second <= time) {
+      // Delete and increment the iterator.
+      UnthrottleTimes::iterator iterator_to_delete = it;
+      ++it;
+      unthrottle_times_.erase(iterator_to_delete);
+    } else {
+      // Just increment the iterator.
+      ++it;
+    }
+  }
+}
+
+// TODO(lipalani): Call this function and fill the return values in snapshot
+// so it could be shown in the about:sync page.
+syncable::ModelTypeSet SyncSessionContext::GetThrottledTypes() const {
+  syncable::ModelTypeSet types;
+  for (UnthrottleTimes::const_iterator it = unthrottle_times_.begin();
+       it != unthrottle_times_.end();
+       ++it) {
+    types.insert(it->first);
+  }
+  return types;
+}
+
 }  // namespace sessions
 }  // namespace browser_sync

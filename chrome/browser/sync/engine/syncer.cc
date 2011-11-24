@@ -145,6 +145,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         // for analysis purposes, so Law of Large Numbers FTW.
         session->context()->extensions_monitor()->GetAndClearRecords(
             session->mutable_extensions_activity());
+        session->context()->PruneUnthrottledTypes(base::TimeTicks::Now());
         next_step = CLEANUP_DISABLED_TYPES;
         break;
       case CLEANUP_DISABLED_TYPES: {
