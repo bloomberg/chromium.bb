@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/status/input_method_menu.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 namespace chromeos {
@@ -21,9 +20,7 @@ namespace chromeos {
 class InputMethodMenuButton : public StatusAreaButton,
                               public views::ViewMenuDelegate {
  public:
-  explicit InputMethodMenuButton(
-      StatusAreaButton::Delegate* delegate,
-      StatusAreaViewChromeos::ScreenMode screen_mode);
+  explicit InputMethodMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~InputMethodMenuButton();
 
   // views::View implementation.
@@ -49,7 +46,6 @@ class InputMethodMenuButton : public StatusAreaButton,
   bool WindowIsActive();
 
   scoped_ptr<InputMethodMenu> menu_;
-  StatusAreaViewChromeos::ScreenMode screen_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMenuButton);
 };

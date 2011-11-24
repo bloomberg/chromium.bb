@@ -76,7 +76,6 @@ namespace chromeos {
 
 BackgroundView::BackgroundView()
     : status_area_(NULL),
-      screen_mode_(StatusAreaViewChromeos::LOGIN_MODE_VIEWS),
       os_version_label_(NULL),
       boot_times_label_(NULL),
       shutdown_button_(NULL),
@@ -295,7 +294,7 @@ void BackgroundView::OnBootTimesLabelTextUpdated(
 void BackgroundView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
   status_area_ = new StatusAreaViewChromeos();
-  status_area_->Init(this, screen_mode_);
+  status_area_->Init(this);
   AddChildView(status_area_);
 }
 

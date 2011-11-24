@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/status/status_area_bubble.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -37,10 +38,8 @@ namespace chromeos {
 // AccessibilityMenuButton
 
 AccessibilityMenuButton::AccessibilityMenuButton(
-    StatusAreaButton::Delegate* delegate,
-    StatusAreaViewChromeos::ScreenMode screen_mode)
-    : StatusAreaButton(delegate, this),
-      screen_mode_(screen_mode) {
+    StatusAreaButton::Delegate* delegate)
+    : StatusAreaButton(delegate, this) {
   set_id(VIEW_ID_STATUS_BUTTON_ACCESSIBILITY);
   accessibility_enabled_.Init(prefs::kAccessibilityEnabled,
                               g_browser_process->local_state(), this);
@@ -95,7 +94,7 @@ void AccessibilityMenuButton::Observe(
     // Show a bubble when accessibility is turned on at the login screen.
     if (path == prefs::kAccessibilityEnabled) {
       if (accessibility_enabled_.GetValue() &&
-          screen_mode_ == StatusAreaViewChromeos::LOGIN_MODE_WEBUI) {
+          StatusAreaViewChromeos::IsLoginMode()) {
         views::ImageView* icon_view = new views::ImageView;
         const gfx::Image& image = ResourceBundle::GetSharedInstance().
             GetImageNamed(IDR_ACCESSIBILITY_ICON);

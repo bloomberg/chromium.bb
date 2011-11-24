@@ -352,8 +352,9 @@ chromeos::BrowserView* BrowserView::GetBrowserViewForBrowser(Browser* browser) {
 
 void BrowserView::Init() {
   ::BrowserView::Init();
+  StatusAreaViewChromeos::SetScreenMode(StatusAreaViewChromeos::BROWSER_MODE);
   status_area_ = new StatusAreaViewChromeos();
-  status_area_->Init(this, StatusAreaViewChromeos::BROWSER_MODE);
+  status_area_->Init(this);
   AddChildView(status_area_);
 
   layout_mode_button_ = new LayoutModeButton();

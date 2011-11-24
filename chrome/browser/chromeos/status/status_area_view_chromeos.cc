@@ -18,6 +18,30 @@
 
 namespace chromeos {
 
+// static
+StatusAreaViewChromeos::ScreenMode
+    StatusAreaViewChromeos::screen_mode_ = BROWSER_MODE;
+
+// static
+bool StatusAreaViewChromeos::IsBrowserMode() {
+  return screen_mode_ == BROWSER_MODE;
+}
+
+// static
+bool StatusAreaViewChromeos::IsLoginMode() {
+  return screen_mode_ == LOGIN_MODE_WEBUI;
+}
+
+// static
+bool StatusAreaViewChromeos::IsScreenLockMode() {
+  return screen_mode_ == SCREEN_LOCKER_MODE;
+}
+
+// static
+void StatusAreaViewChromeos::SetScreenMode(ScreenMode mode) {
+  screen_mode_ = mode;
+}
+
 StatusAreaViewChromeos::StatusAreaViewChromeos() {
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
@@ -28,9 +52,8 @@ StatusAreaViewChromeos::~StatusAreaViewChromeos() {
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 }
 
-void StatusAreaViewChromeos::Init(StatusAreaButton::Delegate* delegate,
-                                  ScreenMode screen_mode) {
-  AddChromeosButtons(this, delegate, screen_mode, NULL);
+void StatusAreaViewChromeos::Init(StatusAreaButton::Delegate* delegate) {
+  AddChromeosButtons(this, delegate, NULL);
 }
 
 void StatusAreaViewChromeos::SystemResumed() {
@@ -59,7 +82,6 @@ void StatusAreaViewChromeos::SetDefaultUse24HourClock(bool use_24hour_clock) {
 void StatusAreaViewChromeos::AddChromeosButtons(
     StatusAreaView* status_area,
     StatusAreaButton::Delegate* delegate,
-    ScreenMode screen_mode,
     ClockMenuButton** clock_button) {
   const bool border = true;
   const bool no_border = false;
@@ -67,18 +89,15 @@ void StatusAreaViewChromeos::AddChromeosButtons(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemoryWidget))
     status_area->AddButton(new MemoryMenuButton(delegate), no_border);
 
-  status_area->AddButton(
-      new AccessibilityMenuButton(delegate, screen_mode), border);
+  status_area->AddButton(new AccessibilityMenuButton(delegate), border);
   status_area->AddButton(new CapsLockMenuButton(delegate), border);
   ClockMenuButton* clock = new ClockMenuButton(delegate);
   status_area->AddButton(clock, border);
   if (clock_button)
     *clock_button = clock;
 
-  status_area->AddButton(
-      new InputMethodMenuButton(delegate, screen_mode), no_border);
-  status_area->AddButton(
-      new NetworkMenuButton(delegate, screen_mode), no_border);
+  status_area->AddButton(new InputMethodMenuButton(delegate), no_border);
+  status_area->AddButton(new NetworkMenuButton(delegate), no_border);
   status_area->AddButton(new PowerMenuButton(delegate), no_border);
 }
 

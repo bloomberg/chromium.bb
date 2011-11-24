@@ -29,7 +29,7 @@ class LoginHtmlDialog : public HtmlDialogUIDelegate,
     virtual ~Delegate() {}
 
     // Called when dialog has been closed.
-    virtual void OnDialogClosed() = 0;
+    virtual void OnDialogClosed();
   };
 
   enum Style {

@@ -19,8 +19,11 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/base_login_display_host.h"
+#include "chrome/browser/chromeos/login/proxy_settings_dialog.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/status/timezone_clock_updater.h"
+#include "ui/gfx/native_widget_types.h"
 #endif
 
 StatusAreaHostAura::StatusAreaHostAura()
@@ -46,9 +49,9 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
   // Add child buttons.
 #if defined(OS_CHROMEOS)
   ClockMenuButton* clock = NULL;
-  chromeos::StatusAreaViewChromeos::AddChromeosButtons(
-      status_area_view_, this, chromeos::StatusAreaViewChromeos::BROWSER_MODE,
-      &clock);
+  chromeos::StatusAreaViewChromeos::AddChromeosButtons(status_area_view_,
+                                                       this,
+                                                       &clock);
   DCHECK(clock);
   timezone_clock_updater_.reset(new TimezoneClockUpdater(clock));
 #else
@@ -81,7 +84,15 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
 bool StatusAreaHostAura::ShouldExecuteStatusAreaCommand(
     const views::View* button_view, int command_id) const {
 #if defined(OS_CHROMEOS)
-  return true;
+  if (chromeos::StatusAreaViewChromeos::IsLoginMode()) {
+    // In login mode network options command means proxy settings dialog.
+    if (command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS)
+      return true;
+    else
+      return false;
+  } else {
+    return true;
+  }
 #else
   // TODO(stevenjb): system options for non-chromeos Aura?
   return false;
@@ -91,20 +102,33 @@ bool StatusAreaHostAura::ShouldExecuteStatusAreaCommand(
 void StatusAreaHostAura::ExecuteStatusAreaCommand(
     const views::View* button_view, int command_id) {
 #if defined(OS_CHROMEOS)
-  Browser* browser = BrowserList::FindBrowserWithProfile(
-      ProfileManager::GetDefaultProfile());
-  switch (command_id) {
-    case StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS:
-      browser->OpenInternetOptionsDialog();
-      break;
-    case StatusAreaButton::Delegate::SHOW_LANGUAGE_OPTIONS:
-      browser->OpenLanguageOptionsDialog();
-      break;
-    case StatusAreaButton::Delegate::SHOW_SYSTEM_OPTIONS:
-      browser->OpenSystemOptionsDialog();
-      break;
-    default:
+  if (chromeos::StatusAreaViewChromeos::IsBrowserMode()) {
+    Browser* browser = BrowserList::FindBrowserWithProfile(
+        ProfileManager::GetDefaultProfile());
+    switch (command_id) {
+      case StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS:
+        browser->OpenInternetOptionsDialog();
+        break;
+      case StatusAreaButton::Delegate::SHOW_LANGUAGE_OPTIONS:
+        browser->OpenLanguageOptionsDialog();
+        break;
+      case StatusAreaButton::Delegate::SHOW_SYSTEM_OPTIONS:
+        browser->OpenSystemOptionsDialog();
+        break;
+      default:
+        NOTREACHED();
+    }
+  } else if (chromeos::StatusAreaViewChromeos::IsLoginMode()) {
+    if (command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS &&
+        chromeos::BaseLoginDisplayHost::default_host()) {
+      gfx::NativeWindow native_window =
+          chromeos::BaseLoginDisplayHost::default_host()->GetNativeWindow();
+      proxy_settings_dialog_.reset(new chromeos::ProxySettingsDialog(
+          NULL, native_window));
+      proxy_settings_dialog_->Show();
+    } else {
       NOTREACHED();
+    }
   }
 #endif
 }

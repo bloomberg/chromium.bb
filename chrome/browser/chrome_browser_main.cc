@@ -142,6 +142,7 @@
 #include "chrome/browser/chromeos/login/ownership_service.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/chromeos/xinput_hierarchy_changed_event_listener.h"
@@ -1563,6 +1564,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // initialization code sees policy settings.
     g_browser_process->browser_policy_connector()->InitializeUserPolicy(
         username, false  /* wait_for_policy_fetch */);
+  } else if (parsed_command_line().HasSwitch(switches::kLoginManager)) {
+    // Initialize status area mode early on.
+    chromeos::StatusAreaViewChromeos::
+        SetScreenMode(chromeos::StatusAreaViewChromeos::LOGIN_MODE_WEBUI);
   }
 #endif
 

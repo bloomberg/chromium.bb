@@ -41,7 +41,7 @@ class NetworkMenuWebUI : public NetworkMenu {
 
 NetworkMenuWebUI::NetworkMenuWebUI(NetworkMenu::Delegate* delegate,
                                    WebUI* web_ui)
-    : NetworkMenu(delegate, false),
+    : NetworkMenu(delegate),
       web_ui_(web_ui) {
 }
 

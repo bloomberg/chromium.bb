@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/sim_dialog_delegate.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -97,18 +98,14 @@ namespace chromeos {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton
 
-NetworkMenuButton::NetworkMenuButton(
-    StatusAreaButton::Delegate* delegate,
-    StatusAreaViewChromeos::ScreenMode screen_mode)
+NetworkMenuButton::NetworkMenuButton(StatusAreaButton::Delegate* delegate)
     : StatusAreaButton(delegate, this),
       mobile_data_bubble_(NULL),
-      is_browser_mode_(false),
       check_for_promo_(true),
       was_sim_locked_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   set_id(VIEW_ID_STATUS_BUTTON_NETWORK_MENU);
-  is_browser_mode_ = (screen_mode == StatusAreaViewChromeos::BROWSER_MODE);
-  network_menu_.reset(new NetworkMenu(this, is_browser_mode_));
+  network_menu_.reset(new NetworkMenu(this));
   network_icon_.reset(
       new NetworkMenuIcon(this, NetworkMenuIcon::MENU_MODE));
 
@@ -367,7 +364,8 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
   // Display one-time notification for non-Guest users on first use
   // of Mobile Data connection or if there's a carrier deal defined
   // show that even if user has already seen generic promo.
-  if (is_browser_mode_ && !UserManager::Get()->IsLoggedInAsGuest() &&
+  if (StatusAreaViewChromeos::IsBrowserMode() &&
+      !UserManager::Get()->IsLoggedInAsGuest() &&
       check_for_promo_ && BrowserList::GetLastActive() &&
       cros->cellular_connected() && !cros->ethernet_connected() &&
       !cros->wifi_connected()) {

@@ -22,16 +22,30 @@ class StatusAreaViewChromeos : public StatusAreaView,
  public:
   // The type of screen the host window is on.
   enum ScreenMode {
-    LOGIN_MODE_VIEWS,    // The host is for the views-based OOBE/login screens.
     LOGIN_MODE_WEBUI,    // The host is for the WebUI OOBE/login screens.
     BROWSER_MODE,        // The host is for browser.
     SCREEN_LOCKER_MODE,  // The host is for screen locker.
   };
 
+  // True if the browser is visible (i.e. not login/OOBE).
+  static bool IsBrowserMode();
+
+  // True if not logged in into user session (i.e. login/OOBE).
+  // It's not always !IsBrowserMode() as there's SCREEN_LOCKER_MODE which
+  // is inside user session, using login host and browser is not available.
+  static bool IsLoginMode();
+
+  // True if user is logged in but browser session is not available
+  // as screen lock is active.
+  static bool IsScreenLockMode();
+
+  // Sets current screen mode.
+  static void SetScreenMode(ScreenMode mode);
+
   explicit StatusAreaViewChromeos();
   virtual ~StatusAreaViewChromeos();
 
-  void Init(StatusAreaButton::Delegate* delegate, ScreenMode screen_mode);
+  void Init(StatusAreaButton::Delegate* delegate);
 
   // PowerManagerClient::Observer:
   virtual void SystemResumed() OVERRIDE;
@@ -47,10 +61,12 @@ class StatusAreaViewChromeos : public StatusAreaView,
   // by this method.
   static void AddChromeosButtons(StatusAreaView* status_area,
                                  StatusAreaButton::Delegate* delegate,
-                                 ScreenMode screen_mode,
                                  ClockMenuButton** clock_button);
 
  private:
+  // Current screen mode of the status area.
+  static ScreenMode screen_mode_;
+
   void UpdateClockText();
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaViewChromeos);

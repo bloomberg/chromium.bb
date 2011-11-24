@@ -35,7 +35,6 @@ class StatusAreaViewChromeos;
 class WebUILoginView : public views::WidgetDelegateView,
                        public StatusAreaButton::Delegate,
                        public TabContentsDelegate,
-                       public LoginHtmlDialog::Delegate,
                        public TabFirstRenderWatcher::Delegate {
  public:
   static const int kStatusAreaCornerPadding;
@@ -76,6 +75,7 @@ class WebUILoginView : public views::WidgetDelegateView,
  protected:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
+  virtual void OnLocaleChanged() OVERRIDE;
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
   // Overridden from StatusAreaButton::Delegate:
@@ -86,10 +86,6 @@ class WebUILoginView : public views::WidgetDelegateView,
   virtual gfx::Font GetStatusAreaFont(const gfx::Font& font) const OVERRIDE;
   virtual StatusAreaButton::TextStyle GetStatusAreaTextStyle() const OVERRIDE;
   virtual void ButtonVisibilityChanged(views::View* button_view) OVERRIDE;
-
-  // Overridden from LoginHtmlDialog::Delegate:
-  virtual void OnDialogClosed() OVERRIDE;
-  virtual void OnLocaleChanged() OVERRIDE;
 
   // TabFirstRenderWatcher::Delegate implementation.
   virtual void OnRenderHostCreated(RenderViewHost* host) OVERRIDE;

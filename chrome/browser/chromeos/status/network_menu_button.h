@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/status/network_menu.h"
 #include "chrome/browser/chromeos/status/network_menu_icon.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 
 class PrefService;
 
@@ -56,8 +55,7 @@ class NetworkMenuButton : public StatusAreaButton,
                           public NetworkLibrary::CellularDataPlanObserver,
                           public MessageBubbleDelegate {
  public:
-  explicit NetworkMenuButton(StatusAreaButton::Delegate* delegate,
-                             StatusAreaViewChromeos::ScreenMode screen_mode);
+  explicit NetworkMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~NetworkMenuButton();
 
   static void RegisterPrefs(PrefService* local_state);
@@ -134,9 +132,6 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // Notification bubble for 3G promo.
   MessageBubble* mobile_data_bubble_;
-
-  // Set to true if the browser is visible (i.e. not login/oobe).
-  bool is_browser_mode_;
 
   // True if check for promo needs to be done,
   // otherwise just ignore it for current session.

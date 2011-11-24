@@ -117,10 +117,6 @@ class BackgroundView : public views::View,
   virtual void OnBootTimesLabelTextUpdated(
       const std::string& boot_times_label_text) OVERRIDE;
 
-  void set_screen_mode(StatusAreaViewChromeos::ScreenMode mode) {
-    screen_mode_ = mode;
-  }
-
  private:
   // Creates and adds the status_area.
   void InitStatusArea();
@@ -133,7 +129,6 @@ class BackgroundView : public views::View,
 
   // All of these variables could be NULL.
   StatusAreaViewChromeos* status_area_;
-  StatusAreaViewChromeos::ScreenMode screen_mode_;
   views::Label* os_version_label_;
   views::Label* boot_times_label_;
   ShutdownButton* shutdown_button_;

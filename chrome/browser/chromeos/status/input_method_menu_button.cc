@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,9 +31,8 @@ PrefService* GetPrefService() {
 class MenuImpl : public chromeos::InputMethodMenu {
  public:
   MenuImpl(chromeos::InputMethodMenuButton* button,
-           PrefService* pref_service,
-           chromeos::StatusAreaViewChromeos::ScreenMode screen_mode)
-      : InputMethodMenu(pref_service, screen_mode, false), button_(button) {}
+           PrefService* pref_service)
+      : InputMethodMenu(pref_service, false), button_(button) {}
 
  private:
   // InputMethodMenu implementation.
@@ -62,11 +62,9 @@ namespace chromeos {
 // InputMethodMenuButton
 
 InputMethodMenuButton::InputMethodMenuButton(
-    StatusAreaButton::Delegate* delegate,
-    StatusAreaViewChromeos::ScreenMode screen_mode)
+    StatusAreaButton::Delegate* delegate)
     : StatusAreaButton(delegate, this),
-      menu_(new MenuImpl(this, GetPrefService(), screen_mode)),
-      screen_mode_(screen_mode) {
+      menu_(new MenuImpl(this, GetPrefService())) {
   set_id(VIEW_ID_STATUS_BUTTON_INPUT_METHOD);
   UpdateUIFromCurrentInputMethod();
 }
@@ -119,7 +117,7 @@ void InputMethodMenuButton::UpdateUI(const std::string& input_method_id,
   const bool hide_button =
       num_active_input_methods == 1 &&
       input_method::InputMethodUtil::IsKeyboardLayout(input_method_id) &&
-      screen_mode_ == StatusAreaViewChromeos::BROWSER_MODE;
+      StatusAreaViewChromeos::IsBrowserMode();
   SetVisible(!hide_button);
   SetText(name);
   SetTooltipText(tooltip);

@@ -224,6 +224,12 @@ void WebUILoginView::Layout() {
   webui_login_->SetBoundsRect(bounds());
 }
 
+void WebUILoginView::OnLocaleChanged() {
+  // Proxy settings dialog contains localized strings.
+  proxy_settings_dialog_.reset();
+  SchedulePaint();
+}
+
 void WebUILoginView::ChildPreferredSizeChanged(View* child) {
   Layout();
   SchedulePaint();
@@ -242,8 +248,8 @@ void WebUILoginView::ExecuteStatusAreaCommand(
     const views::View* button_view, int command_id) {
   if (command_id == StatusAreaButton::Delegate::SHOW_NETWORK_OPTIONS) {
     if (proxy_settings_dialog_.get() == NULL) {
-      proxy_settings_dialog_.reset(new ProxySettingsDialog(
-          this, GetNativeWindow()));
+      proxy_settings_dialog_.reset(new ProxySettingsDialog(NULL,
+                                                           GetNativeWindow()));
     }
     proxy_settings_dialog_->Show();
   }
@@ -261,17 +267,6 @@ void WebUILoginView::ButtonVisibilityChanged(views::View* button_view) {
   status_area_->UpdateButtonVisibility();
 }
 
-// Overridden from LoginHtmlDialog::Delegate:
-
-void WebUILoginView::OnDialogClosed() {
-}
-
-void WebUILoginView::OnLocaleChanged() {
-  // Proxy settings dialog contains localized strings.
-  proxy_settings_dialog_.reset();
-  SchedulePaint();
-}
-
 void WebUILoginView::OnRenderHostCreated(RenderViewHost* host) {
   new SnifferObserver(host, GetWebUI());
 }
@@ -282,6 +277,8 @@ void WebUILoginView::OnTabMainFrameLoaded() {
 
 void WebUILoginView::OnTabMainFrameFirstRender() {
   VLOG(1) << "WebUI login main frame rendered.";
+  StatusAreaViewChromeos::SetScreenMode(
+      StatusAreaViewChromeos::LOGIN_MODE_WEBUI);
   // In aura there's a global status area shown already.
   // TODO(nkostylev): Figure out how to communicate from login screen with
   // global status area.
@@ -321,7 +318,7 @@ void WebUILoginView::InitStatusArea() {
   DCHECK(status_area_ == NULL);
   DCHECK(status_window_ == NULL);
   status_area_ = new StatusAreaViewChromeos();
-  status_area_->Init(this, StatusAreaViewChromeos::LOGIN_MODE_WEBUI);
+  status_area_->Init(this);
   status_area_->SetVisible(status_area_visibility_on_init_);
 
   // Width of |status_window| is meant to be large enough.

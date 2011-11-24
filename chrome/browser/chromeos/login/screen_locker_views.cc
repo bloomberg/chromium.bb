@@ -389,7 +389,13 @@ class ScreenLockerBackgroundView
                              views::View* screen_lock_view)
       : lock_widget_(lock_widget),
         screen_lock_view_(screen_lock_view) {
-    set_screen_mode(chromeos::StatusAreaViewChromeos::SCREEN_LOCKER_MODE);
+    chromeos::StatusAreaViewChromeos::SetScreenMode(
+        chromeos::StatusAreaViewChromeos::SCREEN_LOCKER_MODE);
+  }
+
+  virtual ~ScreenLockerBackgroundView() {
+    chromeos::StatusAreaViewChromeos::SetScreenMode(
+        chromeos::StatusAreaViewChromeos::BROWSER_MODE);
   }
 
   virtual void Layout() OVERRIDE {

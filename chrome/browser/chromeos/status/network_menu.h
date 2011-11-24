@@ -70,7 +70,7 @@ class NetworkMenu {
     virtual bool ShouldOpenButtonOptions() const = 0;
   };
 
-  NetworkMenu(Delegate* delegate, bool is_browser_mode);
+  explicit NetworkMenu(Delegate* delegate);
   virtual ~NetworkMenu();
 
   // Access to menu definition.
@@ -90,7 +90,6 @@ class NetworkMenu {
 
   // Getters.
   Delegate* delegate() const { return delegate_; }
-  bool is_browser_mode() const { return is_browser_mode_; }
 
   // Setters.
   void set_min_width(int min_width) { min_width_ = min_width; }
@@ -100,9 +99,6 @@ class NetworkMenu {
 
   // Weak ptr to delegate.
   Delegate* delegate_;
-
-  // True if the browser is visible (i.e. not login/OOBE).
-  bool is_browser_mode_;
 
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;

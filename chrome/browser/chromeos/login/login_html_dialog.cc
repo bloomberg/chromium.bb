@@ -30,6 +30,9 @@ const double kDefaultHeightRatio = 0.6;
 ///////////////////////////////////////////////////////////////////////////////
 // LoginHtmlDialog, public:
 
+void LoginHtmlDialog::Delegate::OnDialogClosed() {
+}
+
 LoginHtmlDialog::LoginHtmlDialog(Delegate* delegate,
                                  gfx::NativeWindow parent_window,
                                  const std::wstring& title,

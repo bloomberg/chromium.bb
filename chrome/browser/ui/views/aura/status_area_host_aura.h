@@ -9,6 +9,11 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/login/login_html_dialog.h"
+#endif
+
 class StatusAreaView;
 class TimezoneClockUpdater;
 
@@ -46,6 +51,9 @@ class StatusAreaHostAura : public StatusAreaButton::Delegate {
   StatusAreaView* status_area_view_;
 
 #if defined(OS_CHROMEOS)
+  // Proxy settings dialog that can be invoked from network menu.
+  scoped_ptr<chromeos::LoginHtmlDialog> proxy_settings_dialog_;
+
   scoped_ptr<TimezoneClockUpdater> timezone_clock_updater_;
 #endif
 

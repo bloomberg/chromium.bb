@@ -10,7 +10,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -46,7 +45,6 @@ class InputMethodMenu
       public content::NotificationObserver {
  public:
   InputMethodMenu(PrefService* pref_service,
-                  StatusAreaViewChromeos::ScreenMode screen_mode,
                   bool for_out_of_box_experience_dialog);
   virtual ~InputMethodMenu();
 
@@ -171,6 +169,9 @@ class InputMethodMenu
   // Stops observing InputMethodManager.
   void RemoveObservers();
 
+  // Initializes objects for reading/writing Chrome prefs.
+  void InitializePrefMembers();
+
   // The current input method list.
   scoped_ptr<input_method::InputMethodDescriptors> input_method_descriptors_;
 
@@ -195,8 +196,6 @@ class InputMethodMenu
   PrefService* pref_service_;
   content::NotificationRegistrar registrar_;
 
-  // The mode of the host screen  (e.g. browser, screen locker, login screen.)
-  const StatusAreaViewChromeos::ScreenMode screen_mode_;
   // true if the menu is for a dialog in OOBE screen. In the dialog, we don't
   // use radio buttons.
   const bool for_out_of_box_experience_dialog_;
