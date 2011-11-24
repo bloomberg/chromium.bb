@@ -38,7 +38,7 @@ generator_default_variables = {
   'SHARED_LIB_PREFIX': 'lib',
   'STATIC_LIB_SUFFIX': '.a',
   'INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/$(TARGET)/geni',
-  'SHARED_INTERMEDIATE_DIR': '$(obj).$(TOOLSET)/gen',
+  'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
   'PRODUCT_DIR': '$(builddir)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
   'RULE_INPUT_DIRNAME': '%(INPUT_DIRNAME)s',  # This gets expanded by Python.
