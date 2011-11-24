@@ -330,7 +330,6 @@
    fun:_ZN6webkit5npapi9PluginLib13NP_InitializeEv
    fun:_ZN6webkit5npapi21WebPluginDelegateImpl6CreateERK8FilePathRKSsy
    fun:_ZN19TestWebViewDelegate20CreatePluginDelegateERK8FilePathRKSs
-   fun:_ZN6webkit5npapi13WebPluginImpl10initializeEPN6WebKit18WebPluginContainerE
 }
 {
    # Mac Sandbox test cases are registered in a global map.  This code is only

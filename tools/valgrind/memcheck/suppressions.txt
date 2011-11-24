@@ -2765,6 +2765,15 @@
    fun:_ZN30ExtensionFromWebApp_Basic_Test8TestBodyEv
 }
 {
+   bug_63671_b
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:_ZN9file_util9WriteFileERK8FilePathPKci
+   fun:_ZN12_GLOBAL__N_110SaveBitmapEPSt6vectorIhSaIhEE8FilePathPb
+   fun:_ZN4base8internal15RunnableAdapterIPFvPSt6vectorIhSaIhEE8FilePathPbEE3RunERKS5_RKS6_RKS7_
+}
+{
    bug_64804
    Memcheck:Leak
    fun:_Znw*
