@@ -881,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   // Disable mouse watcher. We don't care about mouse movements in this test.
   PanelManager* panel_manager = PanelManager::GetInstance();
   panel_manager->disable_mouse_watching();
-  Panel* panel = CreatePanel("PanelTest");
+  Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
   EXPECT_EQ(panel->GetBounds(), panel->GetRestoredBounds());
   EXPECT_EQ(0, panel_manager->minimized_panel_count());
@@ -1493,6 +1493,67 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateWithExistingContents) {
   Browser* tabbed_browser = BrowserList::FindTabbedBrowser(profile, false);
   EXPECT_EQ(contents, tabbed_browser->GetSelectedTabContentsWrapper());
   tabbed_browser->window()->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, SizeClamping) {
+  // Using '0' sizes is equivalent of not providing sizes in API and causes
+  // minimum sizes to be applied to facilitate auto-sizing.
+  CreatePanelParams params("Panel", gfx::Rect(), SHOW_AS_ACTIVE);
+  Panel* panel = CreatePanelWithParams(params);
+  EXPECT_EQ(PanelManager::kPanelMinWidth, panel->GetBounds().width());
+  EXPECT_EQ(PanelManager::kPanelMinHeight, panel->GetBounds().height());
+  panel->Close();
+
+  // Using reasonable actual sizes should avoid clamping.
+  int reasonable_width = PanelManager::kPanelMinWidth + 10;
+  int reasonable_height = PanelManager::kPanelMinHeight + 20;
+  CreatePanelParams params1("Panel1",
+                            gfx::Rect(0, 0,
+                                      reasonable_width, reasonable_height),
+                            SHOW_AS_ACTIVE);
+  panel = CreatePanelWithParams(params1);
+  EXPECT_EQ(reasonable_width, panel->GetBounds().width());
+  EXPECT_EQ(reasonable_height, panel->GetBounds().height());
+  panel->Close();
+
+  // Using just one size should auto-compute some reasonable other size.
+  int given_height = 200;
+  CreatePanelParams params2("Panel2", gfx::Rect(0, 0, 0, given_height),
+                            SHOW_AS_ACTIVE);
+  panel = CreatePanelWithParams(params2);
+  EXPECT_GT(panel->GetBounds().width(), 0);
+  EXPECT_EQ(given_height, panel->GetBounds().height());
+  panel->Close();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, TightAutosizeAroundSingleLine) {
+  PanelManager::GetInstance()->enable_auto_sizing(true);
+  // Using 0 sizes triggers auto-sizing.
+  CreatePanelParams params("Panel", gfx::Rect(), SHOW_AS_ACTIVE);
+  params.url = GURL("data:text/html;charset=utf-8,<!doctype html><body>");
+  Panel* panel = CreatePanelWithParams(params);
+
+  int initial_width = panel->GetBounds().width();
+  int initial_height = panel->GetBounds().height();
+
+  // Inject some HTML content into the panel.
+  ui_test_utils::WindowedNotificationObserver enlarge(
+      chrome::NOTIFICATION_PANEL_BOUNDS_ANIMATIONS_FINISHED,
+      content::Source<Panel>(panel));
+  EXPECT_TRUE(ui_test_utils::ExecuteJavaScript(
+      panel->browser()->GetSelectedTabContents()->render_view_host(),
+      std::wstring(),
+      L"document.body.innerHTML ="
+      L"'<nobr>line of text and a <button>Button</button>';"));
+  enlarge.Wait();
+
+  // The panel should have become larger in both dimensions (the minimums
+  // has to be set to be smaller then a simple 1-line content, so the autosize
+  // can work correctly.
+  EXPECT_GT(panel->GetBounds().width(), initial_width);
+  EXPECT_GT(panel->GetBounds().height(), initial_height);
+
+  panel->Close();
 }
 
 class PanelDownloadTest : public PanelBrowserTest {

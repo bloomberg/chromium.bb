@@ -50,6 +50,10 @@ const int kMillisecondsBeforeCollapsingFromTitleOnlyState = 0;
 }  // namespace
 
 // static
+const int PanelManager::kPanelMinWidth = 100;
+const int PanelManager::kPanelMinHeight = 20;
+
+// static
 PanelManager* PanelManager::GetInstance() {
   static base::LazyInstance<PanelManager> instance = LAZY_INSTANCE_INITIALIZER;
   return instance.Pointer();

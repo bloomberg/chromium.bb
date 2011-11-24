@@ -118,6 +118,7 @@ class PanelManager : public PanelMouseWatcher::Observer,
 
  private:
   friend struct base::DefaultLazyInstanceTraits<PanelManager>;
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, SizeClamping);
 
   enum TitlebarAction {
     NO_ACTION,
@@ -221,12 +222,11 @@ class PanelManager : public PanelMouseWatcher::Observer,
 
   static const int kPanelsHorizontalSpacing = 4;
 
-  // Minimum width and height of a panel.
-  // Note: The minimum size of a widget (see widget.cc) is fixed to 100x100.
-  // TODO(jianli): Need to fix this to support smaller panel.
-  // http://crbug.com/102708
-  static const int kPanelMinWidth = 100;
-  static const int kPanelMinHeight = 100;
+  // Absolute minimum width and height for panels, including non-client area.
+  // Should only be big enough to accomodate a close button on the reasonably
+  // recognisable titlebar.
+  static const int kPanelMinWidth;
+  static const int kPanelMinHeight;
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };
