@@ -25,15 +25,16 @@
     },
     'views': {
       # Applies to all files and subdirs within this directory.
-      'filepath': '^views/.*',
+      'filepath': '^views/.*|'\
+                  '^ui/views/.*',
     },
     'aura': {
-      'filepath': 'ui/aura/.*'\
+      'filepath': 'ui/aura/.*|'\
                   'ui/aura_shell/.*',
     },
     'views_core': {
-      'filepath': 'views/view.h'\
-                  'views/view.cc'\
+      'filepath': 'views/view.h|'\
+                  'views/view.cc|'\
                   'views/widget/.*',
     },
     'browser': {
