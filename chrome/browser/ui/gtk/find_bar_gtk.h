@@ -165,11 +165,8 @@ class FindBarGtk : public FindBar,
     find_bar->AdjustTextAlignment();
   }
 
-  static gboolean OnFocusIn(GtkWidget* entry, GdkEventFocus* event,
-                            FindBarGtk* find_bar);
-
-  static gboolean OnFocusOut(GtkWidget* entry, GdkEventFocus* event,
-                             FindBarGtk* find_bar);
+  CHROMEGTK_CALLBACK_1(FindBarGtk, gboolean, OnFocusIn, GdkEventFocus*);
+  CHROMEGTK_CALLBACK_1(FindBarGtk, gboolean, OnFocusOut, GdkEventFocus*);
 
   Browser* browser_;
   BrowserWindowGtk* window_;

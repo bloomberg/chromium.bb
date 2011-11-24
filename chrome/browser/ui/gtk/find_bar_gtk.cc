@@ -206,9 +206,9 @@ FindBarGtk::FindBarGtk(BrowserWindowGtk* window)
   g_signal_connect(text_entry_, "direction-changed",
                    G_CALLBACK(OnWidgetDirectionChanged), this);
   g_signal_connect(text_entry_, "focus-in-event",
-                   G_CALLBACK(OnFocusIn), this);
+                   G_CALLBACK(OnFocusInThunk), this);
   g_signal_connect(text_entry_, "focus-out-event",
-                   G_CALLBACK(OnFocusOut), this);
+                   G_CALLBACK(OnFocusOutThunk), this);
   g_signal_connect(container_, "expose-event",
                    G_CALLBACK(OnExpose), this);
 }
@@ -732,10 +732,9 @@ void FindBarGtk::OnParentSet(GtkWidget* widget, GtkObject* old_parent,
 }
 
 // static
-void FindBarGtk::OnSetFloatingPosition(
-    GtkFloatingContainer* floating_container,
-    GtkAllocation* allocation,
-    FindBarGtk* find_bar) {
+void FindBarGtk::OnSetFloatingPosition(GtkFloatingContainer* floating_container,
+                                       GtkAllocation* allocation,
+                                       FindBarGtk* find_bar) {
   GtkWidget* findbar = find_bar->widget();
 
   int xposition = find_bar->GetDialogPosition(find_bar->selection_rect_).x();
@@ -963,25 +962,20 @@ void FindBarGtk::OnActivate(GtkWidget* entry) {
   FindEntryTextInContents(true);
 }
 
-// static
-gboolean FindBarGtk::OnFocusIn(GtkWidget* entry, GdkEventFocus* event,
-                               FindBarGtk* find_bar) {
-  g_signal_connect(
-      gdk_keymap_get_for_display(gtk_widget_get_display(entry)),
-      "direction-changed",
-      G_CALLBACK(&OnKeymapDirectionChanged), find_bar);
+gboolean FindBarGtk::OnFocusIn(GtkWidget* entry, GdkEventFocus* event) {
+  g_signal_connect(gdk_keymap_get_for_display(gtk_widget_get_display(entry)),
+                   "direction-changed",
+                   G_CALLBACK(&OnKeymapDirectionChanged), this);
 
-  find_bar->AdjustTextAlignment();
+  AdjustTextAlignment();
 
   return FALSE;  // Continue propagation.
 }
 
-// static
-gboolean FindBarGtk::OnFocusOut(GtkWidget* entry, GdkEventFocus* event,
-                                FindBarGtk* find_bar) {
+gboolean FindBarGtk::OnFocusOut(GtkWidget* entry, GdkEventFocus* event) {
   g_signal_handlers_disconnect_by_func(
       gdk_keymap_get_for_display(gtk_widget_get_display(entry)),
-      reinterpret_cast<gpointer>(&OnKeymapDirectionChanged), find_bar);
+      reinterpret_cast<gpointer>(&OnKeymapDirectionChanged), this);
 
   return FALSE;  // Continue propagation.
 }
