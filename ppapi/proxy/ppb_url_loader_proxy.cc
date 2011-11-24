@@ -543,7 +543,7 @@ void PPB_URLLoader_Proxy::OnMsgFinishStreamingToFile(
     const HostResource& loader) {
   EnterHostFromHostResourceForceCallback<PPB_URLLoader_API> enter(
       loader, callback_factory_, &PPB_URLLoader_Proxy::OnCallback, loader);
-  if (enter.failed())
+  if (enter.succeeded())
     enter.SetResult(enter.object()->FinishStreamingToFile(enter.callback()));;
 }
 
