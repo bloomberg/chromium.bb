@@ -267,8 +267,19 @@
   </interface>
 
   <interface name="wl_shell" version="1">
-    <request name="move">
+    <request name="get_shell_surface">
+      <arg name="id" type="new_id" interface="wl_shell_surface"/>
       <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
+  </interface>
+
+  <!-- A wrapper interface for shell related actions on a wl_surface.
+       On server side the object is automatically destroyed when the
+       related wl_surface is destroyed.
+       On client side, wl_shell_surface_destroy() must be called
+       before destroying the wl_surface object. -->
+  <interface name="wl_shell_surface" version="1">
+    <request name="move">
       <arg name="input_device" type="object" interface="wl_input_device"/>
       <arg name="time" type="uint"/>
     </request>
@@ -286,7 +297,6 @@
     </enum>
 
     <request name="resize">
-      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="input_device" type="object" interface="wl_input_device"/>
       <arg name="time" type="uint"/>
       <!-- edges is an enum, need to get the values in here -->
@@ -294,9 +304,7 @@
     </request>
 
     <!-- Make the surface visible as a toplevel window. -->
-    <request name="set_toplevel">
-      <arg name="surface" type="object" interface="wl_surface"/>
-    </request>
+    <request name="set_toplevel"/>
 
     <!-- Map the surface relative to an existing surface. The x and y
          arguments specify the locations of the upper left corner of
@@ -307,8 +315,7 @@
          determines the initial position or if the surface is locked
          to that relative position during moves. -->
     <request name="set_transient">
-      <arg name="surface" type="object" interface="wl_surface"/>
-      <arg name="parent" type="object" interface="wl_surface"/>
+      <arg name="parent" type="object" interface="wl_shell_surface"/>
       <arg name="x" type="int"/>
       <arg name="y" type="int"/>
       <arg name="flags" type="uint"/>
@@ -322,9 +329,7 @@
          fullscreen? what if there's already a fullscreen surface on
          the output, maybe you can only go fullscreen if you're
          active?  -->
-    <request name="set_fullscreen">
-      <arg name="surface" type="object" interface="wl_surface"/>
-    </request>
+    <request name="set_fullscreen"/>
 
     <!-- The configure event asks the client to resize its surface.
          The size is a hint, in the sense that the client is free to
@@ -335,7 +340,6 @@
     <event name="configure">
       <arg name="time" type="uint"/>
       <arg name="edges" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>
