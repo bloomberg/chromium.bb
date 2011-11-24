@@ -1999,3 +1999,48 @@
    fun:_ZN4base12_GLOBAL__N_112WorkerThread10ThreadMainEv
    fun:_ZN4base12_GLOBAL__N_110ThreadFuncEPv
 }
+{
+   bug_105339
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_malloc_internal
+   fun:_cache_addForwardEntry
+   fun:lookUpMethod
+   fun:class_respondsToSelector
+}
+{
+   bug_105341_a
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:allocWorld
+   fun:create
+   fun:aquireColorWorldByAttributes
+   fun:acquireColorWorld
+   fun:CMSTransformConvertComponents
+   fun:CGCMSInterfaceTransformConvertColorComponents
+}
+{
+   bug_105341_b
+   Memcheck:Leak
+   fun:calloc
+   fun:_ZN9CMMMemMgr3NewEm
+   ...
+   fun:create
+   fun:aquireColorWorldByAttributes
+   fun:acquireColorWorld
+   fun:CMSTransformConvertComponents
+   fun:CGCMSInterfaceTransformConvertColorComponents
+}
+{
+   bug_105342
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN15TSessionManager20CreateSessionManagerEv
+   fun:pthread_once
+   fun:_ZN15TSessionManagerC1Ev
+   fun:_ZN13TFontMetadata24CreateMetadataForFontURLEPK7__CFURLb
+   ...
+   fun:XTRegisterFont
+   fun:SendActivateFontsMessage
+}

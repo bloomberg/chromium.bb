@@ -684,6 +684,7 @@
    valgrind_bitfields_false_positive
    Memcheck:Cond
    fun:_ZN7WebCore13WidthIterator*
+   ...
    fun:_ZNK7WebCore4Font33getGlyphsAndAdvancesForSimpleTextERKNS_7TextRunEiiRNS_11GlyphBufferENS0_20ForTextEmphasisOrNotE
    fun:_ZNK7WebCore4Font14drawSimpleTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
    ...
