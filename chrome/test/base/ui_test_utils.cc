@@ -4,6 +4,10 @@
 
 #include "chrome/test/base/ui_test_utils.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include <vector>
 
 #include "base/bind.h"
@@ -16,6 +20,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/automation/ui_controls.h"
@@ -61,6 +66,8 @@
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"
 #endif
+
+static const int kDefaultWsPort = 8880;
 
 namespace ui_test_utils {
 
@@ -727,7 +734,11 @@ void AppendToPythonPath(const FilePath& dir) {
 
 }  // anonymous namespace
 
-TestWebSocketServer::TestWebSocketServer() : started_(false) {
+TestWebSocketServer::TestWebSocketServer()
+    : started_(false) {
+#if defined(OS_POSIX)
+  process_handle_ = base::kNullProcessHandle;
+#endif
 }
 
 bool TestWebSocketServer::Start(const FilePath& root_directory) {
@@ -740,6 +751,7 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   cmd_line->AppendArg("--register_cygwin");
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("--root=") +
                             root_directory.value());
+  cmd_line->AppendArg("--port=" + base::IntToString(kDefaultWsPort));
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Unable to create a temporary directory.";
     return false;
@@ -748,9 +760,32 @@ bool TestWebSocketServer::Start(const FilePath& root_directory) {
   cmd_line->AppendArgNative(FILE_PATH_LITERAL("--pidfile=") +
                             websocket_pid_file_.value());
   SetPythonPath();
+
   base::LaunchOptions options;
+  base::ProcessHandle* process_handle = NULL;
+
+#if defined(OS_POSIX)
+  options.new_process_group = true;
+  process_handle = &process_handle_;
+#elif defined(OS_WIN)
+  job_handle_.Set(CreateJobObject(NULL, NULL));
+  if (!job_handle_.IsValid()) {
+    LOG(ERROR) << "Could not create JobObject.";
+    return false;
+  }
+
+  if (!base::SetJobObjectAsKillOnJobClose(job_handle_.Get())) {
+    LOG(ERROR) << "Could not SetInformationJobObject.";
+    return false;
+  }
+
+  options.inherit_handles = true;
+  options.job_handle = job_handle_.Get();
+#endif
+
+  // Launch a new WebSocket server process.
   options.wait = true;
-  if (!base::LaunchProcess(*cmd_line.get(), options, NULL)) {
+  if (!base::LaunchProcess(*cmd_line.get(), options, process_handle)) {
     LOG(ERROR) << "Unable to launch websocket server.";
     return false;
   }
@@ -805,6 +840,11 @@ TestWebSocketServer::~TestWebSocketServer() {
   base::LaunchOptions options;
   options.wait = true;
   base::LaunchProcess(*cmd_line.get(), options, NULL);
+
+#if defined(OS_POSIX)
+  // Just to make sure that the server process terminates certainly.
+  base::KillProcessGroup(process_handle_);
+#endif
 }
 
 TestNotificationObserver::TestNotificationObserver()

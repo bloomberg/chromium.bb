@@ -14,6 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/message_loop.h"
+#include "base/process.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -27,6 +28,10 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"
+
+#if defined(OS_WIN)
+#include "base/win/scoped_handle.h"
+#endif
 
 class AppModalDialog;
 class BookmarkModel;
@@ -335,6 +340,14 @@ class TestWebSocketServer {
   // Used to close the same python interpreter when server falls out
   // scope.
   FilePath websocket_pid_file_;
+
+#if defined(OS_POSIX)
+  // ProcessHandle used to terminate child process.
+  base::ProcessHandle process_handle_;
+#elif defined(OS_WIN)
+  // JobObject used to clean up orphaned child process.
+  base::win::ScopedHandle job_handle_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
 };
