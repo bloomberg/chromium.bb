@@ -453,12 +453,10 @@ static void
 handle_event(struct wl_display *display,
 	     uint32_t id, uint32_t opcode, uint32_t size)
 {
-	uint32_t p[32];
 	struct wl_proxy *proxy;
 	struct wl_closure *closure;
 	const struct wl_message *message;
 
-	wl_connection_copy(display->connection, p, size);
 	proxy = wl_map_lookup(&display->objects, id);
 
 	if (proxy == WL_ZOMBIE_OBJECT) {
