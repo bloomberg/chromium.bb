@@ -88,11 +88,7 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
-  chromeos::accessibility::SystemEventObserver::Shutdown();
-
   chromeos::disks::DiskMountManager::Shutdown();
-
-  chromeos::BluetoothManager::Shutdown();
 
   chromeos::DBusThreadManager::Shutdown();
 
@@ -222,4 +218,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
     chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
         ->RemoveObserver(brightness_observer_.get());
   }
+
+  // Shut these down here instead of in the destructor in case we exited before
+  // running BrowserMainLoop::RunMainMessageLoopParts() and never initialized
+  // these.
+  chromeos::accessibility::SystemEventObserver::Shutdown();
+  chromeos::BluetoothManager::Shutdown();
 }
