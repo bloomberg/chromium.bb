@@ -552,8 +552,10 @@ add_config('arm-tegra2_seaboard-private-bin', [internal, arm, binary, {
   'usepkg_build_packages' : False,
 }])
 
-add_config('arm-tegra2_kaen-private-bin', [internal, arm, binary, {
+add_config('arm-tegra2_kaen-private-bin', [internal, arm, pfq, {
   'board' : 'tegra2_kaen',
+  'overlays': 'private',
+  'description' : 'tegra2_kaen PFQ'
 }])
 
 add_config('arm-tegra2_kaen-aura-private-bin', [internal, arm, binary, {
