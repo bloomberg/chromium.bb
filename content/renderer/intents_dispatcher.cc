@@ -11,6 +11,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSerializedScriptValue.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 #include "webkit/glue/cpp_bound_class.h"
 
@@ -147,6 +148,14 @@ void IntentsDispatcher::OnWebIntentReply(
     const WebKit::WebString& data,
     int intent_id) {
   LOG(INFO) << "RenderView got reply to intent type " << reply_type;
+
+  if (reply_type == webkit_glue::WEB_INTENT_REPLY_SUCCESS) {
+    render_view()->GetWebView()->mainFrame()->handleIntentResult(
+        intent_id, data);
+  } else {
+    render_view()->GetWebView()->mainFrame()->handleIntentFailure(
+        intent_id, data);
+  }
 }
 
 void IntentsDispatcher::OnResult(const WebKit::WebString& data) {
