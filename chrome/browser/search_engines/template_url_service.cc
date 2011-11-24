@@ -537,8 +537,7 @@ void TemplateURLService::OnWebDataServiceRequestDone(
           *result,
           template_urls,
           &backup_default_search_provider) &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoProtector) &&
-      default_search_provider) {
+      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoProtector)) {
     // TODO: need to handle no default_search_provider better. Likely need to
     // make sure the default search engine is there, and if not assume it was
     // deleted and add it back.
