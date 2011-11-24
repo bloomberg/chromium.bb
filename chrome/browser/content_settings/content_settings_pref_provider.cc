@@ -592,6 +592,13 @@ void PrefProvider::UpdateObsoleteGeolocationPref(
   if (!prefs_)
     return;
 
+  // Ignore settings with wildcard patterns as they are not supported by the
+  // obsolete preference.
+  if (primary_pattern == ContentSettingsPattern::Wildcard() ||
+      secondary_pattern == ContentSettingsPattern::Wildcard()) {
+    return;
+  }
+
   const GURL requesting_origin(primary_pattern.ToString());
   const GURL embedding_origin(secondary_pattern.ToString());
   DCHECK(requesting_origin.is_valid() && embedding_origin.is_valid());
@@ -926,6 +933,8 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
 
   const DictionaryValue* geolocation_settings =
       prefs_->GetDictionary(prefs::kGeolocationContentSettings);
+
+  std::vector<std::pair<std::string, std::string> > corrupted_keys;
   for (DictionaryValue::key_iterator i =
            geolocation_settings->begin_keys();
        i != geolocation_settings->end_keys();
@@ -945,7 +954,11 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
          ++j) {
       const std::string& secondary_key(*j);
       GURL secondary_url(secondary_key);
-      DCHECK(secondary_url.is_valid());
+      // Save corrupted keys to remove them later.
+      if (!secondary_url.is_valid()) {
+        corrupted_keys.push_back(std::make_pair(primary_key, secondary_key));
+        continue;
+      }
 
       base::Value* value = NULL;
       found = requesting_origin_settings->GetWithoutPathExpansion(
@@ -965,6 +978,22 @@ void PrefProvider::MigrateObsoleteGeolocationPref() {
                                  value,
                                  pattern_pairs_settings);
     }
+  }
+
+  // Remove corrupted keys.
+  DictionaryPrefUpdate update_geo_settings(
+      prefs_, prefs::kGeolocationContentSettings);
+  base::DictionaryValue* geo_dict = update_geo_settings.Get();
+  std::vector<std::pair<std::string, std::string> >::iterator key_pair;
+  for (key_pair = corrupted_keys.begin();
+       key_pair != corrupted_keys.end();
+       ++key_pair) {
+    base::DictionaryValue* dict;
+    bool found = geo_dict->GetDictionaryWithoutPathExpansion(
+        key_pair->first, &dict);
+    DCHECK(found);
+    DCHECK(dict->HasKey(key_pair->second));
+    dict->RemoveWithoutPathExpansion(key_pair->second, NULL);
   }
 }
 
