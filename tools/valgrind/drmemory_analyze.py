@@ -7,6 +7,8 @@
 
 ''' Given a Dr. Memory output file, parses errors and uniques them.'''
 
+from collections import defaultdict
+import common
 import logging
 import optparse
 import os
@@ -15,30 +17,13 @@ import subprocess
 import sys
 import time
 
-class _StackTraceLine(object):
-  def __init__(self, line, address, binary):
-    self.raw_line_ = line
-    self.address = address
-    self.binary = binary
-  def __str__(self):
-    return self.raw_line_
 
-class DrMemoryAnalyze:
+class DrMemoryAnalyzer:
   ''' Given a set of Dr.Memory output files, parse all the errors out of
   them, unique them and output the results.'''
 
-  def __init__(self, source_dir, files):
-    '''Reads in a set of files.
-
-    Args:
-      source_dir: Path to top of source tree for this build
-      files: A list of filenames.
-    '''
-
-    self.reports = []
-    self.used_suppressions = []
-    for file in files:
-      self.ParseReportFile(file)
+  def __init__(self):
+    self.known_errors = set()
 
   def ReadLine(self):
     self.line_ = self.cur_fd_.readline()
@@ -52,8 +37,9 @@ class DrMemoryAnalyze:
     return result
 
   def ParseReportFile(self, filename):
-    self.cur_fd_ = open(filename, 'r')
+    ret = []
 
+    self.cur_fd_ = open(filename, 'r')
     while True:
       self.ReadLine()
       if (self.line_ == ''): break
@@ -62,7 +48,7 @@ class DrMemoryAnalyze:
       if match:
         self.line_ = match.groups()[0].strip() + "\n"
         tmp = self.ReadSection()
-        self.reports.append(tmp)
+        ret.append("".join(tmp).strip())
 
       if re.search("SUPPRESSIONS USED:", self.line_):
         self.ReadLine()
@@ -70,53 +56,59 @@ class DrMemoryAnalyze:
           line = self.line_.strip()
           (count, name) = re.match(" *([0-9]+)x(?: \(leaked .*\))?: (.*)",
                                    line).groups()
-          self.used_suppressions.append("%7s %s" % (count, name))
+          count = int(count)
+          self.used_suppressions[name] += count
           self.ReadLine()
 
       if self.line_.startswith("ASSERT FAILURE"):
-        self.reports.append(self.line_.strip())
+        ret.append(self.line_.strip())
 
     self.cur_fd_.close()
+    return ret
 
-  def Report(self, check_sanity):
+  def Report(self, filenames, testcase, check_sanity):
     sys.stdout.flush()
-    #TODO(timurrrr): support positive tests / check_sanity==True
+    # TODO(timurrrr): support positive tests / check_sanity==True
 
-    if self.used_suppressions:
-      print "-----------------------------------------------------"
-      # TODO(timurrrr): sum up the counts from different wrappers (e.g. ui_tests)
-      # or does it work now already? Or add the memcheck-like per-test printing.
-      print "Suppressions used:\n  count name\n%s" % (
-                "\n".join(self.used_suppressions))
-      print "-----------------------------------------------------"
-      sys.stdout.flush()
+    to_report = []
+    self.used_suppressions = defaultdict(int)
+    for f in filenames:
+      cur_reports = self.ParseReportFile(f)
 
-    if len(self.reports) > 0:
-      logging.error("Found %i error reports" % len(self.reports))
-      for report_list in self.reports:
-        report = ''
-        for line in report_list:
-          report += str(line)
-        logging.error('\n' + report)
-      logging.error("Total: %i error reports" % len(self.reports))
-      return -1
-    logging.info("PASS: No error reports found")
-    return 0
+      # Filter out the reports that were there in previous tests.
+      for r in cur_reports:
+        if r in self.known_errors:
+          pass  # TODO: print out a hash once we add hashes to the reports.
+        else:
+          self.known_errors.add(r)
+          to_report.append(r)
+
+    common.PrintUsedSuppressionsList(self.used_suppressions)
+
+    if not to_report:
+      logging.info("PASS: No error reports found")
+      return 0
+
+    logging.error("Found %i error reports" % len(to_report))
+    for report in to_report:
+      if testcase:
+        logging.error("\n%s\nNote: observed on `%s`\n" %
+                      (report, testcase))
+      else:
+        logging.error("\n%s\n" % report)
+    logging.error("Total: %i error reports" % len(to_report))
+    return -1
 
 if __name__ == '__main__':
-  '''For testing only. The DrMemoryAnalyze class should be imported instead.'''
+  '''For testing only. The DrMemoryAnalyzer class should be imported instead.'''
   retcode = 0
-  parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
-  parser.add_option("", "--source_dir",
-                    help="path to top of source tree for this build"
-                    "(used to normalize source paths in baseline)")
-
+  parser = optparse.OptionParser("usage: %prog <files to analyze>")
   (options, args) = parser.parse_args()
   if len(args) == 0:
     parser.error("no filename specified")
   filenames = args
 
-  analyzer = DrMemoryAnalyze(options.source_dir, filenames)
-  retcode = analyzer.Report(False)
+  analyzer = DrMemoryAnalyzer()
+  retcode = analyzer.Report(filenames, None, False)
 
   sys.exit(retcode)

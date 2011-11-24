@@ -162,7 +162,7 @@ def BoringCallers(mangled, use_re_wildcards):
     # Don't show our testing framework:
     ("testing::Test::Run",     "_ZN7testing4Test3RunEv"),
     ("testing::TestInfo::Run", "_ZN7testing8TestInfo3RunEv"),
-    ("testing::internal::Handle*ExceptionsInMethodIfSupported",
+    ("testing::internal::Handle*ExceptionsInMethodIfSupported*",
      "_ZN7testing8internal3?Handle*ExceptionsInMethodIfSupported*"),
 
     # Depend on scheduling:
@@ -212,3 +212,26 @@ def NormalizeWindowsPath(path):
     return out.strip()
   else:
     return path
+
+############################
+# Common output format code
+
+def PrintUsedSuppressionsList(suppcounts):
+  """ Prints out the list of used suppressions in a format common to all the
+      memory tools. If the list is empty, prints nothing and returns False,
+      otherwise True.
+
+      suppcounts: a dictionary of used suppression counts,
+                  Key -> name, Value -> count.
+  """
+  if not suppcounts:
+    return False
+
+  print "-----------------------------------------------------"
+  print "Suppressions used:"
+  print "  count name"
+  for (name, count) in sorted(suppcounts.items(), key=lambda (k,v): (v,k)):
+    print "%7d %s" % (count, name)
+  print "-----------------------------------------------------"
+  sys.stdout.flush()
+  return True

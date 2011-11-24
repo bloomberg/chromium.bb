@@ -436,7 +436,7 @@ class ValgrindTool(BaseTool):
                                "in the tool-specific subclass"
 
   def GetAnalyzeResults(self, check_sanity=False):
-    # Glob all the files in the "testing.tmp" directory
+    # Glob all the files in the log directory
     filenames = glob.glob(self.log_dir + "/" + self.ToolName() + ".*")
 
     # If we have browser wrapper, the logfiles are named as
@@ -879,7 +879,9 @@ class DrMemory(BaseTool):
     proc += ["--"]
 
     if self._options.indirect:
-      self.CreateBrowserWrapper(" ".join(proc))
+      # TODO(timurrrr): reuse for TSan on Windows
+      self.CreateBrowserWrapper(" ".join(
+            ["python", "tools/valgrind/browser_wrapper_win.py"] + proc))
       proc = []
 
     # Note that self._args begins with the name of the exe to be run.
@@ -891,11 +893,49 @@ class DrMemory(BaseTool):
     os.putenv("BROWSER_WRAPPER", command)
 
   def Analyze(self, check_sanity=False):
-    # Glob all the results files in the "testing.tmp" directory
-    filenames = glob.glob(self.log_dir + "/*/results.txt")
+    # Use one analyzer for all the log files to avoid printing duplicate reports
+    #
+    # TODO(timurrrr): unify this with Valgrind and other tools when we have
+    # http://code.google.com/p/drmemory/issues/detail?id=684
+    analyzer = drmemory_analyze.DrMemoryAnalyzer()
 
-    analyzer = drmemory_analyze.DrMemoryAnalyze(self._source_dir, filenames)
-    ret = analyzer.Report(check_sanity)
+    ret = 0
+    if not self._options.indirect:
+      filenames = glob.glob(self.log_dir + "/*/results.txt")
+
+      ret = analyzer.Report(filenames, None, check_sanity)
+    else:
+      testcases = glob.glob(self.log_dir + "/testcase.*.logs")
+      # If we have browser wrapper, the per-test logdirs are named as
+      # "testcase.wrapper_PID".
+      # Let's extract the list of wrapper_PIDs and name it ppids
+      ppids = set([int(f.split(".")[-2]) for f in testcases])
+
+      for ppid in ppids:
+        testcase_name = None
+        try:
+          f = open(self.log_dir + ("/testcase.%d.name" % ppid))
+          testcase_name = f.read().strip()
+          f.close()
+        except IOError:
+          pass
+        print "====================================================="
+        print " Below is the report for drmemory wrapper PID=%d." % ppid
+        if testcase_name:
+          print " It was used while running the `%s` test." % testcase_name
+        else:
+          # TODO(timurrrr): hm, the PID line is suppressed on Windows...
+          print " You can find the corresponding test"
+          print " by searching the above log for 'PID=%d'" % ppid
+        sys.stdout.flush()
+        ppid_filenames = glob.glob("%s/testcase.%d.logs/*/results.txt" %
+                                   (self.log_dir, ppid))
+        ret |= analyzer.Report(ppid_filenames, testcase_name, False)
+        print "====================================================="
+        sys.stdout.flush()
+
+    logging.info("Please see http://dev.chromium.org/developers/how-tos/"
+                 "using-drmemory for the info on Dr. Memory")
     return ret
 
 
