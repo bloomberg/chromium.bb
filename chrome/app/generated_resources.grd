@@ -14551,6 +14551,32 @@ Keep your key file in a safe place. You will need it to create new versions of y
       bookmarks_<ph name="DATESTAMP">$1<ex>02_11_11</ex></ph>.html
     </message>
 
+    <!-- Media Capture messages -->
+    <message name="IDS_MEDIA_CAPTURE_MIC_AND_VIDEO" desc="Question asked on the info bar whenever a web page requests access to the computer's microphone and camera.">
+      <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera and microphone.
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_MIC_ONLY" desc="Question asked on the info bar whenever a web page requests access to the computer's microphone.">
+      <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your microphone.
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_VIDEO_ONLY" desc="Question asked on the info bar whenever a web page requests access to the computer's camera.">
+      <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera.
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_MIC" desc="Label for a microphone list drop-down.">
+      Microphone:
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_VIDEO" desc="Label for a camera list drop-down.">
+      Camera:
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_ALLOW" desc="Label for a button that grants access to a  web page, so they can use a camera and/or a microphone.">
+      Allow
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_DENY" desc="Label for a button that denies access to a  web page, so they can use a camera and/or a microphone.">
+      Deny
+    </message>
+    <message name="IDS_MEDIA_CAPTURE_NO_DEVICES" desc="Label for a drop-down button, used if there are no available devices (e.g. camera, microphone) available on the computer.">
+      (no devices)
+    </message>
+    
     <!-- Quota messages -->
     <if expr="pp_ifdef('android')">
       <message name="IDS_REQUEST_QUOTA_INFOBAR_QUESTION" desc="For mobile device. Question asked on the info bar whenever webapp requests new (larger) quota to persistently store data on the mobile device (e.g. for persistent-type filesystem).">
@@ -14576,6 +14602,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </ph> wants to permanently store large data on your local computer.
       </message>
     </if>
+
     <!-- Manage Profile Dialog -->
     <if expr="pp_ifdef('use_titlecase')">
       <message name="IDS_PROFILES_MANAGE_TITLE" desc="In Title Case: Title of the manage profile dialog">
