@@ -7,6 +7,7 @@
 #include <Tlhelp32.h>
 #include <wintrust.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/file_path.h"
@@ -399,9 +400,8 @@ void ModuleEnumerator::ScanNow(ModulesVector* list, bool limited_mode) {
   if (!limited_mode_) {
     CHECK(BrowserThread::GetCurrentThreadIdentifier(&callback_thread_id_));
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-            NewRunnableMethod(this, &ModuleEnumerator::ScanImpl));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&ModuleEnumerator::ScanImpl, this));
   } else {
     // Run it synchronously.
     ScanImpl();
@@ -443,9 +443,8 @@ void ModuleEnumerator::ScanImpl() {
 
   if (!limited_mode_) {
     // Send a reply back on the UI thread.
-    BrowserThread::PostTask(
-        callback_thread_id_, FROM_HERE,
-        NewRunnableMethod(this, &ModuleEnumerator::ReportBack));
+    BrowserThread::PostTask(callback_thread_id_, FROM_HERE,
+                            base::Bind(&ModuleEnumerator::ReportBack, this));
   } else {
     // We are on the main thread already.
     ReportBack();

@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -102,7 +104,7 @@ ExternalTabContainer::ExternalTabContainer(
       automation_resource_message_filter_(filter),
       load_requests_via_automation_(false),
       handle_top_level_requests_(false),
-      external_method_factory_(this),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       pending_(false),
       focus_manager_(NULL),
       external_tab_view_(NULL),
@@ -198,8 +200,8 @@ bool ExternalTabContainer::Init(Profile* profile,
     // Navigate out of context since we don't have a 'tab_handle_' yet.
     MessageLoop::current()->PostTask(
         FROM_HERE,
-        external_method_factory_.NewRunnableMethod(
-            &ExternalTabContainer::Navigate, initial_url, referrer));
+        base::Bind(&ExternalTabContainer::Navigate, weak_factory_.GetWeakPtr(),
+                   initial_url, referrer));
   }
 
   // We need WS_POPUP to be on the window during initialization, but
@@ -262,9 +264,8 @@ bool ExternalTabContainer::Reinitialize(
   // Wait for the automation channel to be initialized before resuming pending
   // render views and sending in the navigation state.
   MessageLoop::current()->PostTask(
-      FROM_HERE,
-      external_method_factory_.NewRunnableMethod(
-          &ExternalTabContainer::OnReinitialize));
+      FROM_HERE, base::Bind(&ExternalTabContainer::OnReinitialize,
+                            weak_factory_.GetWeakPtr()));
 
   if (parent_window)
     SetParent(GetNativeView(), parent_window);
@@ -542,10 +543,12 @@ bool ExternalTabContainer::CanDownload(TabContents* source, int request_id) {
       // In case the host needs to show UI that needs to take the focus.
       ::AllowSetForegroundWindow(ASFW_ANY);
 
-      BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(automation_resource_message_filter_.get(),
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::IgnoreReturn<bool>(base::Bind(
               &AutomationResourceMessageFilter::SendDownloadRequestToHost,
-              0, tab_handle_, request_id));
+              automation_resource_message_filter_.get(), 0, tab_handle_,
+              request_id)));
     }
   } else {
     DLOG(WARNING) << "Downloads are only supported with host browser network "

@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -303,7 +304,7 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // Allows us to run tasks on the ExternalTabContainer instance which are
   // bound by its lifetime.
-  ScopedRunnableMethodFactory<ExternalTabContainer> external_method_factory_;
+  base::WeakPtrFactory<ExternalTabContainer> weak_factory_;
 
   // The URL request context to be used for this tab. Can be NULL.
   scoped_refptr<ChromeURLRequestContextGetter> request_context_;

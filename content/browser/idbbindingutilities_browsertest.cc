@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -92,7 +93,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this, &IDBKeyPathHelper::CreateUtilityProcess));
+          base::Bind(&IDBKeyPathHelper::CreateUtilityProcess, this));
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -107,7 +108,7 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this, &IDBKeyPathHelper::DestroyUtilityProcess));
+          base::Bind(&IDBKeyPathHelper::DestroyUtilityProcess, this));
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -136,8 +137,8 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this, &IDBKeyPathHelper::CheckValuesForKeyPath,
-                            id, serialized_values, key_path));
+          base::Bind(&IDBKeyPathHelper::CheckValuesForKeyPath, this, id,
+                     serialized_values, key_path));
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -153,8 +154,8 @@ class IDBKeyPathHelper : public UtilityProcessHost::Client {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          NewRunnableMethod(this, &IDBKeyPathHelper::CheckInjectValue,
-                            key, value, key_path));
+          base::Bind(&IDBKeyPathHelper::CheckInjectValue, this, key, value,
+                     key_path));
       return;
     }
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
