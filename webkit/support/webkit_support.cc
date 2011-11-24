@@ -127,9 +127,11 @@ class TestEnvironment {
   typedef MessageLoopForUI MessageLoopType;
 #endif
 
-  explicit TestEnvironment(bool unit_test_mode) {
+  TestEnvironment(bool unit_test_mode,
+                  base::AtExitManager* existing_at_exit_manager) {
     if (!unit_test_mode) {
-      at_exit_manager_.reset(new base::AtExitManager);
+      // The existing_at_exit_manager must be not NULL.
+      at_exit_manager_.reset(existing_at_exit_manager);
       InitLogging(false);
     }
     main_message_loop_.reset(new MessageLoopType);
@@ -158,6 +160,8 @@ class TestEnvironment {
 #endif
 
  private:
+  // Data member at_exit_manager_ will take the ownership of the input
+  // AtExitManager and manage its lifecycle.
   scoped_ptr<base::AtExitManager> at_exit_manager_;
   scoped_ptr<MessageLoopType> main_message_loop_;
   scoped_ptr<TestWebKitPlatformSupport> webkit_platform_support_;
@@ -237,8 +241,14 @@ static void SetUpTestEnvironmentImpl(bool unit_test_mode) {
   // Otherwise crash may happend when different threads try to create a GURL
   // at same time.
   url_util::Initialize();
+  base::AtExitManager* at_exit_manager = NULL;
+  // Some initialization code may use a AtExitManager before initializing
+  // TestEnvironment, so we create a AtExitManager early and pass its ownership
+  // to TestEnvironment.
+  if (!unit_test_mode)
+    at_exit_manager = new base::AtExitManager;
   BeforeInitialize(unit_test_mode);
-  test_environment = new TestEnvironment(unit_test_mode);
+  test_environment = new TestEnvironment(unit_test_mode, at_exit_manager);
   AfterInitialize(unit_test_mode);
   if (!unit_test_mode) {
     // Load ICU data tables.  This has to run after TestEnvironment is created
