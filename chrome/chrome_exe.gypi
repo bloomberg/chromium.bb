@@ -434,19 +434,8 @@
           },
         }],
         ['OS=="win"', {
-          'conditions': [
-            ['optimize_with_syzygy==1', {
-              # With syzygy enabled there is an intermediate target which
-              # builds an initial version of chrome_dll, then optimizes it
-              # to its final location.  The optimization step also
-              # depends on chrome_exe, so here we depend on the initial
-              # chrome_dll.
-              'dependencies': ['chrome_dll_initial',]
-            }, {
-              'dependencies': ['chrome_dll',]
-            }],
-          ],
           'dependencies': [
+            'chrome_dll',
             'chrome_version_resources',
             'installer_util',
             'installer_util_strings',

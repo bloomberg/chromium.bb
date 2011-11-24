@@ -124,7 +124,6 @@
     'chrome_common.gypi',
     'chrome_dll.gypi',
     'chrome_exe.gypi',
-    'chrome_dll_syzygy.gypi',  # This must follow chrome_dll and chrome_exe.
     'chrome_installer.gypi',
     'chrome_installer_util.gypi',
     'chrome_renderer.gypi',

@@ -6,24 +6,11 @@
     ['OS=="mac" or OS=="win"', {
       'targets': [
         {
+          'target_name': 'chrome_dll',
+          'type': 'shared_library',
           'variables': {
             'enable_wexit_time_destructors': 1,
-            'conditions' : [
-              ['OS=="win" and optimize_with_syzygy==1', {
-                # On Windows we use build chrome_dll as an intermediate target
-                # then have a subsequent step which either optimizes it to its
-                # final location, or copies it to its final location, depending
-                # on whether or not optimize_with_syzygy==1.  Please, refer to
-                # chrome_dll_syzygy.gypi for the subsequent defintion of the
-                # Windows chrome_dll target.
-                'dll_target_name': 'chrome_dll_initial',
-              }, {
-                'dll_target_name': 'chrome_dll',
-              }],
-            ],
           },
-          'target_name': '<(dll_target_name)',
-          'type': 'shared_library',
           'dependencies': [
             '<@(chromium_dependencies)',
             'app/policy/cloud_policy_codegen.gyp:policy',
@@ -113,13 +100,7 @@
                   # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
                   'SubSystem': '2',
                   'conditions': [
-                    ['optimize_with_syzygy==1', {
-                      # When syzygy is enabled we use build chrome_dll as an
-                      # intermediate target then have a subsequent step which
-                      # optimizes it to its final location
-                      'ProgramDatabaseFile': '$(OutDir)\\initial\\chrome_dll.pdb',
-                      'OutputFile': '$(OutDir)\\initial\\chrome.dll',
-                    }], ['incremental_chrome_dll==1', {
+                    ['incremental_chrome_dll==1', {
                       'OutputFile': '$(OutDir)\\initial\\chrome.dll',
                       'UseLibraryDependencyInputs': "true",
                     }],
@@ -146,7 +127,7 @@
                 },
               },
               'conditions': [
-                ['incremental_chrome_dll==1 and optimize_with_syzygy==0', {
+                ['incremental_chrome_dll==1', {
                   # Linking to a different directory and then hardlinking back
                   # to OutDir is a workaround to avoid having the .ilk for
                   # chrome.exe and chrome.dll conflicting. See crbug.com/92528
