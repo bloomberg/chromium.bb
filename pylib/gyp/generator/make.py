@@ -449,10 +449,10 @@ $(if $(or $(command_changed),$(prereq_changed)),
 )
 endef
 
-# Declare "all" target first so it is the default, even though we don't have the
-# deps yet.
-.PHONY: all
-all:
+# Declare the "%(default_target)s" target first so it is the default,
+# even though we don't have the deps yet.
+.PHONY: %(default_target)s
+%(default_target)s:
 
 # Use FORCE_DO_CMD to force a target to run.  Should be coupled with
 # do_cmd.
@@ -2724,6 +2724,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
   generator_flags = params.get('generator_flags', {})
   builddir_name = generator_flags.get('output_dir', 'out')
   android_ndk_version = generator_flags.get('android_ndk_version', None)
+  default_target = generator_flags.get('default_target', 'all')
 
   def CalculateMakefilePath(build_file, base_name):
     """Determine where to write a Makefile for a given gyp file."""
@@ -2765,6 +2766,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
   flock_command= 'flock'
   header_params = {
+      'default_target': default_target,
       'builddir': builddir_name,
       'default_configuration': default_configuration,
       'flock': flock_command,
