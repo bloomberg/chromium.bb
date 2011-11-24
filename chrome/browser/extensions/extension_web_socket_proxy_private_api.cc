@@ -63,28 +63,29 @@ void WebSocketProxyPrivate::Observe(
 
 void WebSocketProxyPrivate::ResolveHost() {
 #if defined(OS_CHROMEOS)
-  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
-    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&WebSocketProxyPrivate::ResolveHost, this));
-    return;
-  }
+  IOThread* io_thread = g_browser_process->io_thread();
+  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&WebSocketProxyPrivate::ResolveHostIOPart, this, io_thread));
+#endif
+}
+
+void WebSocketProxyPrivate::ResolveHostIOPart(IOThread* io_thread) {
+#if defined(OS_CHROMEOS)
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(resolver_ == NULL);
-  if (g_browser_process) {
-    IOThread* io_thread = g_browser_process->io_thread();
-    if (io_thread && io_thread->globals()) {
-      net::HostResolver* host_resolver =
-          io_thread->globals()->host_resolver.get();
-      if (host_resolver) {
-        resolver_.reset(new net::SingleRequestHostResolver(host_resolver));
-        net::HostResolver::RequestInfo info(net::HostPortPair(
-            hostname_, port_));
-        int result = resolver_->Resolve(info, &addr_,
-            base::Bind(&WebSocketProxyPrivate::OnHostResolution, this),
-            net::BoundNetLog());
-        if (result != net::ERR_IO_PENDING)
-          OnHostResolution(result);
-        return;
-      }
+  if (io_thread && io_thread->globals()) {
+    net::HostResolver* host_resolver =
+        io_thread->globals()->host_resolver.get();
+    if (host_resolver) {
+      resolver_.reset(new net::SingleRequestHostResolver(host_resolver));
+      net::HostResolver::RequestInfo info(net::HostPortPair(
+          hostname_, port_));
+      int result = resolver_->Resolve(info, &addr_,
+          base::Bind(&WebSocketProxyPrivate::OnHostResolution, this),
+          net::BoundNetLog());
+      if (result != net::ERR_IO_PENDING)
+        OnHostResolution(result);
+      return;
     }
   }
   NOTREACHED();

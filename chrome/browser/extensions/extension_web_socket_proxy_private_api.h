@@ -12,6 +12,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "net/base/address_list.h"
 
+class IOThread;
+
 namespace net {
 class SingleRequestHostResolver;
 }
@@ -56,8 +58,10 @@ class WebSocketProxyPrivate
   // Callback for DNS resolution.
   void OnHostResolution(int result);
 
-  // Executes on IO thread. Performs DNS resolution.
+  // Posts task to the IO thread, which will make dns resolution.
   void ResolveHost();
+  // Executes on IO thread. Performs DNS resolution.
+  void ResolveHostIOPart(IOThread* io_thread);
 
   // Used to signal timeout (when waiting for proxy initial launch).
   base::OneShotTimer<WebSocketProxyPrivate> timer_;
