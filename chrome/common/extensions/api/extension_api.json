@@ -1033,103 +1033,107 @@
             "optional": true
           }
         }
-      }
-    ],
-    "functions": [
+      },
       {
-        "name": "get",
-        "unprivileged": true,
-        "type": "function",
-        "description": "Gets one or more values from settings.",
-        "parameters": [
+        "id": "StorageNamespace",
+        "type": "object",
+        "functions": [
           {
-            "name": "keys",
-            "choices": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "string" } },
+            "name": "get",
+            "unprivileged": true,
+            "type": "function",
+            "description": "Gets one or more values from settings.",
+            "parameters": [
               {
-                "type": "object",
-                "description": "Settings object to return in the callback, where the values are replaced with those from settings if they exist.",
-                "properties": {},
-                "additionalProperties": { "type": "any" }
+                "name": "keys",
+                "choices": [
+                  { "type": "string" },
+                  { "type": "array", "items": { "type": "string" } },
+                  {
+                    "type": "object",
+                    "description": "Settings object to return in the callback, where the values are replaced with those from settings if they exist.",
+                    "properties": {},
+                    "additionalProperties": { "type": "any" }
+                  }
+                ],
+                "description": "A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty settings object.  Pass in null or undefined to get the entire contents of settings; this should only be used for debugging.",
+                "optional": true
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Callback with settings values, or on failure (in which case lastError will be set).",
+                "parameters": [
+                  {
+                    "name": "settings",
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": { "type": "any" },
+                    "description": "Object with given keys set to settings values."
+                  }
+                ]
               }
-            ],
-            "description": "A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty settings object.  Pass in null or undefined to get the entire contents of settings; this should only be used for debugging.",
-            "optional": true
+            ]
           },
           {
-            "name": "callback",
+            "name": "set",
+            "unprivileged": true,
             "type": "function",
-            "description": "Callback with settings values, or on failure (in which case lastError will be set).",
+            "description": "Sets multiple settings values.",
             "parameters": [
               {
                 "name": "settings",
                 "type": "object",
                 "properties": {},
                 "additionalProperties": { "type": "any" },
-                "description": "Object with given keys set to settings values."
+                "description": "Object to augment settings with. Values that cannot be serialized (functions, etc) will be ignored."
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Callback on success, or on failure (in which case lastError will be set).",
+                "parameters": [],
+                "optional": true
               }
             ]
-          }
-        ]
-      },
-      {
-        "name": "set",
-        "unprivileged": true,
-        "type": "function",
-        "description": "Sets multiple settings values.",
-        "parameters": [
-          {
-            "name": "settings",
-            "type": "object",
-            "properties": {},
-            "additionalProperties": { "type": "any" },
-            "description": "Object to augment settings with. Values that cannot be serialized (functions, etc) will be ignored."
           },
           {
-            "name": "callback",
+            "name": "remove",
+            "unprivileged": true,
             "type": "function",
-            "description": "Callback on success, or on failure (in which case lastError will be set).",
-            "parameters": [],
-            "optional": true
-          }
-        ]
-      },
-      {
-        "name": "remove",
-        "unprivileged": true,
-        "type": "function",
-        "description": "Removes one or more values from settings.",
-        "parameters": [
-          {
-            "name": "keys",
-            "choices": [
-              {"type": "string"},
-              {"type": "array", "items": {"type": "string"}, "minItems": 1}
-            ],
-            "description": "A single key or a list of keys to remove from settings."
+            "description": "Removes one or more values from settings.",
+            "parameters": [
+              {
+                "name": "keys",
+                "choices": [
+                  {"type": "string"},
+                  {"type": "array", "items": {"type": "string"}, "minItems": 1}
+                ],
+                "description": "A single key or a list of keys to remove from settings."
+              },
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Callback on success, or on failure (in which case lastError will be set).",
+                "parameters": [],
+                "optional": true
+              }
+            ]
           },
           {
-            "name": "callback",
+            "name": "clear",
+            "unprivileged": true,
             "type": "function",
-            "description": "Callback on success, or on failure (in which case lastError will be set).",
-            "parameters": [],
-            "optional": true
-          }
-        ]
-      },
-      {
-        "name": "clear",
-        "unprivileged": true,
-        "type": "function",
-        "description": "Removes all values from settings.",
-        "parameters": [
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Callback on success, or on failure (in which case lastError will be set).",
-            "parameters": [],
-            "optional": true
+            "description": "Removes all values from settings.",
+            "parameters": [
+              {
+                "name": "callback",
+                "type": "function",
+                "description": "Callback on success, or on failure (in which case lastError will be set).",
+                "parameters": [],
+                "optional": true
+              }
+            ]
           }
         ]
       }
@@ -1145,10 +1149,27 @@
             "name": "changes",
             "type": "array",
             "items": {"$ref": "SettingChange"}
+          },
+          {
+            "name": "namespace",
+            "type": "string",
+            "description": "The namespace (e.g. sync or local) of the area the changes are for."
           }
         ]
       }
-    ]
+    ],
+    "properties": {
+      "sync": {
+        "$ref": "StorageNamespace",
+        "description": "Settings under the \"sync\" namespace are synced using Chrome Sync.",
+        "value": [ "sync" ]
+      },
+      "local": {
+        "$ref": "StorageNamespace",
+        "description": "Settings under the \"local\" namespace are local to each machine.",
+        "value": [ "local" ]
+      }
+    }
   },
   {
     "namespace": "windows",

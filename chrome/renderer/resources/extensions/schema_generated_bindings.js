@@ -384,6 +384,29 @@ var chrome = chrome || {};
     customBindings['ContentSetting'] = ContentSetting;
   }
 
+  function setupStorageNamespace() {
+    function StorageNamespace(namespace, schema) {
+      // Binds an API function for a namespace to its browser-side call, e.g.
+      // experimental.settings.sync.get('foo') -> (binds to) ->
+      // experimental.settings.get('sync', 'foo').
+      //
+      // TODO(kalman): Put as a method on CustomBindingsObject and re-use (or
+      // even generate) for other APIs that need to do this.
+      function bindApiFunction(functionName) {
+        this[functionName] = function() {
+          var schema = this.parameters[functionName];
+          chromeHidden.validate(arguments, schema);
+          return sendRequest(
+              'experimental.settings.' + functionName,
+              [namespace].concat(Array.prototype.slice.call(arguments)),
+              extendSchema(schema));
+        };
+      }
+      ['get', 'set', 'remove', 'clear'].forEach(bindApiFunction.bind(this));
+    }
+    StorageNamespace.prototype = new CustomBindingsObject();
+    customBindings['StorageNamespace'] = StorageNamespace;
+  }
   function setupInputEvents() {
     chrome.experimental.input.ime.onKeyEvent.dispatch =
         function(engineID, keyData) {
@@ -580,9 +603,11 @@ var chrome = chrome || {};
     // ChromeSetting objects from the API definition.
     setupChromeSetting();
 
-    // Setup the ContentSetting class so we can use it to construct
-    // ContentSetting objects from the API definition.
+    // Ditto ContentSetting.
     setupContentSetting();
+
+    // Ditto StorageNamespace.
+    setupStorageNamespace();
 
     // |apiFunctions| is a hash of name -> object that stores the
     // name & definition of the apiFunction. Custom handling of api functions
@@ -593,7 +618,7 @@ var chrome = chrome || {};
     // TODO(rafaelw): Consider defining a json schema for an api definition
     //   and validating either here, in a unit_test or both.
     // TODO(rafaelw): Handle synchronous functions.
-    // TOOD(rafaelw): Consider providing some convenient override points
+    // TODO(rafaelw): Consider providing some convenient override points
     //   for api functions that wish to insert themselves into the call.
     var apiDefinitions = GetExtensionAPIDefinition();
     var platform = getPlatform();

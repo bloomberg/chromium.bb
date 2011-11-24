@@ -10,68 +10,57 @@
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/settings_backend.h"
+#include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
-namespace extensions {
-
 using content::BrowserThread;
+
+namespace extensions {
 
 namespace {
 
-struct Backends {
-  Backends(
-      // Ownership taken.
-      SettingsStorageFactory* storage_factory,
-      const FilePath& profile_path,
-      const scoped_refptr<SettingsObserverList>& observers)
-    : storage_factory_(storage_factory),
-      extensions_backend_(
-          storage_factory,
-          profile_path.AppendASCII(
-              ExtensionService::kExtensionSettingsDirectoryName),
-          observers),
-      apps_backend_(
-          storage_factory,
-          profile_path.AppendASCII(
-              ExtensionService::kAppSettingsDirectoryName),
-          observers) {}
+// Settings change Observer which forwards changes on to the extension
+// processes for |profile| and its incognito partner if it exists.
+class DefaultObserver : public SettingsObserver {
+ public:
+  explicit DefaultObserver(Profile* profile) : profile_(profile) {}
 
-  scoped_ptr<SettingsStorageFactory> storage_factory_;
-  SettingsBackend extensions_backend_;
-  SettingsBackend apps_backend_;
+  // SettingsObserver implementation.
+  virtual void OnSettingsChanged(
+      const std::string& extension_id,
+      settings_namespace::Namespace settings_namespace,
+      const std::string& change_json) OVERRIDE {
+    profile_->GetExtensionEventRouter()->DispatchEventToExtension(
+        extension_id,
+        extension_event_names::kOnSettingsChanged,
+        // This is the list of function arguments to pass to the onChanged
+        // handler of extensions, an array of [changes, settings_namespace].
+        std::string("[") + change_json + ",\"" +
+            settings_namespace::ToString(settings_namespace) + "\"]",
+        NULL,
+        GURL());
+  }
+
+ private:
+  Profile* const profile_;
 };
 
-static void CallbackWithExtensionsBackend(
+void CallbackWithSyncableService(
     const SettingsFrontend::SyncableServiceCallback& callback,
-    Backends* backends) {
+    SettingsBackend* backend) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  callback.Run(&backends->extensions_backend_);
+  callback.Run(backend);
 }
 
-void CallbackWithAppsBackend(
-    const SettingsFrontend::SyncableServiceCallback& callback,
-    Backends* backends) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  callback.Run(&backends->apps_backend_);
-}
-
-void CallbackWithExtensionsStorage(
+void CallbackWithStorage(
     const std::string& extension_id,
     const SettingsFrontend::StorageCallback& callback,
-    Backends* backends) {
+    SettingsBackend* backend) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  callback.Run(backends->extensions_backend_.GetStorage(extension_id));
-}
-
-void CallbackWithAppsStorage(
-    const std::string& extension_id,
-    const SettingsFrontend::StorageCallback& callback,
-    Backends* backends) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  callback.Run(backends->apps_backend_.GetStorage(extension_id));
+  callback.Run(backend->GetStorage(extension_id));
 }
 
 void CallbackWithNullStorage(
@@ -81,103 +70,94 @@ void CallbackWithNullStorage(
 }
 
 void DeleteStorageOnFileThread(
-    const std::string& extension_id, Backends* backends) {
+    const std::string& extension_id, SettingsBackend* backend) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  backends->extensions_backend_.DeleteStorage(extension_id);
-  backends->apps_backend_.DeleteStorage(extension_id);
+  backend->DeleteStorage(extension_id);
 }
 
 }  // namespace
 
-// DefaultObserver
-
-SettingsFrontend::DefaultObserver::DefaultObserver(Profile* profile)
-    : profile_(profile) {}
-
-SettingsFrontend::DefaultObserver::~DefaultObserver() {}
-
-void SettingsFrontend::DefaultObserver::OnSettingsChanged(
-    const std::string& extension_id, const std::string& changes_json) {
-  profile_->GetExtensionEventRouter()->DispatchEventToExtension(
-      extension_id,
-      extension_event_names::kOnSettingsChanged,
-      // This is the list of function arguments to pass to the onChanged
-      // handler of extensions, a single argument with the list of changes.
-      std::string("[") + changes_json + "]",
-      NULL,
-      GURL());
-}
-
-// Core
-
-class SettingsFrontend::Core
-    : public base::RefCountedThreadSafe<Core> {
+// Ref-counted container for a SettingsBackend object.
+class SettingsFrontend::BackendWrapper
+    : public base::RefCountedThreadSafe<BackendWrapper> {
  public:
-  explicit Core(
-      // Ownership taken.
-      SettingsStorageFactory* storage_factory,
-      const scoped_refptr<SettingsObserverList>& observers)
-      : storage_factory_(storage_factory),
-        observers_(observers),
-        backends_(NULL) {
+  // Creates a new BackendWrapper and initializes it on the FILE thread.
+  static scoped_refptr<BackendWrapper> CreateAndInit(
+      const scoped_refptr<SettingsStorageFactory>& factory,
+      const scoped_refptr<SettingsObserverList>& observers,
+      const FilePath& path) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    scoped_refptr<BackendWrapper> backend_wrapper =
+        new BackendWrapper(factory, observers);
+    BrowserThread::PostTask(
+        BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(
+            &SettingsFrontend::BackendWrapper::InitOnFileThread,
+            backend_wrapper,
+            path));
+    return backend_wrapper;
   }
 
-  typedef base::Callback<void(Backends*)> BackendsCallback;
+  typedef base::Callback<void(SettingsBackend*)> BackendCallback;
 
-  // Does any FILE thread specific initialization, such as construction of
-  // |backend_|.  Must be called before any call to
-  // RunWithBackendOnFileThread().
-  void InitOnFileThread(const FilePath& profile_path) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    DCHECK(!backends_);
-    backends_ =
-        new Backends(
-            storage_factory_.release(), profile_path, observers_);
-  }
-
-  // Runs |callback| with both the extensions and apps settings on the FILE
-  // thread.
-  void RunWithBackends(const BackendsCallback& callback) {
+  // Runs |callback| with the wrapped Backend on the FILE thread.
+  void RunWithBackend(const BackendCallback& callback) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     BrowserThread::PostTask(
         BrowserThread::FILE,
         FROM_HERE,
         base::Bind(
-            &SettingsFrontend::Core::RunWithBackendsOnFileThread,
+            &SettingsFrontend::BackendWrapper::RunWithBackendOnFileThread,
             this,
             callback));
   }
 
  private:
-  void RunWithBackendsOnFileThread(const BackendsCallback& callback) {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    DCHECK(backends_);
-    callback.Run(backends_);
+  friend class base::RefCountedThreadSafe<BackendWrapper>;
+
+  BackendWrapper(
+      const scoped_refptr<SettingsStorageFactory>& storage_factory,
+      const scoped_refptr<SettingsObserverList>& observers)
+      : storage_factory_(storage_factory),
+        observers_(observers),
+        backend_(NULL) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   }
 
-  virtual ~Core() {
+  virtual ~BackendWrapper() {
     if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-      delete backends_;
+      delete backend_;
     } else if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, backends_);
+      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, backend_);
     } else {
       NOTREACHED();
     }
   }
 
-  friend class base::RefCountedThreadSafe<Core>;
+  void InitOnFileThread(const FilePath& path) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK(!backend_);
+    backend_ = new SettingsBackend(storage_factory_, path, observers_);
+    storage_factory_ = NULL;
+    observers_ = NULL;
+  }
 
-  // Leveldb storage area factory.  Ownership passed to Backends on Init.
-  scoped_ptr<SettingsStorageFactory> storage_factory_;
+  void RunWithBackendOnFileThread(const BackendCallback& callback) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+    DCHECK(backend_);
+    callback.Run(backend_);
+  }
 
-  // Observers to settings changes (thread safe).
+  // Only need these until |backend_| exists.
+  scoped_refptr<SettingsStorageFactory> storage_factory_;
   scoped_refptr<SettingsObserverList> observers_;
 
-  // Backends for extensions and apps settings.  Lives on FILE thread.
-  Backends* backends_;
+  // Wrapped Backend.  Used exclusively on the FILE thread, and is created on
+  // the FILE thread in InitOnFileThread.
+  SettingsBackend* backend_;
 
-  DISALLOW_COPY_AND_ASSIGN(Core);
+  DISALLOW_COPY_AND_ASSIGN(BackendWrapper);
 };
 
 // SettingsFrontend
@@ -189,54 +169,75 @@ SettingsFrontend* SettingsFrontend::Create(Profile* profile) {
 
 /* static */
 SettingsFrontend* SettingsFrontend::Create(
-    SettingsStorageFactory* storage_factory, Profile* profile) {
+    const scoped_refptr<SettingsStorageFactory>& storage_factory,
+    Profile* profile) {
   return new SettingsFrontend(storage_factory, profile);
 }
 
 SettingsFrontend::SettingsFrontend(
-    SettingsStorageFactory* storage_factory, Profile* profile)
+    const scoped_refptr<SettingsStorageFactory>& factory, Profile* profile)
     : profile_(profile),
       observers_(new SettingsObserverList()),
-      default_observer_(profile),
-      core_(new SettingsFrontend::Core(storage_factory, observers_)) {
+      profile_observer_(new DefaultObserver(profile)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!profile->IsOffTheRecord());
 
-  observers_->AddObserver(&default_observer_);
+  observers_->AddObserver(profile_observer_.get());
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(
-          &SettingsFrontend::Core::InitOnFileThread,
-          core_.get(),
-          profile->GetPath()));
+  const FilePath& profile_path = profile->GetPath();
+  backends_[settings_namespace::LOCAL].app =
+      BackendWrapper::CreateAndInit(
+          factory,
+          observers_,
+          profile_path.AppendASCII(
+              ExtensionService::kLocalAppSettingsDirectoryName));
+  backends_[settings_namespace::LOCAL].extension =
+      BackendWrapper::CreateAndInit(
+          factory,
+          observers_,
+          profile_path.AppendASCII(
+              ExtensionService::kLocalExtensionSettingsDirectoryName));
+  backends_[settings_namespace::SYNC].app =
+      BackendWrapper::CreateAndInit(
+          factory,
+          observers_,
+          profile_path.AppendASCII(
+              ExtensionService::kSyncAppSettingsDirectoryName));
+  backends_[settings_namespace::SYNC].extension =
+      BackendWrapper::CreateAndInit(
+          factory,
+          observers_,
+          profile_path.AppendASCII(
+              ExtensionService::kSyncExtensionSettingsDirectoryName));
 }
 
 SettingsFrontend::~SettingsFrontend() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  observers_->RemoveObserver(&default_observer_);
+  observers_->RemoveObserver(profile_observer_.get());
 }
 
 void SettingsFrontend::RunWithSyncableService(
     syncable::ModelType model_type, const SyncableServiceCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  scoped_refptr<BackendWrapper> backend;
   switch (model_type) {
-    case syncable::EXTENSION_SETTINGS:
-      core_->RunWithBackends(
-          base::Bind(&CallbackWithExtensionsBackend, callback));
-      break;
     case syncable::APP_SETTINGS:
-      core_->RunWithBackends(
-          base::Bind(&CallbackWithAppsBackend, callback));
+      backend = backends_[settings_namespace::SYNC].app;
       break;
+
+    case syncable::EXTENSION_SETTINGS:
+      backend = backends_[settings_namespace::SYNC].extension;
+      break;
+
     default:
       NOTREACHED();
   }
+  backend->RunWithBackend(base::Bind(&CallbackWithSyncableService, callback));
 }
 
 void SettingsFrontend::RunWithStorage(
     const std::string& extension_id,
+    settings_namespace::Namespace settings_namespace,
     const StorageCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -250,25 +251,36 @@ void SettingsFrontend::RunWithStorage(
     return;
   }
 
+  scoped_refptr<BackendWrapper> backend;
   if (extension->is_app()) {
-    core_->RunWithBackends(
-        base::Bind(&CallbackWithAppsStorage, extension_id, callback));
+    backend = backends_[settings_namespace].app;
   } else {
-    core_->RunWithBackends(
-        base::Bind(&CallbackWithExtensionsStorage, extension_id, callback));
+    backend = backends_[settings_namespace].extension;
   }
+  backend->RunWithBackend(
+      base::Bind(&CallbackWithStorage, extension_id, callback));
 }
 
 void SettingsFrontend::DeleteStorageSoon(
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  core_->RunWithBackends(base::Bind(&DeleteStorageOnFileThread, extension_id));
+  SettingsFrontend::BackendWrapper::BackendCallback callback =
+      base::Bind(&DeleteStorageOnFileThread, extension_id);
+  for (std::map<settings_namespace::Namespace, BackendWrappers>::iterator it =
+      backends_.begin(); it != backends_.end(); ++it) {
+    it->second.app->RunWithBackend(callback);
+    it->second.extension->RunWithBackend(callback);
+  }
 }
 
-scoped_refptr<SettingsObserverList>
-SettingsFrontend::GetObservers() {
+scoped_refptr<SettingsObserverList> SettingsFrontend::GetObservers() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return observers_;
 }
+
+// BackendWrappers
+
+SettingsFrontend::BackendWrappers::BackendWrappers() {}
+SettingsFrontend::BackendWrappers::~BackendWrappers() {}
 
 }  // namespace extensions

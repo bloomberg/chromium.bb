@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_event_router.h"
@@ -69,19 +71,23 @@ class MockProfile : public TestingProfile {
 // SettingsStorageFactory which acts as a wrapper for other factories.
 class ScopedSettingsStorageFactory : public SettingsStorageFactory {
  public:
-  explicit ScopedSettingsStorageFactory(SettingsStorageFactory* delegate);
+  ScopedSettingsStorageFactory();
 
-  virtual ~ScopedSettingsStorageFactory();
+  explicit ScopedSettingsStorageFactory(
+      const scoped_refptr<SettingsStorageFactory>& delegate);
 
   // Sets the delegate factory (equivalent to scoped_ptr::reset).
-  void Reset(SettingsStorageFactory* delegate);
+  void Reset(const scoped_refptr<SettingsStorageFactory>& delegate);
 
   // SettingsStorageFactory implementation.
   virtual SettingsStorage* Create(
       const FilePath& base_path, const std::string& extension_id) OVERRIDE;
 
  private:
-  scoped_ptr<SettingsStorageFactory> delegate_;
+  // SettingsStorageFactory is refcounted.
+  virtual ~ScopedSettingsStorageFactory();
+
+  scoped_refptr<SettingsStorageFactory> delegate_;
 };
 
 }  // namespace settings_test_util

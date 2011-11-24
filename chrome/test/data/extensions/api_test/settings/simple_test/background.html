@@ -1,55 +1,59 @@
 <script>
-// Calls chrome.test.succeed after the settings have been cleared for the next
-// test.
-function succeed() {
-  chrome.experimental.settings.clear(chrome.test.succeed);
+function test(stage0) {
+  var apis = [
+      chrome.experimental.settings.sync,
+      chrome.experimental.settings.local
+  ];
+  apis.forEach(function(api) {
+    api.succeed = chrome.test.callbackPass(api.clear.bind(api));
+    stage0.call(api);
+  });
 }
 
 chrome.test.runTests([
   function getWhenEmpty() {
     function stage0() {
-      chrome.experimental.settings.get('foo', stage1);
+      this.get('foo', stage1.bind(this));
     }
     function stage1(settings) {
       chrome.test.assertEq({}, settings);
-      chrome.experimental.settings.get(['foo', 'bar'], stage2);
+      this.get(['foo', 'bar'], stage2.bind(this));
     }
     function stage2(settings) {
       chrome.test.assertEq({}, settings);
-      chrome.experimental.settings.get(undefined, stage3);
+      this.get(undefined, stage3.bind(this));
     }
     function stage3(settings) {
       chrome.test.assertEq({}, settings);
-      succeed();
+      this.succeed();
     }
-    stage0();
+    test(stage0);
   },
 
   function getWhenNonempty() {
     function stage0() {
-      chrome.experimental.settings.set({
+      this.set({
         'foo'  : 'bar',
         'baz'  : 'qux',
         'hello': 'world'
-      }, stage1);
+      }, stage1.bind(this));
     }
     function stage1() {
-      chrome.experimental.settings.get(['foo', 'baz'], stage2);
+      this.get(['foo', 'baz'], stage2.bind(this));
     }
     function stage2(settings) {
       chrome.test.assertEq({
         'foo': 'bar',
         'baz': 'qux'
       }, settings);
-      chrome.experimental.settings.get(
-          ['nothing', 'baz', 'hello', 'ignore'], stage3);
+      this.get(['nothing', 'baz', 'hello', 'ignore'], stage3.bind(this));
     }
     function stage3(settings) {
       chrome.test.assertEq({
         'baz'  : 'qux',
         'hello': 'world'
       }, settings);
-      chrome.experimental.settings.get(null, stage4);
+      this.get(null, stage4.bind(this));
     }
     function stage4(settings) {
       chrome.test.assertEq({
@@ -57,80 +61,77 @@ chrome.test.runTests([
         'baz'  : 'qux',
         'hello': 'world'
       }, settings);
-      succeed();
+      this.succeed();
     }
-    stage0();
+    test(stage0);
   },
 
   function removeWhenEmpty() {
     function stage0() {
-      chrome.experimental.settings.remove('foo', stage1);
+      this.remove('foo', stage1.bind(this));
     }
     function stage1() {
-      chrome.experimental.settings.remove(['foo', 'bar'], stage2);
+      this.remove(['foo', 'bar'], this.succeed);
     }
-    function stage2() {
-      succeed();
-    }
-    stage0();
+    test(stage0);
   },
 
   function removeWhenNonempty() {
     function stage0() {
-      chrome.experimental.settings.set({
+      this.set({
         'foo'  : 'bar',
         'baz'  : 'qux',
         'hello': 'world'
-      }, stage1);
+      }, stage1.bind(this));
     }
     function stage1() {
-      chrome.experimental.settings.remove('foo', stage2);
+      this.remove('foo', stage2.bind(this));
     }
     function stage2() {
-      chrome.experimental.settings.get(null, stage3);
+      this.get(null, stage3.bind(this));
     }
     function stage3(settings) {
       chrome.test.assertEq({
         'baz'  : 'qux',
         'hello': 'world'
       }, settings);
-      chrome.experimental.settings.remove(['baz', 'nothing'], stage4);
+      this.remove(['baz', 'nothing'], stage4.bind(this));
     }
     function stage4() {
-      chrome.experimental.settings.get(null, stage5);
+      this.get(null, stage5.bind(this));
     }
     function stage5(settings) {
       chrome.test.assertEq({
         'hello': 'world'
       }, settings);
-      chrome.experimental.settings.remove('hello', stage6);
+      this.remove('hello', stage6.bind(this));
     }
     function stage6() {
-      chrome.experimental.settings.get(null, stage7);
+      this.get(null, stage7.bind(this));
     }
     function stage7(settings) {
       chrome.test.assertEq({}, settings);
-      succeed();
+      this.succeed();
     }
-    stage0();
+    test(stage0);
   },
 
   function setWhenOverwriting() {
     function stage0() {
-      chrome.experimental.settings.set({
+      this.set({
         'foo'  : 'bar',
         'baz'  : 'qux',
         'hello': 'world'
-      }, stage1);
+      }, stage1.bind(this));
     }
     function stage1() {
-      chrome.experimental.settings.set({
+      this.set({
         'foo'  : 'otherBar',
         'baz'  : 'otherQux'
-      }, stage2);
+      }, stage2.bind(this));
     }
     function stage2() {
-      chrome.experimental.settings.get(null, stage3);
+      this.get(null, stage3.bind(this));
     }
     function stage3(settings) {
       chrome.test.assertEq({
@@ -138,14 +139,14 @@ chrome.test.runTests([
         'baz'  : 'otherQux',
         'hello': 'world'
       }, settings);
-      chrome.experimental.settings.set({
+      this.set({
         'baz'  : 'anotherQux',
         'hello': 'otherWorld',
         'some' : 'value'
-      }, stage4);
+      }, stage4.bind(this));
     }
     function stage4() {
-      chrome.experimental.settings.get(null, stage5);
+      this.get(null, stage5.bind(this));
     }
     function stage5(settings) {
       chrome.test.assertEq({
@@ -154,152 +155,157 @@ chrome.test.runTests([
         'hello': 'otherWorld',
         'some' : 'value'
       }, settings);
-      succeed();
+      this.succeed();
     }
-    stage0();
+    test(stage0);
   },
 
   function clearWhenEmpty() {
     function stage0() {
-      chrome.experimental.settings.clear(stage1);
+      this.clear(stage1.bind(this));
     }
     function stage1() {
-      chrome.experimental.settings.get(null, stage2);
+      this.get(null, stage2.bind(this));
     }
     function stage2(settings) {
       chrome.test.assertEq({}, settings);
-      succeed();
+      this.succeed();
     }
-    stage0();
+    test(stage0);
   },
 
   function clearWhenNonempty() {
     function stage0() {
-      chrome.experimental.settings.set({
+      this.set({
         'foo'  : 'bar',
         'baz'  : 'qux',
         'hello': 'world'
-      }, stage1);
+      }, stage1.bind(this));
     }
     function stage1() {
-      chrome.experimental.settings.clear(stage2);
+      this.clear(stage2.bind(this));
     }
     function stage2() {
-      chrome.experimental.settings.get(null, stage3);
+      this.get(null, stage3.bind(this));
     }
     function stage3(settings) {
       chrome.test.assertEq({}, settings);
-      succeed();
+      this.succeed();
     }
-    stage0();
+    test(stage0);
   },
 
   function keysWithDots() {
     function stage0() {
-      chrome.experimental.settings.set({
+      this.set({
         'foo.bar' : 'baz',
         'one'     : {'two': 'three'}
-      }, stage1);
+      }, stage1.bind(this));
     }
     function stage1() {
-      chrome.experimental.settings.get(['foo.bar', 'one'], stage2);
+      this.get(['foo.bar', 'one'], stage2.bind(this));
     }
     function stage2(settings) {
       chrome.test.assertEq({
         'foo.bar' : 'baz',
         'one'     : {'two': 'three'}
       }, settings);
-      chrome.experimental.settings.get('one.two', stage3);
+      this.get('one.two', stage3.bind(this));
     }
     function stage3(settings) {
       chrome.test.assertEq({}, settings);
-      chrome.experimental.settings.remove(['foo.bar', 'one.two'], stage4);
+      this.remove(['foo.bar', 'one.two'], stage4.bind(this));
     }
     function stage4() {
-      chrome.experimental.settings.get(null, stage5);
+      this.get(null, stage5.bind(this));
     }
     function stage5(settings) {
       chrome.test.assertEq({
         'one'     : {'two': 'three'}
       }, settings);
-      succeed();
+      this.succeed();
     }
-    stage0();
+    test(stage0);
   },
 
   function getWithDefaultValues() {
     function stage0() {
-      chrome.experimental.settings.get({
+      this.get({
         'foo': 'defaultBar',
         'baz': [1, 2, 3]
-      }, stage1);
+      }, stage1.bind(this));
     }
     function stage1(settings) {
       chrome.test.assertEq({
         'foo': 'defaultBar',
         'baz': [1, 2, 3]
       }, settings);
-      chrome.experimental.settings.get(null, stage2);
+      this.get(null, stage2.bind(this));
     }
     function stage2(settings) {
       chrome.test.assertEq({}, settings);
-      chrome.experimental.settings.set({'foo': 'bar'}, stage3);
+      this.set({'foo': 'bar'}, stage3.bind(this));
     }
     function stage3() {
-      chrome.experimental.settings.get({
+      this.get({
         'foo': 'defaultBar',
         'baz': [1, 2, 3]
-      }, stage4);
+      }, stage4.bind(this));
     }
     function stage4(settings) {
       chrome.test.assertEq({
         'foo': 'bar',
         'baz': [1, 2, 3]
       }, settings);
-      chrome.experimental.settings.set({'baz': {}}, stage5);
+      this.set({'baz': {}}, stage5.bind(this));
     }
     function stage5() {
-      chrome.experimental.settings.get({
+      this.get({
         'foo': 'defaultBar',
         'baz': [1, 2, 3]
-      }, stage6);
+      }, stage6.bind(this));
     }
     function stage6(settings) {
       chrome.test.assertEq({
         'foo': 'bar',
         'baz': {}
       }, settings);
-      chrome.experimental.settings.remove('foo', stage7);
+      this.remove('foo', stage7.bind(this));
     }
     function stage7() {
-      chrome.experimental.settings.get({
+      this.get({
         'foo': 'defaultBar',
         'baz': [1, 2, 3]
-      }, stage8);
+      }, stage8.bind(this));
     }
     function stage8(settings) {
       chrome.test.assertEq({
         'foo': 'defaultBar',
         'baz': {}
       }, settings);
-      succeed();
+      this.succeed();
     }
-    stage0();
+    test(stage0);
   },
 
   function throttling() {
+    // We can only really test one of the namespaces since they will all get
+    // throttled together.
+    var api = chrome.experimental.settings.sync;
+
     // Should get throttled after 1000 calls.
     var maxRequests = 1001;
+
     function next() {
-      chrome.experimental.settings.clear((--maxRequests > 0) ? next : done);
+      api.clear((--maxRequests > 0) ? next : done);
     }
     function done() {
       chrome.test.assertEq(
           "This request exceeds available quota.",
           chrome.extension.lastError.message);
-      succeed();
+      chrome.test.succeed();
     }
-    chrome.experimental.settings.clear(next);
+    api.clear(next);
   }
 ]);
 </script>

@@ -1,13 +1,16 @@
 <script>
-var settings = chrome.experimental.settings;
+var api = chrome.experimental.settings;
 var assertEq = chrome.test.assertEq;
 var inIncognitoContext = chrome.extension.inIncognitoContext;
 
-// All notifications received.
-var notifications = [];
-settings.onChanged.addListener(function(changes) {
-  changes.forEach(function(change) {
-    notifications.push(change);
+['sync', 'local'].forEach(function(namespace) {
+  api[namespace].notifications = [];
+  api.onChanged.addListener(function(changes, event_namespace) {
+    if (event_namespace == namespace) {
+      changes.forEach(function(change) {
+        api[namespace].notifications.push(change);
+      });
+    }
   });
 });
 
@@ -18,49 +21,43 @@ settings.onChanged.addListener(function(changes) {
 // operation fully completes.
 var testActions = {
   noop: function(callback) {
-    settings.get("", callback);
+    this.get("", callback);
   },
   assertEmpty: function(callback) {
-    settings.get(null, function(settings) {
+    this.get(null, function(settings) {
       chrome.test.assertEq({}, settings);
       callback();
     });
   },
   assertFoo: function(callback) {
-    settings.get(null, function(settings) {
+    this.get(null, function(settings) {
       chrome.test.assertEq({foo: "bar"}, settings);
       callback();
     });
   },
   setFoo: function(callback) {
-    settings.set({foo: "bar"}, callback);
+    this.set({foo: "bar"}, callback);
   },
   removeFoo: function(callback) {
-    settings.remove("foo", callback);
+    this.remove("foo", callback);
   },
   clear: function(callback) {
-    settings.clear(callback);
+    this.clear(callback);
   },
   assertNoNotifications: function(callback) {
-    assertEq([], notifications);
+    assertEq([], this.notifications);
     callback();
   },
   clearNotifications: function(callback) {
-    notifications = [];
+    this.notifications.length = 0;
     callback();
   },
   assertAddFooNotification: function(callback) {
-    assertEq(1, notifications.length);
-    assertEq("foo", notifications[0].key);
-    assertEq(undefined, notifications[0].oldValue);
-    assertEq("bar", notifications[0].newValue);
+    assertEq([{ key: 'foo', newValue: 'bar' }], this.notifications);
     callback();
   },
   assertDeleteFooNotification: function(callback) {
-    assertEq(1, notifications.length);
-    assertEq("foo", notifications[0].key);
-    assertEq("bar", notifications[0].oldValue);
-    assertEq(undefined, notifications[0].newValue);
+    assertEq([{ key: 'foo', oldValue: 'bar' }], this.notifications);
     callback();
   }
 };
@@ -73,7 +70,12 @@ function testEverything() {
     chrome.test.sendMessage(waiting, function(messageJson) {
       var message = JSON.parse(messageJson);
       var action = testActions[message.action];
-      action(message.isFinalAction ? chrome.test.succeed : next);
+      if (!action) {
+        chrome.test.fail("Unknown action: " + message.action);
+        return;
+      }
+      action.bind(api[message.namespace])(
+          message.isFinalAction ? chrome.test.succeed : next);
     });
   }
   next();

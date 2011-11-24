@@ -29,13 +29,15 @@ const SettingsStorage::WriteOptions DEFAULTS = SettingsStorage::DEFAULTS;
 // A SettingsStorageFactory which always returns NULL.
 class NullSettingsStorageFactory : public SettingsStorageFactory {
  public:
-  virtual ~NullSettingsStorageFactory() {}
-
   // SettingsStorageFactory implementation.
   virtual SettingsStorage* Create(
       const FilePath& base_path, const std::string& extension_id) OVERRIDE {
     return NULL;
   }
+
+ private:
+  // SettingsStorageFactory is refcounted.
+  virtual ~NullSettingsStorageFactory() {}
 };
 
 }
@@ -43,7 +45,8 @@ class NullSettingsStorageFactory : public SettingsStorageFactory {
 class ExtensionSettingsFrontendTest : public testing::Test {
  public:
    ExtensionSettingsFrontendTest()
-      : ui_thread_(BrowserThread::UI, MessageLoop::current()),
+      : storage_factory_(new ScopedSettingsStorageFactory()),
+        ui_thread_(BrowserThread::UI, MessageLoop::current()),
         file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
 
   virtual void SetUp() OVERRIDE {
@@ -59,17 +62,15 @@ class ExtensionSettingsFrontendTest : public testing::Test {
 
  protected:
   void ResetFrontend() {
-    storage_factory_ =
-        new ScopedSettingsStorageFactory(new SettingsLeveldbStorage::Factory());
-    frontend_.reset(SettingsFrontend::Create(storage_factory_, profile_.get()));
+    storage_factory_->Reset(new SettingsLeveldbStorage::Factory());
+    frontend_.reset(
+        SettingsFrontend::Create(storage_factory_.get(), profile_.get()));
   }
 
   ScopedTempDir temp_dir_;
   scoped_ptr<MockProfile> profile_;
   scoped_ptr<SettingsFrontend> frontend_;
-
-  // Owned by |frontend_|.
-  ScopedSettingsStorageFactory* storage_factory_;
+  scoped_refptr<ScopedSettingsStorageFactory> storage_factory_;
 
  private:
   MessageLoop message_loop_;

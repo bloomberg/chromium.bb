@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
+#include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +19,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 
 namespace extensions {
+
+using namespace settings_namespace;
 
 namespace {
 
@@ -37,24 +40,32 @@ class NoopSyncChangeProcessor : public SyncChangeProcessor {
 class ExtensionSettingsApiTest : public ExtensionApiTest {
  protected:
   void ReplyWhenSatisfied(
+      Namespace settings_namespace,
       const std::string& normal_action,
       const std::string& incognito_action) {
     MaybeLoadAndReplyWhenSatisfied(
-        normal_action, incognito_action, NULL, false);
+        settings_namespace, normal_action, incognito_action, NULL, false);
   }
 
   const Extension* LoadAndReplyWhenSatisfied(
+      Namespace settings_namespace,
       const std::string& normal_action,
       const std::string& incognito_action,
       const std::string& extension_dir) {
     return MaybeLoadAndReplyWhenSatisfied(
-        normal_action, incognito_action, &extension_dir, false);
+        settings_namespace,
+        normal_action,
+        incognito_action,
+        &extension_dir,
+        false);
   }
 
   void FinalReplyWhenSatisfied(
+      Namespace settings_namespace,
       const std::string& normal_action,
       const std::string& incognito_action) {
-    MaybeLoadAndReplyWhenSatisfied(normal_action, incognito_action, NULL, true);
+    MaybeLoadAndReplyWhenSatisfied(
+        settings_namespace, normal_action, incognito_action, NULL, true);
   }
 
   void InitSync(SyncChangeProcessor* sync_processor) {
@@ -83,6 +94,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
 
  private:
   const Extension* MaybeLoadAndReplyWhenSatisfied(
+      Namespace settings_namespace,
       const std::string& normal_action,
       const std::string& incognito_action,
       // May be NULL to imply not loading the extension.
@@ -103,13 +115,19 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
     EXPECT_TRUE(listener.WaitUntilSatisfied());
     EXPECT_TRUE(listener_incognito.WaitUntilSatisfied());
 
-    listener.Reply(CreateMessage(normal_action, is_final_action));
-    listener_incognito.Reply(CreateMessage(incognito_action, is_final_action));
+    listener.Reply(
+        CreateMessage(settings_namespace, normal_action, is_final_action));
+    listener_incognito.Reply(
+        CreateMessage(settings_namespace, incognito_action, is_final_action));
     return extension;
   }
 
-  std::string CreateMessage(const std::string& action, bool is_final_action) {
+  std::string CreateMessage(
+      Namespace settings_namespace,
+      const std::string& action,
+      bool is_final_action) {
     scoped_ptr<DictionaryValue> message(new DictionaryValue());
+    message->SetString("namespace", ToString(settings_namespace));
     message->SetString("action", action);
     message->SetBoolean("isFinalAction", is_final_action);
     std::string message_json;
@@ -153,15 +171,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, SplitModeIncognito) {
   catcher_incognito.RestrictToProfile(
       browser()->profile()->GetOffTheRecordProfile());
 
-  LoadAndReplyWhenSatisfied("assertEmpty", "assertEmpty", "split_incognito");
-  ReplyWhenSatisfied("noop", "setFoo");
-  ReplyWhenSatisfied("assertFoo", "assertFoo");
-  ReplyWhenSatisfied("clear", "noop");
-  ReplyWhenSatisfied("assertEmpty", "assertEmpty");
-  ReplyWhenSatisfied("setFoo", "noop");
-  ReplyWhenSatisfied("assertFoo", "assertFoo");
-  ReplyWhenSatisfied("noop", "removeFoo");
-  FinalReplyWhenSatisfied("assertEmpty", "assertEmpty");
+  LoadAndReplyWhenSatisfied(SYNC,
+      "assertEmpty", "assertEmpty", "split_incognito");
+  ReplyWhenSatisfied(SYNC, "noop", "setFoo");
+  ReplyWhenSatisfied(SYNC, "assertFoo", "assertFoo");
+  ReplyWhenSatisfied(SYNC, "clear", "noop");
+  ReplyWhenSatisfied(SYNC, "assertEmpty", "assertEmpty");
+  ReplyWhenSatisfied(SYNC, "setFoo", "noop");
+  ReplyWhenSatisfied(SYNC, "assertFoo", "assertFoo");
+  ReplyWhenSatisfied(SYNC, "noop", "removeFoo");
+  FinalReplyWhenSatisfied(SYNC, "assertEmpty", "assertEmpty");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
@@ -179,14 +198,68 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   catcher_incognito.RestrictToProfile(
       browser()->profile()->GetOffTheRecordProfile());
 
-  LoadAndReplyWhenSatisfied(
+  LoadAndReplyWhenSatisfied(SYNC,
       "assertNoNotifications", "assertNoNotifications", "split_incognito");
-  ReplyWhenSatisfied("noop", "setFoo");
-  ReplyWhenSatisfied("assertAddFooNotification", "assertAddFooNotification");
-  ReplyWhenSatisfied("clearNotifications", "clearNotifications");
-  ReplyWhenSatisfied("removeFoo", "noop");
-  FinalReplyWhenSatisfied(
+  ReplyWhenSatisfied(SYNC, "noop", "setFoo");
+  ReplyWhenSatisfied(SYNC,
+      "assertAddFooNotification", "assertAddFooNotification");
+  ReplyWhenSatisfied(SYNC, "clearNotifications", "clearNotifications");
+  ReplyWhenSatisfied(SYNC, "removeFoo", "noop");
+  FinalReplyWhenSatisfied(SYNC,
       "assertDeleteFooNotification", "assertDeleteFooNotification");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
+    SyncAndLocalAreasAreSeparate) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  // We need 2 ResultCatchers because we'll be running the same test in both
+  // regular and incognito mode.
+  ResultCatcher catcher, catcher_incognito;
+  catcher.RestrictToProfile(browser()->profile());
+  catcher_incognito.RestrictToProfile(
+      browser()->profile()->GetOffTheRecordProfile());
+
+  LoadAndReplyWhenSatisfied(SYNC,
+      "assertNoNotifications", "assertNoNotifications", "split_incognito");
+
+  ReplyWhenSatisfied(SYNC, "noop", "setFoo");
+  ReplyWhenSatisfied(SYNC, "assertFoo", "assertFoo");
+  ReplyWhenSatisfied(SYNC,
+      "assertAddFooNotification", "assertAddFooNotification");
+  ReplyWhenSatisfied(LOCAL, "assertEmpty", "assertEmpty");
+  ReplyWhenSatisfied(LOCAL, "assertNoNotifications", "assertNoNotifications");
+
+  ReplyWhenSatisfied(SYNC, "clearNotifications", "clearNotifications");
+
+  ReplyWhenSatisfied(LOCAL, "setFoo", "noop");
+  ReplyWhenSatisfied(LOCAL, "assertFoo", "assertFoo");
+  ReplyWhenSatisfied(LOCAL,
+      "assertAddFooNotification", "assertAddFooNotification");
+  ReplyWhenSatisfied(SYNC, "assertFoo", "assertFoo");
+  ReplyWhenSatisfied(SYNC, "assertNoNotifications", "assertNoNotifications");
+
+  ReplyWhenSatisfied(LOCAL, "clearNotifications", "clearNotifications");
+
+  ReplyWhenSatisfied(LOCAL, "noop", "removeFoo");
+  ReplyWhenSatisfied(LOCAL, "assertEmpty", "assertEmpty");
+  ReplyWhenSatisfied(LOCAL,
+      "assertDeleteFooNotification", "assertDeleteFooNotification");
+  ReplyWhenSatisfied(SYNC, "assertFoo", "assertFoo");
+  ReplyWhenSatisfied(SYNC, "assertNoNotifications", "assertNoNotifications");
+
+  ReplyWhenSatisfied(LOCAL, "clearNotifications", "clearNotifications");
+
+  ReplyWhenSatisfied(SYNC, "removeFoo", "noop");
+  ReplyWhenSatisfied(SYNC, "assertEmpty", "assertEmpty");
+  ReplyWhenSatisfied(SYNC,
+      "assertDeleteFooNotification", "assertDeleteFooNotification");
+  ReplyWhenSatisfied(LOCAL, "assertNoNotifications", "assertNoNotifications");
+  FinalReplyWhenSatisfied(LOCAL, "assertEmpty", "assertEmpty");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
@@ -206,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
       browser()->profile()->GetOffTheRecordProfile());
 
   const Extension* extension =
-      LoadAndReplyWhenSatisfied(
+      LoadAndReplyWhenSatisfied(SYNC,
           "assertNoNotifications", "assertNoNotifications", "split_incognito");
   const std::string& extension_id = extension->id();
 
@@ -220,8 +293,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
       extension_id, "foo", bar));
   SendChanges(sync_changes);
 
-  ReplyWhenSatisfied("assertAddFooNotification", "assertAddFooNotification");
-  ReplyWhenSatisfied("clearNotifications", "clearNotifications");
+  ReplyWhenSatisfied(SYNC,
+      "assertAddFooNotification", "assertAddFooNotification");
+  ReplyWhenSatisfied(SYNC, "clearNotifications", "clearNotifications");
 
   // Remove "foo" via sync.
   sync_changes.clear();
@@ -229,8 +303,54 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
       extension_id, "foo"));
   SendChanges(sync_changes);
 
-  FinalReplyWhenSatisfied(
+  FinalReplyWhenSatisfied(SYNC,
       "assertDeleteFooNotification", "assertDeleteFooNotification");
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+  EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
+}
+
+// Disabled, see crbug.com/101110
+//
+// TODO: boring test, already done in the unit tests.  What we really should be
+// be testing is that the areas don't overlap.
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
+    DISABLED_OnChangedNotificationsFromSyncNotSentToLocal) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+
+  // We need 2 ResultCatchers because we'll be running the same test in both
+  // regular and incognito mode.
+  ResultCatcher catcher, catcher_incognito;
+  catcher.RestrictToProfile(browser()->profile());
+  catcher_incognito.RestrictToProfile(
+      browser()->profile()->GetOffTheRecordProfile());
+
+  const Extension* extension =
+      LoadAndReplyWhenSatisfied(LOCAL,
+          "assertNoNotifications", "assertNoNotifications", "split_incognito");
+  const std::string& extension_id = extension->id();
+
+  NoopSyncChangeProcessor sync_processor;
+  InitSync(&sync_processor);
+
+  // Set "foo" to "bar" via sync.
+  SyncChangeList sync_changes;
+  StringValue bar("bar");
+  sync_changes.push_back(settings_sync_util::CreateAdd(
+      extension_id, "foo", bar));
+  SendChanges(sync_changes);
+
+  ReplyWhenSatisfied(LOCAL, "assertNoNotifications", "assertNoNotifications");
+
+  // Remove "foo" via sync.
+  sync_changes.clear();
+  sync_changes.push_back(settings_sync_util::CreateDelete(
+      extension_id, "foo"));
+  SendChanges(sync_changes);
+
+  FinalReplyWhenSatisfied(LOCAL,
+      "assertNoNotifications", "assertNoNotifications");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();

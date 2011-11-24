@@ -7,6 +7,7 @@
 #pragma once
 
 #include "base/observer_list_threadsafe.h"
+#include "chrome/browser/extensions/settings/settings_namespace.h"
 
 namespace extensions {
 
@@ -16,10 +17,10 @@ class SettingsObserver {
   // Called when a list of settings have changed for an extension.
   virtual void OnSettingsChanged(
       const std::string& extension_id,
+      settings_namespace::Namespace settings_namespace,
       const std::string& changes_json) = 0;
 
- protected:
-  virtual ~SettingsObserver();
+  virtual ~SettingsObserver() {}
 };
 
 typedef ObserverListThreadSafe<SettingsObserver>

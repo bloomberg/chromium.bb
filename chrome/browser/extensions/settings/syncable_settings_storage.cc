@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/settings/syncable_settings_storage.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_sync_util.h"
 #include "chrome/browser/sync/api/sync_data.h"
 #include "chrome/browser/sync/protocol/extension_setting_specifics.pb.h"
@@ -321,6 +322,7 @@ SyncError SyncableSettingsStorage::ProcessSyncChanges(
   observers_->Notify(
       &SettingsObserver::OnSettingsChanged,
       extension_id_,
+      settings_namespace::SYNC,
       SettingChange::GetEventJson(changes));
 
   // TODO(kalman): Something sensible with multiple errors.

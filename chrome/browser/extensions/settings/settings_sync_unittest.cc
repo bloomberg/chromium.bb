@@ -162,6 +162,9 @@ class TestingSettingsStorageFactory : public SettingsStorageFactory {
   }
 
  private:
+  // SettingsStorageFactory is refcounted.
+  virtual ~TestingSettingsStorageFactory() {}
+
   // None of these storage areas are owned by this factory, so care must be
   // taken when calling GetExisting.
   std::map<std::string, TestingSettingsStorage*> created_;
@@ -177,14 +180,15 @@ class ExtensionSettingsSyncTest : public testing::Test {
  public:
   ExtensionSettingsSyncTest()
       : ui_thread_(BrowserThread::UI, MessageLoop::current()),
-        file_thread_(BrowserThread::FILE, MessageLoop::current()) {}
+        file_thread_(BrowserThread::FILE, MessageLoop::current()),
+        storage_factory_(new ScopedSettingsStorageFactory()) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new MockProfile(temp_dir_.path()));
-    storage_factory_ =
-        new ScopedSettingsStorageFactory(new SettingsLeveldbStorage::Factory());
-    frontend_.reset(SettingsFrontend::Create(storage_factory_, profile_.get()));
+    storage_factory_->Reset(new SettingsLeveldbStorage::Factory());
+    frontend_.reset(
+        SettingsFrontend::Create(storage_factory_.get(), profile_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
@@ -234,9 +238,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   MockSyncChangeProcessor sync_;
   scoped_ptr<MockProfile> profile_;
   scoped_ptr<SettingsFrontend> frontend_;
-
-  // Owned by |frontend_|.
-  ScopedSettingsStorageFactory* storage_factory_;
+  scoped_refptr<ScopedSettingsStorageFactory> storage_factory_;
 };
 
 // Get a semblance of coverage for both EXTENSION_SETTINGS and APP_SETTINGS
@@ -246,22 +248,22 @@ TEST_F(ExtensionSettingsSyncTest, NoDataDoesNotInvokeSync) {
   syncable::ModelType model_type = syncable::EXTENSION_SETTINGS;
   Extension::Type type = Extension::TYPE_EXTENSION;
 
-  ASSERT_EQ(0u, GetAllSyncData(model_type).size());
+  EXPECT_EQ(0u, GetAllSyncData(model_type).size());
 
   // Have one extension created before sync is set up, the other created after.
   AddExtensionAndGetStorage("s1", type);
-  ASSERT_EQ(0u, GetAllSyncData(model_type).size());
+  EXPECT_EQ(0u, GetAllSyncData(model_type).size());
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type, SyncDataList(), &sync_);
 
   AddExtensionAndGetStorage("s2", type);
-  ASSERT_EQ(0u, GetAllSyncData(model_type).size());
+  EXPECT_EQ(0u, GetAllSyncData(model_type).size());
 
   GetSyncableService(model_type)->StopSyncing(model_type);
 
-  ASSERT_EQ(0u, sync_.changes().size());
-  ASSERT_EQ(0u, GetAllSyncData(model_type).size());
+  EXPECT_EQ(0u, sync_.changes().size());
+  EXPECT_EQ(0u, GetAllSyncData(model_type).size());
 }
 
 TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
@@ -280,11 +282,11 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
 
   std::map<std::string, SettingSyncDataList> all_sync_data =
       GetAllSyncData(model_type);
-  ASSERT_EQ(2u, all_sync_data.size());
-  ASSERT_EQ(1u, all_sync_data["s1"].size());
-  ASSERT_PRED_FORMAT2(ValuesEq, &value1, &all_sync_data["s1"][0].value());
-  ASSERT_EQ(1u, all_sync_data["s2"].size());
-  ASSERT_PRED_FORMAT2(ValuesEq, &value2, &all_sync_data["s2"][0].value());
+  EXPECT_EQ(2u, all_sync_data.size());
+  EXPECT_EQ(1u, all_sync_data["s1"].size());
+  EXPECT_PRED_FORMAT2(ValuesEq, &value1, &all_sync_data["s1"][0].value());
+  EXPECT_EQ(1u, all_sync_data["s2"].size());
+  EXPECT_PRED_FORMAT2(ValuesEq, &value2, &all_sync_data["s2"][0].value());
 
   SyncDataList sync_data;
   sync_data.push_back(settings_sync_util::CreateData(
@@ -296,18 +298,18 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
       model_type, sync_data, &sync_);
 
   // Already in sync, so no changes.
-  ASSERT_EQ(0u, sync_.changes().size());
+  EXPECT_EQ(0u, sync_.changes().size());
 
   // Regression test: not-changing the synced value shouldn't result in a sync
   // change, and changing the synced value should result in an update.
   storage1->Set(DEFAULTS, "foo", value1);
-  ASSERT_EQ(0u, sync_.changes().size());
+  EXPECT_EQ(0u, sync_.changes().size());
 
   storage1->Set(DEFAULTS, "foo", value2);
-  ASSERT_EQ(1u, sync_.changes().size());
+  EXPECT_EQ(1u, sync_.changes().size());
   SettingSyncData change = sync_.GetOnlyChange("s1", "foo");
-  ASSERT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
-  ASSERT_TRUE(value2.Equals(&change.value()));
+  EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+  EXPECT_TRUE(value2.Equals(&change.value()));
 
   GetSyncableService(model_type)->StopSyncing(model_type);
 }
@@ -330,13 +332,13 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
       model_type, SyncDataList(), &sync_);
 
   // All settings should have been pushed to sync.
-  ASSERT_EQ(2u, sync_.changes().size());
+  EXPECT_EQ(2u, sync_.changes().size());
   SettingSyncData change = sync_.GetOnlyChange("s1", "foo");
-  ASSERT_EQ(SyncChange::ACTION_ADD, change.change_type());
-  ASSERT_TRUE(value1.Equals(&change.value()));
+  EXPECT_EQ(SyncChange::ACTION_ADD, change.change_type());
+  EXPECT_TRUE(value1.Equals(&change.value()));
   change = sync_.GetOnlyChange("s2", "bar");
-  ASSERT_EQ(SyncChange::ACTION_ADD, change.change_type());
-  ASSERT_TRUE(value2.Equals(&change.value()));
+  EXPECT_EQ(SyncChange::ACTION_ADD, change.change_type());
+  EXPECT_TRUE(value2.Equals(&change.value()));
 
   GetSyncableService(model_type)->StopSyncing(model_type);
 }
@@ -370,11 +372,11 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   SettingsStorage* storage2 = AddExtensionAndGetStorage("s2", type);
 
   // All changes should be local, so no sync changes.
-  ASSERT_EQ(0u, sync_.changes().size());
+  EXPECT_EQ(0u, sync_.changes().size());
 
   // Sync settings should have been pushed to local settings.
-  ASSERT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
-  ASSERT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
+  EXPECT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
+  EXPECT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
 
   GetSyncableService(model_type)->StopSyncing(model_type);
 }
@@ -416,8 +418,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("foo", value1.DeepCopy());
 
-  ASSERT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
-  ASSERT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
+  EXPECT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
+  EXPECT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
 
   // Make sync update some settings, storage1 the new setting, storage2 the
   // initial setting.
@@ -430,8 +432,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   expected1.Set("bar", value2.DeepCopy());
   expected2.Set("bar", value1.DeepCopy());
 
-  ASSERT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
-  ASSERT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
+  EXPECT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
+  EXPECT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
 
   // Make sync remove some settings, storage1 the initial setting, storage2 the
   // new setting.
@@ -444,8 +446,8 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   expected1.Remove("foo", NULL);
   expected2.Remove("foo", NULL);
 
-  ASSERT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
-  ASSERT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
+  EXPECT_PRED_FORMAT2(SettingsEq, expected1, storage1->Get());
+  EXPECT_PRED_FORMAT2(SettingsEq, expected2, storage2->Get());
 
   GetSyncableService(model_type)->StopSyncing(model_type);
 }
@@ -484,17 +486,17 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   storage4->Set(DEFAULTS, "foo", value1);
 
   SettingSyncData change = sync_.GetOnlyChange("s1", "bar");
-    ASSERT_EQ(SyncChange::ACTION_ADD, change.change_type());
-    ASSERT_TRUE(value2.Equals(&change.value()));
+    EXPECT_EQ(SyncChange::ACTION_ADD, change.change_type());
+    EXPECT_TRUE(value2.Equals(&change.value()));
   sync_.GetOnlyChange("s2", "bar");
-    ASSERT_EQ(SyncChange::ACTION_ADD, change.change_type());
-    ASSERT_TRUE(value2.Equals(&change.value()));
+    EXPECT_EQ(SyncChange::ACTION_ADD, change.change_type());
+    EXPECT_TRUE(value2.Equals(&change.value()));
   change = sync_.GetOnlyChange("s3", "foo");
-    ASSERT_EQ(SyncChange::ACTION_ADD, change.change_type());
-    ASSERT_TRUE(value1.Equals(&change.value()));
+    EXPECT_EQ(SyncChange::ACTION_ADD, change.change_type());
+    EXPECT_TRUE(value1.Equals(&change.value()));
   change = sync_.GetOnlyChange("s4", "foo");
-    ASSERT_EQ(SyncChange::ACTION_ADD, change.change_type());
-    ASSERT_TRUE(value1.Equals(&change.value()));
+    EXPECT_EQ(SyncChange::ACTION_ADD, change.change_type());
+    EXPECT_TRUE(value1.Equals(&change.value()));
 
   // Change something locally, storage1/3 the new setting and storage2/4 the
   // initial setting, for all combinations of local vs sync intialisation and
@@ -506,17 +508,17 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   storage4->Set(DEFAULTS, "foo", value2);
 
   change = sync_.GetOnlyChange("s1", "bar");
-    ASSERT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
-    ASSERT_TRUE(value1.Equals(&change.value()));
+    EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+    EXPECT_TRUE(value1.Equals(&change.value()));
   change = sync_.GetOnlyChange("s2", "foo");
-    ASSERT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
-    ASSERT_TRUE(value2.Equals(&change.value()));
+    EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+    EXPECT_TRUE(value2.Equals(&change.value()));
   change = sync_.GetOnlyChange("s3", "bar");
-    ASSERT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
-    ASSERT_TRUE(value1.Equals(&change.value()));
+    EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+    EXPECT_TRUE(value1.Equals(&change.value()));
   change = sync_.GetOnlyChange("s4", "foo");
-    ASSERT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
-    ASSERT_TRUE(value2.Equals(&change.value()));
+    EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+    EXPECT_TRUE(value2.Equals(&change.value()));
 
   // Remove something locally, storage1/3 the new setting and storage2/4 the
   // initial setting, for all combinations of local vs sync intialisation and
@@ -527,16 +529,16 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   storage3->Remove("foo");
   storage4->Remove("bar");
 
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s1", "foo").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s2", "bar").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s3", "foo").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s4", "bar").change_type());
 
@@ -547,7 +549,7 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   storage3->Remove("foo");
   storage4->Remove("bar");
 
-  ASSERT_EQ(0u, sync_.changes().size());
+  EXPECT_EQ(0u, sync_.changes().size());
 
   // Clear the rest of the settings.  Add the removed ones back first so that
   // more than one setting is cleared.
@@ -562,28 +564,28 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   storage3->Clear();
   storage4->Clear();
 
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s1", "foo").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s1", "bar").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s2", "foo").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s2", "bar").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s3", "foo").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s3", "bar").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s4", "foo").change_type());
-  ASSERT_EQ(
+  EXPECT_EQ(
       SyncChange::ACTION_DELETE,
       sync_.GetOnlyChange("s4", "bar").change_type());
 
@@ -606,15 +608,15 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
 
   std::map<std::string, SettingSyncDataList> extension_sync_data =
       GetAllSyncData(syncable::EXTENSION_SETTINGS);
-  ASSERT_EQ(1u, extension_sync_data.size());
-  ASSERT_EQ(1u, extension_sync_data["s1"].size());
-  ASSERT_PRED_FORMAT2(ValuesEq, &value1, &extension_sync_data["s1"][0].value());
+  EXPECT_EQ(1u, extension_sync_data.size());
+  EXPECT_EQ(1u, extension_sync_data["s1"].size());
+  EXPECT_PRED_FORMAT2(ValuesEq, &value1, &extension_sync_data["s1"][0].value());
 
   std::map<std::string, SettingSyncDataList> app_sync_data =
       GetAllSyncData(syncable::APP_SETTINGS);
-  ASSERT_EQ(1u, app_sync_data.size());
-  ASSERT_EQ(1u, app_sync_data["s2"].size());
-  ASSERT_PRED_FORMAT2(ValuesEq, &value2, &app_sync_data["s2"][0].value());
+  EXPECT_EQ(1u, app_sync_data.size());
+  EXPECT_EQ(1u, app_sync_data["s2"].size());
+  EXPECT_PRED_FORMAT2(ValuesEq, &value2, &app_sync_data["s2"][0].value());
 
   // Stop each separately, there should be no changes either time.
   SyncDataList sync_data;
@@ -625,7 +627,7 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
       MergeDataAndStartSyncing(syncable::EXTENSION_SETTINGS, sync_data, &sync_);
   GetSyncableService(syncable::EXTENSION_SETTINGS)->
       StopSyncing(syncable::EXTENSION_SETTINGS);
-  ASSERT_EQ(0u, sync_.changes().size());
+  EXPECT_EQ(0u, sync_.changes().size());
 
   sync_data.clear();
   sync_data.push_back(settings_sync_util::CreateData(
@@ -635,7 +637,7 @@ TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
       MergeDataAndStartSyncing(syncable::APP_SETTINGS, sync_data, &sync_);
   GetSyncableService(syncable::APP_SETTINGS)->
       StopSyncing(syncable::APP_SETTINGS);
-  ASSERT_EQ(0u, sync_.changes().size());
+  EXPECT_EQ(0u, sync_.changes().size());
 }
 
 TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {

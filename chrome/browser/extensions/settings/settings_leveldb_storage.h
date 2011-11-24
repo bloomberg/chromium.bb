@@ -29,15 +29,13 @@ class SettingsLeveldbStorage : public SettingsStorage {
   // Factory for creating SettingsLeveldbStorage instances.
   class Factory : public SettingsStorageFactory {
    public:
-    Factory() {}
-    virtual ~Factory() {}
-
-    // SettingsStorageFactory implementation.
     virtual SettingsStorage* Create(
-        const FilePath& base_path, const std::string& extension_id) OVERRIDE;
+        const FilePath& base_path,
+        const std::string& extension_id) OVERRIDE;
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(Factory);
+    // SettingsStorageFactory is refcounted.
+    virtual ~Factory() {}
   };
 
   // Must be deleted on the FILE thread.

@@ -23,23 +23,36 @@ const char* kUnsupportedArgumentType = "Unsupported argument type";
 
 // SettingsFunction
 
+SettingsFunction::SettingsFunction()
+    : settings_namespace_(settings_namespace::INVALID) {}
+
+SettingsFunction::~SettingsFunction() {}
+
 bool SettingsFunction::RunImpl() {
+  {
+    std::string settings_namespace_string;
+    EXTENSION_FUNCTION_VALIDATE(
+        args_->GetString(0, &settings_namespace_string));
+    args_->Remove(0, NULL);
+    settings_namespace_ =
+        settings_namespace::FromString(settings_namespace_string);
+    EXTENSION_FUNCTION_VALIDATE(
+        settings_namespace_ != settings_namespace::INVALID);
+  }
+
   SettingsFrontend* frontend =
       profile()->GetExtensionService()->settings_frontend();
+  observers_ = frontend->GetObservers();
   frontend->RunWithStorage(
       extension_id(),
-      base::Bind(
-          &SettingsFunction::RunWithStorageOnFileThread,
-          this,
-          frontend->GetObservers()));
+      settings_namespace_,
+      base::Bind(&SettingsFunction::RunWithStorageOnFileThread, this));
   return true;
 }
 
-void SettingsFunction::RunWithStorageOnFileThread(
-    scoped_refptr<SettingsObserverList> observers,
-    SettingsStorage* storage) {
+void SettingsFunction::RunWithStorageOnFileThread(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  bool success = RunWithStorage(observers.get(), storage);
+  bool success = RunWithStorage(storage);
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
@@ -59,7 +72,6 @@ bool SettingsFunction::UseReadResult(
 }
 
 bool SettingsFunction::UseWriteResult(
-    scoped_refptr<SettingsObserverList> observers,
     const SettingsStorage::WriteResult& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (result.HasError()) {
@@ -68,9 +80,10 @@ bool SettingsFunction::UseWriteResult(
   }
 
   if (!result.changes().empty()) {
-    observers->Notify(
+    observers_->Notify(
         &SettingsObserver::OnSettingsChanged,
         extension_id(),
+        settings_namespace_,
         SettingChange::GetEventJson(result.changes()));
   }
 
@@ -128,9 +141,7 @@ static void GetModificationQuotaLimitHeuristics(
 
 }  // namespace
 
-bool GetSettingsFunction::RunWithStorage(
-    scoped_refptr<SettingsObserverList> observers,
-    SettingsStorage* storage) {
+bool GetSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Value *input;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
@@ -171,14 +182,11 @@ bool GetSettingsFunction::RunWithStorage(
   }
 }
 
-bool SetSettingsFunction::RunWithStorage(
-    scoped_refptr<SettingsObserverList> observers,
-    SettingsStorage* storage) {
+bool SetSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DictionaryValue *input;
+  DictionaryValue* input;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &input));
-  return UseWriteResult(
-      observers, storage->Set(SettingsStorage::DEFAULTS, *input));
+  return UseWriteResult(storage->Set(SettingsStorage::DEFAULTS, *input));
 }
 
 void SetSettingsFunction::GetQuotaLimitHeuristics(
@@ -186,9 +194,7 @@ void SetSettingsFunction::GetQuotaLimitHeuristics(
   GetModificationQuotaLimitHeuristics(heuristics);
 }
 
-bool RemoveSettingsFunction::RunWithStorage(
-    scoped_refptr<SettingsObserverList> observers,
-    SettingsStorage* storage) {
+bool RemoveSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Value *input;
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &input));
@@ -197,18 +203,17 @@ bool RemoveSettingsFunction::RunWithStorage(
     case Value::TYPE_STRING: {
       std::string as_string;
       input->GetAsString(&as_string);
-      return UseWriteResult(observers, storage->Remove(as_string));
+      return UseWriteResult(storage->Remove(as_string));
     }
 
     case Value::TYPE_LIST: {
       std::vector<std::string> as_string_list;
       AddAllStringValues(*static_cast<ListValue*>(input), &as_string_list);
-      return UseWriteResult(observers, storage->Remove(as_string_list));
+      return UseWriteResult(storage->Remove(as_string_list));
     }
 
     default:
       return UseWriteResult(
-          observers,
           SettingsStorage::WriteResult(kUnsupportedArgumentType));
   };
 }
@@ -218,11 +223,9 @@ void RemoveSettingsFunction::GetQuotaLimitHeuristics(
   GetModificationQuotaLimitHeuristics(heuristics);
 }
 
-bool ClearSettingsFunction::RunWithStorage(
-    scoped_refptr<SettingsObserverList> observers,
-    SettingsStorage* storage) {
+bool ClearSettingsFunction::RunWithStorage(SettingsStorage* storage) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  return UseWriteResult(observers, storage->Clear());
+  return UseWriteResult(storage->Clear());
 }
 
 void ClearSettingsFunction::GetQuotaLimitHeuristics(

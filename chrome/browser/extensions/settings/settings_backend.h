@@ -28,9 +28,8 @@ class SettingsBackend : public SyncableService {
   // |base_path| is the base of the extension settings directory, so the
   // databases will be at base_path/extension_id.
   // |observers| is the list of observers to settings changes.
-  explicit SettingsBackend(
-      // Ownership NOT taken.
-      SettingsStorageFactory* storage_factory,
+  SettingsBackend(
+      const scoped_refptr<SettingsStorageFactory>& storage_factory,
       const FilePath& base_path,
       const scoped_refptr<SettingsObserverList>& observers);
 
@@ -70,8 +69,8 @@ class SettingsBackend : public SyncableService {
   // Disable the syncing of the storage area for |extension_id|.
   void DisableSyncForExtension(const std::string& extension_id) const;
 
-  // The Factory to use for creating leveldb storage areas.  Not owned.
-  SettingsStorageFactory* const storage_factory_;
+  // The Factory to use for creating leveldb storage areas.
+  const scoped_refptr<SettingsStorageFactory> storage_factory_;
 
   // The base file path to create any leveldb databases at.
   const FilePath base_path_;

@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/browser/extensions/settings/settings_frontend.h"
+#include "chrome/browser/extensions/settings/settings_namespace.h"
 
 namespace extensions {
 
@@ -22,6 +23,7 @@ SettingsStorage* GetStorage(
   SettingsStorage* storage = NULL;
   frontend->RunWithStorage(
       extension_id,
+      settings_namespace::SYNC,
       base::Bind(&AssignStorage, &storage));
   MessageLoop::current()->RunAllPending();
   return storage;
@@ -100,20 +102,22 @@ ExtensionEventRouter* MockProfile::GetExtensionEventRouter() {
 
 // ScopedSettingsFactory
 
+ScopedSettingsStorageFactory::ScopedSettingsStorageFactory() {}
+
 ScopedSettingsStorageFactory::ScopedSettingsStorageFactory(
-    SettingsStorageFactory* delegate) : delegate_(delegate) {
-  DCHECK(delegate);
-}
+    const scoped_refptr<SettingsStorageFactory>& delegate)
+    : delegate_(delegate) {}
 
 ScopedSettingsStorageFactory::~ScopedSettingsStorageFactory() {}
 
-void ScopedSettingsStorageFactory::Reset(SettingsStorageFactory* delegate) {
-  DCHECK(delegate);
-  delegate_.reset(delegate);
+void ScopedSettingsStorageFactory::Reset(
+    const scoped_refptr<SettingsStorageFactory>& delegate) {
+  delegate_ = delegate;
 }
 
 SettingsStorage* ScopedSettingsStorageFactory::Create(
     const FilePath& base_path, const std::string& extension_id) {
+  DCHECK(delegate_.get());
   return delegate_->Create(base_path, extension_id);
 }
 

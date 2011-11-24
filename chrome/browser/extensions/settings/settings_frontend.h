@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
+#include "chrome/browser/extensions/settings/settings_namespace.h"
 #include "chrome/browser/extensions/settings/settings_observer.h"
 #include "chrome/browser/sync/api/syncable_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -34,8 +35,7 @@ class SettingsFrontend {
   static SettingsFrontend* Create(Profile* profile);
 
   static SettingsFrontend* Create(
-      // Ownership taken.
-      SettingsStorageFactory* storage_factory,
+      const scoped_refptr<SettingsStorageFactory>& storage_factory,
       // Owership NOT taken.
       Profile* profile);
 
@@ -53,7 +53,9 @@ class SettingsFrontend {
   // |extension_id|.  If there is no extension with that ID, the storage area
   // will be NULL.
   void RunWithStorage(
-      const std::string& extension_id, const StorageCallback& callback);
+      const std::string& extension_id,
+      settings_namespace::Namespace settings_namespace,
+      const StorageCallback& callback);
 
   // Deletes the settings for an extension (on the FILE thread).
   void DeleteStorageSoon(const std::string& extension_id);
@@ -62,25 +64,8 @@ class SettingsFrontend {
   scoped_refptr<SettingsObserverList> GetObservers();
 
  private:
-  // Settings change Observer which forwards changes on to the extension
-  // processes for |profile| and its incognito partner if it exists.
-  class DefaultObserver : public SettingsObserver {
-   public:
-    explicit DefaultObserver(Profile* profile);
-    virtual ~DefaultObserver();
-
-    // SettingsObserver implementation.
-    virtual void OnSettingsChanged(
-        const std::string& extension_id,
-        const std::string& change_json) OVERRIDE;
-
-   private:
-    Profile* const profile_;
-  };
-
   SettingsFrontend(
-      // Ownership taken.
-      SettingsStorageFactory* storage_factory,
+      const scoped_refptr<SettingsStorageFactory>& storage_factory,
       // Ownership NOT taken.
       Profile* profile);
 
@@ -91,11 +76,21 @@ class SettingsFrontend {
   scoped_refptr<SettingsObserverList> observers_;
 
   // Observer for |profile_|.
-  DefaultObserver default_observer_;
+  scoped_ptr<SettingsObserver> profile_observer_;
 
-  // Ref-counted container for the SettingsBackend object.
-  class Core;
-  scoped_refptr<Core> core_;
+  // Ref-counted container for each SettingsBackend object.  There are 4: an
+  // apps and an extensions Backend for the LOCAL namespace, and likewise for
+  // the SYNC namespace.  They only differ in what directory the database for
+  // each exists in (and the Backends in the SYNC namespace happen to be
+  // returned from RunWithSyncableService).
+  class BackendWrapper;
+  struct BackendWrappers {
+    BackendWrappers();
+    ~BackendWrappers();
+    scoped_refptr<BackendWrapper> app;
+    scoped_refptr<BackendWrapper> extension;
+  };
+  std::map<settings_namespace::Namespace, BackendWrappers> backends_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsFrontend);
 };

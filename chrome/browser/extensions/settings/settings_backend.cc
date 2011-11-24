@@ -39,7 +39,7 @@ const size_t kMaxSettingKeys = 512;
 }  // namespace
 
 SettingsBackend::SettingsBackend(
-    SettingsStorageFactory* storage_factory,
+    const scoped_refptr<SettingsStorageFactory>& storage_factory,
     const FilePath& base_path,
     const scoped_refptr<SettingsObserverList>& observers)
     : storage_factory_(storage_factory),
@@ -61,8 +61,7 @@ SettingsStorage* SettingsBackend::GetStorage(
   return GetOrCreateStorageWithSyncData(extension_id, empty);
 }
 
-SyncableSettingsStorage*
-SettingsBackend::GetOrCreateStorageWithSyncData(
+SyncableSettingsStorage* SettingsBackend::GetOrCreateStorageWithSyncData(
     const std::string& extension_id, const DictionaryValue& sync_data) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 

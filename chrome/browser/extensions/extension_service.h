@@ -140,13 +140,21 @@ class ExtensionService
   // If auto-updates are turned on, default to running every 5 hours.
   static const int kDefaultUpdateFrequencySeconds = 60 * 60 * 5;
 
-  // The name of the directory inside the profile where per-extension settings
+  // The name of the directory inside the profile where per-app local settings
   // are stored.
-  static const char* kExtensionSettingsDirectoryName;
+  static const char* kLocalAppSettingsDirectoryName;
 
-  // The name of the directory inside the profile where per-app settings
+  // The name of the directory inside the profile where per-extension local
+  // settings are stored.
+  static const char* kLocalExtensionSettingsDirectoryName;
+
+  // The name of the directory inside the profile where per-app synced settings
   // are stored.
-  static const char* kAppSettingsDirectoryName;
+  static const char* kSyncAppSettingsDirectoryName;
+
+  // The name of the directory inside the profile where per-extension synced
+  // settings are stored.
+  static const char* kSyncExtensionSettingsDirectoryName;
 
   // Determine if a given extension download should be treated as if it came
   // from the gallery. Note that this is requires *both* that the download_url

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/settings/settings_storage_unittest.h"
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/settings/settings_leveldb_storage.h"
 
 namespace extensions {
@@ -12,7 +13,8 @@ namespace {
 
 SettingsStorage* Param(
     const FilePath& file_path, const std::string& extension_id) {
-  return SettingsLeveldbStorage::Factory().Create(file_path, extension_id);
+  return scoped_refptr<SettingsStorageFactory>(
+      new SettingsLeveldbStorage::Factory())->Create(file_path, extension_id);
 }
 
 }  // namespace

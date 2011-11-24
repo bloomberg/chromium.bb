@@ -169,9 +169,15 @@ ExtensionService::NaClModuleInfo::~NaClModuleInfo() {
 // ExtensionService.
 
 const char* ExtensionService::kInstallDirectoryName = "Extensions";
-const char* ExtensionService::kExtensionSettingsDirectoryName =
-    "Extension Settings";
-const char* ExtensionService::kAppSettingsDirectoryName = "App Settings";
+
+const char* ExtensionService::kLocalAppSettingsDirectoryName =
+    "Local App Settings";
+const char* ExtensionService::kLocalExtensionSettingsDirectoryName =
+    "Local Extension Settings";
+const char* ExtensionService::kSyncAppSettingsDirectoryName =
+    "Sync App Settings";
+const char* ExtensionService::kSyncExtensionSettingsDirectoryName =
+    "Sync Extension Settings";
 
 void ExtensionService::CheckExternalUninstall(const std::string& id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
