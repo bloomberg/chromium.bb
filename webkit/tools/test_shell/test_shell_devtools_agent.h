@@ -50,7 +50,6 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
  private:
   void Call(const TestShellDevToolsCallArgs& args);
   void DelayedFrontendLoaded();
-  static void DispatchMessageLoop();
   WebKit::WebDevToolsAgent* GetWebAgent();
 
   base::WeakPtrFactory<TestShellDevToolsAgent> weak_factory_;
