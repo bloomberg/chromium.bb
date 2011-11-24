@@ -17,39 +17,57 @@ import sync_tgz
 import sys
 
 
-def GetUpdatedDEPS(base_url, version, nacl_newlib_only):
+def VersionSelect(options, flavor):
+  """Decide which version to used based on options + flavor.
+
+  Arguments:
+    options: options from the command line.
+    flavor: kind of toolchain.
+  Returns:
+    An svn version number.
+  """
+  if toolchainbinaries.IsArmTrustedFlavor(flavor):
+    return options.arm_trusted_version
+  elif toolchainbinaries.IsPnaclFlavor(flavor):
+    return options.pnacl_version
+  else:
+    return options.x86_version
+
+
+def GetUpdatedDEPS(options):
   """Return a suggested DEPS toolchain hash update for all platforms.
 
   Arguments:
-    base_url: base download url for the toolchains.
-    version: revision of the toolchain to use.
-    nacl_newlib_only: flag indicating to only consider non-pnacl newlib flavors.
+    options: options from the command line.
   """
   flavors = set()
   for platform in toolchainbinaries.PLATFORM_MAPPING:
     pm = toolchainbinaries.PLATFORM_MAPPING[platform]
     for arch in pm:
       for flavor in pm[arch]:
-        if (nacl_newlib_only and
+        if (options.nacl_newlib_only and
             not toolchainbinaries.IsNaClNewlibFlavor(flavor)):
+          continue
+        if (options.no_pnacl and toolchainbinaries.IsPnaclFlavor(flavor)):
+          continue
+        if (options.no_arm_trusted and
+            toolchainbinaries.IsArmTrustedFlavor(flavor)):
           continue
         flavors.add(flavor)
   new_deps = {}
   for flavor in flavors:
-    url = toolchainbinaries.EncodeToolchainUrl(base_url, version, flavor)
+    url = toolchainbinaries.EncodeToolchainUrl(
+      options.base_url, VersionSelect(options, flavor), flavor)
     new_deps['nacl_toolchain_%s_hash' % flavor] = sync_tgz.HashUrl(url)
   return new_deps
 
-def ShowUpdatedDEPS(base_url, version, nacl_newlib_only):
+def ShowUpdatedDEPS(options):
   """Print a suggested DEPS toolchain hash update for all platforms.
 
   Arguments:
-    base_url: base download url for the toolchains.
-    version: revision of the toolchain to use.
-    nacl_newlib_only: flag indicating to only consider non-pnacl newlib flavors.
+    options: options from the command line.
   """
-  for key, value in sorted(GetUpdatedDEPS(base_url, version,
-                                          nacl_newlib_only).iteritems()):
+  for key, value in sorted(GetUpdatedDEPS(options).iteritems()):
     print '  "%s":' % key
     print '      "%s",' % value
     sys.stdout.flush()
@@ -157,14 +175,9 @@ def Main(args):
     flavors = [flavor for flavor in flavors
                if toolchainbinaries.IsNaClNewlibFlavor(flavor)]
   for flavor in flavors:
-    if toolchainbinaries.IsArmTrustedFlavor(flavor):
-      version = options.arm_trusted_version
-    elif toolchainbinaries.IsPnaclFlavor(flavor):
-      version = options.pnacl_version
-    else:
-      version = options.x86_version
-    url = toolchainbinaries.EncodeToolchainUrl(options.base_url, version,
-                                               flavor)
+    version = VersionSelect(options, flavor)
+    url = toolchainbinaries.EncodeToolchainUrl(
+      options.base_url, version, flavor)
     dst = os.path.join(options.toolchain_dir, flavor)
     if version == 'latest':
       print flavor + ': downloading latest version...'
@@ -198,8 +211,7 @@ def Main(args):
       print '  (Calculating, may take a second...)'
       print '-' * 70
       sys.stdout.flush()
-      ShowUpdatedDEPS(options.base_url, options.x86_version,
-                      options.nacl_newlib_only)
+      ShowUpdatedDEPS(options)
       print '-' * 70
       sys.exit(1)
 
