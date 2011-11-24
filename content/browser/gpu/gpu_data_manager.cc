@@ -205,12 +205,7 @@ void GpuDataManager::Initialize() {
   // User flags need to be collected before any further initialization.
   user_flags_.Initialize();
 
-  // Certain tests doesn't go through the browser startup path that
-  // initializes GpuDataManager on FILE thread; therefore, it is initialized
-  // on UI thread later, and we skip the preliminary gpu info collection
-  // in such situation.
-  if (!user_flags_.skip_gpu_data_loading() &&
-      BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
+  if (!user_flags_.skip_gpu_data_loading()) {
     content::GPUInfo gpu_info;
     gpu_info_collector::CollectPreliminaryGraphicsInfo(&gpu_info);
     UpdateGpuInfo(gpu_info);
