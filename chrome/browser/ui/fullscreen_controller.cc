@@ -58,8 +58,12 @@ void FullscreenController::RequestToLockMouse(TabContents* tab) {
 
   switch (GetMouseLockSetting(tab->GetURL())) {
     case CONTENT_SETTING_ALLOW:
-      mouse_lock_state_ = MOUSELOCK_ACCEPTED;
-      tab->GotResponseToLockMouseRequest(true);
+      if (tab_fullscreen_accepted_) {
+        mouse_lock_state_ = MOUSELOCK_ACCEPTED;
+        tab->GotResponseToLockMouseRequest(true);
+      } else {
+        mouse_lock_state_ = MOUSELOCK_REQUESTED;
+      }
       break;
     case CONTENT_SETTING_BLOCK:
       mouse_lock_state_ = MOUSELOCK_NOT_REQUESTED;
