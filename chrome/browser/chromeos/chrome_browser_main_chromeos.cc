@@ -88,13 +88,13 @@ ChromeBrowserMainPartsChromeos::ChromeBrowserMainPartsChromeos(
 }
 
 ChromeBrowserMainPartsChromeos::~ChromeBrowserMainPartsChromeos() {
+  chromeos::accessibility::SystemEventObserver::Shutdown();
+
   chromeos::disks::DiskMountManager::Shutdown();
 
   chromeos::BluetoothManager::Shutdown();
 
   chromeos::DBusThreadManager::Shutdown();
-
-  chromeos::accessibility::SystemEventObserver::Shutdown();
 
   if (!parameters().ui_task && chromeos::CrosLibrary::Get())
     chromeos::CrosLibrary::Shutdown();
@@ -129,8 +129,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopStart() {
   // implementation.
   net::NetworkChangeNotifier::SetFactory(
       new chromeos::CrosNetworkChangeNotifierFactory());
-
-  chromeos::accessibility::SystemEventObserver::Initialize();
 }
 
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
@@ -173,6 +171,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 
   // Initialize the disk mount manager.
   chromeos::disks::DiskMountManager::Initialize();
+
+  // Initialize the system event observer.
+  chromeos::accessibility::SystemEventObserver::Initialize();
 
   // Initialize the network change notifier for Chrome OS. The network
   // change notifier starts to monitor changes from the power manager and

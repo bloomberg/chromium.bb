@@ -51,6 +51,9 @@ class PowerManagerClient {
     // Called when power supply polling takes place.  |status| is a data
     // structure that contains the current state of the power supply.
     virtual void PowerChanged(const PowerSupplyStatus& status) {}
+
+    // Called when the system resumes from suspend.
+    virtual void SystemResumed() {}
   };
 
   // Adds and removes the observer.

@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/chromeos/status/accessibility_menu_button.h"
 #include "chrome/browser/chromeos/status/caps_lock_menu_button.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
@@ -19,12 +19,12 @@
 namespace chromeos {
 
 StatusAreaViewChromeos::StatusAreaViewChromeos() {
-  CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   system::TimezoneSettings::GetInstance()->AddObserver(this);
 }
 
 StatusAreaViewChromeos::~StatusAreaViewChromeos() {
-  CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 }
 

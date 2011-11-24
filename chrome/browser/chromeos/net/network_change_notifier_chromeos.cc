@@ -81,8 +81,7 @@ void NetworkChangeNotifierChromeos::Init() {
       chromeos::CrosLibrary::Get()->GetNetworkLibrary();
   network_library->AddNetworkManagerObserver(this);
 
-  chromeos::CrosLibrary::Get()->GetPowerLibrary()
-      ->AddObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
   UpdateNetworkState(network_library);
 }
@@ -99,9 +98,7 @@ void NetworkChangeNotifierChromeos::Shutdown() {
   lib->RemoveNetworkManagerObserver(this);
   lib->RemoveObserverForAllNetworks(this);
 
-  chromeos::CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
-  chromeos::DBusThreadManager::Get()->GetPowerManagerClient()
-      ->RemoveObserver(this);
+  DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
 }
 
 void NetworkChangeNotifierChromeos::PowerChanged(

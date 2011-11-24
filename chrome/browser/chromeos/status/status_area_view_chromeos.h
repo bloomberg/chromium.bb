@@ -8,7 +8,7 @@
 
 #include "chrome/browser/chromeos/status/status_area_view.h"
 
-#include "chrome/browser/chromeos/cros/power_library.h"
+#include "chrome/browser/chromeos/dbus/power_manager_client.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/view_ids.h"
 
@@ -17,7 +17,7 @@ class ClockMenuButton;
 namespace chromeos {
 
 class StatusAreaViewChromeos : public StatusAreaView,
-                               public PowerLibrary::Observer,
+                               public PowerManagerClient::Observer,
                                public system::TimezoneSettings::Observer {
  public:
   // The type of screen the host window is on.
@@ -33,7 +33,7 @@ class StatusAreaViewChromeos : public StatusAreaView,
 
   void Init(StatusAreaButton::Delegate* delegate, ScreenMode screen_mode);
 
-  // PowerLibrary::Observer:
+  // PowerManagerClient::Observer:
   virtual void SystemResumed() OVERRIDE;
 
   // TimezoneSettings::Observer:

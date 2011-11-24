@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/accessibility_events.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 
@@ -20,13 +21,11 @@ SystemEventObserver* g_system_event_observer = NULL;
 }
 
 SystemEventObserver::SystemEventObserver() {
-  CrosLibrary::Get()->GetPowerLibrary()->AddObserver(this);
   CrosLibrary::Get()->GetScreenLockLibrary()->AddObserver(this);
 }
 
 SystemEventObserver::~SystemEventObserver() {
   CrosLibrary::Get()->GetScreenLockLibrary()->RemoveObserver(this);
-  CrosLibrary::Get()->GetPowerLibrary()->RemoveObserver(this);
 }
 
 void SystemEventObserver::SystemResumed() {
@@ -55,6 +54,8 @@ void SystemEventObserver::Initialize() {
   DCHECK(!g_system_event_observer);
   g_system_event_observer = new SystemEventObserver();
   VLOG(1) << "SystemEventObserver initialized";
+  DBusThreadManager::Get()->GetPowerManagerClient()->
+      AddObserver(g_system_event_observer);
 }
 
 // static
@@ -65,6 +66,8 @@ SystemEventObserver* SystemEventObserver::GetInstance() {
 // static
 void SystemEventObserver::Shutdown() {
   DCHECK(g_system_event_observer);
+  DBusThreadManager::Get()->GetPowerManagerClient()->
+      RemoveObserver(g_system_event_observer);
   delete g_system_event_observer;
   g_system_event_observer = NULL;
   VLOG(1) << "SystemEventObserver Shutdown completed";

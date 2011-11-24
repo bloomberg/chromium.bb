@@ -83,6 +83,15 @@ class PowerManagerClientImpl : public PowerManagerClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&PowerManagerClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for power state changed signals.
+    power_manager_proxy_->ConnectToSignal(
+        power_manager::kPowerManagerInterface,
+        power_manager::kPowerStateChangedSignal,
+        base::Bind(&PowerManagerClientImpl::PowerStateChangedSignalReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&PowerManagerClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
   virtual ~PowerManagerClientImpl() {
@@ -209,6 +218,21 @@ class PowerManagerClientImpl : public PowerManagerClient {
       return;
     }
     VLOG(1) << "screen brightness increased: " << response->ToString();
+  }
+
+  // Called when a power state changed signal is received.
+  void PowerStateChangedSignalReceived(dbus::Signal* signal) {
+    VLOG(1) << "Received power state changed signal.";
+    dbus::MessageReader reader(signal);
+    std::string power_state_string;
+    if (!reader.PopString(&power_state_string)) {
+      LOG(ERROR) << "Error reading signal args: " << signal->ToString();
+      return;
+    }
+    if (power_state_string != "on")
+      return;
+    // Notify all observers of resume event.
+    FOR_EACH_OBSERVER(Observer, observers_, SystemResumed());
   }
 
   // Called when a power supply polling signal is received.
