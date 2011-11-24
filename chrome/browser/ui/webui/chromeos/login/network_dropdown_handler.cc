@@ -66,12 +66,15 @@ void NetworkDropdownHandler::HandleNetworkItemChosen(
 
 void NetworkDropdownHandler::HandleNetworkDropdownShow(
     const base::ListValue* args) {
-  DCHECK(args->GetSize() == 1);
+  DCHECK(args->GetSize() == 2);
   std::string element_id;
   if (!args->GetString(0, &element_id))
     NOTREACHED();
+  bool oobe;
+  if (!args->GetBoolean(1, &oobe))
+    NOTREACHED();
 
-  dropdown_.reset(new NetworkDropdown(web_ui_, GetNativeWindow()));
+  dropdown_.reset(new NetworkDropdown(web_ui_, GetNativeWindow(), oobe));
 }
 
 void NetworkDropdownHandler::HandleNetworkDropdownHide(

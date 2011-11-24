@@ -92,9 +92,11 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
 
 // NetworkDropdown -------------------------------------------------------------
 
-NetworkDropdown::NetworkDropdown(WebUI* web_ui, gfx::NativeWindow parent_window)
+NetworkDropdown::NetworkDropdown(WebUI* web_ui,
+                                 gfx::NativeWindow parent_window, bool oobe)
     : parent_window_(parent_window),
-      web_ui_(web_ui) {
+      web_ui_(web_ui),
+      oobe_(oobe) {
   network_menu_.reset(new NetworkMenuWebUI(this, web_ui));
   network_icon_.reset(
       new NetworkMenuIcon(this, NetworkMenuIcon::DROPDOWN_MODE));
@@ -128,7 +130,7 @@ void NetworkDropdown::OpenButtonOptions() {
 }
 
 bool NetworkDropdown::ShouldOpenButtonOptions() const {
-  return false;
+  return !oobe_;
 }
 
 void NetworkDropdown::OnNetworkManagerChanged(NetworkLibrary* cros) {

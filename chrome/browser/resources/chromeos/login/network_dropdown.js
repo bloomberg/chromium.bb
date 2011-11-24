@@ -373,13 +373,14 @@ cr.define('cr.ui', function() {
    * can be active at the same time. So activating new drop-down deactivates
    * the previous one. Deactivating not active drop-down does nothing.
    * @param {string} element_id Id of the element which is network drop-down.
-   * @param {boolean} is_active Is drop-down active?
+   * @param {boolean} isActive Is drop-down active?
+   * @param {boolean} isOobe Is dropdown placed on an OOBE screen.
    */
-  DropDown.setActive = function(elementId, isActive) {
+  DropDown.setActive = function(elementId, isActive, isOobe) {
     if (isActive) {
       DropDown.activeElementId_ = elementId;
       $(elementId).isShown = false;
-      chrome.send('networkDropdownShow', [elementId]);
+      chrome.send('networkDropdownShow', [elementId, isOobe]);
     } else {
       if (DropDown.activeElementId_ == elementId) {
         DropDown.activeElementId_ = '';

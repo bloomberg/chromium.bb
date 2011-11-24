@@ -95,14 +95,14 @@ cr.define('login', function() {
     },
 
     onBeforeShow: function() {
-      cr.ui.DropDown.setActive('offline-networks-list', true);
+      cr.ui.DropDown.setActive('offline-networks-list', true, false);
 
       $('error-guest-signin').hidden = $('guestSignin').hidden ||
           !$('add-user-header-bar-item').hidden;
     },
 
     onBeforeHide: function() {
-      cr.ui.DropDown.setActive('offline-networks-list', false);
+      cr.ui.DropDown.setActive('offline-networks-list', false, false);
     },
 
     update: function() {

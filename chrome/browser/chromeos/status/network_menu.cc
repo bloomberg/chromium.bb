@@ -907,19 +907,17 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
   MenuItemVector address_items;
 
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
-  bool oobe = !should_open_button_options;  // we don't show options for OOBE.
   bool connected = cros->Connected();  // always call for test expectations.
-  if (!oobe) {
-    int message_id = -1;
-    if (StatusAreaViewChromeos::IsBrowserMode())
-      message_id = IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG;
-    else if (connected)
-      message_id = IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG;
-    if (message_id != -1) {
-      link_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
-                                    l10n_util::GetStringUTF16(message_id),
-                                    SkBitmap(), std::string(), FLAG_OPTIONS));
-    }
+
+  int message_id = -1;
+  if (StatusAreaViewChromeos::IsBrowserMode())
+    message_id = IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG;
+  else if (connected)
+    message_id = IDS_STATUSBAR_NETWORK_OPEN_PROXY_SETTINGS_DIALOG;
+  if (message_id != -1) {
+    link_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
+                                  l10n_util::GetStringUTF16(message_id),
+                                  SkBitmap(), std::string(), FLAG_OPTIONS));
   }
 
   if (connected) {

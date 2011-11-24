@@ -22,7 +22,7 @@ class NetworkDropdown : public NetworkMenu::Delegate,
                         NetworkLibrary::NetworkManagerObserver,
                         public LoginHtmlDialog::Delegate {
  public:
-  NetworkDropdown(WebUI* web_ui, gfx::NativeWindow parent_window);
+  NetworkDropdown(WebUI* web_ui, gfx::NativeWindow parent_window, bool oobe);
   virtual ~NetworkDropdown();
 
   // This method should be called, when item with the given id is chosen.
@@ -62,6 +62,9 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   scoped_ptr<LoginHtmlDialog> proxy_settings_dialog_;
 
   WebUI* web_ui_;
+
+  // Is the dropdown shown on one of the OOBE screens.
+  bool oobe_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDropdown);
 };
