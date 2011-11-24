@@ -382,12 +382,12 @@ gpu::CommandBuffer* Graphics3D::GetCommandBuffer() {
 }
 
 int32 Graphics3D::DoSwapBuffers() {
+  gles2_impl()->SwapBuffers();
   IPC::Message* msg = new PpapiHostMsg_PPBGraphics3D_SwapBuffers(
       API_ID_PPB_GRAPHICS_3D, host_resource());
   msg->set_unblock(true);
   PluginDispatcher::GetForResource(this)->Send(msg);
 
-  gles2_impl()->SwapBuffers();
   return PP_OK_COMPLETIONPENDING;
 }
 

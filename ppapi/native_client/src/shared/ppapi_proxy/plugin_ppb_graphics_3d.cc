@@ -238,11 +238,11 @@ bool PluginGraphics3D::InitFromBrowserResource(PP_Resource res) {
 
 int32_t PluginGraphics3D::SwapBuffers(PP_Resource graphics3d_id,
                                       struct PP_CompletionCallback callback) {
-
   int32_t callback_id = CompletionCallbackTable::Get()->AddCallback(callback);
   if (callback_id == 0)  // Just like Chrome, for now disallow blocking calls.
     return PP_ERROR_BLOCKS_MAIN_THREAD;
 
+  impl()->SwapBuffers();
   int32_t pp_error;
   NaClSrpcError retval =
       PpbGraphics3DRpcClient::PPB_Graphics3D_SwapBuffers(
@@ -256,7 +256,6 @@ int32_t PluginGraphics3D::SwapBuffers(PP_Resource graphics3d_id,
   if ((PP_OK_COMPLETIONPENDING != pp_error) && (PP_OK != pp_error))
     return pp_error;
 
-  impl()->SwapBuffers();
   return PP_OK_COMPLETIONPENDING;
 }
 
