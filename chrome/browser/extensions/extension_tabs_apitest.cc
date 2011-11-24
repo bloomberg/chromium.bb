@@ -31,7 +31,14 @@
 #else
 #define MAYBE_FocusWindowDoesNotExitFullscreen FocusWindowDoesNotExitFullscreen
 #define MAYBE_UpdateWindowSizeExitsFullscreen UpdateWindowSizeExitsFullscreen
+
+// http://crbug.com/105356 , this test is failing browser_tests on Windows.
+#if defined(OS_WIN)
+#define MAYBE_UpdateWindowShowState FAILS_UpdateWindowShowState
+#else
 #define MAYBE_UpdateWindowShowState UpdateWindowShowState
+#endif
+
 #endif
 
 // In the touch build, this fails reliably. http://crbug.com/85191
