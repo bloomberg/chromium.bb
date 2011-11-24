@@ -56,11 +56,6 @@
 IPC_MESSAGE_ROUTED1(DevToolsClientMsg_DispatchOnInspectorFrontend,
                     std::string /* message */)
 
-// Legacy debugger output message.
-IPC_MESSAGE_ROUTED1(DevToolsClientMsg_DebuggerOutput,
-                    std::string /* message */)
-
-
 //-----------------------------------------------------------------------------
 // These are messages sent from DevToolsClient to DevToolsAgent through the
 // browser.
@@ -81,13 +76,6 @@ IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_FrontendLoaded)
 // WebKit-level transport.
 IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchOnInspectorBackend,
                     std::string /* message */)
-
-// Send debugger command to the debugger agent. Debugger commands should
-// be handled on IO thread(while all other devtools messages are handled in
-// the render thread) to allow executing the commands when v8 is on a
-// breakpoint.
-IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DebuggerCommand,
-                     std::string  /* command */)
 
 // Inspect element with the given coordinates.
 IPC_MESSAGE_ROUTED2(DevToolsAgentMsg_InspectElement,

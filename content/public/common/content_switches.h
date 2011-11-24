@@ -136,7 +136,6 @@ CONTENT_EXPORT extern const char kProcessPerTab[];
 CONTENT_EXPORT extern const char kProcessType[];
 CONTENT_EXPORT extern const char kRecordMode[];
 CONTENT_EXPORT extern const char kRegisterPepperPlugins[];
-CONTENT_EXPORT extern const char kRemoteShellPort[];
 CONTENT_EXPORT extern const char kRendererAssertTest[];
 extern const char kRendererCmdPrefix[];
 CONTENT_EXPORT extern const char kRendererCrashTest[];

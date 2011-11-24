@@ -672,17 +672,7 @@ bool BrowserInit::LaunchWithProfile::Launch(
   if (command_line_.HasSwitch(switches::kDumpHistogramsOnExit))
     base::StatisticsRecorder::set_dump_on_exit(true);
 
-  if (command_line_.HasSwitch(switches::kRemoteShellPort)) {
-    std::string port_str =
-        command_line_.GetSwitchValueASCII(switches::kRemoteShellPort);
-    int64 port;
-    if (base::StringToInt64(port_str, &port) && port > 0 && port < 65535) {
-      g_browser_process->InitDevToolsLegacyProtocolHandler(
-          static_cast<int>(port));
-    } else {
-      DLOG(WARNING) << "Invalid remote shell port number " << port;
-    }
-  } else if (command_line_.HasSwitch(switches::kRemoteDebuggingPort)) {
+  if (command_line_.HasSwitch(switches::kRemoteDebuggingPort)) {
     std::string port_str =
         command_line_.GetSwitchValueASCII(switches::kRemoteDebuggingPort);
     int64 port;

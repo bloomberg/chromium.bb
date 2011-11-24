@@ -168,9 +168,6 @@ void TestingBrowserProcess::InitDevToolsHttpProtocolHandler(
     const std::string& frontend_url) {
 }
 
-void TestingBrowserProcess::InitDevToolsLegacyProtocolHandler(int port) {
-}
-
 unsigned int TestingBrowserProcess::AddRefModule() {
   return ++module_ref_count_;
 }

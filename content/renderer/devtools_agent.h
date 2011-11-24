@@ -43,13 +43,11 @@ class DevToolsAgent : public content::RenderViewObserver,
 
   // WebDevToolsAgentClient implementation
   virtual void sendMessageToInspectorFrontend(const WebKit::WebString& data);
-  virtual void sendDebuggerOutput(const WebKit::WebString& data);
 
   virtual int hostIdentifier();
   virtual void saveAgentRuntimeState(const WebKit::WebString& state);
   virtual WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
       createClientMessageLoop();
-  virtual bool exposeV8DebuggerProtocol();
   virtual void clearBrowserCache();
   virtual void clearBrowserCookies();
 
@@ -64,7 +62,6 @@ class DevToolsAgent : public content::RenderViewObserver,
   void OnSetupDevToolsClient();
 
   bool is_attached_;
-  bool expose_v8_debugger_protocol_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgent);
 };

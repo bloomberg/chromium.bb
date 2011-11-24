@@ -39,8 +39,6 @@ class DevToolsClient : public content::RenderViewObserver,
   // WebDevToolsFrontendClient implementation.
   virtual void sendFrontendLoaded() OVERRIDE;
   virtual void sendMessageToBackend(const WebKit::WebString&) OVERRIDE;
-  virtual void sendDebuggerCommandToAgent(
-      const WebKit::WebString& command) OVERRIDE;
 
   virtual void activateWindow() OVERRIDE;
   virtual void closeWindow() OVERRIDE;
@@ -49,8 +47,6 @@ class DevToolsClient : public content::RenderViewObserver,
   virtual void requestUndockWindow() OVERRIDE;
   virtual void saveAs(const WebKit::WebString& file_name,
                       const WebKit::WebString& content) OVERRIDE;
-
-  virtual bool shouldHideScriptsPanel() OVERRIDE;
 
   void OnDispatchOnInspectorFrontend(const std::string& message);
 

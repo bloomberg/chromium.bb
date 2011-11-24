@@ -6,14 +6,12 @@
 
 #include <map>
 
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/process.h"
 #include "base/string_number_conversions.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/view_messages.h"
-#include "content/public/common/content_switches.h"
 #include "content/renderer/devtools_agent_filter.h"
 #include "content/renderer/devtools_client.h"
 #include "content/renderer/render_view_impl.h"
@@ -63,9 +61,6 @@ DevToolsAgent::DevToolsAgent(RenderViewImpl* render_view)
       is_attached_(false) {
   g_agent_for_routing_id.Get()[routing_id()] = this;
 
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  expose_v8_debugger_protocol_ = cmd->HasSwitch(switches::kRemoteShellPort);
-
   render_view->webview()->setDevToolsAgentClient(this);
   render_view->webview()->devToolsAgent()->setProcessId(
       base::Process::Current().pid());
@@ -104,12 +99,6 @@ void DevToolsAgent::sendMessageToInspectorFrontend(
                                                     message.utf8())));
 }
 
-void DevToolsAgent::sendDebuggerOutput(const WebKit::WebString& data) {
-  Send(new DevToolsHostMsg_ForwardToClient(
-      routing_id(),
-      DevToolsClientMsg_DebuggerOutput(MSG_ROUTING_NONE, data.utf8())));
-}
-
 int DevToolsAgent::hostIdentifier() {
   return routing_id();
 }
@@ -122,10 +111,6 @@ void DevToolsAgent::saveAgentRuntimeState(
 WebKit::WebDevToolsAgentClient::WebKitClientMessageLoop*
     DevToolsAgent::createClientMessageLoop() {
   return new WebKitClientMessageLoopImpl();
-}
-
-bool DevToolsAgent::exposeV8DebuggerProtocol() {
-  return expose_v8_debugger_protocol_;
 }
 
 void DevToolsAgent::clearBrowserCache() {

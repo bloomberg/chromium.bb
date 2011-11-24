@@ -431,9 +431,6 @@ const char kProcessType[]                   = "type";
 // Register Pepper plugins (see pepper_plugin_registry.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";
 
-// Enable remote debug / automation shell on the specified port.
-const char kRemoteShellPort[]               = "remote-shell-port";
-
 // Causes the renderer process to throw an assertion on launch.
 const char kRendererAssertTest[]            = "renderer-assert-test";
 

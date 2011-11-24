@@ -23,7 +23,6 @@
 #include "chrome/browser/chrome_plugin_service_filter.h"
 #include "chrome/browser/component_updater/component_updater_configurator.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
-#include "chrome/browser/debugger/devtools_protocol_handler.h"
 #include "chrome/browser/debugger/remote_debugging_server.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
@@ -220,11 +219,6 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
   // Debugger must be cleaned up before IO thread and NotificationService.
   remote_debugging_server_.reset();
-
-  if (devtools_legacy_handler_.get()) {
-    devtools_legacy_handler_->Stop();
-    devtools_legacy_handler_ = NULL;
-  }
 
   if (resource_dispatcher_host_.get()) {
     // Cancel pending requests and prevent new requests.
@@ -543,11 +537,6 @@ void BrowserProcessImpl::InitDevToolsHttpProtocolHandler(
   DCHECK(CalledOnValidThread());
   remote_debugging_server_.reset(
       new RemoteDebuggingServer(profile, ip, port, frontend_url));
-}
-
-void BrowserProcessImpl::InitDevToolsLegacyProtocolHandler(int port) {
-  DCHECK(CalledOnValidThread());
-  devtools_legacy_handler_ = DevToolsProtocolHandler::Start(port);
 }
 
 bool BrowserProcessImpl::IsShuttingDown() {

@@ -161,8 +161,6 @@ class BrowserProcess {
       int port,
       const std::string& frontend_url) = 0;
 
-  virtual void InitDevToolsLegacyProtocolHandler(int port) = 0;
-
   virtual unsigned int AddRefModule() = 0;
   virtual unsigned int ReleaseModule() = 0;
 

@@ -58,11 +58,6 @@ void DevToolsClient::sendMessageToBackend(const WebString& message)  {
                                                           message.utf8()));
 }
 
-void DevToolsClient::sendDebuggerCommandToAgent(const WebString& command) {
-  SendToAgent(DevToolsAgentMsg_DebuggerCommand(MSG_ROUTING_NONE,
-                                               command.utf8()));
-}
-
 void DevToolsClient::activateWindow() {
   Send(new DevToolsHostMsg_ActivateWindow(routing_id()));
 }
@@ -93,9 +88,4 @@ void DevToolsClient::saveAs(const WebKit::WebString& file_name,
 void DevToolsClient::OnDispatchOnInspectorFrontend(const std::string& message) {
   web_tools_frontend_->dispatchOnInspectorFrontend(
       WebString::fromUTF8(message));
-}
-
-bool DevToolsClient::shouldHideScriptsPanel() {
-  CommandLine* cmd = CommandLine::ForCurrentProcess();
-  return cmd->HasSwitch(switches::kRemoteShellPort);
 }

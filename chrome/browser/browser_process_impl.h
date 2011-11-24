@@ -29,7 +29,6 @@ class BrowserOnlineStateObserver;
 class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
-class DevToolsProtocolHandler;
 class RemoteDebuggingServer;
 class TabCloseableStateWatcher;
 
@@ -79,7 +78,6 @@ class BrowserProcessImpl : public BrowserProcess,
       const std::string& ip,
       int port,
       const std::string& frontend_url) OVERRIDE;
-  virtual void InitDevToolsLegacyProtocolHandler(int port) OVERRIDE;
   virtual unsigned int AddRefModule() OVERRIDE;
   virtual unsigned int ReleaseModule() OVERRIDE;
   virtual bool IsShuttingDown() OVERRIDE;
@@ -199,8 +197,6 @@ class BrowserProcessImpl : public BrowserProcess,
       extension_event_router_forwarder_;
 
   scoped_ptr<RemoteDebuggingServer> remote_debugging_server_;
-
-  scoped_refptr<DevToolsProtocolHandler> devtools_legacy_handler_;
 
   bool created_sidebar_manager_;
   scoped_refptr<SidebarManager> sidebar_manager_;

@@ -88,7 +88,6 @@ class TestingBrowserProcess : public BrowserProcess {
       const std::string& ip,
       int port,
       const std::string& frontend_url) OVERRIDE;
-  virtual void InitDevToolsLegacyProtocolHandler(int port) OVERRIDE;
   virtual unsigned int AddRefModule() OVERRIDE;
   virtual unsigned int ReleaseModule() OVERRIDE;
   virtual bool IsShuttingDown() OVERRIDE;

@@ -38,15 +38,6 @@ class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
 }
 
 // static
-void DevToolsAgentFilter::DispatchMessageLoop() {
-  MessageLoop* current = MessageLoop::current();
-  bool old_state = current->NestableTasksAllowed();
-  current->SetNestableTasksAllowed(true);
-  current->RunAllPending();
-  current->SetNestableTasksAllowed(old_state);
-}
-
-// static
 IPC::Channel* DevToolsAgentFilter::channel_ = NULL;
 // static
 int DevToolsAgentFilter::current_routing_id_ = 0;
@@ -54,8 +45,6 @@ int DevToolsAgentFilter::current_routing_id_ = 0;
 DevToolsAgentFilter::DevToolsAgentFilter()
     : message_handled_(false),
       render_thread_loop_(MessageLoop::current()) {
-  WebDevToolsAgent::setMessageLoopDispatchHandler(
-      &DevToolsAgentFilter::DispatchMessageLoop);
 }
 
 DevToolsAgentFilter::~DevToolsAgentFilter() {
@@ -66,7 +55,6 @@ bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
   message_handled_ = true;
   current_routing_id_ = message.routing_id();
   IPC_BEGIN_MESSAGE_MAP(DevToolsAgentFilter, message)
-    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DebuggerCommand, OnDebuggerCommand)
     IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DispatchOnInspectorBackend,
                         OnDispatchOnInspectorBackend)
     IPC_MESSAGE_UNHANDLED(message_handled_ = false)
@@ -76,11 +64,6 @@ bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
 
 void DevToolsAgentFilter::OnFilterAdded(IPC::Channel* channel) {
   channel_ = channel;
-}
-
-void DevToolsAgentFilter::OnDebuggerCommand(const std::string& command) {
-  WebDevToolsAgent::executeDebuggerCommand(
-      WebString::fromUTF8(command), current_routing_id_);
 }
 
 void DevToolsAgentFilter::OnDispatchOnInspectorBackend(
