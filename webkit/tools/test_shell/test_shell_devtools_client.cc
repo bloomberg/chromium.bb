@@ -53,11 +53,6 @@ void TestShellDevToolsClient::sendMessageToBackend(
     dev_tools_agent_->AsyncCall(TestShellDevToolsCallArgs(data));
 }
 
-void TestShellDevToolsClient::sendDebuggerCommandToAgent(
-     const WebString& command) {
-  WebDevToolsAgent::executeDebuggerCommand(command, 1);
-}
-
 void TestShellDevToolsClient::activateWindow() {
   NOTIMPLEMENTED();
 }
