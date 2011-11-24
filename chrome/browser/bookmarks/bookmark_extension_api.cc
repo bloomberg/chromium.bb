@@ -794,6 +794,15 @@ class BookmarksQuotaLimitFactory {
  private:
   static void BuildWithMappers(QuotaLimitHeuristics* heuristics,
       BucketMapper* short_mapper, BucketMapper* long_mapper) {
+    const Config kShortLimitConfig = {
+      2,                         // 2 tokens per interval.
+      TimeDelta::FromMinutes(1)  // 1 minute long refill interval.
+    };
+    const Config kLongLimitConfig = {
+      100,                       // 100 tokens per interval.
+      TimeDelta::FromHours(1)    // 1 hour long refill interval.
+    };
+
     TimedLimit* timed = new TimedLimit(kLongLimitConfig, long_mapper);
     // A max of two operations per minute, sustained over 10 minutes.
     SustainedLimit* sustained = new SustainedLimit(TimeDelta::FromMinutes(10),
@@ -802,21 +811,7 @@ class BookmarksQuotaLimitFactory {
     heuristics->push_back(sustained);
   }
 
-  // The quota configurations used for all BookmarkFunctions.
-  static const Config kShortLimitConfig;
-  static const Config kLongLimitConfig;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(BookmarksQuotaLimitFactory);
-};
-
-const Config BookmarksQuotaLimitFactory::kShortLimitConfig = {
-  2,                         // 2 tokens per interval.
-  TimeDelta::FromMinutes(1)  // 1 minute long refill interval.
-};
-
-const Config BookmarksQuotaLimitFactory::kLongLimitConfig = {
-  100,                       // 100 tokens per interval.
-  TimeDelta::FromHours(1)    // 1 hour long refill interval.
 };
 
 // And finally, building the individual heuristics for each function.

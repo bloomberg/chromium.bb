@@ -30,7 +30,7 @@
 // is calling SaveChanges.  In the worst case scenario, the user can put his
 // laptop to sleep during db contention, and wake up the laptop days later, so
 // infinity seems like the best choice here.
-const int kDirectoryBackingStoreBusyTimeoutMs = std::numeric_limits<int>::max();
+const int kDirectoryBackingStoreBusyTimeoutMs = INT_MAX;
 
 using std::string;
 
