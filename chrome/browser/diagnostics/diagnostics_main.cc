@@ -9,7 +9,6 @@
 #include <unistd.h>
 #endif
 
-#include <iostream>
 #include <string>
 
 #include "base/basictypes.h"
@@ -46,9 +45,8 @@ class SimpleConsole {
   // Writes a string to the console with the current color.
   virtual bool Write(const std::wstring& text) = 0;
 
-  // Reads a string from the console. Internally it may be limited to 256
-  // characters.
-  virtual bool Read(std::wstring* txt) = 0;
+  // Called when the program is about to exit.
+  virtual void OnQuit() = 0;
 
   // Sets the foreground and background color.
   virtual bool SetColor(Color color) = 0;
@@ -85,14 +83,13 @@ class WinConsole : public SimpleConsole {
 
   // Reads a string from the console. Internally it is limited to 256
   // characters.
-  virtual bool Read(std::wstring* txt) {
+  virtual void OnQuit() {
+    // Block here so the user can see the results.
+    SetColor(SimpleConsole::DEFAULT);
+    Write(L"Press [enter] to continue\n");
     wchar_t buf[256];
-    DWORD read = sizeof(buf) - sizeof(buf[0]);
-    if (!::ReadConsoleW(std_in_, buf, read, &read, NULL))
-      return false;
-    // Note that |read| is in bytes.
-    txt->assign(buf, read/2);
-    return true;
+    DWORD read = arraysize(buf);
+    ::ReadConsoleW(std_in_, buf, read, &read, NULL);
   }
 
   // Sets the foreground and background color.
@@ -152,14 +149,9 @@ class PosixConsole : public SimpleConsole {
     return true;
   }
 
-  virtual bool Read(std::wstring* txt) {
-    std::string input;
-    if (!std::getline(std::cin, input)) {
-      std::cin.clear();
-      return false;
-    }
-    *txt = UTF8ToWide(input);
-    return true;
+  virtual void OnQuit() {
+    // The "press enter to continue" prompt isn't very unixy, so only do that on
+    // Windows.
   }
 
   virtual bool SetColor(Color color) {
@@ -361,14 +353,6 @@ int DiagnosticsMain(const CommandLine& command_line) {
   controller.Run(model);
   delete model;
 
-  // The "press enter to continue" prompt isn't very unixy, so only do that on
-  // Windows.
-#if defined(OS_WIN)
-  // Block here so the user can see the results.
-  writer.WriteInfoText(L"Press [enter] to continue\n");
-  std::wstring txt;
-  console->Read(&txt);
-#endif
   delete console;
   return 0;
 }
