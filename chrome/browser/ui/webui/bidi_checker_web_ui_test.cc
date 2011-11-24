@@ -187,9 +187,7 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestNewTabPage) {
   RunBidiCheckerOnPage(chrome::kChromeUINewTabURL);
 }
 
-// http://crbug.com/97453
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL,
-                       DISABLED_TestNewTabPage) {
+IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, TestNewTabPage) {
   RunBidiCheckerOnPage(chrome::kChromeUINewTabURL);
 }
 
