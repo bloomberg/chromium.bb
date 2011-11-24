@@ -88,11 +88,11 @@
           'action_name': 'generate_gl_bindings',
           'inputs': [
             'generate_bindings.py',
-            '../../../gpu/GLES2/gl2ext.h',
-            '../../../gpu/EGL/eglext.h',
-            '../../../third_party/mesa/MesaLib/include/GL/glext.h',
-            '../../../third_party/mesa/MesaLib/include/GL/glxext.h',
-            '../../../third_party/mesa/MesaLib/include/GL/wglext.h',
+            '<(DEPTH)/third_party/khronos/GLES2/gl2ext.h',
+            '<(DEPTH)/third_party/khronos/EGL/eglext.h',
+            '<(DEPTH)/third_party/mesa/MesaLib/include/GL/glext.h',
+            '<(DEPTH)/third_party/mesa/MesaLib/include/GL/glxext.h',
+            '<(DEPTH)/third_party/mesa/MesaLib/include/GL/wglext.h',
           ],
           'outputs': [
             '<(gl_binding_output_dir)/gl_bindings_autogen_egl.cc',

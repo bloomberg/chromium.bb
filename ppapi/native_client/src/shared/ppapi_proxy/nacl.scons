@@ -12,7 +12,7 @@ Dir('.').addRepository(Dir('#/../gpu'))
 # client GPU command buffer sources.
 env.Append(CPPPATH=
           ['${SOURCE_ROOT}/native_client/src/shared/ppapi_proxy/untrusted',
-           '$SOURCE_ROOT/gpu'])
+           '$SOURCE_ROOT/third_party/khronos', '$SOURCE_ROOT/gpu'])
 
 env.Append(CPPDEFINES=['XP_UNIX'])
 env.FilterOut(CCFLAGS=['-Wswitch-enum'])

@@ -33,7 +33,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/gpu/gpu.gyp:command_buffer_service',
       ],
-      'include_dirs': ['egl/native'],
+      'include_dirs': ['<(DEPTH)/third_party/khronos'],
       'sources': [
         'egl/config.cc',
         'egl/config.h',
@@ -44,8 +44,12 @@
         'egl/surface.h',
       ],
       'direct_dependent_settings': {
-        'include_dirs': ['egl/native'],
+        'include_dirs': ['<(DEPTH)/third_party/khronos'],
       },
+      'defines': [
+        'EGLAPI=',
+        'EGLAPIENTRY=',
+      ],
     },
     {
       'target_name': 'egl_main_native',
@@ -58,14 +62,18 @@
           'dependencies': ['../../build/linux/system.gyp:gtk'],
         }],
       ],
-      'include_dirs': ['egl/native'],
+      'include_dirs': ['<(DEPTH)/third_party/khronos'],
       'sources': [
         '<@(bootstrap_sources_native)',
       ],
       'direct_dependent_settings': {
-        'include_dirs': ['egl/native'],
+        'include_dirs': ['<(DEPTH)/third_party/khronos'],
       },
-      'defines': ['GTF_GLES20'],
+      'defines': [
+        'GTF_GLES20',
+        'EGLAPI=',
+        'EGLAPIENTRY=',
+      ],
     },
     {
       'target_name': 'gles2_conform_support',
@@ -84,6 +92,8 @@
       'defines': [
         'GLES2_CONFORM_SUPPORT_ONLY',
         'GTF_GLES20',
+        'EGLAPI=',
+        'EGLAPIENTRY=',
       ],
       'sources': [
         '<@(bootstrap_sources_native)',
