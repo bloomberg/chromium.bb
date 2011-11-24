@@ -393,6 +393,10 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   if (ext.HaveAndDesire("GL_CHROMIUM_post_sub_buffer")) {
     AddExtensionString("GL_CHROMIUM_post_sub_buffer");
   }
+
+  if (ext.HaveAndDesire("GL_CHROMIUM_front_buffer_cached")) {
+    AddExtensionString("GL_CHROMIUM_front_buffer_cached");
+  }
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {

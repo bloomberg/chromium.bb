@@ -32,11 +32,13 @@ class PbufferImageTransportSurface
                                int32 renderer_id,
                                int32 command_buffer_id);
 
-  // GLSurface implementation
-  virtual bool Initialize();
-  virtual void Destroy();
-  virtual bool IsOffscreen();
-  virtual bool SwapBuffers();
+  // gfx::GLSurface implementation
+  virtual bool Initialize() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
+  virtual bool IsOffscreen() OVERRIDE;
+  virtual bool SwapBuffers() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual std::string GetExtensions() OVERRIDE;
 
  protected:
   // ImageTransportSurface implementation
@@ -107,6 +109,19 @@ bool PbufferImageTransportSurface::SwapBuffers() {
       AsWeakPtr()));
 
   return true;
+}
+
+bool PbufferImageTransportSurface::PostSubBuffer(
+    int x, int y, int width, int height) {
+  NOTREACHED();
+  return false;
+}
+
+std::string PbufferImageTransportSurface::GetExtensions() {
+  std::string extensions = gfx::GLSurface::GetExtensions();
+  extensions += extensions.empty() ? "" : " ";
+  extensions += "GL_CHROMIUM_front_buffer_cached";
+  return extensions;
 }
 
 void PbufferImageTransportSurface::SendBuffersSwapped() {

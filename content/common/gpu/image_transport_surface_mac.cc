@@ -89,6 +89,7 @@ class TransportDIBImageTransportSurface : public gfx::PbufferGLSurfaceCGL,
   virtual void Destroy() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
+  virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
@@ -238,7 +239,10 @@ bool IOSurfaceImageTransportSurface::PostSubBuffer(
 }
 
 std::string IOSurfaceImageTransportSurface::GetExtensions() {
-  return gfx::GLSurface::GetExtensions();
+  std::string extensions = gfx::GLSurface::GetExtensions();
+  extensions += extensions.empty() ? "" : " ";
+  extensions += "GL_CHROMIUM_front_buffer_cached";
+  return extensions;
 }
 
 gfx::Size IOSurfaceImageTransportSurface::GetSize() {
@@ -451,8 +455,17 @@ bool TransportDIBImageTransportSurface::SwapBuffers() {
   return true;
 }
 
+bool TransportDIBImageTransportSurface::PostSubBuffer(
+    int x, int y, int width, int height) {
+  NOTREACHED();
+  return false;
+}
+
 std::string TransportDIBImageTransportSurface::GetExtensions() {
-  return gfx::GLSurface::GetExtensions();
+  std::string extensions = gfx::GLSurface::GetExtensions();
+  extensions += extensions.empty() ? "" : " ";
+  extensions += "GL_CHROMIUM_front_buffer_cached";
+  return extensions;
 }
 
 gfx::Size TransportDIBImageTransportSurface::GetSize() {

@@ -62,7 +62,7 @@ class EGLImageTransportSurface : public ImageTransportSurface,
                            int32 renderer_id,
                            int32 command_buffer_id);
 
-  // GLSurface implementation
+  // gfx::GLSurface implementation
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
@@ -115,6 +115,7 @@ class GLXImageTransportSurface : public ImageTransportSurface,
   virtual void Destroy() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual bool PostSubBuffer(int x, int y, int width, int height) OVERRIDE;
+  virtual std::string GetExtensions();
   virtual gfx::Size GetSize() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
@@ -254,7 +255,7 @@ EGLImageTransportSurface::~EGLImageTransportSurface() {
 bool EGLImageTransportSurface::Initialize() {
   if (!helper_->Initialize())
     return false;
-  return PbufferGLSurfaceEGL::Initialize();
+  return gfx::PbufferGLSurfaceEGL::Initialize();
 }
 
 void EGLImageTransportSurface::Destroy() {
@@ -264,7 +265,7 @@ void EGLImageTransportSurface::Destroy() {
     ReleaseSurface(&front_surface_);
 
   helper_->Destroy();
-  PbufferGLSurfaceEGL::Destroy();
+  gfx::PbufferGLSurfaceEGL::Destroy();
 }
 
 // Make sure that buffer swaps occur for the surface, so we can send the data
@@ -378,7 +379,10 @@ bool EGLImageTransportSurface::PostSubBuffer(
 }
 
 std::string EGLImageTransportSurface::GetExtensions() {
-  return GLSurface::GetExtensions();
+  std::string extensions = gfx::GLSurface::GetExtensions();
+  extensions += extensions.empty() ? "" : " ";
+  extensions += "GL_CHROMIUM_front_buffer_cached";
+  return extensions;
 }
 
 gfx::Size EGLImageTransportSurface::GetSize() {
@@ -562,6 +566,13 @@ bool GLXImageTransportSurface::PostSubBuffer(
   return true;
 }
 
+std::string GLXImageTransportSurface::GetExtensions() {
+  std::string extensions = gfx::NativeViewGLSurfaceGLX::GetExtensions();
+  extensions += extensions.empty() ? "" : " ";
+  extensions += "GL_CHROMIUM_front_buffer_cached";
+  return extensions;
+}
+
 gfx::Size GLXImageTransportSurface::GetSize() {
   return size_;
 }
@@ -708,7 +719,10 @@ bool OSMesaImageTransportSurface::PostSubBuffer(
 }
 
 std::string OSMesaImageTransportSurface::GetExtensions() {
-  return GLSurface::GetExtensions();
+  std::string extensions = gfx::GLSurface::GetExtensions();
+  extensions += extensions.empty() ? "" : " ";
+  extensions += "GL_CHROMIUM_front_buffer_cached";
+  return extensions;
 }
 
 void OSMesaImageTransportSurface::OnBuffersSwappedACK() {
