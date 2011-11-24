@@ -32,6 +32,7 @@
         'common_constants',
         'common_net',
         'common_version',
+        'default_plugin/default_plugin.gyp:default_plugin',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_static',
@@ -246,12 +247,7 @@
         ['OS=="win"', {
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
-          ]
-        }],
-        ['OS=="win" and use_aura==0', {
-          'dependencies': [
-            'default_plugin/default_plugin.gyp:default_plugin',
-          ]
+          ],
         }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
@@ -268,6 +264,11 @@
               '-lXext',
             ],
           },
+        },],
+        ['use_aura==1', {
+          'dependencies!': [
+           'default_plugin/default_plugin.gyp:default_plugin',
+          ],
         }],
         ['OS=="linux" and selinux==1', {
           'dependencies': [

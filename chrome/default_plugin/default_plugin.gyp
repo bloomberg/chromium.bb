@@ -29,6 +29,12 @@
         '<(DEPTH)/third_party/wtl/include',
       ],
       'sources': [
+        'plugin_impl_aura.cc',
+        'plugin_impl_aura.h',
+        'plugin_impl_gtk.cc',
+        'plugin_impl_gtk.h',
+        'plugin_impl_mac.h',
+        'plugin_impl_mac.mm',
         'plugin_impl_win.cc',
         'plugin_impl_win.h',
         'plugin_installer_base.cc',
