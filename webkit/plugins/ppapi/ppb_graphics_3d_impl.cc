@@ -165,8 +165,22 @@ int32 PPB_Graphics3D_Impl::DoSwapBuffers() {
   if (gles2_impl())
     gles2_impl()->SwapBuffers();
 
-  platform_context_->Echo(base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
-                                     weak_ptr_factory_.GetWeakPtr()));
+  if (bound_to_instance_) {
+    // If we are bound to the instance, we need to ask the compositor
+    // to commit our backing texture so that the graphics appears on the page.
+    // When the backing texture will be committed we get notified via
+    // ViewFlushedPaint().
+    //
+    // Don't need to check for NULL from GetPluginInstance since when we're
+    // bound, we know our instance is valid.
+    ResourceHelper::GetPluginInstance(this)->CommitBackingTexture();
+    commit_pending_ = true;
+  } else {
+    // Wait for the command to complete on the GPU to allow for throttling.
+    platform_context_->Echo(base::Bind(&PPB_Graphics3D_Impl::OnSwapBuffers,
+                                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
 
   return PP_OK_COMPLETIONPENDING;
 }
@@ -208,17 +222,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PP_Resource share_context,
 }
 
 void PPB_Graphics3D_Impl::OnSwapBuffers() {
-  if (bound_to_instance_) {
-    // If we are bound to the instance, we need to ask the compositor
-    // to commit our backing texture so that the graphics appears on the page.
-    // When the backing texture will be committed we get notified via
-    // ViewFlushedPaint().
-    //
-    // Don't need to check for NULL from GetPluginInstance since when we're
-    // bound, we know our instance is valid.
-    ResourceHelper::GetPluginInstance(this)->CommitBackingTexture();
-    commit_pending_ = true;
-  } else if (HasPendingSwap()) {
+  if (HasPendingSwap()) {
     // If we're off-screen, no need to trigger and wait for compositing.
     // Just send the swap-buffers ACK to the plugin immediately.
     commit_pending_ = false;
