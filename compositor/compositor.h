@@ -260,7 +260,14 @@ struct wlsc_surface {
 	struct wl_list buffer_link;
 	struct wlsc_transform *transform;
 	uint32_t visual;
+
+	/*
+	 * Which output to vsync this surface to.
+	 * Used to determine, whether to send or queue frame events.
+	 * Must be NULL, if 'link' is not in wlsc_compositor::surface_list.
+	 */
 	struct wlsc_output *output;
+
 	struct wlsc_output *fullscreen_output;
 	struct wl_list frame_callback_list;
 
