@@ -140,6 +140,7 @@
         '../crypto/crypto.gyp:crypto',
         '../gpu/gpu.gyp:gpu_unittest_utils',
         '../ipc/ipc.gyp:test_support_ipc',
+        '../jingle/jingle.gyp:jingle_glue_test_util',
         '../media/media.gyp:media_test_support',
         '../net/net.gyp:net_test_support',
         '../skia/skia.gyp:skia',
@@ -255,6 +256,15 @@
            'sources!': [
              'renderer/active_notification_tracker_unittest.cc',
            ],
+        }],
+        ['p2p_apis==1', {
+          'sources': [
+            'browser/renderer_host/p2p/socket_host_test_utils.h',
+            'browser/renderer_host/p2p/socket_host_tcp_unittest.cc',
+            'browser/renderer_host/p2p/socket_host_tcp_server_unittest.cc',
+            'browser/renderer_host/p2p/socket_host_udp_unittest.cc',
+            'renderer/p2p/p2p_transport_impl_unittest.cc',
+          ],
         }],
         ['use_x11 == 1', {
           'dependencies': [
