@@ -285,6 +285,8 @@ BrowserProcessImpl::~BrowserProcessImpl() {
   // former registers for notifications.
   tab_closeable_state_watcher_.reset();
 
+  tracked_objects::ThreadData::EnsureCleanupWasCalled(4);
+
   g_browser_process = NULL;
 }
 
