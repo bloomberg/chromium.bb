@@ -255,6 +255,31 @@ class S2Test(unittest.TestCase):
       self.assertEquals(0, code)
     self._run_test(fn)
 
+  def test_check_output_redirect_stderr_to_stdout_pipe(self):
+    def fn(c, e, un):
+      (out, err), code = subprocess2.communicate(
+          e + ['--stderr'],
+          stdout=subprocess2.PIPE,
+          stderr=subprocess2.STDOUT,
+          universal_newlines=un)
+      # stderr output into stdout.
+      self.assertEquals(c('a\nbb\nccc\n'), out)
+      self.assertEquals(None, err)
+      self.assertEquals(0, code)
+    self._run_test(fn)
+
+  def test_check_output_redirect_stderr_to_stdout(self):
+    def fn(c, e, un):
+      (out, err), code = subprocess2.communicate(
+          e + ['--stderr'],
+          stderr=subprocess2.STDOUT,
+          universal_newlines=un)
+      # stderr output into stdout but stdout is not piped.
+      self.assertEquals(None, out)
+      self.assertEquals(None, err)
+      self.assertEquals(0, code)
+    self._run_test(fn)
+
   def test_check_output_throw_stdout(self):
     def fn(c, e, un):
       try:
