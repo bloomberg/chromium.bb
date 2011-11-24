@@ -4884,6 +4884,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_PLATFORM_APPS_DESCRIPTION" desc="Description for the flag to enable platform apps.">
         Enable advanced application capabilities.
       </message>
+      <message name="IDS_FLAGS_ENABLE_GAMEPAD_NAME" desc="Title for the flag to enable gamepad support.">
+        Enable Gamepad
+      </message>
+      <message name="IDS_FLAGS_ENABLE_GAMEPAD_DESCRIPTION" desc="Description for the flag to enable gamepad support.">
+        This API allows web applications to access data from gamepad devices connected to the system.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

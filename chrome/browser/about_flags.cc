@@ -434,6 +434,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kAuraWindows)
   },
 #endif
+  {
+    "enable-gamepad",
+    IDS_FLAGS_ENABLE_GAMEPAD_NAME,
+    IDS_FLAGS_ENABLE_GAMEPAD_DESCRIPTION,
+    kOsWin,
+    SINGLE_VALUE_TYPE(switches::kEnableGamepad)
+  },
 };
 
 const Experiment* experiments = kExperiments;
