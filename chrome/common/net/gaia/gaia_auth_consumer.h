@@ -42,6 +42,11 @@ class GaiaAuthConsumer {
   virtual void OnIssueAuthTokenFailure(const std::string& service,
                                        const GoogleServiceAuthError& error) {}
 
+  virtual void OnOAuthLoginTokenSuccess(const std::string& refresh_token,
+                                        const std::string& access_token,
+                                        int expires_in_secs) {}
+  virtual void OnOAuthLoginTokenFailure(const GoogleServiceAuthError& error) {}
+
   virtual void OnGetUserInfoSuccess(const std::string& key,
                                     const std::string& value) {}
   virtual void OnGetUserInfoKeyNotFound(const std::string& key) {}
