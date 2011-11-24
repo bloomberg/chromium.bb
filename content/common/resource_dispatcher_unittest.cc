@@ -171,7 +171,8 @@ class ResourceDispatcherTest : public testing::Test,
     request_info.request_type = ResourceType::SUB_RESOURCE;
     request_info.appcache_host_id = appcache::kNoHostId;
     request_info.routing_id = 0;
-    RequestExtraData extra_data(true, 0, false, -1,
+    RequestExtraData extra_data(WebKit::WebReferrerPolicyDefault,
+                                true, 0, false, -1,
                                 content::PAGE_TRANSITION_LINK);
     request_info.extra_data = &extra_data;
 

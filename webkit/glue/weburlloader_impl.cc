@@ -33,6 +33,7 @@
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webkitplatformsupport_impl.h"
+#include "webkit/glue/weburlrequest_extradata_impl.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -40,6 +41,7 @@ using WebKit::WebData;
 using WebKit::WebHTTPBody;
 using WebKit::WebHTTPHeaderVisitor;
 using WebKit::WebHTTPLoadInfo;
+using WebKit::WebReferrerPolicy;
 using WebKit::WebSecurityPolicy;
 using WebKit::WebString;
 using WebKit::WebURL;
@@ -295,6 +297,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   WebURLLoaderImpl* loader_;
   WebURLRequest request_;
   WebURLLoaderClient* client_;
+  WebReferrerPolicy referrer_policy_;
   scoped_ptr<ResourceLoaderBridge> bridge_;
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
   scoped_ptr<MultipartResponseDelegate> multipart_delegate_;
@@ -303,7 +306,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
 
 WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader)
     : loader_(loader),
-      client_(NULL) {
+      client_(NULL),
+      referrer_policy_(WebKit::WebReferrerPolicyDefault) {
 }
 
 void WebURLLoaderImpl::Context::Cancel() {
@@ -418,6 +422,11 @@ void WebURLLoaderImpl::Context::Start(
   request_info.extra_data = request.extraData();
   bridge_.reset(platform->CreateResourceLoader(request_info));
 
+  if (request.extraData()) {
+    referrer_policy_ = static_cast<WebURLRequestExtraDataImpl*>(
+        request.extraData())->referrer_policy();
+  }
+
   if (!request.httpBody().isNull()) {
     // GET and HEAD requests shouldn't have http bodies.
     DCHECK(method != "GET" && method != "HEAD");
@@ -492,8 +501,11 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   new_request.setDownloadToFile(request_.downloadToFile());
 
   WebString referrer_string = WebString::fromUTF8("Referer");
-  WebString referrer = request_.httpHeaderField(referrer_string);
-  if (!WebSecurityPolicy::shouldHideReferrer(new_url, referrer))
+  WebString referrer = WebSecurityPolicy::generateReferrerHeader(
+      referrer_policy_,
+      new_url,
+      request_.httpHeaderField(referrer_string));
+  if (!referrer.isEmpty())
     new_request.setHTTPHeaderField(referrer_string, referrer);
 
   if (response.httpStatusCode() == 307)

@@ -63,6 +63,7 @@
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webpreferences.h"
+#include "webkit/glue/weburlrequest_extradata_impl.h"
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/media/video_renderer_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
@@ -874,6 +875,9 @@ void TestWebViewDelegate::willSendRequest(
     const WebURLResponse& redirect_response) {
   GURL url = request.url();
   std::string request_url = url.possibly_invalid_spec();
+
+  request.setExtraData(
+      new webkit_glue::WebURLRequestExtraDataImpl(frame->referrerPolicy()));
 
   if (!redirect_response.isNull() && block_redirects_) {
     printf("Returning null for this redirect\n");
