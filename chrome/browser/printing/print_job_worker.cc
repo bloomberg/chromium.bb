@@ -33,36 +33,17 @@ void HoldRefCallback(const scoped_refptr<printing::PrintJobWorkerOwner>& owner,
 
 namespace printing {
 
-class PrintJobWorker::NotificationTask : public Task {
- public:
-  NotificationTask() : print_job_(NULL), details_(NULL) {}
-  ~NotificationTask() {}
-
-  // Initializes the object. This object can't be initialized in the constructor
-  // since it is not created directly.
-  void Init(PrintJobWorkerOwner* print_job,
-            JobEventDetails::Type detail_type,
-            PrintedDocument* document,
-            PrintedPage* page) {
-    DCHECK(!print_job_);
-    DCHECK(!details_);
-    print_job_ = print_job;
-    details_ = new JobEventDetails(detail_type, document, page);
-  }
-
-  virtual void Run() {
-    // Send the notification in the right thread.
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PRINT_JOB_EVENT,
-        // We know that is is a PrintJob object in this circumstance.
-        content::Source<PrintJob>(static_cast<PrintJob*>(print_job_.get())),
-        content::Details<JobEventDetails>(details_));
-  }
-
-  // The job which originates this notification.
-  scoped_refptr<PrintJobWorkerOwner> print_job_;
-  scoped_refptr<JobEventDetails> details_;
-};
+void NotificationCallback(PrintJobWorkerOwner* print_job,
+                          JobEventDetails::Type detail_type,
+                          PrintedDocument* document,
+                          PrintedPage* page) {
+  JobEventDetails* details = new JobEventDetails(detail_type, document, page);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PRINT_JOB_EVENT,
+      // We know that is is a PrintJob object in this circumstance.
+      content::Source<PrintJob>(static_cast<PrintJob*>(print_job)),
+      content::Details<JobEventDetails>(details));
+}
 
 PrintJobWorker::PrintJobWorker(PrintJobWorkerOwner* owner)
     : Thread("Printing_Worker"),
@@ -275,7 +256,7 @@ void PrintJobWorker::OnNewPage() {
       break;
     }
     // The page is there, print it.
-    SpoolPage(*page);
+    SpoolPage(page);
     ++page_number_;
     if (page_number_ == PageNumber::npos()) {
       OnDocumentDone();
@@ -302,29 +283,24 @@ void PrintJobWorker::OnDocumentDone() {
     return;
   }
 
-  // Tell everyone!
-  NotificationTask* task = new NotificationTask();
-  task->Init(owner_,
-             JobEventDetails::DOC_DONE,
-             document_.get(),
-             NULL);
-  owner_->message_loop()->PostTask(FROM_HERE, task);
+  owner_->message_loop()->PostTask(
+      FROM_HERE, base::Bind(NotificationCallback, make_scoped_refptr(owner_),
+                            JobEventDetails::DOC_DONE, document_,
+                            scoped_refptr<PrintedPage>()));
 
   // Makes sure the variables are reinitialized.
   document_ = NULL;
 }
 
-void PrintJobWorker::SpoolPage(PrintedPage& page) {
+void PrintJobWorker::SpoolPage(PrintedPage* page) {
   DCHECK_EQ(message_loop(), MessageLoop::current());
   DCHECK_NE(page_number_, PageNumber::npos());
 
   // Signal everyone that the page is about to be printed.
-  NotificationTask* task = new NotificationTask();
-  task->Init(owner_,
-             JobEventDetails::NEW_PAGE,
-             document_.get(),
-             &page);
-  owner_->message_loop()->PostTask(FROM_HERE, task);
+  owner_->message_loop()->PostTask(
+      FROM_HERE, base::Bind(NotificationCallback, make_scoped_refptr(owner_),
+                            JobEventDetails::NEW_PAGE, document_,
+                            make_scoped_refptr(page)));
 
   // Preprocess.
   if (printing_context_->NewPage() != PrintingContext::OK) {
@@ -334,9 +310,9 @@ void PrintJobWorker::SpoolPage(PrintedPage& page) {
 
   // Actual printing.
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  document_->RenderPrintedPage(page, printing_context_->context());
+  document_->RenderPrintedPage(*page, printing_context_->context());
 #elif defined(OS_POSIX)
-  document_->RenderPrintedPage(page, printing_context_.get());
+  document_->RenderPrintedPage(*page, printing_context_.get());
 #endif
 
   // Postprocess.
@@ -346,12 +322,11 @@ void PrintJobWorker::SpoolPage(PrintedPage& page) {
   }
 
   // Signal everyone that the page is printed.
-  task = new NotificationTask();
-  task->Init(owner_,
-             JobEventDetails::PAGE_DONE,
-             document_.get(),
-             &page);
-  owner_->message_loop()->PostTask(FROM_HERE, task);
+  owner_->message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(NotificationCallback, make_scoped_refptr(owner_),
+                 JobEventDetails::PAGE_DONE, document_,
+                 make_scoped_refptr(page)));
 }
 
 void PrintJobWorker::OnFailure() {
@@ -360,12 +335,10 @@ void PrintJobWorker::OnFailure() {
   // We may loose our last reference by broadcasting the FAILED event.
   scoped_refptr<PrintJobWorkerOwner> handle(owner_);
 
-  NotificationTask* task = new NotificationTask();
-  task->Init(owner_,
-             JobEventDetails::FAILED,
-             document_.get(),
-             NULL);
-  owner_->message_loop()->PostTask(FROM_HERE, task);
+  owner_->message_loop()->PostTask(
+      FROM_HERE, base::Bind(NotificationCallback, make_scoped_refptr(owner_),
+                            JobEventDetails::FAILED, document_,
+                            scoped_refptr<PrintedPage>()));
   Cancel();
 
   // Makes sure the variables are reinitialized.

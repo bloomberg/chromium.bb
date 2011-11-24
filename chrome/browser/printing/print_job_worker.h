@@ -80,7 +80,7 @@ class PrintJobWorker : public base::Thread {
   class NotificationTask;
 
   // Renders a page in the printer.
-  void SpoolPage(PrintedPage& page);
+  void SpoolPage(PrintedPage* page);
 
   // Closes the job since spooling is done.
   void OnDocumentDone();
