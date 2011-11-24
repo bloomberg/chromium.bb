@@ -47,7 +47,7 @@ class DefaultsTest(unittest.TestCase):
   TO_SAVE = {
     subprocess2: [
       'Popen', 'communicate', 'call', 'check_call', 'capture', 'check_output'],
-    subprocess2.subprocess: ['Popen'],
+    subprocess2.subprocess.Popen: ['__init__', 'communicate'],
   }
 
   def setUp(self):
@@ -65,17 +65,19 @@ class DefaultsTest(unittest.TestCase):
 
   @staticmethod
   def _fake_communicate():
+    """Mocks subprocess2.communicate()."""
     results = {}
     def fake_communicate(args, **kwargs):
       assert not results
       results.update(kwargs)
       results['args'] = args
-      return ['stdout', 'stderr'], 0
+      return ('stdout', 'stderr'), 0
     subprocess2.communicate = fake_communicate
     return results
 
   @staticmethod
   def _fake_Popen():
+    """Mocks the whole subprocess2.Popen class."""
     results = {}
     class fake_Popen(object):
       returncode = -8
@@ -91,23 +93,22 @@ class DefaultsTest(unittest.TestCase):
 
   @staticmethod
   def _fake_subprocess_Popen():
+    """Mocks the base class subprocess.Popen only."""
     results = {}
-    class fake_Popen(object):
-      returncode = -8
-      def __init__(self, args, **kwargs):
-        assert not results
-        results.update(kwargs)
-        results['args'] = args
-      @staticmethod
-      def communicate():
-        return None, None
-    subprocess2.subprocess.Popen = fake_Popen
+    def __init__(self, args, **kwargs):
+      assert not results
+      results.update(kwargs)
+      results['args'] = args
+    def communicate():
+      return None, None
+    subprocess2.subprocess.Popen.__init__ = __init__
+    subprocess2.subprocess.Popen.communicate = communicate
     return results
 
   def test_check_call_defaults(self):
     results = self._fake_communicate()
     self.assertEquals(
-        ['stdout', 'stderr'], subprocess2.check_call_out(['foo'], a=True))
+        ('stdout', 'stderr'), subprocess2.check_call_out(['foo'], a=True))
     expected = {
         'args': ['foo'],
         'a':True,
@@ -139,7 +140,12 @@ class DefaultsTest(unittest.TestCase):
   def test_Popen_defaults(self):
     results = self._fake_subprocess_Popen()
     proc = subprocess2.Popen(['foo'], a=True)
-    self.assertEquals(-8, proc.returncode)
+    # Cleanup code in subprocess.py needs this member to be set.
+    # pylint: disable=W0201
+    proc._child_created = None
+    # Since subprocess.Popen.__init__() is not called, proc.returncode shouldn't
+    # be present.
+    self.assertFalse(hasattr(proc, 'returncode'))
     expected = {
         'args': ['foo'],
         'a': True,
