@@ -139,17 +139,17 @@ URLRow InMemoryURLIndexTest::MakeURLRow(const char* url,
 }
 
 String16Vector InMemoryURLIndexTest::Make1Term(const char* term) const {
-  String16Vector terms;
-  terms.push_back(UTF8ToUTF16(term));
-  return terms;
+  String16Vector original_terms;
+  original_terms.push_back(UTF8ToUTF16(term));
+  return original_terms;
 }
 
 String16Vector InMemoryURLIndexTest::Make2Terms(const char* term_1,
                                                 const char* term_2) const {
-  String16Vector terms;
-  terms.push_back(UTF8ToUTF16(term_1));
-  terms.push_back(UTF8ToUTF16(term_2));
-  return terms;
+  String16Vector original_terms;
+  original_terms.push_back(UTF8ToUTF16(term_1));
+  original_terms.push_back(UTF8ToUTF16(term_2));
+  return original_terms;
 }
 
 void InMemoryURLIndexTest::CheckTerm(
@@ -215,7 +215,7 @@ void ExpandedInMemoryURLIndexTest::SetUp() {
 }
 
 TEST_F(InMemoryURLIndexTest, Construction) {
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   EXPECT_TRUE(url_index_.get());
 }
 
@@ -227,9 +227,8 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
   uint64 row_count = 0;
   while (statement.Step()) ++row_count;
   EXPECT_EQ(1U, row_count);
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
-  url_index_->Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
   URLIndexPrivateData& private_data(*(url_index_->private_data_));
 
   // history_info_map_ should have the same number of items as were filtered.
@@ -239,9 +238,8 @@ TEST_F(LimitedInMemoryURLIndexTest, Initialization) {
 }
 
 TEST_F(InMemoryURLIndexTest, Retrieval) {
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
-  url_index_->Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
   // The term will be lowercased by the search.
 
   // See if a very specific term gives a single result.
@@ -273,11 +271,11 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
             matches[0].url_info.title());
 
   // Search which should result in very poor result.
-  String16Vector terms;
-  terms.push_back(ASCIIToUTF16("z"));
-  terms.push_back(ASCIIToUTF16("y"));
-  terms.push_back(ASCIIToUTF16("x"));
-  matches = url_index_->HistoryItemsForTerms(terms);
+  String16Vector original_terms;
+  original_terms.push_back(ASCIIToUTF16("z"));
+  original_terms.push_back(ASCIIToUTF16("y"));
+  original_terms.push_back(ASCIIToUTF16("x"));
+  matches = url_index_->HistoryItemsForTerms(original_terms);
   ASSERT_EQ(1U, matches.size());
   // The results should have a poor score.
   EXPECT_LT(matches[0].raw_score, 500);
@@ -293,9 +291,8 @@ TEST_F(InMemoryURLIndexTest, Retrieval) {
 }
 
 TEST_F(ExpandedInMemoryURLIndexTest, ShortCircuit) {
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
-  url_index_->Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
 
   // A search for 'w' should short-circuit and not return any matches.
   ScoredHistoryMatches matches =
@@ -308,18 +305,18 @@ TEST_F(ExpandedInMemoryURLIndexTest, ShortCircuit) {
 }
 
 TEST_F(InMemoryURLIndexTest, TitleSearch) {
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
-  url_index_->Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
   // Signal if someone has changed the test DB.
   EXPECT_EQ(27U, url_index_->private_data_->history_info_map_.size());
-  String16Vector terms;
+  String16Vector original_terms;
 
   // Ensure title is being searched.
-  terms.push_back(ASCIIToUTF16("MORTGAGE"));
-  terms.push_back(ASCIIToUTF16("RATE"));
-  terms.push_back(ASCIIToUTF16("DROPS"));
-  ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(terms);
+  original_terms.push_back(ASCIIToUTF16("MORTGAGE"));
+  original_terms.push_back(ASCIIToUTF16("RATE"));
+  original_terms.push_back(ASCIIToUTF16("DROPS"));
+  ScoredHistoryMatches matches =
+      url_index_->HistoryItemsForTerms(original_terms);
   ASSERT_EQ(1U, matches.size());
 
   // Verify that we got back the result we expected.
@@ -332,9 +329,8 @@ TEST_F(InMemoryURLIndexTest, TitleSearch) {
 }
 
 TEST_F(InMemoryURLIndexTest, TitleChange) {
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
-  url_index_->Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
 
   // Verify current title terms retrieves desired item.
   String16Vector original_terms;
@@ -370,7 +366,7 @@ TEST_F(InMemoryURLIndexTest, TitleChange) {
 
   // Update the row.
   old_row.set_title(ASCIIToUTF16("Does eat oats and little lambs eat ivy"));
-  url_index_->UpdateURL(old_row);
+  url_index_->UpdateURL(expected_id, old_row);
 
   // Verify we get the row using the new terms but not the original terms.
   matches = url_index_->HistoryItemsForTerms(new_terms);
@@ -381,9 +377,8 @@ TEST_F(InMemoryURLIndexTest, TitleChange) {
 }
 
 TEST_F(InMemoryURLIndexTest, NonUniqueTermCharacterSets) {
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
-  url_index_->Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
 
   // The presence of duplicate characters should succeed. Exercise by cycling
   // through a string with several duplicate characters.
@@ -418,9 +413,8 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
   typedef InMemoryURLIndex::SearchTermCacheMap::iterator CacheIter;
   typedef InMemoryURLIndex::SearchTermCacheItem CacheItem;
 
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
-  url_index_->Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
 
   InMemoryURLIndex::SearchTermCacheMap& cache(url_index_->search_term_cache_);
 
@@ -432,55 +426,55 @@ TEST_F(InMemoryURLIndexTest, TypedCharacterCaching) {
 
   // Simulate typing "r" giving "r" in the simulated omnibox. The results for
   // 'r' will be not cached because it is only 1 character long.
-  String16Vector terms;
+  String16Vector original_terms;
   string16 term_r = ASCIIToUTF16("r");
-  terms.push_back(term_r);
-  url_index_->HistoryItemsForTerms(terms);
+  original_terms.push_back(term_r);
+  url_index_->HistoryItemsForTerms(original_terms);
   EXPECT_EQ(0U, cache.size());
 
   // Simulate typing "re" giving "r re" in the simulated omnibox.
   string16 term_re = ASCIIToUTF16("re");
-  terms.push_back(term_re);
+  original_terms.push_back(term_re);
   // 're' should be cached at this point but not 'r' as it is a single
   // character.
-  ASSERT_EQ(2U, terms.size());
-  url_index_->HistoryItemsForTerms(terms);
+  ASSERT_EQ(2U, original_terms.size());
+  url_index_->HistoryItemsForTerms(original_terms);
   ASSERT_EQ(1U, cache.size());
   CheckTerm(cache, term_re);
 
   // Simulate typing "reco" giving "r re reco" in the simulated omnibox.
   string16 term_reco = ASCIIToUTF16("reco");
-  terms.push_back(term_reco);
+  original_terms.push_back(term_reco);
   // 're' and 'reco' should be cached at this point but not 'r' as it is a
   // single character.
-  url_index_->HistoryItemsForTerms(terms);
+  url_index_->HistoryItemsForTerms(original_terms);
   ASSERT_EQ(2U, cache.size());
   CheckTerm(cache, term_re);
   CheckTerm(cache, term_reco);
 
-  terms.clear();  // Simulate pressing <ESC>.
+  original_terms.clear();  // Simulate pressing <ESC>.
 
   // Simulate typing "mort".
   string16 term_mort = ASCIIToUTF16("mort");
-  terms.push_back(term_mort);
+  original_terms.push_back(term_mort);
   // Since we now have only one search term, the cached results for 're' and
   // 'reco' should be purged, giving us only 1 item in the cache (for 'mort').
-  url_index_->HistoryItemsForTerms(terms);
+  url_index_->HistoryItemsForTerms(original_terms);
   ASSERT_EQ(1U, cache.size());
   CheckTerm(cache, term_mort);
 
   // Simulate typing "reco" giving "mort reco" in the simulated omnibox.
-  terms.push_back(term_reco);
-  url_index_->HistoryItemsForTerms(terms);
+  original_terms.push_back(term_reco);
+  url_index_->HistoryItemsForTerms(original_terms);
   ASSERT_EQ(2U, cache.size());
   CheckTerm(cache, term_mort);
   CheckTerm(cache, term_reco);
 
   // Simulate a <DELETE> by removing the 'reco' and adding back the 'rec'.
-  terms.resize(terms.size() - 1);
+  original_terms.resize(original_terms.size() - 1);
   string16 term_rec = ASCIIToUTF16("rec");
-  terms.push_back(term_rec);
-  url_index_->HistoryItemsForTerms(terms);
+  original_terms.push_back(term_rec);
+  url_index_->HistoryItemsForTerms(original_terms);
   ASSERT_EQ(2U, cache.size());
   CheckTerm(cache, term_mort);
   CheckTerm(cache, term_rec);
@@ -522,45 +516,44 @@ TEST_F(InMemoryURLIndexTest, Scoring) {
 }
 
 TEST_F(InMemoryURLIndexTest, AddNewRows) {
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
-  url_index_->Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
-  String16Vector terms;
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
+  String16Vector original_terms;
 
   // Verify that the row we're going to add does not already exist.
   URLID new_row_id = 87654321;
   // Newly created URLRows get a last_visit time of 'right now' so it should
   // qualify as a quick result candidate.
-  terms.push_back(ASCIIToUTF16("brokeandalone"));
-  EXPECT_TRUE(url_index_->HistoryItemsForTerms(terms).empty());
+  original_terms.push_back(ASCIIToUTF16("brokeandalone"));
+  EXPECT_TRUE(url_index_->HistoryItemsForTerms(original_terms).empty());
 
   // Add a new row.
   URLRow new_row(GURL("http://www.brokeandaloneinmanitoba.com/"), new_row_id);
   new_row.set_last_visit(base::Time::Now());
-  url_index_->UpdateURL(new_row);
+  url_index_->UpdateURL(new_row_id, new_row);
 
   // Verify that we can retrieve it.
-  EXPECT_EQ(1U, url_index_->HistoryItemsForTerms(terms).size());
+  EXPECT_EQ(1U, url_index_->HistoryItemsForTerms(original_terms).size());
 
   // Add it again just to be sure that is harmless.
-  url_index_->UpdateURL(new_row);
-  EXPECT_EQ(1U, url_index_->HistoryItemsForTerms(terms).size());
+  url_index_->UpdateURL(new_row_id, new_row);
+  EXPECT_EQ(1U, url_index_->HistoryItemsForTerms(original_terms).size());
 }
 
 TEST_F(InMemoryURLIndexTest, DeleteRows) {
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
-  url_index_->Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
-  String16Vector terms;
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
+  url_index_->Init(this, "en,ja,hi,zh");
+  String16Vector original_terms;
 
   // Make sure we actually get an existing result.
-  terms.push_back(ASCIIToUTF16("DrudgeReport"));
-  ScoredHistoryMatches matches = url_index_->HistoryItemsForTerms(terms);
+  original_terms.push_back(ASCIIToUTF16("DrudgeReport"));
+  ScoredHistoryMatches matches =
+      url_index_->HistoryItemsForTerms(original_terms);
   ASSERT_EQ(1U, matches.size());
 
   // Determine the row id for that result, delete that id, then search again.
-  url_index_->DeleteURL(matches[0].url_info);
-  EXPECT_TRUE(url_index_->HistoryItemsForTerms(terms).empty());
+  url_index_->DeleteURL(matches[0].url_info.id());
+  EXPECT_TRUE(url_index_->HistoryItemsForTerms(original_terms).empty());
 }
 
 TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
@@ -636,7 +629,7 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
     { "xmpp:node@example.com", false },
     { "xmpp://guest@example.com", false },
   };
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     GURL url(data[i].url_spec);
     EXPECT_EQ(data[i].expected_is_whitelisted,
@@ -645,8 +638,8 @@ TEST_F(InMemoryURLIndexTest, WhitelistedURLs) {
 }
 
 TEST_F(InMemoryURLIndexTest, CacheFilePath) {
-  url_index_.reset(new InMemoryURLIndex(
-      NULL, FilePath(FILE_PATH_LITERAL("/flammmy/frammy/"))));
+  url_index_.reset(new InMemoryURLIndex(FilePath(FILE_PATH_LITERAL(
+      "/flammmy/frammy/"))));
   FilePath full_file_path;
   url_index_->GetCacheFilePath(&full_file_path);
   std::vector<FilePath::StringType> expected_parts;
@@ -664,10 +657,9 @@ TEST_F(InMemoryURLIndexTest, CacheFilePath) {
 
 TEST_F(InMemoryURLIndexTest, CacheSaveRestore) {
   // Save the cache to a protobuf, restore it, and compare the results.
-  url_index_.reset(new InMemoryURLIndex(NULL, FilePath()));
+  url_index_.reset(new InMemoryURLIndex(FilePath()));
   InMemoryURLIndex& url_index(*(url_index_.get()));
-  url_index.Init("en,ja,hi,zh");
-  url_index_->ReloadFromHistory(this);
+  url_index.Init(this, "en,ja,hi,zh");
   in_memory_url_index::InMemoryURLIndexCacheItem index_cache;
   url_index.SavePrivateData(&index_cache);
 

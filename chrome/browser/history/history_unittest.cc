@@ -119,8 +119,8 @@ class HistoryTest : public testing::Test {
   // Creates the HistoryBackend and HistoryDatabase on the current thread,
   // assigning the values to backend_ and db_.
   void CreateBackendAndDatabase() {
-    backend_ = new HistoryBackend(history_dir_, 0,
-                                  new BackendDelegate(this), NULL);
+    backend_ =
+        new HistoryBackend(history_dir_, 0, new BackendDelegate(this), NULL);
     backend_->Init(std::string(), false);
     db_ = backend_->db_.get();
     DCHECK(in_mem_backend_.get()) << "Mem backend should have been set by "

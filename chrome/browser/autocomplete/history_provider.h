@@ -46,10 +46,6 @@ class HistoryProvider : public AutocompleteProvider {
   // |input.prevent_inline_autocomplete()| is true, or the input text contains
   // trailing whitespace.
   bool PreventInlineAutocomplete(const AutocompleteInput& input);
-
-  // Finds and removes the match from the current collection of matches and
-  // backing data.
-  void DeleteMatchFromMatches(const AutocompleteMatch& match);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_

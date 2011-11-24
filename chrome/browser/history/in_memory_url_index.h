@@ -23,12 +23,12 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "chrome/browser/history/in_memory_url_index_cache.pb.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class Profile;
+namespace base {
+class Time;
+}
 
 namespace in_memory_url_index {
 class InMemoryURLIndexCacheItem;
@@ -39,9 +39,6 @@ namespace history {
 namespace imui = in_memory_url_index;
 
 class URLDatabase;
-struct URLsDeletedDetails;
-struct URLsModifiedDetails;
-struct URLVisitedDetails;
 
 // The URL history source.
 // Holds portions of the URL database in memory in an indexed form.  Used to
@@ -62,28 +59,32 @@ struct URLVisitedDetails;
 // will eliminate such words except in the case where a single character
 // is being searched on and which character occurs as the second char16 of a
 // multi-char16 instance.
-class InMemoryURLIndex : public content::NotificationObserver {
+class InMemoryURLIndex {
  public:
   // |history_dir| is a path to the directory containing the history database
   // within the profile wherein the cache and transaction journals will be
   // stored.
-  InMemoryURLIndex(Profile* profile, const FilePath& history_dir);
+  explicit InMemoryURLIndex(const FilePath& history_dir);
   virtual ~InMemoryURLIndex();
 
-  // Restores our index from its cache, if possible. If the cache is not
-  // available then we will register for the NOTIFICATION_HISTORY_LOADED
-  // notifications and then rebuild the index from the history database.
+  // Opens and indexes the URL history database.
   // |languages| gives a list of language encodings with which the history
   // URLs and omnibox searches are interpreted, i.e. when each is broken
   // down into words and each word is broken down into characters.
-  void Init(const std::string& languages);
+  bool Init(URLDatabase* history_db, const std::string& languages);
 
-  // Reloads the history index from the history database given in |history_db|.
-  void ReloadFromHistory(URLDatabase* history_db);
+  // Reloads the history index. Attempts to reload from the cache unless
+  // |clear_cache| is true. If the cache is unavailable then reload the
+  // index from |history_db|.
+  bool ReloadFromHistory(URLDatabase* history_db, bool clear_cache);
 
   // Signals that any outstanding initialization should be canceled and
   // flushes the cache to disk.
   void ShutDown();
+
+  // Restores the index's private data from the cache file stored in the
+  // profile directory and returns true if successful.
+  bool RestoreFromCacheFile();
 
   // Caches the index private data and writes the cache file to the profile
   // directory.
@@ -104,18 +105,13 @@ class InMemoryURLIndex : public content::NotificationObserver {
   ScoredHistoryMatches HistoryItemsForTerms(const String16Vector& terms);
 
   // Updates or adds an history item to the index if it meets the minimum
-  // selection criteria.
-  void UpdateURL(const URLRow& row);
+  // 'quick' criteria.
+  void UpdateURL(URLID row_id, const URLRow& row);
 
   // Deletes indexing data for an history item. The item may not have actually
   // been indexed (which is the case if it did not previously meet minimum
   // 'quick' criteria).
-  void DeleteURL(const URLRow& row);
-
-  // Notification callback.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+  void DeleteURL(URLID row_id);
 
  private:
   friend class AddHistoryMatch;
@@ -188,16 +184,6 @@ class InMemoryURLIndex : public content::NotificationObserver {
     const String16Vector& lower_terms_;
   };
 
-  // Initialization and Restoration --------------------------------------------
-
-  // Restores the index's private data from the cache, if possible, otherwise
-  // registers to be notified when the history database becomes available.
-  void RestoreFromCache();
-
-  // Restores the index's private data from the cache file stored in the
-  // profile directory and returns true if successful.
-  bool RestoreFromCacheFile();
-
   // Initializes all index data members in preparation for restoring the index
   // from the cache or a complete rebuild from the history database.
   void ClearPrivateData();
@@ -205,7 +191,7 @@ class InMemoryURLIndex : public content::NotificationObserver {
   // Initializes the whitelist of URL schemes.
   static void InitializeSchemeWhitelist(std::set<std::string>* whitelist);
 
-  // URL History Indexing ------------------------------------------------------
+  // URL History indexing support functions.
 
   // Indexes one URL history item.
   void IndexRow(const URLRow& row);
@@ -265,11 +251,6 @@ class InMemoryURLIndex : public content::NotificationObserver {
   // Determines if |gurl| has a whitelisted scheme and returns true if so.
   bool URLSchemeIsWhitelisted(const GURL& gurl) const;
 
-  // Notification handlers.
-  void OnURLVisited(const URLVisitedDetails* details);
-  void OnURLsModified(const URLsModifiedDetails* details);
-  void OnURLsDeleted(const URLsDeletedDetails* details);
-
   // Utility functions supporting RestoreFromCache and SaveToCache.
 
   // Construct a file path for the cache file within the same directory where
@@ -294,11 +275,6 @@ class InMemoryURLIndex : public content::NotificationObserver {
   bool RestoreCharWordMap(const imui::InMemoryURLIndexCacheItem& cache);
   bool RestoreWordIDHistoryMap(const imui::InMemoryURLIndexCacheItem& cache);
   bool RestoreHistoryInfoMap(const imui::InMemoryURLIndexCacheItem& cache);
-
-  content::NotificationRegistrar registrar_;
-
-  // The profile with which we are associated.
-  Profile* profile_;
 
   // Directory where cache file resides. This is, except when unit testing,
   // the same directory in which the profile's history database is found. It

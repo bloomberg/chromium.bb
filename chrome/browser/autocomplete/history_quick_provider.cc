@@ -29,6 +29,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 
+using history::InMemoryURLIndex;
 using history::ScoredHistoryMatch;
 using history::ScoredHistoryMatches;
 

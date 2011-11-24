@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -217,7 +218,7 @@ HistoryBackend::~HistoryBackend() {
   DCHECK(!scheduled_commit_) << "Deleting without cleanup";
   ReleaseDBTasks();
 
-  // Close the databases before optionally running the "destroy" task.
+  // First close the databases before optionally running the "destroy" task.
   if (db_.get()) {
     // Commit the long-running transaction.
     db_->CommitTransaction();
@@ -884,7 +885,6 @@ void HistoryBackend::SetPageTitle(const GURL& url,
     if (row_id && row.title() != title) {
       row.set_title(title);
       db_->UpdateURLRow(row_id, row);
-      row.id_ = row_id;
       changed_urls.push_back(row);
       if (row.typed_count() > 0)
         typed_url_changed = true;

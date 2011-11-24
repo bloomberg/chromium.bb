@@ -13,17 +13,20 @@
 #include "base/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
+#include "base/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
-#include "chrome/browser/history/history.h"
-#include "chrome/browser/history/history_notifications.h"
+#include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/notification_service.h"
+#include "googleurl/src/url_parse.h"
+#include "googleurl/src/url_util.h"
+#include "net/base/escape.h"
 #include "net/base/net_util.h"
+#include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using google::protobuf::RepeatedField;
@@ -109,20 +112,11 @@ int ScoreForValue(int value, const int* value_ranks) {
   return score;
 }
 
-InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
-                                   const FilePath& history_dir)
-    : profile_(profile),
-      history_dir_(history_dir),
+InMemoryURLIndex::InMemoryURLIndex(const FilePath& history_dir)
+    : history_dir_(history_dir),
       private_data_(new URLIndexPrivateData),
       cached_at_shutdown_(false) {
   InMemoryURLIndex::InitializeSchemeWhitelist(&scheme_whitelist_);
-  if (profile) {
-    content::Source<Profile> source(profile);
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URL_VISITED, source);
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED,
-                   source);
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
-  }
 }
 
 // Called only by unit tests.
@@ -135,7 +129,6 @@ InMemoryURLIndex::InMemoryURLIndex()
 InMemoryURLIndex::~InMemoryURLIndex() {
   // If there was a history directory (which there won't be for some unit tests)
   // then insure that the cache has already been saved.
-  registrar_.RemoveAll();
   DCHECK(history_dir_.empty() || cached_at_shutdown_);
 }
 
@@ -154,65 +147,17 @@ void InMemoryURLIndex::InitializeSchemeWhitelist(
 
 // Indexing
 
-void InMemoryURLIndex::Init(const std::string& languages) {
+bool InMemoryURLIndex::Init(URLDatabase* history_db,
+                            const std::string& languages) {
   // TODO(mrossetti): Register for profile/language change notifications.
   languages_ = languages;
-  RestoreFromCache();
+  return ReloadFromHistory(history_db, false);
 }
 
 void InMemoryURLIndex::ShutDown() {
+  // Write our cache.
   SaveToCacheFile();
   cached_at_shutdown_ = true;
-}
-
-void InMemoryURLIndex::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_HISTORY_URL_VISITED:
-      OnURLVisited(content::Details<URLVisitedDetails>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED:
-      OnURLsModified(
-          content::Details<history::URLsModifiedDetails>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
-      OnURLsDeleted(
-          content::Details<history::URLsDeletedDetails>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_HISTORY_LOADED: {
-        HistoryService* history_service =
-            profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-        URLDatabase* history_db = history_service->HistoryDatabase();
-        ReloadFromHistory(history_db);
-      }
-      break;
-    default:
-      // For simplicity, the unit tests send us all notifications, even when
-      // we haven't registered for them, so don't assert here.
-      break;
-  }
-}
-
-void InMemoryURLIndex::OnURLVisited(const URLVisitedDetails* details) {
-  UpdateURL(details->row);
-}
-
-void InMemoryURLIndex::OnURLsModified(const URLsModifiedDetails* details) {
-  for (std::vector<history::URLRow>::const_iterator row =
-           details->changed_urls.begin();
-       row != details->changed_urls.end(); ++row)
-    UpdateURL(*row);
-}
-
-void InMemoryURLIndex::OnURLsDeleted(const URLsDeletedDetails* details) {
-  if (details->all_history) {
-    ClearPrivateData();
-  } else {
-    for (std::vector<URLRow>::const_iterator row = details->rows.begin();
-         row != details->rows.end(); ++row)
-      DeleteURL(*row);
-  }
 }
 
 void InMemoryURLIndex::IndexRow(const URLRow& row) {
@@ -308,37 +253,32 @@ void InMemoryURLIndex::RemoveRowWordsFromIndex(const URLRow& row) {
   }
 }
 
-void InMemoryURLIndex::ReloadFromHistory(history::URLDatabase* history_db) {
+bool InMemoryURLIndex::ReloadFromHistory(history::URLDatabase* history_db,
+                                         bool clear_cache) {
   ClearPrivateData();
 
   if (!history_db)
-    return;
+    return false;
 
-  base::TimeTicks beginning_time = base::TimeTicks::Now();
-  // The index has to be built from scratch.
-  URLDatabase::URLEnumerator history_enum;
-  if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
-    return;
-
-  URLRow row;
-  while (history_enum.GetNextURL(&row))
-    IndexRow(row);
-  UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime",
-                      base::TimeTicks::Now() - beginning_time);
-  SaveToCacheFile();
+  if (clear_cache || !RestoreFromCacheFile()) {
+    base::TimeTicks beginning_time = base::TimeTicks::Now();
+    // The index has to be built from scratch.
+    URLDatabase::URLEnumerator history_enum;
+    if (!history_db->InitURLEnumeratorForSignificant(&history_enum))
+      return false;
+    URLRow row;
+    while (history_enum.GetNextURL(&row))
+      IndexRow(row);
+    UMA_HISTOGRAM_TIMES("History.InMemoryURLIndexingTime",
+                        base::TimeTicks::Now() - beginning_time);
+    SaveToCacheFile();
+  }
+  return true;
 }
 
 void InMemoryURLIndex::ClearPrivateData() {
   private_data_->Clear();
   search_term_cache_.clear();
-}
-
-void InMemoryURLIndex::RestoreFromCache() {
-  ClearPrivateData();
-  if (!RestoreFromCacheFile() && profile_) {
-    content::Source<Profile> source(profile_);
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED, source);
-  }
 }
 
 bool InMemoryURLIndex::RestoreFromCacheFile() {
@@ -409,46 +349,55 @@ bool InMemoryURLIndex::SaveToCacheFile() {
   return true;
 }
 
-void InMemoryURLIndex::UpdateURL(const URLRow& row) {
+void InMemoryURLIndex::UpdateURL(URLID row_id, const URLRow& row) {
   // The row may or may not already be in our index. If it is not already
   // indexed and it qualifies then it gets indexed. If it is already
   // indexed and still qualifies then it gets updated, otherwise it
   // is deleted from the index.
   HistoryInfoMap::iterator row_pos =
-      private_data_->history_info_map_.find(row.id());
+      private_data_->history_info_map_.find(row_id);
   if (row_pos == private_data_->history_info_map_.end()) {
     // This new row should be indexed if it qualifies.
-    if (RowQualifiesAsSignificant(row, base::Time()))
-      IndexRow(row);
+    URLRow new_row(row);
+    new_row.set_id(row_id);
+    if (RowQualifiesAsSignificant(new_row, base::Time()))
+      IndexRow(new_row);
   } else if (RowQualifiesAsSignificant(row, base::Time())) {
     // This indexed row still qualifies and will be re-indexed.
     // The url won't have changed but the title, visit count, etc.
     // might have changed.
-    URLRow& old_row = row_pos->second;
-    old_row.set_visit_count(row.visit_count());
-    old_row.set_typed_count(row.typed_count());
-    old_row.set_last_visit(row.last_visit());
+    URLRow& updated_row = row_pos->second;
+    updated_row.set_visit_count(row.visit_count());
+    updated_row.set_typed_count(row.typed_count());
+    updated_row.set_last_visit(row.last_visit());
     // While the URL is guaranteed to remain stable, the title may have changed.
     // If so, then we need to update the index with the changed words.
-    if (old_row.title() != row.title()) {
+    if (updated_row.title() != row.title()) {
       // Clear all words associated with this row and re-index both the
       // URL and title.
-      RemoveRowWordsFromIndex(row);
-      old_row.set_title(row.title());
-      AddRowWordsToIndex(old_row);
+      RemoveRowWordsFromIndex(updated_row);
+      updated_row.set_title(row.title());
+      AddRowWordsToIndex(updated_row);
     }
   } else {
     // This indexed row no longer qualifies and will be de-indexed by
     // clearing all words associated with this row.
-    RemoveRowFromIndex(row);
+    URLRow& removed_row = row_pos->second;
+    RemoveRowFromIndex(removed_row);
   }
   // This invalidates the cache.
   search_term_cache_.clear();
 }
 
-void InMemoryURLIndex::DeleteURL(const URLRow& row) {
-  RemoveRowFromIndex(row);
-  search_term_cache_.clear();  // Invalidate the word cache.
+void InMemoryURLIndex::DeleteURL(URLID row_id) {
+  // Note that this does not remove any reference to this row from the
+  // word_id_history_map_. That map will continue to contain (and return)
+  // hits against this row until that map is rebuilt, but since the
+  // history_info_map_ no longer references the row no erroneous results
+  // will propagate to the user.
+  private_data_->history_info_map_.erase(row_id);
+  // This invalidates the word cache.
+  search_term_cache_.clear();
 }
 
 // Searching
