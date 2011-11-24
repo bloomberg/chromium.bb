@@ -219,8 +219,9 @@ class ContentSettingsPattern {
      virtual ContentSettingsPattern Build() OVERRIDE;
     private:
      // Canonicalizes the pattern parts so that they are ASCII only, either
-     // in original (if it was already ASCII) or punycode form.
-     static void Canonicalize(PatternParts* parts);
+     // in original (if it was already ASCII) or punycode form. Returns true if
+     // the canonicalization was successful.
+     static bool Canonicalize(PatternParts* parts);
 
      // Returns true when the pattern |parts| represent a valid pattern.
      static bool Validate(const PatternParts& parts);

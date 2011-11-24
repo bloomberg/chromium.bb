@@ -172,13 +172,19 @@ TEST(ContentSettingsPatternTest, FromString_WithNoWildcards) {
 }
 
 TEST(ContentSettingsPatternTest, FromString_FilePatterns) {
-  EXPECT_TRUE(Pattern("file:///").IsValid());
-  EXPECT_STREQ("file:///",
-               Pattern("file:///").ToString().c_str());
-  EXPECT_TRUE(Pattern("file:///").Matches(
-      GURL("file:///")));
-  EXPECT_FALSE(Pattern("file:///").Matches(
-      GURL("file:///tmp/test.html")));
+  EXPECT_FALSE(Pattern("file:///").IsValid());
+
+  // Non-empty domains aren't allowed in file patterns.
+  EXPECT_FALSE(Pattern("file://foo/").IsValid());
+
+  // Domain wildcards aren't allowed in file patterns.
+  EXPECT_FALSE(Pattern("file://*/").IsValid());
+  EXPECT_FALSE(Pattern("file://[*.]/").IsValid());
+
+  // These specify a path that contains '*', which isn't allowed to avoid
+  // user confusion.
+  EXPECT_FALSE(Pattern("file:///*").IsValid());
+  EXPECT_FALSE(Pattern("file:///foo/bar/*").IsValid());
 
   EXPECT_TRUE(Pattern("file:///tmp/test.html").IsValid());
   EXPECT_STREQ("file:///tmp/file.html",
@@ -208,6 +214,10 @@ TEST(ContentSettingsPatternTest, FromString_WithIPAdresses) {
   EXPECT_TRUE(Pattern("https://192.168.0.1:8080").IsValid());
   EXPECT_STREQ("https://192.168.0.1:8080",
                Pattern("https://192.168.0.1:8080").ToString().c_str());
+
+  // Subdomain wildcards should be only valid for hosts, not for IP addresses.
+  EXPECT_FALSE(Pattern("[*.]127.0.0.1").IsValid());
+
   // IPv6
   EXPECT_TRUE(Pattern("[::1]").IsValid());
   EXPECT_STREQ("[::1]", Pattern("[::1]").ToString().c_str());
@@ -302,9 +312,11 @@ TEST(ContentSettingsPatternTest, FromString_WithWildcards) {
       GURL("http://www.example.com/")));
 
   // Patterns with host wildcard
-  // TODO(markusheintz): Should these patterns be allowed?
-  // EXPECT_TRUE(Pattern("http://*").IsValid());
-  // EXPECT_TRUE(Pattern("http://*:8080").IsValid());
+  EXPECT_TRUE(Pattern("[*.]").IsValid());
+  EXPECT_TRUE(Pattern("http://*").IsValid());
+  EXPECT_TRUE(Pattern("http://[*.]").IsValid());
+  EXPECT_EQ(std::string("http://*"), Pattern("http://[*.]").ToString());
+  EXPECT_TRUE(Pattern("http://*:8080").IsValid());
   EXPECT_TRUE(Pattern("*://*").IsValid());
   EXPECT_STREQ("*", Pattern("*://*").ToString().c_str());
 }

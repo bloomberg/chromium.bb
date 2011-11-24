@@ -141,7 +141,8 @@ BuilderInterface* ContentSettingsPattern::Builder::Invalid() {
 ContentSettingsPattern ContentSettingsPattern::Builder::Build() {
   if (!is_valid_)
     return ContentSettingsPattern();
-  Canonicalize(&parts_);
+  if (!Canonicalize(&parts_))
+    return ContentSettingsPattern();
   if (use_legacy_validate_) {
     is_valid_ = LegacyValidate(parts_);
   } else {
@@ -151,7 +152,7 @@ ContentSettingsPattern ContentSettingsPattern::Builder::Build() {
 }
 
 // static
-void ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
+bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
   // Canonicalize the scheme part.
   const std::string scheme(StringToLowerASCII(parts->scheme));
   parts->scheme = scheme;
@@ -166,6 +167,8 @@ void ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
   const std::string host(parts->host);
   url_canon::CanonHostInfo host_info;
   std::string canonicalized_host(net::CanonicalizeHost(host, &host_info));
+  if (host_info.IsIPAddress() && parts->has_domain_wildcard)
+    return false;
   canonicalized_host = net::TrimEndingDot(canonicalized_host);
 
   parts->host = "";
@@ -174,31 +177,44 @@ void ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
     // Valid host.
     parts->host += canonicalized_host;
   }
+  return true;
 }
 
 // static
 bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
-  // If the pattern is for a "file-pattern" test if it is valid.
-  if (parts.scheme == std::string(chrome::kFileScheme) &&
-      !parts.is_scheme_wildcard &&
-      parts.host.empty() &&
-      parts.port.empty())
-    return true;
+  // Sanity checks first: {scheme, port} wildcards imply empty {scheme, port}.
+  if ((parts.is_scheme_wildcard && !parts.scheme.empty()) ||
+      (parts.is_port_wildcard && !parts.port.empty())) {
+    NOTREACHED();
+    return false;
+  }
+
+  // file:// URL patterns have an empty host and port.
+  if (parts.scheme == std::string(chrome::kFileScheme))
+    return parts.host.empty() &&
+           parts.port.empty() &&
+           !parts.path.empty() &&
+           parts.path != std::string("/") &&
+           parts.path.find("*") == std::string::npos;
 
   // If the pattern is for an extension URL test if it is valid.
   if (parts.scheme == std::string(chrome::kExtensionScheme) &&
-      !parts.is_scheme_wildcard &&
       !parts.host.empty() &&
       !parts.has_domain_wildcard &&
       parts.port.empty() &&
-      !parts.is_port_wildcard)
+      !parts.is_port_wildcard) {
     return true;
+  }
 
   // Non-file patterns are invalid if either the scheme, host or port part is
   // empty.
   if ((parts.scheme.empty() && !parts.is_scheme_wildcard) ||
       (parts.host.empty() && !parts.has_domain_wildcard) ||
-      (parts.port.empty() && !parts.is_port_wildcard))
+      (parts.port.empty() && !parts.is_port_wildcard)) {
+    return false;
+  }
+
+  if (parts.host.find("*") != std::string::npos)
     return false;
 
   // Test if the scheme is supported or a wildcard.

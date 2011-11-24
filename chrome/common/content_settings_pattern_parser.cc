@@ -140,14 +140,8 @@ void PatternParser::Parse(const std::string& pattern_spec,
       builder->WithDomainWildcard();
     } else if (StartsWithASCII(host, kDomainWildcard, true)) {
       host = host.substr(kDomainWildcardLength);
-      // If the host still contains a wildcard symbol then it is invalid.
-      if (host.find(kHostWildcard) != std::string::npos) {
-        builder->Invalid();
-        return;
-      } else {
-        builder->WithDomainWildcard();
-        builder->WithHost(host);
-      }
+      builder->WithDomainWildcard();
+      builder->WithHost(host);
     } else {
       // If the host contains a wildcard symbol then it is invalid.
       if (host.find(kHostWildcard) != std::string::npos) {
