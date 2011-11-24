@@ -933,7 +933,7 @@ TEST_F(ExtensionManifestTest, FileManagerURLOverride) {
 #if defined(FILE_MANAGER_EXTENSION)
   EXPECT_EQ("", error);
 #else
-  EXPECT_EQ(errors::kInvalidChromeURLOverrides, error);
+  EXPECT_EQ(std::string(errors::kInvalidChromeURLOverrides), error);
 #endif
 
   // Extensions of other types can't ovverride chrome://files/ URL.

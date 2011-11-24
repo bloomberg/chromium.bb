@@ -257,7 +257,7 @@ TEST(ExtensionL10nUtil, LocalizeEmptyManifest) {
 
   EXPECT_FALSE(
       extension_l10n_util::LocalizeManifest(*messages, &manifest, &error));
-  EXPECT_EQ(errors::kInvalidName, error);
+  EXPECT_EQ(std::string(errors::kInvalidName), error);
 }
 
 TEST(ExtensionL10nUtil, LocalizeManifestWithoutNameMsgAndEmptyDescription) {

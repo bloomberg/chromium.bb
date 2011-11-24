@@ -48,19 +48,22 @@ public:
 TEST_F(ExtensionUnpackerTest, EmptyDefaultLocale) {
   SetupUnpacker("empty_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(errors::kInvalidDefaultLocale, unpacker_->error_message());
+  EXPECT_EQ(std::string(errors::kInvalidDefaultLocale),
+            unpacker_->error_message());
 }
 
 TEST_F(ExtensionUnpackerTest, HasDefaultLocaleMissingLocalesFolder) {
   SetupUnpacker("has_default_missing_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(errors::kLocalesTreeMissing, unpacker_->error_message());
+  EXPECT_EQ(std::string(errors::kLocalesTreeMissing),
+            unpacker_->error_message());
 }
 
 TEST_F(ExtensionUnpackerTest, InvalidDefaultLocale) {
   SetupUnpacker("invalid_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(errors::kInvalidDefaultLocale, unpacker_->error_message());
+  EXPECT_EQ(std::string(errors::kInvalidDefaultLocale),
+            unpacker_->error_message());
 }
 
 TEST_F(ExtensionUnpackerTest, InvalidMessagesFile) {
@@ -74,13 +77,14 @@ TEST_F(ExtensionUnpackerTest, InvalidMessagesFile) {
 TEST_F(ExtensionUnpackerTest, MissingDefaultData) {
   SetupUnpacker("missing_default_data.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(errors::kLocalesNoDefaultMessages, unpacker_->error_message());
+  EXPECT_EQ(std::string(errors::kLocalesNoDefaultMessages),
+            unpacker_->error_message());
 }
 
 TEST_F(ExtensionUnpackerTest, MissingDefaultLocaleHasLocalesFolder) {
   SetupUnpacker("missing_default_has_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(errors::kLocalesNoDefaultLocaleSpecified,
+  EXPECT_EQ(std::string(errors::kLocalesNoDefaultLocaleSpecified),
             unpacker_->error_message());
 }
 
@@ -95,7 +99,8 @@ TEST_F(ExtensionUnpackerTest, MissingMessagesFile) {
 TEST_F(ExtensionUnpackerTest, NoLocaleData) {
   SetupUnpacker("no_locale_data.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_EQ(errors::kLocalesNoDefaultMessages, unpacker_->error_message());
+  EXPECT_EQ(std::string(errors::kLocalesNoDefaultMessages),
+            unpacker_->error_message());
 }
 
 TEST_F(ExtensionUnpackerTest, GoodL10n) {
