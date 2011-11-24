@@ -53,6 +53,7 @@
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/geolocation_dispatcher.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/renderer/idle_user_detector.h"
 #include "content/renderer/intents_dispatcher.h"
 #include "content/renderer/java/java_bridge_dispatcher.h"
 #include "content/renderer/load_progress_tracker.h"
@@ -416,6 +417,8 @@ RenderViewImpl::RenderViewImpl(
   devtools_agent_ = new DevToolsAgent(this);
 
   renderer_accessibility_ = new RendererAccessibility(this);
+
+  new IdleUserDetector(this);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kEnableMediaStream)) {

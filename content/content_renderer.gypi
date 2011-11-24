@@ -69,6 +69,8 @@
     'renderer/gpu/transport_texture_service.h',
     'renderer/gpu/webgraphicscontext3d_command_buffer_impl.cc',
     'renderer/gpu/webgraphicscontext3d_command_buffer_impl.h',
+    'renderer/idle_user_detector.cc',
+    'renderer/idle_user_detector.h',
     'renderer/indexed_db_dispatcher.cc',
     'renderer/indexed_db_dispatcher.h',
     'renderer/intents_dispatcher.cc',

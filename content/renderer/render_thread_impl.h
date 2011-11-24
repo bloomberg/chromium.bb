@@ -42,6 +42,7 @@ class WebStorageEventDispatcher;
 }
 
 namespace base {
+class ProcessMetrics;
 class MessageLoopProxy;
 class Thread;
 namespace win {
@@ -167,6 +168,11 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // on the renderer's main thread.
   scoped_refptr<base::MessageLoopProxy> GetFileThreadMessageLoopProxy();
 
+  // Causes the idle handler to skip sending idle notifications
+  // on the two next scheduled calls, so idle notifications are
+  // not sent for at least one notification delay.
+  void PostponeIdleNotification();
+
  private:
   virtual bool OnControlMessageReceived(const IPC::Message& msg) OVERRIDE;
 
@@ -182,6 +188,8 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   void OnNetworkStateChanged(bool online);
   void OnGetAccessibilityTree();
   void OnTempCrashWithData(const GURL& data);
+
+  void IdleHandlerInForegroundTab();
 
   // These objects live solely on the render thread.
   scoped_ptr<ScopedRunnableMethodFactory<RenderThreadImpl> > task_factory_;
@@ -217,11 +225,16 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
   // The current value of the idle notification timer delay.
   int64 idle_notification_delay_in_ms_;
 
+  // The number of idle handler calls that skip sending idle notifications.
+  int idle_notifications_to_skip_;
+
   bool suspend_webkit_shared_timer_;
   bool notify_webkit_of_modal_loop_;
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThreadImpl> idle_timer_;
+
+  scoped_ptr<base::ProcessMetrics> process_metrics_;
 
   // The channel from the renderer process to the GPU process.
   scoped_refptr<GpuChannelHost> gpu_channel_;

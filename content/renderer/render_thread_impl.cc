@@ -102,6 +102,9 @@ using content::RenderProcessObserver;
 
 namespace {
 static const int64 kInitialIdleHandlerDelayMs = 1000;
+static const int64 kShortIdleHandlerDelayMs = 1000;
+static const int64 kLongIdleHandlerDelayMs = 30*1000;
+static const int kIdleCPUUsageThresholdInPercents = 3;
 
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
@@ -190,6 +193,15 @@ void RenderThreadImpl::Init() {
   widget_count_ = 0;
   hidden_widget_count_ = 0;
   idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
+  idle_notifications_to_skip_ = 0;
+  base::ProcessHandle handle = base::GetCurrentProcessHandle();
+#if defined(OS_MACOSX)
+  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle,
+                                                                    NULL));
+#else
+  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle));
+#endif
+  process_metrics_->GetCPUUsage(); // Initialize CPU usage counters.
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThreadImpl>(this));
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
@@ -415,7 +427,7 @@ void RenderThreadImpl::WidgetRestored() {
     return;
   }
 
-  idle_timer_.Stop();
+  ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 }
 
 void RenderThreadImpl::EnsureWebKitInitialized() {
@@ -531,6 +543,11 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableQuota(true);
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
+
+  if (content::GetContentClient()->renderer()->
+         RunIdleHandlerWhenWidgetsHidden()) {
+    ScheduleIdleHandler(kLongIdleHandlerDelayMs);
+  }
 }
 
 void RenderThreadImpl::RecordUserMetrics(const std::string& action) {
@@ -564,7 +581,14 @@ void RenderThreadImpl::ScheduleIdleHandler(int64 initial_delay_ms) {
 }
 
 void RenderThreadImpl::IdleHandler() {
-  #if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
+  bool run_in_foreground_tab = (widget_count_ > hidden_widget_count_) &&
+                               content::GetContentClient()->renderer()->
+                                   RunIdleHandlerWhenWidgetsHidden();
+  if (run_in_foreground_tab) {
+    IdleHandlerInForegroundTab();
+    return;
+  }
+#if !defined(OS_MACOSX) && defined(USE_TCMALLOC)
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
 
@@ -587,6 +611,29 @@ void RenderThreadImpl::IdleHandler() {
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, IdleNotification());
 }
 
+void RenderThreadImpl::IdleHandlerInForegroundTab() {
+  // Increase the delay in the same way as in IdleHandler,
+  // but make it periodic by reseting it once it is too big.
+  int64 new_delay_ms = idle_notification_delay_in_ms_ +
+                       1000000 / (idle_notification_delay_in_ms_ + 2000);
+  if (new_delay_ms >= kLongIdleHandlerDelayMs)
+    new_delay_ms = kShortIdleHandlerDelayMs;
+
+  // Sample the CPU usage on each timer event, so that it is more accurate.
+  double cpu_usage = process_metrics_->GetCPUUsage();
+
+  if (idle_notifications_to_skip_ > 0) {
+    idle_notifications_to_skip_--;
+  } else if (cpu_usage < kIdleCPUUsageThresholdInPercents) {
+    if (v8::V8::IdleNotification()) {
+      // V8 finished collecting garbage.
+      new_delay_ms = kLongIdleHandlerDelayMs;
+    }
+  }
+
+  ScheduleIdleHandler(new_delay_ms);
+}
+
 int64 RenderThreadImpl::GetIdleNotificationDelayInMs() const {
   return idle_notification_delay_in_ms_;
 }
@@ -594,6 +641,10 @@ int64 RenderThreadImpl::GetIdleNotificationDelayInMs() const {
 void RenderThreadImpl::SetIdleNotificationDelayInMs(
     int64 idle_notification_delay_in_ms) {
   idle_notification_delay_in_ms_ = idle_notification_delay_in_ms;
+}
+
+void RenderThreadImpl::PostponeIdleNotification() {
+  idle_notifications_to_skip_ = 2;
 }
 
 #if defined(OS_WIN)
