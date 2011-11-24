@@ -20,13 +20,13 @@ const char kProtectorValueChangedCounter[] = "Protector.ValueChangedCounter";
 const char kProtectorValueValidCounter[] = "Protector.ValueValidCounter";
 
 const char kProtectorHistogramNewSearchProvider[] =
-    "Protector.NewSearchProvider";
+    "Protector.SearchProvider.New";
 const char kProtectorHistogramSearchProviderApplied[] =
-    "Protector.SearchProviderApplied";
+    "Protector.SearchProvider.Applied";
 const char kProtectorHistogramSearchProviderDiscarded[] =
-    "Protector.SearchProviderDiscarded";
+    "Protector.SearchProvider.Discarded";
 const char kProtectorHistogramSearchProviderTimeout[] =
-    "Protector.SearchProviderTimeout";
+    "Protector.SearchProvider.Timeout";
 
 const int kProtectorMaxSearchProviderID = SEARCH_ENGINE_MAX;
 

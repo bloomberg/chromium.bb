@@ -100,13 +100,13 @@ enum ProfileDownloadResult {
 
 // Time histogram name for the default profile image download.
 const char kProfileDownloadDefaultTime[] =
-    "UserImage.ProfileDownloadDefaultTime";
+    "UserImage.ProfileDownloadTime.Default";
 // Time histogram name for a failed profile image download.
 const char kProfileDownloadFailureTime[] =
-    "UserImage.ProfileDownloadFailureTime";
+    "UserImage.ProfileDownloadTime.Failure";
 // Time histogram name for a successful profile image download.
 const char ProfileDownloadSuccessTime[] =
-    "UserImage.ProfileDownloadSuccessTime";
+    "UserImage.ProfileDownloadTime.Success";
 
 // Used to handle the asynchronous response of deleting a cryptohome directory.
 class RemoveAttempt : public CryptohomeLibrary::Delegate {
