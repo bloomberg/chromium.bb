@@ -221,7 +221,11 @@ remoting.HostList.prototype.renameHost_ = function(hostId) {
       'Authorization': 'OAuth ' + token,
       'Content-type' : 'application/json; charset=UTF-8'
     };
-    var newHostDetails = { data: hostTableEntry.host };
+    var newHostDetails = { data: {
+      hostId: hostTableEntry.host.hostId,
+      hostName: hostTableEntry.host.hostName,
+      publicKey: hostTableEntry.host.publicKey
+    } };
     remoting.xhr.put(
         'https://www.googleapis.com/chromoting/v1/@me/hosts/' + hostId,
         function(xhr) {},
