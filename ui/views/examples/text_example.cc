@@ -8,10 +8,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/examples/example_combobox_model.h"
 #include "ui/views/layout/grid_layout.h"
 #include "views/controls/button/checkbox.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/view.h"
 

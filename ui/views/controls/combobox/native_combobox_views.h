@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_VIEWS_H_
-#define VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_VIEWS_H_
+#ifndef UI_VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_VIEWS_H_
+#define UI_VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_VIEWS_H_
 #pragma once
 
-#include "views/controls/combobox/native_combobox_wrapper.h"
+#include "ui/views/controls/combobox/native_combobox_wrapper.h"
 #include "views/controls/menu/menu_delegate.h"
 #include "views/view.h"
 
@@ -101,4 +101,4 @@ class NativeComboboxViews : public views::View,
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_VIEWS_H_
+#endif  // UI_VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_VIEWS_H_

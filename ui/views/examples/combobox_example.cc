@@ -7,8 +7,8 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/layout/fill_layout.h"
-#include "views/controls/combobox/combobox.h"
 
 namespace {
 

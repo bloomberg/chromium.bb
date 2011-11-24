@@ -17,11 +17,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "views/border.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 

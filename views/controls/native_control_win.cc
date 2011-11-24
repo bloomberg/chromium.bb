@@ -11,9 +11,9 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/hwnd_util.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/combobox/combobox.h"
 
 using ui::ViewProp;
 

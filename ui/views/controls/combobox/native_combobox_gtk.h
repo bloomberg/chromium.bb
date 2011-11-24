@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_WIN_H_
-#define VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_WIN_H_
+#ifndef UI_VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_GTK_H_
+#define UI_VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_GTK_H_
 #pragma once
 
-#include "views/controls/combobox/native_combobox_wrapper.h"
-#include "views/controls/native_control_win.h"
+#include "ui/base/gtk/gtk_signal.h"
+#include "ui/views/controls/combobox/native_combobox_wrapper.h"
+#include "views/controls/native_control_gtk.h"
 
 namespace views {
 
-class NativeComboboxWin : public NativeControlWin,
+class NativeComboboxGtk : public NativeControlGtk,
                           public NativeComboboxWrapper {
  public:
-  explicit NativeComboboxWin(Combobox* combobox);
-  virtual ~NativeComboboxWin();
+  explicit NativeComboboxGtk(Combobox* combobox);
+  virtual ~NativeComboboxGtk();
 
   // Overridden from NativeComboboxWrapper:
   virtual void UpdateFromModel() OVERRIDE;
@@ -33,26 +34,31 @@ class NativeComboboxWin : public NativeControlWin,
   virtual gfx::NativeView GetTestingHandle() const OVERRIDE;
 
  protected:
-  // Overridden from NativeControlWin:
-  virtual bool ProcessMessage(UINT message,
-                              WPARAM w_param,
-                              LPARAM l_param,
-                              LRESULT* result) OVERRIDE;
+  // Overridden from NativeControlGtk:
   virtual void CreateNativeControl() OVERRIDE;
-  virtual void NativeControlCreated(HWND native_control) OVERRIDE;
+  virtual void NativeControlCreated(GtkWidget* widget) OVERRIDE;
 
  private:
-  void UpdateFont();
+  void SelectionChanged();
+  void FocusedMenuItemChanged();
+
+  CHROMEGTK_CALLBACK_0(NativeComboboxGtk, void, CallChanged);
+  CHROMEGTK_CALLBACK_0(NativeComboboxGtk, gboolean, CallPopUp);
+  CHROMEGTK_CALLBACK_1(NativeComboboxGtk, void, CallMenuMoveCurrent,
+                       GtkMenuDirectionType);
 
   // The combobox we are bound to.
   Combobox* combobox_;
 
-  // The min width, in pixels, for the text content.
-  int content_width_;
+  // The combo box's pop-up menu.
+  GtkMenu* menu_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeComboboxWin);
+  // The preferred size from the last size_request.
+  gfx::Size preferred_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeComboboxGtk);
 };
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_WIN_H_
+#endif  // UI_VIEWS_CONTROLS_COMBOBOX_NATIVE_COMBOBOX_GTK_H_

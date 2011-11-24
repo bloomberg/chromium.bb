@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "ui/gfx/native_theme.h"
+#include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/examples/example_base.h"
 #include "views/controls/button/custom_button.h"
-#include "views/controls/combobox/combobox_listener.h"
 #include "views/native_theme_delegate.h"
 #include "views/native_theme_painter.h"
 

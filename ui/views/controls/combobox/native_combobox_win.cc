@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/combobox/native_combobox_win.h"
+#include "ui/views/controls/combobox/native_combobox_win.h"
 
 #include "base/i18n/rtl.h"
 #include "base/utf_string_conversions.h"
@@ -11,9 +11,9 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_theme_win.h"
+#include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/combobox/native_combobox_views.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/combobox/combobox.h"
-#include "views/controls/combobox/native_combobox_views.h"
 
 namespace views {
 

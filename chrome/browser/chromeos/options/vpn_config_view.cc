@@ -17,9 +17,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
 #include "views/controls/textfield/textfield.h"
 

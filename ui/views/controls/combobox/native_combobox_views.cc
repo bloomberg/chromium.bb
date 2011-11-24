@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/combobox/native_combobox_views.h"
+#include "ui/views/controls/combobox/native_combobox_views.h"
 
 #include <algorithm>
 
@@ -15,11 +15,11 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
+#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/controls/combobox/combobox.h"
 #include "views/controls/focusable_border.h"
 #include "views/controls/menu/menu_runner.h"
 #include "views/controls/menu/submenu_view.h"

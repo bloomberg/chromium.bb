@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/combobox/native_combobox_gtk.h"
+#include "ui/views/controls/combobox/native_combobox_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -11,9 +11,9 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/combobox/native_combobox_views.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/combobox/combobox.h"
-#include "views/controls/combobox/native_combobox_views.h"
 #include "views/views_delegate.h"
 
 namespace views {
