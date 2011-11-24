@@ -2488,7 +2488,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Delete update, causing it to finish, which should trigger a new update
     // for the queued host and master entry after a delay.
     delete update;
-    EXPECT_TRUE(group_->restart_update_task_);
+    EXPECT_FALSE(group_->restart_update_task_.IsCancelled());
 
     // Set up checks for when queued update job finishes.
     do_checks_after_update_finished_ = true;

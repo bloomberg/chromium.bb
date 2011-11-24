@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "webkit/appcache/appcache.h"
@@ -45,7 +46,6 @@ AppCacheGroup::AppCacheGroup(AppCacheService* service,
       newest_complete_cache_(NULL),
       update_job_(NULL),
       service_(service),
-      restart_update_task_(NULL),
       is_in_dtor_(false) {
   service_->storage()->working_set()->AddGroup(this);
   host_observer_.reset(new HostObserver(this));
@@ -54,7 +54,7 @@ AppCacheGroup::AppCacheGroup(AppCacheService* service,
 AppCacheGroup::~AppCacheGroup() {
   DCHECK(old_caches_.empty());
   DCHECK(!newest_complete_cache_);
-  DCHECK(!restart_update_task_);
+  DCHECK(restart_update_task_.IsCancelled());
   DCHECK(queued_updates_.empty());
 
   is_in_dtor_ = true;
@@ -166,9 +166,8 @@ void AppCacheGroup::StartUpdateWithNewMasterEntry(
   update_job_->StartUpdate(host, new_master_resource);
 
   // Run queued update immediately as an update has been started manually.
-  if (restart_update_task_) {
-    restart_update_task_->Cancel();
-    restart_update_task_ = NULL;
+  if (!restart_update_task_.IsCancelled()) {
+    restart_update_task_.Cancel();
     RunQueuedUpdates();
   }
 }
@@ -198,8 +197,8 @@ void AppCacheGroup::QueueUpdate(AppCacheHost* host,
 }
 
 void AppCacheGroup::RunQueuedUpdates() {
-  if (restart_update_task_)
-    restart_update_task_ = NULL;
+  if (!restart_update_task_.IsCancelled())
+    restart_update_task_.Cancel();
 
   if (queued_updates_.empty())
     return;
@@ -228,19 +227,17 @@ bool AppCacheGroup::FindObserver(UpdateObserver* find_me,
 }
 
 void AppCacheGroup::ScheduleUpdateRestart(int delay_ms) {
-  DCHECK(!restart_update_task_);
-  restart_update_task_ =
-      NewRunnableMethod(this, &AppCacheGroup::RunQueuedUpdates);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, restart_update_task_,
-                                          delay_ms);
+  DCHECK(restart_update_task_.IsCancelled());
+  restart_update_task_.Reset(
+      base::Bind(&AppCacheGroup::RunQueuedUpdates, this));
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, restart_update_task_.callback(), delay_ms);
 }
 
 void AppCacheGroup::HostDestructionImminent(AppCacheHost* host) {
   queued_updates_.erase(host);
-  if (queued_updates_.empty() && restart_update_task_) {
-    restart_update_task_->Cancel();
-    restart_update_task_ = NULL;
-  }
+  if (queued_updates_.empty() && !restart_update_task_.IsCancelled())
+    restart_update_task_.Cancel();
 }
 
 void AppCacheGroup::SetUpdateStatus(UpdateStatus status) {

@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -146,7 +147,7 @@ class APPCACHE_EXPORT AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   // Updates that have been queued for the next run.
   QueuedUpdates queued_updates_;
   ObserverList<UpdateObserver> queued_observers_;
-  CancelableTask* restart_update_task_;
+  base::CancelableCallback restart_update_task_;
   scoped_ptr<HostObserver> host_observer_;
 
   // True if we're in our destructor.

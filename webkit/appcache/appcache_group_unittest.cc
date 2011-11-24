@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,14 +275,14 @@ TEST(AppCacheGroupTest, QueueUpdate) {
   // sent to host.
   delete group->update_job_;
   EXPECT_EQ(AppCacheGroup::IDLE, group->update_status_);
-  EXPECT_TRUE(group->restart_update_task_);
+  EXPECT_FALSE(group->restart_update_task_.IsCancelled());
   EXPECT_FALSE(host.update_completed_);
 
   // Start another update. Cancels task and will run queued updates.
   group->update_status_ = AppCacheGroup::CHECKING;  // prevent actual fetches
   group->StartUpdate();
   EXPECT_TRUE(group->update_job_);
-  EXPECT_FALSE(group->restart_update_task_);
+  EXPECT_TRUE(group->restart_update_task_.IsCancelled());
   EXPECT_TRUE(group->queued_updates_.empty());
   EXPECT_FALSE(group->update_job_->pending_master_entries_.empty());
   EXPECT_FALSE(group->FindObserver(&host, group->queued_observers_));
@@ -291,7 +291,7 @@ TEST(AppCacheGroupTest, QueueUpdate) {
   // Delete update to cause it to complete. Verify host is notified.
   delete group->update_job_;
   EXPECT_EQ(AppCacheGroup::IDLE, group->update_status_);
-  EXPECT_FALSE(group->restart_update_task_);
+  EXPECT_TRUE(group->restart_update_task_.IsCancelled());
   EXPECT_TRUE(host.update_completed_);
 }
 
