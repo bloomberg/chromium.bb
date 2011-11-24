@@ -2152,7 +2152,6 @@
             ['exclude', '^browser/password_manager/native_backend_gnome_x_unittest.cc'],
             ['exclude', '^browser/password_manager/native_backend_kwallet_x_unittest.cc'],
             ['exclude', '^browser/safe_browsing/download_protection_service_unittest.cc' ],
-            ['exclude', '^../content/browser/geolocation/wifi_data_provider_linux_unittest.cc'],
           ],
           'conditions': [
             ['use_aura==1', {
