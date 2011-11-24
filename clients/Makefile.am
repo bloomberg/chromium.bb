@@ -70,7 +70,12 @@ smoke_LDADD = $(toolkit_libs)
 resizor_SOURCES = resizor.c
 resizor_LDADD = $(toolkit_libs)
 
-wscreensaver_SOURCES = wscreensaver.c wscreensaver-glue.c glmatrix.c
+wscreensaver_SOURCES =				\
+	wscreensaver.c				\
+	desktop-shell-client-protocol.h		\
+	desktop-shell-protocol.c		\
+	wscreensaver-glue.c			\
+	glmatrix.c
 wscreensaver_LDADD = $(toolkit_libs) -lGLU
 
 eventdemo_SOURCES = eventdemo.c

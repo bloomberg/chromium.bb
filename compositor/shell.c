@@ -54,6 +54,8 @@ struct wl_shell {
 
 	struct wl_list backgrounds;
 	struct wl_list panels;
+
+	struct wl_resource *screensaver;
 };
 
 enum shell_surface_type {
@@ -933,6 +935,54 @@ bind_desktop_shell(struct wl_client *client,
 	wl_resource_destroy(resource, 0);
 }
 
+static void
+screensaver_set_surface(struct wl_client *client,
+			struct wl_resource *resource,
+			struct wl_resource *shell_surface_resource,
+			struct wl_resource *output_resource)
+{
+	struct wl_shell *shell = resource->data;
+	struct shell_surface *surface = shell_surface_resource->data;
+	struct wlsc_output *output = output_resource->data;
+
+	/* TODO */
+}
+
+static const struct screensaver_interface screensaver_implementation = {
+	screensaver_set_surface
+};
+
+static void
+unbind_screensaver(struct wl_resource *resource)
+{
+	struct wl_shell *shell = resource->data;
+
+	shell->screensaver = NULL;
+	free(resource);
+}
+
+static void
+bind_screensaver(struct wl_client *client,
+		 void *data, uint32_t version, uint32_t id)
+{
+	struct wl_shell *shell = data;
+	struct wl_resource *resource;
+
+	resource = wl_client_add_object(client, &screensaver_interface,
+					&screensaver_implementation,
+					id, shell);
+
+	if (shell->screensaver == NULL) {
+		resource->destroy = unbind_screensaver;
+		shell->screensaver = resource;
+		return;
+	}
+
+	wl_resource_post_error(resource, WL_DISPLAY_ERROR_INVALID_OBJECT,
+			       "interface object already bound");
+	wl_resource_destroy(resource, 0);
+}
+
 int
 shell_init(struct wlsc_compositor *ec);
 
@@ -964,6 +1014,10 @@ shell_init(struct wlsc_compositor *ec)
 	if (wl_display_add_global(ec->wl_display,
 				  &desktop_shell_interface,
 				  shell, bind_desktop_shell) == NULL)
+		return -1;
+
+	if (wl_display_add_global(ec->wl_display, &screensaver_interface,
+				  shell, bind_screensaver) == NULL)
 		return -1;
 
 	if (launch_desktop_shell_process(shell) != 0)

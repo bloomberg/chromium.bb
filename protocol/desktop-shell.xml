@@ -35,4 +35,17 @@
     <event name="prepare_lock_surface"/>
   </interface>
 
+  <!-- Only one client can bind this interface at a time. -->
+  <interface name="screensaver" version="1">
+
+    <!-- Set the surface type as a screensaver for a particular output.
+         A screensaver surface is normally hidden, and only visible after
+         an idle timeout. -->
+    <request name="set_surface">
+      <arg name="surface" type="object" interface="wl_shell_surface"/>
+      <arg name="output" type="object" interface="wl_output"/>
+    </request>
+
+  </interface>
+
 </protocol>

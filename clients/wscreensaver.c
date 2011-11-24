@@ -20,7 +20,7 @@
  * OF THIS SOFTWARE.
  */
 
-#include "config.h"
+#include "../config.h"
 
 #include "wscreensaver.h"
 
@@ -34,6 +34,7 @@
 
 #include <wayland-client.h>
 
+#include "desktop-shell-client-protocol.h"
 #include "window.h"
 
 extern struct wscreensaver_plugin glmatrix_screensaver;
@@ -45,7 +46,11 @@ static const struct wscreensaver_plugin * const plugins[] = {
 
 const char *progname = NULL;
 
+static int demo_mode;
+
 struct wscreensaver {
+	struct screensaver *interface;
+
 	struct display *display;
 
 	/* per output, if fullscreen mode */
@@ -246,21 +251,51 @@ init_wscreensaver(struct wscreensaver *wscr, struct display *display)
 	return NULL;
 }
 
+static void
+global_handler(struct wl_display *display, uint32_t id,
+	       const char *interface, uint32_t version, void *data)
+{
+	struct wscreensaver *screensaver = data;
+
+	if (!strcmp(interface, "screensaver")) {
+		screensaver->interface =
+			wl_display_bind(display, id, &screensaver_interface);
+	}
+}
+
+static const GOptionEntry option_entries[] = {
+	{ "demo", 0, 0, G_OPTION_ARG_NONE, &demo_mode,
+		"Run as a regular application, not a screensaver.", NULL },
+	{ NULL }
+};
+
 int main(int argc, char *argv[])
 {
 	struct display *d;
-	struct wscreensaver wscr = { 0 };
+	struct wscreensaver screensaver = { 0 };
 	const char *msg;
 
 	init_frand();
 
-	d = display_create(&argc, &argv, NULL);
+	d = display_create(&argc, &argv, option_entries);
 	if (d == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return EXIT_FAILURE;
 	}
 
-	msg = init_wscreensaver(&wscr, d);
+	if (!demo_mode) {
+		wl_display_add_global_listener(display_get_display(d),
+					       global_handler, &screensaver);
+		wl_display_roundtrip(display_get_display(d));
+		if (!screensaver.interface) {
+			fprintf(stderr,
+				"Server did not offer screensaver interface,"
+				" exiting.\n");
+			return EXIT_FAILURE;
+		}
+	}
+
+	msg = init_wscreensaver(&screensaver, d);
 	if (msg) {
 		fprintf(stderr, "wscreensaver init failed: %s\n", msg);
 		return EXIT_FAILURE;
