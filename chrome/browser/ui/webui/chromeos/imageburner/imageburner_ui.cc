@@ -3,17 +3,19 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/chromeos/imageburner/imageburner_ui.h"
-#include "chrome/browser/ui/webui/chromeos/imageburner/webui_handler.h"
+
+#include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/chromeos/imageburner/webui_handler.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
@@ -47,8 +49,8 @@ const char kMoreInfoLink[] =
 
 namespace {
 
-ChromeWebUIDataSource *CreateImageburnerUIHTMLSource() {
-  ChromeWebUIDataSource *source =
+ChromeWebUIDataSource* CreateImageburnerUIHTMLSource() {
+  ChromeWebUIDataSource* source =
       new ChromeWebUIDataSource(chrome::kChromeUIImageBurnerHost);
 
     source->AddLocalizedString("headerTitle", IDS_IMAGEBURN_HEADER_TITLE);
@@ -359,7 +361,7 @@ void WebUIHandler::HandleBurnImage(const ListValue* args) {
     scoped_refptr<WebUIHandlerTaskProxy> task = new WebUIHandlerTaskProxy(this);
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        NewRunnableMethod(task.get(), &WebUIHandlerTaskProxy::CreateImageDir));
+        base::Bind(&WebUIHandlerTaskProxy::CreateImageDir, task.get()));
   } else {
     ImageDirCreatedOnUIThread(true);
   }
@@ -376,8 +378,8 @@ void WebUIHandler::OnImageDirCreated(bool success) {
   scoped_refptr<WebUIHandlerTaskProxy> task = new WebUIHandlerTaskProxy(this);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(task.get(), &WebUIHandlerTaskProxy::OnImageDirCreated,
-                        success));
+      base::Bind(&WebUIHandlerTaskProxy::OnImageDirCreated,
+                 task.get(), success));
 }
 
 void WebUIHandler::ImageDirCreatedOnUIThread(bool success) {
