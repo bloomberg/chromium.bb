@@ -25,7 +25,17 @@ class BrowserMainTest : public testing::Test {
   CommandLine command_line_;
 };
 
-TEST_F(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket) {
+// http://crbug.com/105326
+// Crashes unit_tests on "Linux Clang (ChromeOS dbg)".
+#if defined(OS_CHROMEOS)
+#define MAYBE_WarmConnectionFieldTrial_WarmestSocket \
+    DISABLED_WarmConnectionFieldTrial_WarmestSocket
+#else
+#define MAYBE_WarmConnectionFieldTrial_WarmestSocket \
+    WarmConnectionFieldTrial_WarmestSocket
+#endif
+
+TEST_F(BrowserMainTest, MAYBE_WarmConnectionFieldTrial_WarmestSocket) {
   command_line_.AppendSwitchASCII(switches::kSocketReusePolicy, "0");
 
   scoped_ptr<content::MainFunctionParams> params(
@@ -40,7 +50,17 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket) {
   }
 }
 
-TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Random) {
+// http://crbug.com/105326
+// Crashes unit_tests on "Linux Clang (ChromeOS dbg)".
+#if defined(OS_CHROMEOS)
+#define MAYBE_WarmConnectionFieldTrial_Random \
+    DISABLED_WarmConnectionFieldTrial_Random
+#else
+#define MAYBE_WarmConnectionFieldTrial_Random \
+    WarmConnectionFieldTrial_Random
+#endif
+
+TEST_F(BrowserMainTest, MAYBE_WarmConnectionFieldTrial_Random) {
   scoped_ptr<content::MainFunctionParams> params(
       new content::MainFunctionParams(command_line_));
   scoped_ptr<content::BrowserMainParts> bw(
@@ -58,7 +78,17 @@ TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Random) {
   }
 }
 
-TEST_F(BrowserMainTest, WarmConnectionFieldTrial_Invalid) {
+// http://crbug.com/105326
+// Crashes unit_tests on "Linux Clang (ChromeOS dbg)".
+#if defined(OS_CHROMEOS)
+#define MAYBE_WarmConnectionFieldTrial_Invalid \
+    DISABLED_WarmConnectionFieldTrial_Invalid
+#else
+#define MAYBE_WarmConnectionFieldTrial_Invalid \
+    WarmConnectionFieldTrial_Invalid
+#endif
+
+TEST_F(BrowserMainTest, MAYBE_WarmConnectionFieldTrial_Invalid) {
   command_line_.AppendSwitchASCII(switches::kSocketReusePolicy, "100");
 
   scoped_ptr<content::MainFunctionParams> params(

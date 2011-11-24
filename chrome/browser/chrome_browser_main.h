@@ -165,9 +165,10 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // Initialized in SetupMetricsAndFieldTrials.
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
 
-  FRIEND_TEST(BrowserMainTest, WarmConnectionFieldTrial_WarmestSocket);
-  FRIEND_TEST(BrowserMainTest, WarmConnectionFieldTrial_Random);
-  FRIEND_TEST(BrowserMainTest, WarmConnectionFieldTrial_Invalid);
+  FRIEND_TEST_ALL_PREFIXES(BrowserMainTest,
+                           WarmConnectionFieldTrial_WarmestSocket);
+  FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Random);
+  FRIEND_TEST_ALL_PREFIXES(BrowserMainTest, WarmConnectionFieldTrial_Invalid);
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };
 
