@@ -549,13 +549,8 @@ class SafeBrowsingServiceTestHelper
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceTestHelper);
 };
 
-#if defined(OS_WIN) && defined(NDEBUG)
-#define MAYBE_SafeBrowsingSystemTest FLAKY_SafeBrowsingSystemTest
-#else
-#define MAYBE_SafeBrowsingSystemTest SafeBrowsingServiceTest
-#endif
-// See http://crbug.com/96489
-IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, MAYBE_SafeBrowsingSystemTest) {
+// See http://crbug.com/96459
+IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, FLAKY_SafeBrowsingSystemTest) {
   LOG(INFO) << "Start test";
   const char* server_host = SafeBrowsingTestServer::Host();
   int server_port = SafeBrowsingTestServer::Port();
