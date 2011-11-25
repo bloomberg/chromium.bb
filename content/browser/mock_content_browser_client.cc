@@ -15,6 +15,16 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "webkit/glue/webpreferences.h"
 
+#if defined(USE_AURA)
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#elif defined(OS_WIN)
+#include "content/browser/renderer_host/render_widget_host_view_win.h"
+#elif defined(TOOLKIT_USES_GTK)
+#include "content/browser/renderer_host/render_widget_host_view_gtk.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#endif
+
 namespace content {
 
 MockContentBrowserClient::MockContentBrowserClient() {
@@ -30,7 +40,17 @@ BrowserMainParts* MockContentBrowserClient::CreateBrowserMainParts(
 
 RenderWidgetHostView* MockContentBrowserClient::CreateViewForWidget(
     RenderWidgetHost* widget) {
-  return NULL;
+#if defined(USE_AURA)
+  return new RenderWidgetHostViewAura(widget);
+#elif defined(OS_WIN)
+  return new RenderWidgetHostViewWin(widget);
+#elif defined(TOOLKIT_USES_GTK)
+  return new RenderWidgetHostViewGtk(widget);
+#elif defined(OS_MACOSX)
+  return render_widget_host_view_mac::CreateRenderWidgetHostView(widget);
+#else
+#error Need to create your platform ViewForWidget here.
+#endif
 }
 
 TabContentsView* MockContentBrowserClient::CreateTabContentsView(

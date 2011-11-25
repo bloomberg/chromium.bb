@@ -2009,7 +2009,6 @@
         'test/data/resource.rc',
         'test/data/unit/framework_unittest.gtestjs',
         'tools/convert_dict/convert_dict_unittest.cc',
-        '../content/browser/renderer_host/render_widget_host_unittest.cc',
         '../content/browser/tab_contents/navigation_controller_unittest.cc',
         '../content/browser/tab_contents/render_view_host_manager_unittest.cc',
         '../content/common/sandbox_mac_diraccess_unittest.mm',
