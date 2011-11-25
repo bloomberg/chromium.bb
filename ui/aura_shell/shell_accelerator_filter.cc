@@ -8,8 +8,8 @@
 #include "ui/aura/event.h"
 #include "ui/aura_shell/shell.h"
 #include "ui/aura_shell/shell_accelerator_controller.h"
-#include "ui/base/accelerator_manager.h"
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/accelerator_manager.h"
 
 namespace {
 const int kModifierFlagMask = (ui::EF_SHIFT_DOWN |

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_ACCELERATOR_MANAGER_H_
-#define UI_BASE_ACCELERATOR_MANAGER_H_
+#ifndef UI_BASE_ACCELERATORS_ACCELERATOR_MANAGER_H_
+#define UI_BASE_ACCELERATORS_ACCELERATOR_MANAGER_H_
 #pragma once
 
 #include <list>
 #include <map>
 
 #include "base/basictypes.h"
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
@@ -62,4 +62,4 @@ class UI_EXPORT AcceleratorManager {
 
 }  // namespace ui
 
-#endif  // UI_BASE_ACCELERATOR_MANAGER_H_
+#endif  // UI_BASE_ACCELERATORS_ACCELERATOR_MANAGER_H_

@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/utf_string_conversions.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/models/accelerator.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/focus_manager_test.h"
@@ -13,8 +13,8 @@
 #include "views/controls/textfield/textfield.h"
 
 #if !defined(USE_AURA)
-#include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
+#include "views/controls/tabbed_pane/tabbed_pane.h"
 #endif
 
 #if defined(OS_LINUX)

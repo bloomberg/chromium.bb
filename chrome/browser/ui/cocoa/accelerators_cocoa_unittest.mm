@@ -9,7 +9,7 @@
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
-#include "ui/base/models/accelerator_cocoa.h"
+#include "ui/base/accelerators/accelerator_cocoa.h"
 
 TEST(AcceleratorsCocoaTest, GetAccelerator) {
   AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();

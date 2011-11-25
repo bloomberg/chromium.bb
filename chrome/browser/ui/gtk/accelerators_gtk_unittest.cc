@@ -8,7 +8,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/gtk/accelerators_gtk.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/models/accelerator_gtk.h"
+#include "ui/base/accelerators/accelerator_gtk.h"
 
 TEST(AcceleratorsGtkTest, GetAccelerator) {
   AcceleratorsGtk* keymap = AcceleratorsGtk::GetInstance();

@@ -8,7 +8,7 @@
 
 #include <map>
 
-#include "ui/base/models/accelerator_cocoa.h"
+#include "ui/base/accelerators/accelerator_cocoa.h"
 
 template <typename T> struct DefaultSingletonTraits;
 

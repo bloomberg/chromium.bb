@@ -5,7 +5,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager.h"

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/hash_tables.h"
-#include "ui/base/models/accelerator_gtk.h"
+#include "ui/base/accelerators/accelerator_gtk.h"
 
 template <typename T> struct DefaultSingletonTraits;
 

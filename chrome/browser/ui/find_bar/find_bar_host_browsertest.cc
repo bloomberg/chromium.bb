@@ -24,8 +24,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "net/test/test_server.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/models/accelerator.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/find_bar_host.h"

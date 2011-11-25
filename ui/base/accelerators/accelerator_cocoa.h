@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_MODELS_ACCELERATOR_COCOA_H_
-#define UI_BASE_MODELS_ACCELERATOR_COCOA_H_
+#ifndef UI_BASE_ACCELERATORS_ACCELERATOR_COCOA_H_
+#define UI_BASE_ACCELERATORS_ACCELERATOR_COCOA_H_
 #pragma once
 
 #include <Foundation/Foundation.h>
 
 #include "base/memory/scoped_nsobject.h"
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ui_export.h"
 
 namespace ui {
@@ -41,4 +41,4 @@ class UI_EXPORT AcceleratorCocoa : public Accelerator {
 
 }  // namespace ui
 
-#endif  // UI_BASE_MODELS_ACCELERATOR_COCOA_H_
+#endif  // UI_BASE_ACCELERATORS_ACCELERATOR_COCOA_H_

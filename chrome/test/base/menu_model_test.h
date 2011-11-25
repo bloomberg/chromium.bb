@@ -6,15 +6,15 @@
 #define CHROME_TEST_BASE_MENU_MODEL_TEST_H_
 #pragma once
 
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/simple_menu_model.h"
 
 // A mix-in class to be used in addition to something that derrives from
 // testing::Test to provide some extra functionality for testing menu models.
 class MenuModelTest {
  public:
-  MenuModelTest() { }
-  virtual ~MenuModelTest() { }
+  MenuModelTest() {}
+  virtual ~MenuModelTest() {}
 
  protected:
   // A menu delegate that counts the number of times certain things are called
@@ -22,7 +22,7 @@ class MenuModelTest {
   class Delegate : public ui::SimpleMenuModel::Delegate,
                    public ui::AcceleratorProvider {
    public:
-    Delegate() : execute_count_(0), enable_count_(0) { }
+    Delegate() : execute_count_(0), enable_count_(0) {}
 
     virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
       return false;

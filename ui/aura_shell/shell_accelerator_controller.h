@@ -10,11 +10,11 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura_shell/aura_shell_export.h"
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 
 namespace ui {
 class AcceleratorManager;
-}  // namespace ui
+}
 
 namespace aura_shell {
 

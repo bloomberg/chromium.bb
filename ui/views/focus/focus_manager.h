@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/events/event.h"
 #include "views/views_export.h"

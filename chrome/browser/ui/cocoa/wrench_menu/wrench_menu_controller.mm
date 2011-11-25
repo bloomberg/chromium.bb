@@ -10,6 +10,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
@@ -18,7 +19,6 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/wrench_menu/menu_tracked_root_view.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_service.h"
@@ -26,8 +26,8 @@
 #include "content/public/browser/notification_types.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "ui/base/accelerators/accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/accelerator_cocoa.h"
 #include "ui/base/models/menu_model.h"
 
 @interface WrenchMenuController (Private)

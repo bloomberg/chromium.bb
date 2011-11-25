@@ -41,8 +41,8 @@
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_types.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/accelerator.h"
 
 #if defined(USE_LINUX_BREAKPAD)
 #include "chrome/app/breakpad_linux.h"

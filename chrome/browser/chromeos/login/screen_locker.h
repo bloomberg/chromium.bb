@@ -13,7 +13,7 @@
 #include "base/time.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 
 namespace chromeos {
 

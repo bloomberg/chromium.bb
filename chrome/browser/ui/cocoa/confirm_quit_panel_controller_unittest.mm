@@ -6,7 +6,7 @@
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/confirm_quit_panel_controller.h"
 #include "testing/gtest_mac.h"
-#include "ui/base/models/accelerator_cocoa.h"
+#include "ui/base/accelerators/accelerator_cocoa.h"
 
 namespace {
 

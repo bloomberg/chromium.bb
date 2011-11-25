@@ -8,8 +8,8 @@
 #include "base/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/accelerators/accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/models/accelerator_cocoa.h"
 #include "ui/base/models/simple_menu_model.h"
 
 @interface MenuController (Private)

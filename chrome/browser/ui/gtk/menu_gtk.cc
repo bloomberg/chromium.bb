@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/views/event_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/models/accelerator_gtk.h"
+#include "ui/base/accelerators/accelerator_gtk.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/gtk_util.h"

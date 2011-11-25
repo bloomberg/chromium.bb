@@ -8,8 +8,8 @@
 // It also defines the < operator so that it can be used as a key in a std::map.
 //
 
-#ifndef UI_BASE_MODELS_ACCELERATOR_H_
-#define UI_BASE_MODELS_ACCELERATOR_H_
+#ifndef UI_BASE_ACCELERATORS_ACCELERATOR_H_
+#define UI_BASE_ACCELERATORS_ACCELERATOR_H_
 #pragma once
 
 #include "base/string16.h"
@@ -126,4 +126,4 @@ class AcceleratorProvider {
 
 }  // namespace ui
 
-#endif  // UI_BASE_MODELS_ACCELERATOR_H_
+#endif  // UI_BASE_ACCELERATORS_ACCELERATOR_H_

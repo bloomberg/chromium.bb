@@ -8,8 +8,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "ui/base/models/accelerator.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "views/view.h"
 

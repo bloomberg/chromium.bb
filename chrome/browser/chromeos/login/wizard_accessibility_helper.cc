@@ -17,8 +17,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/accelerator.h"
 #include "views/view.h"
 
 namespace chromeos {

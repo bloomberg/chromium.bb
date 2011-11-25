@@ -5,16 +5,16 @@
 #import "chrome/browser/ui/cocoa/fullscreen_exit_bubble_controller.h"
 
 #include "base/mac/mac_util.h"
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/site_instance.h"
 #include "testing/gtest_mac.h"
-#include "ui/base/models/accelerator_cocoa.h"
+#include "ui/base/accelerators/accelerator_cocoa.h"
 
 @interface FullscreenExitBubbleController(JustForTesting)
 // Already defined.

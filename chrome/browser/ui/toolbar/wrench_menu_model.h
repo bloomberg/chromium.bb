@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/simple_menu_model.h"
 

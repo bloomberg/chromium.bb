@@ -10,8 +10,8 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/wizard_accessibility_handler.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "ui/base/models/accelerator.h"
 
 class Profile;
 namespace views {

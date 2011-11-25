@@ -4,7 +4,7 @@
 
 #include "views/accessible_pane_view.h"
 
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"

@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/cocoa_protocols.h"
-#include "ui/base/models/accelerator_cocoa.h"
+#include "ui/base/accelerators/accelerator_cocoa.h"
 
 @class ConfirmQuitFrameView;
 

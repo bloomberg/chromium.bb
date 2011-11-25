@@ -7,5 +7,5 @@
 // linker will know to include the symbols, defined by these headers, in the
 // resulting dynamic library (ui.dll).
 
-#include "ui/base/models/accelerator.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/models/table_model_observer.h"
