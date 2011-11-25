@@ -67,6 +67,7 @@ struct wayland_output {
 
 	struct {
 		struct wl_surface	*surface;
+		struct wl_shell_surface	*shell_surface;
 		struct wl_egl_window	*egl_window;
 	} parent;
 	EGLSurface egl_surface;
@@ -281,7 +282,11 @@ wayland_compositor_create_output(struct wayland_compositor *c,
 		return -1;
 	}
 
-	wl_shell_set_toplevel(c->parent.shell, output->parent.surface);
+	output->parent.shell_surface =
+		wl_shell_get_shell_surface(c->parent.shell,
+					   output->parent.surface);
+	/* FIXME: add shell_surface listener for resizing */
+	wl_shell_surface_set_toplevel(output->parent.shell_surface);
 
 	glClearColor(0, 0, 0, 0.5);
 
@@ -344,23 +349,6 @@ display_handle_mode(void *data,
 static const struct wl_output_listener output_listener = {
 	display_handle_geometry,
 	display_handle_mode
-};
-
-/* parent shell interface */
-static void
-handle_configure(void *data, struct wl_shell *shell,
-		 uint32_t time, uint32_t edges,
-		 struct wl_surface *surface, int32_t width, int32_t height)
-{
-#if 0
-	struct output *output = wl_surface_get_user_data(surface);
-
-	/* FIXME: add resize? */
-#endif
-}
-
-static const struct wl_shell_listener shell_listener = {
-	handle_configure,
 };
 
 /* parent input interface */
@@ -482,7 +470,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		c->parent.shell =
 			wl_display_bind(display, id, &wl_shell_interface);
-		wl_shell_add_listener(c->parent.shell, &shell_listener, c);
 	}
 }
 

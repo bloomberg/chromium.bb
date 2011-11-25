@@ -103,6 +103,7 @@ struct window {
 	struct display *display;
 	struct window *parent;
 	struct wl_surface *surface;
+	struct wl_shell_surface *shell_surface;
 	char *title;
 	struct rectangle allocation, saved_allocation, server_allocation;
 	int x, y;
@@ -749,19 +750,17 @@ window_get_resize_dx_dy(struct window *window, int *x, int *y)
 static void
 window_set_type(struct window *window)
 {
-	struct display *display = window->display;
-
 	switch (window->type) {
 	case TYPE_FULLSCREEN:
-		wl_shell_set_fullscreen(display->shell, window->surface);
+		wl_shell_surface_set_fullscreen(window->shell_surface);
 		break;
 	case TYPE_TOPLEVEL:
-		wl_shell_set_toplevel(display->shell, window->surface);
+		wl_shell_surface_set_toplevel(window->shell_surface);
 		break;
 	case TYPE_TRANSIENT:
-		wl_shell_set_transient(display->shell, window->surface,
-				       window->parent->surface,
-				       window->x, window->y, 0);
+		wl_shell_surface_set_transient(window->shell_surface,
+					       window->parent->shell_surface,
+					       window->x, window->y, 0);
 		break;
 	case TYPE_CUSTOM:
 		break;
@@ -1009,6 +1008,7 @@ window_destroy(struct window *window)
 			input->keyboard_focus = NULL;
 	}
 
+	wl_shell_surface_destroy(window->shell_surface);
 	wl_surface_destroy(window->surface);
 	wl_list_remove(&window->link);
 	free(window);
@@ -1102,6 +1102,12 @@ struct wl_surface *
 window_get_wl_surface(struct window *window)
 {
 	return window->surface;
+}
+
+struct wl_shell_surface *
+window_get_wl_shell_surface(struct window *window)
+{
+	return window->shell_surface;
 }
 
 static int
@@ -1269,8 +1275,8 @@ window_handle_button(void *data,
 	    button == BTN_LEFT && state == 1) {
 		switch (location) {
 		case WINDOW_TITLEBAR:
-			wl_shell_move(window->display->shell,
-				      window->surface, input_device, time);
+			wl_shell_surface_move(window->shell_surface,
+					      input_device, time);
 			break;
 		case WINDOW_RESIZING_TOP:
 		case WINDOW_RESIZING_BOTTOM:
@@ -1280,9 +1286,9 @@ window_handle_button(void *data,
 		case WINDOW_RESIZING_TOP_RIGHT:
 		case WINDOW_RESIZING_BOTTOM_LEFT:
 		case WINDOW_RESIZING_BOTTOM_RIGHT:
-			wl_shell_resize(window->display->shell,
-					window->surface, input_device, time,
-					location);
+			wl_shell_surface_resize(window->shell_surface,
+						input_device, time,
+						location);
 			break;
 		case WINDOW_CLIENT_AREA:
 			if (window->button_handler)
@@ -1685,17 +1691,16 @@ input_receive_selection_data(struct input *input, const char *mime_type,
 void
 window_move(struct window *window, struct input *input, uint32_t time)
 {
-	if (window->display->shell)
-		wl_shell_move(window->display->shell,
-			      window->surface, input->input_device, time);
+	wl_shell_surface_move(window->shell_surface,
+			      input->input_device, time);
 }
 
 static void
-handle_configure(void *data, struct wl_shell *shell,
+handle_configure(void *data, struct wl_shell_surface *shell_surface,
 		 uint32_t time, uint32_t edges,
-		 struct wl_surface *surface, int32_t width, int32_t height)
+		 int32_t width, int32_t height)
 {
-	struct window *window = wl_surface_get_user_data(surface);
+	struct window *window = data;
 	int32_t child_width, child_height;
 
 	/* FIXME: this is probably the wrong place to check for width
@@ -1722,7 +1727,7 @@ handle_configure(void *data, struct wl_shell *shell,
 	}
 }
 
-static const struct wl_shell_listener shell_listener = {
+static const struct wl_shell_surface_listener shell_surface_listener = {
 	handle_configure,
 };
 
@@ -1961,6 +1966,8 @@ window_create_internal(struct display *display, struct window *parent,
 	window->display = display;
 	window->parent = parent;
 	window->surface = wl_compositor_create_surface(display->compositor);
+	window->shell_surface = wl_shell_get_shell_surface(display->shell,
+							   window->surface);
 	window->allocation.x = 0;
 	window->allocation.y = 0;
 	window->allocation.width = width;
@@ -1983,6 +1990,9 @@ window_create_internal(struct display *display, struct window *parent,
 
 	wl_surface_set_user_data(window->surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
+
+	wl_shell_surface_add_listener(window->shell_surface,
+				      &shell_surface_listener, window);
 
 	return window;
 }
@@ -2128,7 +2138,6 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		display_add_input(d, id);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		d->shell = wl_display_bind(display, id, &wl_shell_interface);
-		wl_shell_add_listener(d->shell, &shell_listener, d);
 	} else if (strcmp(interface, "wl_shm") == 0) {
 		d->shm = wl_display_bind(display, id, &wl_shm_interface);
 	} else if (strcmp(interface, "wl_data_device_manager") == 0) {

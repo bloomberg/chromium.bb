@@ -63,6 +63,7 @@ struct window {
 
 	struct wl_egl_window *native;
 	struct wl_surface *surface;
+	struct wl_shell_surface *shell_surface;
 	EGLSurface egl_surface;
 };
 
@@ -198,6 +199,8 @@ create_surface(struct window *window)
 	};
 	
 	window->surface = wl_compositor_create_surface(display->compositor);
+	window->shell_surface = wl_shell_get_shell_surface(display->shell,
+							   window->surface);
 	window->native =
 		wl_egl_window_create(window->surface,
 				     window->geometry.width,
@@ -208,7 +211,7 @@ create_surface(struct window *window)
 				       window->native,
 				       surface_attribs);
 
-	wl_shell_set_toplevel(display->shell, window->surface);
+	wl_shell_surface_set_toplevel(window->shell_surface);
 
 	ret = eglMakeCurrent(window->display->egl.dpy, window->egl_surface,
 			     window->egl_surface, window->display->egl.ctx);

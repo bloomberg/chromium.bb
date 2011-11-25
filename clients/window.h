@@ -228,6 +228,9 @@ window_get_surface(struct window *window);
 struct wl_surface *
 window_get_wl_surface(struct window *window);
 
+struct wl_shell_surface *
+window_get_wl_shell_surface(struct window *window);
+
 void
 window_flush(struct window *window);
 

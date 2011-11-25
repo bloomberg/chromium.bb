@@ -45,6 +45,7 @@ struct window {
 	struct display *display;
 	int width, height;
 	struct wl_surface *surface;
+	struct wl_shell_surface *shell_surface;
 	struct wl_buffer *buffer;
 	void *data;
 };
@@ -100,12 +101,14 @@ create_window(struct display *display, int width, int height)
 	window->width = width;
 	window->height = height;
 	window->surface = wl_compositor_create_surface(display->compositor);
+	window->shell_surface = wl_shell_get_shell_surface(display->shell,
+							   window->surface);
 	window->buffer = create_shm_buffer(display,
 					   width, height,
 					   WL_SHM_FORMAT_XRGB32,
 					   &window->data);
 
-	wl_shell_set_toplevel(display->shell, window->surface);
+	wl_shell_surface_set_toplevel(window->shell_surface);
 
 	return window;
 }

@@ -70,8 +70,10 @@ enum shell_surface_type {
 };
 
 struct shell_surface {
+	struct wl_resource resource;
+
 	struct wlsc_surface *surface;
-	struct wl_listener destroy_listener;
+	struct wl_listener surface_destroy_listener;
 
 	enum shell_surface_type type;
 	int32_t saved_x, saved_y;
@@ -86,47 +88,10 @@ struct wlsc_move_grab {
 	int32_t dx, dy;
 };
 
-static void
-destroy_shell_surface(struct shell_surface *priv)
-{
-	wl_list_remove(&priv->destroy_listener.link);
-	wl_list_remove(&priv->link);
-	free(priv);
-}
-
-static void
-handle_shell_surface_destroy(struct wl_listener *listener,
-			     struct wl_resource *resource, uint32_t time)
-{
-	struct shell_surface *priv =
-		container_of(listener, struct shell_surface, destroy_listener);
-	destroy_shell_surface(priv);
-}
-
 static struct shell_surface *
 get_shell_surface(struct wlsc_surface *surface)
 {
-	struct shell_surface *priv;
-
-	if (surface->shell_priv)
-		return surface->shell_priv;
-
-	priv = calloc(1, sizeof *priv);
-	if (!priv)
-		return NULL;
-
-	priv->destroy_listener.func = handle_shell_surface_destroy;
-	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
-		       &priv->destroy_listener.link);
-
-	surface->shell_priv = priv;
-	priv->surface = surface;
-	/* init link so its safe to always remove it in destroy_shell_surface */
-	wl_list_init(&priv->link);
-
-	priv->type = SHELL_SURFACE_NORMAL;
-
-	return priv;
+	return surface->shell_priv;
 }
 
 static void
@@ -185,14 +150,13 @@ wlsc_surface_move(struct wlsc_surface *es,
 }
 
 static void
-shell_move(struct wl_client *client, struct wl_resource *resource,
-	   struct wl_resource *surface_resource,
-	   struct wl_resource *input_resource, uint32_t time)
+shell_surface_move(struct wl_client *client, struct wl_resource *resource,
+		   struct wl_resource *input_resource, uint32_t time)
 {
 	struct wlsc_input_device *wd = input_resource->data;
-	struct wlsc_surface *es = surface_resource->data;
+	struct shell_surface *shsurf = resource->data;
 
-	if (wlsc_surface_move(es, wd, time) < 0)
+	if (wlsc_surface_move(shsurf->surface, wd, time) < 0)
 		wl_resource_post_no_memory(resource);
 }
 
@@ -200,8 +164,7 @@ struct wlsc_resize_grab {
 	struct wl_grab grab;
 	uint32_t edges;
 	int32_t dx, dy, width, height;
-	struct wlsc_surface *surface;
-	struct wl_resource *resource;
+	struct shell_surface *shsurf;
 };
 
 static void
@@ -210,28 +173,27 @@ resize_grab_motion(struct wl_grab *grab,
 {
 	struct wlsc_resize_grab *resize = (struct wlsc_resize_grab *) grab;
 	struct wl_input_device *device = grab->input_device;
-	struct wl_surface *surface = &resize->surface->surface;
 	int32_t width, height;
 
-	if (resize->edges & WL_SHELL_RESIZE_LEFT) {
+	if (resize->edges & WL_SHELL_SURFACE_RESIZE_LEFT) {
 		width = device->grab_x - x + resize->width;
-	} else if (resize->edges & WL_SHELL_RESIZE_RIGHT) {
+	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_RIGHT) {
 		width = x - device->grab_x + resize->width;
 	} else {
 		width = resize->width;
 	}
 
-	if (resize->edges & WL_SHELL_RESIZE_TOP) {
+	if (resize->edges & WL_SHELL_SURFACE_RESIZE_TOP) {
 		height = device->grab_y - y + resize->height;
-	} else if (resize->edges & WL_SHELL_RESIZE_BOTTOM) {
+	} else if (resize->edges & WL_SHELL_SURFACE_RESIZE_BOTTOM) {
 		height = y - device->grab_y + resize->height;
 	} else {
 		height = resize->height;
 	}
 
-	wl_resource_post_event(resize->resource,
-			       WL_SHELL_CONFIGURE, time, resize->edges,
-			       surface, width, height);
+	wl_resource_post_event(&resize->shsurf->resource,
+			       WL_SHELL_SURFACE_CONFIGURE, time, resize->edges,
+			       width, height);
 }
 
 static void
@@ -253,12 +215,12 @@ static const struct wl_grab_interface resize_grab_interface = {
 };
 
 static int
-wlsc_surface_resize(struct wlsc_surface *es,
+wlsc_surface_resize(struct shell_surface *shsurf,
 		    struct wlsc_input_device *wd,
-		    uint32_t time, uint32_t edges,
-		    struct wl_resource *resource)
+		    uint32_t time, uint32_t edges)
 {
 	struct wlsc_resize_grab *resize;
+	struct wlsc_surface *es = shsurf->surface;
 	enum wlsc_pointer_type pointer = WLSC_POINTER_LEFT_PTR;
 
 	/* FIXME: Reject if fullscreen */
@@ -273,36 +235,35 @@ wlsc_surface_resize(struct wlsc_surface *es,
 	resize->dy = es->y - wd->input_device.grab_y;
 	resize->width = es->width;
 	resize->height = es->height;
-	resize->surface = es;
-	resize->resource = resource;
+	resize->shsurf = shsurf;
 
 	if (edges == 0 || edges > 15 ||
 	    (edges & 3) == 3 || (edges & 12) == 12)
 		return 0;
 
 	switch (edges) {
-	case WL_SHELL_RESIZE_TOP:
+	case WL_SHELL_SURFACE_RESIZE_TOP:
 		pointer = WLSC_POINTER_TOP;
 		break;
-	case WL_SHELL_RESIZE_BOTTOM:
+	case WL_SHELL_SURFACE_RESIZE_BOTTOM:
 		pointer = WLSC_POINTER_BOTTOM;
 		break;
-	case WL_SHELL_RESIZE_LEFT:
+	case WL_SHELL_SURFACE_RESIZE_LEFT:
 		pointer = WLSC_POINTER_LEFT;
 		break;
-	case WL_SHELL_RESIZE_TOP_LEFT:
+	case WL_SHELL_SURFACE_RESIZE_TOP_LEFT:
 		pointer = WLSC_POINTER_TOP_LEFT;
 		break;
-	case WL_SHELL_RESIZE_BOTTOM_LEFT:
+	case WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT:
 		pointer = WLSC_POINTER_BOTTOM_LEFT;
 		break;
-	case WL_SHELL_RESIZE_RIGHT:
+	case WL_SHELL_SURFACE_RESIZE_RIGHT:
 		pointer = WLSC_POINTER_RIGHT;
 		break;
-	case WL_SHELL_RESIZE_TOP_RIGHT:
+	case WL_SHELL_SURFACE_RESIZE_TOP_RIGHT:
 		pointer = WLSC_POINTER_TOP_RIGHT;
 		break;
-	case WL_SHELL_RESIZE_BOTTOM_RIGHT:
+	case WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT:
 		pointer = WLSC_POINTER_BOTTOM_RIGHT;
 		break;
 	}
@@ -319,51 +280,46 @@ wlsc_surface_resize(struct wlsc_surface *es,
 }
 
 static void
-shell_resize(struct wl_client *client, struct wl_resource *resource,
-	     struct wl_resource *surface_resource,
-	     struct wl_resource *input_resource, uint32_t time, uint32_t edges)
+shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
+		     struct wl_resource *input_resource, uint32_t time,
+		     uint32_t edges)
 {
 	struct wlsc_input_device *wd = input_resource->data;
-	struct wlsc_surface *es = surface_resource->data;
+	struct shell_surface *shsurf = resource->data;
 
 	/* FIXME: Reject if fullscreen */
 
-	if (wlsc_surface_resize(es, wd, time, edges, resource) < 0)
+	if (wlsc_surface_resize(shsurf, wd, time, edges) < 0)
 		wl_resource_post_no_memory(resource);
 }
 
 static void
-shell_set_toplevel(struct wl_client *client,
-		   struct wl_resource *resource,
-		   struct wl_resource *surface_resource)
+shell_surface_set_toplevel(struct wl_client *client,
+			   struct wl_resource *resource)
 
 {
-	struct wlsc_surface *es = surface_resource->data;
-	struct shell_surface *priv;
+	struct shell_surface *shsurf = resource->data;
+	struct wlsc_surface *es = shsurf->surface;
 
-	priv = get_shell_surface(es);
-	if (priv->type == SHELL_SURFACE_FULLSCREEN) {
-		es->x = priv->saved_x;
-		es->y = priv->saved_y;
+	if (shsurf->type == SHELL_SURFACE_FULLSCREEN) {
+		es->x = shsurf->saved_x;
+		es->y = shsurf->saved_y;
 	}
 
 	wlsc_surface_damage(es);
-	priv->type = SHELL_SURFACE_TOPLEVEL;
+	shsurf->type = SHELL_SURFACE_TOPLEVEL;
 	es->fullscreen_output = NULL;
 }
 
 static void
-shell_set_transient(struct wl_client *client,
-		    struct wl_resource *resource,
-		    struct wl_resource *surface_resource,
-		    struct wl_resource *parent_resource,
-		    int x, int y, uint32_t flags)
+shell_surface_set_transient(struct wl_client *client,
+			    struct wl_resource *resource,
+			    struct wl_resource *parent_resource,
+			    int x, int y, uint32_t flags)
 {
-	struct wlsc_surface *es = surface_resource->data;
+	struct shell_surface *shsurf = resource->data;
+	struct wlsc_surface *es = shsurf->surface;
 	struct wlsc_surface *pes = parent_resource->data;
-	struct shell_surface *priv;
-
-	priv = get_shell_surface(es);
 
 	/* assign to parents output  */
 	es->output = pes->output;
@@ -372,20 +328,17 @@ shell_set_transient(struct wl_client *client,
 	es->y = pes->y + y;
 
 	wlsc_surface_damage(es);
-	priv->type = SHELL_SURFACE_TRANSIENT;
+	shsurf->type = SHELL_SURFACE_TRANSIENT;
 }
 
 static void
-shell_set_fullscreen(struct wl_client *client,
-		     struct wl_resource *resource,
-		     struct wl_resource *surface_resource)
+shell_surface_set_fullscreen(struct wl_client *client,
+			     struct wl_resource *resource)
 
 {
-	struct wlsc_surface *es = surface_resource->data;
+	struct shell_surface *shsurf = resource->data;
+	struct wlsc_surface *es = shsurf->surface;
 	struct wlsc_output *output;
-	struct shell_surface *priv;
-
-	priv = get_shell_surface(es);
 
 	/* FIXME: Fullscreen on first output */
 	/* FIXME: Handle output going away */
@@ -393,21 +346,87 @@ shell_set_fullscreen(struct wl_client *client,
 			      struct wlsc_output, link);
 	es->output = output;
 
-	priv->saved_x = es->x;
-	priv->saved_y = es->y;
+	shsurf->saved_x = es->x;
+	shsurf->saved_y = es->y;
 	es->x = (output->current->width - es->width) / 2;
 	es->y = (output->current->height - es->height) / 2;
 	es->fullscreen_output = output;
 	wlsc_surface_damage(es);
-	priv->type = SHELL_SURFACE_FULLSCREEN;
+	shsurf->type = SHELL_SURFACE_FULLSCREEN;
 }
 
-static const struct wl_shell_interface shell_interface = {
-	shell_move,
-	shell_resize,
-	shell_set_toplevel,
-	shell_set_transient,
-	shell_set_fullscreen
+static const struct wl_shell_surface_interface shell_surface_implementation = {
+	shell_surface_move,
+	shell_surface_resize,
+	shell_surface_set_toplevel,
+	shell_surface_set_transient,
+	shell_surface_set_fullscreen
+};
+
+static void
+destroy_shell_surface(struct wl_resource *resource)
+{
+	struct shell_surface *shsurf = resource->data;
+
+	/* in case cleaning up a dead client destroys shell_surface first */
+	if (shsurf->surface)
+		wl_list_remove(&shsurf->surface_destroy_listener.link);
+
+	wl_list_remove(&shsurf->link);
+	free(shsurf);
+}
+
+static void
+shell_handle_surface_destroy(struct wl_listener *listener,
+			     struct wl_resource *resource, uint32_t time)
+{
+	struct shell_surface *shsurf = container_of(listener,
+						    struct shell_surface,
+						    surface_destroy_listener);
+
+	shsurf->surface = NULL;
+	wl_resource_destroy(&shsurf->resource, time);
+}
+
+static void
+shell_create_shell_surface(struct wl_client *client,
+			   struct wl_resource *resource,
+			   uint32_t id,
+			   struct wl_resource *surface_resource)
+{
+	struct wlsc_surface *surface = surface_resource->data;
+	struct shell_surface *shsurf;
+
+	shsurf = calloc(1, sizeof *shsurf);
+	if (!shsurf) {
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
+	shsurf->resource.destroy = destroy_shell_surface;
+	shsurf->resource.object.id = id;
+	shsurf->resource.object.interface = &wl_shell_surface_interface;
+	shsurf->resource.object.implementation =
+		(void (**)(void)) &shell_surface_implementation;
+	shsurf->resource.data = shsurf;
+
+	shsurf->surface = surface;
+	shsurf->surface_destroy_listener.func = shell_handle_surface_destroy;
+	wl_list_insert(surface->surface.resource.destroy_listener_list.prev,
+		       &shsurf->surface_destroy_listener.link);
+
+	/* init link so its safe to always remove it in destroy_shell_surface */
+	wl_list_init(&shsurf->link);
+
+	shsurf->type = SHELL_SURFACE_NORMAL;
+
+	surface->shell_priv = shsurf;
+
+	wl_client_add_resource(client, &shsurf->resource);
+}
+
+static const struct wl_shell_interface shell_implementation = {
+	shell_create_shell_surface
 };
 
 static void
@@ -567,13 +586,13 @@ move_binding(struct wl_input_device *device, uint32_t time,
 {
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
-	struct shell_surface *priv;
+	struct shell_surface *shsurf;
 
 	if (surface == NULL)
 		return;
 
-	priv = get_shell_surface(surface);
-	switch (priv->type) {
+	shsurf = get_shell_surface(surface);
+	switch (shsurf->type) {
 		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_BACKGROUND:
 		case SHELL_SURFACE_FULLSCREEN:
@@ -591,16 +610,15 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 {
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
-	struct wl_resource *resource;
 	uint32_t edges = 0;
 	int32_t x, y;
-	struct shell_surface *priv;
+	struct shell_surface *shsurf;
 
 	if (surface == NULL)
 		return;
 	
-	priv = get_shell_surface(surface);
-	switch (priv->type) {
+	shsurf = get_shell_surface(surface);
+	switch (shsurf->type) {
 		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_BACKGROUND:
 		case SHELL_SURFACE_FULLSCREEN:
@@ -613,25 +631,21 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 	y = device->grab_y - surface->y;
 
 	if (x < surface->width / 3)
-		edges |= WL_SHELL_RESIZE_LEFT;
+		edges |= WL_SHELL_SURFACE_RESIZE_LEFT;
 	else if (x < 2 * surface->width / 3)
 		edges |= 0;
 	else
-		edges |= WL_SHELL_RESIZE_RIGHT;
+		edges |= WL_SHELL_SURFACE_RESIZE_RIGHT;
 
 	if (y < surface->height / 3)
-		edges |= WL_SHELL_RESIZE_TOP;
+		edges |= WL_SHELL_SURFACE_RESIZE_TOP;
 	else if (y < 2 * surface->height / 3)
 		edges |= 0;
 	else
-		edges |= WL_SHELL_RESIZE_BOTTOM;
+		edges |= WL_SHELL_SURFACE_RESIZE_BOTTOM;
 
-	resource = /* Find shell resource for surface client */ 0;
-
-	/* ... or use wl_shell_surface */
-
-	wlsc_surface_resize(surface, (struct wlsc_input_device *) device,
-			    time, edges, resource);
+	wlsc_surface_resize(shsurf, (struct wlsc_input_device *) device,
+			    time, edges);
 }
 
 static void
@@ -889,7 +903,7 @@ bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	struct wl_shell *shell = data;
 
 	wl_client_add_object(client, &wl_shell_interface,
-			     &shell_interface, id, shell);
+			     &shell_implementation, id, shell);
 }
 
 static void
