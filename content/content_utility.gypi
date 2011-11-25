@@ -17,13 +17,4 @@
   'include_dirs': [
     '..',
   ],
-  'conditions': [
-    ['OS=="mac"', {
-      'link_settings': {
-        'mac_bundle_resources': [
-          'utility/utility.sb',
-        ],
-      },
-    }],
-  ],
 }

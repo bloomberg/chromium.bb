@@ -54,4 +54,12 @@ bool ShellContentClient::SandboxPlugin(CommandLine* command_line,
 }
 #endif
 
+#if defined(OS_MACOSX)
+bool ShellContentClient::GetSandboxProfileForSandboxType(
+    int sandbox_type,
+    int* sandbox_profile_resource_id) const {
+  return false;
+}
+#endif
+
 }  // namespace content

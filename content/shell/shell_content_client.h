@@ -31,6 +31,12 @@ class ShellContentClient : public ContentClient {
   virtual bool SandboxPlugin(CommandLine* command_line,
                              sandbox::TargetPolicy* policy) OVERRIDE;
 #endif
+
+#if defined(OS_MACOSX)
+  virtual bool GetSandboxProfileForSandboxType(
+      int sandbox_type,
+      int* sandbox_profile_resource_id) const OVERRIDE;
+#endif
 };
 
 }  // namespace content

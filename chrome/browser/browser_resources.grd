@@ -167,9 +167,6 @@
       <if expr="pp_ifdef('chromeos') and pp_ifdef('_google_chrome')">
         <include name="IDR_HELP_MANIFEST" file="resources\help_app\manifest.json" type="BINDATA" />
       </if>
-      <if expr="pp_ifdef('is_macosx')">
-        <include name="IDR_NACL_SANDBOX_DEFINITION" file="nacl_loader.sb" type="BINDATA" />
-      </if>
     </includes>
   </release>
 </grit>

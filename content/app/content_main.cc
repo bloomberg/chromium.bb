@@ -40,6 +40,7 @@
 #include "base/mach_ipc_mac.h"
 #include "base/system_monitor/system_monitor.h"
 #include "content/browser/mach_broker_mac.h"
+#include "content/common/sandbox_init_mac.h"
 #endif // OS_WIN
 
 #if defined(OS_POSIX)

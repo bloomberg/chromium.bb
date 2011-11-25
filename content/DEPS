@@ -18,8 +18,12 @@ include_rules = [
   # TODO(ben): remove this
   "+content/public/browser/native_web_keyboard_event.h",
 
+  "+grit/content_resources.h",
+  "+grit/webkit_chromium_resources.h",
+  "+grit/webkit_resources.h",
+  "+grit/webkit_strings.h",
+
   "+dbus",
-  "+grit",
   "+gpu",
   "+net",
   "+ppapi",

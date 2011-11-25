@@ -14,6 +14,9 @@
       <include name="IDR_I18N_TEMPLATE_JS" file="..\browser\resources\shared\js\i18n_template.js" type="BINDATA" />
       <include name="IDR_JSTEMPLATE_JS" file="..\browser\resources\shared\js\jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEB_APP_SCHEMA" file="web_app_schema.json" type="BINDATA" />
+      <if expr="is_macosx">
+        <include name="IDR_NACL_SANDBOX_PROFILE" file="nacl_loader.sb" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

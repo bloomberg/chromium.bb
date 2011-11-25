@@ -246,11 +246,6 @@
       'sources!': [
         'common/process_watcher_posix.cc',
       ],
-      'link_settings': {
-        'mac_bundle_resources': [
-          'renderer/renderer.sb',
-        ],
-      },
     }],
     ['OS=="win" and win_use_allocator_shim==1', {
       'dependencies': [

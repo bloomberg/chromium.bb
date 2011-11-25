@@ -56,6 +56,7 @@
     'public/common/resource_dispatcher_delegate.h',
     'public/common/result_codes.h',
     'public/common/sandbox_init.h',
+    'public/common/sandbox_type_mac.h',
     'public/common/security_style.h',
     'public/common/serialized_script_value.cc',
     'public/common/serialized_script_value.h',
@@ -216,6 +217,7 @@
     'common/resource_dispatcher.h',
     'common/resource_messages.h',
     'common/sandbox_init_mac.cc',
+    'common/sandbox_init_mac.h',
     'common/sandbox_init_win.cc',
     'common/sandbox_mac.h',
     'common/sandbox_mac.mm',
@@ -268,13 +270,6 @@
         'common/sandbox_policy.cc',
         'common/sandbox_policy.h',
       ],
-    }],
-    ['OS=="mac"', {
-      'link_settings': {
-        'mac_bundle_resources': [
-          'common/common.sb',
-        ],
-      },
     }],
     ['toolkit_uses_gtk == 1', {
       'dependencies': [

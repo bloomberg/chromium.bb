@@ -282,8 +282,12 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       process_type == switches::kZygoteProcess ||
 #endif
 #if defined(OS_MACOSX)
-      // Mac needs them to for scrollbar related images.
+      // Mac needs them too for scrollbar related images and for sandbox
+      // profiles.
       process_type == switches::kWorkerProcess ||
+      process_type == switches::kNaClLoaderProcess ||
+      process_type == switches::kPpapiPluginProcess ||
+      process_type == switches::kPpapiBrokerProcess ||
 #endif
       process_type == switches::kRendererProcess ||
       process_type == switches::kUtilityProcess;
@@ -607,7 +611,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
     // sources.  The language should have been passed in to us from the
     // browser process as a command line flag.
     DCHECK(command_line.HasSwitch(switches::kLang) ||
-           process_type == switches::kZygoteProcess);
+           process_type == switches::kZygoteProcess ||
+           process_type == switches::kNaClLoaderProcess ||
+           process_type == switches::kPpapiBrokerProcess ||
+           process_type == switches::kPpapiPluginProcess);
 
     // TODO(markusheintz): The command line flag --lang is actually processed
     // by the CommandLinePrefStore, and made available through the PrefService

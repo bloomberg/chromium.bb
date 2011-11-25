@@ -121,7 +121,7 @@ TEST_F(MacSandboxTest, FontLoadingTest) {
   file_util::WriteFileDescriptor(fileno(temp_file),
       static_cast<const char *>(font_data.memory()), font_data_size);
 
-  ASSERT_TRUE(RunTestInSandbox(Sandbox::SANDBOX_TYPE_RENDERER,
+  ASSERT_TRUE(RunTestInSandbox(content::SANDBOX_TYPE_RENDERER,
                   "FontLoadingTestCase", temp_file_path.value().c_str()));
   temp_file_closer.reset();
   ASSERT_TRUE(file_util::Delete(temp_file_path, false));

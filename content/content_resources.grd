@@ -20,12 +20,12 @@ content_resources.rc file to the respective targets.
   <release seq="1">
     <includes>
       <if expr="is_macosx">
-        <include name="IDR_GPU_SANDBOX_DEFINITION" file="browser/gpu.sb" type="BINDATA" />
-        <include name="IDR_WORKER_SANDBOX_DEFINITION" file="browser/worker.sb" type="BINDATA" />
-        <include name="IDR_COMMON_SANDBOX_DEFINITION" file="common/common.sb" type="BINDATA" />
-        <include name="IDR_PPAPI_SANDBOX_DEFINITION" file="ppapi_plugin/ppapi.sb" type="BINDATA" />
-        <include name="IDR_RENDERER_SANDBOX_DEFINITION" file="renderer/renderer.sb" type="BINDATA" />
-        <include name="IDR_UTILITY_SANDBOX_DEFINITION" file="utility/utility.sb" type="BINDATA" />
+        <include name="IDR_GPU_SANDBOX_PROFILE" file="browser/gpu.sb" type="BINDATA" />
+        <include name="IDR_WORKER_SANDBOX_PROFILE" file="browser/worker.sb" type="BINDATA" />
+        <include name="IDR_COMMON_SANDBOX_PROFILE" file="common/common.sb" type="BINDATA" />
+        <include name="IDR_PPAPI_SANDBOX_PROFILE" file="ppapi_plugin/ppapi.sb" type="BINDATA" />
+        <include name="IDR_RENDERER_SANDBOX_PROFILE" file="renderer/renderer.sb" type="BINDATA" />
+        <include name="IDR_UTILITY_SANDBOX_PROFILE" file="utility/utility.sb" type="BINDATA" />
       </if>
     </includes>
   </release>

@@ -1,4 +1,5 @@
 include_rules = [
   # Testing utilities can access anything in content/
   "+content",
+  "+ui/base/resource/data_pack.h"
 ]

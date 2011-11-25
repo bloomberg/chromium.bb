@@ -4447,9 +4447,6 @@
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
               '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
             ],
-            'mac_bundle_resources': [
-              'browser/nacl_loader.sb',
-            ],
           },
           'dependencies': [
             '../content/content.gyp:closure_blocks_leopard_compat',

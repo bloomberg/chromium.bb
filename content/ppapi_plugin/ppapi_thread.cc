@@ -27,6 +27,8 @@
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
+#elif defined(OS_MACOSX)
+#include "content/common/sandbox_init_mac.h"
 #endif
 
 #if defined(OS_WIN)

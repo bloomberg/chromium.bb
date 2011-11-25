@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/gtest_prod_util.h"
+#include "content/public/common/sandbox_type_mac.h"
 
 class FilePath;
 
@@ -57,44 +58,21 @@ class Sandbox {
   typedef base::hash_map<std::string, SandboxSubstring>
       SandboxVariableSubstitions;
 
-  enum SandboxProcessType {
-    SANDBOX_TYPE_FIRST_TYPE,  // Placeholder to ease iteration.
-
-    SANDBOX_TYPE_RENDERER = SANDBOX_TYPE_FIRST_TYPE,
-
-    // The worker process uses the most restrictive sandbox which has almost
-    // *everything* locked down. Only a couple of /System/Library/ paths and
-    // some other very basic operations (e.g., reading metadata to allow
-    // following symlinks) are permitted.
-    SANDBOX_TYPE_WORKER,
-
-    // Utility process is as restrictive as the worker process except full
-    // access is allowed to one configurable directory.
-    SANDBOX_TYPE_UTILITY,
-
-    // Native Client sandbox for the user's untrusted code.
-    SANDBOX_TYPE_NACL_LOADER,
-
-    // GPU process.
-    SANDBOX_TYPE_GPU,
-
-    // The PPAPI plugin process.
-    SANDBOX_TYPE_PPAPI,
-
-    SANDBOX_AFTER_TYPE_LAST_TYPE,  // Placeholder to ease iteration.
-  };
-
-  // Warm up System APIs that empirically need to be accessed before the Sandbox
-  // is turned on. |sandbox_type| is the type of sandbox to warm up.
-  static void SandboxWarmup(SandboxProcessType sandbox_type);
+  // Warm up System APIs that empirically need to be accessed before the
+  // sandbox is turned on. |sandbox_type| is the type of sandbox to warm up.
+  // Valid |sandbox_type| values are defined by the enum SandboxType, or can be
+  // defined by the embedder via
+  // ContentClient::GetSandboxProfileForProcessType().
+  static void SandboxWarmup(int sandbox_type);
 
   // Turns on the OS X sandbox for this process.
-  // |sandbox_type| - type of Sandbox to use.
+  // |sandbox_type| - type of Sandbox to use. See SandboxWarmup() for legal
+  // values.
   // |allowed_dir| - directory to allow access to, currently the only sandbox
   // profile that supports this is SANDBOX_TYPE_UTILITY .
   //
   // Returns true on success, false if an error occurred enabling the sandbox.
-  static bool EnableSandbox(SandboxProcessType sandbox_type,
+  static bool EnableSandbox(int sandbox_type,
                             const FilePath& allowed_dir);
 
 

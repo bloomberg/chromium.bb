@@ -51,15 +51,19 @@ class MacSandboxTest : public base::MultiProcessTest {
   // required.
   // Returns true if the test passes, false if either of the functions in
   // the corresponding MacSandboxTestCase return false.
-  bool RunTestInSandbox(sandbox::Sandbox::SandboxProcessType sandbox_type,
+  bool RunTestInSandbox(content::SandboxType sandbox_type,
                         const char* test_name,
                         const char* test_data);
 
-  // Runs the test specified by |test_name| in all the different sandbox types,
-  // one by one.
+  // Runs the test specified by |test_name| in all the different sandbox types
+  // known to content, one by one.
   // Returns true if the test passes, false if either of the functions in
   // the corresponding MacSandboxTestCase return false in any of the spawned
   // processes.
+  //
+  // DANGER DANGER DANGER:
+  // Additional sandbox types defined by the embedder (e.g. the NaCL sandbox)
+  // won't be covered by these tests.
   bool RunTestInAllSandboxTypes(const char* test_name,
                                 const char* test_data);
 };

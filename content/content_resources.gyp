@@ -23,6 +23,14 @@
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak'
+          ],
+        },
+      ],
     },
   ],
 }

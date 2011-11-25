@@ -21,17 +21,39 @@ extern "C" {
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/string16.h"
+#include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "content/common/chrome_application_mac.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "grit/content_resources.h"
 #include "unicode/uchar.h"
 #include "ui/gfx/gl/gl_surface.h"
 
 namespace {
+
+struct SandboxTypeToResourceIDMapping {
+  content::SandboxType sandbox_type;
+  int sandbox_profile_resource_id;
+};
+
+// Mapping from sandbox process types to resource IDs containing the sandbox
+// profile for all process types known to content.
+SandboxTypeToResourceIDMapping kDefaultSandboxTypeToResourceIDMapping[] = {
+  { content::SANDBOX_TYPE_RENDERER, IDR_RENDERER_SANDBOX_PROFILE },
+  { content::SANDBOX_TYPE_WORKER,   IDR_WORKER_SANDBOX_PROFILE },
+  { content::SANDBOX_TYPE_UTILITY,  IDR_UTILITY_SANDBOX_PROFILE },
+  { content::SANDBOX_TYPE_GPU,      IDR_GPU_SANDBOX_PROFILE },
+  { content::SANDBOX_TYPE_PPAPI,    IDR_PPAPI_SANDBOX_PROFILE },
+};
+
+COMPILE_ASSERT(arraysize(kDefaultSandboxTypeToResourceIDMapping) == \
+               size_t(content::SANDBOX_TYPE_AFTER_LAST_TYPE), \
+               sandbox_type_to_resource_id_mapping_incorrect);
 
 // Try to escape |c| as a "SingleEscapeCharacter" (\n, etc).  If successful,
 // returns true and appends the escape sequence to |dst|.
@@ -190,7 +212,7 @@ bool Sandbox::QuoteStringForRegex(const std::string& str_utf8,
 //     10.5.6, 10.6.0
 
 // static
-void Sandbox::SandboxWarmup(SandboxProcessType sandbox_type) {
+void Sandbox::SandboxWarmup(int sandbox_type) {
   base::mac::ScopedNSAutoreleasePool scoped_pool;
 
   { // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
@@ -247,18 +269,10 @@ void Sandbox::SandboxWarmup(SandboxProcessType sandbox_type) {
   }
 
   // Process-type dependent warm-up.
-  switch (sandbox_type) {
-    case SANDBOX_TYPE_GPU:
-      {
-         // Preload either the desktop GL or the osmesa so, depending on the
-         // --use-gl flag.
-         gfx::GLSurface::InitializeOneOff();
-      }
-      break;
-
-    default:
-      // To shut up a gcc warning.
-      break;
+  if (sandbox_type == content::SANDBOX_TYPE_GPU) {
+     // Preload either the desktop GL or the osmesa so, depending on the
+     // --use-gl flag.
+     gfx::GLSurface::InitializeOneOff();
   }
 }
 
@@ -324,64 +338,54 @@ NSString* Sandbox::BuildAllowDirectoryAccessSandboxString(
 
 // Load the appropriate template for the given sandbox type.
 // Returns the template as an NSString or nil on error.
-NSString* LoadSandboxTemplate(Sandbox::SandboxProcessType sandbox_type) {
-  // We use a custom sandbox definition file to lock things down as
-  // tightly as possible.
-  NSString* sandbox_config_filename = nil;
-  switch (sandbox_type) {
-    case Sandbox::SANDBOX_TYPE_RENDERER:
-      sandbox_config_filename = @"renderer";
+NSString* LoadSandboxTemplate(int sandbox_type) {
+  // We use a custom sandbox definition to lock things down as tightly as
+  // possible.
+  int sandbox_profile_resource_id = -1;
+
+  // Find resource id for sandbox profile to use for the specific sandbox type.
+  for (size_t i = 0;
+       i < arraysize(kDefaultSandboxTypeToResourceIDMapping);
+       ++i) {
+    if (kDefaultSandboxTypeToResourceIDMapping[i].sandbox_type ==
+        sandbox_type) {
+      sandbox_profile_resource_id =
+          kDefaultSandboxTypeToResourceIDMapping[i].sandbox_profile_resource_id;
       break;
-    case Sandbox::SANDBOX_TYPE_WORKER:
-      sandbox_config_filename = @"worker";
-      break;
-    case Sandbox::SANDBOX_TYPE_UTILITY:
-      sandbox_config_filename = @"utility";
-      break;
-    case Sandbox::SANDBOX_TYPE_NACL_LOADER:
-      // The Native Client loader is used for safeguarding the user's
-      // untrusted code within Native Client.
-      sandbox_config_filename = @"nacl_loader";
-      break;
-    case Sandbox::SANDBOX_TYPE_GPU:
-      sandbox_config_filename = @"gpu";
-      break;
-    case Sandbox::SANDBOX_TYPE_PPAPI:
-      sandbox_config_filename = @"ppapi";
-      break;
-    default:
-      NOTREACHED();
-      return nil;
+    }
+  }
+  if (sandbox_profile_resource_id == -1) {
+    // Check if the embedder knows about this sandbox process type.
+    bool sandbox_type_found =
+        content::GetContentClient()->GetSandboxProfileForSandboxType(
+            sandbox_type, &sandbox_profile_resource_id);
+    CHECK(sandbox_type_found) << "Unknown sandbox type " << sandbox_type;
   }
 
-  // Read in the sandbox profile and the common prefix file.
-  NSString* common_sandbox_prefix_path =
-      [base::mac::MainAppBundle() pathForResource:@"common"
-                                          ofType:@"sb"];
+  base::StringPiece sandbox_definition =
+      content::GetContentClient()->GetDataResource(sandbox_profile_resource_id);
+  if (sandbox_definition.empty()) {
+    LOG(FATAL) << "Failed to load the sandbox profile (resource id "
+               << sandbox_profile_resource_id << ")";
+    return nil;
+  }
+
+  base::StringPiece common_sandbox_definition =
+      content::GetContentClient()->GetDataResource(IDR_COMMON_SANDBOX_PROFILE);
+  if (common_sandbox_definition.empty()) {
+    LOG(FATAL) << "Failed to load the common sandbox profile";
+    return nil;
+  }
+
   NSString* common_sandbox_prefix_data =
-      [NSString stringWithContentsOfFile:common_sandbox_prefix_path
-                                encoding:NSUTF8StringEncoding
-                                   error:NULL];
+      [[NSString alloc] initWithBytes:common_sandbox_definition.data()
+                               length:common_sandbox_definition.length()
+                             encoding:NSUTF8StringEncoding];
 
-  if (!common_sandbox_prefix_data) {
-    DLOG(FATAL) << "Failed to find the sandbox profile on disk "
-                << [common_sandbox_prefix_path fileSystemRepresentation];
-    return nil;
-  }
-
-  NSString* sandbox_profile_path =
-      [base::mac::MainAppBundle() pathForResource:sandbox_config_filename
-                                          ofType:@"sb"];
   NSString* sandbox_data =
-      [NSString stringWithContentsOfFile:sandbox_profile_path
-                                 encoding:NSUTF8StringEncoding
-                                    error:NULL];
-
-  if (!sandbox_data) {
-    DLOG(FATAL) << "Failed to find the sandbox profile on disk "
-                << [sandbox_profile_path fileSystemRepresentation];
-    return nil;
-  }
+      [[NSString alloc] initWithBytes:sandbox_definition.data()
+                               length:sandbox_definition.length()
+                             encoding:NSUTF8StringEncoding];
 
   // Prefix sandbox_data with common_sandbox_prefix_data.
   return [common_sandbox_prefix_data stringByAppendingString:sandbox_data];
@@ -459,11 +463,12 @@ bool Sandbox::PostProcessSandboxProfile(
 // Turns on the OS X sandbox for this process.
 
 // static
-bool Sandbox::EnableSandbox(SandboxProcessType sandbox_type,
+bool Sandbox::EnableSandbox(int sandbox_type,
                             const FilePath& allowed_dir) {
   // Sanity - currently only SANDBOX_TYPE_UTILITY supports a directory being
   // passed in.
-  if (sandbox_type != SANDBOX_TYPE_UTILITY) {
+  if (sandbox_type < content::SANDBOX_TYPE_AFTER_LAST_TYPE &&
+      sandbox_type != content::SANDBOX_TYPE_UTILITY) {
     DCHECK(allowed_dir.empty())
         << "Only SANDBOX_TYPE_UTILITY allows a custom directory parameter.";
   }

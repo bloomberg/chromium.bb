@@ -21,6 +21,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/default_plugin/plugin_main.h"
 #include "content/public/common/pepper_plugin_info.h"
+#include "grit/common_resources.h"
 #include "remoting/client/plugin/pepper_entrypoints.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -30,6 +31,8 @@
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
+#elif defined(OS_MACOSX)
+#include "chrome/common/chrome_sandbox_type_mac.h"
 #endif
 
 namespace {
@@ -396,6 +399,19 @@ bool ChromeContentClient::SandboxPlugin(CommandLine* command_line,
   }
 
   return true;
+}
+#endif
+
+#if defined(OS_MACOSX)
+bool ChromeContentClient::GetSandboxProfileForSandboxType(
+    int sandbox_type,
+    int* sandbox_profile_resource_id) const {
+  DCHECK(sandbox_profile_resource_id);
+  if (sandbox_type == CHROME_SANDBOX_TYPE_NACL_LOADER) {
+    *sandbox_profile_resource_id = IDR_NACL_SANDBOX_PROFILE;
+    return true;
+  }
+  return false;
 }
 #endif
 

@@ -114,6 +114,19 @@ class CONTENT_EXPORT ContentClient {
                              sandbox::TargetPolicy* policy) = 0;
 #endif
 
+#if defined(OS_MACOSX)
+  // Allows the embedder to define a new |sandbox_type| by mapping it to the
+  // resource ID corresponding to the sandbox profile to use. The legal values
+  // for |sandbox_type| are defined by the embedder and should start with
+  // SandboxType::SANDBOX_TYPE_AFTER_LAST_TYPE. Returns false if no sandbox
+  // profile for the given |sandbox_type| exists. Otherwise,
+  // |sandbox_profile_resource_id| is set to the resource ID corresponding to
+  // the sandbox profile to use and true is returned.
+  virtual bool GetSandboxProfileForSandboxType(
+      int sandbox_type,
+      int* sandbox_profile_resource_id) const = 0;
+#endif
+
  private:
   // The embedder API for participating in browser logic.
   ContentBrowserClient* browser_;

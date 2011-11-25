@@ -14,7 +14,7 @@
 #import "content/common/chrome_application_mac.h"
 #include "content/common/sandbox_mac.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/sandbox_init.h"
+#include "content/common/sandbox_init_mac.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(

@@ -697,12 +697,6 @@
         '../third_party/mozilla/NSPasteboard+Utils.h',
         '../third_party/mozilla/NSPasteboard+Utils.mm',
       ],
-      'link_settings': {
-        'mac_bundle_resources': [
-          'browser/gpu.sb',
-          'browser/worker.sb',
-        ],
-      },
       'dependencies': [
         'closure_blocks_leopard_compat',
       ],

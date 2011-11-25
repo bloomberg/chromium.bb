@@ -12,21 +12,34 @@
 
 namespace content {
 
-bool InitializeSandbox() {
-  using sandbox::Sandbox;
+bool InitializeSandbox(int sandbox_type, const FilePath& allowed_dir) {
+  // Warm up APIs before turning on the sandbox.
+  sandbox::Sandbox::SandboxWarmup(sandbox_type);
+
+  // Actually sandbox the process.
+  return sandbox::Sandbox::EnableSandbox(sandbox_type, allowed_dir);
+}
+
+// Fill in |sandbox_type| and |allowed_dir| based on the command line,  returns
+// false if the current process type doesn't need to be sandboxed or if the
+// sandbox was disabled from the command line.
+bool GetSandboxTypeFromCommandLine(int* sandbox_type,
+                                   FilePath* allowed_dir) {
+  DCHECK(sandbox_type);
+  DCHECK(allowed_dir);
+
+  *sandbox_type = -1;
+  *allowed_dir = FilePath();  // Empty by default.
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kNoSandbox))
-    return true;
-
-  Sandbox::SandboxProcessType sandbox_process_type;
-  FilePath allowed_dir;  // Empty by default.
+    return false;
 
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
   if (process_type.empty()) {
     // Browser process isn't sandboxed.
-    return true;
+    return false;
   } else if (process_type == switches::kRendererProcess) {
     if (!command_line.HasSwitch(switches::kDisable3DAPIs) &&
         !command_line.HasSwitch(switches::kDisableExperimentalWebGL) &&
@@ -34,41 +47,41 @@ bool InitializeSandbox() {
       // TODO(kbr): this check seems to be necessary only on this
       // platform because the sandbox is initialized later. Remove
       // this once this flag is removed.
-      return true;
+      return false;
     } else {
-      sandbox_process_type = Sandbox::SANDBOX_TYPE_RENDERER;
+      *sandbox_type = SANDBOX_TYPE_RENDERER;
     }
   } else if (process_type == switches::kUtilityProcess) {
     // Utility process sandbox.
-    sandbox_process_type = Sandbox::SANDBOX_TYPE_UTILITY;
-    allowed_dir =
+    *sandbox_type = SANDBOX_TYPE_UTILITY;
+    *allowed_dir =
         command_line.GetSwitchValuePath(switches::kUtilityProcessAllowedDir);
   } else if (process_type == switches::kWorkerProcess) {
     // Worker process sandbox.
-    sandbox_process_type = Sandbox::SANDBOX_TYPE_WORKER;
-  } else if (process_type == switches::kNaClLoaderProcess) {
-    // Native Client sel_ldr (user untrusted code) sandbox.
-    sandbox_process_type = Sandbox::SANDBOX_TYPE_NACL_LOADER;
+    *sandbox_type = SANDBOX_TYPE_WORKER;
   } else if (process_type == switches::kGpuProcess) {
-    sandbox_process_type = Sandbox::SANDBOX_TYPE_GPU;
+    *sandbox_type = SANDBOX_TYPE_GPU;
   } else if ((process_type == switches::kPluginProcess) ||
              (process_type == switches::kServiceProcess) ||
              (process_type == switches::kPpapiBrokerProcess)) {
-    return true;
+    return false;
   } else if (process_type == switches::kPpapiPluginProcess) {
-    sandbox_process_type = Sandbox::SANDBOX_TYPE_PPAPI;
+    *sandbox_type = SANDBOX_TYPE_PPAPI;
   } else {
     // Failsafe: If you hit an unreached here, is your new process type in need
     // of sandboxing?
     NOTREACHED() << "Unknown process type " << process_type;
-    return true;
+    return false;
   }
+  return true;
+}
 
-  // Warm up APIs before turning on the sandbox.
-  Sandbox::SandboxWarmup(sandbox_process_type);
-
-  // Actually sandbox the process.
-  return Sandbox::EnableSandbox(sandbox_process_type, allowed_dir);
+bool InitializeSandbox() {
+  int sandbox_type = 0;
+  FilePath allowed_dir;
+  if (!GetSandboxTypeFromCommandLine(&sandbox_type, &allowed_dir))
+    return true;
+  return InitializeSandbox(sandbox_type, allowed_dir);
 }
 
 }  // namespace content
