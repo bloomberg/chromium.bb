@@ -587,7 +587,7 @@ class MemcheckAnalyzer:
         logging.info("The following test errors were not handled: ")
         for (name, count) in remaining_sanity_supp.iteritems():
           logging.info("  * %dx %s" % (count, name))
-      retcode = -3
+        retcode = -3
 
     if retcode != 0:
       return retcode
