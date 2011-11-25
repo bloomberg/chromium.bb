@@ -880,8 +880,9 @@ class DrMemory(BaseTool):
 
     if self._options.indirect:
       # TODO(timurrrr): reuse for TSan on Windows
-      self.CreateBrowserWrapper(" ".join(
-            ["python", "tools/valgrind/browser_wrapper_win.py"] + proc))
+      wrapper_path = os.path.join(self._source_dir,
+                                  "tools", "valgrind", "browser_wrapper_win.py")
+      self.CreateBrowserWrapper(" ".join(["python", wrapper_path] + proc))
       proc = []
 
     # Note that self._args begins with the name of the exe to be run.
