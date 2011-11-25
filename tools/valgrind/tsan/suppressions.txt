@@ -395,8 +395,7 @@
 {
   bug_79050 Test to detect read contention & benign race
   ThreadSanitizer:Race
-  fun:Replace_memcpy
-  fun:memcpy
+  ...
   fun:::MockDataFetcher::GetGamepadData
   fun:gamepad::Provider::DoPoll
 }
