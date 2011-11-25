@@ -612,7 +612,9 @@ HRESULT RegisterElevationPolicy(bool reg, bool is_system) {
     // be able launch Chrome when running in low-integrity IE.
     hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_ELEVATION, reg);
     if (SUCCEEDED(hr)) {
-      hr = RefreshElevationPolicy();
+      // Ignore failures since old versions of IE 7 (e.g., 7.0.6000.16386, which
+      // shipped with Vista RTM) do not export IERefreshElevationPolicy.
+      RefreshElevationPolicy();
     }
   }
   return hr;
