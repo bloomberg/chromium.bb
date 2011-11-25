@@ -9,7 +9,7 @@
 
 import gdb_helper
 
-import common
+from collections import defaultdict
 import hashlib
 import logging
 import optparse
@@ -18,6 +18,8 @@ import re
 import subprocess
 import sys
 import time
+
+import common
 
 # Global symbol table (ugh)
 TheAddressTable = None
@@ -48,7 +50,8 @@ class TsanAnalyzer(object):
   THREAD_CREATION_STR = ("INFO: T.* "
       "(has been created by T.* at this point|is program's main thread)")
 
-  SANITY_TEST_SUPPRESSION = "ThreadSanitizer sanity test"
+  SANITY_TEST_SUPPRESSION = ("ThreadSanitizer sanity test "
+                             "(ToolsSanityTest.DataRace)")
   TSAN_RACE_DESCRIPTION = "Possible data race"
   TSAN_WARNING_DESCRIPTION =  ("Unlocking a non-locked lock"
       "|accessing an invalid lock"
@@ -186,10 +189,7 @@ class TsanAnalyzer(object):
       if match:
         count, supp_name = match.groups()
         count = int(count)
-        if supp_name in self.used_suppressions:
-          self.used_suppressions[supp_name] += count
-        else:
-          self.used_suppressions[supp_name] = count
+        self.used_suppressions[supp_name] += count
     self.cur_fd_.close()
     return ret
 
@@ -207,7 +207,7 @@ class TsanAnalyzer(object):
     else:
       TheAddressTable = None
     reports = []
-    self.used_suppressions = {}
+    self.used_suppressions = defaultdict(int)
     for file in files:
       reports.extend(self.ParseReportFile(file))
     if self._use_gdb:
@@ -230,16 +230,8 @@ class TsanAnalyzer(object):
     reports = self.GetReports(files)
     self._cur_testcase = None  # just in case, shouldn't be used anymore
 
-    is_sane = False
-    print "-----------------------------------------------------"
-    print "Suppressions used:"
-    print "  count name"
-    for item in sorted(self.used_suppressions.items(), key=lambda (k,v): (v,k)):
-      print "%7s %s" % (item[1], item[0])
-      if item[0].startswith(TsanAnalyzer.SANITY_TEST_SUPPRESSION):
-        is_sane = True
-    print "-----------------------------------------------------"
-    sys.stdout.flush()
+    common.PrintUsedSuppressionsList(self.used_suppressions)
+
 
     retcode = 0
     if reports:
@@ -249,12 +241,14 @@ class TsanAnalyzer(object):
       retcode = -1
 
     # Report tool's insanity even if there were errors.
-    if check_sanity and not is_sane:
+    if (check_sanity and
+        TsanAnalyzer.SANITY_TEST_SUPPRESSION not in self.used_suppressions):
       logging.error("FAIL! Sanity check failed!")
       retcode = -3
 
     if retcode != 0:
       return retcode
+
     logging.info("PASS: No reports found")
     return 0
 

@@ -9,6 +9,7 @@
 
 import gdb_helper
 
+from collections import defaultdict
 import hashlib
 import logging
 import optparse
@@ -435,7 +436,7 @@ class MemcheckAnalyzer:
     else:
       TheAddressTable = None
     cur_report_errors = set()
-    suppcounts = {}
+    suppcounts = defaultdict(int)
     badfiles = set()
 
     if self._analyze_start_time == None:
@@ -548,10 +549,7 @@ class MemcheckAnalyzer:
           for node in suppcountlist.getElementsByTagName("pair"):
             count = getTextOf(node, "count");
             name = getTextOf(node, "name");
-            if name in suppcounts:
-              suppcounts[name] += int(count)
-            else:
-              suppcounts[name] = int(count)
+            suppcounts[name] += int(count)
 
     if len(badfiles) > 0:
       logging.warn("valgrind didn't finish writing %d files?!" % len(badfiles))
@@ -563,21 +561,7 @@ class MemcheckAnalyzer:
       logging.error("FAIL! Couldn't parse Valgrind output file")
       return -2
 
-    is_sane = False
-    print "-----------------------------------------------------"
-    print "Suppressions used:"
-    print "  count name"
-
-    remaining_sanity_supp = MemcheckAnalyzer.SANITY_TEST_SUPPRESSIONS
-    for (name, count) in sorted(suppcounts.items(),
-                                key=lambda (k,v): (v,k)):
-      print "%7d %s" % (count, name)
-      if name in remaining_sanity_supp and remaining_sanity_supp[name] == count:
-        del remaining_sanity_supp[name]
-    if len(remaining_sanity_supp) == 0:
-      is_sane = True
-    print "-----------------------------------------------------"
-    sys.stdout.flush()
+    common.PrintUsedSuppressionsList(suppcounts)
 
     retcode = 0
     if cur_report_errors:
@@ -592,12 +576,17 @@ class MemcheckAnalyzer:
       retcode = -1
 
     # Report tool's insanity even if there were errors.
-    if check_sanity and not is_sane:
-      logging.error("FAIL! Sanity check failed!")
-      logging.info("The following test errors were not handled: ")
-      for (name, count) in sorted(remaining_sanity_supp.items(),
-                                  key=lambda (k,v): (v,k)):
-        logging.info("%7d %s" % (count, name))
+    if check_sanity:
+      remaining_sanity_supp = MemcheckAnalyzer.SANITY_TEST_SUPPRESSIONS
+      for (name, count) in suppcounts.iteritems():
+        if (name in remaining_sanity_supp and
+            remaining_sanity_supp[name] == count):
+          del remaining_sanity_supp[name]
+      if remaining_sanity_supp:
+        logging.error("FAIL! Sanity check failed!")
+        logging.info("The following test errors were not handled: ")
+        for (name, count) in remaining_sanity_supp.iteritems():
+          logging.info("  * %dx %s" % (count, name))
       retcode = -3
 
     if retcode != 0:

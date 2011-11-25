@@ -330,7 +330,7 @@
 }
 
 {
-  ThreadSanitizer sanity test (ToolsSanityTest.DataRace).
+  ThreadSanitizer sanity test (ToolsSanityTest.DataRace)
   ThreadSanitizer:Race
   fun:*TOOLS_SANITY_TEST_CONCURRENT_THREAD::ThreadMain
 }
