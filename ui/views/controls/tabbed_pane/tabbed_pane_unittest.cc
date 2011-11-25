@@ -5,10 +5,10 @@
 #include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "views/controls/tabbed_pane/tabbed_pane.h"
 
 namespace views {
 

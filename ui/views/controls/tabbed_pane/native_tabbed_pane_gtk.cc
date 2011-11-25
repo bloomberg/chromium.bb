@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/tabbed_pane/native_tabbed_pane_gtk.h"
+#include "ui/views/controls/tabbed_pane/native_tabbed_pane_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -12,12 +12,12 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/skia_utils_gtk.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/widget.h"
 #include "views/background.h"
-#include "views/controls/tabbed_pane/tabbed_pane.h"
-#include "views/controls/tabbed_pane/tabbed_pane_listener.h"
 
 namespace views {
 

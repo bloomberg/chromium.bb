@@ -13,8 +13,8 @@
 #include "views/controls/textfield/textfield.h"
 
 #if !defined(USE_AURA)
-#include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
-#include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #endif
 
 #if defined(OS_LINUX)

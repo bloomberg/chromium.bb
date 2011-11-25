@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_
-#define VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_
+#ifndef UI_VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_
+#define UI_VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_
 #pragma once
 
 #include "base/string16.h"
+#include "ui/gfx/native_widget_types.h"
+
+namespace gfx {
+class Size;
+}
 
 namespace views {
 
@@ -71,4 +76,4 @@ class NativeTabbedPaneWrapper {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_
+#endif  // UI_VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WRAPPER_H_

@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/examples/example_base.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/tabbed_pane/tabbed_pane_listener.h"
 
 namespace views {
 class TabbedPane;

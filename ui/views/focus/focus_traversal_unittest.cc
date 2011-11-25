@@ -21,7 +21,7 @@
 #include "views/controls/textfield/textfield.h"
 
 #if !defined(USE_AURA)
-#include "views/controls/tabbed_pane/tabbed_pane.h"
+#include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #endif
 
 namespace views {

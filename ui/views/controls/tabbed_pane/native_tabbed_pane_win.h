@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WIN_H_
-#define VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WIN_H_
+#ifndef UI_VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WIN_H_
+#define UI_VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WIN_H_
 #pragma once
 
 #include <vector>
 
+#include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 #include "views/controls/native_control_win.h"
-#include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 
 namespace views {
 
@@ -89,4 +89,4 @@ class NativeTabbedPaneWin : public NativeControlWin,
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WIN_H_
+#endif  // UI_VIEWS_CONTROLS_TABBED_PANE_NATIVE_TABBED_PANE_WIN_H_
