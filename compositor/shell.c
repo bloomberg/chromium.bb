@@ -518,16 +518,23 @@ static void
 resume_desktop(struct wl_shell *shell)
 {
 	struct wlsc_surface *surface;
-	struct shell_surface *background;
+	struct wl_list *list;
 
 	wl_list_for_each(surface, &shell->hidden_surface_list, link)
 		wlsc_surface_configure(surface, surface->x, surface->y,
 				       surface->width, surface->height);
 
-	background = container_of(shell->backgrounds.prev,
-				  struct shell_surface, link);
-	wl_list_insert_list(background->surface->link.prev,
-			    &shell->hidden_surface_list);
+	if (wl_list_empty(&shell->backgrounds)) {
+		list = &shell->compositor->surface_list;
+	} else {
+		struct shell_surface *background;
+		background = container_of(shell->backgrounds.prev,
+					  struct shell_surface, link);
+		list = background->surface->link.prev;
+	}
+
+	if (!wl_list_empty(&shell->hidden_surface_list))
+		wl_list_insert_list(list, &shell->hidden_surface_list);
 	wl_list_init(&shell->hidden_surface_list);
 
 	shell->locked = false;
