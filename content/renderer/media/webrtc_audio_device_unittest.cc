@@ -6,6 +6,7 @@
 #include "base/test/test_timeouts.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/test/webrtc_audio_device_test.h"
+#include "media/audio/audio_manager.h"
 #include "media/audio/audio_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/webrtc/voice_engine/main/interface/voe_audio_processing.h"
@@ -114,9 +115,39 @@ class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
 
 }  // end namespace
 
+// Utility class to delete the AudioManager.
+// TODO(tommi): Remove when we've fixed issue 105249.
+class AutoAudioManagerCleanup {
+ public:
+  AutoAudioManagerCleanup() {
+    // Log an error if a previous test didn't clean up the AudioManager.
+    if (DeleteAndResurrect()) {
+      LOG(ERROR)
+          << "AudioManager singleton was not cleaned up by some previous test!";
+    }
+  }
+  ~AutoAudioManagerCleanup() {
+    DeleteAndResurrect();
+  }
+
+ private:
+  // Returns true iff the AudioManager existed and was deleted.
+  bool DeleteAndResurrect() {
+    if (AudioManager::SingletonExists()) {
+      AudioManager::Destroy(NULL);
+      AudioManager::Resurrect();
+      return true;
+    }
+    return false;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(AutoAudioManagerCleanup);
+};
+
 // Basic test that instantiates and initializes an instance of
 // WebRtcAudioDeviceImpl.
 TEST_F(WebRTCAudioDeviceTest, Construct) {
+  AutoAudioManagerCleanup audio_manager_cleanup;
   AudioUtilNoHardware audio_util(48000.0, 48000.0);
   SetAudioUtilCallback(&audio_util);
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
@@ -139,6 +170,8 @@ TEST_F(WebRTCAudioDeviceTest, Construct) {
 // verify that streaming starts correctly.
 // Disabled when running headless since the bots don't have the required config.
 TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
+  AutoAudioManagerCleanup audio_manager_cleanup;
+
   if (IsRunningHeadless())
     return;
 
@@ -208,6 +241,8 @@ TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
 // that the audio capturing starts as it should.
 // Disabled when running headless since the bots don't have the required config.
 TEST_F(WebRTCAudioDeviceTest, StartRecording) {
+  AutoAudioManagerCleanup audio_manager_cleanup;
+
   if (IsRunningHeadless())
     return;
 
@@ -272,6 +307,8 @@ TEST_F(WebRTCAudioDeviceTest, StartRecording) {
 // Uses WebRtcAudioDeviceImpl to play a local wave file.
 // Disabled when running headless since the bots don't have the required config.
 TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
+  AutoAudioManagerCleanup audio_manager_cleanup;
+
   if (IsRunningHeadless())
     return;
 
@@ -332,6 +369,8 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
 // TODO(henrika): improve quality by using a wideband codec, enabling noise-
 // suppressions and perhaps also the digital AGC.
 TEST_F(WebRTCAudioDeviceTest, FullDuplexAudio) {
+  AutoAudioManagerCleanup audio_manager_cleanup;
+
   if (IsRunningHeadless())
     return;
 
@@ -341,6 +380,8 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudio) {
       OnSetAudioStreamPlaying(_, 1, true));
   EXPECT_CALL(media_observer(),
       OnSetAudioStreamStatus(_, 1, StrEq("closed")));
+  EXPECT_CALL(media_observer(),
+      OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
   AudioUtil audio_util;
   SetAudioUtilCallback(&audio_util);
