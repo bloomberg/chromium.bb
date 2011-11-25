@@ -5,24 +5,25 @@
 #include "chrome/test/test_navigation_observer.h"
 
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This class observes |rvh| and calls OnJsInjectionReady() of
 // |js_injection_ready_observer| when the time is right to inject
 // JavaScript into the page.
-class TestNavigationObserver::RVHOSendJS : public RenderViewHostObserver {
+class TestNavigationObserver::RVHOSendJS
+    : public content::RenderViewHostObserver {
  public:
   RVHOSendJS(RenderViewHost* rvh,
              JsInjectionReadyObserver* js_injection_ready_observer)
-      : RenderViewHostObserver(rvh),
+      : content::RenderViewHostObserver(rvh),
         js_injection_ready_observer_(js_injection_ready_observer) {
   }
 
  private:
-  // RenderViewHostObserver implementation.
+  // content::RenderViewHostObserver implementation.
   virtual void RenderViewHostInitialized() OVERRIDE {
     if (js_injection_ready_observer_)
       js_injection_ready_observer_->OnJsInjectionReady(render_view_host());

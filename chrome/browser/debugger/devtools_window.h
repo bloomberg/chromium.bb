@@ -13,10 +13,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "content/browser/debugger/devtools_client_host.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_view_host_observer.h"
 
 namespace IPC {
 class Message;
@@ -34,11 +34,10 @@ namespace base {
 class Value;
 }
 
-class DevToolsWindow
-    : public DevToolsClientHost,
-      private content::NotificationObserver,
-      private TabContentsDelegate,
-      private RenderViewHostObserver {
+class DevToolsWindow : public DevToolsClientHost,
+                       private content::NotificationObserver,
+                       private TabContentsDelegate,
+                       private content::RenderViewHostObserver {
  public:
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefService* prefs);
@@ -125,7 +124,7 @@ class DevToolsWindow
                                               DevToolsToggleAction action);
   static DevToolsWindow* AsDevToolsWindow(DevToolsClientHost*);
 
-  // RenderViewHostObserver overrides.
+  // content::RenderViewHostObserver overrides.
   virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

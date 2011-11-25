@@ -16,9 +16,9 @@
 #include "chrome/common/spellcheck_messages.h"
 #include "content/browser/mac/closure_blocks_leopard_compat.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
+#include "content/public/browser/render_view_host_observer.h"
 
 // Declare things that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -64,12 +64,12 @@ namespace ChromeRenderWidgetHostViewMacDelegateInternal {
 
 // Filters the message sent to RenderViewHost to know if spellchecking is
 // enabled or not for the currently focused element.
-class SpellCheckRenderViewObserver : public RenderViewHostObserver {
+class SpellCheckRenderViewObserver : public content::RenderViewHostObserver {
  public:
   SpellCheckRenderViewObserver(
       RenderViewHost* host,
       ChromeRenderWidgetHostViewMacDelegate* view_delegate)
-      : RenderViewHostObserver(host),
+      : content::RenderViewHostObserver(host),
         view_delegate_(view_delegate) {
   }
 
@@ -77,7 +77,7 @@ class SpellCheckRenderViewObserver : public RenderViewHostObserver {
   }
 
  private:
-  // RenderViewHostObserver implementation.
+  // content::RenderViewHostObserver implementation.
   virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE {
     // The parent implementation destroys the observer, scoping the lifetime of
     // the observer to the RenderViewHost. Since this class is acting as a

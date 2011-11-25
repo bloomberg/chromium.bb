@@ -14,7 +14,7 @@
 
 ExtensionMessageHandler::ExtensionMessageHandler(
     RenderViewHost* render_view_host)
-    : RenderViewHostObserver(render_view_host) {
+    : content::RenderViewHostObserver(render_view_host) {
 }
 
 ExtensionMessageHandler::~ExtensionMessageHandler() {

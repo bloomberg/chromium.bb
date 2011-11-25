@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_OBSERVER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_OBSERVER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_OBSERVER_H_
+#define CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_OBSERVER_H_
+#pragma once
 
 #include "ipc/ipc_channel.h"
 #include "content/common/content_export.h"
 
 class GURL;
 class RenderViewHost;
+
+namespace content {
 
 // An observer API implemented by classes which want to filter IPC messages from
 // RenderViewHost.
@@ -45,7 +48,7 @@ class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
   int routing_id() { return routing_id_; }
 
  private:
-  friend class RenderViewHost;
+  friend class ::RenderViewHost;
 
   // Invoked from RenderViewHost. Invokes RenderViewHostDestroyed and NULL out
   // |render_view_host_|.
@@ -59,4 +62,6 @@ class CONTENT_EXPORT RenderViewHostObserver : public IPC::Channel::Listener,
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostObserver);
 };
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_OBSERVER_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_RENDER_VIEW_HOST_OBSERVER_H_

@@ -28,7 +28,7 @@ void ExtensionFunctionDeleteTraits::Destruct(const ExtensionFunction* x) {
 UIThreadExtensionFunction::RenderViewHostTracker::RenderViewHostTracker(
     UIThreadExtensionFunction* function,
     RenderViewHost* render_view_host)
-    : RenderViewHostObserver(render_view_host),
+    : content::RenderViewHostObserver(render_view_host),
       function_(function) {
   registrar_.Add(this,
                  content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,

@@ -25,7 +25,6 @@
 #include "content/browser/power_save_blocker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/renderer_host/render_widget_host.h"
 #include "content/browser/renderer_host/render_widget_host_view.h"
 #include "content/browser/site_instance.h"
@@ -40,6 +39,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/result_codes.h"
@@ -141,7 +141,7 @@ RenderViewHost::RenderViewHost(SiteInstance* instance,
 
 RenderViewHost::~RenderViewHost() {
   FOR_EACH_OBSERVER(
-      RenderViewHostObserver, observers_, RenderViewHostDestruction());
+      content::RenderViewHostObserver, observers_, RenderViewHostDestruction());
 
   content::NotificationService::current()->Notify(
       content::NOTIFICATION_RENDER_VIEW_HOST_DELETED,
@@ -191,7 +191,7 @@ bool RenderViewHost::CreateRenderView(const string16& frame_name) {
   delegate_->RenderViewCreated(this);
 
   FOR_EACH_OBSERVER(
-      RenderViewHostObserver, observers_, RenderViewHostInitialized());
+      content::RenderViewHostObserver, observers_, RenderViewHostInitialized());
 
   return true;
 }
@@ -247,7 +247,8 @@ void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {
   if (!params.url.SchemeIs(chrome::kJavaScriptScheme))
     delegate_->DidStartLoading();
 
-  FOR_EACH_OBSERVER(RenderViewHostObserver, observers_, Navigate(params.url));
+  FOR_EACH_OBSERVER(content::RenderViewHostObserver,
+                    observers_, Navigate(params.url));
 }
 
 void RenderViewHost::NavigateToURL(const GURL& url) {
@@ -653,8 +654,8 @@ bool RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
     if (!content::SwappedOutMessages::CanHandleWhileSwappedOut(msg))
       return true;
 
-  ObserverListBase<RenderViewHostObserver>::Iterator it(observers_);
-  RenderViewHostObserver* observer;
+  ObserverListBase<content::RenderViewHostObserver>::Iterator it(observers_);
+  content::RenderViewHostObserver* observer;
   while ((observer = it.GetNext()) != NULL) {
     if (observer->OnMessageReceived(msg))
       return true;
@@ -1137,11 +1138,11 @@ void RenderViewHost::OnAddMessageToConsole(int32 level,
       message << "\", source: " << source_id << " (" << line_no << ")";
 }
 
-void RenderViewHost::AddObserver(RenderViewHostObserver* observer) {
+void RenderViewHost::AddObserver(content::RenderViewHostObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void RenderViewHost::RemoveObserver(RenderViewHostObserver* observer) {
+void RenderViewHost::RemoveObserver(content::RenderViewHostObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 

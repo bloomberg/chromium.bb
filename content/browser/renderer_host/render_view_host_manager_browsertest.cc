@@ -9,13 +9,13 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/test/test_server.h"
@@ -270,16 +270,16 @@ class RenderViewHostObserverArray {
   }
  private:
   friend class RVHObserver;
-  class RVHObserver : public RenderViewHostObserver {
+  class RVHObserver : public content::RenderViewHostObserver {
    public:
     RVHObserver(RenderViewHostObserverArray* parent, RenderViewHost* rvh)
-        : RenderViewHostObserver(rvh),
+        : content::RenderViewHostObserver(rvh),
           parent_(parent) {
     }
     virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE {
       if (parent_)
         parent_->RemoveObserver(this);
-      RenderViewHostObserver::RenderViewHostDestroyed(rvh);
+      content::RenderViewHostObserver::RenderViewHostDestroyed(rvh);
     };
     void ClearParent() {
       parent_ = NULL;

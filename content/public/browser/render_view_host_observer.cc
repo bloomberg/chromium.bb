@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_view_host_observer.h"
+#include "content/public/browser/render_view_host_observer.h"
 
 #include "content/browser/renderer_host/render_view_host.h"
+
+namespace content {
 
 RenderViewHostObserver::RenderViewHostObserver(RenderViewHost* render_view_host)
     : render_view_host_(render_view_host),
@@ -46,3 +48,5 @@ void RenderViewHostObserver::RenderViewHostDestruction() {
   render_view_host_ = NULL;
   RenderViewHostDestroyed(rvh);
 }
+
+}  // namespace content

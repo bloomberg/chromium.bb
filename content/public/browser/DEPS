@@ -1,3 +1,4 @@
 include_rules = [
   "+content/browser/notification_service_impl.h",
+  "+content/browser/renderer_host/render_view_host.h",
 ]

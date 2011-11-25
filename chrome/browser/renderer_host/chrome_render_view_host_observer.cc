@@ -23,7 +23,7 @@
 
 ChromeRenderViewHostObserver::ChromeRenderViewHostObserver(
     RenderViewHost* render_view_host, chrome_browser_net::Predictor* predictor)
-    : RenderViewHostObserver(render_view_host),
+    : content::RenderViewHostObserver(render_view_host),
       predictor_(predictor) {
   SiteInstance* site_instance = render_view_host->site_instance();
   profile_ = Profile::FromBrowserContext(

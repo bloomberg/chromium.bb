@@ -50,7 +50,7 @@ bool RenderViewDevToolsAgentHost::IsDebuggerAttached(
 }
 
 RenderViewDevToolsAgentHost::RenderViewDevToolsAgentHost(RenderViewHost* rvh)
-    : RenderViewHostObserver(rvh),
+    : content::RenderViewHostObserver(rvh),
       render_view_host_(rvh) {
   g_instances.Get()[rvh] = this;
 }

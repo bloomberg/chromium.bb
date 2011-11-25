@@ -33,7 +33,6 @@ class FilePath;
 class GURL;
 class PowerSaveBlocker;
 class RenderViewHostDelegate;
-class RenderViewHostObserver;
 class SessionStorageNamespace;
 class SiteInstance;
 class SkBitmap;
@@ -53,6 +52,7 @@ class ListValue;
 }
 
 namespace content {
+class RenderViewHostObserver;
 struct FileChooserParams;
 struct ShowDesktopNotificationHostMsgParams;
 }
@@ -480,12 +480,12 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   // one or two places.  Have the caller send the IPC message directly.
 
  protected:
-  friend class RenderViewHostObserver;
+  friend class content::RenderViewHostObserver;
 
   // Add and remove observers for filtering IPC messages.  Clients must be sure
   // to remove the observer before they go away.
-  void AddObserver(RenderViewHostObserver* observer);
-  void RemoveObserver(RenderViewHostObserver* observer);
+  void AddObserver(content::RenderViewHostObserver* observer);
+  void RemoveObserver(content::RenderViewHostObserver* observer);
 
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
@@ -676,7 +676,7 @@ class CONTENT_EXPORT RenderViewHost : public RenderWidgetHost {
   PowerSaveBlockerMap power_save_blockers_;
 
   // A list of observers that filter messages.  Weak references.
-  ObserverList<RenderViewHostObserver> observers_;
+  ObserverList<content::RenderViewHostObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHost);
 };

@@ -16,10 +16,10 @@
 #include "base/process.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "ipc/ipc_message.h"
 
 class Browser;
@@ -289,7 +289,7 @@ class UIThreadExtensionFunction : public ExtensionFunction {
   // NotificationObservers, and it would be an easy error to forget to call the
   // base class's Observe() method.
   class RenderViewHostTracker : public content::NotificationObserver,
-                                public RenderViewHostObserver {
+                                public content::RenderViewHostObserver {
    public:
     RenderViewHostTracker(UIThreadExtensionFunction* function,
                           RenderViewHost* render_view_host);

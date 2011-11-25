@@ -20,8 +20,8 @@
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/render_messages.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/render_view_host_observer.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/widget/widget.h"
@@ -46,10 +46,10 @@ const char kAccelNameEnrollment[] = "enrollment";
 
 // Observes IPC messages from the FrameSniffer and notifies JS if error
 // appears.
-class SnifferObserver : public RenderViewHostObserver {
+class SnifferObserver : public content::RenderViewHostObserver {
  public:
   SnifferObserver(RenderViewHost* host, WebUI* webui)
-      : RenderViewHostObserver(host), webui_(webui) {
+      : content::RenderViewHostObserver(host), webui_(webui) {
     DCHECK(webui_);
     Send(new ChromeViewMsg_StartFrameSniffer(routing_id(),
                                              UTF8ToUTF16("gaia-frame")));

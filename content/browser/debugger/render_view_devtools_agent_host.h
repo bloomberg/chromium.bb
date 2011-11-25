@@ -10,14 +10,15 @@
 
 #include "base/basictypes.h"
 #include "content/browser/debugger/devtools_agent_host.h"
-#include "content/browser/renderer_host/render_view_host_observer.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/render_view_host_observer.h"
 
 class RenderViewHost;
 class TabContents;
 
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
-    : public DevToolsAgentHost, private RenderViewHostObserver {
+    : public DevToolsAgentHost,
+      private content::RenderViewHostObserver {
  public:
   static DevToolsAgentHost* FindFor(RenderViewHost*);
   static bool IsDebuggerAttached(TabContents*);
@@ -31,7 +32,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual void NotifyClientClosing() OVERRIDE;
   virtual int GetRenderProcessId() OVERRIDE;
 
-  // RenderViewHostObserver overrides.
+  // content::RenderViewHostObserver overrides.
   virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 

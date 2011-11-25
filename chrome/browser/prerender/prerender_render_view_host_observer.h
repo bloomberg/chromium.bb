@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "content/browser/renderer_host/render_view_host_observer.h"
+#include "content/public/browser/render_view_host_observer.h"
 
 struct FaviconURL;
 class RenderViewHost;
@@ -21,7 +21,7 @@ namespace prerender {
 class PrerenderContents;
 
 // Observer for RenderViewHost messages.
-class PrerenderRenderViewHostObserver : public RenderViewHostObserver {
+class PrerenderRenderViewHostObserver : public content::RenderViewHostObserver {
  public:
   PrerenderRenderViewHostObserver(PrerenderContents* prerender_contents,
                                   RenderViewHost* render_view_host);

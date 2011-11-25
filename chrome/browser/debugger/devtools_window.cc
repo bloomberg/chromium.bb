@@ -164,7 +164,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
                                Profile* profile,
                                RenderViewHost* inspected_rvh,
                                bool docked)
-    : RenderViewHostObserver(tab_contents->render_view_host()),
+    : content::RenderViewHostObserver(tab_contents->render_view_host()),
       profile_(profile),
       inspected_tab_(NULL),
       tab_contents_(tab_contents),
