@@ -116,17 +116,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       WebKit::WebFrame* frame,
       const WebKit::WebPluginParams& params);
 
-  WebKit::WebPlugin* CreatePluginPlaceholder(
-      content::RenderView* render_view,
-      WebKit::WebFrame* frame,
-      const webkit::WebPluginInfo& plugin,
-      const WebKit::WebPluginParams& params,
-      const webkit::npapi::PluginGroup* group,
-      int resource_id,
-      int message_id,
-      bool is_blocked_for_prerendering,
-      bool allow_loading);
-
   // Returns the extension for the given URL.  Excludes extension objects for
   // bookmark apps, which do not use the app process model.
   const Extension* GetNonBookmarkAppExtension(const ExtensionSet* extensions,

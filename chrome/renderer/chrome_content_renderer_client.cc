@@ -28,7 +28,6 @@
 #include "chrome/renderer/autofill/password_autofill_manager.h"
 #include "chrome/renderer/automation/automation_renderer_helper.h"
 #include "chrome/renderer/benchmarking_extension.h"
-#include "chrome/renderer/blocked_plugin.h"
 #include "chrome/renderer/chrome_ppapi_interfaces.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
 #include "chrome/renderer/chrome_render_view_observer.h"
@@ -46,7 +45,9 @@
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/page_click_tracker.h"
 #include "chrome/renderer/page_load_histograms.h"
-#include "chrome/renderer/plugin_uma.h"
+#include "chrome/renderer/plugins/blocked_plugin.h"
+#include "chrome/renderer/plugins/missing_plugin.h"
+#include "chrome/renderer/plugins/plugin_uma.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/print_web_view_helper.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
@@ -290,9 +291,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
   if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
         orig_mime_type, url);
-    return CreatePluginPlaceholder(
-        render_view, frame, plugin, original_params, NULL,
-        IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_FOUND, false, false);
+    return MissingPlugin::Create(render_view, frame, original_params);
   }
   if (plugin.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
     MissingPluginReporter::GetInstance()->ReportPluginMissing(
@@ -303,8 +302,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       webkit::npapi::PluginList::Singleton()->GetPluginGroup(plugin));
 
   if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kDisabled) {
-    return CreatePluginPlaceholder(
-        render_view, frame, plugin, original_params, group.get(),
+    return BlockedPlugin::Create(
+        render_view, frame, original_params, plugin, group.get(),
         IDR_DISABLED_PLUGIN_HTML, IDS_PLUGIN_DISABLED, false, false);
   }
 
@@ -326,14 +325,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         GURL(group->GetUpdateURL())));
   }
   if (status.value ==
-      ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked ||
+          ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked ||
       status.value ==
           ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed) {
-    return CreatePluginPlaceholder(
-        render_view, frame, plugin, params, group.get(),
+    return BlockedPlugin::Create(
+        render_view, frame, params, plugin, group.get(),
         IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_OUTDATED, false,
         status.value ==
-        ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked);
+            ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedBlocked);
   }
 
   ContentSettingsObserver* observer = ContentSettingsObserver::Get(render_view);
@@ -343,8 +342,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       !observer->plugins_temporarily_allowed()) {
     render_view->Send(new ChromeViewHostMsg_BlockedOutdatedPlugin(
         render_view->GetRoutingId(), group->GetGroupName(), GURL()));
-    return CreatePluginPlaceholder(
-        render_view, frame, plugin, params, group.get(),
+    return BlockedPlugin::Create(
+        render_view, frame, params, plugin, group.get(),
         IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_NOT_AUTHORIZED, false, true);
   }
 
@@ -355,8 +354,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       plugin.path.value() == webkit::npapi::kDefaultPluginLibraryName) {
     // Delay loading plugins if prerendering.
     if (prerender::PrerenderHelper::IsPrerendering(render_view)) {
-      return CreatePluginPlaceholder(
-          render_view, frame, plugin, params, group.get(),
+      return BlockedPlugin::Create(
+          render_view, frame, params, plugin, group.get(),
           IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD, true, true);
     }
 
@@ -381,8 +380,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                          is_nacl_mime_type,
                          is_nacl_enabled,
                          params)) {
-        return CreatePluginPlaceholder(
-            render_view, frame, plugin, params, group.get(),
+        return BlockedPlugin::Create(
+            render_view, frame, params, plugin, group.get(),
             IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, false);
       }
     }
@@ -396,14 +395,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       group->identifier());
   if (status.value == ChromeViewHostMsg_GetPluginInfo_Status::kClickToPlay) {
     RenderThread::Get()->RecordUserMetrics("Plugin_ClickToPlay");
-    return CreatePluginPlaceholder(
-        render_view, frame, plugin, params, group.get(),
+    return BlockedPlugin::Create(
+        render_view, frame, params, plugin, group.get(),
         IDR_CLICK_TO_PLAY_PLUGIN_HTML, IDS_PLUGIN_LOAD, false, true);
   } else {
     DCHECK(status.value == ChromeViewHostMsg_GetPluginInfo_Status::kBlocked);
     RenderThread::Get()->RecordUserMetrics("Plugin_Blocked");
-    return CreatePluginPlaceholder(
-        render_view, frame, plugin, params, group.get(),
+    return BlockedPlugin::Create(
+        render_view, frame, params, plugin, group.get(),
         IDR_BLOCKED_PLUGIN_HTML, IDS_PLUGIN_BLOCKED, false, true);
   }
 }
@@ -487,41 +486,6 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   }
 
   return true;
-}
-
-WebPlugin* ChromeContentRendererClient::CreatePluginPlaceholder(
-    content::RenderView* render_view,
-    WebFrame* frame,
-    const webkit::WebPluginInfo& plugin,
-    const WebPluginParams& params,
-    const webkit::npapi::PluginGroup* group,
-    int resource_id,
-    int message_id,
-    bool is_blocked_for_prerendering,
-    bool allow_loading) {
-  // |blocked_plugin| will delete itself when the WebViewPlugin
-  // is destroyed.
-  string16 name;
-  string16 message;
-  if (group) {
-    name = group->GetGroupName();
-    message = l10n_util::GetStringFUTF16(message_id, name);
-  } else {
-    message = l10n_util::GetStringUTF16(message_id);
-  }
-
-  BlockedPlugin* blocked_plugin =
-      new BlockedPlugin(render_view,
-                        frame,
-                        plugin,
-                        params,
-                        render_view->GetWebkitPreferences(),
-                        resource_id,
-                        name,
-                        message,
-                        is_blocked_for_prerendering,
-                        allow_loading);
-  return blocked_plugin->plugin();
 }
 
 bool ChromeContentRendererClient::HasErrorPage(int http_status_code,

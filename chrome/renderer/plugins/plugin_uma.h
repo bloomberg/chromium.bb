@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_PLUGIN_UMA_H_
-#define CHROME_RENDERER_PLUGIN_UMA_H_
+#ifndef CHROME_RENDERER_PLUGINS_PLUGIN_UMA_H_
+#define CHROME_RENDERER_PLUGINS_PLUGIN_UMA_H_
 
 #include <string>
 
@@ -66,5 +66,5 @@ class MissingPluginReporter {
   DISALLOW_COPY_AND_ASSIGN(MissingPluginReporter);
 };
 
-#endif  // CHROME_RENDERER_PLUGIN_UMA_H_
+#endif  // CHROME_RENDERER_PLUGINS_PLUGIN_UMA_H_
 

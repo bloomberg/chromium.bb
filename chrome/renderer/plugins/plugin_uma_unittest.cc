@@ -5,7 +5,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "chrome/renderer/plugin_uma.h"
+#include "chrome/renderer/plugins/plugin_uma.h"
 
 using ::testing::_;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/plugins/npapi/webview_plugin.h"
+#include "webkit/plugins/webview_plugin.h"
 
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -45,7 +45,6 @@ using WebKit::WebVector;
 using WebKit::WebView;
 
 namespace webkit {
-namespace npapi {
 
 WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
     : delegate_(delegate),
@@ -250,5 +249,4 @@ void WebViewPlugin::didReceiveResponse(WebFrame* frame,
   WebFrameClient::didReceiveResponse(frame, identifier, response);
 }
 
-}  // namespace npapi
 }  // namespace webkit

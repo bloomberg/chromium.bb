@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_PLUGINS_NPAPI_WEBVIEW_PLUGIN_H_
-#define WEBKIT_PLUGINS_NPAPI_WEBVIEW_PLUGIN_H_
+#ifndef WEBKIT_PLUGINS_WEBVIEW_PLUGIN_H_
+#define WEBKIT_PLUGINS_WEBVIEW_PLUGIN_H_
 
 #include <list>
 
@@ -13,7 +13,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrameClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewClient.h"
 
@@ -23,7 +22,6 @@ class WebMouseEvent;
 struct WebPreferences;
 
 namespace webkit {
-namespace npapi {
 
 // This class implements the WebPlugin interface by forwarding drawing and
 // handling input events to a WebView.
@@ -141,8 +139,11 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   virtual ~WebViewPlugin();
 
   Delegate* delegate_;
+  // Destroys itself.
   WebKit::WebCursorInfo current_cursor_;
+  // Owns us.
   WebKit::WebPluginContainer* container_;
+  // Owned by us, deleted via |close()|.
   WebKit::WebView* web_view_;
   gfx::Rect rect_;
 
@@ -153,7 +154,6 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
   WebKit::WebString old_title_;
 };
 
-}  // namespace npapi
 }  // namespace webkit
 
-#endif  // WEBKIT_PLUGINS_NPAPI_WEBVIEW_PLUGIN_H_
+#endif  // WEBKIT_PLUGINS_WEBVIEW_PLUGIN_H_

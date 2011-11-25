@@ -147,12 +147,10 @@
 #include "webkit/glue/weburlloader_impl.h"
 #include "webkit/media/video_renderer_impl.h"
 #include "webkit/media/webmediaplayer_impl.h"
-#include "webkit/plugins/npapi/default_plugin_shared.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 #include "webkit/plugins/npapi/webplugin_delegate.h"
 #include "webkit/plugins/npapi/webplugin_delegate_impl.h"
 #include "webkit/plugins/npapi/webplugin_impl.h"
-#include "webkit/plugins/npapi/webview_plugin.h"
 #include "webkit/plugins/ppapi/ppapi_webplugin_impl.h"
 
 #if defined(OS_WIN)
