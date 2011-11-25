@@ -4,6 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/platform_file.h"
 #include "base/scoped_temp_dir.h"
@@ -11,7 +12,6 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/signaling_task.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/password_manager/password_form_data.h"
@@ -360,7 +360,7 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
   // task to notify us that it's safe to carry on with the test.
   WaitableEvent done(false, false);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Initializing the PasswordStore should trigger a migration.
@@ -378,7 +378,7 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
   // Again, the WDS schedules tasks to run on the DB thread, so schedule a task
   // to signal us when it is safe to continue.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Let the WDS callbacks proceed so the logins can be migrated.
@@ -423,7 +423,7 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
 
   // Wait for the WDS methods to execute on the DB thread.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Handle the callback from the WDS.
@@ -437,7 +437,7 @@ TEST_P(PasswordStoreXTest, WDSMigration) {
 
   // Wait for the WDS methods to execute on the DB thread.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Handle the callback from the WDS.
@@ -480,7 +480,7 @@ TEST_P(PasswordStoreXTest, WDSMigrationAlreadyDone) {
   // task to notify us that it's safe to carry on with the test.
   WaitableEvent done(false, false);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Pretend that the migration has already taken place.
@@ -565,7 +565,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
   // yet another task to notify us that it's safe to carry on with the test.
   WaitableEvent done(false, false);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Change the password.
@@ -587,7 +587,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
 
   // Wait for PasswordStore to send the notification.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   const PasswordStoreChange expected_delete_changes[] = {
@@ -606,7 +606,7 @@ TEST_P(PasswordStoreXTest, Notifications) {
 
   // Wait for PasswordStore to send the notification.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Public in PasswordStore, protected in PasswordStoreX.
@@ -648,7 +648,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
   // carry on with the test.
   WaitableEvent done(false, false);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Get the new size of the login DB file. We expect it to be larger.
@@ -713,7 +713,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   // Wait for the login DB methods to execute on the DB thread.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   if (GetParam() == WORKING_BACKEND) {
@@ -733,7 +733,7 @@ TEST_P(PasswordStoreXTest, NativeMigration) {
 
   // Wait for the login DB methods to execute on the DB thread.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   if (GetParam() == WORKING_BACKEND) {

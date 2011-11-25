@@ -5,10 +5,10 @@
 #include "content/test/webrtc_audio_device_test.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/signaling_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
@@ -257,7 +257,8 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
 // Posts a final task to the IO message loop and waits for completion.
 void WebRTCAudioDeviceTest::WaitForIOThreadCompletion() {
   ChildProcess::current()->io_message_loop()->PostTask(
-      FROM_HERE, new base::SignalingTask(&event_));
+      FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
+                            base::Unretained(&event_)));
   EXPECT_TRUE(event_.TimedWait(
       base::TimeDelta::FromMilliseconds(TestTimeouts::action_timeout_ms())));
 }

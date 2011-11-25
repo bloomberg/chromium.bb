@@ -4,8 +4,9 @@
 
 #include "chrome/browser/sync/signin_manager.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/test/signaling_task.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/net/gaia/token_service_unittest.h"
 #include "chrome/browser/password_manager/encryptor.h"

@@ -7,12 +7,13 @@
 #include <vector>
 #include <wincrypt.h>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/signaling_task.h"
 #include "base/time.h"
 #include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/password_manager/password_form_data.h"
@@ -166,7 +167,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
   // task to notify us that it's safe to carry on with the test.
   WaitableEvent done(false, false);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Prentend that the migration has already taken place.
@@ -278,7 +279,7 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
   // task to notify us that it's safe to carry on with the test.
   WaitableEvent done(false, false);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Prentend that the migration has already taken place.
@@ -434,7 +435,7 @@ TEST_F(PasswordStoreWinTest, Migration) {
   // task to notify us that it's safe to carry on with the test.
   WaitableEvent done(false, false);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Initializing the PasswordStore should trigger a migration.
@@ -449,7 +450,7 @@ TEST_F(PasswordStoreWinTest, Migration) {
   // Again, the WDS schedules tasks to run on the DB thread, so schedule a task
   // to signal us when it is safe to continue.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Let the WDS callbacks proceed so the logins can be migrated.
@@ -494,7 +495,7 @@ TEST_F(PasswordStoreWinTest, Migration) {
 
   // Wait for the WDS methods to execute on the DB thread.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Handle the callback from the WDS.
@@ -508,7 +509,7 @@ TEST_F(PasswordStoreWinTest, Migration) {
 
   // Wait for the WDS methods to execute on the DB thread.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      new base::SignalingTask(&done));
+      base::Bind(&WaitableEvent::Signal, base::Unretained(&done)));
   done.Wait();
 
   // Handle the callback from the WDS.
