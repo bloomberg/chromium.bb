@@ -697,6 +697,13 @@ void UserManager::SetUserImage(const std::string& username,
            current_user_is_new_);
     bool image_changed = user->image_index() != User::kInvalidImageIndex;
     user->SetImage(image, image_index);
+    // If it is the profile image of the current user, save it to
+    // |downloaded_profile_image_| so that it can be reused if the started
+    // download attempt fails.
+    if (image_index == User::kProfileImageIndex && user == logged_in_user_) {
+      downloaded_profile_image_ = image;
+      downloaded_profile_image_data_url_ = web_ui_util::GetImageDataUrl(image);
+    }
     if (image_changed) {
       // Unless this is first-time setting with |SetInitialUserImage|,
       // send a notification about image change.
@@ -868,11 +875,6 @@ void UserManager::OnDownloadComplete(ProfileDownloader* downloader,
     downloaded_profile_image_ = downloader->GetProfilePicture();
 
     if (logged_in_user().image_index() == User::kProfileImageIndex) {
-      std::string current_image_data_url =
-          web_ui_util::GetImageDataUrl(logged_in_user().image());
-      if (current_image_data_url == new_image_data_url)
-        return;
-
       VLOG(1) << "Updating profile image for logged-in user";
       UMA_HISTOGRAM_ENUMERATION("UserImage.ProfileDownloadResult",
                                 kDownloadSuccessChanged,
