@@ -799,7 +799,7 @@
       'conditions': [
         ['disable_nacl!=1', {
           'dependencies': [
-            '../ppapi/ppapi_internal.gyp:ppapi_nacl_tests',
+            '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
           ],
           'copies': [
             {
