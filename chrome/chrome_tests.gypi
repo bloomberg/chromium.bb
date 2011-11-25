@@ -734,7 +734,6 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         # run time dependencies
-        'default_plugin/default_plugin.gyp:default_plugin',
         '../ppapi/ppapi_internal.gyp:ppapi_tests',
         '../third_party/mesa/mesa.gyp:osmesa',
         '../third_party/WebKit/Source/WebKit/chromium/WebKit.gyp:copy_TestNetscapePlugIn',
@@ -843,6 +842,7 @@
           'sources!': [
             'test/automation/automation_proxy_uitest.cc',
             'test/ui/npapi_uitest.cc',
+            'browser/default_plugin_uitest.cc',
           ],
           'dependencies': [
             '../ui/aura/aura.gyp:aura',
@@ -873,6 +873,12 @@
               'dependencies': [
                 '<(allocator_target)',
               ],
+            }],
+            ['use_aura==0', {
+              'dependencies': [
+                # Runtime dependency
+                'default_plugin/default_plugin.gyp:default_plugin',
+              ]
             }],
           ],
           'link_settings': {
