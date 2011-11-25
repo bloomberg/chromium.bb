@@ -28,7 +28,7 @@
     ],
   },
   'includes': [
-    'ppapi_sources.gypi',
+    '../native_client/build/untrusted.gypi',
     'ppapi_cpp.gypi',
     'ppapi_gl.gypi',
   ],
