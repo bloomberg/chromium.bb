@@ -246,7 +246,7 @@ deps = {
     Var("libjingle_revision"),
 
   "src/third_party/speex":
-    "/trunk/deps/third_party/speex@83190",
+    "/trunk/deps/third_party/speex@111570",
 
   "src/third_party/yasm/source/patched-yasm":
     "/trunk/deps/third_party/yasm/patched-yasm@73761",
