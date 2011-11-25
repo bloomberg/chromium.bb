@@ -834,7 +834,12 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateSettingsMenu) {
       "http://home", "options.html");
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, AutoResize) {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define MAYBE_AutoResize AutoResize
+#else
+#define MAYBE_AutoResize FLAKY_AutoResize
+#endif
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
   PanelManager::GetInstance()->enable_auto_sizing(true);
   set_testing_work_area(gfx::Rect(0, 0, 1200, 900));
 
