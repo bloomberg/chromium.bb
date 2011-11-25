@@ -51,7 +51,6 @@
     'public/common/page_zoom.h',
     'public/common/pepper_plugin_info.cc',
     'public/common/pepper_plugin_info.h',
-    'public/common/referrer.h',
     'public/common/renderer_preferences.cc',
     'public/common/renderer_preferences.h',
     'public/common/resource_dispatcher_delegate.h',

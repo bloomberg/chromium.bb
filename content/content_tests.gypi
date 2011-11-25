@@ -229,7 +229,6 @@
         'common/hi_res_timer_manager_unittest.cc',
         'common/net/url_fetcher_impl_unittest.cc',
         'common/page_zoom_unittest.cc',
-        'common/referrer_unittest.cc',
         'common/resource_dispatcher_unittest.cc',
         'gpu/gpu_info_collector_unittest.cc',
         'gpu/gpu_info_collector_unittest_win.cc',
