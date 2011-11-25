@@ -470,9 +470,7 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpLayoutTests) {
   ASSERT_TRUE(http_server.Stop());
 }
 
-// TODO(yutak): Reenable this test after the following issue is resolved.
-// https://bugs.webkit.org/show_bug.cgi?id=64852
-TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
+TEST_F(WorkerTest, WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "close-in-onmessage-crash.html",
     "close-in-shared-worker.html",
