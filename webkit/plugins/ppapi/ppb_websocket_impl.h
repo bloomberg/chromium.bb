@@ -5,22 +5,8 @@
 #ifndef WEBKIT_PLUGINS_PPAPI_PPB_WEBSOCKET_IMPL_H_
 #define WEBKIT_PLUGINS_PPAPI_PPB_WEBSOCKET_IMPL_H_
 
-#include <queue>
-
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_websocket_api.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSocketClient.h"
-
-struct PPB_Var;
-
-namespace ppapi {
-class StringVar;
-}
-
-namespace WebKit {
-class WebSocket;
-}
 
 namespace webkit {
 namespace ppapi {
@@ -28,8 +14,7 @@ namespace ppapi {
 // All implementation is in this class for now. We should move some common
 // implementation to shared_impl when we implement proxy interfaces.
 class PPB_WebSocket_Impl : public ::ppapi::Resource,
-                           public ::ppapi::thunk::PPB_WebSocket_API,
-                           public ::WebKit::WebSocketClient {
+                           public ::ppapi::thunk::PPB_WebSocket_API {
  public:
   explicit PPB_WebSocket_Impl(PP_Instance instance);
   virtual ~PPB_WebSocket_Impl();
@@ -58,41 +43,6 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   virtual PP_Var GetProtocol() OVERRIDE;
   virtual PP_WebSocketReadyState_Dev GetReadyState() OVERRIDE;
   virtual PP_Var GetURL() OVERRIDE;
-
-  // WebSocketClient implementation.
-  virtual void didConnect() OVERRIDE;
-  virtual void didReceiveMessage(const WebKit::WebString& message) OVERRIDE;
-  virtual void didReceiveBinaryData(
-      const WebKit::WebData& binaryData) OVERRIDE;
-  virtual void didReceiveMessageError() OVERRIDE;
-  virtual void didStartClosingHandshake() OVERRIDE;
-  virtual void didClose(unsigned long bufferedAmount,
-                        ClosingHandshakeCompletionStatus status,
-                        unsigned short code,
-                        const WebKit::WebString& reason) OVERRIDE;
- private:
-  int32_t DoReceive();
-
-  scoped_ptr<WebKit::WebSocket> websocket_;
-  PP_WebSocketReadyState_Dev state_;
-
-  PP_CompletionCallback connect_callback_;
-
-  PP_CompletionCallback receive_callback_;
-  PP_Var* receive_callback_var_;
-  bool wait_for_receive_;
-  // TODO(toyoshim): Use std::queue<Var> when it supports binary.
-  std::queue<PP_Var> received_messages_;
-
-  PP_CompletionCallback close_callback_;
-  uint16_t close_code_;
-  scoped_refptr< ::ppapi::StringVar> close_reason_;
-  PP_Bool close_was_clean_;
-
-  scoped_refptr< ::ppapi::StringVar> empty_string_;
-  scoped_refptr< ::ppapi::StringVar> extensions_;
-  scoped_refptr< ::ppapi::StringVar> protocol_;
-  scoped_refptr< ::ppapi::StringVar> url_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_WebSocket_Impl);
 };

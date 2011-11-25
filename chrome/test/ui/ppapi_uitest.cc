@@ -231,17 +231,6 @@ class PPAPINaClTest : public PPAPITestBase {
       RunTestViaHTTP(#test_name); \
     }
 
-// Similar macros that test with WebSocket server
-#define TEST_PPAPI_IN_PROCESS_WITH_WS(test_name) \
-    TEST_F(PPAPITest, test_name) { \
-      RunTestWithWebSocketServer(#test_name); \
-    }
-#define TEST_PPAPI_OUT_OF_PROCESS_WITH_WS(test_name) \
-    TEST_F(OutOfProcessPPAPITest, test_name) { \
-      RunTestWithWebSocketServer(#test_name); \
-    }
-
-
 
 // NaCl based PPAPI tests
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
@@ -471,9 +460,7 @@ TEST_PPAPI_OUT_OF_PROCESS(Flash_MessageLoop)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetLocalTimeZoneOffset)
 TEST_PPAPI_OUT_OF_PROCESS(Flash_GetCommandLineArgs)
 
-TEST_PPAPI_IN_PROCESS(WebSocket_InvalidConnect)
+TEST_PPAPI_IN_PROCESS(WebSocket_Create)
 TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_ValidConnect)
-TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_TextSendReceive)
 
 #endif // ADDRESS_SANITIZER
