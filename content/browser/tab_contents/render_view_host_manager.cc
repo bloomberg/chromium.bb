@@ -307,13 +307,6 @@ void RenderViewHostManager::OnCrossSiteResponse(int new_render_process_host_id,
                                                            new_request_id);
 }
 
-void RenderViewHostManager::OnCrossSiteNavigationCanceled() {
-  DCHECK(cross_navigation_pending_);
-  cross_navigation_pending_ = false;
-  if (pending_render_view_host_)
-    CancelPending();
-}
-
 void RenderViewHostManager::Observe(
     int type,
     const content::NotificationSource& source,

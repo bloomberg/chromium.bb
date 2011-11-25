@@ -172,10 +172,6 @@ class CONTENT_EXPORT RenderViewHostDelegate : public IPC::Channel::Listener {
     virtual void OnCrossSiteResponse(int new_render_process_host_id,
                                      int new_request_id) = 0;
 
-    // Called the ResourceDispatcherHost's associate CrossSiteRequestHandler
-    // when a cross-site navigation has been canceled.
-    virtual void OnCrossSiteNavigationCanceled() = 0;
-
    protected:
     virtual ~RendererManagement() {}
   };

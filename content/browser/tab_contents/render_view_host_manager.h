@@ -176,7 +176,6 @@ class CONTENT_EXPORT RenderViewHostManager
                                bool proceed) OVERRIDE;
   virtual void OnCrossSiteResponse(int new_render_process_host_id,
                                    int new_request_id) OVERRIDE;
-  virtual void OnCrossSiteNavigationCanceled() OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
