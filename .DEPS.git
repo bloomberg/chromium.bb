@@ -89,7 +89,7 @@ deps = {
     'src/third_party/snappy/src':
         Var('git_url') + '/external/snappy.git@5258607248a000affb2f72b87b9bbd044806677d',
     'src/third_party/speex':
-        Var('git_url') + '/chromium/deps/speex.git@0c94ee62322ce3272783cafda02b3ee172c45553',
+        Var('git_url') + '/chromium/deps/speex.git@a79adadda5ed70fce6ddce1f0767fac623a9beb7',
     'src/third_party/swig/Lib':
         Var('git_url') + '/chromium/deps/swig/Lib.git@549f0b084ad9c40ef42d111303d831eb8d91252e',
     'src/third_party/v8-i18n':
