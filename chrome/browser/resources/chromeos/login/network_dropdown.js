@@ -354,8 +354,8 @@ cr.define('cr.ui', function() {
    * @param {!Object} data Networks list.
    */
   DropDown.updateNetworks = function(data) {
-    var elementId = DropDown.activeElementId_;
-    $(elementId).setItems(data);
+    if (DropDown.activeElementId_)
+      $(DropDown.activeElementId_).setItems(data);
   };
 
   /**
@@ -364,8 +364,8 @@ cr.define('cr.ui', function() {
    * @param {!Object} icon Icon to be displayed.
    */
   DropDown.updateNetworkTitle = function(title, icon) {
-    var elementId = DropDown.activeElementId_;
-    $(elementId).setTitle(title, icon);
+    if (DropDown.activeElementId_)
+      $(DropDown.activeElementId_).setTitle(title, icon);
   };
 
   /**
@@ -378,9 +378,11 @@ cr.define('cr.ui', function() {
    */
   DropDown.setActive = function(elementId, isActive, isOobe) {
     if (isActive) {
-      DropDown.activeElementId_ = elementId;
       $(elementId).isShown = false;
-      chrome.send('networkDropdownShow', [elementId, isOobe]);
+      if (DropDown.activeElementId_ != elementId) {
+        DropDown.activeElementId_ = elementId;
+        chrome.send('networkDropdownShow', [elementId, isOobe]);
+      }
     } else {
       if (DropDown.activeElementId_ == elementId) {
         DropDown.activeElementId_ = '';
