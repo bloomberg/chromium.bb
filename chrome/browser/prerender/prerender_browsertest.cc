@@ -1832,8 +1832,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewBackgroundTab) {
   OpenDestURLViaClickNewBackgroundTab();
 }
 
+// Disabled due to http://crbug.com/105433
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       NavigateToPrerenderedPageWhenDevToolsAttached) {
+                       DISABLED_NavigateToPrerenderedPageWhenDevToolsAttached) {
   DisableJavascriptCalls();
   TabContents* tab_contents = browser()->GetSelectedTabContents();
   RenderViewHost* inspected_rvh = tab_contents->render_view_host();
