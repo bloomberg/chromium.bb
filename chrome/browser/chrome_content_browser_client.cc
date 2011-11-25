@@ -104,10 +104,6 @@
 #include "chrome/browser/chrome_browser_main_extra_parts_aura.h"
 #endif
 
-#if defined(TOUCH_UI)
-#include "chrome/browser/chrome_browser_main_extra_parts_touch.h"
-#endif
-
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
 #include "base/linux_util.h"
 #include "chrome/browser/crash_handler_host_linux.h"
