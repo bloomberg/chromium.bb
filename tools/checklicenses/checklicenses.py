@@ -320,6 +320,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/pylib': [
         'UNKNOWN',
     ],
+    'third_party/pymox': [  # http://crbug.com/105457
+        'UNKNOWN',
+    ],
     'third_party/scons-2.0.1/engine/SCons': [  # http://crbug.com/98462
         'UNKNOWN',
     ],
