@@ -16,13 +16,19 @@ vars = {
   # These hashes need to be updated when nacl_toolchain_revision is changed.
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
-  "nacl_toolchain_mac_x86_newlib_hash":
-      "74612a65dd6bae1d85af1f7277cc6af6e5d86b46",
-  "nacl_toolchain_win_x86_newlib_hash":
-      "3672e7b20848beec886badc46909cf24fb1c574f",
+  "nacl_toolchain_linux_x86_hash":
+    "33afa1cefa7fd2a7270b309298dbbf93361d90db",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "528b9b85d087ffb5a0f6348f5219a33cd0ff725f",
-  "nacl_toolchain_revision": "7098",
+    "5f82c18ce9d0201f9df852bddcb19746ef690290",
+  "nacl_toolchain_mac_x86_hash":
+    "f7b73f3d9073b75bb1ef6b583eaf56f397ca80ed",
+  "nacl_toolchain_mac_x86_newlib_hash":
+    "648b5ae8ae770b41c4a0eef28cff6f67fe8bb386",
+  "nacl_toolchain_win_x86_hash":
+    "75ee1d6f8c758d9580b2c35773b14d0ab6847372",
+  "nacl_toolchain_win_x86_newlib_hash":
+    "a340bc72900f002f88491bf82baf69d35593ed75",
+  "nacl_toolchain_revision": "7258",
 
   "libjingle_revision": "95",
   "libvpx_revision": "109236",
@@ -102,6 +108,12 @@ deps = {
 
   "src/native_client":
     Var("nacl_trunk") + "/src/native_client@" + Var("nacl_revision"),
+    
+  "src/native_client_sdk/src/site_scons":
+    Var("nacl_trunk") + "/src/native_client/site_scons@" + Var("nacl_revision"),
+
+  "src/third_party/pymox":
+    "http://pymox.googlecode.com/svn/trunk@61",
 
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
@@ -341,6 +353,10 @@ deps_os = {
     # latest release binaries for the toolchain.
     "src/third_party/syzygy/binaries":
       (Var("googlecode_url") % "sawbuck") + "/trunk/syzygy/binaries@543",
+
+    # Binaries for nacl sdk.
+    "src/third_party/nacl_sdk_binaries":
+      "/trunk/deps/third_party/nacl_sdk_binaries@111576",
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
@@ -423,14 +439,23 @@ hooks = [
     "pattern": ".",
     "action": [
         "python", "src/build/download_nacl_toolchains.py",
+         "--no-pnacl",
+         "--no-arm-trusted",
          "--x86-version", Var("nacl_toolchain_revision"),
-         "--nacl-newlib-only",
          "--file-hash", "mac_x86_newlib",
              Var("nacl_toolchain_mac_x86_newlib_hash"),
          "--file-hash", "win_x86_newlib",
              Var("nacl_toolchain_win_x86_newlib_hash"),
          "--file-hash", "linux_x86_newlib",
              Var("nacl_toolchain_linux_x86_newlib_hash"),
+         "--file-hash", "mac_x86",
+             Var("nacl_toolchain_mac_x86_hash"),
+         "--file-hash", "win_x86",
+             Var("nacl_toolchain_win_x86_hash"),
+         "--file-hash", "linux_x86",
+             Var("nacl_toolchain_linux_x86_hash"),
+         "--save-downloads-dir",
+         "src/native_client_sdk/src/build_tools/toolchain_archives",
     ],
   },
   {
