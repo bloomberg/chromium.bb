@@ -52,6 +52,7 @@
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
 #include "content/browser/renderer_host/file_utilities_message_filter.h"
+#include "content/browser/renderer_host/gamepad_browser_message_filter.h"
 #include "content/browser/renderer_host/gpu_message_filter.h"
 #include "content/browser/renderer_host/media/audio_input_renderer_host.h"
 #include "content/browser/renderer_host/media/audio_renderer_host.h"
@@ -532,6 +533,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new QuotaDispatcherHost(
       GetID(), GetBrowserContext()->GetQuotaManager(),
       content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
+  channel_->AddFilter(new GamepadBrowserMessageFilter);
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

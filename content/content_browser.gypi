@@ -369,6 +369,8 @@
     'browser/renderer_host/database_message_filter.h',
     'browser/renderer_host/file_utilities_message_filter.cc',
     'browser/renderer_host/file_utilities_message_filter.h',
+    'browser/renderer_host/gamepad_browser_message_filter.cc',
+    'browser/renderer_host/gamepad_browser_message_filter.h',
     'browser/renderer_host/global_request_id.h',
     'browser/renderer_host/gpu_message_filter.cc',
     'browser/renderer_host/gpu_message_filter.h',
