@@ -4,12 +4,14 @@
 
 #include "ui/gfx/compositor/compositor_cc.h"
 
+#include "base/command_line.h"
 #include "third_party/skia/include/images/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCompositor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatPoint.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
+#include "ui/gfx/compositor/compositor_switches.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -125,6 +127,11 @@ CompositorCC::CompositorCC(CompositorDelegate* delegate,
       widget_(widget),
       root_web_layer_(WebKit::WebLayer::create(this)) {
   WebKit::WebLayerTreeView::Settings settings;
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  settings.showFPSCounter =
+     command_line->HasSwitch(switches::kUIShowFPSCounter);
+  settings.showPlatformLayerTree =
+      command_line->HasSwitch(switches::kUIShowLayerTree);
   settings.enableCompositorThread = !!g_compositor_thread;
   host_ = WebKit::WebLayerTreeView::create(this, root_web_layer_, settings);
   root_web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));

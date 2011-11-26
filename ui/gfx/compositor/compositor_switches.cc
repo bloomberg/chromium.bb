@@ -9,7 +9,13 @@ namespace switches {
 const char kEnableCompositorOverdrawDebugging[] =
     "enable-compositor-overdraw-debugging";
 
+// Show FPS counter.
+const char kUIShowFPSCounter[] = "ui-show-fps-counter";
+
 // Show colored borders around layers.
 const char kUIShowLayerBorders[] = "ui-show-layer-borders";
+
+// Show layer tree.
+const char kUIShowLayerTree[] = "ui-show-layer-tree";
 
 }  // namespace switches
