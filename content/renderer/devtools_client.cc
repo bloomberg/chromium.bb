@@ -49,10 +49,6 @@ bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DevToolsClient::sendFrontendLoaded() {
-  SendToAgent(DevToolsAgentMsg_FrontendLoaded(MSG_ROUTING_NONE));
-}
-
 void DevToolsClient::sendMessageToBackend(const WebString& message)  {
   SendToAgent(DevToolsAgentMsg_DispatchOnInspectorBackend(MSG_ROUTING_NONE,
                                                           message.utf8()));

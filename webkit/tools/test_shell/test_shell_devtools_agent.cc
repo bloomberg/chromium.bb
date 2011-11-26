@@ -93,12 +93,6 @@ void TestShellDevToolsAgent::Call(const TestShellDevToolsCallArgs &args) {
     dev_tools_client_->all_messages_processed();
 }
 
-void TestShellDevToolsAgent::DelayedFrontendLoaded() {
-  WebDevToolsAgent *web_agent = GetWebAgent();
-  if (web_agent)
-    web_agent->frontendLoaded();
-}
-
 WebDevToolsAgent* TestShellDevToolsAgent::GetWebAgent() {
   if (!web_view_)
     return NULL;
@@ -119,13 +113,6 @@ void TestShellDevToolsAgent::detach() {
   if (web_agent)
     web_agent->detach();
   dev_tools_client_ = NULL;
-}
-
-void TestShellDevToolsAgent::frontendLoaded() {
-  MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestShellDevToolsAgent::DelayedFrontendLoaded,
-                 weak_factory_.GetWeakPtr()));
 }
 
 bool TestShellDevToolsAgent::evaluateInWebInspector(

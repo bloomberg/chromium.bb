@@ -54,7 +54,6 @@ class DevToolsAgent : public content::RenderViewObserver,
   void OnAttach();
   void OnReattach(const std::string& agent_state);
   void OnDetach();
-  void OnFrontendLoaded();
   void OnDispatchOnInspectorBackend(const std::string& message);
   void OnInspectElement(int x, int y);
   void OnSetApuAgentEnabled(bool enabled);

@@ -66,19 +66,14 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
     // Following messages depend on inspector protocol that is not yet
     // finalized.
 
-    // 1. Report front-end is loaded.
-    devtools_manager->ForwardToDevToolsAgent(
-        this,
-        DevToolsAgentMsg_FrontendLoaded(MSG_ROUTING_NONE));
-
-    // 2. Start timeline profiler.
+    // 1. Start timeline profiler.
     devtools_manager->ForwardToDevToolsAgent(
         this,
         DevToolsAgentMsg_DispatchOnInspectorBackend(
             MSG_ROUTING_NONE,
             FormatDevToolsMessage(2, "Timeline.start")));
 
-    // 3. Enable network resource tracking.
+    // 2. Enable network resource tracking.
     devtools_manager->ForwardToDevToolsAgent(
         this,
         DevToolsAgentMsg_DispatchOnInspectorBackend(

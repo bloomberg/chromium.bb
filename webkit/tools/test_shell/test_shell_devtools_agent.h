@@ -43,13 +43,11 @@ class TestShellDevToolsAgent : public WebKit::WebDevToolsAgentClient {
 
   void attach(TestShellDevToolsClient* client);
   void detach();
-  void frontendLoaded();
 
   bool evaluateInWebInspector(long call_id, const std::string& script);
 
  private:
   void Call(const TestShellDevToolsCallArgs& args);
-  void DelayedFrontendLoaded();
   WebKit::WebDevToolsAgent* GetWebAgent();
 
   base::WeakPtrFactory<TestShellDevToolsAgent> weak_factory_;

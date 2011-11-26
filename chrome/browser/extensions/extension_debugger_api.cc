@@ -133,9 +133,6 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
   DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
       tab_contents_->render_view_host(),
       this);
-  DevToolsManager::GetInstance()->ForwardToDevToolsAgent(
-      this,
-      DevToolsAgentMsg_FrontendLoaded(MSG_ROUTING_NONE));
 }
 
 ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {

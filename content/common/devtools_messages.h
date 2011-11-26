@@ -70,9 +70,6 @@ IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_Reattach,
 // Tells agent that there is no longer a client host connected to it.
 IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_Detach)
 
-// Tells agent that the front-end has been loaded
-IPC_MESSAGE_ROUTED0(DevToolsAgentMsg_FrontendLoaded)
-
 // WebKit-level transport.
 IPC_MESSAGE_ROUTED1(DevToolsAgentMsg_DispatchOnInspectorBackend,
                     std::string /* message */)

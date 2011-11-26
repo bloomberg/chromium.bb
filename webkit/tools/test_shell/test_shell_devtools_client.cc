@@ -42,11 +42,6 @@ TestShellDevToolsClient::~TestShellDevToolsClient() {
     dev_tools_agent_->detach();
 }
 
-void TestShellDevToolsClient::sendFrontendLoaded() {
-  if (dev_tools_agent_)
-    dev_tools_agent_->frontendLoaded();
-}
-
 void TestShellDevToolsClient::sendMessageToBackend(
      const WebString& data) {
   if (dev_tools_agent_)

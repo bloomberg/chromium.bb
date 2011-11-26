@@ -37,7 +37,6 @@ class DevToolsClient : public content::RenderViewObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebDevToolsFrontendClient implementation.
-  virtual void sendFrontendLoaded() OVERRIDE;
   virtual void sendMessageToBackend(const WebKit::WebString&) OVERRIDE;
 
   virtual void activateWindow() OVERRIDE;

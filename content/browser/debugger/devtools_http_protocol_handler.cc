@@ -380,9 +380,6 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
   manager->RegisterDevToolsClientHostFor(
       tab_contents->render_view_host(),
       client_host);
-  manager->ForwardToDevToolsAgent(
-      client_host,
-      DevToolsAgentMsg_FrontendLoaded(MSG_ROUTING_NONE));
 
   AcceptWebSocket(connection_id, request);
 }
