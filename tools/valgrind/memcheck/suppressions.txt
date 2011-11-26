@@ -14,7 +14,7 @@
 
 # 1. third party stuff we have no control over
 {
-   Uninitialized value in deflate
+   Uninitialized value in deflate (Third Party)
    Memcheck:Cond
    ...
    fun:MOZ_Z_deflate
@@ -111,7 +111,7 @@
    fun:FcPatternObjectAdd
 }
 {
-   bug_18590
+   bug_18590 (Third Party)
    Memcheck:Leak
    ...
    fun:malloc
@@ -127,7 +127,7 @@
    fun:FcConfigSubstitute
 }
 {
-  bug_46177_a
+  bug_46177_a (Third Party)
   Memcheck:Leak
   ...
   fun:FcCharSetOperate
@@ -137,7 +137,7 @@
   fun:pango_layout_get_pixel_size
 }
 {
-  bug_46177_b
+  bug_46177_b (Third Party)
   Memcheck:Leak
   ...
   fun:FcCharSetFindLeafCreate
@@ -149,7 +149,7 @@
   fun:pango_layout_get_iter
 }
 {
-  bug_46177_c
+  bug_46177_c (Third Party)
   Memcheck:Leak
   ...
   fun:FcCharSetFindLeafCreate
@@ -199,7 +199,7 @@
    fun:SECMOD_AddNewModule
 }
 {
-   bug_12614
+   bug_12614 (Third Party)
    Memcheck:Leak
    fun:?alloc
    ...
@@ -257,7 +257,7 @@
    # for no reason other than pleasing valgrind, but a patch might be accepted
    # under a macro like SQLITE_SECURE_DELETE which could be construed to apply
    # to cases like this. (Note that we compile with SQLITE_SECURE_DELETE.)
-   bug_20653a
+   bug_20653a (Third Party)
    Memcheck:Param
    write(buf)
    ...
@@ -265,7 +265,7 @@
    fun:pager_write_pagelist
 }
 {
-   bug_20653b
+   bug_20653b (Third Party)
    Memcheck:Param
    write(buf)
    ...
@@ -284,7 +284,7 @@
 }
 {
    # Totem plugin leaks when we load it.
-   bug_21326
+   bug_21326 (Third Party)
    Memcheck:Leak
    ...
    fun:_ZN56webkit5npapi9PluginLib17ReadWebPluginInfoERK8FilePathP13WebPluginInfo
@@ -300,7 +300,7 @@
    fun:PK11_ImportAndReturnPrivateKey
 }
 {
-   bug_23314
+   bug_23314 (Third Party)
    Memcheck:Addr2
    fun:sqlite3PcacheClearSyncFlags
    fun:syncJournal
@@ -308,7 +308,7 @@
    fun:sqlite3BtreeCommitPhaseOne
 }
 {
-   bug_23314b
+   bug_23314b (Third Party)
    Memcheck:Addr4
    fun:sqlite3PcacheClearSyncFlags
    fun:syncJournal
@@ -403,7 +403,7 @@
   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
 }
 {
-   bug_30667
+   bug_30667 (Third Party)
    Memcheck:Cond
    ...
    fun:inflate
@@ -421,7 +421,7 @@
 }
 #-- end of zlib filters
 {
-   bug_33394
+   bug_33394 (Third Party)
    Memcheck:Leak
    fun:calloc
    fun:PR_Calloc
@@ -432,7 +432,7 @@
    fun:_ZN4base14EnsureNSPRInitEv
 }
 {
-   bug_33394_b
+   bug_33394_b (Third Party)
    Memcheck:Leak
    fun:calloc
    fun:PR_Calloc
@@ -444,7 +444,7 @@
 }
 {
    # Looks like a leak in gtk's code when loading the im context module.
-   bug_41231
+   bug_41231 (Third Party)
    Memcheck:Leak
    ...
    fun:malloc
@@ -455,7 +455,7 @@
    fun:gtk_im_context_set_client_window
 }
 {
-   bug_51332a
+   bug_51332a (Third Party)
    Memcheck:Leak
    ...
    fun:PORT_NewArena_Util
@@ -465,7 +465,7 @@
    fun:SEC_PKCS12Encode
 }
 {
-   bug_51332b
+   bug_51332b (Third Party)
    Memcheck:Leak
    ...
    fun:PORT_ArenaZAlloc_Util
@@ -475,7 +475,7 @@
    fun:SEC_PKCS12Encode
 }
 {
-   bug_51332c
+   bug_51332c (Third Party)
    Memcheck:Leak
    fun:calloc
    fun:PORT_ZAlloc_Util
@@ -485,7 +485,7 @@
    fun:SEC_PKCS12Encode
 }
 {
-   bug_51330
+   bug_51330 (Third Party)
    Memcheck:Leak
    ...
    fun:p12u_DigestOpen
@@ -493,7 +493,7 @@
    fun:SEC_PKCS12DecoderUpdate
 }
 {
-   bug_51328a
+   bug_51328a (Third Party)
    Memcheck:Leak
    ...
    fun:SEC_ASN1DecoderUpdate_Util
@@ -505,7 +505,7 @@
    fun:SEC_PKCS12DecoderUpdate
 }
 {
-   bug_51328b
+   bug_51328b (Third Party)
    Memcheck:Leak
    ...
    fun:SEC_PKCS7DecoderStart
@@ -514,83 +514,83 @@
    fun:SEC_PKCS12DecoderUpdate
 }
 {
-   bug_58730_strlen_addr8
+   bug_58730_strlen_addr8 (Third Party)
    Memcheck:Addr8
    fun:__strlen_sse2
 }
 {
-   bug_58730_strlen_cond
+   bug_58730_strlen_cond (Third Party)
    Memcheck:Cond
    fun:__strlen_sse2
 }
 {
-   bug_58730_strcmp_addr8
+   bug_58730_strcmp_addr8 (Third Party)
    Memcheck:Addr8
    fun:__strcmp_ssse3
 }
 {
-   bug_58730_strcmp_cond
+   bug_58730_strcmp_cond (Third Party)
    Memcheck:Cond
    fun:__strcmp_ssse3
 }
 {
-   bug_58730_strcmp_value8
+   bug_58730_strcmp_value8 (Third Party)
    Memcheck:Value8
    fun:__strcmp_ssse3
 }
 {
-   bug_58730_strncmp_value8
+   bug_58730_strncmp_value8 (Third Party)
    Memcheck:Value8
    fun:__strncmp_ssse3
 }
 {
-   bug_58730_memmove_value4
+   bug_58730_memmove_value4 (Third Party)
    Memcheck:Value4
    fun:__memmove_ssse3
 }
 {
-   bug_58730_memmove_cond
+   bug_58730_memmove_cond (Third Party)
    Memcheck:Cond
    fun:__memmove_ssse3
 }
 {
-   bug_58730_memcpy_value4
+   bug_58730_memcpy_value4 (Third Party)
    Memcheck:Value4
    fun:__memcpy_ssse3
 }
 {
-   bug_58730_memcpy_addr8
+   bug_58730_memcpy_addr8 (Third Party)
    Memcheck:Addr8
    fun:__memcpy_ssse3
 }
 {
-   bug_58730_memcpy_cond
+   bug_58730_memcpy_cond (Third Party)
    Memcheck:Cond
    fun:__memcpy_ssse3
 }
 {
-   bug_58730_memmove_chk_cond
+   bug_58730_memmove_chk_cond (Third Party)
    Memcheck:Cond
    fun:__memmove_chk_ssse3
 }
 {
-   bug_58730_libc.so_addr8
+   bug_58730_libc.so_addr8 (Third Party)
    Memcheck:Addr8
    obj:/lib/libc-2.*.so
 }
 {
-   bug_58730_libc.so_cond
+   bug_58730_libc.so_cond (Third Party)
    Memcheck:Cond
    obj:/lib/libc-2.*.so
 }
 {
-   bug_58730_libc.so_value8
+   bug_58730_libc.so_value8 (Third Party)
    Memcheck:Value8
    obj:/lib/libc-2.11.1.so
 }
 {
    # I believe it's a bug in gtk+-2.12.x and should already be fixed in recent gtk.
-   bug_61685
+   bug_61685 (Third Party)
    Memcheck:Leak
    fun:malloc
    ...
@@ -598,7 +598,7 @@
    fun:*OmniboxViewGtk16SetSelectedRange*
 }
 {
-   bug_66941
+   bug_66941 (Third Party)
    Memcheck:Leak
    ...
    fun:STAN_ChangeCertTrust
@@ -619,7 +619,7 @@
    fun:_ZN14OmniboxViewGtk14HandleKeyPressEP10_GtkWidgetP12_GdkEventKey
 }
 {
-   bug_76386a
+   bug_76386a (Third Party)
    Memcheck:Leak
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createE*RKSaIcE
@@ -627,14 +627,14 @@
    fun:_ZNSsC1*KS*
 }
 {
-   bug_76386b
+   bug_76386b (Third Party)
    Memcheck:Leak
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createE*RKSaIcE
    fun:_ZNSs4_Rep8_M_cloneERKSaIcE*
 }
 {
-   bug_76386c
+   bug_76386c (Third Party)
    Memcheck:Leak
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createE*RKSaIcE
@@ -837,7 +837,7 @@
 {
    # Non-joinable thread doesn't clean up all state on program exit
    # very common in ui tests
-   bug_16096
+   bug_16096 (WontFix)
    Memcheck:Leak
    fun:_Znw*
    fun:_ZNSs4_Rep9_S_createE*RKSaIcE
@@ -851,7 +851,7 @@
 {
    # According to dglazkov, these are one-time leaks and intentional.
    # They may go away if the change to move these off the heap lands.
-   bug_17996
+   bug_17996 (Intentional)
    Memcheck:Leak
    ...
    fun:_ZN7WebCore8SVGNames4initEv
@@ -894,16 +894,33 @@
    fun:_Z12RendererMainRKN7content18MainFunctionParams*
 }
 {
+   # PR_GetCurrentThread allocates a PRThread structure and stores it in
+   # thread-specific data.  The PRThread structure is freed by the
+   # PR_DetachThread call in CertVerifierWorker::Run or when the thread
+   # terminates.  Since we do not shut down worker threads, the PRThread
+   # structure created for a worker thread may be leaked at Chrome shutdown
+   # if the worker thread did not make it to the PR_DetachThread call.
+   bug_32624 (Intentional)
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:PR_GetCurrentThread
+   ...
+   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net18CertVerifierWorker3RunEv
+}
+{
    # The InvalidRead error in rc4_wordconv is intentional.
    # https://bugzilla.mozilla.org/show_bug.cgi?id=341127
-   bug_43113
+   bug_43113 (Intentional)
    Memcheck:Addr4
    fun:rc4_wordconv
    fun:RC4_Encrypt
 }
 {
    # Intentionally leaking NSS to prevent shutdown crashes
-   bug_61585a
+   bug_61585a (Intentional)
    Memcheck:Leak
    fun:calloc
    ...
@@ -917,28 +934,11 @@
    fun:*13EnsureNSSInitEv
 }
 {
-   bug_61585b
+   bug_61585b (Intentional)
    Memcheck:Leak
    fun:malloc
    fun:PL_ArenaAllocate
    fun:PORT_ArenaAlloc*
-}
-{
-   # PR_GetCurrentThread allocates a PRThread structure and stores it in
-   # thread-specific data.  The PRThread structure is freed by the
-   # PR_DetachThread call in CertVerifierWorker::Run or when the thread
-   # terminates.  Since we do not shut down worker threads, the PRThread
-   # structure created for a worker thread may be leaked at Chrome shutdown
-   # if the worker thread did not make it to the PR_DetachThread call.
-   bug_32624
-   Memcheck:Leak
-   fun:calloc
-   fun:PR_Calloc
-   fun:PR_GetCurrentThread
-   ...
-   fun:_ZNK3net15X509Certificate14VerifyInternalERKSsiPNS_16CertVerifyResultE
-   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
-   fun:_ZN3net18CertVerifierWorker3RunEv
 }
 {
    # Histograms are used on un-joined threads, and can't be deleted atexit.
@@ -957,21 +957,41 @@
    fun:_ZN10disk_cache14StatsHistogram10FactoryGet*
 }
 {
-   bug_83345
+   # See http://code.google.com/p/chromium/issues/detail?id=70062#c8
+   bug_70062 (Intentional)
+   Memcheck:Leak
+   fun:calloc
+   ...
+   fun:PR_NewLock
+   ...
+   fun:InitSessionCacheLocks
+   fun:initSessionCacheLocksLazily
+   fun:PR_CallOnce
+   fun:ssl_InitSessionCacheLocks
+   fun:lock_cache
+   fun:ssl_LookupSID
+   fun:ssl2_BeginClientHandshake
+   fun:ssl_Do1stHandshake
+   fun:SSL_ForceHandshake
+   fun:_ZN3net18SSLClientSocketNSS11DoHandshakeEv
+   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
+}
+{
+   bug_83345 (Needs_Annotation)
    Memcheck:Leak
    ...
    fun:_ZN4base23LeakyLazyInstanceTraits*NewEPv
    fun:_ZN4base12LazyInstance*LeakyLazyInstanceTraits*PointerEv
 }
 {
-   bug_87500_a
+   bug_87500_a (Intentional)
    Memcheck:Leak
    ...
    fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
    fun:_ZN10disk_cache9BackendIO16ExecuteOperationEv
 }
 {
-   bug_87500_b
+   bug_87500_b (Intentional)
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base4Bind*TaskClosureAdapterEFvvEPS2_EENS_8internal20InvokerStorageHolderINS6_15InvokerStorage1IT_T0_EEEES9_RKSA_
@@ -981,7 +1001,7 @@
    fun:_ZN10disk_cache10InFlightIO12OnIOCompleteEPNS_12BackgroundIOE
 }
 {
-   bug_87500_c
+   bug_87500_c (Intentional)
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN3net9HttpCache*EntryERKSsPPNS0_11ActiveEntryEPNS0_11TransactionE
@@ -3006,25 +3026,6 @@
    fun:_ZN3IPC17SyncMessageSchemaI6Tuple1I21PluginMsg_Init_ParamsES1_IRbEE32DispatchDelayReplyWithSendParamsIN13PluginChannel13MessageFilterEMS9_FvRKS2_PNS_7MessageEEEEbbRKS3_PKSC_PT_T0_
    fun:_ZN14PluginMsg_Init18DispatchDelayReplyIN13PluginChannel13MessageFilterEMS2_FvRK21PluginMsg_Init_ParamsPN3IPC7MessageEEEEbPKS7_PT_T0_
    fun:_ZN13PluginChannel13MessageFilter17OnMessageReceivedERKN3IPC7MessageE
-}
-{
-   Bug_70062
-   Memcheck:Leak
-   fun:calloc
-   ...
-   fun:PR_NewLock
-   ...
-   fun:InitSessionCacheLocks
-   fun:initSessionCacheLocksLazily
-   fun:PR_CallOnce
-   fun:ssl_InitSessionCacheLocks
-   fun:lock_cache
-   fun:ssl_LookupSID
-   fun:ssl2_BeginClientHandshake
-   fun:ssl_Do1stHandshake
-   fun:SSL_ForceHandshake
-   fun:_ZN3net18SSLClientSocketNSS11DoHandshakeEv
-   fun:_ZN3net18SSLClientSocketNSS15DoHandshakeLoopEi
 }
 {
    bug_70327_a
