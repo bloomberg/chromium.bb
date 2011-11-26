@@ -292,6 +292,7 @@ class COMPOSITOR_EXPORT Layer :
   void CreateWebLayer();
   void RecomputeTransform();
   void RecomputeDrawsContentAndUVRect();
+  void RecomputeDebugBorderColor();
 #endif
 
   const LayerType type_;
@@ -334,6 +335,7 @@ class COMPOSITOR_EXPORT Layer :
 #if defined(USE_WEBKIT_COMPOSITOR)
   WebKit::WebLayer web_layer_;
   bool web_layer_is_accelerated_;
+  bool show_debug_borders_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(Layer);

@@ -9,4 +9,7 @@ namespace switches {
 const char kEnableCompositorOverdrawDebugging[] =
     "enable-compositor-overdraw-debugging";
 
+// Show colored borders around layers.
+const char kUIShowLayerBorders[] = "ui-show-layer-borders";
+
 }  // namespace switches

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,10 +16,11 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFloatRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "ui/base/animation/animation.h"
+#include "ui/gfx/canvas_skia.h"
 #if defined(USE_WEBKIT_COMPOSITOR)
 #include "ui/gfx/compositor/compositor_cc.h"
 #endif
-#include "ui/gfx/canvas_skia.h"
+#include "ui/gfx/compositor/compositor_switches.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
@@ -261,6 +263,7 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
   SetNeedsToRecomputeHole();
 #if defined(USE_WEBKIT_COMPOSITOR)
   web_layer_.setOpaque(fills_bounds_opaquely);
+  RecomputeDebugBorderColor();
 #endif
 }
 
@@ -286,7 +289,9 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
     web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
     web_layer_.setOpaque(fills_bounds_opaquely_);
     web_layer_.setOpacity(visible_ ? opacity_ : 0.f);
+    web_layer_.setDebugBorderWidth(show_debug_borders_ ? 2 : 0);
     RecomputeTransform();
+    RecomputeDebugBorderColor();
   }
   TextureCC* texture_cc = static_cast<TextureCC*>(texture);
   texture_cc->Update();
@@ -665,6 +670,7 @@ void Layer::SetOpacityImmediately(float opacity) {
 #if defined(USE_WEBKIT_COMPOSITOR)
   if (visible_)
     web_layer_.setOpacity(opacity);
+  RecomputeDebugBorderColor();
 #endif
   if (schedule_draw)
     ScheduleDraw();
@@ -704,7 +710,11 @@ void Layer::CreateWebLayer() {
   web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   web_layer_.setOpaque(true);
   web_layer_is_accelerated_ = false;
+  show_debug_borders_ = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUIShowLayerBorders);
+  web_layer_.setDebugBorderWidth(show_debug_borders_ ? 2 : 0);
   RecomputeDrawsContentAndUVRect();
+  RecomputeDebugBorderColor();
 }
 
 void Layer::RecomputeTransform() {
@@ -737,6 +747,17 @@ void Layer::RecomputeDrawsContentAndUVRect() {
     texture_layer.setUVRect(rect);
     web_layer_.setBounds(size);
   }
+}
+
+void Layer::RecomputeDebugBorderColor() {
+  if (!show_debug_borders_)
+    return;
+  unsigned int color = 0xFF000000;
+  color |= web_layer_is_accelerated_ ? 0x0000FF00 : 0x00FF0000;
+  bool opaque = fills_bounds_opaquely_ && (GetCombinedOpacity() == 1.f);
+  if (!opaque)
+    color |= 0xFF;
+  web_layer_.setDebugBorderColor(color);
 }
 #endif
 

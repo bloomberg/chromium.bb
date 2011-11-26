@@ -11,6 +11,7 @@
 namespace switches {
 
 COMPOSITOR_EXPORT extern const char kEnableCompositorOverdrawDebugging[];
+COMPOSITOR_EXPORT extern const char kUIShowLayerBorders[];
 
 }  // namespace switches
 
