@@ -124,6 +124,10 @@ remoting.DebugLog.prototype.updateStatistics = function(stats) {
  * @return {void} Nothing.
  */
 remoting.DebugLog.onKeydown = function(event) {
+  var element = /** @type {Element} */ (event.target);
+  if (element.tagName == 'INPUT' || element.tagName == 'TEXTAREA') {
+    return;
+  }
   if (String.fromCharCode(event.which) == 'D') {
     remoting.debug.toggle();
   }

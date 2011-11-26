@@ -101,7 +101,8 @@ remoting.HostList.prototype.parseHostListResponse_ = function(xhr) {
       }
     }
   } catch (er) {
-    console.error('Error processing response: ', xhr, er);
+    var typed_er = /** @type {Object} */ (er);
+    console.error('Error processing response: ', xhr, typed_er);
   }
 }
 
