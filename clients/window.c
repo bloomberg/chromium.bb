@@ -64,7 +64,6 @@ struct display {
 	struct wl_shm *shm;
 	struct wl_output *output;
 	struct wl_data_device_manager *data_device_manager;
-	struct rectangle screen_allocation;
 	EGLDisplay dpy;
 	EGLConfig rgb_config;
 	EGLConfig premultiplied_argb_config;
@@ -82,6 +81,7 @@ struct display {
 
 	struct wl_list window_list;
 	struct wl_list input_list;
+	struct wl_list output_list;
 	char *device_name;
 	cairo_surface_t *active_frame, *inactive_frame, *shadow;
 	struct xkb_desc *xkb;
@@ -160,6 +160,13 @@ struct input {
 	struct wl_data_device *data_device;
 	struct data_offer *drag_offer;
 	struct data_offer *selection_offer;
+};
+
+struct output {
+	struct display *display;
+	struct wl_output *output;
+	struct rectangle allocation;
+	struct wl_list link;
 };
 
 enum {
@@ -1789,15 +1796,17 @@ void
 window_set_fullscreen(struct window *window, int fullscreen)
 {
 	int32_t width, height;
+	struct output *output;
 
 	if ((window->type == TYPE_FULLSCREEN) == fullscreen)
 		return;
 
 	if (fullscreen) {
+		output = display_get_output(window->display);
 		window->type = TYPE_FULLSCREEN;
 		window->saved_allocation = window->allocation;
-		width = window->display->screen_allocation.width;
-		height = window->display->screen_allocation.height;
+		width = output->allocation.width;
+		height = output->allocation.height;
 		window->decoration = 0;
 	} else {
 		window->type = TYPE_TOPLEVEL;
@@ -2026,10 +2035,10 @@ display_handle_geometry(void *data,
 			const char *make,
 			const char *model)
 {
-	struct display *display = data;
+	struct output *output = data;
 
-	display->screen_allocation.x = x;
-	display->screen_allocation.y = y;
+	output->allocation.x = x;
+	output->allocation.y = y;
 }
 
 static void
@@ -2040,16 +2049,42 @@ display_handle_mode(void *data,
 		    int height,
 		    int refresh)
 {
-	struct display *display = data;
+	struct output *output = data;
 
-	display->screen_allocation.width = width;
-	display->screen_allocation.height = height;
+	if (flags & WL_OUTPUT_MODE_CURRENT) {
+		output->allocation.width = width;
+		output->allocation.height = height;
+	}
 }
 
 static const struct wl_output_listener output_listener = {
 	display_handle_geometry,
 	display_handle_mode
 };
+
+static void
+display_add_output(struct display *d, uint32_t id)
+{
+	struct output *output;
+
+	output = malloc(sizeof *output);
+	if (output == NULL)
+		return;
+
+	memset(output, 0, sizeof *output);
+	output->display = d;
+	output->output =
+		wl_display_bind(d->display, id, &wl_output_interface);
+	wl_list_insert(d->output_list.prev, &output->link);
+
+	wl_output_add_listener(output->output, &output_listener, output);
+}
+
+void
+output_get_allocation(struct output *output, struct rectangle *allocation)
+{
+	*allocation = output->allocation;
+}
 
 static void
 display_add_input(struct display *d, uint32_t id)
@@ -2089,8 +2124,7 @@ display_handle_global(struct wl_display *display, uint32_t id,
 		d->compositor =
 			wl_display_bind(display, id, &wl_compositor_interface);
 	} else if (strcmp(interface, "wl_output") == 0) {
-		d->output = wl_display_bind(display, id, &wl_output_interface);
-		wl_output_add_listener(d->output, &output_listener, d);
+		display_add_output(d, id);
 	} else if (strcmp(interface, "wl_input_device") == 0) {
 		display_add_input(d, id);
 	} else if (strcmp(interface, "wl_shell") == 0) {
@@ -2309,6 +2343,7 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 
 	wl_list_init(&d->deferred_list);
 	wl_list_init(&d->input_list);
+	wl_list_init(&d->output_list);
 
 	/* Set up listener so we'll catch all events. */
 	wl_display_add_global_listener(d->display,
@@ -2339,6 +2374,12 @@ struct wl_display *
 display_get_display(struct display *display)
 {
 	return display->display;
+}
+
+struct output *
+display_get_output(struct display *display)
+{
+	return container_of(display->output_list.next, struct output, link);
 }
 
 struct wl_compositor *

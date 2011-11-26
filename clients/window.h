@@ -32,6 +32,7 @@ struct window;
 struct item;
 struct display;
 struct input;
+struct output;
 
 struct task {
 	void (*run)(struct task *task, uint32_t events);
@@ -56,6 +57,9 @@ display_get_compositor(struct display *display);
 
 struct wl_shell *
 display_get_shell(struct display *display);
+
+struct output *
+display_get_output(struct display *display);
 
 struct wl_data_source *
 display_create_data_source(struct display *display);
@@ -350,6 +354,10 @@ input_receive_drag_data(struct input *input, const char *mime_type,
 int
 input_receive_selection_data(struct input *input, const char *mime_type,
 			     data_func_t func, void *data);
+
+void
+output_get_allocation(struct output *output, struct rectangle *allocation);
+
 
 enum {
 	CONFIG_KEY_INTEGER,
