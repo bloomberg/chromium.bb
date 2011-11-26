@@ -100,7 +100,8 @@ tablet_shell_sigchld(struct wlsc_process *process, int status)
 
 	shell->process.pid = 0;
 
-	fprintf(stderr, "meego-ux-daemon crashed, exit code %d\n", status);
+	fprintf(stderr,
+		"wayland-tablet-daemon crashed, exit code %d\n", status);
 }
 
 static void
@@ -212,8 +213,7 @@ tablet_shell_map(struct wlsc_shell *base, struct wlsc_surface *surface,
 	surface->y = 0;
 
 	if (surface == shell->lockscreen_surface) {
-		wlsc_compositor_fade(shell->compositor, 0.0);
-		wlsc_compositor_wake(shell->compositor);
+		/* */
 	} else if (surface == shell->switcher_surface) {
 		/* */
 	} else if (surface == shell->home_surface) {
@@ -263,14 +263,10 @@ tablet_shell_set_lockscreen(struct wl_client *client,
 {
 	struct tablet_shell *shell = resource->data;
 	struct wlsc_surface *es = surface_resource->data;
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) shell->compositor->input_device;
 
 	es->x = 0;
 	es->y = 0;
-	wlsc_surface_activate(es, device, wlsc_compositor_get_time());
 	shell->lockscreen_surface = es;
-
 	shell->lockscreen_listener.func = handle_lockscreen_surface_destroy;
 	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
 		       &shell->lockscreen_listener.link);
@@ -295,8 +291,6 @@ tablet_shell_set_switcher(struct wl_client *client,
 			  struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) shell->compositor->input_device;
 	struct wlsc_surface *es = surface_resource->data;
 
 	/* FIXME: Switcher should be centered and the compositor
@@ -306,8 +300,6 @@ tablet_shell_set_switcher(struct wl_client *client,
 	shell->switcher_surface = es;
 	shell->switcher_surface->x = 0;
 	shell->switcher_surface->y = 0;
-
-	wlsc_surface_activate(es, device, wlsc_compositor_get_time());
 
 	shell->switcher_listener.func = handle_switcher_surface_destroy;
 	wl_list_insert(es->surface.resource.destroy_listener_list.prev,
@@ -320,15 +312,10 @@ tablet_shell_set_homescreen(struct wl_client *client,
 			    struct wl_resource *surface_resource)
 {
 	struct tablet_shell *shell = resource->data;
-	struct wlsc_input_device *device =
-		(struct wlsc_input_device *) shell->compositor->input_device;
 
 	shell->home_surface = surface_resource->data;
 	shell->home_surface->x = 0;
 	shell->home_surface->y = 0;
-
-	wlsc_surface_activate(shell->home_surface, device,
-			      wlsc_compositor_get_time());
 }
 
 static void
@@ -478,6 +465,7 @@ static const struct tablet_shell_interface tablet_shell_implementation = {
 static void
 launch_ux_daemon(struct tablet_shell *shell)
 {
+	const char *shell_exe = LIBEXECDIR "/wayland-tablet-shell";
 	struct wlsc_compositor *compositor = shell->compositor;
 	char s[32];
 	int sv[2], flags;
@@ -500,9 +488,7 @@ launch_ux_daemon(struct tablet_shell *shell)
 
 		snprintf(s, sizeof s, "%d", sv[1]);
 		setenv("WAYLAND_SOCKET", s, 1);
-		setenv("QT_QPA_PLATFORM", "waylandgl", 1);
-		if (execl("/usr/libexec/meego-ux-daemon",
-			  "/usr/libexec/meego-ux-daemon", NULL) < 0)
+		if (execl(shell_exe, shell_exe, NULL) < 0)
 			fprintf(stderr, "exec failed: %m\n");
 		exit(-1);
 
@@ -533,6 +519,13 @@ toggle_switcher(struct tablet_shell *shell)
 		tablet_shell_set_state(shell, STATE_SWITCHER);
 		break;
 	}
+}
+
+static void
+tablet_shell_activate(struct wlsc_shell *base, struct wlsc_surface *es,
+		      struct wlsc_input_device *device, uint32_t time)
+{
+	wlsc_surface_activate(es, device, time);
 }
 
 static void
@@ -633,6 +626,11 @@ home_key_binding(struct wl_input_device *device, uint32_t time,
 }
 
 static void
+destroy_tablet_shell(struct wl_resource *resource)
+{
+}
+
+static void
 bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 {
 	struct tablet_shell *shell = data;
@@ -642,8 +640,15 @@ bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 		 * tries to access the object?. */
 		return;
 
-	shell->resource.client = client;
 	shell->resource.object.id = id;
+	shell->resource.object.interface = &tablet_shell_interface;
+	shell->resource.object.implementation =
+		(void (**)(void)) &tablet_shell_implementation;
+	shell->resource.client = client;
+	shell->resource.data = shell;
+	shell->resource.destroy = destroy_tablet_shell;
+
+	wl_client_add_resource(client, &shell->resource);
 }
 
 void
@@ -662,13 +667,9 @@ shell_init(struct wlsc_compositor *compositor)
 	memset(shell, 0, sizeof *shell);
 	shell->compositor = compositor;
 
-	shell->resource.object.interface = &tablet_shell_interface;
-	shell->resource.object.implementation =
-		(void (**)(void)) &tablet_shell_implementation;
-
 	/* FIXME: This will make the object available to all clients. */
 	wl_display_add_global(compositor->wl_display,
-			      &wl_shell_interface, shell, bind_shell);
+			      &tablet_shell_interface, shell, bind_shell);
 
 	loop = wl_display_get_event_loop(compositor->wl_display);
 	shell->long_press_source =
@@ -687,6 +688,7 @@ shell_init(struct wlsc_compositor *compositor)
 
 	compositor->shell = &shell->shell;
 
+	shell->shell.activate = tablet_shell_activate;
 	shell->shell.lock = tablet_shell_lock;
 	shell->shell.unlock = tablet_shell_unlock;
 	shell->shell.map = tablet_shell_map;

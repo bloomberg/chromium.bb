@@ -2,7 +2,7 @@ noinst_PROGRAMS = $(clients_programs) 		\
 	$(poppler_programs) 			\
 	$(simple_clients_programs)
 
-libexec_PROGRAMS = $(desktop_shell)
+libexec_PROGRAMS = $(desktop_shell) $(tablet_shell)
 
 if BUILD_SIMPLE_CLIENTS
 simple_clients_programs = simple-egl simple-shm
@@ -27,6 +27,7 @@ clients_programs =				\
 	eventdemo
 
 desktop_shell = wayland-desktop-shell
+tablet_shell = wayland-tablet-shell
 
 noinst_LIBRARIES = libtoytoolkit.a
 
@@ -82,11 +83,19 @@ wayland_desktop_shell_SOURCES =			\
 	desktop-shell-protocol.c
 wayland_desktop_shell_LDADD = $(toolkit_libs)
 
+wayland_tablet_shell_SOURCES =			\
+	tablet-shell.c				\
+	tablet-shell-client-protocol.h		\
+	tablet-shell-protocol.c
+wayland_tablet_shell_LDADD = $(toolkit_libs)
+
 BUILT_SOURCES =					\
 	screenshooter-client-protocol.h		\
 	screenshooter-protocol.c		\
 	desktop-shell-client-protocol.h		\
-	desktop-shell-protocol.c
+	desktop-shell-protocol.c		\
+	tablet-shell-client-protocol.h		\
+	tablet-shell-protocol.c
 
 CLEANFILES = $(BUILT_SOURCES)
 endif
