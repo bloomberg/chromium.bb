@@ -78,11 +78,11 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/extensions/extension_file_browser_private_api.h"
-#include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
-#include "chrome/browser/extensions/extension_input_ime_api.h"
-#include "chrome/browser/extensions/extension_input_method_api.h"
-#include "chrome/browser/extensions/extension_mediaplayer_private_api.h"
+#include "chrome/browser/chromeos/extensions/file_browser_extension_api.h"
+#include "chrome/browser/chromeos/extensions/get_chromeos_info_extension_api.h"
+#include "chrome/browser/chromeos/extensions/media_player_extension_api.h"
+#include "chrome/browser/chromeos/extensions/input_ime_extension_api.h"
+#include "chrome/browser/chromeos/extensions/input_method_extension_api.h"
 #endif
 
 using extensions::ExtensionAPI;

@@ -40,7 +40,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/extensions/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager_util.h"
 #endif
 
 using content::BrowserThread;

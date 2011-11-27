@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_mediaplayer_private_api.h"
+#include "chrome/browser/chromeos/extensions/media_player_extension_api.h"
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/media/media_player.h"

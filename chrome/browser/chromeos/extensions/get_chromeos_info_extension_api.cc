@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_info_private_api_chromeos.h"
+#include "chrome/browser/chromeos/extensions/get_chromeos_info_extension_api.h"
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
