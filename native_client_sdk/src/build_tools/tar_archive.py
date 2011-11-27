@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -153,4 +152,3 @@ class TarArchive(path_set.PathSet):
         else:
           # Everything else is considered a plain file.
           self.files.add(self.path_filter(manifest_item[LAST_ITEM_INDEX]))
-

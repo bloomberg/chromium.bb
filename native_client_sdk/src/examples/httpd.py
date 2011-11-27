@@ -1,9 +1,7 @@
-#!/usr/bin/python
-#
+#!/usr/bin/env python
 # Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-#
 
 """A tiny web server.
 
@@ -105,7 +103,7 @@ def Run(server_address,
   logging.info("Shutting down local server on port %d", server_address[1])
 
 
-if __name__ == '__main__':
+def main():
   usage_str = "usage: %prog [options] [optional_portnum]"
   parser = optparse.OptionParser(usage=usage_str)
   parser.add_option(
@@ -122,4 +120,8 @@ if __name__ == '__main__':
     Run((SERVER_HOST, int(args[1])))
   else:
     Run((SERVER_HOST, SERVER_PORT))
-  sys.exit(0)
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main())

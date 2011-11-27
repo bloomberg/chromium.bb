@@ -1,5 +1,4 @@
-#!/usr/bin/python2.6
-#
+#!/usr/bin/env python
 # Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -236,7 +235,6 @@ class TestPatch(unittest.TestCase):
 
 
 def RunTests():
-
   outcome = True
   for test_class in [TestRange, TestChangeHunk, TestPatchHeader, TestPatch]:
     suite = unittest.TestLoader().loadTestsFromTestCase(test_class)
@@ -244,6 +242,7 @@ def RunTests():
     outcome = outcome and result.wasSuccessful()
 
   return int(not outcome)
+
 
 if __name__ == '__main__':
   sys.exit(RunTests())

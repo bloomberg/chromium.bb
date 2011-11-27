@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Native Client Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -91,6 +91,7 @@ def main(argv):
     argv: Command-line arguments'''
   ValidateAllLinks(argv)
   return 0
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
