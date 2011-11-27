@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,6 +35,7 @@ def GrepForHistograms(path, histograms):
     if match:
       histograms.add(match.group(1))
 
+
 def WalkDirectory(root_path, histograms):
   for path, dirs, files in os.walk(root_path):
     if '.svn' in dirs:
@@ -43,6 +44,7 @@ def WalkDirectory(root_path, histograms):
       ext = os.path.splitext(file)[1]
       if ext == '.cc':
         GrepForHistograms(os.path.join(path, file), histograms)
+
 
 def main(argv):
   histograms = set()
@@ -53,6 +55,8 @@ def main(argv):
   # Print out the histograms as a sorted list.
   for histogram in sorted(histograms):
     print histogram
+  return 0
+
 
 if '__main__' == __name__:
-  main(sys.argv)
+  sys.exit(main(sys.argv))

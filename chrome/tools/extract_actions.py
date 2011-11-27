@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -439,6 +439,8 @@ def main(argv):
 
   if hash_output:
     print "Done. Do not forget to add chromeactions.txt to your changelist"
+  return 0
+
 
 if '__main__' == __name__:
-  main(sys.argv)
+  sys.exit(main(sys.argv))

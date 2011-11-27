@@ -1,7 +1,8 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be found
-# in the LICENSE file.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 
 """Extracts registration forms from the corresponding HTML files.
 
@@ -228,7 +229,6 @@ class FormsExtractor(object):
 
 
 def main():
-  # Command line options.
   parser = OptionParser()
   parser.add_option(
       '-l', '--log_level', metavar='LOG_LEVEL', default='error',
@@ -242,12 +242,13 @@ def main():
   if options.log_level not in ['DEBUG', 'INFO', 'WARNING', 'ERROR']:
     print 'Wrong log_level argument.'
     parser.print_help()
-    sys.exit(1)
+    return 1
 
   options.log_level = getattr(logging, options.log_level)
   extractor = FormsExtractor(logging_level=options.log_level)
   extractor.Extract(options.js)
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

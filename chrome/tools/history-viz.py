@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,7 +17,18 @@ import subprocess
 import sys
 import urlparse
 
-class URL:
+
+# Some transition types, copied from page_transition_types.h.
+TRANS_TYPES = {
+  0: 'link',
+  1: 'typed',
+  2: 'most-visited',
+  3: 'auto subframe',
+  7: 'form',
+}
+
+
+class URL(object):
   """Represents a broken-down URL from our most visited database."""
 
   def __init__(self, id, url):
@@ -67,7 +78,8 @@ class URL:
       lines.append(line)
     return '\n'.join(lines)
 
-class Edge:
+
+class Edge(object):
   """Represents an edge in the history graph, connecting two pages.
 
   If a link is traversed twice, it is one Edge with two entries in
@@ -97,6 +109,7 @@ class Edge:
       #     edge['chain'] = chain
     return all
 
+
 def ClusterBy(objs, pred):
   """Group a list of objects by a predicate.
 
@@ -109,12 +122,14 @@ def ClusterBy(objs, pred):
     clusters[cluster].append(obj)
   return clusters
 
-def EscapeDot(str):
+
+def EscapeDot(string):
   """Escape a string suitable for embedding in a graphviz graph."""
   # TODO(evanm): this is likely not sufficient.
-  return str.replace('\n', '\\n')
+  return string.replace('\n', '\\n')
 
-class SQLite:
+
+class SQLite(object):
   """Trivial interface to executing SQLite queries.
   Spawns a new process with each call."""
   def __init__(self, file=None):
@@ -131,6 +146,7 @@ class SQLite:
     for line in subproc.stdout:
       row = line.strip().split('\t')
       yield row
+
 
 def LoadHistory(filename):
   db = SQLite(filename)
@@ -157,85 +173,81 @@ def LoadHistory(filename):
 
   return urls, edges
 
-# Some transition types, copied from page_transition_types.h.
-TRANS_TYPES = {
-  0: 'link',
-  1: 'typed',
-  2: 'most-visited',
-  3: 'auto subframe',
-  7: 'form',
-}
 
-urls, edges = LoadHistory(sys.argv[1])
+def main():
+  urls, edges = LoadHistory(sys.argv[1])
+  print 'digraph G {'
+  print '  graph [rankdir=LR]'  # Display left to right.
+  print '  node [shape=box]'    # Display nodes as boxes.
+  print '  subgraph { rank=source; 0 [label="start"] }'
 
-print 'digraph G {'
-print '  graph [rankdir=LR]'  # Display left to right.
-print '  node [shape=box]'    # Display nodes as boxes.
-print '  subgraph { rank=source; 0 [label="start"] }'
-
-# Output all the nodes within graph clusters.
-hosts = ClusterBy(urls.values(), lambda url: url.host)
-for i, (host, urls) in enumerate(hosts.items()):
-  # Cluster all URLs under this host if it has more than one entry.
-  host_clustered = len(urls) > 1
-  if host_clustered:
-    print 'subgraph clusterhost%d {' % i
-    print '  label="%s"' % host
-  paths = ClusterBy(urls, lambda url: url.path)
-  for j, (path, urls) in enumerate(paths.items()):
+  # Output all the nodes within graph clusters.
+  hosts = ClusterBy(urls.values(), lambda url: url.host)
+  for i, (host, urls) in enumerate(hosts.items()):
     # Cluster all URLs under this host if it has more than one entry.
-    path_clustered = host_clustered and len(urls) > 1
-    if path_clustered:
-      print '  subgraph cluster%d%d {' % (i, j)
-      print '    label="%s"' % path
-    for url in urls:
-      if url.id == '0': continue  # We already output the special start node.
-      pretty = url.PrettyPrint(include_host=not host_clustered,
-                               include_path=not path_clustered)
-      print '    %s [label="%s"]' % (url.id, EscapeDot(pretty))
-    if path_clustered:
-      print '  }'
-  if host_clustered:
-    print '}'
+    host_clustered = len(urls) > 1
+    if host_clustered:
+      print 'subgraph clusterhost%d {' % i
+      print '  label="%s"' % host
+    paths = ClusterBy(urls, lambda url: url.path)
+    for j, (path, urls) in enumerate(paths.items()):
+      # Cluster all URLs under this host if it has more than one entry.
+      path_clustered = host_clustered and len(urls) > 1
+      if path_clustered:
+        print '  subgraph cluster%d%d {' % (i, j)
+        print '    label="%s"' % path
+      for url in urls:
+        if url.id == '0': continue  # We already output the special start node.
+        pretty = url.PrettyPrint(include_host=not host_clustered,
+                                include_path=not path_clustered)
+        print '    %s [label="%s"]' % (url.id, EscapeDot(pretty))
+      if path_clustered:
+        print '  }'
+    if host_clustered:
+      print '}'
 
-# Output all the edges between nodes.
-for src, dsts in edges.items():
-  for dst, edge in dsts.items():
-    # Gather up all the transitions into the label.
-    label = []      # Label for the edge.
-    transitions = edge.Transitions()
-    for trans, count in transitions.items():
-      text = ''
-      if count > 1:
-        text = '%dx ' % count
-      base_type = trans & 0xFF
-      redir = (trans & 0xC0000000) != 0
-      start = (trans & 0x10000000) != 0
-      end = (trans & 0x20000000) != 0
-      if start or end:
-        if start:
-          text += '<'
-        if end:
-          text += '>'
-        text += ' '
-      if redir:
-        text += 'R '
-      text += TRANS_TYPES.get(base_type, 'trans%d' % base_type)
-      label.append(text)
-    if len(label) == 0:
-      continue
+  # Output all the edges between nodes.
+  for src, dsts in edges.items():
+    for dst, edge in dsts.items():
+      # Gather up all the transitions into the label.
+      label = []      # Label for the edge.
+      transitions = edge.Transitions()
+      for trans, count in transitions.items():
+        text = ''
+        if count > 1:
+          text = '%dx ' % count
+        base_type = trans & 0xFF
+        redir = (trans & 0xC0000000) != 0
+        start = (trans & 0x10000000) != 0
+        end = (trans & 0x20000000) != 0
+        if start or end:
+          if start:
+            text += '<'
+          if end:
+            text += '>'
+          text += ' '
+        if redir:
+          text += 'R '
+        text += TRANS_TYPES.get(base_type, 'trans%d' % base_type)
+        label.append(text)
+      if len(label) == 0:
+        continue
 
-    edgeattrs = []  # Graphviz attributes for the edge.
-    # If the edge is from the start and the transitions are fishy, make it
-    # display as a dotted line.
-    if src == '0' and len(transitions.keys()) == 1 and transitions.has_key(0):
-      edgeattrs.append('style=dashed')
-    if len(label) > 0:
-      edgeattrs.append('label="%s"' % EscapeDot('\n'.join(label)))
+      edgeattrs = []  # Graphviz attributes for the edge.
+      # If the edge is from the start and the transitions are fishy, make it
+      # display as a dotted line.
+      if src == '0' and len(transitions.keys()) == 1 and transitions.has_key(0):
+        edgeattrs.append('style=dashed')
+      if len(label) > 0:
+        edgeattrs.append('label="%s"' % EscapeDot('\n'.join(label)))
 
-    out = '%s -> %s' % (src, dst)
-    if len(edgeattrs) > 0:
-      out += ' [%s]' % ','.join(edgeattrs)
-    print out
-print '}'
+      out = '%s -> %s' % (src, dst)
+      if len(edgeattrs) > 0:
+        out += ' [%s]' % ','.join(edgeattrs)
+      print out
+  print '}'
+  return 0
 
+
+if __name__ == '__main__':
+  sys.exit(main())

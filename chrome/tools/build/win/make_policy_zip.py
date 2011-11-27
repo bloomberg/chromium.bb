@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,6 +12,7 @@ import optparse
 import os
 import sys
 import zipfile
+
 
 def add_files_to_zip(zip_file, base_dir, file_list):
   """Pack a list of files into a zip archive, that is already
@@ -26,6 +28,7 @@ def add_files_to_zip(zip_file, base_dir, file_list):
     zip_file.write(base_dir + file_path, file_path)
   return 0
 
+
 def get_grd_outputs(grit_cmd, grit_defines, grd_file, grd_strip_path_prefix):
   grit_path = os.path.join(os.getcwd(), os.path.dirname(grit_cmd))
   sys.path.append(grit_path)
@@ -36,6 +39,7 @@ def get_grd_outputs(grit_cmd, grit_defines, grd_file, grd_strip_path_prefix):
     assert item.startswith(grd_strip_path_prefix)
     result.append(item[len(grd_strip_path_prefix):])
   return result
+
 
 def main(argv):
   """Pack a list of files into a zip archive.
@@ -73,6 +77,6 @@ def main(argv):
   finally:
     zip_file.close()
 
+
 if '__main__' == __name__:
   sys.exit(main(sys.argv))
-

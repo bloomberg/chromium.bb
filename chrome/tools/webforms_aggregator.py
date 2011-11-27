@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -722,7 +722,6 @@ class ThreadedCrawler(object):
 
 
 def main():
-  # Command line options.
   usage = 'usage: %prog [options] single_url_or_urls_filename'
   parser = optparse.OptionParser(usage)
   parser.add_option(
@@ -734,7 +733,7 @@ def main():
   if options.log_level not in ['DEBUG', 'INFO', 'WARNING', 'ERROR']:
     print 'Wrong log_level argument.'
     parser.print_help()
-    sys.exit(1)
+    return 1
   options.log_level = getattr(logging, options.log_level)
 
   if len(args) != 1:
@@ -762,7 +761,8 @@ def main():
   logger.info('Started at: %s\n', t0)
   logger.info('Ended at: %s\n', t1)
   logger.info('Total execution time: %s\n', delta_t)
+  return 0
 
 
 if __name__ == "__main__":
-  main()
+  sys.exit(main())

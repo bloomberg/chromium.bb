@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -16,6 +15,7 @@ Usage:
 import optparse
 import os
 import shutil
+import sys
 
 
 class SuidAction(object):
@@ -29,7 +29,6 @@ class SuidAction(object):
     if not self._options.action:
       raise RuntimeError('No action specified.')
 
-
   def Run(self):
     self._ParseArgs()
     assert os.geteuid() == 0, 'Needs superuser privileges.'
@@ -37,6 +36,7 @@ class SuidAction(object):
     assert handler and callable(handler), \
         'No handler for %s' % self._options.action
     handler()
+    return 0
 
   ## Actions ##
 
@@ -54,5 +54,4 @@ class SuidAction(object):
 
 
 if __name__ == '__main__':
-  suid_action = SuidAction()
-  suid_action.Run()
+  sys.exit(SuidAction().Run())

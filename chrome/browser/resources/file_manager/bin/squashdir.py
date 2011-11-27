@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -27,8 +27,10 @@ presented by <input type=file multiple> do not allow users to recurse a
 selected directory, nor do they provide information about directory structure.
 """)
 
+
 def status(msg):
   sys.stderr.write(msg + '\n')
+
 
 def scan_path(dest, src, path):
   abs_src = os.path.join(src, path)
@@ -44,10 +46,11 @@ def scan_path(dest, src, path):
     for child_path in glob.glob(abs_src + '/*'):
       scan_path(dest, src, child_path[len(src) + 1:])
 
-if __name__ == '__main__':
+
+def main():
   if len(sys.argv) < 3 or sys.argv[1][0] == '-':
     usage()
-    return
+    return 1
 
   dest = sys.argv[1]
   for src in sys.argv[2:]:
@@ -55,3 +58,8 @@ if __name__ == '__main__':
     path = os.path.basename(abs_src)
     abs_src = os.path.dirname(abs_src)
     scan_path(dest, abs_src, path)
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main())

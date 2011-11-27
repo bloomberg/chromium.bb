@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -39,6 +39,7 @@ def RunSystemCommand(cmd):
     return subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0]
   except:
     raise Error("Failed to execute: " + cmd)
+
 
 def RunDumpbin(binary_file):
   """Runs dumpbin and parses its output.
@@ -196,8 +197,19 @@ def VerifyDependents(pe_name, dependents, delay_loaded, list_file, verbose):
   return max(deps_result, delayed_result)
 
 
-def main(options, args):
+def main():
   # PE means portable executable. It's any .DLL, .EXE, .SYS, .AX, etc.
+  usage = "usage: %prog [options] input output"
+  option_parser = optparse.OptionParser(usage=usage)
+  option_parser.add_option("-d",
+                           "--debug",
+                           dest="debug",
+                           action="store_true",
+                           default=False,
+                           help="Display debugging information")
+  options, args = option_parser.parse_args()
+  if len(args) != 2:
+    option_parser.error("Incorrect number of arguments")
   pe_name = args[0]
   deps_file = args[1]
   dependents, delay_loaded = RunDumpbin(pe_name)
@@ -211,15 +223,4 @@ def main(options, args):
 
 
 if '__main__' == __name__:
-  usage = "usage: %prog [options] input output"
-  option_parser = optparse.OptionParser(usage = usage)
-  option_parser.add_option("-d",
-                           "--debug",
-                           dest="debug",
-                           action="store_true",
-                           default=False,
-                           help="Display debugging information")
-  options, args = option_parser.parse_args()
-  if len(args) != 2:
-    option_parser.error("Incorrect number of arguments")
-  sys.exit(main(options, args))
+  sys.exit(main())

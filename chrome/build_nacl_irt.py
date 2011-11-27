@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -215,13 +215,14 @@ def Main(argv):
   if args or not options.platforms or (
       not options.inputs and not options.outdir):
     parser.print_help()
-    sys.exit(1)
+    return 1
 
   if options.inputs:
     PrintInputs(options.platforms)
   else:
     BuildIRT(options.platforms, options.outdir)
+  return 0
 
 
 if __name__ == '__main__':
-  Main(sys.argv)
+  sys.exit(Main(sys.argv))

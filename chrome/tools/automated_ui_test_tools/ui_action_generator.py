@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -68,10 +67,7 @@ def CreateUIActionList(actions_per_command, num_commands, given_seed=None):
 
 
 def ParseCommandLine():
-  """Parses the command line.
-
-  Returns:
-    List of options and their values, and unparsed args.
+  """Returns the list of options and their values, and unparsed args.
   """
   parser = optparse.OptionParser()
   parser.add_option('-o', '--output', dest='output_file', type='string',
@@ -102,7 +98,8 @@ def main():
   f.write(command_list)
   f.close()
   print command_list
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

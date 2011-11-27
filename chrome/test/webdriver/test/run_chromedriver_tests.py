@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -24,7 +24,7 @@ import chromedriver_tests
 import py_unittest_util
 
 
-if __name__ == '__main__':
+def main():
   parser = optparse.OptionParser()
   parser.add_option(
       '', '--filter', type='string', default='*',
@@ -47,10 +47,10 @@ if __name__ == '__main__':
 
   if options.list is True:
     print '\n'.join(py_unittest_util.GetTestNamesFromSuite(filtered_suite))
-    sys.exit(0)
+    return 0
   if sys.platform.startswith('darwin'):
     print 'All tests temporarily disabled on mac, crbug.com/103434'
-    sys.exit(0)
+    return 0
 
   driver_exe = options.driver_exe
   if driver_exe is not None:
@@ -61,4 +61,8 @@ if __name__ == '__main__':
   ChromeDriverTest.GlobalSetUp(driver_exe, chrome_exe)
   result = py_unittest_util.GTestTextTestRunner(verbosity=1).run(filtered_suite)
   ChromeDriverTest.GlobalTearDown()
-  sys.exit(not result.wasSuccessful())
+  return not result.wasSuccessful()
+
+
+if __name__ == '__main__':
+  sys.exit(main())

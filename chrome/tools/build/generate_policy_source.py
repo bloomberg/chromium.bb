@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -51,7 +51,7 @@ def main():
   if len(args) != 3:
     print "exactly platform, chromium_os flag and input file must be specified."
     parser.print_help()
-    sys.exit(2)
+    return 2
   template_file_contents = _LoadJSONFile(args[2]);
   if opts.header_path is not None:
     _WritePolicyConstantHeader(template_file_contents, args, opts);
@@ -63,6 +63,7 @@ def main():
     _WriteProtobuf(template_file_contents, args, opts.proto_path)
   if opts.decoder_path is not None:
     _WriteProtobufParser(template_file_contents, args, opts.decoder_path)
+  return 0
 
 
 #------------------ shared helpers ---------------------------------#
@@ -462,6 +463,5 @@ def _WriteProtobufParser(template_file_contents, args, outfilepath):
     f.write(CPP_FOOT)
 
 
-#------------------ main() -----------------------------------------#
 if __name__ == '__main__':
-  main();
+  sys.exit(main())

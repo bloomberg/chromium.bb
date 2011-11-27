@@ -1,12 +1,11 @@
-#!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Script used to scan for server DLLs at build time and build a header
    included by setup.exe. This header contains an array of the names of
    the DLLs that need registering at install time.
-
 """
 
 import ConfigParser
@@ -128,19 +127,11 @@ def RunSystemCommand(cmd):
     raise "Error while running cmd: %s" % cmd
 
 
-def main(options):
+def main():
   """Main method that reads input file, scans <build_output>\servers for
      matches to files described in the input file. A header file for the
      setup project is then generated.
   """
-  config = Readconfig(options.output_dir, options.input_file)
-  registered_dll_list = ScanServerDlls(config, options.distribution,
-                                       options.output_dir)
-  CreateRegisteredDllIncludeFile(registered_dll_list,
-                                 options.header_output_dir)
-
-
-if '__main__' == __name__:
   option_parser = optparse.OptionParser()
   option_parser.add_option('-o', '--output_dir', help='Build Output directory')
   option_parser.add_option('-x', '--header_output_dir',
@@ -150,4 +141,13 @@ if '__main__' == __name__:
       help='Name of Chromium Distribution. Optional.')
 
   options, args = option_parser.parse_args()
-  sys.exit(main(options))
+  config = Readconfig(options.output_dir, options.input_file)
+  registered_dll_list = ScanServerDlls(config, options.distribution,
+                                       options.output_dir)
+  CreateRegisteredDllIncludeFile(registered_dll_list,
+                                 options.header_output_dir)
+  return 0
+
+
+if '__main__' == __name__:
+  sys.exit(main())

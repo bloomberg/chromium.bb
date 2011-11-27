@@ -1,6 +1,5 @@
-#!/usr/bin/python
-
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -111,7 +110,7 @@ def CheckForUnusedGrdIDsInSources(grd_files, src_dirs):
   return 0
 
 
-if __name__ == '__main__':
+def main():
   # script lives in src/chrome/tools
   chrome_tools_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
   src_dir = os.path.dirname(os.path.dirname(chrome_tools_dir))
@@ -162,4 +161,8 @@ if __name__ == '__main__':
       os.path.join(src_dir, 'third_party', 'mozilla_security_manager'),
     ]
 
-  sys.exit(CheckForUnusedGrdIDsInSources(grd_files, src_dirs))
+  return CheckForUnusedGrdIDsInSources(grd_files, src_dirs)
+
+
+if __name__ == '__main__':
+  sys.exit(main())

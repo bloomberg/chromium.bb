@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -76,6 +76,7 @@ kStringIds = [
 # The ID of the first resource string.
 kFirstResourceID = 1600
 
+
 class TranslationStruct:
   """A helper struct that holds information about a single translation."""
   def __init__(self, resource_id_str, language, translation):
@@ -152,6 +153,7 @@ def CollectTranslatedStrings(branding):
   translated_strings.sort()
   return translated_strings
 
+
 def WriteRCFile(translated_strings, out_filename):
   """Writes a resource (rc) file with all the language strings provided in
   |translated_strings|."""
@@ -176,6 +178,7 @@ def WriteRCFile(translated_strings, out_filename):
   outfile = open(out_filename + '.rc', 'wb')
   outfile.write(''.join(lines).encode('utf-16'))
   outfile.close()
+
 
 def WriteHeaderFile(translated_strings, out_filename):
   """Writes a .h file with resource ids.  This file can be included by the
@@ -219,7 +222,12 @@ def WriteHeaderFile(translated_strings, out_filename):
   outfile.write('\n#endif  // ndef RC_INVOKED\n')
   outfile.close()
 
+
 def main(argv):
+  # TODO: Use optparse to parse command line flags.
+  if len(argv) < 2:
+    print 'Usage:\n  %s <output_directory> [branding]' % argv[0]
+    return 1
   branding = ''
   if (len(sys.argv) > 2):
     branding = argv[2]
@@ -227,10 +235,8 @@ def main(argv):
   kFilebase = os.path.join(argv[1], 'installer_util_strings')
   WriteRCFile(translated_strings, kFilebase)
   WriteHeaderFile(translated_strings, kFilebase)
+  return 0
+
 
 if '__main__' == __name__:
-  if len(sys.argv) < 2:
-    print 'Usage:\n  %s <output_directory> [branding]' % sys.argv[0]
-    sys.exit(1)
-  # Use optparse to parse command line flags.
-  main(sys.argv)
+  sys.exit(main(sys.argv))

@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -63,7 +63,7 @@ def ScanSlnFile(filename):
   return projects
 
 
-def main(filename, project_to_scan, reverse):
+def sln_deps(filename, project_to_scan, reverse):
   """Displays the project's dependencies."""
   project_to_scan = project_to_scan.lower()
 
@@ -91,9 +91,10 @@ def main(filename, project_to_scan, reverse):
     deps_name = [projects[d].name for d in project.deps]
     print "\n".join(str("  " + name) for name in sorted(deps_name,
                                                         key=str.lower))
+  return 0
 
 
-if __name__ == '__main__':
+def main():
   usage = "usage: %prog [options] solution [project]"
 
   description = ("Display the dependencies of a project in human readable"
@@ -116,5 +117,8 @@ if __name__ == '__main__':
   project_to_scan = ""
   if len(args) == 2:
     project_to_scan = args[1]
-  main(args[0], project_to_scan, options.reverse)
+  return sln_deps(args[0], project_to_scan, options.reverse)
 
+
+if __name__ == '__main__':
+  sys.exit(main())

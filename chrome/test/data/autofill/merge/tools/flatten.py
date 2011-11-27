@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,7 +7,6 @@ import sys
 
 def main():
   """Converts a vertical serialization into a compact, horizontal serialization.
-
   """
 
   COLUMNS = ['First name', 'Middle name', 'Last name', 'Email', 'Company name',
@@ -59,7 +59,8 @@ def main():
     profile_format = zip(column_formats, profile)
     profile = [format_.format(value) for (format_, value) in profile_format]
     print " | ".join(profile)
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

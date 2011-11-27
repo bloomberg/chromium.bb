@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -265,7 +265,9 @@ def main_linux(options, args):
   return 0
 
 
-if '__main__' == __name__:
+def main():
+  if not sys.platform.startswith('linux'):
+    return 1
   parser = optparse.OptionParser()
   parser.add_option('', '--processor-dir', type='string', default='',
                     help='The directory where the processor is installed. '
@@ -291,8 +293,8 @@ if '__main__' == __name__:
                          'Default: chrome')
 
   (options, args) = parser.parse_args()
+  return main_linux(options, args)
 
-  if sys.platform.startswith('linux'):
-    sys.exit(main_linux(options, args))
-  else:
-    sys.exit(1)
+
+if '__main__' == __name__:
+  sys.exit(main())

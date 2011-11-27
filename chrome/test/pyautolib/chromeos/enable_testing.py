@@ -1,5 +1,4 @@
-#!/usr/bin/python
-
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -19,6 +18,7 @@ Usage:
 import dbus
 import optparse
 import os
+import sys
 
 
 class EnableChromeTestingOnChromeOS(object):
@@ -46,8 +46,8 @@ class EnableChromeTestingOnChromeOS(object):
                                                    self.SESSION_MANAGER_PATH),
                              self.SESSION_MANAGER_INTERFACE)
     print manager.EnableChromeTesting(True, self._options.extra_chrome_flags)
+    return 0
 
 
 if __name__ == '__main__':
-  enabler = EnableChromeTestingOnChromeOS()
-  enabler.Run()
+  sys.exit(EnableChromeTestingOnChromeOS().Run())

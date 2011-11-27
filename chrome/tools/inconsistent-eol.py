@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -38,6 +38,7 @@ def CountChars(text, str):
   logging.debug(len(split) - 1)
   return len(split) - 1
 
+
 def PrevailingEOLName(crlf, cr, lf):
   """Describe the most common line ending.
 
@@ -55,6 +56,7 @@ def PrevailingEOLName(crlf, cr, lf):
   if most == crlf:
     return 'crlf'
   return 'lf'
+
 
 def FixEndings(file, crlf, cr, lf):
   """Change the file's line endings to CRLF or LF, whichever is more common."""
@@ -99,7 +101,8 @@ def ProcessFiles(filelist):
         print '%s: mostly %s' % (filename, PrevailingEOLName(crlf, cr, lf))
         FixEndings(filename, crlf, cr, lf)
 
-def main(options, args):
+
+def process(options, args):
   """Process the files."""
   if not args or len(args) < 1:
     raise Error('No files given.')
@@ -111,8 +114,10 @@ def main(options, args):
   else:
     filelist = args
     ProcessFiles(filelist)
+  return 0
 
-if '__main__' == __name__:
+
+def main():
   if DEBUGGING:
     debug_level = logging.DEBUG
   else:
@@ -131,5 +136,8 @@ if '__main__' == __name__:
                            default=False,
                            help="Force any files with CRLF to LF instead.")
   options, args = option_parser.parse_args()
+  return process(options, args)
 
-  sys.exit(main(options, args))
+
+if '__main__' == __name__:
+  sys.exit(main())

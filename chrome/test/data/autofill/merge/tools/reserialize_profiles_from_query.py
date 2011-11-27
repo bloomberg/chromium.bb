@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,9 +7,9 @@ import sys
 
 from autofill_merge_common import SerializeProfiles, ColumnNameToFieldType
 
+
 def main():
   """Serializes the output of the query 'SELECT * from autofill_profiles;'.
-
   """
 
   COLUMNS = ['GUID', 'LABEL', 'FIRST_NAME', 'MIDDLE_NAME', 'LAST_NAME', 'EMAIL',
@@ -32,7 +33,8 @@ def main():
       profiles.append(zip(types, values))
 
   print SerializeProfiles(profiles)
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())
