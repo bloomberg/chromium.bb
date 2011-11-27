@@ -7,6 +7,9 @@
 
 Import('env')
 
+# Disable Chrome extention tests until issue with Windows is fixed
+# and test is moved into Chrome repo.
+# BUG http://code.google.com/p/chromium/issues/detail?id=105481
 Return()
 
 # BUG(adonovan): test is breaking on ARM.  Disable in haste...
