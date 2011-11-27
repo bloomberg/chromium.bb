@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/textfield/native_textfield_views.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
 
 #include <algorithm>
 
@@ -18,6 +18,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/controls/textfield/textfield_views_model.h"
 #include "ui/views/events/event.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/widget/widget.h"
@@ -27,9 +30,6 @@
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
-#include "views/controls/textfield/textfield.h"
-#include "views/controls/textfield/textfield_controller.h"
-#include "views/controls/textfield/textfield_views_model.h"
 #include "views/metrics.h"
 #include "views/views_delegate.h"
 

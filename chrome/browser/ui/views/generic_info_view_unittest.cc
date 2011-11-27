@@ -9,9 +9,9 @@
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 #include "views/controls/label.h"
-#include "views/controls/textfield/textfield.h"
 
 // This class is only used on windows for now.
 #if defined(OS_WIN)

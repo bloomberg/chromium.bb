@@ -1,15 +1,15 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/textfield/gtk_views_entry.h"
+#include "ui/views/controls/textfield/gtk_views_entry.h"
 
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/skia_utils_gtk.h"
-#include "views/controls/textfield/native_textfield_gtk.h"
-#include "views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/native_textfield_gtk.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 G_BEGIN_DECLS
 

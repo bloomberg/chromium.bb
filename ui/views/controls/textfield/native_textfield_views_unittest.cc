@@ -21,6 +21,10 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/controls/textfield/textfield_views_model.h"
 #include "ui/views/events/event.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/ime/mock_input_method.h"
@@ -28,10 +32,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/textfield/native_textfield_views.h"
-#include "views/controls/textfield/textfield.h"
-#include "views/controls/textfield/textfield_controller.h"
-#include "views/controls/textfield/textfield_views_model.h"
 #include "views/views_delegate.h"
 
 // Drag and drop for aura in linux hasn't been implemented yet.

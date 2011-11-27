@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 namespace chromeos {
 

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_GTK_H_
-#define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_GTK_H_
+#ifndef UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_GTK_H_
+#define UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
 
 #include "base/string16.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/views/controls/textfield/native_textfield_wrapper.h"
 #include "views/controls/native_control_gtk.h"
-#include "views/controls/textfield/native_textfield_wrapper.h"
 
 namespace gfx {
 class SelectionModel;
@@ -102,4 +102,4 @@ class NativeTextfieldGtk : public NativeControlGtk,
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_GTK_H_
+#endif  // UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_GTK_H_

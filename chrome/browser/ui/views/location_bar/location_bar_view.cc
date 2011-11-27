@@ -56,8 +56,8 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
 #include "views/controls/label.h"
-#include "views/controls/textfield/native_textfield_views.h"
 #include "views/drag_utils.h"
 
 #if !defined(OS_CHROMEOS)

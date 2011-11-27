@@ -22,6 +22,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/events/event.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/view_storage.h"
@@ -34,7 +35,6 @@
 #include "views/controls/button/button_dropdown.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/scroll_view.h"
-#include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 

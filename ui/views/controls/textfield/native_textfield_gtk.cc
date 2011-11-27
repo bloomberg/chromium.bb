@@ -5,7 +5,7 @@
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
-#include "views/controls/textfield/native_textfield_gtk.h"
+#include "ui/views/controls/textfield/native_textfield_gtk.h"
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
@@ -14,12 +14,12 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/gfx/skia_utils_gtk.h"
+#include "ui/views/controls/textfield/gtk_views_entry.h"
+#include "ui/views/controls/textfield/gtk_views_textview.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
+#include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/widget/native_widget_gtk.h"
-#include "views/controls/textfield/gtk_views_entry.h"
-#include "views/controls/textfield/gtk_views_textview.h"
-#include "views/controls/textfield/native_textfield_views.h"
-#include "views/controls/textfield/textfield.h"
-#include "views/controls/textfield/textfield_controller.h"
 
 namespace views {
 

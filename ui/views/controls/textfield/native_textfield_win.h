@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WIN_H_
-#define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WIN_H_
+#ifndef UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WIN_H_
+#define UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WIN_H_
 #pragma once
 
 #include <atlbase.h>
@@ -19,7 +19,7 @@
 #include "base/win/scoped_comptr.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/insets.h"
-#include "views/controls/textfield/native_textfield_wrapper.h"
+#include "ui/views/controls/textfield/native_textfield_wrapper.h"
 
 namespace gfx {
 class SelectionModel;
@@ -291,4 +291,4 @@ class NativeTextfieldWin
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WIN_H_
+#endif  // UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_WIN_H_

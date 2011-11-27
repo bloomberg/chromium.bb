@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
-#define VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
+#ifndef UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
+#define UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
 #pragma once
 
 #include "base/memory/weak_ptr.h"
@@ -11,11 +11,11 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
+#include "ui/views/controls/textfield/native_textfield_wrapper.h"
+#include "ui/views/controls/textfield/textfield_views_model.h"
 #include "ui/views/touchui/touch_selection_controller.h"
 #include "views/border.h"
 #include "views/context_menu_controller.h"
-#include "views/controls/textfield/native_textfield_wrapper.h"
-#include "views/controls/textfield/textfield_views_model.h"
 #include "views/drag_controller.h"
 #include "views/view.h"
 
@@ -264,4 +264,4 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_
+#endif  // UI_VIEWS_CONTROLS_TEXTFIELD_NATIVE_TEXTFIELD_VIEWS_H_

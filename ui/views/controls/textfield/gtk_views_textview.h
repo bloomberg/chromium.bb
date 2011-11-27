@@ -1,9 +1,9 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_TEXTFIELD_GTK_VIEWS_TEXTVIEW_H_
-#define VIEWS_CONTROLS_TEXTFIELD_GTK_VIEWS_TEXTVIEW_H_
+#ifndef UI_VIEWS_CONTROLS_TEXTFIELD_GTK_VIEWS_TEXTVIEW_H_
+#define UI_VIEWS_CONTROLS_TEXTFIELD_GTK_VIEWS_TEXTVIEW_H_
 #pragma once
 
 #include <gdk/gdk.h>
@@ -51,4 +51,4 @@ GType gtk_views_textview_get_type();
 
 G_END_DECLS
 
-#endif  // VIEWS_CONTROLS_TEXTFIELD_GTK_VIEWS_TEXTVIEW_H_
+#endif  // UI_VIEWS_CONTROLS_TEXTFIELD_GTK_VIEWS_TEXTVIEW_H_

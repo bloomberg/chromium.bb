@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdkkeysyms.h>
@@ -19,9 +19,9 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/controls/textfield/native_textfield_wrapper.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/textfield/native_textfield_wrapper.h"
-#include "views/controls/textfield/textfield_controller.h"
 
 #if defined(OS_LINUX)
 #include "ui/base/keycodes/keyboard_code_conversion_gtk.h"
@@ -29,8 +29,8 @@
 #include "base/win/win_util.h"
 // TODO(beng): this should be removed when the OS_WIN hack from
 // ViewHierarchyChanged is removed.
-#include "views/controls/textfield/native_textfield_views.h"
-#include "views/controls/textfield/native_textfield_win.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
+#include "ui/views/controls/textfield/native_textfield_win.h"
 #endif
 
 namespace views {

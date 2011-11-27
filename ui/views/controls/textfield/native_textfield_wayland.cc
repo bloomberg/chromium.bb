@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "views/controls/textfield/native_textfield_views.h"
-#include "views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 namespace views {
 

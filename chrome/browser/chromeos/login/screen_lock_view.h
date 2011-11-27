@@ -11,7 +11,7 @@
 #include "chrome/browser/chromeos/login/user_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "views/controls/textfield/textfield_controller.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 #include "views/view.h"
 
 namespace chromeos {

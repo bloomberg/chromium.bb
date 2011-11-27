@@ -5,12 +5,12 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/keycodes/keyboard_codes.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/focus_manager_test.h"
 #include "ui/views/widget/widget.h"
 #include "views/controls/button/text_button.h"
-#include "views/controls/textfield/textfield.h"
 
 #if !defined(USE_AURA)
 #include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"

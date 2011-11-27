@@ -10,10 +10,10 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "views/controls/label.h"
-#include "views/controls/textfield/textfield.h"
 
 static const int kLocalStorageSetItemInfoViewBorderSize = 1;
 static const int kLocalStorageSetItemInfoViewInsetSize = 3;

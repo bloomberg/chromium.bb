@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
-#define VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
+#ifndef UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
+#define UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
 #pragma once
 
 #include "build/build_config.h"
@@ -18,7 +18,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_widget_types.h"
-#include "views/controls/textfield/native_textfield_wrapper.h"
+#include "ui/views/controls/textfield/native_textfield_wrapper.h"
 #include "views/view.h"
 
 #if !defined(OS_LINUX)
@@ -312,4 +312,4 @@ class VIEWS_EXPORT Textfield : public View {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_
+#endif  // UI_VIEWS_CONTROLS_TEXTFIELD_TEXTFIELD_H_

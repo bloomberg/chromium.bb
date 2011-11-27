@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/textfield/textfield_views_model.h"
+#include "ui/views/controls/textfield/textfield_views_model.h"
 
 #include <algorithm>
 
@@ -16,7 +16,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/render_text.h"
-#include "views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "views/views_delegate.h"
 
 namespace views {

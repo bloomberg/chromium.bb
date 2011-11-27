@@ -8,8 +8,8 @@
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/textfield/textfield.h"
 
 void DropdownBarHost::SetWidgetPositionNative(const gfx::Rect& new_pos,
                                               bool no_redraw) {

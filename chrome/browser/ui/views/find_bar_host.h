@@ -12,7 +12,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
-#include "views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 class BrowserView;
 class FindBarController;

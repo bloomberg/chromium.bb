@@ -19,14 +19,14 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/textfield/native_textfield_wrapper.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/native_widget_gtk.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
-#include "views/controls/textfield/native_textfield_wrapper.h"
-#include "views/controls/textfield/textfield.h"
 
 namespace chromeos {
 

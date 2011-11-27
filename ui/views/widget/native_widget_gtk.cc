@@ -34,16 +34,16 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/ime/input_method_gtk.h"
-#include "views/controls/textfield/native_textfield_views.h"
-#include "views/views_delegate.h"
 #include "ui/views/widget/drop_target_gtk.h"
 #include "ui/views/widget/gtk_views_fixed.h"
 #include "ui/views/widget/gtk_views_window.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_gtk.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "views/views_delegate.h"
 
 #if defined(HAVE_IBUS)
 #include "ui/views/ime/input_method_ibus.h"

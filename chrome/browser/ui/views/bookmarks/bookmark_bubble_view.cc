@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/events/event.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -31,7 +32,6 @@
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
-#include "views/controls/textfield/textfield.h"
 
 using views::ColumnSet;
 using views::GridLayout;

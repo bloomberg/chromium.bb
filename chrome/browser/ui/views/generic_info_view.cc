@@ -8,10 +8,10 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "views/controls/label.h"
-#include "views/controls/textfield/textfield.h"
 
 GenericInfoView::GenericInfoView(int number_of_rows)
     : number_of_rows_(number_of_rows), name_string_ids_(NULL) {
