@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "googleurl/src/gurl.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/events/event.h"
-#include "views/controls/native/native_view_host.h"
 
 class Profile;
 class SiteInstance;

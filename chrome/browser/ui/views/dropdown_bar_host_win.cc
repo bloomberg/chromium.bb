@@ -10,7 +10,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "ui/base/keycodes/keyboard_code_conversion_win.h"
-#include "views/controls/scrollbar/native_scroll_bar.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar.h"
 
 NativeWebKeyboardEvent DropdownBarHost::GetKeyboardEvent(
      const TabContents* contents,

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_
-#define VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_
+#ifndef UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_
+#define UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_
 #pragma once
 
 #include "ui/gfx/native_widget_types.h"
@@ -69,4 +69,4 @@ class NativeViewHostWrapper {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_
+#endif  // UI_VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_WRAPPER_H_

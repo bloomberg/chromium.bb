@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "ui/base/models/table_model.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/table/table_view_observer.h"
-#include "views/controls/native/native_view_host.h"
 
 namespace views {
 

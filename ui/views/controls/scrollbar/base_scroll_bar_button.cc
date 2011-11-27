@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/scrollbar/base_scroll_bar_button.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar_button.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

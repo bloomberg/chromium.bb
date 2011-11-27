@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
-#include "views/controls/native/native_view_host.h"
+#include "ui/views/controls/native/native_view_host.h"
 
 class NativeTabContentsContainerWin : public NativeTabContentsContainer,
                                       public views::NativeViewHost {

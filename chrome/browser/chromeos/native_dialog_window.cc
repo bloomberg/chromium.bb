@@ -11,10 +11,10 @@
 #include "chrome/browser/chromeos/frame/bubble_window.h"
 #include "chrome/browser/ui/views/window.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/non_client_view.h"
-#include "views/controls/native/native_view_host.h"
 
 namespace {
 

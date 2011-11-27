@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "views/controls/scrollbar/scroll_bar.h"
+#include "ui/views/controls/scrollbar/scroll_bar.h"
 
 namespace views {
 

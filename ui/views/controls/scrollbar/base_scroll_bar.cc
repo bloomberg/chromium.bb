@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/scrollbar/base_scroll_bar.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,11 +16,11 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/widget/widget.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_runner.h"
 #include "views/controls/scroll_view.h"
-#include "views/controls/scrollbar/base_scroll_bar_thumb.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/screen.h"

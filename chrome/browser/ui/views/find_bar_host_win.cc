@@ -10,8 +10,8 @@
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/scrollbar/native_scroll_bar.h"
 
 void FindBarHost::AudibleAlert() {
   MessageBeep(MB_OK);

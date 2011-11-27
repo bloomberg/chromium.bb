@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_VIEWS_H_
-#define VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_VIEWS_H_
+#ifndef UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_VIEWS_H_
+#define UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_VIEWS_H_
 #pragma once
 
 #include "base/compiler_specific.h"
 #include "ui/gfx/native_theme.h"
 #include "ui/gfx/point.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar_wrapper.h"
 #include "views/controls/button/button.h"
-#include "views/controls/scrollbar/base_scroll_bar.h"
-#include "views/controls/scrollbar/native_scroll_bar_wrapper.h"
 #include "views/view.h"
 
 namespace gfx {
@@ -78,4 +78,4 @@ class VIEWS_EXPORT NativeScrollBarViews : public BaseScrollBar,
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_VIEWS_H_
+#endif  // UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_VIEWS_H_

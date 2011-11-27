@@ -24,8 +24,8 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/icon_util.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/table/table_view_observer.h"
-#include "views/controls/native/native_view_host.h"
 
 namespace {
 

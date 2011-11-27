@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/native/native_view_host_gtk.h"
+#include "ui/views/controls/native/native_view_host_gtk.h"
 
 #include <gtk/gtk.h>
 
 #include <algorithm>
 
 #include "base/logging.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/gtk_views_fixed.h"
 #include "ui/views/widget/native_widget_gtk.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/native/native_view_host.h"
 #include "views/views_delegate.h"
 
 namespace views {

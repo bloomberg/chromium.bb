@@ -33,6 +33,7 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_border.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
@@ -40,7 +41,6 @@
 #include "views/controls/menu/menu_item_view.h"
 #include "views/controls/menu/menu_model_adapter.h"
 #include "views/controls/menu/menu_runner.h"
-#include "views/controls/native/native_view_host.h"
 #include "views/painter.h"
 
 using views::Widget;

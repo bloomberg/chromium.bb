@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/controls/native/native_view_host.h"
+#include "ui/views/controls/native/native_view_host.h"
 
 class Browser;
 class Extension;

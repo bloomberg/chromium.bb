@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_BUTTON_H_
-#define VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_BUTTON_H_
+#ifndef UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_BUTTON_H_
+#define UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_BUTTON_H_
 #pragma once
 
 #include "views/controls/button/custom_button.h"
@@ -47,4 +47,4 @@ class VIEWS_EXPORT BaseScrollBarButton : public CustomButton {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_BUTTON_H_
+#endif  // UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_BUTTON_H_

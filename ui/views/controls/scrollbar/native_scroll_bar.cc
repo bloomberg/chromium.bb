@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/scrollbar/native_scroll_bar.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar.h"
 
 #include <algorithm>
 #include <string>
 
 #include "base/message_loop.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar_wrapper.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/scrollbar/native_scroll_bar_wrapper.h"
 
 #if defined(USE_AURA)
-#include "views/controls/scrollbar/native_scroll_bar_views.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar_views.h"
 #endif
 
 namespace views {

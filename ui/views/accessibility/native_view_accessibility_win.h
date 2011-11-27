@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "ui/base/accessibility/accessible_view_state.h"
-#include "views/controls/native/native_view_host.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "views/view.h"
 
 namespace ui {

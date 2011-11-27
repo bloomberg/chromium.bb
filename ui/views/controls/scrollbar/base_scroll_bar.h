@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_H_
-#define VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_H_
+#ifndef UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_H_
+#define UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_H_
 #pragma once
 
+#include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "views/context_menu_controller.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/menu/menu_delegate.h"
-#include "views/controls/scrollbar/scroll_bar.h"
 #include "views/repeat_controller.h"
 
 namespace views {
@@ -156,4 +156,4 @@ class VIEWS_EXPORT BaseScrollBar : public ScrollBar,
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_H_
+#endif  // UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/scrollbar/native_scroll_bar_views.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar_views.h"
 
 #include "base/logging.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar_button.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar.h"
+#include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "views/controls/button/custom_button.h"
 #include "views/controls/focusable_border.h"
-#include "views/controls/scrollbar/native_scroll_bar.h"
-#include "views/controls/scrollbar/scroll_bar.h"
-#include "views/controls/scrollbar/base_scroll_bar_button.h"
-#include "views/controls/scrollbar/base_scroll_bar_thumb.h"
 
 namespace views {
 

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/native/native_view_host_aura.h"
+#include "ui/views/controls/native/native_view_host_aura.h"
 
 #include "base/logging.h"
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/window.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/native/native_view_host.h"
 
 namespace views {
 

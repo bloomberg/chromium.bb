@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WIN_H_
-#define VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WIN_H_
+#ifndef UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WIN_H_
+#define UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WIN_H_
 #pragma once
 
+#include "ui/views/controls/scrollbar/native_scroll_bar_wrapper.h"
 #include "views/controls/native_control_win.h"
-#include "views/controls/scrollbar/native_scroll_bar_wrapper.h"
 
 namespace views {
 
@@ -64,4 +64,4 @@ class NativeScrollBarWin : public NativeControlWin,
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WIN_H_
+#endif  // UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WIN_H_

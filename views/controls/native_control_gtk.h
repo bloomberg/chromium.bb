@@ -9,7 +9,7 @@
 #include <gtk/gtk.h>
 
 #include "base/compiler_specific.h"
-#include "views/controls/native/native_view_host.h"
+#include "ui/views/controls/native/native_view_host.h"
 
 namespace views {
 

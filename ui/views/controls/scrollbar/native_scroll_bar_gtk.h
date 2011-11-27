@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_
-#define VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_
+#ifndef UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_
+#define UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "ui/views/controls/scrollbar/native_scroll_bar_wrapper.h"
 #include "views/controls/native_control_gtk.h"
-#include "views/controls/scrollbar/native_scroll_bar_wrapper.h"
 
 namespace views {
 
@@ -77,4 +77,4 @@ class NativeScrollBarGtk : public NativeControlGtk,
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_
+#endif  // UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_GTK_H_

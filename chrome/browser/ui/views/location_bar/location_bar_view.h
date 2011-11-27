@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
-#include "views/controls/native/native_view_host.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "views/drag_controller.h"
 
 #if defined(USE_AURA)
