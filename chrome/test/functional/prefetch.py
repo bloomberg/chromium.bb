@@ -1,17 +1,20 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# this functional test spawns a web server, and runs chrome to point
-# at that web server.  The content served contains prefetch requests,
-# and the tests assert that the webserver logs reflect that.
+"""This functional test spawns a web server, and runs chrome to point
+at that web server.
 
-# run like any functional test:
-# $ python chrome/test/functional/prefetch.py
-# in a repo with a built pyautolib
+The content served contains prefetch requests, and the tests assert that the
+webserver logs reflect that.
 
-# the import of multiprocessing implies python 2.6 is required
+Run like any functional test:
+$ python chrome/test/functional/prefetch.py
+in a repo with a built pyautolib
+
+The import of multiprocessing implies python 2.6 is required
+"""
 
 import os
 import time

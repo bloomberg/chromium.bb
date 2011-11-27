@@ -1,9 +1,11 @@
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Helper script to copy policy files into
-# the correct managed policy location in the machine
+"""Helper script to copy policy files into the correct managed policy location
+in the machine.
+"""
 
 import os
 import sys
@@ -24,9 +26,11 @@ def main():
   elif sys.argv[1] == 'remove_dir':
     os.system('rm -rf %s' % sys.argv[2])
   else:
-    print >>sys.stderr, 'Invalid syntax. Possible values are [copy], \
-                         [setup_dir], [remove_dir]'
+    print >>sys.stderr, (
+        'Invalid syntax. Possible values are [copy], [setup_dir], [remove_dir]')
+    return 1
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

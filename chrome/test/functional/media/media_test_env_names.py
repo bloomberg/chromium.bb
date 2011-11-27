@@ -1,10 +1,9 @@
-#!/usr/bin/python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 
-class MediaTestEnvNames:
+class MediaTestEnvNames(object):
   """Class that contains all environment names used in media tests.
 
   Since PyAuto does not support commandline arguments, we have to rely on
