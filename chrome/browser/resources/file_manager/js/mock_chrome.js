@@ -207,7 +207,7 @@ chrome.fileBrowserPrivate = {
    */
   getStrings: function(callback) {
     // Keep this list in sync with the strings in generated_resources.grd and
-    // file_browser_extension_api.cc!
+    // extension_file_browser_private_api.cc!
     callback({
       // These two are from locale_settings*.grd
       WEB_FONT_FAMILY: 'Chrome Droid Sans,Droid Sans Fallback,sans-serif',

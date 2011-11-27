@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/input_method_extension_api.h"
+#include "chrome/browser/extensions/extension_input_method_api.h"
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"

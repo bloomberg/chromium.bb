@@ -41,6 +41,7 @@
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_global_error.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "chrome/browser/extensions/extension_management_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -103,7 +104,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/extensions/input_ime_extension_api.h"
+#include "chrome/browser/extensions/extension_input_ime_api.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
 #include "webkit/fileapi/file_system_path_manager.h"
@@ -502,7 +503,7 @@ void ExtensionService::InitEventRouters() {
       new chromeos::ExtensionInputMethodEventRouter);
 
   ExtensionMediaPlayerEventRouter::GetInstance()->Init(profile_);
-  InputImeExtensionEventRouter::GetInstance()->Init();
+  ExtensionInputImeEventRouter::GetInstance()->Init();
 #endif
 
 #if defined(OS_CHROMEOS) && defined(TOUCH_UI)
@@ -1017,7 +1018,7 @@ void ExtensionService::NotifyExtensionLoaded(const Extension* extension) {
        component != extension->input_components().end();
        ++component) {
     if (component->type == Extension::INPUT_COMPONENT_TYPE_IME) {
-      InputImeExtensionEventRouter::GetInstance()->RegisterIme(
+      ExtensionInputImeEventRouter::GetInstance()->RegisterIme(
           profile_, extension->id(), *component);
     }
 #if defined(TOUCH_UI)

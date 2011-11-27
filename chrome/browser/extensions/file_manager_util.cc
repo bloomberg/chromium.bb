@@ -1,7 +1,7 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/chromeos/extensions/file_manager_util.h"
+#include "chrome/browser/extensions/file_manager_util.h"
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
@@ -345,3 +345,4 @@ void ViewItem(const FilePath& full_path, bool enqueue) {
 }
 
 }  // namespace file_manager_util
+

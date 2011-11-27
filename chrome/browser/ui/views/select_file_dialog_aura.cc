@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/select_file_dialog.h"
 
+#include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -11,6 +12,9 @@ using content::BrowserThread;
 // static
 SelectFileDialog* SelectFileDialog::Create(Listener* listener) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  NOTIMPLEMENTED();
+#if defined(OS_WIN)
   return NULL;
+#else
+  return new SelectFileDialogExtension(listener);
+#endif
 }

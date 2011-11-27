@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/extensions/input_ime_extension_api.h"
+#include "chrome/browser/extensions/extension_input_ime_api.h"
 
 #include "base/json/json_writer.h"
 #include "base/string_number_conversions.h"
@@ -276,7 +276,7 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
       return;
 
     std::string request_id =
-        InputImeExtensionEventRouter::GetInstance()->AddRequest(engine_id,
+        ExtensionInputImeEventRouter::GetInstance()->AddRequest(engine_id,
                                                                 key_data);
 
     DictionaryValue* dict = new DictionaryValue();
@@ -357,23 +357,23 @@ class ImeObserver : public chromeos::InputMethodEngine::Observer {
 }  // namespace chromeos
 
 
-InputImeExtensionEventRouter*
-InputImeExtensionEventRouter::GetInstance() {
-  return Singleton<InputImeExtensionEventRouter>::get();
+ExtensionInputImeEventRouter*
+ExtensionInputImeEventRouter::GetInstance() {
+  return Singleton<ExtensionInputImeEventRouter>::get();
 }
 
-InputImeExtensionEventRouter::InputImeExtensionEventRouter()
+ExtensionInputImeEventRouter::ExtensionInputImeEventRouter()
   : next_request_id_(1) {
 }
 
-InputImeExtensionEventRouter::~InputImeExtensionEventRouter() {
+ExtensionInputImeEventRouter::~ExtensionInputImeEventRouter() {
 }
 
-void InputImeExtensionEventRouter::Init() {
+void ExtensionInputImeEventRouter::Init() {
 }
 
 #if defined(OS_CHROMEOS)
-bool InputImeExtensionEventRouter::RegisterIme(
+bool ExtensionInputImeEventRouter::RegisterIme(
     Profile* profile,
     const std::string& extension_id,
     const Extension::InputComponentInfo& component) {
@@ -425,7 +425,7 @@ bool InputImeExtensionEventRouter::RegisterIme(
 }
 #endif
 
-chromeos::InputMethodEngine* InputImeExtensionEventRouter::GetEngine(
+chromeos::InputMethodEngine* ExtensionInputImeEventRouter::GetEngine(
     const std::string& extension_id, const std::string& engine_id) {
   std::map<std::string,
            std::map<std::string, chromeos::InputMethodEngine*> >::const_iterator
@@ -440,7 +440,7 @@ chromeos::InputMethodEngine* InputImeExtensionEventRouter::GetEngine(
   return NULL;
 }
 
-chromeos::InputMethodEngine* InputImeExtensionEventRouter::GetActiveEngine(
+chromeos::InputMethodEngine* ExtensionInputImeEventRouter::GetActiveEngine(
     const std::string& extension_id) {
   std::map<std::string,
            std::map<std::string, chromeos::InputMethodEngine*> >::const_iterator
@@ -459,7 +459,7 @@ chromeos::InputMethodEngine* InputImeExtensionEventRouter::GetActiveEngine(
   return NULL;
 }
 
-void InputImeExtensionEventRouter::OnEventHandled(
+void ExtensionInputImeEventRouter::OnEventHandled(
     const std::string& extension_id,
     const std::string& request_id,
     bool handled) {
@@ -482,7 +482,7 @@ void InputImeExtensionEventRouter::OnEventHandled(
   engine->KeyEventDone(key_data, handled);
 }
 
-std::string InputImeExtensionEventRouter::AddRequest(
+std::string ExtensionInputImeEventRouter::AddRequest(
     const std::string& engine_id,
     chromeos::input_method::KeyEventHandle* key_data) {
   std::string request_id = base::IntToString(next_request_id_);
@@ -495,7 +495,7 @@ std::string InputImeExtensionEventRouter::AddRequest(
 
 bool SetCompositionFunction::RunImpl() {
   chromeos::InputMethodEngine* engine =
-      InputImeExtensionEventRouter::GetInstance()->
+      ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
     result_.reset(Value::CreateBooleanValue(false));
@@ -563,7 +563,7 @@ bool SetCompositionFunction::RunImpl() {
 
 bool ClearCompositionFunction::RunImpl() {
   chromeos::InputMethodEngine* engine =
-      InputImeExtensionEventRouter::GetInstance()->
+      ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
     result_.reset(Value::CreateBooleanValue(false));
@@ -588,7 +588,7 @@ bool ClearCompositionFunction::RunImpl() {
 bool CommitTextFunction::RunImpl() {
   // TODO(zork): Support committing when not active.
   chromeos::InputMethodEngine* engine =
-      InputImeExtensionEventRouter::GetInstance()->
+      ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
     result_.reset(Value::CreateBooleanValue(false));
@@ -620,7 +620,7 @@ bool SetCandidateWindowPropertiesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kEngineIdKey, &engine_id));
 
   chromeos::InputMethodEngine* engine =
-      InputImeExtensionEventRouter::GetInstance()->GetEngine(extension_id(),
+      ExtensionInputImeEventRouter::GetInstance()->GetEngine(extension_id(),
                                                              engine_id);
   if (!engine) {
     result_.reset(Value::CreateBooleanValue(false));
@@ -731,7 +731,7 @@ bool SetCandidatesFunction::ReadCandidates(
 
 bool SetCandidatesFunction::RunImpl() {
   chromeos::InputMethodEngine* engine =
-      InputImeExtensionEventRouter::GetInstance()->
+      ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
     result_.reset(Value::CreateBooleanValue(false));
@@ -766,7 +766,7 @@ bool SetCandidatesFunction::RunImpl() {
 
 bool SetCursorPositionFunction::RunImpl() {
   chromeos::InputMethodEngine* engine =
-      InputImeExtensionEventRouter::GetInstance()->
+      ExtensionInputImeEventRouter::GetInstance()->
           GetActiveEngine(extension_id());
   if (!engine) {
     result_.reset(Value::CreateBooleanValue(false));
@@ -799,7 +799,7 @@ bool SetMenuItemsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kEngineIdKey, &engine_id));
 
   chromeos::InputMethodEngine* engine =
-      InputImeExtensionEventRouter::GetInstance()->GetEngine(extension_id(),
+      ExtensionInputImeEventRouter::GetInstance()->GetEngine(extension_id(),
                                                              engine_id);
   if (!engine) {
     error_ = kErrorEngineNotAvailable;
@@ -826,7 +826,7 @@ bool UpdateMenuItemsFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kEngineIdKey, &engine_id));
 
   chromeos::InputMethodEngine* engine =
-      InputImeExtensionEventRouter::GetInstance()->GetEngine(extension_id(),
+      ExtensionInputImeEventRouter::GetInstance()->GetEngine(extension_id(),
                                                              engine_id);
   if (!engine) {
     error_ = kErrorEngineNotAvailable;
@@ -852,7 +852,7 @@ bool InputEventHandled::RunImpl() {
   bool handled = false;
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &handled));
 
-  InputImeExtensionEventRouter::GetInstance()->OnEventHandled(
+  ExtensionInputImeEventRouter::GetInstance()->OnEventHandled(
       extension_id(), request_id_str, handled);
 
   return true;

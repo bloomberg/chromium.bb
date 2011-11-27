@@ -17,15 +17,15 @@ using ::testing::_;
 using ::testing::ReturnRef;
 using ::testing::StrEq;
 
-class FileBrowserExtensionApiTest : public ExtensionApiTest {
+class ExtensionFileBrowserPrivateApiTest : public ExtensionApiTest {
  public:
-  FileBrowserExtensionApiTest()
+  ExtensionFileBrowserPrivateApiTest()
       : disk_mount_manager_mock_(NULL),
         test_mount_point_("/tmp") {
     CreateVolumeMap();
   }
 
-  virtual ~FileBrowserExtensionApiTest() {
+  virtual ~ExtensionFileBrowserPrivateApiTest() {
     DCHECK(!disk_mount_manager_mock_);
     STLDeleteValues(&volumes_);
   }
@@ -123,7 +123,7 @@ class FileBrowserExtensionApiTest : public ExtensionApiTest {
   FilePath test_mount_point_;
 };
 
-IN_PROC_BROWSER_TEST_F(FileBrowserExtensionApiTest, FileBrowserMount) {
+IN_PROC_BROWSER_TEST_F(ExtensionFileBrowserPrivateApiTest, FileBrowserMount) {
   // We will call fileBrowserPrivate.unmountVolume once. To test that method, we
   // check that UnmountPath is really called with the same value.
   AddTmpMountPoint();
