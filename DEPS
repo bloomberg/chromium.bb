@@ -8,7 +8,7 @@ vars = {
   "webkit_revision": "101168",
   "chromium_git": "http://git.chromium.org/git",
   "swig_revision": "69281",
-  "nacl_revision": "7169",
+  "nacl_revision": "7282",
   # After changing nacl_revision, run 'glient sync' and check native_client/DEPS
   # to update other nacl_*_revision's.
   "nacl_tools_revision": "7139",  # native_client/DEPS: tools_rev
@@ -16,13 +16,13 @@ vars = {
   # These hashes need to be updated when nacl_toolchain_revision is changed.
   # After changing nacl_toolchain_revision, run 'gclient runhooks' to get the
   # new values.
-  "nacl_toolchain_mac_x86_newlib_hash":
-      "74612a65dd6bae1d85af1f7277cc6af6e5d86b46",
-  "nacl_toolchain_win_x86_newlib_hash":
-      "3672e7b20848beec886badc46909cf24fb1c574f",
   "nacl_toolchain_linux_x86_newlib_hash":
-      "528b9b85d087ffb5a0f6348f5219a33cd0ff725f",
-  "nacl_toolchain_revision": "7098",
+      "5f82c18ce9d0201f9df852bddcb19746ef690290",
+  "nacl_toolchain_mac_x86_newlib_hash":
+      "648b5ae8ae770b41c4a0eef28cff6f67fe8bb386",
+  "nacl_toolchain_win_x86_newlib_hash":
+      "a340bc72900f002f88491bf82baf69d35593ed75",
+  "nacl_toolchain_revision": "7258",
 
   "libjingle_revision": "95",
   "libvpx_revision": "109236",
