@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.settings - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.experimental.storage - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -294,7 +294,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.settings</h1>
+        <h1 class="page_title">chrome.experimental.storage</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -309,7 +309,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.settings</a>
+                <a href="#apiReference">API reference: chrome.experimental.storage</a>
                 <ol>
                   <li>
             <a href="#properties">Properties</a>
@@ -341,7 +341,7 @@
             <a href="#types">Types</a>
             <ol>
               <li>
-                <a href="#type-SettingChange">SettingChange</a>
+                <a href="#type-StorageChange">StorageChange</a>
                 <ol>
                   <li style="display: none; ">
             <a>Methods</a>
@@ -406,7 +406,7 @@
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.settings</h2>
+        <h2>API reference: chrome.experimental.storage</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup">
@@ -418,7 +418,7 @@
               <h4>sync</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.experimental.settings.</span><span>sync</span>
+                <span>chrome.experimental.storage.</span><span>sync</span>
               </div>
               <div>
           <dt>
@@ -432,7 +432,7 @@
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.settings.html#type-StorageNamespace">StorageNamespace</a>
+                        <a href="experimental.storage.html#type-StorageNamespace">StorageNamespace</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -450,7 +450,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Settings under the "sync" namespace are synced using Chrome Sync.</dd>
+          <dd>Items under the "sync" namespace are synced using Chrome Sync.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -492,7 +492,7 @@
               <h4>local</h4>
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span>chrome.experimental.settings.</span><span>local</span>
+                <span>chrome.experimental.storage.</span><span>local</span>
               </div>
               <div>
           <dt>
@@ -506,7 +506,7 @@
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.settings.html#type-StorageNamespace">StorageNamespace</a>
+                        <a href="experimental.storage.html#type-StorageNamespace">StorageNamespace</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -524,7 +524,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Settings under the "local" namespace are local to each machine.</dd>
+          <dd>Items under the "local" namespace are local to each machine.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -652,12 +652,12 @@
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.settings.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>array of SettingChange changes, string namespace</span>) <span class="subdued">{...}</span><span></span>);
+                <span class="subdued">chrome.experimental.storage.</span><span>onChanged</span><span class="subdued">.addListener</span>(function(<span>array of StorageChange changes, string namespace</span>) <span class="subdued">{...}</span><span></span>);
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when one or more settings change.</p>
+                <p>Fired when one or more items change.</p>
 
                 <!-- LISTENER PARAMETERS -->
                 <div>
@@ -682,7 +682,7 @@
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="experimental.settings.html#type-SettingChange">SettingChange</a>
+                        <a href="experimental.storage.html#type-StorageChange">StorageChange</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -775,7 +775,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The namespace (e.g. sync or local) of the area the changes are for.</dd>
+          <dd>The namespace (e.g. sync or local) of the storage area the changes are for.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -848,8 +848,8 @@
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a name="type-SettingChange"></a>
-              <h4>SettingChange</h4>
+              <a name="type-StorageChange"></a>
+              <h4>StorageChange</h4>
 
               <div>
           <dt>
@@ -928,7 +928,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The ID of the setting which changed.</dd>
+          <dd>The key of the item which changed.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -996,7 +996,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The old value of the setting, before it changed.</dd>
+          <dd>The old value of the item, if there was an old value.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1064,7 +1064,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The new value of the setting.</dd>
+          <dd>The new value of the item, if there is a new value.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1197,7 +1197,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Removes all values from settings.</p>
+                <p>Removes all items from storage.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1327,7 +1327,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Gets one or more values from settings.</p>
+                <p>Gets one or more items from storage.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1363,7 +1363,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty settings object.  Pass in null or undefined to get the entire contents of settings; this should only be used for debugging.</dd>
+          <dd>A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty result object.  Pass in null or undefined to get the entire contents of storage; this should only be used for debugging.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1431,7 +1431,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Callback with settings values, or on failure (in which case lastError will be set).</dd>
+          <dd>Callback with storage items, or on failure (in which case lastError will be set).</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1494,12 +1494,12 @@
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>object settings</span>) <span class="subdued">{...}</span>;</pre>
+                  <pre>function(<span>object items</span>) <span class="subdued">{...}</span>;</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>settings</var>
+            <var>items</var>
               <em>
 
                 <!-- TYPE -->
@@ -1527,7 +1527,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Object with given keys set to settings values.</dd>
+          <dd>Object with items in their key-value mappings.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1590,7 +1590,7 @@
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Removes one or more values from settings.</p>
+                <p>Removes one or more items from storage.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1626,7 +1626,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>A single key or a list of keys to remove from settings.</dd>
+          <dd>A single key or a list of keys for items to remove.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.
@@ -1783,12 +1783,12 @@
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>storageNamespace.set</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
-                      <var><span>settings</span></var></span><span class="optional"><span>, </span><span>function</span>
+                      <var><span>items</span></var></span><span class="optional"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Sets multiple settings values.</p>
+                <p>Sets multiple items.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1796,7 +1796,7 @@
                   <div>
                     <div>
           <dt>
-            <var>settings</var>
+            <var>items</var>
               <em>
 
                 <!-- TYPE -->
@@ -1824,7 +1824,7 @@
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Object to augment settings with. Values that cannot be serialized (functions, etc) will be ignored.</dd>
+          <dd>Object specifying items to augment storage with. Values that cannot be serialized (functions, etc) will be ignored.</dd>
           <dd style="display: none; ">
             This parameter was added in version
             <b><span></span></b>.

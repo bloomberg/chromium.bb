@@ -1,8 +1,8 @@
 <script>
 function test(stage0) {
   var apis = [
-      chrome.experimental.settings.sync,
-      chrome.experimental.settings.local
+      chrome.experimental.storage.sync,
+      chrome.experimental.storage.local
   ];
   apis.forEach(function(api) {
     api.succeed = chrome.test.callbackPass(api.clear.bind(api));
@@ -291,7 +291,7 @@ chrome.test.runTests([
   function throttling() {
     // We can only really test one of the namespaces since they will all get
     // throttled together.
-    var api = chrome.experimental.settings.sync;
+    var api = chrome.experimental.storage.sync;
 
     // Should get throttled after 1000 calls.
     var maxRequests = 1001;

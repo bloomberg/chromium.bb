@@ -14,8 +14,8 @@ namespace settings_namespace {
 
 // The namespaces of the storage areas.
 enum Namespace {
-  LOCAL,  // "local" i.e. chrome.experimental.settings.local
-  SYNC,   // "sync"  i.e. chrome.experimental.settings.sync
+  LOCAL,  // "local" i.e. chrome.experimental.storage.local
+  SYNC,   // "sync"  i.e. chrome.experimental.storage.sync
   INVALID
 };
 

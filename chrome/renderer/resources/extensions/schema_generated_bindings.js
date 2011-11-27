@@ -387,8 +387,8 @@ var chrome = chrome || {};
   function setupStorageNamespace() {
     function StorageNamespace(namespace, schema) {
       // Binds an API function for a namespace to its browser-side call, e.g.
-      // experimental.settings.sync.get('foo') -> (binds to) ->
-      // experimental.settings.get('sync', 'foo').
+      // experimental.storage.sync.get('foo') -> (binds to) ->
+      // experimental.storage.get('sync', 'foo').
       //
       // TODO(kalman): Put as a method on CustomBindingsObject and re-use (or
       // even generate) for other APIs that need to do this.
@@ -397,7 +397,7 @@ var chrome = chrome || {};
           var schema = this.parameters[functionName];
           chromeHidden.validate(arguments, schema);
           return sendRequest(
-              'experimental.settings.' + functionName,
+              'experimental.storage.' + functionName,
               [namespace].concat(Array.prototype.slice.call(arguments)),
               extendSchema(schema));
         };

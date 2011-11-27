@@ -16,6 +16,11 @@
 namespace extensions {
 
 // Superclass of all settings functions.
+//
+// NOTE: these all have "*SettingsFunction" names left over from when the API
+// was called the "Settings API" (now "Storage API").
+// TODO(kalman): Rename these functions, and all files under
+// chrome/browser/extensions/settings.
 class SettingsFunction : public AsyncExtensionFunction {
  public:
   SettingsFunction();
@@ -55,7 +60,7 @@ class SettingsFunction : public AsyncExtensionFunction {
 
 class GetSettingsFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.get");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.storage.get");
 
  protected:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
@@ -63,7 +68,7 @@ class GetSettingsFunction : public SettingsFunction {
 
 class SetSettingsFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.set");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.storage.set");
 
  protected:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
@@ -74,7 +79,7 @@ class SetSettingsFunction : public SettingsFunction {
 
 class RemoveSettingsFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.remove");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.storage.remove");
 
  protected:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;
@@ -85,7 +90,7 @@ class RemoveSettingsFunction : public SettingsFunction {
 
 class ClearSettingsFunction : public SettingsFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.settings.clear");
+  DECLARE_EXTENSION_FUNCTION_NAME("experimental.storage.clear");
 
  protected:
   virtual bool RunWithStorage(SettingsStorage* storage) OVERRIDE;

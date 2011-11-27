@@ -36,5 +36,5 @@ const char kOnDownloadCreated[] = "experimental.downloads.onCreated";
 const char kOnDownloadChanged[] = "experimental.downloads.onChanged";
 const char kOnDownloadErased[] = "experimental.downloads.onErased";
 
-const char kOnSettingsChanged[] = "experimental.settings.onChanged";
+const char kOnSettingsChanged[] = "experimental.storage.onChanged";
 }  // namespace extension_event_names

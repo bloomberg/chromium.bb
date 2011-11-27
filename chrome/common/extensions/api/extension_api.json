@@ -1015,21 +1015,21 @@
     ]
   },
   {
-    "namespace": "experimental.settings",
+    "namespace": "experimental.storage",
     "types": [
       {
-        "id": "SettingChange",
+        "id": "StorageChange",
         "type": "object",
         "properties": {
-          "key": {"type": "string", "description": "The ID of the setting which changed."},
+          "key": {"type": "string", "description": "The key of the item which changed."},
           "oldValue": {
             "type": "any",
-            "description": "The old value of the setting, before it changed.",
+            "description": "The old value of the item, if there was an old value.",
             "optional": true
           },
           "newValue": {
             "type": "any",
-            "description": "The new value of the setting.",
+            "description": "The new value of the item, if there is a new value.",
             "optional": true
           }
         }
@@ -1042,7 +1042,7 @@
             "name": "get",
             "unprivileged": true,
             "type": "function",
-            "description": "Gets one or more values from settings.",
+            "description": "Gets one or more items from storage.",
             "parameters": [
               {
                 "name": "keys",
@@ -1051,25 +1051,25 @@
                   { "type": "array", "items": { "type": "string" } },
                   {
                     "type": "object",
-                    "description": "Settings object to return in the callback, where the values are replaced with those from settings if they exist.",
+                    "description": "Storage items to return in the callback, where the values are replaced with those from storage if they exist.",
                     "properties": {},
                     "additionalProperties": { "type": "any" }
                   }
                 ],
-                "description": "A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty settings object.  Pass in null or undefined to get the entire contents of settings; this should only be used for debugging.",
+                "description": "A single key to get, list of keys to get, or a dictionary specifying default values (see description of the object).  An empty list or object will return an empty result object.  Pass in null or undefined to get the entire contents of storage; this should only be used for debugging.",
                 "optional": true
               },
               {
                 "name": "callback",
                 "type": "function",
-                "description": "Callback with settings values, or on failure (in which case lastError will be set).",
+                "description": "Callback with storage items, or on failure (in which case lastError will be set).",
                 "parameters": [
                   {
-                    "name": "settings",
+                    "name": "items",
                     "type": "object",
                     "properties": {},
                     "additionalProperties": { "type": "any" },
-                    "description": "Object with given keys set to settings values."
+                    "description": "Object with items in their key-value mappings."
                   }
                 ]
               }
@@ -1079,14 +1079,14 @@
             "name": "set",
             "unprivileged": true,
             "type": "function",
-            "description": "Sets multiple settings values.",
+            "description": "Sets multiple items.",
             "parameters": [
               {
-                "name": "settings",
+                "name": "items",
                 "type": "object",
                 "properties": {},
                 "additionalProperties": { "type": "any" },
-                "description": "Object to augment settings with. Values that cannot be serialized (functions, etc) will be ignored."
+                "description": "Object specifying items to augment storage with. Values that cannot be serialized (functions, etc) will be ignored."
               },
               {
                 "name": "callback",
@@ -1101,7 +1101,7 @@
             "name": "remove",
             "unprivileged": true,
             "type": "function",
-            "description": "Removes one or more values from settings.",
+            "description": "Removes one or more items from storage.",
             "parameters": [
               {
                 "name": "keys",
@@ -1109,7 +1109,7 @@
                   {"type": "string"},
                   {"type": "array", "items": {"type": "string"}, "minItems": 1}
                 ],
-                "description": "A single key or a list of keys to remove from settings."
+                "description": "A single key or a list of keys for items to remove."
               },
               {
                 "name": "callback",
@@ -1124,7 +1124,7 @@
             "name": "clear",
             "unprivileged": true,
             "type": "function",
-            "description": "Removes all values from settings.",
+            "description": "Removes all items from storage.",
             "parameters": [
               {
                 "name": "callback",
@@ -1143,17 +1143,17 @@
         "name": "onChanged",
         "unprivileged": true,
         "type": "function",
-        "description": "Fired when one or more settings change.",
+        "description": "Fired when one or more items change.",
         "parameters": [
           {
             "name": "changes",
             "type": "array",
-            "items": {"$ref": "SettingChange"}
+            "items": {"$ref": "StorageChange"}
           },
           {
             "name": "namespace",
             "type": "string",
-            "description": "The namespace (e.g. sync or local) of the area the changes are for."
+            "description": "The namespace (e.g. sync or local) of the storage area the changes are for."
           }
         ]
       }
@@ -1161,12 +1161,12 @@
     "properties": {
       "sync": {
         "$ref": "StorageNamespace",
-        "description": "Settings under the \"sync\" namespace are synced using Chrome Sync.",
+        "description": "Items under the \"sync\" namespace are synced using Chrome Sync.",
         "value": [ "sync" ]
       },
       "local": {
         "$ref": "StorageNamespace",
-        "description": "Settings under the \"local\" namespace are local to each machine.",
+        "description": "Items under the \"local\" namespace are local to each machine.",
         "value": [ "local" ]
       }
     }
