@@ -959,8 +959,6 @@
         'browser/extensions/extension_clear_api.h',
         'browser/extensions/extension_clear_api_constants.cc',
         'browser/extensions/extension_clear_api_constants.h',
-        'browser/extensions/extension_clipboard_api.cc',
-        'browser/extensions/extension_clipboard_api.h',
         'browser/extensions/extension_content_settings_api.cc',
         'browser/extensions/extension_content_settings_api.h',
         'browser/extensions/extension_content_settings_api_constants.cc',

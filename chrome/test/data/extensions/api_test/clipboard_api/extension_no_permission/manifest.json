@@ -1,7 +1,0 @@
-{
-  "name": "chrome.experimental.clipboard.extension_no_permission",
-  "version": "0.1",
-  "description": "end-to-end browser test for clipboard api permissions",
-  "background_page": "test.html",
-  "permissions": ["clipboard"]
-}

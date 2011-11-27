@@ -1,7 +1,0 @@
-{
-  "name": "chrome.clipboard_private.extension",
-  "version": "0.1",
-  "description": "end-to-end browser test on Widnows for clipboard api",
-  "background_page": "test.html",
-  "permissions": ["experimental", "clipboard"]
-}

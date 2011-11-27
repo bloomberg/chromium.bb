@@ -2540,7 +2540,6 @@
         'browser/extensions/extension_browsertests_misc.cc',
         'browser/extensions/extension_chrome_auth_private_apitest.cc',
         'browser/extensions/extension_clear_apitest.cc',
-        'browser/extensions/extension_clipboard_apitest.cc',
         'browser/extensions/extension_content_settings_apitest.cc',
         'browser/extensions/extension_context_menu_apitest.cc',
         'browser/extensions/extension_context_menu_browsertest.cc',
