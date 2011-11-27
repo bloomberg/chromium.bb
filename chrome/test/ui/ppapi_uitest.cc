@@ -242,12 +242,17 @@ class PPAPINaClTest : public PPAPITestBase {
     }
 
 
+#if defined(DISABLE_NACL)
+#define TEST_PPAPI_NACL_VIA_HTTP(test_name)
+#else
 
 // NaCl based PPAPI tests
 #define TEST_PPAPI_NACL_VIA_HTTP(test_name) \
     TEST_F(PPAPINaClTest, test_name) { \
   RunTestViaHTTP(#test_name); \
 }
+#endif
+
 
 //
 // Interface tests.
