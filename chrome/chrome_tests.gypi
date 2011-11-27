@@ -2577,7 +2577,6 @@
         'browser/extensions/extension_messages_browsertest.cc',
         'browser/extensions/extension_metrics_apitest.cc',
         'browser/extensions/extension_module_apitest.cc',
-        'browser/extensions/extension_nacl_browsertest.cc',
         'browser/extensions/extension_omnibox_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
         'browser/extensions/extension_preference_apitest.cc',
@@ -2791,6 +2790,11 @@
         },
       ],
       'conditions': [
+        ['disable_nacl!=0', {
+          'sources':[
+            'browser/extensions/extension_nacl_browsertest.cc',
+          ],
+        }],
         ['chromeos==0', {
           'sources/': [
             ['exclude', '^browser/chromeos'],
