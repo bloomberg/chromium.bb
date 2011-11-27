@@ -12,8 +12,8 @@ vars = {
   # value.  chromebinaries_rev should match LKGR so that we can download
   # the binaries, but sometimes chrome_rev needs to be more recent to get
   # source changes when LKGR is lagging too far back.
-  "chromebinaries_rev": "111354",
-  "chrome_rev": "111354",
+  "chromebinaries_rev": "111642",
+  "chrome_rev": "111642",
   # NOTE!  These four should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.
   "gtest_rev": "560",
@@ -71,6 +71,8 @@ deps = {
   "third_party/lss":
     ((Var("googlecode_url") % "linux-syscall-support") +
      "/trunk/lss@" + Var("lss_rev")),
+  "third_party/khronos":
+    Var("chromium_trunk") + "/src/third_party/khronos@" + Var("chrome_rev"),
   "third_party/pyftpdlib":
     Var("chromium_trunk") + "/src/third_party/pyftpdlib@" + Var("chrome_rev"),
   "third_party/pyftpdlib/src":
