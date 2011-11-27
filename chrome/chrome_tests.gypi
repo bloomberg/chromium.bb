@@ -2790,7 +2790,7 @@
         },
       ],
       'conditions': [
-        ['disable_nacl!=0', {
+        ['disable_nacl!=1', {
           'sources':[
             'browser/extensions/extension_nacl_browsertest.cc',
           ],
