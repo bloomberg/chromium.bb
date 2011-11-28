@@ -51,7 +51,7 @@ const KeyboardShortcutData* GetWindowKeyboardShortcutTable(
     {true,  false, false, false, kVK_ANSI_Keypad8,    0, IDC_SELECT_TAB_7},
     {true,  false, false, false, kVK_ANSI_9,          0, IDC_SELECT_LAST_TAB},
     {true,  false, false, false, kVK_ANSI_Keypad9,    0, IDC_SELECT_LAST_TAB},
-    {true,  true, false, false,  0,                 'm', IDC_SHOW_AVATAR_MENU},
+    {true,  true,  false, false, kVK_ANSI_M,          0, IDC_SHOW_AVATAR_MENU},
   };
 
   *num_entries = arraysize(keyboard_shortcuts);
