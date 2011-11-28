@@ -150,6 +150,14 @@ def ProcessToolLogs(options, logs_dir):
 
 
 def Run(url, options):
+  # Set this inside the Run function so we're assured hard_timeout will work.
+  # Tests, such as run_inbrowser_trusted_crash_in_startup_test, may not use the
+  # RunFromCommand line entry point - and otherwise get stuck in an infinite
+  # loop when the hard timeout is not set.
+  # http://code.google.com/p/chromium/issues/detail?id=105406
+  if options.hard_timeout is None:
+    options.hard_timeout = options.timeout * 4
+
   options.files.append(os.path.join(script_dir, 'browserdata', 'nacltest.js'))
 
   # Create server
@@ -260,9 +268,6 @@ def RunFromCommandLine():
   url = options.url
   if url is None:
     parser.error('Must specify a URL')
-
-  if options.hard_timeout is None:
-    options.hard_timeout = options.timeout * 4
 
   return Run(url, options)
 
