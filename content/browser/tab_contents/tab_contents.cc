@@ -283,8 +283,8 @@ bool TabContents::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(TabContents, message, message_is_ok)
-    IPC_MESSAGE_HANDLER(IntentsHostMsg_RegisterIntentHandler,
-                        OnRegisterIntentHandler)
+    IPC_MESSAGE_HANDLER(IntentsHostMsg_RegisterIntentService,
+                        OnRegisterIntentService)
     IPC_MESSAGE_HANDLER(IntentsHostMsg_WebIntentDispatch,
                         OnWebIntentDispatch)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidStartProvisionalLoadForFrame,
@@ -901,7 +901,7 @@ void TabContents::SetContentRestrictions(int restrictions) {
   delegate()->ContentRestrictionsChanged(this);
 }
 
-void TabContents::OnRegisterIntentHandler(const string16& action,
+void TabContents::OnRegisterIntentService(const string16& action,
                                           const string16& type,
                                           const string16& href,
                                           const string16& title,

@@ -597,7 +597,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   friend class TestTabContents;
 
   // Message handlers.
-  void OnRegisterIntentHandler(const string16& action,
+  void OnRegisterIntentService(const string16& action,
                                const string16& type,
                                const string16& href,
                                const string16& title,

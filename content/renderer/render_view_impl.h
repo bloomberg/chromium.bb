@@ -380,16 +380,7 @@ class RenderViewImpl : public RenderWidget,
                                        const WebKit::WebString& base_url,
                                        const WebKit::WebString& url,
                                        const WebKit::WebString& title);
-  virtual void registerIntentHandler(const WebKit::WebString& action,
-                                     const WebKit::WebString& type,
-                                     const WebKit::WebString& href,
-                                     const WebKit::WebString& title,
-                                     const WebKit::WebString& disposition);
   virtual WebKit::WebPageVisibilityState visibilityState() const;
-  virtual void startActivity(const WebKit::WebString& action,
-                             const WebKit::WebString& type,
-                             const WebKit::WebString& data,
-                             int intent_id);
 
   // WebKit::WebFrameClient implementation -------------------------------------
 
@@ -532,6 +523,12 @@ class RenderViewImpl : public RenderWidget,
       WebKit::WebStorageQuotaType type,
       unsigned long long requested_size,
       WebKit::WebStorageQuotaCallbacks* callbacks);
+
+  virtual void registerIntentService(
+      WebKit::WebFrame* frame,
+      const WebKit::WebIntentServiceInfo& service);
+  virtual void dispatchIntent(WebKit::WebFrame* frame,
+                              const WebKit::WebIntent& intent);
 
   // WebKit::WebPageSerializerClient implementation ----------------------------
 

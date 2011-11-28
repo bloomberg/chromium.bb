@@ -101,6 +101,8 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebImage.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntent.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebIntentServiceInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
@@ -3033,6 +3035,26 @@ void RenderViewImpl::requestStorageQuota(
       QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
 }
 
+void RenderViewImpl::registerIntentService(
+    WebKit::WebFrame* frame, const WebKit::WebIntentServiceInfo& service) {
+  Send(new IntentsHostMsg_RegisterIntentService(routing_id_,
+                                                service.action(),
+                                                service.type(),
+                                                service.url().spec().utf16(),
+                                                service.title(),
+                                                service.disposition()));
+}
+
+void RenderViewImpl::dispatchIntent(WebKit::WebFrame* frame,
+                                    const WebKit::WebIntent& intent) {
+  webkit_glue::WebIntentData intent_data;
+  intent_data.action = intent.action();
+  intent_data.type = intent.type();
+  intent_data.data = intent.data();
+  Send(new IntentsHostMsg_WebIntentDispatch(
+      routing_id_, intent_data, intent.identifier()));
+}
+
 // WebKit::WebPageSerializerClient implementation ------------------------------
 
 void RenderViewImpl::didSerializeDataForFrame(
@@ -4573,19 +4595,6 @@ void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
                                                title));
 }
 
-void RenderViewImpl::registerIntentHandler(const WebString& action,
-                                           const WebString& type,
-                                           const WebString& href,
-                                           const WebString& title,
-                                           const WebString& disposition) {
-  Send(new IntentsHostMsg_RegisterIntentHandler(routing_id_,
-                                             action,
-                                             type,
-                                             href,
-                                             title,
-                                             disposition));
-}
-
 WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
   WebKit::WebPageVisibilityState current_state = is_hidden() ?
       WebKit::WebPageVisibilityStateHidden :
@@ -4596,18 +4605,6 @@ WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
                                             &override_state))
     return override_state;
   return current_state;
-}
-
-void RenderViewImpl::startActivity(const WebKit::WebString& action,
-                                   const WebKit::WebString& type,
-                                   const WebKit::WebString& data,
-                                   int intent_id) {
-  webkit_glue::WebIntentData intent_data;
-  intent_data.action = action;
-  intent_data.type = type;
-  intent_data.data = data;
-  Send(new IntentsHostMsg_WebIntentDispatch(
-      routing_id_, intent_data, intent_id));
 }
 
 bool RenderViewImpl::IsNonLocalTopLevelNavigation(
