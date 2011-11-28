@@ -206,7 +206,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
   // OS X uses CoreText, and FreeType renders slightly different on Linux and
   // Win.
 #if defined(OS_MACOSX)
-  std::string expectation_file = "pdf_browsertest_mac.png"
+  std::string expectation_file = "pdf_browsertest_mac.png";
 #elif defined(OS_LINUX)
   std::string expectation_file = "pdf_browsertest_linux.png";
 #else
