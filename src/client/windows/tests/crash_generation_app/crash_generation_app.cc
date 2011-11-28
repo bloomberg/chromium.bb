@@ -216,7 +216,6 @@ static void _cdecl ShowClientConnected(void* context,
 
 static void _cdecl ShowClientCrashed(void* context,
                                      const ClientInfo* client_info,
-                                     const CrashGenerationServer::ClientDumpRequestType request_type,
                                      const wstring* dump_path) {
   TCHAR* line = new TCHAR[kMaximumLineLength];
   line[0] = _T('\0');

@@ -91,15 +91,6 @@ class CrashGenerationClient {
   // if the registration step was not performed or it was not successful,
   // false will be returned.
   bool RequestDump(MDRawAssertionInfo* assert_info);
-  
-  // Requests the crash server generate a minidump on the parent side
-  // of the connection. Blocks until the dump has been completed or
-  // the request times out.
-  //
-  // Returns true if the dump was successful; false otherwise. Note that
-  // if the registration step was not performed or it was not successful,
-  // false will be returned.
-  bool RequestParentDump();
 
  private:
   // Connects to the appropriate pipe and sets the pipe handle state.
@@ -140,10 +131,6 @@ class CrashGenerationClient {
 
   // Event to signal in case of a crash.
   HANDLE crash_event_;
-
-  // Event signaling a server side minidump is being requested
-  // by the client.
-  HANDLE parent_dump_request_event_;
 
   // Handle to wait on after signaling a crash for the server
   // to finish generating crash dump.

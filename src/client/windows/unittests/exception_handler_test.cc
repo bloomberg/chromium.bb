@@ -78,7 +78,6 @@ class ExceptionHandlerTest : public ::testing::Test {
   static void ClientDumpCallback(
       void *dump_context,
       const google_breakpad::ClientInfo *client_info,
-      const google_breakpad::CrashGenerationServer::ClientDumpRequestType request_type,
       const std::wstring *dump_path);
 
   static bool DumpCallback(const wchar_t* dump_path,
@@ -139,7 +138,6 @@ BOOL ExceptionHandlerTest::DoesPathExist(const TCHAR *path_name) {
 void ExceptionHandlerTest::ClientDumpCallback(
     void *dump_context,
     const google_breakpad::ClientInfo *client_info,
-    const google_breakpad::CrashGenerationServer::ClientDumpRequestType request_type,
     const wstring *dump_path) {
   dump_file = *dump_path;
   // Create the full dump file name from the dump path.

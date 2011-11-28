@@ -49,19 +49,11 @@ class ClientInfo;
 // generation in this way, the server generates Windows minidump files.
 class CrashGenerationServer {
  public:
-  // For client minidump request callbacks indicates the type of minidump
-  // the request generated.
-  enum ClientDumpRequestType {
-    DUMP_REQ_PARENT,
-    DUMP_REQ_CHILD,
-  };
-
   typedef void (*OnClientConnectedCallback)(void* context,
                                             const ClientInfo* client_info);
 
   typedef void (*OnClientDumpRequestCallback)(void* context,
                                               const ClientInfo* client_info,
-                                              const ClientDumpRequestType request_type,
                                               const std::wstring* file_path);
 
   typedef void (*OnClientExitedCallback)(void* context,
@@ -104,11 +96,6 @@ class CrashGenerationServer {
   //
   // Returns true if initialization is successful; false otherwise.
   bool Start();
-
-  // Sets the preferred parent side minidump thread id passed
-  // to breakpad when a server side minidump is requested by
-  // a client.
-  void SetParentDumpThreadId(DWORD thread_id) { preferred_parent_thread_id_ = thread_id; }
 
  private:
   // Various states the client can be in during the handshake with
@@ -188,17 +175,11 @@ class CrashGenerationServer {
   // Handles a dump request from the client.
   void HandleDumpRequest(const ClientInfo& client_info);
 
-  // Handles a server side minidump request from the client.
-  void HandleParentDumpRequest(const ClientInfo& client_info);
-
   // Callback for pipe connected event.
   static void CALLBACK OnPipeConnected(void* context, BOOLEAN timer_or_wait);
 
   // Callback for a dump request.
   static void CALLBACK OnDumpRequest(void* context, BOOLEAN timer_or_wait);
-
-  // Callback for a server minidump request.
-  static void CALLBACK OnParentDumpRequest(void* context, BOOLEAN timer_or_wait);
 
   // Callback for client process exit event.
   static void CALLBACK OnClientEnd(void* context, BOOLEAN timer_or_wait);
@@ -296,10 +277,6 @@ class CrashGenerationServer {
   // Count of clean-up work items that are currently running or are
   // already queued to run.
   volatile LONG cleanup_item_count_;
-
-  // For client requested server side minidumps, the preferred
-  // minidump thread id passed to breakpad.
-  DWORD preferred_parent_thread_id_;
 
   // Disable copy ctor and operator=.
   CrashGenerationServer(const CrashGenerationServer& crash_server);

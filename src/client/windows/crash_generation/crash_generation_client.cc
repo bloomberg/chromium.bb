@@ -194,7 +194,6 @@ bool CrashGenerationClient::RegisterClient(HANDLE pipe) {
                       custom_info_,
                       NULL,
                       NULL,
-                      NULL,
                       NULL);
   ProtocolMessage reply;
   DWORD bytes_count = 0;
@@ -221,10 +220,8 @@ bool CrashGenerationClient::RegisterClient(HANDLE pipe) {
   if (!WriteFile(pipe, &ack_msg, sizeof(ack_msg), &bytes_count, NULL)) {
     return false;
   }
-
   crash_event_ = reply.dump_request_handle;
   crash_generated_ = reply.dump_generated_handle;
-  parent_dump_request_event_ = reply.parent_dump_request_handle;
   server_alive_ = reply.server_alive_handle;
   server_process_id_ = reply.pid;
 
@@ -272,39 +269,6 @@ bool CrashGenerationClient::ValidateResponse(
 
 bool CrashGenerationClient::IsRegistered() const {
   return crash_event_ != NULL;
-}
-
-bool CrashGenerationClient::RequestParentDump() {
-  if (!IsRegistered()) {
-    return false;
-  }
-
-  assert(parent_dump_request_event_);
-  assert(server_alive_);
-
-  // Reset the dump generated event before signaling the crash
-  // event so that the server can set the dump generated event
-  // once it is done generating the event.
-  if (!ResetEvent(crash_generated_)) {
-    return false;
-  }
-
-  // Signal we want a server side crash dump generated
-  if (!SetEvent(parent_dump_request_event_)) {
-    return false;
-  }
-
-  // Wait for the crash dump process to complete
-  HANDLE wait_handles[kWaitEventCount] = {crash_generated_, server_alive_};
-
-  DWORD result = WaitForMultipleObjects(kWaitEventCount,
-                                        wait_handles,
-                                        FALSE,
-                                        kWaitForServerTimeoutMs);
-
-  // Crash dump was successfully generated only if the server
-  // signaled the crash generated event.
-  return result == WAIT_OBJECT_0;
 }
 
 bool CrashGenerationClient::RequestDump(EXCEPTION_POINTERS* ex_info,

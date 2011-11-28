@@ -110,7 +110,6 @@ struct ProtocolMessage {
         custom_client_info(),
         dump_request_handle(NULL),
         dump_generated_handle(NULL),
-        parent_dump_request_handle(NULL),
         server_alive_handle(NULL) {
   }
 
@@ -123,7 +122,6 @@ struct ProtocolMessage {
                   MDRawAssertionInfo* arg_assert_info,
                   const CustomClientInfo& custom_info,
                   HANDLE arg_dump_request_handle,
-                  HANDLE arg_parent_dump_request_handle,
                   HANDLE arg_dump_generated_handle,
                   HANDLE arg_server_alive)
     : tag(arg_tag),
@@ -134,7 +132,6 @@ struct ProtocolMessage {
       assert_info(arg_assert_info),
       custom_client_info(custom_info),
       dump_request_handle(arg_dump_request_handle),
-      parent_dump_request_handle(arg_parent_dump_request_handle),
       dump_generated_handle(arg_dump_generated_handle),
       server_alive_handle(arg_server_alive) {
   }
@@ -163,9 +160,6 @@ struct ProtocolMessage {
 
   // Handle to signal the crash event.
   HANDLE dump_request_handle;
-
-  // Handle to signal a request for a server side minidump.
-  HANDLE parent_dump_request_handle;
 
   // Handle to check if server is done generating crash.
   HANDLE dump_generated_handle;

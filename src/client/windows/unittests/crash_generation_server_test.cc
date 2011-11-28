@@ -77,9 +77,8 @@ class CrashGenerationServerTest : public ::testing::Test {
    public:
     MOCK_METHOD1(OnClientConnected,
                  void(const google_breakpad::ClientInfo* client_info));
-    MOCK_METHOD3(OnClientDumpRequested,
+    MOCK_METHOD2(OnClientDumpRequested,
                  void(const google_breakpad::ClientInfo* client_info,
-                      const google_breakpad::CrashGenerationServer::ClientDumpRequestType request_type,
                       const std::wstring* file_path));
     MOCK_METHOD1(OnClientExited,
                  void(const google_breakpad::ClientInfo* client_info));
@@ -177,7 +176,6 @@ class CrashGenerationServerTest : public ::testing::Test {
       custom_info,
       NULL,
       NULL,
-      NULL,
       NULL);
 
     DWORD bytes_count = 0;
@@ -239,10 +237,9 @@ class CrashGenerationServerTest : public ::testing::Test {
   static void CallOnClientDumpRequested(
     void* context,
     const google_breakpad::ClientInfo* client_info,
-    const google_breakpad::CrashGenerationServer::ClientDumpRequestType request_type,
     const std::wstring* file_path) {
     static_cast<MockCrashGenerationServerCallbacks*>(context)->
-      OnClientDumpRequested(client_info, request_type, file_path);
+      OnClientDumpRequested(client_info, file_path);
   }
 
   static void CallOnClientExited(
