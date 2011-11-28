@@ -1743,3 +1743,28 @@
 #   fun:PrintPreviewTabControllerUnitTest_MultiplePreviewTabs_Test::TestBody
 #   fun:PrintPreviewTabControllerUnitTest_ClearInitiatorTabDetails_Test::TestBody
 }
+{
+   bug_105624_a
+   Heapcheck:Leak
+   fun:PeerConnectionHandlerTest_Basic_Test::TestBody
+}
+{
+   bug_105624_b
+   Heapcheck:Leak
+   fun:WTF::fastMalloc
+   fun:WTF::RefCounted::operator new
+   fun:WebCore::MediaStreamSource::create
+   fun:WebKit::WebMediaStreamSource::initialize
+   fun:PeerConnectionHandlerTest_Basic_Test::TestBody
+}
+{
+   bug_105624_c
+   Heapcheck:Leak
+   fun:WTF::fastMalloc
+   fun:WTF::StringImpl::createUninitialized
+   fun:WTF::String::fromUTF8
+   fun:WTF::String::fromUTF8
+   fun:WTF::String::fromUTF8
+   fun:WebKit::WebString::fromUTF8
+   fun:PeerConnectionHandlerTest_Basic_Test::TestBody
+}
