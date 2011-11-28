@@ -9,6 +9,7 @@
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/cros/native_network_constants.h"
+#include "chrome/browser/chromeos/cros/native_network_parser.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "net/base/cert_database.h"
 #include "net/base/crypto_module.h"
@@ -149,7 +150,6 @@ bool OncNetworkParser::ParseCertificate(int cert_index) {
 }
 
 Network* OncNetworkParser::ParseNetwork(int n) {
-  // TODO(chocobo): Change this to parse network into a dictionary.
   if (!network_configs_)
     return NULL;
   DictionaryValue* info = NULL;
@@ -166,12 +166,19 @@ Network* OncNetworkParser::CreateNetworkFromInfo(
   if (type == TYPE_UNKNOWN)  // Return NULL if cannot parse network type.
     return NULL;
   scoped_ptr<Network> network(CreateNewNetwork(type, service_path));
+  // Update property with native value for type.
+  std::string str = NativeNetworkParser::type_mapper()->GetKey(type);
+  network->UpdatePropertyMap(PROPERTY_INDEX_TYPE,
+                             *Value::CreateStringValue(str));
 
   // Get the child dictionary with properties for the network.
   // And copy all the values from this network type dictionary to parent.
   DictionaryValue* dict;
   if (!info.GetDictionary(GetTypeFromDictionary(info), &dict))
     return NULL;
+
+  // Add GUID from the parent dictionary.
+  dict->SetString("GUID", GetGuidFromDictionary(info));
 
   UpdateNetworkFromInfo(*dict, network.get());
   VLOG(2) << "Created Network '" << network->name()
@@ -206,6 +213,13 @@ std::string OncNetworkParser::GetTypeFromDictionary(
   std::string type_string;
   info.GetString("Type", &type_string);
   return type_string;
+}
+
+std::string OncNetworkParser::GetGuidFromDictionary(
+    const base::DictionaryValue& info) {
+  std::string guid_string;
+  info.GetString("GUID", &guid_string);
+  return guid_string;
 }
 
 bool OncNetworkParser::ParseServerOrCaCertificate(
@@ -353,7 +367,12 @@ bool OncWifiNetworkParser::ParseValue(PropertyIndex index,
       std::string security_string;
       if (!value.GetAsString(&security_string))
         break;
-      wifi_network->set_encryption(ParseSecurity(security_string));
+      ConnectionSecurity security = ParseSecurity(security_string);
+      wifi_network->set_encryption(security);
+      // Also update property with native value for security.
+      std::string str =
+          NativeNetworkParser::security_mapper()->GetKey(security);
+      wifi_network->UpdatePropertyMap(index, *Value::CreateStringValue(str));
       return true;
     }
     case PROPERTY_INDEX_PASSPHRASE: {
@@ -381,6 +400,7 @@ bool OncWifiNetworkParser::ParseValue(PropertyIndex index,
         DCHECK(res);
         if (res) {
           PropertyIndex index = mapper().Get(key);
+          wifi_network->UpdatePropertyMap(index, *eap_value);
           if (!ParseEAPValue(index, *eap_value, wifi_network))
             VLOG(1) << network->name() << ": EAP unhandled key: " << key
                     << " Type: " << eap_value->GetType();
@@ -407,17 +427,27 @@ bool OncWifiNetworkParser::ParseEAPValue(PropertyIndex index,
       return true;
     }
     case PROPERTY_INDEX_EAP_METHOD: {
-      std::string eap_method;
-      if (!value.GetAsString(&eap_method))
+      std::string eap_method_str;
+      if (!value.GetAsString(&eap_method_str))
         break;
-      wifi_network->set_eap_method(ParseEAPMethod(eap_method));
+      EAPMethod eap_method = ParseEAPMethod(eap_method_str);
+      wifi_network->set_eap_method(eap_method);
+      // Also update property with native value for EAP method.
+      std::string str =
+          NativeNetworkParser::eap_method_mapper()->GetKey(eap_method);
+      wifi_network->UpdatePropertyMap(index, *Value::CreateStringValue(str));
       return true;
     }
     case PROPERTY_INDEX_EAP_PHASE_2_AUTH: {
-      std::string eap_phase_2_auth;
-      if (!value.GetAsString(&eap_phase_2_auth))
+      std::string eap_phase_2_auth_str;
+      if (!value.GetAsString(&eap_phase_2_auth_str))
         break;
-      wifi_network->set_eap_phase_2_auth(ParseEAPPhase2Auth(eap_phase_2_auth));
+      EAPPhase2Auth eap_phase_2_auth = ParseEAPPhase2Auth(eap_phase_2_auth_str);
+      wifi_network->set_eap_phase_2_auth(eap_phase_2_auth);
+      // Also update property with native value for EAP phase 2 auth.
+      std::string str =
+          NativeNetworkParser::eap_auth_mapper()->GetKey(eap_phase_2_auth);
+      wifi_network->UpdatePropertyMap(index, *Value::CreateStringValue(str));
       return true;
     }
     case PROPERTY_INDEX_EAP_ANONYMOUS_IDENTITY: {

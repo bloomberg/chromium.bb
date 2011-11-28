@@ -18,6 +18,7 @@
 #include "base/i18n/icu_encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/i18n/time_formatting.h"
+#include "base/json/json_writer.h"  // for debug output only.
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
@@ -315,6 +316,22 @@ GValue* ConvertValueToGValue(const Value* value) {
   return new GValue();
 }
 
+GHashTable* ConvertDictionaryValueToGValueMap(const DictionaryValue* dict) {
+  GHashTable* ghash =
+      g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+  for (DictionaryValue::key_iterator it = dict->begin_keys();
+       it != dict->end_keys(); ++it) {
+    std::string key = *it;
+    Value* val = NULL;
+    if (dict->Get(key, &val)) {
+      g_hash_table_insert(ghash,
+                          g_strdup(const_cast<char*>(key.c_str())),
+                          ConvertValueToGValue(val));
+    }
+  }
+  return ghash;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -384,6 +401,19 @@ Network::~Network() {}
 
 void Network::SetNetworkParser(NetworkParser* parser) {
   network_parser_.reset(parser);
+}
+
+void Network::UpdatePropertyMap(PropertyIndex index, const base::Value& value) {
+  // Add the property to property_map_.  Delete previous value if necessary.
+  Value*& entry = property_map_[index];
+  delete entry;
+  entry = value.DeepCopy();
+  if (VLOG_IS_ON(2)) {
+    std::string value_json;
+    base::JSONWriter::Write(&value, true, &value_json);
+    VLOG(2) << "Updated property map on network: "
+            << unique_id() << "[" << index << "] = " << value_json;
+  }
 }
 
 void Network::SetState(ConnectionState new_state) {
@@ -1463,6 +1493,10 @@ class NetworkLibraryImplBase : public NetworkLibrary  {
       const std::string& service_name,
       const std::string& server_hostname,
       ProviderType provider_type) = 0;
+  // Call to configure a wifi service. The identifier is either a service_path
+  // or a GUID. |info| is a dictionary of property values.
+  virtual void CallConfigureService(const std::string& identifier,
+                                    const DictionaryValue* info) = 0;
   // Called from NetworkConnectStart.
   // Calls NetworkConnectCompleted when the connection attept completes.
   virtual void CallConnectToNetwork(Network* network) = 0;
@@ -2797,7 +2831,17 @@ bool NetworkLibraryImplBase::LoadOncNetworks(const std::string& onc_blob) {
       return false;
     }
 
-    // TODO(chocobo): Pass parsed network values to flimflam update network.
+    DictionaryValue dict;
+    for (Network::PropertyMap::const_iterator props =
+             network->property_map_.begin();
+         props != network->property_map_.end(); ++props) {
+      std::string key =
+          NativeNetworkParser::property_mapper()->GetKey(props->first);
+      if (!key.empty())
+        dict.SetWithoutPathExpansion(key, props->second->DeepCopy());
+    }
+
+    CallConfigureService(network->unique_id(), &dict);
   }
   return parser.GetNetworkConfigsSize() != 0;
 }
@@ -3296,6 +3340,8 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
   virtual void MonitorNetworkDeviceStop(
       const std::string& device_path) OVERRIDE;
 
+  virtual void CallConfigureService(const std::string& identifier,
+                                    const DictionaryValue* info) OVERRIDE;
   virtual void CallConnectToNetwork(Network* network) OVERRIDE;
   virtual void CallRequestWifiNetworkAndConnect(
       const std::string& ssid, ConnectionSecurity security) OVERRIDE;
@@ -3356,6 +3402,11 @@ class NetworkLibraryImplCros : public NetworkLibraryImplBase  {
 
   static void CellularRegisterCallback(void* object,
                                        const char* path,
+                                       NetworkMethodErrorType error,
+                                       const char* error_message);
+
+  static void ConfigureServiceCallback(void* object,
+                                       const char* service_path,
                                        NetworkMethodErrorType error,
                                        const char* error_message);
 
@@ -3615,6 +3666,27 @@ void NetworkLibraryImplCros::UpdateNetworkDeviceStatus(
 
 /////////////////////////////////////////////////////////////////////////////
 // NetworkLibraryImplBase connect implementation.
+
+// static callback
+void NetworkLibraryImplCros::ConfigureServiceCallback(
+    void* object,
+    const char* service_path,
+    NetworkMethodErrorType error,
+    const char* error_message) {
+  DCHECK(CrosLibrary::Get()->libcros_loaded());
+  if (error != NETWORK_METHOD_ERROR_NONE) {
+    LOG(WARNING) << "Error from ConfigureService callback for: "
+                 << service_path
+                 << " Error: " << error << " Message: " << error_message;
+  }
+}
+
+void NetworkLibraryImplCros::CallConfigureService(const std::string& identifier,
+                                                  const DictionaryValue* info) {
+  GHashTable* ghash = ConvertDictionaryValueToGValueMap(info);
+  chromeos::ConfigureService(identifier.c_str(), ghash,
+                             ConfigureServiceCallback, this);
+}
 
 // static callback
 void NetworkLibraryImplCros::NetworkConnectCallback(
@@ -4703,6 +4775,8 @@ class NetworkLibraryImplStub : public NetworkLibraryImplBase {
   virtual void MonitorNetworkDeviceStop(
       const std::string& device_path) OVERRIDE {}
 
+  virtual void CallConfigureService(const std::string& identifier,
+                                    const DictionaryValue* info) OVERRIDE {}
   virtual void CallConnectToNetwork(Network* network) OVERRIDE;
   virtual void CallRequestWifiNetworkAndConnect(
       const std::string& ssid, ConnectionSecurity security) OVERRIDE;
@@ -4919,6 +4993,22 @@ void NetworkLibraryImplStub::Init() {
   // autotest browser_tests sometimes conclude the device is offline.
   CHECK(active_network()->connected());
   CHECK(connected_network()->is_active());
+
+  std::string test_blob(
+        "{"
+        "  \"NetworkConfigurations\": ["
+        "    {"
+        "      \"GUID\": \"guid\","
+        "      \"Type\": \"WiFi\","
+        "      \"WiFi\": {"
+        "        \"Security\": \"WEP\","
+        "        \"SSID\": \"MySSID\","
+        "      }"
+        "    }"
+        "  ],"
+        "  \"Certificates\": []"
+        "}");
+  LoadOncNetworks(test_blob);
 }
 
 ////////////////////////////////////////////////////////////////////////////
