@@ -143,6 +143,17 @@ wl_resource_post_error(struct wl_resource *resource,
 	va_end(ap);
 
 	client->error = 1;
+
+	/*
+	 * When a client aborts, its resources are destroyed in id order,
+	 * which means the display resource is destroyed first. If destruction
+	 * of any later resources results in a protocol error, we end up here
+	 * with a NULL display_resource. Do not try to send errors to an
+	 * already dead client.
+	 */
+	if (!client->display_resource)
+		return;
+
 	wl_resource_post_event(client->display_resource,
 			       WL_DISPLAY_ERROR, resource, code, buffer);
 }
@@ -579,6 +590,13 @@ struct wl_display_interface display_interface = {
 };
 
 static void
+destroy_client_display_resource(struct wl_resource *resource)
+{
+	resource->client->display_resource = NULL;
+	free(resource);
+}
+
+static void
 bind_display(struct wl_client *client,
 	     void *data, uint32_t version, uint32_t id)
 {
@@ -588,6 +606,7 @@ bind_display(struct wl_client *client,
 	client->display_resource =
 		wl_client_add_object(client, &wl_display_interface,
 				     &display_interface, id, display);
+	client->display_resource->destroy = destroy_client_display_resource;
 
 	wl_list_for_each(global, &display->global_list, link)
 		wl_resource_post_event(client->display_resource,
