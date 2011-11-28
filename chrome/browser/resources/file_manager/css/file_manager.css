@@ -301,17 +301,45 @@ div.img-container > img {
   display: -webkit-box;
   -webkit-box-orient: horizontal;
   padding-left: 39px;
-  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.preview-thumbnails > div.img-container {
+.preview-thumbnails > div {
   width: 45px;
   height: 45px;
   position: relative;
   margin: 0 0 0 -39px;  /* Show 7 pixels of the overlapped image */
-  overflow: hidden;
-  border: 1px solid white;
+}
+
+.preview-thumbnails > div > div.img-container {
+  margin: 0;
+  width: 45px;
+  height: 45px;
+}
+
+.preview-thumbnails > div {
+  border: 1px solid #fff;
+  -webkit-box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.2);
   background-color: #F2F2F2;
+}
+
+.preview-thumbnails > div > div.popup {
+  border: 2px solid #fff;
+  -webkit-box-shadow: 3px 3px 9px rgba(0, 0, 0, 0.6);
+  background-color: #F2F2F2;
+  margin: 0;
+  z-index: 1;
+  position: absolute;
+
+  -webkit-transition: all 180ms ease-in;
+  -webkit-transition-delay: 300ms;
+
+  -webkit-transform: translate(0, 3px) scale(0.95);
+  opacity: 0;
+}
+
+.preview-thumbnails > div:hover > div.popup {
+  -webkit-transform: translate(0, 0) scale(1.0);
+  opacity: 1;
 }
 
 .preview-panel > * {

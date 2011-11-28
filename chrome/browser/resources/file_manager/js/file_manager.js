@@ -124,6 +124,12 @@ FileManager.prototype = {
   const MAX_PREVIEW_THUMBAIL_COUNT = 4;
 
   /**
+   * Maximum width or height of an image what pops up when the mouse hovers
+   * thumbnail in the bottom panel (in pixels).
+   */
+  const IMAGE_HOVER_PREVIEW_SIZE = 200;
+
+  /**
    * Translated strings.
    */
   var localStrings;
@@ -1572,40 +1578,44 @@ FileManager.prototype = {
   };
 
   /**
-   * Insert a thumbnail image to fit/fill the container.
+   * Update the thumbnail image to fit/fill the square container.
    *
    * Using webkit center packing does not align the image properly, so we need
    * to wait until the image loads and its proportions are known, then manually
    * position it at the center.
    *
-   * @param {HTMLElement} parent
-   * @param {HTMLImageElement} img
-   * @param {string} url
+   * @param {CSSStyleDeclaration} style Style object of the image.
+   * @param {number} width Width of the image.
+   * @param {number} height Height of the image.
    * @param {boolean} fill True: the image should fill the entire container,
    *                       false: the image should fully fit into the container.
    */
-  FileManager.insertCenteredImage_ = function(parent, img, url, fill) {
-    img.onload = function() {
-      function percent(fraction) {
-        return Math.round(fraction * 100 * 10) / 10 + '%';  // Round to 0.1%
-      }
+  FileManager.prototype.centerImage_ = function(style, width, height, fill) {
+    function percent(fraction) {
+      return Math.round(fraction * 100 * 10) / 10 + '%';  // Round to 0.1%
+    }
 
-      // First try vertical fit or horizontal fill.
-      var fractionX = img.width / img.height;
-      var fractionY = 1;
-      if ((fractionX < 1) == !!fill) {  // Vertical fill or horizontal fit.
-        fractionY = 1 / fractionX;
-        fractionX = 1;
-      }
+    // First try vertical fit or horizontal fill.
+    var fractionX = width / height;
+    var fractionY = 1;
+    if ((fractionX < 1) == !!fill) {  // Vertical fill or horizontal fit.
+      fractionY = 1 / fractionX;
+      fractionX = 1;
+    }
 
-      img.style.width = percent(fractionX);
-      img.style.height = percent(fractionY);
-      img.style.left = percent((1 - fractionX) / 2);
-      img.style.top = percent((1 - fractionY) / 2);
+    style.width = percent(fractionX);
+    style.height = percent(fractionY);
+    style.left = percent((1 - fractionX) / 2);
+    style.top = percent((1 - fractionY) / 2);
+  };
 
-      parent.appendChild(img);
-    };
-    img.src = url;
+  FileManager.prototype.applyImageTransformation_ = function(box, transform) {
+    if (transform) {
+      box.style.webkitTransform =
+          'scaleX(' + transform.scaleX + ') ' +
+          'scaleY(' + transform.scaleY + ') ' +
+          'rotate(' + transform.rotate90 * 90 + 'deg)';
+    }
   };
 
   /**
@@ -1613,20 +1623,26 @@ FileManager.prototype = {
    *
    * @param {Entry} entry
    * @param {boolean} True if fill, false if fit.
+   * @param {function(HTMLElement)} opt_imageLoadCallback Callback called when
+   *                                the image has been loaded before inserting
+   *                                it into the DOM.
    * @return {HTMLDivElement}
    */
-  FileManager.prototype.renderThumbnailBox_ = function(entry, fill) {
+  FileManager.prototype.renderThumbnailBox_ = function(entry, fill,
+                                                       opt_imageLoadCallback) {
     var box = this.document_.createElement('div');
     box.className = 'img-container';
     var img = this.document_.createElement('img');
+    var self = this;
     this.getThumbnailURL(entry, function(iconType, url, transform) {
-      FileManager.insertCenteredImage_(box, img, url, fill);
-      if (transform) {
-        box.style.webkitTransform =
-            'scaleX(' + transform.scaleX + ') ' +
-            'scaleY(' + transform.scaleY + ') ' +
-            'rotate(' + transform.rotate90 * 90 + 'deg)';
-      }
+      img.onload = function() {
+        self.centerImage_(img.style, img.width, img.height, fill);
+        if (opt_imageLoadCallback)
+          opt_imageLoadCallback(img, transform);
+        box.appendChild(img);
+      };
+      img.src = url;
+      self.applyImageTransformation_(box, transform);
     });
     return box;
   };
@@ -1844,9 +1860,14 @@ FileManager.prototype = {
       }
 
       if (thumbnailCount < MAX_PREVIEW_THUMBAIL_COUNT && entry.isFile) {
-        var thumbnail = this.renderThumbnailBox_(entry, true);
-        thumbnail.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
-        this.previewThumbnails_.appendChild(thumbnail);
+        var box = this.document_.createElement('div');
+        var imageLoadCalback = thumbnailCount == 0 &&
+                               this.initThumbnailZoom_.bind(this, box);
+        var thumbnail = this.renderThumbnailBox_(entry, true, imageLoadCalback);
+        box.appendChild(thumbnail);
+        box.style.zIndex = MAX_PREVIEW_THUMBAIL_COUNT + 1 - i;
+
+        this.previewThumbnails_.appendChild(box);
         thumbnailCount++;
       }
 
@@ -1907,6 +1928,59 @@ FileManager.prototype = {
     }
 
     cacheNextFile();
+  };
+
+  /**
+   * Initialize a thumbnail in the bottom pannel to pop up on mouse over.
+   * Image's assumed to be just loaded and not inserted into the DOM.
+   *
+   * @param {HTMLElement} box Element what's going to contain the image.
+   * @param {HTMLElement} img Loaded image.
+   */
+  FileManager.prototype.initThumbnailZoom_ = function(box, img, transform) {
+    var width = img.width;
+    var height = img.height;
+    const THUMBNAIL_SIZE = 45;
+
+    if (width < THUMBNAIL_SIZE * 2 && height < THUMBNAIL_SIZE * 2)
+      return;
+
+    var scale = Math.min(1,
+        IMAGE_HOVER_PREVIEW_SIZE / Math.max(width, height));
+
+    var largeImage = this.document_.createElement('img');
+    largeImage.src = img.src;
+    var largeImageBox = this.document_.createElement('div');
+    largeImageBox.className = 'popup';
+
+    var imageWidth = Math.round(width * scale);
+    var imageHeight = Math.round(height * scale);
+
+    var boxWidth = Math.max(THUMBNAIL_SIZE, imageWidth);
+    var boxHeight = Math.max(THUMBNAIL_SIZE, imageHeight);
+
+    if (transform && transform.rotate90 % 2 == 1) {
+      var t = boxWidth;
+      boxWidth = boxHeight;
+      boxHeight = t;
+    }
+
+    var style = largeImageBox.style;
+    style.width = boxWidth + 'px';
+    style.height = boxHeight + 'px';
+    style.top = (-boxHeight + THUMBNAIL_SIZE) + 'px';
+
+    var style = largeImage.style;
+    style.width = imageWidth + 'px';
+    style.height = imageHeight + 'px';
+    style.left = (boxWidth - imageWidth) / 2 + 'px';
+    style.top = (boxHeight - imageHeight) / 2 + 'px';
+    style.position = 'relative';
+
+    this.applyImageTransformation_(largeImage, transform);
+
+    largeImageBox.appendChild(largeImage);
+    box.insertBefore(largeImageBox, box.firstChild);
   };
 
   FileManager.prototype.updatePreviewPanelVisibility_ = function() {
@@ -2548,7 +2622,8 @@ FileManager.prototype = {
       opt_saveHistory = !!opt_saveHistory;
     }
 
-    var location = '#' + encodeURI(dirEntry.fullPath);
+    var location = document.location.origin + document.location.pathname + '#' +
+                   encodeURI(dirEntry.fullPath);
     if (opt_saveHistory) {
       history.pushState(undefined, dirEntry.fullPath, location);
     } else if (window.location.hash != location) {
