@@ -56,24 +56,38 @@ class EBuildTest(mox.MoxTestBase):
     fake_ebuild_path = '/path/to/test_package/test_package-0.0.1-r1.ebuild'
     fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
 
-    self.assertEquals(fake_ebuild.version_no_rev, '0.0.1')
+    self.assertEquals(fake_ebuild._category, 'to')
+    self.assertEquals(fake_ebuild._pkgname, 'test_package')
+    self.assertEquals(fake_ebuild._version_no_rev, '0.0.1')
+    self.assertEquals(fake_ebuild.current_revision, 1)
+    self.assertEquals(fake_ebuild.version, '0.0.1-r1')
+    self.assertEquals(fake_ebuild.package, 'to/test_package')
+    self.assertEquals(fake_ebuild._ebuild_path_no_version,
+                      '/path/to/test_package/test_package')
     self.assertEquals(fake_ebuild.ebuild_path_no_revision,
                       '/path/to/test_package/test_package-0.0.1')
-    self.assertEquals(fake_ebuild.ebuild_path_no_version,
-                      '/path/to/test_package/test_package')
-    self.assertEquals(fake_ebuild.current_revision, 1)
+    self.assertEquals(fake_ebuild._unstable_ebuild_path,
+                      '/path/to/test_package/test_package-9999.ebuild')
+    self.assertEquals(fake_ebuild.ebuild_path, fake_ebuild_path)
 
   def testParseEBuildPathNoRevisionNumber(self):
     # Test with ebuild without revision number.
     fake_ebuild_path = '/path/to/test_package/test_package-9999.ebuild'
     fake_ebuild = self._makeFakeEbuild(fake_ebuild_path)
 
-    self.assertEquals(fake_ebuild.version_no_rev, '9999')
+    self.assertEquals(fake_ebuild._category, 'to')
+    self.assertEquals(fake_ebuild._pkgname, 'test_package')
+    self.assertEquals(fake_ebuild._version_no_rev, '9999')
+    self.assertEquals(fake_ebuild.current_revision, 0)
+    self.assertEquals(fake_ebuild.version, '9999-r0')
+    self.assertEquals(fake_ebuild.package, 'to/test_package')
+    self.assertEquals(fake_ebuild._ebuild_path_no_version,
+                      '/path/to/test_package/test_package')
     self.assertEquals(fake_ebuild.ebuild_path_no_revision,
                       '/path/to/test_package/test_package-9999')
-    self.assertEquals(fake_ebuild.ebuild_path_no_version,
-                      '/path/to/test_package/test_package')
-    self.assertEquals(fake_ebuild.current_revision, 0)
+    self.assertEquals(fake_ebuild._unstable_ebuild_path,
+                      '/path/to/test_package/test_package-9999.ebuild')
+    self.assertEquals(fake_ebuild.ebuild_path, fake_ebuild_path)
 
   def testGetCommitId(self):
     fake_sources = '/path/to/sources'
@@ -126,9 +140,130 @@ class EBuildTest(mox.MoxTestBase):
         shell=True).AndReturn(result3)
 
     self.mox.ReplayAll()
-    test_hash = fake_ebuild.GetCommitId(fake_sources)
+    test_hash = fake_ebuild._GetCommitId(fake_sources)
     self.mox.VerifyAll()
     self.assertEquals(test_hash, fake_hash)
+
+
+class StubEBuild(portage_utilities.EBuild):
+  def __init__(self, path):
+    super(StubEBuild, self).__init__(path)
+    self.is_workon = True
+    self.is_stable = True
+
+  def _ReadEBuild(self, path):
+    pass
+
+  def _GetCommitId(self, srcroot):
+    if srcroot == '/sources':
+      return 'my_id'
+    else:
+      return 'you_lose'
+
+
+class EBuildRevWorkonTest(mox.MoxTestBase):
+  # Lines that we will feed as fake ebuild contents to
+  # EBuild.MarAsStable().  This is the minimum content needed
+  # to test the various branches in the function's main processing
+  # loop.
+  _mock_ebuild = ['EAPI=2\n',
+                  'CROS_WORKON_COMMIT=old_id\n',
+                  'KEYWORDS=\"~x86 ~arm\"\n',
+                  'src_unpack(){}\n']
+
+  def setUp(self):
+    mox.MoxTestBase.setUp(self)
+    package_name = '/sources/overlay/category/test_package/test_package-0.0.1'
+    ebuild_path = package_name + '-r1.ebuild'
+    self.m_ebuild = StubEBuild(ebuild_path)
+    self.revved_ebuild_path = package_name + '-r2.ebuild'
+
+  def createRevWorkOnMocks(self, ebuild_content):
+    self.mox.StubOutWithMock(portage_utilities.os.path, 'exists')
+    self.mox.StubOutWithMock(portage_utilities.cros_build_lib, 'Die')
+    self.mox.StubOutWithMock(portage_utilities.shutil, 'copyfile')
+    self.mox.StubOutWithMock(portage_utilities.os, 'unlink')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, '_RunCommand')
+    self.mox.StubOutWithMock(portage_utilities.filecmp, 'cmp')
+    self.mox.StubOutWithMock(portage_utilities.fileinput, 'input')
+
+    ebuild_9999 = self.m_ebuild._unstable_ebuild_path
+    portage_utilities.os.path.exists(ebuild_9999).AndReturn(True)
+
+    # These calls come from MarkAsStable()
+    portage_utilities.shutil.copyfile(ebuild_9999, self.revved_ebuild_path)
+
+    m_file = self.mox.CreateMock(file)
+    portage_utilities.fileinput.input(self.revved_ebuild_path,
+                                      inplace=1).AndReturn(ebuild_content)
+    m_file.write('EAPI=2\n')
+    m_file.write('CROS_WORKON_COMMIT="my_id"\n')
+    m_file.write('KEYWORDS=\"x86 arm\"\n')
+    m_file.write( 'src_unpack(){}\n')
+    # MarkAsStable() returns here
+
+    return m_file
+
+  def testRevWorkOnEBuild(self):
+    m_file = self.createRevWorkOnMocks(self._mock_ebuild)
+    portage_utilities.filecmp.cmp(self.m_ebuild.ebuild_path,
+                                  self.revved_ebuild_path,
+                                  shallow=False).AndReturn(False)
+    portage_utilities.EBuild._RunCommand(
+      'git add ' + self.revved_ebuild_path)
+    portage_utilities.EBuild._RunCommand(
+      'git rm ' + self.m_ebuild.ebuild_path)
+    message = portage_utilities._GIT_COMMIT_MESSAGE % (
+      self.m_ebuild.package, 'my_id')
+    portage_utilities.EBuild._RunCommand('git commit -am "%s"' % message)
+
+    self.mox.ReplayAll()
+    result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
+    self.mox.VerifyAll()
+    self.assertEqual(result, 'category/test_package-0.0.1-r2')
+
+  def testRevUnchangedEBuild(self):
+    m_file = self.createRevWorkOnMocks(self._mock_ebuild)
+    portage_utilities.filecmp.cmp(self.m_ebuild.ebuild_path,
+                                  self.revved_ebuild_path,
+                                  shallow=False).AndReturn(True)
+    portage_utilities.os.unlink(self.revved_ebuild_path)
+
+    self.mox.ReplayAll()
+    result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
+    self.mox.VerifyAll()
+    self.assertEqual(result, None)
+
+  def testRevMissingEBuild(self):
+    self.revved_ebuild_path = self.m_ebuild.ebuild_path
+    self.m_ebuild.ebuild_path = self.m_ebuild._unstable_ebuild_path
+    self.m_ebuild.current_revision = 0
+    self.m_ebuild.is_stable = False
+
+    m_file = self.createRevWorkOnMocks(
+      self._mock_ebuild[0:1] + self._mock_ebuild[2:])
+    portage_utilities.filecmp.cmp(self.m_ebuild.ebuild_path,
+                                  self.revved_ebuild_path,
+                                  shallow=False).AndReturn(False)
+    portage_utilities.EBuild._RunCommand(
+      'git add ' + self.revved_ebuild_path)
+    message = portage_utilities._GIT_COMMIT_MESSAGE % (
+      self.m_ebuild.package, 'my_id')
+    portage_utilities.EBuild._RunCommand('git commit -am "%s"' % message)
+
+    self.mox.ReplayAll()
+    result = self.m_ebuild.RevWorkOnEBuild('/sources', redirect_file=m_file)
+    self.mox.VerifyAll()
+    self.assertEqual(result, 'category/test_package-0.0.1-r1')
+
+  def testCommitChange(self):
+    self.mox.StubOutWithMock(portage_utilities.EBuild, '_RunCommand')
+    mock_message = 'Commit me'
+    portage_utilities.EBuild._RunCommand(
+      'git commit -am "%s"' % mock_message)
+    self.mox.ReplayAll()
+    self.m_ebuild.CommitChange(mock_message)
+    self.mox.VerifyAll()
 
 
 class FindOverlaysTest(mox.MoxTestBase):

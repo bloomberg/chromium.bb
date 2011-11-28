@@ -195,15 +195,6 @@ class ChromeEBuild(portage_utilities.EBuild):
     if re_match:
       self.chrome_version = re_match.group(1)
 
-  def __cmp__(self, other):
-    """Use ebuild paths for comparison."""
-    if self.ebuild_path == other.ebuild_path:
-      return 0
-    elif self.ebuild_path > other.ebuild_path:
-      return 1
-    else:
-      return (-1)
-
   def __str__(self):
     return self.ebuild_path
 
@@ -437,7 +428,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
                                    constants.CHROME_REV_SPEC,
                                    constants.CHROME_REV_LOCAL]
 
-  cros_mark_as_stable.EBuildStableMarker.MarkAsStable(
+  portage_utilities.EBuild.MarkAsStable(
       unstable_ebuild.ebuild_path, new_ebuild_path, _CHROME_SVN_TAG, commit,
       make_stable=mark_stable)
   new_ebuild = ChromeEBuild(new_ebuild_path)
@@ -458,7 +449,7 @@ def MarkChromeEBuildAsStable(stable_candidate, unstable_ebuild, chrome_rev,
   if stable_candidate and stable_candidate != sticky_ebuild:
     RunCommand(['git', 'rm', stable_candidate.ebuild_path])
 
-  cros_mark_as_stable.EBuildStableMarker.CommitChange(
+  portage_utilities.EBuild.CommitChange(
       _GIT_COMMIT_MESSAGE % {'chrome_rev': chrome_rev,
                              'chrome_version': chrome_version})
 

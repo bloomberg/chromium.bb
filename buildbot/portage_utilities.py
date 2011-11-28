@@ -4,14 +4,20 @@
 
 """Routines and classes for working with Portage overlays and ebuilds."""
 
+import filecmp
 import fileinput
 import os
 import re
+import shutil
+import sys
 
 from chromite.lib import cros_build_lib
 
 _PUBLIC_OVERLAY = '%(build_root)s/src/third_party/chromiumos-overlay'
 _OVERLAY_LIST_CMD = '%(build_root)s/src/platform/dev/host/cros_overlay_list'
+
+# Takes two strings, package_name and commit_id.
+_GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit %s as stable.'
 
 
 def FindOverlays(srcroot, overlay_type):
@@ -91,25 +97,106 @@ class EBuild(object):
 
   verbose = False
 
+  @classmethod
+  def _Print(cls, message):
+    """Verbose print function."""
+    if cls.verbose:
+      cros_build_lib.Info(message)
+
+  @classmethod
+  def _RunCommand(cls, command):
+    command_result = cros_build_lib.RunCommand(
+      command, redirect_stdout=True, print_cmd=cls.verbose, shell=True)
+    return command_result.output
+
+  @classmethod
+  def MarkAsStable(cls, unstable_ebuild_path, new_stable_ebuild_path,
+                   commit_keyword, commit_value, redirect_file=None,
+                   make_stable=True):
+    """Static function that creates a revved stable ebuild.
+
+    This function assumes you have already figured out the name of the new
+    stable ebuild path and then creates that file from the given unstable
+    ebuild and marks it as stable.  If the commit_value is set, it also
+    set the commit_keyword=commit_value pair in the ebuild.
+
+    Args:
+      unstable_ebuild_path: The path to the unstable ebuild.
+      new_stable_ebuild_path:  The path you want to use for the new stable
+        ebuild.
+      commit_keyword: Optional keyword to set in the ebuild to mark it as
+        stable.
+      commit_value: Value to set the above keyword to.
+      redirect_file:  Optionally redirect output of new ebuild somewhere else.
+      make_stable:  Actually make the ebuild stable.
+    """
+    shutil.copyfile(unstable_ebuild_path, new_stable_ebuild_path)
+    for line in fileinput.input(new_stable_ebuild_path, inplace=1):
+      # Has to be done here to get changes to sys.stdout from fileinput.input.
+      if not redirect_file:
+        redirect_file = sys.stdout
+      if line.startswith('KEYWORDS'):
+        # Actually mark this file as stable by removing ~'s.
+        if make_stable:
+          redirect_file.write(line.replace('~', ''))
+        else:
+          redirect_file.write(line)
+      elif line.startswith('EAPI'):
+        # Always add new commit_id after EAPI definition.
+        redirect_file.write(line)
+        if commit_keyword and commit_value:
+          redirect_file.write('%s="%s"\n' % (commit_keyword, commit_value))
+      elif not line.startswith(commit_keyword):
+        # Skip old commit_keyword definition.
+        redirect_file.write(line)
+    fileinput.close()
+
+  @classmethod
+  def CommitChange(cls, message):
+    """Commits current changes in git locally with given commit message.
+
+    Args:
+        message: the commit string to write when committing to git.
+
+    Raises:
+        OSError: Error occurred while committing.
+    """
+    cros_build_lib.Info('Committing changes with commit message: %s' % message)
+    git_commit_cmd = 'git commit -am "%s"' % message
+    cls._RunCommand(git_commit_cmd)
+
   def __init__(self, path):
     """Sets up data about an ebuild from its path."""
     from portage.versions import pkgsplit
-    _path, self.category, self.pkgname, filename = path.rsplit('/', 3)
-    _pkgname, self.version_no_rev, rev = pkgsplit(
+    _path, self._category, self._pkgname, filename = path.rsplit('/', 3)
+    _pkgname, self._version_no_rev, rev = pkgsplit(
         filename.replace('.ebuild', ''))
-
-    self.ebuild_path_no_version = os.path.join(
-        os.path.dirname(path), self.pkgname)
-    self.ebuild_path_no_revision = '%s-%s' % (self.ebuild_path_no_version,
-                                              self.version_no_rev)
     self.current_revision = int(rev.replace('r', ''))
-    self.version = '%s-%s' % (self.version_no_rev, rev)
-    self.package = '%s/%s' % (self.category, self.pkgname)
+    self.version = '%s-%s' % (self._version_no_rev, rev)
+    self.package = '%s/%s' % (self._category, self._pkgname)
+
+    self._ebuild_path_no_version = os.path.join(
+        os.path.dirname(path), self._pkgname)
+    self.ebuild_path_no_revision = '%s-%s' % (
+        self._ebuild_path_no_version, self._version_no_rev)
+    self._unstable_ebuild_path = '%s-9999.ebuild' % (
+        self._ebuild_path_no_version)
     self.ebuild_path = path
 
     self.is_workon = False
     self.is_stable = False
+    self._ReadEBuild(path)
 
+  def _ReadEBuild(self, path):
+    """Determine the settings of `is_workon` and `is_stable`.
+
+    `is_workon` is determined by whether the ebuild inherits from
+    the 'cros-workon' eclass.  `is_stable` is determined by whether
+    there's a '~' in the KEYWORDS setting in the ebuild.
+
+    This function is separate from __init__() to allow unit tests to
+    stub it out.
+    """
     for line in fileinput.input(path):
       if line.startswith('inherit ') and 'cros-workon' in line:
         self.is_workon = True
@@ -118,24 +205,18 @@ class EBuild(object):
         self.is_stable = True
     fileinput.close()
 
-  def _RunCommand(self, command):
-    command_result = cros_build_lib.RunCommand(
-      command, redirect_stdout=True, print_cmd=self.verbose, shell=True)
-    return command_result.output
-
-  def GetCommitId(self, srcroot):
+  def _GetCommitId(self, srcroot):
     """Get the commit id for this ebuild."""
     # Grab and evaluate CROS_WORKON variables from this ebuild.
-    unstable_ebuild = '%s-9999.ebuild' % self.ebuild_path_no_version
     cmd = ('export CROS_WORKON_LOCALNAME="%s" CROS_WORKON_PROJECT="%s"; '
            'eval $(grep -E "^CROS_WORKON" %s) && '
            'echo $CROS_WORKON_PROJECT '
            '$CROS_WORKON_LOCALNAME/$CROS_WORKON_SUBDIR'
-           % (self.pkgname, self.pkgname, unstable_ebuild))
+           % (self._pkgname, self._pkgname, self._unstable_ebuild_path))
     project, subdir = self._RunCommand(cmd).split()
 
     # Calculate srcdir.
-    if self.category == 'chromeos-base':
+    if self._category == 'chromeos-base':
       dir_ = 'platform'
     else:
       dir_ = 'third_party'
@@ -154,13 +235,71 @@ class EBuild(object):
     actual_project = self._RunCommand(cmd).rstrip()
     if project not in (actual_project, 'chromeos-kernel'):
       cros_build_lib.Die('Project name mismatch for %s (%s != %s)' % (
-          unstable_ebuild, project, actual_project))
+          self._unstable_ebuild_path, project, actual_project))
 
     # Get commit id.
     output = self._RunCommand('cd %s && git rev-parse HEAD' % srcdir)
     if not output:
       cros_build_lib.Die('Missing commit id for %s' % self.ebuild_path)
     return output.rstrip()
+
+  def RevWorkOnEBuild(self, srcroot, redirect_file=None):
+    """Revs a workon ebuild given the git commit hash.
+
+    By default this class overwrites a new ebuild given the normal
+    ebuild rev'ing logic.  However, a user can specify a redirect_file
+    to redirect the new stable ebuild to another file.
+
+    Args:
+        srcroot: full path to the 'src' subdirectory in the source
+          repository.
+        redirect_file: Optional file to write the new ebuild.  By default
+          it is written using the standard rev'ing logic.  This file must be
+          opened and closed by the caller.
+
+    Raises:
+        OSError: Error occurred while creating a new ebuild.
+        IOError: Error occurred while writing to the new revved ebuild file.
+    Returns:
+      If the revved package is different than the old ebuild, return the full
+      revved package name, including the version number. Otherwise, return None.
+    """
+    if self.is_stable:
+      stable_version_no_rev = self._version_no_rev
+    else:
+      # If given unstable ebuild, use 0.0.1 rather than 9999.
+      stable_version_no_rev = '0.0.1'
+
+    new_version = '%s-r%d' % (
+        stable_version_no_rev, self.current_revision + 1)
+    new_stable_ebuild_path = '%s-%s.ebuild' % (
+        self._ebuild_path_no_version, new_version)
+
+    self._Print('Creating new stable ebuild %s' % new_stable_ebuild_path)
+    if not os.path.exists(self._unstable_ebuild_path):
+      cros_build_lib.Die('Missing unstable ebuild: %s' %
+                         self._unstable_ebuild_path)
+
+    commit_id = self._GetCommitId(srcroot)
+    self.MarkAsStable(self._unstable_ebuild_path,
+                      new_stable_ebuild_path,
+                      'CROS_WORKON_COMMIT', commit_id, redirect_file)
+
+    old_ebuild_path = self.ebuild_path
+    if filecmp.cmp(old_ebuild_path, new_stable_ebuild_path, shallow=False):
+      os.unlink(new_stable_ebuild_path)
+      return None
+    else:
+      self._Print('Adding new stable ebuild to git')
+      self._RunCommand('git add %s' % new_stable_ebuild_path)
+
+      if self.is_stable:
+        self._Print('Removing old ebuild from git')
+        self._RunCommand('git rm %s' % old_ebuild_path)
+
+      message = _GIT_COMMIT_MESSAGE % (self.package, commit_id)
+      self.CommitChange(message)
+      return '%s-%s' % (self.package, new_version)
 
 
 def BestEBuild(ebuilds):

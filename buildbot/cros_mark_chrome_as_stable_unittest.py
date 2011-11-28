@@ -20,6 +20,7 @@ import constants
 if __name__ == '__main__':
   sys.path.append(constants.SOURCE_ROOT)
 
+from chromite.buildbot import portage_utilities
 from chromite.buildbot import cros_mark_as_stable
 from chromite.buildbot import cros_mark_chrome_as_stable
 
@@ -105,16 +106,13 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
     unstable, stable_ebuilds = cros_mark_chrome_as_stable.FindChromeCandidates(
         self.mock_chrome_dir)
 
+    stable_ebuild_paths = map(lambda eb: eb.ebuild_path, stable_ebuilds)
     self.assertEqual(unstable.ebuild_path, self.unstable)
     self.assertEqual(len(stable_ebuilds), 4)
-    self.assertTrue(cros_mark_chrome_as_stable.ChromeEBuild(self.sticky) in
-                    stable_ebuilds)
-    self.assertTrue(cros_mark_chrome_as_stable.ChromeEBuild(self.sticky_rc) in
-                    stable_ebuilds)
-    self.assertTrue(cros_mark_chrome_as_stable.ChromeEBuild(self.latest_stable)
-                    in stable_ebuilds)
-    self.assertTrue(cros_mark_chrome_as_stable.ChromeEBuild(self.tot_stable) in
-                    stable_ebuilds)
+    self.assertTrue(self.sticky in stable_ebuild_paths)
+    self.assertTrue(self.sticky_rc in stable_ebuild_paths)
+    self.assertTrue(self.latest_stable in stable_ebuild_paths)
+    self.assertTrue(self.tot_stable in stable_ebuild_paths)
 
   def _GetStableEBuilds(self):
     """Common helper to create a list of stable ebuilds."""
@@ -307,8 +305,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
       commit_string_indicator: a string that the commit message must contain
     """
     self.mox.StubOutWithMock(cros_mark_chrome_as_stable, 'RunCommand')
-    self.mox.StubOutWithMock(cros_mark_as_stable.EBuildStableMarker,
-                             'CommitChange')
+    self.mox.StubOutWithMock(portage_utilities.EBuild, 'CommitChange')
     stable_candidate = cros_mark_chrome_as_stable.ChromeEBuild(old_ebuild_path)
     unstable_ebuild = cros_mark_chrome_as_stable.ChromeEBuild(self.unstable)
     sticky_ebuild = cros_mark_chrome_as_stable.ChromeEBuild(self.sticky)
@@ -318,7 +315,7 @@ class CrosMarkChromeAsStable(mox.MoxTestBase):
 
     cros_mark_chrome_as_stable.RunCommand(['git', 'add', new_ebuild_path])
     cros_mark_chrome_as_stable.RunCommand(['git', 'rm', old_ebuild_path])
-    cros_mark_as_stable.EBuildStableMarker.CommitChange(
+    portage_utilities.EBuild.CommitChange(
         mox.StrContains(commit_string_indicator))
 
     self.mox.ReplayAll()

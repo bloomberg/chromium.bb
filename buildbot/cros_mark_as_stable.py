@@ -6,11 +6,8 @@
 
 """This module uprevs a given package's ebuild to the next revision."""
 
-import filecmp
-import fileinput
 import optparse
 import os
-import shutil
 import subprocess
 import sys
 
@@ -24,9 +21,6 @@ from chromite.lib import cros_build_lib
 
 # TODO(sosa): Remove during OO refactor.
 VERBOSE = False
-
-# Takes two strings, package_name and commit_id.
-_GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s with commit %s as stable.'
 
 # Dictionary of valid commands with usage information.
 COMMAND_DICTIONARY = {
@@ -196,125 +190,6 @@ class GitBranch(object):
     _SimpleRunCommand(delete_cmd)
 
 
-class EBuildStableMarker(object):
-  """Class that revs the ebuild and commits locally or pushes the change."""
-
-  def __init__(self, ebuild):
-    assert ebuild
-    self._ebuild = ebuild
-
-  @classmethod
-  def MarkAsStable(cls, unstable_ebuild_path, new_stable_ebuild_path,
-                   commit_keyword, commit_value, redirect_file=None,
-                   make_stable=True):
-    """Static function that creates a revved stable ebuild.
-
-    This function assumes you have already figured out the name of the new
-    stable ebuild path and then creates that file from the given unstable
-    ebuild and marks it as stable.  If the commit_value is set, it also
-    set the commit_keyword=commit_value pair in the ebuild.
-
-    Args:
-      unstable_ebuild_path: The path to the unstable ebuild.
-      new_stable_ebuild_path:  The path you want to use for the new stable
-        ebuild.
-      commit_keyword: Optional keyword to set in the ebuild to mark it as
-        stable.
-      commit_value: Value to set the above keyword to.
-      redirect_file:  Optionally redirect output of new ebuild somewhere else.
-      make_stable:  Actually make the ebuild stable.
-    """
-    shutil.copyfile(unstable_ebuild_path, new_stable_ebuild_path)
-    for line in fileinput.input(new_stable_ebuild_path, inplace=1):
-      # Has to be done here to get changes to sys.stdout from fileinput.input.
-      if not redirect_file:
-        redirect_file = sys.stdout
-      if line.startswith('KEYWORDS'):
-        # Actually mark this file as stable by removing ~'s.
-        if make_stable:
-          redirect_file.write(line.replace('~', ''))
-        else:
-          redirect_file.write(line)
-      elif line.startswith('EAPI'):
-        # Always add new commit_id after EAPI definition.
-        redirect_file.write(line)
-        if commit_keyword and commit_value:
-          redirect_file.write('%s="%s"\n' % (commit_keyword, commit_value))
-      elif not line.startswith(commit_keyword):
-        # Skip old commit_keyword definition.
-        redirect_file.write(line)
-    fileinput.close()
-
-  def RevWorkOnEBuild(self, commit_id, redirect_file=None):
-    """Revs a workon ebuild given the git commit hash.
-
-    By default this class overwrites a new ebuild given the normal
-    ebuild rev'ing logic.  However, a user can specify a redirect_file
-    to redirect the new stable ebuild to another file.
-
-    Args:
-        commit_id: String corresponding to the commit hash of the developer
-          package to rev.
-        redirect_file: Optional file to write the new ebuild.  By default
-          it is written using the standard rev'ing logic.  This file must be
-          opened and closed by the caller.
-
-    Raises:
-        OSError: Error occurred while creating a new ebuild.
-        IOError: Error occurred while writing to the new revved ebuild file.
-    Returns:
-      If the revved package is different than the old ebuild, return the full
-      revved package name, including the version number. Otherwise, return None.
-    """
-    if self._ebuild.is_stable:
-      stable_version_no_rev = self._ebuild.version_no_rev
-    else:
-      # If given unstable ebuild, use 0.0.1 rather than 9999.
-      stable_version_no_rev = '0.0.1'
-
-    new_version = '%s-r%d' % (stable_version_no_rev,
-                              self._ebuild.current_revision + 1)
-    new_stable_ebuild_path = '%s-%s.ebuild' % (
-        self._ebuild.ebuild_path_no_version, new_version)
-
-    _Print('Creating new stable ebuild %s' % new_stable_ebuild_path)
-    unstable_ebuild_path = ('%s-9999.ebuild' %
-                            self._ebuild.ebuild_path_no_version)
-    if not os.path.exists(unstable_ebuild_path):
-      cros_build_lib.Die('Missing unstable ebuild: %s' % unstable_ebuild_path)
-
-    self.MarkAsStable(unstable_ebuild_path, new_stable_ebuild_path,
-                      'CROS_WORKON_COMMIT', commit_id, redirect_file)
-
-    old_ebuild_path = self._ebuild.ebuild_path
-    if filecmp.cmp(old_ebuild_path, new_stable_ebuild_path, shallow=False):
-      os.unlink(new_stable_ebuild_path)
-      return None
-    else:
-      _Print('Adding new stable ebuild to git')
-      _SimpleRunCommand('git add %s' % new_stable_ebuild_path)
-
-      if self._ebuild.is_stable:
-        _Print('Removing old ebuild from git')
-        _SimpleRunCommand('git rm %s' % old_ebuild_path)
-
-      return '%s-%s' % (self._ebuild.package, new_version)
-
-  @classmethod
-  def CommitChange(cls, message):
-    """Commits current changes in git locally with given commit message.
-
-    Args:
-        message: the commit string to write when committing to git.
-
-    Raises:
-        OSError: Error occurred while committing.
-    """
-    cros_build_lib.Info('Committing changes with commit message: %s' % message)
-    git_commit_cmd = 'git commit -am "%s"' % message
-    _SimpleRunCommand(git_commit_cmd)
-
-
 def main():
   parser = optparse.OptionParser('cros_mark_as_stable OPTIONS packages')
   parser.add_option('--all', action='store_true',
@@ -402,12 +277,8 @@ def main():
       for ebuild in ebuilds:
         try:
           _Print('Working on %s' % ebuild.package)
-          worker = EBuildStableMarker(ebuild)
-          commit_id = ebuild.GetCommitId(options.srcroot)
-          new_package = worker.RevWorkOnEBuild(commit_id)
+          new_package = ebuild.RevWorkOnEBuild(options.srcroot)
           if new_package:
-            message = _GIT_COMMIT_MESSAGE % (ebuild.package, commit_id)
-            worker.CommitChange(message)
             revved_packages.append(ebuild.package)
             new_package_atoms.append('=%s' % new_package)
         except (OSError, IOError):
