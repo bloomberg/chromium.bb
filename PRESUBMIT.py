@@ -131,11 +131,11 @@ def _CheckNoNewWStrings(input_api, output_api):
   """Checks to make sure we don't introduce use of wstrings."""
   problems = []
   for f in input_api.AffectedFiles():
-    for line_num, line in f.ChangedContents():
-      if (not f.LocalPath().endswith(('.cc', '.h')) or
-          f.LocalPath().endswith('test.cc')):
-        continue
+    if (not f.LocalPath().endswith(('.cc', '.h')) or
+        f.LocalPath().endswith('test.cc')):
+      continue
 
+    for line_num, line in f.ChangedContents():
       if 'wstring' in line:
         problems.append('    %s:%d' % (f.LocalPath(), line_num))
 
@@ -159,6 +159,25 @@ def _CheckNoDEPSGIT(input_api, output_api):
   return []
 
 
+def _CheckNoFRIEND_TEST(input_api, output_api):
+  """Make sure that gtest's FRIEND_TEST() macro is not used, the
+  FRIEND_TEST_ALL_PREFIXES() macro from base/gtest_prod_util.h should be used
+  instead since that allows for FLAKY_, FAILS_ and DISABLED_ prefixes."""
+  problems = []
+
+  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.h'))
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for line_num, line in f.ChangedContents():
+      if 'FRIEND_TEST(' in line:
+        problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitPromptWarning('Chromium code should not use '
+      'gtest\'s FRIEND_TEST() macro. Include base/gtest_prod_util.h and use'
+      'FRIEND_TEST_ALL_PREFIXES() instead.\n' + '\n'.join(problems))]
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -171,6 +190,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
   results.extend(_CheckNoNewWStrings(input_api, output_api))
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
+  results.extend(_CheckNoFRIEND_TEST(input_api, output_api))
   return results
 
 
