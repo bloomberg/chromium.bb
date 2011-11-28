@@ -31,11 +31,6 @@
 #include "content/plugin/webplugin_accelerated_surface_proxy_mac.h"
 #endif
 
-#if defined(OS_WIN)
-#include "content/common/section_util_win.h"
-#include "ui/gfx/gdi_util.h"
-#endif
-
 #if defined(USE_X11)
 #include "ui/base/x/x11_util_internal.h"
 #endif
@@ -473,9 +468,11 @@ void WebPluginProxy::CreateCanvasFromHandle(
   // Create a canvas that will reference the shared bits. We have to handle
   // errors here since we're mapping a large amount of memory that may not fit
   // in our address space, or go wrong in some other way.
-  HANDLE section = chrome::GetSectionFromProcess(dib_handle,
-                                                 channel_->renderer_handle(),
-                                                 false);
+  HANDLE section;
+  DuplicateHandle(channel_->renderer_handle(), dib_handle, GetCurrentProcess(),
+                  &section,
+                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
+                  FALSE, 0);
   scoped_ptr<skia::PlatformCanvas> canvas(new skia::PlatformCanvas);
   if (!canvas->initialize(
           window_rect.width(),

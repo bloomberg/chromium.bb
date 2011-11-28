@@ -103,7 +103,6 @@
 #if defined(OS_WIN)
 #include <objbase.h>
 #include "base/synchronization/waitable_event.h"
-#include "content/common/section_util_win.h"
 #endif
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -796,8 +795,10 @@ TransportDIB* RenderProcessHostImpl::MapTransportDIB(
     TransportDIB::Id dib_id) {
 #if defined(OS_WIN)
   // On Windows we need to duplicate the handle from the remote process
-  HANDLE section = chrome::GetSectionFromProcess(
-      dib_id.handle, GetHandle(), false /* read write */);
+  HANDLE section;
+  DuplicateHandle(GetHandle(), dib_id.handle, GetCurrentProcess(), &section,
+                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
+                  FALSE, 0);
   return TransportDIB::Map(section);
 #elif defined(OS_MACOSX)
   // On OSX, the browser allocates all DIBs and keeps a file descriptor around

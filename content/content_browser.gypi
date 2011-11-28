@@ -48,7 +48,6 @@
     'public/browser/render_view_host_observer.cc',
     'public/browser/render_view_host_observer.h',
     'public/browser/resource_dispatcher_host_delegate.h',
-    'public/browser/resource_response.h',
     'public/browser/sensors.h',
     'public/browser/sensors_listener.h',
     'browser/accessibility/browser_accessibility.cc',

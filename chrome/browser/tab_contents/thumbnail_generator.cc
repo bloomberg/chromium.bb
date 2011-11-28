@@ -29,10 +29,6 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skbitmap_operations.h"
 
-#if defined(OS_WIN)
-#include "content/common/section_util_win.h"
-#endif
-
 // Overview
 // --------
 // This class provides current thumbnails for tabs. The simplest operation is
@@ -236,10 +232,11 @@ void ThumbnailGenerator::AskForSnapshot(RenderWidgetHost* renderer,
   // Duplicate the handle to the DIB here because the renderer process does not
   // have permission. The duplicated handle is owned by the renderer process,
   // which is responsible for closing it.
-  TransportDIB::Handle renderer_dib_handle = chrome::GetSectionForProcess(
-      thumbnail_dib->handle(),
-      renderer->process()->GetHandle(),
-      false);
+  TransportDIB::Handle renderer_dib_handle;
+  DuplicateHandle(GetCurrentProcess(), thumbnail_dib->handle(),
+                  renderer->process()->GetHandle(), &renderer_dib_handle,
+                  STANDARD_RIGHTS_REQUIRED | FILE_MAP_READ | FILE_MAP_WRITE,
+                  FALSE, 0);
   if (!renderer_dib_handle) {
     LOG(WARNING) << "Could not duplicate dib handle for renderer";
     return;
