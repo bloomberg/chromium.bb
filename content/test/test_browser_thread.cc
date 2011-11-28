@@ -10,13 +10,37 @@
 
 namespace content {
 
+// This gives access to set_message_loop().
+class TestBrowserThreadImpl : public BrowserThreadImpl {
+ public:
+  explicit TestBrowserThreadImpl(BrowserThread::ID identifier)
+      : BrowserThreadImpl(identifier) {
+  }
+
+  TestBrowserThreadImpl(BrowserThread::ID identifier,
+                        MessageLoop* message_loop)
+      : BrowserThreadImpl(identifier, message_loop) {
+  }
+
+  virtual ~TestBrowserThreadImpl() {
+    Stop();
+  }
+
+  void set_message_loop(MessageLoop* loop) {
+    Thread::set_message_loop(loop);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserThreadImpl);
+};
+
 TestBrowserThread::TestBrowserThread(BrowserThread::ID identifier)
-    : impl_(new BrowserThreadImpl(identifier)) {
+    : impl_(new TestBrowserThreadImpl(identifier)) {
 }
 
 TestBrowserThread::TestBrowserThread(BrowserThread::ID identifier,
                                      MessageLoop* message_loop)
-    : impl_(new BrowserThreadImpl(identifier, message_loop)) {
+    : impl_(new TestBrowserThreadImpl(identifier, message_loop)) {
 }
 
 TestBrowserThread::~TestBrowserThread() {
@@ -43,6 +67,10 @@ bool TestBrowserThread::IsRunning() {
 
 base::Thread* TestBrowserThread::DeprecatedGetThreadObject() {
   return impl_.get();
+}
+
+void TestBrowserThread::DeprecatedSetMessageLoop(MessageLoop* loop) {
+  impl_->set_message_loop(loop);
 }
 
 }  // namespace content

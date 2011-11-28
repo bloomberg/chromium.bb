@@ -30,6 +30,7 @@
 #include "chrome/common/net/gaia/gaia_auth_consumer.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/test/test_browser_thread.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -48,6 +49,7 @@ using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::_;
+using content::BrowserThread;
 
 const char kTrue[] = "true";
 const char kDomain[] = "domain.com";
@@ -74,20 +76,19 @@ ACTION_P(MockSessionManagerClientPolicyCallback, policy) {
   arg0.Run(policy);
 }
 
-// Subclass IOThread to expose set_message_loop.
-class TestIOThread : public IOThread {
- public:
-  explicit TestIOThread(PrefService* local_state)
-      : IOThread(local_state, NULL, NULL) {}
-
-  using IOThread::set_message_loop;
-};
-
 template<typename TESTBASE>
 class LoginUtilsTestBase : public TESTBASE,
                            public LoginUtils::Delegate,
                            public LoginStatusConsumer {
  public:
+  // Initialization here is important. The UI thread gets the test's
+  // message loop, as does the file thread (which never actually gets
+  // started - so this is a way to fake multiple threads on a single
+  // test thread).  The IO thread does not get the message loop set,
+  // and is never started.  This is necessary so that we skip various
+  // bits of initialization that get posted to the IO thread.  We do
+  // however, at one point in the test, temporarily set the message
+  // loop for the IO thread.
   LoginUtilsTestBase()
       : loop_(MessageLoop::TYPE_IO),
         browser_process_(
@@ -95,7 +96,8 @@ class LoginUtilsTestBase : public TESTBASE,
         local_state_(browser_process_),
         ui_thread_(content::BrowserThread::UI, &loop_),
         file_thread_(content::BrowserThread::FILE, &loop_),
-        io_thread_(local_state_.Get()),
+        io_thread_(content::BrowserThread::IO),
+        io_thread_state_(local_state_.Get(), NULL, NULL),
         prepared_profile_(NULL) {}
 
   virtual void SetUp() OVERRIDE {
@@ -111,7 +113,7 @@ class LoginUtilsTestBase : public TESTBASE,
 
     local_state_.Get()->RegisterStringPref(prefs::kApplicationLocale, "");
 
-    browser_process_->SetIOThread(&io_thread_);
+    browser_process_->SetIOThread(&io_thread_state_);
 
     DBusThreadManager::InitializeForTesting(&dbus_thread_manager_);
 
@@ -169,12 +171,16 @@ class LoginUtilsTestBase : public TESTBASE,
       // g_browser_process->profile_manager() is valid during initialization.
       // Run a task on a temporary BrowserThread::IO that allows skipping
       // these routines.
-      io_thread_.set_message_loop(&loop_);
+      //
+      // It is important to not have a fake message loop on the IO
+      // thread for the whole test, see comment on LoginUtilsTestBase
+      // constructor for details.
+      io_thread_.DeprecatedSetMessageLoop(&loop_);
       loop_.PostTask(FROM_HERE,
                      base::Bind(&LoginUtilsTestBase::TearDownOnIO,
                                 base::Unretained(this)));
       loop_.RunAllPending();
-      io_thread_.set_message_loop(NULL);
+      io_thread_.DeprecatedSetMessageLoop(NULL);
     }
 
     // These trigger some tasks that have to run while BrowserThread::UI
@@ -305,7 +311,8 @@ class LoginUtilsTestBase : public TESTBASE,
 
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  TestIOThread io_thread_;
+  content::TestBrowserThread io_thread_;
+  IOThread io_thread_state_;
 
   MockDBusThreadManager dbus_thread_manager_;
   TestURLFetcherFactory test_url_fetcher_factory_;

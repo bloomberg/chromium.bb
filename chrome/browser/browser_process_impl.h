@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/prefs/pref_member.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_message.h"
@@ -29,6 +30,7 @@ class BrowserOnlineStateObserver;
 class ChromeNetLog;
 class ChromeResourceDispatcherHostDelegate;
 class CommandLine;
+class ChromeFrameFriendOfBrowserProcessImpl;  // TODO(joi): Remove
 class RemoteDebuggingServer;
 class TabCloseableStateWatcher;
 
@@ -43,6 +45,19 @@ class BrowserProcessImpl : public BrowserProcess,
  public:
   explicit BrowserProcessImpl(const CommandLine& command_line);
   virtual ~BrowserProcessImpl();
+
+  // Some of our startup is interleaved with thread creation, driven
+  // by these functions.
+  void PreStartThread(content::BrowserThread::ID identifier);
+  void PostStartThread(content::BrowserThread::ID identifier);
+
+  // Most cleanup is done by these functions, driven from
+  // ChromeBrowserMain based on notifications from the content
+  // framework, rather than in the destructor, so that we can
+  // interleave cleanup with threads being stopped.
+  void StartTearDown();
+  void PreStopThread(content::BrowserThread::ID identifier);
+  void PostStopThread(content::BrowserThread::ID identifier);
 
   base::Thread* process_launcher_thread();
 
@@ -117,20 +132,18 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual CRLSetFetcher* crl_set_fetcher() OVERRIDE;
 
  private:
+  // TODO(joi): Remove. Temporary hack to get at CreateIOThreadState.
+  friend class ChromeFrameFriendOfBrowserProcessImpl;
+
+  // Must be called right before the IO thread is started.
+  void CreateIOThreadState();
+
   void CreateResourceDispatcherHost();
   void CreateMetricsService();
 
-  void CreateIOThread();
-  static void CleanupOnIOThread();
-
-  void CreateFileThread();
-  void CreateDBThread();
-  void CreateProcessLauncherThread();
-  void CreateCacheThread();
-  void CreateGpuThread();
   void CreateWatchdogThread();
 #if defined(OS_CHROMEOS)
-  void CreateWebSocketProxyThread();
+  void InitializeWebSocketProxyThread();
 #endif
   void CreateTemplateURLService();
   void CreateProfileManager();
@@ -161,28 +174,10 @@ class BrowserProcessImpl : public BrowserProcess,
   bool created_metrics_service_;
   scoped_ptr<MetricsService> metrics_service_;
 
-  bool created_io_thread_;
   scoped_ptr<IOThread> io_thread_;
-
-  bool created_file_thread_;
-  scoped_ptr<base::Thread> file_thread_;
-
-  bool created_db_thread_;
-  scoped_ptr<base::Thread> db_thread_;
-
-  bool created_process_launcher_thread_;
-  scoped_ptr<base::Thread> process_launcher_thread_;
-
-  bool created_cache_thread_;
-  scoped_ptr<base::Thread> cache_thread_;
 
   bool created_watchdog_thread_;
   scoped_ptr<WatchDogThread> watchdog_thread_;
-
-#if defined(OS_CHROMEOS)
-  bool created_web_socket_proxy_thread_;
-  scoped_ptr<base::Thread> web_socket_proxy_thread_;
-#endif
 
   bool created_profile_manager_;
   scoped_ptr<ProfileManager> profile_manager_;
@@ -270,7 +265,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_refptr<MHTMLGenerationManager> mhtml_generation_manager_;
 
   // Monitors the state of the 'DisablePluginFinder' policy.
-  BooleanPrefMember plugin_finder_disabled_pref_;
+  scoped_ptr<BooleanPrefMember> plugin_finder_disabled_pref_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
   base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;

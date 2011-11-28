@@ -316,7 +316,8 @@ class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
 SystemURLRequestContextGetter::SystemURLRequestContextGetter(
     IOThread* io_thread)
     : io_thread_(io_thread),
-      io_message_loop_proxy_(io_thread->message_loop_proxy()) {
+      io_message_loop_proxy_(
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
 }
 
 SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
@@ -347,8 +348,7 @@ IOThread::IOThread(
     PrefService* local_state,
     ChromeNetLog* net_log,
     ExtensionEventRouterForwarder* extension_event_router_forwarder)
-    : content::BrowserProcessSubThread(BrowserThread::IO),
-      net_log_(net_log),
+    : net_log_(net_log),
       extension_event_router_forwarder_(extension_event_router_forwarder),
       globals_(NULL),
       sdch_manager_(NULL),
@@ -371,17 +371,17 @@ IOThread::IOThread(
                                                     local_state);
   ssl_config_service_manager_.reset(
       SSLConfigServiceManager::CreateDefaultManager(local_state));
-  MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&IOThread::InitSystemRequestContext,
-                            weak_factory_.GetWeakPtr()));
+
+  BrowserThread::SetDelegate(BrowserThread::IO, this);
 }
 
 IOThread::~IOThread() {
+  // This isn't needed for production code, but in tests, IOThread may
+  // be multiply constructed.
+  BrowserThread::SetDelegate(BrowserThread::IO, NULL);
+
   if (pref_proxy_config_tracker_.get())
     pref_proxy_config_tracker_->DetachFromPrefService();
-  // We cannot rely on our base class to stop the thread since we want our
-  // CleanUp function to run.
-  Stop();
   DCHECK(!globals_);
 }
 
@@ -407,9 +407,7 @@ void IOThread::Init() {
   // messages around; it shouldn't be allowed to perform any blocking disk I/O.
   base::ThreadRestrictions::SetIOAllowed(false);
 
-  content::BrowserProcessSubThread::Init();
-
-  DCHECK_EQ(MessageLoop::TYPE_IO, message_loop()->type());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
 #if defined(USE_NSS)
   net::SetMessageLoopForOCSP();
@@ -480,6 +478,26 @@ void IOThread::Init() {
 
   sdch_manager_ = new net::SdchManager();
   sdch_manager_->set_sdch_fetcher(new SdchDictionaryFetcher);
+
+  // InitSystemRequestContext turns right around and posts a task back
+  // to the IO thread, so we can't let it run until we know the IO
+  // thread has started.
+  //
+  // Note that since we are at BrowserThread::Init time, the UI thread
+  // is blocked waiting for the thread to start.  Therefore, posting
+  // this task to the main thread's message loop here is guaranteed to
+  // get it onto the message loop while the IOThread object still
+  // exists.  However, the message might not be processed on the UI
+  // thread until after IOThread is gone, so use a weak pointer.
+  BrowserThread::PostTask(BrowserThread::UI,
+                          FROM_HERE,
+                          base::Bind(&IOThread::InitSystemRequestContext,
+                                     weak_factory_.GetWeakPtr()));
+
+  // We constructed the weak pointer on the IO thread but it will be
+  // used on the UI thread.  Call this to avoid a thread checker
+  // error.
+  weak_factory_.DetachFromThread();
 }
 
 void IOThread::CleanUp() {
@@ -520,10 +538,6 @@ void IOThread::CleanUp() {
   base::debug::LeakTracker<net::URLRequest>::CheckForLeaks();
 
   base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
-
-  // This will delete the |notification_service_|.  Make sure it's done after
-  // anything else can reference it.
-  content::BrowserProcessSubThread::CleanUp();
 }
 
 // static
@@ -574,6 +588,11 @@ void IOThread::ClearHostCache() {
     host_cache->clear();
 }
 
+MessageLoop* IOThread::message_loop() const {
+  return BrowserThread::UnsafeGetBrowserThread(
+      BrowserThread::IO)->message_loop();
+}
+
 net::SSLConfigService* IOThread::GetSSLConfigService() {
   return ssl_config_service_manager_->Get();
 }
@@ -593,6 +612,8 @@ void IOThread::InitSystemRequestContext() {
   }
   system_url_request_context_getter_ =
       new SystemURLRequestContextGetter(this);
+  // Safe to post an unretained this pointer, since IOThread is
+  // guaranteed to outlive the IO BrowserThread.
   message_loop()->PostTask(
       FROM_HERE, base::Bind(&IOThread::InitSystemRequestContextOnIOThread,
                             base::Unretained(this)));

@@ -5,10 +5,9 @@
 #include "chrome/browser/ui/gtk/gtk_util.h"
 
 #include <cairo/cairo.h>
-#include <gdk/gdkx.h>
-#include <gtk/gtk.h>
 
 #include <cstdarg>
+
 #include <map>
 
 #include "base/environment.h"
@@ -52,6 +51,10 @@
 #else
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #endif
+
+// These conflict with base/tracked_objects.h, so need to come last.
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 
 namespace {
 

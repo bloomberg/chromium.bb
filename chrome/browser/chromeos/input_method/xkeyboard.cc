@@ -9,9 +9,6 @@
 #include <string>
 #include <utility>
 
-#include <X11/XKBlib.h>
-#include <X11/Xlib.h>
-#include <glib.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -24,6 +21,11 @@
 #include "chrome/browser/chromeos/system/runtime_environment.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/x/x11_util.h"
+
+// These includes conflict with base/tracked_objects.h so must come last.
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <glib.h>
 
 using content::BrowserThread;
 

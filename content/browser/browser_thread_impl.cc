@@ -4,16 +4,19 @@
 
 #include "content/browser/browser_thread_impl.h"
 
+#include "base/atomicops.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
 #include "base/threading/thread_restrictions.h"
 
+namespace content {
+
 namespace {
 
 // Friendly names for the well-known threads.
-static const char* browser_thread_names[content::BrowserThread::ID_COUNT] = {
+static const char* g_browser_thread_names[BrowserThread::ID_COUNT] = {
   "",  // UI (name assembled in browser_main.cc).
   "Chrome_DBThread",  // DB
   "Chrome_WebKitThread",  // WEBKIT
@@ -26,38 +29,86 @@ static const char* browser_thread_names[content::BrowserThread::ID_COUNT] = {
 #endif
 };
 
-}  // namespace
-
-namespace content {
-
-namespace {
-
-// This lock protects |g_browser_threads|.  Do not read or modify that array
-// without holding this lock.  Do not block while holding this lock.
+// This lock protects |g_browser_threads|.  Do not read or modify that
+// array without holding this lock.  Do not block while holding this
+// lock.
 base::LazyInstance<base::Lock,
                    base::LeakyLazyInstanceTraits<base::Lock> >
     g_lock = LAZY_INSTANCE_INITIALIZER;
 
-
-// An array of the BrowserThread objects.  This array is protected by |g_lock|.
-// The threads are not owned by this array.  Typically, the threads are owned
-// on the UI thread by the g_browser_process object.  BrowserThreads remove
+// This array is protected by |g_lock|.  The threads are not owned by this
+// array. Typically, the threads are owned on the UI thread by
+// content::BrowserMainLoop.  BrowserThreadImpl objects remove
 // themselves from this array upon destruction.
-BrowserThread* g_browser_threads[BrowserThread::ID_COUNT];
+static BrowserThreadImpl* g_browser_threads[BrowserThread::ID_COUNT];
+
+// Only atomic operations are used on this array.  The delegates are
+// not owned by this array, rather by whoever calls
+// BrowserThread::SetDelegate.
+static BrowserThreadDelegate* g_browser_thread_delegates[
+    BrowserThread::ID_COUNT];
 
 }  // namespace
 
-BrowserThreadImpl::BrowserThreadImpl(BrowserThread::ID identifier)
-    : BrowserThread(identifier) {
+BrowserThreadImpl::BrowserThreadImpl(ID identifier)
+    : Thread(g_browser_thread_names[identifier]),
+      identifier_(identifier) {
+  Initialize();
 }
 
-BrowserThreadImpl::BrowserThreadImpl(BrowserThread::ID identifier,
+BrowserThreadImpl::BrowserThreadImpl(ID identifier,
                                      MessageLoop* message_loop)
-    : BrowserThread(identifier, message_loop) {
+    : Thread(message_loop->thread_name().c_str()),
+      identifier_(identifier) {
+  set_message_loop(message_loop);
+  Initialize();
+}
+
+void BrowserThreadImpl::Init() {
+  using base::subtle::AtomicWord;
+  AtomicWord* storage =
+      reinterpret_cast<AtomicWord*>(&g_browser_thread_delegates[identifier_]);
+  AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
+  BrowserThreadDelegate* delegate =
+      reinterpret_cast<BrowserThreadDelegate*>(stored_pointer);
+  if (delegate)
+    delegate->Init();
+}
+
+void BrowserThreadImpl::CleanUp() {
+  using base::subtle::AtomicWord;
+  AtomicWord* storage =
+      reinterpret_cast<AtomicWord*>(&g_browser_thread_delegates[identifier_]);
+  AtomicWord stored_pointer = base::subtle::NoBarrier_Load(storage);
+  BrowserThreadDelegate* delegate =
+      reinterpret_cast<BrowserThreadDelegate*>(stored_pointer);
+
+  if (delegate)
+    delegate->CleanUp();
+}
+
+void BrowserThreadImpl::Initialize() {
+  base::AutoLock lock(g_lock.Get());
+  DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
+  DCHECK(g_browser_threads[identifier_] == NULL);
+  g_browser_threads[identifier_] = this;
 }
 
 BrowserThreadImpl::~BrowserThreadImpl() {
+  // All Thread subclasses must call Stop() in the destructor. This is
+  // doubly important here as various bits of code check they are on
+  // the right BrowserThread.
   Stop();
+
+  base::AutoLock lock(g_lock.Get());
+  g_browser_threads[identifier_] = NULL;
+#ifndef NDEBUG
+  // Double check that the threads are ordered correctly in the enumeration.
+  for (int i = identifier_ + 1; i < ID_COUNT; ++i) {
+    DCHECK(!g_browser_threads[i]) <<
+        "Threads must be listed in the reverse order that they die";
+  }
+#endif
 }
 
 // static
@@ -77,7 +128,7 @@ bool BrowserThreadImpl::PostTaskHelper(
   BrowserThread::ID current_thread;
   bool guaranteed_to_outlive_target_thread =
       GetCurrentThreadIdentifier(&current_thread) &&
-      current_thread >= identifier;
+      current_thread <= identifier;
 
   if (!guaranteed_to_outlive_target_thread)
     g_lock.Get().Acquire();
@@ -118,7 +169,7 @@ bool BrowserThreadImpl::PostTaskHelper(
   BrowserThread::ID current_thread;
   bool guaranteed_to_outlive_target_thread =
       GetCurrentThreadIdentifier(&current_thread) &&
-      current_thread >= identifier;
+      current_thread <= identifier;
 
   if (!guaranteed_to_outlive_target_thread)
     g_lock.Get().Acquire();
@@ -137,18 +188,6 @@ bool BrowserThreadImpl::PostTaskHelper(
     g_lock.Get().Release();
 
   return !!message_loop;
-}
-
-// TODO(joi): Remove
-DeprecatedBrowserThread::DeprecatedBrowserThread(BrowserThread::ID identifier)
-    : BrowserThread(identifier) {
-}
-DeprecatedBrowserThread::DeprecatedBrowserThread(BrowserThread::ID identifier,
-                                                 MessageLoop* message_loop)
-    : BrowserThread(identifier, message_loop) {
-}
-DeprecatedBrowserThread::~DeprecatedBrowserThread() {
-  Stop();
 }
 
 // An implementation of MessageLoopProxy to be used in conjunction
@@ -214,44 +253,6 @@ class BrowserThreadMessageLoopProxy : public base::MessageLoopProxy {
   BrowserThread::ID id_;
   DISALLOW_COPY_AND_ASSIGN(BrowserThreadMessageLoopProxy);
 };
-
-BrowserThread::BrowserThread(ID identifier)
-    : Thread(browser_thread_names[identifier]),
-      identifier_(identifier) {
-  Initialize();
-}
-
-BrowserThread::BrowserThread(ID identifier,
-                             MessageLoop* message_loop)
-    : Thread(message_loop->thread_name().c_str()),
-      identifier_(identifier) {
-  set_message_loop(message_loop);
-  Initialize();
-}
-
-void BrowserThread::Initialize() {
-  base::AutoLock lock(g_lock.Get());
-  DCHECK(identifier_ >= 0 && identifier_ < ID_COUNT);
-  DCHECK(g_browser_threads[identifier_] == NULL);
-  g_browser_threads[identifier_] = this;
-}
-
-BrowserThread::~BrowserThread() {
-  // Stop the thread here, instead of the parent's class destructor.  This is so
-  // that if there are pending tasks that run, code that checks that it's on the
-  // correct BrowserThread succeeds.
-  Stop();
-
-  base::AutoLock lock(g_lock.Get());
-  g_browser_threads[identifier_] = NULL;
-#ifndef NDEBUG
-  // Double check that the threads are ordered correctly in the enumeration.
-  for (int i = identifier_ + 1; i < ID_COUNT; ++i) {
-    DCHECK(!g_browser_threads[i]) <<
-        "Threads must be listed in the reverse order that they die";
-  }
-#endif
-}
 
 // static
 bool BrowserThread::IsWellKnownThread(ID identifier) {
@@ -391,6 +392,25 @@ BrowserThread::GetMessageLoopProxyForThread(
   scoped_refptr<base::MessageLoopProxy> proxy(
       new BrowserThreadMessageLoopProxy(identifier));
   return proxy;
+}
+
+base::Thread* BrowserThread::UnsafeGetBrowserThread(ID identifier) {
+  base::AutoLock lock(g_lock.Get());
+  base::Thread* thread = g_browser_threads[identifier];
+  DCHECK(thread);
+  return thread;
+}
+
+void BrowserThread::SetDelegate(ID identifier,
+                                BrowserThreadDelegate* delegate) {
+  using base::subtle::AtomicWord;
+  AtomicWord* storage = reinterpret_cast<AtomicWord*>(
+      &g_browser_thread_delegates[identifier]);
+  AtomicWord old_pointer = base::subtle::NoBarrier_AtomicExchange(
+      storage, reinterpret_cast<AtomicWord>(delegate));
+
+  // This catches registration when previously registered.
+  DCHECK(!delegate || !old_pointer);
 }
 
 }  // namespace content
