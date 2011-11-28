@@ -396,12 +396,12 @@ add_config('x86-generic-commit-queue', [commit_queue, {
   'master' : True,
 }])
 
-add_config('arm-generic-commit-queue', [commit_queue, {
+add_config('arm-generic-commit-queue', [arm, commit_queue, {
   'board' : 'arm-generic',
   'important': False,
 }])
 
-add_config('arm-tegra2-commit-queue', [commit_queue, {
+add_config('arm-tegra2-commit-queue', [arm, commit_queue, {
   'board' : 'tegra2',
   'important': False,
 }])
