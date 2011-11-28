@@ -64,12 +64,35 @@ cr.define('login', function() {
                   ['login.ErrorMessageScreen.updateState']);
 
       cr.ui.DropDown.decorate($('offline-networks-list'));
+      this.updateLocalizedContent_();
+    },
 
+    onBeforeShow: function() {
+      cr.ui.DropDown.setActive('offline-networks-list', true, false);
+
+      $('error-guest-signin').hidden = $('guestSignin').hidden ||
+          !$('add-user-header-bar-item').hidden;
+    },
+
+    onBeforeHide: function() {
+      cr.ui.DropDown.setActive('offline-networks-list', false, false);
+    },
+
+    update: function() {
+      chrome.send('loginRequestNetworkState',
+                  ['login.ErrorMessageScreen.updateState',
+                   'update']);
+    },
+
+    /**
+     * Updates localized content of the screen that is not updated via template.
+     */
+    updateLocalizedContent_: function() {
       $('captive-portal-message-text').innerHTML = localStrings.getStringF(
-          'captivePortalMessage',
-          '<b id="' + CURRENT_NETWORK_NAME_ID + '"></b>',
-          '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="signin-link" href="#">',
-          '</a>');
+        'captivePortalMessage',
+        '<b id="' + CURRENT_NETWORK_NAME_ID + '"></b>',
+        '<a id="' + FIX_CAPTIVE_PORTAL_ID + '" class="signin-link" href="#">',
+        '</a>');
       $(FIX_CAPTIVE_PORTAL_ID).onclick = function() {
         chrome.send('fixCaptivePortal');
       };
@@ -92,23 +115,6 @@ cr.define('login', function() {
       $('error-guest-signin-link').onclick = function() {
         chrome.send('launchIncognito');
       };
-    },
-
-    onBeforeShow: function() {
-      cr.ui.DropDown.setActive('offline-networks-list', true, false);
-
-      $('error-guest-signin').hidden = $('guestSignin').hidden ||
-          !$('add-user-header-bar-item').hidden;
-    },
-
-    onBeforeHide: function() {
-      cr.ui.DropDown.setActive('offline-networks-list', false, false);
-    },
-
-    update: function() {
-      chrome.send('loginRequestNetworkState',
-                  ['login.ErrorMessageScreen.updateState',
-                   'update']);
     },
 
     /**
@@ -239,6 +245,14 @@ cr.define('login', function() {
       // Schedules a retry.
       currentScreen.scheduleRetry();
     }
+  };
+
+  /**
+   * Updates screen localized content like links since they're not updated
+   * via template.
+   */
+  ErrorMessageScreen.updateLocalizedContent = function() {
+    $('error-message').updateLocalizedContent_();
   };
 
   return {

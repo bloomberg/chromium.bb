@@ -51,20 +51,8 @@ cr.define('login', function() {
     decorate: function() {
       this.frame_ = $('signin-frame');
 
-      $('createAccount').innerHTML = localStrings.getStringF(
-          'createAccount',
-          '<a id="createAccountLink" class="signin-link" href="#">',
-          '</a>');
-      $('guestSignin').innerHTML = localStrings.getStringF(
-          'guestSignin',
-          '<a id="guestSigninLink" class="signin-link" href="#">',
-          '</a>');
-      $('createAccountLink').onclick = function() {
-        chrome.send('createAccount');
-      };
-      $('guestSigninLink').onclick = function() {
-        chrome.send('launchIncognito');
-      };
+      this.updateLocalizedContent();
+
       document.addEventListener(
           'focusin', this.selfBind_(this.onFocusIn_.bind(this)));
     },
@@ -295,6 +283,26 @@ cr.define('login', function() {
      */
     onFrameError: function(error) {
       this.error_ = error;
+    },
+
+    /**
+     * Updates localized content of the screen that is not updated via template.
+     */
+    updateLocalizedContent: function() {
+      $('createAccount').innerHTML = localStrings.getStringF(
+        'createAccount',
+        '<a id="createAccountLink" class="signin-link" href="#">',
+        '</a>');
+      $('guestSignin').innerHTML = localStrings.getStringF(
+          'guestSignin',
+          '<a id="guestSigninLink" class="signin-link" href="#">',
+          '</a>');
+      $('createAccountLink').onclick = function() {
+        chrome.send('createAccount');
+      };
+      $('guestSigninLink').onclick = function() {
+        chrome.send('launchIncognito');
+      };
     }
   };
 

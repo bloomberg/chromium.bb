@@ -180,20 +180,17 @@ cr.define('cr.ui', function() {
     Oobe.setupSelect($('language-select'), data.languageList, '');
     Oobe.setupSelect($('keyboard-select'), data.inputMethodsList, '');
 
-    // Update headers & buttons.
-    Oobe.updateHeadersAndButtons();
-
-    // Trigger network drop-down to reload its state
-    // so that strings are reloaded.
-    cr.ui.DropDown.refresh();
+    // Update localized content of the screens.
+    Oobe.updateLocalizedContent();
   }
 
   /**
-   * Updates headers and buttons of the screens.
+   * Updates localized content of the screens.
    * Should be executed on language change.
    */
-  Oobe.updateHeadersAndButtons = function() {
-    Oobe.getInstance().updateHeadersAndButtons_();
+  Oobe.updateLocalizedContent = function() {
+    // Buttons, headers and links.
+    Oobe.getInstance().updateLocalizedContent_();
   };
 
   /**
