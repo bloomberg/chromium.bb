@@ -18,7 +18,7 @@ class Thread;
 
 namespace content {
 
-class TestBrowserThreadImpl;
+class BrowserThreadImpl;
 
 // A BrowserThread for unit tests; this lets unit tests in chrome/
 // create BrowserThread instances.
@@ -49,12 +49,8 @@ class TestBrowserThread {
   // in new tests.
   base::Thread* DeprecatedGetThreadObject();
 
-  // Sets the message loop to use for the thread. This should not be
-  // used in new tests.
-  void DeprecatedSetMessageLoop(MessageLoop* loop);
-
  private:
-  scoped_ptr<TestBrowserThreadImpl> impl_;
+  scoped_ptr<BrowserThreadImpl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserThread);
 };

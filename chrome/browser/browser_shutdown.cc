@@ -114,7 +114,7 @@ FilePath GetShutdownMsPath() {
   return shutdown_ms_file.AppendASCII(kShutdownMsFile);
 }
 
-bool ShutdownPreThreadsStop() {
+void Shutdown() {
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesLoader::Get()->AddLogoutTimeMarker(
       "BrowserShutdownStarted", false);
@@ -162,10 +162,6 @@ bool ShutdownPreThreadsStop() {
   RLZTracker::CleanupRlz();
 #endif
 
-  return restart_last_session;
-}
-
-void ShutdownPostThreadsStop(bool restart_last_session) {
   // The jank'o'meter requires that the browser process has been destroyed
   // before calling UninstallJankometer().
   delete g_browser_process;

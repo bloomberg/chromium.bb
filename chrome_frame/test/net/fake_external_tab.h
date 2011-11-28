@@ -17,7 +17,7 @@
 #include "chrome_frame/test/net/test_automation_provider.h"
 #include "chrome_frame/test/test_server.h"
 #include "chrome_frame/test_utils.h"
-#include "content/test/test_browser_thread.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_test_suite.h"
 
 class ProcessSingleton;
@@ -32,7 +32,6 @@ class FakeExternalTab {
   virtual ~FakeExternalTab();
 
   virtual void Initialize();
-  virtual void InitializePostThreadsCreated();
   virtual void Shutdown();
 
   const FilePath& user_data() const {
@@ -106,15 +105,9 @@ class CFUrlRequestUnittestRunner
   // on the main thread.
   FakeExternalTab fake_chrome_;
   scoped_ptr<ProcessSingletonSubclass> pss_subclass_;
-  scoped_ptr<content::TestBrowserThread> main_thread_;
+  scoped_ptr<content::DeprecatedBrowserThread> main_thread_;
   ScopedChromeFrameRegistrar registrar_;
   int test_result_;
-
-  // TODO(joi): This should be fixed so that this test executable uses
-  // content::BrowserMainParts.  As it stands it is a horrible hack.
-  scoped_ptr<content::TestBrowserThread> db_thread_;
-  scoped_ptr<content::TestBrowserThread> file_thread_;
-  scoped_ptr<content::TestBrowserThread> io_thread_;
 };
 
 #endif  // CHROME_FRAME_TEST_NET_FAKE_EXTERNAL_TAB_H_

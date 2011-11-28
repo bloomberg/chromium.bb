@@ -8,7 +8,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/browser/browser_process_sub_thread.h"
 
 class CommandLine;
 class HighResolutionTimerManager;
@@ -26,7 +25,6 @@ class NetworkChangeNotifier;
 namespace content {
 
 class BrowserMainParts;
-class BrowserShutdownImpl;
 class BrowserThreadImpl;
 struct MainFunctionParams;
 
@@ -48,13 +46,6 @@ class BrowserMainLoop {
   int GetResultCode() const { return result_code_; }
 
  private:
-  // For ShutdownThreadsAndCleanUp.
-  friend class BrowserShutdownImpl;
-
-  // Performs the shutdown sequence, starting with PostMainMessageLoopRun
-  // through stopping threads to PostDestroyThreads.
-  void ShutdownThreadsAndCleanUp();
-
   void InitializeMainThread();
 
   // Members initialized on construction ---------------------------------------
@@ -78,14 +69,6 @@ class BrowserMainLoop {
   // Members initialized in |InitializeMainThread()| ---------------------------
   // This must get destroyed before other threads that are created in parts_.
   scoped_ptr<BrowserThreadImpl> main_thread_;
-  scoped_ptr<BrowserProcessSubThread> io_thread_;
-  scoped_ptr<BrowserProcessSubThread> file_thread_;
-  scoped_ptr<BrowserProcessSubThread> db_thread_;
-  scoped_ptr<BrowserProcessSubThread> process_launcher_thread_;
-  scoped_ptr<BrowserProcessSubThread> cache_thread_;
-#if defined(OS_CHROMEOS)
-  scoped_ptr<BrowserProcessSubThread> web_socket_proxy_thread_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(BrowserMainLoop);
 };

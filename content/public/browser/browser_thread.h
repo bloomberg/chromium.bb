@@ -6,21 +6,11 @@
 #define CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_H_
 #pragma once
 
-#include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/task.h"
-#include "base/tracked_objects.h"
-#include "content/common/content_export.h"
-#include "content/public/browser/browser_thread_delegate.h"
-
-// TODO(joi): Remove these in a follow-up change and IWYU in files
-// that were getting them directly or indirectly from here.
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
+#include "base/task.h"
 #include "base/threading/thread.h"
+#include "content/common/content_export.h"
 
 #if defined(UNIT_TEST)
 #include "base/logging.h"
@@ -28,12 +18,12 @@
 
 namespace base {
 class MessageLoopProxy;
-class Thread;
 }
 
 namespace content {
 
 class BrowserThreadImpl;
+class DeprecatedBrowserThread;
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserThread
@@ -57,7 +47,7 @@ class BrowserThreadImpl;
 // task is posted to is guaranteed to outlive the current thread, then no locks
 // are used.  You should never need to cache pointers to MessageLoops, since
 // they're not thread safe.
-class CONTENT_EXPORT BrowserThread {
+class CONTENT_EXPORT BrowserThread : public base::Thread {
  public:
   // An enumeration of the well-known threads.
   // NOTE: threads must be listed in the order of their life-time, with each
@@ -180,33 +170,6 @@ class CONTENT_EXPORT BrowserThread {
   static scoped_refptr<base::MessageLoopProxy> GetMessageLoopProxyForThread(
       ID identifier);
 
-  // Gets the Thread object for the specified thread, or NULL if the
-  // thread has not been created (or has been destroyed during
-  // shutdown).
-  //
-  // Before calling this, you must have called content::ContentMain
-  // with a command-line that would specify a browser process (e.g. an
-  // empty command line).
-  //
-  // This is unsafe as your pointer may become invalid close to
-  // shutdown.
-  //
-  // TODO(joi): Remove this once clients such as BrowserProcessImpl
-  // (and classes that call things like
-  // g_browser_process->file_thread()) are switched to using
-  // MessageLoopProxy.
-  static base::Thread* UnsafeGetBrowserThread(ID identifier);
-
-  // Sets the delegate for the specified BrowserThread.
-  //
-  // Only one delegate may be registered at a time.  Delegates may be
-  // unregistered by providing a NULL pointer.
-  //
-  // If the caller unregisters a delegate before CleanUp has been
-  // called, it must perform its own locking to ensure the delegate is
-  // not deleted while unregistering.
-  static void SetDelegate(ID identifier, BrowserThreadDelegate* delegate);
-
   // Use these templates in conjuction with RefCountedThreadSafe when you want
   // to ensure that an object is deleted on a specific thread.  This is needed
   // when an object can hop between threads (i.e. IO -> FILE -> IO), and thread
@@ -250,10 +213,40 @@ class CONTENT_EXPORT BrowserThread {
   struct DeleteOnWebKitThread : public DeleteOnThread<WEBKIT> { };
 
  private:
-  friend class BrowserThreadImpl;
+  // Construct a BrowserThread with the supplied identifier.  It is an error
+  // to construct a BrowserThread that already exists.
+  explicit BrowserThread(ID identifier);
 
-  BrowserThread() {}
-  DISALLOW_COPY_AND_ASSIGN(BrowserThread);
+  // Special constructor for the main (UI) thread and unittests. We use a dummy
+  // thread here since the main thread already exists.
+  BrowserThread(ID identifier, MessageLoop* message_loop);
+
+  virtual ~BrowserThread();
+
+  // Common initialization code for the constructors.
+  void Initialize();
+
+  // Constructors are only available through this subclass.
+  friend class content::BrowserThreadImpl;
+
+  // TODO(joi): Remove.
+  friend class DeprecatedBrowserThread;
+
+  // The identifier of this thread.  Only one thread can exist with a given
+  // identifier at a given time.
+  // TODO(joi): Move to BrowserThreadImpl, and make constructors here
+  // do-nothing.
+  ID identifier_;
+};
+
+// Temporary escape hatch for chrome/ to construct BrowserThread,
+// until we make content/ construct its own threads.
+class CONTENT_EXPORT DeprecatedBrowserThread : public BrowserThread {
+ public:
+  explicit DeprecatedBrowserThread(BrowserThread::ID identifier);
+  DeprecatedBrowserThread(BrowserThread::ID identifier,
+                          MessageLoop* message_loop);
+  virtual ~DeprecatedBrowserThread();
 };
 
 }  // namespace content

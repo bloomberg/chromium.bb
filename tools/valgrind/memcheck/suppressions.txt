@@ -5183,7 +5183,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN16ProcessSingletonC1ERK8FilePath
-   fun:_ZN22ChromeBrowserMainParts20PreCreateThreadsImplEv
+   fun:_ZN22ChromeBrowserMainParts25PreMainMessageLoopRunImplEv
 }
 {
    bug_104690

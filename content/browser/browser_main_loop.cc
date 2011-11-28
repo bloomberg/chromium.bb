@@ -16,7 +16,6 @@
 #include "content/common/hi_res_timer_manager.h"
 #include "content/common/sandbox_policy.h"
 #include "content/public/browser/browser_main_parts.h"
-#include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -146,33 +145,6 @@ static void SetUpGLibLogHandler() {
 
 namespace content {
 
-// The currently-running BrowserMainLoop.  There can be one or zero.
-// This is stored to enable immediate shutdown when needed.
-BrowserMainLoop* current_browser_main_loop = NULL;
-
-// This is just to be able to keep ShutdownThreadsAndCleanUp out of
-// the public interface of BrowserMainLoop.
-class BrowserShutdownImpl {
- public:
-  static void ImmediateShutdownAndExitProcess() {
-    DCHECK(current_browser_main_loop);
-    current_browser_main_loop->ShutdownThreadsAndCleanUp();
-
-#if defined(OS_WIN)
-    // At this point the message loop is still running yet we've shut everything
-    // down. If any messages are processed we'll likely crash. Exit now.
-    ExitProcess(content::RESULT_CODE_NORMAL_EXIT);
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
-    _exit(content::RESULT_CODE_NORMAL_EXIT);
-#else
-    NOTIMPLEMENTED();
-#endif
-  }
-};
-
-void ImmediateShutdownAndExitProcess() {
-  BrowserShutdownImpl::ImmediateShutdownAndExitProcess();
-}
 
 // BrowserMainLoop construction / destructione =============================
 
@@ -180,16 +152,12 @@ BrowserMainLoop::BrowserMainLoop(const content::MainFunctionParams& parameters)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(content::RESULT_CODE_NORMAL_EXIT) {
-  DCHECK(!current_browser_main_loop);
-  current_browser_main_loop = this;
 #if defined(OS_WIN)
   OleInitialize(NULL);
 #endif
 }
 
 BrowserMainLoop::~BrowserMainLoop() {
-  DCHECK_EQ(this, current_browser_main_loop);
-  current_browser_main_loop = NULL;
 #if defined(OS_WIN)
   OleUninitialize();
 #endif
@@ -294,85 +262,6 @@ void BrowserMainLoop::MainMessageLoopStart() {
 void BrowserMainLoop::RunMainMessageLoopParts(
     bool* completed_main_message_loop) {
   if (parts_.get())
-    parts_->PreCreateThreads();
-
-  base::Thread::Options default_options;
-  base::Thread::Options io_message_loop_options;
-  io_message_loop_options.message_loop_type = MessageLoop::TYPE_IO;
-  base::Thread::Options ui_message_loop_options;
-  ui_message_loop_options.message_loop_type = MessageLoop::TYPE_UI;
-
-  // Start threads in the order they occur in the BrowserThread::ID
-  // enumeration, except for BrowserThread::UI which is the main
-  // thread.
-  //
-  // Must be size_t so we can increment it.
-  for (size_t thread_id = BrowserThread::UI + 1;
-       thread_id < BrowserThread::ID_COUNT;
-       ++thread_id) {
-    scoped_ptr<BrowserProcessSubThread>* thread_to_start = NULL;
-    base::Thread::Options* options = &default_options;
-
-    switch (thread_id) {
-      case BrowserThread::DB:
-        thread_to_start = &db_thread_;
-        break;
-      case BrowserThread::WEBKIT:
-        // For now, the WebKit thread in the browser is owned by
-        // ResourceDispatcherHost, not by the content framework. Until
-        // this is fixed, we don't start the thread but still call
-        // Pre/PostStartThread for the ID.
-        break;
-      case BrowserThread::FILE:
-        thread_to_start = &file_thread_;
-#if defined(OS_WIN)
-        // On Windows, the FILE thread needs to be have a UI message loop
-        // which pumps messages in such a way that Google Update can
-        // communicate back to us.
-        options = &ui_message_loop_options;
-#else
-        options = &io_message_loop_options;
-#endif
-        break;
-      case BrowserThread::PROCESS_LAUNCHER:
-        thread_to_start = &process_launcher_thread_;
-        break;
-      case BrowserThread::CACHE:
-        thread_to_start = &cache_thread_;
-        options = &io_message_loop_options;
-        break;
-      case BrowserThread::IO:
-        thread_to_start = &io_thread_;
-        options = &io_message_loop_options;
-        break;
-#if defined(OS_CHROMEOS)
-      case BrowserThread::WEB_SOCKET_PROXY:
-        thread_to_start = &web_socket_proxy_thread_;
-        options = &io_message_loop_options;
-        break;
-#endif
-      case BrowserThread::UI:
-      case BrowserThread::ID_COUNT:
-      default:
-        NOTREACHED();
-        break;
-    }
-
-    BrowserThread::ID id = static_cast<BrowserThread::ID>(thread_id);
-
-    if (parts_.get())
-      parts_->PreStartThread(id);
-
-    if (thread_to_start) {
-      (*thread_to_start).reset(new BrowserProcessSubThread(id));
-      (*thread_to_start)->StartWithOptions(*options);
-    }
-
-    if (parts_.get())
-      parts_->PostStartThread(id);
-  }
-
-  if (parts_.get())
     parts_->PreMainMessageLoopRun();
 
   TRACE_EVENT_BEGIN_ETW("BrowserMain:MESSAGE_LOOP", 0, "");
@@ -392,96 +281,8 @@ void BrowserMainLoop::RunMainMessageLoopParts(
   if (completed_main_message_loop)
     *completed_main_message_loop = true;
 
-  ShutdownThreadsAndCleanUp();
-}
-
-void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
-  // Teardown may start in PostMainMessageLoopRun, and during teardown we
-  // need to be able to perform IO.
-  base::ThreadRestrictions::SetIOAllowed(true);
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      NewRunnableFunction(&base::ThreadRestrictions::SetIOAllowed, true));
-
   if (parts_.get())
     parts_->PostMainMessageLoopRun();
-
-  // Must be size_t so we can subtract from it.
-  for (size_t thread_id = BrowserThread::ID_COUNT - 1;
-       thread_id >= (BrowserThread::UI + 1);
-       --thread_id) {
-    // Find the thread object we want to stop. Looping over all valid
-    // BrowserThread IDs and DCHECKing on a missing case in the switch
-    // statement helps avoid a mismatch between this code and the
-    // BrowserThread::ID enumeration.
-    //
-    // The destruction order is the reverse order of occurrence in the
-    // BrowserThread::ID list. The rationale for the order is as
-    // follows (need to be filled in a bit):
-    //
-    // - (Not sure why the WEB_SOCKET_PROXY thread is stopped first.)
-    //
-    // - The IO thread is the only user of the CACHE thread.
-    //
-    // - The PROCESS_LAUNCHER thread must be stopped after IO in case
-    //   the IO thread posted a task to terminate a process on the
-    //   process launcher thread.
-    //
-    // - (Not sure why FILE needs to stop before WEBKIT.)
-    //
-    // - The WEBKIT thread (which currently is the responsibility of
-    //   the embedder to stop, by destroying ResourceDispatcherHost
-    //   before the DB thread is stopped)
-    //
-    // - (Not sure why DB stops last.)
-    scoped_ptr<BrowserProcessSubThread>* thread_to_stop = NULL;
-    switch (thread_id) {
-      case BrowserThread::DB:
-        thread_to_stop = &db_thread_;
-        break;
-      case BrowserThread::WEBKIT:
-        // For now, the WebKit thread in the browser is owned by
-        // ResourceDispatcherHost, not by the content framework. Until
-        // this is fixed, we don't stop the thread but still call
-        // Pre/PostStopThread for the ID.
-        break;
-      case BrowserThread::FILE:
-        thread_to_stop = &file_thread_;
-        break;
-      case BrowserThread::PROCESS_LAUNCHER:
-        thread_to_stop = &process_launcher_thread_;
-        break;
-      case BrowserThread::CACHE:
-        thread_to_stop = &cache_thread_;
-        break;
-      case BrowserThread::IO:
-        thread_to_stop = &io_thread_;
-        break;
-#if defined(OS_CHROMEOS)
-      case BrowserThread::WEB_SOCKET_PROXY:
-        thread_to_stop = &web_socket_proxy_thread_;
-        break;
-#endif
-      case BrowserThread::UI:
-      case BrowserThread::ID_COUNT:
-      default:
-        NOTREACHED();
-        break;
-    }
-
-    BrowserThread::ID id = static_cast<BrowserThread::ID>(thread_id);
-
-    if (parts_.get())
-      parts_->PreStopThread(id);
-    if (thread_to_stop)
-      thread_to_stop->reset();
-    if (parts_.get())
-      parts_->PostStopThread(id);
-  }
-
-  if (parts_.get())
-    parts_->PostDestroyThreads();
 }
 
 void BrowserMainLoop::InitializeMainThread() {

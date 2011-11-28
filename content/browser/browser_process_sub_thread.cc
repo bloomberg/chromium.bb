@@ -17,6 +17,8 @@ BrowserProcessSubThread::BrowserProcessSubThread(BrowserThread::ID identifier)
     : BrowserThreadImpl(identifier) {}
 
 BrowserProcessSubThread::~BrowserProcessSubThread() {
+  // We cannot rely on our base class to stop the thread since we want our
+  // CleanUp function to run.
   Stop();
 }
 
@@ -27,13 +29,9 @@ void BrowserProcessSubThread::Init() {
 #endif
 
   notification_service_ = new NotificationServiceImpl;
-
-  BrowserThreadImpl::Init();
 }
 
 void BrowserProcessSubThread::CleanUp() {
-  BrowserThreadImpl::CleanUp();
-
   delete notification_service_;
   notification_service_ = NULL;
 

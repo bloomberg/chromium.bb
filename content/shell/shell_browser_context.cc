@@ -8,7 +8,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/threading/thread.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/chrome_blob_storage_context.h"
 #include "content/browser/download/download_id_factory.h"
@@ -141,10 +140,8 @@ net::URLRequestContextGetter* ShellBrowserContext::GetRequestContext()  {
   if (!url_request_getter_) {
     url_request_getter_ = new ShellURLRequestContextGetter(
         GetPath(),
-        BrowserThread::UnsafeGetBrowserThread(
-            BrowserThread::IO)->message_loop(),
-        BrowserThread::UnsafeGetBrowserThread(
-            BrowserThread::FILE)->message_loop());
+        shell_main_parts_->io_thread()->message_loop(),
+        shell_main_parts_->file_thread()->message_loop());
   }
   return url_request_getter_;
 }

@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/tab_contents/navigation_details.h"
-#include "content/public/browser/browser_shutdown.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -549,12 +548,7 @@ void BrowserList::ExitCleanly() {
 }
 #endif
 
-// static
-void BrowserList::SessionEnding() {
-  // This is a time-limited shutdown where we need to write as much to
-  // disk as we can as soon as we can, and where we must kill the
-  // process within a hang timeout to avoid user prompts.
-
+static void TimeLimitedSessionEnding() {
   // Start watching for hang during shutdown, and crash it if takes too long.
   // We disarm when |shutdown_watcher| object is destroyed, which is when we
   // exit this function.
@@ -588,8 +582,23 @@ void BrowserList::SessionEnding() {
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
-  // This will end by terminating the process.
-  content::ImmediateShutdownAndExitProcess();
+  // And shutdown.
+  browser_shutdown::Shutdown();
+}
+
+// static
+void BrowserList::SessionEnding() {
+  TimeLimitedSessionEnding();
+
+#if defined(OS_WIN)
+  // At this point the message loop is still running yet we've shut everything
+  // down. If any messages are processed we'll likely crash. Exit now.
+  ExitProcess(content::RESULT_CODE_NORMAL_EXIT);
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+  _exit(content::RESULT_CODE_NORMAL_EXIT);
+#else
+  NOTIMPLEMENTED();
+#endif
 }
 
 // static

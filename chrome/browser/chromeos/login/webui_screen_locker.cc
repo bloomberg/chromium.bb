@@ -4,6 +4,15 @@
 
 #include "chrome/browser/chromeos/login/webui_screen_locker.h"
 
+#include <X11/extensions/XTest.h>
+#include <X11/keysym.h>
+#include <gdk/gdkkeysyms.h>
+#include <gdk/gdkx.h>
+
+// Evil hack to undo X11 evil #define.
+#undef None
+#undef Status
+
 #include "base/command_line.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -25,12 +34,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/native_widget_gtk.h"
-
-// These conflict with some of the Chrome headers, so must be included last.
-#include <X11/extensions/XTest.h>
-#include <X11/keysym.h>
-#include <gdk/gdkkeysyms.h>
-#include <gdk/gdkx.h>
 
 namespace {
 
