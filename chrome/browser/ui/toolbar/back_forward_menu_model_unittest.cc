@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/toolbar/back_forward_menu_model.h"
 
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/history/history.h"
@@ -345,7 +346,7 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   // Check to see if the chapter stops have the right labels.
   int index = BackForwardMenuModel::kMaxHistoryItems;
   // Empty string indicates item is a separator.
-  EXPECT_EQ(ASCIIToUTF16(""), back_model->GetLabelAt(index++));
+  EXPECT_EQ(string16(), back_model->GetLabelAt(index++));
   EXPECT_EQ(ASCIIToUTF16("F3"), back_model->GetLabelAt(index++));
   EXPECT_EQ(ASCIIToUTF16("E3"), back_model->GetLabelAt(index++));
   EXPECT_EQ(ASCIIToUTF16("D3"), back_model->GetLabelAt(index++));
@@ -353,7 +354,7 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   // The menu should only show a maximum of 5 chapter stops.
   EXPECT_EQ(ASCIIToUTF16("B3"), back_model->GetLabelAt(index));
   // Empty string indicates item is a separator.
-  EXPECT_EQ(ASCIIToUTF16(""), back_model->GetLabelAt(index + 1));
+  EXPECT_EQ(string16(), back_model->GetLabelAt(index + 1));
   EXPECT_EQ(back_model->GetShowFullHistoryLabel(),
             back_model->GetLabelAt(index + 2));
 
@@ -371,7 +372,7 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   EXPECT_EQ(ASCIIToUTF16("A3"), back_model->GetLabelAt(index));
   GoBack();
   // It is now a separator.
-  EXPECT_EQ(ASCIIToUTF16(""), back_model->GetLabelAt(index));
+  EXPECT_EQ(string16(), back_model->GetLabelAt(index));
   // Undo our position change.
   NavigateToOffset(6);
 
@@ -394,7 +395,7 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   // Check to see if the chapter stops have the right labels.
   index = BackForwardMenuModel::kMaxHistoryItems;
   // Empty string indicates item is a separator.
-  EXPECT_EQ(ASCIIToUTF16(""), forward_model->GetLabelAt(index++));
+  EXPECT_EQ(string16(), forward_model->GetLabelAt(index++));
   EXPECT_EQ(ASCIIToUTF16("E3"), forward_model->GetLabelAt(index++));
   EXPECT_EQ(ASCIIToUTF16("F3"), forward_model->GetLabelAt(index++));
   EXPECT_EQ(ASCIIToUTF16("G3"), forward_model->GetLabelAt(index++));
@@ -402,7 +403,7 @@ TEST_F(BackFwdMenuModelTest, ChapterStops) {
   // The menu should only show a maximum of 5 chapter stops.
   EXPECT_EQ(ASCIIToUTF16("I3"), forward_model->GetLabelAt(index));
   // Empty string indicates item is a separator.
-  EXPECT_EQ(ASCIIToUTF16(""), forward_model->GetLabelAt(index + 1));
+  EXPECT_EQ(string16(), forward_model->GetLabelAt(index + 1));
   EXPECT_EQ(forward_model->GetShowFullHistoryLabel(),
       forward_model->GetLabelAt(index + 2));
 

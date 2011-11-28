@@ -6,6 +6,7 @@
 
 #include "base/file_path.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/automation/automation_tab_helper.h"
@@ -97,7 +98,7 @@ class AutomationTabHelperBrowserTest : public InProcessBrowserTest {
     } else {
       script += "window.domAutomationController.setAutomationId(0);"
                 "window.domAutomationController.send(0);";
-      host->ExecuteJavascriptInWebFrame(ASCIIToUTF16(""), ASCIIToUTF16(script));
+      host->ExecuteJavascriptInWebFrame(string16(), ASCIIToUTF16(script));
     }
   }
 

@@ -772,7 +772,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadOverwriteTest) {
   EXPECT_FALSE(observer->was_opened());
   EXPECT_FALSE(download->GetFileExternallyRemoved());
   EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
-  EXPECT_EQ(download_item_model->GetStatusText(), ASCIIToUTF16(""));
+  EXPECT_EQ(download_item_model->GetStatusText(), string16());
 
   EXPECT_TRUE(file_util::PathExists(new_path));
   EXPECT_FALSE(file_util::PathExists(cr_path));
@@ -849,7 +849,7 @@ TEST_F(DownloadManagerTest, MAYBE_DownloadRemoveTest) {
   EXPECT_FALSE(observer->was_opened());
   EXPECT_FALSE(download->GetFileExternallyRemoved());
   EXPECT_EQ(DownloadItem::COMPLETE, download->GetState());
-  EXPECT_EQ(download_item_model->GetStatusText(), ASCIIToUTF16(""));
+  EXPECT_EQ(download_item_model->GetStatusText(), string16());
 
   EXPECT_TRUE(file_util::PathExists(new_path));
   EXPECT_FALSE(file_util::PathExists(cr_path));

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/field_types.h"
@@ -18,7 +19,7 @@ TEST(PhoneNumberTest, Matcher) {
   phone_number.SetCanonicalizedInfo(PHONE_HOME_WHOLE_NUMBER, phone);
 
   FieldTypeSet matching_types;
-  phone_number.GetMatchingTypes(ASCIIToUTF16(""), &matching_types);
+  phone_number.GetMatchingTypes(string16(), &matching_types);
   EXPECT_EQ(1U, matching_types.size());
   EXPECT_TRUE(matching_types.find(EMPTY_TYPE) != matching_types.end());
   matching_types.clear();

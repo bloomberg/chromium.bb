@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "crypto/nss_util.h"
@@ -152,7 +153,7 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12WrongPassword) {
   EXPECT_EQ(ERR_PKCS12_IMPORT_BAD_PASSWORD,
             cert_db_.ImportFromPKCS12(slot_,
                                       pkcs12_data,
-                                      ASCIIToUTF16(""),
+                                      string16(),
                                       true));  // is_extractable
 
   // Test db should still be empty.
@@ -255,7 +256,7 @@ TEST_F(CertDatabaseNSSTest, ImportFromPKCS12InvalidFile) {
   EXPECT_EQ(ERR_PKCS12_IMPORT_INVALID_FILE,
             cert_db_.ImportFromPKCS12(slot_,
                                       pkcs12_data,
-                                      ASCIIToUTF16(""),
+                                      string16(),
                                       true));  // is_extractable
 
   // Test db should still be empty.

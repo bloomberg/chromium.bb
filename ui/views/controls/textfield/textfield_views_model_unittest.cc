@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -49,7 +50,7 @@ class TextfieldViewsModelTest : public ViewsTestBase,
 
  protected:
   void ResetModel(TextfieldViewsModel* model) const {
-    model->SetText(ASCIIToUTF16(""));
+    model->SetText(string16());
     model->ClearEditHistory();
   }
 
@@ -498,7 +499,7 @@ TEST_F(TextfieldViewsModelTest, SetText) {
   // Setting shorter string moves the cursor to the end of the new string.
   EXPECT_EQ(3U, model.GetCursorPosition());
   EXPECT_EQ(string16(), model.GetSelectedText());
-  model.SetText(ASCIIToUTF16(""));
+  model.SetText(string16());
   EXPECT_EQ(0U, model.GetCursorPosition());
 }
 

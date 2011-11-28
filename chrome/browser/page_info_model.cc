@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/page_info_model_observer.h"
@@ -39,7 +40,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
   if (url.SchemeIs(chrome::kChromeUIScheme)) {
     sections_.push_back(
         SectionInfo(ICON_STATE_INTERNAL_PAGE,
-                    ASCIIToUTF16(""),
+                    string16(),
                     l10n_util::GetStringUTF16(IDS_PAGE_INFO_INTERNAL_PAGE),
                     SECTION_INFO_INTERNAL_PAGE));
     return;

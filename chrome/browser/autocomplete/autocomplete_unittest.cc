@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -279,7 +280,7 @@ TEST_F(AutocompleteTest, InputType) {
     const string16 input;
     const AutocompleteInput::Type type;
   } input_cases[] = {
-    { ASCIIToUTF16(""), AutocompleteInput::INVALID },
+    { string16(), AutocompleteInput::INVALID },
     { ASCIIToUTF16("?"), AutocompleteInput::FORCED_QUERY },
     { ASCIIToUTF16("?foo"), AutocompleteInput::FORCED_QUERY },
     { ASCIIToUTF16("?foo bar"), AutocompleteInput::FORCED_QUERY },
@@ -444,7 +445,7 @@ TEST(AutocompleteInput, ParseForEmphasizeComponent) {
     const Component scheme;
     const Component host;
   } input_cases[] = {
-    { ASCIIToUTF16(""), kInvalidComponent, kInvalidComponent },
+    { string16(), kInvalidComponent, kInvalidComponent },
     { ASCIIToUTF16("?"), kInvalidComponent, kInvalidComponent },
     { ASCIIToUTF16("?http://foo.com/bar"), kInvalidComponent,
         kInvalidComponent },

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
@@ -58,7 +59,7 @@ const PluginGroupDefinition kPluginDefinitions[] = {
 // name, path, version, desc.
 static const WebPluginInfo kPluginNoVersion = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.2.0.43")),
-    ASCIIToUTF16(""), ASCIIToUTF16("MyPlugin version 2.0.43"));
+    string16(), ASCIIToUTF16("MyPlugin version 2.0.43"));
 static const WebPluginInfo kPlugin2043 = WebPluginInfo(
     ASCIIToUTF16("MyPlugin"), FilePath(FILE_PATH_LITERAL("myplugin.so.2.0.43")),
     ASCIIToUTF16("2.0.43"), ASCIIToUTF16("MyPlugin version 2.0.43"));

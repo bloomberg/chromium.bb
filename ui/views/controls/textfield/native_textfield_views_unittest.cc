@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/pickle.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -383,7 +384,7 @@ TEST_F(NativeTextfieldViewsTest, KeyTest) {
   EXPECT_STR_EQ("Cr", textfield_->text());
   EXPECT_STR_EQ("Cr", last_contents_);
 
-  textfield_->SetText(ASCIIToUTF16(""));
+  textfield_->SetText(string16());
   SendKeyEvent(ui::VKEY_C, true, false, true);
   SendKeyEvent(ui::VKEY_C, false, false, true);
   SendKeyEvent(ui::VKEY_1, false, false, true);

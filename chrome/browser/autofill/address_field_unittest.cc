@@ -4,6 +4,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_field.h"
 #include "chrome/browser/autofill/autofill_field.h"
@@ -257,7 +258,7 @@ TEST_F(AddressFieldTest, ParseTwoLineAddressMissingLabel) {
   field.name = ASCIIToUTF16("address");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr1")));
 
-  field.label = ASCIIToUTF16("");
+  field.label = string16();
   field.name = ASCIIToUTF16("bogus");
   list_.push_back(new AutofillField(field, ASCIIToUTF16("addr2")));
 

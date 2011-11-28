@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/weak_ptr.h"
+#include "base/string16.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
@@ -276,7 +277,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   }
 
   // Crash information.
-  AddPair(list, ASCIIToUTF16(""), "--- Crash data ---");
+  AddPair(list, string16(), "--- Crash data ---");
   bool crash_reporting_enabled = CrashesUI::CrashReportingEnabled();
   if (crash_reporting_enabled) {
     std::vector<CrashUploadList::CrashInfo> crashes;
@@ -297,7 +298,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   }
 
   // GPU information.
-  AddPair(list, ASCIIToUTF16(""), "--- GPU information ---");
+  AddPair(list, string16(), "--- GPU information ---");
   const content::GPUInfo& gpu_info = gpu_data_manager_->gpu_info();
 
   if (!gpu_data_manager_->GpuAccessAllowed())
@@ -325,7 +326,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   }
 #endif
 
-  AddPair(list, ASCIIToUTF16(""), "--- GPU driver, more information ---");
+  AddPair(list, string16(), "--- GPU driver, more information ---");
   AddPair(list,
           ASCIIToUTF16("Vendor Id"),
           base::StringPrintf("0x%04x", gpu_info.vendor_id));

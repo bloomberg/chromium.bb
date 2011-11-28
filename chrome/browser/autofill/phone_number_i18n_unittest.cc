@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/phone_number_i18n.h"
 #include "content/test/test_browser_thread.h"
@@ -287,22 +288,22 @@ TEST_F(PhoneNumberI18NTest, ConstructPhoneNumber) {
                                    autofill_i18n::RFC3966,
                                    &number));
   EXPECT_EQ(number, ASCIIToUTF16("+1-650-234-5678"));
-  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16(""),
+  EXPECT_TRUE(ConstructPhoneNumber(string16(),
                                    ASCIIToUTF16("650"),
                                    ASCIIToUTF16("2345678"),
                                    "US",
                                    autofill_i18n::INTERNATIONAL,
                                    &number));
   EXPECT_EQ(number, ASCIIToUTF16("+1 650-234-5678"));
-  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16(""),
-                                   ASCIIToUTF16(""),
+  EXPECT_TRUE(ConstructPhoneNumber(string16(),
+                                   string16(),
                                    ASCIIToUTF16("6502345678"),
                                    "US",
                                    autofill_i18n::INTERNATIONAL,
                                    &number));
   EXPECT_EQ(number, ASCIIToUTF16("+1 650-234-5678"));
 
-  EXPECT_FALSE(ConstructPhoneNumber(ASCIIToUTF16(""),
+  EXPECT_FALSE(ConstructPhoneNumber(string16(),
                                     ASCIIToUTF16("650"),
                                     ASCIIToUTF16("234567890"),
                                     "US",
@@ -310,7 +311,7 @@ TEST_F(PhoneNumberI18NTest, ConstructPhoneNumber) {
                                     &number));
   EXPECT_EQ(number, string16());
   // Italian number
-  EXPECT_TRUE(ConstructPhoneNumber(ASCIIToUTF16(""),
+  EXPECT_TRUE(ConstructPhoneNumber(string16(),
                                    ASCIIToUTF16("347"),
                                    ASCIIToUTF16("2345678"),
                                    "IT",

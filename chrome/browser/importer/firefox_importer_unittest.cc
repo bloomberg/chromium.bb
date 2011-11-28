@@ -7,6 +7,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/importer/firefox2_importer.h"
@@ -98,7 +99,7 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       "<DT><H3 PERSONAL_TOOLBAR_FOLDER=\"true\"></H3>",
       charset, &folder_name, &is_toolbar_folder, &folder_add_date);
   EXPECT_TRUE(result);
-  EXPECT_EQ(ASCIIToUTF16(""), folder_name);
+  EXPECT_EQ(string16(), folder_name);
   EXPECT_TRUE(is_toolbar_folder);
 
   // Unicode characters in title and shortcut.
@@ -115,7 +116,7 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
   EXPECT_EQ(L"\x4E2D\x6587", UTF16ToWide(title));
   EXPECT_EQ("http://chinese.site.cn/path?query=1#ref", url.spec());
   EXPECT_EQ(L"\x4E2D", UTF16ToWide(shortcut));
-  EXPECT_EQ(ASCIIToUTF16(""), post_data);
+  EXPECT_EQ(string16(), post_data);
   EXPECT_TRUE(base::Time() == add_date);
 
   // No shortcut, and url contains %22 ('"' character).
@@ -125,8 +126,8 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
   EXPECT_TRUE(result);
   EXPECT_EQ(ASCIIToUTF16("name"), title);
   EXPECT_EQ("http://domain.com/?q=%22%3C%3E%22", url.spec());
-  EXPECT_EQ(ASCIIToUTF16(""), shortcut);
-  EXPECT_EQ(ASCIIToUTF16(""), post_data);
+  EXPECT_EQ(string16(), shortcut);
+  EXPECT_EQ(string16(), post_data);
   EXPECT_TRUE(base::Time() == add_date);
 
   result = Firefox2Importer::ParseBookmarkFromLine(
@@ -135,8 +136,8 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
   EXPECT_TRUE(result);
   EXPECT_EQ(ASCIIToUTF16("name"), title);
   EXPECT_EQ("http://domain.com/?g=%22", url.spec());
-  EXPECT_EQ(ASCIIToUTF16(""), shortcut);
-  EXPECT_EQ(ASCIIToUTF16(""), post_data);
+  EXPECT_EQ(string16(), shortcut);
+  EXPECT_EQ(string16(), post_data);
   EXPECT_TRUE(base::Time() == add_date);
 
   // Creation date.
@@ -146,8 +147,8 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
   EXPECT_TRUE(result);
   EXPECT_EQ(ASCIIToUTF16("name"), title);
   EXPECT_EQ(GURL("http://site/"), url);
-  EXPECT_EQ(ASCIIToUTF16(""), shortcut);
-  EXPECT_EQ(ASCIIToUTF16(""), post_data);
+  EXPECT_EQ(string16(), shortcut);
+  EXPECT_EQ(string16(), post_data);
   EXPECT_TRUE(base::Time::FromTimeT(1121301154) == add_date);
 
   // Post-data
@@ -169,10 +170,10 @@ TEST(FirefoxImporterTest, Firefox2BookmarkParse) {
       "<DT><A HREF=\"http://domain.com/?q=%22",
       charset, &title, &url, &favicon, &shortcut, &add_date, &post_data);
   EXPECT_FALSE(result);
-  EXPECT_EQ(ASCIIToUTF16(""), title);
+  EXPECT_EQ(string16(), title);
   EXPECT_EQ("", url.spec());
-  EXPECT_EQ(ASCIIToUTF16(""), shortcut);
-  EXPECT_EQ(ASCIIToUTF16(""), post_data);
+  EXPECT_EQ(string16(), shortcut);
+  EXPECT_EQ(string16(), post_data);
   EXPECT_TRUE(base::Time() == add_date);
 
   // Epiphany format.

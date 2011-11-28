@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_field.h"
 #include "chrome/browser/autofill/form_field.h"
@@ -18,7 +19,7 @@ TEST(FormFieldTest, Match) {
   EXPECT_TRUE(FormField::Match(&field, string16(), FormField::MATCH_LABEL));
 
   // Strictly empty pattern matches empty string.
-  field.label = ASCIIToUTF16("");
+  field.label = string16();
   EXPECT_TRUE(FormField::Match(&field, ASCIIToUTF16("^$"),
               FormField::MATCH_LABEL));
 

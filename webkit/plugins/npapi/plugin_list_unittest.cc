@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/npapi/plugin_list.h"
 
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/npapi/mock_plugin_list.h"
@@ -96,10 +97,9 @@ TEST_F(PluginListTest, EmptyGroup) {
 }
 
 TEST_F(PluginListTest, BadPluginDescription) {
-  WebPluginInfo plugin_3043(ASCIIToUTF16(""),
-                            FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
-                            ASCIIToUTF16(""),
-                            ASCIIToUTF16(""));
+  WebPluginInfo plugin_3043(
+      string16(), FilePath(FILE_PATH_LITERAL("/myplugin.3.0.43")),
+      string16(), string16());
   // Simulate loading of the plugins.
   plugin_list_.ClearPluginsToLoad();
   plugin_list_.AddPluginToLoad(plugin_3043);

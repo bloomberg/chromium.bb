@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/utf_string_conversions.h"
@@ -108,19 +109,19 @@ TEST_F(SafariImporterTest, BookmarkImport) {
     {
       false,
       GURL("http://www.reddit.com/"),
-      ASCIIToUTF16(""),
+      string16(),
       ASCIIToUTF16("reddit.com: what's new online!")
     },
     {
       false,
       GURL(),
-      ASCIIToUTF16(""),
+      string16(),
       ASCIIToUTF16("Empty Folder")
     },
     {
       false,
       GURL("http://www.webkit.org/blog/"),
-      ASCIIToUTF16(""),
+      string16(),
       ASCIIToUTF16("Surfin' Safari - The WebKit Blog")
     },
   };

@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_nsobject.h"
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -192,7 +193,7 @@ TEST_F(BookmarkBubbleControllerTest, TestFolderWithBlankName) {
                                                ASCIIToUTF16("one"));
   EXPECT_TRUE(node1);
   const BookmarkNode* node2 = model->AddFolder(bookmarkBarNode, 1,
-                                               ASCIIToUTF16(""));
+                                               string16());
   EXPECT_TRUE(node2);
   const BookmarkNode* node3 = model->AddFolder(bookmarkBarNode, 2,
                                                ASCIIToUTF16("three"));
