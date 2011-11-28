@@ -1562,15 +1562,15 @@ bool WillHandleBrowserAboutURL(GURL* url,
     // Induce an intentional crash in the browser process.
     CHECK(false);
   } else if (host == chrome::kChromeUIGpuCleanHost) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::FromID(0);
+    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)
       shim->SimulateRemoveAllContext();
   } else if (host == chrome::kChromeUIGpuCrashHost) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::FromID(0);
+    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)
       shim->SimulateCrash();
   } else if (host == chrome::kChromeUIGpuHangHost) {
-    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::FromID(0);
+    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
     if (shim)
       shim->SimulateHang();
 #if defined(OS_CHROMEOS)

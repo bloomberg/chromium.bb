@@ -66,6 +66,10 @@ class GpuProcessHostUIShim
 
   CONTENT_EXPORT static GpuProcessHostUIShim* FromID(int host_id);
 
+  // Get a GpuProcessHostUIShim instance; it doesn't matter which one.
+  // Return NULL if none has been created.
+  CONTENT_EXPORT static GpuProcessHostUIShim* GetOneInstance();
+
   // IPC::Channel::Sender implementation.
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 

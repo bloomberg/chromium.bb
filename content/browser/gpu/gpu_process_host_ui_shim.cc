@@ -131,6 +131,15 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::FromID(int host_id) {
   return g_hosts_by_id.Pointer()->Lookup(host_id);
 }
 
+// static
+GpuProcessHostUIShim* GpuProcessHostUIShim::GetOneInstance() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (g_hosts_by_id.Pointer()->IsEmpty())
+    return NULL;
+  IDMap<GpuProcessHostUIShim>::iterator it(g_hosts_by_id.Pointer());
+  return it.GetCurrentValue();
+}
+
 bool GpuProcessHostUIShim::Send(IPC::Message* msg) {
   DCHECK(CalledOnValidThread());
   return BrowserThread::PostTask(BrowserThread::IO,
