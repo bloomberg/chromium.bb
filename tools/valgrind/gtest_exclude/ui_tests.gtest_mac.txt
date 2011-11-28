@@ -342,3 +342,7 @@ PPAPITest.NetAddressPrivate_Describe
 PPAPITest.NetAddressPrivate_DescribeIPv6
 PPAPITest.NetAddressPrivate_GetAnyAddress
 PPAPITest.NetAddressPrivate_ReplacePort
+
+# http://crbug.com/105551
+PPAPITest.WebSocket_InvalidConnect
+PPAPITest.WebSocket_ValidConnect
