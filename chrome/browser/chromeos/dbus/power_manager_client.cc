@@ -272,6 +272,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   void OnGetIdleTime(const CalculateIdleTimeCallback& callback,
                      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Error calling " << power_manager::kGetIdleTime;
+      return;
+    }
     dbus::MessageReader reader(response);
     int64 idle_time_ms = 0;
     if (!reader.PopInt64(&idle_time_ms)) {
