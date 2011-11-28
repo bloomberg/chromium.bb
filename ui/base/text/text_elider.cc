@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
-
 #include "ui/base/text/text_elider.h"
+
+#include <string>
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/i18n/break_iterator.h"
@@ -43,7 +44,7 @@ string16 CutString(const string16& text,
   // TODO(tony): This is wrong, it might split the string in the middle of a
   // surrogate pair.
   const string16 kInsert = insert_ellipsis ? UTF8ToUTF16(kEllipsis) :
-                                             ASCIIToUTF16("");
+                                             string16();
   if (!cut_in_middle)
     return text.substr(0, length) + kInsert;
   // We put the extra character, if any, before the cut.
@@ -517,7 +518,7 @@ class RectangleString {
         suppressed_(false),
         output_(output) {}
 
-  // Perform deferred initializions following creation.  Must be called
+  // Perform deferred initializations following creation.  Must be called
   // before any input can be added via AddString().
   void Init() { output_->clear(); }
 
@@ -528,7 +529,7 @@ class RectangleString {
   void AddString(const string16& input);
 
   // Perform any deferred output processing.  Must be called after the
-  // last  AddString() call has occured.
+  // last AddString() call has occurred.
   bool Finalize();
 
  private:
@@ -536,8 +537,8 @@ class RectangleString {
   // either by itself or by breaking it into words.
   void AddLine(const string16& line);
 
-  // Add a word to the rectangluar region at the current position,
-  // either by itelf or by breaking it into characters.
+  // Add a word to the rectangular region at the current position,
+  // either by itself or by breaking it into characters.
   void AddWord(const string16& word);
 
   // Add text to the output string if the rectangular boundaries
@@ -574,7 +575,7 @@ class RectangleString {
   bool suppressed_;
 
   // String onto which the output is accumulated.
-  string16 *output_;
+  string16* output_;
 };
 
 void RectangleString::AddString(const string16& input) {
@@ -635,7 +636,7 @@ void RectangleString::AddWord(const string16& word) {
       }
       chars.Advance();
     }
-    // add last remaining fragment, if any.
+    // Add the last remaining fragment, if any.
     if (array_start != chars.array_pos())
       Append(word.substr(array_start, chars.array_pos() - array_start));
   }

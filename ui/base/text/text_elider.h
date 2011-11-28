@@ -6,13 +6,14 @@
 #define UI_BASE_TEXT_TEXT_ELIDER_H_
 #pragma once
 
-#include <unicode/coll.h>
-#include <unicode/uchar.h>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/font.h"
+#include "unicode/coll.h"
+#include "unicode/uchar.h"
 
 class FilePath;
 class GURL;
@@ -126,6 +127,6 @@ UI_EXPORT bool ElideRectangleString(const string16& input, size_t max_rows,
 // less.
 UI_EXPORT string16 TruncateString(const string16& string, size_t length);
 
-} // namespace ui
+}  // namespace ui
 
 #endif  // UI_BASE_TEXT_TEXT_ELIDER_H_
