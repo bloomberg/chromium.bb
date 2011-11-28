@@ -2955,7 +2955,7 @@
           ],
           'sources': [
             'browser/spellchecker/spellcheck_message_filter_browsertest.cc',
-            '../content/renderer/external_popup_menu_unittest.cc',
+            '../content/renderer/external_popup_menu_browsertest.cc',
           ],
           'sources!': [
             # TODO(hbono): This test depends on hunspell and we cannot run it on
