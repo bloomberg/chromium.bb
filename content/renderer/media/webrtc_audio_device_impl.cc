@@ -828,9 +828,8 @@ int32_t WebRtcAudioDeviceImpl::MicrophoneBoost(bool* enabled) const {
 }
 
 int32_t WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable(bool* available) const {
-  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoPlayoutIsAvailable() "
-           << "NOT IMPLEMENTED";
-  *available = false;
+  DCHECK(initialized_) << "Init() must be called first.";
+  *available = (output_channels_ == 2);
   return 0;
 }
 
@@ -848,8 +847,8 @@ int32_t WebRtcAudioDeviceImpl::StereoPlayout(bool* enabled) const {
 
 int32_t WebRtcAudioDeviceImpl::StereoRecordingIsAvailable(
     bool* available) const {
-  DVLOG(2) << "WARNING: WebRtcAudioDeviceImpl::StereoRecordingIsAvailable() "
-           << "NOT IMPLEMENTED";
+  DCHECK(initialized_) << "Init() must be called first.";
+  *available = (input_channels_ == 2);
   return 0;
 }
 
