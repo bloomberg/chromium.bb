@@ -547,8 +547,9 @@ class SelectFileDialogImpl : public SelectFileDialog,
  public:
   explicit SelectFileDialogImpl(Listener* listener);
 
-  virtual bool IsRunning(HWND owning_hwnd) const;
-  virtual void ListenerDestroyed();
+  // BaseShellDialog implementation:
+  virtual bool IsRunning(HWND owning_hwnd) const OVERRIDE;
+  virtual void ListenerDestroyed() OVERRIDE;
 
  protected:
   // SelectFileDialog implementation:
@@ -559,7 +560,7 @@ class SelectFileDialogImpl : public SelectFileDialog,
                               int file_type_index,
                               const FilePath::StringType& default_extension,
                               gfx::NativeWindow owning_window,
-                              void* params);
+                              void* params) OVERRIDE;
 
  private:
   virtual ~SelectFileDialogImpl();
@@ -644,9 +645,9 @@ class SelectFileDialogImpl : public SelectFileDialog,
                                          LPARAM parameter,
                                          LPARAM data);
 
-  virtual bool HasMultipleFileTypeChoicesImpl();
+  virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
-  bool hasMultipleFileTypeChoices_;
+  bool has_multiple_file_type_choices_;
 
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
@@ -654,7 +655,8 @@ class SelectFileDialogImpl : public SelectFileDialog,
 
 SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener)
     : SelectFileDialog(listener),
-      BaseShellDialogImpl() {
+      BaseShellDialogImpl(),
+      has_multiple_file_type_choices_(false) {
 }
 
 SelectFileDialogImpl::~SelectFileDialogImpl() {
@@ -669,7 +671,7 @@ void SelectFileDialogImpl::SelectFileImpl(
     const FilePath::StringType& default_extension,
     gfx::NativeWindow owning_window,
     void* params) {
-  hasMultipleFileTypeChoices_ =
+  has_multiple_file_type_choices_ =
       file_types ? file_types->extensions.size() > 1 : true;
   ExecuteSelectParams execute_params(type, UTF16ToWide(title), default_path,
                                      file_types, file_type_index,
@@ -682,7 +684,7 @@ void SelectFileDialogImpl::SelectFileImpl(
 }
 
 bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
-  return hasMultipleFileTypeChoices_;
+  return has_multiple_file_type_choices_;
 }
 
 bool SelectFileDialogImpl::IsRunning(HWND owning_hwnd) const {

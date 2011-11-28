@@ -95,6 +95,7 @@ SelectFileDialogExtension* SelectFileDialogExtension::Create(
 
 SelectFileDialogExtension::SelectFileDialogExtension(Listener* listener)
     : SelectFileDialog(listener),
+      has_multiple_file_type_choices_(false),
       params_(NULL),
       tab_id_(0),
       owner_window_(0) {
@@ -181,7 +182,7 @@ bool SelectFileDialogExtension::PendingExists(int32 tab_id) {
 }
 
 bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {
-  return hasMultipleFileTypeChoices_;
+  return has_multiple_file_type_choices_;
 }
 
 void SelectFileDialogExtension::SelectFileImpl(
@@ -220,7 +221,7 @@ void SelectFileDialogExtension::SelectFileImpl(
     virtual_path = default_path.BaseName();
   }
 
-  hasMultipleFileTypeChoices_ =
+  has_multiple_file_type_choices_ =
       file_types ? file_types->extensions.size() > 1 : true;
 
   GURL file_browser_url = file_manager_util::GetFileBrowserUrlWithParams(

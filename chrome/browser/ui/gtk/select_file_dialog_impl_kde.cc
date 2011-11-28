@@ -41,7 +41,7 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
  public:
   SelectFileDialogImplKDE(Listener* listener,
                           base::nix::DesktopEnvironment desktop);
-  ~SelectFileDialogImplKDE();
+  virtual ~SelectFileDialogImplKDE();
 
  protected:
   // SelectFileDialog implementation.
@@ -53,10 +53,10 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
                               int file_type_index,
                               const FilePath::StringType& default_extension,
                               gfx::NativeWindow owning_window,
-                              void* params);
+                              void* params) OVERRIDE;
 
  private:
-  virtual bool HasMultipleFileTypeChoicesImpl();
+  virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
   // Get the filters from |file_types_| and concatenate them into
   // |filter_string|.

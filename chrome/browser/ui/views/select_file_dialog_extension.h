@@ -75,10 +75,10 @@ class SelectFileDialogExtension
   // Check if the list of pending dialogs contains dialog for |tab_id|.
   static bool PendingExists(int32 tab_id);
 
-  // Returns if the dialog has mutiple file type choices
+  // Returns true if the dialog has multiple file type choices.
   virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
-  bool hasMultipleFileTypeChoices_;
+  bool has_multiple_file_type_choices_;
   void* params_;
 
   // Host for the extension that implements this dialog.

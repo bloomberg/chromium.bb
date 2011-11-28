@@ -37,12 +37,12 @@ class SelectFileDialogImplGTK : public SelectFileDialogImpl {
                               int file_type_index,
                               const FilePath::StringType& default_extension,
                               gfx::NativeWindow owning_window,
-                              void* params);
+                              void* params) OVERRIDE;
 
  private:
   virtual ~SelectFileDialogImplGTK();
 
-  virtual bool HasMultipleFileTypeChoicesImpl();
+  virtual bool HasMultipleFileTypeChoicesImpl() OVERRIDE;
 
   // Add the filters from |file_types_| to |chooser|.
   void AddFilters(GtkFileChooser* chooser);

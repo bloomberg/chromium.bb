@@ -167,10 +167,11 @@ class SelectFileDialog
   // either unset or set to true.
   bool CanOpenSelectFileDialog();
 
-  // Informs the |listener_| that the file seleciton dialog was canceled. Moved
+  // Informs the |listener_| that the file selection dialog was canceled. Moved
   // to a function for being able to post it to the message loop.
   void CancelFileSelection(void* params);
 
+  // Returns true if the dialog has multiple file type choices.
   virtual bool HasMultipleFileTypeChoicesImpl() = 0;
 };
 
