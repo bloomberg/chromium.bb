@@ -4213,6 +4213,7 @@
             '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../sql/sql.gyp:sql_unittests',
+            '../content/content.gyp:content_unittests',
             # ui_tests seem unhappy on both Mac and Win when run under
             # coverage (all tests fail, often with a
             # "server_->WaitForInitialLoads()").  TODO(jrg):
