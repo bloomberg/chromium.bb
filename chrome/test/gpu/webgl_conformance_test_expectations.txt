@@ -34,9 +34,10 @@
 103759 MAC WIN LINUX : conformance_more_functions_texImage2DHTML = FAIL
 103759 MAC WIN LINUX : conformance_more_functions_texSubImage2DHTML = FAIL
 
+104772 MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_video = FAIL
+
 // -----------------------------------------------------------------------------
 // FLAKY TESTS
 // -----------------------------------------------------------------------------
 
-104772 MAC WIN LINUX : conformance_textures_tex_image_and_sub_image_2d_with_video = PASS FAIL
 
