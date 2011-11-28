@@ -34,13 +34,18 @@ void OnShutdownStarting(ShutdownType type);
 // Get the current shutdown type.
 ShutdownType GetShutdownType();
 
-// Invoked in two ways:
-// . When the last browser has been deleted and the message loop has finished
-//   running.
-// . When ChromeFrame::EndSession is invoked and we need to do cleanup.
-//   NOTE: in this case the message loop is still running, but will die soon
-//         after this returns.
-void Shutdown();
+// Performs the shutdown tasks that need to be done before
+// BrowserProcess and the various threads go away.
+//
+// Returns true if the session should be restarted.
+bool ShutdownPreThreadsStop();
+
+// Performs the remaining shutdown tasks after all threads but the
+// main thread have been stopped.  This includes deleting g_browser_process.
+//
+// The provided parameter indicates whether a preference to restart
+// the session was present.
+void ShutdownPostThreadsStop(bool restart_last_session);
 
 // Called at startup to create a histogram from our previous shutdown time.
 void ReadLastShutdownInfo();

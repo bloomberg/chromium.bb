@@ -14,7 +14,9 @@
 #include "base/tracked_objects.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
+#include "chrome/browser/ui/browser_init.h"
 #include "content/public/browser/browser_main_parts.h"
+#include "content/public/browser/browser_thread.h"
 
 class BrowserInit;
 class BrowserProcessImpl;
@@ -58,9 +60,15 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   virtual void ToolkitInitialized() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
+  virtual void PreCreateThreads() OVERRIDE;
+  virtual void PreStartThread(content::BrowserThread::ID identifier) OVERRIDE;
+  virtual void PostStartThread(content::BrowserThread::ID identifier) OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
+  virtual void PreStopThread(content::BrowserThread::ID identifier) OVERRIDE;
+  virtual void PostStopThread(content::BrowserThread::ID identifier) OVERRIDE;
+  virtual void PostDestroyThreads() OVERRIDE;
 
   // Displays a warning message that we can't find any locale data files.
   virtual void ShowMissingLocaleMessageBox() = 0;
@@ -121,6 +129,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Methods for Main Message Loop -------------------------------------------
 
+  int PreCreateThreadsImpl();
   int PreMainMessageLoopRunImpl();
 
   // Members initialized on construction ---------------------------------------
@@ -164,6 +173,17 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Initialized in SetupMetricsAndFieldTrials.
   scoped_refptr<FieldTrialSynchronizer> field_trial_synchronizer_;
+
+  // Members initialized in PreMainMessageLoopRun, needed in
+  // PreMainMessageLoopRunThreadsCreated.
+  bool is_first_run_;
+  bool first_run_ui_bypass_;
+  MetricsService* metrics_;
+  PrefService* local_state_;
+  FilePath user_data_dir_;
+
+  // Members needed across shutdown methods.
+  bool restart_last_session_;
 
   FRIEND_TEST_ALL_PREFIXES(BrowserMainTest,
                            WarmConnectionFieldTrial_WarmestSocket);

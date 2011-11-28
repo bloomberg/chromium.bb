@@ -9,13 +9,26 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/prefs/pref_member.h"
-#include "content/browser/browser_process_sub_thread.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browser_thread_delegate.h"
 #include "net/base/network_change_notifier.h"
 
+// TODO(joi): Remove these in a follow-up change and IWYU in files
+// that were getting them directly or indirectly from here.
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
+#include "base/message_loop_proxy.h"
+#include "base/synchronization/lock.h"
+#include "base/threading/thread.h"
+
+class BrowserProcessImpl;
 class ChromeNetLog;
 class ExtensionEventRouterForwarder;
 class MediaInternals;
@@ -43,7 +56,10 @@ class URLRequestContextGetter;
 class URLSecurityManager;
 }  // namespace net
 
-class IOThread : public content::BrowserProcessSubThread {
+// Contains state associated with, initialized and cleaned up on, and
+// primarily used on, the IO thread.  Also acts as a convenience
+// accessor to the Thread object for the IO thread.
+class IOThread : public content::BrowserThreadDelegate {
  public:
   struct Globals {
     Globals();
@@ -109,25 +125,36 @@ class IOThread : public content::BrowserProcessSubThread {
   // called on the IO thread.
   void ClearHostCache();
 
- protected:
+  // Convenience method similar to base::Thread, giving access to the
+  // actual IO thread.
+  // TODO(joi): Remove this in follow-up changes.
+  MessageLoop* message_loop() const;
+
+ private:
+  // BrowserThreadDelegate implementation, runs on the IO thread.
+  // This handles initialization and destruction of state that must
+  // live on the IO thread.
   virtual void Init() OVERRIDE;
   virtual void CleanUp() OVERRIDE;
 
- private:
   // Provide SystemURLRequestContextGetter with access to
   // InitSystemRequestContext().
   friend class SystemURLRequestContextGetter;
+
+  // Global state must be initialized on the IO thread, then this
+  // method must be invoked on the UI thread.
+  void InitSystemRequestContext();
+
+  // Lazy initialization of system request context for
+  // SystemURLRequestContextGetter. To be called on IO thread only
+  // after global state has been initialized on the IO thread, and
+  // SystemRequestContext state has been initialized on the UI thread.
+  void InitSystemRequestContextOnIOThread();
 
   static void RegisterPrefs(PrefService* local_state);
 
   net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory(
       net::HostResolver* resolver);
-
-  void InitSystemRequestContext();
-
-  // Lazy initialization of system request context for
-  // SystemURLRequestContextGetter. To be called on IO thread.
-  void InitSystemRequestContextOnIOThread();
 
   // Returns an SSLConfigService instance.
   net::SSLConfigService* GetSSLConfigService();

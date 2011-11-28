@@ -68,7 +68,7 @@
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/google_update_constants.h"
-#include "content/browser/browser_process_sub_thread.h"
+#include "content/browser/browser_child_process_host.h"
 #include "content/browser/child_process_security_policy.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/download_status_updater.h"
@@ -124,15 +124,7 @@ using content::BrowserThread;
 BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
     : created_resource_dispatcher_host_(false),
       created_metrics_service_(false),
-      created_io_thread_(false),
-      created_file_thread_(false),
-      created_db_thread_(false),
-      created_process_launcher_thread_(false),
-      created_cache_thread_(false),
       created_watchdog_thread_(false),
-#if defined(OS_CHROMEOS)
-      created_web_socket_proxy_thread_(false),
-#endif
       created_profile_manager_(false),
       created_local_state_(false),
       created_icon_manager_(false),
@@ -165,12 +157,20 @@ BrowserProcessImpl::BrowserProcessImpl(const CommandLine& command_line)
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
-#if defined(OS_CHROMEOS)
-  if (web_socket_proxy_thread_.get())
-    chromeos::WebSocketProxyController::Shutdown();
-  web_socket_proxy_thread_.reset();
-#endif
+  // See StartTearDown and PreStopThread functions below, this is where
+  // most destruction happens so that it can be interleaved with threads
+  // going away.
 
+  // Wait for the pending print jobs to finish.
+  print_job_manager_->OnQuit();
+  print_job_manager_.reset();
+
+  tracked_objects::ThreadData::EnsureCleanupWasCalled(4);
+
+  g_browser_process = NULL;
+}
+
+void BrowserProcessImpl::StartTearDown() {
   // Delete the AutomationProviderList before NotificationService,
   // since it may try to unregister notifications
   // Both NotificationService and AutomationProvider are singleton instances in
@@ -239,49 +239,65 @@ BrowserProcessImpl::~BrowserProcessImpl() {
 
   // Stop the watchdog thread before stopping other threads.
   watchdog_thread_.reset();
+}
 
-  // Need to stop io_thread_ before resource_dispatcher_host_, since
-  // io_thread_ may still deref ResourceDispatcherHost and handle resource
-  // request before going away.
-  io_thread_.reset();
+void BrowserProcessImpl::PreStartThread(BrowserThread::ID thread_id) {
+  switch (thread_id) {
+    case BrowserThread::IO:
+      CreateIOThreadState();
+      break;
 
-  // The IO thread was the only user of this thread.
-  cache_thread_.reset();
-
-  // Stop the process launcher thread after the IO thread, in case the IO thread
-  // posted a task to terminate a process on the process launcher thread.
-  process_launcher_thread_.reset();
-
-  // Clean up state that lives on the file_thread_ before it goes away.
-  if (resource_dispatcher_host_.get()) {
-    resource_dispatcher_host()->download_file_manager()->Shutdown();
-    resource_dispatcher_host()->save_file_manager()->Shutdown();
+    default:
+      break;
   }
+}
 
-  // Need to stop the file_thread_ here to force it to process messages in its
-  // message loop from the previous call to shutdown the DownloadFileManager,
-  // SaveFileManager and SessionService.
-  file_thread_.reset();
+void BrowserProcessImpl::PostStartThread(BrowserThread::ID thread_id) {
+}
 
-  // With the file_thread_ flushed, we can release any icon resources.
-  icon_manager_.reset();
+void BrowserProcessImpl::PreStopThread(BrowserThread::ID thread_id) {
+  switch (thread_id) {
+#if defined(OS_CHROMEOS)
+    case BrowserThread::WEB_SOCKET_PROXY:
+      chromeos::WebSocketProxyController::Shutdown();
+      break;
+#endif
+    case BrowserThread::FILE:
+      // Clean up state that lives on or uses the file_thread_ before
+      // it goes away.
+      if (resource_dispatcher_host_.get()) {
+        resource_dispatcher_host()->download_file_manager()->Shutdown();
+        resource_dispatcher_host()->save_file_manager()->Shutdown();
+      }
+      break;
+    case BrowserThread::WEBKIT:
+      // Need to destroy ResourceDispatcherHost before PluginService
+      // and SafeBrowsingService, since it caches a pointer to
+      // it. This also causes the webkit thread to terminate (which is
+      // still the responsibility of the embedder, not of the content
+      // framework).
+      resource_dispatcher_host_.reset();
+      break;
+    default:
+      break;
+  }
+}
 
-  // Need to destroy ResourceDispatcherHost before PluginService and
-  // SafeBrowsingService, since it caches a pointer to it. This also
-  // causes the webkit thread to terminate.
-  resource_dispatcher_host_.reset();
-
-  // Wait for the pending print jobs to finish.
-  print_job_manager_->OnQuit();
-  print_job_manager_.reset();
-
-  // Destroy TabCloseableStateWatcher before NotificationService since the
-  // former registers for notifications.
-  tab_closeable_state_watcher_.reset();
-
-  tracked_objects::ThreadData::EnsureCleanupWasCalled(4);
-
-  g_browser_process = NULL;
+void BrowserProcessImpl::PostStopThread(BrowserThread::ID thread_id) {
+  switch (thread_id) {
+    case BrowserThread::FILE:
+      // With the file_thread_ flushed, we can release any icon resources.
+      icon_manager_.reset();
+      break;
+    case BrowserThread::IO:
+      // Reset associated state right after actual thread is stopped,
+      // as io_thread_.global_ cleanup happens in CleanUp on the IO
+      // thread, i.e. as the thread exits its message loop.
+      io_thread_.reset();
+      break;
+    default:
+      break;
+  }
 }
 
 #if defined(OS_WIN)
@@ -395,37 +411,28 @@ MetricsService* BrowserProcessImpl::metrics_service() {
 
 IOThread* BrowserProcessImpl::io_thread() {
   DCHECK(CalledOnValidThread());
-  if (!created_io_thread_)
-    CreateIOThread();
+  DCHECK(io_thread_.get());
   return io_thread_.get();
 }
 
 base::Thread* BrowserProcessImpl::file_thread() {
   DCHECK(CalledOnValidThread());
-  if (!created_file_thread_)
-    CreateFileThread();
-  return file_thread_.get();
+  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::FILE);
 }
 
 base::Thread* BrowserProcessImpl::db_thread() {
   DCHECK(CalledOnValidThread());
-  if (!created_db_thread_)
-    CreateDBThread();
-  return db_thread_.get();
+  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::DB);
 }
 
 base::Thread* BrowserProcessImpl::process_launcher_thread() {
   DCHECK(CalledOnValidThread());
-  if (!created_process_launcher_thread_)
-    CreateProcessLauncherThread();
-  return process_launcher_thread_.get();
+  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::PROCESS_LAUNCHER);
 }
 
 base::Thread* BrowserProcessImpl::cache_thread() {
   DCHECK(CalledOnValidThread());
-  if (!created_cache_thread_)
-    CreateCacheThread();
-  return cache_thread_.get();
+  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::CACHE);
 }
 
 WatchDogThread* BrowserProcessImpl::watchdog_thread() {
@@ -439,10 +446,7 @@ WatchDogThread* BrowserProcessImpl::watchdog_thread() {
 #if defined(OS_CHROMEOS)
 base::Thread* BrowserProcessImpl::web_socket_proxy_thread() {
   DCHECK(CalledOnValidThread());
-  if (!created_web_socket_proxy_thread_)
-    CreateWebSocketProxyThread();
-  DCHECK(web_socket_proxy_thread_.get() != NULL);
-  return web_socket_proxy_thread_.get();
+  return BrowserThread::UnsafeGetBrowserThread(BrowserThread::WEB_SOCKET_PROXY);
 }
 #endif
 
@@ -642,7 +646,10 @@ safe_browsing::ClientSideDetectionService*
 }
 
 bool BrowserProcessImpl::plugin_finder_disabled() const {
-  return *plugin_finder_disabled_pref_;
+  if (plugin_finder_disabled_pref_.get())
+    return plugin_finder_disabled_pref_->GetValue();
+  else
+    return false;
 }
 
 void BrowserProcessImpl::Observe(int type,
@@ -757,14 +764,11 @@ void BrowserProcessImpl::CreateMetricsService() {
   metrics_service_.reset(new MetricsService);
 }
 
-void BrowserProcessImpl::CreateIOThread() {
-  DCHECK(!created_io_thread_ && io_thread_.get() == NULL);
-  created_io_thread_ = true;
-
-  // Prior to starting the io thread, we create the plugin service as
-  // it is predominantly used from the io thread, but must be created
-  // on the main thread. The service ctor is inexpensive and does not
-  // invoke the io_thread() accessor.
+void BrowserProcessImpl::CreateIOThreadState() {
+  // Prior to any processing happening on the io thread, we create the
+  // plugin service as it is predominantly used from the io thread,
+  // but must be created on the main thread. The service ctor is
+  // inexpensive and does not invoke the io_thread() accessor.
   PluginService* plugin_service = PluginService::GetInstance();
   plugin_service->Init();
   plugin_service->set_filter(ChromePluginServiceFilter::GetInstance());
@@ -789,81 +793,7 @@ void BrowserProcessImpl::CreateIOThread() {
 
   scoped_ptr<IOThread> thread(new IOThread(
       local_state(), net_log_.get(), extension_event_router_forwarder_.get()));
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  if (!thread->StartWithOptions(options))
-    return;
   io_thread_.swap(thread);
-}
-
-void BrowserProcessImpl::CreateFileThread() {
-  DCHECK(!created_file_thread_ && file_thread_.get() == NULL);
-  created_file_thread_ = true;
-
-  scoped_ptr<base::Thread> thread(
-      new content::BrowserProcessSubThread(BrowserThread::FILE));
-  base::Thread::Options options;
-#if defined(OS_WIN)
-  // On Windows, the FILE thread needs to be have a UI message loop which pumps
-  // messages in such a way that Google Update can communicate back to us.
-  options.message_loop_type = MessageLoop::TYPE_UI;
-#else
-  options.message_loop_type = MessageLoop::TYPE_IO;
-#endif
-  if (!thread->StartWithOptions(options))
-    return;
-  file_thread_.swap(thread);
-}
-
-#if defined(OS_CHROMEOS)
-void BrowserProcessImpl::CreateWebSocketProxyThread() {
-  DCHECK(!created_web_socket_proxy_thread_);
-  DCHECK(web_socket_proxy_thread_.get() == NULL);
-  created_web_socket_proxy_thread_ = true;
-
-  scoped_ptr<base::Thread> thread(
-      new content::BrowserProcessSubThread(BrowserThread::WEB_SOCKET_PROXY));
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  if (!thread->StartWithOptions(options))
-    return;
-  web_socket_proxy_thread_.swap(thread);
-}
-#endif
-
-void BrowserProcessImpl::CreateDBThread() {
-  DCHECK(!created_db_thread_ && db_thread_.get() == NULL);
-  created_db_thread_ = true;
-
-  scoped_ptr<base::Thread> thread(
-      new content::BrowserProcessSubThread(BrowserThread::DB));
-  if (!thread->Start())
-    return;
-  db_thread_.swap(thread);
-}
-
-void BrowserProcessImpl::CreateProcessLauncherThread() {
-  DCHECK(!created_process_launcher_thread_ && !process_launcher_thread_.get());
-  created_process_launcher_thread_ = true;
-
-  scoped_ptr<base::Thread> thread(
-      new content::BrowserProcessSubThread(BrowserThread::PROCESS_LAUNCHER));
-  if (!thread->Start())
-    return;
-  process_launcher_thread_.swap(thread);
-}
-
-void BrowserProcessImpl::CreateCacheThread() {
-  DCHECK(!created_cache_thread_ && !cache_thread_.get());
-  created_cache_thread_ = true;
-
-  scoped_ptr<base::Thread> thread(
-      new content::DeprecatedBrowserThread(BrowserThread::CACHE));
-  base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_IO;
-  if (!thread->StartWithOptions(options))
-    return;
-  cache_thread_.swap(thread);
 }
 
 void BrowserProcessImpl::CreateWatchdogThread() {
@@ -911,9 +841,10 @@ void BrowserProcessImpl::CreateLocalState() {
   // Initialize the preference for the plugin finder policy.
   // This preference is only needed on the IO thread so make it available there.
   local_state_->RegisterBooleanPref(prefs::kDisablePluginFinder, false);
-  plugin_finder_disabled_pref_.Init(prefs::kDisablePluginFinder,
+  plugin_finder_disabled_pref_.reset(new BooleanPrefMember);
+  plugin_finder_disabled_pref_->Init(prefs::kDisablePluginFinder,
                                    local_state_.get(), NULL);
-  plugin_finder_disabled_pref_.MoveToThread(BrowserThread::IO);
+  plugin_finder_disabled_pref_->MoveToThread(BrowserThread::IO);
 
   // Another policy that needs to be defined before the net subsystem is
   // initialized is MaxConnectionsPerProxy so we do it here.

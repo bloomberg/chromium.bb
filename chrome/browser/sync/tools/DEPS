@@ -1,4 +1,6 @@
 include_rules = [
+  # sync_tools needs to manage its own BrowserThreads.
+  "+content/browser",
   # sync_tools depends on the google cache invalidation API.
   "+google/cacheinvalidation",
   # sync_tools depends on libjingle.

@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/sync/notifier/invalidation_version_tracker.h"
 #include "chrome/browser/sync/notifier/sync_notifier.h"
 #include "chrome/browser/sync/notifier/sync_notifier_factory.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/sync/syncable/model_type_payload_map.h"
 #include "chrome/test/base/test_url_request_context_getter.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/browser/browser_thread_impl.h"
 
 using content::BrowserThread;
 
@@ -95,9 +97,8 @@ int main(int argc, char* argv[]) {
       logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
 
   MessageLoop ui_loop;
-  content::DeprecatedBrowserThread ui_thread(BrowserThread::UI, &ui_loop);
-
-  content::DeprecatedBrowserThread io_thread(BrowserThread::IO);
+  content::BrowserThreadImpl ui_thread(BrowserThread::UI, &ui_loop);
+  content::BrowserThreadImpl io_thread(BrowserThread::IO);
   base::Thread::Options options;
   options.message_loop_type = MessageLoop::TYPE_IO;
   io_thread.StartWithOptions(options);

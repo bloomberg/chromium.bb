@@ -76,7 +76,6 @@
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_init.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/web_resource/gpu_blacklist_updater.h"
 #include "chrome/common/child_process_logging.h"
@@ -309,23 +308,6 @@ void InitializeURLRequestThrottlerManager(net::NetLog* net_log) {
   // come from there. Doing it this way for now (2011/5/12) to try to fail
   // fast in case A/B experiment gives unexpected results.
   net::URLRequestThrottlerManager::GetInstance()->set_net_log(net_log);
-}
-
-// Creates key child threads. We need to do this explicitly since
-// BrowserThread::PostTask silently deletes a posted task if the target message
-// loop isn't created.
-void CreateChildThreads(BrowserProcessImpl* process) {
-  process->db_thread();
-  process->file_thread();
-  process->process_launcher_thread();
-  process->cache_thread();
-  process->io_thread();
-#if defined(OS_CHROMEOS)
-  process->web_socket_proxy_thread();
-#endif
-  // Create watchdog thread after creating all other threads because it will
-  // watch the other threads and they must be running.
-  process->watchdog_thread();
 }
 
 // Returns the new local state object, guaranteed non-NULL.
@@ -687,7 +669,12 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
       translate_manager_(NULL),
       profile_(NULL),
       run_message_loop_(true),
-      notify_result_(ProcessSingleton::PROCESS_NONE) {
+      notify_result_(ProcessSingleton::PROCESS_NONE),
+      is_first_run_(false),
+      first_run_ui_bypass_(false),
+      metrics_(NULL),
+      local_state_(NULL),
+      restart_last_session_(false) {
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
@@ -1207,31 +1194,55 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
     chrome_extra_parts_[i]->PostMainMessageLoopStart();
 }
 
-void ChromeBrowserMainParts::PreMainMessageLoopRun() {
-  result_code_ = PreMainMessageLoopRunImpl();
+void ChromeBrowserMainParts::PreCreateThreads() {
+  result_code_ = PreCreateThreadsImpl();
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreMainMessageLoopRun();
 }
 
-int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
+void ChromeBrowserMainParts::PreStartThread(
+    content::BrowserThread::ID thread_id) {
+  browser_process_->PreStartThread(thread_id);
+}
+
+void ChromeBrowserMainParts::PostStartThread(
+    content::BrowserThread::ID thread_id) {
+  browser_process_->PostStartThread(thread_id);
+  switch (thread_id) {
+    case BrowserThread::FILE:
+      // Now the command line has been mutated based on about:flags,
+      // and the file thread has been started, we can set up metrics
+      // and initialize field trials.
+      metrics_ = SetupMetricsAndFieldTrials(local_state_);
+      break;
+
+    default:
+      break;
+  }
+}
+
+void ChromeBrowserMainParts::PreMainMessageLoopRun() {
+  result_code_ = PreMainMessageLoopRunImpl();
+}
+
+int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   run_message_loop_ = false;
-  FilePath user_data_dir;
 #if defined(OS_WIN)
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_);
 #else
   // Getting the user data dir can fail if the directory isn't
   // creatable, for example; on Windows in code below we bring up a
   // dialog prompting the user to pick a different directory.
   // However, ProcessSingleton needs a real user_data_dir on Mac/Linux,
   // so it's better to fail here than fail mysteriously elsewhere.
-  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
+  CHECK(PathService::Get(chrome::DIR_USER_DATA, &user_data_dir_))
       << "Must be able to get user data directory!";
 #endif
 
-  process_singleton_.reset(new ProcessSingleton(user_data_dir));
+  process_singleton_.reset(new ProcessSingleton(user_data_dir_));
 
-  bool is_first_run = FirstRun::IsChromeFirstRun() ||
+  is_first_run_ = FirstRun::IsChromeFirstRun() ||
       parsed_command_line().HasSwitch(switches::kFirstRun);
 
   if (parsed_command_line().HasSwitch(switches::kImport) ||
@@ -1240,7 +1251,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     // instantiated (as it makes a net::URLRequest and we don't have an IO
     // thread, see bug #1292702).
     browser_process_.reset(new FirstRunBrowserProcess(parsed_command_line()));
-    is_first_run = false;
+    is_first_run_ = false;
   } else {
     browser_process_.reset(new BrowserProcessImpl(parsed_command_line()));
   }
@@ -1258,8 +1269,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // tabs.
   g_browser_process->tab_closeable_state_watcher();
 
-  PrefService* local_state = InitializeLocalState(parsed_command_line(),
-                                                  is_first_run);
+  local_state_ = InitializeLocalState(parsed_command_line(),
+                                      is_first_run_);
 
 #if defined(USE_LINUX_BREAKPAD)
   // Needs to be called after we have chrome::DIR_USER_DATA and
@@ -1267,7 +1278,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
       new GetLinuxDistroTask());
 
-  if (IsCrashReportingEnabled(local_state))
+  if (IsCrashReportingEnabled(local_state_))
     InitCrashReporter();
 #endif
 
@@ -1283,7 +1294,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     g_browser_process->SetApplicationLocale(l10n_util::GetLocaleOverride());
 #else
     const std::string locale =
-        local_state->GetString(prefs::kApplicationLocale);
+        local_state_->GetString(prefs::kApplicationLocale);
     // On a POSIX OS other than ChromeOS, the parameter that is passed to the
     // method InitSharedInstance is ignored.
     const std::string loaded_locale =
@@ -1343,19 +1354,19 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
   master_prefs_.reset(new FirstRun::MasterPrefs);
-  bool first_run_ui_bypass = false;  // True to skip first run UI.
-  if (is_first_run) {
-    first_run_ui_bypass =
-        !FirstRun::ProcessMasterPreferences(user_data_dir, master_prefs_.get());
+  first_run_ui_bypass_ = false;  // True to skip first run UI.
+  if (is_first_run_) {
+    first_run_ui_bypass_ = !FirstRun::ProcessMasterPreferences(
+        user_data_dir_, master_prefs_.get());
     AddFirstRunNewTabs(browser_init_.get(), master_prefs_->new_tabs);
 
     // If we are running in App mode, we do not want to show the importer
     // (first run) UI.
-    if (!first_run_ui_bypass &&
+    if (!first_run_ui_bypass_ &&
         (parsed_command_line().HasSwitch(switches::kApp) ||
          parsed_command_line().HasSwitch(switches::kAppId) ||
          parsed_command_line().HasSwitch(switches::kNoFirstRun)))
-      first_run_ui_bypass = true;
+      first_run_ui_bypass_ = true;
   }
 
   // TODO(viettrungluu): why don't we run this earlier?
@@ -1364,17 +1375,17 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Enable print preview once for supported platforms.
 #if defined(GOOGLE_CHROME_BUILD)
-  local_state->RegisterBooleanPref(prefs::kPrintingPrintPreviewEnabledOnce,
+  local_state_->RegisterBooleanPref(prefs::kPrintingPrintPreviewEnabledOnce,
                                    false,
                                    PrefService::UNSYNCABLE_PREF);
-  if (!local_state->GetBoolean(prefs::kPrintingPrintPreviewEnabledOnce)) {
-    local_state->SetBoolean(prefs::kPrintingPrintPreviewEnabledOnce, true);
-    about_flags::SetExperimentEnabled(local_state, "print-preview", true);
+  if (!local_state_->GetBoolean(prefs::kPrintingPrintPreviewEnabledOnce)) {
+    local_state_->SetBoolean(prefs::kPrintingPrintPreviewEnabledOnce, true);
+    about_flags::SetExperimentEnabled(local_state_, "print-preview", true);
   }
 #endif
 
   // Convert active labs into switches. Modifies the current command line.
-  about_flags::ConvertFlagsToSwitches(local_state,
+  about_flags::ConvertFlagsToSwitches(local_state_,
                                       CommandLine::ForCurrentProcess());
 
   // Reset the command line in the crash report details, since we may have
@@ -1391,10 +1402,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   histogram_synchronizer_ = new HistogramSynchronizer();
   tracking_synchronizer_ = new chrome_browser_metrics::TrackingSynchronizer();
 
-  // Now the command line has been mutated based on about:flags, we can
-  // set up metrics and initialize field trials.
-  MetricsService* metrics = SetupMetricsAndFieldTrials(local_state);
-
 #if defined(USE_WEBKIT_COMPOSITOR)
   // We need to ensure WebKit has been initialized before we start the WebKit
   // compositor. This is done by the ResourceDispatcherHost on creation.
@@ -1405,9 +1412,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // for the uninstall metrics if this is our first run. This only actually
   // gets used if the user has metrics reporting enabled at uninstall time.
   int64 install_date =
-      local_state->GetInt64(prefs::kUninstallMetricsInstallDate);
+      local_state_->GetInt64(prefs::kUninstallMetricsInstallDate);
   if (install_date == 0) {
-    local_state->SetInt64(prefs::kUninstallMetricsInstallDate,
+    local_state_->SetInt64(prefs::kUninstallMetricsInstallDate,
                           base::Time::Now().ToTimeT());
   }
 
@@ -1421,7 +1428,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   SecKeychainAddCallback(&KeychainCallback, 0, NULL);
 #endif
 
-  CreateChildThreads(browser_process_.get());
+  return content::RESULT_CODE_NORMAL_EXIT;
+}
+
+int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
+  // Create watchdog thread after creating all other threads because it will
+  // watch the other threads and they must be running.
+  browser_process_->watchdog_thread();
 
 #if defined(OS_CHROMEOS)
   // Now that the file thread exists we can record our stats.
@@ -1571,13 +1584,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 #endif
 
-  if (is_first_run) {
+  if (is_first_run_) {
     // Warn the ProfileManager that an import process will run, possibly
     // locking the WebDataService directory of the next Profile created.
     g_browser_process->profile_manager()->SetWillImport();
   }
 
-  profile_ = CreateProfile(parameters(), user_data_dir, parsed_command_line());
+  profile_ = CreateProfile(parameters(), user_data_dir_, parsed_command_line());
   if (!profile_)
     return content::RESULT_CODE_NORMAL_EXIT;
 
@@ -1661,8 +1674,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Note that this be done _after_ the PrefService is initialized and all
   // preferences are registered, since some of the code that the importer
   // touches reads preferences.
-  if (is_first_run) {
-    if (!first_run_ui_bypass) {
+  if (is_first_run_) {
+    if (!first_run_ui_bypass_) {
       FirstRun::AutoImport(profile_,
                            master_prefs_->homepage_defined,
                            master_prefs_->do_import_items,
@@ -1678,9 +1691,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       // If stats reporting was turned on by the first run dialog then toggle
       // the pref.
       if (GoogleUpdateSettings::GetCollectStatsConsent())
-        local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
+        local_state_->SetBoolean(prefs::kMetricsReportingEnabled, true);
 #endif  // OS_POSIX
-    }  // if (!first_run_ui_bypass)
+    }  // if (!first_run_ui_bypass_)
 
     Browser::SetNewHomePagePrefs(profile_->GetPrefs());
     g_browser_process->profile_manager()->OnImportFinished(profile_);
@@ -1799,8 +1812,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
   HandleTestParameters(parsed_command_line());
-  RecordBreakpadStatusUMA(metrics);
-  about_flags::RecordUMAStatistics(local_state);
+  RecordBreakpadStatusUMA(metrics_);
+  about_flags::RecordUMAStatistics(local_state_);
   LanguageUsageMetrics::RecordAcceptLanguages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   LanguageUsageMetrics::RecordApplicationLanguage(
@@ -1811,7 +1824,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif
 
 #if defined(OS_CHROMEOS)
-  metrics->StartExternalMetrics();
+  metrics_->StartExternalMetrics();
 
   // Initialize the audio handler on ChromeOS.
   chromeos::AudioHandler::Initialize();
@@ -1844,7 +1857,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #if defined(OS_WIN)
   // We check this here because if the profile is OTR (chromeos possibility)
   // it won't still be accessible after browser is destroyed.
-  record_search_engine_ = is_first_run && !profile_->IsOffTheRecord();
+  record_search_engine_ = is_first_run_ && !profile_->IsOffTheRecord();
 #endif
 
   // ChildProcess:: is a misnomer unless you consider context.  Use
@@ -1900,8 +1913,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
     // We are in regular browser boot sequence. Open initial tabs and enter the
     // main message loop.
+    int result_code;
     if (browser_init_->Start(parsed_command_line(), FilePath(), profile_,
-                             &result_code_)) {
+                             &result_code)) {
 #if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
       // Initialize autoupdate timer. Timer callback costs basically nothing
       // when browser is not in persistent mode, so it's OK to let it ride on
@@ -2068,10 +2082,23 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   chromeos::AudioHandler::Shutdown();
 #endif
 
+  restart_last_session_ = browser_shutdown::ShutdownPreThreadsStop();
+  browser_process_->StartTearDown();
+}
+
+void ChromeBrowserMainParts::PreStopThread(BrowserThread::ID identifier) {
+  browser_process_->PreStopThread(identifier);
+}
+
+void ChromeBrowserMainParts::PostStopThread(BrowserThread::ID identifier) {
+  browser_process_->PostStopThread(identifier);
+}
+
+void ChromeBrowserMainParts::PostDestroyThreads() {
   // browser_shutdown takes care of deleting browser_process, so we need to
   // release it.
   ignore_result(browser_process_.release());
-  browser_shutdown::Shutdown();
+  browser_shutdown::ShutdownPostThreadsStop(restart_last_session_);
   master_prefs_.reset();
   process_singleton_.reset();
 
