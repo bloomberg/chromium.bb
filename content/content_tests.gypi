@@ -221,6 +221,7 @@
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/tab_contents/navigation_controller_unittest.cc',
         'browser/tab_contents/navigation_entry_unittest.cc',
+        'browser/tab_contents/render_view_host_manager_unittest.cc',
         'browser/tab_contents/tab_contents_delegate_unittest.cc',
         'browser/tab_contents/web_drag_dest_mac_unittest.mm',
         'browser/trace_subscriber_stdio_unittest.cc',

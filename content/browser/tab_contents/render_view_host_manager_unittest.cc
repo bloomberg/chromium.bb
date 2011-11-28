@@ -2,30 +2,113 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/browser_url_handler.h"
+#include "content/browser/mock_content_browser_client.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/render_view_host_manager.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
+#include "content/browser/webui/empty_web_ui_factory.h"
 #include "content/common/test_url_constants.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/page_transition_types.h"
+#include "content/public/common/url_constants.h"
+#include "content/test/test_browser_context.h"
 #include "content/test/test_notification_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "googleurl/src/url_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 using content::BrowserThread;
 using content::BrowserThreadImpl;
 
-class RenderViewHostManagerTest : public ChromeRenderViewHostTestHarness {
+namespace {
+
+const char kChromeUISchemeButNotWebUIURL[] = "chrome://not-webui";
+
+class RenderViewHostManagerTestWebUIFactory
+    : public content::EmptyWebUIFactory {
  public:
+  RenderViewHostManagerTestWebUIFactory()
+    : should_create_webui_(false) {
+  }
+  virtual ~RenderViewHostManagerTestWebUIFactory() {}
+
+  void set_should_create_webui(bool should_create_webui) {
+    should_create_webui_ = should_create_webui;
+  }
+
+  // WebUIFactory implementation.
+  virtual WebUI* CreateWebUIForURL(TabContents* source,
+                                   const GURL& url) const OVERRIDE {
+    if (!(should_create_webui_ && HasWebUIScheme(url)))
+      return NULL;
+    return new WebUI(source);
+  }
+
+  virtual bool UseWebUIForURL(content::BrowserContext* browser_context,
+                              const GURL& url) const OVERRIDE {
+    return HasWebUIScheme(url);
+  }
+
+  virtual bool HasWebUIScheme(const GURL& url) const OVERRIDE {
+    return url.SchemeIs(chrome::kChromeUIScheme) &&
+        url.spec() != kChromeUISchemeButNotWebUIURL;
+  }
+
+ private:
+  bool should_create_webui_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostManagerTestWebUIFactory);
+};
+
+class RenderViewHostManagerTestBrowserClient
+    : public content::MockContentBrowserClient {
+ public:
+  RenderViewHostManagerTestBrowserClient() {}
+  virtual ~RenderViewHostManagerTestBrowserClient() {}
+
+  void set_should_create_webui(bool should_create_webui) {
+    factory_.set_should_create_webui(should_create_webui);
+  }
+
+  // content::MockContentBrowserClient implementation.
+  virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE {
+    return &factory_;
+  }
+
+ private:
+  RenderViewHostManagerTestWebUIFactory factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewHostManagerTestBrowserClient);
+};
+
+}  // namespace
+
+class RenderViewHostManagerTest : public RenderViewHostTestHarness {
+ public:
+  virtual void SetUp() OVERRIDE {
+    RenderViewHostTestHarness::SetUp();
+    old_browser_client_ = content::GetContentClient()->browser();
+    content::GetContentClient()->set_browser(&browser_client_);
+    url_util::AddStandardScheme(chrome::kChromeUIScheme);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    RenderViewHostTestHarness::TearDown();
+    content::GetContentClient()->set_browser(old_browser_client_);
+  }
+
+  void set_should_create_webui(bool should_create_webui) {
+    browser_client_.set_should_create_webui(should_create_webui);
+  }
+
   void NavigateActiveAndCommit(const GURL& url) {
     // Note: we navigate the active RenderViewHost because previous navigations
     // won't have committed yet, so NavigateAndCommit does the wrong thing
@@ -56,6 +139,10 @@ class RenderViewHostManagerTest : public ChromeRenderViewHostTestHarness {
                            const NavigationEntry* new_entry) const {
     return manager->ShouldSwapProcessesForNavigation(cur_entry, new_entry);
   }
+
+ private:
+  RenderViewHostManagerTestBrowserClient browser_client_;
+  content::ContentBrowserClient* old_browser_client_;
 };
 
 // Tests that when you navigate from the New TabPage to another page, and
@@ -72,7 +159,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   NavigateActiveAndCommit(kDestUrl);
 
   // Make a second tab.
-  TestTabContents contents2(profile(), NULL);
+  TestTabContents contents2(browser_context(), NULL);
 
   // Load the two URLs in the second tab. Note that the first navigation creates
   // a RVH that's not pending (since there is no cross-site transition), so
@@ -171,14 +258,14 @@ TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
 
 // Tests the Init function by checking the initial RenderViewHost.
 TEST_F(RenderViewHostManagerTest, Init) {
-  // Using TestingProfile.
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
+  // Using TestBrowserContext.
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
   EXPECT_FALSE(instance->has_site());
 
-  TestTabContents tab_contents(profile(), instance);
+  TestTabContents tab_contents(browser_context(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
   RenderViewHost* host = manager.current_host();
   ASSERT_TRUE(host);
@@ -193,9 +280,9 @@ TEST_F(RenderViewHostManagerTest, Init) {
 TEST_F(RenderViewHostManagerTest, Navigate) {
   TestNotificationTracker notifications;
 
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
 
-  TestTabContents tab_contents(profile(), instance);
+  TestTabContents tab_contents(browser_context(), instance);
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(&tab_contents.controller()));
@@ -203,7 +290,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
   // Create.
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
   RenderViewHost* host;
 
@@ -279,9 +366,9 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   TestNotificationTracker notifications;
 
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
 
-  TestTabContents tab_contents(profile(), instance);
+  TestTabContents tab_contents(browser_context(), instance);
   notifications.ListenFor(
       content::NOTIFICATION_RENDER_VIEW_HOST_CHANGED,
       content::Source<NavigationController>(&tab_contents.controller()));
@@ -289,7 +376,7 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
   // Create.
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
@@ -409,13 +496,14 @@ TEST_F(RenderViewHostManagerTest, NavigateWithEarlyReNavigation) {
 
 // Tests WebUI creation.
 TEST_F(RenderViewHostManagerTest, WebUI) {
+  set_should_create_webui(true);
   BrowserThreadImpl ui_thread(BrowserThread::UI, MessageLoop::current());
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
 
-  TestTabContents tab_contents(profile(), instance);
+  TestTabContents tab_contents(browser_context(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
 
-  manager.Init(profile(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
   const GURL kUrl(chrome::kTestNewTabURL);
   NavigationEntry entry(NULL /* instance */, -1 /* page_id */, kUrl,
@@ -450,10 +538,10 @@ TEST_F(RenderViewHostManagerTest, WebUI) {
 // Regression test for bug 46290.
 TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
   BrowserThreadImpl thread(BrowserThread::UI, &message_loop_);
-  SiteInstance* instance = SiteInstance::CreateSiteInstance(profile());
-  TestTabContents tab_contents(profile(), instance);
+  SiteInstance* instance = SiteInstance::CreateSiteInstance(browser_context());
+  TestTabContents tab_contents(browser_context(), instance);
   RenderViewHostManager manager(&tab_contents, &tab_contents);
-  manager.Init(profile(), instance, MSG_ROUTING_NONE);
+  manager.Init(browser_context(), instance, MSG_ROUTING_NONE);
 
   // NTP is a Web UI page.
   const GURL kNtpUrl(chrome::kTestNewTabURL);
@@ -462,12 +550,8 @@ TEST_F(RenderViewHostManagerTest, NonWebUIChromeURLs) {
                             content::PAGE_TRANSITION_TYPED,
                             false /* is_renderer_init */);
 
-  // about: URLs are not Web UI pages.
-  GURL about_url(chrome::kTestMemoryURL);
-  // Rewrite so it looks like chrome://about/memory
-  bool reverse_on_redirect = false;
-  BrowserURLHandler::GetInstance()->RewriteURLIfNecessary(
-      &about_url, profile(), &reverse_on_redirect);
+  // A URL with the Chrome UI scheme, that isn't handled by Web UI.
+  GURL about_url(kChromeUISchemeButNotWebUIURL);
   NavigationEntry about_entry(NULL /* instance */, -1 /* page_id */, about_url,
                               GURL() /* referrer */, string16() /* title */,
                               content::PAGE_TRANSITION_TYPED,

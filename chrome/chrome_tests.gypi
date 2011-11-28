@@ -2009,7 +2009,6 @@
         'test/data/resource.rc',
         'test/data/unit/framework_unittest.gtestjs',
         'tools/convert_dict/convert_dict_unittest.cc',
-        '../content/browser/tab_contents/render_view_host_manager_unittest.cc',
         '../testing/gtest_mac_unittest.mm',
         '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
         '../ui/views/test/test_views_delegate.cc',
