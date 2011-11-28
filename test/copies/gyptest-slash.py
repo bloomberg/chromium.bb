@@ -36,4 +36,3 @@ test.built_file_must_match('copies-out-slash-2/directory/subdir/file5',
                            chdir='relocate/src')
 
 test.pass_test()
-

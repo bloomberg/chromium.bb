@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # Copyright (c) 2011 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -20,6 +20,7 @@ debug = {}
 DEBUG_GENERAL = 'general'
 DEBUG_VARIABLES = 'variables'
 DEBUG_INCLUDES = 'includes'
+
 
 def DebugOutput(mode, message):
   if 'all' in gyp.debug.keys() or mode in gyp.debug.keys():
