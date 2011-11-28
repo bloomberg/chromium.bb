@@ -38,19 +38,29 @@ setlocal
 set CLIENT_ROOT=%~dp0%..\..
 set CONFIG=%1
 
+if (%2)==() goto setdefaultbase
+if (%3)==() goto usage
+set DRIVE=%2
+set INSTALL_ROOT=%3
+goto pastbase
+:setdefault
+set DRIVE=c:
+set INSTALL_ROOT=\trybot
+:pastbase
+
 @ECHO ON
-c:
-mkdir \trybot
-cd \trybot
+%DRIVE%
+mkdir %INSTALL_ROOT%
+cd %INSTALL_ROOT%
 rmdir /s /q base
-rmdir /s /q chrome\%CONFIG%
+rmdir /s /q build\%CONFIG%
 rmdir /s /q chrome_frame
 mkdir base
-mkdir chrome\%CONFIG%
+mkdir build\%CONFIG%
 mkdir chrome_frame\test\data
 mkdir chrome_frame\test\html_util_test_data
 copy %CLIENT_ROOT%\base\base_paths_win.cc base\base_paths_win.cc
-xcopy %CLIENT_ROOT%\chrome\%CONFIG% chrome\%CONFIG% /E /EXCLUDE:%CLIENT_ROOT%\chrome_frame\test\poor_mans_trybot_xcopy_filter.txt
+xcopy %CLIENT_ROOT%\build\%CONFIG% build\%CONFIG% /E /EXCLUDE:%CLIENT_ROOT%\chrome_frame\test\poor_mans_trybot_xcopy_filter.txt
 xcopy %CLIENT_ROOT%\chrome_frame\test\data chrome_frame\test\data /E
 xcopy %CLIENT_ROOT%\chrome_frame\test\html_util_test_data chrome_frame\test\html_util_test_data /E
 copy %CLIENT_ROOT%\chrome_frame\CFInstance.js chrome_frame\CFInstance.js
@@ -59,16 +69,15 @@ copy %CLIENT_ROOT%\chrome_frame\CFInstall.js chrome_frame\CFInstall.js
 echo ************************************
 echo DO THE FOLLOWING IN AN ADMIN PROMPT:
 echo ************************************
-echo regsvr32 \trybot\chrome\%CONFIG%\servers\npchrome_frame.dll
-echo rundll32 \trybot\chrome\debug\servers\npchrome_frame.dll,RegisterNPAPIPlugin
+echo regsvr32 \trybot\build\%CONFIG%\servers\npchrome_frame.dll
 echo *********************************
 echo THEN DO THIS IN A REGULAR PROMPT:
 echo *********************************
-echo \trybot\chrome\%CONFIG%\chrome_frame_unittests.exe
-echo \trybot\chrome\%CONFIG%\chrome_frame_tests.exe
+echo \trybot\build\%CONFIG%\chrome_frame_unittests.exe
+echo \trybot\build\%CONFIG%\chrome_frame_tests.exe
 goto end
 
 :usage
-echo "Usage: poor_mans_trybot.bat [debug|release]"
+echo "Usage: poor_mans_trybot.bat CONFIG [DRIVE INSTALL_ROOT]"
 
 :end
