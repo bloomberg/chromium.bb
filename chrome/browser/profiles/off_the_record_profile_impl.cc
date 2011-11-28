@@ -112,11 +112,11 @@ void OffTheRecordProfileImpl::Init() {
   GetChromeURLDataManager()->AddDataSource(icon_source);
 
   ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-    PluginPrefs::GetForProfile(this), &GetResourceContext());
+      PluginPrefs::GetForProfile(this), &GetResourceContext());
 
   BrowserThread::PostTask(
-    BrowserThread::IO, FROM_HERE,
-    base::Bind(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&NotifyOTRProfileCreatedOnIOThread, profile_, this));
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {

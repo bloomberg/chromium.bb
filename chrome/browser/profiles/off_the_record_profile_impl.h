@@ -147,9 +147,12 @@ class OffTheRecordProfileImpl : public Profile,
   // Weak pointer owned by |profile_|.
   PrefService* prefs_;
 
-  scoped_ptr<ExtensionProcessManager> extension_process_manager_;
-
   OffTheRecordProfileIOData::Handle io_data_;
+
+  // Must be freed before |io_data_|. While |extension_process_manager_| still
+  // lives, we handle incoming resource requests from extension processes and
+  // those require access to the ResourceContext owned by |io_data_|.
+  scoped_ptr<ExtensionProcessManager> extension_process_manager_;
 
   // We use a non-persistent content settings map for OTR.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
@@ -164,7 +167,6 @@ class OffTheRecordProfileImpl : public Profile,
   // profile because then the main profile would learn some of the host names
   // the user visited while OTR.
   scoped_ptr<SSLHostState> ssl_host_state_;
-
   // Use a separate FindBarState so search terms do not leak back to the main
   // profile.
   scoped_ptr<FindBarState> find_bar_state_;

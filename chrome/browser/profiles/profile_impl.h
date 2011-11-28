@@ -198,6 +198,13 @@ class ProfileImpl : public Profile,
 
   FilePath path_;
   FilePath base_cache_path_;
+
+  // !!! BIG HONKING WARNING !!!
+  //  The order of the members below is important. Do not change it unless
+  //  you know what you're doing. Also, if adding a new member here make sure
+  //  that the declaration occurs AFTER things it depends on as destruction
+  //  happens in reverse order of declaration.
+
   scoped_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
   // Keep |prefs_| on top for destruction order because |extension_prefs_|,
   // |net_pref_observer_|, |web_resource_service_|, and |io_data_| store
@@ -211,9 +218,16 @@ class ProfileImpl : public Profile,
   scoped_ptr<ExtensionPrefs> extension_prefs_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_refptr<UserScriptMaster> user_script_master_;
+
+  ProfileImplIOData::Handle io_data_;
+
   scoped_refptr<ExtensionDevToolsManager> extension_devtools_manager_;
   // extension_info_map_ needs to outlive extension_process_manager_.
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  // |extension_process_manager_| must be destroyed before |io_data_|.
+  // While |extension_process_manager_| still lives, we handle incoming
+  // resource requests from extension processes and those require access
+  // to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<ExtensionEventRouter> extension_event_router_;
@@ -230,8 +244,6 @@ class ProfileImpl : public Profile,
   scoped_ptr<TokenService> token_service_;
   scoped_ptr<ProfileSyncComponentsFactory> profile_sync_factory_;
   scoped_ptr<ProfileSyncService> sync_service_;
-
-  ProfileImplIOData::Handle io_data_;
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 

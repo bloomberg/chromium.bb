@@ -502,7 +502,7 @@ std::string BrowserCloseTest::DownloadsCloseCheckCase::DebugString() const {
   return result;
 }
 
-// The following test is split into three chunks to reduce the chance
+// The following test is split into six chunks to reduce the chance
 // of hitting the 25s timeout.
 
 IN_PROC_BROWSER_TEST_F(BrowserCloseTest, DownloadsCloseCheck_0) {
