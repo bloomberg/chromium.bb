@@ -52,15 +52,12 @@ class LoginUserTest : public LoginTestBase {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
     LoginTestBase::SetUpInProcessBrowserTestFixture();
-    // TODO(nkostylev): Remove this once Aura build includes ScreenLocker.
-#if !defined(USE_AURA)
     EXPECT_CALL(*mock_screen_lock_library_, AddObserver(_))
        .Times(AtLeast(1))
        .WillRepeatedly(Return());
     EXPECT_CALL(*mock_screen_lock_library_, RemoveObserver(_))
        .Times(AtLeast(1))
        .WillRepeatedly(Return());
-#endif
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
