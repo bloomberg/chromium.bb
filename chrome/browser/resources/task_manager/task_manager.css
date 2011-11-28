@@ -34,7 +34,6 @@ body {
   cursor: default;
   font-size: 15px;
   font-weight: bold;
-  margin-bottom: 4px;
   padding: 0px 12px 4px 12px;
 }
 
@@ -44,7 +43,7 @@ body {
   border: 1px #aaa solid;
   border-radius: 3px;
   display: -webkit-box;
-  margin: 4px 4px 2px;
+  margin: 12px 12px 6px;
 }
 
 /* Column text containers. */
@@ -143,7 +142,7 @@ body {
 /* Container for footer area. */
 .dialog-footer {
   display: -webkit-box;
-  margin: 2px 4px 4px;
+  margin: 6px 12px 12px;
 }
 
 /* Container for the ok/cancel buttons. */
