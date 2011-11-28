@@ -4,6 +4,7 @@
 
 #include "base/environment.h"
 #include "base/test/test_timeouts.h"
+#include "content/renderer/media/audio_hardware.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/test/webrtc_audio_device_test.h"
 #include "media/audio/audio_manager.h"
@@ -66,6 +67,26 @@ bool IsRunningHeadless() {
     return true;
   return false;
 }
+
+// The WebRTC audio client only supports 44.1 and 48.0 kHz.
+// This method returns false if a non-supported rate is detected on the
+// input or output side.
+// TODO(henrika): add support for automatic fallback to Windows Wave audio
+// if a non-supported rate is detected. It is probably better to detect
+// invalid audio settings by actually trying to open the audio streams instead
+// of relying on hard coded conditions.
+bool HardwareSampleRatesAreValid() {
+  int output_sample_rate =
+      static_cast<int>(audio_hardware::GetOutputSampleRate());
+  int input_sample_rate =
+      static_cast<int>(audio_hardware::GetInputSampleRate());
+  bool rates_are_valid =
+      ((output_sample_rate == 44100 || output_sample_rate == 48000) &&
+       (input_sample_rate == 44100 || input_sample_rate == 48000));
+  DLOG_IF(WARNING, !rates_are_valid) << "Non-supported sample rate detected.";
+  return rates_are_valid;
+}
+
 
 class WebRTCMediaProcessImpl : public webrtc::VoEMediaProcess {
  public:
@@ -178,6 +199,9 @@ TEST_F(WebRTCAudioDeviceTest, StartPlayout) {
   AudioUtil audio_util;
   SetAudioUtilCallback(&audio_util);
 
+  if (!HardwareSampleRatesAreValid())
+    return;
+
   EXPECT_CALL(media_observer(),
       OnSetAudioStreamStatus(_, 1, StrEq("created"))).Times(1);
   EXPECT_CALL(media_observer(),
@@ -249,6 +273,9 @@ TEST_F(WebRTCAudioDeviceTest, StartRecording) {
   AudioUtil audio_util;
   SetAudioUtilCallback(&audio_util);
 
+  if (!HardwareSampleRatesAreValid())
+    return;
+
   // TODO(tommi): extend MediaObserver and MockMediaObserver with support
   // for new interfaces, like OnSetAudioStreamRecording(). When done, add
   // EXPECT_CALL() macros here.
@@ -318,6 +345,9 @@ TEST_F(WebRTCAudioDeviceTest, PlayLocalFile) {
   AudioUtil audio_util;
   SetAudioUtilCallback(&audio_util);
 
+  if (!HardwareSampleRatesAreValid())
+    return;
+
   EXPECT_CALL(media_observer(),
       OnSetAudioStreamStatus(_, 1, StrEq("created"))).Times(1);
   EXPECT_CALL(media_observer(),
@@ -374,17 +404,20 @@ TEST_F(WebRTCAudioDeviceTest, FullDuplexAudio) {
   if (IsRunningHeadless())
     return;
 
-  EXPECT_CALL(media_observer(),
-      OnSetAudioStreamStatus(_, 1, StrEq("created")));
-  EXPECT_CALL(media_observer(),
-      OnSetAudioStreamPlaying(_, 1, true));
-  EXPECT_CALL(media_observer(),
-      OnSetAudioStreamStatus(_, 1, StrEq("closed")));
-  EXPECT_CALL(media_observer(),
-      OnDeleteAudioStream(_, 1)).Times(AnyNumber());
-
   AudioUtil audio_util;
   SetAudioUtilCallback(&audio_util);
+
+  if (!HardwareSampleRatesAreValid())
+    return;
+
+  EXPECT_CALL(media_observer(),
+    OnSetAudioStreamStatus(_, 1, StrEq("created")));
+  EXPECT_CALL(media_observer(),
+    OnSetAudioStreamPlaying(_, 1, true));
+  EXPECT_CALL(media_observer(),
+    OnSetAudioStreamStatus(_, 1, StrEq("closed")));
+  EXPECT_CALL(media_observer(),
+    OnDeleteAudioStream(_, 1)).Times(AnyNumber());
 
   scoped_refptr<WebRtcAudioDeviceImpl> audio_device(
       new WebRtcAudioDeviceImpl());
