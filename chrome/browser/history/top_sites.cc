@@ -59,6 +59,10 @@ static const int64 kUpdateIntervalSecs = 15;
 static const int64 kMinUpdateIntervalMinutes = 1;
 static const int64 kMaxUpdateIntervalMinutes = 60;
 
+// Use 100 quality (highest quality) because we're very sensitive to
+// artifacts for these small sized, highly detailed images.
+static const int kTopSitesImageQuality = 100;
+
 const TopSites::PrepopulatedPage kPrepopulatedPages[] = {
   { IDS_CHROME_WELCOME_URL, IDS_NEW_TAB_CHROME_WELCOME_PAGE_TITLE,
     IDR_PRODUCT_LOGO_16, IDR_NEWTAB_CHROME_WELCOME_PAGE_THUMBNAIL,
@@ -619,7 +623,7 @@ bool TopSites::EncodeBitmap(gfx::Image* bitmap,
     return false;
   *bytes = new RefCountedBytes();
   std::vector<unsigned char> data;
-  if (!gfx::JPEGEncodedDataFromImage(*bitmap, &data))
+  if (!gfx::JPEGEncodedDataFromImage(*bitmap, kTopSitesImageQuality, &data))
     return false;
 
   // As we're going to cache this data, make sure the vector is only as big as

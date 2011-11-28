@@ -28,8 +28,10 @@ UI_EXPORT bool PNGEncodedDataFromImage(const Image& image,
                                        std::vector<unsigned char>* dst);
 
 // Fills the |dst| vector with JPEG-encoded bytes based on the given Image.
+// |quality| determines the compression level, 0 == lowest, 100 == highest.
 // Returns true if the Image was encoded successfully.
 UI_EXPORT bool JPEGEncodedDataFromImage(const Image& image,
+                                        int quality,
                                         std::vector<unsigned char>* dst);
 
 }

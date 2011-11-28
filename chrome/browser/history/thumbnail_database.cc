@@ -42,6 +42,10 @@ namespace history {
 static const int kCurrentVersionNumber = 5;
 static const int kCompatibleVersionNumber = 5;
 
+// Use 90 quality (out of 100) which is pretty high, because we're very
+// sensitive to artifacts for these small sized, highly detailed images.
+static const int kImageQuality = 90;
+
 ThumbnailDatabase::ThumbnailDatabase()
     : history_publisher_(NULL),
       use_top_sites_(false) {
@@ -262,7 +266,8 @@ void ThumbnailDatabase::SetPageThumbnail(
         return;
 
       std::vector<unsigned char> jpeg_data;
-      bool encoded = gfx::JPEGEncodedDataFromImage(*thumbnail, &jpeg_data);
+      bool encoded = gfx::JPEGEncodedDataFromImage(*thumbnail, kImageQuality,
+                                                   &jpeg_data);
       if (encoded) {
         statement.BindInt64(0, id);
         statement.BindDouble(1, score.boring_score);

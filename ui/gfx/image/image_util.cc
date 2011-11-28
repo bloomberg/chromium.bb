@@ -26,7 +26,7 @@ bool PNGEncodedDataFromImage(const Image& image,
   return gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, dst);
 }
 
-bool JPEGEncodedDataFromImage(const Image& image,
+bool JPEGEncodedDataFromImage(const Image& image, int quality,
                               std::vector<unsigned char>* dst) {
   const SkBitmap& bitmap = image;
   SkAutoLockPixels bitmap_lock(bitmap);
@@ -34,14 +34,11 @@ bool JPEGEncodedDataFromImage(const Image& image,
   if (!bitmap.readyToDraw())
     return false;
 
-  // Use 90 quality (out of 100) which is pretty high, because
-  // we're very sensitive to artifacts for these small sized,
-  // highly detailed images.
   return gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
           gfx::JPEGCodec::FORMAT_BGRA, bitmap.width(),
           bitmap.height(),
-          static_cast<int>(bitmap.rowBytes()), 90,
+          static_cast<int>(bitmap.rowBytes()), quality,
           dst);
 }
 
