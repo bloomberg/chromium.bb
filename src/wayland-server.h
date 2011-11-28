@@ -180,10 +180,27 @@ struct wl_input_device {
 	struct wl_listener grab_listener;
 };
 
+/*
+ * Post an event to the client's object referred to by 'resource'.
+ * 'opcode' is the event number generated from the protocol XML
+ * description (the event name). The variable arguments are the event
+ * parameters, in the order they appear in the protocol XML specification.
+ *
+ * The variable arguments' types are:
+ * - type=uint: 	uint32_t
+ * - type=int:		int32_t
+ * - type=string:	(const char *) to a nil-terminated string
+ * - type=array:	(struct wl_array *)
+ * - type=fd:		int, that is an open file descriptor
+ * - type=new_id:	(struct wl_object *) or (struct wl_resource *)
+ * - type=object:	(struct wl_object *) or (struct wl_resource *)
+ */
 void wl_resource_post_event(struct wl_resource *resource,
 			    uint32_t opcode, ...);
 void wl_resource_queue_event(struct wl_resource *resource,
 			     uint32_t opcode, ...);
+
+/* msg is a printf format string, variable args are its args. */
 void wl_resource_post_error(struct wl_resource *resource,
 			    uint32_t code, const char *msg, ...);
 void wl_resource_post_no_memory(struct wl_resource *resource);
