@@ -539,13 +539,27 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPageWithNoJavaScript) {
   CloseDevToolsWindow();
 }
 
+#if defined(OS_MACOSX)
+#define MAYBE_InspectSharedWorker DISABLED_InspectSharedWorker
+#else
+#define MAYBE_InspectSharedWorker InspectSharedWorker
+#endif
 // Flakily fails with 25s timeout: http://crbug.com/89845
-IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, DISABLED_InspectSharedWorker) {
+IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, MAYBE_InspectSharedWorker) {
   RunTest("testSharedWorker", kSharedWorkerTestPage);
 }
 
+// http://crbug.com/100538
+#if defined(OS_MACOSX)
+#define MAYBE_PauseInSharedWorkerInitialization DISABLED_PauseInSharedWorkerInitialization
+#elif defined(OS_WIN)
+#define MAYBE_PauseInSharedWorkerInitialization FLAKY_PauseInSharedWorkerInitialization
+#else
+#define MAYBE_PauseInSharedWorkerInitialization PauseInSharedWorkerInitialization
+#endif
+// See http://crbug.com/100538
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest,
-                       DISABLED_PauseInSharedWorkerInitialization) {
+                       MAYBE_PauseInSharedWorkerInitialization) {
     ASSERT_TRUE(test_server()->Start());
     GURL url = test_server()->GetURL(kReloadSharedWorkerTestPage);
     ui_test_utils::NavigateToURL(browser(), url);
