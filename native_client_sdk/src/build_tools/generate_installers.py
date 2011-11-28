@@ -83,19 +83,28 @@ def main(argv):
   else:
     all_contents += installer_contents.LINUX_ONLY_CONTENTS
 
-  all_contents_string = string.join(
+  total_contents = (
       installer_contents.GetFilesFromPathList(all_contents) +
-      installer_contents.GetDirectoriesFromPathList(all_contents),
-      ' ')
-  tar_cf = subprocess.Popen('tar cf - %s' % all_contents_string,
-                            bufsize=-1,
-                            cwd=tar_src_dir, env=env, shell=True,
-                            stdout=subprocess.PIPE)
-  tar_xf = subprocess.Popen('tar xfv -',
-                            cwd=installer_dir, env=env, shell=True,
-                            stdin=tar_cf.stdout)
-  assert tar_xf.wait() == 0
-  assert tar_cf.poll() == 0
+      installer_contents.GetDirectoriesFromPathList(all_contents)
+  )
+  for item in total_contents:
+    itemf = installer_contents.FilterPathLayout(item)
+    src = itemf[0]
+    src_dir = os.path.join(tar_src_dir, itemf[1])
+    dst_dir = os.path.join(installer_dir, itemf[2])
+    print 'Tarring "%s" in "%s" then untarring in "%s"' % (
+      src, src_dir, dst_dir)
+    if not os.path.exists(dst_dir):
+      os.makedirs(dst_dir)
+    tar_cf = subprocess.Popen('tar cf - %s' % src,
+                              bufsize=-1,
+                              cwd=src_dir, env=env, shell=True,
+                              stdout=subprocess.PIPE)
+    tar_xf = subprocess.Popen('tar xfv -',
+                              cwd=dst_dir, env=env, shell=True,
+                              stdin=tar_cf.stdout)
+    assert tar_xf.wait() == 0
+    assert tar_cf.poll() == 0
 
   # This loop prunes the result of os.walk() at each excluded dir, so that it
   # doesn't descend into the excluded dir.

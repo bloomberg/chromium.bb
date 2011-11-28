@@ -38,7 +38,7 @@ def main(argv):
   # Create a temporary directory using the version string, then move the
   # contents of src to that directory, clean the directory of unwanted
   # stuff and finally create an installer.
-  temp_dir = os.path.join(script_dir, 'installers_temp')
+  temp_dir = '/naclsdk_temp'
   installer_dir = os.path.join(temp_dir, version_dir)
   bot.Print('generate_windows_installer chose installer directory: %s' %
             (installer_dir))
@@ -53,12 +53,15 @@ def main(argv):
   env['NACL_TARGET_PLATFORM'] = '.'  # Use the repo's toolchain.
 
   # Build the experimental projects.
-  bot.BuildStep('build experimental')
-  bot.Print('generate_windows_installer is building the experimental projects.')
-  experimental_path = os.path.join(home_dir, 'src', 'experimental')
-  scons_path = os.path.join(experimental_path, 'scons.bat')
-  scons_cmd = scons_path + ' --nacl-platform="."'
-  subprocess.check_call(scons_cmd, cwd=experimental_path, env=env)
+  # DISABLED FOR NOW.
+  if False:
+    bot.BuildStep('build experimental')
+    bot.Print('generate_windows_installer is '
+              'building the experimental projects.')
+    experimental_path = os.path.join(home_dir, 'src', 'experimental')
+    scons_path = os.path.join(experimental_path, 'scons.bat')
+    scons_cmd = scons_path + ' --nacl-platform="."'
+    subprocess.check_call(scons_cmd, cwd=experimental_path, env=env)
 
   # On windows we use copytree to copy the SDK into the build location
   # because there is no native tar and using cygwin's version has proven
@@ -74,7 +77,11 @@ def main(argv):
                  installer_contents.WINDOWS_ONLY_CONTENTS
   for copy_source_dir in installer_contents.GetDirectoriesFromPathList(
       all_contents):
-    copy_target_dir = os.path.join(installer_dir, copy_source_dir)
+    itemf = installer_contents.FilterPathLayout(copy_source_dir)
+    dst_dir = os.path.join(installer_dir, itemf[2])
+    if not os.path.exists(dst_dir):
+      os.makedirs(dst_dir)
+    copy_target_dir = os.path.join(dst_dir, itemf[0])
     bot.Print("Copying %s to %s" % (copy_source_dir, copy_target_dir))
     shutil.copytree(copy_source_dir,
                     copy_target_dir,
@@ -82,7 +89,8 @@ def main(argv):
                     ignore=shutil.ignore_patterns(*IGNORE_PATTERN))
   for copy_source_file in installer_contents.GetFilesFromPathList(
       all_contents):
-    copy_target_file = os.path.join(installer_dir, copy_source_file)
+    itemf = installer_contents.FilterPathLayout(copy_source_file)
+    copy_target_file = os.path.join(installer_dir, itemf[2], itemf[0])
     bot.Print("Copying %s to %s" % (copy_source_file, copy_target_file))
     if not os.path.exists(os.path.dirname(copy_target_file)):
       os.makedirs(os.path.dirname(copy_target_file))

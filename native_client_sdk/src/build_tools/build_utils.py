@@ -110,7 +110,12 @@ def NormalizeToolchain(toolchain=TOOLCHAIN_AUTODETECT,
                        variant=nacl_utils.DEFAULT_TOOLCHAIN_VARIANT):
   if toolchain == TOOLCHAIN_AUTODETECT:
     if base_dir is None:
-      base_dir = os.getenv('NACL_SDK_ROOT', '')
+      script_path = os.path.abspath(__file__)
+      script_dir = os.path.dirname(script_path)
+      sdk_src_dir = os.path.dirname(script_dir)
+      sdk_dir = os.path.dirname(sdk_src_dir)
+      src_dir = os.path.dirname(sdk_dir)
+      base_dir = os.path.join(src_dir, 'native_client')
     normalized_toolchain = nacl_utils.ToolchainPath(base_dir=base_dir,
                                                     arch=arch,
                                                     variant=variant)
@@ -235,11 +240,7 @@ class BotAnnotator:
     self._stream.flush()
 
   def BuildStep(self, name):
-    self.Print("BUILD_STEP %s" % name)
-    # mball: Disabling buildbot annotations because it's more confusing than
-    #   useful when running multiple jobs simultaneously.  To re-enable
-    #   annotations, using the following line instead of the previous:
-    # self.Print("@@@BUILD_STEP %s@@@" % name)
+    self.Print("@@@BUILD_STEP %s@@@" % name)
 
   def BuildStepFailure(self):
     '''Signal a failure in the current build step to the annotator'''

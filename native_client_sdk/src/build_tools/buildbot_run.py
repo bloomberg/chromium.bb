@@ -10,8 +10,10 @@ import subprocess
 import sys
 
 # Add scons to the python path (as nacl_utils.py requires it).
-PARENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(PARENT_DIR, 'third_party/scons-2.0.1/engine'))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
+SRC_DIR = os.path.dirname(os.path.dirname(SDK_SRC_DIR))
+sys.path.append(os.path.join(SRC_DIR, 'third_party/scons-2.0.1/engine'))
 
 import build_utils
 
@@ -58,11 +60,19 @@ def main(argv):
     sys.stdout.flush()
     subprocess.check_call(' '.join(parameters), shell=True, cwd=parent_dir)
 
+  print '@@@BUILD_STEP install third party@@@'
+  sys.stdout.flush()
+  subprocess.check_call(' '.join([
+      sys.executable,
+     'build_tools/install_third_party.py',
+     '--all-toolchains',
+     ]), shell=True, cwd=parent_dir)
+
   print '@@@BUILD_STEP generate sdk@@@'
   sys.stdout.flush()
 
   Run(params + ['-c'])
-  Run(params + ['bot'])
+  Run(params + ['bot', '-j1'])
 
   # Archive on non-trybots.
   if '-sdk' in os.environ.get('BUILDBOT_BUILDERNAME', ''):

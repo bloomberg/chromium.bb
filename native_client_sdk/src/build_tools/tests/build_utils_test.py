@@ -45,7 +45,7 @@ class TestBuildUtils(unittest.TestCase):
     stdout_mock = self.mock_factory.CreateMock(sys.stdout)
     stdout_mock.write("My Bot Message\n")
     stdout_mock.flush()
-    stdout_mock.write("BUILD_STEP MyBuildStep\n")
+    stdout_mock.write("@@@BUILD_STEP MyBuildStep@@@\n")
     stdout_mock.flush()
     self.mock_factory.ReplayAll()
     bot = build_utils.BotAnnotator(stdout_mock)

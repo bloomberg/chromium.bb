@@ -1,0 +1,8 @@
+#!/bin/bash
+
+gcl try $* \
+  -b naclsdkm-linux \
+  -b naclsdkm-mac \
+  -b naclsdkm-windows32 \
+  -b naclsdkm-windows64 \
+  -S svn://svn.chromium.org/chrome-try/try-nacl

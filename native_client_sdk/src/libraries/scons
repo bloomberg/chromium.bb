@@ -6,6 +6,7 @@
 
 readonly SCRIPT_DIR="$(dirname "$0")"
 readonly SCRIPT_DIR_ABS="$(cd "${SCRIPT_DIR}" ; pwd -P)"
+readonly SRC_DIR="$(dirname $(dirname $(dirname ${SCRIPT_DIR_ABS})))"
 
 # NACL_SDK_ROOT must be set.
 if [ x"${NACL_SDK_ROOT}"x == "xx" ] ; then
@@ -24,15 +25,23 @@ if [ x"${NACL_TARGET_PLATFORM}"x == "xx" ] ; then
 fi
 
 readonly NACL_PLATFORM_DIR="${NACL_SDK_ROOT}/${NACL_TARGET_PLATFORM}"
-readonly BASE_SCRIPT="${NACL_PLATFORM_DIR}/third_party/scons-2.0.1/script/scons"
 
-export SCONS_LIB_DIR="${NACL_PLATFORM_DIR}/third_party/scons-2.0.1/engine"
-export PYTHONPATH="${NACL_PLATFORM_DIR}/third_party/scons-2.0.1/engine:${NACL_PLATFORM_DIR}/build_tools"
+SCONS_DIR="${NACL_PLATFORM_DIR}/third_party/scons-2.0.1"
+
+if [ ! -f ${SCONS_DIR}/script/scons ]; then
+  SCONS_DIR="${SRC_DIR}/third_party/scons-2.0.1"
+fi
+
+BASE_SCRIPT="${SCONS_DIR}/script/scons"
+
+export SCONS_LIB_DIR="${SCONS_DIR}/engine"
+export PYTHONPATH="${SCONS_LIB_DIR}"
+export PYTHONPATH="${PYTHONPATH}:${NACL_PLATFORM_DIR}/build_tools"
+
 # We have to do this because scons overrides PYTHONPATH and does not preserve
 # what is provided by the OS.  The custom variable name won't be overwritten.
-export PYMOX="${NACL_PLATFORM_DIR}/third_party/pymox"
+export PYMOX="${NACL_PLATFORM_DIR}/third_party/pymox/src"
 
 "${BASE_SCRIPT}" --file=build.scons \
-                 --site-dir="${NACL_PLATFORM_DIR}/build_tools/nacl_sdk_scons" \
+                 --site-dir="${SCRIPT_DIR_ABS}/../build_tools/nacl_sdk_scons" \
                  $*
-

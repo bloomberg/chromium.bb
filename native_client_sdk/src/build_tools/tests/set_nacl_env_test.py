@@ -18,6 +18,8 @@ from build_tools.sdk_tools import set_nacl_env
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+SRC_DIR = os.path.dirname(os.path.dirname(SDK_ROOT_DIR))
+NACL_DIR = os.path.join(SRC_DIR, 'native_client')
 
 
 class FakeOptions(object):
@@ -31,14 +33,14 @@ class TestSetNaclEnv(unittest.TestCase):
     self._options = FakeOptions()
     self._options.host = 'mac'
     self._options.lib_variant = 'newlib'
-    self._options.sdk_root = SDK_ROOT_DIR
+    self._options.sdk_root = NACL_DIR
     self._options.sdk_platform = 'pepper_17'
     self._options.build_type = 'debug'
     self._options.no_ppapi = False
     self._options.merge = False
 
     self._env = {}
-    self._env['NACL_SDK_ROOT'] = SDK_ROOT_DIR
+    self._env['NACL_SDK_ROOT'] = NACL_DIR
 
     self._temp_dir = tempfile.mkdtemp(prefix='tmp_set_nacl_env_test')
 
