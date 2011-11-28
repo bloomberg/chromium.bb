@@ -42,6 +42,10 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
+        ['OS == "android"', {
+          # Don't put the 'chrome' target in 'all' on android
+          'suppress_wildcard': 1,
+        }],
         ['os_posix == 1 and OS != "mac"', {
           'actions': [
             {
