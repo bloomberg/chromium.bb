@@ -4,6 +4,7 @@
 
 #include "chrome/browser/automation/automation_provider.h"
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/trace_event.h"
 #include "base/json/json_reader.h"
@@ -32,20 +33,9 @@
 // This task just adds another task to the event queue.  This is useful if
 // you want to ensure that any tasks added to the event queue after this one
 // have already been processed by the time |task| is run.
-class InvokeTaskLaterTask : public Task {
- public:
-  explicit InvokeTaskLaterTask(Task* task) : task_(task) {}
-  virtual ~InvokeTaskLaterTask() {}
-
-  virtual void Run() {
-    MessageLoop::current()->PostTask(FROM_HERE, task_);
-  }
-
- private:
-  Task* task_;
-
-  DISALLOW_COPY_AND_ASSIGN(InvokeTaskLaterTask);
-};
+void InvokeTaskLater(Task* task) {
+  MessageLoop::current()->PostTask(FROM_HERE, task);
+}
 
 static void MoveMouse(const POINT& point) {
   SetCursorPos(point.x, point.y);
@@ -222,8 +212,9 @@ void AutomationProvider::WindowSimulateDrag(
     SendMessage(top_level_hwnd, up_message, wparam_flags,
                 MAKELPARAM(end.x, end.y));
 
-    MessageLoop::current()->PostTask(FROM_HERE, new InvokeTaskLaterTask(
-        new WindowDragResponseTask(this, reply_message)));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&InvokeTaskLater,
+                              new WindowDragResponseTask(this, reply_message)));
   } else {
     AutomationMsg_WindowDrag::WriteReplyParams(reply_message, false);
     Send(reply_message);

@@ -5,6 +5,7 @@
 #import "chrome/browser/app_controller_mac.h"
 
 #include "base/auto_reset.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/mac/foundation_util.h"
@@ -132,17 +133,12 @@ CFStringRef BaseBundleID_CFString() {
   return base::mac::NSToCFCast(base_bundle_id);
 }
 
-// This task synchronizes preferences (under "org.chromium.Chromium" or
+// This callback synchronizes preferences (under "org.chromium.Chromium" or
 // "com.google.Chrome"), in particular, writes them out to disk.
-class PrefsSyncTask : public Task {
- public:
-  PrefsSyncTask() {}
-  virtual ~PrefsSyncTask() {}
-  virtual void Run() {
-    if (!CFPreferencesAppSynchronize(BaseBundleID_CFString()))
-      LOG(WARNING) << "Error recording application bundle path.";
-  }
-};
+void PrefsSyncCallback() {
+  if (!CFPreferencesAppSynchronize(BaseBundleID_CFString()))
+    LOG(WARNING) << "Error recording application bundle path.";
+}
 
 // Record the location of the application bundle (containing the main framework)
 // from which Chromium was loaded. This is used by app mode shims to find
@@ -160,7 +156,7 @@ void RecordLastRunAppBundlePath() {
 
   // Sync after a delay avoid I/O contention on startup; 1500 ms is plenty.
   BrowserThread::PostDelayedTask(BrowserThread::FILE, FROM_HERE,
-                                 new PrefsSyncTask(), 1500);
+                                 base::Bind(&PrefsSyncCallback), 1500);
 }
 
 }  // anonymous namespace

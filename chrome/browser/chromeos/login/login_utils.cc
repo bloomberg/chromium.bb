@@ -103,74 +103,63 @@ const char kServiceScopeChromeOS[] =
 
 const char kServiceScopeChromeOSDeviceManagement[] =
     "https://www.googleapis.com/auth/chromeosdevicemanagement";
-}  // namespace
+
+class InitializeCookieMonsterHelper {
+ public:
+  explicit InitializeCookieMonsterHelper(
+      net::URLRequestContextGetter* new_context)
+          : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(base::Bind(
+              &InitializeCookieMonsterHelper::InitializeCookieMonster,
+              base::Unretained(this)))),
+            new_context_(new_context) {
+  }
+
+  const net::CookieMonster::GetCookieListCallback& callback() const {
+    return callback_;
+  }
+
+ private:
+  void InitializeCookieMonster(const net::CookieList& cookies) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    net::CookieStore* new_store =
+        new_context_->GetURLRequestContext()->cookie_store();
+    net::CookieMonster* new_monster = new_store->GetCookieMonster();
+
+    if (!new_monster->InitializeFrom(cookies))
+      LOG(WARNING) << "Failed initial cookie transfer.";
+  }
+
+  net::CookieMonster::GetCookieListCallback callback_;
+  scoped_refptr<net::URLRequestContextGetter> new_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitializeCookieMonsterHelper);
+};
 
 // Transfers initial set of Profile cookies from the default profile.
-class TransferDefaultCookiesOnIOThreadTask : public Task {
- public:
-  TransferDefaultCookiesOnIOThreadTask(
-      net::URLRequestContextGetter* auth_context,
-      net::URLRequestContextGetter* new_context)
-          : auth_context_(auth_context),
-            new_context_(new_context) {}
-  virtual ~TransferDefaultCookiesOnIOThreadTask() {}
+void TransferDefaultCookiesOnIOThread(
+    net::URLRequestContextGetter* auth_context,
+    net::URLRequestContextGetter* new_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::CookieStore* default_store =
+      auth_context->GetURLRequestContext()->cookie_store();
 
-  // Task override.
-  virtual void Run() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    net::CookieStore* default_store =
-        auth_context_->GetURLRequestContext()->cookie_store();
-    net::CookieMonster* default_monster = default_store->GetCookieMonster();
-    default_monster->SetKeepExpiredCookies();
-    default_monster->GetAllCookiesAsync(
-        base::Bind(
-            &TransferDefaultCookiesOnIOThreadTask::InitializeCookieMonster,
-            base::Unretained(this)));
-  }
+  InitializeCookieMonsterHelper helper(new_context);
+  net::CookieMonster* default_monster = default_store->GetCookieMonster();
+  default_monster->SetKeepExpiredCookies();
+  default_monster->GetAllCookiesAsync(helper.callback());
+}
 
-  void InitializeCookieMonster(const net::CookieList& cookies) {
-     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-     net::CookieStore* new_store =
-         new_context_->GetURLRequestContext()->cookie_store();
-     net::CookieMonster* new_monster = new_store->GetCookieMonster();
+void TransferDefaultAuthCacheOnIOThread(
+    net::URLRequestContextGetter* auth_context,
+      net::URLRequestContextGetter* new_context) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  net::HttpAuthCache* new_cache = new_context->GetURLRequestContext()->
+      http_transaction_factory()->GetSession()->http_auth_cache();
+  new_cache->UpdateAllFrom(*auth_context->GetURLRequestContext()->
+      http_transaction_factory()->GetSession()->http_auth_cache());
+}
 
-    if (!new_monster->InitializeFrom(cookies)) {
-      LOG(WARNING) << "Failed initial cookie transfer.";
-    }
-  }
-
- private:
-  net::URLRequestContextGetter* auth_context_;
-  net::URLRequestContextGetter* new_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransferDefaultCookiesOnIOThreadTask);
-};
-
-// Transfers initial HTTP proxy authentication from the default profile.
-class TransferDefaultAuthCacheOnIOThreadTask : public Task {
- public:
-  TransferDefaultAuthCacheOnIOThreadTask(
-      net::URLRequestContextGetter* auth_context,
-      net::URLRequestContextGetter* new_context)
-          : auth_context_(auth_context),
-            new_context_(new_context) {}
-  virtual ~TransferDefaultAuthCacheOnIOThreadTask() {}
-
-  // Task override.
-  virtual void Run() OVERRIDE {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    net::HttpAuthCache* new_cache = new_context_->GetURLRequestContext()->
-        http_transaction_factory()->GetSession()->http_auth_cache();
-    new_cache->UpdateAllFrom(*auth_context_->GetURLRequestContext()->
-        http_transaction_factory()->GetSession()->http_auth_cache());
-  }
-
- private:
-  net::URLRequestContextGetter* auth_context_;
-  net::URLRequestContextGetter* new_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(TransferDefaultAuthCacheOnIOThreadTask);
-};
+}  // namespace
 
 // Verifies OAuth1 access token by performing OAuthLogin. Fetches user cookies
 // on successful OAuth authentication.
@@ -514,7 +503,7 @@ class JobRestartRequest
       // constructor.
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          NewRunnableMethod(this, &JobRestartRequest::RestartJob));
+          base::Bind(&JobRestartRequest::RestartJob, this));
       MessageLoop::current()->AssertIdle();
     }
   }
@@ -1142,18 +1131,20 @@ BackgroundView* LoginUtilsImpl::GetBackgroundView() {
 
 void LoginUtilsImpl::TransferDefaultCookies(Profile* default_profile,
                                             Profile* profile) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          new TransferDefaultCookiesOnIOThreadTask(
-                              default_profile->GetRequestContext(),
-                              profile->GetRequestContext()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&TransferDefaultCookiesOnIOThread,
+                 make_scoped_refptr(default_profile->GetRequestContext()),
+                 make_scoped_refptr(profile->GetRequestContext())));
 }
 
 void LoginUtilsImpl::TransferDefaultAuthCache(Profile* default_profile,
                                               Profile* profile) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          new TransferDefaultAuthCacheOnIOThreadTask(
-                              default_profile->GetRequestContext(),
-                              profile->GetRequestContext()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&TransferDefaultAuthCacheOnIOThread,
+                 make_scoped_refptr(default_profile->GetRequestContext()),
+                 make_scoped_refptr(profile->GetRequestContext())));
 }
 
 void LoginUtilsImpl::OnGetOAuthTokenSuccess(const std::string& oauth_token) {

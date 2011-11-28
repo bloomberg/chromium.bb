@@ -108,212 +108,155 @@ HRESULT CallDwmInvalidateIconicBitmaps(HWND window) {
 
 namespace {
 
-// Tasks used in this file.
-// This file uses three I/O tasks to implement AeroPeek:
-// * RegisterThumbnailTask
-//   Register a tab into the thumbnail list of Windows.
-// * SendThumbnailTask
-//   Create a thumbnail image and send it to Windows.
-// * SendLivePreviewTask
-//   Create a preview image and send it to Windows.
-// These I/O tasks indirectly access the specified tab through the
+// These callbacks indirectly access the specified tab through the
 // AeroPeekWindowDelegate interface to prevent these tasks from accessing the
 // deleted tabs.
 
-// A task that registers a thumbnail window as a child of the specified
+// A callback that registers a thumbnail window as a child of the specified
 // browser application.
-class RegisterThumbnailTask : public Task {
- public:
-  RegisterThumbnailTask(HWND frame_window, HWND window, bool active)
-      : frame_window_(frame_window),
-        window_(window),
-        active_(active) {
+void RegisterThumbnailCallback(HWND frame_window, HWND window, bool active) {
+  // Set the App ID of the browser for this place-holder window to tell
+  // that this window is a child of the browser application, i.e. to tell
+  // that this thumbnail window should be displayed when we hover the
+  // browser icon in the taskbar.
+  // TODO(mattm): This should use ShellIntegration::GetChromiumAppId to work
+  // properly with multiple profiles.
+  ui::win::SetAppIdForWindow(
+      BrowserDistribution::GetDistribution()->GetBrowserAppId(), window);
+
+  // Register this place-holder window to the taskbar as a child of
+  // the browser window and add it to the end of its tab list.
+  // Correctly, this registration should be called after this browser window
+  // receives a registered window message "TaskbarButtonCreated", which
+  // means that Windows creates a taskbar button for this window in its
+  // taskbar. But it seems to be OK to register it without checking the
+  // message.
+  // TODO(hbono): we need to check this registered message?
+  base::win::ScopedComPtr<ITaskbarList3> taskbar;
+  if (FAILED(taskbar.CreateInstance(CLSID_TaskbarList, NULL,
+                                    CLSCTX_INPROC_SERVER)) ||
+      FAILED(taskbar->HrInit()) ||
+      FAILED(taskbar->RegisterTab(window, frame_window)) ||
+      FAILED(taskbar->SetTabOrder(window, NULL)))
+    return;
+  if (active)
+    taskbar->SetTabActive(window, frame_window, 0);
+}
+
+// Calculates the thumbnail size sent to Windows so we can preserve the pixel
+// aspect-ratio of the source bitmap. Since Windows returns an error when we
+// send an image bigger than the given size, we decrease either the thumbnail
+// width or the thumbnail height so we can fit the longer edge of the source
+// window.
+void GetThumbnailSize(const gfx::Size& aeropeek_size, int width, int height,
+                      gfx::Size* output) {
+  float thumbnail_width = static_cast<float>(aeropeek_size.width());
+  float thumbnail_height = static_cast<float>(aeropeek_size.height());
+  float source_width = static_cast<float>(width);
+  float source_height = static_cast<float>(height);
+  DCHECK(source_width && source_height);
+
+  float ratio_width = thumbnail_width / source_width;
+  float ratio_height = thumbnail_height / source_height;
+  if (ratio_width > ratio_height) {
+    thumbnail_width = source_width * ratio_height;
+  } else {
+    thumbnail_height = source_height * ratio_width;
   }
 
- private:
-  void Run() {
-    // Set the App ID of the browser for this place-holder window to tell
-    // that this window is a child of the browser application, i.e. to tell
-    // that this thumbnail window should be displayed when we hover the
-    // browser icon in the taskbar.
-    // TODO(mattm): This should use ShellIntegration::GetChromiumAppId to work
-    // properly with multiple profiles.
-    ui::win::SetAppIdForWindow(
-        BrowserDistribution::GetDistribution()->GetBrowserAppId(), window_);
+  output->set_width(static_cast<int>(thumbnail_width));
+  output->set_height(static_cast<int>(thumbnail_height));
+}
 
-    // Register this place-holder window to the taskbar as a child of
-    // the browser window and add it to the end of its tab list.
-    // Correctly, this registration should be called after this browser window
-    // receives a registered window message "TaskbarButtonCreated", which
-    // means that Windows creates a taskbar button for this window in its
-    // taskbar. But it seems to be OK to register it without checking the
-    // message.
-    // TODO(hbono): we need to check this registered message?
-    base::win::ScopedComPtr<ITaskbarList3> taskbar;
-    if (FAILED(taskbar.CreateInstance(CLSID_TaskbarList, NULL,
-                                      CLSCTX_INPROC_SERVER)) ||
-        FAILED(taskbar->HrInit()) ||
-        FAILED(taskbar->RegisterTab(window_, frame_window_)) ||
-        FAILED(taskbar->SetTabOrder(window_, NULL)))
-      return;
-    if (active_)
-      taskbar->SetTabActive(window_, frame_window_, 0);
-  }
+// Returns a pixel of the specified bitmap. If this bitmap is a dummy bitmap,
+// this function returns an opaque white pixel instead.
+int GetPixel(const SkBitmap& bitmap, int x, int y) {
+  const int* tab_pixels = reinterpret_cast<const int*>(bitmap.getPixels());
+  if (!tab_pixels)
+    return 0xFFFFFFFF;
+  return tab_pixels[y * bitmap.width() + x];
+}
 
- private:
-  // An application window to which we are going to register a tab window.
-  // This "application window" is a browser frame in terms of Chrome.
-  HWND frame_window_;
-
-  // A tab window.
-  // After we register this window as a child of the above application window,
-  // Windows sends AeroPeek events to this window.
-  // It seems this window MUST be a tool window.
-  HWND window_;
-
-  // Whether or not we need to activate this tab by default.
-  bool active_;
-};
-
-// A task which creates a thumbnail image used by AeroPeek and sends it to
+// A callback which creates a thumbnail image used by AeroPeek and sends it to
 // Windows.
-class SendThumbnailTask : public Task {
- public:
-  SendThumbnailTask(HWND aeropeek_window,
-                    const gfx::Rect& content_bounds,
-                    const gfx::Size& aeropeek_size,
-                    const SkBitmap& tab_bitmap,
-                    base::WaitableEvent* ready)
-      : aeropeek_window_(aeropeek_window),
-        content_bounds_(content_bounds),
-        aeropeek_size_(aeropeek_size),
-        tab_bitmap_(tab_bitmap),
-        ready_(ready) {
+void SendThumbnailCallback(
+    HWND aeropeek_window, const gfx::Rect& content_bounds,
+    const gfx::Size& aeropeek_size, const SkBitmap& tab_bitmap,
+    base::WaitableEvent* ready) {
+  // Calculate the size of the aeropeek thumbnail and resize the tab bitmap
+  // to the size. When the given bitmap is an empty bitmap, we create a dummy
+  // bitmap from the content-area rectangle to create a DIB. (We don't need to
+  // allocate pixels for this case since we don't use them.)
+  gfx::Size thumbnail_size;
+  SkBitmap thumbnail_bitmap;
+
+  if (tab_bitmap.isNull() || tab_bitmap.empty()) {
+    GetThumbnailSize(
+        aeropeek_size, content_bounds.width(), content_bounds.height(),
+        &thumbnail_size);
+
+    thumbnail_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                               thumbnail_size.width(), thumbnail_size.height());
+  } else {
+    GetThumbnailSize(aeropeek_size, tab_bitmap.width(), tab_bitmap.height(),
+                     &thumbnail_size);
+
+    thumbnail_bitmap = skia::ImageOperations::Resize(
+        tab_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+        thumbnail_size.width(), thumbnail_size.height());
   }
 
-  ~SendThumbnailTask() {
-    if (ready_)
-      ready_->Signal();
+  // Create a DIB, copy the resized image, and send the DIB to Windows.
+  // We can delete this DIB after sending it to Windows since Windows creates
+  // a copy of the DIB and use it.
+  base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
+  if (!hdc.Get()) {
+    LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
+    return;
   }
 
- private:
-  void Run() {
-    // Calculate the size of the aeropeek thumbnail and resize the tab bitmap
-    // to the size. When the given bitmap is an empty bitmap, we create a dummy
-    // bitmap from the content-area rectangle to create a DIB. (We don't need to
-    // allocate pixels for this case since we don't use them.)
-    gfx::Size thumbnail_size;
-    SkBitmap thumbnail_bitmap;
+  BITMAPINFOHEADER header;
+  gfx::CreateBitmapHeader(thumbnail_size.width(), thumbnail_size.height(),
+                          &header);
 
-    if (tab_bitmap_.isNull() || tab_bitmap_.empty()) {
-      GetThumbnailSize(content_bounds_.width(), content_bounds_.height(),
-                       &thumbnail_size);
+  void* bitmap_data = NULL;
+  base::win::ScopedBitmap bitmap(
+      CreateDIBSection(hdc, reinterpret_cast<BITMAPINFO*>(&header),
+                       DIB_RGB_COLORS, &bitmap_data, NULL, 0));
 
-      thumbnail_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                                 thumbnail_size.width(),
-                                 thumbnail_size.height());
-    } else {
-      GetThumbnailSize(tab_bitmap_.width(), tab_bitmap_.height(),
-                       &thumbnail_size);
-
-      thumbnail_bitmap = skia::ImageOperations::Resize(
-          tab_bitmap_,
-          skia::ImageOperations::RESIZE_LANCZOS3,
-          thumbnail_size.width(),
-          thumbnail_size.height());
-    }
-
-    // Create a DIB, copy the resized image, and send the DIB to Windows.
-    // We can delete this DIB after sending it to Windows since Windows creates
-    // a copy of the DIB and use it.
-    base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
-    if (!hdc.Get()) {
-      LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
-      return;
-    }
-
-    BITMAPINFOHEADER header;
-    gfx::CreateBitmapHeader(thumbnail_size.width(), thumbnail_size.height(),
-                            &header);
-
-    void* bitmap_data = NULL;
-    base::win::ScopedBitmap bitmap(
-        CreateDIBSection(hdc,
-                         reinterpret_cast<BITMAPINFO*>(&header),
-                         DIB_RGB_COLORS,
-                         &bitmap_data,
-                         NULL,
-                         0));
-
-    if (!bitmap.Get() || !bitmap_data) {
-      LOG(ERROR) << "cannot create a bitmap: " << GetLastError();
-      return;
-    }
-
-    SkAutoLockPixels lock(thumbnail_bitmap);
-    int* content_pixels = reinterpret_cast<int*>(bitmap_data);
-    for (int y = 0; y < thumbnail_size.height(); ++y) {
-      for (int x = 0; x < thumbnail_size.width(); ++x) {
-        content_pixels[y * thumbnail_size.width() + x] =
-            GetPixel(thumbnail_bitmap, x, y);
-      }
-    }
-
-    HRESULT result = CallDwmSetIconicThumbnail(aeropeek_window_, bitmap, 0);
-    if (FAILED(result))
-      LOG(ERROR) << "cannot set a tab thumbnail: " << result;
+  if (!bitmap.Get() || !bitmap_data) {
+    LOG(ERROR) << "cannot create a bitmap: " << GetLastError();
+    return;
   }
 
-  // Calculates the thumbnail size sent to Windows so we can preserve the pixel
-  // aspect-ratio of the source bitmap. Since Windows returns an error when we
-  // send an image bigger than the given size, we decrease either the thumbnail
-  // width or the thumbnail height so we can fit the longer edge of the source
-  // window.
-  void GetThumbnailSize(int width, int height, gfx::Size* output) const {
-    float thumbnail_width = static_cast<float>(aeropeek_size_.width());
-    float thumbnail_height = static_cast<float>(aeropeek_size_.height());
-    float source_width = static_cast<float>(width);
-    float source_height = static_cast<float>(height);
-    DCHECK(source_width && source_height);
-
-    float ratio_width = thumbnail_width / source_width;
-    float ratio_height = thumbnail_height / source_height;
-    if (ratio_width > ratio_height) {
-      thumbnail_width = source_width * ratio_height;
-    } else {
-      thumbnail_height = source_height * ratio_width;
+  SkAutoLockPixels lock(thumbnail_bitmap);
+  int* content_pixels = reinterpret_cast<int*>(bitmap_data);
+  for (int y = 0; y < thumbnail_size.height(); ++y) {
+    for (int x = 0; x < thumbnail_size.width(); ++x) {
+      content_pixels[y * thumbnail_size.width() + x] =
+          GetPixel(thumbnail_bitmap, x, y);
     }
-
-    output->set_width(static_cast<int>(thumbnail_width));
-    output->set_height(static_cast<int>(thumbnail_height));
   }
 
-  // Returns a pixel of the specified bitmap. If this bitmap is a dummy bitmap,
-  // this function returns an opaque white pixel instead.
-  int GetPixel(const SkBitmap& bitmap, int x, int y) const {
-    const int* tab_pixels = reinterpret_cast<const int*>(bitmap.getPixels());
-    if (!tab_pixels)
-      return 0xFFFFFFFF;
-    return tab_pixels[y * bitmap.width() + x];
-  }
+  HRESULT result = CallDwmSetIconicThumbnail(aeropeek_window, bitmap, 0);
+  if (FAILED(result))
+    LOG(ERROR) << "cannot set a tab thumbnail: " << result;
 
- private:
-  // A window handle to the place-holder window used by AeroPeek.
-  HWND aeropeek_window_;
+  ready->Signal();
+}
 
-  // The bounding rectangle of the user-perceived content area.
-  // This rectangle is used only for creating a fall-back bitmap.
-  gfx::Rect content_bounds_;
+int GetTabPixel(const SkBitmap& tab_bitmap, int x, int y) {
+  // Return the opaque while pixel to prevent old foreground tab from being
+  // shown when we cannot get the specified pixel.
+  const int* tab_pixels = reinterpret_cast<int*>(tab_bitmap.getPixels());
+  if (!tab_pixels || x >= tab_bitmap.width() || y >= tab_bitmap.height())
+    return 0xFFFFFFFF;
 
-  // The size of an output image to be sent to Windows.
-  gfx::Size aeropeek_size_;
-
-  // The source bitmap.
-  SkBitmap tab_bitmap_;
-
-  // An event to notify when this task finishes.
-  base::WaitableEvent* ready_;
-};
+  // DWM uses alpha values to distinguish opaque colors and transparent ones.
+  // Set the alpha value of this source pixel to prevent the original window
+  // from being shown through.
+  return 0xFF000000 | tab_pixels[y * tab_bitmap.width() + x];
+}
 
 // A task which creates a preview image used by AeroPeek and sends it to
 // Windows.
@@ -322,108 +265,51 @@ class SendThumbnailTask : public Task {
 // content area) so Windows can paste the preview image on it.
 // This task is used if an AeroPeek window receives a
 // WM_DWMSENDICONICLIVEPREVIEWBITMAP message.
-class SendLivePreviewTask : public Task {
- public:
-  SendLivePreviewTask(HWND aeropeek_window,
-                      const gfx::Rect& content_bounds,
-                      const SkBitmap& tab_bitmap)
-      : aeropeek_window_(aeropeek_window),
-        content_bounds_(content_bounds),
-        tab_bitmap_(tab_bitmap) {
+void SendLivePreviewCallback(
+    HWND aeropeek_window, const gfx::Rect& content_bounds,
+    const SkBitmap& tab_bitmap) {
+  // Create a DIB for the user-perceived content area of the tab, copy the
+  // tab image into the DIB, and send it to Windows.
+  // We don't need to paste this tab image onto the frame image since Windows
+  // automatically pastes it for us.
+  base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
+  if (!hdc.Get()) {
+    LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
+    return;
   }
 
-  ~SendLivePreviewTask() {
+  BITMAPINFOHEADER header;
+  gfx::CreateBitmapHeader(content_bounds.width(), content_bounds.height(),
+                          &header);
+
+  void* bitmap_data = NULL;
+  base::win::ScopedBitmap bitmap(
+      CreateDIBSection(hdc.Get(), reinterpret_cast<BITMAPINFO*>(&header),
+                       DIB_RGB_COLORS, &bitmap_data, NULL, 0));
+  if (!bitmap.Get() || !bitmap_data) {
+    LOG(ERROR) << "cannot create a bitmap: " << GetLastError();
+    return;
   }
 
- private:
-  void Run() {
-    // Create a DIB for the user-perceived content area of the tab, copy the
-    // tab image into the DIB, and send it to Windows.
-    // We don't need to paste this tab image onto the frame image since Windows
-    // automatically pastes it for us.
-    base::win::ScopedCreateDC hdc(CreateCompatibleDC(NULL));
-    if (!hdc.Get()) {
-      LOG(ERROR) << "cannot create a memory DC: " << GetLastError();
-      return;
-    }
-
-    BITMAPINFOHEADER header;
-    gfx::CreateBitmapHeader(content_bounds_.width(), content_bounds_.height(),
-                            &header);
-
-    void* bitmap_data = NULL;
-    base::win::ScopedBitmap bitmap(
-        CreateDIBSection(hdc.Get(),
-                         reinterpret_cast<BITMAPINFO*>(&header),
-                         DIB_RGB_COLORS, &bitmap_data,
-                         NULL, 0));
-    if (!bitmap.Get() || !bitmap_data) {
-      LOG(ERROR) << "cannot create a bitmap: " << GetLastError();
-      return;
-    }
-
-    // Copy the tab image onto the DIB.
-    SkAutoLockPixels lock(tab_bitmap_);
-    int* content_pixels = reinterpret_cast<int*>(bitmap_data);
-    for (int y = 0; y < content_bounds_.height(); ++y) {
-      for (int x = 0; x < content_bounds_.width(); ++x)
-        content_pixels[y * content_bounds_.width() + x] = GetTabPixel(x, y);
-    }
-
-    // Send the preview image to Windows.
-    // We can set its offset to the top left corner of the user-perceived
-    // content area so Windows can paste this bitmap onto the correct
-    // position.
-    POINT content_offset = {content_bounds_.x(), content_bounds_.y()};
-    HRESULT result = CallDwmSetIconicLivePreviewBitmap(
-        aeropeek_window_, bitmap, &content_offset, 0);
-    if (FAILED(result))
-      LOG(ERROR) << "cannot send a content image: " << result;
+  // Copy the tab image onto the DIB.
+  SkAutoLockPixels lock(tab_bitmap);
+  int* content_pixels = reinterpret_cast<int*>(bitmap_data);
+  for (int y = 0; y < content_bounds.height(); ++y) {
+    for (int x = 0; x < content_bounds.width(); ++x)
+      content_pixels[y * content_bounds.width() + x] =
+          GetTabPixel(tab_bitmap, x, y);
   }
 
-  int GetTabPixel(int x, int y) const {
-    // Return the opaque while pixel to prevent old foreground tab from being
-    // shown when we cannot get the specified pixel.
-    const int* tab_pixels = reinterpret_cast<int*>(tab_bitmap_.getPixels());
-    if (!tab_pixels || x >= tab_bitmap_.width() || y >= tab_bitmap_.height())
-      return 0xFFFFFFFF;
-
-    // DWM uses alpha values to distinguish opaque colors and transparent ones.
-    // Set the alpha value of this source pixel to prevent the original window
-    // from being shown through.
-    return 0xFF000000 | tab_pixels[y * tab_bitmap_.width() + x];
-  }
-
- private:
-  // A window handle to the AeroPeek window.
-  HWND aeropeek_window_;
-
-  // The bounding rectangle of the user-perceived content area. When a tab
-  // hasn't been rendered since a browser window is resized, this size doesn't
-  // become the same as the bitmap size as shown below.
-  //     +----------------------+
-  //     |     frame window     |
-  //     | +---------------------+
-  //     | |     tab contents    |
-  //     | +---------------------+
-  //     | | old tab contents | |
-  //     | +------------------+ |
-  //     +----------------------+
-  // This rectangle is used for clipping the width and height of the bitmap and
-  // cleaning the old tab contents.
-  //     +----------------------+
-  //     |     frame window     |
-  //     | +------------------+ |
-  //     | |   tab contents   | |
-  //     | +------------------+ |
-  //     | |      blank       | |
-  //     | +------------------+ |
-  //     +----------------------+
-  gfx::Rect content_bounds_;
-
-  // The bitmap of the source tab.
-  SkBitmap tab_bitmap_;
-};
+  // Send the preview image to Windows.
+  // We can set its offset to the top left corner of the user-perceived
+  // content area so Windows can paste this bitmap onto the correct
+  // position.
+  POINT content_offset = {content_bounds.x(), content_bounds.y()};
+  HRESULT result = CallDwmSetIconicLivePreviewBitmap(
+      aeropeek_window, bitmap, &content_offset, 0);
+  if (FAILED(result))
+    LOG(ERROR) << "cannot send a content image: " << result;
+}
 
 }  // namespace
 
@@ -786,9 +672,9 @@ LRESULT AeroPeekWindow::OnCreate(LPCREATESTRUCT create_struct) {
   // interface for the first time, Windows loads DLLs and we need to wait for
   // some time.)
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      new RegisterThumbnailTask(frame_window_, hwnd(), tab_active_));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&RegisterThumbnailCallback, frame_window_, hwnd(),
+                 tab_active_));
 
   return 0;
 }
@@ -824,13 +710,10 @@ LRESULT AeroPeekWindow::OnDwmSendIconicThumbnail(UINT message,
   delegate_->GetTabThumbnail(tab_id_, &thumbnail);
 
   gfx::Size aeropeek_size(HIWORD(lparam), LOWORD(lparam));
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          new SendThumbnailTask(hwnd(),
-                                                GetContentBounds(),
-                                                aeropeek_size,
-                                                thumbnail,
-                                                &ready_to_update_thumbnail_));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SendThumbnailCallback, hwnd(), GetContentBounds(),
+                 aeropeek_size, thumbnail, &ready_to_update_thumbnail_));
   return 0;
 }
 
@@ -849,9 +732,9 @@ LRESULT AeroPeekWindow::OnDwmSendIconicLivePreviewBitmap(UINT message,
   delegate_->GetTabPreview(tab_id_, &preview);
 
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      new SendLivePreviewTask(hwnd(), GetContentBounds(), preview));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SendLivePreviewCallback, hwnd(), GetContentBounds(),
+                 preview));
 
   return 0;
 }
