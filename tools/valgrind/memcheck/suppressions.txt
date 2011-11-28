@@ -1934,6 +1934,17 @@
    fun:CERT_VerifyCert
 }
 {
+   bug_38138
+   Memcheck:Param
+   write(buf)
+   obj:*libpthread*
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
+   ...
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
    bug_38254
    Memcheck:Uninitialized
    fun:_ZNK5views4View7HitTestERKN3gfx5PointE
