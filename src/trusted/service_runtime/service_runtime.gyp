@@ -266,6 +266,11 @@
               '-ldl',
             ],
           },
+# TODO(mcgrathr): What this is supposed to do is just ensure that making
+# sel_ldr will also make nacl_helper_bootstrap.  However, there is a Gyp
+# bug such that nacl_bootstrap_lib will be included in the sel_ldr link,
+# which causes bad troubles.
+# See http://code.google.com/p/gyp/issues/detail?id=239
 #          'dependencies': [
 #            'linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
 #          ],

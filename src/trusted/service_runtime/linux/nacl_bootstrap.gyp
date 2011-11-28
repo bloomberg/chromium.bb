@@ -57,7 +57,7 @@
     {
       'target_name': 'nacl_bootstrap_lib',
       'type': 'static_library',
-      'product_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
+      'product_dir': '<(SHARED_INTERMEDIATE_DIR)/nacl_bootstrap',
       'hard_depencency': 1,
       'include_dirs': [
         '..',
@@ -105,7 +105,7 @@
         {
           'action_name': 'link_with_ld_bfd',
           'variables': {
-            'bootstrap_lib': '<(SHARED_INTERMEDIATE_DIR)/chrome/<(STATIC_LIB_PREFIX)nacl_bootstrap_lib<(STATIC_LIB_SUFFIX)',
+            'bootstrap_lib': '<(SHARED_INTERMEDIATE_DIR)/nacl_bootstrap/<(STATIC_LIB_PREFIX)nacl_bootstrap_lib<(STATIC_LIB_SUFFIX)',
             'linker_script': 'nacl_bootstrap.x',
           },
           'inputs': [
