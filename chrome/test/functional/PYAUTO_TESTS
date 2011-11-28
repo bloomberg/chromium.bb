@@ -118,7 +118,9 @@
       # crbug.com/100591
       '-pdf.PDFTest.testPDFRunner',
       # crbug.com/100593
-      '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
+      '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',  
+      # crbug.com/105560
+      '-notifications',
     ],
 
     'win': [
@@ -218,7 +220,7 @@
       # ===========================
       '-browser.BrowserTest.testWindowResize',  # Details at: crbug.com/44963
       # crbug.com/104206
-      '-notifications.NotificationsTest.testKillNotificationProcess', 
+      '-notifications.NotificationsTest.testKillNotificationProcess',
       # Several omnibox tests do not show omnibox results when run
       # under virtual X on linux.  The CONTINUOUS suite runs under virtual X
       # on the chromium bots, so exlcude these from here.  They're included
