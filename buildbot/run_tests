@@ -47,19 +47,28 @@ run_test() {
 # or not it's needed.  'sudo true' will do what we want.
 sudo true
 
-run_test cbuildbot_unittest.py
-run_test cbuildbot_config_unittest.py
-run_test cbuildbot_commands_unittest.py
-run_test cbuildbot_stages_unittest.py
-run_test gerrit_helper_unittest.py
-run_test lkgm_manager_unittest.py
-run_test manifest_version_unittest.py
-run_test patch_unittest.py
-run_test prebuilt_unittest.py
-run_test validation_pool_unittest.py
-run_test portage_utilities_unittest.py yes
-run_test cros_mark_as_stable_unittest.py yes
-run_test cros_mark_chrome_as_stable_unittest.py yes
+all_tests=(
+  cbuildbot_unittest.py
+  cbuildbot_config_unittest.py
+  cbuildbot_commands_unittest.py
+  cbuildbot_stages_unittest.py
+  gerrit_helper_unittest.py
+  lkgm_manager_unittest.py
+  manifest_version_unittest.py
+  patch_unittest.py
+  prebuilt_unittest.py
+  validation_pool_unittest.py
+  "portage_utilities_unittest.py yes"
+  "cros_mark_as_stable_unittest.py yes"
+  "cros_mark_chrome_as_stable_unittest.py yes"
+)
+if [ $# -eq 0 ]; then
+  set -- "${all_tests[@]}"
+fi
+
+for test in "$@" ; do
+  run_test ${test}
+done
 
 if [ ${#FAILED_TESTS[@]} -gt 0 ]; then
   index=0
