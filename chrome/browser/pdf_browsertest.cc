@@ -203,7 +203,16 @@ class PDFBrowserTest : public InProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_Basic) {
   ASSERT_NO_FATAL_FAILURE(Load());
   ASSERT_NO_FATAL_FAILURE(WaitForResponse());
-  ASSERT_NO_FATAL_FAILURE(VerifySnapshot("pdf_browsertest.png"));
+  // OS X uses CoreText, and FreeType renders slightly different on Linux and
+  // Win.
+#if defined(OS_MACOSX)
+  std::string expectation_file = "pdf_browsertest_mac.png"
+#elif defined(OS_LINUX)
+  std::string expectation_file = "pdf_browsertest_linux.png";
+#else
+  std::string expectation_file = "pdf_browsertest.png";
+#endif
+  ASSERT_NO_FATAL_FAILURE(VerifySnapshot(expectation_file));
 }
 
 #if defined(OS_CHROMEOS)
