@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PLUGIN_OBSERVER_H_
 #pragma once
 
+#include "base/memory/weak_ptr.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 
 class GURL;
@@ -22,6 +23,18 @@ class PluginObserver : public TabContentsObserver {
 
  private:
   void OnBlockedOutdatedPlugin(const string16& name, const GURL& update_url);
+  void OnFindMissingPlugin(int placeholder_id, const std::string& mime_type);
+
+  void FoundMissingPlugin(int placeholder_id,
+                          const std::string& mime_type,
+                          const GURL& url,
+                          const string16& name,
+                          bool display_url);
+  void DidNotFindMissingPlugin(int placeholder_id,
+                               const std::string& mime_type);
+  void InstallMissingPlugin(const GURL& url, bool display_url);
+
+  base::WeakPtrFactory<PluginObserver> weak_ptr_factory_;
 
   TabContentsWrapper* tab_contents_;
   scoped_ptr<InfoBarDelegate> plugin_installer_;  // Lazily created.

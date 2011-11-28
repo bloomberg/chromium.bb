@@ -13,12 +13,16 @@
 #include "grit/theme_resources_standard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/npapi/default_plugin_shared.h"
 
 PluginInstallerInfoBarDelegate::PluginInstallerInfoBarDelegate(
-    InfoBarTabHelper* infobar_helper, gfx::NativeWindow window)
+    InfoBarTabHelper* infobar_helper,
+    const string16& plugin_name,
+    const GURL& learn_more_url,
+    const base::Closure& callback)
     : ConfirmInfoBarDelegate(infobar_helper),
-      window_(window) {
+      plugin_name_(plugin_name),
+      learn_more_url_(learn_more_url),
+      callback_(callback) {
 }
 
 PluginInstallerInfoBarDelegate::~PluginInstallerInfoBarDelegate() {
@@ -35,7 +39,11 @@ PluginInstallerInfoBarDelegate*
 }
 
 string16 PluginInstallerInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_PLUGININSTALLER_MISSINGPLUGIN_PROMPT);
+  // TODO(bauerb): Remove this check when removing the default plug-in.
+  return plugin_name_.empty() ?
+      l10n_util::GetStringUTF16(IDS_PLUGININSTALLER_MISSINGPLUGIN_PROMPT) :
+      l10n_util::GetStringFUTF16(IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT,
+                                 plugin_name_);
 }
 
 int PluginInstallerInfoBarDelegate::GetButtons() const {
@@ -49,13 +57,7 @@ string16 PluginInstallerInfoBarDelegate::GetButtonLabel(
 }
 
 bool PluginInstallerInfoBarDelegate::Accept() {
-  // TODO(PORT) for other platforms.
-#if defined(OS_WIN)
-  ::PostMessage(window_,
-                webkit::npapi::default_plugin::kInstallMissingPluginMessage,
-                0,
-                0);
-#endif
+  callback_.Run();
   return true;
 }
 
@@ -65,9 +67,14 @@ string16 PluginInstallerInfoBarDelegate::GetLinkText() const {
 
 bool PluginInstallerInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  owner()->tab_contents()->OpenURL(google_util::AppendGoogleLocaleParam(GURL(
-      "https://www.google.com/support/chrome/bin/answer.py?answer=142064")),
-      GURL(),
+  GURL url(learn_more_url_);
+  // TODO(bauerb): Remove this check when removing the default plug-in.
+  if (url.is_empty()) {
+    url = google_util::AppendGoogleLocaleParam(GURL(
+      "https://www.google.com/support/chrome/bin/answer.py?answer=142064"));
+  }
+  owner()->tab_contents()->OpenURL(
+      url, GURL(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK);
   return false;

@@ -5,6 +5,9 @@
 function debug(msg) {
   document.getElementById('debug').textContent = msg;
 }
+function setMessage(msg) {
+  document.getElementById('message').textContent = msg;
+}
 </script>
 <style>
 body {
@@ -76,7 +79,7 @@ p {
 <div i18n-values="title:name" id="outer">
 <div id="inner">
 <div><img id="plugin_icon" src="plugin_blocked.png" /></div>
-<h1 i18n-content="message">PLUGIN_BLOCKED</h1>
+<h1 id="message" i18n-content="message"></h1>
 <p id="debug"> </p>
 </div>
 <div id="close" i18n-values="title:hide" onclick="plugin.hide();" />

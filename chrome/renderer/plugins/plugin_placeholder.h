@@ -44,6 +44,7 @@ class PluginPlaceholder : public content::RenderViewObserver,
   virtual void BindWebFrame(WebKit::WebFrame* frame) OVERRIDE;
   virtual void WillDestroyPlugin() OVERRIDE;
   virtual void ShowContextMenu(const WebKit::WebMouseEvent& event) OVERRIDE;
+  virtual void DidFinishLoading() OVERRIDE;
 
  private:
   WebKit::WebFrame* frame_;

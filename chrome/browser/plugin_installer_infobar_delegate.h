@@ -6,15 +6,20 @@
 #define CHROME_BROWSER_PLUGIN_INSTALLER_INFOBAR_DELEGATE_H_
 #pragma once
 
+#include "base/callback.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
-#include "ui/gfx/native_widget_types.h"
+#include "googleurl/src/gurl.h"
 
 // The main purpose for this class is to popup/close the infobar when there is
 // a missing plugin.
 class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
+  // Shows an infobar asking whether to install the plugin with the name
+  // |plugin_name|. When the user accepts, |callback| is called.
   PluginInstallerInfoBarDelegate(InfoBarTabHelper* infobar_helper,
-                                 gfx::NativeWindow window);
+                                 const string16& plugin_name,
+                                 const GURL& learn_more_url,
+                                 const base::Closure& callback);
 
  private:
   virtual ~PluginInstallerInfoBarDelegate();
@@ -30,7 +35,9 @@ class PluginInstallerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual string16 GetLinkText() const OVERRIDE;
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
 
-  gfx::NativeWindow window_;
+  string16 plugin_name_;
+  GURL learn_more_url_;
+  base::Closure callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInstallerInfoBarDelegate);
 };

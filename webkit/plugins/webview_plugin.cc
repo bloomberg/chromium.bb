@@ -243,6 +243,11 @@ WebURLError WebViewPlugin::cancelledError(WebFrame* frame,
   return error;
 }
 
+void WebViewPlugin::didFinishLoad(WebFrame* frame) {
+  if (delegate_)
+    delegate_->DidFinishLoading();
+}
+
 void WebViewPlugin::didReceiveResponse(WebFrame* frame,
                                        unsigned identifier,
                                        const WebURLResponse& response) {

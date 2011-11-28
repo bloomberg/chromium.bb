@@ -4,10 +4,14 @@
 
 #include "chrome/browser/plugin_observer.h"
 
+#include "base/bind.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/plugin_finder.h"
+#include "chrome/browser/plugin_installer_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
@@ -282,6 +286,7 @@ bool OutdatedPluginInfoBarDelegate::LinkClicked(
 
 PluginObserver::PluginObserver(TabContentsWrapper* tab_contents)
     : TabContentsObserver(tab_contents->tab_contents()),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       tab_contents_(tab_contents) {
 }
 
@@ -292,6 +297,8 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(PluginObserver, message)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedOutdatedPlugin,
                         OnBlockedOutdatedPlugin)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FindMissingPlugin,
+                        OnFindMissingPlugin)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
 
@@ -307,4 +314,46 @@ void PluginObserver::OnBlockedOutdatedPlugin(const string16& name,
           tab_contents_->profile()->GetHostContentSettingsMap(),
           name)) :
       new OutdatedPluginInfoBarDelegate(infobar_helper, name, update_url));
+}
+
+void PluginObserver::OnFindMissingPlugin(int placeholder_id,
+                                         const std::string& mime_type) {
+  PluginFinder* plugin_finder = PluginFinder::GetInstance();
+  std::string lang = "en-US";  // Oh yes.
+  plugin_finder->FindPlugin(
+      mime_type, lang,
+      base::Bind(&PluginObserver::FoundMissingPlugin,
+                 weak_ptr_factory_.GetWeakPtr(), placeholder_id, mime_type),
+      base::Bind(&PluginObserver::DidNotFindMissingPlugin,
+                 weak_ptr_factory_.GetWeakPtr(), placeholder_id, mime_type));
+}
+
+void PluginObserver::FoundMissingPlugin(int placeholder_id,
+                                        const std::string& mime_type,
+                                        const GURL& url,
+                                        const string16& name,
+                                        bool display_url) {
+  Send(new ChromeViewMsg_FoundMissingPlugin(placeholder_id, name));
+  InfoBarTabHelper* infobar_helper = tab_contents_->infobar_tab_helper();
+  infobar_helper->AddInfoBar(new PluginInstallerInfoBarDelegate(
+      infobar_helper,
+      name,
+      GURL(),  // TODO(bauerb): Get URL from JSON file.
+      base::Bind(&PluginObserver::InstallMissingPlugin,
+                 weak_ptr_factory_.GetWeakPtr(), url, display_url)));
+}
+
+void PluginObserver::DidNotFindMissingPlugin(int placeholder_id,
+                                             const std::string& mime_type) {
+  Send(new ChromeViewMsg_DidNotFindMissingPlugin(placeholder_id));
+}
+
+void PluginObserver::InstallMissingPlugin(const GURL& url,
+                                          bool display_url) {
+  if (display_url) {
+    tab_contents()->OpenURL(url, tab_contents()->GetURL(), NEW_FOREGROUND_TAB,
+                            content::PAGE_TRANSITION_TYPED);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }

@@ -124,3 +124,6 @@ void PluginPlaceholder::WillDestroyPlugin() {
 
 void PluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {
 }
+
+void PluginPlaceholder::DidFinishLoading() {
+}

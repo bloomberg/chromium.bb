@@ -1,0 +1,166 @@
+{
+  "plugins": [
+    {
+      "mime_types": [
+        "application/x-java-applet",
+        "application/x-java-applet,version=1.1",
+        "application/x-java-applet,version=1.1.1",
+        "application/x-java-applet,version=1.1.2",
+        "application/x-java-applet,version=1.1.3",
+        "application/x-java-applet,version=1.2",
+        "application/x-java-applet,version=1.2.1",
+        "application/x-java-applet,version=1.2.2",
+        "application/x-java-applet,version=1.3",
+        "application/x-java-applet,version=1.3.1",
+        "application/x-java-applet,version=1.4",
+        "application/x-java-applet,version=1.4.1",
+        "application/x-java-applet,version=1.4.2",
+        "application/x-java-applet,version=1.5",
+        "application/x-java-applet,version=1.6",
+        "application/x-java-bean",
+        "application/x-java-bean,version=1.1",
+        "application/x-java-bean,version=1.1.1",
+        "application/x-java-bean,version=1.1.2",
+        "application/x-java-bean,version=1.1.3",
+        "application/x-java-bean,version=1.2",
+        "application/x-java-bean,version=1.2.1",
+        "application/x-java-bean,version=1.2.2",
+        "application/x-java-bean,version=1.3",
+        "application/x-java-bean,version=1.3.1",
+        "application/x-java-bean,version=1.4",
+        "application/x-java-bean,version=1.4.1",
+        "application/x-java-bean,version=1.4.2",
+        "application/x-java-bean,version=1.5",
+        "application/x-java-bean,version=1.6",
+        "application/x-java-vm"
+      ],
+      "lang": "en-US",
+      "name": "Java(TM)",
+      "url": "http://java.com/download",
+      "displayurl": true
+    },
+    {
+      "mime_types": [
+        "audio/vnd.rn-realaudio",
+        "video/vnd.rn-realvideo",
+        "audio/x-pn-realaudio-plugin",
+        "audio/x-pn-realaudio"
+      ],
+      "lang": "en-US",
+      "name": "RealPlayer",
+      "url": "http://forms.real.com/real/realone/download.html?type=rpsp_us"
+    },
+    {
+      "mime_types": [
+        "application/futuresplash",
+        "application/x-shockwave-flash"
+      ],
+      "lang": "en-US",
+      "name": "Adobe Flash Player",
+      "url": "http://fpdownload.adobe.com/get/flashplayer/current/install_flash_player.exe"
+    },
+    {
+      "mime_types": [
+        "application/x-director"
+      ],
+      "lang": "en-US",
+      "name": "Adobe Shockwave Player",
+      "url": "http://fpdownload.macromedia.com/get/shockwave/default/english/win95nt/latest/Shockwave_Installer_Slim.exe"
+    },
+    {
+      "mime_types": [
+        "application/pdf",
+        "application/vnd.adobe.x-mars",
+        "application/vnd.adobe.xdp+xml",
+        "application/vnd.adobe.xfd+xml",
+        "application/vnd.adobe.xfdf",
+        "application/vnd.fdf"
+      ],
+      "lang": "en-US",
+      "name": "Adobe Reader",
+      "url": "http://ardownload.adobe.com/pub/adobe/reader/win/9.x/9.1/enu/AdbeRdr910_en_US.exe"
+    },
+    {
+      "mime_types": [
+        "application/sdp",
+        "application/x-mpeg",
+        "application/x-rtsp",
+        "application/x-sdp",
+        "audio/3ggp",
+        "audio/3ggp2",
+        "audio/aac",
+        "audio/ac3",
+        "audio/aiff",
+        "audio/amr",
+        "audio/basic",
+        "audio/mid",
+        "audio/midi",
+        "audio/mp4",
+        "audio/mpeg",
+        "audio/vnd.qcelp",
+        "audio/wav",
+        "audio/x-aac",
+        "audio/x-ac3",
+        "audio/x-aiff",
+        "audio/x-caf",
+        "audio/x-gsm",
+        "audio/x-m4a",
+        "audio/x-m4b",
+        "audio/x-m4p",
+        "audio/x-midi",
+        "audio/x-mpeg",
+        "audio/x-wav",
+        "image/jp2",
+        "image/jpeg2000",
+        "image/jpeg2000-image",
+        "image/pict",
+        "image/png",
+        "image/x-jpeg2000-image",
+        "image/x-macpaint",
+        "image/x-pict",
+        "image/x-png",
+        "image/x-quicktime",
+        "image/x-sgi",
+        "image/x-targa",
+        "video/3ggp",
+        "video/3ggp2",
+        "video/flc",
+        "video/mp4",
+        "video/mpeg",
+        "video/quicktime",
+        "video/sd-video",
+        "video/x-m4v",
+        "video/x-mpeg"
+      ],
+      "lang": "en-US",
+      "name": "QuickTime Player",
+      "url": "http://appldnld.apple.com.edgesuite.net/content.info.apple.com/QuickTime/061-6118.20090601.Pq3V9/QuickTimeInstaller.exe"
+    },
+    {
+      "mime_types": [
+        "application/asx",
+        "application/x-mplayer2",
+        "application/x-ms-wmp",
+        "audio/x-ms-wax",
+        "audio/x-ms-wma",
+        "video/x-ms-asf",
+        "video/x-ms-asf-plugin",
+        "video/x-ms-wm",
+        "video/x-ms-wmv",
+        "video/x-ms-wvx"
+      ],
+      "lang": "en-US",
+      "name": "Windows Media Player",
+      "url": "http://port25.technet.com/videos/downloads/wmpfirefoxplugin.exe"
+    },
+    {
+      "mime_types": [
+        "video/divx",
+        "video/x-matroska"
+      ],
+      "lang": "en-US",
+      "name": "DivX Web Player",
+      "url": "http://download.divx.com/player/divxdotcom/DivXWebPlayerInstaller.exe"
+    }
+  ]
+}

@@ -423,6 +423,21 @@ IPC_SYNC_MESSAGE_CONTROL4_3(ChromeViewHostMsg_GetPluginInfo,
                             webkit::WebPluginInfo /* plugin */,
                             std::string /* actual_mime_type */)
 
+// Tells the browser to search for a plug-in that can handle the given MIME
+// type. The result will be sent asynchronously to the routing ID
+// |placeholder_id|.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FindMissingPlugin,
+                    int /* placeholder_id */,
+                    std::string /* mime_type */)
+
+// Notifies a missing plug-in placeholder that a plug-in with name |plugin_name|
+// has been found.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_FoundMissingPlugin,
+                    string16 /* plugin_name */)
+
+// Notifies a missing plug-in placeholder that no plug-in has been found.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_DidNotFindMissingPlugin)
+
 // Specifies the URL as the first parameter (a wstring) and thumbnail as
 // binary data as the second parameter.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_Thumbnail,

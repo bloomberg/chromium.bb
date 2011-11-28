@@ -539,10 +539,13 @@ are declared in build/common.gypi.
           Input &amp;methods
         </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="The name of the Run command on the blocked plugin context menu">
-          Run this plugin
+          Run this plug-in
         </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_HIDE" desc="The name of the Hide command on the blocked plugin context menu">
-          Hide this plugin
+          Hide this plug-in
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PLUGIN_INSTALL" desc="The name of the Install command on the missing plugin context menu">
+          Install missing plug-in
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU" desc="The name of the Speech input options submenu in the content area context menu">
           Voice recognition options
@@ -754,10 +757,13 @@ are declared in build/common.gypi.
           Input &amp;Methods
         </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_RUN" desc="In Title Case: The name of the Run command on the blocked plugin context menu">
-          Run This Plugin
+          Run This Plug-in
         </message>
         <message name="IDS_CONTENT_CONTEXT_PLUGIN_HIDE" desc="In Title Case: The name of the Hide command on the blocked plugin context menu">
-          Hide This Plugin
+          Hide This Plug-in
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_PLUGIN_INSTALL" desc="The name of the Install command on the missing plugin context menu">
+          Install Missing Plug-in
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPEECH_INPUT_MENU" desc="In Title Case: The name of the Speech input options submenu in the content area context menu">
           Voice Recognition Options
@@ -5032,8 +5038,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_NOT_AUTHORIZED" desc="The placeholder text for a plug-in that requires user permission to run.">
         The <ph name="PLUGIN_NAME">$1<ex>Java</ex></ph> plug-in needs your permission to run.
       </message>
-      <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for a plug-in that is not installed.">
+      <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for an unknown plug-in that is not installed.">
         No plug-in available to display this content.
+      </message>
+      <message name="IDS_PLUGIN_SEARCHING" desc="The placeholder text when searching for a missing plug-in.">
+        Looking for plug-in...
+      </message>
+      <message name="IDS_PLUGIN_FOUND" desc="The placeholder text for a known plug-in that is not installed.">
+        The <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> plug-in is required to display this content.
       </message>
       <message name="IDS_PLUGIN_DISABLED" desc="The placeholder text for a disabled plug-in.">
         The <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> plug-in has been disabled. To re-enable it, please go to <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph>.
@@ -9392,6 +9404,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_PLUGININSTALLER_MISSINGPLUGIN_PROMPT" desc="Info Bar message to prompt installing missing plugin">
         An additional plug-in is required to display some elements on this page.
+      </message>
+      <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_PROMPT" desc="Info Bar message to prompt installing missing plugin">
+        The <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> plug-in is required to display some elements on this page.
       </message>
       <message name="IDS_PLUGININSTALLER_INSTALLPLUGIN_BUTTON" desc="Info Bar button to install missing plugin">
         Install plug-in...

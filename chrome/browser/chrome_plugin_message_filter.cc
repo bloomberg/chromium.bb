@@ -93,7 +93,6 @@ void ChromePluginMessageFilter::OnDownloadUrlOnFileThread(
       context,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
 }
-
 #endif
 
 void ChromePluginMessageFilter::OnGetPluginFinderUrl(
@@ -136,8 +135,10 @@ void ChromePluginMessageFilter::HandleMissingPluginStatus(
   InfoBarTabHelper* infobar_helper = tcw->infobar_tab_helper();
 
   if (status == webkit::npapi::default_plugin::MISSING_PLUGIN_AVAILABLE) {
-    infobar_helper->AddInfoBar(
-        new PluginInstallerInfoBarDelegate(infobar_helper, window));
+    infobar_helper->AddInfoBar(new PluginInstallerInfoBarDelegate(
+        infobar_helper, string16(), GURL(),
+        base::Bind(&ChromePluginMessageFilter::InstallMissingPlugin,
+                   base::Unretained(window))));
     return;
   }
 
@@ -154,6 +155,18 @@ void ChromePluginMessageFilter::HandleMissingPluginStatus(
   // TODO(port): Implement the infobar that accompanies the default plugin.
   // Linux: http://crbug.com/10952
   // Mac: http://crbug.com/17392
+  NOTIMPLEMENTED();
+#endif  // OS_WIN
+}
+
+// static
+void ChromePluginMessageFilter::InstallMissingPlugin(gfx::NativeWindow window) {
+#if defined(OS_WIN)
+  ::PostMessage(window,
+                webkit::npapi::default_plugin::kInstallMissingPluginMessage,
+                0,
+                0);
+#else
   NOTIMPLEMENTED();
 #endif  // OS_WIN
 }

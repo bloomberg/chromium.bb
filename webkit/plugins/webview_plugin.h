@@ -46,6 +46,9 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
 
     // Called upon a context menu event.
     virtual void ShowContextMenu(const WebKit::WebMouseEvent&) = 0;
+
+    // Called when the WebFrame finished loading.
+    virtual void DidFinishLoading() = 0;
   };
 
   explicit WebViewPlugin(Delegate* delegate);
@@ -125,6 +128,8 @@ class WebViewPlugin: public WebKit::WebPlugin, public WebKit::WebViewClient,
 
   virtual WebKit::WebURLError cancelledError(
       WebKit::WebFrame* frame, const WebKit::WebURLRequest& request);
+
+  virtual void didFinishLoad(WebKit::WebFrame*);
 
   // This method is defined in WebPlugin as well as in WebFrameClient, but with
   // different parameters. We only care about implementing the WebPlugin

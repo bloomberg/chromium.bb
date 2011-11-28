@@ -52,11 +52,12 @@ class ChromePluginMessageFilter : public IPC::ChannelProxy::MessageFilter,
                              int render_view_id,
                              gfx::NativeWindow window);
 
-  // static
   static void HandleMissingPluginStatus(int status,
                                         int render_process_id,
                                         int render_view_id,
                                         gfx::NativeWindow window);
+
+  static void InstallMissingPlugin(gfx::NativeWindow window);
 
   PluginProcessHost* process_;
 
