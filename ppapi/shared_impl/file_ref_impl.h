@@ -47,6 +47,7 @@ class PPAPI_SHARED_EXPORT FileRefImpl : public Resource,
   virtual PP_Var GetName() const OVERRIDE;
   virtual PP_Var GetPath() const OVERRIDE;
   virtual const PPB_FileRef_CreateInfo& GetCreateInfo() const OVERRIDE;
+  virtual PP_Var GetAbsolutePath() = 0;
 
  private:
   PPB_FileRef_CreateInfo create_info_;

@@ -6,6 +6,7 @@
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/c/private/ppb_file_ref_private.h"
 #include "ppapi/thunk/common.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/thunk.h"
@@ -98,6 +99,13 @@ int32_t Rename(PP_Resource file_ref,
   return MayForceCallback(callback, result);
 }
 
+PP_Var GetAbsolutePath(PP_Resource file_ref) {
+  EnterResource<PPB_FileRef_API> enter(file_ref, true);
+  if (enter.failed())
+    return PP_MakeUndefined();
+  return enter.object()->GetAbsolutePath();
+}
+
 const PPB_FileRef g_ppb_file_ref_thunk = {
   &Create,
   &IsFileRef,
@@ -111,10 +119,18 @@ const PPB_FileRef g_ppb_file_ref_thunk = {
   &Rename
 };
 
+const PPB_FileRefPrivate g_ppb_file_ref_private_thunk = {
+  &GetAbsolutePath
+};
+
 }  // namespace
 
 const PPB_FileRef* GetPPB_FileRef_Thunk() {
   return &g_ppb_file_ref_thunk;
+}
+
+const PPB_FileRefPrivate* GetPPB_FileRefPrivate_Thunk() {
+  return &g_ppb_file_ref_private_thunk;
 }
 
 }  // namespace thunk

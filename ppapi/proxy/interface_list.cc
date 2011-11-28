@@ -42,6 +42,7 @@
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/c/private/ppb_file_ref_private.h"
 #include "ppapi/c/private/ppb_flash_clipboard.h"
 #include "ppapi/c/private/ppb_flash_file.h"
 #include "ppapi/c/private/ppb_flash_fullscreen.h"
@@ -180,6 +181,7 @@ InterfaceList::InterfaceList() {
   AddPPB(PPB_Testing_Proxy::GetInfo());
   AddPPB(PPB_URLLoader_Proxy::GetTrustedInfo());
   AddPPB(PPB_Var_Deprecated_Proxy::GetInfo());
+  AddPPB(PPB_FileRef_Proxy::GetPrivateInfo());
 
   // PPP (plugin) interfaces.
   AddPPP(PPP_Graphics3D_Proxy::GetInfo());

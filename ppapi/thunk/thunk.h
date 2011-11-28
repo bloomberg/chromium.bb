@@ -34,6 +34,7 @@ struct PPB_BufferTrusted;
 struct PPB_Context3DTrusted_Dev;
 struct PPB_FileChooserTrusted;
 struct PPB_FileIOTrusted;
+struct PPB_FileRefPrivate;
 struct PPB_Flash_Clipboard;
 struct PPB_Flash_Menu;
 struct PPB_Flash_NetConnector;
@@ -63,6 +64,7 @@ PPAPI_THUNK_EXPORT const PPB_Context3DTrusted_Dev*
 PPAPI_THUNK_EXPORT const PPB_FileChooserTrusted*
     GetPPB_FileChooser_Trusted_Thunk();
 PPAPI_THUNK_EXPORT const PPB_FileIOTrusted* GetPPB_FileIOTrusted_Thunk();
+PPAPI_THUNK_EXPORT const PPB_FileRefPrivate* GetPPB_FileRefPrivate_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Flash_Clipboard* GetPPB_Flash_Clipboard_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Flash_Menu* GetPPB_Flash_Menu_Thunk();
 PPAPI_THUNK_EXPORT const PPB_Flash_NetConnector*

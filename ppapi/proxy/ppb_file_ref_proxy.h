@@ -22,10 +22,14 @@ struct PPB_FileRef_CreateInfo;
 
 namespace proxy {
 
+class SerializedVarReturnValue;
+
 class PPB_FileRef_Proxy : public InterfaceProxy {
  public:
   explicit PPB_FileRef_Proxy(Dispatcher* dispatcher);
   virtual ~PPB_FileRef_Proxy();
+
+  static const Info* GetPrivateInfo();
 
   static PP_Resource CreateProxyResource(PP_Resource file_system,
                                          const char* path);
@@ -76,6 +80,8 @@ class PPB_FileRef_Proxy : public InterfaceProxy {
   void OnMsgRename(const HostResource& file_ref,
                    const HostResource& new_file_ref,
                    int callback_id);
+  void OnMsgGetAbsolutePath(const HostResource& host_resource,
+                            SerializedVarReturnValue result);
 
   // Host -> Plugin message handlers.
   void OnMsgCallbackComplete(const HostResource& host_resource,

@@ -631,6 +631,9 @@ IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_Rename,
                     ppapi::HostResource /* file_ref */,
                     ppapi::HostResource /* new_file_ref */,
                     int /* callback_id */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetAbsolutePath,
+                           ppapi::HostResource /* file_ref */,
+                           ppapi::proxy::SerializedVar /* result */)
 
 // PPB_FileSystem.
 IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBFileSystem_Create,

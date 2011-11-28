@@ -244,6 +244,20 @@ int32_t PPB_FileRef_Impl::Rename(PP_Resource new_pp_file_ref,
   return PP_OK_COMPLETIONPENDING;
 }
 
+PP_Var PPB_FileRef_Impl::GetAbsolutePath() {
+  if (GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL)
+    return GetPath();
+  if (!external_path_var_.get()) {
+    PluginModule* plugin_module = ResourceHelper::GetPluginModule(this);
+    if (!plugin_module)
+      return PP_MakeNull();
+    external_path_var_ = new StringVar(
+        plugin_module->pp_module(),
+        external_file_system_path_.AsUTF8Unsafe());
+  }
+  return external_path_var_->GetPPVar();
+}
+
 FilePath PPB_FileRef_Impl::GetSystemPath() const {
   if (GetFileSystemType() != PP_FILESYSTEMTYPE_EXTERNAL) {
     NOTREACHED();

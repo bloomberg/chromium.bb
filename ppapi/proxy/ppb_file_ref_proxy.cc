@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_ref.h"
+#include "ppapi/c/private/ppb_file_ref_private.h"
 #include "ppapi/c/private/ppb_proxy_private.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/host_dispatcher.h"
@@ -42,6 +43,7 @@ class FileRef : public FileRefImpl {
   virtual int32_t Delete(PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t Rename(PP_Resource new_file_ref,
                          PP_CompletionCallback callback) OVERRIDE;
+  virtual PP_Var GetAbsolutePath() OVERRIDE;
 
   // Executes the pending callback with the given ID. See pending_callbacks_.
   void ExecuteCallback(int callback_id, int32_t result);
@@ -144,6 +146,13 @@ int32_t FileRef::Rename(PP_Resource new_file_ref,
   return PP_OK_COMPLETIONPENDING;
 }
 
+PP_Var FileRef::GetAbsolutePath() {
+  ReceiveSerializedVarReturnValue result;
+  GetDispatcher()->Send(new PpapiHostMsg_PPBFileRef_GetAbsolutePath(
+      API_ID_PPB_FILE_REF, host_resource(), &result));
+  return result.Return(GetDispatcher());
+}
+
 void FileRef::ExecuteCallback(int callback_id, int32_t result) {
   PendingCallbackMap::iterator found = pending_callbacks_.find(callback_id);
   if (found == pending_callbacks_.end()) {
@@ -171,12 +180,32 @@ int FileRef::SendCallback(PP_CompletionCallback callback) {
   return next_callback_id_++;
 }
 
+namespace {
+
+InterfaceProxy* CreateFileRefProxy(Dispatcher* dispatcher) {
+  return new PPB_FileRef_Proxy(dispatcher);
+}
+
+}  // namespace
+
 PPB_FileRef_Proxy::PPB_FileRef_Proxy(Dispatcher* dispatcher)
     : InterfaceProxy(dispatcher),
       callback_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
 }
 
 PPB_FileRef_Proxy::~PPB_FileRef_Proxy() {
+}
+
+// static
+const InterfaceProxy::Info* PPB_FileRef_Proxy::GetPrivateInfo() {
+  static const Info info = {
+    thunk::GetPPB_FileRefPrivate_Thunk(),
+    PPB_FILEREFPRIVATE_INTERFACE,
+    API_ID_NONE,  // URL_LOADER is the canonical one.
+    false,
+    &CreateFileRefProxy
+  };
+  return &info;
 }
 
 // static
@@ -205,6 +234,8 @@ bool PPB_FileRef_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFileRef_Touch, OnMsgTouch)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFileRef_Delete, OnMsgDelete)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFileRef_Rename, OnMsgRename)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBFileRef_GetAbsolutePath,
+                        OnMsgGetAbsolutePath)
 
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBFileRef_CallbackComplete,
                         OnMsgCallbackComplete)
@@ -292,6 +323,13 @@ void PPB_FileRef_Proxy::OnMsgRename(const HostResource& file_ref,
     enter.SetResult(enter.object()->Rename(new_file_ref.host_resource(),
                                            enter.callback()));
   }
+}
+
+void PPB_FileRef_Proxy::OnMsgGetAbsolutePath(const HostResource& host_resource,
+                                             SerializedVarReturnValue result) {
+  EnterHostFromHostResource<PPB_FileRef_API> enter(host_resource);
+  if (enter.succeeded())
+    result.Return(dispatcher(), enter.object()->GetAbsolutePath());
 }
 
 void PPB_FileRef_Proxy::OnMsgCallbackComplete(

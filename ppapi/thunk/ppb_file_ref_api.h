@@ -34,6 +34,9 @@ class PPAPI_THUNK_EXPORT PPB_FileRef_API {
   // Intermal function for use in proxying. Returns the internal CreateInfo
   // (the contained resource does not carry a ref on behalf of the caller).
   virtual const PPB_FileRef_CreateInfo& GetCreateInfo() const = 0;
+
+  // Private API
+  virtual PP_Var GetAbsolutePath() = 0;
 };
 
 }  // namespace thunk

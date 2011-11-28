@@ -11,9 +11,12 @@
 #include "googleurl/src/gurl.h"
 #include "ppapi/c/ppb_file_ref.h"
 #include "ppapi/shared_impl/file_ref_impl.h"
+#include "ppapi/shared_impl/var.h"
 
 namespace webkit {
 namespace ppapi {
+
+using ::ppapi::StringVar;
 
 class PPB_FileSystem_Impl;
 
@@ -43,6 +46,7 @@ class PPB_FileRef_Impl : public ::ppapi::FileRefImpl {
   virtual int32_t Delete(PP_CompletionCallback callback) OVERRIDE;
   virtual int32_t Rename(PP_Resource new_file_ref,
                          PP_CompletionCallback callback) OVERRIDE;
+  virtual PP_Var GetAbsolutePath();
 
   PPB_FileSystem_Impl* file_system() const { return file_system_.get(); }
 
@@ -66,6 +70,10 @@ class PPB_FileRef_Impl : public ::ppapi::FileRefImpl {
 
   // Used only for external filesystems.
   FilePath external_file_system_path_;
+
+  // Lazily initialized var created from the external path. This is so we can
+  // return the identical string object every time it is requested.
+  scoped_refptr<StringVar> external_path_var_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_FileRef_Impl);
 };
