@@ -1232,36 +1232,3 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsForContext) {
   host_.CancelRequestsForContext(&filter_->resource_context());
   EXPECT_EQ(0, host_.pending_requests());
 }
-
-TEST_F(ResourceDispatcherHostTest, UnknownURLScheme) {
-  EXPECT_EQ(0, host_.pending_requests());
-
-  SetResourceType(ResourceType::MAIN_FRAME);
-  HandleScheme("http");
-
-  MakeTestRequest(0, 1, GURL("foo://bar"));
-
-  // Flush all pending requests.
-  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-
-  // Sorts out all the messages we saw by request.
-  ResourceIPCAccumulator::ClassifiedMessages msgs;
-  accum_.GetClassifiedMessages(&msgs);
-
-  // We should have gotten one RequestComplete message.
-  ASSERT_EQ(1U, msgs[0].size());
-  EXPECT_EQ(ResourceMsg_RequestComplete::ID, msgs[0][0].type());
-
-  // The RequestComplete message should have had status
-  // (FAILED, ERR_UNKNOWN_URL_SCHEME).
-  int request_id;
-  net::URLRequestStatus status;
-
-  void* iter = NULL;
-  EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &request_id));
-  EXPECT_TRUE(IPC::ReadParam(&msgs[0][0], &iter, &status));
-
-  EXPECT_EQ(1, request_id);
-  EXPECT_EQ(net::URLRequestStatus::FAILED, status.status());
-  EXPECT_EQ(net::ERR_UNKNOWN_URL_SCHEME, status.error());
-}
