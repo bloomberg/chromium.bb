@@ -270,6 +270,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         pool = validation_pool.ValidationPool.AcquirePool(
             self._tracking_branch, internal, self._build_root,
             self._options.buildnumber, self._options.debug)
+
         # We only have work to do if there are changes to try.
         if pool.changes:
           CommitQueueSyncStage.pool = pool
@@ -283,7 +284,9 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
       return self.manifest_manager.CreateNewCandidate(patches=self.pool.changes)
     else:
       manifest = self.manifest_manager.GetLatestCandidate()
-      self.SetPoolFromManifest(manifest)
+      if manifest:
+        self.SetPoolFromManifest(manifest)
+
       return manifest
 
   def _PerformStage(self):
@@ -1050,7 +1053,7 @@ class ArchiveStage(NonHaltingBuilderStage):
     # processes for uploading any created artifacts.
     background.RunParallelSteps([BuildAndArchiveArtifacts] +
                                 [UploadDebugSymbols] +
-                                [UploadArtifacts]*16)
+                                [UploadArtifacts] * 16)
 
     # Now that all data has been generated, we can upload the final result to
     # the image server.
