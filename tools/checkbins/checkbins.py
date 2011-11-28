@@ -23,6 +23,7 @@ PE_FILE_EXTENSIONS = ['.exe', '.dll']
 DYNAMICBASE_FLAG = 0x0040
 NXCOMPAT_FLAG = 0x0100
 NO_SEH_FLAG = 0x0400
+MACHINE_TYPE_AMD64 = 0x8664
 
 # Please do not add your file here without confirming that it indeed doesn't
 # require /NXCOMPAT and /DYNAMICBASE.  Contact cpu@chromium.org or your local
@@ -67,14 +68,19 @@ def main(options, args):
       success = False
       print "Checking %s for /NXCOMPAT... FAIL" % path
 
-    # Check for /SAFESEH. Binaries should either have no SEH table
-    # (in which case a bit is set in the DLL characteristics section)
-    # or there should be a LOAD_CONFIG section present containing
-    # a valid SEH table.
+    # Check for /SAFESEH. Binaries should meet one of the following
+    # criteria:
+    #   1) Have no SEH table as indicated by the DLL characteristics
+    #   2) Have a LOAD_CONFIG section containing a valid SEH table
+    #   3) Be a 64-bit binary, in which case /SAFESEH isn't required
+    #
+    # Refer to the following MSDN article for more information:
+    # http://msdn.microsoft.com/en-us/library/9a89h429.aspx
     if (pe.OPTIONAL_HEADER.DllCharacteristics & NO_SEH_FLAG or
         (hasattr(pe, "DIRECTORY_ENTRY_LOAD_CONFIG") and
          pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SEHandlerCount > 0 and
-         pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SEHandlerTable != 0)):
+         pe.DIRECTORY_ENTRY_LOAD_CONFIG.struct.SEHandlerTable != 0) or
+        pe.FILE_HEADER.Machine == MACHINE_TYPE_AMD64):
       if options.verbose:
         print "Checking %s for /SAFESEH... PASS" % path
     else:
