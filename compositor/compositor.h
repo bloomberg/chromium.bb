@@ -275,8 +275,6 @@ struct wlsc_surface {
 
 	struct wl_buffer *buffer;
 	struct wl_listener buffer_destroy_listener;
-
-	void *shell_priv;
 };
 
 void

@@ -90,12 +90,6 @@ struct wlsc_move_grab {
 	int32_t dx, dy;
 };
 
-static struct shell_surface *
-get_shell_surface(struct wlsc_surface *surface)
-{
-	return surface->shell_priv;
-}
-
 static void
 move_grab_motion(struct wl_grab *grab,
 		   uint32_t time, int32_t x, int32_t y)
@@ -390,6 +384,23 @@ shell_handle_surface_destroy(struct wl_listener *listener,
 	wl_resource_destroy(&shsurf->resource, time);
 }
 
+static struct shell_surface *
+get_shell_surface(struct wlsc_surface *surface)
+{
+	struct wl_list *lst = &surface->surface.resource.destroy_listener_list;
+	struct wl_listener *listener;
+
+	/* search the destroy listener list for our callback */
+	wl_list_for_each(listener, lst, link) {
+		if (listener->func == shell_handle_surface_destroy) {
+			return container_of(listener, struct shell_surface,
+					    surface_destroy_listener);
+		}
+	}
+
+	return NULL;
+}
+
 static void
 shell_create_shell_surface(struct wl_client *client,
 			   struct wl_resource *resource,
@@ -421,8 +432,6 @@ shell_create_shell_surface(struct wl_client *client,
 	wl_list_init(&shsurf->link);
 
 	shsurf->type = SHELL_SURFACE_NORMAL;
-
-	surface->shell_priv = shsurf;
 
 	wl_client_add_resource(client, &shsurf->resource);
 }
