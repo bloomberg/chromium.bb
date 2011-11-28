@@ -1032,26 +1032,17 @@ TEST_F(IPCSyncChannelTest, DISABLED_SendWithTimeoutMixedOKAndTimeout) {
 
 namespace {
 
-class NestedTask : public Task {
- public:
-  explicit NestedTask(Worker* server) : server_(server) {}
-  void Run() {
-    // Sleep a bit so that we wake up after the reply has been received.
-    base::PlatformThread::Sleep(250);
-    server_->SendAnswerToLife(true, base::kNoTimeout, true);
-  }
+void NestedCallback(Worker* server) {
+  // Sleep a bit so that we wake up after the reply has been received.
+  base::PlatformThread::Sleep(250);
+  server->SendAnswerToLife(true, base::kNoTimeout, true);
+}
 
-  Worker* server_;
-};
+bool timeout_occurred = false;
 
-static bool timeout_occured = false;
-
-class TimeoutTask : public Task {
- public:
-  void Run() {
-    timeout_occured = true;
-  }
-};
+void TimeoutCallback() {
+  timeout_occurred = true;
+}
 
 class DoneEventRaceServer : public Worker {
  public:
@@ -1059,14 +1050,16 @@ class DoneEventRaceServer : public Worker {
       : Worker(Channel::MODE_SERVER, "done_event_race_server") { }
 
   void Run() {
-    MessageLoop::current()->PostTask(FROM_HERE, new NestedTask(this));
-    MessageLoop::current()->PostDelayedTask(FROM_HERE, new TimeoutTask(), 9000);
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     base::Bind(&NestedCallback, this));
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, base::Bind(&TimeoutCallback), 9000);
     // Even though we have a timeout on the Send, it will succeed since for this
     // bug, the reply message comes back and is deserialized, however the done
     // event wasn't set.  So we indirectly use the timeout task to notice if a
     // timeout occurred.
     SendAnswerToLife(true, 10000, true);
-    DCHECK(!timeout_occured);
+    DCHECK(!timeout_occurred);
     Done();
   }
 };
