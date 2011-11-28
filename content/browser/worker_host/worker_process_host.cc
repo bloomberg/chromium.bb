@@ -74,23 +74,12 @@ class URLRequestContextSelector
 }  // namespace
 
 // Notifies RenderViewHost that one or more worker objects crashed.
-class WorkerCrashTask : public Task {
- public:
-  WorkerCrashTask(int render_process_unique_id, int render_view_id)
-      : render_process_unique_id_(render_process_unique_id),
-        render_view_id_(render_view_id) { }
-
-  void Run() {
-    RenderViewHost* host =
-        RenderViewHost::FromID(render_process_unique_id_, render_view_id_);
-    if (host)
-      host->delegate()->WorkerCrashed();
-  }
-
- private:
-  int render_process_unique_id_;
-  int render_view_id_;
-};
+void WorkerCrashCallback(int render_process_unique_id, int render_view_id) {
+  RenderViewHost* host =
+      RenderViewHost::FromID(render_process_unique_id, render_view_id);
+  if (host)
+    host->delegate()->WorkerCrashed();
+}
 
 WorkerProcessHost::WorkerProcessHost(
     const content::ResourceContext* resource_context,
@@ -111,8 +100,8 @@ WorkerProcessHost::~WorkerProcessHost() {
              parents.begin(); parent_iter != parents.end(); ++parent_iter) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          new WorkerCrashTask(parent_iter->render_process_id(),
-                              parent_iter->render_view_id()));
+          base::Bind(&WorkerCrashCallback, parent_iter->render_process_id(),
+                     parent_iter->render_view_id()));
     }
     WorkerService::GetInstance()->NotifyWorkerDestroyed(this,
                                                         i->worker_route_id());
