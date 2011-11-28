@@ -351,6 +351,26 @@ void NativeThemeChromeos::PaintScrollbarTrack(
   }
 }
 
+void NativeThemeChromeos::PaintArrowButton(SkCanvas* canvas,
+    const gfx::Rect& rect, Part part, State state) const {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  int resource_id =
+      (part == kScrollbarUpArrow || part == kScrollbarLeftArrow) ?
+          IDR_SCROLL_ARROW_UP : IDR_SCROLL_ARROW_DOWN;
+  if (state == kHovered)
+    resource_id++;
+  else if (state == kPressed)
+    resource_id += 2;
+  SkBitmap* bitmap;
+  if (part == kScrollbarUpArrow || part == kScrollbarDownArrow)
+    bitmap = rb.GetBitmapNamed(resource_id);
+  else
+    bitmap = GetHorizontalBitmapNamed(resource_id);
+  DrawBitmapInt(canvas, *bitmap,
+      0, 0, bitmap->width(), bitmap->height(),
+      rect.x(), rect.y(), rect.width(), rect.height());
+}
+
 void NativeThemeChromeos::PaintScrollbarThumb(SkCanvas* canvas,
     Part part, State state, const gfx::Rect& rect) const {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -394,26 +414,6 @@ void NativeThemeChromeos::PaintScrollbarThumb(SkCanvas* canvas,
         8, 0, 5, bitmap->height(),
         rect.x() + rect.width() - 5, rect.y(), 5, rect.height());
   }
-}
-
-void NativeThemeChromeos::PaintArrowButton(SkCanvas* canvas,
-    const gfx::Rect& rect, Part part, State state) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  int resource_id =
-      (part == kScrollbarUpArrow || part == kScrollbarLeftArrow) ?
-          IDR_SCROLL_ARROW_UP : IDR_SCROLL_ARROW_DOWN;
-  if (state == kHovered)
-    resource_id++;
-  else if (state == kPressed)
-    resource_id += 2;
-  SkBitmap* bitmap;
-  if (part == kScrollbarUpArrow || part == kScrollbarDownArrow)
-    bitmap = rb.GetBitmapNamed(resource_id);
-  else
-    bitmap = GetHorizontalBitmapNamed(resource_id);
-  DrawBitmapInt(canvas, *bitmap,
-      0, 0, bitmap->width(), bitmap->height(),
-      rect.x(), rect.y(), rect.width(), rect.height());
 }
 
 void NativeThemeChromeos::PaintCheckbox(SkCanvas* canvas,
