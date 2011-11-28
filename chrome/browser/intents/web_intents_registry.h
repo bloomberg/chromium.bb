@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_INTENTS_WEB_INTENTS_REGISTRY_H_
 #pragma once
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_service.h"

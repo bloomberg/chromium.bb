@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"

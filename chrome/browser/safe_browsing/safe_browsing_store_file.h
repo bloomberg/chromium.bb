@@ -11,6 +11,7 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 
+#include "base/callback.h"
 #include "base/file_util.h"
 
 // Implement SafeBrowsingStore in terms of a flat file.  The file

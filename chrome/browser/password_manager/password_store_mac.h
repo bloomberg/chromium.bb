@@ -8,7 +8,7 @@
 
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/password_manager/login_database.h"

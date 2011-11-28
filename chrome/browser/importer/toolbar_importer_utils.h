@@ -6,8 +6,7 @@
 #define CHROME_BROWSER_IMPORTER_TOOLBAR_IMPORTER_UTILS_H_
 #pragma once
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 
 class Profile;
 

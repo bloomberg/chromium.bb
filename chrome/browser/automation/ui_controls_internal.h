@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_AUTOMATION_UI_CONTROLS_INTERNAL_H_
 #define CHROME_BROWSER_AUTOMATION_UI_CONTROLS_INTERNAL_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "chrome/browser/automation/ui_controls.h"
 
 namespace ui_controls {

@@ -10,7 +10,7 @@
 #include <set>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/non_thread_safe.h"
