@@ -767,6 +767,16 @@
    fun:_ZN18FocusIndicationFix40currentOSHasSetFocusRingStyleInBitmapBugEv
 }
 {
+   bug_47949_c
+   Memcheck:Leak
+   ...
+   fun:ripc_DrawRects
+   fun:CGContextFillRects
+   fun:CGContextFillRect
+   fun:NSRectFill
+   fun:_ZN18FocusIndicationFix40currentOSHasSetFocusRingStyleInBitmapBugEv
+}
+{
    bug_50286
    Memcheck:Leak
    fun:_Znw*
