@@ -3043,6 +3043,7 @@ sdk-libs() {
 sdk-irt-shim() {
   # NOTE: This uses the nacl-gcc toolchain, causing
   #       the pnacl toolchain to depend on it.
+  StepBanner "SDK" "IRT Shim"
   spushd "${NACL_ROOT}"
   RunWithLog "sdk.irt.shim" \
     ./scons -j${PNACL_CONCURRENCY} \

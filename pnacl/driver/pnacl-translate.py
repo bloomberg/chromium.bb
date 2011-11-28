@@ -13,7 +13,10 @@ from driver_tools import *
 
 EXTRA_ENV = {
   'PIC'           : '0',
-  'IRT_ABI_HACK_64': '0',
+
+  # Use the IRT shim by default on x86-64. This can be disabled with an
+  # explicit flag (--noirtshim) or via -nostdlib.
+  'USE_IRT_SHIM': '${ARCH==X8664 ? 1 : 0}',
 
   # Flags for pnacl-nativeld
   'LD_FLAGS': '${STATIC ? -static : ${SHARED ? -shared}}',
@@ -35,19 +38,19 @@ EXTRA_ENV = {
 
   'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
 
-  'LD_ARGS_IRT_ABI_HACK_64':
-    '-lpnacl_irt_shim  -entry=_pnacl_wrapper_start',
+  'LD_ARGS_IRT_SHIM':
+    '${USE_IRT_SHIM ? -lpnacl_irt_shim  -entry=_pnacl_wrapper_start}',
 
   # These are just the dependencies in the native link.
   # TODO(pdox): To simplify translation, reduce from 4 to 2 cases.
   # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
   'LD_ARGS_newlib_static':
-    '-l:crtbegin.o ${IRT_ABI_HACK_64 ? ${LD_ARGS_IRT_ABI_HACK_64} } ' +
+    '${LD_ARGS_IRT_SHIM} -l:crtbegin.o ' +
     '${DEFAULTLIBS ? --start-group ${ld_inputs} -lgcc_eh -lgcc --end-group} ' +
     '-l:libcrt_platform.a -l:crtend.o',
 
   'LD_ARGS_glibc_static' :
-     '-l:crt1.o -l:crti.o -l:crtbeginT.o ${ld_inputs} ' +
+     '${LD_ARGS_IRT_SHIM} -l:crt1.o -l:crti.o -l:crtbeginT.o ${ld_inputs} ' +
      '${DEFAULTLIBS ? ${GLIBC_HACK} --start-group -lgcc -lgcc_eh -lc ' +
      '--end-group} -l:crtend.o -l:crtn.o',
 
@@ -57,7 +60,7 @@ EXTRA_ENV = {
      '-lgcc -lgcc_s} -l:crtendS.o -l:crtn.o',
 
   'LD_ARGS_glibc_dynamic':
-    '--eh-frame-hdr -l:crt1.o -l:crti.o -l:crtbegin.o ' +
+    '--eh-frame-hdr ${LD_ARGS_IRT_SHIM} -l:crt1.o -l:crti.o -l:crtbegin.o ' +
     '${ld_inputs} ${DEFAULTLIBS ? ${SDK_HACK} ${GLIBC_HACK} ${DSO_HACK} ' +
     '-lgcc -lgcc_s} -l:crtend.o -l:crtn.o',
 
@@ -139,6 +142,8 @@ TranslatorPatterns = [
   ( '-shared',         "env.set('SHARED', '1')"),
   ( '-nostdlib',       "env.set('STDLIB', '0')"),
   ( '-nodefaultlibs',  "env.set('DEFAULTLIBS', '0')"),
+
+  ( '--noirtshim',      "env.set('USE_IRT_SHIM', '0')"),
 
   ( '-rpath-link=(.+)', "env.append('LD_FLAGS', '-L'+$0)"),
 

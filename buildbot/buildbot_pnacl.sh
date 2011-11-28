@@ -338,8 +338,8 @@ mode-buildbot-arm-hw-try() {
 }
 
 mode-test-all() {
-  test-all-newlib
-  test-all-glibc
+  test-all-newlib "$@"
+  test-all-glibc "$@"
 }
 
 # NOTE: clobber and toolchain setup to be done manually, since this is for

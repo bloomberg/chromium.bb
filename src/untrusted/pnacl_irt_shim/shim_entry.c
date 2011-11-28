@@ -25,21 +25,29 @@ void _pnacl_wrapper_start(uint32_t *info) {
       break;
     }
   }
-  if (entry == NULL) {
-    volatile char* p = NULL;
-    *p = 0;
+
+  if (entry != NULL) {
+    /*
+     * Save the real irt interface.
+     */
+    __pnacl_real_irt_interface = (TYPE_nacl_irt_query) entry->a_un.a_val;
+
+    /*
+     * Overwrite the auxv slot with the pnacl IRT shim query function.
+     */
+    entry->a_type = AT_SYSINFO;
+    entry->a_un.a_val = (uintptr_t) __pnacl_irt_interface_wrapper;
   }
 
-  /*
-   * Save the real irt interface.
+  /* If entry is NULL still allow startup to continue.  It may be the case
+   * that the IRT was not actually used (e.g., for some commandline tests).
+   * For newlib, we can tell that the IRT isn't used when libnacl_sys_private.a
+   * is in the bitcode link line. However, glibc does not use
+   * libnacl_sys_private, so that would not work. We could look for -lppapi
+   * in the bitcode link line, but looking at the bitcode link line
+   * seems brittle (what if the bitcode link was separated from translation).
+   * Thus we always wrap _start, even if there is no IRT auxv entry.
    */
-  __pnacl_real_irt_interface = (TYPE_nacl_irt_query) entry->a_un.a_val;
-
-  /*
-   * Overwrite the auxv slot with the pnacl IRT shim query function.
-   */
-  entry->a_type = AT_SYSINFO;
-  entry->a_un.a_val = (uintptr_t) __pnacl_irt_interface_wrapper;
 
   /*
    * Call the user entry point function.  It should not return.
