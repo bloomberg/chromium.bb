@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_ACCESSIBILITY_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_ACCESSIBILITY_API_H_
+#ifndef CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_
+#define CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_
 #pragma once
 
 #include <string>
@@ -90,4 +90,4 @@ class GetFocusedControlFunction : public SyncExtensionFunction {
       "experimental.accessibility.getFocusedControl")
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_ACCESSIBILITY_API_H_
+#endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_

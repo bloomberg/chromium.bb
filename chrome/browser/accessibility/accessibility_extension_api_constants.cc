@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_accessibility_api_constants.h"
+#include "chrome/browser/accessibility/accessibility_extension_api_constants.h"
 
 namespace extension_accessibility_api_constants {
 

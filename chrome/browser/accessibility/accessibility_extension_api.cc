@@ -2,21 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/accessibility/accessibility_extension_api.h"
 
 #include "base/json/json_writer.h"
-#include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_accessibility_api.h"
-#include "chrome/browser/extensions/extension_accessibility_api_constants.h"
+#include "chrome/browser/accessibility/accessibility_extension_api_constants.h"
 #include "chrome/browser/extensions/extension_event_router.h"
-#include "chrome/browser/extensions/extension_function_dispatcher.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_service.h"
 
 namespace keys = extension_accessibility_api_constants;

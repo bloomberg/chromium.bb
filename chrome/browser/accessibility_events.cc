@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 
-#include "chrome/browser/extensions/extension_accessibility_api_constants.h"
+#include "chrome/browser/accessibility/accessibility_extension_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_notification_types.h"
