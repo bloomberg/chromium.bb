@@ -115,7 +115,9 @@ def CopySectionFilesToStagingDir(config, section, staging_dir, build_dir):
     if not os.path.exists(dst):
       os.makedirs(dst)
     for file in glob.glob(os.path.join(build_dir, option)):
-      shutil.copy(file, dst)
+      dst_file = os.path.join(dst, os.path.basename(file))
+      if not os.path.exists(dst_file):
+        shutil.copy(file, dst)
 
 def GenerateDiffPatch(options, orig_file, new_file, patch_file):
   if (options.diff_algorithm == "COURGETTE"):
@@ -186,7 +188,7 @@ def CreateArchiveFile(options, staging_dir, current_version, prev_version):
   """
   # First create an uncompressed archive file for the current build (chrome.7z)
   lzma_exec = GetLZMAExec(options.build_dir)
-  archive_file = os.path.join(options.build_dir,
+  archive_file = os.path.join(options.output_dir,
                               options.output_name + ARCHIVE_SUFFIX)
   cmd = [lzma_exec,
          'a',
@@ -220,7 +222,7 @@ def CreateArchiveFile(options, staging_dir, current_version, prev_version):
     compressed_archive_file = options.output_name + COMPRESSED_ARCHIVE_SUFFIX
     orig_file = archive_file
 
-  compressed_archive_file_path = os.path.join(options.build_dir,
+  compressed_archive_file_path = os.path.join(options.output_dir,
                                               compressed_archive_file)
   CompressUsingLZMA(options.build_dir, compressed_archive_file_path, orig_file)
 
@@ -248,7 +250,7 @@ def PrepareSetupExec(options, staging_dir, current_version, prev_version):
     cmd = ['makecab.exe',
            '/D', 'CompressionType=LZX',
            '/V1',
-           '/L', options.build_dir,
+           '/L', options.output_dir,
            os.path.join(options.build_dir, SETUP_EXEC),]
     RunSystemCommand(cmd)
     setup_file = SETUP_EXEC[:-1] + "_"
@@ -316,6 +318,14 @@ def main(options):
   prev_version = GetPrevVersion(options.build_dir, temp_dir,
                                 options.last_chrome_installer)
 
+  # Preferentially copy the files we can find from the output_dir, as
+  # this is where we'll find the Syzygy-optimized executables when
+  # building the optimized mini_installer.
+  if options.build_dir != options.output_dir:
+    CopyAllFilesToStagingDir(config, options.distribution,
+                             staging_dir, options.output_dir)
+
+  # Now copy the remainder of the files from the build dir.
   CopyAllFilesToStagingDir(config, options.distribution,
                            staging_dir, options.build_dir)
 
@@ -341,11 +351,14 @@ def _ParseOptions():
   parser = optparse.OptionParser()
   parser.add_option('-i', '--input_file',
       help='Input file describing which files to archive.')
-  parser.add_option('-o', '--build_dir',
+  parser.add_option('-b', '--build_dir',
       help='Build directory. The paths in input_file are relative to this.')
   parser.add_option('--staging_dir',
       help='Staging directory where intermediate files and directories '
            'will be created'),
+  parser.add_option('-o', '--output_dir',
+      help='The output directory where the archives will be written. '
+            'Defaults to the build_dir.')
   parser.add_option('--resource_file_path',
       help='The path where the resource file will be output. '
            'Defaults to %s in the build directory.' %
@@ -368,20 +381,22 @@ def _ParseOptions():
       help='Name used to prefix names of generated archives.')
 
   options, args = parser.parse_args()
-
   if not options.build_dir:
     parser.error('You must provide a build dir.')
 
   if not options.staging_dir:
     parser.error('You must provide a staging dir.')
 
+  if not options.output_dir:
+    options.output_dir = options.build_dir
+
   if not options.resource_file_path:
     options.options.resource_file_path = os.path.join(options.build_dir,
                                                       MINI_INSTALLER_INPUT_FILE)
 
-  print sys.argv
   return options
 
 
 if '__main__' == __name__:
+  print sys.argv
   sys.exit(main(_ParseOptions()))
