@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_GTK_PAGE_INFO_WINDOW_H_
-#define CHROME_BROWSER_UI_GTK_PAGE_INFO_WINDOW_H_
+#ifndef CHROME_BROWSER_UI_PAGE_INFO_BUBBLE_H_
+#define CHROME_BROWSER_UI_PAGE_INFO_BUBBLE_H_
 #pragma once
 
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -22,4 +22,4 @@ void ShowPageInfoBubble(gfx::NativeWindow parent,
 
 }  // namespace browser
 
-#endif  // CHROME_BROWSER_UI_GTK_PAGE_INFO_WINDOW_H_
+#endif  // CHROME_BROWSER_UI_PAGE_INFO_BUBBLE_H_
