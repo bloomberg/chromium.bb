@@ -42,9 +42,59 @@ int should_be_true;
 extern int should_be_true;
 #endif
 
-/* This could have less duplication, but let's duplicate the bodies to
- * be clear about what functions are generated and how they call each other.
+/* We test the pnaclcall attribute several ways.
+ * (1) Commandline flag (or nothing at all if there is 100% compatibility).
+ * (2) Declaring the callee as having the "pnaclcall" attribute.
+ * (3) Not declaring the callee to have the attribute, but by making a
+ * call through a temporary function pointer that has the attribute.
+ *
+ * Module 2 is the only one that calls from nacl-gcc to pnacl, so
+ * this is the only one that varies this way.
+ *
+ * Module 0 to Module 1 is where we transition from pnacl to nacl-gcc.
+ * For this, we either use the commandline flag (1), or we use the
+ * declaration (2), since pnacl itself cannot turn on/off the pnaclcall
+ * convention.
  */
+#if defined(TEST_ATTRIBUTE_VIA_DECL)
+
+#define MOD3_DECL(TYPE)                                             \
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                           \
+  extern __attribute__((noinline,pnaclcall)) TYPE mod3_##TYPE(void)
+#define MOD2_TO_3_CALL(TYPE, ret)               \
+  ret = mod3_##TYPE()
+#define MOD1_DECL(TYPE)                                         \
+  __attribute__((pnaclcall,noinline)) TYPE mod1_##TYPE(void)
+
+#elif defined(TEST_ATTRIBUTE_VIA_FP)
+
+#define MOD3_DECL(TYPE)                                     \
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                   \
+  extern __attribute__((noinline)) TYPE mod3_##TYPE(void)
+#define MOD2_TO_3_CALL(TYPE, ret)                                   \
+  do {                                                              \
+    TYPE (__attribute__((pnaclcall)) *temp_fp)(void) =              \
+        (TYPE (__attribute__((pnaclcall)) *)(void)) &mod3_##TYPE;   \
+    ret = (*temp_fp)();                                             \
+  } while(0)
+#define MOD1_DECL(TYPE)                                         \
+  __attribute__((pnaclcall,noinline)) TYPE mod1_##TYPE(void)
+
+#else /* Testing with just the commandline flag / or nothing at all. */
+
+#define MOD3_DECL(TYPE)                                     \
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                   \
+  extern __attribute__((noinline)) TYPE mod3_##TYPE(void)
+#define MOD2_TO_3_CALL(TYPE, ret)               \
+  ret = mod3_##TYPE()
+#define MOD1_DECL(TYPE)                             \
+  __attribute__((noinline)) TYPE mod1_##TYPE(void)
+
+#endif  /* TEST_ATTRIBUTE_VIA_... */
+
+/**********************************************************************/
+/* The actual test code structure (which is divided into 4 modules). */
+
 #define GENERATE_FOR_MODULE3(TYPE)                                  \
   TYPE mod3_##TYPE(void) __attribute__((noinline));                 \
   TYPE mod3_##TYPE(void) {                                          \
@@ -63,11 +113,12 @@ extern int should_be_true;
 
 #define GENERATE_FOR_MODULE2(TYPE)                                  \
   /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                           \
-  extern TYPE mod3_##TYPE(void) __attribute__((noinline));          \
+  MOD3_DECL(TYPE);                                                  \
   TYPE mod2_##TYPE(void) __attribute__((noinline));                 \
   TYPE mod2_##TYPE(void) {                                          \
     if (should_be_true) {                                           \
-      TYPE z = mod3_##TYPE();                                       \
+      TYPE z;                                                       \
+      MOD2_TO_3_CALL(TYPE, z);                                      \
       CHECK_##TYPE(z);                                              \
       printf("Made it to mod2_" #TYPE "\n");                        \
       return z;                                                     \
@@ -83,7 +134,7 @@ extern int should_be_true;
 #define GENERATE_FOR_MODULE1(TYPE)                                  \
   /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                           \
   extern TYPE mod2_##TYPE(void) __attribute__((noinline));          \
-  TYPE mod1_##TYPE(void) __attribute__((noinline));                 \
+  MOD1_DECL(TYPE);                                                  \
   TYPE mod1_##TYPE(void) {                                          \
     if (should_be_true) {                                           \
       TYPE z = mod2_##TYPE();                                       \

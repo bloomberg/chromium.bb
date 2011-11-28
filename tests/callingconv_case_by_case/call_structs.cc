@@ -45,11 +45,63 @@ int should_be_true;
 extern int should_be_true;
 #endif
 
-/* This could have less duplication, but let's duplicate the bodies to
- * be clear about what functions are generated and how they call each other.
+/**********************************************************************/
+
+/* We test the pnaclcall attribute several ways.
+ * (1) Commandline flag (or nothing at all if there is 100% compatibility).
+ * (2) Declaring the callee as having the "pnaclcall" attribute.
+ * (3) Not declaring the callee to have the attribute, but by making a
+ * call through a temporary function pointer that has the attribute.
+ *
+ * Module 2 is the only one that calls from nacl-gcc to pnacl, so
+ * this is the only one that varies this way.
+ *
+ * Module 0 to Module 1 is where we transition from pnacl to nacl-gcc.
+ * For this, we either use the commandline flag (1), or we use the
+ * declaration (2), since pnacl itself cannot turn on/off the pnaclcall
+ * convention.
  */
+#if defined(TEST_ATTRIBUTE_VIA_DECL)
+
+#define MOD3_DECL(TYPE)                                                 \
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                               \
+  extern __attribute__((noinline,pnaclcall)) void mod3_##TYPE(TYPE z)
+#define MOD2_TO_3_CALL(TYPE, arg)               \
+  mod3_##TYPE(arg)
+#define MOD1_DECL(TYPE)                                         \
+  __attribute__((pnaclcall,noinline)) void mod1_##TYPE(TYPE z)
+
+#elif defined(TEST_ATTRIBUTE_VIA_FP)
+
+#define MOD3_DECL(TYPE)                                     \
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                   \
+  extern __attribute__((noinline)) void mod3_##TYPE(TYPE z)
+#define MOD2_TO_3_CALL(TYPE, arg)                                   \
+  do {                                                              \
+    void (__attribute__((pnaclcall)) *temp_fp)(TYPE z) =            \
+        (void (__attribute__((pnaclcall)) *)(TYPE)) &mod3_##TYPE;   \
+    (*temp_fp)(arg);                                                \
+  } while(0)
+#define MOD1_DECL(TYPE)                                         \
+  __attribute__((pnaclcall,noinline)) void mod1_##TYPE(TYPE z)
+
+#else /* Testing with just the commandline flag / or nothing at all. */
+
+#define MOD3_DECL(TYPE)                                     \
+  /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                   \
+  extern __attribute__((noinline)) void mod3_##TYPE(TYPE z)
+#define MOD2_TO_3_CALL(TYPE, arg)               \
+  mod3_##TYPE(arg)
+#define MOD1_DECL(TYPE)                                 \
+  __attribute__((noinline)) void mod1_##TYPE(TYPE z)
+
+#endif  /* TEST_ATTRIBUTE_VIA_... */
+
+/**********************************************************************/
+/* The actual test code structure (which is divided into 4 modules). */
+
 #define GENERATE_FOR_MODULE3(TYPE)                                  \
-  void mod3_##TYPE(TYPE z) __attribute__((noinline));               \
+  __attribute__((noinline)) void mod3_##TYPE(TYPE z);               \
   void mod3_##TYPE(TYPE z) {                                        \
     CHECK_##TYPE(z);                                                \
     if (should_be_true) {                                           \
@@ -62,13 +114,12 @@ extern int should_be_true;
   }
 
 #define GENERATE_FOR_MODULE2(TYPE)                                  \
-  /* @IGNORE_LINES_FOR_CODE_HYGIENE[2] */                           \
-  extern void mod3_##TYPE(TYPE z) __attribute__((noinline));        \
-  void mod2_##TYPE(TYPE z) __attribute__((noinline));               \
+  MOD3_DECL(TYPE);                                                  \
+  __attribute__((noinline)) void mod2_##TYPE(TYPE z);               \
   void mod2_##TYPE(TYPE z) {                                        \
     CHECK_##TYPE(z);                                                \
     if (should_be_true) {                                           \
-      mod3_##TYPE(z);                                               \
+      MOD2_TO_3_CALL(TYPE, z);                                      \
       CHECK_##TYPE(z);                                              \
       printf("Made it to mod2_" #TYPE "\n");                        \
       memset((void*)&z, 0, sizeof z);                               \
@@ -81,8 +132,8 @@ extern int should_be_true;
 
 #define GENERATE_FOR_MODULE1(TYPE)                                  \
   /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                           \
-  extern void mod2_##TYPE(TYPE z) __attribute__((noinline));        \
-  void mod1_##TYPE(TYPE z) __attribute__((noinline));               \
+  extern __attribute__((noinline)) void mod2_##TYPE(TYPE z);        \
+  MOD1_DECL(TYPE);                                                  \
   void mod1_##TYPE(TYPE z) {                                        \
     CHECK_##TYPE(z);                                                \
     if (should_be_true) {                                           \
@@ -99,8 +150,8 @@ extern int should_be_true;
 
 #define GENERATE_FOR_MODULE0(TYPE)                                  \
   /* @IGNORE_LINES_FOR_CODE_HYGIENE[1] */                           \
-  extern void mod1_##TYPE(TYPE z) __attribute__((noinline));        \
-  void mod0_##TYPE(TYPE z) __attribute__((noinline));               \
+  extern __attribute__((noinline)) void mod1_##TYPE(TYPE z) ;       \
+  void __attribute__((noinline)) mod0_##TYPE(TYPE z) ;              \
   void mod0_##TYPE(TYPE z) {                                        \
     CHECK_##TYPE(z);                                                \
     if (should_be_true) {                                           \
@@ -114,7 +165,7 @@ extern int should_be_true;
       mod1_##TYPE(z);                                               \
     }                                                               \
   }                                                                 \
-  void test_##TYPE(void) __attribute__((noinline));                 \
+  void  __attribute__((noinline)) test_##TYPE(void);                \
   void test_##TYPE(void) {                                          \
     TYPE z = k##TYPE;                                               \
     CHECK_##TYPE(z);                                                \

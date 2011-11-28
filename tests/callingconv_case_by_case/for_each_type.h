@@ -61,17 +61,8 @@ DO_FOR_TYPE(CLASS_I32_I32)
 DO_FOR_TYPE(CLASS_DOUBLE_DOUBLE)
 DO_FOR_TYPE(U_CLASS_INT_CLASS)
 
-/* These are currently borked for callsites on 32-bit and 64-bit PNaCl
- * calling into 32-bit and 64-bit NNaCl, even with the compatibility
- * flag "-mstructs-on-stack". See:
- * http://code.google.com/p/nativeclient/issues/detail?id=2403
- *
- * Returning is fine, since that doesn't involve a superfluous "byval".
- */
- /* (should be fixed when we do a pull down of the latest clang)
 DO_FOR_TYPE(NONTRIV_CLASS_I32_I32)
 DO_FOR_TYPE(NONTRIV_CLASS_DOUBLE_DOUBLE)
-*/
 
 DO_FOR_TYPE(MEMBER_PTRS)
 DO_FOR_TYPE(MEMBER_FUN_PTRS)

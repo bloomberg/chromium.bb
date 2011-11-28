@@ -13,56 +13,99 @@ Import('env')
 # MODULE0(cc1) -> MODULE0(cc1) -> MODULE1(cc2) -> MODULE2(cc2) -> MODULE3(cc1).
 # For the return test, the dataflow is reversed.
 
-# Environments for building module sources
-envlist = []
+# For x86-64, there is a compatibility flag and calling conv attribute.
+# We use the same framework to test those as well.
 
-# For nacl-gcc, only do a self-test.
-# For ARM, there is no nacl-gcc so only do a self-test.
-# Otherwise, mix them up!
-if not env.Bit('bitcode') or env.Bit('target_arm'):
-  if not env.Bit('bitcode'):
-    # Assume that for nacl-gcc, the bots have at least sse2.
-    env.Append(CCFLAGS=['-msse2'])
-  for i in xrange(4):
-    envlist.append(env.Clone()) # Same CC for all...
-  link_env = env
-else:
+
+# List of (4 envs for the modules, link_env, test_name_suffix)
+# to apply to each source. The 4 envs may have different flags.
+test_configurations = []
+
+def AddCommonFlags(envlist):
+  for (i, e) in enumerate(envlist):
+    # Add -Wno-long-long because we use c99 long long constants in C++ code.
+    e.Append(CCFLAGS=['-DMODULE' + str(i), '-Wno-long-long'])
+
+def MakeSelfTestEnv(base_env, extra_flags):
+  """ Make a list of four (nearly identical) envs which use the same CC
+  for compiling the four modules to test self-consistency.  """
+  base_env = base_env.Clone()
+  base_env.Append(CCFLAGS=extra_flags)
+  # Same CC for all, but assign different module defines later.
+  envlist = [base_env.Clone() for dummy_count in xrange(4)]
+  AddCommonFlags(envlist)
+  link_env = base_env
+  return (envlist, link_env)
+
+def MakeCrossEnvs(base_env, extra_gcc_flags, extra_pnacl_flags):
+  """ Make a list of four (nearly identical) envs, some of which use gcc
+  and some use pnacl, for compiling the four modules to test consistency.  """
+  envlist = []
   # For module0
-  cc1_env = env.Clone()
+  cc1_env = base_env.Clone()
   cc1_env.PNaClForceNative()
+  cc1_env.Append(CCFLAGS=extra_pnacl_flags)
   envlist.append(cc1_env)
   # For module1
-  cc2_env = env.PNaClGetNNaClEnv()
-  # Assume that for nacl-gcc, the bots have at least sse2.
-  cc2_env.Append(CCFLAGS=['-msse2'])
-  # Add nacl-gcc compatibility flag (to be committed).
-  # cc2_env.Append(CCFLAGS=['-mstructs-on-stack'])
+  cc2_env = base_env.PNaClGetNNaClEnv()
+  cc2_env.Append(CCFLAGS=extra_gcc_flags)
   envlist.append(cc2_env)
   envlist.append(cc2_env.Clone()) # For module2
   envlist.append(cc1_env.Clone()) # For module3
-
   link_env = cc1_env # To allow linking native objects (from ForceNative).
-
-for (i, e) in enumerate(envlist):
-  # Add -Wno-long-long because we use c99 long long constants in C++ code.
-  e.Append(CCFLAGS=['-DMODULE' + str(i), '-Wno-long-long'])
+  AddCommonFlags(envlist)
+  return (envlist, link_env)
 
 
-# Once the gcc flag is added (and/or if we do something with llvm).
-tis_broken = env.Bit('bitcode') and env.Bit('target_x86_64')
+if not env.Bit('bitcode'):
+  # For gcc, only do a self-consistency test.
+  # Assume for nacl-gcc the bots have at least sse2.
+  envlist, link_env = MakeSelfTestEnv(env, ['-msse2'])
+  test_configurations.append((envlist, link_env, ''))
+else:
+  if env.Bit('target_arm'):
+    # For arm, there is no gcc, so just test pnacl (via native objects).
+    native_env = env.Clone()
+    native_env.PNaClForceNative()
+    envlist, link_env = MakeSelfTestEnv(native_env, [])
+    test_configurations.append((envlist, link_env, ''))
+  elif env.Bit('target_x86_32'):
+    # For x86-32 there is gcc, but no compatibility flags.
+    envlist, link_env = MakeCrossEnvs(env, ['-msse2'], [])
+    test_configurations.append((envlist, link_env, ''))
+  elif env.Bit('target_x86_64'):
+    # For x86-64 PNaCl we have more things to test.
+    # First test the command line flag.
+    envlist, link_env = MakeCrossEnvs(env,
+                                      ['-msse2', '-mpnacl-cconv'], [])
+    test_configurations.append((envlist, link_env, ''))
+    envlist, link_env = MakeCrossEnvs(env,
+                                      ['-msse2', '-DTEST_ATTRIBUTE_VIA_DECL'],
+                                      [])
+    test_configurations.append((envlist, link_env, '_decl'))
+    envlist, link_env = MakeCrossEnvs(env,
+                                      ['-msse2', '-DTEST_ATTRIBUTE_VIA_FP'],
+                                      [])
+    test_configurations.append((envlist, link_env, '_fp'))
+  else:
+    raise "Unknown target architecture!"
 
-for test_source in ["return_structs.cc",
-                    "call_structs.cc"]:
+######################################################################
+
+for test_source in ['return_structs.cc',
+                    'call_structs.cc']:
   test_name = test_source.split('.')[0]
-  objfiles = []
-  for (i, e) in enumerate(envlist):
-    obj = e.ComponentObject(test_name + '.' + str(i), test_source)
-    objfiles.append(obj)
-  prog = link_env.ComponentProgram(test_name,
-                                   objfiles,
-                                   EXTRA_LIBS=['${NONIRT_LIBS}'])
-  node = env.CommandSelLdrTestNacl(test_name + '.out',
-                                   prog)
-  env.AddNodeToTestSuite(node, ['small_tests'],
-                         'run_' + test_name + '_test',
-                         is_broken=tis_broken)
+  for (envlist, link_env, test_suffix) in test_configurations:
+    objfiles = []
+    test_full_name = test_name + test_suffix
+    for (i, e) in enumerate(envlist):
+      obj = e.ComponentObject(test_full_name + '.' + str(i),
+                              test_source)
+      objfiles.append(obj)
+    prog = link_env.ComponentProgram(test_full_name,
+                                     objfiles,
+                                     EXTRA_LIBS=['${NONIRT_LIBS}'])
+    node = env.CommandSelLdrTestNacl(test_full_name + '.out',
+                                     prog)
+    env.AddNodeToTestSuite(node, ['small_tests', 'toolchain_tests'],
+                           'run_' + test_full_name + '_test')
