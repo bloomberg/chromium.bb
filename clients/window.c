@@ -1314,11 +1314,11 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 {
 	struct input *input = data;
 	struct window *window = input->keyboard_focus;
-	struct display *d = window->display;
+	struct display *d = input->display;
 	uint32_t code, sym, level;
 
 	code = key + d->xkb->min_key_code;
-	if (window->keyboard_device != input)
+	if (!window || window->keyboard_device != input)
 		return;
 
 	level = 0;
@@ -1394,7 +1394,6 @@ window_handle_keyboard_focus(void *data,
 	struct display *d = input->display;
 	uint32_t *k, *end;
 
-	window = input->keyboard_focus;
 	if (window) {
 		window->keyboard_device = NULL;
 		if (window->keyboard_focus_handler)
