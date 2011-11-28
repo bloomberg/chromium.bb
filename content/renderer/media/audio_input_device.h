@@ -72,6 +72,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "base/threading/simple_thread.h"
@@ -149,10 +150,10 @@ class CONTENT_EXPORT AudioInputDevice
   // AudioInputMessageFilter::Delegate impl., called by AudioInputMessageFilter
   virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
                                    base::SyncSocket::Handle socket_handle,
-                                   uint32 length);
-  virtual void OnVolume(double volume);
-  virtual void OnStateChanged(AudioStreamState state);
-  virtual void OnDeviceReady(const std::string& device_id);
+                                   uint32 length) OVERRIDE;
+  virtual void OnVolume(double volume) OVERRIDE;
+  virtual void OnStateChanged(AudioStreamState state) OVERRIDE;
+  virtual void OnDeviceReady(const std::string& device_id) OVERRIDE;
 
  private:
   // Methods called on IO thread ----------------------------------------------

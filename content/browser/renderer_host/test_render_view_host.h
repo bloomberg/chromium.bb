@@ -138,13 +138,13 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
   virtual void AcceleratedSurfaceNew(
       int32 width, int32 height, uint64* surface_id,
-      TransportDIB::Handle* surface_handle) { }
-  virtual void AcceleratedSurfaceRelease(uint64 surface_id) { }
+      TransportDIB::Handle* surface_handle) OVERRIDE { }
+  virtual void AcceleratedSurfaceRelease(uint64 surface_id) OVERRIDE { }
 #endif
 
 #if defined(TOOLKIT_USES_GTK)
-  virtual void CreatePluginContainer(gfx::PluginWindowHandle id) { }
-  virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) { }
+  virtual void CreatePluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
+  virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) OVERRIDE { }
 #endif
 
   virtual gfx::PluginWindowHandle GetCompositingSurface() OVERRIDE;

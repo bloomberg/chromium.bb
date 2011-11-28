@@ -57,6 +57,7 @@
 
 #include <map>
 
+#include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -122,8 +123,9 @@ class CONTENT_EXPORT AudioInputRendererHost
                       uint32 size) OVERRIDE;
 
   // media_stream::AudioInputDeviceManagerEventHandler implementation.
-  virtual void OnDeviceStarted(int session_id, const std::string& device_id);
-  virtual void OnDeviceStopped(int session_id);
+  virtual void OnDeviceStarted(int session_id,
+                               const std::string& device_id) OVERRIDE;
+  virtual void OnDeviceStopped(int session_id) OVERRIDE;
 
  private:
   // TODO(henrika): extend test suite (compare AudioRenderHost)

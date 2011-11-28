@@ -44,8 +44,8 @@ class CONTENT_EXPORT WebDragSourceGtk : public MessageLoopForUI::Observer {
                      const gfx::Point& image_offset);
 
   // MessageLoop::Observer implementation:
-  virtual void WillProcessEvent(GdkEvent* event);
-  virtual void DidProcessEvent(GdkEvent* event);
+  virtual void WillProcessEvent(GdkEvent* event) OVERRIDE;
+  virtual void DidProcessEvent(GdkEvent* event) OVERRIDE;
 
  private:
   CHROMEGTK_CALLBACK_2(WebDragSourceGtk, gboolean, OnDragFailed,

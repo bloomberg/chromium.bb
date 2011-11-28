@@ -121,8 +121,8 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
                        size_t audio_delay_milliseconds) OVERRIDE;
 
   // AudioInputDevice::CaptureEventHandler implementation.
-  virtual void OnDeviceStarted(const std::string& device_id);
-  virtual void OnDeviceStopped();
+  virtual void OnDeviceStarted(const std::string& device_id) OVERRIDE;
+  virtual void OnDeviceStopped() OVERRIDE;
 
   // webrtc::Module implementation.
   virtual int32_t Version(char* version,

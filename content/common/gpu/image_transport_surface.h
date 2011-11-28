@@ -9,6 +9,7 @@
 #if defined(ENABLE_GPU)
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ipc/ipc_channel.h"
@@ -153,8 +154,8 @@ class PassThroughImageTransportSurface
   virtual ~PassThroughImageTransportSurface();
 
   // GLSurface implementation.
-  virtual bool Initialize();
-  virtual void Destroy();
+  virtual bool Initialize() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
 
   // ImageTransportSurface implementation.
   virtual void OnNewSurfaceACK(

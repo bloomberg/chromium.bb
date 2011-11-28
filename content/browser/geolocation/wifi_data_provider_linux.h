@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_LINUX_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 #include "content/common/content_export.h"
 
@@ -23,8 +24,8 @@ class CONTENT_EXPORT WifiDataProviderLinux : public WifiDataProviderCommon {
   virtual ~WifiDataProviderLinux();
 
   // WifiDataProviderCommon
-  virtual WlanApiInterface* NewWlanApi();
-  virtual PollingPolicyInterface* NewPollingPolicy();
+  virtual WlanApiInterface* NewWlanApi() OVERRIDE;
+  virtual PollingPolicyInterface* NewPollingPolicy() OVERRIDE;
 
   // For testing.
   WlanApiInterface* NewWlanApiForTesting(dbus::Bus* bus);

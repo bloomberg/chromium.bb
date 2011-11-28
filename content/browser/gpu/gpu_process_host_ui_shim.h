@@ -14,6 +14,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/task.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -77,7 +78,7 @@ class GpuProcessHostUIShim
   // The GpuProcessHost causes this to be called on the UI thread to
   // dispatch the incoming messages from the GPU process, which are
   // actually received on the IO thread.
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   CONTENT_EXPORT void SimulateRemoveAllContext();
   CONTENT_EXPORT void SimulateCrash();

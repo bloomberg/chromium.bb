@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 #define CONTENT_COMMON_FONT_CONFIG_IPC_LINUX_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "skia/ext/SkFontHost_fontconfig_impl.h"
 
 #include <string>
@@ -25,8 +26,8 @@ class FontConfigIPC : public FontConfigInterface {
                      const std::string& family,
                      const void* characters,
                      size_t characters_bytes,
-                     bool* is_bold, bool* is_italic);
-  virtual int Open(unsigned filefaceid);
+                     bool* is_bold, bool* is_italic) OVERRIDE;
+  virtual int Open(unsigned filefaceid) OVERRIDE;
 
   enum Method {
     METHOD_MATCH = 0,

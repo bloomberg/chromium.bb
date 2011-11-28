@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_GEOLOCATION_WIN7_LOCATION_PROVIDER_WIN_H_
 #define CONTENT_BROWSER_GEOLOCATION_WIN7_LOCATION_PROVIDER_WIN_H_
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
@@ -25,11 +26,11 @@ class CONTENT_EXPORT Win7LocationProvider : public LocationProviderBase {
   virtual ~Win7LocationProvider();
 
   // LocationProvider.
-  virtual bool StartProvider(bool high_accuracy);
-  virtual void StopProvider();
-  virtual void GetPosition(Geoposition* position);
-  virtual void UpdatePosition();
-  virtual void OnPermissionGranted(const GURL& requesting_frame);
+  virtual bool StartProvider(bool high_accuracy) OVERRIDE;
+  virtual void StopProvider() OVERRIDE;
+  virtual void GetPosition(Geoposition* position) OVERRIDE;
+  virtual void UpdatePosition() OVERRIDE;
+  virtual void OnPermissionGranted(const GURL& requesting_frame) OVERRIDE;
 
  private:
   // Task which runs in the child thread.
