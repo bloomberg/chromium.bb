@@ -17,6 +17,7 @@ sys.path.append(constants.SOURCE_ROOT)
 from chromite.buildbot import gerrit_helper
 from chromite.buildbot import patch as cros_patch
 from chromite.buildbot import validation_pool
+from chromite.lib import cros_build_lib
 
 
 # pylint: disable=W0212,R0904
@@ -309,6 +310,70 @@ class TestValidationPool(mox.MoxTestBase):
 
     self.mox.ReplayAll()
     self.assertTrue(pool.ApplyPoolIntoRepo(build_root))
+    self.mox.VerifyAll()
+
+  def testSimpleSubmitPool(self):
+    """Tests the ability to submit a list of changes."""
+    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
+    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
+    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
+    build_root = 'fakebuildroot'
+
+    validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool.changes = [patch1, patch2]
+    pool.gerrit_helper = helper
+    pool.dryrun = False
+
+    patch1.Submit(helper, dryrun=False)
+    helper.IsChangeCommitted(patch1.id).AndReturn(True)
+    patch2.Submit(helper, dryrun=False)
+    helper.IsChangeCommitted(patch2.id).AndReturn(True)
+
+    self.mox.ReplayAll()
+    pool.SubmitPool()
+    self.mox.VerifyAll()
+
+  def testSubmitPoolWithSomeFailures(self):
+    """Tests submitting a pool when some changes fail to be submitted.
+
+    Tests what happens when we try to submit 3 patches with 2 patches failing
+    to submit correctly (one with submit failure and the other not showing up
+    as submitted in Gerrit.
+    """
+    self.mox.StubOutWithMock(validation_pool.ValidationPool, '_IsTreeOpen')
+    patch1 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch2 = self.mox.CreateMock(cros_patch.GerritPatch)
+    patch3 = self.mox.CreateMock(cros_patch.GerritPatch)
+    helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
+
+    patch1.id = 'ChangeId1'
+    patch2.id = 'ChangeId2'
+    patch3.id = 'ChangeId3'
+    build_root = 'fakebuildroot'
+
+    validation_pool.ValidationPool._IsTreeOpen().AndReturn(True)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
+    pool.changes = [patch1, patch2, patch3]
+    pool.gerrit_helper = helper
+    pool.dryrun = False
+
+    patch1.Submit(helper, dryrun=False)
+    helper.IsChangeCommitted(patch1.id).AndReturn(False)
+    patch1.HandleCouldNotSubmit(helper, pool.build_log, dryrun=False)
+    patch2.Submit(helper, dryrun=False).AndRaise(
+        cros_build_lib.RunCommandError('Failed to submit', 'cmd', 1))
+    patch2.HandleCouldNotSubmit(helper, pool.build_log, dryrun=False)
+    patch3.Submit(helper, dryrun=False)
+    helper.IsChangeCommitted(patch3.id).AndReturn(True)
+
+    self.mox.ReplayAll()
+    self.assertRaises(validation_pool.FailedToSubmitAllChangesException,
+                      validation_pool.ValidationPool.SubmitPool, (pool))
     self.mox.VerifyAll()
 
 

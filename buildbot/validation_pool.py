@@ -25,10 +25,17 @@ _BUILD_INT_DASHBOARD = 'http://chromeos-botmaster.mtv.corp.google.com:8026'
 
 class TreeIsClosedException(Exception):
   """Raised when the tree is closed and we wanted to submit changes."""
-
   def __init__(self):
     super(TreeIsClosedException, self).__init__(
         'TREE IS CLOSED.  PLEASE SET TO OPEN OR THROTTLED TO COMMIT')
+
+
+class FailedToSubmitAllChangesException(Exception):
+  """Raised if we fail to submit any changes."""
+  def __init__(self, changes):
+    super(FailedToSubmitAllChangesException, self).__init__(
+        'FAILED TO SUBMIT ALL CHANGES:  Could not verify that changes %s were '
+        'submitted' % ' '.join(str(c) for c in changes))
 
 
 class ValidationPool(object):
@@ -262,17 +269,29 @@ class ValidationPool(object):
       TreeIsClosedException: if the tree is closed.
     """
     assert self.is_master, 'Non-master builder calling SubmitPool'
+    changes_that_failed_to_submit = []
     if ValidationPool._IsTreeOpen() or self.dryrun:
       for change in self.changes:
+        was_change_submitted = False
         logging.info('Change %s will be submitted', change)
         try:
           change.Submit(self.gerrit_helper, dryrun=self.dryrun)
+          was_change_submitted = self.gerrit_helper.IsChangeCommitted(
+              change.id)
         except cros_build_lib.RunCommandError:
-          change.HandleCouldNotSubmit(self.gerrit_helper, self.build_log,
-                                      dryrun=self.dryrun)
-          # TODO(sosa): Do we re-raise?
+          logging.error('gerrit review --submit failed for change.')
+        finally:
+          if not was_change_submitted:
+            logging.error('Could not submit %s', str(change))
+            change.HandleCouldNotSubmit(self.gerrit_helper, self.build_log,
+                                        dryrun=self.dryrun)
+            changes_that_failed_to_submit.append(change)
+
       if self.changes_that_failed_to_apply_earlier:
         self.HandleApplicationFailure(self.changes_that_failed_to_apply_earlier)
+
+      if changes_that_failed_to_submit:
+        raise FailedToSubmitAllChangesException(changes_that_failed_to_submit)
 
     else:
       raise TreeIsClosedException()
