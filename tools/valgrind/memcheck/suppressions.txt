@@ -4922,6 +4922,7 @@
 {
    bug_101755_b
    Memcheck:Cond
+   ...
    fun:_ZN7WebCore13WidthIterator*
    fun:_ZNK7WebCore4Font26selectionRectForSimpleTextERKNS_7TextRunERKNS_10FloatPointEiii
    fun:_ZNK7WebCore4Font20selectionRectForTextERKNS_7TextRunERKNS_10FloatPointEiii
