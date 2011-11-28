@@ -1272,6 +1272,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
       parsed_command_line().GetSwitchValueASCII(switches::kEnableProfiling);
     bool enabled = flag.compare("0") != 0;
     tracked_objects::ThreadData::InitializeAndSetTrackingStatus(enabled);
+  } else {
+#if defined(OS_WIN)
+    // TODO(jar) 103209: Temporarilly default to disable for XP.
+    if (base::win::GetVersion() <= base::win::VERSION_XP)
+      tracked_objects::ThreadData::InitializeAndSetTrackingStatus(false);
+#endif  // OS_WIN
   }
 
   // This forces the TabCloseableStateWatcher to be created and, on chromeos,
