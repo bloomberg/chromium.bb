@@ -1,10 +1,14 @@
+#account-picture-wrapper {
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  display: inline-block;
+  margin: 5px 10px 5px 2px;
+  padding: 3px;
+}
+
 #account-picture {
-  border-radius: 3px;
-  border: 1px solid rgba(0, 0, 0, 0.5);
   width: 70px;
   height: 70px;
-  margin-right: 10px;
-  margin-bottom: 5px;
   vertical-align: middle;
 }
 

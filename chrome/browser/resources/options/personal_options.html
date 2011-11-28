@@ -5,8 +5,10 @@
     <section>
       <h3 i18n-content="account"></h3>
       <div>
-        <img id='account-picture'
-            src='chrome://theme/IDR_LOGIN_DEFAULT_USER'>
+        <span id="account-picture-wrapper">
+          <img id="account-picture"
+               src="chrome://theme/IDR_PROFILE_PICTURE_LOADING">
+        </span>
         <label>
           <input id="enable-screen-lock" type="checkbox"
               pref="settings.enable_screen_lock">
