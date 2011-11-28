@@ -24,6 +24,8 @@ deps = {
         Var('git_url') + '/external/google-url.git@d5391dd20f9bf8b1dd60d060b0810c30c2d68c70',
     'src/native_client':
         Var('git_url') + '/native_client/src/native_client.git@6799691b54c2057d309598c866cbe5eea5015666',
+    'src/native_client_sdk/src/site_scons':
+        Var('git_url') + '/native_client/src/native_client/site_scons.git@5e8a60cf79724ba18e7ec636900da80de87fb125',
     'src/sdch/open-vcdiff':
         Var('git_url') + '/external/open-vcdiff.git@64fe2324403ea78dbd781073f4e5b34768676e2c',
     'src/seccompsandbox':
@@ -72,6 +74,8 @@ deps = {
         Var('git_url') + '/external/pyftpdlib.git@3647f3cafa367c9576f29bde2f7b6d1b7d2983b3',
     'src/third_party/pylib':
         Var('git_url') + '/native_client/src/third_party/pylib.git@be1b3e269cb698f969a5a630a026628cc6d6cc78',
+    'src/third_party/pymox/src':
+        Var('git_url') + '/external/pymox.git@df220ffcc57380c3823aae52cdea0d7bb6f2b145',
     'src/third_party/safe_browsing/testing':
         Var('git_url') + '/external/google-safe-browsing/testing.git@1c915e54f77f3a8288bd6af5c507d2dbdc6b4035',
     'src/third_party/scons-2.0.1':
@@ -159,6 +163,8 @@ deps_os = {
             Var('git_url') + '/chromium/deps/lighttpd.git@856e79c6109d4f0abe93c01d4c22419e33c9bee7',
         'src/third_party/mingw-w64/mingw/bin':
             Var('git_url') + '/native_client/deps/third_party/mingw-w64/mingw/bin.git@3cc8b140b883a9fe4986d12cfd46c16a093d3527',
+        'src/third_party/nacl_sdk_binaries':
+            Var('git_url') + '/chromium/deps/nacl_sdk_binaries.git@759dfca03bdc774da7ecbf974f6e2b84f43699a5',
         'src/third_party/nss':
             Var('git_url') + '/chromium/deps/nss.git@46701144a73b7854ec7d27c1642c378cea69075b',
         'src/third_party/pefile':
@@ -206,9 +212,10 @@ hooks = [
          [
     'python',
     'src/build/download_nacl_toolchains.py',
+    '--no-pnacl',
+    '--no-arm-trusted',
     '--x86-version',
     '7258',
-    '--nacl-newlib-only',
     '--file-hash',
     'mac_x86_newlib',
     '648b5ae8ae770b41c4a0eef28cff6f67fe8bb386',
@@ -217,7 +224,18 @@ hooks = [
     'a340bc72900f002f88491bf82baf69d35593ed75',
     '--file-hash',
     'linux_x86_newlib',
-    '5f82c18ce9d0201f9df852bddcb19746ef690290'
+    '5f82c18ce9d0201f9df852bddcb19746ef690290',
+    '--file-hash',
+    'mac_x86',
+    'f7b73f3d9073b75bb1ef6b583eaf56f397ca80ed',
+    '--file-hash',
+    'win_x86',
+    '75ee1d6f8c758d9580b2c35773b14d0ab6847372',
+    '--file-hash',
+    'linux_x86',
+    '33afa1cefa7fd2a7270b309298dbbf93361d90db',
+    '--save-downloads-dir',
+    'src/native_client_sdk/src/build_tools/toolchain_archives'
 ],
     'pattern':
          '.'
