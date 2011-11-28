@@ -589,19 +589,28 @@ static const struct desktop_shell_interface desktop_shell_implementation = {
 	desktop_shell_unlock
 };
 
+static enum shell_surface_type
+get_shell_surface_type(struct wlsc_surface *surface)
+{
+	struct shell_surface *shsurf;
+
+	shsurf = get_shell_surface(surface);
+	if (!shsurf)
+		return SHELL_SURFACE_NORMAL;
+	return shsurf->type;
+}
+
 static void
 move_binding(struct wl_input_device *device, uint32_t time,
 	     uint32_t key, uint32_t button, uint32_t state, void *data)
 {
 	struct wlsc_surface *surface =
 		(struct wlsc_surface *) device->pointer_focus;
-	struct shell_surface *shsurf;
 
 	if (surface == NULL)
 		return;
 
-	shsurf = get_shell_surface(surface);
-	switch (shsurf->type) {
+	switch (get_shell_surface_type(surface)) {
 		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_BACKGROUND:
 		case SHELL_SURFACE_FULLSCREEN:
@@ -625,8 +634,11 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 
 	if (surface == NULL)
 		return;
-	
+
 	shsurf = get_shell_surface(surface);
+	if (!shsurf)
+		return;
+
 	switch (shsurf->type) {
 		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_BACKGROUND:
@@ -663,16 +675,13 @@ activate(struct wlsc_shell *base, struct wlsc_surface *es,
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct wlsc_compositor *compositor = shell->compositor;
-	struct shell_surface *priv;
-
-	priv = get_shell_surface(es);
 
 	wlsc_surface_activate(es, device, time);
 
 	if (compositor->wxs)
 		wlsc_xserver_surface_activate(es);
 
-	switch (priv->type) {
+	switch (get_shell_surface_type(es)) {
 	case SHELL_SURFACE_BACKGROUND:
 		/* put background back to bottom */
 		wl_list_remove(&es->link);
@@ -701,7 +710,6 @@ lock(struct wlsc_shell *base)
 	struct wl_list *surface_list = &shell->compositor->surface_list;
 	struct wlsc_surface *cur;
 	struct wlsc_surface *tmp;
-	struct shell_surface *priv;
 	struct wlsc_input_device *device;
 	uint32_t time;
 
@@ -725,8 +733,7 @@ lock(struct wlsc_shell *base)
 		if (cur->surface.resource.client == NULL)
 			continue;
 
-		priv = get_shell_surface(cur);
-		if (priv->type == SHELL_SURFACE_BACKGROUND)
+		if (get_shell_surface_type(cur) == SHELL_SURFACE_BACKGROUND)
 			continue;
 
 		cur->output = NULL;
@@ -780,9 +787,9 @@ map(struct wlsc_shell *base,
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct wlsc_compositor *compositor = shell->compositor;
 	struct wl_list *list;
-	struct shell_surface *priv;
+	enum shell_surface_type surface_type;
 
-	priv = get_shell_surface(surface);
+	surface_type = get_shell_surface_type(surface);
 
 	if (shell->locked)
 		list = &shell->hidden_surface_list;
@@ -790,7 +797,7 @@ map(struct wlsc_shell *base,
 		list = &compositor->surface_list;
 
 	/* surface stacking order, see also activate() */
-	switch (priv->type) {
+	switch (surface_type) {
 	case SHELL_SURFACE_BACKGROUND:
 		/* background always visible, at the bottom */
 		wl_list_insert(compositor->surface_list.prev, &surface->link);
@@ -818,14 +825,14 @@ map(struct wlsc_shell *base,
 		}
 	}
 
-	if (priv->type == SHELL_SURFACE_TOPLEVEL) {
+	if (surface_type == SHELL_SURFACE_TOPLEVEL) {
 		surface->x = 10 + random() % 400;
 		surface->y = 10 + random() % 400;
 	}
 
 	surface->width = width;
 	surface->height = height;
-	if (!shell->locked || priv->type == SHELL_SURFACE_LOCK)
+	if (!shell->locked || surface_type == SHELL_SURFACE_LOCK)
 		wlsc_surface_configure(surface,
 				       surface->x, surface->y, width, height);
 }
@@ -835,10 +842,8 @@ configure(struct wlsc_shell *shell, struct wlsc_surface *surface,
 	  int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct wlsc_mode *current;
-	struct shell_surface *priv;
 
-	priv = get_shell_surface(surface);
-	switch (priv->type) {
+	switch (get_shell_surface_type(surface)) {
 	case SHELL_SURFACE_FULLSCREEN:
 		current = surface->fullscreen_output->current;
 		x = (current->width - surface->width) / 2;
