@@ -59,6 +59,17 @@ cr.define('login', function() {
     },
 
     /**
+     * Disables the header bar and all of its elements.
+     * @type {boolean}
+     */
+    set disabled(value) {
+      var buttons = this.getElementsByTagName('button');
+      for (var i = 0, button; button = buttons[i]; ++i) {
+        button.disabled = value;
+      }
+    },
+
+    /**
      * Shutdown button click handler.
      * @private
      */

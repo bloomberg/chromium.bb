@@ -271,13 +271,12 @@ cr.define('login', function() {
      * @type {(HTMLButtonElement|HTMLInputElement)}
      */
     get mainInput() {
-      if (this.isGuest) {
+      if (this.isGuest)
         return this.enterButtonElement;
-      } else if (!this.signinButtonElement.hidden) {
+      else if (!this.signinButtonElement.hidden)
         return this.signinButtonElement;
-      } else {
+      else
         return this.passwordElement;
-      }
     },
 
     /**
@@ -342,7 +341,6 @@ cr.define('login', function() {
     activate: function() {
       if (this.isGuest) {
         chrome.send('launchIncognito');
-        this.parentNode.rowEnabled = false;
       } else if (!this.signinButtonElement.hidden) {
         // Switch to Gaia signin.
         if (!this.needGaiaSignin) {
@@ -356,23 +354,22 @@ cr.define('login', function() {
         return false;
       } else {
         chrome.send('authenticateUser',
-            [this.user.emailAddress, this.passwordElement.value]);
-        this.parentNode.rowEnabled = false;
+                    [this.user.emailAddress, this.passwordElement.value]);
       }
 
       return true;
     },
 
     /**
-     * Resets input field.
+     * Resets the input field and updates the tab order of pod controls.
      * @param {boolean} takeFocus If true, input field takes focus.
      */
     reset: function(takeFocus) {
-      this.parentNode.rowEnabled = true;
       this.passwordElement.value = '';
-
       if (takeFocus)
-        this.focusInput();
+        this.focusInput();  // This will set a custom tab order.
+      else
+        this.resetTabOrder();
     },
 
     /**
@@ -388,7 +385,7 @@ cr.define('login', function() {
      * @param {Event} e Click event.
      */
     handleRemoveButtonClick_: function(e) {
-      if (!this.parentNode.rowEnabled)
+      if (this.parentNode.disabled)
         return;
       if (this.activeRemoveButton)
         chrome.send('removeUser', [this.user.emailAddress]);
@@ -401,7 +398,7 @@ cr.define('login', function() {
      * @param {Event} e Mouseout event.
      */
     handleMouseDown_: function(e) {
-      if (!this.parentNode.rowEnabled)
+      if (this.parentNode.disabled)
         return;
       if (!this.signinButtonElement.hidden) {
         this.parentNode.showSigninUI(this.user.emailAddress);
@@ -450,15 +447,19 @@ cr.define('login', function() {
     },
 
     /**
-     * True when clicking on pods is enabled.
+     * True if the the pod row is disabled (handles no user interaction).
      * @type {boolean}
      */
-    rowEnabled_ : true,
-    get rowEnabled() {
-      return this.rowEnabled_;
+    disabled_ : false,
+    get disabled() {
+      return this.disabled_;
     },
-    set rowEnabled(enabled) {
-      this.rowEnabled_ = enabled;
+    set disabled(value) {
+      this.disabled_ = value;
+      var controls = this.querySelectorAll('button,input');
+      for (var i = 0, control; control = controls[i]; ++i) {
+        control.disabled = value;
+      }
     },
 
     /**
@@ -497,7 +498,6 @@ cr.define('login', function() {
         if (pod == this.pods[i])
           return i;
       }
-
       return -1;
     },
 
@@ -585,15 +585,15 @@ cr.define('login', function() {
         if (pod != podToFocus) {
           pod.classList.remove('focused');
           pod.classList.remove('faded');
-          pod.resetTabOrder();
+          pod.reset(false);
         }
       }
 
       this.focusedPod_ = podToFocus;
       if (podToFocus) {
-        podToFocus.classList.remove("faded");
-        podToFocus.classList.add("focused");
-        podToFocus.focusInput();
+        podToFocus.classList.remove('faded');
+        podToFocus.classList.add('focused');
+        podToFocus.reset(true);  // Reset and give focus.
         this.scrollPodIntoView(podToFocus);
       }
     },
@@ -602,23 +602,13 @@ cr.define('login', function() {
      * Returns the currently activated pod.
      * @type {UserPod}
      */
-    get activated() {
+    get activatedPod() {
       return this.activatedPod_;
     },
-
-    /**
-     * Activates given pod.
-     * @param {UserPod} pod Pod to activate.
-     */
-    activatePod: function(pod) {
-      if (!pod)
-        return;
-
-      if (pod.activate()) {
+    set activatedPod(pod) {
+      if (pod && pod.activate()) {
+        this.disabled = true;
         this.activatedPod_ = pod;
-
-        for (var i = 0; i < this.pods.length; ++i)
-          this.pods[i].mainInput.disabled = true;
       }
     },
 
@@ -639,10 +629,7 @@ cr.define('login', function() {
      * @param {boolean} takeFocus True to take focus.
      */
     reset: function(takeFocus) {
-      this.rowEnabled = true;
-      for (var i = 0; i < this.pods.length; ++i)
-        this.pods[i].mainInput.disabled = false;
-
+      this.disabled = false;
       if (this.activatedPod_)
         this.activatedPod_.reset(takeFocus);
     },
@@ -652,7 +639,7 @@ cr.define('login', function() {
      * @param {string} email Email for signin UI.
      */
     showSigninUI: function(email) {
-      this.rowEnabled = false;
+      this.disabled = true;
       Oobe.showSigninUI(email);
     },
 
@@ -676,7 +663,7 @@ cr.define('login', function() {
      * @private
      */
     handleClick_: function(e) {
-      if (!this.rowEnabled)
+      if (this.disabled)
         return;
       // Clears focus if not clicked on a pod.
       if (e.target.parentNode != this &&
@@ -690,7 +677,7 @@ cr.define('login', function() {
      * @private
      */
     handleFocus_: function(e) {
-      if (!this.rowEnabled)
+      if (this.disabled)
         return;
       if (e.target.parentNode == this) {
         // Focus on a pod
@@ -718,7 +705,7 @@ cr.define('login', function() {
      * @public
      */
     handleKeyDown: function(e) {
-      if (!this.rowEnabled)
+      if (this.disabled)
         return;
       var editing = e.target.tagName == 'INPUT' && e.target.value;
       switch (e.keyIdentifier) {
@@ -744,7 +731,7 @@ cr.define('login', function() {
           break;
         case 'Enter':
           if (this.focusedPod_) {
-            this.activatePod(this.focusedPod_);
+            this.activatedPod = this.focusedPod_;
             e.stopPropagation();
           }
           break;

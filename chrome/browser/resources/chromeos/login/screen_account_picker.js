@@ -87,7 +87,6 @@ cr.define('login', function() {
    * @public
    */
   AccountPickerScreen.updateUserImage = function(email) {
-    console.log('updateUserImage ' + email);
     $('pod-row').updateUserImage(email);
   };
 

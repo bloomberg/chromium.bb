@@ -322,14 +322,14 @@ cr.define('cr.ui.login', function() {
       anchorPos.left += 60;
       anchorPos.top += 105;
     } else if (currentScreenId == SCREEN_ACCOUNT_PICKER &&
-               $('pod-row').activated) {
+               $('pod-row').activatedPod) {
       const MAX_LOGIN_ATTEMMPTS_IN_POD = 3;
       if (loginAttempts > MAX_LOGIN_ATTEMMPTS_IN_POD) {
-        Oobe.showSigninUI($('pod-row').activated.user.emailAddress);
+        Oobe.showSigninUI($('pod-row').activatedPod.user.emailAddress);
         return;
       }
 
-      anchor = $('pod-row').activated.mainInput;
+      anchor = $('pod-row').activatedPod.mainInput;
     }
     if (!anchor && !anchorPos) {
       console.log('Warning: Failed to find anchor for error :' +
