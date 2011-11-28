@@ -1,0 +1,7 @@
+{
+  "name": "chrome.extension.pageCapture",
+  "version": "0.1",
+  "description": "Tests that the pageCapture extension API work.",
+  "background_page": "background.html",
+  "permissions": ["pageCapture", "tabs"]
+}

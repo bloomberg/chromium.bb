@@ -46,6 +46,7 @@ class ExtensionPermissionMessage {
     kClipboard,
     kTtsEngine,
     kContentSettings,
+    kAllPageContent,
     kEnumBoundary
   };
 
@@ -112,6 +113,7 @@ class ExtensionAPIPermission {
     kMediaPlayerPrivate,
     kMetricsPrivate,
     kNotification,
+    kPageCapture,
     kPlugin,
     kProxy,
     kTab,

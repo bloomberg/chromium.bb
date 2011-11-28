@@ -302,6 +302,10 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
       IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       ExtensionPermissionMessage::kManagement, optional);
   RegisterPermission(
+      ExtensionAPIPermission::kPageCapture, "pageCapture",
+      IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT,
+      ExtensionPermissionMessage::kAllPageContent, none);
+  RegisterPermission(
       ExtensionAPIPermission::kTab, "tabs",
       IDS_EXTENSION_PROMPT_WARNING_TABS,
       ExtensionPermissionMessage::kTabs, optional);

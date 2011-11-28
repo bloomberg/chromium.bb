@@ -1,7 +1,0 @@
-{
-  "name": "chrome.extension.savePage",
-  "version": "0.1",
-  "description": "Tests that the savePage extension API work.",
-  "background_page": "background.html",
-  "permissions": ["experimental", "tabs"]
-}

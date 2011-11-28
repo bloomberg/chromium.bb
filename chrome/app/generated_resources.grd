@@ -3899,6 +3899,9 @@ are declared in build/common.gypi.
       <message name="IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT" desc="Permisson string for access to extension management.">
         Your list of installed apps, extensions, and themes
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_PAGES_CONTENT" desc="Permisson string for access to page capture.">
+        The content of pages you visit
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_TABS" desc="Permission string for access to tabs.">
         Your tabs and browsing activity
       </message>

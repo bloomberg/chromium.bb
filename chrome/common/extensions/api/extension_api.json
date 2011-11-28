@@ -9078,7 +9078,7 @@
     ]
   },
   {
-    "namespace": "experimental.savePage",
+    "namespace": "pageCapture",
     "functions": [
       {
         "name": "saveAsMHTML",

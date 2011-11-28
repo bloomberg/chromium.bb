@@ -1,6 +1,6 @@
 <!-- BEGIN AUTHORED CONTENT -->
 <p>
-The savePage API allows you to save a tab as MHTML.
+The pageCapture API allows you to save a tab as MHTML.
 </p>
 
 <p>
@@ -16,9 +16,18 @@ system and that it can only be loaded in the main frame.
 
 <h2 id="manifest">Manifest</h2>
 
-<p>
-The savePage API is currently
-experimental, so you must declare the "experimental"
-permission to use it.
+
+<p>You must declare the "pageCapture" permission
+in the <a href="manifest.html">extension manifest</a>
+to use the history API.
+For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "pageCapture"
+  ]</b>,
+  ...
+}</pre>
 
 <!-- END AUTHORED CONTENT -->

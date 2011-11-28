@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <title>chrome.experimental.savePage - Google Chrome Extensions - Google Code</title></head>
+  <title>chrome.pageCapture - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -294,7 +294,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.experimental.savePage</h1>
+        <h1 class="page_title">chrome.pageCapture</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
@@ -309,7 +309,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.savePage</a>
+                <a href="#apiReference">API reference: chrome.pageCapture</a>
                 <ol>
                   <li style="display: none; ">
             <a href="#properties">Properties</a>
@@ -354,14 +354,14 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- Standard content lead-in for experimental API pages -->
-        <p id="classSummary">
+        <p id="classSummary" style="display: none; ">
           For information on how to use experimental APIs, see the <a href="experimental.html">chrome.experimental.* APIs</a> page.
         </p>
 
         <!-- STATIC CONTENT PLACEHOLDER -->
         <div id="static"><!-- BEGIN AUTHORED CONTENT -->
 <p>
-The savePage API allows you to save a tab as MHTML.
+The pageCapture API allows you to save a tab as MHTML.
 </p>
 
 <p>
@@ -377,18 +377,27 @@ system and that it can only be loaded in the main frame.
 
 <h2 id="manifest">Manifest</h2>
 
-<p>
-The savePage API is currently
-experimental, so you must declare the "experimental"
-permission to use it.
+
+<p>You must declare the "pageCapture" permission
+in the <a href="manifest.html">extension manifest</a>
+to use the history API.
+For example:</p>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": [
+    "pageCapture"
+  ]</b>,
+  ...
+}</pre>
 
 <!-- END AUTHORED CONTENT -->
-</p></div>
+</div>
 
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.savePage</h2>
+        <h2>API reference: chrome.pageCapture</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -420,7 +429,7 @@ permission to use it.
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.savePage.saveAsMHTML</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                  <span>chrome.pageCapture.saveAsMHTML</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
                       <var><span>details</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 

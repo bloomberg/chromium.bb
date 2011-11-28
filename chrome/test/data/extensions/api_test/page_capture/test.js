@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// API test for chrome.extension.savePage.
-// browser_tests.exe --gtest_filter=ExtensionApiTest.SavePage
+// API test for chrome.extension.pageCapture.
+// browser_tests.exe --gtest_filter=ExtensionApiTest.PageCapture
 
 const assertEq = chrome.test.assertEq;
 const assertTrue = chrome.test.assertTrue;
 
 var testUrl = 'http://www.a.com:PORT' +
-    '/files/extensions/api_test/save_page/google.html';
+    '/files/extensions/api_test/page_capture/google.html';
 
 function waitForCurrentTabLoaded(callback) {
   chrome.tabs.getSelected(null, function(tab) {
@@ -25,11 +25,11 @@ chrome.test.getConfig(function(config) {
   testUrl = testUrl.replace(/PORT/, config.testServer.port);
 
   chrome.test.runTests([
-    function savePageAsMHTML() {
+    function saveAsMHTML() {
       chrome.tabs.getSelected(null, function(tab) {
         chrome.tabs.update(null, { "url": testUrl });
         waitForCurrentTabLoaded(function() {
-          chrome.experimental.savePage.saveAsMHTML({ "tabId": tab.id },
+          chrome.pageCapture.saveAsMHTML({ "tabId": tab.id },
               function(data) {
             assertEq(undefined, chrome.extension.lastError);
             assertTrue(data != null);

@@ -32,11 +32,11 @@
 #include "chrome/browser/extensions/extension_module.h"
 #include "chrome/browser/extensions/extension_omnibox_api.h"
 #include "chrome/browser/extensions/extension_page_actions_module.h"
+#include "chrome/browser/extensions/extension_page_capture_api.h"
 #include "chrome/browser/extensions/extension_permissions_api.h"
 #include "chrome/browser/extensions/extension_preference_api.h"
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
-#include "chrome/browser/extensions/extension_save_page_api.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/extension_sidebar_api.h"
@@ -463,8 +463,8 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<DownloadsShowFunction>();
   RegisterFunction<DownloadsDragFunction>();
 
-  // SavePage
-  RegisterFunction<SavePageAsMHTMLFunction>();
+  // PageCapture
+  RegisterFunction<PageCaptureSaveAsMHTMLFunction>();
 
   // TopSites
   RegisterFunction<GetTopSitesFunction>();

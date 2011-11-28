@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SAVE_PAGE_API_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_SAVE_PAGE_API_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_CAPTURE_API_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_CAPTURE_API_H_
 
 #include <string>
 
@@ -14,9 +14,9 @@
 
 class FilePath;
 
-class SavePageAsMHTMLFunction : public AsyncExtensionFunction {
+class PageCaptureSaveAsMHTMLFunction : public AsyncExtensionFunction {
  public:
-  SavePageAsMHTMLFunction();
+  PageCaptureSaveAsMHTMLFunction();
 
   // Test specific delegate used to test that the temporary file gets deleted.
   class TestDelegate {
@@ -28,7 +28,7 @@ class SavePageAsMHTMLFunction : public AsyncExtensionFunction {
   static void SetTestDelegate(TestDelegate* delegate);
 
  private:
-  virtual ~SavePageAsMHTMLFunction();
+  virtual ~PageCaptureSaveAsMHTMLFunction();
   virtual bool RunImpl() OVERRIDE;
   virtual bool OnMessageReceivedFromRenderView(
       const IPC::Message& message) OVERRIDE;
@@ -55,7 +55,7 @@ class SavePageAsMHTMLFunction : public AsyncExtensionFunction {
   // The file containing the MHTML.
   scoped_refptr<webkit_blob::DeletableFileReference> mhtml_file_;
 
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.savePage.saveAsMHTML")
+  DECLARE_EXTENSION_FUNCTION_NAME("pageCapture.saveAsMHTML")
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SAVE_PAGE_API_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PAGE_CAPTURE_API_H_

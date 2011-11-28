@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_save_page_api.h"
+#include "chrome/browser/extensions/extension_page_capture_api.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -28,19 +28,19 @@ const char* const kSizeRetrievalError =
 const char* const kTemporaryFileError = "Failed to create a temporary file.";
 const char* const kTabClosedError = "Cannot find the tab for thie request.";
 
-static SavePageAsMHTMLFunction::TestDelegate* test_delegate_ = NULL;
+static PageCaptureSaveAsMHTMLFunction::TestDelegate* test_delegate_ = NULL;
 
-SavePageAsMHTMLFunction::SavePageAsMHTMLFunction() : tab_id_(0) {
+PageCaptureSaveAsMHTMLFunction::PageCaptureSaveAsMHTMLFunction() : tab_id_(0) {
 }
 
-SavePageAsMHTMLFunction::~SavePageAsMHTMLFunction() {
+PageCaptureSaveAsMHTMLFunction::~PageCaptureSaveAsMHTMLFunction() {
 }
 
-void SavePageAsMHTMLFunction::SetTestDelegate(TestDelegate* delegate) {
+void PageCaptureSaveAsMHTMLFunction::SetTestDelegate(TestDelegate* delegate) {
   test_delegate_ = delegate;
 }
 
-bool SavePageAsMHTMLFunction::RunImpl() {
+bool PageCaptureSaveAsMHTMLFunction::RunImpl() {
   DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
@@ -52,11 +52,12 @@ bool SavePageAsMHTMLFunction::RunImpl() {
   AddRef();  // Balanced in ReturnFailure/ReturnSuccess()
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &SavePageAsMHTMLFunction::CreateTemporaryFile));
+      NewRunnableMethod(this,
+                        &PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile));
   return true;
 }
 
-bool SavePageAsMHTMLFunction::OnMessageReceivedFromRenderView(
+bool PageCaptureSaveAsMHTMLFunction::OnMessageReceivedFromRenderView(
     const IPC::Message& message) {
   if (message.type() != ExtensionHostMsg_ResponseAck::ID)
     return false;
@@ -78,15 +79,16 @@ bool SavePageAsMHTMLFunction::OnMessageReceivedFromRenderView(
   return true;
 }
 
-void SavePageAsMHTMLFunction::CreateTemporaryFile() {
+void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   bool success = file_util::CreateTemporaryFile(&mhtml_path_);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &SavePageAsMHTMLFunction::TemporaryFileCreated,
+      NewRunnableMethod(this,
+                        &PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated,
                         success));
 }
 
-void SavePageAsMHTMLFunction::TemporaryFileCreated(bool success) {
+void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
   if (!success) {
     ReturnFailure(kTemporaryFileError);
     return;
@@ -107,14 +109,14 @@ void SavePageAsMHTMLFunction::TemporaryFileCreated(bool success) {
   }
 
   MHTMLGenerationManager::GenerateMHTMLCallback callback =
-      base::Bind(&SavePageAsMHTMLFunction::MHTMLGenerated, this);
+      base::Bind(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this);
 
   g_browser_process->mhtml_generation_manager()->GenerateMHTML(
       tab_contents, mhtml_path_, callback);
 }
 
-void SavePageAsMHTMLFunction::MHTMLGenerated(const FilePath& file_path,
-                                             int64 mhtml_file_size) {
+void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(const FilePath& file_path,
+                                                    int64 mhtml_file_size) {
   DCHECK(mhtml_path_ == file_path);
   if (mhtml_file_size <= 0) {
     ReturnFailure(kMHTMLGenerationFailedError);
@@ -129,7 +131,7 @@ void SavePageAsMHTMLFunction::MHTMLGenerated(const FilePath& file_path,
   ReturnSuccess(mhtml_file_size);
 }
 
-void SavePageAsMHTMLFunction::ReturnFailure(const std::string& error) {
+void PageCaptureSaveAsMHTMLFunction::ReturnFailure(const std::string& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   error_ = error;
@@ -139,7 +141,7 @@ void SavePageAsMHTMLFunction::ReturnFailure(const std::string& error) {
   Release();  // Balanced in Run()
 }
 
-void SavePageAsMHTMLFunction::ReturnSuccess(int64 file_size) {
+void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64 file_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   TabContents* tab_contents = GetTabContents();
@@ -164,7 +166,7 @@ void SavePageAsMHTMLFunction::ReturnSuccess(int64 file_size) {
   // blob file from being deleted).
 }
 
-TabContents* SavePageAsMHTMLFunction::GetTabContents() {
+TabContents* PageCaptureSaveAsMHTMLFunction::GetTabContents() {
   Browser* browser = NULL;
   TabContentsWrapper* tab_contents_wrapper = NULL;
 

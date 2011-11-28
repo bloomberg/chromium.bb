@@ -814,7 +814,7 @@ var chrome = chrome || {};
       });
     };
 
-    apiFunctions["experimental.savePage.saveAsMHTML"].customCallback =
+    apiFunctions["pageCapture.saveAsMHTML"].customCallback =
       function(name, request, response) {
         var params = chromeHidden.JSON.parse(response);
         var path = params.mhtmlFilePath;
