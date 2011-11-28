@@ -5,6 +5,7 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_CLIPBOARD_IMPL_H_
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_CLIPBOARD_IMPL_H_
 
+#include "base/compiler_specific.h"
 #include "webkit/glue/clipboard_client.h"
 
 class SimpleClipboardClient : public webkit_glue::ClipboardClient {
@@ -12,21 +13,23 @@ class SimpleClipboardClient : public webkit_glue::ClipboardClient {
   SimpleClipboardClient();
   virtual ~SimpleClipboardClient();
 
-  virtual ui::Clipboard* GetClipboard();
-  virtual uint64 GetSequenceNumber(ui::Clipboard::Buffer buffer);
+  virtual ui::Clipboard* GetClipboard() OVERRIDE;
+  virtual uint64 GetSequenceNumber(ui::Clipboard::Buffer buffer) OVERRIDE;
   virtual bool IsFormatAvailable(const ui::Clipboard::FormatType& format,
-                                 ui::Clipboard::Buffer buffer);
+                                 ui::Clipboard::Buffer buffer) OVERRIDE;
   virtual void ReadAvailableTypes(ui::Clipboard::Buffer buffer,
                                   std::vector<string16>* types,
-                                  bool* contains_filenames);
-  virtual void ReadText(ui::Clipboard::Buffer buffer, string16* result);
+                                  bool* contains_filenames) OVERRIDE;
+  virtual void ReadText(ui::Clipboard::Buffer buffer,
+                        string16* result) OVERRIDE;
   virtual void ReadAsciiText(ui::Clipboard::Buffer buffer,
-                             std::string* result);
+                             std::string* result) OVERRIDE;
   virtual void ReadHTML(ui::Clipboard::Buffer buffer, string16* markup,
                         GURL* url, uint32* fragment_start,
-                        uint32* fragment_end);
-  virtual void ReadImage(ui::Clipboard::Buffer buffer, std::string* data);
-  virtual WriteContext* CreateWriteContext();
+                        uint32* fragment_end) OVERRIDE;
+  virtual void ReadImage(ui::Clipboard::Buffer buffer,
+                         std::string* data) OVERRIDE;
+  virtual WriteContext* CreateWriteContext() OVERRIDE;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_CLIPBOARD_IMPL_H_
