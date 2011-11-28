@@ -822,6 +822,8 @@
         'browser/component_updater/component_updater_configurator.h',
         'browser/component_updater/component_unpacker.cc',
         'browser/component_updater/component_unpacker.h',
+        'browser/extensions/socket_api.cc',
+        'browser/extensions/socket_api.h',
         'browser/component_updater/component_updater_service.cc',
         'browser/component_updater/component_updater_service.h',
         'browser/component_updater/flash_component_installer.h',

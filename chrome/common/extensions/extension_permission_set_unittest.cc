@@ -648,6 +648,9 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
   // Warned as part of host permissions.
   skip.insert(ExtensionAPIPermission::kDevtools);
 
+  // Platform apps. TODO(miket): must we skip?
+  skip.insert(ExtensionAPIPermission::kSocket);
+
   ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
   ExtensionAPIPermissionSet permissions = info->GetAll();
   for (ExtensionAPIPermissionSet::const_iterator i = permissions.begin();

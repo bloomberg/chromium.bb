@@ -9149,5 +9149,189 @@
         ]
       }
     ]
+  },
+  {
+    "namespace": "experimental.socket",
+    "types": [
+      {
+        "id": "SocketEvent",
+        "type": "object",
+        "description": "A socket event.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["data", "error"],
+            "description": "A 'data' event represents data received on the socket. An 'error' event represents an error."
+          },
+          "byteCount": {
+            "type": "integer",
+            "optional": true,
+            "description": "The number of bytes received in a 'data' event."
+          },
+          "bytes": {
+            "type": "blob",
+            "optional": true,
+            "description": "The data received, as a Blob."
+          },
+          "errorCode": {
+            "type": "integer",
+            "description": "The error code, if the event type is 'error'.",
+            "optional": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "The error description, if the event type is 'error'.",
+            "optional": true
+          }
+        }
+      }
+    ],
+    "functions": [
+      {
+        "name": "create",
+        "type": "function",
+        "description": "Creates a socket of the specified type.",
+        "parameters": [
+          {
+	    "name": "type",
+            "type": "string",
+            "description":
+              "The type of socket to create. Must be <code>udp</code>.",
+            "enum": ["udp"]
+          },
+          {
+            "type": "object",
+            "name": "options",
+            "optional": true,
+            "description": "The socket options.",
+            "properties": {
+              "onEvent": {
+                "type": "function",
+                "optional": true,
+                "description": "This function is called with events that occur during the lifetime of the socket.",
+                "parameters": [
+                  {
+                    "name": "event",
+                    "$ref": "SocketEvent",
+                    "description": "The socket event."
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when the socket has been created.",
+            "parameters": [
+              {
+                "type": "object",
+                "name": "socketInfo",
+                "properties": {
+                  "socketId": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "The id of the newly created socket."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "connect",
+        "type": "function",
+        "description": "Connects the socket to the given address. In the case of a UDP socket, this method merely associates the address with the socket for future sent data.",
+        "parameters": [
+          {
+	    "name": "socketId",
+            "type": "integer",
+            "description": "The socketId.",
+	    "minimum": 1
+          },
+          {
+	    "name": "hostname",
+            "type": "string",
+            "description": "The remote hostname."
+          },
+          {
+	    "name": "port",
+            "type": "integer",
+            "description": "The remote port.",
+	    "minimum": 1,
+	    "maximum": 65535
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when the connection is complete.",
+            "parameters": [
+              {
+                "type": "boolean",
+                "name": "result",
+		"description": "True if successful, false otherwise."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "disconnect",
+        "type": "function",
+        "description": "Disconnects the socket.",
+        "parameters": [
+          {
+	    "name": "socketId",
+            "type": "integer",
+            "description": "The socketId.",
+	    "minimum": 1
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when the disconnection is complete.",
+            "parameters": [
+              {
+                "type": "boolean",
+                "name": "result",
+		"description": "True if successful, false otherwise."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "send",
+        "type": "function",
+        "description": "Sends data on the connected socket.",
+        "parameters": [
+          {
+	    "name": "socketId",
+            "type": "integer",
+            "description": "The socketId.",
+	    "minimum": 1
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "description": "Called when the send is complete.",
+            "parameters": [
+              {
+                "type": "object",
+                "name": "sendInfo",
+                "properties": {
+                  "bytesSent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "The number of bytes sent."
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 ]

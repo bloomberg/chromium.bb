@@ -224,6 +224,7 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
   int component_only = ExtensionAPIPermission::kFlagComponentOnly;
   int full_access = ExtensionAPIPermission::kFlagImpliesFullAccess;
   int all_urls = ExtensionAPIPermission::kFlagImpliesFullURLAccess;
+  int platform_app_only = ExtensionAPIPermission::kFlagPlatformAppOnly;
 
   // Note: please update the permissions API documentation when modifying which
   // permissions can be specified as optional.
@@ -354,6 +355,11 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
       ExtensionAPIPermission::kPlugin, "plugin",
       IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS,
       ExtensionPermissionMessage::kFullAccess, all_urls | full_access);
+
+  // Platform-app permissions
+  RegisterPermission(
+      ExtensionAPIPermission::kSocket, "socket", 0,
+      ExtensionPermissionMessage::kNone, platform_app_only);
 
   // Register Aliases
   RegisterAlias("unlimitedStorage", kOldUnlimitedStoragePermission);
@@ -678,6 +684,17 @@ bool ExtensionPermissionSet::HasPrivatePermissions() const {
        i != apis_.end(); ++i) {
     ExtensionAPIPermission* permission = info->GetByID(*i);
     if (permission && permission->is_component_only())
+      return true;
+  }
+  return false;
+}
+
+bool ExtensionPermissionSet::HasPlatformAppPermissions() const {
+  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  for (ExtensionAPIPermissionSet::const_iterator i = apis_.begin();
+       i != apis_.end(); ++i) {
+    ExtensionAPIPermission* permission = info->GetByID(*i);
+    if (permission && permission->is_platform_app_only())
       return true;
   }
   return false;

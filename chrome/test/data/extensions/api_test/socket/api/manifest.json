@@ -1,0 +1,17 @@
+{
+  "name": "chrome.socket",
+  "version": "0.1",
+  "description": "end-to-end browser test for chrome.experimental.socket API",
+  "platform_app": true,
+  "background_page": "background.html",
+  "app": {
+    "launch": {
+      "container": "panel",
+      "local_path": "main.html"
+    }
+  },
+  "permissions": [
+    "experimental",
+    "socket"
+  ]
+}

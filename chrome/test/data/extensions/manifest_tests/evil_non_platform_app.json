@@ -1,0 +1,7 @@
+{
+  "name": "evil_non_platform_app.json",
+  "version": "0.1",
+  "description": "I request permissions available only to platform apps.",
+  "platform_app": false,
+  "permissions": ["socket"]
+}

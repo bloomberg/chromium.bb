@@ -908,8 +908,9 @@ bool Extension::LoadIsApp(const DictionaryValue* manifest,
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePlatformApps)) {
-    if (manifest->HasKey(keys::kPlatformApp))
-      is_platform_app_ = true;
+    if (manifest->HasKey(keys::kPlatformApp)) {
+      manifest->GetBoolean(keys::kPlatformApp, &is_platform_app_);
+    }
   }
 
   return true;
@@ -2859,6 +2860,14 @@ bool Extension::CanSpecifyAPIPermission(
         *error = ExtensionErrorUtils::FormatErrorMessage(
             errors::kPermissionNotAllowed, permission->name());
       }
+      return false;
+    }
+  }
+
+  if (permission->is_platform_app_only()) {
+    if (!is_platform_app()) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kPermissionNotAllowed, permission->name());
       return false;
     }
   }

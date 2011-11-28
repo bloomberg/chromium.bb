@@ -38,7 +38,6 @@
 #include "chrome/browser/extensions/extension_processes_api.h"
 #include "chrome/browser/extensions/extension_proxy_api.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/settings/settings_api.h"
 #include "chrome/browser/extensions/extension_sidebar_api.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extension_test_api.h"
@@ -51,6 +50,8 @@
 #include "chrome/browser/extensions/extension_webstore_private_api.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/process_map.h"
+#include "chrome/browser/extensions/settings/settings_api.h"
+#include "chrome/browser/extensions/socket_api.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/history/history_extension_api.h"
 #include "chrome/browser/history/top_sites_extension_api.h"
@@ -468,6 +469,12 @@ void FactoryRegistry::ResetFunctions() {
 
   // TopSites
   RegisterFunction<GetTopSitesFunction>();
+
+  // Sockets
+  RegisterFunction<extensions::SocketCreateFunction>();
+  RegisterFunction<extensions::SocketConnectFunction>();
+  RegisterFunction<extensions::SocketDisconnectFunction>();
+  RegisterFunction<extensions::SocketSendFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {

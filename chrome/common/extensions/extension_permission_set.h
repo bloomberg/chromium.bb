@@ -116,6 +116,7 @@ class ExtensionAPIPermission {
     kPageCapture,
     kPlugin,
     kProxy,
+    kSocket,
     kTab,
     kTts,
     kTtsEngine,
@@ -144,6 +145,9 @@ class ExtensionAPIPermission {
 
     // Indicates that the permission supports the optional permissions API.
     kFlagSupportsOptional = 1 << 4,
+
+    // Indicates whether the permission is available only to platform apps.
+    kFlagPlatformAppOnly = 1 << 5,
   };
 
   typedef std::set<ID> IDSet;
@@ -190,6 +194,11 @@ class ExtensionAPIPermission {
   // optional permissions extension API.
   bool supports_optional() const {
     return (flags_ & kFlagSupportsOptional) != 0;
+  }
+
+  // Returns true if this permission can only be acquired by platform apps.
+  bool is_platform_app_only() const {
+    return (flags_ & kFlagPlatformAppOnly) != 0;
   }
 
  private:
@@ -361,6 +370,10 @@ class ExtensionPermissionSet
   // Returns true if this permission set includes permissions that are
   // restricted to internal extensions.
   bool HasPrivatePermissions() const;
+
+  // Returns true if this permission set includes permissions that are
+  // restricted to platform apps.
+  bool HasPlatformAppPermissions() const;
 
   // Returns true if |permissions| has a greater privilege level than this
   // permission set (e.g., this permission set has less permissions).

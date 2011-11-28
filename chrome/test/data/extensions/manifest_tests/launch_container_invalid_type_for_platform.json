@@ -1,7 +1,7 @@
 {
   "name": "interesting app",
   "version": "1",
-  "platform_app": "true",
+  "platform_app": true,
   "app": {
     "launch": {
       "container": "tab",

@@ -55,7 +55,8 @@ class ExtensionManifestTest : public testing::Test {
     path = path.AppendASCII("extensions")
         .AppendASCII("manifest_tests")
         .AppendASCII(filename.c_str());
-    EXPECT_TRUE(file_util::PathExists(path));
+    EXPECT_TRUE(file_util::PathExists(path)) <<
+        "Couldn't find " << path.value();
 
     JSONFileValueSerializer serializer(path);
     return static_cast<DictionaryValue*>(serializer.Deserialize(NULL, error));
@@ -652,6 +653,11 @@ TEST_F(ExtensionManifestTest, HostedAppPermissions) {
       EXPECT_TRUE(extension->GetActivePermissions()->HasAPIPermission(
           permission->id()));
 
+    } else if (permission->is_platform_app_only()) {
+      LoadAndExpectError(Manifest(manifest.get(), name),
+                         errors::kPermissionNotAllowed,
+                         Extension::INTERNAL,
+                         Extension::STRICT_ERROR_CHECKS);
     } else if (!permission->is_hosted_app()) {
       // Most normal extension permissions also aren't available to hosted apps.
       // For these, the error is only reported in strict mode for legacy
@@ -959,4 +965,35 @@ TEST_F(ExtensionManifestTest, OfflineEnabled) {
   scoped_refptr<Extension> extension_4(
       LoadAndExpectSuccess("offline_enabled_hosted_app.json"));
   EXPECT_TRUE(extension_4->offline_enabled());
+}
+
+TEST_F(ExtensionManifestTest, PlatformAppOnlyPermissions) {
+  ExtensionPermissionsInfo* info = ExtensionPermissionsInfo::GetInstance();
+  ExtensionAPIPermissionSet private_perms;
+  private_perms.insert(ExtensionAPIPermission::kSocket);
+
+  ExtensionAPIPermissionSet perms = info->GetAll();
+  int count = 0;
+  for (ExtensionAPIPermissionSet::iterator i = perms.begin();
+       i != perms.end(); ++i) {
+    count += private_perms.count(*i);
+    EXPECT_EQ(private_perms.count(*i) > 0,
+              info->GetByID(*i)->is_platform_app_only());
+  }
+  EXPECT_EQ(1, count);
+
+  // This guy should fail to load because he's requesting platform-app-only
+  // permissions.
+  LoadAndExpectError("evil_non_platform_app.json",
+                     errors::kPermissionNotAllowed,
+                     Extension::INTERNAL, Extension::STRICT_ERROR_CHECKS);
+
+  // This guy is identical to the previous but doesn't ask for any
+  // platform-app-only permissions. We should be able to load him and ask
+  // questions about his permissions.
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("not_platform_app.json"));
+  scoped_refptr<const ExtensionPermissionSet> permissions;
+  permissions = extension->GetActivePermissions();
+  EXPECT_FALSE(permissions->HasPlatformAppPermissions());
 }
