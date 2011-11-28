@@ -46,12 +46,7 @@ class SiteInstanceTestWebUIFactory : public content::EmptyWebUIFactory {
 class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
  public:
   SiteInstanceTestBrowserClient()
-      : old_browser_client_(NULL),
-        privileged_process_id_(-1) {
-  }
-
-  virtual TabContentsView* CreateTabContentsView(TabContents* tab_contents) {
-    return old_browser_client_->CreateTabContentsView(tab_contents);
+      : privileged_process_id_(-1) {
   }
 
   virtual content::WebUIFactory* GetWebUIFactory() OVERRIDE {
@@ -74,17 +69,12 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
         site_url.SchemeIs(kPrivilegedScheme);
   }
 
-  void SetOriginalClient(content::ContentBrowserClient* old_browser_client) {
-    old_browser_client_ = old_browser_client;
-  }
-
-  void SetPrivilegedProcessId(int process_id) {
+  void set_privileged_process_id(int process_id) {
     privileged_process_id_ = process_id;
   }
 
  private:
   SiteInstanceTestWebUIFactory factory_;
-  content::ContentBrowserClient* old_browser_client_;
   int privileged_process_id_;
 };
 
@@ -97,7 +87,6 @@ class SiteInstanceTest : public testing::Test {
 
   virtual void SetUp() {
     old_browser_client_ = content::GetContentClient()->browser();
-    browser_client_.SetOriginalClient(old_browser_client_);
     content::GetContentClient()->set_browser(&browser_client_);
     url_util::AddStandardScheme(kPrivilegedScheme);
     url_util::AddStandardScheme(chrome::kChromeUIScheme);
@@ -107,8 +96,8 @@ class SiteInstanceTest : public testing::Test {
     content::GetContentClient()->set_browser(old_browser_client_);
   }
 
-  void SetPrivilegedProcessId(int process_id) {
-    browser_client_.SetPrivilegedProcessId(process_id);
+  void set_privileged_process_id(int process_id) {
+    browser_client_.set_privileged_process_id(process_id);
   }
 
  private:
@@ -532,7 +521,7 @@ TEST_F(SiteInstanceTest, ProcessSharingByType) {
   scoped_refptr<SiteInstance> extension1_instance(
       CreateSiteInstance(&rph_factory,
       GURL(kPrivilegedScheme + std::string("://foo/bar"))));
-  SetPrivilegedProcessId(extension1_instance->GetProcess()->GetID());
+  set_privileged_process_id(extension1_instance->GetProcess()->GetID());
 
   scoped_refptr<SiteInstance> extension2_instance(
       CreateSiteInstance(&rph_factory,
