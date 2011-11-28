@@ -270,11 +270,19 @@ class ValgrindError:
                "http://dev.chromium.org/developers/how-tos/using-valgrind#TOC-Suppressing-Errors")
 
     # Widen suppression slightly to make portable between mac and linux
+    # TODO(timurrrr): Oops, these transformations should happen
+    # BEFORE calculating the hash!
     supp = self._suppression;
     supp = supp.replace("fun:_Znwj", "fun:_Znw*")
     supp = supp.replace("fun:_Znwm", "fun:_Znw*")
     supp = supp.replace("fun:_Znaj", "fun:_Zna*")
     supp = supp.replace("fun:_Znam", "fun:_Zna*")
+
+    # Make suppressions even less platform-dependent.
+    for sz in [1, 2, 4, 8]:
+      supp = supp.replace("Memcheck:Addr%d" % sz, "Memcheck:Unaddressable")
+      supp = supp.replace("Memcheck:Value%d" % sz, "Memcheck:Uninitialized")
+    supp = supp.replace("Memcheck:Cond", "Memcheck:Uninitialized")
 
     # Split into lines so we can enforce length limits
     supplines = supp.split("\n")

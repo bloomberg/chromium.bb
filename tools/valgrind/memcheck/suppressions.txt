@@ -15,7 +15,7 @@
 # 1. third party stuff we have no control over
 {
    Uninitialized value in deflate (Third Party)
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:MOZ_Z_deflate
 }
@@ -135,42 +135,42 @@
    fun:_ZN16FontConfigDirect5MatchEPSsPjbjRKSsPKvmPbS6_
 }
 {
-  bug_46177_a (Third Party)
-  Memcheck:Leak
-  ...
-  fun:FcCharSetOperate
-  fun:FcFontSetSort
-  fun:FcFontSort
-  ...
-  fun:pango_layout_get_pixel_size
+   bug_46177_a (Third Party)
+   Memcheck:Leak
+   ...
+   fun:FcCharSetOperate
+   fun:FcFontSetSort
+   fun:FcFontSort
+   ...
+   fun:pango_layout_get_pixel_size
 }
 {
-  bug_46177_b (Third Party)
-  Memcheck:Leak
-  ...
-  fun:FcCharSetFindLeafCreate
-  fun:FcCharSetAddLeaf
-  fun:FcCharSetOperate
-  fun:FcFontSetSort
-  fun:FcFontSort
-  ...
-  fun:pango_layout_get_iter
+   bug_46177_b (Third Party)
+   Memcheck:Leak
+   ...
+   fun:FcCharSetFindLeafCreate
+   fun:FcCharSetAddLeaf
+   fun:FcCharSetOperate
+   fun:FcFontSetSort
+   fun:FcFontSort
+   ...
+   fun:pango_layout_get_iter
 }
 {
-  bug_46177_c (Third Party)
-  Memcheck:Leak
-  ...
-  fun:FcCharSetFindLeafCreate
-  fun:FcCharSetAddLeaf
-  fun:FcCharSetOperate
-  fun:FcFontSetSort
-  fun:FcFontSort
-  ...
-  fun:pango_layout_line_get_extents
+   bug_46177_c (Third Party)
+   Memcheck:Leak
+   ...
+   fun:FcCharSetFindLeafCreate
+   fun:FcCharSetAddLeaf
+   fun:FcCharSetOperate
+   fun:FcFontSetSort
+   fun:FcFontSort
+   ...
+   fun:pango_layout_line_get_extents
 }
 {
    dlopen invalid read, probably a bug in glibc.  TODO(dkegel): file glibc bug
-   Memcheck:Value4
+   Memcheck:Uninitialized
    ...
    fun:dlopen@@GLIBC_2.1
    fun:PR_LoadLibraryWithFlags
@@ -217,13 +217,13 @@
 }
 {
    libc_dynamiclinker_foo
-   Memcheck:Cond
+   Memcheck:Uninitialized
    obj:/lib*/ld-2.*.so
    obj:/lib*/ld-2.*.so
 }
 {
    libc_dynamiclinker_bar
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    obj:/lib*/ld-2.*.so
    obj:/lib*/ld-2.*.so
 }
@@ -309,7 +309,7 @@
 }
 {
    bug_23314 (Third Party)
-   Memcheck:Addr2
+   Memcheck:Unaddressable
    fun:sqlite3PcacheClearSyncFlags
    fun:syncJournal
    fun:sqlite3PagerCommitPhaseOne
@@ -317,7 +317,7 @@
 }
 {
    bug_23314b (Third Party)
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:sqlite3PcacheClearSyncFlags
    fun:syncJournal
    fun:sqlite3PagerCommitPhaseOne
@@ -339,7 +339,7 @@
 # filter "*flate", capturing issues with both deflate and inflate.
 {
    zlib-1.2.x trickyness (1a): See http://www.zlib.net/zlib_faq.html#faq36
-   Memcheck:Cond
+   Memcheck:Uninitialized
    obj:/*lib*/libz.so.1.2.*
    ...
    obj:/*lib*/libz.so.1.2.*
@@ -347,13 +347,13 @@
 }
 {
    zlib-1.2.x trickyness (1b): See http://www.zlib.net/zlib_faq.html#faq36
-   Memcheck:Cond
+   Memcheck:Uninitialized
    obj:/*lib*/libz.so.1.2.*
    fun:*flate
 }
 {
    zlib-1.2.x trickyness (2a): See http://www.zlib.net/zlib_faq.html#faq36
-   Memcheck:Value8
+   Memcheck:Uninitialized
    obj:/*lib*/libz.so.1.2.*
    ...
    obj:/*lib*/libz.so.1.2.*
@@ -361,13 +361,13 @@
 }
 {
    zlib-1.2.x trickyness (2b): See http://www.zlib.net/zlib_faq.html#faq36
-   Memcheck:Value8
+   Memcheck:Uninitialized
    obj:/*lib*/libz.so.1.2.*
    fun:*flate
 }
 {
    zlib-1.2.x trickyness (3a): See http://www.zlib.net/zlib_faq.html#faq36
-   Memcheck:Value4
+   Memcheck:Uninitialized
    obj:/*lib*/libz.so.1.2.*
    ...
    obj:/*lib*/libz.so.1.2.*
@@ -375,44 +375,15 @@
 }
 {
    zlib-1.2.x trickyness (3b): See http://www.zlib.net/zlib_faq.html#faq36
-   Memcheck:Value4
+   Memcheck:Uninitialized
    obj:/*lib*/libz.so.1.2.*
    fun:*flate
 }
 {
-  # zlib is smarter than we are:
-  #   http://www.zlib.net/zlib_faq.html#faq36
-  zlib_conditional_jump_performance_a
-  Memcheck:Value4
-  ...
-  fun:inflate
-  fun:_ZN4spdy10SpdyFramer26DecompressFrameWithZStreamERKNS_9SpdyFrameEP10z_stream_s
-  fun:_ZN4spdy10SpdyFramer22DecompressControlFrameERKNS_16SpdyControlFrameE
-  fun:_ZN4spdy10SpdyFramer15DecompressFrameERKNS_9SpdyFrameE
-}
-{
-  # zlib is smarter than we are:
-  #   http://www.zlib.net/zlib_faq.html#faq36
-  zlib_conditional_jump_performance_b
-  Memcheck:Value8
-  ...
-  fun:inflate
-  fun:_ZN4spdy10SpdyFramer26DecompressFrameWithZStreamERKNS_9SpdyFrameEP10z_stream_s
-  fun:_ZN4spdy10SpdyFramer22DecompressControlFrameERKNS_16SpdyControlFrameE
-  fun:_ZN4spdy10SpdyFramer15DecompressFrameERKNS_9SpdyFrameE
-}
-{
-  # zlib is smarter than we are:
-  #   http://www.zlib.net/zlib_faq.html#faq36
-  zlib_conditional_jump_performance_c
-  Memcheck:Value8
-  ...
-  fun:inflate
-  fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
-}
-{
-   bug_30667 (Third Party)
-   Memcheck:Cond
+   # zlib is smarter than we are:
+   #   http://www.zlib.net/zlib_faq.html#faq36
+   zlib_conditional_jump_performance_a
+   Memcheck:Uninitialized
    ...
    fun:inflate
    fun:_ZN4spdy10SpdyFramer26DecompressFrameWithZStreamERKNS_9SpdyFrameEP10z_stream_s
@@ -420,12 +391,41 @@
    fun:_ZN4spdy10SpdyFramer15DecompressFrameERKNS_9SpdyFrameE
 }
 {
-  zlibz_value4_deflate_libpng
-  Memcheck:Value4
-  ...
-  fun:deflate*
-  ...
-  fun:*png*
+   # zlib is smarter than we are:
+   #   http://www.zlib.net/zlib_faq.html#faq36
+   zlib_conditional_jump_performance_b
+   Memcheck:Uninitialized
+   ...
+   fun:inflate
+   fun:_ZN4spdy10SpdyFramer26DecompressFrameWithZStreamERKNS_9SpdyFrameEP10z_stream_s
+   fun:_ZN4spdy10SpdyFramer22DecompressControlFrameERKNS_16SpdyControlFrameE
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameERKNS_9SpdyFrameE
+}
+{
+   # zlib is smarter than we are:
+   #   http://www.zlib.net/zlib_faq.html#faq36
+   zlib_conditional_jump_performance_c
+   Memcheck:Uninitialized
+   ...
+   fun:inflate
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
+}
+{
+   bug_30667 (Third Party)
+   Memcheck:Uninitialized
+   ...
+   fun:inflate
+   fun:_ZN4spdy10SpdyFramer26DecompressFrameWithZStreamERKNS_9SpdyFrameEP10z_stream_s
+   fun:_ZN4spdy10SpdyFramer22DecompressControlFrameERKNS_16SpdyControlFrameE
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameERKNS_9SpdyFrameE
+}
+{
+   zlibz_value4_deflate_libpng
+   Memcheck:Uninitialized
+   ...
+   fun:deflate*
+   ...
+   fun:*png*
 }
 #-- end of zlib filters
 {
@@ -523,77 +523,77 @@
 }
 {
    bug_58730_strlen_addr8 (Third Party)
-   Memcheck:Addr8
+   Memcheck:Unaddressable
    fun:__strlen_sse2
 }
 {
    bug_58730_strlen_cond (Third Party)
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:__strlen_sse2
 }
 {
    bug_58730_strcmp_addr8 (Third Party)
-   Memcheck:Addr8
+   Memcheck:Unaddressable
    fun:__strcmp_ssse3
 }
 {
    bug_58730_strcmp_cond (Third Party)
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:__strcmp_ssse3
 }
 {
    bug_58730_strcmp_value8 (Third Party)
-   Memcheck:Value8
+   Memcheck:Uninitialized
    fun:__strcmp_ssse3
 }
 {
    bug_58730_strncmp_value8 (Third Party)
-   Memcheck:Value8
+   Memcheck:Uninitialized
    fun:__strncmp_ssse3
 }
 {
    bug_58730_memmove_value4 (Third Party)
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:__memmove_ssse3
 }
 {
    bug_58730_memmove_cond (Third Party)
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:__memmove_ssse3
 }
 {
    bug_58730_memcpy_value4 (Third Party)
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:__memcpy_ssse3
 }
 {
    bug_58730_memcpy_addr8 (Third Party)
-   Memcheck:Addr8
+   Memcheck:Unaddressable
    fun:__memcpy_ssse3
 }
 {
    bug_58730_memcpy_cond (Third Party)
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:__memcpy_ssse3
 }
 {
    bug_58730_memmove_chk_cond (Third Party)
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:__memmove_chk_ssse3
 }
 {
    bug_58730_libc.so_addr8 (Third Party)
-   Memcheck:Addr8
+   Memcheck:Unaddressable
    obj:/lib/libc-2.*.so
 }
 {
    bug_58730_libc.so_cond (Third Party)
-   Memcheck:Cond
+   Memcheck:Uninitialized
    obj:/lib/libc-2.*.so
 }
 {
    bug_58730_libc.so_value8 (Third Party)
-   Memcheck:Value8
+   Memcheck:Uninitialized
    obj:/lib/libc-2.11.1.so
 }
 {
@@ -620,7 +620,7 @@
 }
 {
    bug_73000_fixed_upstream_in_gtk
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:clipboard_clipboard_buffer_received
    ...
    fun:gtk_text_view_key_press_event
@@ -690,7 +690,7 @@
 # See https://bugs.kde.org/show_bug.cgi?id=270709#c4 for possible reason
 {
    valgrind_bitfields_false_positive
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN7WebCore13WidthIterator*
    ...
    fun:_ZNK7WebCore4Font33getGlyphsAndAdvancesForSimpleTextERKNS_7TextRunEiiRNS_11GlyphBufferENS0_20ForTextEmphasisOrNotE
@@ -717,68 +717,68 @@
 }
 {
    Memcheck sanity test 02 (malloc/read left).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:*ReadValueOutOfArrayBoundsLeft*
    ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 03 (malloc/read right).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:*ReadValueOutOfArrayBoundsRight*
    ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 04 (malloc/write left).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:*WriteValueOutOfArrayBoundsLeft*
    ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 05 (malloc/write right).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:*WriteValueOutOfArrayBoundsRight*
    ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 06 (new/read left).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:*ReadValueOutOfArrayBoundsLeft*
    ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 07 (new/read right).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:*ReadValueOutOfArrayBoundsRight*
    ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 08 (new/write left).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:*WriteValueOutOfArrayBoundsLeft*
    ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 09 (new/write right).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:*WriteValueOutOfArrayBoundsRight*
    ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 10 (write after free).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 11 (write after delete).
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
 }
 {
@@ -795,14 +795,14 @@
 }
 {
    Memcheck sanity test 14 (malloc/read uninit).
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:*ReadUninitializedValue*
    ...
    fun:_ZN4base43ToolsSanityTest_AccessesToMallocMemory_Test8TestBodyEv
 }
 {
    Memcheck sanity test 15 (new/read uninit).
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:*ReadUninitializedValue*
    ...
    fun:_ZN4base40ToolsSanityTest_AccessesToNewMemory_Test8TestBodyEv
@@ -830,7 +830,7 @@
 {
    # uitest's ResourceDispatcherTest.CrossSiteAfterCrash crashes on purpose
    Intentional_crash
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN12AboutHandler10AboutCrashEv
 }
 {
@@ -897,7 +897,7 @@
 {
    # Intentional crash test
    intentional_RendererCrashTest
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_Z*33HandleRendererErrorTestParametersRK11CommandLine
    fun:_Z12RendererMainRKN7content18MainFunctionParams*
 }
@@ -922,7 +922,7 @@
    # The InvalidRead error in rc4_wordconv is intentional.
    # https://bugzilla.mozilla.org/show_bug.cgi?id=341127
    bug_43113 (Intentional)
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:rc4_wordconv
    fun:RC4_Encrypt
 }
@@ -1519,7 +1519,7 @@
    # GTK tooltip doesn't always initialize variables.
    # https://bugzilla.gnome.org/show_bug.cgi?id=554686
    tooltip_554686
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:child_location_foreach
    fun:gtk_fixed_forall
    ...
@@ -1535,7 +1535,7 @@
    # always set the variables passed to the signal and still saw the error.
    # https://bugzilla.gnome.org/show_bug.cgi?id=554686
    tooltip_554686_2
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZNK5views4View7HitTestERKN3gfx5PointE
    ...
@@ -1555,7 +1555,7 @@
 {
    # See the description of tooltip_554686_2
    tooltip_554686_3
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZNK3gfx4Rect8ContainsEii
    fun:_ZNK3gfx4Rect8ContainsERKNS_5PointE
    fun:_ZNK5views18NonClientFrameView7HitTestERKN3gfx5PointE
@@ -1578,7 +1578,7 @@
 {
    # See the description of tooltip_554686_2
    tooltip_554686_4
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZNK22OpaqueBrowserFrameView7HitTestERKN3gfx5PointE
    fun:_ZN5views13NonClientView23GetEventHandlerForPointERKN3gfx5PointE
    fun:_ZN5views4View23GetEventHandlerForPointERKN3gfx5PointE
@@ -1598,7 +1598,7 @@
 {
    # See the description of tooltip_554686_2
    tooltip_554686_5
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN8chromeos24BrowserFrameViewChromeos23GetEventHandlerForPointERKN3gfx5PointE
    fun:_ZN5views13NonClientView23GetEventHandlerForPointERKN3gfx5PointE
    fun:_ZN5views4View23GetEventHandlerForPointERKN3gfx5PointE
@@ -1618,7 +1618,7 @@
 {
    # See the description of tooltip_554686_2
    tooltip_554686_6
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZNK8chromeos24BrowserFrameViewChromeos7HitTestERKN3gfx5PointE
    fun:_ZN5views13NonClientView23GetEventHandlerForPointERKN3gfx5PointE
    fun:_ZN5views4View23GetEventHandlerForPointERKN3gfx5PointE
@@ -1662,7 +1662,7 @@
 }
 {
    bug_30346b
-   Memcheck:Addr2
+   Memcheck:Unaddressable
    ...
    fun:_ZSt22__get_temporary_bufferIPN7WebCore11RenderLayerEESt4pairIPT_iEiS5_
    fun:_ZNSt17_Temporary_bufferIPPN7WebCore11RenderLayerES2_EC1ES3_S3_
@@ -1681,7 +1681,7 @@
 }
 {
    bug_30703b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:deflate
    fun:zipCloseFileInZipRaw
    fun:zipCloseFileInZip
@@ -1689,7 +1689,7 @@
 }
 {
    bug_30704a
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:crc32
    ...
    fun:png_write_row
@@ -1698,7 +1698,7 @@
 }
 {
    bug_30704b
-   Memcheck:Value8
+   Memcheck:Uninitialized
    fun:crc32
    ...
    fun:png_write_row
@@ -1721,7 +1721,7 @@
 }
 {
    bug_30704e
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:crc32
    ...
    fun:png_write_row
@@ -1730,7 +1730,7 @@
 }
 {
    bug_87232
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:_ZN7WebCore12base64EncodeEPKcjRN3WTF6VectorIcLj0EEEb
    fun:_ZN7WebCore12base64EncodeERKN3WTF6VectorIcLj0EEERS2_b
    fun:_ZN7WebCore*14ImageToDataURL*SkBitmapEEN3WTF6StringERT_*
@@ -1934,19 +1934,8 @@
    fun:CERT_VerifyCert
 }
 {
-   bug_38138
-   Memcheck:Param
-   write(buf)
-   obj:*
-   fun:_ZN3IPC7Channel11ChannelImpl23ProcessOutgoingMessagesEv
-   ...
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-}
-{
    bug_38254
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZNK5views4View7HitTestERKN3gfx5PointE
    fun:_ZN5views4View15GetViewForPointERKN3gfx5PointE
    fun:_ZN5views17TooltipManagerGtk11ShowTooltipEiibP11_GtkTooltip
@@ -2053,7 +2042,7 @@
 }
 {
    bug_44341b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:memcpy
    fun:fill_window
    fun:deflate_slow
@@ -2069,7 +2058,7 @@
 }
 {
    bug_44341c
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:memcpy
    fun:fill_window
    fun:deflate_slow
@@ -2085,7 +2074,7 @@
 }
 {
    bug_44341d
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:rijndael_encryptBlock128
    fun:rijndael_encryptCBC
    ...
@@ -2093,7 +2082,7 @@
 }
 {
    bug_44341e
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:memcpy
    fun:fill_window
    fun:deflate_slow
@@ -2102,7 +2091,7 @@
 }
 {
    bug_44341f
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:memcpy
    fun:fill_window
    fun:deflate_slow
@@ -2194,28 +2183,28 @@
 }
 {
    bug_50968_b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
    fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
 }
 {
    bug_50968_c
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    ...
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
    fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
 }
 {
    bug_50968_d
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
    fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
 }
 {
    bug_50968_e
-   Memcheck:Value4
+   Memcheck:Uninitialized
    ...
    fun:_ZN14WebDataService29InitializeDatabaseIfNecessaryEv
    fun:_Z16DispatchToMethodI14WebDataServiceMS0_FvvEEvPT_T0_RK6Tuple0
@@ -2262,7 +2251,7 @@
 }
 {
    bug_51587
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZN29AccessibilityEventRouterViews11IsMenuEventEPN5views4ViewEi
    ...
@@ -2270,21 +2259,21 @@
 }
 {
    bug_51590a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:_ZN7WebCore13TextRunWalker13nextScriptRunEv
    fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
 }
 {
    bug_51590b
-   Memcheck:Addr2
+   Memcheck:Unaddressable
    ...
    fun:_ZN7WebCore13TextRunWalker13nextScriptRunEv
    fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
 }
 {
    bug_51590c
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    ...
    fun:_ZN7WebCore13TextRunWalker13nextScriptRunEv
    fun:_ZN7WebCore13TextRunWalker14widthOfFullRunEv
@@ -2347,7 +2336,7 @@
 }
 {
    bug_52957
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:glGetString
    fun:_ZN18gpu_info_collector19CollectGraphicsInfoER7GPUInfo
    fun:_ZN9GpuThread18OnEstablishChannelEi
@@ -2357,7 +2346,7 @@
 }
 {
    bug_53349
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:PL_HashTableLookupConst
    fun:SECOID_FindOID_Util
    fun:SECOID_FindOIDTag_Util
@@ -2463,7 +2452,7 @@
 }
 {
    bug_57949
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZNK22OpaqueBrowserFrameView24NonClientTopBorderHeightEbb
    fun:_ZNK22OpaqueBrowserFrameView35GetHorizontalTabStripVerticalOffsetEb
    fun:_ZNK22OpaqueBrowserFrameView20GetBoundsForTabStripEP12BaseTabStrip
@@ -2487,7 +2476,7 @@
 }
 {
    bug_58321
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZNK3WTF6RefPtrIN7WebCore5FrameEE3getEv
    fun:_ZN7WebCore14ResourceLoader18didReceiveResponseEPNS_14ResourceHandleERKNS_16ResourceResponseE
    fun:_ZN7WebCore22ResourceHandleInternal18didReceiveResponseEPN6WebKit12WebURLLoaderERKNS1_14WebURLResponseE
@@ -2505,7 +2494,7 @@
 }
 {
    bug_58340
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZNK3WTF6RefPtrIN7WebCore5FrameEE3getEv
    fun:_ZN7WebCore14ResourceLoader18didReceiveResponseEPNS_14ResourceHandleERKNS_16ResourceResponseE
    fun:_ZN7WebCore22ResourceHandleInternal18didReceiveResponseEPN6WebKit12WebURLLoaderERKNS1_14WebURLResponseE
@@ -2559,7 +2548,7 @@
 }
 {
    bug_58574
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEE
    fun:_ZN3net12CertVerifier7Request8DoVerifyEv
@@ -2569,7 +2558,7 @@
 }
 {
    bug_60556a
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    ...
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
@@ -2577,7 +2566,7 @@
 }
 {
    bug_60556b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:sqlite3_exec
    fun:_ZN3sql10Connection7ExecuteEPKc
@@ -2585,7 +2574,7 @@
 }
 {
    bug_60556c
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    ...
    fun:sqlite3_step
    fun:_ZN3sql9Statement3RunEv
@@ -2595,7 +2584,7 @@
 }
 {
    bug_60556d
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:sqlite3_step
    fun:_ZN3sql9Statement3RunEv
@@ -2614,7 +2603,7 @@
 }
 {
    bug_60556f
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:sqlite3_close
    fun:_ZN3sql10Connection5CloseEv
@@ -2624,7 +2613,7 @@
 }
 {
    bug_60556g
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:sqlite3_step
    fun:_ZN3sql9Statement4StepEv
@@ -2645,7 +2634,7 @@
 }
 {
    bug_60654
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN7WebCore25GraphicsContext3DInternal7reshapeEii
    fun:_ZN7WebCore17GraphicsContext3D7reshapeEii
    fun:_ZN7WebCore21WebGLRenderingContextC1EPNS_17HTMLCanvasElementEN3WTF10PassRefPtrINS_17GraphicsContext3DEEE
@@ -2693,7 +2682,7 @@
 }
 {
    bug_60668
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_mesa_convert_colors
    fun:convert_color_type
    fun:_swrast_write_rgba_span
@@ -2716,7 +2705,7 @@
 }
 {
    bug_60670a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:swizzle_copy
    fun:_mesa_swizzle_ubyte_image
    fun:_mesa_texstore_rgba8888
@@ -2730,7 +2719,7 @@
 }
 {
    bug_60670b
-   Memcheck:Addr2
+   Memcheck:Unaddressable
    fun:extract_float_rgba
    fun:_mesa_unpack_color_span_chan
    fun:_mesa_make_temp_chan_image
@@ -2813,7 +2802,7 @@
 }
 {
    bug_64887_a
-   Memcheck:Value8
+   Memcheck:Uninitialized
    fun:_itoa_word
    fun:vfprintf
    fun:vsnprintf
@@ -2839,7 +2828,7 @@
 }
 {
    bug_64887_b
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:_itoa_word
    fun:vfprintf
    fun:*vsnprintf*
@@ -2857,7 +2846,7 @@
 }
 {
    bug_64887_c
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_itoa_word
    fun:vfprintf
    fun:*vsnprintf*
@@ -2875,7 +2864,7 @@
 }
 {
    bug_64887_d
-   Memcheck:Value4
+   Memcheck:Uninitialized
    ...
    fun:_ZNSolsEx
    fun:_ZN7testing9internal220TypeWithoutFormatterIN5media7PreloadELNS0_8TypeKindE1EE10PrintValueERKS3_PSo
@@ -2897,7 +2886,7 @@
 }
 {
    bug_64887_e
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZNSolsEx
    fun:_ZN7testing9internal220TypeWithoutFormatterIN5media7PreloadELNS0_8TypeKindE1EE10PrintValueERKS3_PSo
@@ -3076,7 +3065,7 @@
 }
 {
    bug_70599
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:bcmp
    fun:_ZN3WTF14VectorComparerILb1EN7WebCore11CSSPropertyEE7compareEPKS2_S5*
    fun:_ZN3WTF20VectorTypeOperationsIN7WebCore11CSSPropertyEE7compareEPKS2_S5*
@@ -3172,7 +3161,7 @@
 }
 {
    bug_73415
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:_ZN23AccessibilityController36shouldDumpAccessibilityNotificationsEv
    fun:_ZN11WebViewHost29postAccessibilityNotificationERKN6WebKit22WebAccessibilityObjectENS0_28WebAccessibilityNotificationE
    fun:_ZN6WebKit16ChromeClientImpl29postAccessibilityNotificationEPN7WebCore19AccessibilityObjectENS1_13AXObjectCache14AXNotificationE
@@ -3199,7 +3188,7 @@
 }
 {
    bug_74383a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:gtk_widget_set_size_request
    fun:_ZN15StatusBubbleGtk22UpdateLabelSizeRequestEv
    fun:_ZN15StatusBubbleGtk19AnimationProgressedEPKN2ui9AnimationE
@@ -3208,7 +3197,7 @@
 }
 {
    bug_74383b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:gtk_widget_set_usize_internal
    fun:_ZN15StatusBubbleGtk22UpdateLabelSizeRequestEv
    ...
@@ -3251,21 +3240,21 @@
 }
 {
    bug_75127a
-   Memcheck:Value4
+   Memcheck:Uninitialized
    ...
    fun:png_process_data
    fun:_ZN3gfx8PNGCodec6Decode*
 }
 {
    bug_75127b
-   Memcheck:Value8
+   Memcheck:Uninitialized
    ...
    fun:png_process_data
    fun:_ZN3gfx8PNGCodec6Decode*
 }
 {
    bug_75127c
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:png_process_data
    fun:_ZN3gfx8PNGCodec6Decode*
@@ -3289,7 +3278,7 @@
 }
 {
    bug_76197a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:sqlite3DbFree
    fun:releaseMemArray
    fun:sqlite3VdbeDelete
@@ -3315,7 +3304,7 @@
 }
 {
    bug_76197b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:sqlite3_step
    fun:sqlite3_exec
@@ -3363,7 +3352,7 @@
 }
 {
    bug_79357a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:*FilePathWatcherImpl*Watch*Delegate*
    fun:*FilePathWatcher*Watch*
@@ -3422,7 +3411,7 @@
 }
 {
    bug_79671
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN5views15NativeWidgetGtk16ShowNativeWidgetENS_*9ShowStateE
    fun:_ZN5views6Widget4ShowEv
    fun:_ZN11BrowserView4ShowEv
@@ -3469,7 +3458,7 @@
 }
 {
    bug_80458_b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN22ThumbnailGeneratorTest18ClassifyFirstPixelERK8SkBitmap
    fun:_ZN47ThumbnailGeneratorTest_DiscardBackingStore_Test8TestBodyEv
 }
@@ -3574,7 +3563,7 @@
 }
 {
    bug_83566
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN7WebCore*V8Entr*Callback11handleEvent*
    ...
    fun:_ZN6WebKit31WorkerFileSystemCallbacksBridge21runTaskOnWorkerThreadEPN7WebCore22ScriptExecutionContextEN3WTF10PassRefPtrIS0_EENS4_10PassOwnPtrINS2_4TaskEEE
@@ -3633,7 +3622,7 @@
 }
 {
    bug_84224_b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN13scoped_refptrIN4base8internal18InvokerStorageBaseEEC2ERKS3_
    fun:_ZN13scoped_refptrIN4base8internal18InvokerStorageBaseEEC1ERKS3_
    fun:_ZN4base8internal12CallbackBaseC2ERKS1_
@@ -3657,25 +3646,25 @@
 }
 {
    bug_84770_a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN6WebKit21FrameLoaderClientImpl12allowPluginsEb
    fun:_ZN7WebCore14SubframeLoader12allowPluginsENS_28ReasonForCallingAllowPluginsE
 }
 {
    bug_84770_b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN6WebKit21FrameLoaderClientImpl15allowJavaScriptEb
    fun:_ZN7WebCore16ScriptController17canExecuteScriptsENS_33ReasonForCallingCanExecuteScriptsE
 }
 {
    bug_84770_c
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN6WebKit21FrameLoaderClientImpl20allowScriptExtensionERKN3WTF6StringEi
    fun:_ZN7WebCore16V8DOMWindowShell16createNewContextEN2v86HandleINS1_6ObjectEEEi
 }
 {
    bug_84779
-   Memcheck:Addr2
+   Memcheck:Unaddressable
    ...
    fun:_ZN7WebCoreL12nextBoundaryERKNS_15VisiblePositionEPFjPKtjjNS_33BoundarySearchContextAvailabilityERbE
    fun:_ZN7WebCore9endOfWordERKNS_15VisiblePositionENS_9EWordSideE
@@ -3732,7 +3721,7 @@
 }
 {
    bug_87094b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:_ZN11MessageLoop18AddToIncomingQueueEPNS_11PendingTaskE
    fun:_ZN11MessageLoop8PostTaskERKN15tracked_objects8LocationEP4Task
@@ -3756,7 +3745,7 @@
 }
 {
    bug_87408
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:sqlite3MemSize
    fun:sqlite3MallocSize
    fun:sqlite3_free
@@ -3773,7 +3762,7 @@
 }
 {
    bug_87423
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZNK3net15HttpBasicStream23LogNumRttVsBytesMetricsEv
    fun:_ZN3net22HttpNetworkTransaction18DoReadBodyCompleteEi
    fun:_ZN3net22HttpNetworkTransaction6DoLoopEi
@@ -3837,7 +3826,7 @@
 }
 {
    bug_89938
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN5views6Widget4ShowEv
    fun:_ZN11BrowserView4ShowEv
    fun:_ZN8chromeos11BrowserView12ShowInternalEb
@@ -4032,7 +4021,7 @@
 }
 {
    bug_90967
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN5ppapi11NPObjectVar15InstanceDeletedEv
    fun:_ZN6webkit5ppapi15ResourceTracker19CleanupInstanceDataEib
    fun:_ZN6webkit5ppapi15ResourceTracker15InstanceDeletedEi
@@ -4519,14 +4508,14 @@
 }
 {
    bug_96773a
-   Memcheck:Value4
+   Memcheck:Uninitialized
    ...
    fun:vorbis_decode_frame
    fun:avcodec_decode_audio3
 }
 {
    bug_96773b
-   Memcheck:Value8
+   Memcheck:Uninitialized
    ...
    fun:vorbis_decode_frame
    fun:avcodec_decode_audio3
@@ -4539,7 +4528,7 @@
 }
 {
    bug_98751
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN7SkIRect9intersectEiiii
    fun:_ZN7SkIRect9intersectERKS_
    fun:_ZN8remoting10DecoderVp812ConvertRectsERKSt6vectorI7SkIRectSaIS2_EEPS4_
@@ -4593,7 +4582,7 @@
 }
 {
    bug_99307
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:modp_b64_encode
    fun:_ZN4base12Base64EncodeERKNS_11StringPieceEPSs
    fun:_ZN11web_ui_util15GetImageDataUrlERK8SkBitmap
@@ -4650,7 +4639,7 @@
 }
 {
    bug_100154
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:HB_GSUB_Select_Feature
    fun:_ZN7WebCoreL17setupFontFeaturesEPKNS_19FontFeatureSettingsEP11HB_FaceRec_
    fun:_ZN7WebCore21ComplexTextController21setupFontForScriptRunEv
@@ -4730,7 +4719,7 @@
 }
 {
    bug_100981
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN7WebCore22CSSPrimitiveValueCache11createValueEdNS_17CSSPrimitiveValue9UnitTypesE
    fun:_ZN7WebCore27BorderImageQuadParseContext21commitBorderImageQuadEv
    fun:_ZN7WebCore9CSSParser20parseBorderImageQuadENS0_5UnitsERN3WTF6RefPtrINS_17CSSPrimitiveValueEEE
@@ -4847,7 +4836,7 @@
 }
 {
    bug_101335
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_Z35SendExtensionWebRequestStatusToHostP17RenderProcessHost
    fun:_ZN6chrome26ChromeContentBrowserClient31BrowserRenderProcessHostCreatedEP24BrowserRenderProcessHost
    fun:_ZN24BrowserRenderProcessHost4InitEb
@@ -4912,7 +4901,7 @@
 }
 {
    bug_101755_a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZN7WebCore13WidthIterator*
    fun:_ZNK7WebCore4Font30offsetForPositionForSimpleTextERKNS_7TextRunEfb
@@ -4921,7 +4910,7 @@
 }
 {
    bug_101755_b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZN7WebCore13WidthIterator*
    fun:_ZNK7WebCore4Font26selectionRectForSimpleTextERKNS_7TextRunERKNS_10FloatPointEiii
@@ -4929,7 +4918,7 @@
 }
 {
    bug_101755_c
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN7WebCore21ComplexTextController*
    ...
    fun:_ZNK7WebCore4Font15drawComplexTextEPNS_15GraphicsContextERKNS_7TextRunERKNS_10FloatPointEii
@@ -4967,7 +4956,7 @@
 }
 {
    bug_101781_a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:encode_one_block
    fun:encode_mcu_huff
    fun:compress_data
@@ -4982,7 +4971,7 @@
 }
 {
    bug_101781_b
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:encode_one_block
    fun:encode_mcu_huff
    fun:compress_data
@@ -4997,7 +4986,7 @@
 }
 {
    bug_101781_c
-   Memcheck:Value8
+   Memcheck:Uninitialized
    fun:encode_one_block
    fun:encode_mcu_huff
    fun:compress_data
@@ -5012,13 +5001,13 @@
 }
 {
    bug_101781_d
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN7testing8internal11CmpHelperGEIddEENS_15AssertionResultEPKcS4_RKT_RKT0_
    fun:_ZN3gfx31JPEGCodec_EncodeDecodeRGBA_Test8TestBodyEv
 }
 {
    bug_102016_a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN7WebCore15PlatformSupport25loadPlatformAudioResourceEPKcd
    fun:_ZN7WebCore8AudioBus20loadPlatformResourceEPKcf
    fun:_ZN7WebCore13HRTFElevation35calculateKernelsForAzimuthElevationEiifRKN3WTF6StringERNS1_6RefPtrINS_10HRTFKernelEEES8_
@@ -5079,7 +5068,7 @@
 }
 {
    bug_102257
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPS5_Pb
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_6ObjectEEES4_iPS4_Pbb
@@ -5124,7 +5113,7 @@
 }
 {
    bug_102622
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:bcmp
    fun:_ZN31InputEventFilterTest_Basic_Test8TestBodyEv
 }
@@ -5144,7 +5133,7 @@
 }
 {
    bug_103467
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZNK7WebCore12NamedNodeMap20mappedMapsEquivalentEPKS0_
    fun:_ZNK7WebCore16CSSStyleSelector24canShareStyleWithElementEPNS_4NodeE
    fun:_ZNK7WebCore16CSSStyleSelector26findSiblingForStyleSharingEPNS_4NodeERj

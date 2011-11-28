@@ -34,14 +34,14 @@
    # test machine 'caliban'.  Don't delete just because it
    # doesn't happen on the bots.
    bug_11134
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:vCMMVectorConvert8BitRGBToRGB
    fun:_ZNK15CMMConvRGBToRGB7ConvertER8CMM8BitsP14CMMRuntimeInfomm
 }
 {
    # Mac system library bug?  See http://crbug.com/11327
    bug_11327
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN19AudioConverterChain5ResetEv
    fun:AudioConverterReset
    obj:/System/Library/Components/CoreAudio.component/Contents/MacOS/CoreAudio
@@ -49,7 +49,7 @@
 {
    # Mac system library bug?  See http://crbug.com/11327
    bug_11327b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:AUNetSendEntry
    fun:AUNetSendEntry
    obj:/System/Library/Components/CoreAudio.component/Contents/MacOS/CoreAudio
@@ -99,14 +99,14 @@
 }
 {
    bug_18215
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_DPSNextEvent
    fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
    fun:-[NSApplication run]
 }
 {
    bug_18223
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZNK8Security12UnixPlusPlus17StaticForkMonitorclEv
    fun:_ZN12ocspdGlobals10serverPortEv
 }
@@ -151,7 +151,7 @@
 # See http://www.openradar.me/8287193
 {
    Invalid redzone accesses in DKeyHas8Words
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:DKeyHas8Words
 }
 
@@ -185,7 +185,7 @@
    # The check has to be quite generic, as different hardware graphics cards
    # will cause different sets of warnings.
    bug_75037
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZN8remoting*CapturerMac*
 }
@@ -212,7 +212,7 @@
 {
    # See also http://openradar.appspot.com/radar?id=1169404
    bug_79533a
-   Memcheck:Value4
+   Memcheck:Uninitialized
    ...
    fun:_Z*19cssm_DataAbortQuery17cssm_dl_db_handlel
    fun:CSSM_DL_DataAbortQuery
@@ -225,7 +225,7 @@
 {
    # See also http://openradar.appspot.com/radar?id=1169404
    bug_79533b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_Z*19cssm_DataAbortQuery17cssm_dl_db_handlel
    fun:CSSM_DL_DataAbortQuery
@@ -379,17 +379,31 @@
    ...
    fun:__cxa_get_globals
 }
+{
+   bug_93711_a - intentional
+   Memcheck:Param
+   msync(start)
+   fun:msync$UNIX2003
+   fun:mach_override_ptr
+}
+{
+   bug_93711_b - likely induced by an intentional memory error
+   Memcheck:Leak
+   fun:malloc
+   fun:allocateBranchIsland
+   fun:mach_override_ptr
+}
 
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 {
-  bug_17297
-  Memcheck:Leak
-  fun:malloc
-  ...
-  fun:+[NSColor keyboardFocusIndicatorColor]
-  fun:+[NSColor colorWithCatalogName:colorName:]
-  fun:+[NSCatalogColor newWithCoder:zone:]
-  fun:-[NSColor initWithCoder:]
+   bug_17297
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:+[NSColor keyboardFocusIndicatorColor]
+   fun:+[NSColor colorWithCatalogName:colorName:]
+   fun:+[NSCatalogColor newWithCoder:zone:]
+   fun:-[NSColor initWithCoder:]
 }
 {
    bug_18218
@@ -517,7 +531,7 @@
 }
 {
    bug_28072c
-   Memcheck:Addr2
+   Memcheck:Unaddressable
    ...
    fun:CSBackupSetItemExcluded
    fun:_ZN8mac_util22SetFileBackupExclusionERK8FilePathb
@@ -527,7 +541,7 @@
 }
 {
    bug_28072d
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:CSBackupSetItemExcluded
    fun:_ZN4base3mac22SetFileBackupExclusionERK8FilePath
@@ -548,7 +562,7 @@
 }
 {
    bug_35164
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:gl_context_init_client_state
    fun:ogl_begin_rendering
@@ -734,7 +748,7 @@
 }
 {
    bug_47949_a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:ripc_DrawRects
    fun:CGContextFillRects
@@ -744,7 +758,7 @@
 }
 {
    bug_47949_b
-   Memcheck:Value4
+   Memcheck:Uninitialized
    ...
    fun:ripc_DrawRects
    fun:CGContextFillRects
@@ -768,7 +782,7 @@
 }
 {
    bug_50297_a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
    fun:_ZN4base19MessagePumpLibevent21FileDescriptorWatcher28OnFileCanReadWithoutBlockingEiPS0_
@@ -780,7 +794,7 @@
 }
 {
    bug_50297_b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN6Pickle8FindNextEmPKcS1_
    fun:_ZN3IPC7Message8FindNextEPKcS2_
    fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
@@ -794,7 +808,7 @@
 }
 {
    bug_50638_a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:gleUpdateViewScissorData
    ...
    fun:cgl_set_surface
@@ -808,7 +822,7 @@
 }
 {
    bug_50638_b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:gleUpdateViewScissorData
    fun:cgl_set_surface
    fun:ogl_attach_surface
@@ -825,7 +839,7 @@
 }
 {
    bug_50968
-   Memcheck:Addr2
+   Memcheck:Unaddressable
    fun:sqlite3PcacheClearSyncFlags
    fun:syncJournal
    fun:pagerStress
@@ -870,7 +884,7 @@
 }
 {
    bug_53742_a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZN16AudioQueueObject12ConvertInputEP9AQCommandRmb
    fun:_ZN16AudioQueueObject12RunConverterEi
@@ -882,14 +896,14 @@
 }
 {
    bug_53742_b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN16AudioQueueObject12ConvertInputEP9AQCommandRmb
    fun:_ZN16AudioQueueObject5ResetEv
    fun:_ZN16AudioQueueObject4StopEb
 }
 {
    bug_53989_a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:glvm_function_new
    fun:glvmCreateModularFunction
    fun:gleGetVertexSubmitFuncObjectAndKey
@@ -907,7 +921,7 @@
 }
 {
    bug_53989_b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:glvm_function_hash_value_6
    fun:glvm_hash_set_*
    fun:glvm*ModularFunction*Cache
@@ -925,7 +939,7 @@
 }
 {
    bug_53989_c
-   Memcheck:Value4
+   Memcheck:Uninitialized
    ...
    fun:gleGetVertexSubmitFuncObjectAndKey
    fun:gleSetVertexArrayFunc
@@ -942,7 +956,7 @@
 }
 {
    bug_55773
-   Memcheck:Addr8
+   Memcheck:Unaddressable
    fun:sseCGSFill8by1
    fun:argb32_mark_constshape
    fun:argb32_mark
@@ -975,7 +989,7 @@
 }
 {
    bug_58860_a
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:memcpy
    ...
    fun:FSFindFolder
@@ -987,7 +1001,7 @@
 }
 {
    bug_58860_b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:FSFindFolder
    fun:_ZN12_GLOBAL__N_124GetPluginCommonDirectoryEPSt6vectorI8FilePathSaIS1_EEb
@@ -1039,7 +1053,7 @@
 }
 {
    bug_60873
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:UTF8ToCString
    fun:_Z16UTF8ToClassicHFSPKcmmmPh
    fun:_Z14PathMakeFSSpecPKcP6FSSpecPh
@@ -1065,7 +1079,7 @@
 }
 {
    bug_61737
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN2v88internal9preparser9PreParserINS0_7ScannerENS0_21PartialParserRecorderEE36ParseMemberWithNewPrefixesExpressionEPiPb
    fun:_ZN2v88internal9preparser9PreParserINS0_7ScannerENS0_21PartialParserRecorderEE14ParseNewPrefixEPiPb
    fun:_ZN2v88internal9preparser9PreParserINS0_7ScannerENS0_21PartialParserRecorderEE18ParseNewExpressionEPb
@@ -1105,7 +1119,7 @@
 }
 {
    bug_63024a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:memcpy
    fun:_ZN8Security13NameValuePair9CloneDataERKNS_8CssmDataE
    fun:_ZN8Security13NameValuePairC2ERKNS_8CssmDataE
@@ -1117,7 +1131,7 @@
 }
 {
    bug_63024b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN8Security19NameValueDictionary12MakeFromDataERKNS_8CssmDataE
    fun:_ZN8Security19NameValueDictionaryC2ERKNS_8CssmDataE
    fun:_ZN8Security12KeychainCore12CCallbackMgr7consumeEjjRKNS_8CssmDataE
@@ -1135,7 +1149,7 @@
 }
 {
    bug_63670
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:NSIntersectionRect
    fun:-[BrowserWindowController tabContentsViewFrameWillChange:frameRect:]
    fun:-[TabStripController tabContentsViewFrameWillChange:frameRect:]
@@ -1183,7 +1197,7 @@
 }
 {
    bug_68090
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZL10AddEncHashP12EncHashTablePKhij
    fun:_Z16BuildMacEncTablev
    fun:_ZN15TParsingContext13GetParseProcsEv
@@ -1230,19 +1244,19 @@
 }
 {
    bug_75136a
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    ...
    fun:CFBundlePreflightExecutable
 }
 {
    bug_75136b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:CFBundlePreflightExecutable
 }
 {
    bug_75142a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:CGContextShowGlyphsWithAdvances
 }
@@ -1254,7 +1268,7 @@
 }
 {
    bug_75714_a
-   Memcheck:Addr8
+   Memcheck:Unaddressable
    ...
    fun:argb32_mark
    fun:ripl_BltShape
@@ -1271,7 +1285,7 @@
 }
 {
    bug_75714_b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:argb32_mark
    fun:ripl_BltShape
@@ -1287,7 +1301,7 @@
 }
 {
    bug_75714_c
-   Memcheck:Addr8
+   Memcheck:Unaddressable
    ...
    fun:argb32_image
    fun:ripd_Mark
@@ -1305,7 +1319,7 @@
 }
 {
    bug_76370
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:get_bits
    ...
    fun:read_huffman_tree
@@ -1389,7 +1403,7 @@
 }
 {
    bug_77388_a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:PrivateMPEntryPoint
    fun:_pthread_start
@@ -1397,7 +1411,7 @@
 }
 {
    bug_77388_b
-   Memcheck:Value4
+   Memcheck:Uninitialized
    ...
    fun:PrivateMPEntryPoint
    fun:_pthread_start
@@ -1415,7 +1429,7 @@
 }
 {
    bug_77388_d
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:TestAndSetClear
    fun:TestAndClear
    fun:_ZN5TNode28UnregisterChangeNotificationERK11TCountedPtrI21TClientChangeNotifierEmb
@@ -1432,7 +1446,7 @@
 }
 {
    bug_77388_e
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:TestAndSetClear
    fun:TestAndSet
    fun:_ZN5TNode17HandleSyncStartedEv
@@ -1453,7 +1467,7 @@
 }
 {
    bug_79655a
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    ...
    fun:dlopen
    fun:_ZN20IOSurfaceSupportImplC2Ev
@@ -1479,7 +1493,7 @@
 }
 {
    bug_79994
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:gleUpdateState
    fun:gleInitializeContext
@@ -1497,7 +1511,7 @@
 }
 {
    bug_80239_a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:CGLCreateContext
    fun:-[NSOpenGLContext initWithFormat:shareContext:]
@@ -1511,7 +1525,7 @@
 }
 {
    bug_80239_b
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    ...
    fun:CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext
    fun:-[AcceleratedPluginView initWithRenderWidgetHostViewMac:pluginHandle:]
@@ -1523,7 +1537,7 @@
 }
 {
    bug_82328
-   Memcheck:Addr8
+   Memcheck:Unaddressable
    fun:CGSFillDRAM64
    fun:argb32_mark_pixelshape
    ...
@@ -1541,7 +1555,7 @@
 }
 {
    bug_84329
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN3WTF17ChromiumThreading16callOnMainThreadEPFvPvES1_
    fun:_ZN3WTF16callOnMainThreadEPFvPvES0_
    fun:_ZN6WebKit13WebWorkerBase24dispatchTaskToMainThreadEN3WTF10PassOwnPtrIN7WebCore22ScriptExecutionContext4TaskEEE
@@ -1549,13 +1563,13 @@
 }
 {
    bug_86303a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:objc_msgSend*
 }
 {
    bug_86303b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:-[NSView _recursiveDisplayAllDirtyWithLockFocus:visRect:]
    fun:-[NSView _recursiveDisplayRectIfNeededIgnoringOpacity:isVisibleRect:rectIsVisibleRectForView:topView:]
@@ -1598,7 +1612,7 @@
 }
 {
    bug_90976
-   Memcheck:Addr2
+   Memcheck:Unaddressable
    ...
    fun:_CFPropertyListCreateFromXMLData
    fun:CFPropertyListCreateFromStream
@@ -1620,7 +1634,7 @@
 }
 {
    bug_91889_a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN4base12_GLOBAL__N_122StackDumpSignalHandlerEiP9__siginfoP17__darwin_ucontext
    obj:*
    fun:IOCFUnserialize
@@ -1637,7 +1651,7 @@
 }
 {
    bug_91889_b
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:IOCFUnserializeparse
    fun:IOCFUnserialize
    fun:IORegistryEntrySearchCFProperty
@@ -1653,7 +1667,7 @@
 }
 {
    bug_91889_c
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN4base12_GLOBAL__N_122StackDumpSignalHandlerEiP9__siginfoP17__darwin_ucontext
    obj:*
    obj:*
@@ -1692,13 +1706,13 @@
 }
 {
    bug_92579a
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN15CVCGDisplayLink17setCurrentDisplayEj
    fun:CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext
 }
 {
    bug_92579b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:_ZN15CVCGDisplayLink17setCurrentDisplayEj
    fun:_ZN15CVCGDisplayLink18initWithCGDisplaysEPjlPi
    fun:CVDisplayLinkCreateWithCGDisplays
@@ -1706,7 +1720,7 @@
 }
 {
    bug_92579c
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:IOCFUnserializeparse
    fun:IOCFUnserialize
    fun:IORegistryEntryCreateCFProperties
@@ -1718,26 +1732,12 @@
 }
 {
    bug_93036
-   Memcheck:Addr2
+   Memcheck:Unaddressable
    fun:+[NSPICTImageRep _verifyDataIsPICT:]
    fun:+[NSImageRep imageRepClassForData:]
    fun:-[NSImage initWithData:]
    fun:_ZN2ui14ResourceBundle19GetNativeImageNamedEi
    fun:-[BookmarkBarController initWithBrowser:initialWidth:delegate:resizeDelegate:]
-}
-{
-   bug_93711_a
-   Memcheck:Leak
-   fun:malloc
-   fun:allocateBranchIsland
-   fun:mach_override_ptr
-}
-{
-   bug_93711_b
-   Memcheck:Param
-   msync(start)
-   fun:msync$UNIX2003
-   fun:mach_override_ptr
 }
 {
    bug_93932_a
@@ -1797,56 +1797,56 @@
 }
 {
    bug_96559a
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:PyObject_Realloc
 }
 {
    bug_96559b
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:PyObject_Realloc
 }
 {
    bug_96559c
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:PyObject_Realloc
 }
 {
    bug_96559d
-   Memcheck:Value4
+   Memcheck:Uninitialized
    fun:PyObject_Free
 }
 {
    bug_96559e
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:PyObject_Free
 }
 {
    bug_96559f
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:PyObject_Free
 }
 {
    bug_96671
-   Memcheck:Cond
+   Memcheck:Uninitialized
    ...
    fun:_ZNK12MockKeychain26SearchCreateFromAttributesEPKvmPK24SecKeychainAttributeListPP26OpaqueSecKeychainSearchRef
    fun:_ZN14KeychainSearch17FindMatchingItemsEPSt6vectorIP24OpaqueSecKeychainItemRefSaIS2_EE
 }
 {
    bug_96684a
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN7content16P2PSocketHostTcp4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEE
    fun:*SocketHostTcpTest_*_Test8TestBodyEv
 }
 {
    bug_96684b
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN7content16P2PSocketHostUdp4SendERKN3net10IPEndPointERKSt6vectorIcSaIcEE
    fun:*SocketHostUdpTest_*_Test8TestBodyEv
 }
 {
    bug_96689
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZN3net11SSLHostInfo10ParseInnerERKSs
    fun:_ZN3net11SSLHostInfo5ParseERKSs
    fun:_ZN3net25DiskCacheBasedSSLHostInfo22DoWaitForDataReadyDoneEv
@@ -1880,7 +1880,7 @@
 }
 {
    bug_100022
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    ...
    fun:_ZNK11ImageLoader15containsAddressEPKv
    fun:_ZN4dyld14bindLazySymbolEPK11mach_headerPm
@@ -1923,7 +1923,7 @@
 }
 {
    bug_102327_a
-   Memcheck:Addr1
+   Memcheck:Unaddressable
    fun:_ZNK15tracked_objects10ThreadData26OnThreadTerminationCleanupEv
    fun:_ZN15tracked_objects10ThreadData19OnThreadTerminationEPv
    fun:_pthread_tsd_cleanup
@@ -1939,7 +1939,7 @@
 }
 {
    bug_102621
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:NSHFSTypeCodeFromFileType
    fun:-[NSPasteboard(ChimeraPasteboardURLUtils) getURLs:andTitles:convertingFilenames:]
    fun:_ZN2ui33PopulateURLAndTitleFromPasteboardEP4GURLPSbItN4base20string16_char_traitsESaItEEP12NSPasteboarda
@@ -2051,7 +2051,7 @@
 }
 {
    bug_105524
-   Memcheck:Cond
+   Memcheck:Uninitialized
    fun:_ZNK7WebCore13InlineTextBox17expansionBehaviorEv
    fun:_ZNK7WebCore13InlineTextBox16constructTextRunEPNS_11RenderStyleERKNS_4FontEPKtiiPNS_24BufferForAppendingHyphenE
    fun:_ZNK7WebCore13InlineTextBox16constructTextRunEPNS_11RenderStyleERKNS_4FontEPNS_24BufferForAppendingHyphenE
@@ -2088,7 +2088,7 @@
 }
 {
    bug_105526 read
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:CGSSetWindowColorSpace
    fun:_ZN10WindowData16UpdateColorSpaceEh
    fun:_ZN10WindowData18FinishConstructionEmymPK4RectPhjP15OpaqueWindowPtrP16OpaqueControlRef
@@ -2104,7 +2104,7 @@
 }
 {
    bug_105526 write
-   Memcheck:Addr4
+   Memcheck:Unaddressable
    fun:CGSColorProfileRelease
    fun:CGSSetWindowColorSpace
    fun:_ZN10WindowData16UpdateColorSpaceEh

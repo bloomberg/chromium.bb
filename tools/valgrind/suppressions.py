@@ -71,6 +71,36 @@ class Suppression(object):
         re_line += '\n'
     re_line += '(.*\n)*'
     re_line += '}'
+
+    # In the recent version of valgrind-variant we've switched
+    # from memcheck's default Addr[1248]/Value[1248]/Cond suppression types
+    # to simply Unaddressable/Uninitialized.
+    # The suppression generator no longer gives us "old" types thus
+    # for the "new-type" suppressions:
+    #  * Memcheck:Unaddressable should also match Addr* reports,
+    #  * Memcheck:Uninitialized should also match Cond and Value reports,
+    #
+    # We also want to support legacy suppressions (e.g. copied from
+    # upstream bugs etc), so:
+    #  * Memcheck:Addr[1248] suppressions should match Unaddressable reports,
+    #  * Memcheck:Cond and Memcheck:Value[1248] should match Uninitialized.
+    # Please note the latest two rules only apply to the
+    # tools/valgrind/waterfall.sh suppression matcher and the real
+    # valgrind-variant Memcheck will not suppress
+    # e.g. Addr1 printed as Unaddressable with Addr4 suppression.
+    # Be careful to check the access size while copying legacy suppressions!
+    for sz in [1, 2, 4, 8]:
+      re_line = re_line.replace("\nMemcheck:Addr%d\n" % sz,
+                                "\nMemcheck:(Addr%d|Unaddressable)\n" % sz)
+      re_line = re_line.replace("\nMemcheck:Value%d\n" % sz,
+                                "\nMemcheck:(Value%d|Uninitialized)\n" % sz)
+    re_line = re_line.replace("\nMemcheck:Cond\n",
+                              "\nMemcheck:(Cond|Uninitialized)\n")
+    re_line = re_line.replace("\nMemcheck:Unaddressable\n",
+                              "\nMemcheck:(Addr.|Unaddressable)\n")
+    re_line = re_line.replace("\nMemcheck:Uninitialized\n",
+                              "\nMemcheck:(Cond|Value.|Uninitialized)\n")
+
     self._re = re.compile(re_line, re.MULTILINE)
 
   def Match(self, suppression_from_report):
@@ -163,9 +193,10 @@ def ReadSuppressions(lines, supp_descriptor):
             'is expected, got "%s"' % line)
       supp_type = line.split(':')[1]
       if not supp_type in ["Addr1", "Addr2", "Addr4", "Addr8",
-                          "Cond", "Free", "Jump", "Leak", "Overlap", "Param",
-                          "Value1", "Value2", "Value4", "Value8",
-                          "Race", "UnlockNonLocked", "InvalidLock"]:
+                           "Cond", "Free", "Jump", "Leak", "Overlap", "Param",
+                           "Value1", "Value2", "Value4", "Value8",
+                           "Race", "UnlockNonLocked", "InvalidLock",
+                           "Unaddressable", "Uninitialized"]:
         raise SuppressionError(supp_descriptor, nline,
                                'Unknown suppression type "%s"' % supp_type)
       cur_type = line
@@ -194,12 +225,12 @@ def TestStack(stack, positive, negative):
            "Suppression:\n%s\ndidn't match stack:\n%s" % (supp, stack)
   for supp in negative:
     assert not ReadSuppressions(supp.split("\n"), "")[0].Match(stack), \
-           "Suppression:\n%s\ndidn't match stack:\n%s" % (supp, stack)
+           "Suppression:\n%s\ndid match stack:\n%s" % (supp, stack)
 
 def SelfTest():
   """Tests the Suppression.Match() capabilities."""
 
-  test_stack1 = """{
+  test_memcheck_stack_1 = """{
     test
     Memcheck:Leak
     fun:absolutly
@@ -209,7 +240,37 @@ def SelfTest():
     fun:expression
   }""".split("\n")
 
-  test_stack2 = """{
+  test_memcheck_stack_2 = """{
+    test
+    Memcheck:Uninitialized
+    fun:absolutly
+    fun:brilliant
+    obj:condition
+    fun:detection
+    fun:expression
+  }""".split("\n")
+
+  test_memcheck_stack_3 = """{
+    test
+    Memcheck:Unaddressable
+    fun:absolutly
+    fun:brilliant
+    obj:condition
+    fun:detection
+    fun:expression
+  }""".split("\n")
+
+  test_memcheck_stack_4 = """{
+    test
+    Memcheck:Addr4
+    fun:absolutly
+    fun:brilliant
+    obj:condition
+    fun:detection
+    fun:expression
+  }""".split("\n")
+
+  test_heapcheck_stack = """{
     test
     Heapcheck:Leak
     fun:absolutly
@@ -219,7 +280,7 @@ def SelfTest():
     fun:expression
   }""".split("\n")
 
-  test_stack3 = """{
+  test_tsan_stack = """{
     test
     ThreadSanitizer:Race
     fun:absolutly
@@ -230,7 +291,7 @@ def SelfTest():
   }""".split("\n")
 
 
-  positive_memcheck_suppressions = [
+  positive_memcheck_suppressions_1 = [
     "{\nzzz\nMemcheck:Leak\nfun:absolutly\n}",
     "{\nzzz\nMemcheck:Leak\nfun:ab*ly\n}",
     "{\nzzz\nMemcheck:Leak\nfun:absolutly\nfun:brilliant\n}",
@@ -243,6 +304,33 @@ def SelfTest():
     "{\nzzz\nMemcheck:Leak\n...\nfun:brilliant\nobj:condition\n}",
   ]
 
+  positive_memcheck_suppressions_2 = [
+    "{\nzzz\nMemcheck:Uninitialized\nfun:absolutly\n}",
+    "{\nzzz\nMemcheck:Uninitialized\nfun:ab*ly\n}",
+    "{\nzzz\nMemcheck:Uninitialized\nfun:absolutly\nfun:brilliant\n}",
+    # Legacy suppression types
+    "{\nzzz\nMemcheck:Value1\n...\nfun:brilliant\n}",
+    "{\nzzz\nMemcheck:Cond\n...\nfun:detection\n}",
+    "{\nzzz\nMemcheck:Value8\nfun:absolutly\nfun:brilliant\n}",
+  ]
+
+  positive_memcheck_suppressions_3 = [
+    "{\nzzz\nMemcheck:Unaddressable\nfun:absolutly\n}",
+    "{\nzzz\nMemcheck:Unaddressable\nfun:absolutly\nfun:brilliant\n}",
+    "{\nzzz\nMemcheck:Unaddressable\nfun:absolutly\nfun:brilliant\n}",
+    # Legacy suppression types
+    "{\nzzz\nMemcheck:Addr1\n...\nfun:brilliant\n}",
+    "{\nzzz\nMemcheck:Addr8\n...\nfun:detection\n}",
+  ]
+
+  positive_memcheck_suppressions_4 = [
+    "{\nzzz\nMemcheck:Addr4\nfun:absolutly\n}",
+    "{\nzzz\nMemcheck:Unaddressable\nfun:absolutly\n}",
+    "{\nzzz\nMemcheck:Addr4\nfun:absolutly\nfun:brilliant\n}",
+    "{\nzzz\nMemcheck:Unaddressable\n...\nfun:brilliant\n}",
+    "{\nzzz\nMemcheck:Addr4\n...\nfun:detection\n}",
+  ]
+
   positive_heapcheck_suppressions = [
     "{\nzzz\nHeapcheck:Leak\n...\nobj:condition\n}",
     "{\nzzz\nHeapcheck:Leak\nfun:absolutly\n}",
@@ -253,10 +341,40 @@ def SelfTest():
     "{\nzzz\nThreadSanitizer:Race\nfun:absolutly\n}",
   ]
 
-  negative_memcheck_suppressions = [
+  negative_memcheck_suppressions_1 = [
     "{\nzzz\nMemcheck:Leak\nfun:abnormal\n}",
     "{\nzzz\nMemcheck:Leak\nfun:ab*liant\n}",
     "{\nzzz\nMemcheck:Leak\nfun:brilliant\n}",
+    "{\nzzz\nMemcheck:Leak\nobj:condition\n}",
+    "{\nzzz\nMemcheck:Addr8\nfun:brilliant\n}",
+  ]
+
+  negative_memcheck_suppressions_2 = [
+    "{\nzzz\nMemcheck:Cond\nfun:abnormal\n}",
+    "{\nzzz\nMemcheck:Value2\nfun:abnormal\n}",
+    "{\nzzz\nMemcheck:Uninitialized\nfun:ab*liant\n}",
+    "{\nzzz\nMemcheck:Value4\nfun:brilliant\n}",
+    "{\nzzz\nMemcheck:Leak\nobj:condition\n}",
+    "{\nzzz\nMemcheck:Addr8\nfun:brilliant\n}",
+    "{\nzzz\nMemcheck:Unaddressable\nfun:brilliant\n}",
+  ]
+
+  negative_memcheck_suppressions_3 = [
+    "{\nzzz\nMemcheck:Addr1\nfun:abnormal\n}",
+    "{\nzzz\nMemcheck:Uninitialized\nfun:absolutly\n}",
+    "{\nzzz\nMemcheck:Addr2\nfun:ab*liant\n}",
+    "{\nzzz\nMemcheck:Value4\nfun:brilliant\n}",
+    "{\nzzz\nMemcheck:Leak\nobj:condition\n}",
+    "{\nzzz\nMemcheck:Addr8\nfun:brilliant\n}",
+  ]
+
+  negative_memcheck_suppressions_4 = [
+    "{\nzzz\nMemcheck:Addr1\nfun:abnormal\n}",
+    "{\nzzz\nMemcheck:Addr4\nfun:abnormal\n}",
+    "{\nzzz\nMemcheck:Unaddressable\nfun:abnormal\n}",
+    "{\nzzz\nMemcheck:Addr1\nfun:absolutly\n}",
+    "{\nzzz\nMemcheck:Addr2\nfun:ab*liant\n}",
+    "{\nzzz\nMemcheck:Value4\nfun:brilliant\n}",
     "{\nzzz\nMemcheck:Leak\nobj:condition\n}",
     "{\nzzz\nMemcheck:Addr8\nfun:brilliant\n}",
   ]
@@ -271,11 +389,21 @@ def SelfTest():
     "{\nzzz\nThreadSanitizer:Race\nfun:brilliant\n}",
   ]
 
-  TestStack(test_stack1, positive_memcheck_suppressions,
-            negative_memcheck_suppressions)
-  TestStack(test_stack2, positive_heapcheck_suppressions,
+  TestStack(test_memcheck_stack_1,
+            positive_memcheck_suppressions_1,
+            negative_memcheck_suppressions_1)
+  TestStack(test_memcheck_stack_2,
+            positive_memcheck_suppressions_2,
+            negative_memcheck_suppressions_2)
+  TestStack(test_memcheck_stack_3,
+            positive_memcheck_suppressions_3,
+            negative_memcheck_suppressions_3)
+  TestStack(test_memcheck_stack_4,
+            positive_memcheck_suppressions_4,
+            negative_memcheck_suppressions_4)
+  TestStack(test_heapcheck_stack, positive_heapcheck_suppressions,
             negative_heapcheck_suppressions)
-  TestStack(test_stack3, positive_tsan_suppressions,
+  TestStack(test_tsan_stack, positive_tsan_suppressions,
             negative_tsan_suppressions)
 
 if __name__ == '__main__':
