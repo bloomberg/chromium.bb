@@ -12,7 +12,8 @@ import sys
 # Add scons to the python path (as nacl_utils.py requires it).
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
-SRC_DIR = os.path.dirname(os.path.dirname(SDK_SRC_DIR))
+SDK_DIR = os.path.dirname(SDK_SRC_DIR)
+SRC_DIR = os.path.dirname(SDK_DIR)
 sys.path.append(os.path.join(SRC_DIR, 'third_party/scons-2.0.1/engine'))
 
 import build_utils
@@ -36,10 +37,11 @@ def Archive(revision, chrome_milestone):
     dst = 'naclsdk_linux.tgz'
   bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/pepper_%s_%s/%s' % (
       chrome_milestone, revision, dst)
+  full_src = os.path.join(SDK_DIR, src)
   full_dst = 'gs://%s' % bucket_path
   subprocess.check_call(
       '/b/build/scripts/slave/gsutil cp -a public-read %s %s' % (
-          src, full_dst), shell=True)
+          full_src, full_dst), shell=True)
   url = 'https://commondatastorage.googleapis.com/%s' % bucket_path
   print '@@@STEP_LINK@download@%s@@@' % url
   sys.stdout.flush()
