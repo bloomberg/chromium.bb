@@ -79,6 +79,9 @@ def BuildArgParser():
   parser.add_option('--sel_ldr', dest='sel_ldr', action='store',
                     type='string', default=None,
                     help='Use the sel_ldr located here.')
+  parser.add_option('--sel_ldr_bootstrap', dest='sel_ldr_bootstrap',
+                    action='store', type='string', default=None,
+                    help='Use the bootstrap loader located here.')
   parser.add_option('--irt_library', dest='irt_library', action='store',
                     type='string', default=None,
                     help='Use the integrated runtime (IRT) library '

@@ -179,6 +179,7 @@ struct SelLdrLauncher {
   // <prefix> <sel_ldr> <extra stuff> -f <nexe> <sel_ldr_argv> -- <nexe_args>
   // Path to prefix tool or empty if not used
   nacl::string command_prefix_;
+  nacl::string sel_ldr_bootstrap_;
   // Path to the sel_ldr executable
   nacl::string sel_ldr_;
   // arguments to sel_ldr

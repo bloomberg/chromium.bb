@@ -1152,6 +1152,16 @@ def GetSelLdr(env):
   trusted_env = env['TRUSTED_ENV']
   return trusted_env.File('${STAGING_DIR}/${PROGPREFIX}sel_ldr${PROGSUFFIX}')
 
+def GetBootstrap(env):
+  if 'TRUSTED_ENV' in env:
+    trusted_env = env['TRUSTED_ENV']
+    # TODO(mcgrathr): For now, only x86-64 sel_ldr is built as a PIE.
+    # Turn this on for all Linux once we're building as PIE everywhere.
+    if trusted_env.Bit('linux') and trusted_env.Bit('target_x86_64'):
+      return (trusted_env.File('${STAGING_DIR}/nacl_helper_bootstrap'),
+              '--r_debug=0xXXXXXXXXXXXXXXXX')
+  return None, None
+
 
 def GetIrtNexe(env, irt_name='irt'):
   image = ARGUMENTS.get('force_irt')
@@ -1490,6 +1500,9 @@ def PPAPIBrowserTester(env,
   if not env.Bit('disable_dynamic_plugin_loading'):
     command.extend(['--ppapi_plugin', GetPPAPIPluginPath(env['TRUSTED_ENV'])])
     command.extend(['--sel_ldr', GetSelLdr(env)])
+    bootstrap, _ = GetBootstrap(env)
+    if bootstrap is not None:
+      command.extend(['--sel_ldr_bootstrap', bootstrap])
   if env.Bit('irt') and (not env.Bit('disable_dynamic_plugin_loading') or
                          env.Bit('override_chrome_irt')):
     command.extend(['--irt_library', env.GetIrtNexe()])
@@ -1637,8 +1650,13 @@ def PyAutoTester(env, target, test, files=[], log_verbosity=2,
   osenv = []
   if not env.Bit('disable_dynamic_plugin_loading'):
     # Pass the sel_ldr location to Chrome via the NACL_SEL_LDR variable.
-    osenv.append('NACL_SEL_LDR=%s' % GetSelLdr(env))
-    extra_deps.append(GetSelLdr(env))
+    sel_ldr = GetSelLdr(env)
+    osenv.append('NACL_SEL_LDR=%s' % sel_ldr)
+    extra_deps.append(sel_ldr)
+    bootstrap, _ = GetBootstrap(env)
+    if bootstrap is not None:
+      osenv.append('NACL_SEL_LDR_BOOTSTRAP=%s' % bootstrap)
+      extra_deps.append(bootstrap)
   if env.Bit('irt') and (not env.Bit('disable_dynamic_plugin_loading') or
                          env.Bit('override_chrome_irt')):
     osenv.append('NACL_IRT_LIBRARY=%s' % env.GetIrtNexe())
@@ -1790,15 +1808,21 @@ def SelUniversalTest(env, name, nexe, sel_universal_flags=None, **kwargs):
     print 'WARNING: no sel_ldr found. Skipping test %s' % name
     return []
   kwargs.setdefault('osenv', []).append('NACL_SEL_LDR=' + sel_ldr.abspath)
+  bootstrap, _ = GetBootstrap(env)
+  if bootstrap is not None:
+    kwargs['osenv'].append('NACL_SEL_LDR_BOOTSTRAP=%s' % bootstrap.abspath)
 
   node = CommandSelLdrTestNacl(env,
                                name,
                                nexe,
                                loader=sel_universal,
                                sel_ldr_flags=sel_universal_flags,
+                               skip_bootstrap=True,
                                **kwargs)
   if not env.Bit('built_elsewhere'):
     env.Depends(node, sel_ldr)
+    if bootstrap is not None:
+      env.Depends(node, bootstrap)
   return node
 
 pre_base_env.AddMethod(SelUniversalTest)
@@ -1844,6 +1868,7 @@ def CommandSelLdrTestNacl(env, name, nexe,
                           # True for *.nexe statically linked with glibc
                           glibc_static=False,
                           uses_ppapi=False,
+                          skip_bootstrap=False,
                           **extra):
   # Disable all sel_ldr tests for windows under coverage.
   # Currently several .S files block sel_ldr from being instrumented.
@@ -1892,7 +1917,16 @@ def CommandSelLdrTestNacl(env, name, nexe,
   if env.Bit('tests_use_irt') or (env.Bit('irt') and uses_ppapi):
     sel_ldr_flags += ['-B', nacl_env.GetIrtNexe()]
 
-  command = [loader] + sel_ldr_flags + ['--'] + command
+  if skip_bootstrap:
+    bootstrap, bootstrap_arg = None, None
+  else:
+    bootstrap, bootstrap_arg = GetBootstrap(env)
+  if bootstrap is None:
+    loader_cmd = [loader]
+  else:
+    loader_cmd = [bootstrap, loader, bootstrap_arg]
+
+  command = loader_cmd + sel_ldr_flags + ['--'] + command
 
   if ShouldUseVerboseOptions(extra):
     env.MakeVerboseExtraOptions(name, log_verbosity, extra)

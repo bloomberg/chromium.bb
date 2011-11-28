@@ -102,13 +102,9 @@ bool SelLdrLauncher::LaunchFromCommandLine() {
     for (size_t i = 0; i < command.size(); ++i) {
       argv[i] = command[i].c_str();
     }
-    argv[command.size()] = 0;
+    argv[command.size()] = NULL;
 
-    if (command_prefix_ != "") {
-      execv(command_prefix_.c_str(), const_cast<char**>(argv));
-    } else {
-      execv(sel_ldr_.c_str(), const_cast<char**>(argv));
-    }
+    execv(argv[0], const_cast<char**>(argv));
     NaClLog(LOG_ERROR, "execv failed, args were:\n");
     for (size_t i = 0; i < command.size(); ++i) {
       NaClLog(LOG_ERROR, "%s\n", argv[i]);

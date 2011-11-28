@@ -163,6 +163,8 @@ class BrowserLauncher(object):
                           'NFS volume?)' % browser_path)
     if self.options.sel_ldr:
       env['NACL_SEL_LDR'] = self.options.sel_ldr
+    if self.options.sel_ldr_bootstrap:
+      env['NACL_SEL_LDR_BOOTSTRAP'] = self.options.sel_ldr_bootstrap
     if self.options.irt_library:
       env['NACL_IRT_LIBRARY'] = self.options.irt_library
     if self.options.enable_experimental_js:
