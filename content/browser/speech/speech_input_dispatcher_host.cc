@@ -192,7 +192,7 @@ void SpeechInputDispatcherHost::OnStopRecording(int render_view_id,
 }
 
 void SpeechInputDispatcherHost::SetRecognitionResult(
-    int caller_id, const SpeechInputResult& result) {
+    int caller_id, const content::SpeechInputResult& result) {
   VLOG(1) << "SpeechInputDispatcherHost::SetRecognitionResult enter";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int caller_render_view_id =

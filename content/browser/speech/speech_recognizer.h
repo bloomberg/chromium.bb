@@ -15,6 +15,7 @@
 #include "content/browser/speech/endpointer/endpointer.h"
 #include "content/browser/speech/speech_recognition_request.h"
 #include "content/common/content_export.h"
+#include "content/public/common/speech_input_result.h"
 #include "media/audio/audio_input_controller.h"
 
 namespace net {
@@ -35,7 +36,7 @@ class CONTENT_EXPORT SpeechRecognizer
    public:
     virtual void SetRecognitionResult(
         int caller_id,
-        const SpeechInputResult& result) = 0;
+        const content::SpeechInputResult& result) = 0;
 
     // Invoked when the first audio packet was received from the audio capture
     // device.
@@ -62,7 +63,7 @@ class CONTENT_EXPORT SpeechRecognizer
     // callbacks will not be issued. It is safe to destroy/release the
     // |SpeechRecognizer| object while processing this call.
     virtual void OnRecognizerError(int caller_id,
-                                   SpeechInputError error) = 0;
+                                   content::SpeechInputError error) = 0;
 
     // At the start of recognition, a short amount of audio is recorded to
     // estimate the environment/background noise and this callback is issued
@@ -114,7 +115,8 @@ class CONTENT_EXPORT SpeechRecognizer
                       uint32 size) OVERRIDE;
 
   // SpeechRecognitionRequest::Delegate methods.
-  virtual void SetRecognitionResult(const SpeechInputResult& result) OVERRIDE;
+  virtual void SetRecognitionResult(
+      const content::SpeechInputResult& result) OVERRIDE;
 
   static const int kAudioSampleRate;
   static const int kAudioPacketIntervalMs;  // Duration of each audio packet.
@@ -124,7 +126,7 @@ class CONTENT_EXPORT SpeechRecognizer
   static const int kEndpointerEstimationTimeMs;
 
  private:
-  void InformErrorAndCancelRecognition(SpeechInputError error);
+  void InformErrorAndCancelRecognition(content::SpeechInputError error);
   void SendRecordedAudioToServer();
 
   void HandleOnError(int error_code);  // Handles OnError in the IO thread.

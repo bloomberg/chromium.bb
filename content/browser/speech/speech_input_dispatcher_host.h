@@ -29,8 +29,9 @@ class SpeechInputDispatcherHost : public BrowserMessageFilter,
       SpeechInputPreferences* speech_input_preferences);
 
   // SpeechInputManager::Delegate methods.
-  virtual void SetRecognitionResult(int caller_id,
-                                    const SpeechInputResult& result) OVERRIDE;
+  virtual void SetRecognitionResult(
+      int caller_id,
+      const content::SpeechInputResult& result) OVERRIDE;
   virtual void DidCompleteRecording(int caller_id) OVERRIDE;
   virtual void DidCompleteRecognition(int caller_id) OVERRIDE;
 

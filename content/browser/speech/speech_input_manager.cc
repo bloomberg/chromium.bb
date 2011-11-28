@@ -202,7 +202,7 @@ void SpeechInputManager::StopRecording(int caller_id) {
 }
 
 void SpeechInputManager::SetRecognitionResult(
-    int caller_id, const SpeechInputResult& result) {
+    int caller_id, const content::SpeechInputResult& result) {
   DCHECK(HasPendingRequest(caller_id));
   GetDelegate(caller_id)->SetRecognitionResult(caller_id, result);
 }
@@ -228,7 +228,7 @@ void SpeechInputManager::DidStopReceivingSpeech(int caller_id) {
 }
 
 void SpeechInputManager::OnRecognizerError(
-    int caller_id, SpeechInputError error) {
+    int caller_id, content::SpeechInputError error) {
   if (caller_id == recording_caller_id_)
     recording_caller_id_ = 0;
   requests_[caller_id].is_active = false;

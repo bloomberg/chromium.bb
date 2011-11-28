@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SPEECH_INPUT_RESULT_H_
-#define CONTENT_COMMON_SPEECH_INPUT_RESULT_H_
+#ifndef CONTENT_PUBLIC_COMMON_SPEECH_INPUT_RESULT_H_
+#define CONTENT_PUBLIC_COMMON_SPEECH_INPUT_RESULT_H_
 
 #include <vector>
 
@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "content/common/content_export.h"
 
-namespace speech_input {
+namespace content {
 
 struct SpeechInputHypothesis {
   string16 utterance;
@@ -30,13 +30,20 @@ typedef std::vector<SpeechInputHypothesis> SpeechInputHypothesisArray;
 // This enumeration follows the values described here:
 // http://www.w3.org/2005/Incubator/htmlspeech/2010/10/google-api-draft.html#speech-input-error
 enum SpeechInputError {
-  kErrorNone = 0,   // There was no error.
-  kErrorAborted,    // The user or a script aborted speech input.
-  kErrorAudio,      // There was an error with recording audio.
-  kErrorNetwork,    // There was a network error.
-  kErrorNoSpeech,   // No speech heard before timeout.
-  kErrorNoMatch,    // Speech was heard, but could not be interpreted.
-  kErrorBadGrammar, // There was an error in the speech recognition grammar.
+  // There was no error.
+  SPEECH_INPUT_ERROR_NONE = 0,
+  // The user or a script aborted speech input.
+  SPEECH_INPUT_ERROR_ABORTED,
+  // There was an error with recording audio.
+  SPEECH_INPUT_ERROR_AUDIO,
+  // There was a network error.
+  SPEECH_INPUT_ERROR_NETWORK,
+  // No speech heard before timeout.
+  SPEECH_INPUT_ERROR_NO_SPEECH,
+  // Speech was heard, but could not be interpreted.
+  SPEECH_INPUT_ERROR_NO_MATCH,
+  // There was an error in the speech recognition grammar.
+  SPEECH_INPUT_ERROR_BAD_GRAMMAR,
 };
 
 struct CONTENT_EXPORT SpeechInputResult {
@@ -47,6 +54,6 @@ struct CONTENT_EXPORT SpeechInputResult {
   ~SpeechInputResult();
 };
 
-}  // namespace speech_input
+}  // namespace content
 
-#endif  // CONTENT_COMMON_SPEECH_INPUT_RESULT_H_
+#endif  // CONTENT_PUBLIC_COMMON_SPEECH_INPUT_RESULT_H_

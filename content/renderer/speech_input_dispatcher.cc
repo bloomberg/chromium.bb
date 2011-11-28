@@ -85,7 +85,7 @@ void SpeechInputDispatcher::stopRecording(int request_id) {
 
 void SpeechInputDispatcher::OnSpeechRecognitionResult(
     int request_id,
-    const speech_input::SpeechInputResult& result) {
+    const content::SpeechInputResult& result) {
   VLOG(1) << "SpeechInputDispatcher::OnSpeechRecognitionResult enter";
   WebKit::WebSpeechInputResultArray webkit_result(result.hypotheses.size());
   for (size_t i = 0; i < result.hypotheses.size(); ++i) {

@@ -42,7 +42,7 @@ class ChromeSpeechInputManager : public SpeechInputManager,
   virtual void ShowMicError(int caller_id,
                             SpeechInputManager::MicError error) OVERRIDE;
   virtual void ShowRecognizerError(int caller_id,
-                                   SpeechInputError error) OVERRIDE;
+                                   content::SpeechInputError error) OVERRIDE;
   virtual void DoClose(int caller_id) OVERRIDE;
 
  private:

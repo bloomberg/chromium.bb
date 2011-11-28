@@ -11,10 +11,13 @@
 #include "base/basictypes.h"
 #include "content/browser/speech/speech_recognizer.h"
 #include "content/common/content_export.h"
-#include "content/common/speech_input_result.h"
 #include "ui/gfx/rect.h"
 
 class SpeechInputPreferences;
+
+namespace content {
+struct SpeechInputResult;
+}
 
 namespace speech_input {
 
@@ -29,7 +32,7 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
    public:
     virtual void SetRecognitionResult(
         int caller_id,
-        const SpeechInputResult& result) = 0;
+        const content::SpeechInputResult& result) = 0;
     virtual void DidCompleteRecording(int caller_id) = 0;
     virtual void DidCompleteRecognition(int caller_id) = 0;
 
@@ -75,15 +78,16 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
 
   // SpeechRecognizerDelegate methods.
   virtual void DidStartReceivingAudio(int caller_id) OVERRIDE;
-  virtual void SetRecognitionResult(int caller_id,
-                                    const SpeechInputResult& result) OVERRIDE;
+  virtual void SetRecognitionResult(
+      int caller_id,
+      const content::SpeechInputResult& result) OVERRIDE;
   virtual void DidCompleteRecording(int caller_id) OVERRIDE;
   virtual void DidCompleteRecognition(int caller_id) OVERRIDE;
   virtual void DidStartReceivingSpeech(int caller_id) OVERRIDE;
   virtual void DidStopReceivingSpeech(int caller_id) OVERRIDE;
 
   virtual void OnRecognizerError(int caller_id,
-                                 SpeechInputError error) OVERRIDE;
+                                 content::SpeechInputError error) OVERRIDE;
   virtual void DidCompleteEnvironmentEstimation(int caller_id) OVERRIDE;
   virtual void SetInputVolume(int caller_id, float volume,
                               float noise_volume) OVERRIDE;
@@ -122,7 +126,7 @@ class CONTENT_EXPORT SpeechInputManager : public SpeechRecognizerDelegate {
 
   // Called when there has been a error with the recognition.
   virtual void ShowRecognizerError(int caller_id,
-                                   SpeechInputError error) = 0;
+                                   content::SpeechInputError error) = 0;
 
   // Called when recognition has ended or has been canceled.
   virtual void DoClose(int caller_id) = 0;

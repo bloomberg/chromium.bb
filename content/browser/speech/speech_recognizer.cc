@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/time.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/speech_input_result.h"
 #include "net/url_request/url_request_context_getter.h"
 
 using content::BrowserThread;
@@ -188,7 +189,7 @@ void SpeechRecognizer::HandleOnError(int error_code) {
   if (!audio_controller_.get())
     return;
 
-  InformErrorAndCancelRecognition(kErrorAudio);
+  InformErrorAndCancelRecognition(content::SPEECH_INPUT_ERROR_AUDIO);
 }
 
 void SpeechRecognizer::OnData(AudioInputController* controller,
@@ -252,7 +253,7 @@ void SpeechRecognizer::HandleOnData(string* data) {
   bool speech_was_heard_after_packet = endpointer_.DidStartReceivingSpeech();
   if (!speech_was_heard_after_packet &&
       num_samples_recorded_ >= kNoSpeechTimeoutSec * kAudioSampleRate) {
-    InformErrorAndCancelRecognition(kErrorNoSpeech);
+    InformErrorAndCancelRecognition(content::SPEECH_INPUT_ERROR_NO_SPEECH);
     return;
   }
 
@@ -283,8 +284,8 @@ void SpeechRecognizer::HandleOnData(string* data) {
 }
 
 void SpeechRecognizer::SetRecognitionResult(
-    const SpeechInputResult& result) {
-  if (result.error != kErrorNone) {
+    const content::SpeechInputResult& result) {
+  if (result.error != content::SPEECH_INPUT_ERROR_NONE) {
     InformErrorAndCancelRecognition(result.error);
     return;
   }
@@ -296,8 +297,8 @@ void SpeechRecognizer::SetRecognitionResult(
 }
 
 void SpeechRecognizer::InformErrorAndCancelRecognition(
-    SpeechInputError error) {
-  DCHECK_NE(error, kErrorNone);
+    content::SpeechInputError error) {
+  DCHECK_NE(error, content::SPEECH_INPUT_ERROR_NONE);
   CancelRecognition();
 
   // Guard against the delegate freeing us until we finish our job.

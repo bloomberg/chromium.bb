@@ -8,7 +8,6 @@
 
 #include "base/synchronization/lock.h"
 #include "content/browser/speech/speech_recognizer.h"
-#include "content/common/speech_input_result.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include <string>
@@ -111,7 +110,7 @@ class SpeechInputExtensionManager
   // Methods from SpeechRecognizerDelegate.
   virtual void SetRecognitionResult(
       int caller_id,
-      const speech_input::SpeechInputResult& result) OVERRIDE;
+      const content::SpeechInputResult& result) OVERRIDE;
 
   virtual void DidStartReceivingAudio(int caller_id) OVERRIDE;
   virtual void DidCompleteRecording(int caller_id) OVERRIDE;
@@ -119,7 +118,7 @@ class SpeechInputExtensionManager
   virtual void DidStartReceivingSpeech(int caller_id) OVERRIDE;
   virtual void DidStopReceivingSpeech(int caller_id) OVERRIDE;
   virtual void OnRecognizerError(int caller_id,
-                                 speech_input::SpeechInputError error)
+                                 content::SpeechInputError error)
                                  OVERRIDE;
   virtual void DidCompleteEnvironmentEstimation(int caller_id) OVERRIDE;
   virtual void SetInputVolume(int caller_id, float volume,
@@ -155,7 +154,7 @@ class SpeechInputExtensionManager
   void ForceStopOnIOThread();
 
   void SetRecognitionResultOnUIThread(
-      const speech_input::SpeechInputResult& result,
+      const content::SpeechInputResult& result,
       const std::string& extension_id);
   void DidStartReceivingAudioOnUIThread();
   void StopSucceededOnUIThread();

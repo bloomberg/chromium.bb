@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/speech_input_result.h"
+#include "content/public/common/speech_input_result.h"
 
-namespace speech_input {
+namespace content {
 
 SpeechInputResult::SpeechInputResult()
-    : error(kErrorNone) {
+    : error(SPEECH_INPUT_ERROR_NONE) {
 }
 
 SpeechInputResult::~SpeechInputResult() {
 }
 
-}  // namespace speech_input
+}  // namespace content

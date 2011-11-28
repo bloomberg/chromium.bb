@@ -15,6 +15,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/speech_input_result.h"
 #include "grit/generated_resources.h"
 #include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -164,20 +165,20 @@ void ChromeSpeechInputManager::ShowMicError(
 }
 
 void ChromeSpeechInputManager::ShowRecognizerError(
-    int caller_id, SpeechInputError error) {
+    int caller_id, content::SpeechInputError error) {
   struct ErrorMessageMapEntry {
-    SpeechInputError error;
+    content::SpeechInputError error;
     int message_id;
   };
   ErrorMessageMapEntry error_message_map[] = {
     {
-      kErrorAudio, IDS_SPEECH_INPUT_MIC_ERROR
+      content::SPEECH_INPUT_ERROR_AUDIO, IDS_SPEECH_INPUT_MIC_ERROR
     }, {
-      kErrorNoSpeech, IDS_SPEECH_INPUT_NO_SPEECH
+      content::SPEECH_INPUT_ERROR_NO_SPEECH, IDS_SPEECH_INPUT_NO_SPEECH
     }, {
-      kErrorNoMatch, IDS_SPEECH_INPUT_NO_RESULTS
+      content::SPEECH_INPUT_ERROR_NO_MATCH, IDS_SPEECH_INPUT_NO_RESULTS
     }, {
-      kErrorNetwork, IDS_SPEECH_INPUT_NET_ERROR
+      content::SPEECH_INPUT_ERROR_NETWORK, IDS_SPEECH_INPUT_NET_ERROR
     }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(error_message_map); ++i) {

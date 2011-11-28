@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "content/common/net/url_fetcher_impl.h"
+#include "content/public/common/speech_input_result.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context.h"
@@ -31,7 +32,7 @@ const char* const kConfidenceString = "confidence";
 const int kMaxResults = 6;
 
 bool ParseServerResponse(const std::string& response_body,
-                         speech_input::SpeechInputResult* result) {
+                         content::SpeechInputResult* result) {
   if (response_body.empty()) {
     LOG(WARNING) << "ParseServerResponse: Response was empty.";
     return false;
@@ -65,9 +66,9 @@ bool ParseServerResponse(const std::string& response_body,
 
   // Process the status.
   switch (status) {
-  case speech_input::kErrorNone:
-  case speech_input::kErrorNoSpeech:
-  case speech_input::kErrorNoMatch:
+  case content::SPEECH_INPUT_ERROR_NONE:
+  case content::SPEECH_INPUT_ERROR_NO_SPEECH:
+  case content::SPEECH_INPUT_ERROR_NO_MATCH:
     break;
 
   default:
@@ -76,7 +77,7 @@ bool ParseServerResponse(const std::string& response_body,
     return false;
   }
 
-  result->error = static_cast<speech_input::SpeechInputError>(status);
+  result->error = static_cast<content::SpeechInputError>(status);
 
   // Get the hypotheses.
   Value* hypotheses_value = NULL;
@@ -120,7 +121,7 @@ bool ParseServerResponse(const std::string& response_body,
     double confidence = 0.0;
     hypothesis_value->GetDouble(kConfidenceString, &confidence);
 
-    result->hypotheses.push_back(speech_input::SpeechInputHypothesis(
+    result->hypotheses.push_back(content::SpeechInputHypothesis(
         utterance, confidence));
   }
 
@@ -210,12 +211,12 @@ void SpeechRecognitionRequest::OnURLFetchComplete(
     const content::URLFetcher* source) {
   DCHECK_EQ(url_fetcher_.get(), source);
 
-  SpeechInputResult result;
+  content::SpeechInputResult result;
   std::string data;
   if (!source->GetStatus().is_success() || source->GetResponseCode() != 200 ||
       !source->GetResponseAsString(&data) ||
       !ParseServerResponse(data, &result)) {
-    result.error = kErrorNetwork;
+    result.error = content::SPEECH_INPUT_ERROR_NETWORK;
   }
 
   DVLOG(1) << "SpeechRecognitionRequest: Invoking delegate with result.";

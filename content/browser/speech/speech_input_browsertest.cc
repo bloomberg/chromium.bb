@@ -16,6 +16,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/speech_input_result.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 
 namespace speech_input {
@@ -112,7 +113,7 @@ class FakeSpeechInputManager : public SpeechInputManager {
   virtual void ShowMicError(int caller_id,
                             SpeechInputManager::MicError error) {}
   virtual void ShowRecognizerError(int caller_id,
-                                   SpeechInputError error) {}
+                                   content::SpeechInputError error) {}
   virtual void DoClose(int caller_id) {}
 
  private:
@@ -120,8 +121,8 @@ class FakeSpeechInputManager : public SpeechInputManager {
     if (caller_id_) {  // Do a check in case we were cancelled..
       VLOG(1) << "Setting fake recognition result.";
       delegate_->DidCompleteRecording(caller_id_);
-      SpeechInputResult results;
-      results.hypotheses.push_back(SpeechInputHypothesis(
+      content::SpeechInputResult results;
+      results.hypotheses.push_back(content::SpeechInputHypothesis(
           ASCIIToUTF16(kTestResult), 1.0));
       delegate_->SetRecognitionResult(caller_id_, results);
       delegate_->DidCompleteRecognition(caller_id_);

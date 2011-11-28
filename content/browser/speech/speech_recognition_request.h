@@ -13,10 +13,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/common/url_fetcher_delegate.h"
-#include "content/common/speech_input_result.h"
 #include "googleurl/src/gurl.h"
 
 class URLFetcher;
+
+namespace content {
+struct SpeechInputResult;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -34,7 +37,8 @@ class SpeechRecognitionRequest : public content::URLFetcherDelegate {
   // Interface for receiving callbacks from this object.
   class CONTENT_EXPORT Delegate {
    public:
-    virtual void SetRecognitionResult(const SpeechInputResult& result) = 0;
+    virtual void SetRecognitionResult(
+        const content::SpeechInputResult& result) = 0;
 
    protected:
     virtual ~Delegate() {}

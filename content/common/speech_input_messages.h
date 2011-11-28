@@ -6,12 +6,24 @@
 
 #include <string>
 
-#include "content/common/speech_input_result.h"
+#include "content/public/common/speech_input_result.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 #include "ui/gfx/rect.h"
 
 #define IPC_MESSAGE_START SpeechInputMsgStart
+
+IPC_ENUM_TRAITS(content::SpeechInputError)
+
+IPC_STRUCT_TRAITS_BEGIN(content::SpeechInputHypothesis)
+  IPC_STRUCT_TRAITS_MEMBER(utterance)
+  IPC_STRUCT_TRAITS_MEMBER(confidence)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::SpeechInputResult)
+  IPC_STRUCT_TRAITS_MEMBER(error)
+  IPC_STRUCT_TRAITS_MEMBER(hypotheses)
+IPC_STRUCT_TRAITS_END()
 
 // Used to start a speech recognition session.
 IPC_STRUCT_BEGIN(SpeechInputHostMsg_StartRecognition_Params)
@@ -28,18 +40,6 @@ IPC_STRUCT_BEGIN(SpeechInputHostMsg_StartRecognition_Params)
   // URL of the page (or iframe if applicable).
   IPC_STRUCT_MEMBER(std::string, origin_url)
 IPC_STRUCT_END()
-
-IPC_STRUCT_TRAITS_BEGIN(speech_input::SpeechInputHypothesis)
-  IPC_STRUCT_TRAITS_MEMBER(utterance)
-  IPC_STRUCT_TRAITS_MEMBER(confidence)
-IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS(speech_input::SpeechInputError)
-
-IPC_STRUCT_TRAITS_BEGIN(speech_input::SpeechInputResult)
-  IPC_STRUCT_TRAITS_MEMBER(error)
-  IPC_STRUCT_TRAITS_MEMBER(hypotheses)
-IPC_STRUCT_TRAITS_END()
 
 // Speech input messages sent from the renderer to the browser.
 
@@ -68,7 +68,7 @@ IPC_MESSAGE_CONTROL2(SpeechInputHostMsg_StopRecording,
 // Relay a speech recognition result, either partial or final.
 IPC_MESSAGE_ROUTED2(SpeechInputMsg_SetRecognitionResult,
                     int /* request_id */,
-                    speech_input::SpeechInputResult /* result */)
+                    content::SpeechInputResult /* result */)
 
 // Indicate that speech recognizer has stopped recording and started
 // recognition.

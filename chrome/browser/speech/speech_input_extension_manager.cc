@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/common/speech_input_result.h"
 
 using content::BrowserThread;
 using namespace speech_input;
@@ -225,7 +226,7 @@ void SpeechInputExtensionManager::ResetToIdleState() {
 
 void SpeechInputExtensionManager::SetRecognitionResult(
     int caller_id,
-    const SpeechInputResult& result) {
+    const content::SpeechInputResult& result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(caller_id, kSpeechCallerId);
 
@@ -240,7 +241,7 @@ void SpeechInputExtensionManager::SetRecognitionResult(
 }
 
 void SpeechInputExtensionManager::SetRecognitionResultOnUIThread(
-    const SpeechInputResult& result, const std::string& extension_id) {
+    const content::SpeechInputResult& result, const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   ListValue args;
@@ -251,7 +252,7 @@ void SpeechInputExtensionManager::SetRecognitionResultOnUIThread(
   js_event->Set(kHypothesesKey, js_hypothesis_array);
 
   for (size_t i = 0; i < result.hypotheses.size(); ++i) {
-    const SpeechInputHypothesis& hypothesis = result.hypotheses[i];
+    const content::SpeechInputHypothesis& hypothesis = result.hypotheses[i];
 
     DictionaryValue* js_hypothesis_object = new DictionaryValue();
     js_hypothesis_array->Append(js_hypothesis_object);
@@ -321,7 +322,7 @@ void SpeechInputExtensionManager::DidStartReceivingAudioOnUIThread() {
 }
 
 void SpeechInputExtensionManager::OnRecognizerError(
-    int caller_id, SpeechInputError error) {
+    int caller_id, content::SpeechInputError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(caller_id, kSpeechCallerId);
   VLOG(1) << "OnRecognizerError: " << error;
@@ -337,10 +338,10 @@ void SpeechInputExtensionManager::OnRecognizerError(
   bool report_to_event = true;
 
   switch (error) {
-    case kErrorNone:
+    case content::SPEECH_INPUT_ERROR_NONE:
       break;
 
-    case kErrorAudio:
+    case content::SPEECH_INPUT_ERROR_AUDIO:
       if (state_ == kStarting) {
         event_error_code = kErrorUnableToStart;
         report_to_event = false;
@@ -349,22 +350,22 @@ void SpeechInputExtensionManager::OnRecognizerError(
       }
       break;
 
-    case kErrorNetwork:
+    case content::SPEECH_INPUT_ERROR_NETWORK:
       event_error_code = kErrorNetworkError;
       break;
 
-    case kErrorBadGrammar:
+    case content::SPEECH_INPUT_ERROR_BAD_GRAMMAR:
       // No error is returned on invalid language, for example.
       // To avoid confusion about when this is would be fired, the invalid
       // params error is not being exposed to the onError event.
       event_error_code = kErrorUnableToStart;
       break;
 
-    case kErrorNoSpeech:
+    case content::SPEECH_INPUT_ERROR_NO_SPEECH:
       event_error_code = kErrorNoSpeechHeard;
       break;
 
-    case kErrorNoMatch:
+    case content::SPEECH_INPUT_ERROR_NO_MATCH:
       event_error_code = kErrorNoResults;
       break;
 
