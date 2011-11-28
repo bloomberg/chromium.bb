@@ -53,11 +53,7 @@ class SyncTest : public InProcessBrowserTest {
     // Tests where three or more client profiles are synced with the server.
     // Typically, these tests create client side races and verify that sync
     // works.
-    MULTIPLE_CLIENT,
-
-    // Tests where several client profiles are synced with the server. Only used
-    // by stress tests.
-    MANY_CLIENT
+    MULTIPLE_CLIENT
   };
 
   // The type of server we're running against.

@@ -134,10 +134,6 @@ SyncTest::SyncTest(TestType test_type)
       num_clients_ = 3;
       break;
     }
-    case MANY_CLIENT: {
-      num_clients_ = 10;
-      break;
-    }
   }
 }
 
