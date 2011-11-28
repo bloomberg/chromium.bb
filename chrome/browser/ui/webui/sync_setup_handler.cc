@@ -24,6 +24,7 @@
 #include "chrome/browser/sync/util/oauth.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/sync_promo_ui.h"
+#include "chrome/browser/ui/webui/user_selectable_sync_type.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -568,25 +569,36 @@ void SyncSetupHandler::HandleConfigure(const ListValue* args) {
         // Only log the data types that are explicitly listed on the sync
         // preferences page.
         const syncable::ModelTypeSet& types = configuration.data_types;
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncBookmarks",
-            types.find(syncable::BOOKMARKS) != types.end());
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncPreferences",
-            types.find(syncable::PREFERENCES) != types.end());
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncThemes",
-            types.find(syncable::THEMES) != types.end());
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncPasswords",
-            types.find(syncable::PASSWORDS) != types.end());
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncAutofill",
-            types.find(syncable::AUTOFILL) != types.end());
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncExtensions",
-            types.find(syncable::EXTENSIONS) != types.end());
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncTypedUrls",
-            types.find(syncable::TYPED_URLS) != types.end());
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncSessions",
-            types.find(syncable::SESSIONS) != types.end());
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomSyncApps",
-            types.find(syncable::APPS) != types.end());
+        if (types.find(syncable::BOOKMARKS) != types.end())
+          UMA_HISTOGRAM_ENUMERATION(
+              "Sync.CustomSync", BOOKMARKS, SELECTABLE_DATATYPE_COUNT + 1);
+        if (types.find(syncable::PREFERENCES) != types.end())
+          UMA_HISTOGRAM_ENUMERATION(
+              "Sync.CustomSync", PREFERENCES, SELECTABLE_DATATYPE_COUNT + 1);
+        if (types.find(syncable::PASSWORDS) != types.end())
+          UMA_HISTOGRAM_ENUMERATION(
+              "Sync.CustomSync", PASSWORDS, SELECTABLE_DATATYPE_COUNT + 1);
+        if (types.find(syncable::AUTOFILL) != types.end())
+          UMA_HISTOGRAM_ENUMERATION(
+              "Sync.CustomSync", AUTOFILL, SELECTABLE_DATATYPE_COUNT + 1);
+        if (types.find(syncable::THEMES) != types.end())
+          UMA_HISTOGRAM_ENUMERATION(
+              "Sync.CustomSync", THEMES, SELECTABLE_DATATYPE_COUNT + 1);
+        if (types.find(syncable::TYPED_URLS) != types.end())
+          UMA_HISTOGRAM_ENUMERATION(
+              "Sync.CustomSync", TYPED_URLS, SELECTABLE_DATATYPE_COUNT + 1);
+        if (types.find(syncable::EXTENSIONS) != types.end())
+          UMA_HISTOGRAM_ENUMERATION(
+              "Sync.CustomSync", EXTENSIONS, SELECTABLE_DATATYPE_COUNT + 1);
+        if (types.find(syncable::SESSIONS) != types.end())
+          UMA_HISTOGRAM_ENUMERATION(
+              "Sync.CustomSync", SESSIONS, SELECTABLE_DATATYPE_COUNT + 1);
+        if (types.find(syncable::APPS) != types.end())
+          UMA_HISTOGRAM_ENUMERATION(
+              "Sync.CustomSync", APPS, SELECTABLE_DATATYPE_COUNT + 1);
         COMPILE_ASSERT(17 == syncable::MODEL_TYPE_COUNT,
+                       UpdateCustomConfigHistogram);
+        COMPILE_ASSERT(9 == SELECTABLE_DATATYPE_COUNT,
                        UpdateCustomConfigHistogram);
       }
       UMA_HISTOGRAM_BOOLEAN("Sync.EncryptAllData", configuration.encrypt_all);
