@@ -11,10 +11,12 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/string16.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
+#include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
 #include "grit/ui_resources.h"
 #include "grit/theme_resources.h"
@@ -111,6 +113,8 @@ EditSearchEngineDialogHandlerWebUI::EditSearchEngineDialogHandlerWebUI(
     : template_url_(template_url),
       profile_(profile),
       controller_(new EditSearchEngineController(template_url, NULL, profile)) {
+   // Make the chrome://theme/ resource available.
+   profile->GetChromeURLDataManager()->AddDataSource(new ThemeSource(profile));
 }
 
 EditSearchEngineDialogHandlerWebUI::~EditSearchEngineDialogHandlerWebUI() {
