@@ -392,6 +392,8 @@ int32 IndexedDBDispatcher::TransactionId(
 void IndexedDBDispatcher::OnSuccessIDBDatabase(int32 response_id,
                                                int32 object_id) {
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
   callbacks->onSuccess(new RendererWebIDBDatabaseImpl(object_id));
   pending_callbacks_.Remove(response_id);
 }
@@ -399,6 +401,8 @@ void IndexedDBDispatcher::OnSuccessIDBDatabase(int32 response_id,
 void IndexedDBDispatcher::OnSuccessIndexedDBKey(int32 response_id,
                                                 const IndexedDBKey& key) {
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
   callbacks->onSuccess(key);
   pending_callbacks_.Remove(response_id);
 }
@@ -406,6 +410,8 @@ void IndexedDBDispatcher::OnSuccessIndexedDBKey(int32 response_id,
 void IndexedDBDispatcher::OnSuccessIDBTransaction(int32 response_id,
                                                   int32 object_id) {
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
   callbacks->onSuccess(new RendererWebIDBTransactionImpl(object_id));
   pending_callbacks_.Remove(response_id);
 }
@@ -413,6 +419,8 @@ void IndexedDBDispatcher::OnSuccessIDBTransaction(int32 response_id,
 void IndexedDBDispatcher::OnSuccessStringList(
     int32 response_id, const std::vector<string16>& value) {
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
   WebDOMStringList string_list;
   for (std::vector<string16>::const_iterator it = value.begin();
        it != value.end(); ++it)
@@ -424,6 +432,8 @@ void IndexedDBDispatcher::OnSuccessStringList(
 void IndexedDBDispatcher::OnSuccessSerializedScriptValue(
     int32 response_id, const content::SerializedScriptValue& value) {
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
   callbacks->onSuccess(value);
   pending_callbacks_.Remove(response_id);
 }
@@ -433,6 +443,8 @@ void IndexedDBDispatcher::OnSuccessOpenCursor(int32 repsonse_id,
     const content::SerializedScriptValue& value) {
   WebIDBCallbacks* callbacks =
       pending_callbacks_.Lookup(repsonse_id);
+  if (!callbacks)
+    return;
 
   RendererWebIDBCursorImpl* cursor = new RendererWebIDBCursorImpl(object_id);
   cursors_[object_id] = cursor;
@@ -453,6 +465,8 @@ void IndexedDBDispatcher::OnSuccessCursorContinue(
   cursor->SetKeyAndValue(key, primary_key, value);
 
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
   callbacks->onSuccessWithContinuation();
 
   pending_callbacks_.Remove(response_id);
@@ -466,6 +480,8 @@ void IndexedDBDispatcher::OnBlocked(int32 response_id) {
 void IndexedDBDispatcher::OnError(int32 response_id, int code,
                                   const string16& message) {
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(response_id);
+  if (!callbacks)
+    return;
   callbacks->onError(WebIDBDatabaseError(code, message));
   pending_callbacks_.Remove(response_id);
 }
@@ -473,6 +489,8 @@ void IndexedDBDispatcher::OnError(int32 response_id, int code,
 void IndexedDBDispatcher::OnAbort(int32 transaction_id) {
   WebIDBTransactionCallbacks* callbacks =
       pending_transaction_callbacks_.Lookup(transaction_id);
+  if (!callbacks)
+    return;
   callbacks->onAbort();
   pending_transaction_callbacks_.Remove(transaction_id);
 }
@@ -480,6 +498,8 @@ void IndexedDBDispatcher::OnAbort(int32 transaction_id) {
 void IndexedDBDispatcher::OnComplete(int32 transaction_id) {
   WebIDBTransactionCallbacks* callbacks =
       pending_transaction_callbacks_.Lookup(transaction_id);
+  if (!callbacks)
+    return;
   callbacks->onComplete();
   pending_transaction_callbacks_.Remove(transaction_id);
 }
@@ -490,6 +510,7 @@ void IndexedDBDispatcher::OnVersionChange(int32 database_id,
       pending_database_callbacks_.Lookup(database_id);
   // callbacks would be NULL if a versionchange event is received after close
   // has been called.
-  if (callbacks)
-    callbacks->onVersionChange(newVersion);
+  if (!callbacks)
+    return;
+  callbacks->onVersionChange(newVersion);
 }

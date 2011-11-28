@@ -467,6 +467,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnOpen(
     int32 idb_database_id, int32 response_id) {
   WebIDBDatabase* database = parent_->GetOrTerminateProcess(
       &map_, idb_database_id);
+  if (!database)
+    return;
   database->open(new IndexedDBDatabaseCallbacks(parent_, response_id));
 }
 
@@ -474,6 +476,8 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnClose(
     int32 idb_database_id) {
   WebIDBDatabase* database = parent_->GetOrTerminateProcess(
       &map_, idb_database_id);
+  if (!database)
+    return;
   database->close();
 }
 
