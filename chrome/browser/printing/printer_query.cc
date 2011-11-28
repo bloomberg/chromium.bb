@@ -27,11 +27,6 @@ PrinterQuery::~PrinterQuery() {
   DCHECK(!is_print_dialog_box_shown_);
   // If this fires, it is that this pending printer context has leaked.
   DCHECK(!worker_.get());
-  if (callback_.get()) {
-    // Be sure to cancel it.
-    callback_->Cancel();
-  }
-  // It may get deleted in a different thread that the one that created it.
 }
 
 void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
@@ -45,18 +40,18 @@ void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
     // Failure.
     cookie_ = 0;
   }
-  if (callback_.get()) {
+
+  if (!callback_.is_null()) {
     // This may cause reentrancy like to call StopWorker().
-    callback_->Run();
-    callback_.reset(NULL);
+    callback_.Run();
+    callback_.Reset();
   }
 }
 
 PrintJobWorker* PrinterQuery::DetachWorker(PrintJobWorkerOwner* new_owner) {
-  DCHECK(!callback_.get());
+  DCHECK(callback_.is_null());
   DCHECK(worker_.get());
-  if (!worker_.get())
-    return NULL;
+
   worker_->SetNewOwner(new_owner);
   return worker_.release();
 }
@@ -78,11 +73,11 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
                                int expected_page_count,
                                bool has_selection,
                                MarginType margin_type,
-                               CancelableTask* callback) {
+                               const base::Closure& callback) {
   DCHECK_EQ(io_message_loop_, MessageLoop::current());
   DCHECK(!is_print_dialog_box_shown_);
-  if (!StartWorker(callback))
-    return;
+
+  StartWorker(callback);
 
   // Real work is done in PrintJobWorker::Init().
   is_print_dialog_box_shown_ = ask_user_for_settings == ASK_USER;
@@ -95,9 +90,8 @@ void PrinterQuery::GetSettings(GetSettingsAskParam ask_user_for_settings,
 }
 
 void PrinterQuery::SetSettings(const DictionaryValue& new_settings,
-                               CancelableTask* callback) {
-  if (!StartWorker(callback))
-    return;
+                               const base::Closure& callback) {
+  StartWorker(callback);
 
   worker_->message_loop()->PostTask(
       FROM_HERE,
@@ -106,25 +100,15 @@ void PrinterQuery::SetSettings(const DictionaryValue& new_settings,
                  new_settings.DeepCopy()));
 }
 
-bool PrinterQuery::StartWorker(CancelableTask* callback) {
-  DCHECK(!callback_.get());
+void PrinterQuery::StartWorker(const base::Closure& callback) {
+  DCHECK(callback_.is_null());
   DCHECK(worker_.get());
-  if (!worker_.get())
-    return false;
 
-  // Lazy create the worker thread. There is one worker thread per print job.
-  if (!worker_->message_loop()) {
-    if (!worker_->Start()) {
-      if (callback) {
-        callback->Cancel();
-        delete callback;
-      }
-      NOTREACHED();
-      return false;
-    }
-  }
-  callback_.reset(callback);
-  return true;
+  // Lazily create the worker thread. There is one worker thread per print job.
+  if (!worker_->message_loop())
+    worker_->Start();
+
+  callback_ = callback;
 }
 
 void PrinterQuery::StopWorker() {
@@ -139,7 +123,7 @@ void PrinterQuery::StopWorker() {
 }
 
 bool PrinterQuery::is_callback_pending() const {
-  return callback_.get() != NULL;
+  return !callback_.is_null();
 }
 
 bool PrinterQuery::is_valid() const {
