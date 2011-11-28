@@ -3,16 +3,16 @@
   <interface name="desktop_shell" version="1">
     <request name="set_background">
       <arg name="output" type="object" interface="wl_output"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="surface" type="object" interface="wl_shell_surface"/>
     </request>
 
     <request name="set_panel">
       <arg name="output" type="object" interface="wl_output"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="surface" type="object" interface="wl_shell_surface"/>
     </request>
 
     <request name="set_lock_surface">
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="surface" type="object" interface="wl_shell_surface"/>
     </request>
 
     <request name="unlock"/>
@@ -22,7 +22,7 @@
     <event name="configure">
       <arg name="time" type="uint"/>
       <arg name="edges" type="uint"/>
-      <arg name="surface" type="object" interface="wl_surface"/>
+      <arg name="surface" type="object" interface="wl_shell_surface"/>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
     </event>

@@ -36,6 +36,8 @@
 #include "compositor.h"
 #include "desktop-shell-server-protocol.h"
 
+struct shell_surface;
+
 struct wl_shell {
 	struct wlsc_compositor *compositor;
 	struct wlsc_shell shell;
@@ -49,7 +51,7 @@ struct wl_shell {
 	bool locked;
 	bool prepare_event_sent;
 
-	struct wlsc_surface *lock_surface;
+	struct shell_surface *lock_surface;
 	struct wl_listener lock_surface_listener;
 	struct wl_list hidden_surface_list;
 
@@ -436,7 +438,8 @@ desktop_shell_set_background(struct wl_client *client,
 			     struct wl_resource *surface_resource)
 {
 	struct wl_shell *shell = resource->data;
-	struct wlsc_surface *surface = surface_resource->data;
+	struct shell_surface *shsurf = surface_resource->data;
+	struct wlsc_surface *surface = shsurf->surface;
 	struct shell_surface *priv;
 
 	wl_list_for_each(priv, &shell->backgrounds, link) {
@@ -448,20 +451,19 @@ desktop_shell_set_background(struct wl_client *client,
 		}
 	}
 
-	priv = get_shell_surface(surface);
-	priv->type = SHELL_SURFACE_BACKGROUND;
-	priv->output = output_resource->data;
+	shsurf->type = SHELL_SURFACE_BACKGROUND;
+	shsurf->output = output_resource->data;
 
-	wl_list_insert(&shell->backgrounds, &priv->link);
+	wl_list_insert(&shell->backgrounds, &shsurf->link);
 
-	surface->x = priv->output->x;
-	surface->y = priv->output->y;
+	surface->x = shsurf->output->x;
+	surface->y = shsurf->output->y;
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
-			       wlsc_compositor_get_time(), 0, surface,
-			       priv->output->current->width,
-			       priv->output->current->height);
+			       wlsc_compositor_get_time(), 0, surface_resource,
+			       shsurf->output->current->width,
+			       shsurf->output->current->height);
 }
 
 static void
@@ -471,7 +473,8 @@ desktop_shell_set_panel(struct wl_client *client,
 			struct wl_resource *surface_resource)
 {
 	struct wl_shell *shell = resource->data;
-	struct wlsc_surface *surface = surface_resource->data;
+	struct shell_surface *shsurf = surface_resource->data;
+	struct wlsc_surface *surface = shsurf->surface;
 	struct shell_surface *priv;
 
 	wl_list_for_each(priv, &shell->panels, link) {
@@ -483,20 +486,19 @@ desktop_shell_set_panel(struct wl_client *client,
 		}
 	}
 
-	priv = get_shell_surface(surface);
-	priv->type = SHELL_SURFACE_PANEL;
-	priv->output = output_resource->data;
+	shsurf->type = SHELL_SURFACE_PANEL;
+	shsurf->output = output_resource->data;
 
-	wl_list_insert(&shell->panels, &priv->link);
+	wl_list_insert(&shell->panels, &shsurf->link);
 
-	surface->x = priv->output->x;
-	surface->y = priv->output->y;
+	surface->x = shsurf->output->x;
+	surface->y = shsurf->output->y;
 
 	wl_resource_post_event(resource,
 			       DESKTOP_SHELL_CONFIGURE,
 			       wlsc_compositor_get_time(), 0, surface_resource,
-			       priv->output->current->width,
-			       priv->output->current->height);
+			       shsurf->output->current->width,
+			       shsurf->output->current->height);
 }
 
 static void
@@ -516,7 +518,6 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 			       struct wl_resource *surface_resource)
 {
 	struct wl_shell *shell = resource->data;
-	struct shell_surface *priv;
 
 	shell->prepare_event_sent = false;
 
@@ -529,8 +530,7 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 	wl_list_insert(&surface_resource->destroy_listener_list,
 		       &shell->lock_surface_listener.link);
 
-	priv = get_shell_surface(shell->lock_surface);
-	priv->type = SHELL_SURFACE_LOCK;
+	shell->lock_surface->type = SHELL_SURFACE_LOCK;
 }
 
 static void

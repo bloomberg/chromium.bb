@@ -51,7 +51,7 @@ struct surface {
 	void (*configure)(void *data,
 			  struct desktop_shell *desktop_shell,
 			  uint32_t time, uint32_t edges,
-			  struct wl_surface *surface,
+			  struct window *window,
 			  int32_t width, int32_t height);
 };
 
@@ -260,14 +260,11 @@ static void
 panel_configure(void *data,
 		struct desktop_shell *desktop_shell,
 		uint32_t time, uint32_t edges,
-		struct wl_surface *surface,
+		struct window *window,
 		int32_t width, int32_t height)
 {
-	struct panel *panel =
-		window_get_user_data(wl_surface_get_user_data(surface));
-
-	window_set_child_size(panel->window, width, 32);
-	window_schedule_redraw(panel->window);
+	window_set_child_size(window, width, 32);
+	window_schedule_redraw(window);
 }
 
 static struct panel *
@@ -345,15 +342,12 @@ static void
 background_configure(void *data,
 		     struct desktop_shell *desktop_shell,
 		     uint32_t time, uint32_t edges,
-		     struct wl_surface *surface,
+		     struct window *window,
 		     int32_t width, int32_t height)
 {
 	struct desktop *desktop = data;
-	struct background *background =
-		window_get_user_data(wl_surface_get_user_data(surface));
 
-	background_draw(background->window,
-			width, height, desktop->background_path);
+	background_draw(window, width, height, desktop->background_path);
 }
 
 static void
@@ -474,7 +468,7 @@ unlock_dialog_create(struct desktop *desktop)
 	dialog->button = window_add_item(dialog->window, NULL);
 
 	desktop_shell_set_lock_surface(desktop->shell,
-				       window_get_wl_surface(dialog->window));
+	       window_get_wl_shell_surface(dialog->window));
 
 	unlock_dialog_draw(dialog);
 
@@ -503,13 +497,13 @@ static void
 desktop_shell_configure(void *data,
 			struct desktop_shell *desktop_shell,
 			uint32_t time, uint32_t edges,
-			struct wl_surface *surface,
+			struct wl_shell_surface *shell_surface,
 			int32_t width, int32_t height)
 {
-	struct surface *s =
-		window_get_user_data(wl_surface_get_user_data(surface));
+	struct window *window = wl_shell_surface_get_user_data(shell_surface);
+	struct surface *s = window_get_user_data(window);
 
-	s->configure(data, desktop_shell, time, edges, surface, width, height);
+	s->configure(data, desktop_shell, time, edges, window, width, height);
 }
 
 static void
@@ -619,16 +613,15 @@ int main(int argc, char *argv[])
 				       global_handler, &desktop);
 
 	wl_list_for_each(output, &desktop.outputs, link) {
-		struct wl_surface *surface;
+		struct wl_shell_surface *s;
 
 		output->panel = panel_create(desktop.display);
-		surface = window_get_wl_surface(output->panel->window);
-		desktop_shell_set_panel(desktop.shell, output->output, surface);
+		s = window_get_wl_shell_surface(output->panel->window);
+		desktop_shell_set_panel(desktop.shell, output->output, s);
 
 		output->background = background_create(&desktop);
-		surface = window_get_wl_surface(output->background->window);
-		desktop_shell_set_background(desktop.shell,
-					     output->output, surface);
+		s = window_get_wl_shell_surface(output->background->window);
+		desktop_shell_set_background(desktop.shell, output->output, s);
 	}
 
 	config_file = config_file_path("wayland-desktop-shell.ini");

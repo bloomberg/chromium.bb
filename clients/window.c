@@ -1989,6 +1989,7 @@ window_create_internal(struct display *display, struct window *parent,
 		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
 
 	wl_surface_set_user_data(window->surface, window);
+	wl_shell_surface_set_user_data(window->shell_surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
 
 	wl_shell_surface_add_listener(window->shell_surface,
