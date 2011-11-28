@@ -12,6 +12,11 @@ def Main(args):
   pwd = os.environ.get('PWD', '')
   is_integration_bot = 'nacl-chrome' in pwd
 
+  if not is_integration_bot and sys.platform == 'darwin':
+    # TODO: Reenable.
+    sys.stdout.write('Skipping nacl_integration, see http://crbug.com/105406\n')
+    return
+
   # On the main Chrome waterfall, we may need to control where the tests are
   # run.
   # If there is serious skew in the PPAPI interface that causes all of
