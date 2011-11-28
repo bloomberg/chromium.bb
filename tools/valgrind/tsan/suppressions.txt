@@ -617,7 +617,7 @@
   fun:base::::ThreadFunc
 }
 {
-  bug_102327_b  
+  bug_102327_b
   ThreadSanitizer:Race
   fun:tracked_objects::ThreadData::tracking_status
 }
@@ -686,4 +686,10 @@
    fun:MessageLoop::RunInternal
    fun:MessageLoop::RunHandler
    fun:MessageLoop::Run
+}
+{
+  bug_105579
+  ThreadSanitizer:Race
+  fun:net::SdchManager::EnableSdchSupport
+  fun:net::SdchManager::Shutdown
 }
