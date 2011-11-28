@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -156,31 +157,10 @@ class DevToolsSanityTest : public InProcessBrowserTest {
   RenderViewHost* inspected_rvh_;
 };
 
-
-class CancelableQuitTask : public Task {
- public:
-  explicit CancelableQuitTask(const std::string& timeout_message)
-      : timeout_message_(timeout_message),
-        cancelled_(false) {
-  }
-
-  void cancel() {
-    cancelled_ = true;
-  }
-
-  virtual void Run() {
-    if (cancelled_) {
-      return;
-    }
-    FAIL() << timeout_message_;
-    MessageLoop::current()->Quit();
-  }
-
- private:
-  std::string timeout_message_;
-  bool cancelled_;
-};
-
+void TimeoutCallback(const std::string& timeout_message) {
+  FAIL() << timeout_message;
+  MessageLoop::current()->Quit();
+}
 
 // Base class for DevTools tests that test devtools functionality for
 // extensions and content scripts.
@@ -194,7 +174,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
   }
 
  protected:
-  // Load an extention from test\data\devtools\extensions\<extension_name>
+  // Load an extension from test\data\devtools\extensions\<extension_name>
   void LoadExtension(const char* extension_name) {
     FilePath path = test_extensions_dir_.AppendASCII(extension_name);
     ASSERT_TRUE(LoadExtensionFromPath(path)) << "Failed to load extension.";
@@ -208,13 +188,13 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
       content::NotificationRegistrar registrar;
       registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                     content::NotificationService::AllSources());
-      CancelableQuitTask* delayed_quit =
-          new CancelableQuitTask("Extension load timed out.");
-      MessageLoop::current()->PostDelayedTask(FROM_HERE, delayed_quit,
-          4*1000);
+      base::CancelableCallback timeout(
+          base::Bind(&TimeoutCallback, "Extension load timed out."));
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, timeout.callback(), 4 * 1000);
       extensions::UnpackedInstaller::Create(service)->Load(path);
       ui_test_utils::RunMessageLoop();
-      delayed_quit->cancel();
+      timeout.Cancel();
     }
     size_t num_after = service->extensions()->size();
     if (num_after != (num_before + 1))
@@ -231,10 +211,10 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                   content::NotificationService::AllSources());
-    CancelableQuitTask* delayed_quit =
-        new CancelableQuitTask("Extension host load timed out.");
-    MessageLoop::current()->PostDelayedTask(FROM_HERE, delayed_quit,
-        4*1000);
+    base::CancelableCallback timeout(
+        base::Bind(&TimeoutCallback, "Extension host load timed out."));
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, timeout.callback(), 4 * 1000);
 
     ExtensionProcessManager* manager =
           browser()->profile()->GetExtensionProcessManager();
@@ -246,7 +226,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
         ui_test_utils::RunMessageLoop();
     }
 
-    delayed_quit->cancel();
+    timeout.Cancel();
     return true;
   }
 
