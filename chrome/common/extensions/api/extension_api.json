@@ -4405,7 +4405,7 @@
           "danger": {
             "type": "string",
             "description": "Indication of whether this download is thought to be safe or known to be suspicious.",
-            "enum": ["safe", "file", "url"],
+            "enum": ["safe", "file", "url", "content"],
             "optional": true
           },
           "dangerAccepted": {
