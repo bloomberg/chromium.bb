@@ -66,8 +66,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
  protected:
   // Overridden below by ProfileSyncServiceStartupCrosTest.
   virtual void CreateSyncService() {
-    service_.reset(new TestProfileSyncService(&factory_, profile_.get(),
-                                              "", true, NULL));
+    service_.reset(new TestProfileSyncService(
+        &factory_, profile_.get(), "", true, base::Closure()));
   }
 
   DataTypeManagerMock* SetUpDataTypeManager() {
@@ -89,8 +89,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
  protected:
   virtual void CreateSyncService() {
-    service_.reset(new TestProfileSyncService(&factory_, profile_.get(),
-                                              "test_user", true, NULL));
+    service_.reset(new TestProfileSyncService(
+        &factory_, profile_.get(), "test_user", true, base::Closure()));
   }
 };
 

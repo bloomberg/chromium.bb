@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/sync/glue/data_type_manager_impl.h"
@@ -65,13 +66,13 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHost {
 
 class TestProfileSyncService : public ProfileSyncService {
  public:
-  // |initial_condition_setup_task| can be used to populate nodes
-  // before the OnBackendInitialized callback fires.
+  // |callback| can be used to populate nodes before the OnBackendInitialized
+  // callback fires.
   TestProfileSyncService(ProfileSyncComponentsFactory* factory,
                          Profile* profile,
                          const std::string& test_user,
                          bool synchronous_backend_initialization,
-                         Task* initial_condition_setup_task);
+                         const base::Closure& callback);
 
   virtual ~TestProfileSyncService();
 
@@ -113,7 +114,7 @@ class TestProfileSyncService : public ProfileSyncService {
   bool synchronous_sync_configuration_;
   bool set_expect_resume_expectations_;
 
-  Task* initial_condition_setup_task_;
+  base::Closure callback_;
   bool set_initial_sync_ended_on_init_;
 
   bool fail_initial_download_;

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -69,17 +70,19 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   scoped_ptr<TestProfileSyncService> service_;
 };
 
-class CreateRootTask : public Task {
+class CreateRootHelper {
  public:
-  CreateRootTask(AbstractProfileSyncServiceTest* test,
-                 syncable::ModelType model_type);
+  CreateRootHelper(AbstractProfileSyncServiceTest* test,
+                   syncable::ModelType model_type);
+  virtual ~CreateRootHelper();
 
-  virtual ~CreateRootTask();
-  virtual void Run() OVERRIDE;
-
+  const base::Closure& callback() const;
   bool success();
 
  private:
+  void CreateRootCallback();
+
+  base::Closure callback_;
   AbstractProfileSyncServiceTest* test_;
   syncable::ModelType model_type_;
   bool success_;

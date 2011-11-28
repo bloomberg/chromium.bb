@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/abstract_profile_sync_service_test.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "chrome/browser/sync/internal_api/write_transaction.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
@@ -130,20 +132,27 @@ bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
       service_->id_factory());
 }
 
-CreateRootTask::CreateRootTask(AbstractProfileSyncServiceTest* test,
-                               ModelType model_type)
-    : test_(test),
+CreateRootHelper::CreateRootHelper(AbstractProfileSyncServiceTest* test,
+                                   ModelType model_type)
+    : ALLOW_THIS_IN_INITIALIZER_LIST(callback_(
+          base::Bind(&CreateRootHelper::CreateRootCallback,
+                     base::Unretained(this)))),
+      test_(test),
       model_type_(model_type),
       success_(false) {
 }
 
-CreateRootTask::~CreateRootTask() {
+CreateRootHelper::~CreateRootHelper() {
 }
 
-void CreateRootTask::Run() {
-  success_ = test_->CreateRoot(model_type_);
+const base::Closure& CreateRootHelper::callback() const {
+  return callback_;
 }
 
-bool CreateRootTask::success() {
+bool CreateRootHelper::success() {
   return success_;
+}
+
+void CreateRootHelper::CreateRootCallback() {
+  success_ = test_->CreateRoot(model_type_);
 }

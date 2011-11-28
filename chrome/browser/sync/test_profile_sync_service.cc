@@ -139,12 +139,12 @@ TestProfileSyncService::TestProfileSyncService(
     Profile* profile,
     const std::string& test_user,
     bool synchronous_backend_initialization,
-    Task* initial_condition_setup_task)
+    const base::Closure& callback)
     : ProfileSyncService(factory, profile, new FakeSigninManager(), test_user),
       synchronous_backend_initialization_(
           synchronous_backend_initialization),
       synchronous_sync_configuration_(false),
-      initial_condition_setup_task_(initial_condition_setup_task),
+      callback_(callback),
       set_initial_sync_ended_on_init_(true),
       fail_initial_download_(false) {
   SetSyncSetupCompleted();
@@ -176,9 +176,9 @@ void TestProfileSyncService::OnBackendInitialized(
     backend_initialized_ = true;
 
     // Set up any nodes the test wants around before model association.
-    if (initial_condition_setup_task_) {
-      initial_condition_setup_task_->Run();
-      initial_condition_setup_task_ = NULL;
+    if (!callback_.is_null()) {
+      callback_.Run();
+      callback_.Reset();
     }
 
     // Pretend we downloaded initial updates and set initial sync ended bits

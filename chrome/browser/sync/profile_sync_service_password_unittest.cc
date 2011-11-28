@@ -125,29 +125,29 @@ class MockPasswordStore : public PasswordStore {
 
 class PasswordTestProfileSyncService : public TestProfileSyncService {
  public:
-  PasswordTestProfileSyncService(ProfileSyncComponentsFactory* factory,
-                                 Profile* profile,
-                                 const std::string& test_user,
-                                 bool synchronous_backend_initialization,
-                                 Task* initial_condition_setup_task,
-                                 Task* passphrase_accept_task)
+  PasswordTestProfileSyncService(
+      ProfileSyncComponentsFactory* factory,
+      Profile* profile,
+      const std::string& test_user,
+      bool synchronous_backend_initialization,
+      const base::Closure& initial_condition_setup_cb,
+      const base::Closure& passphrase_accept_cb)
       : TestProfileSyncService(factory, profile, test_user,
                                synchronous_backend_initialization,
-                               initial_condition_setup_task),
-        passphrase_accept_task_(passphrase_accept_task) {}
+                               initial_condition_setup_cb),
+        callback_(passphrase_accept_cb) {}
 
   virtual ~PasswordTestProfileSyncService() {}
 
   virtual void OnPassphraseAccepted() {
-    if (passphrase_accept_task_) {
-      passphrase_accept_task_->Run();
-    }
+    if (!callback_.is_null())
+      callback_.Run();
 
     TestProfileSyncService::OnPassphraseAccepted();
   }
 
  private:
-  Task* passphrase_accept_task_;
+  base::Closure callback_;
 };
 
 class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
@@ -155,6 +155,20 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   sync_api::UserShare* GetUserShare() {
     return service_->GetUserShare();
   }
+
+  void AddPasswordSyncNode(const PasswordForm& entry) {
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    sync_api::ReadNode password_root(&trans);
+    ASSERT_TRUE(password_root.InitByTagLookup(browser_sync::kPasswordTag));
+
+    sync_api::WriteNode node(&trans);
+    std::string tag = PasswordModelAssociator::MakeTag(entry);
+    ASSERT_TRUE(node.InitUniqueByCreation(syncable::PASSWORDS,
+                                          password_root,
+                                          tag));
+    PasswordModelAssociator::WriteToSyncNode(entry, &node);
+  }
+
  protected:
   ProfileSyncServicePasswordTest() {}
 
@@ -195,10 +209,12 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
         TestTimeouts::action_timeout_ms()));
   }
 
-  void StartSyncService(Task* root_task, Task* node_task) {
+  void StartSyncService(const base::Closure& root_callback,
+                        const base::Closure& node_callback) {
     if (!service_.get()) {
       service_.reset(new PasswordTestProfileSyncService(
-          &factory_, &profile_, "test_user", false, root_task, node_task));
+          &factory_, &profile_, "test_user", false,
+          root_callback, node_callback));
       syncable::ModelTypeSet preferred_types;
       service_->GetPreferredDataTypes(&preferred_types);
       preferred_types.insert(syncable::PASSWORDS);
@@ -247,19 +263,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     }
   }
 
-  void AddPasswordSyncNode(const PasswordForm& entry) {
-    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    sync_api::ReadNode password_root(&trans);
-    ASSERT_TRUE(password_root.InitByTagLookup(browser_sync::kPasswordTag));
-
-    sync_api::WriteNode node(&trans);
-    std::string tag = PasswordModelAssociator::MakeTag(entry);
-    ASSERT_TRUE(node.InitUniqueByCreation(syncable::PASSWORDS,
-                                          password_root,
-                                          tag));
-    PasswordModelAssociator::WriteToSyncNode(entry, &node);
-  }
-
   void GetPasswordEntriesFromSyncDB(std::vector<PasswordForm>* entries) {
     sync_api::ReadTransaction trans(FROM_HERE, service_->GetUserShare());
     sync_api::ReadNode password_root(&trans);
@@ -303,8 +306,6 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
     EXPECT_CALL(*password_store_, RemoveLoginImpl(_)).Times(0);
   }
 
-  friend class AddPasswordEntriesTask;
-
   scoped_refptr<ThreadNotificationService> notification_service_;
   content::NotificationObserverMock observer_;
   ProfileMock profile_;
@@ -312,26 +313,14 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   content::NotificationRegistrar registrar_;
 };
 
-class AddPasswordEntriesTask : public Task {
- public:
-  AddPasswordEntriesTask(ProfileSyncServicePasswordTest* test,
-                         const std::vector<PasswordForm>& entries)
-      : test_(test), entries_(entries) {
-  }
-
-  virtual void Run() {
-    for (size_t i = 0; i < entries_.size(); ++i) {
-      test_->AddPasswordSyncNode(entries_[i]);
-    }
-  }
-
- private:
-  ProfileSyncServicePasswordTest* test_;
-  const std::vector<PasswordForm>& entries_;
-};
+void AddPasswordEntriesCallback(ProfileSyncServicePasswordTest* test,
+                                const std::vector<PasswordForm>& entries) {
+  for (size_t i = 0; i < entries.size(); ++i)
+    test->AddPasswordSyncNode(entries[i]);
+}
 
 TEST_F(ProfileSyncServicePasswordTest, FailModelAssociation) {
-  StartSyncService(NULL, NULL);
+  StartSyncService(base::Closure(), base::Closure());
   EXPECT_TRUE(service_->unrecoverable_error_detected());
 }
 
@@ -341,8 +330,8 @@ TEST_F(ProfileSyncServicePasswordTest, EmptyNativeEmptySync) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
       .WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
-  CreateRootTask task(this, syncable::PASSWORDS);
-  StartSyncService(&task, NULL);
+  CreateRootHelper create_root(this, syncable::PASSWORDS);
+  StartSyncService(create_root.callback(), base::Closure());
   std::vector<PasswordForm> sync_entries;
   GetPasswordEntriesFromSyncDB(&sync_entries);
   EXPECT_EQ(0U, sync_entries.size());
@@ -371,8 +360,8 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySync) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
       .WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
-  CreateRootTask task(this, syncable::PASSWORDS);
-  StartSyncService(&task, NULL);
+  CreateRootHelper create_root(this, syncable::PASSWORDS);
+  StartSyncService(create_root.callback(), base::Closure());
   std::vector<PasswordForm> sync_forms;
   GetPasswordEntriesFromSyncDB(&sync_forms);
   ASSERT_EQ(1U, sync_forms.size());
@@ -423,8 +412,8 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeEntriesEmptySyncSameUsername) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_))
       .WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
-  CreateRootTask task(this, syncable::PASSWORDS);
-  StartSyncService(&task, NULL);
+  CreateRootHelper create_root(this, syncable::PASSWORDS);
+  StartSyncService(create_root.callback(), base::Closure());
   std::vector<PasswordForm> sync_forms;
   GetPasswordEntriesFromSyncDB(&sync_forms);
   ASSERT_EQ(2U, sync_forms.size());
@@ -478,9 +467,9 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncNoMerge) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*password_store_, AddLoginImpl(_)).Times(1);
 
-  CreateRootTask root_task(this, syncable::PASSWORDS);
-  AddPasswordEntriesTask node_task(this, sync_forms);
-  StartSyncService(&root_task, &node_task);
+  CreateRootHelper create_root(this, syncable::PASSWORDS);
+  StartSyncService(create_root.callback(),
+                   base::Bind(&AddPasswordEntriesCallback, this, sync_forms));
 
   std::vector<PasswordForm> new_sync_forms;
   GetPasswordEntriesFromSyncDB(&new_sync_forms);
@@ -543,9 +532,9 @@ TEST_F(ProfileSyncServicePasswordTest, EnsureNoTransactions) {
   EXPECT_CALL(*password_store_, AddLoginImpl(_))
       .WillOnce(AcquireSyncTransaction(this));
 
-  CreateRootTask root_task(this, syncable::PASSWORDS);
-  AddPasswordEntriesTask node_task(this, sync_forms);
-  StartSyncService(&root_task, &node_task);
+  CreateRootHelper create_root(this, syncable::PASSWORDS);
+  StartSyncService(create_root.callback(),
+                   base::Bind(&AddPasswordEntriesCallback, this, sync_forms));
 
   std::vector<PasswordForm> new_sync_forms;
   GetPasswordEntriesFromSyncDB(&new_sync_forms);
@@ -616,10 +605,9 @@ TEST_F(ProfileSyncServicePasswordTest, HasNativeHasSyncMergeEntry) {
   EXPECT_CALL(*password_store_, FillBlacklistLogins(_)).WillOnce(Return(true));
   EXPECT_CALL(*password_store_, UpdateLoginImpl(_)).Times(1);
 
-  CreateRootTask root_task(this, syncable::PASSWORDS);
-  AddPasswordEntriesTask node_task(this, sync_forms);
-
-  StartSyncService(&root_task, &node_task);
+  CreateRootHelper create_root(this, syncable::PASSWORDS);
+  StartSyncService(create_root.callback(),
+                   base::Bind(&AddPasswordEntriesCallback, this, sync_forms));
 
   std::vector<PasswordForm> new_sync_forms;
   GetPasswordEntriesFromSyncDB(&new_sync_forms);

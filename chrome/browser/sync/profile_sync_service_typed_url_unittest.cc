@@ -6,6 +6,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
@@ -102,23 +105,15 @@ class HistoryServiceMock : public HistoryService {
                                     CancelableRequestConsumerBase*));
 };
 
-class RunOnDBThreadTask : public Task {
- public:
-  RunOnDBThreadTask(HistoryBackend* backend, HistoryDBTask* task)
-      : backend_(backend), task_(task) {}
-  virtual void Run() {
-    task_->RunOnDBThread(backend_, NULL);
-    task_ = NULL;
-  }
- private:
-  HistoryBackend* backend_;
-  scoped_refptr<HistoryDBTask> task_;
-};
+void RunOnDBThreadCallback(HistoryBackend* backend,
+                           HistoryDBTask* task) {
+  task->RunOnDBThread(backend, NULL);
+}
 
 ACTION_P2(RunTaskOnDBThread, thread, backend) {
  thread->message_loop()->PostTask(
-    FROM_HERE,
-    new RunOnDBThreadTask(backend, arg0));
+    FROM_HERE, base::Bind(&RunOnDBThreadCallback, base::Unretained(backend),
+                          base::Unretained(arg0)));
 }
 
 ACTION_P4(MakeTypedUrlSyncComponents, profile, service, hb, dtc) {
@@ -131,6 +126,21 @@ ACTION_P4(MakeTypedUrlSyncComponents, profile, service, hb, dtc) {
 }
 
 class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
+ public:
+  void AddTypedUrlSyncNode(const history::URLRow& url,
+                           const history::VisitVector& visits) {
+    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
+    sync_api::ReadNode typed_url_root(&trans);
+    ASSERT_TRUE(typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
+
+    sync_api::WriteNode node(&trans);
+    std::string tag = url.url().spec();
+    ASSERT_TRUE(node.InitUniqueByCreation(syncable::TYPED_URLS,
+                                          typed_url_root,
+                                          tag));
+    TypedUrlModelAssociator::WriteToSyncNode(url, visits, &node);
+  }
+
  protected:
   ProfileSyncServiceTypedUrlTest()
       : history_thread_("history") {
@@ -161,11 +171,11 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     AbstractProfileSyncServiceTest::TearDown();
   }
 
-  void StartSyncService(Task* task) {
+  void StartSyncService(const base::Closure& callback) {
     if (!service_.get()) {
       service_.reset(
           new TestProfileSyncService(&factory_, &profile_, "test", false,
-                                     task));
+                                     callback));
       EXPECT_CALL(profile_, GetProfileSyncService()).WillRepeatedly(
           Return(service_.get()));
       TypedUrlDataTypeController* data_type_controller =
@@ -200,20 +210,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
       service_->Initialize();
       MessageLoop::current()->Run();
     }
-  }
-
-  void AddTypedUrlSyncNode(const history::URLRow& url,
-                           const history::VisitVector& visits) {
-    sync_api::WriteTransaction trans(FROM_HERE, service_->GetUserShare());
-    sync_api::ReadNode typed_url_root(&trans);
-    ASSERT_TRUE(typed_url_root.InitByTagLookup(browser_sync::kTypedUrlTag));
-
-    sync_api::WriteNode node(&trans);
-    std::string tag = url.url().spec();
-    ASSERT_TRUE(node.InitUniqueByCreation(syncable::TYPED_URLS,
-                                          typed_url_root,
-                                          tag));
-    TypedUrlModelAssociator::WriteToSyncNode(url, visits, &node);
   }
 
   void GetTypedUrlsFromSyncDB(std::vector<history::URLRow>* urls) {
@@ -284,9 +280,6 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     return history_url;
   }
 
-  friend class AddTypedUrlEntriesTask;
-  friend class CreateTypedUrlRootTask;
-
   Thread history_thread_;
   scoped_refptr<ThreadNotificationService> notification_service_;
 
@@ -296,35 +289,24 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   scoped_refptr<HistoryServiceMock> history_service_;
 };
 
-class AddTypedUrlEntriesTask : public Task {
- public:
-  AddTypedUrlEntriesTask(ProfileSyncServiceTypedUrlTest* test,
-                         const std::vector<history::URLRow>& entries)
-      : test_(test), entries_(entries) {
+void AddTypedUrlEntries(ProfileSyncServiceTypedUrlTest* test,
+                        const std::vector<history::URLRow>& entries) {
+  test->CreateRoot(syncable::TYPED_URLS);
+  for (size_t i = 0; i < entries.size(); ++i) {
+    history::VisitVector visits;
+    visits.push_back(history::VisitRow(
+        entries[i].id(), entries[i].last_visit(), 0,
+        content::PageTransitionFromInt(0), 0));
+    test->AddTypedUrlSyncNode(entries[i], visits);
   }
-
-  virtual void Run() {
-    test_->CreateRoot(syncable::TYPED_URLS);
-    for (size_t i = 0; i < entries_.size(); ++i) {
-      history::VisitVector visits;
-      visits.push_back(history::VisitRow(
-          entries_[i].id(), entries_[i].last_visit(), 0,
-          content::PageTransitionFromInt(0), 0));
-      test_->AddTypedUrlSyncNode(entries_[i], visits);
-    }
-  }
-
- private:
-  ProfileSyncServiceTypedUrlTest* test_;
-  const std::vector<history::URLRow>& entries_;
-};
+}
 
 TEST_F(ProfileSyncServiceTypedUrlTest, EmptyNativeEmptySync) {
   EXPECT_CALL((*history_backend_.get()), GetAllTypedURLs(_)).
       WillOnce(Return(true));
   SetIdleChangeProcessorExpectations();
-  CreateRootTask task(this, syncable::TYPED_URLS);
-  StartSyncService(&task);
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
   std::vector<history::URLRow> sync_entries;
   GetTypedUrlsFromSyncDB(&sync_entries);
   EXPECT_EQ(0U, sync_entries.size());
@@ -341,8 +323,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeEmptySync) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(visits), Return(true)));
   SetIdleChangeProcessorExpectations();
-  CreateRootTask task(this, syncable::TYPED_URLS);
-  StartSyncService(&task);
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
   std::vector<history::URLRow> sync_entries;
   GetTypedUrlsFromSyncDB(&sync_entries);
   ASSERT_EQ(1U, sync_entries.size());
@@ -368,11 +350,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncNoMerge) {
 
   std::vector<history::URLRow> sync_entries;
   sync_entries.push_back(sync_entry);
-  AddTypedUrlEntriesTask task(this, sync_entries);
 
   EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
       WillRepeatedly(Return(true));
-  StartSyncService(&task);
+  StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
 
   std::map<std::string, history::URLRow> expected;
   expected[native_entry.url().spec()] = native_entry;
@@ -414,13 +395,12 @@ TEST_F(ProfileSyncServiceTypedUrlTest, HasNativeHasSyncMerge) {
 
   std::vector<history::URLRow> sync_entries;
   sync_entries.push_back(sync_entry);
-  AddTypedUrlEntriesTask task(this, sync_entries);
 
   EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
       WillRepeatedly(Return(true));
   EXPECT_CALL((*history_backend_.get()), SetPageTitle(_, _)).
       WillRepeatedly(Return());
-  StartSyncService(&task);
+  StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
 
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -439,8 +419,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
       WillOnce(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
 
   SetIdleChangeProcessorExpectations();
-  CreateRootTask task(this, syncable::TYPED_URLS);
-  StartSyncService(&task);
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
 
   history::URLsModifiedDetails details;
   details.changed_urls.push_back(added_entry);
@@ -468,8 +448,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillOnce(DoAll(SetArgumentPointee<2>(original_visits),
                      Return(true)));
-  CreateRootTask task(this, syncable::TYPED_URLS);
-  StartSyncService(&task);
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
 
   history::VisitVector updated_visits;
   history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
@@ -503,8 +483,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddFromVisit) {
       WillOnce(DoAll(SetArgumentPointee<2>(added_visits), Return(true)));
 
   SetIdleChangeProcessorExpectations();
-  CreateRootTask task(this, syncable::TYPED_URLS);
-  StartSyncService(&task);
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
 
   history::URLVisitedDetails details;
   details.row = added_entry;
@@ -533,8 +513,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdateFromVisit) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillOnce(DoAll(SetArgumentPointee<2>(original_visits),
                            Return(true)));
-  CreateRootTask task(this, syncable::TYPED_URLS);
-  StartSyncService(&task);
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
 
   history::VisitVector updated_visits;
   history::URLRow updated_entry(MakeTypedUrlEntry("http://mine.com", "entry",
@@ -571,8 +551,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserIgnoreChangeUpdateFromVisit) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits),
                            Return(true)));
-  CreateRootTask task(this, syncable::TYPED_URLS);
-  StartSyncService(&task);
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
   ASSERT_EQ(1U, new_sync_entries.size());
@@ -647,8 +627,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemove) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits1),
                            Return(true)));
-  CreateRootTask task(this, syncable::TYPED_URLS);
-  StartSyncService(&task);
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
 
   history::URLsDeletedDetails changes;
   changes.all_history = false;
@@ -683,8 +663,8 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeRemoveAll) {
   EXPECT_CALL((*history_backend_.get()), GetMostRecentVisitsForURL(_, _, _)).
       WillRepeatedly(DoAll(SetArgumentPointee<2>(original_visits1),
                            Return(true)));
-  CreateRootTask task(this, syncable::TYPED_URLS);
-  StartSyncService(&task);
+  CreateRootHelper create_root(this, syncable::TYPED_URLS);
+  StartSyncService(create_root.callback());
 
   history::URLsDeletedDetails changes;
   changes.all_history = true;
@@ -717,11 +697,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, FailWriteToHistoryBackend) {
 
   std::vector<history::URLRow> sync_entries;
   sync_entries.push_back(sync_entry);
-  AddTypedUrlEntriesTask task(this, sync_entries);
 
   EXPECT_CALL((*history_backend_.get()), UpdateURL(_, _)).
       WillRepeatedly(Return(false));
-  StartSyncService(&task);
+  StartSyncService(base::Bind(&AddTypedUrlEntries, this, sync_entries));
   ASSERT_TRUE(
       service_->failed_datatypes_handler().GetFailedTypes().count(
           syncable::TYPED_URLS) != 0);
