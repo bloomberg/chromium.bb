@@ -4985,7 +4985,7 @@
    fun:process_data_simple_main
    fun:chromium_jpeg_write_scanlines
    fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
-   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageEPSt6vectorIhSaIhEE
+   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageE?PSt6vectorIhSaIhEE
    fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
    fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
    fun:_ZN7history17ExpireHistoryTest14AddExampleDataEP?PN4base4TimeE
@@ -5000,7 +5000,7 @@
    fun:process_data_simple_main
    fun:chromium_jpeg_write_scanlines
    fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
-   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageEPSt6vectorIhSaIhEE
+   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageE?PSt6vectorIhSaIhEE
    fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
    fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
    fun:_ZN7history17ExpireHistoryTest14AddExampleDataEP?PN4base4TimeE
@@ -5015,7 +5015,7 @@
    fun:process_data_simple_main
    fun:chromium_jpeg_write_scanlines
    fun:_ZN3gfx9JPEGCodec6EncodeEPKhNS0_11ColorFormatEiiiiPSt6vectorIhSaIhEE
-   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageEPSt6vectorIhSaIhEE
+   fun:_ZN3gfx24JPEGEncodedDataFromImageERKNS_5ImageE?PSt6vectorIhSaIhEE
    fun:_ZN7history8TopSites12EncodeBitmapEPN3gfx5ImageEP13scoped_refptrI15RefCountedBytesE
    fun:_ZN7history8TopSites16SetPageThumbnailERK4GURLPN3gfx5ImageERK14ThumbnailScore
    fun:_ZN7history17ExpireHistoryTest14AddExampleDataEP?PN4base4TimeE
