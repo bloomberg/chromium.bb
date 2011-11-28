@@ -35,14 +35,14 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/menu/menu_scroll_view_container.h"
+#include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 #include "views/background.h"
 #include "views/controls/label.h"
-#include "views/controls/menu/menu_config.h"
-#include "views/controls/menu/menu_item_view.h"
-#include "views/controls/menu/menu_runner.h"
-#include "views/controls/menu/menu_scroll_view_container.h"
-#include "views/controls/menu/submenu_view.h"
 
 using ui::MenuModel;
 using views::CustomButton;

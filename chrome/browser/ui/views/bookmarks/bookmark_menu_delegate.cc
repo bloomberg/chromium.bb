@@ -22,9 +22,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/menu/menu_item_view.h"
-#include "views/controls/menu/submenu_view.h"
 
 using views::MenuItemView;
 

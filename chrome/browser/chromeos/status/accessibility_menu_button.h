@@ -9,8 +9,8 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
-#include "views/controls/menu/view_menu_delegate.h"
-#include "views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 
 namespace views {
 class MenuRunner;

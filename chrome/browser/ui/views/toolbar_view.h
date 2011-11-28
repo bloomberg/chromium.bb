@@ -19,8 +19,8 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 #include "views/accessible_pane_view.h"
-#include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 class BrowserActionsContainer;

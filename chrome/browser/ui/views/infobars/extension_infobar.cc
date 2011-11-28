@@ -17,8 +17,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/menu/menu_item_view.h"
 
 // ExtensionInfoBarDelegate ----------------------------------------------------
 

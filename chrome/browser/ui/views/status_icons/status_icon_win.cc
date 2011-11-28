@@ -10,7 +10,7 @@
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/point.h"
 #if !defined(USE_AURA)
-#include "views/controls/menu/menu_2.h"
+#include "ui/views/controls/menu/menu_2.h"
 #endif
 
 StatusIconWin::StatusIconWin(UINT id, HWND window, UINT message)

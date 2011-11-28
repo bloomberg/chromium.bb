@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task.h"
-#include "views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/menu_delegate.h"
 
 class BrowserActionsContainer;
 class BrowserActionView;

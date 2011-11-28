@@ -20,9 +20,9 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "views/controls/label.h"
-#include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 class BalloonCollection;

@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 
 class Extension;
 class PanelBrowserView;

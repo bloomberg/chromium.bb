@@ -10,8 +10,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "views/controls/menu/menu_delegate.h"
-#include "views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 class WizardControllerTest_SwitchLanguage_Test;

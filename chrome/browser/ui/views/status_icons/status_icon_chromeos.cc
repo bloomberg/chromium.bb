@@ -11,10 +11,10 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
-#include "views/controls/menu/menu_delegate.h"
-#include "views/controls/menu/menu_model_adapter.h"
-#include "views/controls/menu/menu_runner.h"
-#include "views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 
 class StatusIconChromeOS::NotificationTrayButton
     : public StatusAreaButton,

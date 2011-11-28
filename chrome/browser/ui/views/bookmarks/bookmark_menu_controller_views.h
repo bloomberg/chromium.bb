@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_node_data.h"
-#include "views/controls/menu/menu_delegate.h"
-#include "views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 
 class BookmarkBarView;
 class BookmarkMenuDelegate;

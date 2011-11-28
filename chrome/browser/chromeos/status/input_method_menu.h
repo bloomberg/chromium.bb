@@ -15,8 +15,8 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
 #include "ui/base/models/menu_model.h"
-#include "views/controls/menu/menu_item_view.h"
-#include "views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 
 class PrefService;
 class SkBitmap;

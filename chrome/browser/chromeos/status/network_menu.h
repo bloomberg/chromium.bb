@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"  // ConnectionType
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
-#include "views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 
 namespace ui {
 class MenuModel;

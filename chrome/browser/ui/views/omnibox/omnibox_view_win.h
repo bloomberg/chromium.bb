@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
-#include "views/controls/menu/menu_2.h"
+#include "ui/views/controls/menu/menu_2.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditController;

@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "views/controls/menu/view_menu_delegate.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 
 class Browser;
 namespace views {

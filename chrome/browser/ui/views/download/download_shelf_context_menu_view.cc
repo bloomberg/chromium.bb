@@ -9,9 +9,9 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "content/browser/download/download_item.h"
 #include "ui/gfx/point.h"
-#include "views/controls/menu/menu_item_view.h"
-#include "views/controls/menu/menu_model_adapter.h"
-#include "views/controls/menu/menu_runner.h"
+#include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/controls/menu/menu_model_adapter.h"
+#include "ui/views/controls/menu/menu_runner.h"
 
 DownloadShelfContextMenuView::DownloadShelfContextMenuView(
     BaseDownloadItemModel* model)

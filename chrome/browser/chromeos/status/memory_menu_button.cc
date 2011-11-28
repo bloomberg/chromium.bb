@@ -20,8 +20,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/menu/menu_runner.h"
 
 #if defined(USE_TCMALLOC)
 #include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"

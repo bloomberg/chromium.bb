@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/views/toolbar_view.h"
 #include "chrome/common/automation_messages.h"
 #include "ui/gfx/point.h"
+#include "ui/views/controls/menu/menu_listener.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/menu/menu_listener.h"
 #include "views/view.h"
 
 namespace {

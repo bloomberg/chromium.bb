@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/views/controls/combobox/native_combobox_wrapper.h"
-#include "views/controls/menu/menu_delegate.h"
+#include "ui/views/controls/menu/menu_delegate.h"
 #include "views/view.h"
 
 namespace gfx {

@@ -36,7 +36,7 @@
 #include "ui/gfx/gtk_util.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/controls/menu/menu_2.h"
+#include "ui/views/controls/menu/menu_2.h"
 #else
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #endif

@@ -10,9 +10,9 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/menu/menu_2.h"
+#include "ui/views/controls/menu/view_menu_delegate.h"
 #include "ui/views/layout/fill_layout.h"
-#include "views/controls/menu/menu_2.h"
-#include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 namespace {
