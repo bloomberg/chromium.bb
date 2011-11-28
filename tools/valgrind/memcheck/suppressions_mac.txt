@@ -480,21 +480,6 @@
    Memcheck:Leak
    ...
    fun:_ZN19WebSharedWorkerStub9OnConnectEii
-   fun:_Z16DispatchToMethodI19WebSharedWorkerStubMS0_FviiEiiEvPT_T0_RK6Tuple2IT1_T2_E
-   fun:_ZN3IPC16MessageWithTupleI6Tuple2IiiEE8DispatchI19WebSharedWorkerStubMS5_FviiEEEbPKNS_7MessageEPT_T0_
-   fun:_ZN19WebSharedWorkerStub17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN13MessageRouter12RouteMessageERKN3IPC7MessageE
-   fun:_ZN13MessageRouter17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
-   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
-   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
    bug_28847a
@@ -659,14 +644,6 @@
    ...
    fun:_ZN19extension_file_util13LoadExtensionERK8FilePathbPSs
    fun:_ZN12CrxInstaller15CompleteInstallEv
-   fun:_Z16DispatchToMethodI12CrxInstallerMS0_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN14RunnableMethodI12CrxInstallerMS0_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
    bug_46186_a
@@ -688,11 +665,6 @@
    fun:AudioQueueEnqueueBuffer
    fun:_ZN28PCMQueueOutAudioOutputStream5StartEPN17AudioOutputStream19AudioSourceCallbackE
    fun:_ZN5media21AudioOutputController6DoPlayEv
-   fun:_ZN14RunnableMethodIN5media21AudioOutputControllerEMS1_FvvE6Tuple0E3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
 }
 {
    bug_46186_b
@@ -876,8 +848,6 @@
    fun:_ZN16ChildProcessHost13CreateChannelEv
    fun:_ZN18UtilityProcessHost12StartProcessERK8FilePath
    fun:_ZN18UtilityProcessHost22StartExtensionUnpackerERK8FilePath
-   fun:_ZN14RunnableMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathE6Tuple1IS1_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_52681_b
@@ -888,9 +858,6 @@
    fun:_ZN18UtilityProcessHost12StartProcessERK8FilePath
    fun:_ZN18UtilityProcessHost22StartExtensionUnpackerERK8FilePath
    fun:_ZN26SandboxedExtensionUnpacker22StartProcessOnIOThreadERK8FilePath
-   fun:_Z16DispatchToMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathES1_EvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodI26SandboxedExtensionUnpackerMS0_FvRK8FilePathE6Tuple1IS1_EE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_53742_a
@@ -1911,13 +1878,6 @@
    fun:_ZN10disk_cache5Stats4InitEPNS_11BackendImplEPj
    fun:_ZN10disk_cache11BackendImpl8SyncInitEv
    fun:_ZN10disk_cache9BackendIO23ExecuteBackendOperationEv
-   fun:_ZN4base8internal8Invoker1ILb0ENS0_15InvokerStorage1IMN10disk_cache9BackendIOEFvvEPS4_EES6_E8DoInvokeEPNS0_18InvokerStorageBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
-   fun:_ZN11MessageLoop6DoWorkEv
-   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
-   fun:_ZN11MessageLoop11RunInternalEv
 }
 {
    bug_101359
