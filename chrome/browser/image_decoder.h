@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "content/browser/utility_process_host.h"
 
 class SkBitmap;
@@ -43,7 +44,7 @@ class ImageDecoder : public UtilityProcessHost::Client {
   virtual ~ImageDecoder();
 
   // Overidden from UtilityProcessHost::Client:
-  virtual bool OnMessageReceived(const IPC::Message& message);
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // IPC message handlers.
   void OnDecodeImageSucceeded(const SkBitmap& decoded_image);

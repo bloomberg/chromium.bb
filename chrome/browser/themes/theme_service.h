@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
@@ -147,18 +148,25 @@ class ThemeService : public base::NonThreadSafe,
   virtual bool ShouldUseNativeFrame() const OVERRIDE;
   virtual bool HasCustomImage(int id) const OVERRIDE;
   virtual RefCountedMemory* GetRawData(int id) const OVERRIDE;
-#if defined(TOOLKIT_USES_GTK)
-  // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
-  // shared instances owned by the theme provider and should not be freed.
-  virtual GdkPixbuf* GetPixbufNamed(int id) const;
-  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const OVERRIDE;
   virtual NSColor* GetNSImageColorNamed(int id,
                                         bool allow_default) const OVERRIDE;
   virtual NSColor* GetNSColor(int id, bool allow_default) const OVERRIDE;
   virtual NSColor* GetNSColorTint(int id, bool allow_default) const OVERRIDE;
   virtual NSGradient* GetNSGradient(int id) const OVERRIDE;
+#elif defined(OS_POSIX) && !defined(TOOLKIT_VIEWS) && !defined(OS_ANDROID)
+  // This mismatch between what this class defines and whether or not it
+  // overrides ui::ThemeProvider is http://crbug.com/105040 .
+  // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
+  // shared instances owned by the theme provider and should not be freed.
+  virtual GdkPixbuf* GetPixbufNamed(int id) const OVERRIDE;
+  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const OVERRIDE;
+#elif defined(TOOLKIT_USES_GTK)
+  // GdkPixbufs returned by GetPixbufNamed and GetRTLEnabledPixbufNamed are
+  // shared instances owned by the theme provider and should not be freed.
+  virtual GdkPixbuf* GetPixbufNamed(int id) const;
+  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const;
 #endif
 
   // Set the current theme to the theme defined in |extension|.

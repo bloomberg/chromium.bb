@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_GTK_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
@@ -26,7 +27,7 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
   void Popup(const gfx::Point& point);
 
   // Menu::Delegate implementation ---------------------------------------------
-  virtual bool AlwaysShowIconForCmd(int command_id) const;
+  virtual bool AlwaysShowIconForCmd(int command_id) const OVERRIDE;
 
   // RenderViewContextMenuDelegate implementation ------------------------------
   virtual void UpdateMenuItem(int command_id,
@@ -36,11 +37,11 @@ class RenderViewContextMenuGtk : public RenderViewContextMenu,
 
  protected:
   // RenderViewContextMenu implementation --------------------------------------
-  virtual void PlatformInit();
+  virtual void PlatformInit() OVERRIDE;
   // TODO(port): implement.
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      ui::Accelerator* accelerator);
+      ui::Accelerator* accelerator) OVERRIDE;
 
  private:
   scoped_ptr<MenuGtk> menu_gtk_;

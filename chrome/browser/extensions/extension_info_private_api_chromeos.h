@@ -7,6 +7,8 @@
 #pragma once
 
 #include <string>
+
+#include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_function.h"
 
 class GetChromeosInfoFunction : public AsyncExtensionFunction {
@@ -16,7 +18,7 @@ class GetChromeosInfoFunction : public AsyncExtensionFunction {
  protected:
   virtual ~GetChromeosInfoFunction();
 
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
 
  private:
   bool GetValue(const std::string& property_name, std::string* value);

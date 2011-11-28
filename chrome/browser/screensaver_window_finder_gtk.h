@@ -9,13 +9,14 @@
 #include "ui/base/x/x11_util.h"
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 
 class ScreensaverWindowFinder : public ui::EnumerateWindowsDelegate {
  public:
   static bool ScreensaverWindowExists();
 
  protected:
-  virtual bool ShouldStopIterating(XID window);
+  virtual bool ShouldStopIterating(XID window) OVERRIDE;
 
  private:
   ScreensaverWindowFinder();

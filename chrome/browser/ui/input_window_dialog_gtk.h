@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/input_window_dialog.h"
@@ -26,8 +27,8 @@ class InputWindowDialogGtk : public InputWindowDialog {
                        ButtonType type);
   virtual ~InputWindowDialogGtk();
 
-  virtual void Show();
-  virtual void Close();
+  virtual void Show() OVERRIDE;
+  virtual void Close() OVERRIDE;
 
  private:
   CHROMEG_CALLBACK_0(InputWindowDialogGtk, void, OnEntryChanged, GtkEditable*);

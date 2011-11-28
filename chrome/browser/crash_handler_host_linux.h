@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CRASH_HANDLER_HOST_LINUX_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 
 #if defined(USE_LINUX_BREAKPAD)
@@ -44,11 +45,11 @@ class CrashHandlerHostLinux : public MessageLoopForIO::Watcher,
   }
 
   // MessagePumbLibevent::Watcher impl:
-  virtual void OnFileCanWriteWithoutBlocking(int fd);
-  virtual void OnFileCanReadWithoutBlocking(int fd);
+  virtual void OnFileCanWriteWithoutBlocking(int fd) OVERRIDE;
+  virtual void OnFileCanReadWithoutBlocking(int fd) OVERRIDE;
 
   // MessageLoop::DestructionObserver impl:
-  virtual void WillDestroyCurrentMessageLoop();
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
 #if defined(USE_LINUX_BREAKPAD)
   // Whether we are shutting down or not.
@@ -106,7 +107,7 @@ class ExtensionCrashHandlerHostLinux : public CrashHandlerHostLinux {
   virtual ~ExtensionCrashHandlerHostLinux();
 
 #if defined(USE_LINUX_BREAKPAD)
-  virtual void SetProcessType();
+  virtual void SetProcessType() OVERRIDE;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionCrashHandlerHostLinux);
@@ -123,7 +124,7 @@ class GpuCrashHandlerHostLinux : public CrashHandlerHostLinux {
   virtual ~GpuCrashHandlerHostLinux();
 
 #if defined(USE_LINUX_BREAKPAD)
-  virtual void SetProcessType();
+  virtual void SetProcessType() OVERRIDE;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(GpuCrashHandlerHostLinux);
@@ -140,7 +141,7 @@ class PluginCrashHandlerHostLinux : public CrashHandlerHostLinux {
   virtual ~PluginCrashHandlerHostLinux();
 
 #if defined(USE_LINUX_BREAKPAD)
-  virtual void SetProcessType();
+  virtual void SetProcessType() OVERRIDE;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PluginCrashHandlerHostLinux);
@@ -157,7 +158,7 @@ class PpapiCrashHandlerHostLinux : public CrashHandlerHostLinux {
   virtual ~PpapiCrashHandlerHostLinux();
 
 #if defined(USE_LINUX_BREAKPAD)
-  virtual void SetProcessType();
+  virtual void SetProcessType() OVERRIDE;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PpapiCrashHandlerHostLinux);
@@ -174,7 +175,7 @@ class RendererCrashHandlerHostLinux : public CrashHandlerHostLinux {
   virtual ~RendererCrashHandlerHostLinux();
 
 #if defined(USE_LINUX_BREAKPAD)
-  virtual void SetProcessType();
+  virtual void SetProcessType() OVERRIDE;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RendererCrashHandlerHostLinux);

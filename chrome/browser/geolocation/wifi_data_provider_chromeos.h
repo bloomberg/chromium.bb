@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_CHROMEOS_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/browser/geolocation/wifi_data_provider_common.h"
 
 namespace chromeos {
@@ -17,9 +18,9 @@ class WifiDataProviderChromeOs : public WifiDataProviderImplBase {
   WifiDataProviderChromeOs();
 
   // WifiDataProviderImplBase
-  virtual bool StartDataProvider();
-  virtual void StopDataProvider();
-  virtual bool GetData(WifiData* data);
+  virtual bool StartDataProvider() OVERRIDE;
+  virtual void StopDataProvider() OVERRIDE;
+  virtual bool GetData(WifiData* data) OVERRIDE;
 
   // Allows injection of |lib| for testing.
   static WifiDataProviderCommon::WlanApiInterface* NewWlanApi(

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
@@ -42,18 +43,22 @@ class ExtensionInputUiEventRouter
   void PageDown(Profile* profile, const std::string& extension_id);
 
   // IBusUiController overrides.
-  virtual void OnHideAuxiliaryText();
-  virtual void OnHideLookupTable();
-  virtual void OnHidePreeditText();
-  virtual void OnSetCursorLocation(int x, int y, int width, int height);
+  virtual void OnHideAuxiliaryText() OVERRIDE;
+  virtual void OnHideLookupTable() OVERRIDE;
+  virtual void OnHidePreeditText() OVERRIDE;
+  virtual void OnSetCursorLocation(int x,
+                                   int y,
+                                   int width,
+                                   int height) OVERRIDE;
   virtual void OnUpdateAuxiliaryText(const std::string& utf8_text,
-                                     bool visible);
+                                     bool visible) OVERRIDE;
   virtual void OnUpdateLookupTable(
-      const chromeos::input_method::InputMethodLookupTable& lookup_table);
+      const chromeos::input_method::InputMethodLookupTable& lookup_table)
+          OVERRIDE;
   virtual void OnUpdatePreeditText(const std::string& utf8_text,
                                    unsigned int cursor,
-                                   bool visible);
-  virtual void OnConnectionChange(bool connected);
+                                   bool visible) OVERRIDE;
+  virtual void OnConnectionChange(bool connected) OVERRIDE;
 
   void DispatchEvent(Profile* profile,
                      const char* event_name,
@@ -68,37 +73,37 @@ class ExtensionInputUiEventRouter
 
 class RegisterInputUiFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.register");
 };
 
 class CandidateClickedInputUiFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.candidateClicked");
 };
 
 class CursorUpInputUiFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.cursorUp");
 };
 
 class CursorDownInputUiFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.cursorDown");
 };
 
 class PageUpInputUiFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.pageUp");
 };
 
 class PageDownInputUiFunction : public SyncExtensionFunction {
  public:
-  virtual bool RunImpl();
+  virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.input.ui.pageDown");
 };
 
