@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -642,8 +644,10 @@ TEST_F(SessionServiceTest, GetCurrentSession) {
 
   CancelableRequestConsumer consumer;
   GetCurrentSessionCallbackHandler handler;
-  service()->GetCurrentSession(&consumer,
-      NewCallback(&handler, &GetCurrentSessionCallbackHandler::OnGotSession));
+  service()->GetCurrentSession(
+      &consumer,
+      base::Bind(&GetCurrentSessionCallbackHandler::OnGotSession,
+                 base::Unretained(&handler)));
 }
 
 // Test that the notification for SESSION_SERVICE_SAVED is working properly.

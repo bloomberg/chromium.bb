@@ -9,6 +9,8 @@
 #include <set>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -424,9 +426,9 @@ class SessionRestoreImpl : public content::NotificationObserver {
     SessionService* session_service =
         SessionServiceFactory::GetForProfile(profile_);
     DCHECK(session_service);
-    SessionService::SessionCallback* callback =
-        NewCallback(this, &SessionRestoreImpl::OnGotSession);
-    session_service->GetLastSession(&request_consumer_, callback);
+    session_service->GetLastSession(
+        &request_consumer_,
+        base::Bind(&SessionRestoreImpl::OnGotSession, base::Unretained(this)));
 
     if (synchronous_) {
       bool old_state = MessageLoop::current()->NestableTasksAllowed();

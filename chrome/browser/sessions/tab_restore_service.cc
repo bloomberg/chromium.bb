@@ -430,8 +430,10 @@ void TabRestoreService::LoadTabsFromLastSession() {
       session_service) {
     // The previous session crashed and wasn't restored. Load the tabs/windows
     // that were open at the point of crash from the session service.
-    session_service->GetLastSession(&crash_consumer_,
-        NewCallback(this, &TabRestoreService::OnGotPreviousSession));
+    session_service->GetLastSession(
+        &crash_consumer_,
+        base::Bind(&TabRestoreService::OnGotPreviousSession,
+                   base::Unretained(this)));
   } else {
     load_state_ |= LOADED_LAST_SESSION;
   }

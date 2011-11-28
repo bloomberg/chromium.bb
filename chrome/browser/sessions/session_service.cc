@@ -79,13 +79,13 @@ class InternalSessionRequest
  public:
   InternalSessionRequest(
       const CallbackType& callback,
-      SessionService::SessionCallback* real_callback)
+      const SessionService::SessionCallback& real_callback)
       : BaseSessionService::InternalGetCommandsRequest(callback),
         real_callback(real_callback) {
   }
 
   // The callback supplied to GetLastSession and GetCurrentSession.
-  scoped_ptr<SessionService::SessionCallback> real_callback;
+  SessionService::SessionCallback real_callback;
 
  private:
   ~InternalSessionRequest() {}
@@ -419,7 +419,7 @@ void SessionService::SetSelectedTabInWindow(const SessionID& window_id,
 
 SessionService::Handle SessionService::GetLastSession(
     CancelableRequestConsumerBase* consumer,
-    SessionCallback* callback) {
+    const SessionCallback& callback) {
   return ScheduleGetLastSessionCommands(
       new InternalSessionRequest(
           base::Bind(&SessionService::OnGotSessionCommands,
@@ -430,7 +430,7 @@ SessionService::Handle SessionService::GetLastSession(
 
 SessionService::Handle SessionService::GetCurrentSession(
     CancelableRequestConsumerBase* consumer,
-    SessionCallback* callback) {
+    const SessionCallback& callback) {
   if (pending_window_close_ids_.empty()) {
     // If there are no pending window closes, we can get the current session
     // from memory.
@@ -794,13 +794,12 @@ void SessionService::OnGotSessionCommands(
     scoped_refptr<InternalGetCommandsRequest> request) {
   if (request->canceled())
     return;
+
   ScopedVector<SessionWindow> valid_windows;
   RestoreSessionFromCommands(
       request->commands, &(valid_windows.get()));
   static_cast<InternalSessionRequest*>(request.get())->
-      real_callback->RunWithParams(
-          SessionCallback::TupleType(request->handle(),
-                                     &(valid_windows.get())));
+      real_callback.Run(request->handle(), &(valid_windows.get()));
 }
 
 void SessionService::RestoreSessionFromCommands(

@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback_old.h"
+#include "base/callback.h"
 #include "base/time.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/sessions/base_session_service.h"
@@ -157,7 +157,7 @@ class SessionService : public BaseSessionService,
   // notified. To take ownership of the vector clear it before returning.
   //
   // The time gives the time the session was closed.
-  typedef Callback2<Handle, std::vector<SessionWindow*>*>::Type
+  typedef base::Callback<void(Handle, std::vector<SessionWindow*>*)>
       SessionCallback;
 
   // Fetches the contents of the last session, notifying the callback when
@@ -168,7 +168,7 @@ class SessionService : public BaseSessionService,
   // callback invokes OnGotSessionCommands from which we map the
   // SessionCommands to browser state, then notify the callback.
   Handle GetLastSession(CancelableRequestConsumerBase* consumer,
-                        SessionCallback* callback);
+                        const SessionCallback& callback);
 
   // Fetches the contents of the current session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
@@ -178,7 +178,7 @@ class SessionService : public BaseSessionService,
   // callback invokes OnGotSessionCommands from which we map the
   // SessionCommands to browser state, then notify the callback.
   Handle GetCurrentSession(CancelableRequestConsumerBase* consumer,
-                           SessionCallback* callback);
+                           const SessionCallback& callback);
 
   // Overridden from BaseSessionService because we want some UMA reporting on
   // session update activities.
