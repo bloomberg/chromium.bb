@@ -2123,7 +2123,7 @@
    fun:-[NSThemeFrame drawWindowBackgroundRegion:]
 }
 {
-   bug_105526 read
+   bug_105526_read_a
    Memcheck:Unaddressable
    fun:CGSSetWindowColorSpace
    fun:_ZN10WindowData16UpdateColorSpaceEh
@@ -2139,7 +2139,23 @@
    fun:HIObjectCreate
 }
 {
-   bug_105526 write
+   bug_105526_read_b
+   Memcheck:Unaddressable
+   obj:*
+   fun:_ZN10WindowData16UpdateColorSpaceEh
+   fun:_ZN10WindowData18FinishConstructionEmymPK4RectPhjP15OpaqueWindowPtrP16OpaqueControlRef
+   fun:_ZN10WindowData10InitializeEP14OpaqueEventRef
+   fun:_ZN14AppleWindowDef10InitializeEP14OpaqueEventRef
+   fun:_ZN8HIObject24HandleClassHIObjectEventEP25OpaqueEventHandlerCallRefP14OpaqueEventRefPv
+   fun:_ZN8HIObject9EventHookEP25OpaqueEventHandlerCallRefP14OpaqueEventRefPv
+   fun:_ZL23DispatchEventToHandlersP14EventTargetRecP14OpaqueEventRefP14HandlerCallRec
+   fun:_ZL30SendEventToEventTargetInternalP14OpaqueEventRefP20OpaqueEventTargetRefP14HandlerCallRec
+   fun:SendEventToEventTargetWithOptions
+   fun:_ZN8HIObject6CreateEPK10__CFStringP14OpaqueEventRefPPS_
+   fun:HIObjectCreate
+}
+{
+   bug_105526_write
    Memcheck:Unaddressable
    fun:CGSColorProfileRelease
    fun:CGSSetWindowColorSpace
