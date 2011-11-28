@@ -16,8 +16,8 @@ metrics.startInterval = function(name) {
   metrics.intervals[name] = Date.now();
 };
 
-metrics.startInterval('TotalLoad');
-metrics.startInterval('ScriptParse');
+metrics.startInterval('Load.Total');
+metrics.startInterval('Load.Script');
 
 metrics.convertName_ = function(name) {
   return 'FileBrowser.' + name;

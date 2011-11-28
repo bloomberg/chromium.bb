@@ -14,9 +14,9 @@ var fileManager;
  */
 function init() {
   FileManager.initStrings(function () {
-    metrics.startInterval('Construct');
+    metrics.startInterval('Load.Construct');
     fileManager = new FileManager(document.body);
-    metrics.recordTime('Construct');
+    metrics.recordTime('Load.Construct');
     // We're ready to run.  Tests can monitor for this state with
     // ExtensionTestMessageListener listener("ready");
     // ASSERT_TRUE(listener.WaitUntilSatisfied());

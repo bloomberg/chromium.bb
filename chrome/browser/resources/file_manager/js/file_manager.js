@@ -26,8 +26,6 @@ const SIMULTANEOUS_RESCAN_INTERVAL = 1000;
  *     the root filesystem for the new FileManager.
  */
 function FileManager(dialogDom) {
-  console.log('Init FileManager: ' + dialogDom);
-
   this.dialogDom_ = dialogDom;
   this.rootEntries_ = null;
   this.filesystem_ = null;
@@ -473,7 +471,7 @@ FileManager.prototype = {
   FileManager.prototype.resolveRoots_ = function(callback) {
     var rootPaths = ['Downloads', 'removable', 'archive'];
 
-    metrics.startInterval('RequestLocalFileSystem');
+    metrics.startInterval('Load.FileSystem');
     var self = this;
 
     // The list of active mount points to distinct them from other directories.
@@ -491,12 +489,12 @@ FileManager.prototype = {
       self.filesystem_ = filesystem;
       util.installFileErrorToString();
 
-      metrics.recordTime('RequestLocalFileSystem');
-      console.log('Found filesystem: ' + filesystem.name, filesystem);
+      metrics.recordTime('Load.FileSystem');
 
       var rootEntries = [];
 
       function onAllRootsFound() {
+        metrics.recordTime('Load.Roots');
         self.rootEntries_ = rootEntries;
         onDone();
       }
@@ -513,7 +511,7 @@ FileManager.prototype = {
         }
       }
 
-      metrics.startInterval('EnumerateRoots');
+      metrics.startInterval('Load.Roots');
       if (filesystem.name.match(/^chrome-extension_\S+:external/i)) {
         // We've been handed the local filesystem, whose root directory
         // cannot be enumerated.
@@ -529,7 +527,7 @@ FileManager.prototype = {
    * Continue initializing the file manager after resolving roots.
    */
   FileManager.prototype.init_ = function() {
-    metrics.startInterval('InitFileManager');
+    metrics.startInterval('Load.DOM');
 
     // TODO(rginda): 6/22/11: Remove this test when createDateTimeFormat is
     // available in all chrome trunk builds.
@@ -610,8 +608,8 @@ FileManager.prototype = {
     this.refocus();
 
     this.createMetadataProvider_();
-    metrics.recordTime('InitFileManager');
-    metrics.recordTime('TotalLoad');
+    metrics.recordTime('Load.DOM');
+    metrics.recordTime('Load.Total');
   };
 
   /**
@@ -3136,11 +3134,11 @@ FileManager.prototype = {
         spliceArgs.unshift(0, 0);  // index, deleteCount
         self.dataModel_.splice.apply(self.dataModel_, spliceArgs);
 
-        metrics.startInterval('DirectoryScan');
-
         // Keep reading until entries.length is 0.
         reader.readEntries(onReadSome, onError);
       };
+
+      metrics.startInterval('DirectoryScan');
 
       // If not the root directory, just read the contents.
       reader = this.currentDirEntry_.createReader();

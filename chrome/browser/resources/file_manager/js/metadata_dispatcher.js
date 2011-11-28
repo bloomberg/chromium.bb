@@ -29,7 +29,6 @@ function MetadataDispatcher() {
   for (var i = 0; i < MetadataDispatcher.parserClasses_.length; i++) {
     var parserClass = MetadataDispatcher.parserClasses_[i];
     var parser = new parserClass(this);
-    this.log('new parser: ' + parser.type);
     this.parserInstances_.push(parser);
     patterns.push(parser.urlFilter.source);
   }
