@@ -74,11 +74,6 @@ class SiteInstanceTestBrowserClient : public content::MockContentBrowserClient {
         site_url.SchemeIs(kPrivilegedScheme);
   }
 
-  virtual GURL GetEffectiveURL(content::BrowserContext* browser_context,
-                               const GURL& url) OVERRIDE {
-    return url;
-  }
-
   void SetOriginalClient(content::ContentBrowserClient* old_browser_client) {
     old_browser_client_ = old_browser_client;
   }

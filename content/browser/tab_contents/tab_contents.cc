@@ -1981,10 +1981,12 @@ TabContents::GetLastCommittedNavigationEntryForRenderManager() {
 
 bool TabContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host) {
+  // Can be NULL during tests.
   RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(render_view_host);
 
   // Now that the RenderView has been created, we need to tell it its size.
-  rwh_view->SetSize(view_->GetContainerSize());
+  if (rwh_view)
+    rwh_view->SetSize(view_->GetContainerSize());
 
   if (!render_view_host->CreateRenderView(string16()))
     return false;
@@ -1992,8 +1994,10 @@ bool TabContents::CreateRenderViewForRenderManager(
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Force a ViewMsg_Resize to be sent, needed to make plugins show up on
   // linux. See crbug.com/83941.
-  if (RenderWidgetHost* render_widget_host = rwh_view->GetRenderWidgetHost())
-    render_widget_host->WasResized();
+  if (rwh_view) {
+    if (RenderWidgetHost* render_widget_host = rwh_view->GetRenderWidgetHost())
+      render_widget_host->WasResized();
+  }
 #endif
 
   UpdateMaxPageIDIfNecessary(render_view_host->site_instance(),
@@ -2032,7 +2036,9 @@ void TabContents::set_encoding(const std::string& encoding) {
 
 void TabContents::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   RenderWidgetHostView* rwh_view = view()->CreateViewForWidget(rvh);
-  rwh_view->SetSize(view()->GetContainerSize());
+  // Can be NULL during tests.
+  if (rwh_view)
+    rwh_view->SetSize(view()->GetContainerSize());
 }
 
 bool TabContents::GotResponseToLockMouseRequest(bool allowed) {

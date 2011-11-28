@@ -16,9 +16,8 @@
 //  #include "chrome/browser/sessions/session_service_factory.h"
 //  #include "chrome/browser/sessions/session_service_test_helper.h"
 //  #include "chrome/browser/sessions/session_types.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "chrome/test/base/testing_profile.h"
 #include "content/browser/site_instance.h"
+#include "content/browser/renderer_host/test_render_view_host.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/navigation_entry.h"
@@ -28,6 +27,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "content/test/test_browser_context.h"
 #include "content/test/test_notification_tracker.h"
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +37,7 @@ using base::Time;
 
 // NavigationControllerTest ----------------------------------------------------
 
-class NavigationControllerTest : public ChromeRenderViewHostTestHarness {
+class NavigationControllerTest : public RenderViewHostTestHarness {
  public:
   NavigationControllerTest() {}
 };
@@ -1471,12 +1471,13 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
   std::vector<NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
       url, GURL(), content::PAGE_TRANSITION_RELOAD, false, std::string(),
-      profile());
+      browser_context());
   entry->set_page_id(0);
   entry->set_title(ASCIIToUTF16("Title"));
   entry->set_content_state("state");
   entries.push_back(entry);
-  TabContents our_contents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  TabContents our_contents(
+      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   NavigationController& our_controller = our_contents.controller();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());
@@ -1530,12 +1531,13 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   std::vector<NavigationEntry*> entries;
   NavigationEntry* entry = NavigationController::CreateNavigationEntry(
       url, GURL(), content::PAGE_TRANSITION_RELOAD, false, std::string(),
-      profile());
+      browser_context());
   entry->set_page_id(0);
   entry->set_title(ASCIIToUTF16("Title"));
   entry->set_content_state("state");
   entries.push_back(entry);
-  TabContents our_contents(profile(), NULL, MSG_ROUTING_NONE, NULL, NULL);
+  TabContents our_contents(
+      browser_context(), NULL, MSG_ROUTING_NONE, NULL, NULL);
   NavigationController& our_controller = our_contents.controller();
   our_controller.Restore(0, true, &entries);
   ASSERT_EQ(0u, entries.size());

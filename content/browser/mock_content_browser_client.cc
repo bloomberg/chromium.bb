@@ -77,7 +77,7 @@ WebUIFactory* MockContentBrowserClient::GetWebUIFactory() {
 
 GURL MockContentBrowserClient::GetEffectiveURL(
     content::BrowserContext* browser_context, const GURL& url) {
-  return GURL();
+  return url;
 }
 
 bool MockContentBrowserClient::ShouldUseProcessPerSite(
