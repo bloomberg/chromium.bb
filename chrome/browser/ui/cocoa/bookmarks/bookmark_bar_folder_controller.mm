@@ -506,7 +506,8 @@ struct LayoutMetrics {
     topOfWindow = [[parentButton_ window]
                    convertBaseToScreen:[[parentButton_ superview]
                                         convertPoint:topOfWindow toView:nil]];
-    newWindowTopLeft.y = topOfWindow.y;
+    newWindowTopLeft.y = topOfWindow.y +
+                         2 * bookmarks::kBookmarkVerticalPadding;
   }
   return newWindowTopLeft;
 }
@@ -865,9 +866,9 @@ struct LayoutMetrics {
 // If the button at index contains the mouse it will select it and return YES.
 // Otherwise returns NO.
 - (BOOL)selectButtonIfHoveredAtIndex:(int)index {
-  BookmarkButton *btn = [self buttonAtIndex:index];
-  if ([[btn cell] isMouseReallyInside]) {
-    buttonThatMouseIsIn_ = btn;
+  BookmarkButton* button = [self buttonAtIndex:index];
+  if ([[button cell] isMouseReallyInside]) {
+    buttonThatMouseIsIn_ = button;
     [self setSelectedButtonByIndex:index];
     return YES;
   }
@@ -1569,7 +1570,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   if ([prefix length] == 0) // Also handles nil.
     return -1;
   int maxButtons = [buttons_ count];
-  NSString *lowercasePrefix = [prefix lowercaseString];
+  NSString* lowercasePrefix = [prefix lowercaseString];
   for (int i = 0 ; i < maxButtons ; ++i) {
     BookmarkButton* button = [buttons_ objectAtIndex:i];
     if ([[[button title] lowercaseString] hasPrefix:lowercasePrefix])
@@ -1666,7 +1667,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   }
 
   // It is a char or string worth adding to the type-select buffer.
-  NSString *newString = (!typedPrefix_) ?
+  NSString* newString = (!typedPrefix_) ?
       newText : [typedPrefix_ stringByAppendingString:newText];
   [typedPrefix_ release];
   typedPrefix_ = [newString retain];
