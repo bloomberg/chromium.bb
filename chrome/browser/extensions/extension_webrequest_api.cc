@@ -1556,8 +1556,8 @@ bool WebRequestEventHandled::RunImpl() {
     }
 
     if (value->HasKey("responseHeaders")) {
-      helpers::ResponseHeaders* response_headers =
-          new helpers::ResponseHeaders();
+      scoped_ptr<helpers::ResponseHeaders> response_headers(
+          new helpers::ResponseHeaders());
       ListValue* response_headers_value = NULL;
       EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kResponseHeadersKey,
                                                  &response_headers_value));
@@ -1571,7 +1571,7 @@ bool WebRequestEventHandled::RunImpl() {
             FromHeaderDictionary(header_value, &name, &value));
         response_headers->push_back(helpers::ResponseHeader(name, value));
       }
-      response->response_headers.reset(response_headers);
+      response->response_headers.reset(response_headers.release());
     }
 
     if (value->HasKey(keys::kAuthCredentialsKey)) {
