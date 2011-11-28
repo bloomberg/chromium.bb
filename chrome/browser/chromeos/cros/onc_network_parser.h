@@ -63,9 +63,6 @@ class OncNetworkParser : public NetworkParser {
   // Returns the type string from the dictionary of network values.
   std::string GetTypeFromDictionary(const base::DictionaryValue& info);
 
-  // Returns the GUID string from the dictionary of network values.
-  std::string GetGuidFromDictionary(const base::DictionaryValue& info);
-
  private:
   bool ParseServerOrCaCertificate(
     int cert_index,
