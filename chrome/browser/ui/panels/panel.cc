@@ -33,22 +33,23 @@ const Extension* Panel::GetExtensionFromBrowser(Browser* browser) {
       web_app::GetExtensionIdFromApplicationName(browser->app_name()), false);
 }
 
-Panel::Panel(Browser* browser,
-             const gfx::Rect& bounds,
-             const gfx::Size& min_size,
-             const gfx::Size& max_size,
-             bool auto_resizable)
-    : min_size_(min_size),
-      max_size_(max_size),
+Panel::Panel(Browser* browser, const gfx::Size& requested_size)
+    : browser_(browser),
+      initialized_(false),
+      restored_size_(requested_size),
       auto_resizable_(false),
-      expansion_state_(EXPANDED),
-      restored_height_(bounds.height()) {
-  native_panel_ = CreateNativePanel(browser, this, bounds);
-  SetAutoResizable(auto_resizable);
+      expansion_state_(EXPANDED) {
 }
 
 Panel::~Panel() {
   // Invoked by native panel destructor. Do not access native_panel_ here.
+}
+
+void Panel::Initialize(const gfx::Rect& bounds) {
+  DCHECK(!initialized_);
+  DCHECK(!bounds.IsEmpty());
+  initialized_ = true;
+  native_panel_ = CreateNativePanel(browser_, this, bounds);
 }
 
 void Panel::OnNativePanelClosed() {
@@ -67,7 +68,7 @@ const Extension* Panel::GetExtension() const {
 
 void Panel::SetPanelBounds(const gfx::Rect& bounds) {
   if (expansion_state_ == Panel::EXPANDED)
-    restored_height_ = bounds.height();
+    restored_size_ = bounds.size();
 
   native_panel_->SetPanelBounds(bounds);
 
@@ -93,6 +94,20 @@ void Panel::SetAutoResizable(bool resizable) {
   }
 }
 
+void Panel::SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size) {
+  DCHECK(min_size.width() <= max_size.width());
+  DCHECK(min_size.height() <= max_size.height());
+  min_size_ = min_size;
+  max_size_ = max_size;
+
+  // Need to update the renderer on the new size range.
+  if (auto_resizable_) {
+    RenderViewHost* render_view_host = GetRenderViewHost();
+    if (render_view_host)
+      RequestRenderViewHostToDisableScrollbars(render_view_host);
+  }
+}
+
 void Panel::SetExpansionState(ExpansionState new_state) {
   if (expansion_state_ == new_state)
     return;
@@ -103,7 +118,7 @@ void Panel::SetExpansionState(ExpansionState new_state) {
   int height;
   switch (expansion_state_) {
     case EXPANDED:
-      height = restored_height_;
+      height = restored_size_.height();
       break;
     case TITLE_ONLY:
       height = native_panel_->TitleOnlyHeight();
@@ -113,7 +128,7 @@ void Panel::SetExpansionState(ExpansionState new_state) {
       break;
     default:
       NOTREACHED();
-      height = restored_height_;
+      height = restored_size_.height();
       break;
   }
 
@@ -157,14 +172,6 @@ bool Panel::ShouldBringUpTitlebar(int mouse_x, int mouse_y) const {
 
 bool Panel::IsDrawingAttention() const {
   return native_panel_->IsDrawingAttention();
-}
-
-int Panel::GetRestoredHeight() const {
-  return restored_height_;
-}
-
-void Panel::SetRestoredHeight(int height) {
-  restored_height_ = height;
 }
 
 void Panel::Show() {
@@ -247,8 +254,9 @@ void Panel::SetStarredState(bool is_starred) {
 
 gfx::Rect Panel::GetRestoredBounds() const {
   gfx::Rect bounds = native_panel_->GetPanelBounds();
-  bounds.set_y(bounds.y() + bounds.height() - restored_height_);
-  bounds.set_height(restored_height_);
+  bounds.set_y(bounds.bottom() - restored_size_.height());
+  bounds.set_x(bounds.right() - restored_size_.width());
+  bounds.set_size(restored_size_);
   return bounds;
 }
 
@@ -629,10 +637,6 @@ void Panel::OnWindowSizeAvailable() {
     if (render_view_host)
       RequestRenderViewHostToDisableScrollbars(render_view_host);
   }
-}
-
-Browser* Panel::browser() const {
-  return native_panel_->GetPanelBrowser();
 }
 
 void Panel::DestroyBrowser() {

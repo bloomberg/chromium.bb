@@ -105,22 +105,27 @@ void PanelManager::SetWorkArea(const gfx::Rect& work_area) {
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {
-  // Adjust the width and height to fit into our constraint.
   int width = browser->override_bounds().width();
   int height = browser->override_bounds().height();
 
+  Panel* panel = new Panel(browser, gfx::Size(width, height));
+
+  int max_panel_width = GetMaxPanelWidth();
+  int max_panel_height = GetMaxPanelHeight();
+  panel->SetSizeRange(gfx::Size(kPanelMinWidth, kPanelMinHeight),
+                      gfx::Size(max_panel_width, max_panel_height));
+
   // Auto resizable is enabled only if no initial size is provided.
   bool auto_resize = (width == 0 && height == 0);
+  panel->SetAutoResizable(auto_resize);
 
+  // Adjust the width and height to fit into our constraint.
   if (!auto_resize) {
     if (height == 0)
       height = width / kPanelDefaultWidthToHeightRatio;
     if (width == 0)
       width = height * kPanelDefaultWidthToHeightRatio;
   }
-
-  int max_panel_width = GetMaxPanelWidth();
-  int max_panel_height = GetMaxPanelHeight();
 
   if (width < kPanelMinWidth)
     width = kPanelMinWidth;
@@ -132,15 +137,13 @@ Panel* PanelManager::CreatePanel(Browser* browser) {
   else if (height > max_panel_height)
     height = max_panel_height;
 
+  panel->set_restored_size(gfx::Size(width, height));
+
+  // Layout the new panel.
   int y = adjusted_work_area_.bottom() - height;
   int x = GetRightMostAvailablePosition() - width;
+  panel->Initialize(gfx::Rect(x, y, width, height));
 
-  // Now create the panel with the computed bounds.
-  Panel* panel = new Panel(browser,
-                           gfx::Rect(x, y, width, height),
-                           gfx::Size(kPanelMinWidth, kPanelMinHeight),
-                           gfx::Size(max_panel_width, max_panel_height),
-                           auto_resize);
   panels_.push_back(panel);
 
   content::NotificationService::current()->Notify(
@@ -369,7 +372,6 @@ void PanelManager::OnPreferredWindowSizeChanged(
     return;
 
   gfx::Rect bounds = panel->GetBounds();
-  int restored_height = panel->GetRestoredHeight();
 
   // The panel width:
   // * cannot grow or shrink to go beyond [min_width, max_width]
@@ -409,14 +411,17 @@ void PanelManager::OnPreferredWindowSizeChanged(
   if (new_height < panel->min_size().height())
     new_height = panel->min_size().height();
 
-  if (new_height != restored_height) {
-    panel->SetRestoredHeight(new_height);
-    // Only need to adjust bounds height when panel is expanded.
-    if (panel->expansion_state() == Panel::EXPANDED) {
-      bounds.set_y(bounds.y() - new_height + bounds.height());
-      bounds.set_height(new_height);
-    }
+  // Only need to adjust bounds height when panel is expanded.
+  gfx::Size restored_size = panel->restored_size();
+  if (new_height != restored_size.height() &&
+      panel->expansion_state() == Panel::EXPANDED) {
+    bounds.set_y(bounds.y() - new_height + bounds.height());
+    bounds.set_height(new_height);
   }
+
+  gfx::Size new_size = gfx::Size(new_width, new_height);
+  if (new_size != restored_size)
+    panel->set_restored_size(new_size);
 
   panel->SetPanelBounds(bounds);
 }

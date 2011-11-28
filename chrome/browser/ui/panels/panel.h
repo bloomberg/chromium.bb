@@ -60,11 +60,6 @@ class Panel : public BrowserWindow,
 
   bool IsDrawingAttention() const;
 
-  // Gets or sets the restored height, which is the full height of the panel
-  // when it is expanded.
-  int GetRestoredHeight() const;
-  void SetRestoredHeight(int height);
-
   // BrowserWindow overrides.
   virtual void Show() OVERRIDE;
   virtual void ShowInactive() OVERRIDE;
@@ -203,11 +198,14 @@ class Panel : public BrowserWindow,
   void OnNativePanelClosed();
 
   NativePanel* native_panel() { return native_panel_; }
-  Browser* browser() const;
+  Browser* browser() const { return browser_; }
   ExpansionState expansion_state() const { return expansion_state_; }
   const gfx::Size& min_size() const { return min_size_; }
   const gfx::Size& max_size() const { return max_size_; }
   bool auto_resizable() const { return auto_resizable_; }
+  // The restored size is the size of the panel when it is expanded.
+  gfx::Size restored_size() const { return restored_size_; }
+  void set_restored_size(const gfx::Size& size) { restored_size_ = size; }
 
  protected:
   virtual void DestroyBrowser() OVERRIDE;
@@ -218,11 +216,14 @@ class Panel : public BrowserWindow,
   FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, RestoredBounds);
 
   // Panel can only be created using PanelManager::CreatePanel().
-  Panel(Browser* browser,
-        const gfx::Rect& bounds,
-        const gfx::Size& min_size,
-        const gfx::Size& max_size,
-        bool auto_resizable);
+  // |requested_size| is the desired size for the panel, but actual
+  // size may differ after panel layout.
+  Panel(Browser* browser, const gfx::Size& requested_size);
+
+  // Panel must be initialized to be "fully created" and ready for use.
+  // Only called by PanelManager.
+  bool initialized() const { return initialized_; }
+  void Initialize(const gfx::Rect& bounds);
 
   // This is different from BrowserWindow::SetBounds():
   // * SetPanelBounds() is only called by PanelManager to manage its position.
@@ -232,6 +233,9 @@ class Panel : public BrowserWindow,
 
   // Sets whether the panel will auto resize according to its content.
   void SetAutoResizable(bool resizable);
+
+  // Sets minimum and maximum size for the panel.
+  void SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size);
 
   // NULL might be returned if the tab has not been added.
   RenderViewHost* GetRenderViewHost() const;
@@ -248,6 +252,14 @@ class Panel : public BrowserWindow,
   void RequestRenderViewHostToDisableScrollbars(
       RenderViewHost* render_view_host);
 
+  Browser* browser_;  // Weak, owned by native panel.
+
+  bool initialized_;
+
+  // Stores the full size of the panel so we can restore it after it's
+  // been minimized.
+  gfx::Size restored_size_;
+
   // This is the minimum size that the panel can shrink to.
   gfx::Size min_size_;
 
@@ -263,10 +275,6 @@ class Panel : public BrowserWindow,
   NativePanel* native_panel_;  // Weak, owns us.
 
   ExpansionState expansion_state_;
-
-  // Stores the full height of the panel so we can restore it after it's
-  // been minimized.
-  int restored_height_;
 
   content::NotificationRegistrar registrar_;
 
