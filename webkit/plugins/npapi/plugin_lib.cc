@@ -4,6 +4,7 @@
 
 #include "webkit/plugins/npapi/plugin_lib.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/metrics/stats_counters.h"
@@ -268,48 +269,31 @@ bool PluginLib::Load() {
   return rv;
 }
 
-// This class implements delayed NP_Shutdown and FreeLibrary on the plugin dll.
-class FreePluginLibraryTask : public Task {
- public:
-  FreePluginLibraryTask(const FilePath& path,
-                        base::NativeLibrary library,
-                        NP_ShutdownFunc shutdown_func)
-      : path_(path),
-        library_(library),
-        NP_Shutdown_(shutdown_func) {
-  }
-
-  ~FreePluginLibraryTask() {}
-
-  void Run() {
-    if (NP_Shutdown_) {
-      // Don't call NP_Shutdown if the library has been reloaded since this task
-      // was posted.
-      bool reloaded = false;
-      if (g_loaded_libs) {
-        for (size_t i = 0; i < g_loaded_libs->size(); ++i) {
-          if ((*g_loaded_libs)[i]->plugin_info().path == path_)
-            reloaded = true;
-        }
+// This is a helper to help perform a delayed NP_Shutdown and FreeLibrary on the
+// plugin dll.
+void FreePluginLibraryHelper(const FilePath& path,
+                             base::NativeLibrary library,
+                             NP_ShutdownFunc shutdown_func) {
+  if (shutdown_func) {
+    // Don't call NP_Shutdown if the library has been reloaded since this task
+    // was posted.
+    bool reloaded = false;
+    if (g_loaded_libs) {
+      for (size_t i = 0; i < g_loaded_libs->size(); ++i) {
+        if ((*g_loaded_libs)[i]->plugin_info().path == path)
+          reloaded = true;
       }
-      if (!reloaded)
-        NP_Shutdown_();
     }
-
-    if (library_) {
-      // Always call base::UnloadNativeLibrary so that the system reference
-      // count is decremented.
-      base::UnloadNativeLibrary(library_);
-      library_ = NULL;
-    }
+    if (!reloaded)
+      shutdown_func();
   }
 
- private:
-  FilePath path_;
-  base::NativeLibrary library_;
-  NP_ShutdownFunc NP_Shutdown_;
-  DISALLOW_COPY_AND_ASSIGN(FreePluginLibraryTask);
-};
+  if (library) {
+    // Always call base::UnloadNativeLibrary so that the system reference
+    // count is decremented.
+    base::UnloadNativeLibrary(library);
+  }
+}
 
 void PluginLib::Unload() {
   if (!internal_ && library_) {
@@ -325,14 +309,15 @@ void PluginLib::Unload() {
 #endif
 */
     if (!defer_unload_) {
-      FreePluginLibraryTask* free_library_task =
-          new FreePluginLibraryTask(web_plugin_info_.path,
-                                    skip_unload_ ? NULL : library_,
-                                    entry_points_.np_shutdown);
       LOG_IF(ERROR, PluginList::DebugPluginLoading())
           << "Scheduling delayed unload for plugin "
           << web_plugin_info_.path.value();
-      MessageLoop::current()->PostTask(FROM_HERE, free_library_task);
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&FreePluginLibraryHelper,
+                     web_plugin_info_.path,
+                     skip_unload_ ? NULL : library_,
+                     entry_points_.np_shutdown));
     } else {
       Shutdown();
       if (!skip_unload_) {

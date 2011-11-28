@@ -7,6 +7,7 @@
 
 #include "webkit/plugins/npapi/test/plugin_thread_async_call_test.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/threading/thread.h"
@@ -25,19 +26,6 @@ PluginThreadAsyncCallTest* g_long_lived_instance;
 void OnCallSucceededHelper(void* data) {
   static_cast<PluginThreadAsyncCallTest*>(data)->OnCallSucceeded();
 }
-
-class AsyncCallTask : public Task {
- public:
-  AsyncCallTask(PluginThreadAsyncCallTest* test_class)
-    : test_class_(test_class) {}
-
-  void Run() {
-    test_class_->AsyncCall();
-  }
-
- private:
-  PluginThreadAsyncCallTest* test_class_;
-};
 
 void OnCallFailed(void* data) {
   g_long_lived_instance->SetError("Async callback invoked after NPP_Destroy");
@@ -84,7 +72,9 @@ NPError PluginThreadAsyncCallTest::New(
     at_exit_manager_ = new base::ShadowingAtExitManager();
     base::Thread random_thread("random_thread");
     random_thread.Start();
-    random_thread.message_loop()->PostTask(FROM_HERE, new AsyncCallTask(this));
+    random_thread.message_loop()->PostTask(
+        FROM_HERE, base::Bind(&PluginThreadAsyncCallTest::AsyncCall,
+                              base::Unretained(this)));
   }
 
   return NPERR_NO_ERROR;
