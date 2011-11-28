@@ -25,30 +25,38 @@ RendererWebStorageAreaImpl::RendererWebStorageAreaImpl(
 RendererWebStorageAreaImpl::~RendererWebStorageAreaImpl() {
 }
 
+// In November 2011 stats were recorded about performance of each of the
+// DOMStorage operations. Results of median, 99% quantile, and 99.9% quantile
+// are provided in milliseconds. The ratio of number of calls for each operation
+// relative to the number of calls to getItem is also provided.
+//
+// Operation    Freq     50%     99%     99.9%
+// -------------------------------------------
+// getItem      1.00     0.6     2.0     27.9
+// setItem      .029     0.7     13.6    114.9
+// removeItem   .003     0.9     11.8    90.7
+// length       .017     0.6     2.0     12.0
+// key          .591     0.6     2.0     29.9
+// clear        1e-6     1.0     32.4    605.2
+
 unsigned RendererWebStorageAreaImpl::length() {
   unsigned length;
-  base::Time start = base::Time::Now();
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_Length(storage_area_id_, &length));
-  UMA_HISTOGRAM_TIMES("DOMStorage.length", base::Time::Now() - start);
   return length;
 }
 
 WebString RendererWebStorageAreaImpl::key(unsigned index) {
   NullableString16 key;
-  base::Time start = base::Time::Now();
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_Key(storage_area_id_, index, &key));
-  UMA_HISTOGRAM_TIMES("DOMStorage.key", base::Time::Now() - start);
   return key;
 }
 
 WebString RendererWebStorageAreaImpl::getItem(const WebString& key) {
   NullableString16 value;
-  base::Time start = base::Time::Now();
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_GetItem(storage_area_id_, key, &value));
-  UMA_HISTOGRAM_TIMES("DOMStorage.getItem", base::Time::Now() - start);
   return value;
 }
 
@@ -61,27 +69,21 @@ void RendererWebStorageAreaImpl::setItem(
     return;
   }
   NullableString16 old_value;
-  base::Time start = base::Time::Now();
   RenderThreadImpl::current()->Send(new DOMStorageHostMsg_SetItem(
       storage_area_id_, key, value, url, &result, &old_value));
-  UMA_HISTOGRAM_TIMES("DOMStorage.setItem", base::Time::Now() - start);
   old_value_webkit = old_value;
 }
 
 void RendererWebStorageAreaImpl::removeItem(
     const WebString& key, const WebURL& url, WebString& old_value_webkit) {
   NullableString16 old_value;
-  base::Time start = base::Time::Now();
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_RemoveItem(storage_area_id_, key, url, &old_value));
-  UMA_HISTOGRAM_TIMES("DOMStorage.removeItem", base::Time::Now() - start);
   old_value_webkit = old_value;
 }
 
 void RendererWebStorageAreaImpl::clear(
     const WebURL& url, bool& cleared_something) {
-  base::Time start = base::Time::Now();
   RenderThreadImpl::current()->Send(
       new DOMStorageHostMsg_Clear(storage_area_id_, url, &cleared_something));
-  UMA_HISTOGRAM_TIMES("DOMStorage.clear", base::Time::Now() - start);
 }
