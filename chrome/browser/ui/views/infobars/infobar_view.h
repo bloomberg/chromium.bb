@@ -11,8 +11,8 @@
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_container.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
-#include "views/controls/button/button.h"
 #include "views/controls/menu/menu_item_view.h"
 
 namespace ui {

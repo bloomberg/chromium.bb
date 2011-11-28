@@ -30,7 +30,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/font.h"
-#include "views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button.h"
 
 // How long the pulse throb takes.
 static const int kPulseDurationMs = 200;

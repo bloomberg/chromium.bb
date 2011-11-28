@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/string16.h"
-#include "views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 namespace gfx {

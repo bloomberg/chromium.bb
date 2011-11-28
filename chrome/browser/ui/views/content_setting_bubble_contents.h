@@ -14,7 +14,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "views/controls/button/button.h"
+#include "ui/views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 
 // ContentSettingBubbleContents is used when the user turns on different kinds

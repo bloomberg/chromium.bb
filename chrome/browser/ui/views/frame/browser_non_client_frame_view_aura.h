@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "ui/aura_shell/window_frame.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/button/button.h"
 
 class BrowserFrame;
 class BrowserView;

@@ -7,8 +7,8 @@
 #pragma once
 
 #include "ui/aura_shell/aura_shell_export.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
-#include "views/controls/button/button.h"
 
 namespace aura_shell {
 namespace internal {

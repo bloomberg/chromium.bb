@@ -8,9 +8,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/examples/example_base.h"
-#include "views/controls/button/button.h"
 
 namespace views {
 class Checkbox;

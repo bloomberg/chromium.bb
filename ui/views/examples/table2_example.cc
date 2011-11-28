@@ -6,9 +6,9 @@
 
 #include "base/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/table/table_view2.h"
 #include "ui/views/layout/grid_layout.h"
-#include "views/controls/button/checkbox.h"
 
 namespace examples {
 

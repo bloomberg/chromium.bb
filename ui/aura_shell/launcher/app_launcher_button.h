@@ -6,7 +6,7 @@
 #define UI_AURA_SHELL_LAUNCHER_APP_LAUNCHER_BUTTON_H_
 #pragma once
 
-#include "views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button.h"
 
 namespace aura_shell {
 namespace internal {

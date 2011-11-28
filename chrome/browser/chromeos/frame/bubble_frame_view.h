@@ -7,8 +7,8 @@
 #pragma once
 
 #include "chrome/browser/chromeos/frame/bubble_window.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
-#include "views/controls/button/button.h"
 
 namespace gfx {
 class Insets;

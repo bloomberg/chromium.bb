@@ -8,7 +8,7 @@
 
 #include "base/timer.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "views/controls/button/button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ui {
 class Accelerator;

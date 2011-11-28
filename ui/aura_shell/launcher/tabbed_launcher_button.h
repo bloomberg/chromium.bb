@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/aura_shell/launcher/launcher_types.h"
-#include "views/controls/button/custom_button.h"
+#include "ui/views/controls/button/custom_button.h"
 
 namespace aura_shell {
 namespace internal {

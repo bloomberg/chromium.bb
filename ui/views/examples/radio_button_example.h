@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/controls/button/radio_button.h"
 #include "ui/views/examples/example_base.h"
-#include "views/controls/button/radio_button.h"
 
 namespace events {
 class TextButton;

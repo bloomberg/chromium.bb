@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SHUTDOWN_BUTTON_H_
 #pragma once
 
-#include "views/controls/button/text_button.h"
+#include "ui/views/controls/button/text_button.h"
 
 namespace chromeos {
 

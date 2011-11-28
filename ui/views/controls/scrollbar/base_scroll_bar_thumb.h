@@ -7,8 +7,8 @@
 #pragma once
 
 #include "ui/gfx/size.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
-#include "views/controls/button/custom_button.h"
 #include "views/view.h"
 
 namespace gfx {

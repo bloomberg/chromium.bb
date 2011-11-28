@@ -10,7 +10,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/favicon_size.h"
-#include "views/controls/button/text_button.h"
+#include "ui/views/controls/button/text_button.h"
 #include "views/controls/menu/menu_config.h"
 #include "views/controls/menu/menu_image_util.h"
 #include "views/controls/menu/submenu_view.h"

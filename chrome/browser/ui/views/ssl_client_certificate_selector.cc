@@ -19,10 +19,10 @@
 #include "ui/base/models/table_model.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
 
 using content::BrowserThread;

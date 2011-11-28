@@ -23,7 +23,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/tween.h"
-#include "views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/controls/resize_area_delegate.h"
 #include "views/drag_controller.h"

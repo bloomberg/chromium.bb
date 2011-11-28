@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
-#define VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
+#ifndef UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
+#define UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
 #pragma once
 
 #include <string>
@@ -11,8 +11,8 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "ui/gfx/font.h"
+#include "ui/views/controls/button/text_button.h"
 #include "views/background.h"
-#include "views/controls/button/text_button.h"
 
 namespace views {
 
@@ -102,4 +102,4 @@ class VIEWS_EXPORT MenuButton : public TextButton {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
+#endif  // UI_VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_

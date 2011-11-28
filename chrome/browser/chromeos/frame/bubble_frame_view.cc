@@ -19,9 +19,9 @@
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
 #include "views/controls/throbber.h"
 

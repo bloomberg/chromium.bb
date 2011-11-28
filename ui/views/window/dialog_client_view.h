@@ -7,9 +7,9 @@
 #pragma once
 
 #include "ui/gfx/font.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/window/client_view.h"
-#include "views/controls/button/button.h"
 
 namespace views {
 

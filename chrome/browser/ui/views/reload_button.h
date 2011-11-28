@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/timer.h"
-#include "views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button.h"
 
 class Browser;
 class LocationBarView;

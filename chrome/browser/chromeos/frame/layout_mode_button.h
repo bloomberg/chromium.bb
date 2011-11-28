@@ -9,8 +9,8 @@
 #include "base/basictypes.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "views/controls/button/button.h"
-#include "views/controls/button/image_button.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
 
 namespace chromeos {
 

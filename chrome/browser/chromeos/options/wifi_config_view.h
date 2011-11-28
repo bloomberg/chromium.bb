@@ -15,9 +15,9 @@
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "views/controls/button/button.h"
 #include "views/view.h"
 
 namespace views {

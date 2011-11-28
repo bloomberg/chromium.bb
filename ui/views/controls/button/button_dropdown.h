@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
-#define VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
+#ifndef UI_VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
+#define UI_VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
 #pragma once
 
 #include "base/memory/weak_ptr.h"
-#include "views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button.h"
 
 namespace ui {
 class MenuModel;
@@ -70,4 +70,4 @@ class VIEWS_EXPORT ButtonDropDown : public ImageButton {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_
+#endif  // UI_VIEWS_CONTROLS_BUTTON_BUTTON_DROPDOWN_H_

@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
-#include "views/controls/button/button.h"
 
 class BrowserView;
 

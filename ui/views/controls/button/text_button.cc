@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/button/text_button.h"
+#include "ui/views/controls/button/text_button.h"
 
 #include <algorithm>
 
@@ -11,9 +11,9 @@
 #include "ui/base/animation/throb_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/button/button.h"
 
 #if defined(OS_WIN)
 #include "skia/ext/skia_utils_win.h"

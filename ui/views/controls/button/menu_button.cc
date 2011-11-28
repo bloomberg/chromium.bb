@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button.h"
 
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
@@ -13,10 +13,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 using base::Time;

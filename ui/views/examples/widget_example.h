@@ -10,9 +10,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/button/text_button.h"
 
 namespace examples {
 

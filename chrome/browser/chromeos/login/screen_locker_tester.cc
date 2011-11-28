@@ -12,10 +12,10 @@
 #include "chrome/browser/chromeos/login/screen_lock_view.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screen_locker_views.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/root_view.h"
-#include "views/controls/button/button.h"
 #include "views/controls/label.h"
 
 namespace chromeos {

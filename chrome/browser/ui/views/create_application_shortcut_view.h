@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "views/controls/button/button.h"
 
 class Extension;
 class Profile;

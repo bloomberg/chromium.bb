@@ -7,8 +7,8 @@
 #include "base/utf_string_conversions.h"
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/controls/button/checkbox.h"
 #include "ui/views/layout/fill_layout.h"
-#include "views/controls/button/checkbox.h"
 #include "views/view.h"
 
 namespace examples {

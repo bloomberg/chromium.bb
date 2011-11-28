@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_
-#define VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_
+#ifndef UI_VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_
+#define UI_VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_
 #pragma once
 
 #include <string>
@@ -13,8 +13,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "views/border.h"
-#include "views/controls/button/custom_button.h"
 #include "views/native_theme_delegate.h"
 
 namespace views {
@@ -428,4 +428,4 @@ class VIEWS_EXPORT NativeTextButton : public TextButton {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_
+#endif  // UI_VIEWS_CONTROLS_BUTTON_TEXT_BUTTON_H_

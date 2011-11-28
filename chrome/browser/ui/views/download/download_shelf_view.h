@@ -12,8 +12,8 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "ui/base/animation/animation_delegate.h"
+#include "ui/views/controls/button/button.h"
 #include "views/accessible_pane_view.h"
-#include "views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 #include "views/mouse_watcher.h"
 

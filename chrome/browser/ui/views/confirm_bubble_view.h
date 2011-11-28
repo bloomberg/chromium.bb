@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/bubble/bubble.h"
-#include "views/controls/button/button.h"
+#include "ui/views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 #include "views/view.h"
 

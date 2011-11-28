@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "views/controls/button/button.h"
+#include "ui/views/controls/button/button.h"
 #include "views/view.h"
 
 class PhotoCaptureObserver;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/button/button_dropdown.h"
+#include "ui/views/controls/button/button_dropdown.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -21,7 +21,7 @@ namespace views {
 
 // static
 const char ButtonDropDown::kViewClassName[] =
-    "views/controls/button/ButtonDropDown";
+    "ui/views/controls/button/ButtonDropDown";
 
 // How long to wait before showing the menu.
 const int kMenuTimerDelay = 500;

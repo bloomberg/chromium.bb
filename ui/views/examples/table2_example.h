@@ -12,9 +12,9 @@
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/table_model.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/examples/example_base.h"
-#include "views/controls/button/button.h"
 
 namespace views {
 class Checkbox;

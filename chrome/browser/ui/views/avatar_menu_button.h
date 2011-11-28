@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 namespace gfx {

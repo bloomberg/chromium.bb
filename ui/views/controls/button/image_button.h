@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
-#define VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
+#ifndef UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
+#define UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
 #pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/controls/button/custom_button.h"
+#include "ui/views/controls/button/custom_button.h"
 
 namespace views {
 
@@ -120,4 +120,4 @@ class VIEWS_EXPORT ToggleImageButton : public ImageButton {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
+#endif  // UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_

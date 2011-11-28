@@ -6,8 +6,8 @@
 #define UI_VIEWS_EXAMPLES_BUBBLE_EXAMPLE_H_
 #pragma once
 
+#include "ui/views/controls/button/button.h"
 #include "ui/views/examples/example_base.h"
-#include "views/controls/button/button.h"
 
 namespace examples {
 

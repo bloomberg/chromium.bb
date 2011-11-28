@@ -6,9 +6,9 @@
 #define UI_AURA_SHELL_EXAMPLES_WINDOW_TYPE_LAUNCHER_H_
 #pragma once
 
+#include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "views/context_menu_controller.h"
-#include "views/controls/button/button.h"
 #include "views/controls/menu/menu_delegate.h"
 
 namespace views {

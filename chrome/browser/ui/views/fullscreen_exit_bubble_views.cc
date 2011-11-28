@@ -16,8 +16,8 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/button/text_button.h"
 #include "views/controls/link.h"
 
 #if defined(OS_WIN)

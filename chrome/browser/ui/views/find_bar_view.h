@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/views/dropdown_bar_view.h"
 #include "ui/gfx/size.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "views/controls/button/button.h"
 
 class FindBarHost;
 

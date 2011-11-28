@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "views/controls/button/text_button.h"
+#include "ui/views/controls/button/text_button.h"
 #include "views/view.h"
 
 class GURL;

@@ -12,8 +12,8 @@
 #include "chrome/browser/bookmarks/recently_used_folders_combo_model.h"
 #include "googleurl/src/gurl.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
-#include "views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 
 class Profile;

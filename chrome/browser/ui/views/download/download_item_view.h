@@ -31,8 +31,8 @@
 #include "content/browser/download/download_manager.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/gfx/font.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/events/event.h"
-#include "views/controls/button/button.h"
 #include "views/view.h"
 
 class BaseDownloadItemModel;

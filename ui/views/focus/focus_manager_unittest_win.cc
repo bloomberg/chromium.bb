@@ -5,10 +5,10 @@
 #include "ui/views/focus/focus_manager.h"
 
 #include "base/utf_string_conversions.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager_test.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/button/text_button.h"
 
 namespace views {
 

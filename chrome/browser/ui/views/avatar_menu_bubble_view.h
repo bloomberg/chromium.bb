@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "views/controls/button/button.h"
+#include "ui/views/controls/button/button.h"
 #include "views/controls/link_listener.h"
 
 class AvatarMenuModel;

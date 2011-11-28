@@ -12,8 +12,8 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
-#include "views/controls/button/button.h"
 
 class BrowserView;
 namespace views {

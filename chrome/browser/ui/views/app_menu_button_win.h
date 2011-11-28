@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_APP_MENU_BUTTON_WIN_H_
 #pragma once
 
-#include "views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button.h"
 
 // Button used for showing the app menu. Special cases space to show the system
 // menu.

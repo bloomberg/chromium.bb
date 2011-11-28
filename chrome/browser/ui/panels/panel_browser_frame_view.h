@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "views/controls/button/button.h"
+#include "ui/views/controls/button/button.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
 class Extension;

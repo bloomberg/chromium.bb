@@ -10,10 +10,10 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/dbus/mock_dbus_thread_manager.h"
-#include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chrome/browser/chromeos/dbus/mock_session_manager_client.h"
 #include "chrome/browser/chromeos/login/mock_screen_observer.h"
 #include "chrome/browser/chromeos/login/network_screen.h"
 #include "chrome/browser/chromeos/login/view_screen.h"
@@ -25,7 +25,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/controls/button/text_button.h"
+#include "ui/views/controls/button/text_button.h"
 
 namespace chromeos {
 using ::testing::AnyNumber;

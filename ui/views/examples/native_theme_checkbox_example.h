@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "ui/gfx/native_theme.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/examples/example_base.h"
-#include "views/controls/button/button.h"
 
 namespace views {
 class Checkbox;

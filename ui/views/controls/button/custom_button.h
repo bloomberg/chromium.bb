@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
-#define VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
+#ifndef UI_VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
+#define UI_VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
 #pragma once
 
 #include "ui/base/animation/animation_delegate.h"
-#include "views/controls/button/button.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ui {
 class ThrobAnimation;
@@ -146,4 +146,4 @@ class VIEWS_EXPORT CustomButton : public Button,
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_
+#endif  // UI_VIEWS_CONTROLS_BUTTON_CUSTOM_BUTTON_H_

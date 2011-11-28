@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_BUTTON_RADIO_BUTTON_H_
-#define VIEWS_CONTROLS_BUTTON_RADIO_BUTTON_H_
+#ifndef UI_VIEWS_CONTROLS_BUTTON_RADIO_BUTTON_H_
+#define UI_VIEWS_CONTROLS_BUTTON_RADIO_BUTTON_H_
 #pragma once
 
 #include "base/string16.h"
-#include "views/controls/button/checkbox.h"
+#include "ui/views/controls/button/checkbox.h"
 
 namespace views {
 
@@ -43,4 +43,4 @@ class VIEWS_EXPORT RadioButton : public Checkbox {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_BUTTON_RADIO_BUTTON_H_
+#endif  // UI_VIEWS_CONTROLS_BUTTON_RADIO_BUTTON_H_

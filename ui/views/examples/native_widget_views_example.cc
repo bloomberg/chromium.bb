@@ -6,11 +6,11 @@
 
 #include "base/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/native_widget_views.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/button/text_button.h"
 #include "views/view.h"
 
 namespace examples {

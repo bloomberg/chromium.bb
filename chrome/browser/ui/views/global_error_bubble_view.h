@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/views/bubble/bubble_delegate.h"
-#include "views/controls/button/button.h"
+#include "ui/views/controls/button/button.h"
 
 class Browser;
 class GlobalError;

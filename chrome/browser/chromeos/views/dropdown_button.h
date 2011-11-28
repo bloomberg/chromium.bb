@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "views/controls/button/menu_button.h"
+#include "ui/views/controls/button/menu_button.h"
 
 namespace chromeos {
 

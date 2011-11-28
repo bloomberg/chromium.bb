@@ -26,8 +26,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/button/image_button.h"
 #include "views/background.h"
-#include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/link.h"
 

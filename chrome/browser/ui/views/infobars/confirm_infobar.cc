@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/tab_contents/confirm_infobar_delegate.h"
 #include "chrome/browser/ui/views/event_utils.h"
-#include "views/controls/button/text_button.h"
+#include "ui/views/controls/button/text_button.h"
 #include "views/controls/label.h"
 #include "views/controls/link.h"
 
