@@ -127,6 +127,14 @@
    fun:FcConfigSubstitute
 }
 {
+   bug_18590a (Third Party)
+   Memcheck:Leak
+   fun:malloc
+   fun:FcConfigValues
+   fun:FcConfigSubstituteWithPat
+   fun:_ZN16FontConfigDirect5MatchEPSsPjbjRKSsPKvmPbS6_
+}
+{
   bug_46177_a (Third Party)
   Memcheck:Leak
   ...
@@ -1180,7 +1188,7 @@
    bug_16095
    Memcheck:Leak
    ...
-   fun:_ZN11MessageLoop21AddToDelayedWorkQueueERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop21AddToDelayedWorkQueueERKN4base11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
 }
 {
@@ -1755,11 +1763,11 @@
    bug_32085
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN9__gnu_cxx13new_allocatorIN21NotificationRegistrar6RecordEE8allocate*
-   fun:_ZNSt12_Vector_baseIN21NotificationRegistrar6RecordESaIS1_EE11_M_allocate*
-   fun:_ZNSt6vectorIN21NotificationRegistrar6RecordESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
-   fun:_ZNSt6vectorIN21NotificationRegistrar6RecordESaIS1_EE9push_backERKS1_
-   fun:_ZN21NotificationRegistrar3AddEP20NotificationObserveriRK18NotificationSource
+   fun:_ZN9__gnu_cxx13new_allocatorIN7content21NotificationRegistrar6RecordEE8allocate*
+   fun:_ZNSt12_Vector_baseIN7content21NotificationRegistrar6RecordESaIS*
+   fun:_ZNSt6vectorIN7content21NotificationRegistrar6RecordESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S*
+   fun:_ZNSt6vectorIN7content21NotificationRegistrar6RecordESaIS*
+   fun:_ZN7content21NotificationRegistrar3Add*
 }
 {
    bug_32273_a
@@ -3197,10 +3205,6 @@
    fun:_ZN15StatusBubbleGtk19AnimationProgressedEPKN2ui9AnimationE
    fun:_ZN2ui15LinearAnimation4StepEN4base9TimeTicksE
    fun:_ZN2ui18AnimationContainer3RunEv
-   fun:_Z16DispatchToMethodIN2ui18AnimationContainerEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN4base9BaseTimerIN2ui18AnimationContainerELb1EE9TimerTask3RunEv
-   ...
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_74383b
@@ -3209,10 +3213,6 @@
    fun:_ZN15StatusBubbleGtk22UpdateLabelSizeRequestEv
    ...
    fun:_ZN2ui18AnimationContainer3RunEv
-   fun:_Z16DispatchToMethodIN2ui18AnimationContainerEMS1_FvvEEvPT_T0_RK6Tuple0
-   fun:_ZN4base9BaseTimerIN2ui18AnimationContainerELb1EE9TimerTask3RunEv
-   ...
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_75019
@@ -4275,7 +4275,6 @@
    fun:_ZNK4base8internal18WeakReferenceOwner6GetRefEv
    fun:_ZN4base15SupportsWeakPtrI16ObserverListBaseIN11MessageLoop12TaskObserverEEE9AsWeakPtrEv
    fun:_ZN16ObserverListBaseIN11MessageLoop12TaskObserverEE8IteratorC1ERS2_
-   fun:_ZN11MessageLoop7RunTaskERKNS_11PendingTaskE
 }
 {
    bug_94764
@@ -5100,7 +5099,7 @@
    ...
    fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEE6insertESt17_Rb_tree_iteratorIS9_ERKS9_
    fun:_ZNSt3mapIPKN15tracked_objects6BirthsENS0_9DeathDataESt4lessIS3_ESaISt4pairIKS3_S4_EEEixERS8_
-   fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsERKNS_8DurationES6_
+   fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6Births*
    fun:_ZN15tracked_objects10ThreadData3?TallyRunOn*ThreadIfTrackingE*
 }
 {
@@ -5261,6 +5260,38 @@
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
    fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
    fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   ...
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLS2_N7content14PageTransitionERKSs
+}
+{
+   bug_104998c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN20ChildProcessLauncherC1EbRKSt6vectorISt4pairISsSsESaIS2_EEiP11CommandLinePNS_6ClientE
+   fun:_ZN21RenderProcessHostImpl4InitEb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
+   fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
+   fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
+   fun:_ZN20NavigationController22NavigateToPendingEntryENS_10ReloadTypeE
+   fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
+   fun:_ZN20NavigationController7LoadURLERK4GURLS2_N7content14PageTransitionERKSs
+}
+{
+   bug_104998d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN21RenderProcessHostImpl4InitEb
+   fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
+   fun:_ZN11TabContents32CreateRenderViewForRenderManagerEP14RenderViewHost
+   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
    fun:_ZN21RenderViewHostManager8NavigateERK15NavigationEntry
    fun:_ZN11TabContents15NavigateToEntryERK15NavigationEntryN20NavigationController10ReloadTypeE
    fun:_ZN11TabContents22NavigateToPendingEntryEN20NavigationController10ReloadTypeE
@@ -5268,15 +5299,6 @@
    fun:_ZN20NavigationController9LoadEntryEP15NavigationEntry
    fun:_ZN20NavigationController7LoadURLERK4GURLS2_N7content14PageTransitionERKSs
    fun:_ZN11BalloonHost4InitEv
-   fun:_ZN15BalloonViewHost4InitEP10_GtkWidget
-   fun:_ZN19BalloonViewHostView20ViewHierarchyChangedEbPN5views4ViewES2_
-   fun:_ZN5views4View24ViewHierarchyChangedImplEbbPS0_S1_
-   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
-   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
-   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
-   fun:_ZN5views4View25PropagateAddNotificationsEPS0_S1_
-   fun:_ZN5views4View14AddChildViewAtEPS0_i
-   fun:_ZN5views4View12AddChildViewEPS0_
 }
 
 #-----------------------------------------------------------------------
