@@ -2226,3 +2226,19 @@
    fun:XTCopyFontWithName
    fun:_ZNK17TDescriptorSource35CopyFontDescriptorPerPostscriptNameEPK10__CFStringm
 }
+{
+   bug_105580
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:malloc_set_zone_name
+   fun:malloc_default_purgeable_zone
+   fun:_ZN4base30EnableTerminationOnOutOfMemoryEv
+   fun:_ZN7leveldb12_GLOBAL__N_111ChromiumEnvC2Ev
+   fun:_ZN4base25DefaultLazyInstanceTraitsIN7leveldb12_GLOBAL__N_111ChromiumEnvEE3NewEPv
+   fun:_ZN4base12LazyInstanceIN7leveldb12_GLOBAL__N_111ChromiumEnvENS_23LeakyLazyInstanceTraitsIS3_EEE7PointerEv
+   fun:_ZN7leveldb7OptionsC2Ev
+   fun:_ZN7leveldb7OptionsC1Ev
+   fun:_ZN7fileapi27FileSystemDirectoryDatabase4InitEv
+   fun:_ZN7fileapi27FileSystemDirectoryDatabase11GetFileInfoExPNS0_8FileInfoE
+   fun:_ZN7fileapi59FileSystemDirectoryDatabaseTest_TestMissingFileGetInfo_Test8TestBodyEv
+}
