@@ -178,6 +178,36 @@ def _CheckNoFRIEND_TEST(input_api, output_api):
       'FRIEND_TEST_ALL_PREFIXES() instead.\n' + '\n'.join(problems))]
 
 
+def _CheckNoNewOldCallback(input_api, output_api):
+  """Checks to make sure we don't introduce new uses of old callbacks."""
+
+  def HasOldCallbackKeywords(line):
+    """Returns True if a line of text contains keywords that indicate the use
+    of the old callback system.
+    """
+    return ('NewRunnableMethod' in line or
+            'NewRunnableFunction' in line or
+            'NewCallback' in line or
+            input_api.re.search(r'\bCallback\d<', line) or
+            input_api.re.search(r'\bpublic Task\b', line) or
+            'public CancelableTask' in line)
+
+  problems = []
+  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.h'))
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    if not any(HasOldCallbackKeywords(line) for line in f.NewContents()):
+      continue
+    for line_num, line in f.ChangedContents():
+      if HasOldCallbackKeywords(line):
+        problems.append('    %s:%d' % (f.LocalPath(), line_num))
+
+  if not problems:
+    return []
+  return [output_api.PresubmitPromptWarning('The old callback system is '
+      'deprecated. If possible, use base::Bind and base::Callback instead.\n' +
+      '\n'.join(problems))]
+
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
@@ -191,6 +221,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoNewWStrings(input_api, output_api))
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
   results.extend(_CheckNoFRIEND_TEST(input_api, output_api))
+  results.extend(_CheckNoNewOldCallback(input_api, output_api))
   return results
 
 
