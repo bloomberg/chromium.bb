@@ -11,7 +11,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util_proxy.h"
-#include "base/memory/scoped_callback_factory.h"
+#include "base/memory/weak_ptr.h"
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/task.h"
@@ -55,8 +55,7 @@ class FileSystemDirURLRequestJob : public net::URLRequestJob {
   std::string data_;
   FileSystemContext* file_system_context_;
   scoped_refptr<base::MessageLoopProxy> file_thread_proxy_;
-  ScopedRunnableMethodFactory<FileSystemDirURLRequestJob> method_factory_;
-  base::ScopedCallbackFactory<FileSystemDirURLRequestJob> callback_factory_;
+  base::WeakPtrFactory<FileSystemDirURLRequestJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDirURLRequestJob);
 };

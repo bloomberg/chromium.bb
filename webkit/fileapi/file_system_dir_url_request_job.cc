@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util_proxy.h"
 #include "base/message_loop.h"
@@ -91,8 +92,7 @@ FileSystemDirURLRequestJob::FileSystemDirURLRequestJob(
     : URLRequestJob(request),
       file_system_context_(file_system_context),
       file_thread_proxy_(file_thread_proxy),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
 }
 
 FileSystemDirURLRequestJob::~FileSystemDirURLRequestJob() {
@@ -111,15 +111,15 @@ bool FileSystemDirURLRequestJob::ReadRawData(net::IOBuffer* dest, int dest_size,
 }
 
 void FileSystemDirURLRequestJob::Start() {
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &FileSystemDirURLRequestJob::StartAsync));
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&FileSystemDirURLRequestJob::StartAsync,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void FileSystemDirURLRequestJob::Kill() {
   URLRequestJob::Kill();
-  method_factory_.RevokeAll();
-  callback_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 bool FileSystemDirURLRequestJob::GetMimeType(std::string* mime_type) const {
