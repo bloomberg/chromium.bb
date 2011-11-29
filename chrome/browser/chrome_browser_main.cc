@@ -1401,12 +1401,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   histogram_synchronizer_ = new HistogramSynchronizer();
   tracking_synchronizer_ = new chrome_browser_metrics::TrackingSynchronizer();
 
-#if defined(USE_WEBKIT_COMPOSITOR)
-  // We need to ensure WebKit has been initialized before we start the WebKit
-  // compositor. This is done by the ResourceDispatcherHost on creation.
-  g_browser_process->resource_dispatcher_host();
-#endif
-
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually
   // gets used if the user has metrics reporting enabled at uninstall time.
@@ -1434,6 +1428,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Create watchdog thread after creating all other threads because it will
   // watch the other threads and they must be running.
   browser_process_->watchdog_thread();
+
+#if defined(USE_WEBKIT_COMPOSITOR)
+  // We need to ensure WebKit has been initialized before we start the WebKit
+  // compositor. This is done by the ResourceDispatcherHost on creation.
+  browser_process_->resource_dispatcher_host();
+#endif
 
 #if defined(OS_CHROMEOS)
   // Now that the file thread exists we can record our stats.
