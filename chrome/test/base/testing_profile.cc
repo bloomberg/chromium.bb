@@ -422,10 +422,6 @@ Profile* TestingProfile::GetOffTheRecordProfile() {
   return incognito_profile_.get();
 }
 
-GAIAInfoUpdateService* TestingProfile::GetGAIAInfoUpdateService() {
-  return NULL;
-}
-
 bool TestingProfile::HasOffTheRecordProfile() {
   return incognito_profile_.get() != NULL;
 }

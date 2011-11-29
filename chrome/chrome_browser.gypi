@@ -1952,8 +1952,6 @@
         'browser/profiles/avatar_menu_model.cc',
         'browser/profiles/avatar_menu_model.h',
         'browser/profiles/avatar_menu_model_observer.h',
-        'browser/profiles/gaia_info_update_service.cc',
-        'browser/profiles/gaia_info_update_service.h',
         'browser/profiles/off_the_record_profile_impl.cc',
         'browser/profiles/off_the_record_profile_io_data.cc',
         'browser/profiles/off_the_record_profile_io_data.h',

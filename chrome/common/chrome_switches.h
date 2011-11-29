@@ -182,7 +182,6 @@ extern const char kFirstRun[];
 extern const char kForceAppsPromoVisible[];
 extern const char kForceCompositingMode[];
 extern const char kGaiaHost[];
-extern const char kGaiaProfileInfo[];
 extern const char kGSSAPILibraryName[];
 extern const char kHelp[];
 extern const char kHelpShort[];

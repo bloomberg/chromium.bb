@@ -151,7 +151,6 @@ class TestingProfile : public Profile {
   virtual void SetOffTheRecordProfile(Profile* profile);
   virtual Profile* GetOffTheRecordProfile() OVERRIDE;
   virtual void DestroyOffTheRecordProfile() OVERRIDE {}
-  virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual bool HasOffTheRecordProfile() OVERRIDE;
   virtual Profile* GetOriginalProfile() OVERRIDE;
   void SetAppCacheService(ChromeAppCacheService* appcache_service);

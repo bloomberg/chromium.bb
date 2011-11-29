@@ -57,7 +57,6 @@ class ExtensionService;
 class ExtensionSpecialStoragePolicy;
 class FaviconService;
 class FindBarState;
-class GAIAInfoUpdateService;
 class HistoryService;
 class HostContentSettingsMap;
 class NetworkActionPredictor;
@@ -275,9 +274,6 @@ class Profile : public content::BrowserContext {
   // |access| defines what the caller plans to do with the service. See
   // the ServiceAccessType definition above.
   virtual FaviconService* GetFaviconService(ServiceAccessType access) = 0;
-
-  // Accessor. The instance is created upon first access.
-  virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() = 0;
 
   // Retrieves a pointer to the HistoryService associated with this
   // profile.  The HistoryService is lazily created the first time

@@ -201,11 +201,11 @@ void ProfileDownloader::Start() {
   }
 }
 
-string16 ProfileDownloader::GetProfileFullName() const {
+const string16& ProfileDownloader::GetProfileFullName() const {
   return profile_full_name_;
 }
 
-SkBitmap ProfileDownloader::GetProfilePicture() const {
+const SkBitmap& ProfileDownloader::GetProfilePicture() const {
   return profile_picture_;
 }
 
