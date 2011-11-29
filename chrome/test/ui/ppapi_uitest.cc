@@ -441,11 +441,9 @@ TEST_F(OutOfProcessPPAPITest, FAILS_Transport) {
 }
 #endif // ENABLE_P2P_APIS
 
+// There is no proxy. This is used for PDF metrics reporting, and PDF only
+// runs in process, so there's currently no need for a proxy.
 TEST_PPAPI_IN_PROCESS(UMA)
-// There is no proxy.
-TEST_F(OutOfProcessPPAPITest, FAILS_UMA) {
-  RunTest("UMA");
-}
 
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_AreEqual)
 TEST_PPAPI_IN_PROCESS(NetAddressPrivate_AreHostsEqual)
