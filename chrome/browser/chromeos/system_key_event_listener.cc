@@ -9,7 +9,7 @@
 #include <X11/XF86keysym.h>
 #include <X11/XKBlib.h>
 
-#include "chrome/browser/accessibility_events.h"
+#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/chromeos/audio_handler.h"
 #include "chrome/browser/chromeos/brightness_bubble.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"

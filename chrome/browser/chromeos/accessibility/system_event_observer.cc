@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/accessibility/system_event_observer.h"
 
 #include "base/logging.h"
-#include "chrome/browser/accessibility_events.h"
+#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"

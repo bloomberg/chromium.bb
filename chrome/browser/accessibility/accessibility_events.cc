@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/accessibility_events.h"
+#include "chrome/browser/accessibility/accessibility_events.h"
 
 #include "base/values.h"
 
@@ -15,8 +15,7 @@
 
 namespace keys = extension_accessibility_api_constants;
 
-void SendAccessibilityNotification(
-    int type, AccessibilityEventInfo* info) {
+void SendAccessibilityNotification(int type, AccessibilityEventInfo* info) {
   Profile *profile = info->profile();
   if (profile->ShouldSendAccessibilityEvents()) {
     content::NotificationService::current()->Notify(

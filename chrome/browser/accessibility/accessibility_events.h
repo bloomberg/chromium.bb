@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ACCESSIBILITY_EVENTS_H_
-#define CHROME_BROWSER_ACCESSIBILITY_EVENTS_H_
+#ifndef CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENTS_H_
+#define CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENTS_H_
 #pragma once
 
 #include <string>
@@ -20,8 +20,8 @@ class DictionaryValue;
 // notification type with AccessibilityEventInfo details to any
 // listeners.  Will not send if the profile's pause level is nonzero
 // (using profile->PauseAccessibilityEvents).
-void SendAccessibilityNotification(
-    int type, AccessibilityEventInfo* info);
+void SendAccessibilityNotification(int type, AccessibilityEventInfo* info);
+
 void SendAccessibilityVolumeNotification(double volume, bool is_muted);
 
 // Abstract parent class for accessibility event information passed to event
@@ -288,14 +288,14 @@ class AccessibilityVolumeInfo : public AccessibilityEventInfo {
 // Screen unlock event information; this class is used by onScreenUnlocked.
 class ScreenUnlockedEventInfo : public AccessibilityEventInfo {
  public:
-  ScreenUnlockedEventInfo(Profile* profile);
+  explicit ScreenUnlockedEventInfo(Profile* profile);
   virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 };
 
 // Wake up event information; this class is used by onWokeUp.
 class WokeUpEventInfo : public AccessibilityEventInfo {
  public:
-  WokeUpEventInfo(Profile* profile);
+  explicit WokeUpEventInfo(Profile* profile);
   virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
 };
 
@@ -324,4 +324,4 @@ class AccessibilityMenuItemInfo : public AccessibilityControlInfo {
   int item_count_;
 };
 
-#endif  // CHROME_BROWSER_ACCESSIBILITY_EVENTS_H_
+#endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENTS_H_

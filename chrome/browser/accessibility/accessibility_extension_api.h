@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "base/values.h"
-#include "chrome/browser/accessibility_events.h"
+#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
