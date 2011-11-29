@@ -2773,14 +2773,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
 }
 
-// Tests uninstalling normal extensions.
-// Occasionally fails on Windows. See http://crbug.com/96296
-#if defined(OS_WIN)
-#define MAYBE_UninstallExtension FLAKY_UninstallExtension
-#else
-#define MAYBE_UninstallExtension UninstallExtension
-#endif
-TEST_F(ExtensionServiceTest, MAYBE_UninstallExtension) {
+TEST_F(ExtensionServiceTest, UninstallExtension) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   UninstallExtension(good_crx, false);
