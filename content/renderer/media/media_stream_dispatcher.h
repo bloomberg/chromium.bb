@@ -32,21 +32,22 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // Request a new media stream to be created.
   // This can be used either of WebKit or a plugin.
   // Note: The event_handler must be valid for as long as the stream exists.
-  void GenerateStream(int request_id,
-                      MediaStreamDispatcherEventHandler* event_handler,
-                      media_stream::StreamOptions components,
-                      const std::string& security_origin);
+  virtual void GenerateStream(
+      int request_id,
+      MediaStreamDispatcherEventHandler* event_handler,
+      media_stream::StreamOptions components,
+      const std::string& security_origin);
 
   // Stop a started stream. Label is the label provided in OnStreamGenerated.
-  void StopStream(const std::string& label);
+  virtual void StopStream(const std::string& label);
 
   // Check if the label is a valid stream.
-  bool IsStream(const std::string& label);
+  virtual bool IsStream(const std::string& label);
   // Get the video session_id given a label. The label identifies a stream.
   // index is the index in the video_device_array of the stream.
-  int video_session_id(const std::string& label, int index);
+  virtual int video_session_id(const std::string& label, int index);
   // Returns an audio session_id given a label and an index.
-  int audio_session_id(const std::string& label, int index);
+  virtual int audio_session_id(const std::string& label, int index);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDispatcherTest, Basic);
