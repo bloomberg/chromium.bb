@@ -53,6 +53,11 @@ for basename in barebones_tests:
   if basename == 'stack_alignment8' and not env.Bit('build_arm'):
     continue
   is_broken = is_glibc
+  # This is generating a (probably invalid) relocation on PNaCl GlibC X86-64
+  # which cannot be handled by the TLS rewrite in binutils.
+  if basename == 'reloc' and is_glibc and env.Bit('build_x86_64'):
+    continue
+
   # TODO(robertm): enable this when ready (see above)
   if basename == 'stack_alignment16' and env.Bit('build_x86'):
     is_broken = True
