@@ -88,7 +88,8 @@ class Session : public base::NonThreadSafe {
 
   // Cancels a pending CreateStreamChannel() or CreateDatagramChannel()
   // operation for the named channel. If the channel creation already
-  // completed then cancelling it has no effect.
+  // completed then cancelling it has no effect. When shutting down
+  // this method must be called for each channel pending creation.
   virtual void CancelChannelCreation(const std::string& name) = 0;
 
   // JID of the other side.

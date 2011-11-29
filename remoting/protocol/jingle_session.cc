@@ -71,6 +71,7 @@ JingleSession::~JingleSession() {
   state_change_callback_.Reset();
   Close();
   jingle_session_manager_->SessionDestroyed(this);
+  DCHECK(channel_connectors_.empty());
 }
 
 void JingleSession::Init(cricket::Session* cricket_session) {
@@ -89,9 +90,6 @@ void JingleSession::CloseInternal(int result, Error error) {
 
   if (state_ != FAILED && state_ != CLOSED && !closing_) {
     closing_ = true;
-
-    STLDeleteContainerPairSecondPointers(channel_connectors_.begin(),
-                                         channel_connectors_.end());
 
     // Tear down the cricket session, including the cricket transport channels.
     if (cricket_session_) {
