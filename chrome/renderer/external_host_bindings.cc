@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/external_host_bindings.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/values.h"
 #include "chrome/common/render_messages.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
@@ -15,7 +17,8 @@ using WebKit::WebBindings;
 ExternalHostBindings::ExternalHostBindings(IPC::Message::Sender* sender,
                                            int routing_id)
     : frame_(NULL), sender_(sender), routing_id_(routing_id) {
-  BindMethod("postMessage", &ExternalHostBindings::PostMessage);
+  BindCallback("postMessage", base::Bind(&ExternalHostBindings::PostMessage,
+                                         base::Unretained(this)));
   BindProperty("onmessage", &on_message_handler_);
 }
 

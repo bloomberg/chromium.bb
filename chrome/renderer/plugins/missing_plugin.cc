@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/plugins/missing_plugin.h"
 
+#include "base/bind.h"
 #include "base/json/string_escape.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
@@ -84,7 +85,8 @@ MissingPlugin::~MissingPlugin() {
 
 void MissingPlugin::BindWebFrame(WebFrame* frame) {
   PluginPlaceholder::BindWebFrame(frame);
-  BindMethod("hide", &MissingPlugin::HideCallback);
+  BindCallback("hide", base::Bind(&MissingPlugin::HideCallback,
+                                  base::Unretained(this)));
 }
 
 void MissingPlugin::HideCallback(const CppArgumentList& args,

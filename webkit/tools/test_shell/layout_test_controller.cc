@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -81,11 +82,16 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   // they will use when called by JavaScript.  The actual binding of those
   // names to their methods will be done by calling BindToJavaScript() (defined
   // by CppBoundClass, the parent to LayoutTestController).
-  BindMethod("waitUntilDone", &LayoutTestController::waitUntilDone);
-  BindMethod("notifyDone", &LayoutTestController::notifyDone);
+  BindCallback("waitUntilDone",
+               base::Bind(&LayoutTestController::waitUntilDone,
+                          base::Unretained(this)));
+  BindCallback("notifyDone",
+               base::Bind(&LayoutTestController::notifyDone,
+                          base::Unretained(this)));
 
   // The fallback method is called when an unknown method is invoked.
-  BindFallbackMethod(&LayoutTestController::fallbackMethod);
+  BindFallbackCallback(base::Bind(&LayoutTestController::fallbackMethod,
+                                  base::Unretained(this)));
 }
 
 LayoutTestController::~LayoutTestController() {

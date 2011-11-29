@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/automation/dom_automation_controller.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/json/json_value_serializer.h"
 #include "base/string_util.h"
 #include "chrome/common/render_messages.h"
@@ -12,9 +14,13 @@ DomAutomationController::DomAutomationController()
     : sender_(NULL),
       routing_id_(MSG_ROUTING_NONE),
       automation_id_(MSG_ROUTING_NONE) {
-  BindMethod("send", &DomAutomationController::Send);
-  BindMethod("setAutomationId", &DomAutomationController::SetAutomationId);
-  BindMethod("sendJSON", &DomAutomationController::SendJSON);
+  BindCallback("send", base::Bind(&DomAutomationController::Send,
+                                  base::Unretained(this)));
+  BindCallback("setAutomationId",
+               base::Bind(&DomAutomationController::SetAutomationId,
+                          base::Unretained(this)));
+  BindCallback("sendJSON", base::Bind(&DomAutomationController::SendJSON,
+                                      base::Unretained(this)));
 }
 
 void DomAutomationController::Send(const CppArgumentList& args,

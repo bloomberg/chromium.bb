@@ -23,7 +23,6 @@
 
 #include "webkit/glue/cpp_variant.h"
 
-#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -49,8 +48,8 @@ class CppBoundClass {
     virtual bool SetValue(const CppVariant& value) = 0;
   };
 
-  // The constructor should call BindMethod, BindProperty, and
-  // SetFallbackMethod as needed to set up the methods, properties, and
+  // The constructor should call BindCallback, BindProperty, and
+  // BindFallbackCallback as needed to set up the methods, properties, and
   // fallback method.
   CppBoundClass();
   virtual ~CppBoundClass();
@@ -80,29 +79,10 @@ class CppBoundClass {
   // Bind the Javascript method called |name| to the C++ callback |callback|.
   void BindCallback(const std::string& name, const Callback& callback);
 
-  // A wrapper for BindCallback, to simplify the common case of binding a
-  // method on the current object.  Though not verified here, |method|
-  // must be a method of this CppBoundClass subclass.
-  template<typename T>
-  void BindMethod(const std::string& name,
-      void (T::*method)(const CppArgumentList&, CppVariant*)) {
-    BindCallback(name,
-                 base::Bind(method, base::Unretained(static_cast<T*>(this))));
-  }
-
   // Bind Javascript property |name| to the C++ getter callback |callback|.
   // This can be used to create read-only properties.
   void BindGetterCallback(const std::string& name,
                           const GetterCallback& callback);
-
-  // A wrapper for BindGetterCallback, to simplify the common case of binding a
-  // property on the current object.  Though not verified here, |method|
-  // must be a method of this CppBoundClass subclass.
-  template<typename T>
-  void BindProperty(const std::string& name, void (T::*method)(CppVariant*)) {
-    BindGetterCallback(
-        name, base::Bind(method, base::Unretained(static_cast<T*>(this))));
-  }
 
   // Bind the Javascript property called |name| to a CppVariant |prop|.
   void BindProperty(const std::string& name, CppVariant* prop);
@@ -123,21 +103,6 @@ class CppBoundClass {
   // existence).
   void BindFallbackCallback(const Callback& fallback_callback) {
     fallback_callback_ = fallback_callback;
-  }
-
-  // A wrapper for BindFallbackCallback, to simplify the common case of
-  // binding a method on the current object.  Though not verified here,
-  // |method| must be a method of this CppBoundClass subclass.
-  // Passing NULL for |method| clears out any existing binding.
-  template<typename T>
-  void BindFallbackMethod(
-      void (T::*method)(const CppArgumentList&, CppVariant*)) {
-    if (method) {
-      BindFallbackCallback(base::Bind(method,
-                                      base::Unretained(static_cast<T*>(this))));
-    } else {
-      BindFallbackCallback(Callback());
-    }
   }
 
   // Some fields are protected because some tests depend on accessing them,

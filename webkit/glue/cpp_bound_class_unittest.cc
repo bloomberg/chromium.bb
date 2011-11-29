@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,8 @@
 
 #include <vector>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebData.h"
@@ -40,9 +42,10 @@ class CppBindingExampleWithOptionalFallback : public CppBindingExample {
   }
 
   void set_fallback_method_enabled(bool state) {
-    BindFallbackMethod(state ?
-        &CppBindingExampleWithOptionalFallback::fallbackMethod
-        : NULL);
+    BindFallbackCallback(state ?
+        base::Bind(&CppBindingExampleWithOptionalFallback::fallbackMethod,
+                   base::Unretained(this))
+        : CppBoundClass::Callback());
   }
 
   // The fallback method does nothing, but because of it the JavaScript keeps

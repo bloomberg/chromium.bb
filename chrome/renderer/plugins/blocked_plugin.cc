@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/plugins/blocked_plugin.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -96,9 +98,12 @@ BlockedPlugin::~BlockedPlugin() {
 
 void BlockedPlugin::BindWebFrame(WebFrame* frame) {
   PluginPlaceholder::BindWebFrame(frame);
-  BindMethod("load", &BlockedPlugin::LoadCallback);
-  BindMethod("hide", &BlockedPlugin::HideCallback);
-  BindMethod("openURL", &BlockedPlugin::OpenUrlCallback);
+  BindCallback("load", base::Bind(&BlockedPlugin::LoadCallback,
+                                  base::Unretained(this)));
+  BindCallback("hide", base::Bind(&BlockedPlugin::HideCallback,
+                                  base::Unretained(this)));
+  BindCallback("openURL", base::Bind(&BlockedPlugin::OpenUrlCallback,
+                                     base::Unretained(this)));
 }
 
 void BlockedPlugin::ShowContextMenu(const WebKit::WebMouseEvent& event) {

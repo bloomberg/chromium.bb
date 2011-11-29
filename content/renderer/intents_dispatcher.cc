@@ -4,6 +4,8 @@
 
 #include "content/renderer/intents_dispatcher.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "content/common/intents_messages.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message.h"
@@ -50,11 +52,16 @@ class IntentsDispatcher::BoundDeliveredIntent : public CppBoundClass {
                                      frame->windowObject(),
                                      data_val_.get());
 
-    BindProperty("action", &BoundDeliveredIntent::getAction);
-    BindProperty("type", &BoundDeliveredIntent::getType);
-    BindProperty("data", &BoundDeliveredIntent::getData);
-    BindMethod("postResult", &BoundDeliveredIntent::postResult);
-    BindMethod("postFailure", &BoundDeliveredIntent::postFailure);
+    BindGetterCallback("action", base::Bind(&BoundDeliveredIntent::getAction,
+                                            base::Unretained(this)));
+    BindGetterCallback("type", base::Bind(&BoundDeliveredIntent::getType,
+                                          base::Unretained(this)));
+    BindGetterCallback("data", base::Bind(&BoundDeliveredIntent::getData,
+                                          base::Unretained(this)));
+    BindCallback("postResult", base::Bind(&BoundDeliveredIntent::postResult,
+                                          base::Unretained(this)));
+    BindCallback("postFailure", base::Bind(&BoundDeliveredIntent::postFailure,
+                                           base::Unretained(this)));
   }
 
   virtual ~BoundDeliveredIntent() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,9 @@
 // cpp_bound_class_unittest.
 
 #include "cpp_binding_example.h"
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 
 namespace {
 
@@ -37,17 +40,22 @@ CppBindingExample::CppBindingExample() {
   // Bind property with a callback.
   BindProperty("my_value_with_callback", new PropertyCallbackExample());
   // Bind property with a getter callback.
-  BindProperty("same", &CppBindingExample::same);
+  BindGetterCallback("same", base::Bind(&CppBindingExample::same,
+                                        base::Unretained(this)));
 
   // Map methods.  See comment above about names.
-  BindMethod("echoValue", &CppBindingExample::echoValue);
-  BindMethod("echoType",  &CppBindingExample::echoType);
-  BindMethod("plus",      &CppBindingExample::plus);
+  BindCallback("echoValue", base::Bind(&CppBindingExample::echoValue,
+                                       base::Unretained(this)));
+  BindCallback("echoType", base::Bind(&CppBindingExample::echoType,
+                                      base::Unretained(this)));
+  BindCallback("plus", base::Bind(&CppBindingExample::plus,
+                                  base::Unretained(this)));
 
   // The fallback method is called when a nonexistent method is called on an
   // object. If none is specified, calling a nonexistent method causes an
   // exception to be thrown and the JavaScript execution is stopped.
-  BindFallbackMethod(&CppBindingExample::fallbackMethod);
+  BindFallbackCallback(base::Bind(&CppBindingExample::fallbackMethod,
+                                  base::Unretained(this)));
 
   my_value.Set(10);
   my_other_value.Set("Reinitialized!");

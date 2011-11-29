@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCString.h"
@@ -233,55 +235,109 @@ AccessibilityUIElement::AccessibilityUIElement(
 
   DCHECK(factory);
 
-  BindMethod("allAttributes", &AccessibilityUIElement::AllAttributesCallback);
-  BindMethod("attributesOfLinkedUIElements",
-             &AccessibilityUIElement::AttributesOfLinkedUIElementsCallback);
-  BindMethod("attributesOfDocumentLinks",
-             &AccessibilityUIElement::AttributesOfDocumentLinksCallback);
-  BindMethod("attributesOfChildren",
-             &AccessibilityUIElement::AttributesOfChildrenCallback);
-  BindMethod("parameterizedAttributeNames",
-             &AccessibilityUIElement::ParametrizedAttributeNamesCallback);
-  BindMethod("lineForIndex", &AccessibilityUIElement::LineForIndexCallback);
-  BindMethod("boundsForRange", &AccessibilityUIElement::BoundsForRangeCallback);
-  BindMethod("stringForRange", &AccessibilityUIElement::StringForRangeCallback);
-  BindMethod("childAtIndex", &AccessibilityUIElement::ChildAtIndexCallback);
-  BindMethod("elementAtPoint", &AccessibilityUIElement::ElementAtPointCallback);
-  BindMethod("attributesOfColumnHeaders",
-             &AccessibilityUIElement::AttributesOfColumnHeadersCallback);
-  BindMethod("attributesOfRowHeaders",
-             &AccessibilityUIElement::AttributesOfRowHeadersCallback);
-  BindMethod("attributesOfColumns",
-             &AccessibilityUIElement::AttributesOfColumnsCallback);
-  BindMethod("attributesOfRows",
-             &AccessibilityUIElement::AttributesOfRowsCallback);
-  BindMethod("attributesOfVisibleCells",
-             &AccessibilityUIElement::AttributesOfVisibleCellsCallback);
-  BindMethod("attributesOfHeader",
-             &AccessibilityUIElement::AttributesOfHeaderCallback);
-  BindMethod("indexInTable", &AccessibilityUIElement::IndexInTableCallback);
-  BindMethod("rowIndexRange", &AccessibilityUIElement::RowIndexRangeCallback);
-  BindMethod("columnIndexRange",
-             &AccessibilityUIElement::ColumnIndexRangeCallback);
-  BindMethod("cellForColumnAndRow",
-             &AccessibilityUIElement::CellForColumnAndRowCallback);
-  BindMethod("titleUIElement", &AccessibilityUIElement::TitleUIElementCallback);
-  BindMethod("setSelectedTextRange",
-             &AccessibilityUIElement::SetSelectedTextRangeCallback);
-  BindMethod("attributeValue", &AccessibilityUIElement::AttributeValueCallback);
-  BindMethod("isAttributeSettable",
-             &AccessibilityUIElement::IsAttributeSettableCallback);
-  BindMethod("isActionSupported",
-             &AccessibilityUIElement::IsActionSupportedCallback);
-  BindMethod("parentElement", &AccessibilityUIElement::ParentElementCallback);
-  BindMethod("increment", &AccessibilityUIElement::IncrementCallback);
-  BindMethod("decrement", &AccessibilityUIElement::DecrementCallback);
+  BindCallback("allAttributes",
+               base::Bind(&AccessibilityUIElement::AllAttributesCallback,
+                          base::Unretained(this)));
+  BindCallback(
+      "attributesOfLinkedUIElements",
+      base::Bind(&AccessibilityUIElement::AttributesOfLinkedUIElementsCallback,
+                 base::Unretained(this)));
+  BindCallback(
+      "attributesOfDocumentLinks",
+      base::Bind(&AccessibilityUIElement::AttributesOfDocumentLinksCallback,
+                 base::Unretained(this)));
+  BindCallback(
+      "attributesOfChildren",
+      base::Bind(&AccessibilityUIElement::AttributesOfChildrenCallback,
+                 base::Unretained(this)));
+  BindCallback(
+      "parameterizedAttributeNames",
+      base::Bind(&AccessibilityUIElement::ParametrizedAttributeNamesCallback,
+                 base::Unretained(this)));
+  BindCallback("lineForIndex",
+               base::Bind(&AccessibilityUIElement::LineForIndexCallback,
+                          base::Unretained(this)));
+  BindCallback("boundsForRange",
+               base::Bind(&AccessibilityUIElement::BoundsForRangeCallback,
+                          base::Unretained(this)));
+  BindCallback("stringForRange",
+               base::Bind(&AccessibilityUIElement::StringForRangeCallback,
+                          base::Unretained(this)));
+  BindCallback("childAtIndex",
+               base::Bind(&AccessibilityUIElement::ChildAtIndexCallback,
+                          base::Unretained(this)));
+  BindCallback("elementAtPoint",
+               base::Bind(&AccessibilityUIElement::ElementAtPointCallback,
+                          base::Unretained(this)));
+  BindCallback(
+      "attributesOfColumnHeaders",
+      base::Bind(&AccessibilityUIElement::AttributesOfColumnHeadersCallback,
+                 base::Unretained(this)));
+  BindCallback(
+      "attributesOfRowHeaders",
+      base::Bind(&AccessibilityUIElement::AttributesOfRowHeadersCallback,
+                 base::Unretained(this)));
+  BindCallback("attributesOfColumns",
+               base::Bind(&AccessibilityUIElement::AttributesOfColumnsCallback,
+                          base::Unretained(this)));
+  BindCallback("attributesOfRows",
+               base::Bind(&AccessibilityUIElement::AttributesOfRowsCallback,
+                          base::Unretained(this)));
+  BindCallback(
+      "attributesOfVisibleCells",
+      base::Bind(&AccessibilityUIElement::AttributesOfVisibleCellsCallback,
+                 base::Unretained(this)));
+  BindCallback("attributesOfHeader",
+               base::Bind(&AccessibilityUIElement::AttributesOfHeaderCallback,
+                          base::Unretained(this)));
+  BindCallback("indexInTable",
+               base::Bind(&AccessibilityUIElement::IndexInTableCallback,
+                          base::Unretained(this)));
+  BindCallback("rowIndexRange",
+               base::Bind(&AccessibilityUIElement::RowIndexRangeCallback,
+                          base::Unretained(this)));
+  BindCallback("columnIndexRange",
+               base::Bind(&AccessibilityUIElement::ColumnIndexRangeCallback,
+                          base::Unretained(this)));
+  BindCallback("cellForColumnAndRow",
+               base::Bind(&AccessibilityUIElement::CellForColumnAndRowCallback,
+                          base::Unretained(this)));
+  BindCallback("titleUIElement",
+               base::Bind(&AccessibilityUIElement::TitleUIElementCallback,
+                          base::Unretained(this)));
+  BindCallback("setSelectedTextRange",
+               base::Bind(&AccessibilityUIElement::SetSelectedTextRangeCallback,
+                          base::Unretained(this)));
+  BindCallback("attributeValue",
+               base::Bind(&AccessibilityUIElement::AttributeValueCallback,
+                          base::Unretained(this)));
+  BindCallback("isAttributeSettable",
+               base::Bind(&AccessibilityUIElement::IsAttributeSettableCallback,
+                          base::Unretained(this)));
+  BindCallback("isActionSupported",
+               base::Bind(&AccessibilityUIElement::IsActionSupportedCallback,
+                          base::Unretained(this)));
+  BindCallback("parentElement",
+               base::Bind(&AccessibilityUIElement::ParentElementCallback,
+                          base::Unretained(this)));
+  BindCallback("increment",
+               base::Bind(&AccessibilityUIElement::IncrementCallback,
+                          base::Unretained(this)));
+  BindCallback("decrement",
+               base::Bind(&AccessibilityUIElement::DecrementCallback,
+                          base::Unretained(this)));
 
-  BindProperty("role", &AccessibilityUIElement::RoleGetterCallback);
+  BindGetterCallback("role",
+                     base::Bind(&AccessibilityUIElement::RoleGetterCallback,
+                                base::Unretained(this)));
   BindProperty("subrole", &subrole_);
-  BindProperty("title", &AccessibilityUIElement::TitleGetterCallback);
-  BindProperty("description",
-      &AccessibilityUIElement::DescriptionGetterCallback);
+  BindGetterCallback("title",
+                     base::Bind(&AccessibilityUIElement::TitleGetterCallback,
+                                base::Unretained(this)));
+  BindGetterCallback(
+      "description",
+      base::Bind(&AccessibilityUIElement::DescriptionGetterCallback,
+                 base::Unretained(this)));
   BindProperty("language", &language_);
   BindProperty("x", &x_);
   BindProperty("y", &y_);
@@ -292,16 +348,25 @@ AccessibilityUIElement::AccessibilityUIElement(
   BindProperty("intValue", &int_value_);
   BindProperty("minValue", &min_value_);
   BindProperty("maxValue", &max_value_);
-  BindProperty("childrenCount",
-      &AccessibilityUIElement::ChildrenCountGetterCallback);
+  BindGetterCallback(
+      "childrenCount",
+      base::Bind(&AccessibilityUIElement::ChildrenCountGetterCallback,
+                 base::Unretained(this)));
   BindProperty("insertionPointLineNumber", &insertion_point_line_number_);
   BindProperty("selectedTextRange", &selected_text_range);
-  BindProperty("isEnabled", &AccessibilityUIElement::IsEnabledGetterCallback);
+  BindGetterCallback(
+      "isEnabled",
+      base::Bind(&AccessibilityUIElement::IsEnabledGetterCallback,
+                 base::Unretained(this)));
   BindProperty("isRequired", &is_required_);
-  BindProperty("isSelected", &AccessibilityUIElement::IsSelectedGetterCallback);
+  BindGetterCallback(
+      "isSelected",
+      base::Bind(&AccessibilityUIElement::IsSelectedGetterCallback,
+                 base::Unretained(this)));
   BindProperty("valueDescription", &value_description_);
 
-  BindFallbackMethod(&AccessibilityUIElement::FallbackCallback);
+  BindFallbackCallback(base::Bind(&AccessibilityUIElement::FallbackCallback,
+                                  base::Unretained(this)));
 }
 
 AccessibilityUIElement::~AccessibilityUIElement() {}
