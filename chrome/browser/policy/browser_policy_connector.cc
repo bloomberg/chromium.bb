@@ -117,10 +117,12 @@ void BrowserPolicyConnector::Init() {
 #if defined(OS_CHROMEOS)
   InitializeDevicePolicy();
 
-  network_configuration_updater_.reset(
-      new NetworkConfigurationUpdater(
-          managed_cloud_provider_.get(),
-          chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableONCPolicy)) {
+    network_configuration_updater_.reset(
+        new NetworkConfigurationUpdater(
+            managed_cloud_provider_.get(),
+            chromeos::CrosLibrary::Get()->GetNetworkLibrary()));
+  }
 #endif
 }
 

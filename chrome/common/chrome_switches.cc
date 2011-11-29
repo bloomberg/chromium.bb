@@ -1135,6 +1135,9 @@ const char kEnableLoginImages[]             = "enable-login-images";
 // Enables mobile setup in a dialog.
 const char kEnableMobileSetupDialog[]       = "enable-mobile-dialog";
 
+// Enables support for policy-configured networks.
+const char kEnableONCPolicy[]               = "enable-onc-policy";
+
 // Rotates the screen in response to orientation changed events from dbus. Will
 // be reused for more generic sensors.
 const char kEnableSensors[]                 = "enable-sensors";

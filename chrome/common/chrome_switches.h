@@ -311,6 +311,7 @@ extern const char kEnableDevicePolicy[];
 extern const char kEnableGView[];
 extern const char kEnableLoginImages[];
 extern const char kEnableMobileSetupDialog[];
+extern const char kEnableONCPolicy[];
 extern const char kEnableSensors[];
 extern const char kEnableStaticIPConfig[];
 extern const char kLoginManager[];
