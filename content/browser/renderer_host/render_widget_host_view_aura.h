@@ -127,6 +127,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #endif
 
   void UpdateCursorIfOverSelf();
+  void UpdateExternalTexture();
 
   // The model object.
   RenderWidgetHost* host_;
@@ -158,6 +159,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   std::map<uint64, scoped_refptr<AcceleratedSurfaceContainerLinux> >
       accelerated_surface_containers_;
+
+  gfx::PluginWindowHandle current_surface_;
 #endif
 
   bool skip_schedule_paint_;

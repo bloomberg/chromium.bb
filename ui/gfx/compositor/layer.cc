@@ -268,20 +268,23 @@ void Layer::SetFillsBoundsOpaquely(bool fills_bounds_opaquely) {
 }
 
 void Layer::SetExternalTexture(ui::Texture* texture) {
-  DCHECK(texture);
-  layer_updated_externally_ = true;
+  layer_updated_externally_ = !!texture;
   texture_ = texture;
 #if defined(USE_WEBKIT_COMPOSITOR)
-  if (!web_layer_is_accelerated_) {
+  if (web_layer_is_accelerated_ != layer_updated_externally_) {
+    // Switch to a different type of layer.
     web_layer_.removeAllChildren();
-    WebKit::WebLayer new_layer =
-      WebKit::WebExternalTextureLayer::create(this);
+    WebKit::WebLayer new_layer;
+    if (layer_updated_externally_)
+      new_layer = WebKit::WebExternalTextureLayer::create(this);
+    else
+      new_layer = WebKit::WebContentLayer::create(this, this);
     if (parent_) {
       DCHECK(!parent_->web_layer_.isNull());
       parent_->web_layer_.replaceChild(web_layer_, new_layer);
     }
     web_layer_ = new_layer;
-    web_layer_is_accelerated_ = true;
+    web_layer_is_accelerated_ = layer_updated_externally_;
     for (size_t i = 0; i < children_.size(); ++i) {
       DCHECK(!children_[i]->web_layer_.isNull());
       web_layer_.addChild(children_[i]->web_layer_);
@@ -293,11 +296,13 @@ void Layer::SetExternalTexture(ui::Texture* texture) {
     RecomputeTransform();
     RecomputeDebugBorderColor();
   }
-  TextureCC* texture_cc = static_cast<TextureCC*>(texture);
-  texture_cc->Update();
-  WebKit::WebExternalTextureLayer texture_layer =
-      web_layer_.to<WebKit::WebExternalTextureLayer>();
-  texture_layer.setFlipped(texture_cc->flipped());
+  if (texture) {
+    TextureCC* texture_cc = static_cast<TextureCC*>(texture);
+    texture_cc->Update();
+    WebKit::WebExternalTextureLayer texture_layer =
+        web_layer_.to<WebKit::WebExternalTextureLayer>();
+    texture_layer.setFlipped(texture_cc->flipped());
+  }
   RecomputeDrawsContentAndUVRect();
 #endif
 }

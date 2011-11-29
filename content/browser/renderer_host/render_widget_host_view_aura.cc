@@ -93,6 +93,9 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       is_fullscreen_(false),
       popup_parent_host_view_(NULL),
       is_loading_(false),
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+      current_surface_(gfx::kNullPluginWindow),
+#endif
       skip_schedule_paint_(false) {
   host_->SetView(this);
   window_->SetProperty(aura::kTooltipTextKey, &tooltip_);
@@ -274,15 +277,28 @@ BackingStore* RenderWidgetHostViewAura::AllocBackingStore(
 }
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
+  UpdateExternalTexture();
+}
+
+void RenderWidgetHostViewAura::UpdateExternalTexture() {
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+  if (current_surface_ != gfx::kNullPluginWindow &&
+      host_->is_accelerated_compositing_active()) {
+    window_->layer()->SetExternalTexture(
+        accelerated_surface_containers_[current_surface_]->GetTexture());
+    glFlush();
+  } else {
+    window_->layer()->SetExternalTexture(NULL);
+  }
+#endif
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
 #if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-  window_->layer()->SetExternalTexture(
-      accelerated_surface_containers_[params.surface_id]->GetTexture());
-  glFlush();
+  current_surface_ = params.surface_id;
+  UpdateExternalTexture();
 
   if (!window_->layer()->GetCompositor()) {
     // We have no compositor, so we have no way to display the surface.
@@ -352,6 +368,13 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceNew(
 }
 
 void RenderWidgetHostViewAura::AcceleratedSurfaceRelease(uint64 surface_id) {
+  if (current_surface_ == surface_id) {
+    current_surface_ = gfx::kNullPluginWindow;
+    // Don't call UpdateExternalTexture: it's possible that a new surface with
+    // the same ID will be re-created right away, in which case we don't want to
+    // flip back and forth. Instead wait until we got the accelerated
+    // compositing deactivation.
+  }
   accelerated_surface_containers_.erase(surface_id);
 }
 #endif
