@@ -288,6 +288,7 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       process_type == switches::kNaClLoaderProcess ||
       process_type == switches::kPpapiPluginProcess ||
       process_type == switches::kPpapiBrokerProcess ||
+      process_type == switches::kGpuProcess ||
 #endif
       process_type == switches::kRendererProcess ||
       process_type == switches::kUtilityProcess;
@@ -612,6 +613,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
     // browser process as a command line flag.
     DCHECK(command_line.HasSwitch(switches::kLang) ||
            process_type == switches::kZygoteProcess ||
+           process_type == switches::kGpuProcess ||
            process_type == switches::kNaClLoaderProcess ||
            process_type == switches::kPpapiBrokerProcess ||
            process_type == switches::kPpapiPluginProcess);
