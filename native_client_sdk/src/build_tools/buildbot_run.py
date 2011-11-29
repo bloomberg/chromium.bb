@@ -37,11 +37,10 @@ def Archive(revision, chrome_milestone):
     dst = 'naclsdk_linux.tgz'
   bucket_path = 'nativeclient-mirror/nacl/nacl_sdk/pepper_%s_%s/%s' % (
       chrome_milestone, revision, dst)
-  full_src = os.path.join(SDK_DIR, src)
   full_dst = 'gs://%s' % bucket_path
   subprocess.check_call(
       '/b/build/scripts/slave/gsutil cp -a public-read %s %s' % (
-          full_src, full_dst), shell=True)
+          src, full_dst), shell=True, cwd=SDK_DIR)
   url = 'https://commondatastorage.googleapis.com/%s' % bucket_path
   print '@@@STEP_LINK@download@%s@@@' % url
   sys.stdout.flush()
