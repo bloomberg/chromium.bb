@@ -27,6 +27,7 @@ class ExtensionBrowserTest
   ExtensionBrowserTest();
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+
   const Extension* LoadExtension(const FilePath& path);
 
   // Same as above, but enables the extension in incognito mode first.
@@ -56,37 +57,39 @@ class ExtensionBrowserTest
   // disabled, if negative).
   // 1 means you expect a new install, 0 means you expect an upgrade, -1 means
   // you expect a failed upgrade.
-  bool InstallExtension(const FilePath& path, int expected_change) {
+  const Extension* InstallExtension(const FilePath& path, int expected_change) {
     return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NONE,
                                     expected_change);
   }
 
   // Installs extension as if it came from the Chrome Webstore.
-  bool InstallExtensionFromWebstore(const FilePath& path, int expected_change);
+  const Extension* InstallExtensionFromWebstore(
+      const FilePath& path, int expected_change);
 
   // Same as above but passes an id to CrxInstaller and does not allow a
   // privilege increase.
-  bool UpdateExtension(const std::string& id, const FilePath& path,
-                       int expected_change) {
+  const Extension* UpdateExtension(const std::string& id, const FilePath& path,
+                                   int expected_change) {
     return InstallOrUpdateExtension(id, path, INSTALL_UI_TYPE_NONE,
                                     expected_change);
   }
 
   // Same as |InstallExtension| but with the normal extension UI showing up
   // (for e.g. info bar on success).
-  bool InstallExtensionWithUI(const FilePath& path, int expected_change) {
+  const Extension* InstallExtensionWithUI(const FilePath& path,
+                                          int expected_change) {
     return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_NORMAL,
                                     expected_change);
   }
-  bool InstallExtensionWithUIAutoConfirm(const FilePath& path,
-                                         int expected_change,
-                                         Profile* profile) {
+  const Extension* InstallExtensionWithUIAutoConfirm(const FilePath& path,
+                                                     int expected_change,
+                                                     Profile* profile) {
     return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_AUTO_CONFIRM,
                                     expected_change, profile, false);
   }
 
   // Begins install process but simulates a user cancel.
-  bool StartInstallButCancel(const FilePath& path) {
+  const Extension* StartInstallButCancel(const FilePath& path) {
     return InstallOrUpdateExtension("", path, INSTALL_UI_TYPE_CANCEL, 0);
   }
 
@@ -147,14 +150,16 @@ class ExtensionBrowserTest
     INSTALL_UI_TYPE_AUTO_CONFIRM,
   };
 
-  bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,
-                                InstallUIType ui_type,
-                                int expected_change);
-  bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,
-                                InstallUIType ui_type,
-                                int expected_change,
-                                Profile* profile,
-                                bool from_webstore);
+  const Extension* InstallOrUpdateExtension(const std::string& id,
+                                            const FilePath& path,
+                                            InstallUIType ui_type,
+                                            int expected_change);
+  const Extension* InstallOrUpdateExtension(const std::string& id,
+                                            const FilePath& path,
+                                            InstallUIType ui_type,
+                                            int expected_change,
+                                            Profile* profile,
+                                            bool from_webstore);
 
   bool WaitForExtensionHostsToLoad();
 

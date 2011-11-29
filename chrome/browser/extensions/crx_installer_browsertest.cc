@@ -75,9 +75,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Whitelisting) {
 #endif  // !defined(OS_CHROMEOS)
 }
 
+// crbug.com/105728: Fails because the CRX is invalid.
 IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
-                       GalleryInstallGetsExperimental) {
-  InstallExtension(test_data_dir_.AppendASCII("experimental.crx"), 0);
-  InstallExtensionFromWebstore(
-      test_data_dir_.AppendASCII("experimental.crx"), 1);
+                       FAILS_GalleryInstallGetsExperimental) {
+  ASSERT_FALSE(InstallExtension(
+      test_data_dir_.AppendASCII("experimental.crx"), 0));
+  ASSERT_TRUE(InstallExtensionFromWebstore(
+      test_data_dir_.AppendASCII("experimental.crx"), 1));
 }

@@ -70,7 +70,7 @@ class ExtensionManagementApiEscalationTest : public ExtensionBrowserTest {
     EXPECT_TRUE(service->GetExtensionById(kId, false) != NULL);
 
     // Update to a high-permission version - it should get disabled.
-    EXPECT_TRUE(UpdateExtension(
+    EXPECT_FALSE(UpdateExtension(
         kId, test_data_dir_.AppendASCII("permissions-high-v2.crx"), -1));
     EXPECT_TRUE(service->GetExtensionById(kId, false) == NULL);
     EXPECT_TRUE(service->GetExtensionById(kId, true) != NULL);

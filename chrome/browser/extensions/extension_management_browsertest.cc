@@ -68,17 +68,18 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
     size_t size_before = service->extensions()->size();
 
     // Install the initial version, which should happen just fine.
-    if (!InstallExtension(
-        test_data_dir_.AppendASCII("permissions-low-v1.crx"), 1))
+    const Extension* extension = InstallExtension(
+        test_data_dir_.AppendASCII("permissions-low-v1.crx"), 1);
+    if (!extension)
+      return false;
+    if (service->extensions()->size() != size_before + 1)
       return false;
 
     // Upgrade to a version that wants more permissions. We should disable the
     // extension and prompt the user to reenable.
-    if (service->extensions()->size() != size_before + 1)
-      return false;
-    if (!UpdateExtension(
-        service->extensions()->at(size_before)->id(),
-        test_data_dir_.AppendASCII("permissions-high-v2.crx"), -1))
+    if (UpdateExtension(
+            extension->id(),
+            test_data_dir_.AppendASCII("permissions-high-v2.crx"), -1))
       return false;
     EXPECT_EQ(size_before, service->extensions()->size());
     if (service->disabled_extensions()->size() != 1u)
@@ -96,56 +97,55 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
 
 // Tests that installing the same version overwrites.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallSameVersion) {
-  ExtensionService* service = browser()->profile()->GetExtensionService();
-  const size_t size_before = service->extensions()->size();
-  ASSERT_TRUE(InstallExtension(
-      test_data_dir_.AppendASCII("install/install.crx"), 1));
-  FilePath old_path = service->extensions()->back()->path();
+  const Extension* extension = InstallExtension(
+      test_data_dir_.AppendASCII("install/install.crx"), 1);
+  ASSERT_TRUE(extension);
+  FilePath old_path = extension->path();
 
   // Install an extension with the same version. The previous install should be
   // overwritten.
-  ASSERT_TRUE(InstallExtension(
-      test_data_dir_.AppendASCII("install/install_same_version.crx"), 0));
-  FilePath new_path = service->extensions()->back()->path();
+  extension = InstallExtension(
+      test_data_dir_.AppendASCII("install/install_same_version.crx"), 0);
+  ASSERT_TRUE(extension);
+  FilePath new_path = extension->path();
 
-  EXPECT_FALSE(IsExtensionAtVersion(service->extensions()->at(size_before),
-                                    "1.0"));
+  EXPECT_FALSE(IsExtensionAtVersion(extension, "1.0"));
   EXPECT_NE(old_path.value(), new_path.value());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallOlderVersion) {
-  ExtensionService* service = browser()->profile()->GetExtensionService();
-  const size_t size_before = service->extensions()->size();
-  ASSERT_TRUE(InstallExtension(
-      test_data_dir_.AppendASCII("install/install.crx"), 1));
-  ASSERT_TRUE(InstallExtension(
+  const Extension* extension = InstallExtension(
+      test_data_dir_.AppendASCII("install/install.crx"), 1);
+  ASSERT_TRUE(extension);
+  ASSERT_FALSE(InstallExtension(
       test_data_dir_.AppendASCII("install/install_older_version.crx"), 0));
-  EXPECT_TRUE(IsExtensionAtVersion(service->extensions()->at(size_before),
-                                   "1.0"));
+  EXPECT_TRUE(IsExtensionAtVersion(extension, "1.0"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallThenCancel) {
-  ExtensionService* service = browser()->profile()->GetExtensionService();
-  const size_t size_before = service->extensions()->size();
-  ASSERT_TRUE(InstallExtension(
-      test_data_dir_.AppendASCII("install/install.crx"), 1));
+  const Extension* extension = InstallExtension(
+      test_data_dir_.AppendASCII("install/install.crx"), 1);
+  ASSERT_TRUE(extension);
 
   // Cancel this install.
-  StartInstallButCancel(test_data_dir_.AppendASCII("install/install_v2.crx"));
-  EXPECT_TRUE(IsExtensionAtVersion(service->extensions()->at(size_before),
-                                   "1.0"));
+  ASSERT_FALSE(StartInstallButCancel(
+      test_data_dir_.AppendASCII("install/install_v2.crx")));
+  EXPECT_TRUE(IsExtensionAtVersion(extension, "1.0"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, InstallRequiresConfirm) {
-  // Installing the extension without an auto confirming UI should fail
-  // since good.crx has permissions that require approval.
-  ASSERT_TRUE(InstallExtension(test_data_dir_.AppendASCII("good.crx"), 0));
-  UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
+  // Installing the extension without an auto confirming UI should result in
+  // it being disabled, since good.crx has permissions that require approval.
+  ExtensionService* service = browser()->profile()->GetExtensionService();
+  std::string id = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
+  ASSERT_FALSE(InstallExtension(test_data_dir_.AppendASCII("good.crx"), 0));
+  ASSERT_TRUE(service->GetExtensionById(id, true));
+  UninstallExtension(id);
 
   // And the install should succeed when the permissions are accepted.
   ASSERT_TRUE(InstallExtensionWithUIAutoConfirm(
       test_data_dir_.AppendASCII("good.crx"), 1, browser()->profile()));
-  UninstallExtension("ldnnhddmnhbkjipkidpdiheffobcpfmf");
+  UninstallExtension(id);
 }
 
 // Tests the process of updating an extension to one that requires higher
@@ -156,7 +156,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissions) {
   const size_t size_before = service->extensions()->size();
 
   // Now try reenabling it.
-  service->EnableExtension(service->disabled_extensions()->at(0)->id());
+  const std::string id = (*service->disabled_extensions()->begin())->id();
+  service->EnableExtension(id);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
 }
@@ -173,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UpdatePermissionsAndUninstall) {
 
   // Uninstall, and check that the infobar went away.
   ExtensionService* service = browser()->profile()->GetExtensionService();
-  std::string id = service->disabled_extensions()->at(0)->id();
+  std::string id = (*service->disabled_extensions()->begin())->id();
   UninstallExtension(id);
   ASSERT_EQ(0U, infobar_helper->infobar_count());
 
@@ -194,7 +195,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, UninstallDisabled) {
   const size_t size_before = service->extensions()->size();
 
   // Now try uninstalling it.
-  UninstallExtension(service->disabled_extensions()->at(0)->id());
+  UninstallExtension((*service->disabled_extensions()->begin())->id());
   EXPECT_EQ(size_before, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
 }
@@ -314,13 +315,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
   ExtensionService* service = browser()->profile()->GetExtensionService();
   const size_t size_before = service->extensions()->size();
   ASSERT_TRUE(service->disabled_extensions()->empty());
-  ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v1.crx"), 1));
+  const Extension* extension =
+      InstallExtension(basedir.AppendASCII("v1.crx"), 1);
+  ASSERT_TRUE(extension);
   listener1.WaitUntilSatisfied();
-  const ExtensionList* extensions = service->extensions();
-  ASSERT_EQ(size_before + 1, extensions->size());
-  ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf",
-            extensions->at(size_before)->id());
-  ASSERT_EQ("1.0", extensions->at(size_before)->VersionString());
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf", extension->id());
+  ASSERT_EQ("1.0", extension->VersionString());
 
   // We don't want autoupdate blacklist checks.
   service->updater()->set_blacklist_checks_enabled(false);
@@ -330,11 +331,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
   service->updater()->CheckNow();
   ASSERT_TRUE(WaitForExtensionInstall());
   listener2.WaitUntilSatisfied();
-  extensions = service->extensions();
-  ASSERT_EQ(size_before + 1, extensions->size());
-  ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf",
-            extensions->at(size_before)->id());
-  ASSERT_EQ("2.0", extensions->at(size_before)->VersionString());
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  extension = service->GetExtensionById(
+      "ogjcoiohnmldgjemafoockdghcjciccf", false);
+  ASSERT_TRUE(extension);
+  ASSERT_EQ("2.0", extension->VersionString());
   ASSERT_TRUE(notification_listener.started());
   ASSERT_TRUE(notification_listener.finished());
   ASSERT_TRUE(ContainsKey(notification_listener.updates(),
@@ -356,11 +357,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, AutoUpdate) {
                           "ogjcoiohnmldgjemafoockdghcjciccf"));
 
   // Make sure the extension state is the same as before.
-  extensions = service->extensions();
-  ASSERT_EQ(size_before + 1, extensions->size());
-  ASSERT_EQ("ogjcoiohnmldgjemafoockdghcjciccf",
-            extensions->at(size_before)->id());
-  ASSERT_EQ("2.0", extensions->at(size_before)->VersionString());
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  extension = service->GetExtensionById(
+      "ogjcoiohnmldgjemafoockdghcjciccf", false);
+  ASSERT_TRUE(extension);
+  ASSERT_EQ("2.0", extension->VersionString());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
@@ -398,10 +399,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
   // Run autoupdate and make sure version 2 of the extension was installed.
   service->updater()->CheckNow();
   ASSERT_TRUE(WaitForExtensionInstall());
-  const ExtensionList* extensions = service->extensions();
-  ASSERT_EQ(size_before + 1, extensions->size());
-  ASSERT_EQ(kExtensionId, extensions->at(size_before)->id());
-  ASSERT_EQ("2.0", extensions->at(size_before)->VersionString());
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  const Extension* extension = service->GetExtensionById(kExtensionId, false);
+  ASSERT_TRUE(extension);
+  ASSERT_EQ("2.0", extension->VersionString());
 
   // Uninstalling the extension should set a pref that keeps the extension from
   // being installed again the next time external_extensions.json is read.
@@ -483,14 +484,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
   // Check if the extension got installed.
   ASSERT_TRUE(WaitForExtensionInstall());
-  const ExtensionList* extensions = service->extensions();
-  ASSERT_EQ(size_before + 1, extensions->size());
-  ASSERT_EQ(kExtensionId, extensions->at(size_before)->id());
-  EXPECT_EQ("2.0", extensions->at(size_before)->VersionString());
-  EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD,
-            extensions->at(size_before)->location());
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  const Extension* extension = service->GetExtensionById(kExtensionId, false);
+  ASSERT_TRUE(extension);
+  ASSERT_EQ("2.0", extension->VersionString());
+  EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD, extension->location());
 
-  // Try to disable and unstall the extension which should fail.
+  // Try to disable and uninstall the extension which should fail.
   service->DisableExtension(kExtensionId);
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   EXPECT_EQ(size_before + 1, service->extensions()->size());
   EXPECT_EQ(0u, service->disabled_extensions()->size());
 
-  // Now try to disable it through the management api.
+  // Now try to disable it through the management api, again failing.
   ExtensionTestMessageListener listener1("ready", false);
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("management/uninstall_extension")));
@@ -510,10 +510,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   {
     prefs->ClearPref(prefs::kExtensionInstallForceList);
   }
-  EXPECT_EQ(size_before + 1, extensions->size());
-  ExtensionList::const_iterator i;
-  for (i = extensions->begin(); i != extensions->end(); ++i)
-    EXPECT_NE(kExtensionId, (*i)->id());
+  EXPECT_EQ(size_before + 1, service->extensions()->size());
+  EXPECT_FALSE(service->GetExtensionById(kExtensionId, true));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, PolicyOverridesUserInstall) {
@@ -541,10 +539,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, PolicyOverridesUserInstall) {
 
   // User install of the extension.
   ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
-  const ExtensionList* extensions = service->extensions();
-  ASSERT_EQ(size_before + 1, extensions->size());
-  const Extension* extension = extensions->at(size_before);
-  ASSERT_EQ(kExtensionId, extension->id());
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  const Extension* extension = service->GetExtensionById(kExtensionId, false);
+  ASSERT_TRUE(extension);
   EXPECT_EQ(Extension::INTERNAL, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
 
@@ -557,10 +554,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, PolicyOverridesUserInstall) {
         std::string(kExtensionId) + ";http://localhost/autoupdate/manifest"));
   }
   ASSERT_TRUE(WaitForExtensionInstall());
-  extensions = service->extensions();
-  ASSERT_EQ(size_before + 1, extensions->size());
-  extension = extensions->at(size_before);
-  ASSERT_EQ(kExtensionId, extension->id());
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  extension = service->GetExtensionById(kExtensionId, false);
+  ASSERT_TRUE(extension);
   EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
 
@@ -574,24 +570,23 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, PolicyOverridesUserInstall) {
     ASSERT_TRUE(!forcelist->empty());
     forcelist->Clear();
   }
-  extensions = service->extensions();
-  ASSERT_EQ(size_before, extensions->size());
+  ASSERT_EQ(size_before, service->extensions()->size());
   extension = service->GetExtensionById(kExtensionId, true);
-  EXPECT_TRUE(extension == NULL);
+  EXPECT_FALSE(extension);
 
   // User install again, but have it disabled too before setting the policy.
   ASSERT_TRUE(InstallExtension(basedir.AppendASCII("v2.crx"), 1));
-  extensions = service->extensions();
-  ASSERT_EQ(size_before + 1, extensions->size());
-  extension = extensions->at(size_before);
-  ASSERT_EQ(kExtensionId, extension->id());
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  extension = service->GetExtensionById(kExtensionId, false);
+  ASSERT_TRUE(extension);
   EXPECT_EQ(Extension::INTERNAL, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
   EXPECT_TRUE(service->disabled_extensions()->empty());
 
   service->DisableExtension(kExtensionId);
   EXPECT_EQ(1u, service->disabled_extensions()->size());
-  EXPECT_EQ(kExtensionId, service->disabled_extensions()->at(0)->id());
+  extension = service->GetExtensionById(kExtensionId, true);
+  EXPECT_TRUE(extension);
   EXPECT_FALSE(service->IsExtensionEnabled(kExtensionId));
 
   // Install the policy again. It should overwrite the extension's location,
@@ -604,10 +599,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, PolicyOverridesUserInstall) {
         std::string(kExtensionId) + ";http://localhost/autoupdate/manifest"));
   }
   ASSERT_TRUE(WaitForExtensionInstall());
-  extensions = service->extensions();
-  ASSERT_EQ(size_before + 1, extensions->size());
-  extension = extensions->at(size_before);
-  ASSERT_EQ(kExtensionId, extension->id());
+  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  extension = service->GetExtensionById(kExtensionId, false);
+  ASSERT_TRUE(extension);
   EXPECT_EQ(Extension::EXTERNAL_POLICY_DOWNLOAD, extension->location());
   EXPECT_TRUE(service->IsExtensionEnabled(kExtensionId));
   EXPECT_TRUE(service->disabled_extensions()->empty());

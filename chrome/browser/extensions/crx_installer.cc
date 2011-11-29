@@ -459,7 +459,7 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
                   content::NotificationService::NoDetails());
   Release();  // balanced in ConfirmInstall().
 
-  NotifyCrxInstallComplete();
+  NotifyCrxInstallComplete(NULL);
 
   // We're done. Since we don't post any more tasks to ourself, our ref count
   // should go to zero and we die. The destructor will clean up the temp dir.
@@ -540,7 +540,7 @@ void CrxInstaller::ReportFailureFromUIThread(const std::string& error) {
   if (client_)
     client_->OnInstallFailure(error);
 
-  NotifyCrxInstallComplete();
+  NotifyCrxInstallComplete(NULL);
 }
 
 void CrxInstaller::ReportSuccessFromFileThread() {
@@ -587,22 +587,23 @@ void CrxInstaller::ReportSuccessFromUIThread() {
   // extension_ to it.
   frontend_weak_->OnExtensionInstalled(extension_, is_gallery_install(),
                                        page_index_);
-  extension_ = NULL;
 
-  NotifyCrxInstallComplete();
+  NotifyCrxInstallComplete(extension_.get());
+
+  extension_ = NULL;
 
   // We're done. We don't post any more tasks to ourselves so we are deleted
   // soon.
 }
 
-void CrxInstaller::NotifyCrxInstallComplete() {
+void CrxInstaller::NotifyCrxInstallComplete(const Extension* extension) {
   // Some users (such as the download shelf) need to know when a
   // CRXInstaller is done.  Listening for the EXTENSION_* events
   // is problematic because they don't know anything about the
-  // extension before it is unpacked, so they can not filter based
+  // extension before it is unpacked, so they cannot filter based
   // on the extension.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CRX_INSTALLER_DONE,
       content::Source<CrxInstaller>(this),
-      content::NotificationService::NoDetails());
+      content::Details<const Extension>(extension));
 }

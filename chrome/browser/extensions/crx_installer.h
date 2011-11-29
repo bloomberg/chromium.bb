@@ -224,7 +224,7 @@ class CrxInstaller
   void ReportFailureFromUIThread(const std::string& error);
   void ReportSuccessFromFileThread();
   void ReportSuccessFromUIThread();
-  void NotifyCrxInstallComplete();
+  void NotifyCrxInstallComplete(const Extension* extension);
 
   // The file we're installing.
   FilePath source_file_;
