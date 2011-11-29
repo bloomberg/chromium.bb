@@ -11,6 +11,7 @@
 
 class TestMouseObserver : public PanelMouseWatcherObserver {
  public:
+  TestMouseObserver() : mouse_movements_(0) {}
   // Overridden from PanelMouseWatcherObserver:
   virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE {
     ++mouse_movements_;
