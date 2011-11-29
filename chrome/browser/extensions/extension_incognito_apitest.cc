@@ -16,14 +16,7 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "net/base/mock_host_resolver.h"
 
-// In the touch build, this fails frequently. http://crbug.com/85205
-#if defined(TOUCH_UI)
-#define MAYBE_IncognitoNoScript FLAKY_IncognitoNoScript
-#else
-#define MAYBE_IncognitoNoScript IncognitoNoScript
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_IncognitoNoScript) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoNoScript) {
   ASSERT_TRUE(StartTestServer());
 
   // Loads a simple extension which attempts to change the title of every page

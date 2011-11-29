@@ -6,13 +6,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_switches.h"
 
-// In the touch build, this fails reliably. http://crbug.com/85192
-#if defined(TOUCH_UI)
-#define MAYBE_Sidebar DISABLED_Sidebar
-#else
-#define MAYBE_Sidebar Sidebar
-#endif
-
 class SidebarApiTest : public ExtensionApiTest {
  public:
   void SetUpCommandLine(CommandLine* command_line) {
@@ -21,6 +14,6 @@ class SidebarApiTest : public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SidebarApiTest, MAYBE_Sidebar) {
+IN_PROC_BROWSER_TEST_F(SidebarApiTest, Sidebar) {
   ASSERT_TRUE(RunExtensionTest("sidebar")) << message_;
 }

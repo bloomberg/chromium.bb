@@ -41,7 +41,7 @@ class ExtensionOverrideTest : public ExtensionApiTest {
     return true;
   }
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
   // Navigate to the keyboard page, and ensure we have arrived at an
   // extension URL.
   void NavigateToKeyboard() {
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldCleanUpDuplicateEntries) {
   ASSERT_TRUE(CheckHistoryOverridesContainsNoDupes());
 }
 
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
 IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideKeyboard) {
   ASSERT_TRUE(RunExtensionTest("override/keyboard")) << message_;
   {
