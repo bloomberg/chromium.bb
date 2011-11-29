@@ -15,33 +15,31 @@
 namespace views {
 class Checkbox;
 class GridLayout;
-}
 
 namespace examples {
 
 class TextExample : public ExampleBase,
-                    public views::ButtonListener,
-                    public views::ComboboxListener {
+                    public ButtonListener,
+                    public ComboboxListener {
  public:
-  explicit TextExample(ExamplesMain* main);
+  TextExample();
   virtual ~TextExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
   // Create and add a combo box to the layout.
-  views::Combobox* AddCombobox(views::GridLayout* layout,
-                               const char* name,
-                               const char** strings,
-                               int count);
+  Combobox* AddCombobox(GridLayout* layout,
+                        const char* name,
+                        const char** strings,
+                        int count);
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* button,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* button, const Event& event) OVERRIDE;
 
-  // Overridden from views::ComboboxListener:
-  virtual void ItemChanged(views::Combobox* combo_box,
+  // Overridden from ComboboxListener:
+  virtual void ItemChanged(Combobox* combo_box,
                            int prev_index,
                            int new_index) OVERRIDE;
 
@@ -51,29 +49,30 @@ class TextExample : public ExampleBase,
   TextExampleView* text_view_;
 
   // Combo box for horizontal text alignment.
-  views::Combobox* h_align_cb_;
+  Combobox* h_align_cb_;
 
   // Combo box for vertical text alignment.
-  views::Combobox* v_align_cb_;
+  Combobox* v_align_cb_;
 
   // Combo box for text eliding style.
-  views::Combobox* eliding_cb_;
+  Combobox* eliding_cb_;
 
   // Combo box for ampersand prefix show / hide behavior.
-  views::Combobox* prefix_cb_;
+  Combobox* prefix_cb_;
 
   // Combo box to choose one of the sample texts.
-  views::Combobox* text_cb_;
+  Combobox* text_cb_;
 
   // Check box to enable/disable multiline text drawing.
-  views::Checkbox* multiline_checkbox_;
+  Checkbox* multiline_checkbox_;
 
   // Check box to enable/disable character break behavior.
-  views::Checkbox* break_checkbox_;
+  Checkbox* break_checkbox_;
 
   DISALLOW_COPY_AND_ASSIGN(TextExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_TEXT_EXAMPLE_H_

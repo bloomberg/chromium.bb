@@ -17,28 +17,27 @@ namespace events {
 class TextButton;
 }
 
+namespace views {
 namespace examples {
 
-class RadioButtonExample : public ExampleBase,
-                           public views::ButtonListener {
+class RadioButtonExample : public ExampleBase, public ButtonListener {
  public:
-  explicit RadioButtonExample(ExamplesMain* main);
+  RadioButtonExample();
   virtual ~RadioButtonExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
   // Group of 3 radio buttons.
-  views::RadioButton* radio_buttons_[3];
+  RadioButton* radio_buttons_[3];
 
   // Control button to select radio buttons, and show the status of buttons.
-  views::TextButton* select_;
-  views::TextButton* status_;
+  TextButton* select_;
+  TextButton* status_;
 
   // The number of times the button is pressed.
   int count_;
@@ -47,5 +46,6 @@ class RadioButtonExample : public ExampleBase,
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_RADIO_BUTTON_EXAMPLE_H_

@@ -9,30 +9,30 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/examples/example_base.h"
 
+namespace views {
 namespace examples {
 
 // A Bubble example.
-class BubbleExample : public ExampleBase,
-                      public views::ButtonListener {
+class BubbleExample : public ExampleBase, public ButtonListener {
  public:
-  explicit BubbleExample(ExamplesMain* main);
+  BubbleExample();
   virtual ~BubbleExample();
 
   // Overridden from ExampleBase.
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
-  views::Button* round_;
-  views::Button* arrow_;
-  views::Button* fade_in_;
-  views::Button* fade_out_;
+  Button* round_;
+  Button* arrow_;
+  Button* fade_in_;
+  Button* fade_out_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_BUBBLE_EXAMPLE_H_

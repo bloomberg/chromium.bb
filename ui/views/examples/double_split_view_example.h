@@ -12,26 +12,26 @@
 
 namespace views {
 class SingleSplitView;
-}
 
 namespace examples {
 
 class DoubleSplitViewExample : public ExampleBase {
  public:
-  explicit DoubleSplitViewExample(ExamplesMain* main);
+  DoubleSplitViewExample();
   virtual ~DoubleSplitViewExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
   // The SingleSplitViews to be embedded.
-  views::SingleSplitView* outer_single_split_view_;
-  views::SingleSplitView* inner_single_split_view_;
+  SingleSplitView* outer_single_split_view_;
+  SingleSplitView* inner_single_split_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DoubleSplitViewExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_DOUBLE_SPLIT_VIEW_EXAMPLE_H_

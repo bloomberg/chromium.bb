@@ -12,21 +12,23 @@
 #include "base/compiler_specific.h"
 #include "ui/views/examples/example_base.h"
 
+namespace views {
 namespace examples {
 
 // MenuExample demonstrates how to use the Menu class.
 class MenuExample : public ExampleBase {
  public:
-  explicit MenuExample(ExamplesMain* main);
+  MenuExample();
   virtual ~MenuExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MenuExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_MENU_EXAMPLE_H_

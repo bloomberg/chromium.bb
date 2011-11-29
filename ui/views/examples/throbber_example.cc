@@ -8,15 +8,18 @@
 #include "views/controls/throbber.h"
 #include "views/view.h"
 
+namespace views {
+namespace examples {
+
 namespace {
 
 // Time in ms per throbber frame.
 const int kThrobberFrameMs = 60;
 
-class ThrobberView : public views::View {
+class ThrobberView : public View {
  public:
   ThrobberView() {
-    throbber_ = new views::Throbber(kThrobberFrameMs, false);
+    throbber_ = new Throbber(kThrobberFrameMs, false);
     AddChildView(throbber_);
     throbber_->SetVisible(true);
     throbber_->Start();
@@ -27,7 +30,7 @@ class ThrobberView : public views::View {
   }
 
   virtual void Layout() {
-    views::View* child = child_at(0);
+    View* child = child_at(0);
     gfx::Size ps = child->GetPreferredSize();
     child->SetBounds((width() - ps.width()) / 2,
                      (height() - ps.height()) / 2,
@@ -36,25 +39,23 @@ class ThrobberView : public views::View {
   }
 
  private:
-  views::Throbber* throbber_;
+  Throbber* throbber_;
 
   DISALLOW_COPY_AND_ASSIGN(ThrobberView);
 };
 
 }  // namespace
 
-namespace examples {
-
-ThrobberExample::ThrobberExample(ExamplesMain* main)
-    : ExampleBase(main, "Throbber") {
+ThrobberExample::ThrobberExample() : ExampleBase("Throbber") {
 }
 
 ThrobberExample::~ThrobberExample() {
 }
 
-void ThrobberExample::CreateExampleView(views::View* container) {
-  container->SetLayoutManager(new views::FillLayout());
+void ThrobberExample::CreateExampleView(View* container) {
+  container->SetLayoutManager(new FillLayout());
   container->AddChildView(new ThrobberView());
 }
 
 }  // namespace examples
+}  // namespace views

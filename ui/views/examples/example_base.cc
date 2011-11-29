@@ -8,14 +8,22 @@
 
 #include "base/compiler_specific.h"
 #include "base/stringprintf.h"
-#include "ui/views/examples/examples_main.h"
+#include "ui/views/examples/examples_window.h"
+#include "views/view.h"
+
+namespace views {
+namespace examples {
+
+// Logs the specified string to the status area of the examples window.
+// This function can only be called if there is a visible examples window.
+void LogStatus(const std::string& status);
 
 namespace {
 
 // Some of GTK based view classes require NativeWidgetGtk in the view
 // parent chain. This class is used to defer the creation of such
 // views until a NativeWidgetGtk is added to the view hierarchy.
-class ContainerView : public views::View {
+class ContainerView : public View {
  public:
   explicit ContainerView(examples::ExampleBase* base)
       : example_view_created_(false),
@@ -23,13 +31,13 @@ class ContainerView : public views::View {
   }
 
  private:
-  // Overridden from views::View:
+  // Overridden from View:
   virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE {
-    views::View::ViewHierarchyChanged(is_add, parent, child);
+                                    View* parent,
+                                    View* child) OVERRIDE {
+    View::ViewHierarchyChanged(is_add, parent, child);
     // We're not using child == this because a Widget may not be
-    // availalbe when this is added to the hierarchy.
+    // available when this is added to the hierarchy.
     if (is_add && GetWidget() && !example_view_created_) {
       example_view_created_ = true;
       example_base_->CreateExampleView(this);
@@ -46,12 +54,9 @@ class ContainerView : public views::View {
 
 }  // namespace
 
-namespace examples {
-
 ExampleBase::~ExampleBase() {}
 
-ExampleBase::ExampleBase(ExamplesMain* main, const char* title)
-    : main_(main), example_title_(title) {
+ExampleBase::ExampleBase(const char* title) : example_title_(title) {
   container_ = new ContainerView(this);
 }
 
@@ -61,7 +66,8 @@ void ExampleBase::PrintStatus(const char* format, ...) {
   va_start(ap, format);
   std::string msg;
   base::StringAppendV(&msg, format, ap);
-  main_->SetStatus(msg);
+  LogStatus(msg);
 }
 
 }  // namespace examples
+}  // namespace views

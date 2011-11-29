@@ -13,29 +13,27 @@
 
 namespace views {
 class View;
-}
 
 namespace examples {
 
 // ButtonExample simply counts the number of clicks.
-class ButtonExample : public ExampleBase, public views::ButtonListener {
+class ButtonExample : public ExampleBase, public ButtonListener {
  public:
-  explicit ButtonExample(ExamplesMain* main);
+  ButtonExample();
   virtual ~ButtonExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
   // The only control in this test.
-  views::TextButton* button_;
+  TextButton* button_;
 
   // Values used to modify the look and feel of the button.
-  views::TextButton::TextAlignment alignment_;
+  TextButton::TextAlignment alignment_;
   bool use_native_theme_border_;
   SkBitmap* icon_;
 
@@ -46,5 +44,6 @@ class ButtonExample : public ExampleBase, public views::ButtonListener {
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_BUTTON_EXAMPLE_H_

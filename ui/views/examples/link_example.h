@@ -13,28 +13,27 @@
 
 namespace views {
 class View;
-}
 
 namespace examples {
 
-class LinkExample : public ExampleBase,
-                    public views::LinkListener {
+class LinkExample : public ExampleBase, public LinkListener {
  public:
-  explicit LinkExample(ExamplesMain* main);
+  LinkExample();
   virtual ~LinkExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from views::LinkListener:
-  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+  // Overridden from LinkListener:
+  virtual void LinkClicked(Link* source, int event_flags) OVERRIDE;
 
-  views::Link* link_;
+  Link* link_;
 
   DISALLOW_COPY_AND_ASSIGN(LinkExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_LINK_EXAMPLE_H_

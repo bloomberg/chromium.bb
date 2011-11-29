@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "ui/base/models/combobox_model.h"
 
+namespace views {
 namespace examples {
 
 class ExampleComboboxModel : public ui::ComboboxModel {
@@ -28,5 +29,6 @@ class ExampleComboboxModel : public ui::ComboboxModel {
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_EXAMPLE_COMBOBOX_MODEL_H_

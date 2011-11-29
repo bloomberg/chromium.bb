@@ -20,10 +20,11 @@ double ClampToMin(double percent) {
 
 }  // namespace
 
+namespace views {
 namespace examples {
 
-ProgressBarExample::ProgressBarExample(ExamplesMain* main)
-    : ExampleBase(main, "Progress Bar"),
+ProgressBarExample::ProgressBarExample()
+    : ExampleBase("Progress Bar"),
       minus_button_(NULL),
       plus_button_(NULL),
       progress_bar_(NULL),
@@ -33,31 +34,30 @@ ProgressBarExample::ProgressBarExample(ExamplesMain* main)
 ProgressBarExample::~ProgressBarExample() {
 }
 
-void ProgressBarExample::CreateExampleView(views::View* container) {
-  views::GridLayout* layout = new views::GridLayout(container);
+void ProgressBarExample::CreateExampleView(View* container) {
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                        0, views::GridLayout::USE_PREF, 0, 0);
+  ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
+                        0, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 8);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        1, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 8);
-  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
-                        0, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::TRAILING, GridLayout::FILL,
+                        0, GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
-  minus_button_ = new views::TextButton(this, ASCIIToUTF16("-"));
+  minus_button_ = new TextButton(this, ASCIIToUTF16("-"));
   layout->AddView(minus_button_);
-  progress_bar_ = new views::ProgressBar();
+  progress_bar_ = new ProgressBar();
   layout->AddView(progress_bar_);
-  plus_button_ = new views::TextButton(this, ASCIIToUTF16("+"));
+  plus_button_ = new TextButton(this, ASCIIToUTF16("+"));
   layout->AddView(plus_button_);
 }
 
-void ProgressBarExample::ButtonPressed(views::Button* sender,
-                                       const views::Event& event) {
+void ProgressBarExample::ButtonPressed(Button* sender, const Event& event) {
   if (sender == minus_button_)
     current_percent_ = ClampToMin(current_percent_ - kStepSize);
   else if (sender == plus_button_)
@@ -67,3 +67,4 @@ void ProgressBarExample::ButtonPressed(views::Button* sender,
 }
 
 }  // namespace examples
+}  // namespace views

@@ -12,13 +12,14 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
+namespace views {
 namespace examples {
 
 struct BubbleConfig {
   string16 label;
   SkColor color;
-  views::View* anchor_view;
-  views::BubbleBorder::ArrowLocation arrow;
+  View* anchor_view;
+  BubbleBorder::ArrowLocation arrow;
   bool fade_in;
   bool fade_out;
 };
@@ -26,15 +27,15 @@ struct BubbleConfig {
 // Create four types of bubbles, one without arrow, one with an arrow, one
 // that fades in, and another that fades out and won't close on the escape key.
 BubbleConfig kRoundConfig = { ASCIIToUTF16("Round"), 0xFFC1B1E1, NULL,
-                              views::BubbleBorder::NONE, false, false };
+                              BubbleBorder::NONE, false, false };
 BubbleConfig kArrowConfig = { ASCIIToUTF16("Arrow"), SK_ColorGRAY, NULL,
-                              views::BubbleBorder::TOP_LEFT, false, false };
+                              BubbleBorder::TOP_LEFT, false, false };
 BubbleConfig kFadeInConfig = { ASCIIToUTF16("FadeIn"), SK_ColorYELLOW, NULL,
-                               views::BubbleBorder::BOTTOM_RIGHT, true, false };
+                               BubbleBorder::BOTTOM_RIGHT, true, false };
 BubbleConfig kFadeOutConfig = { ASCIIToUTF16("FadeOut"), SK_ColorWHITE, NULL,
-                                views::BubbleBorder::LEFT_TOP, false, true };
+                                BubbleBorder::LEFT_TOP, false, true };
 
-class ExampleBubbleDelegateView : public views::BubbleDelegateView {
+class ExampleBubbleDelegateView : public BubbleDelegateView {
  public:
   ExampleBubbleDelegateView(const BubbleConfig& config)
       : BubbleDelegateView(config.anchor_view, config.arrow, config.color),
@@ -42,8 +43,8 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
 
  protected:
   virtual void Init() OVERRIDE {
-    SetLayoutManager(new views::FillLayout());
-    views::Label* label = new views::Label(label_);
+    SetLayoutManager(new FillLayout());
+    Label* label = new Label(label_);
     AddChildView(label);
   }
 
@@ -51,26 +52,24 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
   string16 label_;
 };
 
-BubbleExample::BubbleExample(ExamplesMain* main)
-    : ExampleBase(main, "Bubble") {}
+BubbleExample::BubbleExample() : ExampleBase("Bubble") {}
 
 BubbleExample::~BubbleExample() {}
 
-void BubbleExample::CreateExampleView(views::View* container) {
+void BubbleExample::CreateExampleView(View* container) {
   container->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 1));
-  round_ = new views::TextButton(this, kRoundConfig.label);
-  arrow_ = new views::TextButton(this, kArrowConfig.label);
-  fade_in_ = new views::TextButton(this, kFadeInConfig.label);
-  fade_out_ = new views::TextButton(this, kFadeOutConfig.label);
+      new BoxLayout(BoxLayout::kHorizontal, 0, 0, 1));
+  round_ = new TextButton(this, kRoundConfig.label);
+  arrow_ = new TextButton(this, kArrowConfig.label);
+  fade_in_ = new TextButton(this, kFadeInConfig.label);
+  fade_out_ = new TextButton(this, kFadeOutConfig.label);
   container->AddChildView(round_);
   container->AddChildView(arrow_);
   container->AddChildView(fade_in_);
   container->AddChildView(fade_out_);
 }
 
-void BubbleExample::ButtonPressed(views::Button* sender,
-                                  const views::Event& event) {
+void BubbleExample::ButtonPressed(Button* sender, const Event& event) {
   BubbleConfig config;
   if (sender == round_)
     config = kRoundConfig;
@@ -84,7 +83,7 @@ void BubbleExample::ButtonPressed(views::Button* sender,
   config.anchor_view = sender;
   ExampleBubbleDelegateView* bubble_delegate =
       new ExampleBubbleDelegateView(config);
-  views::BubbleDelegateView::CreateBubble(bubble_delegate);
+  BubbleDelegateView::CreateBubble(bubble_delegate);
 
   if (config.fade_in)
     bubble_delegate->StartFade(true);
@@ -98,3 +97,4 @@ void BubbleExample::ButtonPressed(views::Button* sender,
 }
 
 }  // namespace examples
+}  // namespace views

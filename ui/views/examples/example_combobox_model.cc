@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/base/models/combobox_model.h"
 
+namespace views {
 namespace examples {
 
 ExampleComboboxModel::ExampleComboboxModel(const char** strings, int count)
@@ -26,3 +27,4 @@ string16 ExampleComboboxModel::GetItemAt(int index) {
 }
 
 }  // namespace examples
+}  // namespace views

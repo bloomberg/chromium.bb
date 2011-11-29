@@ -8,30 +8,30 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/grid_layout.h"
 
+namespace views {
 namespace examples {
 
-TabbedPaneExample::TabbedPaneExample(ExamplesMain* main)
-    : ExampleBase(main, "Tabbed Pane") {
+TabbedPaneExample::TabbedPaneExample() : ExampleBase("Tabbed Pane") {
 }
 
 TabbedPaneExample::~TabbedPaneExample() {
 }
 
-void TabbedPaneExample::CreateExampleView(views::View* container) {
-  tabbed_pane_ = new views::TabbedPane();
+void TabbedPaneExample::CreateExampleView(View* container) {
+  tabbed_pane_ = new TabbedPane();
   tabbed_pane_->set_listener(this);
-  add_ = new views::TextButton(this, ASCIIToUTF16("Add"));
-  add_at_ = new views::TextButton(this, ASCIIToUTF16("Add At 1"));
-  remove_at_ = new views::TextButton(this, ASCIIToUTF16("Remove At 1"));
-  select_at_ = new views::TextButton(this, ASCIIToUTF16("Select At 1"));
+  add_ = new TextButton(this, ASCIIToUTF16("Add"));
+  add_at_ = new TextButton(this, ASCIIToUTF16("Add At 1"));
+  remove_at_ = new TextButton(this, ASCIIToUTF16("Remove At 1"));
+  select_at_ = new TextButton(this, ASCIIToUTF16("Select At 1"));
 
-  views::GridLayout* layout = new views::GridLayout(container);
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
   const int tabbed_pane_column = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(tabbed_pane_column);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        1.0f, views::GridLayout::USE_PREF, 0, 0);
+  ColumnSet* column_set = layout->AddColumnSet(tabbed_pane_column);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        1.0f, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, tabbed_pane_column);
   layout->AddView(tabbed_pane_);
 
@@ -43,8 +43,8 @@ void TabbedPaneExample::CreateExampleView(views::View* container) {
   const int button_column = 1;
   column_set = layout->AddColumnSet(button_column);
   for (int i = 0; i < 4; i++) {
-    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                          1.0f, views::GridLayout::USE_PREF, 0, 0);
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                          1.0f, GridLayout::USE_PREF, 0, 0);
   }
 
   layout->StartRow(0 /* no expand */, button_column);
@@ -54,14 +54,12 @@ void TabbedPaneExample::CreateExampleView(views::View* container) {
   layout->AddView(select_at_);
 }
 
-void TabbedPaneExample::ButtonPressed(views::Button* sender,
-                                      const views::Event& event) {
+void TabbedPaneExample::ButtonPressed(Button* sender, const Event& event) {
   if (sender == add_) {
     AddButton("Added");
   } else if (sender == add_at_) {
     const string16 label = ASCIIToUTF16("Added at 1");
-    tabbed_pane_->AddTabAtIndex(1, label,
-                                new views::TextButton(NULL, label), true);
+    tabbed_pane_->AddTabAtIndex(1, label, new TextButton(NULL, label), true);
   } else if (sender == remove_at_) {
     if (tabbed_pane_->GetTabCount() > 1)
       delete tabbed_pane_->RemoveTabAtIndex(1);
@@ -84,8 +82,9 @@ void TabbedPaneExample::PrintStatus() {
 }
 
 void TabbedPaneExample::AddButton(const std::string& label) {
-  views::TextButton* button = new views::TextButton(NULL, ASCIIToUTF16(label));
+  TextButton* button = new TextButton(NULL, ASCIIToUTF16(label));
   tabbed_pane_->AddTab(ASCIIToUTF16(label), button);
 }
 
 }  // namespace examples
+}  // namespace views

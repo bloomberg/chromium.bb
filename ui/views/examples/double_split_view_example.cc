@@ -42,39 +42,41 @@ gfx::Size SplittedView::GetMinimumSize() {
 
 }  // namespace
 
+namespace views {
 namespace examples {
 
-DoubleSplitViewExample::DoubleSplitViewExample(ExamplesMain* main)
-    : ExampleBase(main, "Double Split View") {
+DoubleSplitViewExample::DoubleSplitViewExample()
+    : ExampleBase("Double Split View") {
 }
 
 DoubleSplitViewExample::~DoubleSplitViewExample() {
 }
 
-void DoubleSplitViewExample::CreateExampleView(views::View* container) {
+void DoubleSplitViewExample::CreateExampleView(View* container) {
   SplittedView* splitted_view_1 = new SplittedView();
   SplittedView* splitted_view_2 = new SplittedView();
   SplittedView* splitted_view_3 = new SplittedView();
 
-  inner_single_split_view_ = new views::SingleSplitView(
+  inner_single_split_view_ = new SingleSplitView(
       splitted_view_1, splitted_view_2,
-      views::SingleSplitView::HORIZONTAL_SPLIT,
+      SingleSplitView::HORIZONTAL_SPLIT,
       NULL);
 
-  outer_single_split_view_ = new views::SingleSplitView(
+  outer_single_split_view_ = new SingleSplitView(
       inner_single_split_view_, splitted_view_3,
-      views::SingleSplitView::HORIZONTAL_SPLIT,
+      SingleSplitView::HORIZONTAL_SPLIT,
       NULL);
 
-  views::GridLayout* layout = new views::GridLayout(container);
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
   // Add scroll view.
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
+  ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1, 0);
   layout->AddView(outer_single_split_view_);
 }
 
 }  // namespace examples
+}  // namespace views

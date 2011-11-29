@@ -13,32 +13,30 @@
 
 namespace views {
 class ProgressBar;
-}
 
 namespace examples {
 
-class ProgressBarExample : public ExampleBase,
-                           public views::ButtonListener {
+class ProgressBarExample : public ExampleBase, public ButtonListener {
  public:
-  explicit ProgressBarExample(ExamplesMain* main);
+  ProgressBarExample();
   virtual ~ProgressBarExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* button,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* button, const Event& event) OVERRIDE;
 
-  views::Button* minus_button_;
-  views::Button* plus_button_;
-  views::ProgressBar* progress_bar_;
+  Button* minus_button_;
+  Button* plus_button_;
+  ProgressBar* progress_bar_;
   double current_percent_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgressBarExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_PROGRESS_BAR_EXAMPLE_H_

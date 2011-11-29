@@ -12,40 +12,40 @@
 #include "ui/views/layout/grid_layout.h"
 #include "views/view.h"
 
+namespace views {
 namespace examples {
 
-TextfieldExample::TextfieldExample(ExamplesMain* main)
-    : ExampleBase(main, "Textfield") {
+TextfieldExample::TextfieldExample() : ExampleBase("Textfield") {
 }
 
 TextfieldExample::~TextfieldExample() {
 }
 
-void TextfieldExample::CreateExampleView(views::View* container) {
-  name_ = new views::Textfield();
-  password_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
+void TextfieldExample::CreateExampleView(View* container) {
+  name_ = new Textfield();
+  password_ = new Textfield(Textfield::STYLE_PASSWORD);
   password_->set_text_to_display_when_empty(ASCIIToUTF16("password"));
-  show_password_ = new views::TextButton(this, ASCIIToUTF16("Show password"));
-  clear_all_ = new views::TextButton(this, ASCIIToUTF16("Clear All"));
-  append_ = new views::TextButton(this, ASCIIToUTF16("Append"));
-  set_ = new views::TextButton(this, ASCIIToUTF16("Set"));
-  set_style_ = new views::TextButton(this, ASCIIToUTF16("Set Styles"));
+  show_password_ = new TextButton(this, ASCIIToUTF16("Show password"));
+  clear_all_ = new TextButton(this, ASCIIToUTF16("Clear All"));
+  append_ = new TextButton(this, ASCIIToUTF16("Append"));
+  set_ = new TextButton(this, ASCIIToUTF16("Set"));
+  set_style_ = new TextButton(this, ASCIIToUTF16("Set Styles"));
   name_->SetController(this);
   password_->SetController(this);
 
-  views::GridLayout* layout = new views::GridLayout(container);
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                        0.2f, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0.8f, views::GridLayout::USE_PREF, 0, 0);
+  ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
+                        0.2f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        0.8f, GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(ASCIIToUTF16("Name:")));
+  layout->AddView(new Label(ASCIIToUTF16("Name:")));
   layout->AddView(name_);
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(ASCIIToUTF16("Password:")));
+  layout->AddView(new Label(ASCIIToUTF16("Password:")));
   layout->AddView(password_);
   layout->StartRow(0, 0);
   layout->AddView(show_password_);
@@ -59,7 +59,7 @@ void TextfieldExample::CreateExampleView(views::View* container) {
   layout->AddView(set_style_);
 }
 
-void TextfieldExample::ContentsChanged(views::Textfield* sender,
+void TextfieldExample::ContentsChanged(Textfield* sender,
                                        const string16& new_contents) {
   if (sender == name_) {
     PrintStatus("Name [%s]", UTF16ToUTF8(new_contents).c_str());
@@ -68,13 +68,13 @@ void TextfieldExample::ContentsChanged(views::Textfield* sender,
   }
 }
 
-bool TextfieldExample::HandleKeyEvent(views::Textfield* sender,
-                                      const views::KeyEvent& key_event) {
+bool TextfieldExample::HandleKeyEvent(Textfield* sender,
+                                      const KeyEvent& key_event) {
   return false;
 }
 
-void TextfieldExample::ButtonPressed(views::Button* sender,
-                                     const views::Event& event) {
+void TextfieldExample::ButtonPressed(Button* sender,
+                                     const Event& event) {
   if (sender == show_password_) {
     PrintStatus("Password [%s]", UTF16ToUTF8(password_->text()).c_str());
   } else if (sender == clear_all_) {
@@ -111,3 +111,4 @@ void TextfieldExample::ButtonPressed(views::Button* sender,
 }
 
 }  // namespace examples
+}  // namespace views

@@ -69,11 +69,12 @@ const char* kVerticalAlignments[] = {
 
 }  // namespace
 
+namespace views {
 namespace examples {
 
 // TextExample's content view, which is responsible for drawing a string with
 // the specified style.
-class TextExample::TextExampleView : public views::View {
+class TextExample::TextExampleView : public View {
  public:
   TextExampleView()
     : font_(ResourceBundle::GetSharedInstance().GetFont(
@@ -134,41 +135,39 @@ class TextExample::TextExampleView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TextExampleView);
 };
 
-TextExample::TextExample(ExamplesMain* main)
-    : ExampleBase(main, "Text Styles") {
+TextExample::TextExample() : ExampleBase("Text Styles") {
 }
 
 TextExample::~TextExample() {
 }
 
-views::Combobox* TextExample::AddCombobox(views::GridLayout* layout,
-                                          const char* name,
-                                          const char** strings,
-                                          int count) {
+Combobox* TextExample::AddCombobox(GridLayout* layout,
+                                   const char* name,
+                                   const char** strings,
+                                   int count) {
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(ASCIIToUTF16(name)));
-  views::Combobox* combo_box =
-      new views::Combobox(new ExampleComboboxModel(strings, count));
+  layout->AddView(new Label(ASCIIToUTF16(name)));
+  Combobox* combo_box = new Combobox(new ExampleComboboxModel(strings, count));
   combo_box->SetSelectedItem(0);
   combo_box->set_listener(this);
   layout->AddView(combo_box);
   return combo_box;
 }
 
-void TextExample::CreateExampleView(views::View* container) {
+void TextExample::CreateExampleView(View* container) {
   text_view_ = new TextExampleView;
 
-  views::GridLayout* layout = new views::GridLayout(container);
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
   layout->AddPaddingRow(0, 8);
 
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddPaddingColumn(0, 8);
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                        0.1f, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0.9f, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
+                        0.1f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        0.9f, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 8);
 
   h_align_cb_ = AddCombobox(layout,
@@ -193,10 +192,10 @@ void TextExample::CreateExampleView(views::View* container) {
                          arraysize(kTextExamples));
 
   layout->StartRow(0, 0);
-  multiline_checkbox_ = new views::Checkbox(ASCIIToUTF16("Multiline"));
+  multiline_checkbox_ = new Checkbox(ASCIIToUTF16("Multiline"));
   multiline_checkbox_->set_listener(this);
   layout->AddView(multiline_checkbox_);
-  break_checkbox_ = new views::Checkbox(ASCIIToUTF16("Character Break"));
+  break_checkbox_ = new Checkbox(ASCIIToUTF16("Character Break"));
   break_checkbox_->set_listener(this);
   layout->AddView(break_checkbox_);
 
@@ -204,8 +203,8 @@ void TextExample::CreateExampleView(views::View* container) {
 
   column_set = layout->AddColumnSet(1);
   column_set->AddPaddingColumn(0, 16);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        1, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 16);
   layout->StartRow(1, 1);
   layout->AddView(text_view_);
@@ -213,8 +212,8 @@ void TextExample::CreateExampleView(views::View* container) {
   layout->AddPaddingRow(0, 8);
 }
 
-void TextExample::ButtonPressed(views::Button* button,
-                                const views::Event& event) {
+void TextExample::ButtonPressed(Button* button,
+                                const Event& event) {
   int text_flags = text_view_->text_flags();
   if (button == multiline_checkbox_) {
     if (multiline_checkbox_->checked())
@@ -231,7 +230,7 @@ void TextExample::ButtonPressed(views::Button* button,
   text_view_->SchedulePaint();
 }
 
-void TextExample::ItemChanged(views::Combobox* combo_box,
+void TextExample::ItemChanged(Combobox* combo_box,
                               int prev_index,
                               int new_index) {
   int text_flags = text_view_->text_flags();
@@ -327,3 +326,4 @@ void TextExample::ItemChanged(views::Combobox* combo_box,
 }
 
 }  // namespace examples
+}  // namespace views

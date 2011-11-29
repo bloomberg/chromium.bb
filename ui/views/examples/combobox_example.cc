@@ -30,25 +30,25 @@ class ComboboxModelExample : public ui::ComboboxModel {
 
 }  // namespace
 
+namespace views {
 namespace examples {
 
-ComboboxExample::ComboboxExample(ExamplesMain* main)
-    : ExampleBase(main, "Combo Box") {
+ComboboxExample::ComboboxExample() : ExampleBase("Combo Box") {
 }
 
 ComboboxExample::~ComboboxExample() {
 }
 
-void ComboboxExample::CreateExampleView(views::View* container) {
-  combobox_ = new views::Combobox(new ComboboxModelExample());
+void ComboboxExample::CreateExampleView(View* container) {
+  combobox_ = new Combobox(new ComboboxModelExample());
   combobox_->set_listener(this);
   combobox_->SetSelectedItem(3);
 
-  container->SetLayoutManager(new views::FillLayout);
+  container->SetLayoutManager(new FillLayout);
   container->AddChildView(combobox_);
 }
 
-void ComboboxExample::ItemChanged(views::Combobox* combo_box,
+void ComboboxExample::ItemChanged(Combobox* combo_box,
                                   int prev_index,
                                   int new_index) {
   PrintStatus("Selected: index=%d, label=%s",
@@ -56,3 +56,4 @@ void ComboboxExample::ItemChanged(views::Combobox* combo_box,
 }
 
 }  // namespace examples
+}  // namespace views

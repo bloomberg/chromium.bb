@@ -15,36 +15,34 @@
 
 namespace views {
 class MessageBoxView;
-}
 
 namespace examples {
 
 // A MessageBoxView example. This tests some of checkbox features as well.
-class MessageBoxExample : public ExampleBase,
-                          public views::ButtonListener {
+class MessageBoxExample : public ExampleBase, public ButtonListener {
  public:
-  explicit MessageBoxExample(ExamplesMain* main);
+  MessageBoxExample();
   virtual ~MessageBoxExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
   // The MessageBoxView to be tested.
-  views::MessageBoxView* message_box_view_;
+  MessageBoxView* message_box_view_;
 
   // Control buttons to show the status and toggle checkbox in the
   // message box.
-  views::Button* status_;
-  views::Button* toggle_;
+  Button* status_;
+  Button* toggle_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBoxExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_MESSAGE_BOX_EXAMPLE_H_

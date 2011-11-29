@@ -14,16 +14,17 @@
 #include "ui/views/examples/example_base.h"
 #include "ui/views/widget/widget.h"
 
+namespace views {
 namespace examples {
 
 // WidgetExample demonstrates how to create a popup widget.
-class WidgetExample : public ExampleBase, public views::ButtonListener {
+class WidgetExample : public ExampleBase, public ButtonListener {
  public:
-  explicit WidgetExample(ExamplesMain* main);
+  WidgetExample();
   virtual ~WidgetExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
   enum Command {
@@ -34,23 +35,23 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
     CLOSE_WIDGET,
   };
 
-  void BuildButton(views::View* container, const std::string& label, int tag);
+  void BuildButton(View* container, const std::string& label, int tag);
 
-  void InitWidget(views::Widget* widget, bool transparent);
+  void InitWidget(Widget* widget, bool transparent);
 
 #if defined(OS_LINUX)
-  void CreateChild(views::View* parent, bool transparent);
+  void CreateChild(View* parent, bool transparent);
 #endif
 
-  void CreatePopup(views::View* parent, bool transparent);
+  void CreatePopup(View* parent, bool transparent);
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_WIDGET_EXAMPLE_H_

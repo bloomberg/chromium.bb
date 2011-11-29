@@ -10,16 +10,17 @@
 #include "ui/views/layout/grid_layout.h"
 #include "views/view.h"
 
+namespace views {
 namespace examples {
 
 // ScrollView's content, which draws gradient color on background.
 // TODO(oshima): add child views as well.
-class ScrollViewExample::ScrollableView : public views::View {
+class ScrollViewExample::ScrollableView : public View {
  public:
   ScrollableView() {
     SetColor(SK_ColorRED, SK_ColorCYAN);
-    AddChildView(new views::TextButton(NULL, ASCIIToUTF16("Button")));
-    AddChildView(new views::RadioButton(ASCIIToUTF16("Radio Button"), 0));
+    AddChildView(new TextButton(NULL, ASCIIToUTF16("Button")));
+    AddChildView(new RadioButton(ASCIIToUTF16("Radio Button"), 0));
   }
 
   virtual gfx::Size GetPreferredSize() {
@@ -27,12 +28,11 @@ class ScrollViewExample::ScrollableView : public views::View {
   }
 
   void SetColor(SkColor from, SkColor to) {
-    set_background(
-        views::Background::CreateVerticalGradientBackground(from, to));
+    set_background(Background::CreateVerticalGradientBackground(from, to));
   }
 
   void PlaceChildY(int index, int y) {
-    views::View* view = child_at(index);
+    View* view = child_at(index);
     gfx::Size size = view->GetPreferredSize();
     view->SetBounds(0, y, size.width(), size.height());
   }
@@ -47,40 +47,39 @@ class ScrollViewExample::ScrollableView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(ScrollableView);
 };
 
-ScrollViewExample::ScrollViewExample(ExamplesMain* main)
-    : ExampleBase(main, "Scroll View") {
+ScrollViewExample::ScrollViewExample() : ExampleBase("Scroll View") {
 }
 
 ScrollViewExample::~ScrollViewExample() {
 }
 
-void ScrollViewExample::CreateExampleView(views::View* container) {
-  wide_ = new views::TextButton(this, ASCIIToUTF16("Wide"));
-  tall_ = new views::TextButton(this, ASCIIToUTF16("Tall"));
-  big_square_ = new views::TextButton(this, ASCIIToUTF16("Big Square"));
-  small_square_ = new views::TextButton(this, ASCIIToUTF16("Small Square"));
-  scroll_to_ = new views::TextButton(this, ASCIIToUTF16("Scroll to"));
+void ScrollViewExample::CreateExampleView(View* container) {
+  wide_ = new TextButton(this, ASCIIToUTF16("Wide"));
+  tall_ = new TextButton(this, ASCIIToUTF16("Tall"));
+  big_square_ = new TextButton(this, ASCIIToUTF16("Big Square"));
+  small_square_ = new TextButton(this, ASCIIToUTF16("Small Square"));
+  scroll_to_ = new TextButton(this, ASCIIToUTF16("Scroll to"));
   scrollable_ = new ScrollableView();
-  scroll_view_ = new views::ScrollView();
+  scroll_view_ = new ScrollView();
   scroll_view_->SetContents(scrollable_);
   scrollable_->SetBounds(0, 0, 1000, 100);
   scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
 
-  views::GridLayout* layout = new views::GridLayout(container);
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
   // Add scroll view.
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
+  ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1, 0);
   layout->AddView(scroll_view_);
 
   // Add control buttons.
   column_set = layout->AddColumnSet(1);
   for (int i = 0; i < 5; i++) {
-    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                          views::GridLayout::USE_PREF, 0, 0);
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                          GridLayout::USE_PREF, 0, 0);
   }
   layout->StartRow(0, 1);
   layout->AddView(wide_);
@@ -90,8 +89,7 @@ void ScrollViewExample::CreateExampleView(views::View* container) {
   layout->AddView(scroll_to_);
 }
 
-void ScrollViewExample::ButtonPressed(views::Button* sender,
-                                      const views::Event& event) {
+void ScrollViewExample::ButtonPressed(Button* sender, const Event& event) {
   if (sender == wide_) {
     scrollable_->SetBounds(0, 0, 1000, 100);
     scrollable_->SetColor(SK_ColorYELLOW, SK_ColorCYAN);
@@ -112,3 +110,4 @@ void ScrollViewExample::ButtonPressed(views::Button* sender,
 }
 
 }  // namespace examples
+}  // namespace views

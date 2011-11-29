@@ -15,6 +15,7 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/examples/example_base.h"
 
+namespace views {
 namespace examples {
 
 // TextfieldExample mimics login screen.
@@ -22,37 +23,37 @@ class TextfieldExample : public ExampleBase,
                          public views::TextfieldController,
                          public views::ButtonListener {
  public:
-  explicit TextfieldExample(ExamplesMain* main);
+  TextfieldExample();
   virtual ~TextfieldExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // views::TextfieldController:
-  virtual void ContentsChanged(views::Textfield* sender,
+  // TextfieldController:
+  virtual void ContentsChanged(Textfield* sender,
                                const string16& new_contents) OVERRIDE;
-  virtual bool HandleKeyEvent(views::Textfield* sender,
-                              const views::KeyEvent& key_event) OVERRIDE;
+  virtual bool HandleKeyEvent(Textfield* sender,
+                              const KeyEvent& key_event) OVERRIDE;
 
-  // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
   // Textfields for name and password.
-  views::Textfield* name_;
-  views::Textfield* password_;
+  Textfield* name_;
+  Textfield* password_;
 
   // Various buttons to control textfield.
-  views::TextButton* show_password_;
-  views::TextButton* clear_all_;
-  views::TextButton* append_;
-  views::TextButton* set_;
-  views::TextButton* set_style_;
+  TextButton* show_password_;
+  TextButton* clear_all_;
+  TextButton* append_;
+  TextButton* set_;
+  TextButton* set_style_;
 
   DISALLOW_COPY_AND_ASSIGN(TextfieldExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_TEXTFIELD_EXAMPLE_H_

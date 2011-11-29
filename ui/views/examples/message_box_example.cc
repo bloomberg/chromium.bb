@@ -9,41 +9,41 @@
 #include "views/controls/message_box_view.h"
 #include "views/view.h"
 
+namespace views {
 namespace examples {
 
-MessageBoxExample::MessageBoxExample(ExamplesMain* main)
-    : ExampleBase(main, "Message Box View") {
+MessageBoxExample::MessageBoxExample() : ExampleBase("Message Box View") {
 }
 
 MessageBoxExample::~MessageBoxExample() {
 }
 
-void MessageBoxExample::CreateExampleView(views::View* container) {
-  message_box_view_ = new views::MessageBoxView(
+void MessageBoxExample::CreateExampleView(View* container) {
+  message_box_view_ = new MessageBoxView(
       0,
       ASCIIToUTF16("Message Box Message"),
       ASCIIToUTF16("Default Prompt"));
-  status_ = new views::TextButton(this, ASCIIToUTF16("Show Status"));
-  toggle_ = new views::TextButton(this, ASCIIToUTF16("Toggle Checkbox"));
+  status_ = new TextButton(this, ASCIIToUTF16("Show Status"));
+  toggle_ = new TextButton(this, ASCIIToUTF16("Toggle Checkbox"));
 
-  views::GridLayout* layout = new views::GridLayout(container);
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
   message_box_view_->SetCheckBoxLabel(ASCIIToUTF16("Check Box"));
 
   const int message_box_column = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(message_box_column);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
+  ColumnSet* column_set = layout->AddColumnSet(message_box_column);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, message_box_column);
   layout->AddView(message_box_view_);
 
   const int button_column = 1;
   column_set = layout->AddColumnSet(button_column);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0.5f, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0.5f, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        0.5f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        0.5f, GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0 /* no expand */, button_column);
 
@@ -51,8 +51,7 @@ void MessageBoxExample::CreateExampleView(views::View* container) {
   layout->AddView(toggle_);
 }
 
-void MessageBoxExample::ButtonPressed(views::Button* sender,
-                                      const views::Event& event) {
+void MessageBoxExample::ButtonPressed(Button* sender, const Event& event) {
   if (sender == status_) {
     message_box_view_->SetCheckBoxLabel(
         ASCIIToUTF16(BoolToOnOff(message_box_view_->IsCheckBoxSelected())));
@@ -65,3 +64,4 @@ void MessageBoxExample::ButtonPressed(views::Button* sender,
 }
 
 }  // namespace examples
+}  // namespace views

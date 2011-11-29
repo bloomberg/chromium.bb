@@ -12,22 +12,22 @@
 
 namespace views {
 class View;
-}
 
 namespace examples {
 
 class ThrobberExample : public ExampleBase {
  public:
-  explicit ThrobberExample(ExamplesMain* main);
+  ThrobberExample();
   virtual ~ThrobberExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThrobberExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_THROBBER_EXAMPLE_H_

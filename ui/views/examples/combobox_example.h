@@ -11,28 +11,29 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/examples/example_base.h"
 
+namespace views {
 namespace examples {
 
-class ComboboxExample : public ExampleBase,
-                        public views::ComboboxListener {
+class ComboboxExample : public ExampleBase, public ComboboxListener {
  public:
-  explicit ComboboxExample(ExamplesMain* main);
+  ComboboxExample();
   virtual ~ComboboxExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from views::ComboboxListener:
-  virtual void ItemChanged(views::Combobox* combo_box,
+  // Overridden from ComboboxListener:
+  virtual void ItemChanged(Combobox* combo_box,
                            int prev_index,
                            int new_index) OVERRIDE;
 
-  views::Combobox* combobox_;
+  Combobox* combobox_;
 
   DISALLOW_COPY_AND_ASSIGN(ComboboxExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_COMBOBOX_EXAMPLE_H_

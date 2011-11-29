@@ -10,34 +10,34 @@
 #include "ui/views/controls/table/table_view2.h"
 #include "ui/views/layout/grid_layout.h"
 
+namespace views {
 namespace examples {
 
-Table2Example::Table2Example(ExamplesMain* main)
-    : ExampleBase(main, "Table2") {
+Table2Example::Table2Example() : ExampleBase("Table2") {
 }
 
 Table2Example::~Table2Example() {
 }
 
-void Table2Example::CreateExampleView(views::View* container) {
-  column1_visible_checkbox_ = new views::Checkbox(
+void Table2Example::CreateExampleView(View* container) {
+  column1_visible_checkbox_ = new Checkbox(
       ASCIIToUTF16("Fruit column visible"));
   column1_visible_checkbox_->SetChecked(true);
   column1_visible_checkbox_->set_listener(this);
-  column2_visible_checkbox_ = new views::Checkbox(
+  column2_visible_checkbox_ = new Checkbox(
       ASCIIToUTF16("Color column visible"));
   column2_visible_checkbox_->SetChecked(true);
   column2_visible_checkbox_->set_listener(this);
-  column3_visible_checkbox_ = new views::Checkbox(
+  column3_visible_checkbox_ = new Checkbox(
       ASCIIToUTF16("Origin column visible"));
   column3_visible_checkbox_->SetChecked(true);
   column3_visible_checkbox_->set_listener(this);
-  column4_visible_checkbox_ = new views::Checkbox(
+  column4_visible_checkbox_ = new Checkbox(
       ASCIIToUTF16("Price column visible"));
   column4_visible_checkbox_->SetChecked(true);
   column4_visible_checkbox_->set_listener(this);
 
-  views::GridLayout* layout = new views::GridLayout(container);
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
   std::vector<ui::TableColumn> columns;
@@ -49,12 +49,12 @@ void Table2Example::CreateExampleView(views::View* container) {
       ui::TableColumn(2, ASCIIToUTF16("Origin"), ui::TableColumn::LEFT, 100));
   columns.push_back(
       ui::TableColumn(3, ASCIIToUTF16("Price"), ui::TableColumn::LEFT, 100));
-  const int options = (views::TableView2::SINGLE_SELECTION |
-                       views::TableView2::RESIZABLE_COLUMNS |
-                       views::TableView2::AUTOSIZE_COLUMNS |
-                       views::TableView2::HORIZONTAL_LINES |
-                       views::TableView2::VERTICAL_LINES);
-  table_ = new views::TableView2(this, columns, views::ICON_AND_TEXT, options);
+  const int options = (TableView2::SINGLE_SELECTION |
+                       TableView2::RESIZABLE_COLUMNS |
+                       TableView2::AUTOSIZE_COLUMNS |
+                       TableView2::HORIZONTAL_LINES |
+                       TableView2::VERTICAL_LINES);
+  table_ = new TableView2(this, columns, ICON_AND_TEXT, options);
   table_->SetObserver(this);
   icon1_.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
   icon1_.allocPixels();
@@ -66,21 +66,21 @@ void Table2Example::CreateExampleView(views::View* container) {
   SkCanvas canvas2(icon2_);
   canvas2.drawColor(SK_ColorBLUE);
 
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
+  ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, 0);
   layout->AddView(table_);
 
   column_set = layout->AddColumnSet(1);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0.5f, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0.5f, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0.5f, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0.5f, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        0.5f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        0.5f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        0.5f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        0.5f, GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0 /* no expand */, 1);
 
@@ -112,8 +112,7 @@ SkBitmap Table2Example::GetIcon(int row) {
 void Table2Example::SetObserver(ui::TableModelObserver* observer) {
 }
 
-void Table2Example::ButtonPressed(views::Button* sender,
-                                  const views::Event& event) {
+void Table2Example::ButtonPressed(Button* sender, const Event& event) {
   int index = 0;
   bool show = true;
   if (sender == column1_visible_checkbox_) {
@@ -145,10 +144,11 @@ void Table2Example::OnMiddleClick() {
 void Table2Example::OnKeyDown(ui::KeyboardCode virtual_keycode) {
 }
 
-void Table2Example::OnTableViewDelete(views::TableView* table_view) {
+void Table2Example::OnTableViewDelete(TableView* table_view) {
 }
 
-void Table2Example::OnTableView2Delete(views::TableView2* table_view) {
+void Table2Example::OnTableView2Delete(TableView2* table_view) {
 }
 
 }  // namespace examples
+}  // namespace views

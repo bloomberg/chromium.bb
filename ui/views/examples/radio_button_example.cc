@@ -10,34 +10,36 @@
 #include "ui/views/layout/grid_layout.h"
 #include "views/view.h"
 
+namespace views {
 namespace examples {
 
-RadioButtonExample::RadioButtonExample(ExamplesMain* main)
-    : ExampleBase(main, "Radio Button"), count_(0) {
+RadioButtonExample::RadioButtonExample()
+    : ExampleBase("Radio Button"),
+      count_(0) {
 }
 
 RadioButtonExample::~RadioButtonExample() {
 }
 
-void RadioButtonExample::CreateExampleView(views::View* container) {
-  select_ = new views::TextButton(this, ASCIIToUTF16("Select"));
-  status_ = new views::TextButton(this, ASCIIToUTF16("Show Status"));
+void RadioButtonExample::CreateExampleView(View* container) {
+  select_ = new TextButton(this, ASCIIToUTF16("Select"));
+  status_ = new TextButton(this, ASCIIToUTF16("Show Status"));
 
   int group = 1;
   for (size_t i = 0; i < arraysize(radio_buttons_); ++i) {
-    radio_buttons_[i] = new views::RadioButton(
+    radio_buttons_[i] = new RadioButton(
         UTF8ToUTF16(base::StringPrintf(
             "Radio %d in group %d", static_cast<int>(i) + 1, group)),
         group);
     radio_buttons_[i]->set_listener(this);
   }
 
-  views::GridLayout* layout = new views::GridLayout(container);
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        1.0f, views::GridLayout::USE_PREF, 0, 0);
+  ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        1.0f, GridLayout::USE_PREF, 0, 0);
   for (size_t i = 0; i < arraysize(radio_buttons_); ++i) {
     layout->StartRow(0, 0);
     layout->AddView(radio_buttons_[i]);
@@ -48,8 +50,7 @@ void RadioButtonExample::CreateExampleView(views::View* container) {
   layout->AddView(status_);
 }
 
-void RadioButtonExample::ButtonPressed(views::Button* sender,
-                                       const views::Event& event) {
+void RadioButtonExample::ButtonPressed(Button* sender, const Event& event) {
   if (sender == select_) {
     radio_buttons_[2]->SetChecked(true);
   } else if (sender == status_) {
@@ -64,3 +65,4 @@ void RadioButtonExample::ButtonPressed(views::Button* sender,
 }
 
 }  // namespace examples
+}  // namespace views

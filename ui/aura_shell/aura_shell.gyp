@@ -182,6 +182,7 @@
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
         '../ui.gyp:ui_resources_standard',
+        '../../views/views.gyp:views_examples_lib',
         'aura_shell',
       ],
       'sources': [

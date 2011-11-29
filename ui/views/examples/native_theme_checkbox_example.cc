@@ -10,26 +10,28 @@
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/layout/fill_layout.h"
 
+namespace views {
 namespace examples {
 
-NativeThemeCheckboxExample::NativeThemeCheckboxExample(ExamplesMain* main)
-    : ExampleBase(main, "Native Theme Checkbox"),
+NativeThemeCheckboxExample::NativeThemeCheckboxExample()
+    : ExampleBase("Native Theme Checkbox"),
       count_(0) {
 }
 
 NativeThemeCheckboxExample::~NativeThemeCheckboxExample() {
 }
 
-void NativeThemeCheckboxExample::CreateExampleView(views::View* container) {
-  button_ = new views::Checkbox(ASCIIToUTF16("Checkbox"));
+void NativeThemeCheckboxExample::CreateExampleView(View* container) {
+  button_ = new Checkbox(ASCIIToUTF16("Checkbox"));
   button_->set_listener(this);
-  container->SetLayoutManager(new views::FillLayout);
+  container->SetLayoutManager(new FillLayout);
   container->AddChildView(button_);
 }
 
-void NativeThemeCheckboxExample::ButtonPressed(views::Button* sender,
-                                               const views::Event& event) {
+void NativeThemeCheckboxExample::ButtonPressed(Button* sender,
+                                               const Event& event) {
   PrintStatus(base::StringPrintf("Pressed! count: %d", ++count_).c_str());
 }
 
 }  // namespace examples
+}  // namespace views

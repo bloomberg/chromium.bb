@@ -11,25 +11,27 @@
 #include "ui/views/examples/example_base.h"
 #include "views/controls/single_split_view_listener.h"
 
+namespace views {
 namespace examples {
 
 class SingleSplitViewExample : public ExampleBase,
-                               public views::SingleSplitViewListener {
+                               public SingleSplitViewListener {
  public:
-  explicit SingleSplitViewExample(ExamplesMain* main);
+  SingleSplitViewExample();
   virtual ~SingleSplitViewExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  virtual bool SplitHandleMoved(views::SingleSplitView* sender) OVERRIDE;
+  virtual bool SplitHandleMoved(SingleSplitView* sender) OVERRIDE;
 
-  views::SingleSplitView* single_split_view_;
+  SingleSplitView* single_split_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleSplitViewExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_SINGLE_SPLIT_VIEW_EXAMPLE_H_

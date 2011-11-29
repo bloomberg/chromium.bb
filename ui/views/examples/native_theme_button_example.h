@@ -17,33 +17,32 @@
 namespace views {
 class Combobox;
 class NativeThemePainter;
-}
 
 namespace examples {
 
 // A subclass of button to test native theme rendering.
-class ExampleNativeThemeButton : public views::CustomButton,
-                                 public views::NativeThemeDelegate,
-                                 public views::ComboboxListener {
+class ExampleNativeThemeButton : public CustomButton,
+                                 public NativeThemeDelegate,
+                                 public ComboboxListener {
  public:
-  ExampleNativeThemeButton(views::ButtonListener* listener,
-                           views::Combobox* cb_part,
-                           views::Combobox* cb_state);
+  ExampleNativeThemeButton(ButtonListener* listener,
+                           Combobox* cb_part,
+                           Combobox* cb_state);
   virtual ~ExampleNativeThemeButton();
 
   std::string MessWithState();
 
  private:
-  // Overridden from views::View:
+  // Overridden from View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnPaintBackground(gfx::Canvas* canvas)  OVERRIDE;
 
-  // Overridden from views::ComboboxListener:
-  virtual void ItemChanged(views::Combobox* combo_box,
+  // Overridden from ComboboxListener:
+  virtual void ItemChanged(Combobox* combo_box,
                            int prev_index,
                            int new_index) OVERRIDE;
 
-  // Overridden from views::NativeThemePainter::Delegate:
+  // Overridden from NativeThemePainter::Delegate:
   virtual gfx::NativeTheme::Part GetThemePart() const OVERRIDE;
   virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
   virtual gfx::NativeTheme::State GetThemeState(
@@ -56,9 +55,9 @@ class ExampleNativeThemeButton : public views::CustomButton,
 
   void GetExtraParams(gfx::NativeTheme::ExtraParams* params) const;
 
-  scoped_ptr<views::NativeThemePainter> painter_;
-  views::Combobox* cb_part_;
-  views::Combobox* cb_state_;
+  scoped_ptr<NativeThemePainter> painter_;
+  Combobox* cb_part_;
+  Combobox* cb_state_;
   int count_;
   bool is_checked_;
   bool is_indeterminate_;
@@ -68,19 +67,17 @@ class ExampleNativeThemeButton : public views::CustomButton,
 
 // NativeThemeButtonExample shows how a View can use the NativeThemePainter
 // to paints its background and get a native look.
-class NativeThemeButtonExample : public ExampleBase,
-                                 public views::ButtonListener {
+class NativeThemeButtonExample : public ExampleBase, public ButtonListener {
  public:
-  explicit NativeThemeButtonExample(ExamplesMain* main);
+  NativeThemeButtonExample();
   virtual ~NativeThemeButtonExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
   // The only control in this test.
   ExampleNativeThemeButton* button_;
@@ -89,5 +86,6 @@ class NativeThemeButtonExample : public ExampleBase,
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_NATIVE_THEME_BUTTON_EXAMPLE_H_

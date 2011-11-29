@@ -15,6 +15,9 @@
 #include "ui/views/layout/fill_layout.h"
 #include "views/view.h"
 
+namespace views {
+namespace examples {
+
 namespace {
 
 class ExampleMenuModel : public ui::SimpleMenuModel,
@@ -48,7 +51,7 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
     kCommandGoHome,
   };
 
-  scoped_ptr<views::Menu2> menu_;
+  scoped_ptr<Menu2> menu_;
   scoped_ptr<ui::SimpleMenuModel> submenu_;
   std::set<int> checked_fruits_;
   int current_encoding_command_id_;
@@ -56,15 +59,14 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
   DISALLOW_COPY_AND_ASSIGN(ExampleMenuModel);
 };
 
-class ExampleMenuButton : public views::MenuButton,
-                          public views::ViewMenuDelegate {
+class ExampleMenuButton : public MenuButton, public ViewMenuDelegate {
  public:
   ExampleMenuButton(const string16& test, bool show_menu_marker);
   virtual ~ExampleMenuButton();
 
  private:
-  // Overridden from views::ViewMenuDelegate:
-  virtual void RunMenu(views::View* source, const gfx::Point& point) OVERRIDE;
+  // Overridden from ViewMenuDelegate:
+  virtual void RunMenu(View* source, const gfx::Point& point) OVERRIDE;
 
   scoped_ptr<ExampleMenuModel> menu_model_;
   DISALLOW_COPY_AND_ASSIGN(ExampleMenuButton);
@@ -93,11 +95,11 @@ ExampleMenuModel::ExampleMenuModel()
   submenu_.reset(new ui::SimpleMenuModel(this));
   submenu_->AddItem(kCommandDoSomething, WideToUTF16(L"Do Something 2"));
   AddSubMenu(0, ASCIIToUTF16("Submenu"), submenu_.get());
-  menu_.reset(new views::Menu2(this));
+  menu_.reset(new Menu2(this));
 }
 
 void ExampleMenuModel::RunMenuAt(const gfx::Point& point) {
-  menu_->RunMenuAt(point, views::Menu2::ALIGN_TOPRIGHT);
+  menu_->RunMenuAt(point, Menu2::ALIGN_TOPRIGHT);
 }
 
 bool ExampleMenuModel::IsCommandIdChecked(int command_id) const {
@@ -179,13 +181,13 @@ void ExampleMenuModel::ExecuteCommand(int command_id) {
 ExampleMenuButton::ExampleMenuButton(const string16& test,
                                      bool show_menu_marker)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          views::MenuButton(NULL, test, this, show_menu_marker)) {
+          MenuButton(NULL, test, this, show_menu_marker)) {
 }
 
 ExampleMenuButton::~ExampleMenuButton() {
 }
 
-void ExampleMenuButton::RunMenu(views::View* source, const gfx::Point& point) {
+void ExampleMenuButton::RunMenu(View* source, const gfx::Point& point) {
   if (!menu_model_.get())
     menu_model_.reset(new ExampleMenuModel);
 
@@ -194,23 +196,21 @@ void ExampleMenuButton::RunMenu(views::View* source, const gfx::Point& point) {
 
 }  // namespace
 
-namespace examples {
-
-MenuExample::MenuExample(ExamplesMain* main)
-    : ExampleBase(main, "Menu") {
+MenuExample::MenuExample() : ExampleBase("Menu") {
 }
 
 MenuExample::~MenuExample() {
 }
 
-void MenuExample::CreateExampleView(views::View* container) {
-  // views::Menu2 is not a sub class of View, hence we cannot directly
+void MenuExample::CreateExampleView(View* container) {
+  // Menu2 is not a sub class of View, hence we cannot directly
   // add to the container. Instead, we add a button to open a menu.
   const bool show_menu_marker = true;
   ExampleMenuButton* menu_button = new ExampleMenuButton(
       ASCIIToUTF16("Open a menu"), show_menu_marker);
-  container->SetLayoutManager(new views::FillLayout);
+  container->SetLayoutManager(new FillLayout);
   container->AddChildView(menu_button);
 }
 
 }  // namespace examples
+}  // namespace views

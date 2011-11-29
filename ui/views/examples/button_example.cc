@@ -11,11 +11,12 @@
 #include "ui/views/layout/fill_layout.h"
 #include "views/view.h"
 
+namespace views {
 namespace examples {
 
-ButtonExample::ButtonExample(ExamplesMain* main)
-    : ExampleBase(main, "Text Button"),
-      alignment_(views::TextButton::ALIGN_LEFT),
+ButtonExample::ButtonExample()
+    : ExampleBase("Text Button"),
+      alignment_(TextButton::ALIGN_LEFT),
       use_native_theme_border_(false),
       icon_(NULL),
       count_(0) {
@@ -26,15 +27,14 @@ ButtonExample::ButtonExample(ExamplesMain* main)
 ButtonExample::~ButtonExample() {
 }
 
-void ButtonExample::CreateExampleView(views::View* container) {
-  views::TextButton* tb = new views::TextButton(this, ASCIIToUTF16("Button"));
+void ButtonExample::CreateExampleView(View* container) {
+  TextButton* tb = new TextButton(this, ASCIIToUTF16("Button"));
   button_ = tb;
-  container->SetLayoutManager(new views::FillLayout);
+  container->SetLayoutManager(new FillLayout);
   container->AddChildView(button_);
 }
 
-void ButtonExample::ButtonPressed(views::Button* sender,
-                                  const views::Event& event) {
+void ButtonExample::ButtonPressed(Button* sender, const Event& event) {
   PrintStatus("Pressed! count: %d", ++count_);
 
   if (event.IsControlDown()) {
@@ -50,11 +50,11 @@ void ButtonExample::ButtonPressed(views::Button* sender,
         }
       } else {
         switch(button_->icon_placement()) {
-          case views::TextButton::ICON_ON_LEFT:
-            button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
+          case TextButton::ICON_ON_LEFT:
+            button_->set_icon_placement(TextButton::ICON_ON_RIGHT);
             break;
-          case views::TextButton::ICON_ON_RIGHT:
-            button_->set_icon_placement(views::TextButton::ICON_ON_LEFT);
+          case TextButton::ICON_ON_RIGHT:
+            button_->set_icon_placement(TextButton::ICON_ON_LEFT);
             break;
         }
       }
@@ -65,14 +65,14 @@ void ButtonExample::ButtonPressed(views::Button* sender,
         button_->SetIcon(*icon_);
     } else {
       switch(alignment_) {
-        case views::TextButton::ALIGN_LEFT:
-          alignment_ = views::TextButton::ALIGN_CENTER;
+        case TextButton::ALIGN_LEFT:
+          alignment_ = TextButton::ALIGN_CENTER;
           break;
-        case views::TextButton::ALIGN_CENTER:
-          alignment_ = views::TextButton::ALIGN_RIGHT;
+        case TextButton::ALIGN_CENTER:
+          alignment_ = TextButton::ALIGN_RIGHT;
           break;
-        case views::TextButton::ALIGN_RIGHT:
-          alignment_ = views::TextButton::ALIGN_LEFT;
+        case TextButton::ALIGN_RIGHT:
+          alignment_ = TextButton::ALIGN_LEFT;
           break;
       }
       button_->set_alignment(alignment_);
@@ -92,9 +92,9 @@ void ButtonExample::ButtonPressed(views::Button* sender,
     } else {
       use_native_theme_border_ = !use_native_theme_border_;
       if (use_native_theme_border_)
-        button_->set_border(new views::TextButtonNativeThemeBorder(button_));
+        button_->set_border(new TextButtonNativeThemeBorder(button_));
       else
-        button_->set_border(new views::TextButtonBorder());
+        button_->set_border(new TextButtonBorder());
     }
   } else if (event.IsAltDown()) {
     button_->SetIsDefault(!button_->is_default());
@@ -102,3 +102,4 @@ void ButtonExample::ButtonPressed(views::Button* sender,
 }
 
 }  // namespace examples
+}  // namespace views

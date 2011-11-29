@@ -12,11 +12,8 @@
 
 namespace views {
 class View;
-}
 
 namespace examples {
-
-class ExamplesMain;
 
 class ExampleBase {
  public:
@@ -31,7 +28,7 @@ class ExampleBase {
   views::View* example_view() { return container_; }
 
  protected:
-  ExampleBase(ExamplesMain* main, const char* title);
+  explicit ExampleBase(const char* title);
 
   // Prints a message in the status area, at the bottom of the window.
   void PrintStatus(const char* format, ...);
@@ -42,9 +39,6 @@ class ExampleBase {
   }
 
  private:
-  // The runner actually running this example.
-  ExamplesMain* main_;
-
   // Name of the example - used for the title of the tab.
   std::string example_title_;
 
@@ -55,5 +49,6 @@ class ExampleBase {
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_EXAMPLE_BASE_H_

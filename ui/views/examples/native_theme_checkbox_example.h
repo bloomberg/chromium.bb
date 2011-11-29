@@ -13,27 +13,24 @@
 
 namespace views {
 class Checkbox;
-}
 
 namespace examples {
 
 // NativeThemeCheckboxExample exercises a Checkbox control.
-class NativeThemeCheckboxExample : public ExampleBase,
-                                   public views::ButtonListener {
+class NativeThemeCheckboxExample : public ExampleBase, public ButtonListener {
  public:
-  explicit NativeThemeCheckboxExample(ExamplesMain* main);
+  NativeThemeCheckboxExample();
   virtual ~NativeThemeCheckboxExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
   // The only control in this test.
-  views::Checkbox* button_;
+  Checkbox* button_;
 
   int count_;
 
@@ -41,5 +38,6 @@ class NativeThemeCheckboxExample : public ExampleBase,
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_NATIVE_THEME_CHECKBOX_EXAMPLE_H_

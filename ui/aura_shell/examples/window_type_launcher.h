@@ -68,6 +68,7 @@ class WindowTypeLauncher : public views::WidgetDelegateView,
   views::NativeTextButton* widgets_button_;
   views::NativeTextButton* modal_button_;
   views::NativeTextButton* transient_button_;
+  views::NativeTextButton* examples_button_;
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncher);

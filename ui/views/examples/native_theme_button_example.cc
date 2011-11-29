@@ -36,12 +36,13 @@ const char* kStates[] = {
 
 }  // namespace
 
+namespace views {
 namespace examples {
 
 ExampleNativeThemeButton::ExampleNativeThemeButton(
-    views::ButtonListener* listener,
-    views::Combobox* cb_part,
-    views::Combobox* cb_state)
+    ButtonListener* listener,
+    Combobox* cb_part,
+    Combobox* cb_state)
     : CustomButton(listener),
       cb_part_(cb_part),
       cb_state_(cb_state),
@@ -51,8 +52,8 @@ ExampleNativeThemeButton::ExampleNativeThemeButton(
   cb_part_->set_listener(this);
   cb_state_->set_listener(this);
 
-  painter_.reset(new views::NativeThemePainter(this));
-  set_background(views::Background::CreateBackgroundPainter(
+  painter_.reset(new NativeThemePainter(this));
+  set_background(Background::CreateBackgroundPainter(
       false, painter_.get()));
 }
 
@@ -90,7 +91,7 @@ std::string ExampleNativeThemeButton::MessWithState() {
   return base::StringPrintf(message, ++count_);
 }
 
-void ExampleNativeThemeButton::ItemChanged(views::Combobox* combo_box,
+void ExampleNativeThemeButton::ItemChanged(Combobox* combo_box,
                                            int prev_index,
                                            int new_index) {
   SchedulePaint();
@@ -198,37 +199,37 @@ void ExampleNativeThemeButton::OnPaintBackground(gfx::Canvas* canvas) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-NativeThemeButtonExample::NativeThemeButtonExample(ExamplesMain* main)
-    : ExampleBase(main, "Native Theme Button") {
+NativeThemeButtonExample::NativeThemeButtonExample()
+    : ExampleBase("Native Theme Button") {
 }
 
 NativeThemeButtonExample::~NativeThemeButtonExample() {
 }
 
-void NativeThemeButtonExample::CreateExampleView(views::View* container) {
-  views::GridLayout* layout = new views::GridLayout(container);
+void NativeThemeButtonExample::CreateExampleView(View* container) {
+  GridLayout* layout = new GridLayout(container);
   container->SetLayoutManager(layout);
 
   layout->AddPaddingRow(0, 8);
 
-  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddPaddingColumn(0, 8);
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                        0.1f, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        0.9f, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
+                        0.1f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        0.9f, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 8);
 
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(ASCIIToUTF16("Part:")));
-  views::Combobox* cb_part = new views::Combobox(
+  layout->AddView(new Label(ASCIIToUTF16("Part:")));
+  Combobox* cb_part = new Combobox(
       new ExampleComboboxModel(kParts, arraysize(kParts)));
   cb_part->SetSelectedItem(0);
   layout->AddView(cb_part);
 
   layout->StartRow(0, 0);
-  layout->AddView(new views::Label(ASCIIToUTF16("State:")));
-  views::Combobox* cb_state = new views::Combobox(
+  layout->AddView(new Label(ASCIIToUTF16("State:")));
+  Combobox* cb_state = new Combobox(
       new ExampleComboboxModel(kStates, arraysize(kStates)));
   cb_state->SetSelectedItem(0);
   layout->AddView(cb_state);
@@ -239,8 +240,8 @@ void NativeThemeButtonExample::CreateExampleView(views::View* container) {
 
   column_set = layout->AddColumnSet(1);
   column_set->AddPaddingColumn(0, 16);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
+                        1, GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 16);
   layout->StartRow(1, 1);
   layout->AddView(button_);
@@ -248,9 +249,10 @@ void NativeThemeButtonExample::CreateExampleView(views::View* container) {
   layout->AddPaddingRow(0, 8);
 }
 
-void NativeThemeButtonExample::ButtonPressed(views::Button* sender,
-                                             const views::Event& event) {
+void NativeThemeButtonExample::ButtonPressed(Button* sender,
+                                             const Event& event) {
   PrintStatus(button_->MessWithState().c_str());
 }
 
 }  // namespace examples
+}  // namespace views

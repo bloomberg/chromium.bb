@@ -14,40 +14,40 @@
 #include "ui/views/examples/example_base.h"
 #include "views/controls/scroll_view.h"
 
+namespace views {
 namespace examples {
 
-class ScrollViewExample : public ExampleBase,
-                          public views::ButtonListener {
+class ScrollViewExample : public ExampleBase, public ButtonListener {
  public:
-  explicit ScrollViewExample(ExamplesMain* main);
+  ScrollViewExample();
   virtual ~ScrollViewExample();
 
   // Overridden from ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // Overridden from ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
   // Control buttons to change the size of scrollable and jump to
   // predefined position.
-  views::TextButton* wide_;
-  views::TextButton* tall_;
-  views::TextButton* big_square_;
-  views::TextButton* small_square_;
-  views::TextButton* scroll_to_;
+  TextButton* wide_;
+  TextButton* tall_;
+  TextButton* big_square_;
+  TextButton* small_square_;
+  TextButton* scroll_to_;
 
   class ScrollableView;
   // The content of the scroll view.
   ScrollableView* scrollable_;
 
   // The scroll view to test.
-  views::ScrollView* scroll_view_;
+  ScrollView* scroll_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollViewExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_SCROLL_VIEW_EXAMPLE_H_

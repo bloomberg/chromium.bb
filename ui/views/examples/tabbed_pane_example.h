@@ -14,27 +14,25 @@
 
 namespace views {
 class TabbedPane;
-}
 
 namespace examples {
 
 // A TabbedPane example tests adding/removing/selecting tabs.
 class TabbedPaneExample : public ExampleBase,
-                          public views::ButtonListener,
-                          public views::TabbedPaneListener {
+                          public ButtonListener,
+                          public TabbedPaneListener {
  public:
-  explicit TabbedPaneExample(ExamplesMain* main);
+  TabbedPaneExample();
   virtual ~TabbedPaneExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
  private:
-  // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
-  // views::TabbedPaneListener:
+  // TabbedPaneListener:
   virtual void TabSelectedAt(int index) OVERRIDE;
 
   // Print the status of the tab in the status area.
@@ -43,17 +41,18 @@ class TabbedPaneExample : public ExampleBase,
   void AddButton(const std::string& label);
 
   // The tabbed pane to be tested.
-  views::TabbedPane* tabbed_pane_;
+  TabbedPane* tabbed_pane_;
 
   // Control buttons to add, remove or select tabs.
-  views::Button* add_;
-  views::Button* add_at_;
-  views::Button* remove_at_;
-  views::Button* select_at_;
+  Button* add_;
+  Button* add_at_;
+  Button* remove_at_;
+  Button* select_at_;
 
   DISALLOW_COPY_AND_ASSIGN(TabbedPaneExample);
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_TABBED_PANE_EXAMPLE_H_

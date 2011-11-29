@@ -21,20 +21,19 @@ namespace views {
 class Checkbox;
 class Event;
 class TableView;
-}
 
 namespace examples {
 
 class TableExample : public ExampleBase,
                      public ui::TableModel,
-                     public views::TableViewObserver,
-                     public views::ButtonListener {
+                     public TableViewObserver,
+                     public ButtonListener {
  public:
-  explicit TableExample(ExamplesMain* main);
+  TableExample();
   virtual ~TableExample();
 
   // ExampleBase:
-  virtual void CreateExampleView(views::View* container) OVERRIDE;
+  virtual void CreateExampleView(View* container) OVERRIDE;
 
   // ui::TableModel:
   virtual int RowCount() OVERRIDE;
@@ -42,26 +41,25 @@ class TableExample : public ExampleBase,
   virtual SkBitmap GetIcon(int row) OVERRIDE;
   virtual void SetObserver(ui::TableModelObserver* observer) OVERRIDE;
 
-  // views::TableViewObserver:
+  // TableViewObserver:
   virtual void OnSelectionChanged() OVERRIDE;
   virtual void OnDoubleClick() OVERRIDE;
   virtual void OnMiddleClick() OVERRIDE;
   virtual void OnKeyDown(ui::KeyboardCode virtual_keycode) OVERRIDE;
-  virtual void OnTableViewDelete(views::TableView* table_view) OVERRIDE;
-  virtual void OnTableView2Delete(views::TableView2* table_view) OVERRIDE;
+  virtual void OnTableViewDelete(TableView* table_view) OVERRIDE;
+  virtual void OnTableView2Delete(TableView2* table_view) OVERRIDE;
 
-  // views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender,
-                             const views::Event& event) OVERRIDE;
+  // ButtonListener:
+  virtual void ButtonPressed(Button* sender, const Event& event) OVERRIDE;
 
  private:
   // The table to be tested.
-  views::TableView* table_;
+  TableView* table_;
 
-  views::Checkbox* column1_visible_checkbox_;
-  views::Checkbox* column2_visible_checkbox_;
-  views::Checkbox* column3_visible_checkbox_;
-  views::Checkbox* column4_visible_checkbox_;
+  Checkbox* column1_visible_checkbox_;
+  Checkbox* column2_visible_checkbox_;
+  Checkbox* column3_visible_checkbox_;
+  Checkbox* column4_visible_checkbox_;
 
   SkBitmap icon1_;
   SkBitmap icon2_;
@@ -70,5 +68,6 @@ class TableExample : public ExampleBase,
 };
 
 }  // namespace examples
+}  // namespace views
 
 #endif  // UI_VIEWS_EXAMPLES_TABLE_EXAMPLE_H_

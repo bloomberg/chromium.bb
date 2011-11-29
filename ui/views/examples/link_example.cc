@@ -9,25 +9,26 @@
 #include "ui/views/layout/fill_layout.h"
 #include "views/view.h"
 
+namespace views {
 namespace examples {
 
-LinkExample::LinkExample(ExamplesMain* main)
-    : ExampleBase(main, "Link") {
+LinkExample::LinkExample() : ExampleBase("Link") {
 }
 
 LinkExample::~LinkExample() {
 }
 
-void LinkExample::CreateExampleView(views::View* container) {
-  link_ = new views::Link(ASCIIToUTF16("Click me!"));
+void LinkExample::CreateExampleView(View* container) {
+  link_ = new Link(ASCIIToUTF16("Click me!"));
   link_->set_listener(this);
 
-  container->SetLayoutManager(new views::FillLayout);
+  container->SetLayoutManager(new FillLayout);
   container->AddChildView(link_);
 }
 
-void LinkExample::LinkClicked(views::Link* source, int event_flags) {
+void LinkExample::LinkClicked(Link* source, int event_flags) {
   PrintStatus("Link clicked");
 }
 
 }  // namespace examples
+}  // namespace views

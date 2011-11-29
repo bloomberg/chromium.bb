@@ -238,6 +238,8 @@
         '../ui/views/controls/scrollbar/scroll_bar.h',
         '../ui/views/controls/tabbed_pane/native_tabbed_pane_gtk.cc',
         '../ui/views/controls/tabbed_pane/native_tabbed_pane_gtk.h',
+        '../ui/views/controls/tabbed_pane/native_tabbed_pane_views.cc',
+        '../ui/views/controls/tabbed_pane/native_tabbed_pane_views.h',
         '../ui/views/controls/tabbed_pane/native_tabbed_pane_win.cc',
         '../ui/views/controls/tabbed_pane/native_tabbed_pane_win.h',
         '../ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h',
@@ -401,8 +403,6 @@
             '../ui/views/controls/menu/menu_separator_linux.cc',
             '../ui/views/controls/scrollbar/bitmap_scroll_bar.cc',
             '../ui/views/controls/scrollbar/bitmap_scroll_bar.h',
-            '../ui/views/controls/tabbed_pane/tabbed_pane.cc',
-            '../ui/views/controls/tabbed_pane/tabbed_pane.h',
             '../ui/views/controls/table/group_table_view.cc',
             '../ui/views/controls/table/group_table_view.h',
             '../ui/views/controls/table/native_table_wrapper.h',
@@ -418,8 +418,7 @@
             '../ui/views/widget/child_window_message_processor.cc',
             '../ui/views/widget/child_window_message_processor.h',
           ],
-        },
-        ],
+        }],
         ['toolkit_uses_gtk == 1', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
@@ -444,6 +443,8 @@
           'sources!': [
             '../ui/views/controls/menu/native_menu_views.cc',
             '../ui/views/controls/menu/native_menu_views.h',
+            '../ui/views/controls/tabbed_pane/native_tabbed_pane_views.cc',
+            '../ui/views/controls/tabbed_pane/native_tabbed_pane_views.h',
             '../ui/views/widget/tooltip_manager_views.cc',
           ],
         }],
@@ -476,7 +477,7 @@
           ],
         }],
       ],
-    },
+    }, # target_name: views
     {
       'target_name': 'views_unittests',
       'type': 'executable',
@@ -588,10 +589,10 @@
           ],
         }],
       ],
-    },
+    },  # target_name: views_unittests
     {
-      'target_name': 'views_examples',
-      'type': 'executable',
+      'target_name': 'views_examples_lib',
+      'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
@@ -608,6 +609,9 @@
       'include_dirs': [
         '..',
       ],
+      'defines': [
+        'VIEWS_EXAMPLES_IMPLEMENTATION',
+      ],
       'sources': [
         '../ui/views/examples/bubble_example.cc',
         '../ui/views/examples/bubble_example.h',
@@ -621,8 +625,8 @@
         '../ui/views/examples/example_base.h',
         '../ui/views/examples/example_combobox_model.cc',
         '../ui/views/examples/example_combobox_model.h',
-        '../ui/views/examples/examples_main.cc',
-        '../ui/views/examples/examples_main.h',
+        '../ui/views/examples/examples_window.cc',
+        '../ui/views/examples/examples_window.h',
         '../ui/views/examples/link_example.cc',
         '../ui/views/examples/link_example.h',
         '../ui/views/examples/message_box_example.cc',
@@ -643,6 +647,8 @@
         '../ui/views/examples/single_split_view_example.h',
         '../ui/views/examples/tabbed_pane_example.cc',
         '../ui/views/examples/tabbed_pane_example.h',
+        '../ui/views/examples/table_example.cc',
+        '../ui/views/examples/table_example.h',
         '../ui/views/examples/table2_example.cc',
         '../ui/views/examples/table2_example.h',
         '../ui/views/examples/text_example.cc',
@@ -653,6 +659,49 @@
         '../ui/views/examples/throbber_example.h',
         '../ui/views/examples/widget_example.cc',
         '../ui/views/examples/widget_example.h',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'include_dirs': [
+            '../third_party/wtl/include',
+          ],
+        }, { # OS!="win"
+          'sources/': [
+            ['exclude', '../ui/views/examples/table_example.cc'],
+            ['exclude', '../ui/views/examples/table_example.h'],
+          ],
+        }],
+        ['use_aura==1', {
+          'sources/': [
+            ['exclude', '../ui/views/examples/table_example.cc'],
+            ['exclude', '../ui/views/examples/table_example.h'],
+            ['exclude', '../ui/views/examples/table2_example.cc'],
+            ['exclude', '../ui/views/examples/table2_example.h'],
+          ],
+        }],
+      ],
+    },  # target_name: views_examples_lib
+    {
+      'target_name': 'views_examples_exe',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../chrome/chrome_resources.gyp:packed_resources',
+        '../skia/skia.gyp:skia',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+        '../ui/ui.gyp:ui',
+        '../ui/ui.gyp:gfx_resources',
+        '../ui/ui.gyp:ui_resources',
+        '../ui/ui.gyp:ui_resources_standard',
+        'views_examples_lib',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        '../ui/views/examples/examples_main.cc',
         '../ui/views/test/test_views_delegate.cc',
         '../ui/views/test/test_views_delegate.h',
         '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.rc',
@@ -680,20 +729,14 @@
               '-loleacc.lib',
             ]
           },
-          'include_dirs': [
-            '../third_party/wtl/include',
-          ],
           'msvs_settings': {
             'VCManifestTool': {
               'AdditionalManifestFiles': '..\\ui\\views\\examples\\views_examples.exe.manifest',
             },
           },
-          'sources': [
-            '../ui/views/examples/table_example.cc',
-            '../ui/views/examples/table_example.h',
-          ],
         }],
       ],
-    },
+    },  # target_name: views_examples_lib
+
   ],
 }
