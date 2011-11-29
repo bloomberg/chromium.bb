@@ -119,40 +119,13 @@ def main(argv):
     UpdatePermissions(dirs)
     UpdatePermissions(files)
 
-  # Grab the toolchain manifest files and massage them so their paths are
-  # corrected for the actual toolchain layout in the SDK.  The newlib toolchain
-  # manifest has these changes made:
-  #  1. Transform path components 'sdk/nacl-sdk' to 'toolchain/win_x86_newlib'
-  #  2. Remove the spurious 'sdk' directory entry.
-  # The glibc manifests can be used unmolested.
-  bot.BuildStep('generate toolchain manifests')
-  def TransformNewlibPath(npath):
-    return os.path.normpath(npath.replace('sdk/nacl-sdk',
-                                          'toolchain/win_x86_newlib'))
-  newlib_manifest = tar_archive.TarArchive()
-  newlib_manifest.path_filter = TransformNewlibPath
-  newlib_manifest_path = os.path.join(
-      home_dir,
-      'src',
-      installer_contents.GetToolchainManifest('newlib'))
-  newlib_manifest.InitWithManifest(newlib_manifest_path)
-  newlib_manifest.dirs.discard('sdk')
-
-  glibc_manifest_path = os.path.join(
-      home_dir,
-      'src',
-      installer_contents.GetToolchainManifest('glibc'))
-  glibc_manifest = tar_archive.TarArchive()
-  glibc_manifest.InitWithManifest(glibc_manifest_path)
-
-  # Merge the newlib and glibc manifests and send them to the script generator.
   bot.BuildStep('create Windows installer')
   bot.Print('generate_windows_installer is creating the windows installer.')
   build_tools_dir = os.path.join(home_dir, 'src', 'build_tools')
   make_nsis_installer.MakeNsisInstaller(
       installer_dir,
       cwd=build_tools_dir,
-      toolchain_manifests=newlib_manifest | glibc_manifest)
+      toolchain_manifests=None)
   bot.Print("Installer created!")
 
   # Clean up.
