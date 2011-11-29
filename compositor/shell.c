@@ -402,10 +402,10 @@ get_shell_surface(struct wlsc_surface *surface)
 }
 
 static void
-shell_create_shell_surface(struct wl_client *client,
-			   struct wl_resource *resource,
-			   uint32_t id,
-			   struct wl_resource *surface_resource)
+shell_get_shell_surface(struct wl_client *client,
+			struct wl_resource *resource,
+			uint32_t id,
+			struct wl_resource *surface_resource)
 {
 	struct wlsc_surface *surface = surface_resource->data;
 	struct shell_surface *shsurf;
@@ -437,7 +437,7 @@ shell_create_shell_surface(struct wl_client *client,
 }
 
 static const struct wl_shell_interface shell_implementation = {
-	shell_create_shell_surface
+	shell_get_shell_surface
 };
 
 static void
