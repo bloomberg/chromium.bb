@@ -125,7 +125,7 @@ class WebDatabaseFake : public WebDatabase {
   explicit WebDatabaseFake(AutofillTable* autofill_table)
       : autofill_table_(autofill_table) {}
 
-  virtual AutofillTable* GetAutofillTable() {
+  virtual AutofillTable* GetAutofillTable() OVERRIDE {
     return autofill_table_;
   }
 
@@ -176,11 +176,11 @@ class WebDataServiceFake : public WebDataService {
     syncable_service_created_or_destroyed_.Wait();
   }
 
-  virtual bool IsDatabaseLoaded() {
+  virtual bool IsDatabaseLoaded() OVERRIDE {
     return true;
   }
 
-  virtual WebDatabase* GetDatabase() {
+  virtual WebDatabase* GetDatabase() OVERRIDE {
     return web_database_;
   }
 
@@ -264,17 +264,17 @@ class AbstractAutofillFactory {
 
 class AutofillEntryFactory : public AbstractAutofillFactory {
  public:
-  browser_sync::DataTypeController* CreateDataTypeController(
+  virtual browser_sync::DataTypeController* CreateDataTypeController(
       ProfileSyncComponentsFactory* factory,
       ProfileMock* profile,
-      ProfileSyncService* service) {
+      ProfileSyncService* service) OVERRIDE {
     return new AutofillDataTypeController(factory, profile);
   }
 
-  void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
-                      ProfileSyncService* service,
-                      WebDataService* wds,
-                      DataTypeController* dtc) {
+  virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
+                              ProfileSyncService* service,
+                              WebDataService* wds,
+                              DataTypeController* dtc) OVERRIDE {
     EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_)).
         WillOnce(MakeGenericChangeProcessor());
     EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
@@ -286,17 +286,17 @@ class AutofillEntryFactory : public AbstractAutofillFactory {
 
 class AutofillProfileFactory : public AbstractAutofillFactory {
  public:
-  browser_sync::DataTypeController* CreateDataTypeController(
+  virtual browser_sync::DataTypeController* CreateDataTypeController(
       ProfileSyncComponentsFactory* factory,
       ProfileMock* profile,
-      ProfileSyncService* service) {
+      ProfileSyncService* service) OVERRIDE {
     return new AutofillProfileDataTypeController(factory, profile);
   }
 
-  void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
-                      ProfileSyncService* service,
-                      WebDataService* wds,
-                      DataTypeController* dtc) {
+  virtual void SetExpectation(ProfileSyncComponentsFactoryMock* factory,
+                              ProfileSyncService* service,
+                              WebDataService* wds,
+                              DataTypeController* dtc) OVERRIDE {
     EXPECT_CALL(*factory, CreateGenericChangeProcessor(_,_,_)).
         WillOnce(MakeGenericChangeProcessor());
     EXPECT_CALL(*factory, CreateSharedChangeProcessor()).
@@ -338,7 +338,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     }
   }
 
-  virtual void SetUp() {
+  virtual void SetUp() OVERRIDE {
     AbstractProfileSyncServiceTest::SetUp();
     profile_.CreateRequestContext();
     web_database_.reset(new WebDatabaseFake(&autofill_table_));
@@ -364,7 +364,7 @@ class ProfileSyncServiceAutofillTest : public AbstractProfileSyncServiceTest {
     web_data_service_->StartSyncableService();
   }
 
-  virtual void TearDown() {
+  virtual void TearDown() OVERRIDE {
     // Note: The tear down order is important.
     service_.reset();
     web_data_service_->ShutdownSyncableService();
@@ -582,7 +582,6 @@ class AddAutofillHelper {
 };
 
 // Overload write transaction to use custom NotifyTransactionComplete
-static const bool kLoggingInfo = true;
 class WriteTransactionTest: public WriteTransaction {
  public:
   WriteTransactionTest(const tracked_objects::Location& from_here,
@@ -592,7 +591,8 @@ class WriteTransactionTest: public WriteTransaction {
       : WriteTransaction(from_here, writer, directory),
         wait_for_syncapi_(wait_for_syncapi) { }
 
-  virtual void NotifyTransactionComplete(syncable::ModelTypeBitSet types) {
+  virtual void NotifyTransactionComplete(
+      syncable::ModelTypeBitSet types) OVERRIDE {
     // This is where we differ. Force a thread change here, giving another
     // thread a chance to create a WriteTransaction
     (*wait_for_syncapi_)->Wait();
@@ -626,7 +626,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
     syncable::ScopedDirLookup dir(dir_manager, user_share->name);
     ASSERT_TRUE(dir.good());
 
-    // Create autofill protobuf
+    // Create autofill protobuf.
     std::string tag = AutocompleteSyncableService::KeyToTag(
         UTF16ToUTF8(entry_.key().name()), UTF16ToUTF8(entry_.key().value()));
     sync_pb::AutofillSpecifics new_autofill;
@@ -670,11 +670,10 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
 
   void CreateNewEntry(const AutofillEntry& entry) {
     entry_ = entry;
-    scoped_ptr<Callback0::Type> c(NewCallback((FakeServerUpdater*)this,
-                                              &FakeServerUpdater::Update));
     ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
-    if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-         base::Bind(&FakeServerUpdater::Update, this))) {
+    if (!BrowserThread::PostTask(
+        BrowserThread::DB, FROM_HERE,
+        base::Bind(&FakeServerUpdater::Update, this))) {
       NOTREACHED() << "Failed to post task to the db thread.";
       return;
     }
@@ -682,8 +681,6 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
 
   void CreateNewEntryAndWait(const AutofillEntry& entry) {
     entry_ = entry;
-    scoped_ptr<Callback0::Type> c(NewCallback((FakeServerUpdater*)this,
-                                              &FakeServerUpdater::Update));
     ASSERT_FALSE(BrowserThread::CurrentlyOn(BrowserThread::DB));
     is_finished_.Reset();
     if (!BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
