@@ -40,6 +40,17 @@
 /* Define if you want use complete types */
 /* #undef INCOMPLETE_TYPES_BROKEN */
 
+/* How to obtain function inlining. */
+#ifndef INLINE
+#if defined(__GNUC__)
+#define INLINE __attribute__((always_inline))
+#elif defined(_MSC_VER)
+#define INLINE __forceinline
+#else
+#define INLINE
+#endif
+#endif
+
 /* Define if you have BSD-like bzero and bcopy */
 /* #undef NEED_BSD_STRINGS */
 
