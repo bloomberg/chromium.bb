@@ -32,7 +32,7 @@ def CreateCygwinSymlink(filepath, target):
   """
   lnk = open(filepath, 'w')
   uni = '!<symlink>\xff\xfe'
-  uni += ''.join([chr + '\x00' for chr in m.linkname])
+  uni += ''.join([chr + '\x00' for chr in target])
   uni += '\x00\x00'
   lnk.write(uni)
   lnk.close()
@@ -160,7 +160,7 @@ def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
     # toolchain is Cygwin based.  For all other tar items, or platforms we
     # go ahead and extract it normally.
     if m.issym() and sys.platform == 'win32':
-      CreateCygwinSymlink(os.path.join(dst_dir, m.name))
+      CreateCygwinSymlink(os.path.join(dst_dir, m.name), m.linkname)
     else:
       tar.extract(m, dst_dir)
 
