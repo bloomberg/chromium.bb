@@ -2021,7 +2021,7 @@ void TabContents::OnDialogClosed(IPC::Message* reply_msg,
                                              user_input);
 }
 
-gfx::NativeWindow TabContents::GetDialogRootWindow() {
+gfx::NativeWindow TabContents::GetDialogRootWindow() const {
   return view_->GetTopLevelNativeWindow();
 }
 

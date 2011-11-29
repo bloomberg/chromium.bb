@@ -19,7 +19,7 @@ namespace content {
 class CONTENT_EXPORT DialogDelegate {
  public:
   // Returns the root native window with which to associate the dialog.
-  virtual gfx::NativeWindow GetDialogRootWindow() = 0;
+  virtual gfx::NativeWindow GetDialogRootWindow() const = 0;
 
   // Called right before the dialog is shown.
   virtual void OnDialogShown() {}

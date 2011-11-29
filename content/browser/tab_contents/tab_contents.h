@@ -433,7 +433,7 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   virtual void OnDialogClosed(IPC::Message* reply_msg,
                               bool success,
                               const string16& user_input) OVERRIDE;
-  virtual gfx::NativeWindow GetDialogRootWindow() OVERRIDE;
+  virtual gfx::NativeWindow GetDialogRootWindow() const OVERRIDE;
   virtual void OnDialogShown() OVERRIDE;
 
   // Gets the zoom level for this tab.
