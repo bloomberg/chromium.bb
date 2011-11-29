@@ -750,6 +750,9 @@ window_get_resize_dx_dy(struct window *window, int *x, int *y)
 static void
 window_set_type(struct window *window)
 {
+	if (!window->shell_surface)
+		return;
+
 	switch (window->type) {
 	case TYPE_FULLSCREEN:
 		wl_shell_surface_set_fullscreen(window->shell_surface);
@@ -1008,7 +1011,8 @@ window_destroy(struct window *window)
 			input->keyboard_focus = NULL;
 	}
 
-	wl_shell_surface_destroy(window->shell_surface);
+	if (window->shell_surface)
+		wl_shell_surface_destroy(window->shell_surface);
 	wl_surface_destroy(window->surface);
 	wl_list_remove(&window->link);
 	free(window);
@@ -1275,6 +1279,8 @@ window_handle_button(void *data,
 	    button == BTN_LEFT && state == 1) {
 		switch (location) {
 		case WINDOW_TITLEBAR:
+			if (!window->shell_surface)
+				break;
 			wl_shell_surface_move(window->shell_surface,
 					      input_device, time);
 			break;
@@ -1286,6 +1292,8 @@ window_handle_button(void *data,
 		case WINDOW_RESIZING_TOP_RIGHT:
 		case WINDOW_RESIZING_BOTTOM_LEFT:
 		case WINDOW_RESIZING_BOTTOM_RIGHT:
+			if (!window->shell_surface)
+				break;
 			wl_shell_surface_resize(window->shell_surface,
 						input_device, time,
 						location);
@@ -1691,6 +1699,9 @@ input_receive_selection_data(struct input *input, const char *mime_type,
 void
 window_move(struct window *window, struct input *input, uint32_t time)
 {
+	if (!window->shell_surface)
+		return;
+
 	wl_shell_surface_move(window->shell_surface,
 			      input->input_device, time);
 }
@@ -1966,8 +1977,11 @@ window_create_internal(struct display *display, struct window *parent,
 	window->display = display;
 	window->parent = parent;
 	window->surface = wl_compositor_create_surface(display->compositor);
-	window->shell_surface = wl_shell_get_shell_surface(display->shell,
-							   window->surface);
+	if (display->shell) {
+		window->shell_surface =
+			wl_shell_get_shell_surface(display->shell,
+						   window->surface);
+	}
 	window->allocation.x = 0;
 	window->allocation.y = 0;
 	window->allocation.width = width;
@@ -1989,11 +2003,13 @@ window_create_internal(struct display *display, struct window *parent,
 		window->buffer_type = WINDOW_BUFFER_TYPE_SHM;
 
 	wl_surface_set_user_data(window->surface, window);
-	wl_shell_surface_set_user_data(window->shell_surface, window);
 	wl_list_insert(display->window_list.prev, &window->link);
 
-	wl_shell_surface_add_listener(window->shell_surface,
-				      &shell_surface_listener, window);
+	if (window->shell_surface) {
+		wl_shell_surface_set_user_data(window->shell_surface, window);
+		wl_shell_surface_add_listener(window->shell_surface,
+					      &shell_surface_listener, window);
+	}
 
 	return window;
 }
