@@ -410,6 +410,13 @@ shell_get_shell_surface(struct wl_client *client,
 	struct wlsc_surface *surface = surface_resource->data;
 	struct shell_surface *shsurf;
 
+	if (get_shell_surface(surface)) {
+		wl_resource_post_error(surface_resource,
+			WL_DISPLAY_ERROR_INVALID_OBJECT,
+			"wl_shell::get_shell_surface already requested");
+		return;
+	}
+
 	shsurf = calloc(1, sizeof *shsurf);
 	if (!shsurf) {
 		wl_resource_post_no_memory(resource);
