@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "grit/google_chrome_strings.h"
@@ -135,7 +136,7 @@ void TaskManagerDialogImpl::OnCloseDialog() {
 
 void TaskManagerDialogImpl::OpenHtmlDialog() {
   Browser* browser = BrowserList::GetLastActive();
-  window_ = browser->BrowserShowHtmlDialog(this, NULL);
+  window_ = browser->BrowserShowHtmlDialog(this, NULL, STYLE_GENERIC);
 }
 
 // ****************************************************

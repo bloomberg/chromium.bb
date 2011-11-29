@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/browser/ui/webui/print_preview_ui.h"
 #include "chrome/common/pref_names.h"
@@ -180,7 +181,9 @@ void CreateCloudPrintSigninDialogImpl(TabContents* parent_tab) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   HtmlDialogUIDelegate* dialog_delegate =
       new CloudPrintSigninDelegate(parent_tab);
-  BrowserList::GetLastActive()->BrowserShowHtmlDialog(dialog_delegate, NULL);
+  BrowserList::GetLastActive()->BrowserShowHtmlDialog(dialog_delegate,
+                                                      NULL,
+                                                      STYLE_GENERIC);
 }
 
 void CreateCloudPrintSigninDialog(TabContents* parent_tab) {

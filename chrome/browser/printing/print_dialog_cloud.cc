@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
@@ -630,9 +631,9 @@ void CreateDialogImpl(const FilePath& path_to_file,
           file_type, modal, delete_on_close);
   if (modal) {
     DCHECK(browser);
-    browser->BrowserShowHtmlDialog(dialog_delegate, NULL);
+    browser->BrowserShowHtmlDialog(dialog_delegate, NULL, STYLE_GENERIC);
   } else {
-    browser::ShowHtmlDialog(NULL, profile, dialog_delegate);
+    browser::ShowHtmlDialog(NULL, profile, dialog_delegate, STYLE_GENERIC);
   }
 }
 

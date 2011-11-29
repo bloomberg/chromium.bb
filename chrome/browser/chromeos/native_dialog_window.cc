@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/frame/bubble_window.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -331,7 +332,7 @@ void ShowNativeDialog(gfx::NativeWindow parent,
                       const gfx::Size& min_size) {
   NativeDialogHost* native_dialog_host =
       new NativeDialogHost(native_dialog, flags, size, min_size);
-  browser::CreateViewsWindow(parent, native_dialog_host);
+  browser::CreateViewsWindow(parent, native_dialog_host, STYLE_GENERIC);
   native_dialog_host->GetWidget()->Show();
 }
 

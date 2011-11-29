@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/chromeos/options/take_photo_dialog.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
@@ -186,7 +187,8 @@ void UserImageScreenHandler::HandleTakePhoto(const base::ListValue* args) {
   TakePhotoDialog* take_photo_dialog = new TakePhotoDialog(this);
   views::Widget* window = browser::CreateViewsWindow(
       GetNativeWindow(),
-      take_photo_dialog);
+      take_photo_dialog,
+      STYLE_GENERIC);
   window->SetAlwaysOnTop(true);
   window->Show();
 }

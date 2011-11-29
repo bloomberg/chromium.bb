@@ -20,6 +20,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_version_info.h"
@@ -90,7 +91,9 @@ namespace browser {
 // need to depend on our .h.
 views::Widget* ShowAboutChromeView(gfx::NativeWindow parent, Profile* profile) {
   views::Widget* about_chrome_window =
-      browser::CreateViewsWindow(parent, new AboutChromeView(profile));
+      browser::CreateViewsWindow(parent,
+                                 new AboutChromeView(profile),
+                                 STYLE_GENERIC);
       about_chrome_window->Show();
   return about_chrome_window;
 }

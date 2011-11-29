@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
@@ -1140,7 +1141,7 @@ void BrowserView::ShowCollectedCookiesDialog(TabContentsWrapper* wrapper) {
 void BrowserView::ConfirmBrowserCloseWithPendingDownloads() {
   DownloadInProgressDialogView* view =
       new DownloadInProgressDialogView(browser_.get());
-  browser::CreateViewsWindow(GetNativeHandle(), view)->Show();
+  browser::CreateViewsWindow(GetNativeHandle(), view, STYLE_GENERIC)->Show();
 }
 
 void BrowserView::ShowCreateWebAppShortcutsDialog(

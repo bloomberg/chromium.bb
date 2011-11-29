@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_WINDOW_H_
 #pragma once
 
+#include "chrome/browser/ui/dialog_style.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace views {
@@ -18,7 +19,8 @@ namespace browser {
 
 // Create a window for given |delegate| using default frame view.
 views::Widget* CreateViewsWindow(gfx::NativeWindow parent,
-                                 views::WidgetDelegate* delegate);
+                                 views::WidgetDelegate* delegate,
+                                 DialogStyle style);
 
 // Create a bubble for a given |delegate|. Takes care of chromeos
 // specific window type setting if needed.

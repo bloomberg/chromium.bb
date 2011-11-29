@@ -31,13 +31,14 @@ namespace browser {
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
                                  Profile* profile,
-                                 HtmlDialogUIDelegate* delegate) {
+                                 HtmlDialogUIDelegate* delegate,
+                                 DialogStyle style) {
   // It's not always safe to display an html dialog with an off the record
   // profile.  If the last browser with that profile is closed it will go
   // away.
   DCHECK(!profile->IsOffTheRecord() || delegate->IsDialogModal());
   HtmlDialogView* html_view = new HtmlDialogView(profile, delegate);
-  browser::CreateViewsWindow(parent, html_view);
+  browser::CreateViewsWindow(parent, html_view, style);
   html_view->InitDialog();
   html_view->GetWidget()->Show();
   return html_view->GetWidget()->GetNativeWindow();

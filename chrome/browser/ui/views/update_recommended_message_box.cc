@@ -7,6 +7,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -103,7 +104,7 @@ UpdateRecommendedMessageBox::UpdateRecommendedMessageBox(
       l10n_util::GetStringFUTF16(IDS_UPDATE_RECOMMENDED, product_name),
       string16(),
       kDialogWidth);
-  browser::CreateViewsWindow(parent_window, this)->Show();
+  browser::CreateViewsWindow(parent_window, this, STYLE_GENERIC)->Show();
 }
 
 UpdateRecommendedMessageBox::~UpdateRecommendedMessageBox() {

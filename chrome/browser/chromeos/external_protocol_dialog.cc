@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
@@ -122,5 +123,5 @@ ExternalProtocolDialog::ExternalProtocolDialog(TabContents* tab_contents,
     // Dialog is top level if we don't have a tab_contents associated with us.
     parent_window = NULL;
   }
-  browser::CreateViewsWindow(parent_window, this)->Show();
+  browser::CreateViewsWindow(parent_window, this, STYLE_GENERIC)->Show();
 }

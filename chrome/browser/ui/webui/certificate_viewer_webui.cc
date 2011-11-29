@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/string_number_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -87,7 +88,7 @@ void CertificateViewerDialog::Show(gfx::NativeWindow parent) {
       this,
       current_wrapper)->window()->GetNativeWindow();
 #else
-  window_ = browser->BrowserShowHtmlDialog(this, parent);
+  window_ = browser->BrowserShowHtmlDialog(this, parent, STYLE_GENERIC);
 #endif
 }
 

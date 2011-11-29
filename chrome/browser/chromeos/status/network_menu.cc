@@ -20,6 +20,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -478,7 +479,7 @@ void NetworkMenuModel::SetMenuModelDelegate(ui::MenuModelDelegate* delegate) {
 
 void NetworkMenuModel::ShowNetworkConfigView(NetworkConfigView* view) const {
   views::Widget* window = browser::CreateViewsWindow(
-      owner_->delegate()->GetNativeWindow(), view);
+      owner_->delegate()->GetNativeWindow(), view, STYLE_GENERIC);
   window->SetAlwaysOnTop(true);
   window->Show();
 }

@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_command_executor.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -76,8 +77,10 @@ private:
 
 namespace browser {
 
-gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent, Profile* profile,
-                                 HtmlDialogUIDelegate* delegate) {
+gfx::NativeWindow ShowHtmlDialog(gfx::NativeWindow parent,
+                                 Profile* profile,
+                                 HtmlDialogUIDelegate* delegate,
+                                 DialogStyle style) {
   // It's not always safe to display an html dialog with an off the record
   // profile.  If the last browser with that profile is closed it will go
   // away.

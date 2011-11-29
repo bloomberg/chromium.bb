@@ -15,6 +15,7 @@
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
@@ -58,7 +59,7 @@ EditSearchEngineDialogWebUI::EditSearchEngineDialogWebUI(
 void EditSearchEngineDialogWebUI::ShowDialog() {
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
-  browser->BrowserShowHtmlDialog(this, NULL);
+  browser->BrowserShowHtmlDialog(this, NULL, STYLE_GENERIC);
 }
 
 // HtmlDialogUIDelegate methods

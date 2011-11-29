@@ -1218,7 +1218,8 @@ void Browser::CloseTabContents(TabContents* contents) {
 
 gfx::NativeWindow Browser::BrowserShowHtmlDialog(
     HtmlDialogUIDelegate* delegate,
-    gfx::NativeWindow parent_window) {
+    gfx::NativeWindow parent_window,
+    DialogStyle style) {
 #if defined(OS_CHROMEOS)
   // For Chrome OS, first try to parent the dialog over the current browser --
   // it's likely to be maximized onscreen.  If it isn't tabbed (e.g. it's a
@@ -1233,7 +1234,7 @@ gfx::NativeWindow Browser::BrowserShowHtmlDialog(
   if (!parent_window)
     parent_window = window_->GetNativeHandle();
 
-  return browser::ShowHtmlDialog(parent_window, profile_, delegate);
+  return browser::ShowHtmlDialog(parent_window, profile_, delegate, style);
 }
 
 void Browser::BrowserRenderWidgetShowing() {

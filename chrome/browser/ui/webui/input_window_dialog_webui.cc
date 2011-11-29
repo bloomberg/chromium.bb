@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -49,7 +50,7 @@ InputWindowDialogWebUI::~InputWindowDialogWebUI() {
 void InputWindowDialogWebUI::Show() {
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
-  browser->BrowserShowHtmlDialog(this, NULL);
+  browser->BrowserShowHtmlDialog(this, NULL, STYLE_GENERIC);
   closed_ = false;
 }
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -72,7 +73,7 @@ void MobileSetupDialogDelegate::ShowDialog() {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;
-  browser->BrowserShowHtmlDialog(this, NULL);
+  browser->BrowserShowHtmlDialog(this, NULL, STYLE_GENERIC);
 }
 
 bool MobileSetupDialogDelegate::IsDialogModal() const {

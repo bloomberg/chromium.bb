@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
@@ -330,7 +331,7 @@ void ShowExtensionInstallDialogImpl(
       delegate, extension, icon, prompt);
 
   views::Widget* window =  browser::CreateViewsWindow(
-      browser_window->GetNativeHandle(), dialog);
+      browser_window->GetNativeHandle(), dialog, STYLE_GENERIC);
 
   window->Show();
 }

@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/webui/html_dialog_ui.h"
 #include "chrome/common/logging_chrome.h"
@@ -121,7 +122,7 @@ void HungRendererDialog::ShowDialog(TabContents* contents) {
   Browser* browser = BrowserList::GetLastActive();
   DCHECK(browser);
   handler_ = new HungRendererDialogHandler(contents_);
-  window_ = browser->BrowserShowHtmlDialog(this, NULL);
+  window_ = browser->BrowserShowHtmlDialog(this, NULL, STYLE_GENERIC);
   contents_observer_.reset(new TabContentsObserverImpl(this, contents_));
 }
 

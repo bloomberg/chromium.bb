@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
 #include "chrome/browser/ui/views/window.h"  // CreateViewsWindow
 #include "chrome/common/chrome_notification_types.h"
@@ -36,7 +37,7 @@ views::Widget* CreateWindow(gfx::NativeWindow parent,
   return chromeos::BubbleWindow::Create(parent,
       STYLE_FLUSH, delegate);
 #else
-  return browser::CreateViewsWindow(parent, delegate);
+  return browser::CreateViewsWindow(parent, delegate, STYLE_GENERIC);
 #endif
 }
 

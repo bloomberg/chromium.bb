@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_version_info.h"
@@ -153,7 +154,7 @@ views::Widget* BackgroundView::CreateWindowContainingView(
 
 void BackgroundView::CreateModalPopup(views::WidgetDelegate* view) {
   views::Widget* window = browser::CreateViewsWindow(
-      GetNativeWindow(), view);
+      GetNativeWindow(), view, STYLE_GENERIC);
   window->SetAlwaysOnTop(true);
   window->Show();
 }

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -37,7 +38,7 @@ void NetworkLoginObserver::CreateModalPopup(views::WidgetDelegate* view) {
   }
   if (browser) {
     views::Widget* window = browser::CreateViewsWindow(
-        browser->window()->GetNativeHandle(), view);
+        browser->window()->GetNativeHandle(), view, STYLE_GENERIC);
     window->SetAlwaysOnTop(true);
     window->Show();
   } else {

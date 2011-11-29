@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/extensions/extension.h"
 #include "grit/generated_resources.h"
@@ -117,7 +118,9 @@ void ExtensionUninstallDialogViews::Show() {
   }
 
   view_ = new ExtensionUninstallDialogDelegateView(this, extension_, &icon_);
-  browser::CreateViewsWindow(window->GetNativeHandle(), view_)->Show();
+  browser::CreateViewsWindow(window->GetNativeHandle(),
+                             view_,
+                             STYLE_GENERIC)->Show();
 }
 
 void ExtensionUninstallDialogViews::ExtensionUninstallAccepted() {

@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/common/net/gaia/gaia_auth_fetcher.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
@@ -82,7 +83,7 @@ CloudPrintSetupFlow* CloudPrintSetupFlow::OpenDialog(
     if (browser && browser->window())
       parent_window = browser->window()->GetNativeHandle();
   }
-  browser::ShowHtmlDialog(parent_window, profile, flow);
+  browser::ShowHtmlDialog(parent_window, profile, flow, STYLE_GENERIC);
   return flow;
 }
 

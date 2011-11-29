@@ -30,6 +30,7 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -321,7 +322,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
         view->Init();
         view->set_delegate(this);
         views::Widget* window = browser::CreateViewsWindow(
-            GetNativeWindow(), view);
+            GetNativeWindow(), view, STYLE_GENERIC);
         window->SetAlwaysOnTop(true);
         window->Show();
       } else {
@@ -503,7 +504,9 @@ void ExistingUserController::OnPasswordChangeDetected(
   // TODO(gspencer): We shouldn't have to erase stateful data when
   // doing this.  See http://crosbug.com/9115 http://crosbug.com/7792
   PasswordChangedView* view = new PasswordChangedView(this, false);
-  views::Widget* window = browser::CreateViewsWindow(GetNativeWindow(), view);
+  views::Widget* window = browser::CreateViewsWindow(GetNativeWindow(),
+                                                     view,
+                                                     STYLE_GENERIC);
   window->SetAlwaysOnTop(true);
   window->Show();
 

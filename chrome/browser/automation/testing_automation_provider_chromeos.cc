@@ -36,6 +36,7 @@
 #include "chrome/browser/policy/enterprise_install_attributes.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
 #include "chrome/common/pref_names.h"
 #include "net/base/network_change_notifier.h"
@@ -1140,7 +1141,7 @@ void TestingAutomationProvider::CaptureProfilePhoto(
       this, reply_message));
 
   views::Widget* window = browser::CreateViewsWindow(
-      browser->window()->GetNativeHandle(), take_photo_dialog);
+      browser->window()->GetNativeHandle(), take_photo_dialog, STYLE_GENERIC);
   window->SetAlwaysOnTop(true);
   window->Show();
 }
