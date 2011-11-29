@@ -315,7 +315,8 @@ cr.define('bmm', function() {
      * @private
      */
     fixWidth_: function() {
-      if (this.loading_)
+      var list = bmm.list;
+      if (this.loading_ || !list)
         return;
 
       // The width of the list is wrong after its content has changed.
