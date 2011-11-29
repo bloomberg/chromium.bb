@@ -27,17 +27,24 @@ if not defined NACL_TARGET_PLATFORM (
 
 set NACL_PLATFORM_DIR=%NACL_SDK_ROOT%\%NACL_TARGET_PLATFORM%
 
-set SCONS_LIB_DIR=%NACL_PLATFORM_DIR%\third_party\scons-2.0.1\engine
-set PYTHONPATH=%NACL_PLATFORM_DIR%\third_party\scons-2.0.1\engine;%NACL_PLATFORM_DIR%\build_tools
+set SCONS_DIR=%NACL_PLATFORM_DIR%\third_party\scons-2.0.1
+if exist %SCONS_DIR% goto gotscons
+set SCONS_DIR=%~dp0..\..\..\third_party\scons-2.0.1
+:gotscons
+
+set SCONS_LIB_DIR=%SCONS_DIR%\engine
+set PYTHONPATH=%SCONS_LIB_DIR%;%NACL_PLATFORM_DIR%\build_tools
 
 :: We have to do this because scons overrides PYTHONPATH and does not preserve
 :: what is provided by the OS.  The custom variable name won't be overwritten.
-set PYMOX=%NACL_PLATFORM_DIR%\third_party\pymox
+set PYMOX=%NACL_PLATFORM_DIR%\third_party\pymox\src
+
+set BASE_SCRIPT=%SCONS_DIR%\script\scons
 
 :: Run the included copy of scons.
-python -O -OO "%NACL_PLATFORM_DIR%\third_party\scons-2.0.1\script\scons" ^
+python -O -OO %BASE_SCRIPT% ^
 --warn no-visual-c-missing ^
 --file=build.scons ^
---site-dir="%NACL_PLATFORM_DIR%\build_tools\nacl_sdk_scons" %*
+--site-dir="%~dp0..\build_tools\nacl_sdk_scons" %*
 
 :end

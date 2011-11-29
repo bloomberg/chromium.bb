@@ -7,6 +7,7 @@
 
 readonly SCRIPT_DIR="$(dirname "$0")"
 readonly SCRIPT_DIR_ABS="$(cd "${SCRIPT_DIR}" ; pwd -P)"
+readonly SRC_DIR="$(dirname $(dirname ${SCRIPT_DIR_ABS}))"
 
 # Use the batch file as an entry point if on cygwin.
 if [ "x${OSTYPE}" = "xcygwin" ]; then
@@ -23,15 +24,15 @@ if [ "x${OSTYPE}" = "xcygwin" ]; then
   exit
 fi
 
-readonly BASE_SCRIPT="${SCRIPT_DIR_ABS}/third_party/scons-2.0.1/script/scons"
+readonly BASE_SCRIPT="${SRC_DIR}/third_party/scons-2.0.1/script/scons"
 
-export NACL_SDK_ROOT="${SCRIPT_DIR_ABS}"
+export NACL_SDK_ROOT="${SCRIPT_DIR_ABS}/../../native_client"
 
-export SCONS_LIB_DIR="${NACL_SDK_ROOT}/third_party/scons-2.0.1/engine"
-export PYTHONPATH="${SCRIPT_DIR_ABS}/third_party/scons-2.0.1/engine:${SCRIPT_DIR_ABS}/third_party/native_client/native_client/build"
+export SCONS_LIB_DIR="${SRC_DIR}/third_party/scons-2.0.1/engine"
+export PYTHONPATH="${SCONS_LIB_DIR}:${SRC_DIR}/native_client/build:${SCRIPT_DIR_ABS}"
 # We have to do this because scons overrides PYTHONPATH and does not preserve
 # what is provided by the OS.  The custom variable name won't be overwritten.
-export PYMOX="${NACL_SDK_ROOT}/third_party/pymox"
+export PYMOX="${SRC_DIR}/third_party/pymox/src"
 
 "${BASE_SCRIPT}" --file=main.scons $*
 

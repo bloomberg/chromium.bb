@@ -137,7 +137,9 @@ def GetNaclSdkRoot():
   if 'NACL_SDK_ROOT' in os.environ:
     return os.environ['NACL_SDK_ROOT']
   else:
-    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(SCRIPT_DIR)))
+    return os.path.join(SRC_DIR, 'native_client')
 
 
 def GetToolchainPath(options):

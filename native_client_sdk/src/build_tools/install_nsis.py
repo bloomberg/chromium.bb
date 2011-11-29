@@ -10,18 +10,25 @@ import subprocess
 import zipfile
 
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
+SRC_DIR = os.path.dirname(os.path.dirname(SDK_SRC_DIR))
+THIRD_PARTY_DIR = os.path.join(SRC_DIR, 'third_party')
+BIN_DIR = os.path.join(THIRD_PARTY_DIR, 'nacl_sdk_binaries')
+
 # The name of the archive that contains the AccessControl extensions.
-ACCESS_CONTROL_ZIP = 'AccessControl.zip'
+ACCESS_CONTROL_ZIP = os.path.join(BIN_DIR, 'AccessControl.zip')
 # The AccessControl plugin.  The installer check for this before installing.
 ACCESS_CONTROL_DLL = 'AccessControl.dll'
 # The name of the MkLnk extension DLL.  This is checked into the SDK repo.
-MKLINK_DLL = os.path.join('MkLink', 'Release Unicode', 'MkLink.dll')
+MKLINK_DLL = os.path.join(SCRIPT_DIR,
+                          'MkLink', 'Release Unicode', 'MkLink.dll')
 # The NSIS compiler.  The installer checks for this before installing.
 NSIS_COMPILER = 'makensis.exe'
 # The default directory name for the NSIS installation.
 NSIS_DIR = 'NSIS'
 # The name of the NSIS installer.  This file is checked into the SDK repo.
-NSIS_INSTALLER = 'nsis-2.46-Unicode-setup.exe'
+NSIS_INSTALLER = os.path.join(BIN_DIR, 'nsis-2.46-Unicode-setup.exe')
 
 def MakeDirsIgnoreExist(dir_path, mode=0755):
   '''Recursively make a directory path.
