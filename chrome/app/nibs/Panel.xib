@@ -76,8 +76,8 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="NSButton" id="514167085">
 								<reference key="NSNextResponder" ref="892753116"/>
-								<int key="NSvFlags">274</int>
-								<string key="NSFrameSize">{14, 14}</string>
+								<int key="NSvFlags">319</int>
+								<string key="NSFrame">{{-2, -4}, {18, 20}}</string>
 								<reference key="NSSuperview" ref="892753116"/>
 								<bool key="NSViewIsLayerTreeHost">YES</bool>
 								<int key="NSViewLayerContentsRedrawPolicy">2</int>
@@ -101,7 +101,7 @@
 								</object>
 							</object>
 						</object>
-						<string key="NSFrame">{{278, 4}, {14, 14}}</string>
+						<string key="NSFrame">{{282, 3}, {14, 14}}</string>
 						<reference key="NSSuperview" ref="304499912"/>
 						<bool key="NSViewIsLayerTreeHost">YES</bool>
 						<int key="NSViewLayerContentsRedrawPolicy">2</int>
@@ -109,16 +109,22 @@
 					</object>
 					<object class="NSTextField" id="537532822">
 						<reference key="NSNextResponder" ref="304499912"/>
-						<int key="NSvFlags">301</int>
-						<string key="NSFrame">{{26, 5}, {248, 14}}</string>
+						<int key="NSvFlags">293</int>
+						<string key="NSFrame">{{26, 4}, {248, 14}}</string>
 						<reference key="NSSuperview" ref="304499912"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="947097847">
-							<int key="NSCellFlags">68288064</int>
-							<int key="NSCellFlags2">4330560</int>
+							<int key="NSCellFlags">67239488</int>
+							<int key="NSCellFlags2">4200512</int>
 							<string key="NSContents"/>
-							<reference key="NSSupport" ref="26"/>
+							<object class="NSFont" key="NSSupport">
+								<string key="NSName">LucidaGrande</string>
+								<double key="NSSize">13</double>
+								<int key="NSfFlags">1044</int>
+							</object>
 							<reference key="NSControlView" ref="537532822"/>
+							<bool key="NSDrawsBackground">YES</bool>
+							<int key="NSTextBezelStyle">1</int>
 							<object class="NSColor" key="NSBackgroundColor">
 								<int key="NSColorSpace">6</int>
 								<string key="NSCatalogName">System</string>
@@ -463,6 +469,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">ChromeBrowserWindow</string>
+					<string key="superclassName">ChromeEventProcessingWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">browser/ui/cocoa/chrome_browser_window.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">ChromeEventProcessingWindow</string>
 					<string key="superclassName">NSWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -663,7 +677,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">PanelWindowCocoaImpl</string>
-					<string key="superclassName">ThemedBrowserWindow</string>
+					<string key="superclassName">ChromeBrowserWindow</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier" id="113923837">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">browser/ui/panels/panel_window_controller_cocoa.h</string>
@@ -691,14 +705,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBUserSource</string>
 						<string key="minorKey"/>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">ThemedBrowserWindow</string>
-					<string key="superclassName">ChromeEventProcessingWindow</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">browser/ui/cocoa/themed_browser_window.h</string>
 					</object>
 				</object>
 			</object>
