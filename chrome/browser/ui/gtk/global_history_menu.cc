@@ -166,24 +166,8 @@ GlobalHistoryMenu::HistoryItem* GlobalHistoryMenu::HistoryItemForMenuItem(
   return it != menu_item_history_map_.end() ? it->second : NULL;
 }
 
-bool GlobalHistoryMenu::HasValidHistoryItemForTab(
-    const TabRestoreService::Tab& entry) {
-  if (entry.navigations.empty())
-    return false;
-
-  const TabNavigation& current_navigation =
-      entry.navigations.at(entry.current_navigation_index);
-  if (current_navigation.virtual_url() == GURL(chrome::kChromeUINewTabURL))
-    return false;
-
-  return true;
-}
-
 GlobalHistoryMenu::HistoryItem* GlobalHistoryMenu::HistoryItemForTab(
     const TabRestoreService::Tab& entry) {
-  if (!HasValidHistoryItemForTab(entry))
-    return NULL;
-
   const TabNavigation& current_navigation =
       entry.navigations.at(entry.current_navigation_index);
   HistoryItem* item = new HistoryItem();
@@ -315,27 +299,11 @@ void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
       if (tabs.empty())
         continue;
 
-      // Check that this window has valid content. Sometimes it is possible for
-      // there to not be any subitems for a given window; if that is the case,
-      // do not add the entry to the main menu.
-      int valid_tab_count = 0;
-      std::vector<TabRestoreService::Tab>::const_iterator it;
-      for (it = tabs.begin(); it != tabs.end(); ++it) {
-        if (HasValidHistoryItemForTab(*it))
-          valid_tab_count++;
-      }
-      if (valid_tab_count == 0)
-        continue;
-
-      // Create the item for the parent/window. Do not set the title yet
-      // because the actual number of items that are in the menu will not be
-      // known until things like the NTP are filtered out, which is done when
-      // the tab items are actually created.
+      // Create the item for the parent/window.
       HistoryItem* item = new HistoryItem();
       item->session_id = entry_win->id;
 
       GtkWidget* submenu = gtk_menu_new();
-
       GtkWidget* restore_item = gtk_menu_item_new_with_label(
           l10n_util::GetStringUTF8(
               IDS_HISTORY_CLOSED_RESTORE_WINDOW_LINUX).c_str());
@@ -358,22 +326,18 @@ void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
 
       // Loop over the window's tabs and add them to the submenu.
       int subindex = 2;
-      for (it = tabs.begin(); it != tabs.end(); ++it) {
-        TabRestoreService::Tab tab = *it;
+      std::vector<TabRestoreService::Tab>::const_iterator iter;
+      for (iter = tabs.begin(); iter != tabs.end(); ++iter) {
+        TabRestoreService::Tab tab = *iter;
         HistoryItem* tab_item = HistoryItemForTab(tab);
-        if (tab_item) {
-          item->tabs.push_back(tab_item);
-          AddHistoryItemToMenu(tab_item,
-                               submenu,
-                               GlobalMenuBar::TAG_RECENTLY_CLOSED,
-                               subindex++);
-        }
+        item->tabs.push_back(tab_item);
+        AddHistoryItemToMenu(tab_item,
+                             submenu,
+                             GlobalMenuBar::TAG_RECENTLY_CLOSED,
+                             subindex++);
       }
 
-      // Now that the number of tabs that has been added is known, set the
-      // title of the parent menu item.
-      std::string title =
-          (item->tabs.size() == 1) ?
+      std::string title = item->tabs.size() == 1 ?
           l10n_util::GetStringUTF8(
               IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE) :
           l10n_util::GetStringFUTF8(
@@ -381,8 +345,7 @@ void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
               base::IntToString16(item->tabs.size()));
 
       // Create the menu item parent. Unlike mac, it's can't be activated.
-      GtkWidget* parent_item = gtk_menu_item_new_with_label(
-          title.c_str());
+      GtkWidget* parent_item = gtk_menu_item_new_with_label(title.c_str());
       gtk_widget_show(parent_item);
       g_object_set_data(G_OBJECT(parent_item), "type-tag",
                         GINT_TO_POINTER(GlobalMenuBar::TAG_RECENTLY_CLOSED));
@@ -392,16 +355,13 @@ void GlobalHistoryMenu::TabRestoreServiceChanged(TabRestoreService* service) {
                             index++);
       ++added_count;
     } else if (entry->type == TabRestoreService::TAB) {
-      TabRestoreService::Tab* tab =
-          static_cast<TabRestoreService::Tab*>(entry);
+      TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
       HistoryItem* item = HistoryItemForTab(*tab);
-      if (item) {
-        AddHistoryItemToMenu(item,
-                             history_menu_.get(),
-                             GlobalMenuBar::TAG_RECENTLY_CLOSED,
-                             index++);
-        ++added_count;
-      }
+      AddHistoryItemToMenu(item,
+                           history_menu_.get(),
+                           GlobalMenuBar::TAG_RECENTLY_CLOSED,
+                           index++);
+      ++added_count;
     }
   }
 }

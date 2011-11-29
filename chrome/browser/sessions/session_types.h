@@ -59,6 +59,7 @@ class TabNavigation {
   const GURL& referrer() const { return referrer_; }
 
   // The title of the page.
+  void set_title(const string16& title) { title_ = title; }
   const string16& title() const { return title_; }
 
   // State bits.

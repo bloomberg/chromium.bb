@@ -10,6 +10,7 @@
 #include <set>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/sessions/base_session_service.h"
@@ -174,6 +175,9 @@ class TabRestoreService : public BaseSessionService {
   virtual void Save() OVERRIDE;
 
  private:
+  friend class TabRestoreServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(TabRestoreServiceTest, PruneEntries);
+
   // Used to indicate what has loaded.
   enum LoadState {
     // Indicates we haven't loaded anything.
@@ -208,8 +212,9 @@ class TabRestoreService : public BaseSessionService {
   // tab/window closes from the previous session are added to the back.
   void AddEntry(Entry* entry, bool prune, bool to_front);
 
-  // Prunes entries_ to contain only kMaxEntries and invokes NotifyTabsChanged.
-  void PruneAndNotify();
+  // Prunes entries_ to contain only kMaxEntries, and removes uninteresting
+  // entries.
+  void PruneEntries();
 
   // Returns an iterator into entries_ whose id matches |id|. If |id| identifies
   // a Window, then its iterator position will be returned. If it identifies a
@@ -269,7 +274,23 @@ class TabRestoreService : public BaseSessionService {
   // Returns true if |tab| has more than one navigation. If |tab| has more
   // than one navigation |tab->current_navigation_index| is constrained based
   // on the number of navigations.
-  bool ValidateTab(Tab* tab);
+  static bool ValidateTab(Tab* tab);
+
+  // Validates all the tabs in a window, plus the window's active tab index.
+  static bool ValidateWindow(Window* window);
+
+  // Calls either ValidateTab or ValidateWindow as appropriate.
+  static bool ValidateEntry(Entry* entry);
+
+  // Returns true if |tab| is one we care about restoring.
+  static bool IsTabInteresting(const Tab* tab);
+
+  // Checks whether |window| is interesting --- if it only contains a single,
+  // uninteresting tab, it's not interesting.
+  static bool IsWindowInteresting(const Window* window);
+
+  // Validates and checks |entry| for interesting.
+  static bool FilterEntry(Entry* entry);
 
   // Validates all entries in |entries|, deleting any with no navigations.
   // This also deletes any entries beyond the max number of entries we can
@@ -300,7 +321,7 @@ class TabRestoreService : public BaseSessionService {
   // Gets the current time. This uses the time_factory_ if there is one.
   base::Time TimeNow() const;
 
-  // Set of entries.
+  // Set of entries. They are ordered from most to least recent.
   Entries entries_;
 
   // Whether we've loaded the last session.
@@ -309,9 +330,6 @@ class TabRestoreService : public BaseSessionService {
   // Are we restoring a tab? If this is true we ignore requests to create a
   // historical tab.
   bool restoring_;
-
-  // Have the max number of entries ever been created?
-  bool reached_max_;
 
   // The number of entries to write.
   int entries_to_write_;

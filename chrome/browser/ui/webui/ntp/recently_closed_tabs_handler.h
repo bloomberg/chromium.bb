@@ -40,7 +40,7 @@ class RecentlyClosedTabsHandler : public WebUIMessageHandler,
 
   // Converts a list of TabRestoreService entries to the JSON format required
   // by the NTP and adds them to the given list value.
-  static void AddRecentlyClosedEntries(
+  static void CreateRecentlyClosedValues(
       const TabRestoreService::Entries& entries,
       base::ListValue* entry_list_value);
 

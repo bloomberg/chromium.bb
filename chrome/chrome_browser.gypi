@@ -2112,8 +2112,6 @@
         'browser/sessions/session_service_factory.h',
         'browser/sessions/session_types.cc',
         'browser/sessions/session_types.h',
-        'browser/sessions/session_utils.cc',
-        'browser/sessions/session_utils.h',
         'browser/sessions/tab_restore_service.cc',
         'browser/sessions/tab_restore_service.h',
         'browser/sessions/tab_restore_service_factory.cc',

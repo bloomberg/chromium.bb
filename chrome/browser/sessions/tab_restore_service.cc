@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -56,7 +57,7 @@ TabRestoreService::Entry::~Entry() {}
 // TabRestoreService ----------------------------------------------------------
 
 // static
-const size_t TabRestoreService::kMaxEntries = 10;
+const size_t TabRestoreService::kMaxEntries = 25;
 
 // Identifier for commands written to file.
 // The ordering in the file is as follows:
@@ -191,7 +192,6 @@ TabRestoreService::TabRestoreService(Profile* profile,
                          FilePath()),
       load_state_(NOT_LOADED),
       restoring_(false),
-      reached_max_(false),
       entries_to_write_(0),
       entries_written_(0),
       time_factory_(time_factory) {
@@ -418,7 +418,7 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
 }
 
 void TabRestoreService::LoadTabsFromLastSession() {
-  if (load_state_ != NOT_LOADED || reached_max_)
+  if (load_state_ != NOT_LOADED || entries_.size() == kMaxEntries)
     return;
 
   load_state_ = LOADING;
@@ -527,25 +527,40 @@ void TabRestoreService::NotifyTabsChanged() {
 }
 
 void TabRestoreService::AddEntry(Entry* entry, bool notify, bool to_front) {
+  if (!FilterEntry(entry) || (entries_.size() >= kMaxEntries && !to_front)) {
+    delete entry;
+    return;
+  }
+
   if (to_front)
     entries_.push_front(entry);
   else
     entries_.push_back(entry);
+
   if (notify)
-    PruneAndNotify();
+    NotifyTabsChanged();
+
   // Start the save timer, when it fires we'll generate the commands.
   StartSaveTimer();
   entries_to_write_++;
 }
 
-void TabRestoreService::PruneAndNotify() {
-  while (entries_.size() > kMaxEntries) {
-    delete entries_.back();
-    entries_.pop_back();
-    reached_max_ = true;
+void TabRestoreService::PruneEntries() {
+  Entries new_entries;
+
+  for (TabRestoreService::Entries::const_iterator iter = entries_.begin();
+       iter != entries_.end(); ++iter) {
+    TabRestoreService::Entry* entry = *iter;
+
+    if (FilterEntry(entry) &&
+        new_entries.size() < kMaxEntries) {
+      new_entries.push_back(entry);
+    } else {
+      delete entry;
+    }
   }
 
-  NotifyTabsChanged();
+  entries_ = new_entries;
 }
 
 TabRestoreService::Entries::iterator TabRestoreService::GetEntryIteratorById(
@@ -885,8 +900,7 @@ void TabRestoreService::CreateEntriesFromCommands(
     }
   }
 
-  // If there was corruption some of the entries won't be valid. Prune any
-  // entries with no navigations.
+  // If there was corruption some of the entries won't be valid.
   ValidateAndDeleteEmptyEntries(&(entries.get()));
 
   loaded_entries->swap(entries.get());
@@ -942,7 +956,80 @@ bool TabRestoreService::ValidateTab(Tab* tab) {
   tab->current_navigation_index =
       std::max(0, std::min(tab->current_navigation_index,
                            static_cast<int>(tab->navigations.size()) - 1));
+
   return true;
+}
+
+bool TabRestoreService::ValidateWindow(Window* window) {
+  window->selected_tab_index =
+      std::max(0, std::min(window->selected_tab_index,
+                           static_cast<int>(window->tabs.size() - 1)));
+
+  int i = 0;
+  for (std::vector<Tab>::iterator tab_i = window->tabs.begin();
+       tab_i != window->tabs.end();) {
+    if (!ValidateTab(&(*tab_i))) {
+      tab_i = window->tabs.erase(tab_i);
+      if (i < window->selected_tab_index)
+        window->selected_tab_index--;
+      else if (i == window->selected_tab_index)
+        window->selected_tab_index = 0;
+    } else {
+      ++tab_i;
+      ++i;
+    }
+  }
+
+  if (window->tabs.empty())
+    return false;
+
+  return true;
+}
+
+bool TabRestoreService::ValidateEntry(Entry* entry) {
+  if (entry->type == TAB)
+    return ValidateTab(static_cast<Tab*>(entry));
+
+  if (entry->type == WINDOW)
+    return ValidateWindow(static_cast<Window*>(entry));
+
+  NOTREACHED();
+  return false;
+}
+
+bool TabRestoreService::IsTabInteresting(const Tab* tab) {
+  if (tab->navigations.empty())
+    return false;
+
+  if (tab->navigations.size() > 1)
+    return true;
+
+  return tab->pinned ||
+      tab->navigations.at(0).virtual_url() !=
+          GURL(chrome::kChromeUINewTabURL);
+}
+
+bool TabRestoreService::IsWindowInteresting(const Window* window) {
+  if (window->tabs.empty())
+    return false;
+
+  if (window->tabs.size() > 1)
+    return true;
+
+  return IsTabInteresting(&window->tabs[0]);
+}
+
+bool TabRestoreService::FilterEntry(Entry* entry) {
+  if (!ValidateEntry(entry))
+    return false;
+
+  if (entry->type == TAB)
+    return IsTabInteresting(static_cast<Tab*>(entry));
+  else if (entry->type == WINDOW)
+    return IsWindowInteresting(static_cast<Window*>(entry));
+
+  NOTREACHED();
+  return false;
 }
 
 void TabRestoreService::ValidateAndDeleteEmptyEntries(
@@ -950,34 +1037,10 @@ void TabRestoreService::ValidateAndDeleteEmptyEntries(
   std::vector<Entry*> valid_entries;
   std::vector<Entry*> invalid_entries;
 
-  size_t max_valid = kMaxEntries - entries_.size();
   // Iterate from the back so that we keep the most recently closed entries.
   for (std::vector<Entry*>::reverse_iterator i = entries->rbegin();
        i != entries->rend(); ++i) {
-    bool valid_entry = false;
-    if (valid_entries.size() != max_valid) {
-      if ((*i)->type == TAB) {
-        Tab* tab = static_cast<Tab*>(*i);
-        if (ValidateTab(tab))
-          valid_entry = true;
-      } else {
-        Window* window = static_cast<Window*>(*i);
-        for (std::vector<Tab>::iterator tab_i = window->tabs.begin();
-             tab_i != window->tabs.end();) {
-          if (!ValidateTab(&(*tab_i)))
-            tab_i = window->tabs.erase(tab_i);
-          else
-            ++tab_i;
-        }
-        if (!window->tabs.empty()) {
-          window->selected_tab_index =
-              std::max(0, std::min(window->selected_tab_index,
-                                   static_cast<int>(window->tabs.size() - 1)));
-          valid_entry = true;
-        }
-      }
-    }
-    if (valid_entry)
+    if (ValidateEntry(*i))
       valid_entries.push_back(*i);
     else
       invalid_entries.push_back(*i);
@@ -1058,7 +1121,7 @@ void TabRestoreService::LoadStateChanged() {
   // We're done loading.
   load_state_ ^= LOADING;
 
-  if (staging_entries_.empty() || reached_max_) {
+  if (entries_.size() == kMaxEntries) {
     STLDeleteElements(&staging_entries_);
     return;
   }
@@ -1091,7 +1154,8 @@ void TabRestoreService::LoadStateChanged() {
   // the front, not the end and we just added the entries to the end).
   entries_to_write_ = staging_entries_.size();
 
-  PruneAndNotify();
+  PruneEntries();
+  NotifyTabsChanged();
 }
 
 Time TabRestoreService::TimeNow() const {

@@ -665,16 +665,12 @@ bool JumpList::AddTab(const TabRestoreService::Tab* tab,
                       size_t max_items) {
   // This code adds the URL and the title strings of the given tab to the
   // specified list.
-  // This code is copied from RecentlyClosedTabsHandler::TabToValue().
-  if (tab->navigations.empty() || list->size() >= max_items)
-    return false;
-
-  const TabNavigation& current_navigation =
-      tab->navigations.at(tab->current_navigation_index);
-  if (current_navigation.virtual_url() == GURL(chrome::kChromeUINewTabURL))
+  if (list->size() >= max_items)
     return false;
 
   scoped_refptr<ShellLinkItem> link(new ShellLinkItem);
+  const TabNavigation& current_navigation =
+      tab->navigations.at(tab->current_navigation_index);
   std::string url = current_navigation.virtual_url().spec();
   link->SetArguments(UTF8ToWide(url));
   link->SetTitle(current_navigation.title());
@@ -683,22 +679,17 @@ bool JumpList::AddTab(const TabRestoreService::Tab* tab,
   return true;
 }
 
-bool JumpList::AddWindow(const TabRestoreService::Window* window,
+void JumpList::AddWindow(const TabRestoreService::Window* window,
                          ShellLinkItemList* list,
                          size_t max_items) {
   // This code enumerates al the tabs in the given window object and add their
   // URLs and titles to the list.
-  // This code is copied from RecentlyClosedTabsHandler::WindowToValue().
-  if (window->tabs.empty()) {
-    NOTREACHED();
-    return false;
-  }
+  DCHECK(!window->tabs.empty());
+
   for (size_t i = 0; i < window->tabs.size(); ++i) {
     if (!AddTab(&window->tabs[i], list, max_items))
-      return false;
+      return;
   }
-
-  return true;
 }
 
 bool JumpList::StartLoadingFavicon() {

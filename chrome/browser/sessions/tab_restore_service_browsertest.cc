@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stringprintf.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -16,6 +18,8 @@
 #include "content/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebKit.h"
+
+typedef TabRestoreService::Tab Tab;
 
 // Create subclass that overrides TimeNow so that we can control the time used
 // for closed tabs and windows.
@@ -136,7 +140,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   // Make sure the entry matches.
   TabRestoreService::Entry* entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
-  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  Tab* tab = static_cast<Tab*>(entry);
   EXPECT_FALSE(tab->pinned);
   EXPECT_TRUE(tab->extension_app_id.empty());
   ASSERT_EQ(3U, tab->navigations.size());
@@ -158,7 +162,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   // Make sure the entry matches
   entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
-  tab = static_cast<TabRestoreService::Tab*>(entry);
+  tab = static_cast<Tab*>(entry);
   EXPECT_FALSE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_EQ(url1_, tab->navigations[0].virtual_url());
@@ -198,7 +202,7 @@ TEST_F(TabRestoreServiceTest, DontRestorePrintPreviewTab) {
   // And verify the entry.
   TabRestoreService::Entry* entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
-  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  Tab* tab = static_cast<Tab*>(entry);
   EXPECT_FALSE(tab->pinned);
 
   // Verify that print preview tab is not restored.
@@ -226,7 +230,7 @@ TEST_F(TabRestoreServiceTest, Restore) {
   // And verify the entry.
   TabRestoreService::Entry* entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
-  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  Tab* tab = static_cast<Tab*>(entry);
   EXPECT_FALSE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_TRUE(url1_ == tab->navigations[0].virtual_url());
@@ -251,7 +255,7 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
   // these tests.
   TabRestoreService::Entry* entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
-  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  Tab* tab = static_cast<Tab*>(entry);
   tab->pinned = true;
   const std::string extension_app_id("test");
   tab->extension_app_id = extension_app_id;
@@ -265,7 +269,7 @@ TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
   // And verify the entry.
   entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
-  tab = static_cast<TabRestoreService::Tab*>(entry);
+  tab = static_cast<Tab*>(entry);
   EXPECT_TRUE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_TRUE(url1_ == tab->navigations[0].virtual_url());
@@ -295,8 +299,8 @@ TEST_F(TabRestoreServiceTest, DontPersistPostData) {
   const TabRestoreService::Entry* restored_entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, restored_entry->type);
 
-  const TabRestoreService::Tab* restored_tab =
-      static_cast<const TabRestoreService::Tab*>(restored_entry);
+  const Tab* restored_tab =
+      static_cast<const Tab*>(restored_entry);
   // There should be 3 navs.
   ASSERT_EQ(3U, restored_tab->navigations.size());
   EXPECT_EQ(time_factory_->TimeNow().ToInternalValue(),
@@ -406,7 +410,7 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
   // Then the closed tab.
   entry = *(++service_->entries().begin());
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
-  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  Tab* tab = static_cast<Tab*>(entry);
   ASSERT_FALSE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_EQ(2, tab->current_navigation_index);
@@ -448,7 +452,7 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabsPinned) {
   // Then the closed tab.
   entry = *(++service_->entries().begin());
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
-  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  Tab* tab = static_cast<Tab*>(entry);
   ASSERT_FALSE(tab->pinned);
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_EQ(2, tab->current_navigation_index);
@@ -507,7 +511,7 @@ TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
   // Make sure the entry matches.
   TabRestoreService::Entry* entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
-  TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+  Tab* tab = static_cast<Tab*>(entry);
   tab->timestamp = tab_timestamp;
 
   // Set this, otherwise previous session won't be loaded.
@@ -521,8 +525,94 @@ TEST_F(TabRestoreServiceTest, TimestampSurvivesRestore) {
   // And verify the entry.
   TabRestoreService::Entry* restored_entry = service_->entries().front();
   ASSERT_EQ(TabRestoreService::TAB, restored_entry->type);
-  TabRestoreService::Tab* restored_tab =
-      static_cast<TabRestoreService::Tab*>(restored_entry);
+  Tab* restored_tab =
+      static_cast<Tab*>(restored_entry);
   EXPECT_EQ(tab_timestamp.ToInternalValue(),
             restored_tab->timestamp.ToInternalValue());
+}
+
+TEST_F(TabRestoreServiceTest, PruneEntries) {
+  service_->ClearEntries();
+  ASSERT_TRUE(service_->entries().empty());
+
+  const size_t max_entries = TabRestoreService::kMaxEntries;
+  for (size_t i = 0; i < max_entries + 5; i++) {
+    TabNavigation navigation;
+    navigation.set_virtual_url(GURL(StringPrintf("http://%d",
+                                                 static_cast<int>(i))));
+    navigation.set_title(ASCIIToUTF16(StringPrintf("%d", static_cast<int>(i))));
+
+    Tab* tab = new Tab();
+    tab->navigations.push_back(navigation);
+    tab->current_navigation_index = 0;
+
+    service_->entries_.push_back(tab);
+  }
+
+  // Only keep kMaxEntries around.
+  EXPECT_EQ(max_entries + 5, service_->entries_.size());
+  service_->PruneEntries();
+  EXPECT_EQ(max_entries, service_->entries_.size());
+  // Pruning again does nothing.
+  service_->PruneEntries();
+  EXPECT_EQ(max_entries, service_->entries_.size());
+
+  // Prune older first.
+  TabNavigation navigation;
+  navigation.set_virtual_url(GURL("http://recent"));
+  navigation.set_title(ASCIIToUTF16("Most recent"));
+  Tab* tab = new Tab();
+  tab->navigations.push_back(navigation);
+  tab->current_navigation_index = 0;
+  service_->entries_.push_front(tab);
+  EXPECT_EQ(max_entries + 1, service_->entries_.size());
+  service_->PruneEntries();
+  EXPECT_EQ(max_entries, service_->entries_.size());
+  EXPECT_EQ(GURL("http://recent"),
+      static_cast<Tab*>(service_->entries_.front())->
+          navigations[0].virtual_url());
+
+  // Ignore NTPs.
+  navigation.set_virtual_url(GURL(chrome::kChromeUINewTabURL));
+  navigation.set_title(ASCIIToUTF16("New tab"));
+
+  tab = new Tab();
+  tab->navigations.push_back(navigation);
+  tab->current_navigation_index = 0;
+  service_->entries_.push_front(tab);
+
+  EXPECT_EQ(max_entries + 1, service_->entries_.size());
+  service_->PruneEntries();
+  EXPECT_EQ(max_entries, service_->entries_.size());
+  EXPECT_EQ(GURL("http://recent"),
+      static_cast<Tab*>(service_->entries_.front())->
+          navigations[0].virtual_url());
+
+  // Don't prune pinned NTPs.
+  tab = new Tab();
+  tab->pinned = true;
+  tab->current_navigation_index = 0;
+  tab->navigations.push_back(navigation);
+  service_->entries_.push_front(tab);
+  EXPECT_EQ(max_entries + 1, service_->entries_.size());
+  service_->PruneEntries();
+  EXPECT_EQ(max_entries, service_->entries_.size());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+      static_cast<Tab*>(service_->entries_.front())->
+          navigations[0].virtual_url());
+
+  // Don't prune NTPs that have multiple navigations.
+  // (Erase the last NTP first.)
+  service_->entries_.erase(service_->entries_.begin());
+  tab = new Tab();
+  tab->current_navigation_index = 1;
+  tab->navigations.push_back(navigation);
+  tab->navigations.push_back(navigation);
+  service_->entries_.push_front(tab);
+  EXPECT_EQ(max_entries, service_->entries_.size());
+  service_->PruneEntries();
+  EXPECT_EQ(max_entries, service_->entries_.size());
+  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+      static_cast<Tab*>(service_->entries_.front())->
+          navigations[1].virtual_url());
 }

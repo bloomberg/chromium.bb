@@ -425,14 +425,10 @@ void HistoryMenuBridge::OnVisitedHistoryResults(
 
 HistoryMenuBridge::HistoryItem* HistoryMenuBridge::HistoryItemForTab(
     const TabRestoreService::Tab& entry) {
-  if (entry.navigations.empty())
-    return NULL;
+  DCHECK(!entry.navigations.empty());
 
   const TabNavigation& current_navigation =
       entry.navigations.at(entry.current_navigation_index);
-  if (current_navigation.virtual_url() == GURL(chrome::kChromeUINewTabURL))
-    return NULL;
-
   HistoryItem* item = new HistoryItem();
   item->title = current_navigation.title();
   item->url = current_navigation.virtual_url();

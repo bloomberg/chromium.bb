@@ -153,7 +153,7 @@ class JumpList : public TabRestoreServiceObserver,
   bool AddTab(const TabRestoreService::Tab* tab,
               ShellLinkItemList* list,
               size_t max_items);
-  bool AddWindow(const TabRestoreService::Window* window,
+  void AddWindow(const TabRestoreService::Window* window,
                  ShellLinkItemList* list,
                  size_t max_items);
 

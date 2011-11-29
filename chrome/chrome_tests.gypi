@@ -1601,7 +1601,6 @@
         'browser/search_engines/template_url_unittest.cc',
         'browser/sessions/session_backend_unittest.cc',
         'browser/sessions/session_service_unittest.cc',
-        'browser/sessions/session_utils_unittest.cc',
         'browser/shell_integration_unittest.cc',
         'browser/speech/speech_input_bubble_controller_unittest.cc',
         'browser/spellchecker/spellchecker_platform_engine_unittest.cc',
