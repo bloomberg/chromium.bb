@@ -73,7 +73,7 @@ def ShowUpdatedDEPS(options):
     sys.stdout.flush()
 
 
-def SyncFlavor(flavor, url, dst, hash, save_downloads_dir=None):
+def SyncFlavor(flavor, url, dst, hash):
   """Sync a flavor of the nacl toolchain
 
   Arguments:
@@ -81,11 +81,7 @@ def SyncFlavor(flavor, url, dst, hash, save_downloads_dir=None):
     url: url to download the toolchain flavor from.
     dst: destination directory for the toolchain.
     hash: expected hash of the toolchain.
-    save_downloads_dir: (optional) save the downloaded toolchains here.
   """
-  save_archive = None
-  if save_downloads_dir:
-    save_archive = os.path.join(save_downloads_dir, os.path.basename(url))
 
   parent_dir = os.path.dirname(os.path.dirname(__file__))
   # TODO(bradnelson_): get rid of this when toolchain tarballs flattened.
@@ -93,19 +89,16 @@ def SyncFlavor(flavor, url, dst, hash, save_downloads_dir=None):
     # TODO(cbiffle): we really shouldn't do this until the unpack succeeds!
     # See: http://code.google.com/p/nativeclient/issues/detail?id=834
     download_utils.RemoveDir(dst)
-    sync_tgz.SyncTgz(url, dst, verbose=False, hash=hash,
-                     save_path=save_archive)
+    sync_tgz.SyncTgz(url, tar_dir=dst, verbose=False, hash=hash)
   elif 'newlib' in flavor:
     dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
-    sync_tgz.SyncTgz(url, dst_tmp, verbose=False, hash=hash,
-                     save_path=save_archive)
+    sync_tgz.SyncTgz(url, dst_tmp, verbose=False, hash=hash)
     subdir = os.path.join(dst_tmp, 'sdk', 'nacl-sdk')
     download_utils.MoveDirCleanly(subdir, dst)
     download_utils.RemoveDir(dst_tmp)
   else:
     dst_tmp = os.path.join(parent_dir, 'toolchain', '.tmp')
-    sync_tgz.SyncTgz(url, dst_tmp, verbose=False, hash=hash,
-                     save_path=save_archive)
+    sync_tgz.SyncTgz(url, dst_tmp, verbose=False, hash=hash)
     subdir = os.path.join(dst_tmp, 'toolchain', flavor)
     download_utils.MoveDirCleanly(subdir, dst)
     download_utils.RemoveDir(dst_tmp)
@@ -202,8 +195,7 @@ def Main(args):
       hash_value = None
 
     try:
-      SyncFlavor(flavor, url, dst, hash_value,
-                 save_downloads_dir=options.save_downloads_dir)
+      SyncFlavor(flavor, url, dst, hash_value)
     except sync_tgz.HashError, e:
       print str(e)
       print '-' * 70
@@ -217,4 +209,5 @@ def Main(args):
 
 
 if __name__ == '__main__':
+  print "\n\nRUNNING\n\n\n"
   Main(sys.argv[1:])

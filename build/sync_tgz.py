@@ -20,6 +20,24 @@ import urllib2
 import download_utils
 import http_download
 
+def CreateCygwinSymlink(filepath, target):
+  """create a cygwin 1.7 style link.
+
+  Arguments:
+    filepath: The filepath of the symlink file.
+    target: The path to the target of the symlink.
+
+  Generates a Cygwin style symlink by creating a SYSTEM tagged
+  file with the !<link> marker an unicode path.
+  """
+  lnk = open(filepath, 'w')
+  uni = '!<symlink>\xff\xfe'
+  uni += ''.join([chr + '\x00' for chr in m.linkname])
+  uni += '\x00\x00'
+  lnk.write(uni)
+  lnk.close()
+  subprocess.call(['cmd', '/C', 'attrib.exe', '+S', filepath])
+
 
 def _HashFileHandle(fh):
   """sha1 of a file like object.
@@ -76,145 +94,79 @@ class HashError(Exception):
         self.actual_hash, self.expected_hash, self.download_url)
 
 
-def SyncTgz(url, target, username=None, password=None, verbose=True, hash=None,
-            save_path=None):
+def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
+            verbose=True, hash=None, keep=False):
   """Download a file from a remote server.
-
   Args:
     url: A URL to download from.
-    target: Directory to extract to and prefix to use for tgz file.
+    tar_dir: Directory for tar download.
+    dst_dir: Directory to extract to.
     username: Optional username for download.
     password: Optional password for download (ignored if no username).
     verbose: Flag indicating if status shut be printed.
     hash: sha1 of expected download (don't check if hash is None).
-    save_path: Optional place to save the downloaded tarball.  If this is None,
-        then the tarball is downloaded to a temporary file which is deleted.
+    keep: Keep the archive, do not delete when done.
   """
-  shutil.rmtree(target, True)
-  os.makedirs(target)
-  tgz_filename = target + '/.tgz'
+
+  verbose=True
+  filename = url.split('/')[-1]
+  tar_filepath = os.path.join(tar_dir, filename)
+  if not dst_dir:
+    dst_dir = tar_dir
+
+  # Crate the directory if it doesn't exist
+  if not os.path.isdir(tar_dir): os.makedirs(tar_dir)
+  if not os.path.isdir(dst_dir): os.makedirs(dst_dir)
 
   if verbose:
-    print 'Downloading %s to %s...' % (url, tgz_filename)
-  http_download.HttpDownload(url, tgz_filename,
+    print "Archive URL: %s" % url
+    print "Archive file: %s" % tar_filepath
+    print "Extract path: %s" % dst_dir
+  # Clean out old directory
+  if verbose:
+    print 'Cleaning out %s' % dst_dir
+  shutil.rmtree(dst_dir, True)
+  if verbose:
+    print 'Downloading %s to %s...' % (url, tar_filepath)
+  http_download.HttpDownload(url, tar_filepath,
     username=username, password=password, verbose=verbose)
 
-  tgz_hash = HashFile(tgz_filename)
-  if hash and hash != tgz_hash:
-    raise HashError(actual_hash=tgz_hash, expected_hash=hash, download_url=url)
-
-  # If saving the tarball, also produce a manifest file that can be parsed by
-  # the SDK installer generator script.  Save this manifest file as
-  # |save_path|.manifest.  Do this because the 'xz' compression format is not
-  # supported by the scripts used in the SDK.
-  save_manifest = None
-  if save_path:
-    if not os.path.exists(os.path.dirname(save_path)):
-      os.makedirs(os.path.dirname(save_path))
-    save_manifest = os.path.abspath(os.path.normpath(save_path + '.manifest'))
+  tar_hash = HashFile(tar_filepath)
+  if hash and hash != tar_hash:
+    raise HashError(actual_hash=tar_hash, expected_hash=hash, download_url=url)
 
   if verbose:
-    print 'Extracting from %s...' % tgz_filename
-  if verbose:
-    verbosechar = 'v'
-  else:
-    verbosechar = ''
-  if sys.platform == 'win32':
-    os.makedirs(os.path.join(target, 'tmptar'))
-    tarfiles = ['cyggcc_s-1.dll', 'cygiconv-2.dll', 'cygintl-8.dll',
-                'cyglzma-1.dll', 'cygncursesw-10.dll', 'cygreadline7.dll',
-                'cygwin1.dll', 'bash.exe', 'bzip2.exe', 'find.exe',
-                'gzip.exe', 'ln.exe', 'readlink.exe', 'tar.exe', 'xz.exe']
-    for filename in tarfiles:
-      http_download.HttpDownload(
-        'http://commondatastorage.googleapis.com/nativeclient-mirror/nacl/'
-        'cygwin_mirror/cygwin/' + filename,
-        os.path.join(target, 'tmptar', filename), verbose=verbose)
-    saveddir = os.getcwd()
-    os.chdir(target)
-    env = os.environ.copy()
-    env['LC_ALL'] = 'C'
-    compress = 'gzip'
-    if url.endswith('.xz'):
-      compress = 'xz'
-    subprocess.check_call(
-        [os.path.join('tmptar', 'tar.exe'),
-         '--use-compress-program', '/tmptar/' + compress,
-         '-xS' + verbosechar + 'opf', '../.tgz'], env=env)
-    if save_manifest:
-      # Save the manifest file.  Use 'wb' as the open mode so that python on
-      # Windows doesn't add spurious CRLF line endings.
-      manifest = open(save_manifest, 'wb')
-      subprocess.check_call(
-        [os.path.join('tmptar', 'tar.exe'),
-         '--use-compress-program', '/tmptar/' + compress,
-         '-tSvopf', '../.tgz'], env=env, stdout=manifest)
-      manifest.close()
-    os.chdir(saveddir)
-    # Some antivirus software can prevent the removal - print message, but
-    # don't stop.
-    for filename in tarfiles:
-      count = 0
-      while True:
-        try:
-          os.remove(os.path.join(target, 'tmptar', filename))
-          break
-        except EnvironmentError, e:
-          if count > 10:
-            if verbose:
-              print "Can not remove %s: %s" % (filename, e.strerror)
-            break
-    try:
-      os.rmdir(os.path.join(target, 'tmptar'))
-    except EnvironmentError, e:
-      if verbose:
-        print "Can not rmdir %s: %s" % (os.path.join(target, 'tmptar'),
-                                          e.strerror)
-  elif sys.platform == 'linux2':
-    compression_char = 'z'
-    if url.endswith('.xz'):
-      compression_char = 'J'
-    subprocess.check_call(['tar', '-xS' + verbosechar + compression_char + 'pf',
-                           tgz_filename, '-C', target])
-    if save_manifest:
-      # Save the manifest file.
-      manifest = open(save_manifest, 'w')
-      subprocess.check_call(['tar', '-tSv' + compression_char + 'pf',
-                             tgz_filename], stdout=manifest)
-      manifest.close()
-  elif sys.platform == 'darwin':
-    # TODO(khim): Replace with --warning=no-unknown-keyword when gnutar 1.23+
-    # will be available.
-    subprocess.check_call(
-        ['bash', '-c',
-         '/usr/bin/gnutar -xS' + verbosechar + 'pf ' + tgz_filename +
-         ' -C ' + target + ' 2> /dev/null'])
-    if save_manifest:
-      # Save the manifest file.
-      manifest = open(save_manifest, 'w')
-      subprocess.check_call(
-          ['bash', '-c',
-           '/usr/bin/gnutar -tSvpf ' + tgz_filename + ' 2> /dev/null'],
-          stdout=manifest)
-      manifest.close()
-  else:
-    tgz = tarfile.open(tgz_filename, 'r')
-    for m in tgz:
-      if verbose:
-        print m.name
-      tgz.extract(m, target)
-    # Note: tarballs that can be processed with the tarfile module do not
-    # require a special manifest file.  No need to create one in this case.
-    tgz.close()
-  # If the tarball is supposed to be saved, move into place.  Otherwise, delete
-  # it.  Note that the file is moved like this because the CygWin-based
-  # Windows code above expects the tarball to be in a specific hard-coded
-  # location and have a specific name.
-  if save_path:
-    download_utils.RemoveFile(save_path)
-    shutil.move(tgz_filename, save_path)
-  else:
-    os.remove(tgz_filename)
+    print 'Extracting from %s...' % tar_filepath
+
+  tar = tarfile.open(tar_filepath, 'r')
+  links = []
+  for m in tar:
+    if verbose:
+      typeinfo = '?'
+      lnk = ''
+      if m.issym():
+        typeinfo = 'S'
+        lnk = '-> ' + m.linkname
+      if m.islnk():
+        typeinfo = 'H'
+        lnk = '-> ' + m.linkname
+      if m.isdir():
+        typeinfo = 'D'
+      if m.isfile():
+        typeinfo = 'F'
+      print '%s : %s %s' % (typeinfo, m.name, lnk)
+
+    # For symlinks in Windows we create Cygwin 1.7 style symlinks since the
+    # toolchain is Cygwin based.  For all other tar items, or platforms we
+    # go ahead and extract it normally.
+    if m.issym() and sys.platform == 'win32':
+      CreateCygwinSymlink(os.path.join(dst_dir, m.name))
+    else:
+      tar.extract(m, dst_dir)
+
+  tar.close()
+  if not keep:
+    os.remove(tar_filepath)
 
   if verbose:
     print 'Update complete.'
