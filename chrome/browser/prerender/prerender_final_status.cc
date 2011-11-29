@@ -50,6 +50,7 @@ const char* kFinalStatusNames[] = {
   "Session Storage Namespace Mismatch",
   "No Use Group",
   "Match Complete Dummy",
+  "Duplicate",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,

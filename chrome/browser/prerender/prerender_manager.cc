@@ -357,9 +357,6 @@ bool PrerenderManager::AddPrerenderFromOmnibox(
       NOTREACHED();
       break;
   };
-
-  histograms_->RecordPrerenderFromOmnibox();
-
   return AddPrerender(origin, std::make_pair(-1, -1), url, GURL(),
                       session_storage_namespace);
 }
@@ -374,8 +371,6 @@ bool PrerenderManager::AddPrerender(
 
   if (origin == ORIGIN_LINK_REL_PRERENDER && IsGoogleSearchResultURL(referrer))
     origin = ORIGIN_GWS_PRERENDER;
-
-  histograms_->RecordPrerender(origin, url_arg);
 
   // If the referring page is prerendering, defer the prerender.
   std::list<PrerenderContentsData>::iterator source_prerender =
@@ -394,10 +389,16 @@ bool PrerenderManager::AddPrerender(
   if (IsControlGroup() && MaybeGetQueryStringBasedAliasURL(url, &alias_url))
     url = alias_url;
 
-  if (FindEntry(url))
-    return false;
+  // From here on, we will record a FinalStatus so we need to register with the
+  // histogram tracking.
+  histograms_->RecordPrerender(origin, url_arg);
 
   uint8 experiment = GetQueryStringBasedExperiment(url_arg);
+
+  if (FindEntry(url)) {
+    RecordFinalStatus(origin, experiment, FINAL_STATUS_DUPLICATE);
+    return false;
+  }
 
   // Do not prerender if there are too many render processes, and we would
   // have to use an existing one.  We do not want prerendering to happen in
@@ -646,9 +647,8 @@ bool PrerenderManager::MaybeUsePrerenderedPage(TabContents* tab_contents,
   }
 
   histograms_->RecordPerSessionCount(++prerenders_per_session_count_);
+  histograms_->RecordUsedPrerender(prerender_contents->origin());
   prerender_contents->set_final_status(FINAL_STATUS_USED);
-
-  histograms_->RecordOmniboxUsedPrerender(prerender_contents->origin());
 
   new_render_view_host->Send(
       new ChromeViewMsg_SetIsPrerendering(new_render_view_host->routing_id(),

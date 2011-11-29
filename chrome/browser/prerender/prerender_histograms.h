@@ -55,12 +55,8 @@ class PrerenderHistograms {
   // To be called when a new prerender is added.
   void RecordPrerender(Origin origin, const GURL& url);
 
-  // Called when a prerender is added with an Omnibox origin.
-  void RecordPrerenderFromOmnibox() const;
-
-  // Called when we swap in a prerender. Checks if the origin is Omnibox before
-  // recording the count.
-  void RecordOmniboxUsedPrerender(Origin origin) const;
+  // Called when we swap in a prerender.
+  void RecordUsedPrerender(Origin origin) const;
 
  private:
   base::TimeTicks GetCurrentTimeTicks() const;
