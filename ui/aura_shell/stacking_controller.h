@@ -35,6 +35,13 @@ class StackingController : public aura::StackingClient {
       aura::Window* ignore) const OVERRIDE;
 
  private:
+  // Returns corresponding modal container for a modal window.
+  // If screen lock is not active, all modal windows are placed into the
+  // normal modal container.
+  // Otherwise those that originate from LockScreen container and above are
+  // placed in the screen lock modal container.
+  aura::Window* GetModalContainer(aura::Window* window) const;
+
   scoped_ptr<internal::AlwaysOnTopController> always_on_top_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(StackingController);

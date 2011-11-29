@@ -23,7 +23,8 @@ aura::Window* GetContainer(int id) {
 bool SupportsChildActivation(aura::Window* window) {
   return window->id() == kShellWindowId_DefaultContainer ||
          window->id() == kShellWindowId_AlwaysOnTopContainer ||
-         window->id() == kShellWindowId_ModalContainer;
+         window->id() == kShellWindowId_ModalContainer ||
+         window->id() == kShellWindowId_LockModalContainer;
 }
 
 bool IsWindowModal(aura::Window* window) {
@@ -75,7 +76,7 @@ void StackingController::AddChildToDefaultParent(aura::Window* window) {
     case aura::WINDOW_TYPE_NORMAL:
     case aura::WINDOW_TYPE_POPUP:
       if (IsWindowModal(window)) {
-        parent = GetContainer(internal::kShellWindowId_ModalContainer);
+        parent = GetModalContainer(window);
         break;
       }
       parent = always_on_top_controller_->GetContainer(window);
@@ -112,6 +113,32 @@ aura::Window* StackingController::GetTopmostWindowToActivate(
 
 ////////////////////////////////////////////////////////////////////////////////
 // StackingController, private:
+
+aura::Window* StackingController::GetModalContainer(
+    aura::Window* window) const {
+  if (!IsWindowModal(window))
+    return NULL;
+
+  // If screen lock is not active, all modal windows are placed into the
+  // normal modal container.
+  aura::Window* lock_container =
+      GetContainer(internal::kShellWindowId_LockScreenContainer);
+  if (!lock_container->children().size())
+    return GetContainer(internal::kShellWindowId_ModalContainer);
+
+  // Otherwise those that originate from LockScreen container and above are
+  // placed in the screen lock modal container.
+  int lock_container_id = lock_container->id();
+  int window_container_id = window->transient_parent()->parent()->id();
+
+  aura::Window* container = NULL;
+  if (window_container_id < lock_container_id)
+    container = GetContainer(internal::kShellWindowId_ModalContainer);
+  else
+    container = GetContainer(internal::kShellWindowId_LockModalContainer);
+
+  return container;
+}
 
 }  // namespace internal
 }  // namespace aura_shell

@@ -83,6 +83,14 @@ void CreateSpecialContainers(aura::Window::Windows* containers) {
   lock_container->set_id(internal::kShellWindowId_LockScreenContainer);
   containers->push_back(lock_container);
 
+  aura::Window* lock_modal_container = new aura::Window(NULL);
+  lock_modal_container->SetEventFilter(
+      new ToplevelWindowEventFilter(lock_modal_container));
+  lock_modal_container->SetLayoutManager(
+      new internal::ModalContainerLayoutManager(lock_modal_container));
+  lock_modal_container->set_id(internal::kShellWindowId_LockModalContainer);
+  containers->push_back(lock_modal_container);
+
   aura::Window* status_container = new aura::Window(NULL);
   status_container->set_id(internal::kShellWindowId_StatusContainer);
   containers->push_back(status_container);
