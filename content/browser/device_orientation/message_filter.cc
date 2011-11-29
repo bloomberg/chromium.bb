@@ -8,7 +8,6 @@
 #include "content/browser/device_orientation/orientation.h"
 #include "content/browser/device_orientation/provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/common/device_orientation_messages.h"
 #include "content/public/browser/browser_thread.h"
 

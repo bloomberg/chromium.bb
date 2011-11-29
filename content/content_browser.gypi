@@ -452,7 +452,6 @@
     'browser/renderer_host/render_view_host_delegate.h',
     'browser/renderer_host/render_view_host_factory.cc',
     'browser/renderer_host/render_view_host_factory.h',
-    'browser/renderer_host/render_view_host_notification_task.h',
     'browser/renderer_host/render_widget_fullscreen_host.cc',
     'browser/renderer_host/render_widget_fullscreen_host.h',
     'browser/renderer_host/render_widget_helper.cc',

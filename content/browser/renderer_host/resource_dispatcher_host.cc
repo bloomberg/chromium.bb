@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
@@ -40,7 +41,6 @@
 #include "content/browser/renderer_host/redirect_to_file_resource_handler.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
-#include "content/browser/renderer_host/render_view_host_notification_task.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_login_delegate.h"
 #include "content/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
@@ -53,6 +53,7 @@
 #include "content/browser/worker_host/worker_service.h"
 #include "content/common/resource_messages.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -87,22 +88,6 @@ using content::ResourceResponse;
 using webkit_blob::DeletableFileReference;
 
 // ----------------------------------------------------------------------------
-
-// A ShutdownTask proxies a shutdown task from the UI thread to the IO thread.
-// It should be constructed on the UI thread and run in the IO thread.
-class ResourceDispatcherHost::ShutdownTask : public Task {
- public:
-  explicit ShutdownTask(ResourceDispatcherHost* resource_dispatcher_host)
-      : rdh_(resource_dispatcher_host) {
-  }
-
-  void Run() {
-    rdh_->OnShutdown();
-  }
-
- private:
-  ResourceDispatcherHost* rdh_;
-};
 
 namespace {
 
@@ -295,6 +280,13 @@ net::RequestPriority DetermineRequestPriority(ResourceType::Type type) {
   }
 }
 
+void OnSwapOutACKHelper(int render_process_id, int render_view_id) {
+  RenderViewHost* rvh = RenderViewHost::FromID(render_process_id,
+                                               render_view_id);
+  if (rvh)
+    rvh->OnSwapOutACK();
+}
+
 }  // namespace
 
 ResourceDispatcherHost::ResourceDispatcherHost(
@@ -334,7 +326,10 @@ void ResourceDispatcherHost::Initialize() {
 
 void ResourceDispatcherHost::Shutdown() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, new ShutdownTask(this));
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&ResourceDispatcherHost::OnShutdown,
+                                     base::Unretained(this)));
 }
 
 void ResourceDispatcherHost::SetRequestInfo(
@@ -791,9 +786,12 @@ void ResourceDispatcherHost::OnSwapOutACK(
       info->cross_site_handler()->ResumeResponse();
   }
   // Update the RenderViewHost's internal state after the ACK.
-  CallRenderViewHost(params.closing_process_id,
-                     params.closing_route_id,
-                     &RenderViewHost::OnSwapOutACK);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&OnSwapOutACKHelper,
+                 params.closing_process_id,
+                 params.closing_route_id));
 }
 
 void ResourceDispatcherHost::OnDidLoadResourceFromMemoryCache(

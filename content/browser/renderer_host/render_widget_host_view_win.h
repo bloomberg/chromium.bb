@@ -16,7 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/task.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "base/win/scoped_comptr.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -443,7 +443,7 @@ class RenderWidgetHostViewWin
   bool tooltip_showing_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
-  ScopedRunnableMethodFactory<RenderWidgetHostViewWin> shutdown_factory_;
+  base::WeakPtrFactory<RenderWidgetHostViewWin> weak_factory_;
 
   // Our parent HWND.  We keep a reference to it as we SetParent(NULL) when
   // hidden to prevent getting messages (Paint, Resize...), and we reattach

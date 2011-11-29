@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
@@ -101,56 +102,45 @@ BOOL CALLBACK DismissOwnedPopups(HWND window, LPARAM arg) {
   return TRUE;
 }
 
-class NotifyPluginProcessHostTask : public Task {
- public:
-  NotifyPluginProcessHostTask(HWND window, HWND parent)
-      : window_(window), parent_(parent), tries_(kMaxTries) { }
-
- private:
-  void Run() {
-    DWORD plugin_process_id;
-    bool found_starting_plugin_process = false;
-    GetWindowThreadProcessId(window_, &plugin_process_id);
-    for (BrowserChildProcessHost::Iterator iter(
-             ChildProcessInfo::PLUGIN_PROCESS);
-         !iter.Done(); ++iter) {
-      PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
-      if (!plugin->handle()) {
-        found_starting_plugin_process = true;
-        continue;
-      }
-      if (base::GetProcId(plugin->handle()) == plugin_process_id) {
-        plugin->AddWindow(parent_);
-        return;
-      }
-    }
-
-    if (found_starting_plugin_process) {
-      // A plugin process has started but we don't have its handle yet.  Since
-      // it's most likely the one for this plugin, try a few more times after a
-      // delay.
-      if (tries_--) {
-        MessageLoop::current()->PostDelayedTask(FROM_HERE, this, kTryDelayMs);
-        return;
-      }
-    }
-
-    // The plugin process might have died in the time to execute the task, don't
-    // leak the HWND.
-    PostMessage(parent_, WM_CLOSE, 0, 0);
-  }
-
-  HWND window_;  // Plugin HWND, created and destroyed in the plugin process.
-  HWND parent_;  // Parent HWND, created and destroyed on the browser UI thread.
-
-  int tries_;
-
-  // How many times we try to find a PluginProcessHost whose process matches
-  // the HWND.
-  static const int kMaxTries = 5;
+// |window| is the plugin HWND, created and destroyed in the plugin process.
+// |parent| is the parent HWND, created and destroyed on the browser UI thread.
+void NotifyPluginProcessHostHelper(HWND window, HWND parent, int tries) {
   // How long to wait between each try.
   static const int kTryDelayMs = 200;
-};
+
+  DWORD plugin_process_id;
+  bool found_starting_plugin_process = false;
+  GetWindowThreadProcessId(window, &plugin_process_id);
+  for (BrowserChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+       !iter.Done(); ++iter) {
+    PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
+    if (!plugin->handle()) {
+      found_starting_plugin_process = true;
+      continue;
+    }
+    if (base::GetProcId(plugin->handle()) == plugin_process_id) {
+      plugin->AddWindow(parent);
+      return;
+    }
+  }
+
+  if (found_starting_plugin_process) {
+    // A plugin process has started but we don't have its handle yet.  Since
+    // it's most likely the one for this plugin, try a few more times after a
+    // delay.
+    if (tries > 0) {
+      MessageLoop::current()->PostDelayedTask(
+          FROM_HERE,
+          base::Bind(&NotifyPluginProcessHostHelper, window, parent, tries - 1),
+          kTryDelayMs);
+      return;
+    }
+  }
+
+  // The plugin process might have died in the time to execute the task, don't
+  // leak the HWND.
+  PostMessage(parent, WM_CLOSE, 0, 0);
+}
 
 // Windows callback for OnDestroy to detach the plugin windows.
 BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
@@ -337,7 +327,7 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       being_destroyed_(false),
       tooltip_hwnd_(NULL),
       tooltip_showing_(false),
-      shutdown_factory_(this),
+      weak_factory_(this),
       parent_hwnd_(NULL),
       is_loading_(false),
       overlay_color_(0),
@@ -578,9 +568,13 @@ HWND RenderWidgetHostViewWin::ReparentWindow(HWND window) {
     ::RemovePropW(orig_parent, webkit::npapi::kNativeWindowClassFilterProp);
   }
   ::SetParent(window, parent);
+  // How many times we try to find a PluginProcessHost whose process matches
+  // the HWND.
+  static const int kMaxTries = 5;
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      new NotifyPluginProcessHostTask(window, parent));
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&NotifyPluginProcessHostHelper, window, parent, kMaxTries));
   return parent;
 }
 
@@ -605,7 +599,8 @@ void RenderWidgetHostViewWin::CleanupCompositorWindow() {
   BrowserThread::PostDelayedTask(
       BrowserThread::UI,
       FROM_HERE,
-      NewRunnableFunction(::DestroyWindow, compositor_host_window_),
+      base::IgnoreReturn<BOOL>(
+          base::Bind(&::DestroyWindow, compositor_host_window_)),
       kDestroyCompositorHostWindowDelay);
 
   compositor_host_window_ = NULL;
@@ -1167,7 +1162,7 @@ void RenderWidgetHostViewWin::OnCancelMode() {
     render_widget_host_->LostCapture();
 
   if ((is_fullscreen_ || close_on_deactivate_) &&
-      shutdown_factory_.empty()) {
+      !weak_factory_.HasWeakPtrs()) {
     // Dismiss popups and menus.  We do this asynchronously to avoid changing
     // activation within this callstack, which may interfere with another window
     // being activated.  We can synchronously hide the window, but we need to
@@ -1176,8 +1171,8 @@ void RenderWidgetHostViewWin::OnCancelMode() {
                  SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOMOVE |
                  SWP_NOREPOSITION | SWP_NOSIZE | SWP_NOZORDER);
     MessageLoop::current()->PostTask(FROM_HERE,
-        shutdown_factory_.NewRunnableMethod(
-            &RenderWidgetHostViewWin::ShutdownHost));
+        base::Bind(&RenderWidgetHostViewWin::ShutdownHost,
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -2354,7 +2349,7 @@ void RenderWidgetHostViewWin::ForwardMouseEventToRenderer(UINT message,
 }
 
 void RenderWidgetHostViewWin::ShutdownHost() {
-  shutdown_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
   if (render_widget_host_)
     render_widget_host_->Shutdown();
   // Do not touch any members at this point, |this| has been deleted.

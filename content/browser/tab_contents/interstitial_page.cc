@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -38,46 +39,27 @@ using WebKit::WebDragOperationsMask;
 
 namespace {
 
-class ResourceRequestTask : public Task {
- public:
-  ResourceRequestTask(int process_id,
-                      int render_view_host_id,
-                      ResourceRequestAction action)
-      : action_(action),
-        process_id_(process_id),
-        render_view_host_id_(render_view_host_id),
-        resource_dispatcher_host_(
-            content::GetContentClient()->browser()->
-                GetResourceDispatcherHost()) {
+void ResourceRequestHelper(ResourceDispatcherHost* resource_dispatcher_host,
+                           int process_id,
+                           int render_view_host_id,
+                           ResourceRequestAction action) {
+  switch (action) {
+    case BLOCK:
+      resource_dispatcher_host->BlockRequestsForRoute(
+          process_id, render_view_host_id);
+      break;
+    case RESUME:
+      resource_dispatcher_host->ResumeBlockedRequestsForRoute(
+          process_id, render_view_host_id);
+      break;
+    case CANCEL:
+      resource_dispatcher_host->CancelBlockedRequestsForRoute(
+          process_id, render_view_host_id);
+      break;
+    default:
+      NOTREACHED();
   }
-
-  virtual void Run() {
-    switch (action_) {
-      case BLOCK:
-        resource_dispatcher_host_->BlockRequestsForRoute(
-            process_id_, render_view_host_id_);
-        break;
-      case RESUME:
-        resource_dispatcher_host_->ResumeBlockedRequestsForRoute(
-            process_id_, render_view_host_id_);
-        break;
-      case CANCEL:
-        resource_dispatcher_host_->CancelBlockedRequestsForRoute(
-            process_id_, render_view_host_id_);
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-
- private:
-  ResourceRequestAction action_;
-  int process_id_;
-  int render_view_host_id_;
-  ResourceDispatcherHost* resource_dispatcher_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceRequestTask);
-};
+}
 
 }  // namespace
 
@@ -563,8 +545,14 @@ void InterstitialPage::TakeActionOnResourceDispatcher(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      new ResourceRequestTask(original_child_id_, original_rvh_id_, action));
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(
+          &ResourceRequestHelper,
+          content::GetContentClient()->browser()->GetResourceDispatcherHost(),
+          original_child_id_,
+          original_rvh_id_,
+          action));
 }
 
 // static
