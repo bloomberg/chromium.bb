@@ -500,11 +500,7 @@
               #'tests/test_transport.cc',
               # Not yet proxied.
               #'tests/test_uma.cc',
-              # Activating the URL loader test requires a test httpd that
-              # understands HTTP POST, which our current httpd.py doesn't.
-              # It also requires deactivating the tests that use FileIOTrusted
-              # when running in NaCl.
-              #'tests/test_url_loader.cc',
+              'tests/test_url_loader.cc',
               # Does not compile under nacl (uses VarPrivate).
               #'test_url_util.cc',
               # Not yet proxied.

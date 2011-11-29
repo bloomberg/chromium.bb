@@ -292,18 +292,8 @@ TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
 
 TEST_PPAPI_IN_PROCESS_VIA_HTTP(URLLoader)
-// http://crbug.com/89961
-#if defined(OS_WIN)
-// It often takes too long time (and fails otherwise) on Windows.
-#define MAYBE_URLLoader DISABLED_URLLoader
-#else
-#define MAYBE_URLLoader FAILS_URLLoader
-#endif
-TEST_F(OutOfProcessPPAPITest, MAYBE_URLLoader) {
-  RunTestViaHTTP("URLLoader");
-}
-
-
+TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(URLLoader)
+TEST_PPAPI_NACL_VIA_HTTP(URLLoader)
 
 TEST_PPAPI_IN_PROCESS(PaintAggregator)
 TEST_PPAPI_OUT_OF_PROCESS(PaintAggregator)

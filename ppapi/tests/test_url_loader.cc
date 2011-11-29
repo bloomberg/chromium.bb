@@ -64,24 +64,53 @@ TestURLLoader::TestURLLoader(TestingInstance* instance)
 }
 
 bool TestURLLoader::Init() {
+  if (!InitTestingInterface()) {
+    instance_->AppendError("Testing interface not available");
+    return false;
+  }
+
+  const PPB_FileIO* file_io_interface = static_cast<const PPB_FileIO*>(
+      pp::Module::Get()->GetBrowserInterface(PPB_FILEIO_INTERFACE));
+  if (testing_interface_->IsOutOfProcess() && file_io_interface) {
+    instance_->AppendError(
+        "FileIO interface is now supported by ppapi proxy: update this test!");
+  } else if (!testing_interface_->IsOutOfProcess() && !file_io_interface) {
+    instance_->AppendError("FileIO interface not available");
+  }
+
   file_io_trusted_interface_ = static_cast<const PPB_FileIOTrusted*>(
       pp::Module::Get()->GetBrowserInterface(PPB_FILEIOTRUSTED_INTERFACE));
-  if (!file_io_trusted_interface_) {
-    instance_->AppendError("FileIOTrusted interface not available");
-  }
   url_loader_trusted_interface_ = static_cast<const PPB_URLLoaderTrusted*>(
       pp::Module::Get()->GetBrowserInterface(PPB_URLLOADERTRUSTED_INTERFACE));
-  if (!url_loader_trusted_interface_) {
-    instance_->AppendError("URLLoaderTrusted interface not available");
+  if  (testing_interface_->IsOutOfProcess() && file_io_trusted_interface_) {
+    instance_->AppendError(
+        "FileIOTrusted interface is now supported by ppapi proxy: "
+        "update this test!");
+  } else if (!testing_interface_->IsOutOfProcess()) {
+    // Trusted interfaces are not supported under NaCl.
+#if !(defined __native_client__)
+    if (!file_io_trusted_interface_)
+      instance_->AppendError("FileIOTrusted interface not available");
+    if (!url_loader_trusted_interface_)
+      instance_->AppendError("URLLoaderTrusted interface not available");
+#else
+    if (file_io_trusted_interface_)
+      instance_->AppendError("FileIOTrusted interface is supported by NaCl");
+    if (url_loader_trusted_interface_)
+      instance_->AppendError("URLLoaderTrusted interface is supported by NaCl");
+#endif
   }
-  return InitTestingInterface() && EnsureRunningOverHTTP();
+  return EnsureRunningOverHTTP();
 }
 
 void TestURLLoader::RunTests(const std::string& filter) {
   RUN_TEST_FORCEASYNC_AND_NOT(BasicGET, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(BasicPOST, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicFilePOST, filter);
-  RUN_TEST_FORCEASYNC_AND_NOT(BasicFileRangePOST, filter);
+  // FileIO interface is not yet supported by ppapi/proxy.
+  if (!testing_interface_->IsOutOfProcess()) {
+    RUN_TEST_FORCEASYNC_AND_NOT(BasicFilePOST, filter);
+    RUN_TEST_FORCEASYNC_AND_NOT(BasicFileRangePOST, filter);
+  }
   RUN_TEST_FORCEASYNC_AND_NOT(CompoundBodyPOST, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(EmptyDataPOST, filter);
   RUN_TEST_FORCEASYNC_AND_NOT(BinaryDataPOST, filter);
@@ -434,31 +463,38 @@ std::string TestURLLoader::TestStreamToFile() {
   if (rv != PP_OK)
     return ReportError("URLLoader::FinishStreamingToFile", rv);
 
-  pp::FileIO reader(instance_);
-  rv = reader.Open(body, PP_FILEOPENFLAG_READ, callback);
-  if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
-    return ReportError("FileIO::Open force_async", rv);
-  if (rv == PP_OK_COMPLETIONPENDING)
-    rv = callback.WaitForResult();
-  if (rv != PP_OK)
-    return ReportError("FileIO::Open", rv);
+  // FileIO is not yet supported by ppapi/proxy.
+  if (!testing_interface_->IsOutOfProcess()) {
+    pp::FileIO reader(instance_);
+    rv = reader.Open(body, PP_FILEOPENFLAG_READ, callback);
+    if (force_async_ && rv != PP_OK_COMPLETIONPENDING)
+      return ReportError("FileIO::Open force_async", rv);
+    if (rv == PP_OK_COMPLETIONPENDING)
+      rv = callback.WaitForResult();
+    if (rv != PP_OK)
+      return ReportError("FileIO::Open", rv);
 
-  std::string data;
-  std::string error = ReadEntireFile(&reader, &data);
-  if (!error.empty())
-    return error;
+    std::string data;
+    std::string error = ReadEntireFile(&reader, &data);
+    if (!error.empty())
+      return error;
 
-  std::string expected_body = "hello\n";
-  if (data.size() != expected_body.size())
-    return "ReadEntireFile returned unexpected content length";
-  if (data != expected_body)
-    return "ReadEntireFile returned unexpected content";
+    std::string expected_body = "hello\n";
+    if (data.size() != expected_body.size())
+      return "ReadEntireFile returned unexpected content length";
+    if (data != expected_body)
+      return "ReadEntireFile returned unexpected content";
 
-  int32_t file_descriptor = file_io_trusted_interface_->GetOSFileDescriptor(
-      reader.pp_resource());
-  if (file_descriptor < 0)
-    return "FileIO::GetOSFileDescriptor() returned a bad file descriptor.";
-
+    // FileIOTrusted is not supported by NaCl or ppapi/proxy.
+    if (!testing_interface_->IsOutOfProcess()) {
+#if !(defined __native_client__)
+      int32_t file_descriptor = file_io_trusted_interface_->GetOSFileDescriptor(
+          reader.pp_resource());
+      if (file_descriptor < 0)
+        return "FileIO::GetOSFileDescriptor() returned a bad file descriptor.";
+#endif
+    }
+  }
   PASS();
 }
 
@@ -474,9 +510,11 @@ std::string TestURLLoader::TestSameOriginRestriction() {
   if (rv != PP_ERROR_NOACCESS)
     return ReportError(
         "Untrusted, unintended cross-origin request restriction", rv);
+#if !(defined __native_client__)
   rv = OpenTrusted(request);
   if (rv != PP_OK)
     return ReportError("Trusted cross-origin request", rv);
+#endif
 
   PASS();
 }
@@ -511,12 +549,14 @@ std::string TestURLLoader::TestJavascriptURLRestriction() {
   if (rv != PP_ERROR_NOACCESS)
     return ReportError(
         "Untrusted Javascript URL request restriction", rv);
+#if !(defined __native_client__)
   // TODO(bbudge) Fix Javascript URLs for trusted loaders.
   // http://code.google.com/p/chromium/issues/detail?id=103062
   // rv = OpenTrusted(request);
   // if (rv == PP_ERROR_NOACCESS)
   //  return ReportError(
   //      "Trusted Javascript URL request", rv);
+#endif
 
   PASS();
 }
@@ -531,10 +571,11 @@ std::string TestURLLoader::TestMethodRestriction() {
   ASSERT_EQ(OpenUntrusted("tRaCe", ""), PP_ERROR_NOACCESS);
   ASSERT_EQ(OpenUntrusted("POST\x0d\x0ax-csrf-token:\x20test1234", ""),
                           PP_ERROR_NOACCESS);
-
+#if !(defined __native_client__)
   ASSERT_EQ(OpenTrusted("cOnNeCt", ""), PP_OK);
   ASSERT_EQ(OpenTrusted("tRaCk", ""), PP_OK);
   ASSERT_EQ(OpenTrusted("tRaCe", ""), PP_OK);
+#endif
 
   PASS();
 }
@@ -566,6 +607,7 @@ std::string TestURLLoader::TestHeaderRestriction() {
           PP_ERROR_NOACCESS);
   ASSERT_EQ(OpenUntrusted("GET", "Sec-foo:\n"), PP_ERROR_NOACCESS);
 
+#if !(defined __native_client__)
   ASSERT_EQ(OpenTrusted("GET", "Accept-Charset:\n"), PP_OK);
   ASSERT_EQ(OpenTrusted("GET", "Accept-Encoding:\n"), PP_OK);
   ASSERT_EQ(OpenTrusted("GET", "Connection:\n"), PP_OK);
@@ -588,6 +630,7 @@ std::string TestURLLoader::TestHeaderRestriction() {
   ASSERT_EQ(OpenTrusted(
       "GET", "Proxy-Authorization: Basic dXNlcjpwYXNzd29yZA==:\n"), PP_OK);
   ASSERT_EQ(OpenTrusted("GET", "Sec-foo:\n"), PP_OK);
+#endif
 
   PASS();
 }
@@ -602,10 +645,11 @@ std::string TestURLLoader::TestCustomReferrer() {
   if (rv != PP_ERROR_NOACCESS)
     return ReportError(
         "Untrusted request with custom referrer restriction", rv);
+#if !(defined __native_client__)
   rv = OpenTrusted(request);
   if (rv != PP_OK)
     return ReportError("Trusted request with custom referrer", rv);
-
+#endif
   PASS();
 }
 
@@ -619,10 +663,11 @@ std::string TestURLLoader::TestCustomContentTransferEncoding() {
   if (rv != PP_ERROR_NOACCESS)
     return ReportError(
         "Untrusted request with content-transfer-encoding restriction", rv);
+#if !(defined __native_client__)
   rv = OpenTrusted(request);
   if (rv != PP_OK)
     return ReportError("Trusted request with content-transfer-encoding", rv);
-
+#endif
   PASS();
 }
 
