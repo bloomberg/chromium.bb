@@ -140,7 +140,7 @@ std::string DownloadProtectionService::DownloadInfo::DebugString() const {
       local_file.value().c_str(),
       target_file.value().c_str(),
       referrer_url.spec().c_str(),
-      "TODO",
+      base::HexEncode(sha256_hash.data(), sha256_hash.size()).c_str(),
       total_bytes,
       user_initiated ? "true" : "false");
 }
