@@ -10,26 +10,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-
-namespace JavaType {
-enum Type {
-  TypeBoolean,
-  TypeByte,
-  TypeChar,
-  TypeShort,
-  TypeInt,
-  TypeLong,
-  TypeFloat,
-  TypeDouble,
-  // This is only used as a return type, so we should never convert from
-  // JavaScript with this type.
-  TypeVoid,
-  TypeArray,
-  // We special-case strings, as they get special handling when coercing.
-  TypeString,
-  TypeObject,
-};
-}  // namespace JavaType
+#include "content/browser/renderer_host/java/java_type.h"
 
 // Wrapper around java.lang.reflect.Method. This class must be used on a single
 // thread only.
@@ -40,8 +21,8 @@ class JavaMethod {
 
   const std::string& name() const { return name_; }
   size_t num_parameters() const;
-  JavaType::Type parameter_type(size_t index) const;
-  JavaType::Type return_type() const;
+  const JavaType& parameter_type(size_t index) const;
+  const JavaType& return_type() const;
   jmethodID id() const;
 
  private:
@@ -52,8 +33,8 @@ class JavaMethod {
   mutable base::android::ScopedJavaGlobalRef<jobject> java_method_;
   mutable bool have_calculated_num_parameters_;
   mutable size_t num_parameters_;
-  mutable std::vector<JavaType::Type> parameter_types_;
-  mutable JavaType::Type return_type_;
+  mutable std::vector<JavaType> parameter_types_;
+  mutable JavaType return_type_;
   mutable jmethodID id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(JavaMethod);

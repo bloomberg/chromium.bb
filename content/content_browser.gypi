@@ -393,6 +393,8 @@
     'browser/renderer_host/java/java_bridge_dispatcher_host.h',
     'browser/renderer_host/java/java_method.cc',
     'browser/renderer_host/java/java_method.h',
+    'browser/renderer_host/java/java_type.cc',
+    'browser/renderer_host/java/java_type.h',
     'browser/renderer_host/media/audio_common.cc',
     'browser/renderer_host/media/audio_common.h',
     'browser/renderer_host/media/audio_input_device_manager.cc',
@@ -780,17 +782,8 @@
         'ENABLE_JAVA_BRIDGE',
       ],
     }, {
-      'sources!': [
-        'browser/renderer_host/java/java_bound_object.cc',
-        'browser/renderer_host/java/java_bound_object.h',
-        'browser/renderer_host/java/java_bridge_channel_host.cc',
-        'browser/renderer_host/java/java_bridge_channel_host.h',
-        'browser/renderer_host/java/java_bridge_dispatcher_host_manager.cc',
-        'browser/renderer_host/java/java_bridge_dispatcher_host_manager.h',
-        'browser/renderer_host/java/java_bridge_dispatcher_host.cc',
-        'browser/renderer_host/java/java_bridge_dispatcher_host.h',
-        'browser/renderer_host/java/java_method.cc',
-        'browser/renderer_host/java/java_method.h',
+      'sources/': [
+        ['exclude', '^browser/renderer_host/java/'],
       ],
     }],
   ],

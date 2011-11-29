@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/string_number_conversions.h"
 #include "base/stringprintf.h"
+#include "content/browser/renderer_host/java/java_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 
 using base::StringPrintf;
@@ -29,15 +30,6 @@ using WebKit::WebBindings;
 // revisit this decision in the future.
 
 namespace {
-
-std::string NPIdentifierToString(NPIdentifier identifier) {
-  const NPUTF8* string;
-  int32_t number;
-  bool is_string;
-  WebBindings::extractIdentifierData(identifier, string, number, is_string);
-  DCHECK(is_string);
-  return string;
-}
 
 // Our special NPObject type.  We extend an NPObject with a pointer to a
 // JavaBoundObject.  We also add static methods for each of the NPObject
@@ -85,7 +77,7 @@ void JavaNPObject::Deallocate(NPObject* np_object) {
 }
 
 bool JavaNPObject::HasMethod(NPObject* np_object, NPIdentifier np_identifier) {
-  std::string name = NPIdentifierToString(np_identifier);
+  std::string name(WebBindings::utf8FromIdentifier(np_identifier));
   JavaNPObject* obj = reinterpret_cast<JavaNPObject*>(np_object);
   return obj->bound_object->HasMethod(name);
 }
@@ -93,7 +85,7 @@ bool JavaNPObject::HasMethod(NPObject* np_object, NPIdentifier np_identifier) {
 bool JavaNPObject::Invoke(NPObject* np_object, NPIdentifier np_identifier,
                           const NPVariant* args, uint32_t arg_count,
                           NPVariant* result) {
-  std::string name = NPIdentifierToString(np_identifier);
+  std::string name(WebBindings::utf8FromIdentifier(np_identifier));
   JavaNPObject* obj = reinterpret_cast<JavaNPObject*>(np_object);
   return obj->bound_object->Invoke(name, args, arg_count, result);
 }
@@ -116,11 +108,11 @@ bool JavaNPObject::GetProperty(NPObject* np_object,
 // Calls a Java method through JNI and returns the result as an NPVariant. Note
 // that this method does not do any type coercion. The Java return value is
 // simply converted to the corresponding NPAPI type.
-NPVariant CallJNIMethod(jobject object, JavaType::Type return_type,
+NPVariant CallJNIMethod(jobject object, const JavaType& return_type,
                         jmethodID id, jvalue* parameters) {
   JNIEnv* env = AttachCurrentThread();
   NPVariant result;
-  switch (return_type) {
+  switch (return_type.type) {
     case JavaType::TypeBoolean:
       BOOLEAN_TO_NPVARIANT(env->CallBooleanMethodA(object, id, parameters),
                            result);
@@ -191,13 +183,13 @@ NPVariant CallJNIMethod(jobject object, JavaType::Type return_type,
 }
 
 jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
-                                         JavaType::Type target_type) {
+                                         const JavaType& target_type) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_NUMBER_VALUES.
   jvalue result;
   DCHECK(variant.type == NPVariantType_Int32 ||
          variant.type == NPVariantType_Double);
   bool is_double = variant.type == NPVariantType_Double;
-  switch (target_type) {
+  switch (target_type.type) {
     case JavaType::TypeByte:
       result.b = is_double ? static_cast<jbyte>(NPVARIANT_TO_DOUBLE(variant)) :
                              static_cast<jbyte>(NPVARIANT_TO_INT32(variant));
@@ -258,12 +250,12 @@ jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
 }
 
 jvalue CoerceJavaScriptBooleanToJavaValue(const NPVariant& variant,
-                                          JavaType::Type target_type) {
+                                          const JavaType& target_type) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_BOOLEAN_VALUES.
   DCHECK_EQ(NPVariantType_Bool, variant.type);
   bool boolean_value = NPVARIANT_TO_BOOLEAN(variant);
   jvalue result;
-  switch (target_type) {
+  switch (target_type.type) {
     case JavaType::TypeBoolean:
       result.z = boolean_value ? JNI_TRUE : JNI_FALSE;
       break;
@@ -303,11 +295,11 @@ jvalue CoerceJavaScriptBooleanToJavaValue(const NPVariant& variant,
 }
 
 jvalue CoerceJavaScriptStringToJavaValue(const NPVariant& variant,
-                                         JavaType::Type target_type) {
+                                         const JavaType& target_type) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_STRING_VALUES.
   DCHECK_EQ(NPVariantType_String, variant.type);
   jvalue result;
-  switch (target_type) {
+  switch (target_type.type) {
     case JavaType::TypeString:
       result.l = ConvertUTF8ToJavaString(
           AttachCurrentThread(),
@@ -355,7 +347,7 @@ jvalue CoerceJavaScriptStringToJavaValue(const NPVariant& variant,
 }
 
 jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
-                                         JavaType::Type target_type) {
+                                         const JavaType& target_type) {
   // We only handle Java objects. See
   // http://jdk6.java.net/plugin2/liveconnect/#JS_JAVA_OBJECTS.
   // TODO(steveblock): Handle arrays.
@@ -371,7 +363,7 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
   DCHECK_EQ(&JavaNPObject::kNPClass, object->_class);
 
   jvalue result;
-  switch (target_type) {
+  switch (target_type.type) {
     case JavaType::TypeObject:
       // LIVECONNECT_COMPLIANCE: Pass all Java objects to maintain existing
       // behavior. We should pass only Java objects which are
@@ -416,12 +408,12 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
 }
 
 jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(const NPVariant& variant,
-                                                  JavaType::Type target_type) {
+                                                  const JavaType& target_type) {
   // See http://jdk6.java.net/plugin2/liveconnect/#JS_NULL.
   DCHECK(variant.type == NPVariantType_Null ||
          variant.type == NPVariantType_Void);
   jvalue result;
-  switch (target_type) {
+  switch (target_type.type) {
     case JavaType::TypeObject:
       result.l = NULL;
       break;
@@ -462,7 +454,7 @@ jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(const NPVariant& variant,
 }
 
 jvalue CoerceJavaScriptValueToJavaValue(const NPVariant& variant,
-                                        JavaType::Type target_type) {
+                                        const JavaType& target_type) {
   // Note that in all these conversions, the relevant field of the jvalue must
   // always be explicitly set, as jvalue does not initialize its fields.
 

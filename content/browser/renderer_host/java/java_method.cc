@@ -16,41 +16,11 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-// Java's reflection API represents types as a string using an extended 'binary
-// name'. This converts to an enum which we store in place of the binary name
-// for simplicity.
-JavaType::Type BinaryNameToType(const std::string& binary_name) {
-  if (binary_name == "boolean") {
-    return JavaType::TypeBoolean;
-  } else if (binary_name == "byte") {
-    return JavaType::TypeByte;
-  } else if (binary_name == "char") {
-    return JavaType::TypeChar;
-  } else if (binary_name == "short") {
-    return JavaType::TypeShort;
-  } else if (binary_name == "int") {
-    return JavaType::TypeInt;
-  } else if (binary_name == "long") {
-    return JavaType::TypeLong;
-  } else if (binary_name == "float") {
-    return JavaType::TypeFloat;
-  } else if (binary_name == "double") {
-    return JavaType::TypeDouble;
-  } else if (binary_name == "void") {
-    return JavaType::TypeVoid;
-  } else if (binary_name[0] == '[') {
-    return JavaType::TypeArray;
-  } else if (binary_name == "java.lang.String") {
-    return JavaType::TypeString;
-  }
-  return JavaType::TypeObject;
-}
-
 std::string BinaryNameToJNIName(const std::string& binary_name,
-                                JavaType::Type* type) {
+                                JavaType* type) {
   DCHECK(type);
-  *type = BinaryNameToType(binary_name);
-  switch (*type) {
+  *type = JavaType::CreateFromBinaryName(binary_name);
+  switch (type->type) {
     case JavaType::TypeBoolean:
       return "Z";
     case JavaType::TypeByte:
@@ -72,7 +42,8 @@ std::string BinaryNameToJNIName(const std::string& binary_name,
     case JavaType::TypeArray:
       return "[";
     default:
-      DCHECK (*type == JavaType::TypeString || *type == JavaType::TypeObject);
+      DCHECK(type->type == JavaType::TypeString ||
+             type->type == JavaType::TypeObject);
       std::string jni_name = "L" + binary_name + ";";
       ReplaceSubstringsAfterOffset(&jni_name, 0, ".", "/");
       return jni_name;
@@ -172,12 +143,12 @@ size_t JavaMethod::num_parameters() const {
   return num_parameters_;
 }
 
-JavaType::Type JavaMethod::parameter_type(size_t index) const {
+const JavaType& JavaMethod::parameter_type(size_t index) const {
   EnsureTypesAndIDAreSetUp();
   return parameter_types_[index];
 }
 
-JavaType::Type JavaMethod::return_type() const {
+const JavaType& JavaMethod::return_type() const {
   EnsureTypesAndIDAreSetUp();
   return return_type_;
 }
