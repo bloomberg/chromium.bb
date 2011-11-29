@@ -32,16 +32,16 @@ class ProfileDownloader : public content::URLFetcherDelegate,
   // Starts downloading profile information if the necessary authorization token
   // is ready. If not, subscribes to token service and starts fetching if the
   // token is available. Should not be called more than once.
-  void Start();
+  virtual void Start();
 
   // On successful download this returns the full name of the user. For example
   // "Pat Smith".
-  const string16& GetProfileFullName() const;
+  virtual string16 GetProfileFullName() const;
 
   // On successful download this returns the profile picture of the user.
   // For users with no profile picture set (that is, they have the default
   // profile picture) this will return an Null bitmap.
-  const SkBitmap& GetProfilePicture() const;
+  virtual SkBitmap GetProfilePicture() const;
 
  private:
   // Overriden from content::URLFetcherDelegate:
