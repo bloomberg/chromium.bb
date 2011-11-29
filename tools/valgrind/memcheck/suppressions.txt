@@ -5180,6 +5180,22 @@
    fun:_ZN10scoped_ptrI22TestProfileSyncServiceE5resetEPS0_
    fun:_ZN30ProfileSyncServiceTypedUrlTest8TearDownEv
 }
+{
+   bug_105699
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base11Environment6CreateEv
+   fun:_ZN12_GLOBAL__N_120DBusPowerSaveBlockerC1Ev
+   fun:_ZN22DefaultSingletonTraitsIN12_GLOBAL__N_120DBusPowerSaveBlockerEE3NewEv
+   fun:_ZN9SingletonIN12_GLOBAL__N_120DBusPowerSaveBlockerE22DefaultSingletonTraitsIS1_ES1_E3getEv
+   fun:_ZN12_GLOBAL__N_120DBusPowerSaveBlocker11GetInstanceEv
+   fun:_ZN16PowerSaveBlocker10ApplyBlockENS_20PowerSaveBlockerTypeE
+   fun:_ZN16PowerSaveBlocker16AdjustBlockCountERKSt6vectorIiSaIiEE
+   fun:_ZN4base8internal15RunnableAdapterIPFvRKSt6vectorIiSaIiEEEE3RunES6_
+   fun:_ZN4base8internal12InvokeHelperILb0EvNS0_15RunnableAdapterIPFvRKSt6vectorIiSaIiEEEEES8_E8MakeItSoESA_S7_
+   fun:_ZN4base8internal7InvokerILi1ENS0_9BindStateINS0_15RunnableAdapterIPFvRKSt6vectorIiSaIiEEEEES9_FvS6_EEES9_E3RunEPNS0_13BindStateBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations

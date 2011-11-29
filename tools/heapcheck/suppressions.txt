@@ -1800,7 +1800,7 @@
    bug_105699
    Heapcheck:Leak
    fun:base::Environment::Create
-   fun:::DBusPowerSaveBlocker::DBusPowerSaveBlocker
+   fun:::DBusPowerSaveBlocker*
    fun:DefaultSingletonTraits::New
    fun:Singleton::get
    fun:::DBusPowerSaveBlocker::GetInstance
