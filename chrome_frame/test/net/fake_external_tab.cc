@@ -609,15 +609,13 @@ const char* IEVersionToString(IEVersion version) {
 }
 
 int main(int argc, char** argv) {
-  // TODO(joi): Remove the "true" part here and fix the log statement below.
-  if (true || chrome_frame_test::GetInstalledIEVersion() >= IE_9) {
+  if (chrome_frame_test::GetInstalledIEVersion() >= IE_9) {
     // Adding this here as the command line and the logging stuff gets
     // initialized in the NetTestSuite constructor. Did not want to break that.
     base::AtExitManager at_exit_manager;
     CommandLine::Init(argc, argv);
     CFUrlRequestUnittestRunner::InitializeLogging();
-    LOG(INFO) << "Temporarily not running any ChromeFrame "
-              << "net tests (http://crbug.com/105435)";
+    LOG(INFO) << "Not running ChromeFrame net tests on IE9+";
     return 0;
   }
 
