@@ -94,7 +94,11 @@ void OAuth2AccessTokenFetcher::CancelRequest() {
   fetcher_.reset();
 }
 
-void OAuth2AccessTokenFetcher::Start(const std::string& refresh_token) {
+void OAuth2AccessTokenFetcher::Start(const std::string& client_id,
+                                     const std::string& client_secret,
+                                     const std::string& refresh_token) {
+  client_id_ = client_id;
+  client_secret_ = client_secret;
   refresh_token_ = refresh_token;
   StartGetAccessToken();
 }
@@ -105,7 +109,7 @@ void OAuth2AccessTokenFetcher::StartGetAccessToken() {
   fetcher_.reset(CreateFetcher(
       getter_,
       MakeGetAccessTokenUrl(),
-      MakeGetAccessTokenBody(refresh_token_),
+      MakeGetAccessTokenBody(client_id_, client_secret_, refresh_token_),
       this));
   fetcher_->Start();  // OnURLFetchComplete will be called.
 }
@@ -156,14 +160,13 @@ GURL OAuth2AccessTokenFetcher::MakeGetAccessTokenUrl() {
 
 // static
 std::string OAuth2AccessTokenFetcher::MakeGetAccessTokenBody(
+    const std::string& client_id,
+    const std::string& client_secret,
     const std::string& refresh_token) {
   return StringPrintf(
       kGetAccessTokenBodyFormat,
-      net::EscapeUrlEncodedData(
-          GaiaUrls::GetInstance()->oauth2_chrome_client_id(), true).c_str(),
-      net::EscapeUrlEncodedData(
-          GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
-              true).c_str(),
+      net::EscapeUrlEncodedData(client_id, true).c_str(),
+      net::EscapeUrlEncodedData(client_secret, true).c_str(),
       net::EscapeUrlEncodedData(refresh_token, true).c_str());
 }
 

@@ -24,6 +24,8 @@ class URLRequestStatus;
 
 // Abstracts the details to get OAuth2 access token token from
 // OAuth2 refresh token.
+// See "Using the Refresh Token" section in:
+// http://code.google.com/apis/accounts/docs/OAuth2WebServer.html
 //
 // This class should be used on a single thread, but it can be whichever thread
 // that you like.
@@ -45,7 +47,9 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
                            const std::string& source);
   virtual ~OAuth2AccessTokenFetcher();
 
-  void Start(const std::string& refresh_token);
+  void Start(const std::string& client_id,
+             const std::string& client_secret,
+             const std::string& refresh_token);
 
   void CancelRequest();
 
@@ -70,7 +74,9 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
 
   // Other helpers.
   static GURL MakeGetAccessTokenUrl();
-  static std::string MakeGetAccessTokenBody(const std::string& refresh_token);
+  static std::string MakeGetAccessTokenBody(const std::string& client_id,
+                                            const std::string& client_secret,
+                                            const std::string& refresh_token);
   static bool ParseGetAccessTokenResponse(const content::URLFetcher* source,
                                           std::string* access_token);
 
@@ -82,6 +88,8 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
 
   // While a fetch is in progress.
   scoped_ptr<content::URLFetcher> fetcher_;
+  std::string client_id_;
+  std::string client_secret_;
   std::string refresh_token_;
 
   friend class OAuth2AccessTokenFetcherTest;

@@ -114,14 +114,14 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
 TEST_F(OAuth2AccessTokenFetcherTest, GetAccessTokenRequestFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
-  fetcher_.Start("refresh_token");
+  fetcher_.Start("client_id", "client_secret", "refresh_token");
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
 TEST_F(OAuth2AccessTokenFetcherTest, GetAccessTokenResponseCodeFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(true, RC_FORBIDDEN, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
-  fetcher_.Start("refresh_token");
+  fetcher_.Start("client_id", "client_secret", "refresh_token");
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
@@ -129,7 +129,7 @@ TEST_F(OAuth2AccessTokenFetcherTest, Success) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(
       true, RC_REQUEST_OK, kValidTokenResponse);
   EXPECT_CALL(consumer_, OnGetTokenSuccess("at1")).Times(1);
-  fetcher_.Start("refresh_token");
+  fetcher_.Start("client_id", "client_secret", "refresh_token");
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
