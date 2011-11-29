@@ -1801,18 +1801,6 @@ void NativeWidgetWin::OnSetFocus(HWND focused_window) {
   SetMsgHandled(FALSE);
 }
 
-LRESULT NativeWidgetWin::OnSetIcon(UINT size_type, HICON new_icon) {
-  // This shouldn't hurt even if we're using the native frame.
-  return DefWindowProcWithRedrawLock(WM_SETICON, size_type,
-                                     reinterpret_cast<LPARAM>(new_icon));
-}
-
-LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
-  // This shouldn't hurt even if we're using the native frame.
-  return DefWindowProcWithRedrawLock(WM_SETTEXT, NULL,
-                                     reinterpret_cast<LPARAM>(text));
-}
-
 void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
   if (!GetParent() && (flags == SPI_SETWORKAREA) &&
       !GetWidget()->widget_delegate()->WillProcessWorkAreaChange()) {
