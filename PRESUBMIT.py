@@ -174,7 +174,7 @@ def _CheckNoFRIEND_TEST(input_api, output_api):
   if not problems:
     return []
   return [output_api.PresubmitPromptWarning('Chromium code should not use '
-      'gtest\'s FRIEND_TEST() macro. Include base/gtest_prod_util.h and use'
+      'gtest\'s FRIEND_TEST() macro. Include base/gtest_prod_util.h and use '
       'FRIEND_TEST_ALL_PREFIXES() instead.\n' + '\n'.join(problems))]
 
 
