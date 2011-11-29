@@ -5,7 +5,7 @@
 #ifndef REMOTING_BASE_PLUGIN_MESSAGE_LOOP_H_
 #define REMOTING_BASE_PLUGIN_MESSAGE_LOOP_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"

@@ -11,7 +11,6 @@
 #define REMOTING_PROTOCOL_CLIENT_STUB_H_
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 
 namespace remoting {
 namespace protocol {
