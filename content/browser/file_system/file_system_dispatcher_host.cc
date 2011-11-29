@@ -11,6 +11,7 @@
 #include "base/platform_file.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
+#include "content/browser/user_metrics.h"
 #include "content/common/file_system_messages.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_platform_file.h"
@@ -163,6 +164,11 @@ bool FileSystemDispatcherHost::OnMessageReceived(
 void FileSystemDispatcherHost::OnOpen(
     int request_id, const GURL& origin_url, fileapi::FileSystemType type,
     int64 requested_size, bool create) {
+  if (type == fileapi::kFileSystemTypeTemporary) {
+    UserMetrics::RecordAction(UserMetricsAction("OpenFileSystemTemporary"));
+  } else if (type == fileapi::kFileSystemTypePersistent) {
+    UserMetrics::RecordAction(UserMetricsAction("OpenFileSystemPersistent"));
+  }
   GetNewOperation(request_id)->OpenFileSystem(origin_url, type, create);
 }
 
