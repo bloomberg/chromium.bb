@@ -50,6 +50,8 @@ function load() {
       options.ContentSettingsRadio);
   cr.ui.decorate('#content-settings-page input[type=radio].handler-radio',
       options.HandlersEnabledRadio);
+  cr.ui.decorate('span.controlled-setting-indicator',
+      options.ControlledSettingIndicator);
 
   var menuOffPattern = /(^\?|&)menu=off($|&)/;
   var menuDisabled = menuOffPattern.test(window.location.search);

@@ -62,6 +62,17 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
   localized_strings->SetString("policyAndExtensionManagedPrefsBannerText",
       l10n_util::GetStringUTF16(IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS));
 
+  // Controlled settings bubble.
+  localized_strings->SetString("controlledSettingPolicy",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
+  localized_strings->SetString("controlledSettingExtension",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION));
+  localized_strings->SetString("controlledSettingRecommended",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED));
+  localized_strings->SetString("controlledSettingApplyRecommendation",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CONTROLLED_SETTING_APPLY_RECOMMENDATION));
+
   // Search
   RegisterTitle(localized_strings, "searchPage", IDS_OPTIONS_SEARCH_PAGE_TITLE);
   localized_strings->SetString("searchPlaceholder",
@@ -261,6 +272,9 @@ DictionaryValue* CoreOptionsHandler::CreateValueForPref(
     dict->SetString("controlledBy", "policy");
   } else if (controlling_pref->IsExtensionControlled()) {
     dict->SetString("controlledBy", "extension");
+  } else if (controlling_pref->IsUserModifiable() &&
+             !controlling_pref->IsDefaultValue()) {
+    dict->SetString("controlledBy", "recommended");
   }
   dict->SetBoolean("disabled", !controlling_pref->IsUserModifiable());
   return dict;

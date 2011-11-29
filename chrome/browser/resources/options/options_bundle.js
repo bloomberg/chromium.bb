@@ -9,6 +9,7 @@
 <include src="pref_ui.js"></include>
 <include src="deletable_item_list.js"></include>
 <include src="inline_editable_list.js"></include>
+<include src="controlled_setting.js"></include>
 <include src="options_page.js"></include>
 <if expr="pp_ifdef('chromeos')">
   <include src="about_page.js"></include>

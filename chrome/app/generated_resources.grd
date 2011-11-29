@@ -8572,40 +8572,71 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
+      <message name="IDS_OPTIONS_CONTROLLED_SETTING_APPLY_RECOMMENDATION" desc="Link text displayed in the controlled settings bubble for applying the recommendation.">
+        Apply recommendation
+      </message>
+
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in case there are policy-managed options the user won't be able to change.">
-          Some settings are being managed by your administrator.
+          Some settings are managed by your administrator.
         </message>
         <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">
-          Some settings are being managed by an extension.
+          Some settings are managed by an extension.
         </message>
         <message name="IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are policy- and extension-managed options the user won't be able to change.">
-          Some settings have been disabled by your administrator and others are being managed by an extension.
+          Some settings have been disabled by your administrator and others are managed by an extension.
         </message>
         <message name="IDS_OPTIONS_UNMODIFIABLE_PREFS" desc="Banner displayed in case there are options that the user won't be able to change.">
           Some settings cannot be modified by the user.
         </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble in case the setting is forced by policy.">
+          This setting is enforced by your administrator.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble in case the setting controlled by an extension.">
+          This setting is managed by an extension.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble in case the setting has a policy-supplied default value.">
+          Your administrator recommends a specific value for this setting.
+        </message>
       </if>
       <if expr="not pp_ifdef('chromeos') and is_posix">
         <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in case there are policy-managed options the user won't be able to change.">
-          Some preferences have been disabled by your administrator.
+          Some preferences are managed by your administrator.
         </message>
         <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">
-          Some preferences are being managed by an extension.
+          Some preferences are managed by an extension.
         </message>
         <message name="IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are policy- and extension-managed options the user won't be able to change.">
-          Some preferences have been disabled by your administrator and others are being managed by an extension.
+          Some preferences have been disabled by your administrator and others are managed by an extension.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble in case the setting is forced by policy.">
+          This preference is enforced by your administrator.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble in case the setting controlled by an extension.">
+          This preference is managed by an extension.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble in case the setting has a policy-supplied default value.">
+          Your administrator recommends a specific value for this preference.
         </message>
       </if>
       <if expr="is_win">
         <message name="IDS_OPTIONS_POLICY_MANAGED_PREFS" desc="Banner displayed in case there are policy-managed options the user won't be able to change.">
-          Some options have been disabled by your administrator.
+          Some options are managed by your administrator.
         </message>
         <message name="IDS_OPTIONS_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are extension-managed options the user won't be able to change.">
-          Some options are being managed by an extension.
+          Some options are managed by an extension.
         </message>
         <message name="IDS_OPTIONS_POLICY_EXTENSION_MANAGED_PREFS" desc="Banner displayed in case there are policy- and extension-managed options the user won't be able to change.">
-          Some options have been disabled by your administrator and others are being managed by an extension.
+          Some options have been disabled by your administrator and others are managed by an extension.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble in case the setting is forced by policy.">
+          This option is enforced by your administrator.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble in case the setting controlled by an extension.">
+          This option is managed by an extension.
+        </message>
+        <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble in case the setting has a policy-supplied default value.">
+          Your administrator recommends a specific value for this option.
         </message>
       </if>
 
