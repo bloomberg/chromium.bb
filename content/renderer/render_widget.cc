@@ -374,7 +374,8 @@ void RenderWidget::OnUpdateRectAck() {
   }
 
   // Notify subclasses.
-  DidFlushPaint();
+  if (!is_accelerated_compositing_active_)
+    DidFlushPaint();
 
   // Continue painting if necessary...
   DoDeferredUpdateAndSendInputAck();
@@ -425,10 +426,6 @@ void RenderWidget::OnSwapBuffersComplete() {
     TRACE_EVENT0("renderer", "EarlyOut_AcceleratedCompositingOff");
     return;
   }
-
-  // Notify subclasses.
-  if(is_accelerated_compositing_active_)
-    DidFlushPaint();
 
   // Continue painting if necessary...
   DoDeferredUpdateAndSendInputAck();
@@ -971,6 +968,9 @@ void RenderWidget::didDeactivateCompositor() {
 }
 
 void RenderWidget::didCommitAndDrawCompositorFrame() {
+  TRACE_EVENT0("gpu", "RenderWidget::didCommitAndDrawCompositorFrame");
+  // Notify subclasses.
+  DidFlushPaint();
 }
 
 void RenderWidget::didCompleteSwapBuffers() {
