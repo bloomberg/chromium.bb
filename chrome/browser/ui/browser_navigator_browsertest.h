@@ -31,6 +31,8 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   TabContentsWrapper* CreateTabContents();
 
   void RunSuppressTest(WindowOpenDisposition disposition);
+  void RunUseNonIncognitoWindowTest(const GURL& url);
+  void RunDoNothingIfIncognitoIsForcedTest(const GURL& url);
 
   // content::NotificationObserver:
   virtual void Observe(int type,

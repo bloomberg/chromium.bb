@@ -715,7 +715,9 @@ void SyncSetupHandler::OpenSyncSetup() {
 bool SyncSetupHandler::FocusExistingWizard() {
   Profile* profile = Profile::FromWebUI(web_ui_);
   ProfileSyncService* service = profile->GetProfileSyncService();
-  DCHECK(service);
+  if (!service)
+    return false;
+
   // If the wizard is already visible, focus it.
   if (service->get_wizard().IsVisible()) {
     service->get_wizard().Focus();

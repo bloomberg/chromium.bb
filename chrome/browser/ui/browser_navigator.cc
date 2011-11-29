@@ -71,36 +71,37 @@ bool CompareURLsWithReplacements(
 }
 
 // Change some of the navigation parameters based on the particular URL.
-// Currently this applies to chrome://settings, the bookmark manager,
-// and chrome://extensions, which we always want to open in a normal
-// (not incognito) window. Guest session is an exception.
-// chrome://extensions is on the list because it redirects to
-// chrome://settings.
+// Currently this applies to some chrome:// pages which we always want to open
+// in a non-incognito window. Note that even though a ChromeOS guest session is
+// technically an incognito window, these URLs are allowed.
 // Returns true on success. Otherwise, if changing params leads the browser into
 // an erroneous state, returns false.
 bool AdjustNavigateParamsForURL(browser::NavigateParams* params) {
-  if (!params->target_contents &&
-      browser::IsURLAllowedInIncognito(params->url)) {
-    Profile* profile =
-        params->browser ? params->browser->profile() : params->profile;
-
-    if ((profile->IsOffTheRecord() && !Profile::IsGuestSession()) ||
-        params->disposition == OFF_THE_RECORD) {
-      profile = profile->GetOriginalProfile();
-
-      // If incognito is forced, we punt.
-      PrefService* prefs = profile->GetPrefs();
-      if (prefs && IncognitoModePrefs::GetAvailability(prefs) ==
-              IncognitoModePrefs::FORCED) {
-        return false;
-      }
-
-      params->disposition = SINGLETON_TAB;
-      params->profile = profile;
-      params->browser = Browser::GetOrCreateTabbedBrowser(profile);
-      params->window_action = browser::NavigateParams::SHOW_WINDOW;
-    }
+  if (params->target_contents != NULL ||
+      browser::IsURLAllowedInIncognito(params->url) ||
+      Profile::IsGuestSession()) {
+    return true;
   }
+
+  Profile* profile =
+      params->browser ? params->browser->profile() : params->profile;
+
+  if (profile->IsOffTheRecord() || params->disposition == OFF_THE_RECORD) {
+    profile = profile->GetOriginalProfile();
+
+    // If incognito is forced, we punt.
+    PrefService* prefs = profile->GetPrefs();
+    if (prefs && IncognitoModePrefs::GetAvailability(prefs) ==
+            IncognitoModePrefs::FORCED) {
+      return false;
+    }
+
+    params->disposition = SINGLETON_TAB;
+    params->profile = profile;
+    params->browser = Browser::GetOrCreateTabbedBrowser(profile);
+    params->window_action = browser::NavigateParams::SHOW_WINDOW;
+  }
+
   return true;
 }
 
@@ -632,10 +633,15 @@ int GetIndexOfSingletonTab(browser::NavigateParams* params) {
 }
 
 bool IsURLAllowedInIncognito(const GURL& url) {
-  return url.scheme() == chrome::kChromeUIScheme &&
+  // Most URLs are allowed in incognito; the following are exceptions.
+  // chrome://extensions is on the list because it redirects to
+  // chrome://settings.
+
+  return !(url.scheme() == chrome::kChromeUIScheme &&
       (url.host() == chrome::kChromeUISettingsHost ||
        url.host() == chrome::kChromeUIExtensionsHost ||
-       url.host() == chrome::kChromeUIBookmarksHost);
+       url.host() == chrome::kChromeUIBookmarksHost ||
+       url.host() == chrome::kChromeUISyncPromoHost));
 }
 
 }  // namespace browser
