@@ -709,6 +709,10 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(const FilePath& old_db_file,
 
   file_util::Delete(old_db_file, false);
 
+  meta_table_.Reset();
+  if (!meta_table_.Init(&db_, kCurrentVersionNumber, kCompatibleVersionNumber))
+    return false;
+
   InitFaviconsIndex();
 
   // Reopen the transaction.
@@ -766,6 +770,10 @@ IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,
     return 0;
 
   return db_.GetLastInsertRowId();
+}
+
+bool ThumbnailDatabase::IsLatestVersion() {
+  return meta_table_.GetVersionNumber() == kCurrentVersionNumber;
 }
 
 bool ThumbnailDatabase::UpgradeToVersion4() {

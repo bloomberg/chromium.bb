@@ -228,6 +228,8 @@ class ThumbnailDatabase {
 
  private:
   friend class ExpireHistoryBackend;
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest,
+                           GetFaviconAfterMigrationToTopSites);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion4);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion5);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
@@ -284,6 +286,9 @@ class ThumbnailDatabase {
   IconMappingID AddIconMapping(const GURL& page_url,
                                FaviconID icon_id,
                                bool is_temporary);
+
+  // Returns True if the current database is latest.
+  bool IsLatestVersion();
 
   sql::Connection db_;
   sql::MetaTable meta_table_;

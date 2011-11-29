@@ -123,6 +123,7 @@ TEST_F(ThumbnailDatabaseTest, GetFaviconAfterMigrationToTopSites) {
   base::Time time = base::Time::Now();
   db.SetFavicon(id, favicon, time);
   EXPECT_TRUE(db.RenameAndDropThumbnails(file_name_, new_file_name_));
+  EXPECT_TRUE(db.IsLatestVersion());
 
   base::Time time_out;
   std::vector<unsigned char> favicon_out;
