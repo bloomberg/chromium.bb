@@ -53,25 +53,23 @@ namespace {
 
 class DefaultRuleIterator : public RuleIterator {
  public:
-  explicit DefaultRuleIterator(ContentSetting setting)
-      : setting_(setting) {}
+  explicit DefaultRuleIterator(const base::Value* value) {
+    value_.reset(value->DeepCopy());
+  }
 
   bool HasNext() const {
-    return (setting_ != CONTENT_SETTING_DEFAULT);
+    return value_.get() != NULL;
   }
 
   Rule Next() {
-    DCHECK(setting_ != CONTENT_SETTING_DEFAULT);
-    ContentSetting setting_to_return = setting_;
-    setting_ = CONTENT_SETTING_DEFAULT;
+    DCHECK(value_.get());
     return Rule(ContentSettingsPattern::Wildcard(),
                 ContentSettingsPattern::Wildcard(),
-                Value::CreateIntegerValue(setting_to_return));
+                value_.release());
   }
 
  private:
-  // TODO(markusheintz): |ContentSetting| should be replaced with a |Value|.
-  ContentSetting setting_;
+  scoped_ptr<base::Value> value_;
 };
 
 }  // namespace
@@ -205,17 +203,13 @@ RuleIterator* DefaultProvider::GetRuleIterator(
     bool incognito) const {
   base::AutoLock lock(lock_);
   if (resource_identifier.empty()) {
-    int int_value = 0;
     ValueMap::const_iterator it(default_settings_.find(content_type));
     if (it != default_settings_.end()) {
-      it->second->GetAsInteger(&int_value);
-    } else {
-      NOTREACHED();
+      return new DefaultRuleIterator(it->second.get());
     }
-    return new DefaultRuleIterator(ContentSetting(int_value));
-  } else {
-    return new EmptyRuleIterator();
+    NOTREACHED();
   }
+  return new EmptyRuleIterator();
 }
 
 void DefaultProvider::ClearAllContentSettingsRules(
