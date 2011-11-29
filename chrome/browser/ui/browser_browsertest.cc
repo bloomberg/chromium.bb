@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #if defined(OS_MACOSX)
@@ -125,36 +126,18 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 };
 
 // Used by CloseWithAppMenuOpen. Invokes CloseWindow on the supplied browser.
-class CloseWindowTask : public Task {
- public:
-  explicit CloseWindowTask(Browser* browser) : browser_(browser) {}
+void CloseWindowCallback(Browser* browser) {
+  browser->CloseWindow();
+}
 
-  virtual void Run() {
-    browser_->CloseWindow();
-  }
-
- private:
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(CloseWindowTask);
-};
-
-// Used by CloseWithAppMenuOpen. Posts a CloseWindowTask and shows the app menu.
-class RunCloseWithAppMenuTask : public Task {
- public:
-  explicit RunCloseWithAppMenuTask(Browser* browser) : browser_(browser) {}
-
-  virtual void Run() {
-    // ShowAppMenu is modal under views. Schedule a task that closes the window.
-    MessageLoop::current()->PostTask(FROM_HERE, new CloseWindowTask(browser_));
-    browser_->ShowAppMenu();
-  }
-
- private:
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(RunCloseWithAppMenuTask);
-};
+// Used by CloseWithAppMenuOpen. Posts a CloseWindowCallback and shows the app
+// menu.
+void RunCloseWithAppMenuCallback(Browser* browser) {
+  // ShowAppMenu is modal under views. Schedule a task that closes the window.
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&CloseWindowCallback, browser));
+  browser->ShowAppMenu();
+}
 
 }  // namespace
 
@@ -1053,8 +1036,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CloseWithAppMenuOpen) {
     return;
 
   // We need a message loop running for menus on windows.
-  MessageLoop::current()->PostTask(FROM_HERE,
-                                   new RunCloseWithAppMenuTask(browser()));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&RunCloseWithAppMenuCallback, browser()));
 }
 
 #if !defined(OS_MACOSX)

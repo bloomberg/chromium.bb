@@ -219,27 +219,7 @@ bool DefaultBrowserInfoBarDelegate::Cancel() {
   return true;
 }
 
-
-// NotifyNotDefaultBrowserTask ------------------------------------------------
-
-class NotifyNotDefaultBrowserTask : public Task {
- public:
-  NotifyNotDefaultBrowserTask();
-  virtual ~NotifyNotDefaultBrowserTask();
-
- private:
-  virtual void Run();
-
-  DISALLOW_COPY_AND_ASSIGN(NotifyNotDefaultBrowserTask);
-};
-
-NotifyNotDefaultBrowserTask::NotifyNotDefaultBrowserTask() {
-}
-
-NotifyNotDefaultBrowserTask::~NotifyNotDefaultBrowserTask() {
-}
-
-void NotifyNotDefaultBrowserTask::Run() {
+void NotifyNotDefaultBrowserCallback() {
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
     return;  // Reached during ui tests.
@@ -260,33 +240,13 @@ void NotifyNotDefaultBrowserTask::Run() {
                                         tab->profile()->GetPrefs()));
 }
 
-
-// CheckDefaultBrowserTask ----------------------------------------------------
-
-class CheckDefaultBrowserTask : public Task {
- public:
-  CheckDefaultBrowserTask();
-  virtual ~CheckDefaultBrowserTask();
-
- private:
-  virtual void Run();
-
-  DISALLOW_COPY_AND_ASSIGN(CheckDefaultBrowserTask);
-};
-
-CheckDefaultBrowserTask::CheckDefaultBrowserTask() {
-}
-
-CheckDefaultBrowserTask::~CheckDefaultBrowserTask() {
-}
-
-void CheckDefaultBrowserTask::Run() {
+void CheckDefaultBrowserCallback() {
   if (ShellIntegration::IsDefaultBrowser() ||
       !ShellIntegration::CanSetAsDefaultBrowser()) {
     return;
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          new NotifyNotDefaultBrowserTask());
+                          base::Bind(&NotifyNotDefaultBrowserCallback));
 }
 
 
@@ -1313,7 +1273,7 @@ void BrowserInit::LaunchWithProfile::CheckDefaultBrowser(Profile* profile) {
     return;
   }
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, new CheckDefaultBrowserTask());
+      BrowserThread::FILE, FROM_HERE, base::Bind(&CheckDefaultBrowserCallback));
 }
 
 std::vector<GURL> BrowserInit::GetURLsFromCommandLine(

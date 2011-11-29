@@ -4,6 +4,7 @@
 
 #include "chrome/browser/themes/theme_service.h"
 
+#include "base/bind.h"
 #include "base/string_split.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -181,21 +182,10 @@ const int kToolbarButtonIDs[] = {
 };
 
 // Writes the theme pack to disk on a separate thread.
-class WritePackToDiskTask : public Task {
- public:
-  WritePackToDiskTask(BrowserThemePack* pack, const FilePath& path)
-      : theme_pack_(pack), pack_path_(path) {}
-
-  virtual void Run() {
-    if (!theme_pack_->WriteToDisk(pack_path_)) {
-      NOTREACHED() << "Could not write theme pack to disk";
-    }
-  }
-
- private:
-  scoped_refptr<BrowserThemePack> theme_pack_;
-  FilePath pack_path_;
-};
+void WritePackToDiskCallback(BrowserThemePack* pack, const FilePath& path) {
+  if (!pack->WriteToDisk(path))
+    NOTREACHED() << "Could not write theme pack to disk";
+}
 
 }  // namespace
 
@@ -654,8 +644,9 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
 
   // Write the packed file to disk.
   FilePath pack_path = extension->path().Append(chrome::kThemePackFilename);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          new WritePackToDiskTask(pack, pack_path));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&WritePackToDiskCallback, pack, pack_path));
 
   SavePackName(pack_path);
   theme_pack_ = pack;

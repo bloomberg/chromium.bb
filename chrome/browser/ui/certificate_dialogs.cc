@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/bind.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -21,30 +22,17 @@ using content::BrowserThread;
 
 namespace {
 
-////////////////////////////////////////////////////////////////////////////////
-// General utility functions.
-
-class Writer : public Task {
- public:
-  Writer(const FilePath& path, const std::string& data)
-      : path_(path), data_(data) {
+void WriterCallback(const FilePath& path, const std::string& data) {
+  int bytes_written = file_util::WriteFile(path, data.data(), data.size());
+  if (bytes_written != static_cast<ssize_t>(data.size())) {
+    LOG(ERROR) << "Writing " << path.value() << " ("
+               << data.size() << "B) returned " << bytes_written;
   }
-
-  virtual void Run() {
-    int bytes_written = file_util::WriteFile(path_, data_.data(), data_.size());
-    if (bytes_written != static_cast<ssize_t>(data_.size())) {
-      LOG(ERROR) << "Writing " << path_.value() << " ("
-                 << data_.size() << "B) returned " << bytes_written;
-    }
-  }
- private:
-  FilePath path_;
-  std::string data_;
-};
+}
 
 void WriteFileOnFileThread(const FilePath& path, const std::string& data) {
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, new Writer(path, data));
+      BrowserThread::FILE, FROM_HERE, base::Bind(&WriterCallback, path, data));
 }
 
 std::string WrapAt64(const std::string &str) {

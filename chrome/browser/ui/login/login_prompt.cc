@@ -395,105 +395,82 @@ void LoginHandler::CloseContentsDeferred() {
     dialog_->CloseConstrainedWindow();
 }
 
-// ----------------------------------------------------------------------------
-// LoginDialogTask
+// Helper to create a PasswordForm and stuff it into a vector as input
+// for PasswordManager::PasswordFormsFound, the hook into PasswordManager.
+void MakeInputForPasswordManager(
+    const GURL& request_url,
+    net::AuthChallengeInfo* auth_info,
+    LoginHandler* handler,
+    std::vector<PasswordForm>* password_manager_input) {
+  PasswordForm dialog_form;
+  if (LowerCaseEqualsASCII(auth_info->scheme, "basic")) {
+    dialog_form.scheme = PasswordForm::SCHEME_BASIC;
+  } else if (LowerCaseEqualsASCII(auth_info->scheme, "digest")) {
+    dialog_form.scheme = PasswordForm::SCHEME_DIGEST;
+  } else {
+    dialog_form.scheme = PasswordForm::SCHEME_OTHER;
+  }
+  std::string host_and_port(auth_info->challenger.ToString());
+  if (auth_info->is_proxy) {
+    std::string origin = host_and_port;
+    // We don't expect this to already start with http:// or https://.
+    DCHECK(origin.find("http://") != 0 && origin.find("https://") != 0);
+    origin = std::string("http://") + origin;
+    dialog_form.origin = GURL(origin);
+  } else if (!auth_info->challenger.Equals(
+      net::HostPortPair::FromURL(request_url))) {
+    dialog_form.origin = GURL();
+    NOTREACHED();  // crbug.com/32718
+  } else {
+    dialog_form.origin = GURL(request_url.scheme() + "://" + host_and_port);
+  }
+  dialog_form.signon_realm = GetSignonRealm(dialog_form.origin, *auth_info);
+  password_manager_input->push_back(dialog_form);
+  // Set the password form for the handler (by copy).
+  handler->SetPasswordForm(dialog_form);
+}
 
-// This task is run on the UI thread and creates a constrained window with
+// This callback is run on the UI thread and creates a constrained window with
 // a LoginView to prompt the user.  The response will be sent to LoginHandler,
 // which then routes it to the net::URLRequest on the I/O thread.
-class LoginDialogTask : public Task {
- public:
-  LoginDialogTask(const GURL& request_url,
-                  net::AuthChallengeInfo* auth_info,
-                  LoginHandler* handler)
-      : request_url_(request_url), auth_info_(auth_info), handler_(handler) {
-  }
-  virtual ~LoginDialogTask() {
-  }
-
-  void Run() {
-    TabContents* parent_contents = handler_->GetTabContentsForLogin();
-    if (!parent_contents || handler_->WasAuthHandled()) {
-      // The request may have been cancelled, or it may be for a renderer
-      // not hosted by a tab (e.g. an extension). Cancel just in case
-      // (cancelling twice is a no-op).
-      handler_->CancelAuth();
-      return;
-    }
-
-    // Tell the password manager to look for saved passwords.
-    TabContentsWrapper* wrapper =
-        TabContentsWrapper::GetCurrentWrapperForContents(parent_contents);
-    if (!wrapper) {
-      NOTREACHED() << "Login dialog created for TabContents with no wrapper";
-      return;
-    }
-    PasswordManager* password_manager = wrapper->password_manager();
-    std::vector<PasswordForm> v;
-    MakeInputForPasswordManager(&v);
-    password_manager->OnPasswordFormsFound(v);
-    handler_->SetPasswordManager(password_manager);
-
-    // The realm is controlled by the remote server, so there is no reason
-    // to believe it is of a reasonable length.
-    string16 elided_realm;
-    ui::ElideString(UTF8ToUTF16(auth_info_->realm), 120, &elided_realm);
-
-    string16 host_and_port = ASCIIToUTF16(auth_info_->challenger.ToString());
-    string16 explanation = elided_realm.empty() ?
-        l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
-                                   host_and_port) :
-        l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,
-                                   host_and_port,
-                                   elided_realm);
-    handler_->BuildViewForPasswordManager(password_manager, explanation);
+void LoginDialogCallback(const GURL& request_url,
+                         net::AuthChallengeInfo* auth_info,
+                         LoginHandler* handler) {
+  TabContents* parent_contents = handler->GetTabContentsForLogin();
+  if (!parent_contents || handler->WasAuthHandled()) {
+    // The request may have been cancelled, or it may be for a renderer
+    // not hosted by a tab (e.g. an extension). Cancel just in case
+    // (cancelling twice is a no-op).
+    handler->CancelAuth();
+    return;
   }
 
- private:
-  // Helper to create a PasswordForm and stuff it into a vector as input
-  // for PasswordManager::PasswordFormsFound, the hook into PasswordManager.
-  void MakeInputForPasswordManager(
-      std::vector<PasswordForm>* password_manager_input) {
-    PasswordForm dialog_form;
-    if (LowerCaseEqualsASCII(auth_info_->scheme, "basic")) {
-      dialog_form.scheme = PasswordForm::SCHEME_BASIC;
-    } else if (LowerCaseEqualsASCII(auth_info_->scheme, "digest")) {
-      dialog_form.scheme = PasswordForm::SCHEME_DIGEST;
-    } else {
-      dialog_form.scheme = PasswordForm::SCHEME_OTHER;
-    }
-    std::string host_and_port(auth_info_->challenger.ToString());
-    if (auth_info_->is_proxy) {
-      std::string origin = host_and_port;
-      // We don't expect this to already start with http:// or https://.
-      DCHECK(origin.find("http://") != 0 && origin.find("https://") != 0);
-      origin = std::string("http://") + origin;
-      dialog_form.origin = GURL(origin);
-    } else if (!auth_info_->challenger.Equals(
-        net::HostPortPair::FromURL(request_url_))) {
-      dialog_form.origin = GURL();
-      NOTREACHED();  // crbug.com/32718
-    } else {
-      dialog_form.origin = GURL(request_url_.scheme() + "://" + host_and_port);
-    }
-    dialog_form.signon_realm = GetSignonRealm(dialog_form.origin, *auth_info_);
-    password_manager_input->push_back(dialog_form);
-    // Set the password form for the handler (by copy).
-    handler_->SetPasswordForm(dialog_form);
-  }
+  // Tell the password manager to look for saved passwords.
+  TabContentsWrapper* wrapper =
+      TabContentsWrapper::GetCurrentWrapperForContents(parent_contents);
+  if (!wrapper)
+    NOTREACHED() << "Login dialog created for TabContents with no wrapper";
 
-  // The url from the net::URLRequest initiating the auth challenge.
-  GURL request_url_;
+  PasswordManager* password_manager = wrapper->password_manager();
+  std::vector<PasswordForm> v;
+  MakeInputForPasswordManager(request_url, auth_info, handler, &v);
+  password_manager->OnPasswordFormsFound(v);
+  handler->SetPasswordManager(password_manager);
 
-  // Info about who/where/what is asking for authentication.
-  scoped_refptr<net::AuthChallengeInfo> auth_info_;
+  // The realm is controlled by the remote server, so there is no reason
+  // to believe it is of a reasonable length.
+  string16 elided_realm;
+  ui::ElideString(UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
 
-  // Where to send the authentication when obtained.
-  // This is owned by the ResourceDispatcherHost that invoked us.
-  LoginHandler* handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoginDialogTask);
-};
+  string16 host_and_port = ASCIIToUTF16(auth_info->challenger.ToString());
+  string16 explanation = elided_realm.empty() ?
+      l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
+                                 host_and_port) :
+      l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION,
+                                 host_and_port,
+                                 elided_realm);
+  handler->BuildViewForPasswordManager(password_manager, explanation);
+}
 
 // ----------------------------------------------------------------------------
 // Public API
@@ -502,7 +479,8 @@ LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
                                 net::URLRequest* request) {
   LoginHandler* handler = LoginHandler::Create(auth_info, request);
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, new LoginDialogTask(
-          request->url(), auth_info, handler));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&LoginDialogCallback, request->url(),
+                 make_scoped_refptr(auth_info), make_scoped_refptr(handler)));
   return handler;
 }
