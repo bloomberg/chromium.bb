@@ -7,7 +7,6 @@
 #pragma once
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "content/browser/renderer_host/backing_store.h"
 
 class TestBackingStore : public BackingStore {

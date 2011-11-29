@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_FONT_LIST_ASYNC_H_
 #define CONTENT_BROWSER_FONT_LIST_ASYNC_H_
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"

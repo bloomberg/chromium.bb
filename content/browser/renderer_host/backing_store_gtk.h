@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/common/content_export.h"

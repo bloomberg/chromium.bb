@@ -9,7 +9,6 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "content/browser/renderer_host/backing_store.h"
 
 class BackingStoreWin : public BackingStore {
