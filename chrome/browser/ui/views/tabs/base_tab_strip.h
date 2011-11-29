@@ -16,7 +16,7 @@
 #include "views/view.h"
 
 class BaseTab;
-class DraggedTabController;
+class TabDragController;
 class TabStripController;
 class TabStripSelectionModel;
 
@@ -210,7 +210,7 @@ class BaseTabStrip : public AbstractTabStripView,
   // Destroys the active drag controller.
   void DestroyDragController();
 
-  // Used by DraggedTabController when the user starts or stops dragging tabs.
+  // Used by TabDragController when the user starts or stops dragging tabs.
   void StartedDraggingTabs(const std::vector<BaseTab*>& tabs);
   void StoppedDraggingTabs(const std::vector<BaseTab*>& tabs);
 
@@ -243,7 +243,7 @@ class BaseTabStrip : public AbstractTabStripView,
  private:
   class RemoveTabDelegate;
 
-  friend class DraggedTabController;
+  friend class DefaultTabDragController;
 
   // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
   // |is_first_tab| is set to true.
@@ -258,7 +258,7 @@ class BaseTabStrip : public AbstractTabStripView,
 
   // The controller for a drag initiated from a Tab. Valid for the lifetime of
   // the drag session.
-  scoped_ptr<DraggedTabController> drag_controller_;
+  scoped_ptr<TabDragController> drag_controller_;
 
   // If true, the insert is a result of a drag attaching the tab back to the
   // model.

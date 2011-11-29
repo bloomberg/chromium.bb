@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/tabs/tab_strip_selection_model.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/tabs/dragged_tab_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -322,7 +322,6 @@ void BaseTabStrip::MaybeStartDrag(
     CHECK(false);
     return;
   }
-  drag_controller_.reset(new DraggedTabController());
   std::vector<BaseTab*> tabs;
   int size_to_selected = 0;
   int x = tab->GetMirroredXInView(event.x());
@@ -344,9 +343,9 @@ void BaseTabStrip::MaybeStartDrag(
   TabStripSelectionModel selection_model;
   if (!original_selection.IsSelected(model_index))
     selection_model.Copy(original_selection);
-  drag_controller_->Init(
+  drag_controller_.reset(TabDragController::Create(
       this, tab, tabs, gfx::Point(x, y), tab->GetMirroredXInView(event.x()),
-      selection_model);
+      selection_model));
 }
 
 void BaseTabStrip::ContinueDrag(const views::MouseEvent& event) {
@@ -354,9 +353,9 @@ void BaseTabStrip::ContinueDrag(const views::MouseEvent& event) {
   // a TabStrip animation when the mouse button is down. In this case we should
   // _not_ continue the drag because it can lead to weird bugs.
   if (drag_controller_.get()) {
-    bool started_drag = drag_controller_->started_drag();
+    bool started_drag = drag_controller_->GetStartedDrag();
     drag_controller_->Drag();
-    if (drag_controller_->started_drag() && !started_drag) {
+    if (drag_controller_->GetStartedDrag() && !started_drag) {
       // The drag just started. Redirect mouse events to us to that the tab that
       // originated the drag can be safely deleted.
       static_cast<views::internal::RootView*>(GetWidget()->GetRootView())->
@@ -368,7 +367,7 @@ void BaseTabStrip::ContinueDrag(const views::MouseEvent& event) {
 bool BaseTabStrip::EndDrag(bool canceled) {
   if (!drag_controller_.get())
     return false;
-  bool started_drag = drag_controller_->started_drag();
+  bool started_drag = drag_controller_->GetStartedDrag();
   drag_controller_->EndDrag(canceled);
   return started_drag;
 }
@@ -530,7 +529,7 @@ void BaseTabStrip::StoppedDraggingTabs(const std::vector<BaseTab*>& tabs) {
 }
 
 void BaseTabStrip::PrepareForAnimation() {
-  if (!IsDragSessionActive() && !DraggedTabController::IsAttachedTo(this)) {
+  if (!IsDragSessionActive() && !TabDragController::IsAttachedTo(this)) {
     for (int i = 0; i < tab_count(); ++i)
       base_tab_at_tab_index(i)->set_dragging(false);
   }

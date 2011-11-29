@@ -128,7 +128,7 @@ class TabStrip : public BaseTabStrip,
   int GetMiniTabCount() const;
 
  private:
-  friend class DraggedTabController;
+  friend class DefaultTabDragController;
 
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.
@@ -214,7 +214,7 @@ class TabStrip : public BaseTabStrip,
 
   // Generates the ideal bounds of the TabStrip when all Tabs have finished
   // animating to their desired position/bounds. This is used by the standard
-  // Layout method and other callers like the DraggedTabController that need
+  // Layout method and other callers like the TabDragController that need
   // stable representations of Tab positions.
   virtual void GenerateIdealBounds() OVERRIDE;
 

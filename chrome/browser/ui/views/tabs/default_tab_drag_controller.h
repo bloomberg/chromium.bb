@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TABS_DRAGGED_TAB_CONTROLLER_H_
-#define CHROME_BROWSER_UI_VIEWS_TABS_DRAGGED_TAB_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TABS_DEFAULT_TAB_DRAG_CONTROLLER_H_
+#define CHROME_BROWSER_UI_VIEWS_TABS_DEFAULT_TAB_DRAG_CONTROLLER_H_
 #pragma once
 
 #include <vector>
@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/browser/ui/tabs/dock_info.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/rect.h"
@@ -29,25 +30,17 @@ class TabStripModel;
 
 struct TabRendererData;
 
-///////////////////////////////////////////////////////////////////////////////
-//
-// DraggedTabController
-//
-//  An object that handles a drag session for an individual Tab within a
-//  TabStrip. This object is created whenever the mouse is pressed down on a
-//  Tab and destroyed when the mouse is released or the drag operation is
-//  aborted. The Tab that the user dragged (the "source tab") owns this object
-//  and must be the only one to destroy it (via |DestroyDragController|).
-//
-///////////////////////////////////////////////////////////////////////////////
-class DraggedTabController : public TabContentsDelegate,
-                             public content::NotificationObserver,
-                             public MessageLoopForUI::Observer {
+// TabDragController implementation that creates a widget representing the
+// dragged tabs when detached (dragged out of the source window).
+class DefaultTabDragController : public TabDragController,
+                                 public TabContentsDelegate,
+                                 public content::NotificationObserver,
+                                 public MessageLoopForUI::Observer {
  public:
-  DraggedTabController();
-  virtual ~DraggedTabController();
+  DefaultTabDragController();
+  virtual ~DefaultTabDragController();
 
-  // Initializes DraggedTabController to drag the tabs in |tabs| originating
+  // Initializes DefaultTabDragController to drag the tabs in |tabs| originating
   // from |source_tabstrip|. |source_tab| is the tab that initiated the drag and
   // is contained in |tabs|.  |mouse_offset| is the distance of the mouse
   // pointer from the origin of the first tab in |tabs| and |source_tab_offset|
@@ -62,25 +55,9 @@ class DraggedTabController : public TabContentsDelegate,
             int source_tab_offset,
             const TabStripSelectionModel& initial_selection_model);
 
-  // Returns true if there is a drag underway and the drag is attached to
-  // |tab_strip|.
-  // NOTE: this returns false if the dragged tab controller is in the process
-  // of finishing the drag.
-  static bool IsAttachedTo(BaseTabStrip* tab_strip);
-
-  // Responds to drag events subsequent to StartDrag. If the mouse moves a
-  // sufficient distance before the mouse is released, a drag session is
-  // initiated.
-  void Drag();
-
-  // Complete the current drag session. If the drag session was canceled
-  // because the user pressed Escape or something interrupted it, |canceled|
-  // is true so the helper can revert the state to the world before the drag
-  // begun.
-  void EndDrag(bool canceled);
-
-  // Returns true if a drag started.
-  bool started_drag() const { return started_drag_; }
+  // See description above fields for details on these.
+  bool active() const { return active_; }
+  const BaseTabStrip* attached_tabstrip() const { return attached_tabstrip_; }
 
  private:
   class DockDisplayer;
@@ -129,6 +106,11 @@ class DraggedTabController : public TabContentsDelegate,
   // Sets |drag_data| from |tab|. This also registers for necessary
   // notifications and resets the delegate of the TabContentsWrapper.
   void InitTabDragData(BaseTab* tab, TabDragData* drag_data);
+
+  // TabDragController overrides:
+  virtual void Drag() OVERRIDE;
+  virtual void EndDrag(bool canceled) OVERRIDE;
+  virtual bool GetStartedDrag() const OVERRIDE;
 
   // Overridden from TabContentsDelegate:
   virtual TabContents* OpenURLFromTab(
@@ -363,7 +345,7 @@ class DraggedTabController : public TabContentsDelegate,
   // Timer used to bring the window under the cursor to front. If the user
   // stops moving the mouse for a brief time over a browser window, it is
   // brought to front.
-  base::OneShotTimer<DraggedTabController> bring_to_front_timer_;
+  base::OneShotTimer<DefaultTabDragController> bring_to_front_timer_;
 
   // Did the mouse move enough that we started a drag?
   bool started_drag_;
@@ -386,7 +368,7 @@ class DraggedTabController : public TabContentsDelegate,
   // The selection model of |attached_tabstrip_| before the tabs were attached.
   TabStripSelectionModel selection_model_before_attach_;
 
-  DISALLOW_COPY_AND_ASSIGN(DraggedTabController);
+  DISALLOW_COPY_AND_ASSIGN(DefaultTabDragController);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TABS_DRAGGED_TAB_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TABS_DEFAULT_TAB_DRAG_CONTROLLER_H_
