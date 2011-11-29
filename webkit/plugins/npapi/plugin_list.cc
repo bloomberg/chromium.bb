@@ -75,19 +75,19 @@ static const VersionRangeDefinition kSilverlightVersionRange[] = {
 
 // Similarly, try and share the group definition for plug-ins that are
 // very consistent across OS'es.
-static const PluginGroupDefinition kFlashDefinition = {
-    "adobe-flash-player", "Flash", "Shockwave Flash", kFlashVersionRange,
-    arraysize(kFlashVersionRange), "http://get.adobe.com/flashplayer/" };
+#define kFlashDefinition { \
+    "adobe-flash-player", "Flash", "Shockwave Flash", kFlashVersionRange,\
+    arraysize(kFlashVersionRange), "http://get.adobe.com/flashplayer/" }
 
-static const PluginGroupDefinition kShockwaveDefinition = {
-    "shockwave", PluginGroup::kShockwaveGroupName, "Shockwave for Director",
-    kShockwaveVersionRange, arraysize(kShockwaveVersionRange),
-    "http://www.adobe.com/shockwave/download/" };
+#define kShockwaveDefinition { \
+    "shockwave", PluginGroup::kShockwaveGroupName, "Shockwave for Director", \
+    kShockwaveVersionRange, arraysize(kShockwaveVersionRange), \
+    "http://www.adobe.com/shockwave/download/" }
 
-static const PluginGroupDefinition kSilverlightDefinition = {
-    "silverlight", PluginGroup::kSilverlightGroupName, "Silverlight",
-    kSilverlightVersionRange, arraysize(kSilverlightVersionRange),
-    "http://www.microsoft.com/getsilverlight/" };
+#define kSilverlightDefinition { \
+    "silverlight", PluginGroup::kSilverlightGroupName, "Silverlight", \
+    kSilverlightVersionRange, arraysize(kSilverlightVersionRange), \
+    "http://www.microsoft.com/getsilverlight/" }
 
 #if defined(OS_MACOSX)
 // Plugin Groups for Mac.

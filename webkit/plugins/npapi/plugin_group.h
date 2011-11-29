@@ -76,14 +76,14 @@ class PluginGroup {
  public:
   // Used by about:plugins to disable Reader plugin when internal PDF viewer is
   // enabled.
-  static const char* kAdobeReaderGroupName;
-  static const char* kAdobeReaderUpdateURL;
-  static const char* kJavaGroupName;
-  static const char* kQuickTimeGroupName;
-  static const char* kShockwaveGroupName;
-  static const char* kRealPlayerGroupName;
-  static const char* kSilverlightGroupName;
-  static const char* kWindowsMediaPlayerGroupName;
+  static const char kAdobeReaderGroupName[];
+  static const char kAdobeReaderUpdateURL[];
+  static const char kJavaGroupName[];
+  static const char kQuickTimeGroupName[];
+  static const char kShockwaveGroupName[];
+  static const char kRealPlayerGroupName[];
+  static const char kSilverlightGroupName[];
+  static const char kWindowsMediaPlayerGroupName[];
 
   PluginGroup(const PluginGroup& other);
 

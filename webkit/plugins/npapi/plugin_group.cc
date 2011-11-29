@@ -18,14 +18,16 @@
 namespace webkit {
 namespace npapi {
 
-const char* PluginGroup::kAdobeReaderGroupName = "Adobe Acrobat";
-const char* PluginGroup::kAdobeReaderUpdateURL = "http://get.adobe.com/reader/";
-const char* PluginGroup::kJavaGroupName = "Java";
-const char* PluginGroup::kQuickTimeGroupName = "QuickTime";
-const char* PluginGroup::kShockwaveGroupName = "Shockwave";
-const char* PluginGroup::kRealPlayerGroupName = "RealPlayer";
-const char* PluginGroup::kSilverlightGroupName = "Silverlight";
-const char* PluginGroup::kWindowsMediaPlayerGroupName = "Windows Media Player";
+// static
+const char PluginGroup::kAdobeReaderGroupName[] = "Adobe Acrobat";
+const char PluginGroup::kAdobeReaderUpdateURL[] =
+    "http://get.adobe.com/reader/";
+const char PluginGroup::kJavaGroupName[] = "Java";
+const char PluginGroup::kQuickTimeGroupName[] = "QuickTime";
+const char PluginGroup::kShockwaveGroupName[] = "Shockwave";
+const char PluginGroup::kRealPlayerGroupName[] = "RealPlayer";
+const char PluginGroup::kSilverlightGroupName[] = "Silverlight";
+const char PluginGroup::kWindowsMediaPlayerGroupName[] = "Windows Media Player";
 
 VersionRange::VersionRange(const VersionRangeDefinition& definition)
     : low_str(definition.version_matcher_low),
