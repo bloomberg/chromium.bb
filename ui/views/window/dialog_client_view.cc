@@ -10,6 +10,8 @@
 #include <windows.h>
 #include <uxtheme.h>
 #include <vsstyle.h>
+#elif defined(TOOLKIT_USES_GTK)
+#include <gtk/gtk.h>
 #endif
 
 #include <algorithm>
@@ -304,8 +306,19 @@ const DialogClientView* DialogClientView::AsDialogClientView() const {
 // DialogClientView, View overrides:
 
 void DialogClientView::OnPaint(gfx::Canvas* canvas) {
+#if defined(TOOLKIT_USES_GTK)
+  // TODO(benrg): Unfortunately, GetSystemColor often returns the wrong color
+  // under GTK right now. This is meant to be a temporary fix. See related TODO
+  // in ui/gfx/native_theme_gtk.cc.
+  GtkWidget* widget = GetWidget()->GetNativeView();
+  if (!GTK_IS_WINDOW(widget))
+    return;
+  SkColor bg_color = gfx::GdkColorToSkColor(
+                         gtk_widget_get_style(widget)->bg[GTK_STATE_NORMAL]);
+#else
   SkColor bg_color = gfx::NativeTheme::instance()->GetSystemColor(
                          gfx::NativeTheme::kColorId_DialogBackground);
+#endif
   canvas->FillRect(bg_color, GetLocalBounds());
 }
 

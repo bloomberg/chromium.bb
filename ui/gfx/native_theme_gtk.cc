@@ -34,7 +34,9 @@ SkColor NativeThemeGtk::GetSystemColor(ColorId color_id) const {
     case kColorId_DialogBackground:
       // TODO(benrg): This code used to call gtk_widget_get_style() on the
       // widget being styled. After refactoring, that widget is not available
-      // and we have to call gtk_widget_get_default_style(). Does it matter?
+      // and we have to call gtk_widget_get_default_style(). Unfortunately,
+      // it turns out that this breaks everything (chromium bug 105609,
+      // chromium-os bug 23461). Need to figure out the right thing and do it.
       return gfx::GdkColorToSkColor(
                      gtk_widget_get_default_style()->bg[GTK_STATE_NORMAL]);
     default:
