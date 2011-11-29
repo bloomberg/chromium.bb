@@ -84,9 +84,7 @@ def main(options, args):
       if options.verbose:
         print "Checking %s for /SAFESEH... PASS" % path
     else:
-      # TODO(scherkus): uncomment this code after we're confident that we
-      # won't cause unintentional failures on the build bots.
-      #success = False
+      success = False
       print "Checking %s for /SAFESEH... FAIL" % path
 
     # Update tally.
