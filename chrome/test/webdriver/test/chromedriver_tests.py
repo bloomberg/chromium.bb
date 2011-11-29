@@ -422,7 +422,7 @@ class ShutdownTest(ChromeDriverTest):
   def setUp(self):
     super(ShutdownTest, self).setUp()
     self._custom_server = ChromeDriverLauncher(self.GetDriverPath()).Launch()
-    self._custom_factory = ChromeDriverFactory(self.custom_server,
+    self._custom_factory = ChromeDriverFactory(self._custom_server,
                                                self.GetChromePath())
 
   def tearDown(self):
@@ -430,26 +430,26 @@ class ShutdownTest(ChromeDriverTest):
     super(ShutdownTest, self).tearDown()
 
   def testShutdownWithSession(self):
-    driver = self.custom_factory.GetNewDriver()
-    driver.get(self.custom_server.GetUrl() + '/status')
+    driver = self._custom_factory.GetNewDriver()
+    driver.get(self._custom_server.GetUrl() + '/status')
     driver.find_element_by_tag_name('body')
-    self.custom_server.Kill()
+    self._custom_server.Kill()
 
   def testShutdownWithBusySession(self):
     def _Hang(driver):
       """Waits for the process to quit and then notifies."""
       try:
-        driver.get(self.custom_server.GetUrl() + '/hang')
+        driver.get(self._custom_server.GetUrl() + '/hang')
       except httplib.BadStatusLine:
         pass
 
-    driver = self.custom_factory.GetNewDriver()
+    driver = self._custom_factory.GetNewDriver()
     wait_thread = threading.Thread(target=_Hang, args=(driver,))
     wait_thread.start()
     wait_thread.join(5)
     self.assertTrue(wait_thread.isAlive())
 
-    self.custom_server.Kill()
+    self._custom_server.Kill()
     wait_thread.join(10)
     self.assertFalse(wait_thread.isAlive())
 
