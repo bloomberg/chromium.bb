@@ -2872,8 +2872,9 @@ void ProcessInfoObserver::OnDetailsAvailable() {
 
       // Renderer type, if this is a renderer process.
       std::string renderer_type = "Unknown";
-      if (iterator->renderer_type != ChildProcessInfo::RENDERER_UNKNOWN) {
-        renderer_type = ChildProcessInfo::GetRendererTypeNameInEnglish(
+      if (iterator->renderer_type !=
+          ProcessMemoryInformation::RENDERER_UNKNOWN) {
+        renderer_type = ProcessMemoryInformation::GetRendererTypeNameInEnglish(
             iterator->renderer_type);
       }
       proc_data->SetString("renderer_type", renderer_type);

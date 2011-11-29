@@ -36,19 +36,6 @@ class CONTENT_EXPORT ChildProcessInfo {
     MAX_PROCESS
   };
 
-  // NOTE: Do not remove or reorder the elements in this enum, and only add new
-  // items at the end. We depend on these specific values in a histogram.
-  enum RendererProcessType {
-    RENDERER_UNKNOWN = 0,
-    RENDERER_NORMAL,
-    RENDERER_CHROME,        // WebUI (chrome:// URL)
-    RENDERER_EXTENSION,     // chrome-extension://
-    RENDERER_DEVTOOLS,      // Web inspector
-    RENDERER_INTERSTITIAL,  // malware/phishing interstitial
-    RENDERER_NOTIFICATION,  // HTML notification bubble
-    RENDERER_BACKGROUND_APP // hosted app background page
-  };
-
   ChildProcessInfo(const ChildProcessInfo& original);
   virtual ~ChildProcessInfo();
 
@@ -57,15 +44,11 @@ class CONTENT_EXPORT ChildProcessInfo {
   // Returns the type of the process.
   ProcessType type() const { return type_; }
 
-  // Returns the renderer subtype of this process.
-  // Only valid if the type() is RENDER_PROCESS.
-  RendererProcessType renderer_type() const { return renderer_type_; }
-
   // Returns the name of the process.  i.e. for plugins it might be Flash, while
   // for workers it might be the domain that it's from.
   const string16& name() const { return name_; }
 
-  // Returns the version of the exe, this only appliest to plugins. Otherwise
+  // Returns the version of the exe, this only applies to plugins. Otherwise
   // the string is empty.
   const string16& version() const { return version_; }
 
@@ -84,10 +67,7 @@ class CONTENT_EXPORT ChildProcessInfo {
 
   // Returns an English name of the process type, should only be used for non
   // user-visible strings, or debugging pages like about:memory.
-  static std::string GetFullTypeNameInEnglish(ProcessType type,
-                                              RendererProcessType rtype);
   static std::string GetTypeNameInEnglish(ProcessType type);
-  static std::string GetRendererTypeNameInEnglish(RendererProcessType type);
 
   // We define the < operator so that the ChildProcessInfo can be used as a key
   // in a std::map.
@@ -122,14 +102,12 @@ class CONTENT_EXPORT ChildProcessInfo {
   ChildProcessInfo(ProcessType type, int id);
 
   void set_type(ProcessType type) { type_ = type; }
-  void set_renderer_type(RendererProcessType type) { renderer_type_ = type; }
   void set_name(const string16& name) { name_ = name; }
   void set_version(const string16& ver) { version_ = ver; }
   void set_handle(base::ProcessHandle handle) { process_.set_handle(handle); }
 
  private:
   ProcessType type_;
-  RendererProcessType renderer_type_;
   string16 name_;
   string16 version_;
   int id_;

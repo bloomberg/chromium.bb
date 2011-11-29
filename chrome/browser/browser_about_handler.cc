@@ -1277,8 +1277,8 @@ void AboutMemoryHandler::AppendProcess(ListValue* child_data,
   BindProcessMetrics(child, info);
 
   std::string child_label(
-      ChildProcessInfo::GetFullTypeNameInEnglish(info->type,
-                                                 info->renderer_type));
+      ProcessMemoryInformation::GetFullTypeNameInEnglish(info->type,
+                                                         info->renderer_type));
   if (info->is_diagnostics)
     child_label.append(" (diagnostics)");
   child->SetString("child_name", child_label);

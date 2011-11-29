@@ -260,7 +260,7 @@ class SyslogsMemoryHandler : public MemoryDetails {
              chrome.processes.begin();
          iter1 != chrome.processes.end(); ++iter1) {
       std::string process_string(
-          ChildProcessInfo::GetFullTypeNameInEnglish(
+          ProcessMemoryInformation::GetFullTypeNameInEnglish(
               iter1->type, iter1->renderer_type));
       if (!iter1->titles.empty()) {
         std::string titles(" [");

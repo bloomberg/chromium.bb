@@ -15,8 +15,7 @@
 #include "base/utf_string_conversions.h"
 
 ChildProcessInfo::ChildProcessInfo(ProcessType type, int id) :
-    type_(type),
-    renderer_type_(RENDERER_UNKNOWN) {
+    type_(type) {
   if (id == -1)
     id_ = GenerateChildProcessUniqueId();
   else
@@ -25,7 +24,6 @@ ChildProcessInfo::ChildProcessInfo(ProcessType type, int id) :
 
 ChildProcessInfo::ChildProcessInfo(const ChildProcessInfo& original)
     : type_(original.type_),
-      renderer_type_(original.renderer_type_),
       name_(original.name_),
       version_(original.version_),
       id_(original.id_),
@@ -39,7 +37,6 @@ ChildProcessInfo& ChildProcessInfo::operator=(
     const ChildProcessInfo& original) {
   if (&original != this) {
     type_ = original.type_;
-    renderer_type_ = original.renderer_type_;
     name_ = original.name_;
     version_ = original.version_;
     id_ = original.id_;
@@ -83,40 +80,6 @@ std::string ChildProcessInfo::GetTypeNameInEnglish(
       DCHECK(false) << "Unknown child process type!";
       return "Unknown";
   }
-}
-
-// static
-std::string ChildProcessInfo::GetRendererTypeNameInEnglish(
-    ChildProcessInfo::RendererProcessType type) {
-  switch (type) {
-    case RENDERER_NORMAL:
-      return "Tab";
-    case RENDERER_CHROME:
-      return "Tab (Chrome)";
-    case RENDERER_EXTENSION:
-      return "Extension";
-    case RENDERER_DEVTOOLS:
-      return "Devtools";
-    case RENDERER_INTERSTITIAL:
-      return "Interstitial";
-    case RENDERER_NOTIFICATION:
-      return "Notification";
-    case RENDERER_BACKGROUND_APP:
-      return "Background App";
-    case RENDERER_UNKNOWN:
-    default:
-      NOTREACHED() << "Unknown renderer process type!";
-      return "Unknown";
-  }
-}
-
-// static
-std::string ChildProcessInfo::GetFullTypeNameInEnglish(
-    ChildProcessInfo::ProcessType type,
-    ChildProcessInfo::RendererProcessType rtype) {
-  if (type == RENDER_PROCESS)
-    return GetRendererTypeNameInEnglish(rtype);
-  return GetTypeNameInEnglish(type);
 }
 
 std::string ChildProcessInfo::GenerateRandomChannelID(void* instance) {
