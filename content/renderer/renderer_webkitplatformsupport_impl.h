@@ -87,8 +87,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url) OVERRIDE;
   virtual void GetPlugins(bool refresh,
                           std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
-  virtual WebKit::WebPeerConnectionHandler* createPeerConnectionHandler(
-      WebKit::WebPeerConnectionHandlerClient* client) OVERRIDE;
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;

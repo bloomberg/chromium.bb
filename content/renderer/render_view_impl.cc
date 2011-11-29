@@ -59,8 +59,6 @@
 #include "content/renderer/load_progress_tracker.h"
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/media/audio_renderer_impl.h"
-#include "content/renderer/media/media_stream_dependency_factory.h"
-#include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_impl.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/mhtml_generator.h"
@@ -108,8 +106,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPageSerializer.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPeerConnectionHandler.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPlugin.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginContainer.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPluginDocument.h"
@@ -130,7 +126,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebURLResponse.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebUserMediaClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
@@ -357,7 +352,6 @@ RenderViewImpl::RenderViewImpl(
       geolocation_dispatcher_(NULL),
       speech_input_dispatcher_(NULL),
       device_orientation_dispatcher_(NULL),
-      media_stream_dispatcher_(NULL),
       p2p_socket_dispatcher_(NULL),
       devtools_agent_(NULL),
       renderer_accessibility_(NULL),
@@ -412,8 +406,7 @@ RenderViewImpl::RenderViewImpl(
   host_window_ = parent_hwnd;
 
 #if defined(ENABLE_P2P_APIS)
-  if (!p2p_socket_dispatcher_)
-    p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
+  p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
 #endif
 
   new MHTMLGenerator(this);
@@ -426,6 +419,12 @@ RenderViewImpl::RenderViewImpl(
   renderer_accessibility_ = new RendererAccessibility(this);
 
   new IdleUserDetector(this);
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kEnableMediaStream)) {
+    media_stream_impl_ = new MediaStreamImpl(
+        RenderThreadImpl::current()->video_capture_impl_manager());
+  }
 
   content::GetContentClient()->renderer()->RenderViewCreated(this);
 }
@@ -461,10 +460,6 @@ RenderViewImpl::~RenderViewImpl() {
   for (ViewMap::iterator it = views->begin(); it != views->end(); ++it)
     DCHECK_NE(this, it->second) << "Failed to call Close?";
 #endif
-
-  // MediaStreamImpl holds weak references to RenderViewObserver objects,
-  // ensure it's deleted before the observers.
-  media_stream_impl_ = NULL;
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, RenderViewGone());
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, OnDestruct());
@@ -522,15 +517,6 @@ void RenderViewImpl::SetNextPageID(int32 next_page_id) {
   // only care that next_page_id_ is at least as large as next_page_id.
   if (next_page_id > next_page_id_)
     next_page_id_ = next_page_id;
-}
-
-WebKit::WebPeerConnectionHandler* RenderViewImpl::CreatePeerConnectionHandler(
-    WebKit::WebPeerConnectionHandlerClient* client) {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kEnableMediaStream))
-    return NULL;
-  EnsureMediaStreamImpl();
-  return media_stream_impl_->CreatePeerConnectionHandler(client);
 }
 
 void RenderViewImpl::AddObserver(RenderViewObserver* observer) {
@@ -2928,25 +2914,6 @@ void RenderViewImpl::CheckPreferredSize() {
                                                       preferred_size_));
 }
 
-void RenderViewImpl::EnsureMediaStreamImpl() {
-#if defined(ENABLE_P2P_APIS)
-  if (!p2p_socket_dispatcher_)
-    p2p_socket_dispatcher_ = new content::P2PSocketDispatcher(this);
-#endif
-
-  if (!media_stream_dispatcher_)
-    media_stream_dispatcher_ = new MediaStreamDispatcher(this);
-
-  if (!media_stream_impl_.get()) {
-    MediaStreamDependencyFactory* factory = new MediaStreamDependencyFactory();
-    media_stream_impl_ = new MediaStreamImpl(
-        media_stream_dispatcher_,
-        p2p_socket_dispatcher_,
-        RenderThreadImpl::current()->video_capture_impl_manager(),
-        factory);
-  }
-}
-
 void RenderViewImpl::didChangeContentsSize(WebFrame* frame,
                                            const WebSize& size) {
   if (webview()->mainFrame() != frame)
@@ -4659,14 +4626,6 @@ WebKit::WebPageVisibilityState RenderViewImpl::visibilityState() const {
                                             &override_state))
     return override_state;
   return current_state;
-}
-
-WebKit::WebUserMediaClient* RenderViewImpl::userMediaClient() {
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (!cmd_line->HasSwitch(switches::kEnableMediaStream))
-    return NULL;
-  EnsureMediaStreamImpl();
-  return media_stream_impl_;
 }
 
 bool RenderViewImpl::IsNonLocalTopLevelNavigation(
