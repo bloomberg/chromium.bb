@@ -55,7 +55,7 @@ void MetricsLogManager::ResumePausedLog() {
 }
 
 void MetricsLogManager::StoreStagedLogAsUnsent(LogType log_type) {
-  DCHECK(staged_log_.get());
+  DCHECK(has_staged_log());
   // If compressing the log failed, there's nothing to store.
   if (compressed_staged_log_text_.empty())
     return;
