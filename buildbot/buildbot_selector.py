@@ -9,6 +9,9 @@ import sys
 
 python = sys.executable
 
+# The system Python on Mac 10.5 is pretty old, use a newer version.
+macpython27 = '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
+
 BOT_ASSIGNMENT = {
     ######################################################################
     # Buildbots.
@@ -38,11 +41,11 @@ BOT_ASSIGNMENT = {
     'win7-64-bare-glibc-opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
     'mac10.5-newlib-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
+        macpython27 + ' buildbot/buildbot_standard.py opt 32 newlib',
     'mac10.6-newlib-opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'mac10.5-glibc-opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
+        macpython27 + ' buildbot/buildbot_standard.py opt 32 glibc',
     'mac10.6-glibc-opt':
         python + ' buildbot/buildbot_standard.py opt 32 glibc',
     'lucid-32-newlib-dbg':
@@ -140,9 +143,9 @@ BOT_ASSIGNMENT = {
     'nacl-win64_glibc_opt':
         python + ' buildbot\\buildbot_standard.py opt 64 glibc',
     'nacl-mac10.5_newlib_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 newlib',
+        macpython27 + ' buildbot/buildbot_standard.py opt 32 newlib',
     'nacl-mac10.5_glibc_opt':
-        python + ' buildbot/buildbot_standard.py opt 32 glibc',
+        macpython27 + ' buildbot/buildbot_standard.py opt 32 glibc',
     'nacl-mac10.6_newlib_opt':
         python + ' buildbot/buildbot_standard.py opt 32 newlib',
     'nacl-mac10.6_glibc_opt':

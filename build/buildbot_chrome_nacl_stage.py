@@ -115,22 +115,18 @@ def BuildAndTest(options):
   if sys.platform == 'cygwin':
     raise Exception('I do not work under cygwin, sorry.')
 
+  # By default, use the version of Python is being used to run this script.
+  python = sys.executable
+  if sys.platform == 'darwin':
+    # Mac 10.5 bots tend to use a particularlly old version of Python, look for
+    # a newer version.
+    macpython27 = '/Library/Frameworks/Python.framework/Versions/2.7/bin/python'
+    if os.path.exists(macpython27):
+      python = macpython27
+
   script_dir = os.path.dirname(os.path.abspath(__file__))
   nacl_dir = os.path.dirname(script_dir)
   src_dir = os.path.dirname(nacl_dir)
-
-  # Load the nacl DEPS file.
-  # TODO(ncbray): move this out of chromebinaries into a common library?
-  deps = chromebinaries.EvalDepsFile(os.path.join(nacl_dir, 'DEPS'))
-
-  # Get out the toolchain revs.
-  x86_rev = deps['vars']['x86_toolchain_version']
-
-  # Download the toolchain.
-  subprocess.check_call([sys.executable,
-                         os.path.join(script_dir, 'download_toolchains.py'),
-                         '--x86-version', x86_rev,
-                         '--no-pnacl', '--no-arm-trusted'])
 
   # Decide platform specifics.
   env = dict(os.environ)
@@ -155,10 +151,10 @@ def BuildAndTest(options):
         r'c:\Program Files (x86)\Microsoft Visual Studio 8\Common7\Tools',
     ])
     env['PATH'] += ';' + msvs_path
-    scons = [sys.executable, 'scons.py']
+    scons = [python, 'scons.py']
   elif sys.platform == 'darwin':
     bits = 32
-    scons = [sys.executable, 'scons.py']
+    scons = [python, 'scons.py']
   else:
     p = subprocess.Popen(
         'uname -m | '
@@ -176,7 +172,7 @@ def BuildAndTest(options):
       bits = 32
     # xvfb-run has a 2-second overhead per invocation, so it is cheaper to wrap
     # the entire build step rather than each test (browser_headless=1).
-    scons = ['xvfb-run', '--auto-servernum', sys.executable, 'scons.py']
+    scons = ['xvfb-run', '--auto-servernum', python, 'scons.py']
 
   chrome_filename = FindChrome(src_dir, options)
 
@@ -220,6 +216,17 @@ def BuildAndTest(options):
   cmd.append('chrome_browser_tests')
   if options.integration_bot:
     cmd.append('pyauto_tests')
+
+
+  # Load the nacl DEPS file.
+  # TODO(ncbray): move this out of chromebinaries into a common library?
+  deps = chromebinaries.EvalDepsFile(os.path.join(nacl_dir, 'DEPS'))
+
+  # Download the toolchain(s).
+  RunCommand([python,
+              os.path.join(script_dir, 'download_toolchains.py'),
+              '--x86-version', deps['vars']['x86_toolchain_version'],
+              '--no-pnacl', '--no-arm-trusted'], nacl_dir, os.environ)
 
   CleanTempDir()
 

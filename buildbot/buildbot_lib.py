@@ -235,10 +235,7 @@ def Command(context, cmd, cwd=None):
 # A specialized version of CommandStep.
 def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
           args=(), cwd=None):
-  if context.Windows():
-    scons = 'scons.bat'
-  else:
-    scons = './scons'
+  python = sys.executable
   if mode is None: mode = context['default_scons_mode']
   if platform is None: platform = context['default_scons_platform']
   if parallel:
@@ -253,7 +250,7 @@ def SCons(context, mode=None, platform=None, parallel=False, browser_test=False,
     # slow down the tests unnecessarily.
     cmd.extend(['xvfb-run', '--auto-servernum'])
   cmd.extend([
-      scons,
+      python, 'scons.py',
       '--verbose',
       '-k',
       '-j%d' % jobs,
