@@ -193,8 +193,12 @@ TouchEvent::TouchEvent(const TouchEvent& model, View* root)
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent, public:
 
+#if defined(OS_WIN)
 // This value matches windows WHEEL_DELTA.
 // static
 const int MouseWheelEvent::kWheelDelta = 120;
-
+#else
+// This value matches GTK+ wheel scroll amount.
+const int MouseWheelEvent::kWheelDelta = 53;
+#endif
 }  // namespace views
