@@ -51,30 +51,29 @@ INSTALLER_CONTENTS = [
     'project_templates/init_project.py',
     'project_templates/scons',
     'project_templates/vs/',
-    '../../third_party/scons-2.0.1/',
+    'third_party/scons-2.0.1/',
 ]
 
-INSTALLER_CONTENTS.append('%s/' % nacl_utils.ToolchainPath(
-    base_dir='../../native_client', variant='newlib'))
-INSTALLER_CONTENTS.append('%s/' % nacl_utils.ToolchainPath(
-    base_dir='../../native_client', variant='glibc'))
+INSTALLER_CONTENTS.append('%s/' % nacl_utils.ToolchainPath(base_dir='',
+                                                           variant='newlib'))
+INSTALLER_CONTENTS.append('%s/' % nacl_utils.ToolchainPath(base_dir='',
+                                                           variant='glibc'))
 
 LINUX_ONLY_CONTENTS = [
-    '../../ppapi/',
+    'third_party/ppapi/',
 ]
 
 MAC_ONLY_CONTENTS = [
-    '../../ppapi/',
+    'third_party/ppapi/',
 ]
 
 WINDOWS_ONLY_CONTENTS = [
     'examples/httpd.cmd',
     'examples/scons.bat',
     'project_templates/scons.bat',
-# Dropping debugger.
-#    'debugger/nacl-gdb_server/x64/Release/',
-#    'debugger/nacl-gdb_server/Release/',
-#    'debugger/nacl-bpad/x64/Release/'
+    'debugger/nacl-gdb_server/x64/Release/',
+    'debugger/nacl-gdb_server/Release/',
+    'debugger/nacl-bpad/x64/Release/'
 ]
 
 # These files are user-readable documentation files, and as such get some
@@ -179,35 +178,3 @@ def GetFilesFromPathList(path_list):
   '''
   return ConvertToOSPaths(
       [dir for dir in path_list if not dir.endswith('/')])
-
-
-def FilterPathLayout(path):
-  '''Given a path, decide how it should be copied.
-
-  The SDK was originally layed out homogeneously with the generated
-  installer. Inside the chromium tree, this is not longer desireable.
-  This function compenstates.
-
-  Args:
-    path: A path to install.
-
-  Returns:
-    A list of [src path to tar, cwd when taring src, dst to untar in].
-  '''
-  # Toolchain moved up to top of tree.
-  nacl_dir = '../../native_client/'.replace('/', os.sep)
-  top_dir = '../../'.replace('/', os.sep)
-  ppapi_dir = '../../ppapi/'.replace('/', os.sep)
-
-  # Use toolchain from nacl_dir.
-  if path.startswith(nacl_dir):
-    return [os.path.join('.', path[len(nacl_dir):]), nacl_dir, '.']
-  # Use ppapi directly, but put in third_party.
-  if path.startswith(ppapi_dir):
-    return [os.path.join('.', path[len(ppapi_dir):]), ppapi_dir,
-            'third_party/ppapi']
-  # Third party is used from top of tree (for scons).
-  if path.startswith(top_dir):
-    return [os.path.join('.', path[len(top_dir):]), top_dir, '.']
-  # Normal case.
-  return [path, '.', '.']

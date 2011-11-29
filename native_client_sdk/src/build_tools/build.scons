@@ -132,7 +132,10 @@ if env['IS_WINDOWS']:
 
 import gyp_extract
 
-ppapi_base = os.path.join(env['SRC_DIR'], 'ppapi')
+ppapi_base = os.path.join(env['ROOT_DIR'],
+                          'third_party',
+                          'native_client',
+                          'ppapi')
 
 # Load ppapi_cpp.gypi
 ppapi_cpp_gypi = gyp_extract.LoadGypFile(os.path.join(ppapi_base,
@@ -253,7 +256,7 @@ def build_nacl_tools(env, target, source):
         '--jobs',
         env['JOB_COUNT'],
         '--nacl_dir',
-        env['SRC_DIR'],
+        os.path.join(env['ROOT_DIR'], 'third_party', 'native_client'),
     ]
     if env.GetOption('clean'):
       make_nacl_tools_args.extend(['--clean'])

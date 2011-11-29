@@ -45,7 +45,7 @@ class TestInstallerContents(unittest.TestCase):
     self.assertEqual(output[2], '')
     self.assertEqual(output[3], os.path.join('abs', 'path'))
 
-  def DISABLEDtestGetToolchainManifest(self):
+  def testGetToolchainManifest(self):
     self.assertRaises(KeyError,
                       installer_contents.GetToolchainManifest,
                       'notatoolchain')
