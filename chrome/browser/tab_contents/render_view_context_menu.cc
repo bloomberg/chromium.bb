@@ -46,6 +46,7 @@
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/per_tab_prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -1772,8 +1773,14 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
 bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
   if (id == IDC_CONTENT_CONTEXT_INSPECTELEMENT) {
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    TabContentsWrapper* tab_contents_wrapper =
+        TabContentsWrapper::GetCurrentWrapperForContents(
+            source_tab_contents_);
+    if (!tab_contents_wrapper)
+      return false;
     // Don't enable the web inspector if JavaScript is disabled.
-    if (!profile_->GetPrefs()->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
+    if (!tab_contents_wrapper->per_tab_prefs_tab_helper()->prefs()->GetBoolean(
+            prefs::kWebKitJavascriptEnabled) ||
         command_line.HasSwitch(switches::kDisableJavaScript))
       return false;
     // Don't enable the web inspector if the developer tools are disabled via

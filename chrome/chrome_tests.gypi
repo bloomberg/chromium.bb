@@ -1869,6 +1869,7 @@
         'browser/ui/select_file_dialog_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
         'browser/ui/tabs/tab_menu_model_unittest.cc',
+        'browser/ui/tab_contents/per_tab_prefs_tab_helper_unittest.cc',
         'browser/ui/tests/ui_gfx_image_unittest.cc',
         'browser/ui/tests/ui_gfx_image_unittest.mm',
         'browser/ui/toolbar/back_forward_menu_model_unittest.cc',

@@ -186,7 +186,8 @@ const char kWebKitDefaultFixedFontSize[] =
 const char kWebKitMinimumFontSize[] = "webkit.webprefs.minimum_font_size";
 const char kWebKitMinimumLogicalFontSize[] =
     "webkit.webprefs.minimum_logical_font_size";
-const char kWebKitJavascriptEnabled[] = "webkit.webprefs.javascript_enabled";
+const char kWebKitGlobalJavascriptEnabled[] =
+    "webkit.webprefs.global.javascript_enabled";
 const char kWebKitWebSecurityEnabled[] = "webkit.webprefs.web_security_enabled";
 const char kWebKitJavascriptCanOpenWindowsAutomatically[] =
     "webkit.webprefs.javascript_can_open_windows_automatically";
@@ -207,6 +208,9 @@ const char kWebKitAllowDisplayingInsecureContent[] =
     "webkit.webprefs.allow_displaying_insecure_content";
 const char kWebKitAllowRunningInsecureContent[] =
     "webkit.webprefs.allow_running_insecure_content";
+
+// Settings below can be overridden for each tab individually.
+const char kWebKitJavascriptEnabled[] = "webkit.webprefs.javascript_enabled";
 
 // Boolean which specifies whether the bookmark bar is visible on all tabs.
 const char kShowBookmarkBar[] = "bookmark_bar.show_on_all_tabs";

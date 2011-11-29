@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/sad_tab_observer.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
+#include "chrome/browser/ui/tab_contents/per_tab_prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -84,8 +85,8 @@ const char* kPrefsToObserve[] = {
   prefs::kWebKitDefaultFontSize,
   prefs::kWebKitFantasyFontFamily,
   prefs::kWebKitFixedFontFamily,
+  prefs::kWebKitGlobalJavascriptEnabled,
   prefs::kWebKitJavaEnabled,
-  prefs::kWebKitJavascriptEnabled,
   prefs::kWebKitLoadsImagesAutomatically,
   prefs::kWebKitMinimumFontSize,
   prefs::kWebKitMinimumLogicalFontSize,
@@ -282,6 +283,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
   password_manager_delegate_.reset(new PasswordManagerDelegateImpl(this));
   password_manager_.reset(
       new PasswordManager(contents, password_manager_delegate_.get()));
+  per_tab_prefs_tab_helper_.reset(new PerTabPrefsTabHelper(this));
   prerender_tab_helper_.reset(new prerender::PrerenderTabHelper(this));
   print_view_manager_.reset(new printing::PrintViewManager(this));
   restore_tab_helper_.reset(new RestoreTabHelper(this));
@@ -306,8 +308,6 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
       new ExtensionWebNavigationTabObserver(contents));
   external_protocol_observer_.reset(new ExternalProtocolObserver(contents));
   plugin_observer_.reset(new PluginObserver(this));
-  per_tab_prefs_.reset(
-      profile()->GetPrefs()->CreatePrefServiceWithPerTabPrefStore());
   print_preview_.reset(new printing::PrintPreviewMessageHandler(contents));
   sad_tab_observer_.reset(new SadTabObserver(contents));
   // Start the in-browser thumbnailing if the feature is enabled.
@@ -374,7 +374,7 @@ void TabContentsWrapper::RegisterUserPrefs(PrefService* prefs) {
                              PrefService::SYNCABLE_PREF);
 
   WebPreferences pref_defaults;
-  prefs->RegisterBooleanPref(prefs::kWebKitJavascriptEnabled,
+  prefs->RegisterBooleanPref(prefs::kWebKitGlobalJavascriptEnabled,
                              pref_defaults.javascript_enabled,
                              PrefService::UNSYNCABLE_PREF);
   prefs->RegisterBooleanPref(prefs::kWebKitWebSecurityEnabled,
@@ -632,7 +632,9 @@ void TabContentsWrapper::Observe(int type,
     case chrome::NOTIFICATION_PREF_CHANGED: {
       std::string* pref_name_in = content::Details<std::string>(details).ptr();
       DCHECK(content::Source<PrefService>(source).ptr() ==
-             profile()->GetPrefs());
+             profile()->GetPrefs() ||
+             content::Source<PrefService>(source).ptr() ==
+             per_tab_prefs_tab_helper_->prefs());
       if (*pref_name_in == prefs::kAlternateErrorPagesEnabled) {
         UpdateAlternateErrorPageURL(render_view_host());
       } else if ((*pref_name_in == prefs::kDefaultCharset) ||
@@ -690,8 +692,9 @@ void TabContentsWrapper::UpdateAlternateErrorPageURL(RenderViewHost* rvh) {
 
 void TabContentsWrapper::UpdateWebPreferences() {
   RenderViewHostDelegate* rvhd = tab_contents();
-  tab_contents()->render_view_host()->UpdateWebkitPreferences(
-      rvhd->GetWebkitPrefs());
+  WebPreferences prefs = rvhd->GetWebkitPrefs();
+  per_tab_prefs_tab_helper_->OverrideWebPreferences(&prefs);
+  tab_contents()->render_view_host()->UpdateWebkitPreferences(prefs);
 }
 
 void TabContentsWrapper::UpdateRendererPreferences() {

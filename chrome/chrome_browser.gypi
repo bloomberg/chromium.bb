@@ -3217,6 +3217,8 @@
         'browser/ui/select_file_dialog.cc',
         'browser/ui/select_file_dialog.h',
         'browser/ui/status_bubble.h',
+        'browser/ui/tab_contents/per_tab_prefs_tab_helper.cc',
+        'browser/ui/tab_contents/per_tab_prefs_tab_helper.h',
         'browser/ui/tab_contents/tab_contents_wrapper.cc',
         'browser/ui/tab_contents/tab_contents_wrapper.h',
         'browser/ui/tab_contents/tab_contents_wrapper_delegate.cc',

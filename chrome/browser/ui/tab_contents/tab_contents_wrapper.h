@@ -39,6 +39,7 @@ class NavigationController;
 class OmniboxSearchHint;
 class PasswordManager;
 class PasswordManagerDelegate;
+class PerTabPrefsTabHelper;
 class PluginObserver;
 class PrefService;
 class Profile;
@@ -179,6 +180,10 @@ class TabContentsWrapper : public TabContentsObserver,
   InfoBarTabHelper* infobar_tab_helper() { return infobar_tab_helper_.get(); }
   PasswordManager* password_manager() { return password_manager_.get(); }
 
+  PerTabPrefsTabHelper* per_tab_prefs_tab_helper() {
+    return per_tab_prefs_tab_helper_.get();
+  }
+
   prerender::PrerenderTabHelper* prerender_tab_helper() {
     return prerender_tab_helper_.get();
   }
@@ -293,6 +298,7 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<PasswordManagerDelegate> password_manager_delegate_;
   scoped_ptr<PasswordManager> password_manager_;
 
+  scoped_ptr<PerTabPrefsTabHelper> per_tab_prefs_tab_helper_;
   scoped_ptr<prerender::PrerenderTabHelper> prerender_tab_helper_;
 
   // Handles print job for this contents.
@@ -324,7 +330,6 @@ class TabContentsWrapper : public TabContentsObserver,
   scoped_ptr<ExtensionWebNavigationTabObserver> webnavigation_observer_;
   scoped_ptr<ExternalProtocolObserver> external_protocol_observer_;
   scoped_ptr<PluginObserver> plugin_observer_;
-  scoped_ptr<PrefService> per_tab_prefs_; // Allows overriding user preferences.
   scoped_ptr<printing::PrintPreviewMessageHandler> print_preview_;
   scoped_ptr<SadTabObserver> sad_tab_observer_;
   scoped_ptr<ThumbnailGenerator> thumbnail_generation_observer_;

@@ -17,10 +17,8 @@ namespace {
 
 const char* overlay_key = prefs::kBrowserWindowPlacement;
 const char* regular_key = prefs::kShowBookmarkBar;
-// There is no real-life sense in mapping these two properties, it for test
-// purposes only.
 const char* mapped_overlay_key = prefs::kWebKitJavascriptEnabled;
-const char* mapped_underlay_key = prefs::kWebKitJavaEnabled;
+const char* mapped_underlay_key = prefs::kWebKitGlobalJavascriptEnabled;
 
 }  // namespace
 

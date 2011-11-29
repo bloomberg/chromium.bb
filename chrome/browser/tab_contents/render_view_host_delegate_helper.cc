@@ -400,7 +400,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.developer_extras_enabled = true;
     web_prefs.javascript_enabled =
         !command_line.HasSwitch(switches::kDisableJavaScript) &&
-        prefs->GetBoolean(prefs::kWebKitJavascriptEnabled);
+        prefs->GetBoolean(prefs::kWebKitGlobalJavascriptEnabled);
     web_prefs.web_security_enabled =
         !command_line.HasSwitch(switches::kDisableWebSecurity) &&
         prefs->GetBoolean(prefs::kWebKitWebSecurityEnabled);
