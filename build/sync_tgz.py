@@ -108,7 +108,6 @@ def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
     keep: Keep the archive, do not delete when done.
   """
 
-  verbose=True
   filename = url.split('/')[-1]
   tar_filepath = os.path.join(tar_dir, filename)
   if not dst_dir:
@@ -161,8 +160,13 @@ def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
     # go ahead and extract it normally.
     if m.issym() and sys.platform == 'win32':
       CreateCygwinSymlink(os.path.join(dst_dir, m.name), m.linkname)
+    elif m.islnk() and sys.platform == 'win32':
+      filepath = os.path.join(dst_dir, m.name).replace('/', '\\')
+      targpath = os.path.join(dst_dir, m.linkname).replace('/', '\\')
+      subprocess.call(['cmd', '/C', 'mklink /H %s %s' % (filepath, targpath)])
     else:
       tar.extract(m, dst_dir)
+
 
   tar.close()
   if not keep:
