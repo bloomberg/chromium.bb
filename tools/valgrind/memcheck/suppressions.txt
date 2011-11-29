@@ -5195,6 +5195,31 @@
    fun:_ZN4base8internal7InvokerILi1ENS0_9BindStateINS0_15RunnableAdapterIPFvRKSt6vectorIiSaIiEEEEES9_FvS6_EEES9_E3RunEPNS0_13BindStateBaseE
    fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
+{
+   bug_105715
+   Memcheck:Uninitialized
+   ...
+   fun:vfprintf
+   fun:__vsnprintf_chk
+   fun:_ZN4base9vsnprintfEPcjPKcS0_
+   fun:_ZN4base12_GLOBAL__N_110vsnprintfTEPcjPKcS1_
+   fun:_ZN4base12_GLOBAL__N_1L14StringAppendVTISsEEvPT_PKNS2_10value_typeEPc
+   fun:_ZN4base13StringAppendVEPSsPKcPc
+   fun:_ZN4base13StringAppendFEPSsPKcz
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEibb
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEibb
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEibb
+   fun:_ZN4base10JSONWriter15BuildJSONStringEPKNS_5ValueEibb
+   fun:_ZN4base10JSONWriter16WriteWithOptionsEPKNS_5ValueEbiPSs
+   fun:_ZN25JSONStringValueSerializer17SerializeInternalERKN4base5ValueEb
+   fun:_ZN25JSONStringValueSerializer9SerializeERKN4base5ValueE
+   fun:_ZN18jstemplate_builder12AppendJsonJSEPKN4base15DictionaryValueEPSs
+   fun:_ZN19OptionsUIHTMLSource16StartDataRequestERKSsbi
+   fun:_ZN4base8internal15RunnableAdapterIMN20ChromeURLDataManager10DataSourceEFvRKSsbiEE3RunEPS3_S5_RKbRKi
+   fun:_ZN4base8internal12InvokeHelperILb0EvNS0_15RunnableAdapterIMN20ChromeURLDataManager10DataSourceEFvRKSsbiEEEFvRKPS4_S6_RKbRKiEE8MakeItSoES9_SC_S6_SE_SG_
+   fun:_ZN4base8internal7InvokerILi4ENS0_9BindStateINS0_15RunnableAdapterIMN20ChromeURLDataManager10DataSourceEFvRKSsbiEEEFvPS5_S7_biEFvSB_SsbiEEESC_E3RunEPNS0_13BindStateBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
