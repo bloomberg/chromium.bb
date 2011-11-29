@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/tracked_objects.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ppapi/c/pp_instance.h"

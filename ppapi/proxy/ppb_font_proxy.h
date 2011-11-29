@@ -5,7 +5,7 @@
 #ifndef PPAPI_PROXY_PPB_FONT_PROXY_H_
 #define PPAPI_PROXY_PPB_FONT_PROXY_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/synchronization/waitable_event.h"
 #include "ppapi/proxy/interface_proxy.h"
 #include "ppapi/shared_impl/function_group_base.h"

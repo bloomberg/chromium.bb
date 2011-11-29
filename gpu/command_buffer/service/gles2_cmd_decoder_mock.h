@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/size.h"
 
