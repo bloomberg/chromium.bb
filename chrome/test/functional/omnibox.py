@@ -361,8 +361,7 @@ class OmniboxTest(pyauto.PyUITest):
     """
     app_crx_file = os.path.abspath(os.path.join(self.DataDir(),
                                    'pyauto_private', 'apps', app_name))
-    installed_app_id = self.InstallApp(app_crx_file)
-    self.assertTrue(installed_app_id, msg='App install failed.')
+    return self.InstallExtension(app_crx_file)
 
   def _VerifyOminiboxMatches(self, search_str, app_url, is_incognito):
     """Verify app matches in omnibox.

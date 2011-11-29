@@ -335,10 +335,16 @@ class ExtensionUninstallObserver : public content::NotificationObserver {
 class ExtensionReadyNotificationObserver
     : public content::NotificationObserver {
  public:
+  // Creates an observer that replies using the old IPC automation method.
   ExtensionReadyNotificationObserver(ExtensionProcessManager* manager,
                                      ExtensionService* service,
                                      AutomationProvider* automation,
                                      int id,
+                                     IPC::Message* reply_message);
+  // Creates an observer that replies using the JSON automation interface.
+  ExtensionReadyNotificationObserver(ExtensionProcessManager* manager,
+                                     ExtensionService* service,
+                                     AutomationProvider* automation,
                                      IPC::Message* reply_message);
   virtual ~ExtensionReadyNotificationObserver();
 
@@ -348,12 +354,15 @@ class ExtensionReadyNotificationObserver
                        const content::NotificationDetails& details);
 
  private:
+  void Init();
+
   content::NotificationRegistrar registrar_;
   ExtensionProcessManager* manager_;
   ExtensionService* service_;
   base::WeakPtr<AutomationProvider> automation_;
   int id_;
   scoped_ptr<IPC::Message> reply_message_;
+  bool use_json_;
   const Extension* extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionReadyNotificationObserver);

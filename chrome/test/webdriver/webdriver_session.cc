@@ -7,6 +7,8 @@
 #include <sstream>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -997,12 +999,35 @@ Error* Session::WaitForAllTabsToStopLoading() {
   return error;
 }
 
-Error* Session::InstallExtension(const FilePath& path) {
+Error* Session::InstallExtensionDeprecated(const FilePath& path) {
   Error* error = NULL;
   RunSessionTask(NewRunnableMethod(
       automation_.get(),
-      &Automation::InstallExtension,
+      &Automation::InstallExtensionDeprecated,
       path,
+      &error));
+  return error;
+}
+
+Error* Session::GetInstalledExtensions(
+    std::vector<std::string>* extension_ids) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::GetInstalledExtensions,
+      base::Unretained(automation_.get()),
+      extension_ids,
+      &error));
+  return error;
+}
+
+Error* Session::InstallExtension(
+    const FilePath& path, std::string* extension_id) {
+  Error* error = NULL;
+  RunSessionTask(base::Bind(
+      &Automation::InstallExtension,
+      base::Unretained(automation_.get()),
+      path,
+      extension_id,
       &error));
   return error;
 }
@@ -1056,6 +1081,21 @@ void Session::RunSessionTaskOnSessionThread(Task* task,
   done_event->Signal();
 }
 
+void Session::RunSessionTask(const base::Closure& task) {
+  base::WaitableEvent done_event(false, false);
+  thread_.message_loop_proxy()->PostTask(FROM_HERE, base::Bind(
+      &Session::RunClosureOnSessionThread,
+      base::Unretained(this),
+      task,
+      &done_event));
+  done_event.Wait();
+}
+
+void Session::RunClosureOnSessionThread(const base::Closure& task,
+                                        base::WaitableEvent* done_event) {
+  task.Run();
+  done_event->Signal();
+}
 
 void Session::InitOnSessionThread(const Automation::BrowserOptions& options,
                                   Error** error) {

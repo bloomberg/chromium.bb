@@ -317,4 +317,19 @@ bool SendGetChromeDriverAutomationVersion(
     int* version,
     std::string* error_msg) WARN_UNUSED_RESULT;
 
+// Requests info about all installed extensions. Returns true on success.
+bool SendGetExtensionsInfoJSONRequest(
+    AutomationMessageSender* sender,
+    base::ListValue* extensions_list,
+    std::string* error_msg) WARN_UNUSED_RESULT;
+
+// Requests that the given extension be installed. If |with_ui| is false,
+// the extension will be installed silently. Returns true on success.
+bool SendInstallExtensionJSONRequest(
+    AutomationMessageSender* sender,
+    const FilePath& path,
+    bool with_ui,
+    std::string* extension_id,
+    std::string* error_msg) WARN_UNUSED_RESULT;
+
 #endif  // CHROME_TEST_AUTOMATION_AUTOMATION_JSON_REQUESTS_H_

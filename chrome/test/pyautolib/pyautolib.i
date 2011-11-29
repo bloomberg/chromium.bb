@@ -379,12 +379,6 @@ class PyUITestBase {
                         int tab_index=0);
 
   // Misc methods
-  %feature("docstring", "Install an extension from the given path.  The path "
-           "must be absolute and may be a crx file or an unpacked extension "
-           "directory. Returns the extension ID if successfully installed and "
-           "loaded. Otherwise, returns the empty string.") InstallExtension;
-  std::string InstallExtension(const std::string& extension_path, bool with_ui);
-
   %feature("docstring", "Get a proxy to the browser window at the given "
                         "zero-based index.") GetBrowserWindow;
   scoped_refptr<BrowserProxy> GetBrowserWindow(int window_index);

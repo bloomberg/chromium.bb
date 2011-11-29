@@ -574,7 +574,27 @@ ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
       automation_(automation->AsWeakPtr()),
       id_(id),
       reply_message_(reply_message),
+      use_json_(false),
       extension_(NULL) {
+  Init();
+}
+
+ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
+    ExtensionProcessManager* manager, ExtensionService* service,
+    AutomationProvider* automation, IPC::Message* reply_message)
+    : manager_(manager),
+      service_(service),
+      automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message),
+      use_json_(true),
+      extension_(NULL) {
+  Init();
+}
+
+ExtensionReadyNotificationObserver::~ExtensionReadyNotificationObserver() {
+}
+
+void ExtensionReadyNotificationObserver::Init() {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
@@ -585,9 +605,6 @@ ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
                  content::NotificationService::AllSources());
-}
-
-ExtensionReadyNotificationObserver::~ExtensionReadyNotificationObserver() {
 }
 
 void ExtensionReadyNotificationObserver::Observe(
@@ -605,8 +622,14 @@ void ExtensionReadyNotificationObserver::Observe(
       if (!extension_ || !DidExtensionHostsStopLoading(manager_))
         return;
       break;
-    case chrome::NOTIFICATION_EXTENSION_LOADED:
-      extension_ = content::Details<const Extension>(details).ptr();
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      const Extension* loaded_extension =
+          content::Details<const Extension>(details).ptr();
+      // Only track an internal or unpacked extension load.
+      Extension::Location location = loaded_extension->location();
+      if (location != Extension::INTERNAL && location != Extension::LOAD)
+        return;
+      extension_ = loaded_extension;
       if (!DidExtensionHostsStopLoading(manager_))
         return;
       // For some reason, the background ExtensionHost is not yet
@@ -616,6 +639,7 @@ void ExtensionReadyNotificationObserver::Observe(
       if (!service_->IsBackgroundPageReady(extension_))
         return;
       break;
+    }
     case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR:
     case chrome::NOTIFICATION_EXTENSION_LOAD_ERROR:
     case chrome::NOTIFICATION_EXTENSION_UPDATE_DISABLED:
@@ -625,21 +649,27 @@ void ExtensionReadyNotificationObserver::Observe(
       break;
   }
 
-  if (id_ == AutomationMsg_InstallExtension::ID) {
-    // A handle of zero indicates an error.
-    int extension_handle = 0;
-    if (extension_)
-      extension_handle = automation_->AddExtension(extension_);
-    AutomationMsg_InstallExtension::WriteReplyParams(
-        reply_message_.get(), extension_handle);
-  } else if (id_ == AutomationMsg_EnableExtension::ID) {
-    AutomationMsg_EnableExtension::WriteReplyParams(reply_message_.get(), true);
+  if (use_json_) {
+    DictionaryValue dict;
+    dict.SetString("id", extension_->id());
+    AutomationJSONReply(automation_, reply_message_.release())
+        .SendSuccess(&dict);
   } else {
-    NOTREACHED();
-    LOG(ERROR) << "Cannot write reply params for unknown message id.";
+    if (id_ == AutomationMsg_InstallExtension::ID) {
+      // A handle of zero indicates an error.
+      int extension_handle = 0;
+      if (extension_)
+        extension_handle = automation_->AddExtension(extension_);
+      AutomationMsg_InstallExtension::WriteReplyParams(
+          reply_message_.get(), extension_handle);
+    } else if (id_ == AutomationMsg_EnableExtension::ID) {
+      AutomationMsg_EnableExtension::WriteReplyParams(
+          reply_message_.get(), true);
+    } else {
+      LOG(ERROR) << "Cannot write reply params for unknown message id.";
+    }
+    automation_->Send(reply_message_.release());
   }
-
-  automation_->Send(reply_message_.release());
   delete this;
 }
 

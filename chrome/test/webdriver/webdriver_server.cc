@@ -31,6 +31,7 @@
 #include "chrome/test/webdriver/commands/alert_commands.h"
 #include "chrome/test/webdriver/commands/appcache_status_command.h"
 #include "chrome/test/webdriver/commands/browser_connection_commands.h"
+#include "chrome/test/webdriver/commands/chrome_commands.h"
 #include "chrome/test/webdriver/commands/cookie_commands.h"
 #include "chrome/test/webdriver/commands/create_session.h"
 #include "chrome/test/webdriver/commands/execute_async_script_command.h"
@@ -140,6 +141,9 @@ void InitCallbacks(Dispatcher* dispatcher,
 
   dispatcher->Add<BrowserConnectionCommand>("/session/*/browser_connection");
   dispatcher->Add<AppCacheStatusCommand>("/session/*/application_cache/status");
+
+  // Chrome-specific command.
+  dispatcher->Add<ExtensionsCommand>("/session/*/chrome/extensions");
 
   // Since the /session/* is a wild card that would match the above URIs, this
   // line MUST be after all other webdriver command callbacks.

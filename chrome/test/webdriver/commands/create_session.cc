@@ -74,7 +74,7 @@ void CreateSession::ExecutePost(Response* const response) {
 
   // Install extensions.
   for (size_t i = 0; i < caps.extensions.size(); ++i) {
-    Error* error = session->InstallExtension(caps.extensions[i]);
+    Error* error = session->InstallExtensionDeprecated(caps.extensions[i]);
     if (error) {
       response->SetError(error);
       return;

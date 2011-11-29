@@ -687,9 +687,60 @@ void Automation::WaitForAllTabsToStopLoading(Error** error) {
     *error = new Error(kUnknownError, error_msg);
 }
 
-void Automation::InstallExtension(const FilePath& path, Error** error) {
+void Automation::InstallExtensionDeprecated(
+    const FilePath& path, Error** error) {
   if (!launcher_->automation()->InstallExtension(path, false).get())
     *error = new Error(kUnknownError, "Failed to install extension");
+}
+
+void Automation::GetInstalledExtensions(
+    std::vector<std::string>* extension_ids, Error** error) {
+  *error = CheckNewExtensionInterfaceSupported();
+  if (*error)
+    return;
+
+  std::string error_msg;
+  base::ListValue extensions_list;
+  if (!SendGetExtensionsInfoJSONRequest(
+          automation(), &extensions_list, &error_msg)) {
+    *error = new Error(kUnknownError, error_msg);
+    return;
+  }
+
+  for (size_t i = 0; i < extensions_list.GetSize(); i++) {
+    DictionaryValue* extension_dict;
+    if (!extensions_list.GetDictionary(i, &extension_dict)) {
+      *error = new Error(kUnknownError, "Invalid extension dictionary");
+      return;
+    }
+    bool is_component;
+    if (!extension_dict->GetBoolean("is_component", &is_component)) {
+      *error = new Error(kUnknownError,
+                         "Missing or invalid 'is_component_extension'");
+      return;
+    }
+    if (is_component)
+      continue;
+
+    std::string extension_id;
+    if (!extension_dict->GetString("id", &extension_id)) {
+      *error = new Error(kUnknownError, "Missing or invalid 'id'");
+      return;
+    }
+    extension_ids->push_back(extension_id);
+  }
+}
+
+void Automation::InstallExtension(
+    const FilePath& path, std::string* extension_id, Error** error) {
+  *error = CheckNewExtensionInterfaceSupported();
+  if (*error)
+    return;
+
+  std::string error_msg;
+  if (!SendInstallExtensionJSONRequest(
+          automation(), path, false /* with_ui */, extension_id, &error_msg))
+    *error = new Error(kUnknownError, error_msg);
 }
 
 AutomationProxy* Automation::automation() const {
@@ -753,6 +804,12 @@ Error* Automation::CheckAdvancedInteractionsSupported() {
   const char* message =
       "Advanced user interactions are not supported for this version of Chrome";
   return CheckVersion(750, 0, message);
+}
+
+Error* Automation::CheckNewExtensionInterfaceSupported() {
+  const char* message =
+      "Extension interface is not supported for this version of Chrome";
+  return CheckVersion(947, 0, message);
 }
 
 }  // namespace webdriver

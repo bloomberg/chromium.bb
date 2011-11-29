@@ -109,7 +109,7 @@ class MemoryTest(pyauto.PyUITest):
     if (self.LOG_TO_OUTPUT_FILE and
         os.path.exists(self.EXTENSION_PROCESS_OUTPUT_FILE)):
       os.remove(self.EXTENSION_PROCESS_OUTPUT_FILE)
-    self.InstallExtension(self.EXTENSION_LOCATION, False)
+    self.InstallExtension(self.EXTENSION_LOCATION)
     # The PID is 0 until the extension has a chance to start up.
     self.WaitUntil(
         lambda: self._GetPidOfExtensionProcessByName(

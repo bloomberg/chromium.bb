@@ -1715,6 +1715,31 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     return self._GetResultFromJSONRequest(
         cmd_dict, windex=window_index)['translation_success']
 
+  def InstallExtension(self, extension_path, with_ui=False):
+    """Installs an extension from the given path.
+
+    The path must be absolute and may be a crx file or an unpacked extension
+    directory. Returns the extension ID if successfully installed and loaded.
+    Otherwise, throws an exception. The extension must not already be installed.
+
+    Args:
+      extension_path: The absolute path to the extension to install. If the
+                      extension is packed, it must have a .crx extension.
+      with_ui: Whether the extension install confirmation UI should be shown.
+
+    Returns:
+      The ID of the installed extension.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
+    """
+    cmd_dict = {
+        'command': 'InstallExtension',
+        'path': extension_path,
+        'with_ui': with_ui
+    }
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)['id']
+
   def GetExtensionsInfo(self):
     """Returns information about all installed extensions.
 
@@ -1728,6 +1753,8 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                                           u'chrome://resources/*'],
           u'host_permissions': [u'chrome://favicon/*', u'chrome://resources/*'],
           u'id': u'eemcgdkfndhakfknompkggombfjjjeno',
+          u'is_component': True,
+          u'is_internal': False,
           u'name': u'Bookmark Manager',
           u'options_url': u'',
           u'public_key': u'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDQcByy+eN9jza\
@@ -1755,7 +1782,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = {  # Prepare command for the json interface
       'command': 'GetExtensionsInfo'
     }
-    return self._GetResultFromJSONRequest(cmd_dict)['extensions']
+    return self._GetResultFromJSONRequest(cmd_dict, windex=-1)['extensions']
 
   def UninstallExtensionById(self, id):
     """Uninstall the extension with the given id.
@@ -2409,11 +2436,15 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     A theme file is a file with a .crx suffix, like an extension.  The theme
     file must be specified with an absolute path.  This method call waits until
     the theme is installed and will trigger the "theme installed" infobar.
+    If the install is unsuccessful, will throw an exception.
 
     Uses InstallExtension().
 
     Returns:
-      The ID of the installed theme, on success.  The empty string, otherwise.
+      The ID of the installed theme.
+
+    Raises:
+      pyauto_errors.JSONInterfaceError if the automation call returns an error.
     """
     return self.InstallExtension(crx_file_path, True)
 
@@ -3101,31 +3132,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
   def _CheckNTPThumbnailShown(self, thumbnail):
     if self.GetNTPThumbnailIndex(thumbnail) == -1:
       raise NTPThumbnailNotShownError()
-
-  def InstallApp(self, app_crx_file_path):
-    """Installs the specified app synchronously.
-
-    An app file is a file with a .crx suffix, like an extension or theme.  The
-    app file must be specified with an absolute path.  This method will not
-    return until the app is installed.
-
-    Returns:
-      The ID of the installed app, on success.  The empty string, otherwise.
-    """
-    return self.InstallExtension(app_crx_file_path, False)
-
-  def UninstallApp(self, app_id):
-    """Uninstalls the specified app synchronously.
-
-    Args:
-      app_id: The string ID of the app to uninstall.  It can be retrieved
-              through the call to GetNTPApps above.
-
-    Returns:
-      True, if the app was successfully uninstalled, or
-      False, otherwise.
-    """
-    return self.UninstallExtensionById(app_id)
 
   def LaunchApp(self, app_id, windex=0):
     """Opens the New Tab Page and launches the specified app from it.

@@ -103,8 +103,7 @@ class ProcessCountTest(pyauto.PyUITest):
     """Verifies the process count when an extension is installed."""
     crx_file_path = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'page_action.crx'))
-    self.assertTrue(self.InstallExtension(crx_file_path, False),
-                    msg='Extension install failed.')
+    self.InstallExtension(crx_file_path)
     self._VerifyProcessCount(self.proc_count_fresh_profile + 1)
 
   def testProcessCountCombination(self):
@@ -122,8 +121,7 @@ class ProcessCountTest(pyauto.PyUITest):
       self.GetPluginsInfo()
     crx_file_path = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'page_action.crx'))
-    self.assertTrue(self.InstallExtension(crx_file_path, False),
-                    msg='Extension install failed.')
+    self.InstallExtension(crx_file_path)
 
     for _ in xrange(2):
       self.AppendTab(pyauto.GURL('about:blank'), 0)

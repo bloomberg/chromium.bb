@@ -61,7 +61,7 @@ class ExtensionsTest(pyauto.PyUITest):
       group_end = curr_extension + group_size
       for extension in extensions[curr_extension:group_end]:
         logging.debug('Installing extension: %s' % extension)
-        self.InstallExtension(extension, False)
+        self.InstallExtension(extension)
 
       for url in top_urls:
         self.NavigateToURL(url)
@@ -154,8 +154,7 @@ class ExtensionsTest(pyauto.PyUITest):
     """Test setting different extension states."""
     crx_file_path = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'google_talk.crx'))
-    ext_id = self.InstallExtension(crx_file_path, False);
-    self.assertTrue(ext_id, 'Failed to install extension.')
+    ext_id = self.InstallExtension(crx_file_path)
 
     # Verify extension is in default state.
     extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)
@@ -188,8 +187,7 @@ class ExtensionsTest(pyauto.PyUITest):
     """
     crx_file_path = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'adblock.crx'))
-    ext_id = self.InstallExtension(crx_file_path, False)
-    self.assertTrue(ext_id, msg='Failed to install extension.')
+    ext_id = self.InstallExtension(crx_file_path)
 
     self.RestartBrowser(clear_profile=False)
     extension = self._GetExtensionInfoById(self.GetExtensionsInfo(), ext_id)

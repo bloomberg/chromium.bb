@@ -162,7 +162,16 @@ class Automation {
   void WaitForAllTabsToStopLoading(Error** error);
 
   // Install packed extension.
-  void InstallExtension(const FilePath& path, Error** error);
+  void InstallExtensionDeprecated(const FilePath& path, Error** error);
+
+  // Gets all installed extension IDs.
+  void GetInstalledExtensions(std::vector<std::string>* extension_ids,
+                              Error** error);
+
+  // Install a packed or unpacked extension. If the path ends with '.crx',
+  // the extension is assumed to be packed.
+  void InstallExtension(const FilePath& path, std::string* extension_id,
+                        Error** error);
 
  private:
   AutomationProxy* automation() const;
@@ -175,6 +184,7 @@ class Automation {
                       const std::string& error_msg);
   Error* CheckAlertsSupported();
   Error* CheckAdvancedInteractionsSupported();
+  Error* CheckNewExtensionInterfaceSupported();
 
   scoped_ptr<ProxyLauncher> launcher_;
 

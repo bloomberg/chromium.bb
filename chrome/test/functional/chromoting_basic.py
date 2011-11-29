@@ -20,7 +20,7 @@ class ChromotingBasic(chromoting.ChromotingMixIn, pyauto.PyUITest):
     using the default Chromoting test account.
     """
     super(ChromotingBasic, self).setUp()
-    app = self.InstallApp(self.GetIT2MeAppPath())
+    app = self.InstallExtension(self.GetIT2MeAppPath())
     self.LaunchApp(app)
     account = self.GetPrivateInfo()['test_chromoting_account']
     self.Authenticate(account['username'], account['password'])

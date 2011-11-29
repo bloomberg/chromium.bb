@@ -634,10 +634,14 @@ class TestingAutomationProvider : public AutomationProvider,
                     base::DictionaryValue* args,
                     IPC::Message* reply_message);
 
+  // Install the given unpacked/packed extension.
+  // Uses the JSON interface for input/output.
+  void InstallExtension(base::DictionaryValue* args,
+                        IPC::Message* reply_message);
+
   // Get info about all intalled extensions.
   // Uses the JSON interface for input/output.
-  void GetExtensionsInfo(Browser* browser,
-                         base::DictionaryValue* args,
+  void GetExtensionsInfo(base::DictionaryValue* args,
                          IPC::Message* reply_message);
 
   // Uninstalls the extension with the given id.

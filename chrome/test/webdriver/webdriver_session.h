@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
@@ -307,7 +308,13 @@ class Session {
   Error* WaitForAllTabsToStopLoading();
 
   // Install packed extension at |path|.
-  Error* InstallExtension(const FilePath& path);
+  Error* InstallExtensionDeprecated(const FilePath& path);
+
+  // Get installed extensions IDs.
+  Error* GetInstalledExtensions(std::vector<std::string>* extension_ids);
+
+  // Install extension at |path|.
+  Error* InstallExtension(const FilePath& path, std::string* extension_id);
 
   const std::string& id() const;
 
@@ -333,6 +340,10 @@ class Session {
   void RunSessionTask(Task* task);
   void RunSessionTaskOnSessionThread(
       Task* task,
+      base::WaitableEvent* done_event);
+  void RunSessionTask(const base::Closure& task);
+  void RunClosureOnSessionThread(
+      const base::Closure& task,
       base::WaitableEvent* done_event);
   void InitOnSessionThread(const Automation::BrowserOptions& options,
                            Error** error);

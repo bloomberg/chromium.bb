@@ -9,7 +9,6 @@
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/test/automation/automation_proxy.h"
-#include "chrome/test/automation/extension_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/pyautolib/pyautolib.h"
 #include "googleurl/src/gurl.h"
@@ -214,21 +213,6 @@ int PyUITestBase::GetBrowserWindowCount() {
   int num_windows = 0;
   EXPECT_TRUE(automation()->GetBrowserWindowCount(&num_windows));
   return num_windows;
-}
-
-std::string PyUITestBase::InstallExtension(const std::string& extension_path,
-                                           bool with_ui) {
-#if defined(OS_WIN)
-  FilePath extension_file_path = FilePath(ASCIIToWide(extension_path));
-#else
-  FilePath extension_file_path = FilePath(extension_path);
-#endif
-  scoped_refptr<ExtensionProxy> proxy =
-      automation()->InstallExtension(extension_file_path, with_ui);
-  std::string id;
-  if (!proxy.get() || !proxy.get()->GetId(&id))
-    return "";
-  return id;
 }
 
 bool PyUITestBase::GetBookmarkBarState(bool* visible, bool* detached) {

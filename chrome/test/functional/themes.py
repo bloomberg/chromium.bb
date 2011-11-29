@@ -28,7 +28,7 @@ class ThemesTest(pyauto.PyUITest):
     self.assertFalse(self.GetThemeInfo())  # Verify there's no theme at startup
     crx_file = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
-    self.assertTrue(self.SetTheme(crx_file))
+    self.SetTheme(crx_file)
     # Verify "theme installed" infobar shows up
     self.assertTrue(self.WaitForInfobarCount(1))
     theme = self.GetThemeInfo()
@@ -41,7 +41,7 @@ class ThemesTest(pyauto.PyUITest):
     self.assertFalse(self.GetThemeInfo())  # Verify there's no theme at startup
     crx_file = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
-    self.assertTrue(self.SetTheme(crx_file))
+    self.SetTheme(crx_file)
     # Verify "theme installed" infobar shows up
     self.assertTrue(self.WaitForInfobarCount(1))
     theme = self.GetThemeInfo()
@@ -51,7 +51,7 @@ class ThemesTest(pyauto.PyUITest):
     """Verify theme reset."""
     crx_file = os.path.abspath(
         os.path.join(self.DataDir(), 'extensions', 'theme.crx'))
-    self.assertTrue(self.SetTheme(crx_file))
+    self.SetTheme(crx_file)
     self.assertTrue(self.ResetToDefaultTheme())
     self.assertFalse(self.GetThemeInfo())
 
@@ -78,8 +78,7 @@ class ThemesTest(pyauto.PyUITest):
       # Apply each theme in this group.
       for theme in this_group:
         logging.debug('Applying theme: %s' % theme)
-        self.assertTrue(self.SetTheme(theme),
-                        'Theme %s not installed.' % theme)
+        self.SetTheme(theme)
 
       for url in urls:
         self.NavigateToURL(url)

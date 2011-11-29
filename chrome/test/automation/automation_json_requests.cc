@@ -18,6 +18,9 @@
 #include "chrome/common/automation_messages.h"
 #include "chrome/test/automation/automation_proxy.h"
 
+using base::DictionaryValue;
+using base::ListValue;
+
 namespace {
 
 bool SendAutomationJSONRequest(AutomationMessageSender* sender,
@@ -608,4 +611,42 @@ bool SendGetChromeDriverAutomationVersion(
   if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg))
     return false;
   return reply_dict.GetInteger("version", version);
+}
+
+bool SendGetExtensionsInfoJSONRequest(
+    AutomationMessageSender* sender,
+    ListValue* extensions_list,
+    std::string* error_msg) {
+  DictionaryValue dict;
+  dict.SetString("command", "GetExtensionsInfo");
+  DictionaryValue reply_dict;
+  if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg))
+    return false;
+  ListValue* extensions_list_swap;
+  if (!reply_dict.GetList("extensions", &extensions_list_swap)) {
+    *error_msg = "Missing or invalid 'extensions'";
+    return false;
+  }
+  extensions_list->Swap(extensions_list_swap);
+  return true;
+}
+
+bool SendInstallExtensionJSONRequest(
+    AutomationMessageSender* sender,
+    const FilePath& path,
+    bool with_ui,
+    std::string* extension_id,
+    std::string* error_msg) {
+  DictionaryValue dict;
+  dict.SetString("command", "InstallExtension");
+  dict.SetString("path", path.value());
+  dict.SetBoolean("with_ui", with_ui);
+  DictionaryValue reply_dict;
+  if (!SendAutomationJSONRequest(sender, dict, &reply_dict, error_msg))
+    return false;
+  if (!reply_dict.GetString("id", extension_id)) {
+    *error_msg = "Missing or invalid 'id'";
+    return false;
+  }
+  return true;
 }
