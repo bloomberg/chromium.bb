@@ -92,7 +92,7 @@ TouchFactory::TouchFactory()
       min_available_slot_(0),
 #endif
       slots_used_() {
-#if defined(TOUCH_UI)
+#if defined(USE_AURA)
   if (!base::MessagePumpForUI::HasXInput2())
     return;
 #endif
@@ -125,7 +125,7 @@ TouchFactory::TouchFactory()
 }
 
 TouchFactory::~TouchFactory() {
-#if defined(TOUCH_UI)
+#if defined(USE_AURA)
   if (!base::MessagePumpForUI::HasXInput2())
     return;
 #endif
@@ -326,7 +326,7 @@ void TouchFactory::SetSlotUsed(int slot, bool used) {
 }
 
 bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
-#if defined(TOUCH_UI)
+#if defined(USE_AURA)
   if (!base::MessagePumpForUI::HasXInput2() ||
       touch_device_list_.empty())
     return true;
@@ -361,7 +361,7 @@ bool TouchFactory::GrabTouchDevices(Display* display, ::Window window) {
 }
 
 bool TouchFactory::UngrabTouchDevices(Display* display) {
-#if defined(TOUCH_UI)
+#if defined(USE_AURA)
   if (!base::MessagePumpForUI::HasXInput2())
     return true;
 #endif
@@ -377,7 +377,7 @@ bool TouchFactory::UngrabTouchDevices(Display* display) {
 }
 
 void TouchFactory::SetCursorVisible(bool show, bool start_timer) {
-#if defined(TOUCH_UI)
+#if defined(USE_AURA)
   if (!base::MessagePumpForUI::HasXInput2())
     return;
 #endif

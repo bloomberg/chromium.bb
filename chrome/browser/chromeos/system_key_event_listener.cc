@@ -22,12 +22,10 @@
 #include "third_party/cros_system_api/window_manager/chromeos_wm_ipc_enums.h"
 #include "ui/base/x/x11_util.h"
 
-#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
 #if defined(USE_WAYLAND)
 #include "base/message_pump_wayland.h"
-#else
+#elif !defined(TOOLKIT_USES_GTK)
 #include "base/message_pump_x.h"
-#endif
 #endif
 
 namespace chromeos {
@@ -129,10 +127,10 @@ SystemKeyEventListener::SystemKeyEventListener()
     LOG(WARNING) << "Could not install Xkb Indicator observer";
   }
 
-#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
-  MessageLoopForUI::current()->AddObserver(this);
-#else
+#if defined(TOOLKIT_USES_GTK)
   gdk_window_add_filter(NULL, GdkEventFilter, this);
+#else
+  MessageLoopForUI::current()->AddObserver(this);
 #endif
 }
 
@@ -143,10 +141,10 @@ SystemKeyEventListener::~SystemKeyEventListener() {
 void SystemKeyEventListener::Stop() {
   if (stopped_)
     return;
-#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
-  MessageLoopForUI::current()->RemoveObserver(this);
-#else
+#if defined(TOOLKIT_USES_GTK)
   gdk_window_remove_filter(NULL, GdkEventFilter, this);
+#else
+  MessageLoopForUI::current()->RemoveObserver(this);
 #endif
   stopped_ = true;
 }
@@ -167,15 +165,7 @@ void SystemKeyEventListener::RemoveCapsLockObserver(
   caps_lock_observers_.RemoveObserver(observer);
 }
 
-#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
-base::EventStatus SystemKeyEventListener::WillProcessEvent(
-    const base::NativeEvent& event) {
-  return ProcessedXEvent(event) ? base::EVENT_HANDLED : base::EVENT_CONTINUE;
-}
-
-void SystemKeyEventListener::DidProcessEvent(const base::NativeEvent& event) {
-}
-#else  // defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK)
 // static
 GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
                                                        GdkEvent* gevent,
@@ -186,7 +176,15 @@ GdkFilterReturn SystemKeyEventListener::GdkEventFilter(GdkXEvent* gxevent,
   return listener->ProcessedXEvent(xevent) ? GDK_FILTER_REMOVE
                                            : GDK_FILTER_CONTINUE;
 }
-#endif  // defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
+#else  // defined(TOOLKIT_USES_GTK)
+base::EventStatus SystemKeyEventListener::WillProcessEvent(
+    const base::NativeEvent& event) {
+  return ProcessedXEvent(event) ? base::EVENT_HANDLED : base::EVENT_CONTINUE;
+}
+
+void SystemKeyEventListener::DidProcessEvent(const base::NativeEvent& event) {
+}
+#endif  // defined(TOOLKIT_USES_GTK)
 
 void SystemKeyEventListener::GrabKey(int32 key, uint32 mask) {
   uint32 caps_lock_mask = LockMask;

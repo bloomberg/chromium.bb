@@ -49,12 +49,7 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
 
   AudioHandler* GetAudioHandler() const;
 
-#if defined(TOUCH_UI) || !defined(TOOLKIT_USES_GTK)
-  // MessageLoopForUI::Observer overrides.
-  virtual base::EventStatus WillProcessEvent(
-      const base::NativeEvent& event) OVERRIDE;
-  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
-#else
+#if defined(TOOLKIT_USES_GTK)
   // This event filter intercepts events before they reach GDK, allowing us to
   // check for system level keyboard events regardless of which window has
   // focus.
@@ -65,6 +60,11 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
   // MessageLoopForUI::Observer overrides.
   virtual void WillProcessEvent(GdkEvent* event) OVERRIDE {}
   virtual void DidProcessEvent(GdkEvent* event) OVERRIDE {}
+#else
+  // MessageLoopForUI::Observer overrides.
+  virtual base::EventStatus WillProcessEvent(
+      const base::NativeEvent& event) OVERRIDE;
+  virtual void DidProcessEvent(const base::NativeEvent& event) OVERRIDE;
 #endif
 
   // Tell X we are interested in the specified key/mask combination.
