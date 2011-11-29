@@ -12,8 +12,8 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "chrome/browser/instant/instant_commit_type.h"
 #include "chrome/browser/instant/instant_loader_delegate.h"
 #include "chrome/browser/search_engines/template_url_id.h"
@@ -248,7 +248,7 @@ class InstantController : public InstantLoaderDelegate {
   std::set<TemplateURLID> blacklisted_ids_;
 
   // Used by ScheduleForDestroy; see it for details.
-  ScopedRunnableMethodFactory<InstantController> destroy_factory_;
+  base::WeakPtrFactory<InstantController> weak_factory_;
 
   // List of InstantLoaders to destroy. See ScheduleForDestroy for details.
   ScopedVector<InstantLoader> loaders_to_destroy_;

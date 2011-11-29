@@ -4,6 +4,7 @@
 
 #include "chrome/browser/instant/instant_controller.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -43,7 +44,7 @@ InstantController::InstantController(Profile* profile,
       is_out_of_date_(true),
       commit_on_mouse_up_(false),
       last_transition_type_(content::PAGE_TRANSITION_LINK),
-      ALLOW_THIS_IN_INITIALIZER_LIST(destroy_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   PrefService* service = profile->GetPrefs();
   if (service && !InstantFieldTrial::IsInstantExperiment(profile)) {
     // kInstantEnabledOnce was added after instant, set it now to make sure it
@@ -550,10 +551,10 @@ void InstantController::ClearBlacklist() {
 
 void InstantController::ScheduleDestroy(InstantLoader* loader) {
   loaders_to_destroy_.push_back(loader);
-  if (destroy_factory_.empty()) {
+  if (!weak_factory_.HasWeakPtrs()) {
     MessageLoop::current()->PostTask(
-        FROM_HERE, destroy_factory_.NewRunnableMethod(
-            &InstantController::DestroyLoaders));
+        FROM_HERE, base::Bind(&InstantController::DestroyLoaders,
+                              weak_factory_.GetWeakPtr()));
   }
 }
 
