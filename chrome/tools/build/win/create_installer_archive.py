@@ -176,9 +176,9 @@ def Readconfig(build_dir, input_file, current_version):
   config.read(input_file)
   return config
 
-def RunSystemCommand(cmd):
+def RunSystemCommand(cmd, **kw):
   print 'Running', cmd
-  exit_code = subprocess.call(cmd)
+  exit_code = subprocess.call(cmd, **kw)
   if (exit_code != 0):
     raise Exception("Error while running cmd: %s, exit_code: %s" %
                     (cmd, exit_code))
@@ -252,7 +252,8 @@ def PrepareSetupExec(options, staging_dir, current_version, prev_version):
            '/V1',
            '/L', options.output_dir,
            os.path.join(options.build_dir, SETUP_EXEC),]
-    RunSystemCommand(cmd)
+    # Send useless makecab progress on stdout to the bitbucket.
+    RunSystemCommand(cmd, stdout=open(os.devnull, "w"))
     setup_file = SETUP_EXEC[:-1] + "_"
   return setup_file
 
@@ -277,7 +278,7 @@ _RESOURCE_FILE_TEMPLATE = """\
 
 
 def CreateResourceInputFile(
-    build_dir, setup_format, archive_file, setup_file, resource_file_path):
+    output_dir, setup_format, archive_file, setup_file, resource_file_path):
   """Creates resource input file (packed_files.txt) for mini_installer project.
 
   This method checks the format of setup.exe being used and according sets
@@ -294,10 +295,10 @@ def CreateResourceInputFile(
       'setup_file': setup_file,
       'setup_file_resource_type': setup_resource_type,
       'setup_file_path':
-          os.path.join(build_dir, setup_file).replace("\\","/"),
+          os.path.join(output_dir, setup_file).replace("\\","/"),
       'archive_file': archive_file,
       'archive_file_path':
-          os.path.join(build_dir, archive_file).replace("\\","/"),
+          os.path.join(output_dir, archive_file).replace("\\","/"),
       }
   resource_file = _RESOURCE_FILE_TEMPLATE % args
 
@@ -344,7 +345,7 @@ def main(options):
   setup_file = PrepareSetupExec(options, staging_dir,
                                 current_build_number, prev_build_number)
 
-  CreateResourceInputFile(options.build_dir, options.setup_exe_format,
+  CreateResourceInputFile(options.output_dir, options.setup_exe_format,
                           archive_file, setup_file, options.resource_file_path)
 
 def _ParseOptions():
