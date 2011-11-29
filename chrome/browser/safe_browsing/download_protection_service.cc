@@ -66,6 +66,8 @@ enum MaliciousExtensionType {
   EXTENSION_REG,
   EXTENSION_GRP,
   EXTENSION_OTHER,  // Groups all other extensions into one bucket.
+  EXTENSION_CRX,
+  EXTENSION_APK,
   EXTENSION_MAX,
 };
 
@@ -88,6 +90,8 @@ MaliciousExtensionType GetExtensionType(const FilePath& f) {
   if (f.MatchesExtension(FILE_PATH_LITERAL(".vb"))) return EXTENSION_VB;
   if (f.MatchesExtension(FILE_PATH_LITERAL(".reg"))) return EXTENSION_REG;
   if (f.MatchesExtension(FILE_PATH_LITERAL(".grp"))) return EXTENSION_GRP;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".crx"))) return EXTENSION_CRX;
+  if (f.MatchesExtension(FILE_PATH_LITERAL(".apk"))) return EXTENSION_APK;
   return EXTENSION_OTHER;
 }
 
