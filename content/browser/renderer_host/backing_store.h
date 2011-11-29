@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/surface/transport_dib.h"

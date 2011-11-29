@@ -8,7 +8,7 @@
 #include <queue>
 #include <set>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_channel_proxy.h"

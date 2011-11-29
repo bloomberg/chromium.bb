@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_DEBUGGER_WORKER_DEVTOOLS_MESSAGE_FILTER_H_
 #pragma once
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "content/browser/browser_message_filter.h"
 
 class WorkerDevToolsMessageFilter : public BrowserMessageFilter {
