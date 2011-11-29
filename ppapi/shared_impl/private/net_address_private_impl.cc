@@ -12,6 +12,8 @@
 #include "base/logging.h"
 #include "base/stringprintf.h"
 #include "build/build_config.h"
+#include "net/base/address_list.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/base/sys_byteorder.h"
@@ -40,6 +42,14 @@ typedef ADDRESS_FAMILY sa_family_t;
 namespace ppapi {
 
 namespace {
+
+// This assert fails on OpenBSD for an unknown reason at the moment.
+#if !defined(OS_OPENBSD)
+// Make sure the storage in |PP_NetAddress_Private| is big enough. (Do it here
+// since the data is opaque elsewhere.)
+COMPILE_ASSERT(sizeof(reinterpret_cast<PP_NetAddress_Private*>(0)->data) >=
+               sizeof(sockaddr_storage), PP_NetAddress_Private_data_too_small);
+#endif
 
 inline sa_family_t GetFamily(const PP_NetAddress_Private& addr) {
   return reinterpret_cast<const sockaddr*>(addr.data)->sa_family;
@@ -279,6 +289,9 @@ GetPPB_NetAddress_Private_Thunk() {
 }  // namespace thunk
 
 // static
+const PP_NetAddress_Private NetAddressPrivateImpl::kInvalidNetAddress = { 0 };
+
+// static
 bool NetAddressPrivateImpl::ValidateNetAddress(
     const PP_NetAddress_Private& addr) {
   if (addr.size < sizeof(reinterpret_cast<sockaddr*>(0)->sa_family))
@@ -295,6 +308,71 @@ bool NetAddressPrivateImpl::ValidateNetAddress(
 
   // Reject everything else.
   return false;
+}
+
+// static
+bool NetAddressPrivateImpl::SockaddrToNetAddress(
+    const sockaddr* sa,
+    uint32_t sa_length,
+    PP_NetAddress_Private* net_addr) {
+  if (!sa || sa_length == 0 || !net_addr)
+    return false;
+
+  CHECK_LE(sa_length, sizeof(net_addr->data));
+  net_addr->size = sa_length;
+  memcpy(net_addr->data, sa, net_addr->size);
+  return true;
+}
+
+// static
+bool NetAddressPrivateImpl::IPEndPointToNetAddress(
+    const net::IPEndPoint& ip,
+    PP_NetAddress_Private* net_addr) {
+  sockaddr_storage storage = { 0 };
+  size_t length = sizeof(storage);
+
+  return ip.ToSockAddr(reinterpret_cast<sockaddr*>(&storage), &length) &&
+      SockaddrToNetAddress(reinterpret_cast<const sockaddr*>(&storage), length,
+                           net_addr);
+}
+
+// static
+bool NetAddressPrivateImpl::AddressListToNetAddress(
+    const net::AddressList& address_list,
+    PP_NetAddress_Private* net_addr) {
+  const addrinfo* head = address_list.head();
+  return head && SockaddrToNetAddress(head->ai_addr, head->ai_addrlen,
+                                      net_addr);
+}
+
+// static
+bool NetAddressPrivateImpl::NetAddressToIPEndPoint(
+    const PP_NetAddress_Private& net_addr,
+    net::IPEndPoint* ip_end_point) {
+  if (!ip_end_point || !ValidateNetAddress(net_addr))
+    return false;
+
+  if (!ip_end_point->FromSockAddr(
+      reinterpret_cast<const sockaddr*>(net_addr.data), net_addr.size)) {
+    return false;
+  }
+
+  return true;
+}
+
+// static
+bool NetAddressPrivateImpl::NetAddressToAddressList(
+    const PP_NetAddress_Private& net_addr, net::AddressList* address_list) {
+  if (!address_list)
+    return false;
+
+  net::IPEndPoint ip_end_point;
+  if (!NetAddressToIPEndPoint(net_addr, &ip_end_point))
+    return false;
+
+  *address_list = net::AddressList::CreateFromIPAddress(ip_end_point.address(),
+                                                        ip_end_point.port());
+  return true;
 }
 
 }  // namespace ppapi
