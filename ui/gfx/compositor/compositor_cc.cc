@@ -235,6 +235,13 @@ WebKit::WebGraphicsContext3D* CompositorCC::createContext3D() {
       new webkit::gpu::WebGraphicsContext3DInProcessImpl(widget_, share_group);
   WebKit::WebGraphicsContext3D::Attributes attrs;
   context->initialize(attrs, 0, true);
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDisableUIVsync)) {
+    context->makeContextCurrent();
+    gfx::GLContext::GetCurrent()->SetSwapInterval(1);
+  }
+
   return context;
 }
 

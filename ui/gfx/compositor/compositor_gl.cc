@@ -542,10 +542,15 @@ CompositorGL::CompositorGL(CompositorDelegate* delegate,
   gl_context_ = SharedResourcesGL::GetInstance()->
       CreateContext(gl_surface_.get());
   gl_context_->MakeCurrent(gl_surface_.get());
-  gl_context_->SetSwapInterval(1);
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  if (!command_line->HasSwitch(switches::kDisableUIVsync))
+    gl_context_->SetSwapInterval(1);
+
   glColorMask(true, true, true, true);
 
-  const bool debug_overdraw = CommandLine::ForCurrentProcess()->HasSwitch(
+  const bool debug_overdraw = command_line->HasSwitch(
       switches::kEnableCompositorOverdrawDebugging);
 
   if (debug_overdraw)
