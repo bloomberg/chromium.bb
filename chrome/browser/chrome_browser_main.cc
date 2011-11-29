@@ -245,9 +245,16 @@ void AddFirstRunNewTabs(BrowserInit* browser_init,
 }
 
 #if defined(USE_LINUX_BREAKPAD)
-void GetLinuxDistroCallback() {
-  base::GetLinuxDistro();  // Initialize base::linux_distro if needed.
-}
+class GetLinuxDistroTask : public Task {
+ public:
+  explicit GetLinuxDistroTask() {}
+
+  virtual void Run() {
+    base::GetLinuxDistro();  // Initialize base::linux_distro if needed.
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(GetLinuxDistroTask);
+};
 #endif  // USE_LINUX_BREAKPAD
 
 void InitializeNetworkOptions(const CommandLine& parsed_command_line) {
@@ -1213,7 +1220,7 @@ void ChromeBrowserMainParts::PostStartThread(
       // Needs to be called after we have chrome::DIR_USER_DATA and
       // g_browser_process.  This happens in PreCreateThreads.
       g_browser_process->file_thread()->message_loop()->PostTask(
-          FROM_HERE, base::Bind(&GetLinuxDistroCallback));
+          FROM_HERE, new GetLinuxDistroTask());
 
       if (IsCrashReportingEnabled(local_state_))
         InitCrashReporter();

@@ -69,7 +69,7 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
 
   // TODO(???): what if the total size of all the cookies >4k, can we have a
   // header that big or do we need multiple Cookie: headers?
-  // Note: Some sites, such as Facebook, occasionally use Cookie headers >4k.
+  // Note: Some sites, such as Facebook, occationally use Cookie headers >4k.
   //
   // Simple interface, gets a cookie string "a=b; c=d" for the given URL.
   // Use options to access httponly cookies.
@@ -78,7 +78,7 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       const GetCookiesCallback& callback) = 0;
 
   // This function is similar to GetCookiesWithOptions same functionality as
-  // GetCookiesWithOptions except that it additionally provides detailed
+  // GetCookiesWithOptions except that it additionaly provides detailed
   // information about the cookie contained in the cookie line.  See |struct
   // CookieInfo| above for details.
   virtual void GetCookiesWithInfoAsync(

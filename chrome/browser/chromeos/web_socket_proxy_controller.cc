@@ -10,8 +10,6 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
@@ -100,6 +98,10 @@ class OriginValidator {
 
 base::LazyInstance<OriginValidator> g_validator = LAZY_INSTANCE_INITIALIZER;
 
+class ProxyTask : public Task {
+  virtual void Run() OVERRIDE;
+};
+
 class ProxyLifetime
     : public net::NetworkChangeNotifier::OnlineStateObserver,
       public content::NotificationObserver {
@@ -107,8 +109,7 @@ class ProxyLifetime
   ProxyLifetime() : delay_ms_(1000), port_(-1), shutdown_requested_(false) {
     DLOG(INFO) << "WebSocketProxyController initiation";
     BrowserThread::PostTask(
-        BrowserThread::WEB_SOCKET_PROXY, FROM_HERE,
-        base::Bind(&ProxyLifetime::ProxyCallback, base::Unretained(this)));
+        BrowserThread::WEB_SOCKET_PROXY, FROM_HERE, new ProxyTask());
     net::NetworkChangeNotifier::AddOnlineStateObserver(this);
     registrar_.Add(
         this, chrome::NOTIFICATION_WEB_SOCKET_PROXY_STARTED,
@@ -131,42 +132,12 @@ class ProxyLifetime
   }
 
  private:
-  // net::NetworkChangeNotifier::OnlineStateObserver implementation.
+  // net::NetworkChangeNotifier::OnlineStateObserver overrides.
   virtual void OnOnlineStateChanged(bool online) OVERRIDE {
     DCHECK(chromeos::WebSocketProxyController::IsInitiated());
     base::AutoLock alk(lock_);
     if (server_)
       server_->OnNetworkChange();
-  }
-
-  void ProxyCallback() {
-    LOG(INFO) << "Attempt to run web socket proxy task";
-    chromeos::WebSocketProxy* server = new chromeos::WebSocketProxy(
-        g_validator.Get().allowed_origins());
-    {
-      base::AutoLock alk(lock_);
-      if (shutdown_requested_)
-        return;
-      delete server_;
-      server_ = server;
-    }
-    server->Run();
-    {
-      base::AutoLock alk(lock_);
-      delete server;
-      server_ = NULL;
-      if (!shutdown_requested_) {
-        // Proxy terminated unexpectedly or failed to start (it can happen due
-        // to a network problem). Keep trying.
-        if (delay_ms_ < 100 * 1000)
-          (delay_ms_ *= 3) /= 2;
-
-        BrowserThread::PostDelayedTask(
-            BrowserThread::WEB_SOCKET_PROXY, FROM_HERE,
-            base::Bind(&ProxyLifetime::ProxyCallback, base::Unretained(this)),
-            delay_ms_);
-      }
-    }
   }
 
   // Delay between next attempt to run proxy.
@@ -179,10 +150,39 @@ class ProxyLifetime
   volatile bool shutdown_requested_;
   base::Lock lock_;
   content::NotificationRegistrar registrar_;
+  friend class ProxyTask;
   friend class chromeos::WebSocketProxyController;
 };
 
 base::LazyInstance<ProxyLifetime> g_proxy_lifetime = LAZY_INSTANCE_INITIALIZER;
+
+void ProxyTask::Run() {
+  LOG(INFO) << "Attempt to run web socket proxy task";
+  chromeos::WebSocketProxy* server = new chromeos::WebSocketProxy(
+      g_validator.Get().allowed_origins());
+  {
+    base::AutoLock alk(g_proxy_lifetime.Get().lock_);
+    if (g_proxy_lifetime.Get().shutdown_requested_)
+      return;
+    delete g_proxy_lifetime.Get().server_;
+    g_proxy_lifetime.Get().server_ = server;
+  }
+  server->Run();
+  {
+    base::AutoLock alk(g_proxy_lifetime.Get().lock_);
+    delete server;
+    g_proxy_lifetime.Get().server_ = NULL;
+    if (!g_proxy_lifetime.Get().shutdown_requested_) {
+      // Proxy terminated unexpectedly or failed to start (it can happen due to
+      // a network problem). Keep trying.
+      if (g_proxy_lifetime.Get().delay_ms_ < 100 * 1000)
+        (g_proxy_lifetime.Get().delay_ms_ *= 3) /= 2;
+      BrowserThread::PostDelayedTask(
+          BrowserThread::WEB_SOCKET_PROXY, FROM_HERE, new ProxyTask(),
+          g_proxy_lifetime.Get().delay_ms_);
+    }
+  }
+}
 
 }  // namespace
 
