@@ -296,6 +296,14 @@
                   '|views/ime/.*'\
                   '|views/controls/textfield/.*'
     },
+    'textinput_chromeos': {
+      'filepath': 'chrome/browser/chromeos/input_method/.*'\
+                  '|chrome/browser/chromeos/extensions/input_method.*'\
+                  '|chrome/browser/chromeos/status/input_method.*'\
+                  '|chrome/browser/extensions/extension_input_.*'
+                  '|chrome/browser/resources/keyboard.*'\
+                  '|chrome/browser/resources/options/language.*'
+    },
     'omnibox': {
       'filepath': 'chrome/browser/autocomplete/.*'\
                   '|chrome/browser/ui/.*/omnibox/.*'
@@ -419,6 +427,7 @@
     'textinput': ['penghuang+watch@chromium.org',
                   'suzhe@chromium.org',
                   'yusukes+watch@chromium.org'],
+    'textinput_chromeos': ['yusukes+watch@chromium.org'],
     'omnibox': ['suzhe@chromium.org'],
     'message_loop': ['sadrul@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
