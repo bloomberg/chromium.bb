@@ -86,8 +86,13 @@ def WriteDataFromStream(filename, stream, chunk_size, verbose=True):
     dst.close()
 
 
-def StampMatches(stampfile, expected):
+def StampMatches(stampfile, expected, script_time):
   try:
+    # Check if the stamp is older than the script
+    url_time = os.stat(stampfile).st_mtime
+    if url_time <= script_time:
+      return False
+
     f = open(stampfile, 'r')
     stamp = f.read()
     f.close()
@@ -107,9 +112,9 @@ def WriteStamp(stampfile, data):
   f.close()
 
 
-def SourceIsCurrent(path, url):
+def SourceIsCurrent(path, url, script_time):
   stampfile = os.path.join(path, SOURCE_STAMP)
-  return StampMatches(stampfile, url)
+  return StampMatches(stampfile, url, script_time)
 
 
 def WriteSourceStamp(path, url):

@@ -108,7 +108,17 @@ def SyncFlavor(flavor, url, dst, hash):
 
 
 def Main(args):
-  parent_dir = os.path.dirname(os.path.dirname(__file__))
+ # Generate the time for the most recently modified script used by the download
+  script_dir = os.path.dirname(__file__)
+  src_list = ['download_toolchains.py', 'download_utils.py',
+              'sync_tgz.py', 'toolchainbinaries.py', 'http_download.py']
+  srcs = [os.path.join(script_dir, src) for src in src_list]
+  src_times = []
+  for src in srcs:
+    src_times.append( os.stat(src).st_mtime )
+  script_time = sorted(src_times)[-1]
+
+  parent_dir = os.path.dirname(script_dir)
   parser = optparse.OptionParser()
   parser.add_option(
       '-b', '--base-url', dest='base_url',
@@ -175,7 +185,7 @@ def Main(args):
     if version == 'latest':
       print flavor + ': downloading latest version...'
     else:
-      msg = download_utils.SourceIsCurrent(dst, url)
+      msg = download_utils.SourceIsCurrent(dst, url, script_time)
       if msg:
         print flavor + ': ' + msg + '..'
         continue
@@ -209,5 +219,4 @@ def Main(args):
 
 
 if __name__ == '__main__':
-  print "\n\nRUNNING\n\n\n"
   Main(sys.argv[1:])

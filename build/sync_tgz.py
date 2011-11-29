@@ -163,7 +163,14 @@ def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
     elif m.islnk() and sys.platform == 'win32':
       filepath = os.path.join(dst_dir, m.name).replace('/', '\\')
       targpath = os.path.join(dst_dir, m.linkname).replace('/', '\\')
-      subprocess.call(['cmd', '/C', 'mklink /H %s %s' % (filepath, targpath)])
+      src_dst = '%s %s' % (filepath, targpath)
+      try:
+        err = subprocess.call(['cmd', '/C', 'mklink /H %s' % src_dst])
+      except OSError:
+        pass
+      # If we failed to create a hardlink, then just copy it.
+      if err or not os.path.isfile(filepath):
+        subprocess.call(['cmd', '/C', 'copy %s' % src_dst])
     else:
       tar.extract(m, dst_dir)
 
