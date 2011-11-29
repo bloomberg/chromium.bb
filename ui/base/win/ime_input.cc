@@ -339,22 +339,19 @@ void ImeInput::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
   }
 }
 
-bool ImeInput::GetString(HIMC imm_context, WPARAM lparam, int type,
+bool ImeInput::GetString(HIMC imm_context,
+                         WPARAM lparam,
+                         int type,
                          string16* result) {
-  bool ret = false;
-  if (lparam & type) {
-    int string_size = ::ImmGetCompositionString(imm_context, type, NULL, 0);
-    if (string_size > 0) {
-      int string_length = string_size / sizeof(wchar_t);
-      wchar_t *string_data = WriteInto(result, string_length + 1);
-      if (string_data) {
-        // Fill the given result object.
-        ::ImmGetCompositionString(imm_context, type, string_data, string_size);
-        ret = true;
-      }
-    }
-  }
-  return ret;
+  if (!(lparam & type))
+    return false;
+  LONG string_size = ::ImmGetCompositionString(imm_context, type, NULL, 0);
+  if (string_size <= 0)
+    return false;
+  DCHECK_EQ(0u, string_size % sizeof(wchar_t));
+  ::ImmGetCompositionString(imm_context, type,
+      WriteInto(result, (string_size / sizeof(wchar_t)) + 1), string_size);
+  return true;
 }
 
 bool ImeInput::GetResult(HWND window_handle, LPARAM lparam, string16* result) {

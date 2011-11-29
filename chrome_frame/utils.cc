@@ -1328,6 +1328,7 @@ std::string Bscf2Str(DWORD flags) {
 // Reads data from a stream into a string.
 HRESULT ReadStream(IStream* stream, size_t size, std::string* data) {
   DCHECK(stream);
+  DCHECK_GT(size, 0u);
   DCHECK(data);
 
   DWORD read = 0;

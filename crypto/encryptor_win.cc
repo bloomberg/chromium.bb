@@ -83,8 +83,10 @@ bool Encryptor::Init(SymmetricKey* key,
 bool Encryptor::Encrypt(const base::StringPiece& plaintext,
                         std::string* ciphertext) {
   DWORD data_len = plaintext.size();
+  CHECK((data_len > 0u) || (mode_ == CBC));
   DWORD total_len = data_len + block_size_;
-  CHECK_GT(total_len, data_len);
+  CHECK_GT(total_len, 0u);
+  CHECK_GT(total_len + 1, data_len);
 
   // CryptoAPI encrypts/decrypts in place.
   char* ciphertext_data = WriteInto(ciphertext, total_len + 1);
@@ -105,8 +107,8 @@ bool Encryptor::Encrypt(const base::StringPiece& plaintext,
 bool Encryptor::Decrypt(const base::StringPiece& ciphertext,
                         std::string* plaintext) {
   DWORD data_len = ciphertext.size();
-  if (data_len == 0 || (data_len + 1) < data_len)
-    return false;
+  CHECK_GT(data_len, 0u);
+  CHECK_GT(data_len + 1, data_len);
 
   // CryptoAPI encrypts/decrypts in place.
   char* plaintext_data = WriteInto(plaintext, data_len + 1);

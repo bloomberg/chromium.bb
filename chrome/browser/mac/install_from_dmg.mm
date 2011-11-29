@@ -141,6 +141,10 @@ bool MediaResidesOnDiskImage(io_service_t media, std::string* image_path) {
     CFDataRef image_path_data = static_cast<CFDataRef>(
         image_path_cftyperef.get());
     CFIndex length = CFDataGetLength(image_path_data);
+    if (length <= 0) {
+      LOG(ERROR) << "image_path_data is unexpectedly empty";
+      return true;
+    }
     char* image_path_c = WriteInto(image_path, length + 1);
     CFDataGetBytes(image_path_data,
                    CFRangeMake(0, length),

@@ -105,7 +105,7 @@ void MetricsLogManager::LoadPersistedUnsentLogs() {
 void MetricsLogManager::CompressStagedLog() {
   int text_size = staged_log_->GetEncodedLogSize();
   std::string staged_log_text;
-  // Leave room for the NULL terminator.
+  DCHECK_GT(text_size, 0);
   staged_log_->GetEncodedLog(WriteInto(&staged_log_text, text_size + 1),
                              text_size);
 

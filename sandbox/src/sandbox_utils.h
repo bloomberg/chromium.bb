@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,18 +32,6 @@ bool IsXPSP2OrLater();
 
 void InitObjectAttribs(const std::wstring& name, ULONG attributes, HANDLE root,
                        OBJECT_ATTRIBUTES* obj_attr, UNICODE_STRING* uni_name);
-
-// The next 2 functions are copied from base\string_util.h and have been
-// slighty modified because we don't want to depend on ICU.
-template <class string_type>
-inline typename string_type::value_type* WriteInto(string_type* str,
-                                                   size_t length_with_null) {
-  str->reserve(length_with_null);
-  str->resize(length_with_null - 1);
-  return &((*str)[0]);
-}
-
-std::string WideToMultiByte(const std::wstring& wide);
 
 };  // namespace sandbox
 

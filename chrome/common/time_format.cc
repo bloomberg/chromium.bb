@@ -296,9 +296,9 @@ static string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
   // With the fallback added, this should never fail.
   DCHECK(U_SUCCESS(error));
   int capacity = time_string.length() + 1;
+  DCHECK_GT(capacity, 1);
   string16 result;
-  time_string.extract(static_cast<UChar*>(
-                      WriteInto(&result, capacity)),
+  time_string.extract(static_cast<UChar*>(WriteInto(&result, capacity)),
                       capacity, error);
   DCHECK(U_SUCCESS(error));
   return result;

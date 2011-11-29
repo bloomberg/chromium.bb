@@ -467,8 +467,9 @@ class SecurityDescBackup {
     DWORD reg_type = REG_NONE;
     if (backup_key.ReadValue(NULL, NULL, &len, &reg_type) != ERROR_SUCCESS)
       return false;
+    DCHECK_EQ(0u, len % sizeof(wchar_t));
 
-    if (reg_type != REG_SZ)
+    if ((len == 0) || (reg_type != REG_SZ))
       return false;
 
     size_t wchar_count = 1 + len / sizeof(wchar_t);

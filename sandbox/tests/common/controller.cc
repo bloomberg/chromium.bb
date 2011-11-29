@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/sys_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "sandbox/src/sandbox_factory.h"
 #include "sandbox/src/sandbox_utils.h"
@@ -261,7 +262,7 @@ int DispatchCall(int argc, wchar_t **argv) {
                              &module))
     return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
 
-  std::string command_name = WideToMultiByte(argv[3]);
+  std::string command_name = base::SysWideToMultiByte(argv[3], CP_UTF8);
   CommandFunction command = reinterpret_cast<CommandFunction>(
                                 ::GetProcAddress(module, command_name.c_str()));
   if (!command)

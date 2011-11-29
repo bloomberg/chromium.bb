@@ -169,8 +169,8 @@ void WindowWatchdog::RemoveObserver(WindowObserver* observer) {
 std::string WindowWatchdog::GetWindowCaption(HWND hwnd) {
   std::string caption;
   int len = ::GetWindowTextLength(hwnd) + 1;
-  ::GetWindowTextA(hwnd, WriteInto(&caption, len), len);
-
+  if (len > 1)
+    ::GetWindowTextA(hwnd, WriteInto(&caption, len), len);
   return caption;
 }
 

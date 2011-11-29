@@ -478,12 +478,12 @@ string16 GetDisplayNameForLocale(const std::string& locale,
     locale_code = "zh-Hant";
 
   UErrorCode error = U_ZERO_ERROR;
-  const int buffer_size = 1024;
+  const int kBufferSize = 1024;
 
   string16 display_name;
   int actual_size = uloc_getDisplayName(locale_code.c_str(),
       display_locale.c_str(),
-      WriteInto(&display_name, buffer_size + 1), buffer_size, &error);
+      WriteInto(&display_name, kBufferSize), kBufferSize - 1, &error);
   DCHECK(U_SUCCESS(error));
   display_name.resize(actual_size);
   // Add an RTL mark so parentheses are properly placed.

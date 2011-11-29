@@ -49,17 +49,19 @@ bool Encryptor::Crypt(int /*CCOperation*/ op,
   // length is never larger than the input length plus the block size."
 
   size_t output_size = input.size() + iv_.size();
+  CHECK_GT(output_size, 0u);
+  CHECK_GT(output_size + 1, input.size());
   CCCryptorStatus err = CCCrypt(op,
                                 kCCAlgorithmAES128,
                                 kCCOptionPKCS7Padding,
                                 raw_key.Data, raw_key.Length,
                                 iv_.data(),
                                 input.data(), input.size(),
-                                WriteInto(output, output_size+1),
+                                WriteInto(output, output_size + 1),
                                 output_size,
                                 &output_size);
   if (err) {
-    output->resize(0);
+    output->clear();
     LOG(ERROR) << "CCCrypt returned " << err;
     return false;
   }
@@ -69,11 +71,13 @@ bool Encryptor::Crypt(int /*CCOperation*/ op,
 
 bool Encryptor::Encrypt(const base::StringPiece& plaintext,
                         std::string* ciphertext) {
+  CHECK(!plaintext.empty() || (mode_ == CBC));
   return Crypt(kCCEncrypt, plaintext, ciphertext);
 }
 
 bool Encryptor::Decrypt(const base::StringPiece& ciphertext,
                         std::string* plaintext) {
+  CHECK(!ciphertext.empty());
   return Crypt(kCCDecrypt, ciphertext, plaintext);
 }
 

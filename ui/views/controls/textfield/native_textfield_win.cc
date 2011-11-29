@@ -173,18 +173,16 @@ void NativeTextfieldWin::AttachHack() {
 
 string16 NativeTextfieldWin::GetText() const {
   int len = GetTextLength() + 1;
-  if (len <= 1)
-    return string16();
-
   string16 str;
-  GetWindowText(WriteInto(&str, len), len);
+  if (len > 1)
+    GetWindowText(WriteInto(&str, len), len);
   // The text get from GetWindowText() might be wrapped with explicit bidi
   // control characters. Refer to UpdateText() for detail. Without such
   // wrapping, in RTL chrome, a pure LTR string ending with parenthesis will
   // not be displayed correctly in a textfield. For example, "Yahoo!" will be
   // displayed as "!Yahoo", and "Google (by default)" will be displayed as
   // "(Google (by default".
-  return base::i18n::StripWrappingBidiControlCharacters(WideToUTF16(str));
+  return base::i18n::StripWrappingBidiControlCharacters(str);
 }
 
 void NativeTextfieldWin::UpdateText() {
@@ -206,15 +204,11 @@ void NativeTextfieldWin::AppendText(const string16& text) {
 }
 
 string16 NativeTextfieldWin::GetSelectedText() const {
-  // Figure out the length of the selection.
   CHARRANGE sel;
   GetSel(sel);
-  if (sel.cpMin == sel.cpMax)  // GetSelText() crashes on NULL input.
-    return string16();
-
-  // Grab the selected text.
   string16 str;
-  GetSelText(WriteInto(&str, sel.cpMax - sel.cpMin + 1));
+  if (sel.cpMin != sel.cpMax)
+    GetSelText(WriteInto(&str, sel.cpMax - sel.cpMin + 1));
   return str;
 }
 

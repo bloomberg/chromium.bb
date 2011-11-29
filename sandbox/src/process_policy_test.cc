@@ -5,11 +5,11 @@
 #include <memory>
 #include <string>
 
+#include "base/sys_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_policy.h"
 #include "sandbox/src/sandbox_factory.h"
-#include "sandbox/src/sandbox_utils.h"
 #include "sandbox/tests/common/controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,9 +67,9 @@ sandbox::SboxTestResult CreateProcessHelper(const std::wstring &exe,
 
   std::string narrow_cmd_line;
   if (cmd_line)
-    narrow_cmd_line = sandbox::WideToMultiByte(cmd_line);
+    narrow_cmd_line = base::SysWideToMultiByte(cmd_line, CP_UTF8);
   if (!::CreateProcessA(
-        exe_name ? sandbox::WideToMultiByte(exe_name).c_str() : NULL,
+        exe_name ? base::SysWideToMultiByte(exe_name, CP_UTF8).c_str() : NULL,
         cmd_line ? const_cast<char*>(narrow_cmd_line.c_str()) : NULL,
         NULL, NULL, FALSE, 0, NULL, NULL, &sia, &pi)) {
     DWORD last_error = GetLastError();

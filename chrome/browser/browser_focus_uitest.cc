@@ -90,7 +90,8 @@ bool ChromeInForeground() {
   std::wstring caption;
   std::wstring filename;
   int len = ::GetWindowTextLength(window) + 1;
-  ::GetWindowText(window, WriteInto(&caption, len), len);
+  if (len > 1)
+    ::GetWindowText(window, WriteInto(&caption, len), len);
   bool chrome_window_in_foreground =
       EndsWith(caption, L" - Google Chrome", true) ||
       EndsWith(caption, L" - Chromium", true);
@@ -102,8 +103,8 @@ bool ChromeInForeground() {
     if (base::OpenProcessHandleWithAccess(process_id,
                                           PROCESS_QUERY_LIMITED_INFORMATION,
                                           &process)) {
-      len = MAX_PATH;
-      if (!GetProcessImageFileName(process, WriteInto(&filename, len), len)) {
+      if (!GetProcessImageFileName(process, WriteInto(&filename, MAX_PATH),
+                                   MAX_PATH)) {
         int error = GetLastError();
         filename = std::wstring(L"Unable to read filename for process id '" +
                                 base::IntToString16(process_id) +

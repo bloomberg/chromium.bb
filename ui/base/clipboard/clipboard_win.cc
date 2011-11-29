@@ -604,7 +604,8 @@ void Clipboard::ReadFiles(std::vector<FilePath>* files) const {
 
   if (count) {
     for (int i = 0; i < count; ++i) {
-      int size = ::DragQueryFile(drop, i, NULL, 0) + 1;
+      UINT size = ::DragQueryFile(drop, i, NULL, 0) + 1;
+      DCHECK_GT(size, 1u);
       std::wstring file;
       ::DragQueryFile(drop, i, WriteInto(&file, size), size);
       files->push_back(FilePath(file));
