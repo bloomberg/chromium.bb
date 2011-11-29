@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -88,29 +89,16 @@ class SyncServerStatusChecker : public content::URLFetcherDelegate {
   bool running_;
 };
 
-class SetProxyConfigTask : public Task {
- public:
-  SetProxyConfigTask(base::WaitableEvent* done,
-                     net::URLRequestContextGetter* url_request_context_getter,
-                     const net::ProxyConfig& proxy_config)
-      : done_(done),
-        url_request_context_getter_(url_request_context_getter),
-        proxy_config_(proxy_config) {
-  }
-
-  void Run() {
-    net::ProxyService* proxy_service =
-        url_request_context_getter_->GetURLRequestContext()->proxy_service();
-    proxy_service->ResetConfigService(
-        new net::ProxyConfigServiceFixed(proxy_config_));
-    done_->Signal();
-  }
-
- private:
-  base::WaitableEvent* done_;
-  net::URLRequestContextGetter* url_request_context_getter_;
-  net::ProxyConfig proxy_config_;
-};
+void SetProxyConfigCallback(
+    base::WaitableEvent* done,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const net::ProxyConfig& proxy_config) {
+  net::ProxyService* proxy_service =
+      url_request_context_getter->GetURLRequestContext()->proxy_service();
+  proxy_service->ResetConfigService(
+      new net::ProxyConfigServiceFixed(proxy_config));
+  done->Signal();
+}
 
 SyncTest::SyncTest(TestType test_type)
     : sync_server_(net::TestServer::TYPE_SYNC, FilePath()),
@@ -708,10 +696,8 @@ void SyncTest::SetProxyConfig(net::URLRequestContextGetter* context_getter,
                               const net::ProxyConfig& proxy_config) {
   base::WaitableEvent done(false, false);
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      new SetProxyConfigTask(&done,
-                             context_getter,
-                             proxy_config));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SetProxyConfigCallback, &done,
+                 make_scoped_refptr(context_getter), proxy_config));
   done.Wait();
 }

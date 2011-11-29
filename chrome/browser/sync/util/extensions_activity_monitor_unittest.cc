@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 
+#include "base/bind.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
 #include "base/synchronization/waitable_event.h"
@@ -40,33 +41,22 @@ const char* kTestExtensionVersion = "1.0.0.0";
 const char* kTestExtensionName = "foo extension";
 
 template <class FunctionType>
-class BookmarkAPIEventTask : public Task {
- public:
-  BookmarkAPIEventTask(FunctionType* t, Extension* e, size_t repeats,
-                       base::WaitableEvent* done) :
-       extension_(e), function_(t), repeats_(repeats), done_(done) {}
-   virtual void Run() {
-     for (size_t i = 0; i < repeats_; i++) {
-       content::NotificationService::current()->Notify(
-           chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-           content::Source<Extension>(extension_.get()),
-           content::Details<const BookmarksFunction>(function_.get()));
-     }
-     done_->Signal();
+void BookmarkAPIEventCallback(FunctionType* function, Extension* extension,
+                              size_t repeats, base::WaitableEvent* done) {
+  for (size_t i = 0; i < repeats; i++) {
+     content::NotificationService::current()->Notify(
+         chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
+         content::Source<Extension>(extension),
+         content::Details<const BookmarksFunction>(function));
    }
- private:
-  scoped_refptr<Extension> extension_;
-  scoped_refptr<FunctionType> function_;
-  size_t repeats_;
-  base::WaitableEvent* done_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkAPIEventTask);
-};
+   done->Signal();
+}
 
 class BookmarkAPIEventGenerator {
  public:
   BookmarkAPIEventGenerator() {}
   virtual ~BookmarkAPIEventGenerator() {}
+
   template <class T>
   void NewEvent(const FilePath::StringType& extension_path,
       T* bookmarks_function, size_t repeats) {
@@ -79,32 +69,25 @@ class BookmarkAPIEventGenerator {
         Extension::STRICT_ERROR_CHECKS, &error));
     bookmarks_function->set_name(T::function_name());
     base::WaitableEvent done_event(false, false);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        new BookmarkAPIEventTask<T>(bookmarks_function, extension,
-                                    repeats, &done_event));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&BookmarkAPIEventCallback<T>,
+                   make_scoped_refptr(bookmarks_function), extension, repeats,
+                   &done_event));
     done_event.Wait();
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkAPIEventGenerator);
 };
+
 }  // namespace
 
-class DoUIThreadSetupTask : public Task {
- public:
-  DoUIThreadSetupTask(content::NotificationService** service,
-                      base::WaitableEvent* done)
-      : service_(service), signal_when_done_(done) {}
-  virtual ~DoUIThreadSetupTask() {}
-  virtual void Run() {
-    *service_ = new NotificationServiceImpl();
-    signal_when_done_->Signal();
-  }
- private:
-  content::NotificationService** service_;
-  base::WaitableEvent* signal_when_done_;
-  DISALLOW_COPY_AND_ASSIGN(DoUIThreadSetupTask);
-};
+void DoUIThreadSetupCallback(content::NotificationService** service,
+                             base::WaitableEvent* done) {
+  *service = new NotificationServiceImpl();
+  done->Signal();
+}
 
 class ExtensionsActivityMonitorTest : public testing::Test {
  public:
@@ -115,8 +98,9 @@ class ExtensionsActivityMonitorTest : public testing::Test {
   virtual void SetUp() {
     ui_thread_.Start();
     base::WaitableEvent service_created(false, false);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        new DoUIThreadSetupTask(&service_, &service_created));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&DoUIThreadSetupCallback, &service_, &service_created));
     service_created.Wait();
   }
 

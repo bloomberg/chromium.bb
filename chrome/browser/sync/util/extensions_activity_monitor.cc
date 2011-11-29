@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 
-#include "base/task.h"
+#include "base/bind.h"
 #include "chrome/browser/bookmarks/bookmark_extension_api.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -16,39 +16,29 @@ using content::BrowserThread;
 namespace browser_sync {
 
 namespace {
-// A helper task to register an ExtensionsActivityMonitor as an observer of
+
+// A helper callback to register an ExtensionsActivityMonitor as an observer of
 // events on the UI thread (even though the monitor may live on another thread).
 // This liberates ExtensionsActivityMonitor from having to be ref counted.
-class RegistrationTask : public Task {
- public:
-  RegistrationTask(ExtensionsActivityMonitor* monitor,
-                   content::NotificationRegistrar* registrar)
-      : monitor_(monitor), registrar_(registrar) {}
-  virtual ~RegistrationTask() {}
+void RegistrationCallback(ExtensionsActivityMonitor* monitor,
+                          content::NotificationRegistrar* registrar) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  virtual void Run() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  // It would be nice if we could specify a Source for each specific function
+  // we wanted to observe, but the actual function objects are allocated on
+  // the fly so there is no reliable object to point to (same problem if we
+  // wanted to use the string name).  Thus, we use all sources and filter in
+  // Observe.
+  registrar->Add(monitor,
+                 chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
+                 content::NotificationService::AllSources());
+}
 
-    // It would be nice if we could specify a Source for each specific function
-    // we wanted to observe, but the actual function objects are allocated on
-    // the fly so there is no reliable object to point to (same problem if we
-    // wanted to use the string name).  Thus, we use all sources and filter in
-    // Observe.
-    registrar_->Add(monitor_,
-                    chrome::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED,
-                    content::NotificationService::AllSources());
-  }
-
- private:
-  ExtensionsActivityMonitor* monitor_;
-  content::NotificationRegistrar* registrar_;
-  DISALLOW_COPY_AND_ASSIGN(RegistrationTask);
-};
 }  // namespace
 
 ExtensionsActivityMonitor::ExtensionsActivityMonitor() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          new RegistrationTask(this, &registrar_));
+                          base::Bind(&RegistrationCallback, this, &registrar_));
 }
 
 ExtensionsActivityMonitor::~ExtensionsActivityMonitor() {
