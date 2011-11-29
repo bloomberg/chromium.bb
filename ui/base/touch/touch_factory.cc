@@ -433,7 +433,7 @@ void TouchFactory::SetupValuator() {
       }
     }
 
-#if !defined(USE_XI_MT)
+#if !defined(USE_XI2_MT)
     // In order to support multi-touch with XI2.0, we need both a slot_id and
     // tracking_id valuator.  Without these we'll treat the device as a
     // single-touch device (like a mouse).
