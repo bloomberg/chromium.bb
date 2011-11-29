@@ -38,8 +38,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessPerTab) {
   int tab_count = 1;
   int host_count = 1;
 
-#if defined(TOUCH_UI)
-  ++host_count;  // For the touch keyboard.
+#if defined(USE_VIRTUAL_KEYBOARD)
+  ++host_count;  // For the virtual keyboard.
 #endif
 
   // Change the first tab to be the new tab page (TYPE_WEBUI).
@@ -100,8 +100,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   content::RenderProcessHost* rph2 = NULL;
   content::RenderProcessHost* rph3 = NULL;
 
-#if defined(TOUCH_UI)
-  ++host_count;  // For the touch keyboard.
+#if defined(USE_VIRTUAL_KEYBOARD)
+  ++host_count;  // For the virtual keyboard.
 #endif
 
   // Change the first tab to be the new tab page (TYPE_WEBUI).
@@ -161,8 +161,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, ProcessOverflow) {
   if (browser()->tab_count() == tab_count)
     ui_test_utils::WaitForNewTab(browser());
   tab_count++;
-#if !defined(TOUCH_UI)
-  // The keyboard in touchui already creates an extension process. So this
+#if !defined(USE_VIRTUAL_KEYBOARD)
+  // The virtual keyboard already creates an extension process. So this
   // should not increase the process count.
   host_count++;
 #endif

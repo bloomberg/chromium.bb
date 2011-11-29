@@ -54,8 +54,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcessPPT) {
   int tab_count = 1;
   int host_count = 1;
 
-#if defined(TOUCH_UI)
-  ++host_count;  // For the touch keyboard.
+#if defined(USE_VIRTUAL_KEYBOARD)
+  ++host_count;  // For the virtual keyboard.
 #endif
 
   GURL page1("data:text/html,hello world1");
@@ -90,8 +90,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, DevToolsOnSelfInOwnProcess) {
   int tab_count = 1;
   int host_count = 1;
 
-#if defined(TOUCH_UI)
-  ++host_count;  // For the touch keyboard.
+#if defined(USE_VIRTUAL_KEYBOARD)
+  ++host_count;  // For the virtual keyboard.
 #endif
 
   GURL page1("data:text/html,hello world1");
