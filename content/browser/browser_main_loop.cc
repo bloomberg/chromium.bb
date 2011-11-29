@@ -109,6 +109,8 @@ static void GLibLogHandler(const gchar* log_domain,
       LOG(ERROR) << "Bug 9643: " << log_domain << ": " << message;
       alerted = true;
     }
+  } else if (strstr(message, "Unable to retrieve the file info for")) {
+    LOG(ERROR) << "GTK File code error: " << message;
   } else if (strstr(message, "Theme file for default has no") ||
              strstr(message, "Theme directory") ||
              strstr(message, "theme pixmap")) {
