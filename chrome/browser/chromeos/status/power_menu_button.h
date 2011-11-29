@@ -37,7 +37,7 @@ class PowerMenuButton : public StatusAreaButton,
   // views::MenuDelegate implementation.
   virtual string16 GetLabel(int id) const OVERRIDE;
 
-  // PowerLibrary::Observer implementation.
+  // PowerManagerClient::Observer implementation.
   virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE;
   virtual void SystemResumed() OVERRIDE {}
 
@@ -65,7 +65,7 @@ class PowerMenuButton : public StatusAreaButton,
   void UpdateBatteryTime(base::TimeDelta* previous,
                          const base::TimeDelta& current);
 
-  // Stored data gathered from CrosLibrary::PowerLibrary.
+  // Stored data gathered from PowerManagerClient.
   bool battery_is_present_;
   bool line_power_on_;
   double battery_percentage_;

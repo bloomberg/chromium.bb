@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/cros/mock_power_library.h"
 #include "chrome/browser/chromeos/cros/mock_screen_lock_library.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
@@ -34,7 +33,6 @@ CrosMock::CrosMock()
     : loader_(NULL),
       mock_cryptohome_library_(NULL),
       mock_network_library_(NULL),
-      mock_power_library_(NULL),
       mock_screen_lock_library_(NULL) {
 }
 
@@ -47,7 +45,6 @@ chromeos::CrosLibrary::TestApi* CrosMock::test_api() {
 
 void CrosMock::InitStatusAreaMocks() {
   InitMockNetworkLibrary();
-  InitMockPowerLibrary();
 }
 
 void CrosMock::InitMockLibraryLoader() {
@@ -76,14 +73,6 @@ void CrosMock::InitMockNetworkLibrary() {
   test_api()->SetNetworkLibrary(mock_network_library_, true);
 }
 
-void CrosMock::InitMockPowerLibrary() {
-  InitMockLibraryLoader();
-  if (mock_power_library_)
-    return;
-  mock_power_library_ = new StrictMock<MockPowerLibrary>();
-  test_api()->SetPowerLibrary(mock_power_library_, true);
-}
-
 void CrosMock::InitMockScreenLockLibrary() {
   InitMockLibraryLoader();
   if (mock_screen_lock_library_)
@@ -101,18 +90,12 @@ MockNetworkLibrary* CrosMock::mock_network_library() {
   return mock_network_library_;
 }
 
-MockPowerLibrary* CrosMock::mock_power_library() {
-  return mock_power_library_;
-}
-
 MockScreenLockLibrary* CrosMock::mock_screen_lock_library() {
   return mock_screen_lock_library_;
 }
 
 void CrosMock::SetStatusAreaMocksExpectations() {
   SetNetworkLibraryStatusAreaExpectations();
-  SetPowerLibraryStatusAreaExpectations();
-  SetPowerLibraryExpectations();
 }
 
 void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
@@ -220,18 +203,6 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
       .RetiresOnSaturation();
 }
 
-void CrosMock::SetPowerLibraryStatusAreaExpectations() {
-  EXPECT_CALL(*mock_power_library_, AddObserver(_))
-      .Times(AnyNumber())
-      .RetiresOnSaturation();
-  EXPECT_CALL(*mock_power_library_, RemoveObserver(_))
-      .Times(AnyNumber())
-      .RetiresOnSaturation();
-}
-
-void CrosMock::SetPowerLibraryExpectations() {
-}
-
 void CrosMock::TearDownMocks() {
   // Prevent bogus gMock leak check from firing.
   if (loader_)
@@ -240,8 +211,6 @@ void CrosMock::TearDownMocks() {
     test_api()->SetCryptohomeLibrary(NULL, false);
   if (mock_network_library_)
     test_api()->SetNetworkLibrary(NULL, false);
-  if (mock_power_library_)
-    test_api()->SetPowerLibrary(NULL, false);
   if (mock_screen_lock_library_)
     test_api()->SetScreenLockLibrary(NULL, false);
 }

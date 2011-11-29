@@ -15,7 +15,6 @@ class MockCryptohomeLibrary;
 class MockKeyboardLibrary;
 class MockLibraryLoader;
 class MockNetworkLibrary;
-class MockPowerLibrary;
 class MockScreenLockLibrary;
 
 // Class for initializing mocks for some parts of CrosLibrary. Once you mock
@@ -42,14 +41,12 @@ class CrosMock {
   void InitMockCryptohomeLibrary();
   void InitMockKeyboardLibrary();
   void InitMockNetworkLibrary();
-  void InitMockPowerLibrary();
   void InitMockScreenLockLibrary();
 
   // Get mocks.
   MockCryptohomeLibrary* mock_cryptohome_library();
   MockKeyboardLibrary* mock_keyboard_library();
   MockNetworkLibrary* mock_network_library();
-  MockPowerLibrary* mock_power_library();
   MockScreenLockLibrary* mock_screen_lock_library();
 
   // This method sets up corresponding expectations for basic mocks that
@@ -63,8 +60,6 @@ class CrosMock {
   // Methods to setup minimal mocks expectations for status area.
   void SetKeyboardLibraryStatusAreaExpectations();
   void SetNetworkLibraryStatusAreaExpectations();
-  void SetPowerLibraryStatusAreaExpectations();
-  void SetPowerLibraryExpectations();
 
   void TearDownMocks();
 
@@ -77,7 +72,6 @@ class CrosMock {
   MockCryptohomeLibrary* mock_cryptohome_library_;
   MockKeyboardLibrary* mock_keyboard_library_;
   MockNetworkLibrary* mock_network_library_;
-  MockPowerLibrary* mock_power_library_;
   MockScreenLockLibrary* mock_screen_lock_library_;
 
   WifiNetworkVector wifi_networks_;

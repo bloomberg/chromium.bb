@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/library_loader.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/cros/screen_lock_library.h"
 #include "third_party/cros/chromeos_cros_api.h"
 
@@ -81,7 +80,6 @@ DEFINE_GET_LIBRARY_METHOD(Burn, burn);
 DEFINE_GET_LIBRARY_METHOD(Cert, cert);
 DEFINE_GET_LIBRARY_METHOD(Cryptohome, crypto);
 DEFINE_GET_LIBRARY_METHOD(Network, network);
-DEFINE_GET_LIBRARY_METHOD(Power, power);
 DEFINE_GET_LIBRARY_METHOD(ScreenLock, screen_lock);
 
 bool CrosLibrary::LoadLibcros() {
@@ -125,7 +123,6 @@ DEFINE_SET_LIBRARY_METHOD(Cert, cert);
 DEFINE_SET_LIBRARY_METHOD(Burn, burn);
 DEFINE_SET_LIBRARY_METHOD(Cryptohome, crypto);
 DEFINE_SET_LIBRARY_METHOD(Network, network);
-DEFINE_SET_LIBRARY_METHOD(Power, power);
 DEFINE_SET_LIBRARY_METHOD(ScreenLock, screen_lock);
 
 } // namespace chromeos

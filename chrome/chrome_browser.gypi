@@ -424,8 +424,6 @@
         'browser/chromeos/cros/network_parser.h',
         'browser/chromeos/cros/onc_network_parser.cc',
         'browser/chromeos/cros/onc_network_parser.h',
-        'browser/chromeos/cros/power_library.cc',
-        'browser/chromeos/cros/power_library.h',
         'browser/chromeos/cros/screen_lock_library.cc',
         'browser/chromeos/cros/screen_lock_library.h',
         'browser/chromeos/cros_settings.cc',

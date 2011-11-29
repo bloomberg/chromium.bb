@@ -2449,8 +2449,6 @@
         'browser/chromeos/cros/cros_in_process_browser_test.h',
         'browser/chromeos/cros/cros_mock.cc',
         'browser/chromeos/cros/cros_mock.h',
-        'browser/chromeos/cros/mock_power_library.cc',
-        'browser/chromeos/cros/mock_power_library.h',
         'browser/chromeos/cros/mock_screen_lock_library.cc',
         'browser/chromeos/cros/mock_screen_lock_library.h',
         'browser/chromeos/disks/mock_disk_mount_manager.cc',
