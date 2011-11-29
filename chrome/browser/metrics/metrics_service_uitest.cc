@@ -69,8 +69,8 @@ TEST_F(MetricsServiceTest, CloseRenderersNormally) {
   local_state->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
   EXPECT_TRUE(local_state->GetBoolean(prefs::kStabilityExitedCleanly));
   EXPECT_EQ(1, local_state->GetInteger(prefs::kStabilityLaunchCount));
-#if defined(TOUCH_UI)
-  // The keyboard page loads for touchui.
+#if defined(USE_VIRTUAL_KEYBOARD)
+  // The keyboard page loads.
   EXPECT_EQ(4, local_state->GetInteger(prefs::kStabilityPageLoadCount));
 #else
   EXPECT_EQ(3, local_state->GetInteger(prefs::kStabilityPageLoadCount));
@@ -113,8 +113,8 @@ TEST_F(MetricsServiceTest, DISABLED_CrashRenderers) {
   local_state->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
   EXPECT_TRUE(local_state->GetBoolean(prefs::kStabilityExitedCleanly));
   EXPECT_EQ(1, local_state->GetInteger(prefs::kStabilityLaunchCount));
-#if defined(TOUCH_UI)
-  // The keyboard page loads for touchui.
+#if defined(USE_VIRTUAL_KEYBOARD)
+  // The keyboard page loads.
   EXPECT_EQ(5, local_state->GetInteger(prefs::kStabilityPageLoadCount));
 #else
   EXPECT_EQ(4, local_state->GetInteger(prefs::kStabilityPageLoadCount));
