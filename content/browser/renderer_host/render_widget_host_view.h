@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/process_util.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"

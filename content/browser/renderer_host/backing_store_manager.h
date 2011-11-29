@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/process.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/rect.h"
