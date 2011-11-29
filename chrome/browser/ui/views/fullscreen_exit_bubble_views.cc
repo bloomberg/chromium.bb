@@ -18,11 +18,11 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/link.h"
-#include "views/controls/link_listener.h"
 #include "views/view.h"
 
 #if defined(OS_WIN)

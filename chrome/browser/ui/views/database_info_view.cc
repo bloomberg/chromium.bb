@@ -12,10 +12,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-#include "views/controls/label.h"
 
 static const int kDatabaseInfoViewBorderSize = 1;
 static const int kDatabaseInfoViewInsetSize = 3;

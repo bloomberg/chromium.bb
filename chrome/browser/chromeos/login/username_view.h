@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "views/controls/label.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/views/controls/label.h"
 
 // Forward declaration.
 namespace gfx {

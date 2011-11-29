@@ -11,13 +11,13 @@
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager_test.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/label.h"
-#include "views/controls/link.h"
 #include "views/controls/scroll_view.h"
 
 #if !defined(USE_AURA)

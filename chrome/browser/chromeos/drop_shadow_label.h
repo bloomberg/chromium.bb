@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/gfx/font.h"
-#include "views/controls/label.h"
+#include "ui/views/controls/label.h"
 
 namespace chromeos {
 

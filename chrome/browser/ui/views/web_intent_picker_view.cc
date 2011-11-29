@@ -22,9 +22,9 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "views/controls/image_view.h"
-#include "views/controls/label.h"
 
 namespace {
 

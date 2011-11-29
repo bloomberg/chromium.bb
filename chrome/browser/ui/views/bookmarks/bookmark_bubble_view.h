@@ -14,7 +14,7 @@
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
-#include "views/controls/link_listener.h"
+#include "ui/views/controls/link_listener.h"
 
 class Profile;
 

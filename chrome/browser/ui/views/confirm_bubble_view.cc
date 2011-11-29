@@ -10,11 +10,11 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "views/controls/image_view.h"
-#include "views/controls/label.h"
-#include "views/controls/link.h"
 
 namespace {
 

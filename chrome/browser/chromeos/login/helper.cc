@@ -17,9 +17,9 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/label.h"
 #include "views/controls/throbber.h"
 #include "views/painter.h"
 

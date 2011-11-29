@@ -9,8 +9,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/label.h"
 #include "views/controls/image_view.h"
-#include "views/controls/label.h"
 
 // Amount of padding at the edges of the bubble.
 static const int kBubbleOuterPadding = LocationBarView::kEdgeItemPadding -

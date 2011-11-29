@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "views/controls/label.h"
+#include "ui/views/controls/label.h"
 
 class AutocompleteEditModel;
 

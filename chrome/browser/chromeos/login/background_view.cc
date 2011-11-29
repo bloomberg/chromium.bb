@@ -32,8 +32,8 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/label.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"

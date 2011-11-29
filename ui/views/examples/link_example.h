@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/examples/example_base.h"
-#include "views/controls/link_listener.h"
 
 namespace views {
 class View;

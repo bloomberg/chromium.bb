@@ -7,10 +7,10 @@
 #include "base/utf_string_conversions.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/label.h"
 
 namespace examples {
 

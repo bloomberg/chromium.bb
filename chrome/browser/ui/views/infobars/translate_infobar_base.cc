@@ -14,7 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "views/controls/label.h"
+#include "ui/views/controls/label.h"
 
 // TranslateInfoBarDelegate ---------------------------------------------------
 

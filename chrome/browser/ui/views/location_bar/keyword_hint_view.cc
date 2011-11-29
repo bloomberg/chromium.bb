@@ -19,7 +19,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "views/controls/label.h"
+#include "ui/views/controls/label.h"
 
 // Amount of space to offset the tab image from the top of the view by.
 static const int kTabImageYOffset = 4;

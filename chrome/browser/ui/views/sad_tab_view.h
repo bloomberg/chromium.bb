@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"
-#include "views/controls/link_listener.h"
+#include "ui/views/controls/link_listener.h"
 #include "views/view.h"
 
 class TabContents;

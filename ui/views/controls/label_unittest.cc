@@ -8,8 +8,8 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/label.h"
 #include "views/border.h"
-#include "views/controls/label.h"
 
 namespace views {
 

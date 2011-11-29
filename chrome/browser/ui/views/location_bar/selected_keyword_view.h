@@ -10,7 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
-#include "views/controls/label.h"
+#include "ui/views/controls/label.h"
 
 class Profile;
 namespace gfx {

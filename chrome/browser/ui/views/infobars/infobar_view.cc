@@ -27,14 +27,14 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 #include "views/controls/image_view.h"
-#include "views/controls/label.h"
-#include "views/controls/link.h"
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"

@@ -31,11 +31,11 @@
 #include "ui/gfx/path.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "unicode/ubidi.h"
-#include "views/controls/label.h"
 #include "views/painter.h"
 
 #if defined(OS_WIN)

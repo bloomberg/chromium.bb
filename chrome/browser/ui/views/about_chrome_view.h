@@ -10,10 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/controls/image_view.h"
-#include "views/controls/label.h"
-#include "views/controls/link_listener.h"
 #include "views/view.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)

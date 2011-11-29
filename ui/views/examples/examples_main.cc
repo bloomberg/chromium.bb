@@ -13,6 +13,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/examples/bubble_example.h"
 #include "ui/views/examples/button_example.h"
@@ -37,7 +38,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/label.h"
 
 #if defined(OS_WIN)
 // TableView is not yet ported to Linux.

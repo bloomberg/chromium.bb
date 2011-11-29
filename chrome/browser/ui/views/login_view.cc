@@ -11,11 +11,11 @@
 #include "base/utf_string_conversions.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/root_view.h"
-#include "views/controls/label.h"
 
 static const int kMessageWidth = 320;
 static const int kTextfieldStackHorizontalSpacing = 30;

@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
-#include "views/controls/label.h"
+#include "ui/views/controls/label.h"
 
 namespace views {
 

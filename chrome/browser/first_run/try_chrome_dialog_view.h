@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
-#include "views/controls/link_listener.h"
+#include "ui/views/controls/link_listener.h"
 
 class ProcessSingleton;
 

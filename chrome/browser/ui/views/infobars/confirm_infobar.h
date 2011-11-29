@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
-#include "views/controls/link_listener.h"
+#include "ui/views/controls/link_listener.h"
 
 class ConfirmInfoBarDelegate;
 

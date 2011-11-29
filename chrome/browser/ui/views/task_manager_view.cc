@@ -25,6 +25,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu.h"
 #include "ui/views/controls/table/group_table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -33,8 +35,6 @@
 #include "ui/views/window/dialog_delegate.h"
 #include "views/background.h"
 #include "views/context_menu_controller.h"
-#include "views/controls/link.h"
-#include "views/controls/link_listener.h"
 
 // The task manager window default size.
 static const int kDefaultWidth = 460;

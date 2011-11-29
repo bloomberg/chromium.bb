@@ -15,7 +15,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
-#include "views/controls/link_listener.h"
+#include "ui/views/controls/link_listener.h"
 
 // ContentSettingBubbleContents is used when the user turns on different kinds
 // of content blocking (e.g. "block images").  When viewing a page with blocked

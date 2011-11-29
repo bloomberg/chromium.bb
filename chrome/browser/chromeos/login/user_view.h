@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ui/views/controls/button/button.h"
-#include "views/controls/link_listener.h"
+#include "ui/views/controls/link_listener.h"
 #include "views/view.h"
 
 class SkBitmap;

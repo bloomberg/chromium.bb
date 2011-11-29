@@ -13,11 +13,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "views/background.h"
 #include "views/border.h"
 #include "views/controls/image_view.h"
-#include "views/controls/label.h"
 #include "views/controls/throbber.h"
 
 namespace {

@@ -26,10 +26,10 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/label.h"
 
 using views::Widget;
 

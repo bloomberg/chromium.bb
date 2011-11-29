@@ -19,11 +19,11 @@
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/link_listener.h"
 #include "views/background.h"
 #include "views/controls/image_view.h"
-#include "views/controls/label.h"
-#include "views/controls/link.h"
-#include "views/controls/link_listener.h"
 
 namespace {
 

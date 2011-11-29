@@ -12,8 +12,8 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "views/controls/label.h"
-#include "views/controls/link.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 
 namespace view_text_utils {
 

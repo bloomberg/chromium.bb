@@ -11,8 +11,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/controls/label.h"
-#include "views/controls/link.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 
 namespace {
 

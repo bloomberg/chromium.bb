@@ -11,7 +11,7 @@
 #include "chrome/browser/page_info_model_observer.h"
 #include "ui/base/animation/slide_animation.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "views/controls/link_listener.h"
+#include "ui/views/controls/link_listener.h"
 
 class PageInfoBubbleView : public views::BubbleDelegateView,
                            public PageInfoModelObserver,
