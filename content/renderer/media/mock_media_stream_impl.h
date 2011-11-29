@@ -15,10 +15,10 @@ class MockMediaStreamImpl : public MediaStreamImpl {
   virtual ~MockMediaStreamImpl();
 
   virtual WebKit::WebPeerConnectionHandler* CreatePeerConnectionHandler(
-      WebKit::WebPeerConnectionHandlerClient* client);
-  virtual void ClosePeerConnection();
+      WebKit::WebPeerConnectionHandlerClient* client) OVERRIDE;
+  virtual void ClosePeerConnection() OVERRIDE;
   // Returns true if created successfully or already exists, false otherwise.
-  virtual bool SetVideoCaptureModule(const std::string& label);
+  virtual bool SetVideoCaptureModule(const std::string& label) OVERRIDE;
 
   // Implement webkit_glue::MediaStreamClient.
   virtual scoped_refptr<media::VideoDecoder> GetVideoDecoder(
