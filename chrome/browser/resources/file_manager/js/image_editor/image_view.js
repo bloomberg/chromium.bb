@@ -28,6 +28,7 @@ function ImageView(container, viewport) {
   // the content cache any more. Screen-scale images are small (~1Mpix)
   // so we can afford to cache more of them.
   this.screenCache_ = new ImageView.Cache(5);
+  this.contentCallbacks_ = [];
 }
 
 ImageView.ANIMATION_DURATION = 180;
@@ -99,6 +100,8 @@ ImageView.prototype.invalidateCaches = function() {
 };
 
 ImageView.prototype.getCanvas = function() { return this.contentCanvas_ };
+
+ImageView.prototype.getThumbnail = function() { return this.thumbnailCanvas_ };
 
 ImageView.prototype.paintScreenRect = function (screenRect, canvas, imageRect) {
   // Map screen canvas (0,0) to (screenClipped.left, screenClipped.top)
@@ -290,7 +293,33 @@ ImageView.prototype.replaceContent_ = function(
   if (!opt_width && !opt_height) {
     this.contentCache_.putItem(this.contentID_, this.contentCanvas_, true);
     this.screenCache_.putItem(this.contentID_, this.screenCanvas_);
+
+    // TODO(kaznacheev): It is better to pass screenCanvas_ as it is usually
+    // much smaller than contentCanvas_ and still contains the entire image.
+    // Once we implement zoom/pan we should pass contentCanvas_ instead.
+    this.updateThumbnail_(this.screenCanvas_);
+
+    for (var i = 0; i != this.contentCallbacks_.length; i++) {
+      this.contentCallbacks_[i]();
+    }
   }
+};
+
+ImageView.prototype.addContentCallback = function(callback) {
+  this.contentCallbacks_.push(callback);
+};
+
+ImageView.prototype.updateThumbnail_ = function(canvas) {
+  ImageUtil.trace.resetTimer('thumb');
+  var pixelCount = 10000;
+  var downScale =
+      Math.max(1, Math.sqrt(canvas.width * canvas.height / pixelCount));
+
+  this.thumbnailCanvas_ = canvas.ownerDocument.createElement('canvas');
+  this.thumbnailCanvas_.width = Math.round(canvas.width / downScale);
+  this.thumbnailCanvas_.height = Math.round(canvas.height / downScale);
+  Rect.drawImage(this.thumbnailCanvas_.getContext('2d'), canvas);
+  ImageUtil.trace.reportTimer('thumb');
 };
 
 /**

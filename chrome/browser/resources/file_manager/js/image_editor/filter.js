@@ -81,10 +81,18 @@ filter.applyByStrips = function(
 /**
  * Return a color histogram for an image.
  *
- * @param {ImageData} imageData
+ * @param {HTMLCanvasElement|ImageData} source
  * @return {{r: Array.<number>, g: Array.<number>, b: Array.<number>}}
  */
-filter.getHistogram = function(imageData) {
+filter.getHistogram = function(source) {
+  var imageData;
+  if (source.constructor.name == 'HTMLCanvasElement') {
+    imageData = source.getContext('2d').
+        getImageData(0, 0, source.width, source.height);
+  } else {
+    imageData = source;
+  }
+
   var r = [];
   var g = [];
   var b = [];
@@ -521,18 +529,54 @@ filter.autofix = function(options) {
  * @return {Array.<number>}
  */
 filter.autofix.stretchColors = function(channelHistogram) {
-  var first = 0;
-  while (first <= 255 && channelHistogram[first] == 0)
-    first++;
-
-  var last = 255;
-  while (last > first && channelHistogram[last] == 0)
-    last--;
-
+  var range = filter.autofix.getRange(channelHistogram);
   return filter.precompute(
       255,
-      last == first ?
-          function(x) { return x } :
-          function(x) { return (x - first) / (last - first) * 255 }
+      function(x) {
+        return (x - range.first) / (range.last - range.first) * 255
+      }
   );
+};
+
+/**
+ * Return a range that encloses non-zero elements values in a histogram array.
+ * @param {Array.<number>} channelHistogram
+ * @return {{first: number, last: number}}
+ */
+filter.autofix.getRange = function(channelHistogram) {
+  var first = 0;
+  while (first < channelHistogram.length && channelHistogram[first] == 0)
+    first++;
+
+  var last = channelHistogram.length - 1;
+  while (last >= 0 && channelHistogram[last] == 0)
+    last--;
+
+  if (first >= last) // Stretching does not make sense
+    return {first: 0, last: channelHistogram.length - 1};
+  else
+    return {first: first, last: last};
+};
+
+filter.autofix.SENSITIVITY = 8;  // Reasonable empirical value.
+
+/**
+ * @param {Array.<number>} channelHistogram
+ * @return {boolean} True if stretching this range to 0..255 would make
+ *                   a visible difference.
+ */
+filter.autofix.needsStretching = function(channelHistogram) {
+  var range = filter.autofix.getRange(channelHistogram);
+  return (range.first >= filter.autofix.SENSITIVITY ||
+          range.last  <= 255 - filter.autofix.SENSITIVITY);
+};
+
+/**
+ * @param {{r: Array.<number>, g: Array.<number>, b: Array.<number>}} histogram
+ * @return {boolean} True if the autofix would make a visible difference.
+ */
+filter.autofix.isApplicable = function(histogram) {
+  return filter.autofix.needsStretching(histogram.r) ||
+         filter.autofix.needsStretching(histogram.g) ||
+         filter.autofix.needsStretching(histogram.b);
 };

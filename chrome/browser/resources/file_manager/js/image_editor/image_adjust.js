@@ -101,9 +101,7 @@ ImageEditor.Mode.Adjust.prototype.createFilter = function(options) {
 };
 
 /**
- * A base class for color filters that are scale independent (i.e. can
- * be applied to a scaled image with basicaly the same effect).
- * Displays a histogram.
+ * A base class for color filters that are scale independent.
  * @constructor
  */
 ImageEditor.Mode.ColorFilter = function() {
@@ -114,110 +112,7 @@ ImageEditor.Mode.ColorFilter.prototype =
     {__proto__: ImageEditor.Mode.Adjust.prototype};
 
 ImageEditor.Mode.ColorFilter.prototype.getHistogram = function() {
-  if (!this.histogram_) {
-    this.histogram_ = new ImageEditor.Mode.Histogram(
-        this.getViewport(), this.getImageView().getCanvas());
-  }
-  return this.histogram_;
-};
-
-ImageEditor.Mode.ColorFilter.prototype.createFilter = function(options) {
-  var filterFunc =
-      ImageEditor.Mode.Adjust.prototype.createFilter.apply(this, arguments);
-  this.getHistogram().update(filterFunc);
-  return filterFunc;
-};
-
-ImageEditor.Mode.ColorFilter.prototype.cleanUpCaches = function() {
-  ImageEditor.Mode.Adjust.prototype.cleanUpCaches.apply(this, arguments);
-  this.histogram_ = null;
-};
-
-/**
- * A histogram container.
- * @constructor
- */
-ImageEditor.Mode.Histogram = function(viewport, canvas) {
-  this.viewport_ = viewport;
-
-  var downScale = Math.max(1, Math.sqrt(canvas.width * canvas.height / 10000));
-
-  var thumbnail = canvas.ownerDocument.createElement('canvas');
-  thumbnail.width = canvas.width / downScale;
-  thumbnail.height = canvas.height / downScale;
-  var context = thumbnail.getContext('2d');
-  Rect.drawImage(context, canvas);
-
-  this.originalImageData_ =
-      context.getImageData(0, 0, thumbnail.width, thumbnail.height);
-  this.filteredImageData_ =
-      context.getImageData(0, 0, thumbnail.width, thumbnail.height);
-
-  this.update();
-};
-
-ImageEditor.Mode.Histogram.prototype.getData = function() { return this.data_ };
-
-ImageEditor.Mode.Histogram.BUCKET_WIDTH = 8;
-ImageEditor.Mode.Histogram.BAR_WIDTH = 2;
-ImageEditor.Mode.Histogram.RIGHT = 5;
-ImageEditor.Mode.Histogram.TOP = 5;
-
-ImageEditor.Mode.Histogram.prototype.update = function(filterFunc) {
-  if (filterFunc) {
-    filterFunc(this.filteredImageData_, this.originalImageData_, 0, 0);
-    this.data_ = filter.getHistogram(this.filteredImageData_);
-  } else {
-    this.data_ = filter.getHistogram(this.originalImageData_);
-  }
-};
-
-ImageEditor.Mode.Histogram.prototype.draw = function(context) {
-  var screen = this.viewport_.getScreenBounds();
-
-  var barCount = 2 + 3 * (256 / ImageEditor.Mode.Histogram.BUCKET_WIDTH);
-  var width = ImageEditor.Mode.Histogram.BAR_WIDTH * barCount;
-  var height = Math.round(width / 2);
-  var rect = new Rect(
-      screen.left + screen.width - ImageEditor.Mode.Histogram.RIGHT - width,
-      ImageEditor.Mode.Histogram.TOP,
-      width,
-      height);
-
-  context.globalAlpha = 1;
-  context.fillStyle = '#E0E0E0';
-  context.strokeStyle = '#000000';
-  context.lineCap = 'square';
-  Rect.fill(context, rect);
-  Rect.outline(context, rect);
-
-  function drawChannel(channel, style, offsetX, offsetY) {
-    context.strokeStyle = style;
-    context.beginPath();
-    for (var i  = 0; i != 256; i += ImageEditor.Mode.Histogram.BUCKET_WIDTH) {
-      var barHeight = channel[i];
-      for (var b = 1; b < ImageEditor.Mode.Histogram.BUCKET_WIDTH; b++)
-        barHeight = Math.max(barHeight, channel[i + b]);
-      barHeight = Math.min(barHeight, height);
-      for (var j = 0; j != ImageEditor.Mode.Histogram.BAR_WIDTH; j++) {
-        context.moveTo(offsetX, offsetY);
-        context.lineTo(offsetX, offsetY - barHeight);
-        offsetX++;
-      }
-      offsetX += 2 * ImageEditor.Mode.Histogram.BAR_WIDTH;
-    }
-    context.closePath();
-    context.stroke();
-  }
-
-  var offsetX = rect.left + 0.5 + ImageEditor.Mode.Histogram.BAR_WIDTH;
-  var offsetY = rect.top + rect.height;
-
-  drawChannel(this.data_.r, '#F00000', offsetX, offsetY);
-  offsetX += ImageEditor.Mode.Histogram.BAR_WIDTH;
-  drawChannel(this.data_.g, '#00F000', offsetX, offsetY);
-  offsetX += ImageEditor.Mode.Histogram.BAR_WIDTH;
-  drawChannel(this.data_.b, '#0000F0', offsetX, offsetY);
+  return filter.getHistogram(this.getImageView().getThumbnail());
 };
 
 /**
@@ -253,8 +148,12 @@ ImageEditor.Mode.Autofix.prototype.createTools = function(toolbar) {
   toolbar.addButton('Apply', this.apply.bind(this));
 };
 
+ImageEditor.Mode.Autofix.prototype.isApplicable = function() {
+  return filter.autofix.isApplicable(this.getHistogram());
+};
+
 ImageEditor.Mode.Autofix.prototype.apply = function() {
-  this.update({histogram: this.getHistogram().getData()});
+  this.update({histogram: this.getHistogram()});
 };
 
 /**

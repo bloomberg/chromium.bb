@@ -17,6 +17,7 @@ function ImageEditor(
     modes, displayStringFunction) {
   this.rootContainer_ = rootContainer;
   this.container_ = galleryContainer;
+  this.modes_ = modes;
   this.displayStringFunction_ = displayStringFunction;
 
   this.container_.innerHTML = '';
@@ -30,6 +31,7 @@ function ImageEditor(
   this.viewport_.addRepaintCallback(this.buffer_.draw.bind(this.buffer_));
 
   this.imageView_ = new ImageView(this.container_, this.viewport_);
+  this.imageView_.addContentCallback(this.onContentUpdate_.bind(this));
   this.buffer_.addOverlay(this.imageView_);
 
   this.panControl_ = new ImageEditor.MouseControl(
@@ -45,7 +47,7 @@ function ImageEditor(
   this.prompt_ = new ImageEditor.Prompt(
       this.rootContainer_, displayStringFunction);
 
-  this.createToolButtons(modes);
+  this.createToolButtons();
 
   this.commandQueue_ = null;
 }
@@ -65,6 +67,13 @@ ImageEditor.prototype.isLocked = function() {
 
 ImageEditor.prototype.lockUI = function(on) {
   ImageUtil.setAttribute(this.rootContainer_, 'locked', on);
+};
+
+ImageEditor.prototype.onContentUpdate_ = function() {
+  for (var i = 0; i != this.modes_.length; i++) {
+    var mode = this.modes_[i];
+    ImageUtil.setAttribute(mode.button_, 'disabled', !mode.isApplicable());
+  }
 };
 
 ImageEditor.prototype.prefetchImage = function(id, source, metadata) {
@@ -95,6 +104,7 @@ ImageEditor.prototype.openSession = function(
  *    image and the modified flag.
  */
 ImageEditor.prototype.closeSession = function(callback) {
+  this.getPrompt().hide();
   if (this.imageView_.isLoading()) {
     this.imageView_.cancelLoad();
     this.lockUI(false);
@@ -217,15 +227,23 @@ ImageEditor.Mode.prototype.getImageView = function() { return this.imageView_ };
 
 ImageEditor.Mode.prototype.getMessage = function() { return this.message_ };
 
+ImageEditor.Mode.prototype.isApplicable = function() { return true };
+
+/**
+ * Called once after creating the mode button.
+ */
+ImageEditor.Mode.prototype.bind = function(editor, button) {
+  this.editor_ = editor;
+  this.button_ = button;
+  this.viewport_ = editor.getViewport();
+  this.imageView_ = editor.getImageView();
+};
+
 /**
  * Called before entering the mode.
  */
-ImageEditor.Mode.prototype.setUp = function(editor) {
-  this.editor_ = editor;
-  this.viewport_ = editor.getViewport();
-  this.imageView_ = editor.getImageView();
+ImageEditor.Mode.prototype.setUp = function() {
   this.editor_.getBuffer().addOverlay(this);
-
   this.updated_ = false;
 };
 
@@ -286,12 +304,12 @@ ImageEditor.Mode.OneClick.prototype.getCommand = function() {
 };
 
 
-ImageEditor.prototype.createToolButtons = function(modes) {
+ImageEditor.prototype.createToolButtons = function() {
   this.mainToolbar_.clear();
-  for (var i = 0; i != modes.length; i++) {
-    var mode = modes[i];
-    this.mainToolbar_.
-        addButton(mode.name, this.enterMode.bind(this, mode), mode.name);
+  for (var i = 0; i != this.modes_.length; i++) {
+    var mode = this.modes_[i];
+    mode.bind(this, this.mainToolbar_.
+        addButton(mode.name, this.enterMode.bind(this, mode), mode.name));
   }
   this.undoButton_ = this.mainToolbar_.
       addButton('undo', this.undo.bind(this), 'undo');
@@ -320,7 +338,7 @@ ImageEditor.prototype.enterMode = function(mode, event) {
   ImageUtil.setAttribute(this.currentTool_, 'pressed', true);
 
   this.currentMode_ = mode;
-  this.currentMode_.setUp(this);
+  this.currentMode_.setUp();
 
   if (this.currentMode_.instant) {  // Instant tool.
     this.leaveMode(true);
