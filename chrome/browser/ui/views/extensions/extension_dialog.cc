@@ -113,9 +113,6 @@ void ExtensionDialog::Close() {
   if (!window_)
     return;
 
-  if (observer_)
-    observer_->ExtensionDialogIsClosing(this);
-
   window_->Close();
   window_ = NULL;
 }
@@ -137,6 +134,11 @@ bool ExtensionDialog::ShouldShowWindowTitle() const {
 
 string16 ExtensionDialog::GetWindowTitle() const {
   return window_title_;
+}
+
+void ExtensionDialog::WindowClosing() {
+  if (observer_)
+    observer_->ExtensionDialogIsClosing(this);
 }
 
 void ExtensionDialog::DeleteDelegate() {
