@@ -120,14 +120,13 @@ static void gtk_floating_container_class_init(
                                              G_SIGNAL_ACTION),
                    0,
                    NULL, NULL,
-                   gtk_marshal_VOID__BOXED,
+                   g_cclosure_marshal_VOID__BOXED,
                    G_TYPE_NONE, 1,
                    GDK_TYPE_RECTANGLE | G_SIGNAL_TYPE_STATIC_SCOPE);
 }
 
 static void gtk_floating_container_init(GtkFloatingContainer* container) {
-  GTK_WIDGET_SET_FLAGS(container, GTK_NO_WINDOW);
-
+  gtk_widget_set_has_window(GTK_WIDGET(container), FALSE);
   container->floating_children = NULL;
 }
 
@@ -136,7 +135,7 @@ static void gtk_floating_container_remove(GtkContainer* container,
   g_return_if_fail(GTK_IS_WIDGET(widget));
 
   GtkBin* bin = GTK_BIN(container);
-  if (bin->child == widget) {
+  if (gtk_bin_get_child(bin) == widget) {
     ((GTK_CONTAINER_CLASS(gtk_floating_container_parent_class))->remove)
         (container, widget);
   } else {
@@ -196,8 +195,8 @@ static void gtk_floating_container_forall(GtkContainer* container,
 static void gtk_floating_container_size_request(GtkWidget* widget,
                                                 GtkRequisition* requisition) {
   GtkBin* bin = GTK_BIN(widget);
-  if (bin && bin->child) {
-    gtk_widget_size_request(bin->child, requisition);
+  if (bin && gtk_bin_get_child(bin)) {
+    gtk_widget_size_request(gtk_bin_get_child(bin), requisition);
   } else {
     requisition->width = 0;
     requisition->height = 0;
@@ -206,10 +205,10 @@ static void gtk_floating_container_size_request(GtkWidget* widget,
 
 static void gtk_floating_container_size_allocate(GtkWidget* widget,
                                                  GtkAllocation* allocation) {
-  widget->allocation = *allocation;
+  gtk_widget_set_allocation(widget, allocation);
 
   if (gtk_widget_get_has_window(widget) && gtk_widget_get_realized(widget)) {
-    gdk_window_move_resize(widget->window,
+    gdk_window_move_resize(gtk_widget_get_window(widget),
                            allocation->x,
                            allocation->y,
                            allocation->width,
@@ -218,8 +217,8 @@ static void gtk_floating_container_size_allocate(GtkWidget* widget,
 
   // Give the same allocation to our GtkBin component.
   GtkBin* bin = GTK_BIN(widget);
-  if (bin->child) {
-    gtk_widget_size_allocate(bin->child, allocation);
+  if (gtk_bin_get_child(bin)) {
+    gtk_widget_size_allocate(gtk_bin_get_child(bin), allocation);
   }
 
   // We need to give whoever is pulling our strings a chance to set the "x" and

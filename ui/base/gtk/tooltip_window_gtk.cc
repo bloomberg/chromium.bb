@@ -64,16 +64,18 @@ void  TooltipWindowGtk::Init() {
 
 // Paints our customized tooltip window.
 gboolean TooltipWindowGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
-  gtk_paint_flat_box(widget->style,
-      widget->window,
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  gtk_paint_flat_box(gtk_widget_get_style(widget),
+      gtk_widget_get_window(widget),
       GTK_STATE_NORMAL,
       GTK_SHADOW_OUT,
       NULL,
       widget,
       "tooltip",
       0, 0,
-      widget->allocation.width,
-      widget->allocation.height);
+      allocation.width,
+      allocation.height);
 
   return FALSE;
 }
@@ -81,11 +83,12 @@ gboolean TooltipWindowGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
 // Style change handler.
 void TooltipWindowGtk::OnStyleSet(GtkWidget* widget,
                                   GtkStyle* previous_style) {
+  GtkStyle* style = gtk_widget_get_style(widget);
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_),
-      widget->style->ythickness,
-      widget->style->ythickness,
-      widget->style->xthickness,
-      widget->style->xthickness);
+      style->ythickness,
+      style->ythickness,
+      style->xthickness,
+      style->xthickness);
 
   gtk_widget_queue_draw(widget);
 }

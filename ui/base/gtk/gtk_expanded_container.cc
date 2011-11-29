@@ -68,7 +68,7 @@ void ChildSizeAllocate(GtkWidget* child, gpointer userdata) {
   child_allocation.x = x + data->border_width;
   child_allocation.y = y + data->border_width;
 
-  if (GTK_WIDGET_NO_WINDOW(data->container)) {
+  if (!gtk_widget_get_has_window(data->container)) {
     child_allocation.x += data->allocation->x;
     child_allocation.y += data->allocation->y;
   }
@@ -143,10 +143,10 @@ static void gtk_expanded_container_init(GtkExpandedContainer* container) {
 
 static void gtk_expanded_container_size_allocate(GtkWidget* widget,
                                                  GtkAllocation* allocation) {
-  widget->allocation = *allocation;
+  gtk_widget_set_allocation(widget, allocation);
 
-  if (!GTK_WIDGET_NO_WINDOW(widget) && gtk_widget_get_realized(widget)) {
-    gdk_window_move_resize(widget->window,
+  if (gtk_widget_get_has_window(widget) && gtk_widget_get_realized(widget)) {
+    gdk_window_move_resize(gtk_widget_get_window(widget),
                            allocation->x,
                            allocation->y,
                            allocation->width,
@@ -183,13 +183,13 @@ void gtk_expanded_container_set_has_window(GtkExpandedContainer* container,
                                            gboolean has_window) {
   g_return_if_fail(GTK_IS_EXPANDED_CONTAINER(container));
   g_return_if_fail(!gtk_widget_get_realized(GTK_WIDGET(container)));
-  gtk_fixed_set_has_window(GTK_FIXED(container), has_window);
+  gtk_widget_set_has_window(GTK_WIDGET(container), has_window);
 }
 
 gboolean gtk_expanded_container_get_has_window(
     GtkExpandedContainer* container) {
   g_return_val_if_fail(GTK_IS_EXPANDED_CONTAINER(container), FALSE);
-  return gtk_fixed_get_has_window(GTK_FIXED(container));
+  return gtk_widget_get_has_window(GTK_WIDGET(container));
 }
 
 G_END_DECLS

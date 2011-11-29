@@ -6,6 +6,23 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#define EXPECT_ALLOCATION_EQ(widget, x_, y_, width_, height_) \
+do { \
+  GtkAllocation allocation; \
+  gtk_widget_get_allocation(widget, &allocation); \
+  EXPECT_EQ(x_, allocation.x); \
+  EXPECT_EQ(y_, allocation.y); \
+  EXPECT_EQ(width_, allocation.width); \
+  EXPECT_EQ(height_, allocation.height); \
+} while(0);
+
+#define EXPECT_ALLOCATION_PARAM_EQ(widget, param, value) \
+do { \
+  GtkAllocation allocation; \
+  gtk_widget_get_allocation(widget, &allocation); \
+  EXPECT_EQ(value,allocation.param); \
+} while(0);
+
 class GtkExpandedContainerTest : public testing::Test {
  protected:
   GtkExpandedContainerTest()
@@ -78,24 +95,18 @@ TEST_F(GtkExpandedContainerTest, Expand) {
   GtkAllocation allocation = { 0, 0, 50, 100 };
   gtk_widget_size_allocate(expanded_, &allocation);
 
-  EXPECT_EQ(0, child1->allocation.x);
-  EXPECT_EQ(0, child1->allocation.y);
-  EXPECT_EQ(50, child1->allocation.width);
-  EXPECT_EQ(100, child1->allocation.height);
+  EXPECT_ALLOCATION_EQ(child1, 0, 0, 50, 100);
 
-  EXPECT_EQ(10, child2->allocation.x);
-  EXPECT_EQ(20, child2->allocation.y);
-  EXPECT_EQ(50, child2->allocation.width);
-  EXPECT_EQ(100, child2->allocation.height);
+  EXPECT_ALLOCATION_EQ(child2, 10, 20, 50, 100);
 
   allocation.x = 10;
   allocation.y = 20;
   gtk_widget_size_allocate(expanded_, &allocation);
 
-  EXPECT_EQ(10, child1->allocation.x);
-  EXPECT_EQ(20, child1->allocation.y);
-  EXPECT_EQ(20, child2->allocation.x);
-  EXPECT_EQ(40, child2->allocation.y);
+  EXPECT_ALLOCATION_PARAM_EQ(child1, x, 10);
+  EXPECT_ALLOCATION_PARAM_EQ(child1, y, 20);
+  EXPECT_ALLOCATION_PARAM_EQ(child2, x, 20);
+  EXPECT_ALLOCATION_PARAM_EQ(child2, y, 40);
 }
 
 // Test if the size allocation for children still works when using own
@@ -111,10 +122,7 @@ TEST_F(GtkExpandedContainerTest, HasWindow) {
   GtkAllocation allocation = { 10, 10, 50, 100 };
   gtk_widget_size_allocate(expanded_, &allocation);
 
-  EXPECT_EQ(0, child->allocation.x);
-  EXPECT_EQ(0, child->allocation.y);
-  EXPECT_EQ(50, child->allocation.width);
-  EXPECT_EQ(100, child->allocation.height);
+  EXPECT_ALLOCATION_EQ(child, 0, 0, 50, 100);
 }
 
 static void OnChildSizeRequest(GtkExpandedContainer* container,
@@ -137,10 +145,7 @@ TEST_F(GtkExpandedContainerTest, ChildSizeRequest) {
   GtkAllocation allocation = { 0, 0, 300, 100 };
   gtk_widget_size_allocate(expanded_, &allocation);
 
-  EXPECT_EQ(0, child->allocation.x);
-  EXPECT_EQ(0, child->allocation.y);
-  EXPECT_EQ(250, child->allocation.width);
-  EXPECT_EQ(25, child->allocation.height);
+  EXPECT_ALLOCATION_EQ(child, 0, 0, 250, 25);
 }
 
 TEST_F(GtkExpandedContainerTest, ChildPosition) {
