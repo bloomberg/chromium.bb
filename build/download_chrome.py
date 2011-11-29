@@ -57,6 +57,16 @@ def CreateLinkToMacFrameworkDir(bin_root):
 
 
 def Main():
+ # Generate the time for the most recently modified script used by the download
+  script_dir = os.path.dirname(__file__)
+  src_list = ['download_chrome.py', 'download_utils.py',
+              'sync_tgz.py', 'toolchainbinaries.py', 'http_download.py']
+  srcs = [os.path.join(script_dir, src) for src in src_list]
+  src_times = []
+  for src in srcs:
+    src_times.append( os.stat(src).st_mtime )
+  script_time = sorted(src_times)[-1]
+
   parser = MakeCommandLineParser()
   options, args = parser.parse_args()
   if args:
@@ -75,7 +85,7 @@ def Main():
 
   uid = " ".join([options.base_url, options.os, options.arch, options.revision])
 
-  if options.force or not download_utils.SourceIsCurrent(dst, uid):
+  if options.force or not download_utils.SourceIsCurrent(dst, uid, script_time):
 
     # Create a temporary working directory.
     tempdir = tempfile.mkdtemp(prefix='nacl_chrome_download_')

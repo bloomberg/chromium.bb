@@ -92,7 +92,10 @@ def StampMatches(stampfile, expected, script_time):
     url_time = os.stat(stampfile).st_mtime
     if url_time <= script_time:
       return False
+  except OSError:
+    return False
 
+  try:
     f = open(stampfile, 'r')
     stamp = f.read()
     f.close()

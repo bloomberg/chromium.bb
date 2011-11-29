@@ -138,7 +138,7 @@ def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
     print 'Extracting from %s...' % tar_filepath
 
   tar = tarfile.open(tar_filepath, 'r')
-  links = []
+  try_mklink = True
   for m in tar:
     if verbose:
       typeinfo = '?'
@@ -163,17 +163,20 @@ def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
     elif m.islnk() and sys.platform == 'win32':
       filepath = os.path.join(dst_dir, m.name).replace('/', '\\')
       targpath = os.path.join(dst_dir, m.linkname).replace('/', '\\')
-      src_dst = '%s %s' % (filepath, targpath)
-      try:
-        err = subprocess.call(['cmd', '/C', 'mklink /H %s' % src_dst])
-      except OSError:
-        pass
+      dst_src = '%s %s' % (filepath, targpath)
+      err = 1
+      if try_mklink:
+        try:
+          err = subprocess.call(['cmd', '/C', 'mklink /H %s' % dst_src])
+          if err: try_mklink = False
+        except OSError:
+          try_mklink = False
+          pass
       # If we failed to create a hardlink, then just copy it.
       if err or not os.path.isfile(filepath):
-        subprocess.call(['cmd', '/C', 'copy %s' % src_dst])
+        shutil.copyfile(targpath, filepath)
     else:
       tar.extract(m, dst_dir)
-
 
   tar.close()
   if not keep:
