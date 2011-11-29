@@ -386,8 +386,8 @@ class ExtensionUpdater : public content::URLFetcherDelegate,
   // Fetched CRX files waiting to be installed.
   std::stack<FetchedCRXFile> fetched_crx_files_;
 
-  FRIEND_TEST(ExtensionUpdaterTest, TestStartUpdateCheckMemory);
-  FRIEND_TEST(ExtensionUpdaterTest, TestAfterStopBehavior);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionUpdaterTest, TestStartUpdateCheckMemory);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionUpdaterTest, TestAfterStopBehavior);
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUpdater);
 };

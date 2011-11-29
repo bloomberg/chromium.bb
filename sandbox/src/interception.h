@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,11 +13,8 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "sandbox/src/sandbox_types.h"
-
-#pragma warning(push, 3)
-#include "testing/gtest/include/gtest/gtest.h"
-#pragma warning(pop)
 
 namespace sandbox {
 
@@ -60,8 +57,10 @@ struct DllInterceptionData;
 //
 class InterceptionManager {
   // The unit test will access private members.
-  FRIEND_TEST(InterceptionManagerTest, BufferLayout1);
-  FRIEND_TEST(InterceptionManagerTest, BufferLayout2);
+  // Allow tests to be marked DISABLED_. Note that FLAKY_ and FAILS_ prefixes
+  // do not work with sandbox tests.
+  FRIEND_TEST_ALL_PREFIXES(InterceptionManagerTest, BufferLayout1);
+  FRIEND_TEST_ALL_PREFIXES(InterceptionManagerTest, BufferLayout2);
 
  public:
   // An interception manager performs interceptions on a given child process.

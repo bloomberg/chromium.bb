@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,10 @@
 #include <list>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "sandbox/src/crosscall_params.h"
 #include "sandbox/src/crosscall_server.h"
 #include "sandbox/src/sharedmem_ipc_client.h"
-
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 // IPC transport implementation that uses shared memory.
 // This is the server side
@@ -53,7 +52,9 @@ class SharedMemIPCServer {
   bool Init(void* shared_mem, size_t shared_size, size_t channel_size);
 
  private:
-  FRIEND_TEST(IPCTest, SharedMemServerTests);
+  // Allow tests to be marked DISABLED_. Note that FLAKY_ and FAILS_ prefixes
+  // do not work with sandbox tests.
+  FRIEND_TEST_ALL_PREFIXES(IPCTest, SharedMemServerTests);
   // When an event fires (IPC request). A thread from the ThreadProvider
   // will call this function. The context parameter should be the same as
   // provided when ThreadProvider::RegisterWait was called.

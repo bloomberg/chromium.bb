@@ -37,8 +37,8 @@ class ConnectInterceptor : public net::URLRequestJobFactory::Interceptor {
 
  private:
   // Provide access to local class TimedCache for testing.
-  FRIEND_TEST(ConnectInterceptorTest, TimedCacheRecall);
-  FRIEND_TEST(ConnectInterceptorTest, TimedCacheEviction);
+  FRIEND_TEST_ALL_PREFIXES(ConnectInterceptorTest, TimedCacheRecall);
+  FRIEND_TEST_ALL_PREFIXES(ConnectInterceptorTest, TimedCacheEviction);
 
   // Define a LRU cache that recalls all navigations within the last N seconds.
   // When we learn about subresources to possibly preconnect to, it would be a

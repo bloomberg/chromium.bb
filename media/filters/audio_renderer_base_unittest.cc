@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/gtest_prod_util.h"
 #include "base/stl_util.h"
 #include "media/base/data_buffer.h"
 #include "media/base/mock_callback.h"
@@ -10,7 +11,6 @@
 #include "media/base/mock_filters.h"
 #include "media/filters/audio_renderer_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -40,9 +40,9 @@ class MockAudioRendererBase : public AudioRendererBase {
   MOCK_METHOD1(CheckPoint, void(int id));
 
  private:
-  FRIEND_TEST(AudioRendererBaseTest, OneCompleteReadCycle);
-  FRIEND_TEST(AudioRendererBaseTest, Underflow);
-  FRIEND_TEST(AudioRendererBaseTest, Underflow_EndOfStream);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, OneCompleteReadCycle);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, Underflow);
+  FRIEND_TEST_ALL_PREFIXES(AudioRendererBaseTest, Underflow_EndOfStream);
   friend class AudioRendererBaseTest;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererBase);

@@ -9,6 +9,7 @@
 #include <list>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
@@ -227,21 +228,21 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   // Test that needs needs access to internal functions.
   friend class PrerenderBrowserTest;
-  FRIEND_TEST(PrerenderManagerTest, AliasURLTest);
-  FRIEND_TEST(PrerenderManagerTest, ClearTest);
-  FRIEND_TEST(PrerenderManagerTest, ControlGroup);
-  FRIEND_TEST(PrerenderManagerTest, DropOldestRequestTest);
-  FRIEND_TEST(PrerenderManagerTest, DropSecondRequestTest);
-  FRIEND_TEST(PrerenderManagerTest, ExpireTest);
-  FRIEND_TEST(PrerenderManagerTest, FoundTest);
-  FRIEND_TEST(PrerenderManagerTest, FragmentMatchesFragmentTest);
-  FRIEND_TEST(PrerenderManagerTest, FragmentMatchesPageTest);
-  FRIEND_TEST(PrerenderManagerTest, PageMatchesFragmentTest);
-  FRIEND_TEST(PrerenderManagerTest, PendingPrerenderTest);
-  FRIEND_TEST(PrerenderManagerTest, RateLimitInWindowTest);
-  FRIEND_TEST(PrerenderManagerTest, RateLimitOutsideWindowTest);
-  FRIEND_TEST(PrerenderManagerTest, SourceRenderViewClosed);
-  FRIEND_TEST(PrerenderManagerTest, TwoElementPrerenderTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, AliasURLTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ClearTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ControlGroup);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, DropOldestRequestTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, DropSecondRequestTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, ExpireTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, FoundTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, FragmentMatchesFragmentTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, FragmentMatchesPageTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, PageMatchesFragmentTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, PendingPrerenderTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, RateLimitInWindowTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, RateLimitOutsideWindowTest);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, SourceRenderViewClosed);
+  FRIEND_TEST_ALL_PREFIXES(PrerenderManagerTest, TwoElementPrerenderTest);
 
   struct PrerenderContentsData;
   struct NavigationRecord;

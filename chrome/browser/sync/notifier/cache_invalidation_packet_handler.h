@@ -46,7 +46,7 @@ class CacheInvalidationPacketHandler {
       invalidation::MessageCallback* incoming_receiver);
 
  private:
-  FRIEND_TEST(CacheInvalidationPacketHandlerTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(CacheInvalidationPacketHandlerTest, Basic);
 
   void HandleInboundPacket(const std::string& packet);
   void HandleChannelContextChange(const std::string& context);

@@ -149,9 +149,9 @@ class Sandbox {
   // This path is not necessarily unique e.g. in the face of hardlinks.
   static void GetCanonicalSandboxPath(FilePath* path);
 
-  FRIEND_TEST(MacDirAccessSandboxTest, StringEscape);
-  FRIEND_TEST(MacDirAccessSandboxTest, RegexEscape);
-  FRIEND_TEST(MacDirAccessSandboxTest, DISABLED_SandboxAccess);
+  FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, StringEscape);
+  FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, RegexEscape);
+  FRIEND_TEST_ALL_PREFIXES(MacDirAccessSandboxTest, DISABLED_SandboxAccess);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(Sandbox);
 };

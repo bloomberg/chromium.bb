@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/task.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace base {
   class Time;
@@ -249,7 +249,7 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
 
  private:
   friend class SafeBrowsingDatabaseTest;
-  FRIEND_TEST(SafeBrowsingDatabaseTest, HashCaching);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseTest, HashCaching);
 
   // A SafeBrowsing whitelist contains a list of whitelisted full-hashes (stored
   // in a sorted vector) as well as a boolean flag indicating whether all
