@@ -127,7 +127,7 @@ class ManifestVersionedSyncStage(SyncStage):
   manifest_manager = None
 
   def _GetManifestVersionsRepoUrl(self, read_only=False):
-    return cbuildbot_config._GetManifestVersionsRepoUrl(
+    return cbuildbot_config.GetManifestVersionsRepoUrl(
         cbuildbot_config.IsInternalBuild(self._build_config),
         read_only=read_only)
 
@@ -199,7 +199,7 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     dry_run = self._options.debug
     source_repo = repository.RepoRepository(
         self._build_config['git_url'], self._build_root,
-        branch=self._tracking_branch);
+        branch=self._tracking_branch)
     ManifestVersionedSyncStage.manifest_manager = lkgm_manager.LKGMManager(
         source_repo=source_repo,
         manifest_repo=self._GetManifestVersionsRepoUrl(read_only=dry_run),
@@ -238,6 +238,9 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
   def __init__(self, bot_id, options, build_config):
     super(CommitQueueSyncStage, self).__init__(bot_id, options, build_config)
     CommitQueueSyncStage.pool = None
+    # Figure out the builder's name from the buildbot waterfall.
+    builder_name = build_config.get('paladin_builder_name')
+    self.builder_name = builder_name if builder_name else bot_id
 
   def HandleSkip(self):
     """Handles skip and initializes validation pool from manifest."""
@@ -249,7 +252,9 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
     internal = cbuildbot_config.IsInternalBuild(self._build_config)
     CommitQueueSyncStage.pool = \
         validation_pool.ValidationPool.AcquirePoolFromManifest(
-            manifest, internal, self._options.buildnumber, self._options.debug)
+            manifest, internal, self._options.buildnumber,
+            self.builder_name, self._build_config['master'],
+            self._options.debug)
 
   def GetNextManifest(self):
     """Gets the next manifest using LKGM logic."""
@@ -269,7 +274,7 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         internal = cbuildbot_config.IsInternalBuild(self._build_config)
         pool = validation_pool.ValidationPool.AcquirePool(
             self._tracking_branch, internal, self._build_root,
-            self._options.buildnumber, self._options.debug)
+            self._options.buildnumber, self.builder_name, self._options.debug)
 
         # We only have work to do if there are changes to try.
         if pool.changes:
@@ -289,6 +294,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
       return manifest
 
+  # Disable pylint that disallows me from calling my parent's parent.
+  # pylint: disable=E1003
   def _PerformStage(self):
     """Performs normal stage and prints blamelist at end."""
     if self._options.force_version:
@@ -325,7 +332,8 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
   option_name = 'sync'
 
   def __init__(self, bot_id, options, build_config, success):
-    bs.BuilderStage.__init__(self, bot_id, options, build_config)
+    super(ManifestVersionedSyncCompletionStage, self).__init__(
+        bot_id, options, build_config)
     self.success = success
 
   def _PerformStage(self):
@@ -347,11 +355,9 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       return True
 
     super(LKGMCandidateSyncCompletionStage, self)._PerformStage()
-    if not self._build_config['master']:
-      return True
-
-    if self._options.debug:
-      builders = []
+    # If debugging or a slave, just check its local status.
+    if not self._build_config['master'] or self._options.debug:
+      builders = [self._bot_id]
     else:
       builders = self._GetImportantBuildersForMaster(cbuildbot_config.config)
 
@@ -393,9 +399,8 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
       # TODO(sosa): Generate a manifest after we submit -- new LKGM.
 
   def HandleError(self):
-    if self._build_config['master']:
-      CommitQueueSyncStage.pool.HandleValidationFailure()
-      super(CommitQueueCompletionStage, self).HandleError()
+    CommitQueueSyncStage.pool.HandleValidationFailure()
+    super(CommitQueueCompletionStage, self).HandleError()
 
 
 class RefreshPackageStatusStage(bs.BuilderStage):

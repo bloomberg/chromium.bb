@@ -85,7 +85,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, False)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
 
     self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
@@ -114,7 +114,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, False)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
     pool.changes = [patch2]
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
     pool.gerrit_helper = helper
@@ -138,7 +138,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, False)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
     pool.changes = [patch2]
     helper = self.mox.CreateMock(gerrit_helper.GerritHelper)
     pool.gerrit_helper = helper
@@ -176,7 +176,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch4.url = 'fake_url/4'
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, False)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3, patch4]
     pool.build_log = 'log'
 
@@ -231,7 +231,7 @@ class TestValidationPool(mox.MoxTestBase):
 
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, False)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2, patch3, patch4]
 
     self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')
@@ -262,7 +262,7 @@ class TestValidationPool(mox.MoxTestBase):
     patch2.url = 'fake_url/2'
     build_root = 'fakebuildroot'
 
-    pool = validation_pool.ValidationPool(False, 1, False)
+    pool = validation_pool.ValidationPool(False, 1, 'build_name', True, False)
     pool.changes = [patch1, patch2]
 
     self.mox.StubOutWithMock(cros_patch.GerritPatch, 'GerritDependencies')

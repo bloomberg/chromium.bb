@@ -43,7 +43,7 @@ class ValidationPool(object):
 
   GLOBAL_DRYRUN = False
 
-  def __init__(self, internal, build_number, dryrun):
+  def __init__(self, internal, build_number, builder_name, is_master, dryrun):
     """Initializes an instance by setting default valuables to instance vars.
 
     Generally use AcquirePool as an entry pool to a pool rather than this
@@ -52,21 +52,17 @@ class ValidationPool(object):
     Args:
       internal:  Set to True if this is an internal validation pool.
       build_number:  Build number for this validation attempt.
+      builder_name:  Builder name on buildbot dashboard.
+      is_master: True if this is the master builder for the Commit Queue.
       dryrun: If set to True, do not submit anything to Gerrit.
     """
-    # TODO(sosa): Make more generic.
-    if not internal:
-      self.build_log = (_BUILD_DASHBOARD +
-                        '/builders/x86%20generic%20commit%20queue/builds/' +
-                        str(build_number))
-    else:
-      self.build_log = (_BUILD_INT_DASHBOARD +
-                        '/builders/x86%20mario%20commit%20queue/builds/' +
-                        str(build_number))
-
+    build_dashboard = _BUILD_DASHBOARD if not internal else _BUILD_INT_DASHBOARD
+    self.build_log = (build_dashboard + '/builders/%s/builds/' % builder_name +
+                      str(build_number))
     self.changes = []
     self.changes_that_failed_to_apply_earlier = []
     self.gerrit_helper = None
+    self.is_master = is_master
     self.dryrun = dryrun | self.GLOBAL_DRYRUN
 
   @classmethod
@@ -83,7 +79,7 @@ class ValidationPool(object):
     status_url = 'https://chromiumos-status.appspot.com/current?format=json'
     current_sleep = 1
 
-    for attempt in range(max_attempts):
+    for _ in range(max_attempts):
       try:
         response = urllib.urlopen(status_url)
         # Check for valid response code.
@@ -101,14 +97,12 @@ class ValidationPool(object):
       logging.warn('Could not get a status from %s', status_url)
       return True
 
-    if attempt > 1:
-      logging.warn('Had to attempt to reach %s %d times', status_url, attempt)
-
     tree_open = response_dict['general_state'] in ['open', 'throttled']
     return tree_open
 
   @classmethod
-  def AcquirePool(cls, branch, internal, buildroot, build_number, dryrun):
+  def AcquirePool(cls, branch, internal, buildroot, build_number, builder_name,
+                  dryrun):
     """Acquires the current pool from Gerrit.
 
     Polls Gerrit and checks for which change's are ready to be committed.
@@ -118,6 +112,7 @@ class ValidationPool(object):
       internal: If True, use gerrit-int.
       buildroot: The location of the buildroot used to filter projects.
       build_number: Corresponding build number for the build.
+      builder_name:  Builder name on buildbot dashboard.
       dryrun: Don't submit anything to gerrit.
     Returns:
       ValidationPool object.
@@ -125,7 +120,8 @@ class ValidationPool(object):
       TreeIsClosedException: if the tree is closed.
     """
     if cls._IsTreeOpen() or dryrun:
-      pool = ValidationPool(internal, build_number, dryrun)
+      # Only master configurations should call this method.
+      pool = ValidationPool(internal, build_number, builder_name, True, dryrun)
       pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
       raw_changes = pool.gerrit_helper.GrabChangesReadyForCommit(branch)
       pool.changes = pool.gerrit_helper.FilterProjectsNotInSourceTree(
@@ -135,17 +131,23 @@ class ValidationPool(object):
       raise TreeIsClosedException()
 
   @classmethod
-  def AcquirePoolFromManifest(cls, manifest, internal, build_number, dryrun):
+  def AcquirePoolFromManifest(cls, manifest, internal, build_number,
+                              builder_name, is_master, dryrun):
     """Acquires the current pool from a given manifest.
 
     Args:
       manifest: path to the manifest where the pool resides.
       internal: if true, assume gerrit-int.
       build_number: Corresponding build number for the build.
+      builder_name:  Builder name on buildbot dashboard.
+      is_master: Boolean that indicates whether this is a pool for a master.
+        config or not.
+      dryrun: Don't submit anything to gerrit.
     Returns:
       ValidationPool object.
     """
-    pool = ValidationPool(internal, build_number, dryrun)
+    pool = ValidationPool(internal, build_number, builder_name, is_master,
+                          dryrun)
     pool.gerrit_helper = gerrit_helper.GerritHelper(internal)
     manifest_dom = minidom.parse(manifest)
     pending_commits = manifest_dom.getElementsByTagName(
@@ -159,14 +161,14 @@ class ValidationPool(object):
 
     return pool
 
-  def ApplyPoolIntoRepo(self, directory):
-    """Applies changes from pool into the repository.
+  def ApplyPoolIntoRepo(self, buildroot):
+    """Applies changes from pool into the directory specified by the buildroot.
 
     This method applies changes in the order specified.  It also respects
     dependency order.
 
     Returns:
-      True if we managed to apply some changes.
+      True if we managed to apply any changes.
     """
     # Sets are used for performance reasons where changes_list is used to
     # maintain ordering when applying changes.
@@ -189,7 +191,7 @@ class ValidationPool(object):
       # Change stacks consists of the change plus its dependencies in the order
       # that they should be applied.
       change_stack = [change]
-      deps = change.GerritDependencies(directory)
+      deps = change.GerritDependencies(buildroot)
 
       # Put the dependent changes on the stack.
       apply_chain = True
@@ -221,7 +223,7 @@ class ValidationPool(object):
           if change in changes_that_failed_to_apply_to_tot:
             break
 
-          change.Apply(directory, trivial=not self.dryrun)
+          change.Apply(buildroot, trivial=not self.dryrun)
           changes_applied.add(change)
           changes_list.append(change)
         except cros_patch.ApplyPatchException as e:
@@ -244,12 +246,13 @@ class ValidationPool(object):
     return len(self.changes) > 0
 
   def SubmitPool(self):
-    """Commits changes to Gerrit from Pool.
+    """Commits changes to Gerrit from Pool.  This is only called by a master.
 
     Raises:
       TreeIsClosedException: if the tree is closed.
     """
-    if ValidationPool._IsTreeOpen():
+    assert self.is_master, 'Non-master builder calling SubmitPool'
+    if ValidationPool._IsTreeOpen() or self.dryrun:
       for change in self.changes:
         logging.info('Change %s will be submitted', change)
         try:
@@ -268,8 +271,9 @@ class ValidationPool(object):
     """Handles changes that were not able to be applied cleanly."""
     for change in changes:
       logging.info('Change %s did not apply cleanly.', change)
-      change.HandleCouldNotApply(self.gerrit_helper, self.build_log,
-                                 dryrun=self.dryrun)
+      if self.is_master:
+        change.HandleCouldNotApply(self.gerrit_helper, self.build_log,
+                                   dryrun=self.dryrun)
 
   def HandleValidationFailure(self):
     """Handles failed changes by removing them from next Validation Pools."""

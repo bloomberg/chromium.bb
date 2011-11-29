@@ -9,6 +9,9 @@ Each dictionary entry is in turn a dictionary of config_param->value.
 config_param's:
 board -- The board of the image to build.  If build_type is CHROOT_BUILD_TYPE,
          may be an array of boards to setup.
+paladin_builder_name -- Used by paladin logic. The name of the builder on the
+                        buildbot waterfall if it differs from the config name.
+                        If None is used, defaults to config name.
 profile -- The profile of the variant to set up and build.
 
 master -- This bot pushes changes to the overlays.
@@ -100,34 +103,36 @@ use_binhost_package_file -- Flag that is used to decide whether to use the
 git_sync -- Boolean that enables parameter --git-sync for prebuilt.py.
 """
 
+# Disable relative import warning from pylint.
+# pylint: disable=W0403
 import constants
 import copy
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-archive/ + bot_id
 
 
-def IsInternalBuild(config):
+def IsInternalBuild(build_config):
   """Returns whether a build config is an internal config.
 
   Args:
-    config: The build configuration dictionary to test.
+    build_config: The build configuration dictionary to test.
   """
-  return config['git_url'] == constants.MANIFEST_INT_URL
+  return build_config['git_url'] == constants.MANIFEST_INT_URL
 
 
-def OverrideConfigForTrybot(config):
+def OverrideConfigForTrybot(build_config):
   """Apply trybot-specific configuration settings.
 
   Args:
-    config:  The build configuration dictionary to override.  The dictionary is
-             not modified.
+    build_config:  The build configuration dictionary to override.
+      The dictionary is not modified.
 
   Returns:
     A build configuration dictionary with the overrides applied.
   """
-  copy_config = copy.deepcopy(config)
+  copy_config = copy.deepcopy(build_config)
   copy_config['uprev'] = True
-  if IsInternalBuild(config):
+  if IsInternalBuild(build_config):
     copy_config['overlays'] = 'both'
 
   # Most users don't have access to the pdf repository so disable pdf.
@@ -138,8 +143,8 @@ def OverrideConfigForTrybot(config):
   return copy_config
 
 
-def _GetManifestVersionsRepoUrl(internal_build, read_only=False):
-
+def GetManifestVersionsRepoUrl(internal_build, read_only=False):
+  """Returns the url to the manifest versions repository."""
   if internal_build:
     if read_only:
       # This is not good .. we needlessly load the gerrit server.
@@ -159,6 +164,7 @@ def _GetManifestVersionsRepoUrl(internal_build, read_only=False):
 
 default = {
   'board' : None,
+  'paladin_builder_name' : None,
   'profile' : None,
 
   'master' : False,
@@ -319,7 +325,6 @@ release = {
   'chrome_tests' : True,
   'manifest_version' : True,
   'images': ['base', 'test', 'factory_test', 'factory_install'],
-  'prebuilts' : False,
   'push_image' : True,
   'upload_symbols' : True,
   'nowithdebug' : True,
@@ -394,14 +399,17 @@ add_config('arm-tegra2-bin', [arm, pfq, {
 add_config('x86-generic-commit-queue', [commit_queue, {
   'board' : 'x86-generic',
   'master' : True,
+  'paladin_builder_name': 'x86%20generic%20commit%20queue',
 }])
 
 add_config('arm-generic-commit-queue', [arm, commit_queue, {
   'board' : 'arm-generic',
+  'paladin_builder_name': 'arm%20generic%20commit%20queue',
 }])
 
 add_config('arm-tegra2-commit-queue', [arm, commit_queue, {
   'board' : 'tegra2',
+  'paladin_builder_name': 'tegra2%20commit%20queue',
 }])
 
 add_config('x86-mario-commit-queue', [commit_queue, internal, {
@@ -410,6 +418,7 @@ add_config('x86-mario-commit-queue', [commit_queue, internal, {
 
   'vm_tests': constants.SIMPLE_AU_TEST_TYPE,
   'overlays': 'private',
+  'paladin_builder_name': 'TOT%20Commit%20Queue',
 }])
 
 add_config('x86-generic-chrome-pre-flight-queue', [chrome_pfq, {
