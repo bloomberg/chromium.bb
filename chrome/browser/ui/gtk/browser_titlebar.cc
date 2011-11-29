@@ -1030,7 +1030,8 @@ void BrowserTitlebar::Observe(int type,
     }
 
     case chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED:
-      UpdateAvatar();
+      if (!IsOffTheRecord())
+        UpdateAvatar();
       break;
 
     default:
