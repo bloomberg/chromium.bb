@@ -102,6 +102,33 @@ void RecordDownloadWriteLoopCount(int count) {
   UMA_HISTOGRAM_ENUMERATION("Download.WriteLoopCount", count, 20);
 }
 
+void RecordAcceptsRanges(const std::string& accepts_ranges,
+                         int64 download_len) {
+  int64 max = 1024 * 1024 * 1024;  // One Terabyte.
+  download_len /= 1024;  // In Kilobytes
+  static const int kBuckets = 50;
+
+  if (LowerCaseEqualsASCII(accepts_ranges, "none")) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.KBytes.AcceptRangesNone",
+                                download_len,
+                                1,
+                                max,
+                                kBuckets);
+  } else if (LowerCaseEqualsASCII(accepts_ranges, "bytes")) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.KBytes.AcceptRangesBytes",
+                                download_len,
+                                1,
+                                max,
+                                kBuckets);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.KBytes.AcceptRangesMissingOrInvalid",
+                                download_len,
+                                1,
+                                max,
+                                kBuckets);
+  }
+}
+
 namespace {
 
 enum DownloadContent {

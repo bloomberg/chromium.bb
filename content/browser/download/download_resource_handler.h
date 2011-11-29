@@ -117,6 +117,8 @@ class DownloadResourceHandler : public ResourceHandler {
   base::TimeTicks download_start_time_;  // used to collect stats.
   base::TimeTicks last_read_time_;        // used to collect stats.
   size_t last_buffer_size_;               // used to collect stats.
+  int64 bytes_read_;                      // used to collect stats.
+  std::string accepts_ranges_;            // used to collect stats.
   static const int kReadBufSize = 32768;  // bytes
   static const int kThrottleTimeMs = 200;  // milliseconds
 

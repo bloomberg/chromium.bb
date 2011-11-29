@@ -53,7 +53,9 @@ DownloadResourceHandler::DownloadResourceHandler(
       save_info_(save_info),
       buffer_(new content::DownloadBuffer),
       rdh_(rdh),
-      is_paused_(false) {
+      is_paused_(false),
+      last_buffer_size_(0),
+      bytes_read_(0) {
   DCHECK(dl_id.IsValid());
   download_stats::RecordDownloadCount(download_stats::UNTHROTTLED_COUNT);
 }
@@ -125,6 +127,13 @@ bool DownloadResourceHandler::OnResponseStarted(
     content_type_header = "";
   info->original_mime_type = content_type_header;
 
+  if (!response->headers ||
+      !response->headers->EnumerateHeader(NULL,
+                                          "Accepts-Ranges",
+                                          &accepts_ranges_)) {
+    accepts_ranges_ = "";
+  }
+
   info->prompt_user_for_save_location =
       save_as_ && save_info_.file_path.empty();
   info->referrer_charset = request_->context()->referrer_charset();
@@ -187,6 +196,7 @@ bool DownloadResourceHandler::OnReadCompleted(int request_id, int* bytes_read) {
 
   if (!*bytes_read)
     return true;
+  bytes_read_ += *bytes_read;
   DCHECK(read_buffer_);
   // Swap the data.
   net::IOBuffer* io_buffer = NULL;
@@ -237,6 +247,9 @@ bool DownloadResourceHandler::OnResponseCompleted(
     // CANCELED/ERR_ABORTED can occur for reasons other than user cancel.
     reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;  // User canceled.
   }
+
+  download_stats::RecordAcceptsRanges(accepts_ranges_, bytes_read_);
+
   if (!download_id_.IsValid())
     CallStartedCB(error_code);
   // We transfer ownership to |DownloadFileManager| to delete |buffer_|,

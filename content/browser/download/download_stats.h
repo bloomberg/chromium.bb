@@ -108,6 +108,9 @@ void RecordOpen(const base::Time& end, bool first);
 // new download is added to the history.
 void RecordHistorySize(int size);
 
+// Record whether or not the server accepts ranges, and the download size .
+void RecordAcceptsRanges(const std::string& accepts_ranges, int64 download_len);
+
 // Record the total number of items and the number of in-progress items showing
 // in the shelf when it closes.  Set |autoclose| to true when the shelf is
 // closing itself, false when the user explicitly closed it.
