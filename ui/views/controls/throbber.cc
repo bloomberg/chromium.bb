@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/throbber.h"
+#include "ui/views/controls/throbber.h"
 
 #include "base/time.h"
 #include "grit/ui_resources.h"

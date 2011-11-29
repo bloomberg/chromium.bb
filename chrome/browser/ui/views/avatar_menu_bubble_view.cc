@@ -22,10 +22,10 @@
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "views/controls/image_view.h"
-#include "views/controls/separator.h"
+#include "ui/views/controls/separator.h"
 
 namespace {
 

@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/setting_level_bubble_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/controls/progress_bar.h"
+#include "ui/views/controls/progress_bar.h"
 #include "views/view.h"
 
 

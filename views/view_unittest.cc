@@ -24,6 +24,7 @@
 #include "ui/views/controls/button/button_dropdown.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/events/event.h"
 #include "ui/views/focus/accelerator_handler.h"
@@ -34,7 +35,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "views/background.h"
-#include "views/controls/scroll_view.h"
 #include "views/view.h"
 #include "views/views_delegate.h"
 

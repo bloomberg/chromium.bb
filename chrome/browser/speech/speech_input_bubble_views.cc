@@ -21,11 +21,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/layout_constants.h"
-#include "views/controls/image_view.h"
 
 namespace {
 

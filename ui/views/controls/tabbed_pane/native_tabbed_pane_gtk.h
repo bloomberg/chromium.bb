@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/controls/native_control_gtk.h"
 #include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
-#include "views/controls/native_control_gtk.h"
 
 namespace views {
 

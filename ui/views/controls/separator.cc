@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/separator.h"
+#include "ui/views/controls/separator.h"
 
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"

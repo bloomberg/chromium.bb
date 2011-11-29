@@ -18,9 +18,9 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/scroll_view.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/screen.h"

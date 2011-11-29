@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/single_split_view.h"
+#include "ui/views/controls/single_split_view.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gdk/gdk.h>
@@ -11,8 +11,8 @@
 #include "skia/ext/skia_utils_win.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/controls/single_split_view_listener.h"
 #include "views/background.h"
-#include "views/controls/single_split_view_listener.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -26,7 +26,7 @@ namespace views {
 
 // static
 const char SingleSplitView::kViewClassName[] =
-    "views/controls/SingleSplitView";
+    "ui/views/controls/SingleSplitView";
 
 // Size of the divider in pixels.
 static const int kDividerSize = 4;

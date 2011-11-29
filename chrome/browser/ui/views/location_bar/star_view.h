@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_STAR_VIEW_H_
 #pragma once
 
-#include "views/controls/image_view.h"
+#include "ui/views/controls/image_view.h"
 
 class CommandUpdater;
 

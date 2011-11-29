@@ -8,7 +8,7 @@
 
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/views/controls/combobox/native_combobox_wrapper.h"
-#include "views/controls/native_control_gtk.h"
+#include "ui/views/controls/native_control_gtk.h"
 
 namespace views {
 

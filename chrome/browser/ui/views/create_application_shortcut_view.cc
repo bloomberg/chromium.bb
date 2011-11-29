@@ -36,11 +36,11 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/image_view.h"
 
 namespace {
 

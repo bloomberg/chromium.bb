@@ -16,13 +16,13 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/path.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/controls/focusable_border.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"

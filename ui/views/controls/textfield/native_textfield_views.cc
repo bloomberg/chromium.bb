@@ -18,6 +18,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -29,7 +30,6 @@
 #include "ui/views/widget/widget.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/controls/focusable_border.h"
 #include "views/metrics.h"
 #include "views/views_delegate.h"
 

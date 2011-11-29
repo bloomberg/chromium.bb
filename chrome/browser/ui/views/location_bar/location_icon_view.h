@@ -7,7 +7,7 @@
 #pragma once
 
 #include "chrome/browser/ui/views/location_bar/click_handler.h"
-#include "views/controls/image_view.h"
+#include "ui/views/controls/image_view.h"
 
 class LocationBarView;
 namespace views {

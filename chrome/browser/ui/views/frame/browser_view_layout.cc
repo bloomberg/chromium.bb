@@ -20,7 +20,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/size.h"
-#include "views/controls/single_split_view.h"
+#include "ui/views/controls/single_split_view.h"
 
 #if !defined(OS_CHROMEOS) || defined(USE_AURA)
 #include "chrome/browser/ui/views/download/download_shelf_view.h"

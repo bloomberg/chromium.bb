@@ -13,8 +13,8 @@
 #include "ui/base/animation/linear_animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/image_view.h"
 
 // How long to spend moving downwards and fading out after waiting.
 static const int kMoveTimeMs = 600;

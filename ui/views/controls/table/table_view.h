@@ -21,7 +21,7 @@
 #include <windows.h>
 
 // TODO(port): remove the ifdef when native_control.h is ported.
-#include "views/controls/native_control.h"
+#include "ui/views/controls/native_control.h"
 
 typedef struct tagNMLVCUSTOMDRAW NMLVCUSTOMDRAW;
 #endif  // defined(OS_WIN)

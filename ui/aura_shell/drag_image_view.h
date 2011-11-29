@@ -6,7 +6,7 @@
 #define UI_AURA_SHELL_DRAG_IMAGE_VIEW_H_
 #pragma once
 
-#include "views/controls/image_view.h"
+#include "ui/views/controls/image_view.h"
 
 namespace views {
 class Widget;

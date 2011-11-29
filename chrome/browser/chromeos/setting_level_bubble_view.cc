@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/canvas.h"
-#include "views/controls/progress_bar.h"
+#include "ui/views/controls/progress_bar.h"
 
 using views::Background;
 using views::View;

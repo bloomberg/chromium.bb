@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/focusable_border.h"
+#include "ui/views/controls/focusable_border.h"
 
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"

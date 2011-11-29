@@ -28,10 +28,10 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/size.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/widget/default_theme_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
-#include "views/controls/image_view.h"
 
 #if defined(OS_WIN)
 #include "ui/base/win/hwnd_util.h"

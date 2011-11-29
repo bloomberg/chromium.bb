@@ -10,11 +10,12 @@
 
 #if defined(TOOLKIT_USES_GTK)
 #include <gtk/gtk.h>
+
 #include "ui/gfx/gtk_util.h"
 #endif
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/controls/image_view.h"
+#include "ui/views/controls/image_view.h"
 #include "views/view.h"
 #endif
 

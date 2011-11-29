@@ -2,10 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Throbbers display an animation, usually used as a status indicator.
-
-#ifndef VIEWS_CONTROLS_THROBBER_H_
-#define VIEWS_CONTROLS_THROBBER_H_
+#ifndef UI_VIEWS_CONTROLS_THROBBER_H_
+#define UI_VIEWS_CONTROLS_THROBBER_H_
 #pragma once
 
 #include "base/basictypes.h"
@@ -17,6 +15,8 @@
 class SkBitmap;
 
 namespace views {
+
+// Throbbers display an animation, usually used as a status indicator.
 
 class VIEWS_EXPORT Throbber : public View {
  public:
@@ -125,4 +125,4 @@ class VIEWS_EXPORT CheckmarkThrobber : public Throbber {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_THROBBER_H_
+#endif  // UI_VIEWS_CONTROLS_THROBBER_H_

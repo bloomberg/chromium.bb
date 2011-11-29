@@ -8,8 +8,8 @@
 
 #include <vector>
 
+#include "ui/views/controls/native_control_win.h"
 #include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
-#include "views/controls/native_control_win.h"
 
 namespace views {
 

@@ -11,7 +11,7 @@
 #include "base/string16.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/animation/linear_animation.h"
-#include "views/controls/image_view.h"
+#include "ui/views/controls/image_view.h"
 
 class ContentSettingImageModel;
 class ContentSettingBubbleContents;

@@ -25,7 +25,7 @@
 #include "ui/base/animation/tween.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/view_menu_delegate.h"
-#include "views/controls/resize_area_delegate.h"
+#include "ui/views/controls/resize_area_delegate.h"
 #include "views/drag_controller.h"
 #include "views/view.h"
 

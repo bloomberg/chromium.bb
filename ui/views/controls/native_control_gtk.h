@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_
-#define VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_
+#ifndef UI_VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_
+#define UI_VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_
 #pragma once
 
 #include <gtk/gtk.h>
@@ -49,4 +49,4 @@ class NativeControlGtk : public NativeViewHost {
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_
+#endif  // UI_VIEWS_CONTROLS_NATIVE_CONTROL_GTK_H_

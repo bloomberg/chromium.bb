@@ -29,10 +29,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/events/event.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/image_view.h"
 #include "views/painter.h"
 #include "views/view.h"
 

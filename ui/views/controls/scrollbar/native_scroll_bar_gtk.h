@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
+#include "ui/views/controls/native_control_gtk.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar_wrapper.h"
-#include "views/controls/native_control_gtk.h"
 
 namespace views {
 

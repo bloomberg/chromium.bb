@@ -10,8 +10,8 @@
 
 #include "base/string16.h"
 #include "ui/base/gtk/gtk_signal.h"
+#include "ui/views/controls/native_control_gtk.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
-#include "views/controls/native_control_gtk.h"
 
 namespace gfx {
 class SelectionModel;

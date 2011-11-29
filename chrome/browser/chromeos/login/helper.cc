@@ -19,8 +19,8 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/throbber.h"
 #include "views/painter.h"
 
 namespace chromeos {

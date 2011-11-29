@@ -48,7 +48,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
-#include "views/controls/resize_area.h"
+#include "ui/views/controls/resize_area.h"
 #include "views/drag_utils.h"
 #include "views/metrics.h"
 

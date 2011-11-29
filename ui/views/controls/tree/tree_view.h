@@ -15,7 +15,7 @@
 #include "base/compiler_specific.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/tree_model.h"
-#include "views/controls/native_control.h"
+#include "ui/views/controls/native_control.h"
 
 namespace views {
 

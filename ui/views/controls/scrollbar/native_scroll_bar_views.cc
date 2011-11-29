@@ -10,11 +10,11 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
 #include "ui/views/controls/button/custom_button.h"
+#include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_button.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
-#include "views/controls/focusable_border.h"
 
 namespace views {
 

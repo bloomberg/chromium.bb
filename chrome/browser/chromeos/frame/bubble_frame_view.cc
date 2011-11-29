@@ -21,9 +21,9 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "views/controls/throbber.h"
 
 namespace {
 

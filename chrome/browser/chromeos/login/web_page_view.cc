@@ -24,9 +24,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/throbber.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/controls/throbber.h"
 
 using base::TimeDelta;
 using views::Label;

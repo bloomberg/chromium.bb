@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/views/controls/single_split_view_listener.h"
 #include "ui/views/examples/example_base.h"
-#include "views/controls/single_split_view_listener.h"
 
 namespace views {
 namespace examples {

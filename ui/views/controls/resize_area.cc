@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/controls/resize_area.h"
+#include "ui/views/controls/resize_area.h"
 
 #include "base/logging.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "views/controls/resize_area_delegate.h"
+#include "ui/views/controls/resize_area_delegate.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"

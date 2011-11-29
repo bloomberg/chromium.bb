@@ -9,8 +9,8 @@
 #include "base/compiler_specific.h"
 #include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/models/table_model.h"
+#include "ui/views/controls/native_control_gtk.h"
 #include "ui/views/controls/table/native_table_wrapper.h"
-#include "views/controls/native_control_gtk.h"
 
 namespace views {
 

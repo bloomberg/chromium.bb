@@ -38,9 +38,9 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/throbber.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/throbber.h"
 #include "views/view_text_utils.h"
 #include "webkit/glue/webkit_glue.h"
 

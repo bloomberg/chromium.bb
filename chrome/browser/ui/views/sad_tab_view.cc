@@ -18,10 +18,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/grid_layout.h"
-#include "views/controls/image_view.h"
 
 static const int kPadding = 20;
 static const float kMessageSize = 0.65f;

@@ -18,9 +18,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/menu/menu.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/widget/widget.h"
-#include "views/controls/scroll_view.h"
 
 #if defined(OS_LINUX)
 #include "views/screen.h"
