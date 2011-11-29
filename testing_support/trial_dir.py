@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -9,7 +8,8 @@ import logging
 import os
 import sys
 import tempfile
-import unittest
+
+from testing_support import auto_stub
 
 import gclient_utils
 
@@ -79,15 +79,15 @@ class TrialDirMixIn(object):
     return self.trial.root_dir
 
 
-class TestCase(unittest.TestCase, TrialDirMixIn):
+class TestCase(auto_stub.TestCase, TrialDirMixIn):
   """Base unittest class that cleans off a trial directory in tearDown()."""
   def setUp(self):
-    unittest.TestCase.setUp(self)
+    auto_stub.TestCase.setUp(self)
     TrialDirMixIn.setUp(self)
 
   def tearDown(self):
     TrialDirMixIn.tearDown(self)
-    unittest.TestCase.tearDown(self)
+    auto_stub.TestCase.tearDown(self)
 
 
 if '-l' in sys.argv:

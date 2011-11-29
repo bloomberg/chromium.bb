@@ -21,6 +21,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import subprocess2
 
+from testing_support import auto_stub
+
 # Method could be a function
 # pylint: disable=R0201
 
@@ -42,29 +44,10 @@ def convert_win(string):
   return string
 
 
-class DefaultsTest(unittest.TestCase):
-  # Can be mocked in a test.
-  TO_SAVE = {
-    subprocess2: [
-      'Popen', 'communicate', 'call', 'check_call', 'capture', 'check_output'],
-    subprocess2.subprocess.Popen: ['__init__', 'communicate'],
-  }
-
-  def setUp(self):
-    self.saved = {}
-    for module, names in self.TO_SAVE.iteritems():
-      self.saved[module] = dict(
-          (name, getattr(module, name)) for name in names)
-    # TODO(maruel): Do a reopen() on sys.__stdout__ and sys.__stderr__ so they
-    # can be trapped in the child process for better coverage.
-
-  def tearDown(self):
-    for module, saved in self.saved.iteritems():
-      for name, value in saved.iteritems():
-        setattr(module, name, value)
-
-  @staticmethod
-  def _fake_communicate():
+class DefaultsTest(auto_stub.TestCase):
+  # TODO(maruel): Do a reopen() on sys.__stdout__ and sys.__stderr__ so they
+  # can be trapped in the child process for better coverage.
+  def _fake_communicate(self):
     """Mocks subprocess2.communicate()."""
     results = {}
     def fake_communicate(args, **kwargs):
@@ -72,11 +55,10 @@ class DefaultsTest(unittest.TestCase):
       results.update(kwargs)
       results['args'] = args
       return ('stdout', 'stderr'), 0
-    subprocess2.communicate = fake_communicate
+    self.mock(subprocess2, 'communicate', fake_communicate)
     return results
 
-  @staticmethod
-  def _fake_Popen():
+  def _fake_Popen(self):
     """Mocks the whole subprocess2.Popen class."""
     results = {}
     class fake_Popen(object):
@@ -88,11 +70,10 @@ class DefaultsTest(unittest.TestCase):
       @staticmethod
       def communicate():
         return None, None
-    subprocess2.Popen = fake_Popen
+    self.mock(subprocess2, 'Popen', fake_Popen)
     return results
 
-  @staticmethod
-  def _fake_subprocess_Popen():
+  def _fake_subprocess_Popen(self):
     """Mocks the base class subprocess.Popen only."""
     results = {}
     def __init__(self, args, **kwargs):
@@ -101,8 +82,8 @@ class DefaultsTest(unittest.TestCase):
       results['args'] = args
     def communicate():
       return None, None
-    subprocess2.subprocess.Popen.__init__ = __init__
-    subprocess2.subprocess.Popen.communicate = communicate
+    self.mock(subprocess2.subprocess.Popen, '__init__', __init__)
+    self.mock(subprocess2.subprocess.Popen, 'communicate', communicate)
     return results
 
   def test_check_call_defaults(self):
