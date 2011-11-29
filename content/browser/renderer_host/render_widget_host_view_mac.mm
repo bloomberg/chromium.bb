@@ -874,7 +874,8 @@ void RenderWidgetHostViewMac::AcceleratedSurfaceBuffersSwapped(
   AcceleratedPluginView* view = ViewForPluginWindowHandle(params.window);
   DCHECK(view);
   if (view) {
-    last_frame_was_accelerated_ = true;
+    last_frame_was_accelerated_ = (params.window ==
+        plugin_container_manager_.root_container_handle());
     plugin_container_manager_.SetSurfaceWasPaintedTo(params.window,
                                                      params.surface_id);
 
