@@ -402,7 +402,8 @@ const char DBusPowerSaveBlocker::kPowerSaveReason[] = "Power Save Blocker";
 DBusPowerSaveBlocker::DBusPowerSaveBlocker() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  switch (base::nix::GetDesktopEnvironment(base::Environment::Create())) {
+  scoped_ptr<base::Environment> env(base::Environment::Create());
+  switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
       delegate_ = new GnomePowerSaveBlocker();
       break;
@@ -457,4 +458,3 @@ void PowerSaveBlocker::ApplyBlock(PowerSaveBlockerType type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DBusPowerSaveBlocker::GetInstance()->ApplyBlock(type);
 }
-
