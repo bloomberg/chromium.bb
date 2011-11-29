@@ -372,7 +372,13 @@ TEST_F(ProfileInfoCacheUnittests, GAIAPicture) {
       profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 }
 
-TEST_F(ProfileInfoCacheUnittests, PersistGAIAPicture) {
+#if defined(USE_AURA)
+#define MAYBE_PersistGAIAPicture DISABLED_PersistGAIAPicture
+#else
+#define MAYBE_PersistGAIAPicture PersistGAIAPicture
+#endif
+
+TEST_F(ProfileInfoCacheUnittests, MAYBE_PersistGAIAPicture) {
   GetCache()->AddProfileToCache(
       GetUserDataDir().Append(StringToFilePath("path_1")),
       ASCIIToUTF16("name_1"), string16(), 0);
