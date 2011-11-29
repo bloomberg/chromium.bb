@@ -293,7 +293,7 @@
                   '|ui/base/gtk/gtk_im.*'\
                   '|ui/base/keycodes/.*'\
                   '|ui/base/win/ime.*'\
-                  '|views/ime/.*'\
+                  '|ui/views/ime/.*'\
                   '|views/controls/textfield/.*'
     },
     'textinput_chromeos': {
