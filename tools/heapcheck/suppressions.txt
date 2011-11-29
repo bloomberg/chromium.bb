@@ -1751,9 +1751,9 @@
    fun:WTF::fastMalloc
    fun:WTF::StringImpl::createUninitialized
    fun:WTF::String::fromUTF8
-   fun:WTF::String::fromUTF8
-   fun:WTF::String::fromUTF8
+   ...
    fun:WebKit::WebString::fromUTF8
+   ...
    fun:PeerConnectionHandlerTest_Basic_Test::TestBody
 }
 {
