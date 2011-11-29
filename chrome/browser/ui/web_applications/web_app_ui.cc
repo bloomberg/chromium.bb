@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -142,7 +143,8 @@ void UpdateShortcutWorker::DownloadIcon() {
       std::max(unprocessed_icons_.back().width,
                unprocessed_icons_.back().height),
       history::FAVICON,
-      NewCallback(this, &UpdateShortcutWorker::OnIconDownloaded));
+      base::Bind(&UpdateShortcutWorker::OnIconDownloaded,
+                 base::Unretained(this)));
   unprocessed_icons_.pop_back();
 }
 
@@ -215,8 +217,8 @@ void UpdateShortcutWorker::CheckExistingShortcuts() {
 
 void UpdateShortcutWorker::UpdateShortcuts() {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-      &UpdateShortcutWorker::UpdateShortcutsOnFileThread));
+      base::Bind(&UpdateShortcutWorker::UpdateShortcutsOnFileThread,
+                 base::Unretained(this)));
 }
 
 void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
@@ -273,7 +275,8 @@ void UpdateShortcutWorker::DeleteMe() {
     DeleteMeOnUIThread();
   } else {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &UpdateShortcutWorker::DeleteMeOnUIThread));
+      base::Bind(&UpdateShortcutWorker::DeleteMeOnUIThread,
+                 base::Unretained(this)));
   }
 }
 
@@ -284,12 +287,6 @@ void UpdateShortcutWorker::DeleteMeOnUIThread() {
 #endif  // defined(OS_WIN)
 
 }  // namespace
-
-#if defined(OS_WIN)
-// Allows UpdateShortcutWorker without adding refcounting. UpdateShortcutWorker
-// manages its own life time and will delete itself when it's done.
-DISABLE_RUNNABLE_METHOD_REFCOUNT(UpdateShortcutWorker);
-#endif  // defined(OS_WIN)
 
 namespace web_app {
 

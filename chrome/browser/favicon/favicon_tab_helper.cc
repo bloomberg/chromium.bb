@@ -109,7 +109,7 @@ void FaviconTabHelper::SaveFavicon() {
 int FaviconTabHelper::DownloadImage(const GURL& image_url,
                                  int image_size,
                                  history::IconType icon_type,
-                                 ImageDownloadCallback* callback) {
+                                 const ImageDownloadCallback& callback) {
   if (icon_type == history::FAVICON)
     return favicon_handler_->DownloadImage(image_url, image_size, icon_type,
                                            callback);

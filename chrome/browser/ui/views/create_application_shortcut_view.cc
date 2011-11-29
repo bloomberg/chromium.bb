@@ -6,7 +6,8 @@
 
 #include <algorithm>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
@@ -459,7 +460,8 @@ void CreateUrlApplicationShortcutView::FetchIcon() {
       std::max(unprocessed_icons_.back().width,
                unprocessed_icons_.back().height),
       history::FAVICON,
-      NewCallback(pending_download_, &IconDownloadCallbackFunctor::Run));
+      base::Bind(&IconDownloadCallbackFunctor::Run,
+                 base::Unretained(pending_download_)));
 
   unprocessed_icons_.pop_back();
 }

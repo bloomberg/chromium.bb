@@ -9,6 +9,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/favicon/favicon_service.h"
@@ -98,7 +99,7 @@ class FaviconHandler {
   int DownloadImage(const GURL& image_url,
                     int image_size,
                     history::IconType icon_type,
-                    FaviconTabHelper::ImageDownloadCallback* callback);
+                    const FaviconTabHelper::ImageDownloadCallback& callback);
 
   // Message Handler.  Must be public, because also called from
   // PrerenderContents.
@@ -156,15 +157,16 @@ class FaviconHandler {
 
   struct DownloadRequest {
     DownloadRequest();
+    ~DownloadRequest();
 
     DownloadRequest(const GURL& url,
                     const GURL& image_url,
-                    FaviconTabHelper::ImageDownloadCallback* callback,
+                    const FaviconTabHelper::ImageDownloadCallback& callback,
                     history::IconType icon_type);
 
     GURL url;
     GURL image_url;
-    FaviconTabHelper::ImageDownloadCallback* callback;
+    FaviconTabHelper::ImageDownloadCallback callback;
     history::IconType icon_type;
   };
 
@@ -189,7 +191,7 @@ class FaviconHandler {
                        const GURL& image_url,
                        int image_size,
                        history::IconType icon_type,
-                       FaviconTabHelper::ImageDownloadCallback* callback);
+                       const FaviconTabHelper::ImageDownloadCallback& callback);
 
   // Sets the image data for the favicon. This is invoked asynchronously after
   // we request the TabContents to download the favicon.
