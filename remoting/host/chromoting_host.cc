@@ -257,8 +257,6 @@ void ChromotingHost::OnStateChange(
     // Create and start session manager.
     protocol::JingleSessionManager* server =
         new protocol::JingleSessionManager(context_->network_message_loop());
-    // TODO(ajwong): Make this a command switch when we're more stable.
-    server->set_allow_local_ips(true);
 
     // Assign key and certificate to server.
     HostKeyPair key_pair;

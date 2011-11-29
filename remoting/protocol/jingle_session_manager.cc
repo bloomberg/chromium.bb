@@ -31,7 +31,6 @@ JingleSessionManager::JingleSessionManager(
     : message_loop_(message_loop),
       signal_strategy_(NULL),
       allow_nat_traversal_(false),
-      allow_local_ips_(false),
       http_port_allocator_(NULL),
       closed_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
@@ -120,10 +119,6 @@ void JingleSessionManager::Close() {
   }
 }
 
-void JingleSessionManager::set_allow_local_ips(bool allow_local_ips) {
-  allow_local_ips_ = allow_local_ips;
-}
-
 Session* JingleSessionManager::Connect(
     const std::string& host_jid,
     const std::string& host_public_key,
@@ -156,8 +151,8 @@ void JingleSessionManager::OnSessionCreate(
     cricket::Session* cricket_session, bool incoming) {
   DCHECK(CalledOnValidThread());
 
-  // Allow local connections if neccessary.
-  cricket_session->set_allow_local_ips(allow_local_ips_);
+  // Allow local connections.
+  cricket_session->set_allow_local_ips(true);
 
   // If this is an incoming session, create a JingleSession on top of it.
   if (incoming) {

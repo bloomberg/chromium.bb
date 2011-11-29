@@ -54,8 +54,6 @@ class JingleSessionManager
       const Session::StateChangeCallback& state_change_callback) OVERRIDE;
   virtual void Close() OVERRIDE;
 
-  void set_allow_local_ips(bool allow_local_ips);
-
   // cricket::SessionClient interface.
   virtual void OnSessionCreate(cricket::Session* cricket_session,
                                bool received_initiate) OVERRIDE;
@@ -107,8 +105,6 @@ class JingleSessionManager
   std::string certificate_;
   scoped_ptr<crypto::RSAPrivateKey> private_key_;
   bool allow_nat_traversal_;
-
-  bool allow_local_ips_;
 
   scoped_ptr<cricket::PortAllocator> port_allocator_;
   cricket::HttpPortAllocator* http_port_allocator_;
