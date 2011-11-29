@@ -39,7 +39,7 @@ class PowerMenuButton : public StatusAreaButton,
 
   // PowerLibrary::Observer implementation.
   virtual void PowerChanged(const PowerSupplyStatus& power_status) OVERRIDE;
-  virtual void SystemResumed() {}
+  virtual void SystemResumed() OVERRIDE {}
 
  protected:
   virtual int icon_width() OVERRIDE;

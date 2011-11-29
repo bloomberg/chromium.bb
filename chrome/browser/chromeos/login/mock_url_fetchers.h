@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "content/test/test_url_fetcher_factory.h"
@@ -32,7 +33,7 @@ class ExpectCanceledFetcher : public TestURLFetcher {
                         content::URLFetcherDelegate* d);
   virtual ~ExpectCanceledFetcher();
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
   void CompleteFetch();
 
@@ -50,7 +51,7 @@ class GotCanceledFetcher : public TestURLFetcher {
                      content::URLFetcherDelegate* d);
   virtual ~GotCanceledFetcher();
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GotCanceledFetcher);
@@ -65,7 +66,7 @@ class SuccessFetcher : public TestURLFetcher {
                  content::URLFetcherDelegate* d);
   virtual ~SuccessFetcher();
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SuccessFetcher);
@@ -80,7 +81,7 @@ class FailFetcher : public TestURLFetcher {
               content::URLFetcherDelegate* d);
   virtual ~FailFetcher();
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FailFetcher);
@@ -99,7 +100,7 @@ class CaptchaFetcher : public TestURLFetcher {
   static std::string GetCaptchaUrl();
   static std::string GetUnlockUrl();
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
  private:
   static const char kCaptchaToken[];
@@ -118,7 +119,7 @@ class HostedFetcher : public TestURLFetcher {
                 content::URLFetcherDelegate* d);
   virtual ~HostedFetcher();
 
-  virtual void Start();
+  virtual void Start() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HostedFetcher);

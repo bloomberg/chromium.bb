@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "chrome/test/webdriver/commands/webdriver_command.h"
 
 namespace base {
@@ -24,11 +25,11 @@ class ExtensionsCommand : public WebDriverCommand {
                     const base::DictionaryValue* const parameters);
   virtual ~ExtensionsCommand();
 
-  virtual bool DoesGet();
-  virtual bool DoesPost();
+  virtual bool DoesGet() OVERRIDE;
+  virtual bool DoesPost() OVERRIDE;
 
-  virtual void ExecuteGet(Response* const response);
-  virtual void ExecutePost(Response* const response);
+  virtual void ExecuteGet(Response* const response) OVERRIDE;
+  virtual void ExecutePost(Response* const response) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionsCommand);

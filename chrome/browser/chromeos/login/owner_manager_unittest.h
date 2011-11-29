@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -30,7 +31,7 @@ class MockKeyLoadObserver : public content::NotificationObserver {
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
-                       const content::NotificationDetails& details);
+                       const content::NotificationDetails& details) OVERRIDE;
 
   void ExpectKeyFetchSuccess(bool should_succeed);
 
@@ -48,7 +49,7 @@ class MockKeyUser : public OwnerManager::Delegate {
   virtual ~MockKeyUser() {}
 
   virtual void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
-                               const std::vector<uint8>& payload);
+                               const std::vector<uint8>& payload) OVERRIDE;
 
   const OwnerManager::KeyOpCode expected_;
  private:
@@ -61,7 +62,7 @@ class MockKeyUpdateUser : public OwnerManager::KeyUpdateDelegate {
   explicit MockKeyUpdateUser(base::WaitableEvent* e) : event_(e) {}
   virtual ~MockKeyUpdateUser() {}
 
-  virtual void OnKeyUpdated();
+  virtual void OnKeyUpdated() OVERRIDE;
 
  private:
   base::WaitableEvent* event_;
@@ -77,7 +78,7 @@ class MockSigner : public OwnerManager::Delegate {
   virtual ~MockSigner();
 
   virtual void OnKeyOpComplete(const OwnerManager::KeyOpCode return_code,
-                               const std::vector<uint8>& payload);
+                               const std::vector<uint8>& payload) OVERRIDE;
 
   const OwnerManager::KeyOpCode expected_code_;
   const std::vector<uint8> expected_sig_;

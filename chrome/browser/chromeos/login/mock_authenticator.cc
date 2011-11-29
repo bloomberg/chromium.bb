@@ -82,10 +82,6 @@ MockLoginUtils::MockLoginUtils(const std::string& expected_username,
 
 MockLoginUtils::~MockLoginUtils() {}
 
-bool MockLoginUtils::ShouldWaitForWifi() {
-  return false;
-}
-
 void MockLoginUtils::PrepareProfile(
     const std::string& username,
     const std::string& password,

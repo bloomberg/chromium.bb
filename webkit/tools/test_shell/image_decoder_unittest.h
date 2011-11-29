@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/memory/scoped_ptr.h"
 
@@ -44,7 +45,7 @@ class ImageDecoderTest : public testing::Test {
   explicit ImageDecoderTest(const std::string& format) : format_(format) { }
 
  protected:
-  virtual void SetUp();
+  virtual void SetUp() OVERRIDE;
 
   // Returns the vector of image files for testing.
   std::vector<FilePath> GetImageFiles() const;

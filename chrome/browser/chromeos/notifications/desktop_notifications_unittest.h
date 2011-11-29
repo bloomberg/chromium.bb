@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
@@ -43,10 +44,10 @@ class MockBalloonCollection : public BalloonCollectionImpl {
 
   // BalloonCollectionImpl overrides
   virtual void Add(const Notification& notification,
-                   Profile* profile);
+                   Profile* profile) OVERRIDE;
   virtual Balloon* MakeBalloon(const Notification& notification,
-                               Profile* profile);
-  virtual void OnBalloonClosed(Balloon* source);
+                               Profile* profile) OVERRIDE;
+  virtual void OnBalloonClosed(Balloon* source) OVERRIDE;
 
   // Number of balloons being shown.
   std::set<Balloon*>& balloons() { return balloons_; }
@@ -72,8 +73,8 @@ class DesktopNotificationsTest : public testing::Test {
 
  protected:
   // testing::Test overrides
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   void AllowOrigin(const GURL& origin) {
     service_->GrantPermission(origin);

@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_GAMEPAD_BROWSER_MESSAGE_FILTER_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "content/browser/browser_message_filter.h"
 #include "content/browser/gamepad/gamepad_provider.h"
 
@@ -13,7 +14,7 @@ class GamepadBrowserMessageFilter : public BrowserMessageFilter {
  public:
   // BrowserMessageFilter implementation.
   virtual bool OnMessageReceived(const IPC::Message& message,
-                                 bool* message_was_ok);
+                                 bool* message_was_ok) OVERRIDE;
   GamepadBrowserMessageFilter();
 
  private:

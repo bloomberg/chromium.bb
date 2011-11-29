@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/background_view.h"
@@ -34,44 +35,45 @@ class MockAuthenticator : public Authenticator {
 
   virtual void CompleteLogin(Profile* profile,
                              const std::string& username,
-                             const std::string& password);
+                             const std::string& password) OVERRIDE;
 
   virtual void AuthenticateToLogin(Profile* profile,
                                    const std::string& username,
                                    const std::string& password,
                                    const std::string& login_token,
-                                   const std::string& login_captcha);
+                                   const std::string& login_captcha) OVERRIDE;
 
   virtual void AuthenticateToUnlock(const std::string& username,
-                                    const std::string& password);
+                                    const std::string& password) OVERRIDE;
 
-  virtual void LoginOffTheRecord();
+  virtual void LoginOffTheRecord() OVERRIDE;
 
   virtual void OnLoginSuccess(
       const GaiaAuthConsumer::ClientLoginResult& credentials,
-      bool request_pending);
+      bool request_pending) OVERRIDE;
 
-  virtual void OnLoginFailure(const LoginFailure& failure);
+  virtual void OnLoginFailure(const LoginFailure& failure) OVERRIDE;
 
   virtual void RecoverEncryptedData(
       const std::string& old_password,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) {}
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE {}
 
   virtual void ResyncEncryptedData(
-      const GaiaAuthConsumer::ClientLoginResult& credentials) {}
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE {}
 
   virtual void RetryAuth(Profile* profile,
                          const std::string& username,
                          const std::string& password,
                          const std::string& login_token,
-                         const std::string& login_captcha) {}
+                         const std::string& login_captcha) OVERRIDE {}
 
-  virtual std::string EncryptToken(const std::string& token);
+  virtual std::string EncryptToken(const std::string& token) OVERRIDE;
 
-  virtual std::string DecryptToken(const std::string& encrypted_token);
+  virtual std::string DecryptToken(const std::string& encrypted_token) OVERRIDE;
 
-  virtual void VerifyOAuth1AccessToken(const std::string& oauth1_access_token,
-                                       const std::string& oauth1_secret) {}
+  virtual void VerifyOAuth1AccessToken(
+      const std::string& oauth1_access_token,
+      const std::string& oauth1_secret) OVERRIDE {}
 
  private:
   std::string expected_username_;
@@ -86,44 +88,42 @@ class MockLoginUtils : public LoginUtils {
                  const std::string& expected_password);
   virtual ~MockLoginUtils();
 
-  virtual bool ShouldWaitForWifi();
-
   virtual void PrepareProfile(const std::string& username,
                               const std::string& password,
                               const GaiaAuthConsumer::ClientLoginResult& res,
                               bool pending_requests,
                               bool using_oauth,
                               bool has_cookies,
-                              Delegate* delegate);
+                              Delegate* delegate) OVERRIDE;
 
-  virtual void DelegateDeleted(Delegate* delegate);
+  virtual void DelegateDeleted(Delegate* delegate) OVERRIDE;
 
-  virtual void CompleteOffTheRecordLogin(const GURL& start_url) {}
+  virtual void CompleteOffTheRecordLogin(const GURL& start_url) OVERRIDE {}
 
-  virtual void SetFirstLoginPrefs(PrefService* prefs) {}
+  virtual void SetFirstLoginPrefs(PrefService* prefs) OVERRIDE {}
 
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
-      LoginStatusConsumer* consumer);
+      LoginStatusConsumer* consumer) OVERRIDE;
 
-  virtual void PrewarmAuthentication() {}
+  virtual void PrewarmAuthentication() OVERRIDE {}
 
   virtual void RestoreAuthenticationSession(const std::string& user_name,
-                                            Profile* profile) {}
+                                            Profile* profile) OVERRIDE {}
 
-  virtual void StartTokenServices(Profile* profile) {}
+  virtual void StartTokenServices(Profile* profile) OVERRIDE {}
 
   virtual void StartSync(
       Profile* profile,
-      const GaiaAuthConsumer::ClientLoginResult& credentials) {}
+      const GaiaAuthConsumer::ClientLoginResult& credentials) OVERRIDE {}
 
-  virtual void SetBackgroundView(BackgroundView* background_view);
+  virtual void SetBackgroundView(BackgroundView* background_view) OVERRIDE;
 
-  virtual BackgroundView* GetBackgroundView();
+  virtual BackgroundView* GetBackgroundView() OVERRIDE;
 
   virtual std::string GetOffTheRecordCommandLine(
       const GURL& start_url,
       const CommandLine& base_command_line,
-      CommandLine* command_line);
+      CommandLine* command_line) OVERRIDE;
 
   virtual void TransferDefaultCookies(Profile* default_profile,
                                       Profile* new_profile) OVERRIDE;

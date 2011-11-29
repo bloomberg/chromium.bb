@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_CROS_IN_PROCESS_BROWSER_TEST_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/cros_mock.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -27,7 +28,7 @@ class CrosInProcessBrowserTest : public InProcessBrowserTest {
   scoped_ptr<CrosMock> cros_mock_;
 
   // Overriden for things you would normally override TearDown for.
-  virtual void TearDownInProcessBrowserTestFixture();
+  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrosInProcessBrowserTest);

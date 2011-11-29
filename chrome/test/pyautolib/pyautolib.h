@@ -9,6 +9,7 @@
 #define CHROME_TEST_PYAUTOLIB_PYAUTOLIB_H_
 #pragma once
 
+#include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/test/ui/ui_test.h"
@@ -60,11 +61,11 @@ class PyUITestBase : public UITestBase {
     launcher_.reset(CreateProxyLauncher());
   }
 
-  virtual ProxyLauncher* CreateProxyLauncher();
+  virtual ProxyLauncher* CreateProxyLauncher() OVERRIDE;
 
   // SetUp,TearDown is redeclared as public to make it accessible from swig.
-  virtual void SetUp();
-  virtual void TearDown();
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   // Navigate to the given URL in the active tab. Blocks until page loaded.
   void NavigateToURL(const char* url_string);

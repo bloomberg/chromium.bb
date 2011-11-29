@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 
 class Browser;
@@ -32,8 +33,8 @@ class WizardInProcessBrowserTest : public CrosInProcessBrowserTest {
   virtual void SetUpWizard() {}
 
   // Overriden from InProcessBrowserTest:
-  virtual Browser* CreateBrowser(Profile* profile);
-  virtual void CleanUpOnMainThread();
+  virtual Browser* CreateBrowser(Profile* profile) OVERRIDE;
+  virtual void CleanUpOnMainThread() OVERRIDE;
 
   WizardController* controller() const { return controller_; }
   void set_controller(WizardController* controller) {

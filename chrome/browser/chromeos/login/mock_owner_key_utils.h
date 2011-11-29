@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "crypto/rsa_private_key.h"
 #include "chrome/browser/chromeos/login/owner_key_utils.h"
@@ -49,7 +50,7 @@ class MockInjector : public OwnerKeyUtils::Factory {
 
   // If this is called, its caller takes ownership of |transient_|.
   // If it's never called, |transient_| remains our problem.
-  virtual OwnerKeyUtils* CreateOwnerKeyUtils();
+  virtual OwnerKeyUtils* CreateOwnerKeyUtils() OVERRIDE;
 
  private:
   scoped_refptr<MockKeyUtils> transient_;
