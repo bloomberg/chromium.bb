@@ -118,9 +118,11 @@
       # crbug.com/100591
       '-pdf.PDFTest.testPDFRunner',
       # crbug.com/100593
-      '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',  
+      '-nacl_sdk.NaClSDKTest.testVerifyNaClPlugin',
       # crbug.com/105560
       '-notifications',
+      # "Recently Closed" has duplicates.  crbug.com/105760
+      '-ntp.NTPTest.testRecentlyClosedShowsUniqueItems',
     ],
 
     'win': [
@@ -455,8 +457,6 @@
       # crbug.com/98681
       '-nacl_sdk.NaClSDKTest.testNaClSDK',
       '-nacl_sdk.NaClSDKTest.testVerifyPrereleaseGallery',
-      # Will enable to following test by 11/30/2011
-      '-ntp.NTPTest.testRecentlyClosedShowsUniqueItems',
     ],
 
     'win': [
