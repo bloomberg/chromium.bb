@@ -4441,7 +4441,7 @@
    fun:_ZN4base12Base64EncodeERKNS_11StringPieceEPSs
    fun:_ZN11web_ui_util15GetImageDataUrlERK8SkBitmap
    fun:_ZN12_GLOBAL__N_121NetworkInfoDictionary8set_iconERK8SkBitmap
-   fun:_ZN12_GLOBAL__N_121NetworkInfoDictionaryC1EPKN8chromeos7NetworkE
+   fun:_ZN12_GLOBAL__N_121NetworkInfoDictionaryC1EPKN8chromeos7NetworkE*
 }
 {
    bug_99308
