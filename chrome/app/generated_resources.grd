@@ -6169,14 +6169,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_MOUSE_LOCK_HEADER" desc="Label for Mouse Lock exception management page on Content Settings dialog">
         Mouse Cursor Exceptions
       </message>
-      <message name="IDS_MOUSE_LOCK_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing all sites ability to hide the mouse cursor.">
-        Allow all sites to hide the mouse cursor
+      <message name="IDS_MOUSE_LOCK_ALLOW_RADIO" desc="A radio button in the Content Settings dialog for allowing all sites ability to disable the mouse cursor.">
+        Allow all sites to disable the mouse cursor
       </message>
-      <message name="IDS_MOUSE_LOCK_ASK_RADIO" desc="A radio button in the Content Settings dialog for asking before allowing sites to hide the mouse cursor.">
-        Ask me when a site tries to hide the mouse cursor (recommended)
+      <message name="IDS_MOUSE_LOCK_ASK_RADIO" desc="A radio button in the Content Settings dialog for asking before allowing sites to disable the mouse cursor.">
+        Ask me when a site tries to disable the mouse cursor (recommended)
       </message>
-      <message name="IDS_MOUSE_LOCK_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking all sites ability to hide the mouse cursor.">
-        Do not allow any site to hide the mouse cursor
+      <message name="IDS_MOUSE_LOCK_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for blocking all sites ability to disable the mouse cursor.">
+        Do not allow any site to disable the mouse cursor
       </message>
 
       <if expr="pp_ifdef('use_titlecase')">
@@ -14443,35 +14443,35 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_FULLSCREEN_USER_ENTERED_FULLSCREEN" desc="Message for the user telling them that they have entered fullscreen mode.">
       You have gone full screen.
     </message>
-    <message name="IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN" desc="Text displayed in the bubble when a page has gone fullscreen.">
+    <message name="IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN" desc="Text displayed in the bubble when a page has gone fullscreen. (With a domain URL to display)">
       <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> is now full screen.
     </message>
-    <message name="IDS_FULLSCREEN_ENTERED_FULLSCREEN" desc="Text displayed in the bubble when a page has gone fullscreen.">
+    <message name="IDS_FULLSCREEN_ENTERED_FULLSCREEN" desc="Text displayed in the bubble when a page has gone fullscreen. (No domain to be shown, e.g. from filesystem page)">
       This page is now full screen.
     </message>
-    <message name="IDS_FULLSCREEN_SITE_REQUEST_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble that requests permission for staying in fullscreen mode and locking the mouse.">
-      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> is now full screen and wants to hide your mouse cursor.
+    <message name="IDS_FULLSCREEN_SITE_REQUEST_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble that requests permission for staying in fullscreen mode and locking the mouse. (With a domain URL to display)">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> is now full screen and wants to disable your mouse cursor.
     </message>
-    <message name="IDS_FULLSCREEN_REQUEST_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble that requests permission for staying in fullscreen mode and locking the mouse.">
-      This page is now full screen and wants to hide your mouse cursor.
+    <message name="IDS_FULLSCREEN_REQUEST_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble that requests permission for staying in fullscreen mode and locking the mouse. (No domain to be shown, e.g. from filesystem page)">
+      This page is now full screen and wants to disable your mouse cursor.
     </message>
-    <message name="IDS_FULLSCREEN_SITE_REQUEST_MOUSELOCK" desc="Text displayed in the bubble that requests permission for locking the mouse.">
-      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> wants to hide your mouse cursor.
+    <message name="IDS_FULLSCREEN_SITE_REQUEST_MOUSELOCK" desc="Text displayed in the bubble that requests permission for locking the mouse. (With a domain URL to display)">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> wants to disable your mouse cursor.
     </message>
-    <message name="IDS_FULLSCREEN_REQUEST_MOUSELOCK" desc="Text displayed in the bubble that requests permission for locking the mouse.">
-      This page wants to hide your mouse cursor.
+    <message name="IDS_FULLSCREEN_REQUEST_MOUSELOCK" desc="Text displayed in the bubble that requests permission for locking the mouse. (No domain to be shown, e.g. from filesystem page)">
+      This page wants to disable your mouse cursor.
     </message>
-    <message name="IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has gone fullscreen and locked the mouse.">
-      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> is now full screen and hiding your mouse cursor.
+    <message name="IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has gone fullscreen and locked the mouse. (With a domain URL to display)">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> is now full screen and has disabled your mouse cursor.
     </message>
-    <message name="IDS_FULLSCREEN_ENTERED_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has gone fullscreen and locked the mouse.">
-      This page is now full screen and hiding your mouse cursor.
+    <message name="IDS_FULLSCREEN_ENTERED_FULLSCREEN_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has gone fullscreen and locked the mouse. (No domain to be shown, e.g. from filesystem page)">
+      This page is now full screen and has disabled your mouse cursor.
     </message>
-    <message name="IDS_FULLSCREEN_SITE_ENTERED_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has locked the mouse.">
-      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> is hiding your mouse cursor.
+    <message name="IDS_FULLSCREEN_SITE_ENTERED_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has locked the mouse. (With a domain URL to display)">
+      <ph name="FULLSCREEN_ORIGIN">$1<ex>google.com</ex></ph> has disabled your mouse cursor.
     </message>
-    <message name="IDS_FULLSCREEN_ENTERED_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has locked the mouse.">
-      This page is hiding your mouse cursor.
+    <message name="IDS_FULLSCREEN_ENTERED_MOUSELOCK" desc="Text displayed in the bubble to inform the user that the page has locked the mouse. (No domain to be shown, e.g. from filesystem page)">
+      This page has disabled your mouse cursor.
     </message>
     <message name="IDS_FULLSCREEN_PRESS_ESC_TO_EXIT" desc="Text displayed in the bubble to tell users how to return to normal mode">
       Press <ph name="ACCELERATOR">$1<ex>Esc</ex></ph> to exit.
