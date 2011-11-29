@@ -181,10 +181,15 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
   UpgradeDetectorChromeos::GetInstance()->Init();
 
   if (chromeos::system::runtime_environment::IsRunningOnChromeOS()) {
-    // For http://crosbug.com/p/5795 and http://crosbug.com/p/6245.
-    // Enable Num Lock on X start up.
+    // Enable Num Lock on X start up for http://crosbug.com/p/5795 and
+    // http://crosbug.com/p/6245. We don't do this for Chromium OS since many
+    // netbooks do not work as intended when Num Lock is on (e.g. On a netbook
+    // with a small keyboard, u, i, o, p, ... keys might be repurposed as
+    // cursor keys when Num Lock is on).
+#if defined(GOOGLE_CHROME_BUILD)
       chromeos::input_method::InputMethodManager::GetInstance()->
           GetXKeyboard()->SetNumLockEnabled(true);
+#endif
 
 #if defined(USE_AURA)
       initial_browser_window_observer_.reset(
