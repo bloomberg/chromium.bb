@@ -374,7 +374,8 @@ void ChromeContentUtilityClient::OnImportStart(
     const importer::SourceProfile& source_profile,
     uint16 items,
     const DictionaryValue& localized_strings) {
-  bridge_ = new ExternalProcessImporterBridge(localized_strings);
+  bridge_ = new ExternalProcessImporterBridge(
+      localized_strings, content::UtilityThread::Get());
   importer_ = importer::CreateImporterByType(source_profile.importer_type);
   if (!importer_) {
     Send(new ProfileImportProcessHostMsg_Import_Finished(false,

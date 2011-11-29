@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/profile_import_process_messages.h"
-#include "content/common/child_thread.h"
 #include "webkit/glue/password_form.h"
 
 #if defined(OS_WIN)
@@ -27,7 +26,9 @@ const int kNumFaviconsToSend = 100;
 }
 
 ExternalProcessImporterBridge::ExternalProcessImporterBridge(
-    const DictionaryValue& localized_strings) {
+    const DictionaryValue& localized_strings,
+    IPC::Message::Sender* sender)
+    : sender_(sender) {
   // Bridge needs to make its own copy because OS 10.6 autoreleases the
   // localized_strings value that is passed in (see http://crbug.com/46003 ).
   localized_strings_.reset(localized_strings.DeepCopy());
@@ -144,5 +145,5 @@ string16 ExternalProcessImporterBridge::GetLocalizedString(int message_id) {
 ExternalProcessImporterBridge::~ExternalProcessImporterBridge() {}
 
 bool ExternalProcessImporterBridge::Send(IPC::Message* message) {
-  return ChildThread::current()->Send(message);
+  return sender_->Send(message);
 }

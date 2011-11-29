@@ -13,12 +13,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/importer/profile_writer.h"
+#include "ipc/ipc_message.h"
 
 class GURL;
-
-namespace IPC {
-class Message;
-}
 
 namespace base {
 class DictionaryValue;
@@ -31,8 +28,9 @@ class DictionaryValue;
 // profile.
 class ExternalProcessImporterBridge : public ImporterBridge {
  public:
-  explicit ExternalProcessImporterBridge(
-      const base::DictionaryValue& localized_strings);
+  ExternalProcessImporterBridge(
+      const base::DictionaryValue& localized_strings,
+      IPC::Message::Sender* sender);
 
   // Begin ImporterBridge implementation:
   virtual void AddBookmarks(
@@ -74,6 +72,8 @@ class ExternalProcessImporterBridge : public ImporterBridge {
   // Holds strings needed by the external importer because the resource
   // bundle isn't available to the external process.
   scoped_ptr<base::DictionaryValue> localized_strings_;
+
+  IPC::Message::Sender* sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProcessImporterBridge);
 };
