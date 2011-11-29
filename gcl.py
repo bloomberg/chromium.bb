@@ -1309,7 +1309,7 @@ def CMDtry(args):
                                                 True, True)
   else:
     change_info = ChangeInfo.Load(args[0], GetRepositoryRoot(),
-                                  False, True)
+                                  True, True)
   if change_info.GetFiles():
     args = args[1:]
   else:
