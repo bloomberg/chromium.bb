@@ -14,11 +14,6 @@ if env.Bit('linux'):
   env['COMPONENT_STATIC'] = False  # Build a .so, not a .a
 
   sources = [ 'module.cc',
-              # This allow us to verify that the code builds before
-              # untrusted nacl_file is fully functioning.
-              # However, main() won't be called when we loaded the trusted
-              # plugin as a dll.
-              'nacl_file_main.cc',
               'ppapi_geturl.cc',
               'url_load_request.cc' ]
 

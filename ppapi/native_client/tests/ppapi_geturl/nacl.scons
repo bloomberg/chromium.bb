@@ -12,7 +12,6 @@
 # module.h/cc - implementation of PPP_Instance interface
 # scriptable_object.h/cc - implementation of the scripting interface
 # url_load_request.h/cc - url loading helper
-# nacl_file_main.cc - uses main() to test NaClFile interface
 
 Import('env')
 
@@ -29,13 +28,11 @@ env.Alias('ppapi_geturl${PROGSUFFIX}',
           ['$STAGING_DIR/%s${PROGSUFFIX}' % nexe])
 
 ppapi_geturl_nexe = env.ComponentProgram(nexe,
-                                         ['nacl_file_main.cc',
-                                          'module.cc',
+                                         ['module.cc',
                                           'ppapi_geturl.cc',
                                           'url_load_request.cc',
                                           ],
                                          EXTRA_LIBS=[
-                                             'nacl_file',
                                              'ppruntime',
                                              'srpc',
                                              'imc',
@@ -44,11 +41,7 @@ ppapi_geturl_nexe = env.ComponentProgram(nexe,
                                              'gio',
                                              '${PTHREAD_LIBS}',
                                              'm',
-                                             '${NON_PPAPI_BROWSER_LIBS}'],
-                                         EXTRA_LINKFLAGS=['-Wl,--wrap=read',
-                                                          '-Wl,--wrap=open',
-                                                          '-Wl,--wrap=lseek',
-                                                          '-Wl,--wrap=close'])
+                                             '${NON_PPAPI_BROWSER_LIBS}'])
 
 env.Publish(nexe, 'run',
             ['ppapi_geturl.html',
