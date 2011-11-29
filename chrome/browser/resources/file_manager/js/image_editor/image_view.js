@@ -12,6 +12,22 @@ function ImageView(container, viewport) {
   this.contentGeneration_ = 0;
   this.displayedContentGeneration_ = 0;
   this.displayedViewportGeneration_ = 0;
+
+  this.imageLoader_ = new ImageUtil.ImageLoader(this.document_);
+  // We have a separate image loader for prefetch which does not get cancelled
+  // when the selection changes.
+  this.prefetchLoader_ = new ImageUtil.ImageLoader(this.document_);
+
+  // The content cache is used for prefetching the next image when going
+  // through the images sequentially. The real life photos can be large
+  // (18Mpix = 72Mb pixel array) so we want only the minimum amount of caching.
+  this.contentCache_ = new ImageView.Cache(2);
+
+  // We reuse previously generated screen-scale images so that going back to
+  // a recently loaded image looks instant even if the image is not in
+  // the content cache any more. Screen-scale images are small (~1Mpix)
+  // so we can afford to cache more of them.
+  this.screenCache_ = new ImageView.Cache(5);
 }
 
 ImageView.ANIMATION_DURATION = 180;
@@ -109,18 +125,11 @@ ImageView.prototype.copyScreenImageData = function () {
 };
 
 ImageView.prototype.isLoading = function() {
-  return this.cancelThumbnailLoad_ || this.cancelImageLoad_;
+  return this.imageLoader_.isBusy();
 };
 
 ImageView.prototype.cancelLoad = function() {
-  if (this.cancelThumbnailLoad_) {
-    this.cancelThumbnailLoad_();
-    this.cancelThumbnailLoad_ = null;
-  }
-  if (this.cancelImageLoad_) {
-    this.cancelImageLoad_();
-    this.cancelImageLoad_ = null;
-  }
+  this.imageLoader_.cancel();
 };
 
 /**
@@ -129,37 +138,43 @@ ImageView.prototype.cancelLoad = function() {
  * Loads the thumbnail first, then replaces it with the main image.
  * Takes into account the image orientation encoded in the metadata.
  *
- * @param {string|HTMLCanvasElement|HTMLImageElement} source
+ * @param {number} id Unique image id for caching purposes
+ * @param {string|HTMLCanvasElement} source
  * @param {Object} metadata
  * @param {Object} slide Slide-in animation direction.
- * @param {function} opt_callback
+ * @param {function(boolean} opt_callback The parameter is true if the image
+ *    was loaded instantly (from the cache of the canvas source).
  */
 ImageView.prototype.load = function(
-    source, metadata, slide, opt_callback) {
+    id, source, metadata, slide, opt_callback) {
 
   metadata = metadata|| {};
 
-  this.cancelLoad();
-
   ImageUtil.trace.resetTimer('load');
-  var canvas = this.container_.ownerDocument.createElement('canvas');
 
   var self = this;
 
-  if (metadata.thumbnailURL) {
-    this.cancelImageLoad_ = ImageUtil.loadImageAsync(
-        canvas,
-        metadata.thumbnailURL,
-        metadata.thumbnailTransform,
-        0, /* no delay */
-        displayThumbnail);
+  this.contentID_ = id;
+
+  var readyContent = this.getReadyContent(id, source);
+  if (readyContent) {
+    displayMainImage(readyContent, true);
   } else {
-    loadMainImage(0);
+    var cachedScreen = this.screenCache_.getItem(id);
+    if (cachedScreen) {
+      // We have a cached screen-scale canvas, use it as a thumbnail.
+      displayThumbnail(cachedScreen);
+    } else if (metadata.thumbnailURL) {
+      this.imageLoader_.load(
+          metadata.thumbnailURL,
+          metadata.thumbnailTransform,
+          displayThumbnail);
+    } else {
+      loadMainImage(0);
+    }
   }
 
-  function displayThumbnail() {
-    self.cancelThumbnailLoad_ = null;
-
+  function displayThumbnail(canvas) {
     // The thumbnail may have different aspect ratio than the main image.
     // Force the main image proportions to avoid flicker.
     var time = Date.now();
@@ -180,15 +195,73 @@ ImageView.prototype.load = function(
   }
 
   function loadMainImage(delay) {
-    self.cancelImageLoad_ = ImageUtil.loadImageAsync(
-        canvas, source, metadata.imageTransform, delay, displayMainImage);
+    if (self.prefetchLoader_.isLoading(source)) {
+      // The image we need is already being prefetched. Initiating another load
+      // would be a waste. Hijack the load instead by overriding the callback.
+      self.prefetchLoader_.setCallback(displayMainImage);
+
+      // Swap the loaders so that the self.isLoading works correctly.
+      var temp = self.prefetchLoader_;
+      self.prefetchLoader_ = self.imageLoader_;
+      self.imageLoader_ = temp;
+      return;
+    }
+    self.prefetchLoader_.cancel();  // The prefetch was doing something useless.
+
+    self.imageLoader_.load(
+        source,
+        metadata.imageTransform,
+        displayMainImage,
+        delay);
   }
 
-  function displayMainImage() {
-    self.cancelImageLoad_ = null;
+  function displayMainImage(canvas, opt_fastLoad) {
     self.replace(canvas, slide);
     ImageUtil.trace.reportTimer('load');
-    if (opt_callback) opt_callback();
+    ImageUtil.trace.report('load-type', opt_fastLoad ? 'cached' : 'file');
+    if (opt_callback) opt_callback(opt_fastLoad);
+  }
+};
+
+/**
+ * Try to get the canvas from the content cache or from the source.
+ *
+ * @param {number} id Unique image id for caching purposes
+ * @param {string|HTMLCanvasElement} source
+ */
+ImageView.prototype.getReadyContent = function(id, source) {
+  if (source.constructor.name == 'HTMLCanvasElement')
+    return source;
+
+  return this.contentCache_.getItem(id);
+};
+
+/**
+ * Prefetch an image.
+ *
+ * @param {number} id Unique image id for caching purposes
+ * @param {string|HTMLCanvasElement} source
+ * @param {Object} metadata
+ */
+ImageView.prototype.prefetch = function(id, source, metadata) {
+  var self = this;
+  function prefetchDone(canvas) {
+    self.contentCache_.putItem(id, canvas);
+  }
+
+  var cached = this.getReadyContent(id, source);
+  if (cached) {
+    prefetchDone(cached);
+  } else {
+    // Evict the LRU item before we allocate the new canvas to avoid unneeded
+    // strain on memory.
+    this.contentCache_.evictLRU();
+
+    this.prefetchLoader_.load(
+        source,
+        metadata.imageTransform,
+        prefetchDone,
+        ImageView.ANIMATION_WAIT_INTERVAL);
   }
 };
 
@@ -211,6 +284,12 @@ ImageView.prototype.replaceContent_ = function(
 
   if (opt_reuseScreenCanvas && !this.screenCanvas_.parentNode) {
     this.container_.appendChild(this.screenCanvas_);
+  }
+
+  // If this is not a thumbnail, cache the content and the screen-scale image.
+  if (!opt_width && !opt_height) {
+    this.contentCache_.putItem(this.contentID_, this.contentCanvas_, true);
+    this.screenCache_.putItem(this.contentID_, this.screenCanvas_);
   }
 };
 
@@ -321,4 +400,43 @@ ImageView.prototype.animateAndReplace = function(canvas, cropRect) {
   setTimeout(function() {
     oldScreenCanvas.parentNode.removeChild(oldScreenCanvas);
   }, ImageView.ANIMATION_WAIT_INTERVAL);
+};
+
+
+ImageView.Cache = function(capacity) {
+  this.capacity_ = capacity;
+  this.map_ = {};
+  this.order_ = [];
+};
+
+ImageView.Cache.prototype.getItem = function(id) { return this.map_[id] };
+
+ImageView.Cache.prototype.putItem = function(id, item, opt_keepLRU) {
+  var pos = this.order_.indexOf(id);
+
+  if ((pos >= 0) != (id in this.map_))
+    throw new Error('Inconsistent cache state');
+
+  if (id in this.map_) {
+    if (!opt_keepLRU) {
+      // Move to the end (most recently used).
+      this.order_.splice(pos, 1);
+      this.order_.push(id);
+    }
+  } else {
+    this.evictLRU();
+    this.order_.push(id);
+  }
+
+  this.map_[id] = item;
+
+  if (this.order_.length > this.capacity_)
+    throw new Error('Exceeded cache capacity');
+};
+
+ImageView.Cache.prototype.evictLRU = function() {
+  if (this.order_.length == this.capacity_) {
+    var id = this.order_.shift();
+    delete this.map_[id];
+  }
 };

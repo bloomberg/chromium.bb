@@ -67,22 +67,26 @@ ImageEditor.prototype.lockUI = function(on) {
   ImageUtil.setAttribute(this.rootContainer_, 'locked', on);
 };
 
+ImageEditor.prototype.prefetchImage = function(id, source, metadata) {
+  this.imageView_.prefetch(id, source, metadata);
+};
+
 ImageEditor.prototype.openSession = function(
-    source, metadata, slide, opt_callback) {
+    id, source, metadata, slide, opt_callback) {
   if (this.commandQueue_)
     throw new Error('Session not closed');
 
   this.lockUI(true);
 
   var self = this;
-  this.imageView_.load(source, metadata, slide, function() {
+  this.imageView_.load(id, source, metadata, slide, function(loadedInstantly) {
     self.lockUI(false);
     self.commandQueue_ = new CommandQueue(
         self.container_.ownerDocument, self.imageView_.getCanvas());
     self.commandQueue_.attachUI(
         self.getImageView(), self.getPrompt(), self.lockUI.bind(self));
     self.updateUndoRedo();
-    if (opt_callback) opt_callback();
+    if (opt_callback) opt_callback(loadedInstantly);
   });
 };
 
@@ -97,7 +101,7 @@ ImageEditor.prototype.closeSession = function(callback) {
     return;
   }
   if (!this.commandQueue_)
-    throw new Error('Session not open');
+    return;
 
   this.commandQueue_.detachUI();
   this.requestImage(callback);

@@ -320,81 +320,117 @@ ImageUtil.setAttribute = function(element, attribute, on) {
     element.removeAttribute(attribute);
 };
 
-/**
- * Load image into a canvas taking the transform into account.
- *
- * The source image is copied to the canvas stripe-by-stripe to avoid
- * freezing up the UI.
- *
- * @param {HTMLCanvasElement} canvas
- * @param {string|HTMLImageElement|HTMLCanvasElement} source
- * @param {{scaleX: number, scaleY: number, rotate90: number}} transform
- * @param {number} delay
- * @param {function} callback
- * @return {function()} Function to call to cancel the load.
+/*
+ * ImageLoader loads an image from a given URL into a canvas in two steps:
+ * 1. Loads the image into an HTMLImageElement.
+ * 2. Copies pixels from HTMLImageElement to HTMLCanvasElement. This is done
+ *    stripe-by-stripe to avoid freezing up the UI. The transform is taken into
+ *    account.
  */
-ImageUtil.loadImageAsync = function(
-    canvas, source, transform, delay, callback) {
-  var image;
-  var timeout = setTimeout(resolveURL, delay);
 
-  function resolveURL() {
-    timeout = null;
-    if (typeof source == 'string') {
-      image = new Image();
-      image.onload = function(e) { image = null; loadImage(e.target); };
-      image.src = source;
-    } else {
-      loadImage(source);
-    }
+ImageUtil.ImageLoader = function(document) {
+  this.document_ = document;
+  this.image_ = new Image();
+};
+
+/**
+ * @param {string} url
+ * @param {{scaleX: number, scaleY: number, rotate90: number}} transform
+ * @param {function(HTMLCanvasElement} callback
+ * @param {number} opt_delay Load delay in milliseconds, useful to let the
+ *        animations play out before the computation heavy image loading starts.
+ */
+ImageUtil.ImageLoader.prototype.load = function(
+    url, transform, callback, opt_delay) {
+  this.cancel();
+
+  this.url_ = url;
+  this.transform_ = transform || { scaleX: 1, scaleY: 1, rotate90: 0};
+  this.callback_ = callback;
+
+  var self = this;
+  function startLoad() {
+    self.timeout_ = null;
+    self.image_.onload = self.convertImage_.bind(self);
+    self.image_.src = url;
+  }
+  if (opt_delay) {
+    this.timeout_ = setTimeout(startLoad, opt_delay);
+  } else {
+    startLoad();
+  }
+};
+
+ImageUtil.ImageLoader.prototype.isBusy = function() {
+  return !!this.callback_;
+};
+
+ImageUtil.ImageLoader.prototype.isLoading = function(url) {
+  return this.isBusy() && (this.url_ == url);
+};
+
+ImageUtil.ImageLoader.prototype.setCallback = function(callback) {
+  this.callback_ = callback;
+};
+
+ImageUtil.ImageLoader.prototype.cancel = function() {
+  if (!this.callback_) return;
+  this.callback_ = null;
+  if (this.timeout_) {
+    clearTimeout(this.timeout_);
+    this.timeout_ = null;
+  }
+  this.image_.onload = function(){};
+};
+
+ImageUtil.ImageLoader.prototype.convertImage_ = function() {
+  var canvas = this.document_.createElement('canvas');
+
+  if (this.transform_.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
+    canvas.width = this.image_.height;
+    canvas.height = this.image_.width;
+  } else  {
+    canvas.width = this.image_.width;
+    canvas.height = this.image_.height;
   }
 
-  function loadImage(image) {
-    transform = transform || { scaleX: 1, scaleY: 1, rotate90: 0};
+  ImageUtil.trace.resetTimer('load-convert');
 
-    if (transform.rotate90 & 1) {  // Rotated +/-90deg, swap the dimensions.
-      canvas.width = image.height;
-      canvas.height = image.width;
-    } else  {
-      canvas.width = image.width;
-      canvas.height = image.height;
-    }
+  var context = canvas.getContext('2d');
+  context.save();
+  context.translate(canvas.width / 2, canvas.height / 2);
+  context.rotate(this.transform_.rotate90 * Math.PI/2);
+  context.scale(this.transform_.scaleX, this.transform_.scaleY);
 
-    ImageUtil.trace.resetTimer('load-draw');
+  var stripCount =
+      Math.ceil (this.image_.width * this.image_.height / ( 1 << 21));
+  var step =
+      Math.max(16, Math.ceil(this.image_.height / stripCount)) & 0xFFFFF0;
 
-    var context = canvas.getContext('2d');
-    context.save();
-    context.translate(context.canvas.width / 2, context.canvas.height / 2);
-    context.rotate(transform.rotate90 * Math.PI/2);
-    context.scale(transform.scaleX, transform.scaleY);
+  this.copyStrip_(context, 0, step);
+};
 
-    var stripCount = Math.ceil (image.width * image.height / ( 1 << 20));
-    var to = 0;
-    var step = Math.max(16, Math.ceil(image.height / stripCount)) & 0xFFFFF0;
+ImageUtil.ImageLoader.prototype.copyStrip_ = function(
+    context, firstRow, rowCount) {
+  var lastRow = Math.min (firstRow + rowCount, this.image_.height);
 
-    function copyStrip() {
-      var from = to;
-      to = Math.min (from + step, image.height);
+  context.drawImage(
+      this.image_, 0, firstRow, this.image_.width, lastRow - firstRow,
+      -this.image_.width / 2, firstRow - this.image_.height / 2,
+      this.image_.width, lastRow - firstRow);
 
-      context.drawImage(image,
-          0, from, image.width, to - from,
-          - image.width/2, from - image.height/2, image.width, to - from);
-
-      if (to == image.height) {
-        context.restore();
-        timeout = null;
-        ImageUtil.trace.reportTimer('load-draw');
-        callback();
-      } else {
-        timeout = setTimeout(copyStrip, 0);
-      }
-    }
-
-    copyStrip();
+  if (lastRow == this.image_.height) {
+    context.restore();
+    ImageUtil.trace.reportTimer('load-convert');
+    var callback = this.callback_;
+    this.callback_ = null;
+    callback(context.canvas);
+  } else {
+    var self = this;
+    this.timeout_ = setTimeout(
+        function() {
+          self.timeout_ = null;
+          self.copyStrip_(context, lastRow, rowCount);
+        }, 0);
   }
-
-  return function () {
-    if (image) image.onload = function(){};
-    if (timeout) clearTimeout(timeout);
-  };
 };

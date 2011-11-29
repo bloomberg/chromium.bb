@@ -2,6 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/*
+ * Base class that Ribbon uses to display photos.
+ */
+
+function RibbonClient() {}
+
+RibbonClient.prototype.prefetchImage = function(id, content, metadata) {};
+
+RibbonClient.prototype.openImage = function(id, content, metadata, direction) {
+};
+
+RibbonClient.prototype.closeImage = function(item) {};
+
 /**
  * Image gallery for viewing and editing image files.
  *
@@ -27,6 +40,8 @@ function Gallery(container, closeCallback, metadataProvider, shareActions,
 
   this.initDom_(shareActions);
 }
+
+Gallery.prototype = { __proto__: RibbonClient.prototype };
 
 Gallery.open = function(parentDirEntry, items, selectedItem,
    closeCallback, metadataProvider, shareActions, displayStringFunction) {
@@ -103,8 +118,8 @@ Gallery.prototype.initDom_ = function(shareActions) {
   this.arrowRight_.appendChild(doc.createElement('div'));
   this.arrowBox_.appendChild(this.arrowRight_);
 
-  this.ribbon_ = new Ribbon(this.ribbonSpacer_, this.onSelect_.bind(this),
-      this.arrowLeft_, this.arrowRight_);
+  this.ribbon_ = new Ribbon(this.ribbonSpacer_,
+      this, this.metadataProvider_, this.arrowLeft_, this.arrowRight_);
 
   this.editBar_  = doc.createElement('div');
   this.editBar_.className = 'edit-bar';
@@ -156,7 +171,7 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
   this.parentDirEntry_ = parentDirEntry;
 
   var urls = [];
-  var selectedURL;
+  var selectedIndex = -1;
 
   // Convert canvas and blob items to blob urls.
   for (var i = 0; i != items.length; i++) {
@@ -172,8 +187,8 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
       item = window.webkitURL.createObjectURL(item);
     }
     if (typeof item == 'string') {
+      if (selected) selectedIndex = urls.length;
       urls.push(item);
-      if (selected) selectedURL = item;
     } else {
       console.error('Unsupported image type');
     }
@@ -182,21 +197,23 @@ Gallery.prototype.load = function(parentDirEntry, items, selectedItem) {
   if (urls.length == 0)
     throw new Error('Cannot open the gallery for 0 items');
 
-  selectedURL = selectedURL || urls[0];
+  if (selectedIndex == -1)
+    throw new Error('Cannot find selected item');
 
   var self = this;
 
   function initRibbon() {
-    self.currentItem_ =
-        self.ribbon_.load(urls, selectedURL, self.metadataProvider_);
+    self.ribbon_.load(urls, selectedIndex);
     // Flash the ribbon briefly to let the user know it is there.
     self.cancelFading_();
     self.initiateFading_(Gallery.FIRST_FADE_TIMEOUT);
   }
 
+  var selectedURL = urls[selectedIndex];
   // Initialize the ribbon only after the selected image is fully loaded.
   this.metadataProvider_.fetch(selectedURL, function (metadata) {
-    self.editor_.openSession(selectedURL, metadata, 0, initRibbon);
+    self.editor_.openSession(
+        selectedIndex, selectedURL, metadata, 0, initRibbon);
   });
 };
 
@@ -211,17 +228,13 @@ Gallery.prototype.saveItem_ = function(item, callback, canvas, modified) {
 
 Gallery.prototype.saveChanges_ = function(opt_callback) {
   this.editor_.requestImage(
-      this.saveItem_.bind(this, this.currentItem_, opt_callback));
+      this.saveItem_.bind(this, this.ribbon_.getSelectedItem(), opt_callback));
 };
 
 Gallery.prototype.onActionExecute_ = function(action) {
-  var item = this.currentItem_;
-  if (item) {
-    // saveChanges_ makes the editor leave the mode and close the sharing menu.
-    this.saveChanges_(function() {
-      action.execute([item.getUrl()]);
-    });
-  }
+  var url = this.ribbon_.getSelectedItem().getUrl();
+  // saveChanges_ makes the editor leave the mode and close the sharing menu.
+  this.saveChanges_(action.execute.bind(action, [url]));
 };
 
 Gallery.prototype.onClose_ = function() {
@@ -229,19 +242,16 @@ Gallery.prototype.onClose_ = function() {
   this.saveChanges_(this.closeCallback_);
 };
 
-Gallery.prototype.onSelect_ = function(item) {
-  if (this.currentItem_ == item)
-    return;
+Gallery.prototype.prefetchImage = function(id, content, metadata) {
+  this.editor_.prefetchImage(id, content, metadata);
+};
 
-  this.editor_.closeSession(
-      this.saveItem_.bind(this, this.currentItem_, null));
+Gallery.prototype.openImage = function(id, content, metadata, slide, callback) {
+  this.editor_.openSession(id, content, metadata, slide, callback);
+};
 
-  var slide = item.getIndex() - this.currentItem_.getIndex();
-
-  this.currentItem_ = item;
-
-  this.editor_.openSession(
-      this.currentItem_.getContent(), this.currentItem_.getMetadata(), slide);
+Gallery.prototype.closeImage = function(item) {
+  this.editor_.closeSession(this.saveItem_.bind(this, item, null));
 };
 
 Gallery.prototype.isEditing_ = function() {
@@ -255,8 +265,8 @@ Gallery.prototype.onEdit_ = function() {
   if (this.isEditing_()) {
     this.cancelFading_();
   } else if (!this.isSharing_()) {
-    this.editor_.requestImage(
-        this.currentItem_.updateThumbnail.bind(this.currentItem_));
+    var item = this.ribbon_.getSelectedItem();
+    this.editor_.requestImage(item.updateThumbnail.bind(item));
     this.initiateFading_();
   }
 
@@ -299,13 +309,18 @@ Gallery.prototype.onKeyDown_ = function(event) {
       this.ribbon_.selectFirst();
       break;
     case 'Left':
-      this.ribbon_.selectPrevious();
+      this.ribbon_.selectNext(-1);
       break;
     case 'Right':
-      this.ribbon_.selectNext();
+      this.ribbon_.selectNext(1);
       break;
     case 'End':
       this.ribbon_.selectLast();
+      break;
+
+    case 'U+00DD':
+      if (event.ctrlKey)  // Ctrl+] (cryptic on purpose).
+        this.ribbon_.toggleDebugSlideshow();
       break;
   }
 };
@@ -356,15 +371,26 @@ Gallery.prototype.cancelFading_ = function() {
   }
 };
 
-function Ribbon(container, onSelect, arrowLeft, arrowRight) {
+/**
+ * @param {HTMLElement} container
+ * @param {RibbonClient} client
+ * @param {MetadataProvider} metadataProvider
+ * @param {HTMLElement} arrowLeft
+ * @param {HTMLElement} arrowRight
+ */
+function Ribbon(container, client, metadataProvider, arrowLeft, arrowRight) {
   this.container_ = container;
   this.document_ = container.ownerDocument;
+  this.client_ = client;
+  this.metadataProvider_ = metadataProvider;
 
   this.arrowLeft_ = arrowLeft;
-  this.arrowLeft_.addEventListener('click', this.selectPrevious.bind(this));
+  this.arrowLeft_.
+      addEventListener('click', this.selectNext.bind(this, -1, null));
 
   this.arrowRight_ = arrowRight;
-  this.arrowRight_.addEventListener('click', this.selectNext.bind(this));
+  this.arrowRight_.
+      addEventListener('click', this.selectNext.bind(this, 1, null));
 
   this.fadeLeft_ = this.document_.createElement('div');
   this.fadeLeft_.className = 'fade left';
@@ -384,16 +410,14 @@ function Ribbon(container, onSelect, arrowLeft, arrowRight) {
   this.fadeRight_ = this.document_.createElement('div');
   this.fadeRight_.className = 'fade right';
   this.container_.appendChild(this.fadeRight_);
-
-  this.onSelect_ = onSelect;
-  this.items_ = [];
-  this.selectedIndex_ = -1;
-  this.firstVisibleIndex_ = 0;
-  this.lastVisibleIndex_ = 0;
 }
 
 Ribbon.PAGING_SINGLE_ITEM_DELAY = 20;
 Ribbon.PAGING_ANIMATION_DURATION = 200;
+
+Ribbon.prototype.getSelectedItem = function () {
+  return this.items_[this.selectedIndex_];
+};
 
 Ribbon.prototype.clear = function() {
   this.bars_[0].textContent = '';
@@ -405,59 +429,108 @@ Ribbon.prototype.clear = function() {
   this.selectedIndex_ = -1;
   this.firstVisibleIndex_ = 0;
   this.lastVisibleIndex_ = -1;  // Zero thumbnails
+  this.sequenceDirection_ = 0;
+  this.sequenceLength_ = 0;
 };
 
-Ribbon.prototype.add = function(url, metadataProvider) {
+Ribbon.prototype.add = function(url) {
   var index = this.items_.length;
-  var selectClosure = this.select.bind(this, index);
+  var selectClosure = this.select.bind(this, index, 0, null);
   var item = new Ribbon.Item(index, url, this.document_, selectClosure);
   this.items_.push(item);
-  var self = this;
-  metadataProvider.fetch(url, function(metadata) {
-    item.setMetadata(metadata);
-    if (item.isSelected()) {
-      self.onSelect_(item);
-    }
-  });
-  return item;
+  this.metadataProvider_.fetch(url, item.setMetadata.bind(item));
 };
 
-Ribbon.prototype.load = function(urls, selectedURL, metadataProvider) {
+Ribbon.prototype.load = function(urls, selectedIndex) {
   this.clear();
-  var selectedIndex = -1;
   for (var index = 0; index < urls.length; ++index) {
-    var item = this.add(urls[index], metadataProvider);
-    if (urls[index] == selectedURL)
-      selectedIndex = index;
+    this.add(urls[index]);
   }
-  this.select(selectedIndex);
-  window.setTimeout(this.redraw.bind(this), 0);
-  return this.items_[this.selectedIndex_];
+  this.selectedIndex_ = selectedIndex;
+
+  // We do not want to call this.select because the selected image is already
+  // displayed. Instead we just update the UI.
+  this.getSelectedItem().select(true);
+  this.redraw();
+
+  // Let the thumbnails load before prefetching the next image.
+  setTimeout(this.requestPrefetch.bind(this, 1), 1000);
+
+  // Make the arrows visible if there are more than 1 image.
+  ImageUtil.setAttribute(this.arrowLeft_, 'active', this.items_.length > 1);
+  ImageUtil.setAttribute(this.arrowRight_, 'active', this.items_.length > 1);
 };
 
-Ribbon.prototype.select = function(index) {
+Ribbon.prototype.select = function(index, opt_forceStep, opt_callback) {
   if (index == this.selectedIndex_)
     return;  // Do not reselect.
 
-  if (this.selectedIndex_ != -1) {
-    this.items_[this.selectedIndex_].select(false);
+  var oldSelectedItem = this.getSelectedItem();
+  oldSelectedItem.select(false);
+  this.client_.closeImage(oldSelectedItem);
+
+  var step = opt_forceStep || (index - this.selectedIndex_);
+
+  if (Math.abs(step) != 1) {
+    // Long leap, the sequence is broken, we have no good prefetch candidate.
+    this.sequenceDirection_ = 0;
+    this.sequenceLength_ = 0;
+  } else if (this.sequenceDirection_ == step) {
+    // Keeping going in sequence.
+    this.sequenceLength_++;
+  } else {
+    // Reversed the direction. Reset the counter.
+    this.sequenceDirection_ = step;
+    this.sequenceLength_ = 1;
+  }
+
+  if (this.sequenceLength_ <= 1) {
+    // We have just broke the sequence. Touch the current image so that it stays
+    // in the cache longer.
+    this.client_.prefetchImage(oldSelectedItem.getIndex(),
+        oldSelectedItem.getContent(), oldSelectedItem.getMetadata());
   }
 
   this.selectedIndex_ = index;
+
+  var selectedItem = this.getSelectedItem();
+  selectedItem.select(true);
   this.redraw();
 
-  if (this.selectedIndex_ != -1) {
-    var selectedItem = this.items_[this.selectedIndex_];
-    selectedItem.select(true);
-    if (selectedItem.getMetadata()) {
-      this.onSelect_(selectedItem);
-    } // otherwise onSelect is called from the metadata callback.
-  }
+  var self = this;
+  selectedItem.fetchMetadata(this.metadataProvider_, function(metadata){
+     if (!selectedItem.isSelected()) return;
+     self.client_.openImage(
+         selectedItem.getIndex(), selectedItem.getContent(), metadata, step,
+         function(loadedInstantly) {
+           if (!selectedItem.isSelected()) return;
+           if (Math.abs(step) != 1) return;
+           if (loadedInstantly || (self.sequenceLength_ >= 3)) {
+             // We can always afford to prefetch if the previous load was
+             // instant. Even if it was not we should start prefetching
+             // if we have been going in the same direction for long enough.
+             self.requestPrefetch(step);
+           }
+           if (opt_callback) opt_callback();
+         });
+  });
+};
 
-  ImageUtil.setAttribute(this.arrowLeft_, 'active', this.selectedIndex_ > 0);
-  ImageUtil.setAttribute(this.arrowRight_, 'active',
-      this.selectedIndex_ + 1 < this.items_.length);
+Ribbon.prototype.requestPrefetch = function(direction) {
+  if (this.items_.length < 2) return;
 
+  var index = this.getNextSelectedIndex_(direction);
+
+  var selectedItem = this.getSelectedItem();
+  var self = this;
+  var item = this.items_[index];
+  item.fetchMetadata(this.metadataProvider_, function(metadata) {
+    if (!selectedItem.isSelected()) return;
+    self.client_.prefetchImage(index, item.getContent(), metadata);
+  });
+};
+
+Ribbon.prototype.updateControls_ = function() {
   ImageUtil.setAttribute(this.fadeLeft_, 'active', this.firstVisibleIndex_ > 0);
   ImageUtil.setAttribute(this.fadeRight_, 'active',
       this.lastVisibleIndex_ + 1 < this.items_.length);
@@ -493,6 +566,8 @@ Ribbon.prototype.redraw = function() {
                          this.selectedIndex_ + (fullItems >> 1));
     firstIndex = lastIndex - fullItems + 1;
   }
+
+  this.updateControls_();
 
   if (this.firstVisibleIndex_ == firstIndex &&
       this.lastVisibleIndex_ == lastIndex) {
@@ -540,14 +615,15 @@ Ribbon.prototype.redraw = function() {
       totalDuration);
 };
 
-Ribbon.prototype.selectPrevious = function() {
-  if (this.selectedIndex_ > 0)
-    this.select(this.selectedIndex_ - 1);
+Ribbon.prototype.getNextSelectedIndex_ = function(direction) {
+  var index = this.selectedIndex_ + (direction > 0 ? 1 : -1);
+  if (index == -1) return this.items_.length - 1;
+  if (index == this.items_.length) return 0;
+  return index;
 };
 
-Ribbon.prototype.selectNext = function() {
-  if (this.selectedIndex_ < this.items_.length - 1)
-    this.select(this.selectedIndex_ + 1);
+Ribbon.prototype.selectNext = function(direction, opt_callback) {
+  this.select(this.getNextSelectedIndex_(direction), direction, opt_callback);
 };
 
 Ribbon.prototype.selectFirst = function() {
@@ -558,6 +634,23 @@ Ribbon.prototype.selectLast = function() {
   this.select(this.items_.length - 1);
 };
 
+/**
+ * Start/stop the slide show. This is useful for performance debugging and
+ * available only through a cryptic keyboard shortcut.
+ */
+Ribbon.prototype.toggleDebugSlideshow = function() {
+  if (this.slideShowTimeout_) {
+    clearInterval(this.slideShowTimeout_);
+    this.slideShowTimeout_ = null;
+  } else {
+    var self = this;
+    function nextSlide() {
+      self.selectNext(1,
+          function() { self.slideShowTimeout_ = setTimeout(nextSlide, 5000) });
+    }
+    nextSlide();
+  }
+};
 
 Ribbon.Item = function(index, url, document, selectClosure) {
   this.index_ = index;
@@ -745,6 +838,14 @@ Ribbon.Item.prototype.getContent = function () {
 
 Ribbon.Item.prototype.getMetadata = function () {
   return this.metadata_;
+};
+
+Ribbon.Item.prototype.fetchMetadata = function (metadataProvider, callback) {
+  if (this.metadata_) {
+    setTimeout(callback.bind(null, this.metadata_), 0);
+  } else {
+    metadataProvider.fetch(this.getUrl(), callback);
+  }
 };
 
 Ribbon.Item.prototype.onSaveSuccess = function(url) {
