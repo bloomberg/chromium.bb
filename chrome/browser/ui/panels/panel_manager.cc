@@ -584,6 +584,14 @@ BrowserWindow* PanelManager::GetNextBrowserWindowToActivate(
   return NULL;
 }
 
+void PanelManager::MoveToPanelStrip(Panel* panel) {
+  // TODO(jennb) - implement.
+}
+
+void PanelManager::MoveToOverflowStrip(Panel* panel, bool is_new) {
+  // TODO(jianli) - implement.
+}
+
 void PanelManager::OnMouseMove(const gfx::Point& mouse_position) {
   bool bring_up_titlebars = ShouldBringUpTitlebars(mouse_position.x(),
                                                    mouse_position.y());

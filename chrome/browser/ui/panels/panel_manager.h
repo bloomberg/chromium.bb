@@ -80,6 +80,16 @@ class PanelManager : public PanelMouseWatcherObserver,
   int GetMaxPanelHeight() const;
   int StartingRightPosition() const;
 
+  // Moves a panel to the panel strip. The panel does not currently
+  // belong in any other strip. This may cause other panels to be
+  // bumped out of the panel strip.
+  void MoveToPanelStrip(Panel* panel);
+
+  // Moves a panel to the overflow strip. The panel does not currently
+  // belong in any other strip.
+  // |is_new| is true if the panel was just created.
+  void MoveToOverflowStrip(Panel* panel, bool is_new);
+
   // Overridden from PanelMouseWatcherObserver:
   virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
 
