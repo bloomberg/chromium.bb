@@ -12,6 +12,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebRect.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "ui/gfx/compositor/compositor_switches.h"
+#include "ui/gfx/compositor/test_web_graphics_context_3d.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/gl/gl_context.h"
 #include "ui/gfx/gl/gl_surface.h"
@@ -120,6 +121,9 @@ void TextureCC::Draw(const ui::TextureDrawParams& params,
   NOTREACHED();
 }
 
+// static
+bool CompositorCC::test_context_enabled_ = false;
+
 CompositorCC::CompositorCC(CompositorDelegate* delegate,
                            gfx::AcceleratedWidget widget,
                            const gfx::Size& size)
@@ -159,6 +163,12 @@ void CompositorCC::Terminate() {
   DCHECK(g_compositor_thread);
   delete g_compositor_thread;
   g_compositor_thread = NULL;
+}
+
+// static
+void CompositorCC::EnableTestContextIfNecessary() {
+  // TODO: only do this if command line param not set.
+  test_context_enabled_ = true;
 }
 
 Texture* CompositorCC::CreateTexture() {
@@ -229,10 +239,15 @@ void CompositorCC::applyScrollDelta(const WebKit::WebSize&) {
 }
 
 WebKit::WebGraphicsContext3D* CompositorCC::createContext3D() {
-  gfx::GLShareGroup* share_group =
-      SharedResourcesCC::GetInstance()->GetShareGroup();
-  WebKit::WebGraphicsContext3D* context =
-      new webkit::gpu::WebGraphicsContext3DInProcessImpl(widget_, share_group);
+  WebKit::WebGraphicsContext3D* context;
+  if (test_context_enabled_) {
+    context = new TestWebGraphicsContext3D();
+  } else {
+    gfx::GLShareGroup* share_group =
+        SharedResourcesCC::GetInstance()->GetShareGroup();
+    context = new webkit::gpu::WebGraphicsContext3DInProcessImpl(
+        widget_, share_group);
+  }
   WebKit::WebGraphicsContext3D::Attributes attrs;
   context->initialize(attrs, 0, true);
 

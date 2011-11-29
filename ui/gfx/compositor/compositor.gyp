@@ -60,6 +60,8 @@
         'layer_animator.h',
         'screen_rotation.cc',
         'screen_rotation.h',
+        # This is needed for ui tests, so it's always compiled.
+        'test_web_graphics_context_3d.h',
       ],
       'conditions': [
         ['os_posix == 1', {
