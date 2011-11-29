@@ -97,9 +97,8 @@ class BookmarkEditorView : public BookmarkEditor,
                                     views::View* parent,
                                     views::View* child) OVERRIDE;
 
-  // views::TreeViewObserver:
-  virtual void OnTreeViewSelectionChanged(
-      views::TreeView* tree_view) OVERRIDE;
+  // views::TreeViewController:
+  virtual void OnTreeViewSelectionChanged(views::TreeView* tree_view) OVERRIDE;
   virtual bool CanEdit(views::TreeView* tree_view,
                        ui::TreeModelNode* node) OVERRIDE;
 
