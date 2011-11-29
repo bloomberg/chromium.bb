@@ -527,10 +527,6 @@ void ProxyConfigServiceImpl::OnProxyConfigChanged(
 void ProxyConfigServiceImpl::OnSettingsOpCompleted(
     SignedSettings::ReturnCode code,
     const base::Value* value) {
-  // We assume ownership here to make sure this gets deleted no matter where
-  // this function ends.
-  scoped_ptr<const base::Value> own_value(value);
-
   retrieve_property_op_ = NULL;
   if (code != SignedSettings::SUCCESS) {
     LOG(WARNING) << this << ": Error retrieving proxy setting from device";
