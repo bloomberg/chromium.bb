@@ -303,6 +303,8 @@ DesktopHostLinux::~DesktopHostLinux() {
 
 base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
     XEvent* xev) {
+  DLOG(WARNING) << "DispatchEvent:" << xev->type;
+
   bool handled = false;
   switch (xev->type) {
     case Expose:
@@ -528,7 +530,8 @@ void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
     default:
       break;
   }
-  XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
+  Status status = XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
+  DLOG(WARNING) << "PostEvent:" << xevent.type << ", status=" << status;
 }
 
 bool DesktopHostLinux::IsWindowManagerPresent() {
