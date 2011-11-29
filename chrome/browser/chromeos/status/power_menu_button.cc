@@ -284,7 +284,8 @@ void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
       POWER_BATTERY_PERCENTAGE_ITEM,
       string16(),
       views::MenuItemView::NORMAL);
-  status_ = new StatusAreaBubbleContentView(new BatteryIconView, string16());
+  status_ = new StatusAreaBubbleContentView(source, new BatteryIconView,
+                                            string16());
   UpdateStatusView();
   submenu->AddChildView(status_);
   menu->CreateSubmenu()->set_resize_open_menu(true);
