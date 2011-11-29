@@ -30,7 +30,7 @@
 #include "content/public/browser/notification_types.h"
 #include "googleurl/src/gurl.h"
 
-#if !defined(TOUCH_UI)
+#if !defined(USE_VIRTUAL_KEYBOARD)
 #include "chrome/browser/chromeos/input_method/candidate_window.h"
 #endif
 
@@ -944,7 +944,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
   }
 
   void UpdateVirtualKeyboardUI() {
-#if defined(TOUCH_UI)
+#if defined(USE_VIRTUAL_KEYBOARD)
     const VirtualKeyboard* virtual_keyboard = NULL;
     std::string virtual_keyboard_layout = "";
 
@@ -1011,7 +1011,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
                                                *virtual_keyboard,
                                                virtual_keyboard_layout));
     }
-#endif  // TOUCH_UI
+#endif  // USE_VIRTUAL_KEYBOARD
   }
 
   // Changes the current input method from the given input method ID.
@@ -1099,7 +1099,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       return false;
     }
 
-#if !defined(TOUCH_UI)
+#if !defined(USE_VIRTUAL_KEYBOARD)
     if (!candidate_window_controller_.get()) {
       candidate_window_controller_.reset(new CandidateWindowController);
       if (!candidate_window_controller_->Init()) {
@@ -1177,7 +1177,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
       shutting_down_ = true;
       notification_registrar_.RemoveAll();
       StopInputMethodDaemon();
-#if !defined(TOUCH_UI)
+#if !defined(USE_VIRTUAL_KEYBOARD)
       candidate_window_controller_.reset(NULL);
 #endif
     }
@@ -1344,7 +1344,7 @@ class InputMethodManagerImpl : public HotkeyManager::Observer,
 
   // The candidate window.  This will be deleted when the APP_TERMINATING
   // message is sent.
-#if !defined(TOUCH_UI)
+#if !defined(USE_VIRTUAL_KEYBOARD)
   scoped_ptr<CandidateWindowController> candidate_window_controller_;
 #endif
 
