@@ -571,13 +571,17 @@ void ExtensionWebNavigationTabObserver::DocumentLoadedInFrame(
 }
 
 void ExtensionWebNavigationTabObserver::DidFinishLoad(
-    int64 frame_id) {
+    int64 frame_id,
+    const GURL& validated_url,
+    bool is_main_frame) {
   if (!navigation_state_.CanSendEvents(frame_id))
     return;
   navigation_state_.SetNavigationCompleted(frame_id);
+  DCHECK_EQ(navigation_state_.GetUrl(frame_id), validated_url);
+  DCHECK_EQ(navigation_state_.IsMainFrame(frame_id), is_main_frame);
   DispatchOnCompleted(tab_contents(),
-                      navigation_state_.GetUrl(frame_id),
-                      navigation_state_.IsMainFrame(frame_id),
+                      validated_url,
+                      is_main_frame,
                       frame_id);
 }
 

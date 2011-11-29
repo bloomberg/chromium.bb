@@ -53,7 +53,6 @@ class WizardWebPageViewTabContents : public TabContents {
   virtual void DidDisplayInsecureContent();
   virtual void DidRunInsecureContent(const std::string& security_origin);
   virtual void DocumentLoadedInFrame(long long frame_id);
-  virtual void DidFinishLoad(long long frame_id);
 
  private:
   WebPageDelegate* page_delegate_;

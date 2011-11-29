@@ -84,10 +84,6 @@ void WizardWebPageViewTabContents::DocumentLoadedInFrame(
   page_delegate_->OnPageLoaded();
 }
 
-void WizardWebPageViewTabContents::DidFinishLoad(
-    long long /*frame_id*/) {
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // WebPageDomView, public:
 

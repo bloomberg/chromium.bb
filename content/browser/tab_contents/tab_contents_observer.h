@@ -58,7 +58,14 @@ class CONTENT_EXPORT TabContentsObserver : public IPC::Channel::Listener,
                                       const string16& error_description);
   virtual void DocumentAvailableInMainFrame();
   virtual void DocumentLoadedInFrame(int64 frame_id);
-  virtual void DidFinishLoad(int64 frame_id);
+  virtual void DidFinishLoad(int64 frame_id,
+                             const GURL& validated_url,
+                             bool is_main_frame);
+  virtual void DidFailLoad(int64 frame_id,
+                           const GURL& validated_url,
+                           bool is_main_frame,
+                           int error_code,
+                           const string16& error_description);
   virtual void DidGetUserGesture();
   virtual void DidGetIgnoredUIEvent();
   virtual void DidBecomeSelected();

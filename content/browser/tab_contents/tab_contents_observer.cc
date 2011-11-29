@@ -69,7 +69,17 @@ void TabContentsObserver::DocumentAvailableInMainFrame() {
 void TabContentsObserver::DocumentLoadedInFrame(int64 frame_id) {
 }
 
-void TabContentsObserver::DidFinishLoad(int64 frame_id) {
+void TabContentsObserver::DidFinishLoad(
+     int64 frame_id,
+     const GURL& validated_url,
+     bool is_main_frame) {
+}
+
+void TabContentsObserver::DidFailLoad(int64 frame_id,
+                                      const GURL& validated_url,
+                                      bool is_main_frame,
+                                      int error_code,
+                                      const string16& error_description) {
 }
 
 void TabContentsObserver::DidGetUserGesture() {

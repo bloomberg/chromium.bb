@@ -2617,7 +2617,25 @@ void RenderViewImpl::didHandleOnloadEvents(WebFrame* frame) {
 }
 
 void RenderViewImpl::didFailLoad(WebFrame* frame, const WebURLError& error) {
+  WebDataSource* ds = frame->dataSource();
+  DCHECK(ds);
+
+
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFailLoad(frame, error));
+
+  const WebURLRequest& failed_request = ds->request();
+  string16 error_description;
+  content::GetContentClient()->renderer()->GetNavigationErrorStrings(
+      failed_request,
+      error,
+      NULL,
+      &error_description);
+  Send(new ViewHostMsg_DidFailLoadWithError(routing_id_,
+                                            frame->identifier(),
+                                            failed_request.url(),
+                                            !frame->parent(),
+                                            error.reason,
+                                            error_description));
 }
 
 void RenderViewImpl::didFinishLoad(WebFrame* frame) {
@@ -2628,7 +2646,10 @@ void RenderViewImpl::didFinishLoad(WebFrame* frame) {
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFinishLoad(frame));
 
-  Send(new ViewHostMsg_DidFinishLoad(routing_id_, frame->identifier()));
+  Send(new ViewHostMsg_DidFinishLoad(routing_id_,
+                                     frame->identifier(),
+                                     ds->request().url(),
+                                     !frame->parent()));
 }
 
 void RenderViewImpl::didNavigateWithinPage(

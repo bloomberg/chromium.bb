@@ -1293,8 +1293,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_DocumentLoadedInFrame,
                     int64 /* frame_id */)
 
 // Notifies the browser that a frame finished loading.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFinishLoad,
-                    int64 /* frame_id */)
+IPC_MESSAGE_ROUTED3(ViewHostMsg_DidFinishLoad,
+                    int64 /* frame_id */,
+                    GURL /* validated_url */,
+                    bool /* is_main_frame */)
 
 // Changes the title for the page in the UI when the page is navigated or the
 // title changes.
@@ -1367,10 +1369,16 @@ IPC_MESSAGE_ROUTED4(ViewHostMsg_DidStartProvisionalLoadForFrame,
                     GURL /* opener url if present, else empty */,
                     GURL /* url */)
 
+IPC_MESSAGE_ROUTED5(ViewHostMsg_DidFailLoadWithError,
+                    int64 /* frame_id */,
+                    GURL /* validated_url */,
+                    bool /* is_main_frame */,
+                    int /* error_code */,
+                    string16 /* error_description */)
+
 // Sent when the renderer fails a provisional load with an error.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFailProvisionalLoadWithError,
                     ViewHostMsg_DidFailProvisionalLoadWithError_Params)
-
 
 // Tells the render view that a ViewHostMsg_PaintAtSize message was
 // processed, and the DIB is ready for use. |tag| has the same value that

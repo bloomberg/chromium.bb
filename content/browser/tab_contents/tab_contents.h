@@ -623,7 +623,14 @@ class CONTENT_EXPORT TabContents : public PageNavigator,
   void OnDidRunInsecureContent(const std::string& security_origin,
                                const GURL& target_url);
   void OnDocumentLoadedInFrame(int64 frame_id);
-  void OnDidFinishLoad(int64 frame_id);
+  void OnDidFinishLoad(int64 frame_id,
+                       const GURL& validated_url,
+                       bool is_main_frame);
+  void OnDidFailLoadWithError(int64 frame_id,
+                              const GURL& validated_url,
+                              bool is_main_frame,
+                              int error_code,
+                              const string16& error_description);
   void OnUpdateContentRestrictions(int restrictions);
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,

@@ -1089,9 +1089,22 @@ void TabContents::OnDocumentLoadedInFrame(int64 frame_id) {
                     DocumentLoadedInFrame(frame_id));
 }
 
-void TabContents::OnDidFinishLoad(int64 frame_id) {
+void TabContents::OnDidFinishLoad(
+    int64 frame_id,
+    const GURL& validated_url,
+    bool is_main_frame) {
   FOR_EACH_OBSERVER(TabContentsObserver, observers_,
-                    DidFinishLoad(frame_id));
+                    DidFinishLoad(frame_id, validated_url, is_main_frame));
+}
+
+void TabContents::OnDidFailLoadWithError(int64 frame_id,
+                                         const GURL& validated_url,
+                                         bool is_main_frame,
+                                         int error_code,
+                                         const string16& error_description) {
+  FOR_EACH_OBSERVER(TabContentsObserver, observers_,
+                    DidFailLoad(frame_id, validated_url, is_main_frame,
+                                error_code, error_description));
 }
 
 void TabContents::OnUpdateContentRestrictions(int restrictions) {
