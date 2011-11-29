@@ -53,6 +53,7 @@
             'breakpad_utilities',
           ],
           'include_dirs': [
+            'src/client/apple/Framework',
             'src/common/mac',
           ],
           'sources': [
@@ -193,6 +194,14 @@
             'crash_inspector',
             'crash_report_sender',
           ],
+          'include_dirs': [
+            'src/client/apple/Framework',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              'src/client/apple/Framework',
+            ],
+          },
           'defines': [
             'USE_PROTECTED_ALLOCATIONS=1',
           ],
