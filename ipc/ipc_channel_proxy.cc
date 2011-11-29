@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -12,18 +13,17 @@
 
 namespace IPC {
 
-//------------------------------------------------------------------------------
-
-// This task ensures the message is deleted if the task is deleted without
+// This helper ensures the message is deleted if the task is deleted without
 // having been run.
-class SendTask : public Task {
+class SendCallbackHelper
+    : public base::RefCountedThreadSafe<SendCallbackHelper> {
  public:
-  SendTask(ChannelProxy::Context* context, Message* message)
+  SendCallbackHelper(ChannelProxy::Context* context, Message* message)
       : context_(context),
         message_(message) {
   }
 
-  virtual void Run() {
+  void Send() {
     context_->OnSendMessage(message_.release());
   }
 
@@ -31,7 +31,7 @@ class SendTask : public Task {
   scoped_refptr<ChannelProxy::Context> context_;
   scoped_ptr<Message> message_;
 
-  DISALLOW_COPY_AND_ASSIGN(SendTask);
+  DISALLOW_COPY_AND_ASSIGN(SendCallbackHelper);
 };
 
 //------------------------------------------------------------------------------
@@ -354,8 +354,10 @@ bool ChannelProxy::Send(Message* message) {
   Logging::GetInstance()->OnSendMessage(message, context_->channel_id());
 #endif
 
-  context_->ipc_message_loop()->PostTask(FROM_HERE,
-                                         new SendTask(context_.get(), message));
+  context_->ipc_message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&SendCallbackHelper::Send,
+                 new SendCallbackHelper(context_.get(), message)));
   return true;
 }
 

@@ -17,7 +17,7 @@
 
 namespace IPC {
 
-class SendTask;
+class SendCallbackHelper;
 
 //-----------------------------------------------------------------------------
 // IPC::ChannelProxy
@@ -222,7 +222,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
 
    private:
     friend class ChannelProxy;
-    friend class SendTask;
+    friend class SendCallbackHelper;
 
     // Create the Channel
     void CreateChannel(const IPC::ChannelHandle& channel_handle,
@@ -263,7 +263,7 @@ class IPC_EXPORT ChannelProxy : public Message::Sender {
   }
 
  private:
-  friend class SendTask;
+  friend class SendCallbackHelper;
 
   // By maintaining this indirection (ref-counted) to our internal state, we
   // can safely be destroyed while the background thread continues to do stuff
