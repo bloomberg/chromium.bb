@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/task.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
@@ -22,41 +23,24 @@ using content::BrowserThread;
 
 namespace {
 
-class GetCookiesTask : public Task {
- public:
-  GetCookiesTask(const GURL& url,
-                 net::URLRequestContextGetter* context_getter,
-                 base::WaitableEvent* event,
-                 std::string* cookies)
-      : url_(url),
-        context_getter_(context_getter),
-        event_(event),
-        cookies_(cookies) {}
+void GetCookiesCallback(std::string* cookies_out,
+                        base::WaitableEvent* event,
+                        const std::string& cookies) {
+  *cookies_out = cookies;
+  event->Signal();
+}
 
-  virtual void Run() {
-    net::CookieOptions options;
-    context_getter_->GetURLRequestContext()->cookie_store()
-        ->GetCookiesWithOptionsAsync(
-            url_, options, base::Bind(&GetCookiesTask::GetCookiesCallback,
-                                      base::Unretained(cookies_),
-                                      base::Unretained(event_)));
-  }
-
-  static void GetCookiesCallback(std::string* cookies_out,
-                                 base::WaitableEvent* event,
-                                 const std::string& cookies) {
-    *cookies_out = cookies;
-    event->Signal();
-  }
-
- private:
-  const GURL& url_;
-  net::URLRequestContextGetter* const context_getter_;
-  base::WaitableEvent* const event_;
-  std::string* const cookies_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetCookiesTask);
-};
+void GetCookiesOnIOThread(const GURL& url,
+                          net::URLRequestContextGetter* context_getter,
+                          base::WaitableEvent* event,
+                          std::string* cookies) {
+  net::CookieStore* cookie_store =
+      context_getter->GetURLRequestContext()->cookie_store();
+  cookie_store->GetCookiesWithOptionsAsync(
+      url, net::CookieOptions(),
+      base::Bind(&GetCookiesCallback,
+                 base::Unretained(cookies), base::Unretained(event)));
+}
 
 class CookiePolicyBrowserTest : public InProcessBrowserTest {
  protected:
@@ -71,7 +55,8 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
-            new GetCookiesTask(url, context_getter, &event, &cookies)));
+            base::Bind(&GetCookiesOnIOThread, url,
+                       make_scoped_refptr(context_getter), &event, &cookies)));
     event.Wait();
     return cookies;
   }
