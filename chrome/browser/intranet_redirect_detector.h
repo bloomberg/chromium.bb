@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "content/public/common/url_fetcher_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -72,7 +73,7 @@ class IntranetRedirectDetector
   virtual void OnIPAddressChanged() OVERRIDE;
 
   GURL redirect_origin_;
-  ScopedRunnableMethodFactory<IntranetRedirectDetector> fetcher_factory_;
+  base::WeakPtrFactory<IntranetRedirectDetector> weak_factory_;
   Fetchers fetchers_;
   std::vector<GURL> resulting_origins_;
   bool in_sleep_;  // True if we're in the seven-second "no fetching" period

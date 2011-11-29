@@ -4,6 +4,7 @@
 
 #include "chrome/browser/intranet_redirect_detector.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -24,7 +25,7 @@ const size_t IntranetRedirectDetector::kNumCharsInHostnames = 10;
 IntranetRedirectDetector::IntranetRedirectDetector()
     : redirect_origin_(g_browser_process->local_state()->GetString(
           prefs::kLastKnownIntranetRedirectOrigin)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(fetcher_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       in_sleep_(true) {
   // Because this function can be called during startup, when kicking off a URL
   // fetch can eat up 20 ms of time, we delay seven seconds, which is hopefully
@@ -34,8 +35,8 @@ IntranetRedirectDetector::IntranetRedirectDetector()
   // no function to do this.
   static const int kStartFetchDelayMS = 7000;
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      fetcher_factory_.NewRunnableMethod(
-          &IntranetRedirectDetector::FinishSleep),
+      base::Bind(&IntranetRedirectDetector::FinishSleep,
+                 weak_factory_.GetWeakPtr()),
       kStartFetchDelayMS);
 
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -151,8 +152,8 @@ void IntranetRedirectDetector::OnIPAddressChanged() {
   in_sleep_ = true;
   static const int kNetworkSwitchDelayMS = 1000;
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      fetcher_factory_.NewRunnableMethod(
-          &IntranetRedirectDetector::FinishSleep),
+      base::Bind(&IntranetRedirectDetector::FinishSleep,
+                 weak_factory_.GetWeakPtr()),
       kNetworkSwitchDelayMS);
 }
 
