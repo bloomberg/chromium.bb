@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
 #include "chrome/browser/ui/window_sizer.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
@@ -69,7 +70,7 @@ PanelManager::PanelManager()
       titlebar_action_factory_(this),
       auto_sizing_enabled_(true),
       mouse_watching_disabled_(false) {
-  panel_mouse_watcher_.reset(PanelMouseWatcher::Create(this));
+  panel_mouse_watcher_.reset(PanelMouseWatcher::Create());
   auto_hiding_desktop_bar_ = AutoHidingDesktopBar::Create(this);
   OnDisplayChanged();
 }
@@ -354,7 +355,7 @@ void PanelManager::OnPanelExpansionStateChanged(
 
 void PanelManager::IncrementMinimizedPanels() {
   if (!mouse_watching_disabled_ && !minimized_panel_count_)
-    panel_mouse_watcher_->Start();
+    panel_mouse_watcher_->AddObserver(this);
   minimized_panel_count_++;
   DCHECK_LE(minimized_panel_count_, num_panels());
 }
@@ -363,7 +364,7 @@ void PanelManager::DecrementMinimizedPanels() {
   minimized_panel_count_--;
   DCHECK_GE(minimized_panel_count_, 0);
   if (!mouse_watching_disabled_ && !minimized_panel_count_)
-    panel_mouse_watcher_->Stop();
+    panel_mouse_watcher_->RemoveObserver(this);
 }
 
 void PanelManager::OnPreferredWindowSizeChanged(

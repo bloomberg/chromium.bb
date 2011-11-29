@@ -13,15 +13,16 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
 #include "ui/gfx/rect.h"
 
 class Browser;
 class Panel;
+class PanelMouseWatcher;
 
 // This class manages a set of panels.
 // Note that the ref count is needed by using PostTask in the implementation.
-class PanelManager : public PanelMouseWatcher::Observer,
+class PanelManager : public PanelMouseWatcherObserver,
                      public AutoHidingDesktopBar::Observer {
  public:
   typedef std::vector<Panel*> Panels;
@@ -79,7 +80,7 @@ class PanelManager : public PanelMouseWatcher::Observer,
   int GetMaxPanelHeight() const;
   int StartingRightPosition() const;
 
-  // Overridden from PanelMouseWatcher::Observer:
+  // Overridden from PanelMouseWatcherObserver:
   virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
 
 #ifdef UNIT_TEST

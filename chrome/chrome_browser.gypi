@@ -3191,6 +3191,7 @@
         'browser/ui/panels/panel_manager.h',
         'browser/ui/panels/panel_mouse_watcher.cc',
         'browser/ui/panels/panel_mouse_watcher.h',
+        'browser/ui/panels/panel_mouse_watcher_observer.h',
         'browser/ui/panels/panel_mouse_watcher_timer.cc',
         'browser/ui/panels/panel_mouse_watcher_win.cc',
         'browser/ui/panels/panel_settings_menu_model.cc',

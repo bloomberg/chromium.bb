@@ -11,14 +11,14 @@
 // and Mac panels implementations.
 class PanelMouseWatcherTimer : public PanelMouseWatcher {
  public:
-  explicit PanelMouseWatcherTimer(Observer* observer);
+  PanelMouseWatcherTimer();
   virtual ~PanelMouseWatcherTimer();
 
- protected:
-  virtual void Start();
-  virtual void Stop();
-
  private:
+  virtual void Start() OVERRIDE;
+  virtual void Stop() OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
+
   // Specifies the rate at which we want to sample the mouse position.
   static const int kMousePollingIntervalMs = 250;
 
@@ -36,28 +36,31 @@ class PanelMouseWatcherTimer : public PanelMouseWatcher {
 };
 
 // static
-PanelMouseWatcher* PanelMouseWatcher::Create(Observer* observer) {
-  return new PanelMouseWatcherTimer(observer);
+PanelMouseWatcher* PanelMouseWatcher::Create() {
+  return new PanelMouseWatcherTimer();
 }
 
-PanelMouseWatcherTimer::PanelMouseWatcherTimer(Observer* observer)
-    : PanelMouseWatcher(observer) {
+PanelMouseWatcherTimer::PanelMouseWatcherTimer() {
 }
 
 PanelMouseWatcherTimer::~PanelMouseWatcherTimer() {
-  DCHECK(!timer_.IsRunning());
+  DCHECK(!IsActive());
 }
 
 void PanelMouseWatcherTimer::Start() {
-  DCHECK(!timer_.IsRunning());
+  DCHECK(!IsActive());
   timer_.Start(FROM_HERE,
                base::TimeDelta::FromMilliseconds(kMousePollingIntervalMs),
                this, &PanelMouseWatcherTimer::DoWork);
 }
 
 void PanelMouseWatcherTimer::Stop() {
-  DCHECK(timer_.IsRunning());
+  DCHECK(IsActive());
   timer_.Stop();
+}
+
+bool PanelMouseWatcherTimer::IsActive() const {
+  return timer_.IsRunning();
 }
 
 void PanelMouseWatcherTimer::DoWork() {

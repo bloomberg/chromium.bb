@@ -27,13 +27,14 @@ HMODULE GetCurrentModuleHandle() {
 
 class PanelMouseWatcherWin : public PanelMouseWatcher {
  public:
-  explicit PanelMouseWatcherWin(Observer* observer);
+  PanelMouseWatcherWin();
   virtual ~PanelMouseWatcherWin();
 
+ private:
   virtual void Start() OVERRIDE;
   virtual void Stop() OVERRIDE;
+  virtual bool IsActive() const OVERRIDE;
 
- private:
   static LRESULT CALLBACK MouseHookProc(int code, WPARAM wparam, LPARAM lparam);
 
   static PanelMouseWatcherWin* instance_;  // singleton instance
@@ -45,32 +46,35 @@ class PanelMouseWatcherWin : public PanelMouseWatcher {
 PanelMouseWatcherWin* PanelMouseWatcherWin::instance_ = NULL;
 
 // static
-PanelMouseWatcher* PanelMouseWatcher::Create(Observer* observer) {
-  return new PanelMouseWatcherWin(observer);
+PanelMouseWatcher* PanelMouseWatcher::Create() {
+  return new PanelMouseWatcherWin();
 }
 
-PanelMouseWatcherWin::PanelMouseWatcherWin(Observer* observer)
-    : PanelMouseWatcher(observer),
-      mouse_hook_(NULL) {
+PanelMouseWatcherWin::PanelMouseWatcherWin()
+    : mouse_hook_(NULL) {
   DCHECK(!instance_);  // Only one instance ever used.
   instance_ = this;
 }
 
 PanelMouseWatcherWin::~PanelMouseWatcherWin() {
-  DCHECK(!mouse_hook_);
+  DCHECK(!IsActive());
 }
 
 void PanelMouseWatcherWin::Start() {
-  DCHECK(!mouse_hook_);
+  DCHECK(!IsActive());
   mouse_hook_ = ::SetWindowsHookEx(
       WH_MOUSE_LL, MouseHookProc, GetCurrentModuleHandle(), 0);
   DCHECK(mouse_hook_);
 }
 
 void PanelMouseWatcherWin::Stop() {
-  DCHECK(mouse_hook_);
+  DCHECK(IsActive());
   ::UnhookWindowsHookEx(mouse_hook_);
   mouse_hook_ = NULL;
+}
+
+bool PanelMouseWatcherWin::IsActive() const {
+  return mouse_hook_ != NULL;
 }
 
 LRESULT CALLBACK PanelMouseWatcherWin::MouseHookProc(int code,

@@ -1863,6 +1863,7 @@
         'browser/ui/omnibox/omnibox_view_unittest.cc',
         'browser/ui/panels/auto_hiding_desktop_bar_win_unittest.cc',
         'browser/ui/panels/panel_browser_window_cocoa_unittest.mm',
+	'browser/ui/panels/panel_mouse_watcher_unittest.cc',
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
         'browser/ui/select_file_dialog_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
