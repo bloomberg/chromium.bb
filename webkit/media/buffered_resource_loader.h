@@ -173,7 +173,7 @@ class BufferedResourceLoader
   virtual ~BufferedResourceLoader();
 
  private:
-  friend class BufferedDataSourceTest2;
+  friend class BufferedDataSourceTest;
   friend class BufferedResourceLoaderTest;
 
   // Updates the |buffer_|'s forward and backward capacities.

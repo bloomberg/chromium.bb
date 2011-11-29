@@ -427,6 +427,8 @@
         '../../media/buffered_data_source_unittest.cc',
         '../../media/buffered_resource_loader_unittest.cc',
         '../../media/simple_data_source_unittest.cc',
+        '../../media/test_response_generator.cc',
+        '../../media/test_response_generator.h',
         '../../mocks/mock_resource_loader_bridge.h',
         '../../mocks/mock_webframeclient.h',
         '../../mocks/mock_weburlloader.cc',

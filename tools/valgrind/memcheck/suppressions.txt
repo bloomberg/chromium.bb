@@ -4546,18 +4546,10 @@
    fun:_ZN16CrxUpdateService19ProcessPendingItemsEv
 }
 {
-   bug_100914a
+   bug_100914
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN12webkit_media18BufferedDataSource20CreateResourceLoaderEll
-   fun:_ZN12webkit_media18BufferedDataSource24HttpInitialStartCallbackEi
-}
-{
-   bug_100914b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12webkit_media18BufferedDataSource20CreateResourceLoaderEll
-   fun:_ZN12webkit_media18BufferedDataSource14InitializeTaskEv
 }
 {
    bug_100916

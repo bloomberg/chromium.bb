@@ -69,7 +69,7 @@ class BufferedDataSource : public WebDataSource {
       int64 first_byte_position, int64 last_byte_position);
 
  private:
-  friend class BufferedDataSourceTest2;
+  friend class BufferedDataSourceTest;
 
   // Posted to perform initialization on render thread and start resource
   // loading.
