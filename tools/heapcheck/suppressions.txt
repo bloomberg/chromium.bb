@@ -1796,3 +1796,18 @@
    fun:scoped_ptr::reset
    fun:ProfileSyncServiceTypedUrlTest::TearDown
 }
+{
+   bug_105699
+   Heapcheck:Leak
+   fun:base::Environment::Create
+   fun:::DBusPowerSaveBlocker::DBusPowerSaveBlocker
+   fun:DefaultSingletonTraits::New
+   fun:Singleton::get
+   fun:::DBusPowerSaveBlocker::GetInstance
+   fun:PowerSaveBlocker::ApplyBlock
+   fun:PowerSaveBlocker::AdjustBlockCount
+   fun:base::internal::RunnableAdapter::Run
+   fun:base::internal::InvokeHelper::MakeItSo
+   fun:base::internal::Invoker::Run
+   fun:base::Callback::Run
+}
