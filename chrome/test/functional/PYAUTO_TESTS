@@ -455,6 +455,8 @@
       # crbug.com/98681
       '-nacl_sdk.NaClSDKTest.testNaClSDK',
       '-nacl_sdk.NaClSDKTest.testVerifyPrereleaseGallery',
+      # Will enable to following test by 11/30/2011
+      '-ntp.NTPTest.testRecentlyClosedShowsUniqueItems',
     ],
 
     'win': [
