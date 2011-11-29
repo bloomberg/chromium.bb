@@ -5223,6 +5223,23 @@
    fun:_ZN4base8internal7InvokerILi4ENS0_9BindStateINS0_15RunnableAdapterIMN20ChromeURLDataManager10DataSourceEFvRKSsbiEEEFvPS5_S7_biEFvSB_SsbiEEESC_E3RunEPNS0_13BindStateBaseE
    fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
+{
+   bug_105744
+   Memcheck:Leak
+   fun:malloc
+   fun:_cairo_image_surface_create_for_pixman_image
+   fun:_cairo_image_surface_create_with_pixman_format
+   fun:_ZN4skia20BitmapPlatformDevice6CreateEiibPh
+   fun:_ZN4skia14PlatformCanvas10initializeEiibPh
+   fun:_ZL19PaintViewIntoCanvasPN6WebKit7WebViewERN4skia14PlatformCanvasE
+   fun:_ZN24ChromeRenderViewObserver21CaptureFrameThumbnailEPN6WebKit7WebViewEiiP8SkBitmapP14ThumbnailScore
+   fun:_ZN24ChromeRenderViewObserver16CaptureThumbnailEv
+   fun:_ZN24ChromeRenderViewObserver15CapturePageInfoEib
+   fun:_ZN4base8internal15RunnableAdapterIM24ChromeRenderViewObserverFvibEE3RunEPS2_RKiRKb
+   fun:_ZN4base8internal12InvokeHelperILb1EvNS0_15RunnableAdapterIM24ChromeRenderViewObserverFvibEEEFvRKNS_7WeakPtrIS3_EERKiRKbEE8MakeItSoES6_SA_SC_SE_
+   fun:_ZN4base8internal7InvokerILi3ENS0_9BindStateINS0_15RunnableAdapterIM24ChromeRenderViewObserverFvibEEEFvPS4_ibEFvNS_7WeakPtrIS4_EEibEEES9_E3RunEPNS0_13BindStateBaseE
+   fun:_ZNK4base8CallbackIFvvEE3RunEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
