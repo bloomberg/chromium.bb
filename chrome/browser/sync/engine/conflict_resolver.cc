@@ -58,7 +58,7 @@ void ConflictResolver::IgnoreLocalChanges(MutableEntry* entry) {
   // An update matches local actions, merge the changes.
   // This is a little fishy because we don't actually merge them.
   // In the future we should do a 3-way merge.
-  VLOG(1) << "Resolving conflict by ignoring local changes:" << entry;
+  DVLOG(1) << "Resolving conflict by ignoring local changes:" << entry;
   // With IS_UNSYNCED false, changes should be merged.
   entry->Put(syncable::IS_UNSYNCED, false);
 }
@@ -70,7 +70,7 @@ void ConflictResolver::OverwriteServerChanges(WriteTransaction* trans,
   // made our local client changes.
   // TODO(chron): This is really a general property clobber. We clobber
   // the server side property. Perhaps we should actually do property merging.
-  VLOG(1) << "Resolving conflict by ignoring server changes:" << entry;
+  DVLOG(1) << "Resolving conflict by ignoring server changes:" << entry;
   entry->Put(syncable::BASE_VERSION, entry->Get(syncable::SERVER_VERSION));
   entry->Put(syncable::IS_UNAPPLIED_UPDATE, false);
 }
@@ -90,12 +90,12 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
 
   if (!entry.Get(syncable::IS_UNAPPLIED_UPDATE)) {
     if (!entry.Get(syncable::PARENT_ID).ServerKnows()) {
-      VLOG(1) << "Item conflicting because its parent not yet committed. Id: "
-              << id;
+      DVLOG(1) << "Item conflicting because its parent not yet committed. Id: "
+               << id;
     } else {
-      VLOG(1) << "No set for conflicting entry id " << id << ". There should "
-                 "be an update/commit that will fix this soon. This message "
-                 "should not repeat.";
+      DVLOG(1) << "No set for conflicting entry id " << id << ". There should "
+               << "be an update/commit that will fix this soon. This message "
+               << "should not repeat.";
     }
     return NO_SYNC_PROGRESS;
   }
@@ -128,16 +128,16 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
       // TODO(zea): We may prefer to choose the local changes over the server
       // if we know the local changes happened before (or vice versa).
       // See http://crbug.com/76596
-      VLOG(1) << "Resolving simple conflict, ignoring local changes for:"
-              << entry;
+      DVLOG(1) << "Resolving simple conflict, ignoring local changes for:"
+               << entry;
       IgnoreLocalChanges(&entry);
       status->increment_num_local_overwrites();
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                                 OVERWRITE_LOCAL,
                                 CONFLICT_RESOLUTION_SIZE);
     } else {
-      VLOG(1) << "Resolving simple conflict, overwriting server changes for:"
-              << entry;
+      DVLOG(1) << "Resolving simple conflict, overwriting server changes for:"
+               << entry;
       OverwriteServerChanges(trans, &entry);
       status->increment_num_server_overwrites();
       UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
@@ -153,8 +153,8 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
                                               entry.Get(syncable::ID),
                                               &children);
       if (0 != children.size()) {
-        VLOG(1) << "Entry is a server deleted directory with local contents, "
-                   "should be in a set. (race condition).";
+        DVLOG(1) << "Entry is a server deleted directory with local contents, "
+                 << "should be in a set. (race condition).";
         return NO_SYNC_PROGRESS;
       }
     }
@@ -238,7 +238,7 @@ bool AttemptToFixCircularConflict(WriteTransaction* trans,
     }
     if (parentid.IsRoot())
       continue;
-    VLOG(1) << "Overwriting server changes to avoid loop: " << entryi;
+    DVLOG(1) << "Overwriting server changes to avoid loop: " << entryi;
     entryi.Put(syncable::BASE_VERSION, entryi.Get(syncable::SERVER_VERSION));
     entryi.Put(syncable::IS_UNSYNCED, true);
     entryi.Put(syncable::IS_UNAPPLIED_UPDATE, false);
@@ -280,7 +280,7 @@ bool AttemptToFixUnsyncedEntryInDeletedServerTree(WriteTransaction* trans,
     MutableEntry parent(trans, syncable::GET_BY_ID, id);
     if (!binary_search(conflict_set->begin(), conflict_set->end(), id))
       break;
-    VLOG(1) << "Giving directory a new id so we can undelete it " << parent;
+    DVLOG(1) << "Giving directory a new id so we can undelete it " << parent;
     ClearServerData(&parent);
     SyncerUtil::ChangeEntryIDAndUpdateChildren(trans, &parent,
         trans->directory()->NextId());
@@ -357,8 +357,8 @@ bool AttemptToFixUpdateEntryInDeletedLocalTree(WriteTransaction* trans,
     }
     MutableEntry entry(trans, syncable::GET_BY_ID, id);
 
-    VLOG(1) << "Undoing our deletion of " << entry
-            << ", will have name " << entry.Get(syncable::NON_UNIQUE_NAME);
+    DVLOG(1) << "Undoing our deletion of " << entry
+             << ", will have name " << entry.Get(syncable::NON_UNIQUE_NAME);
 
     Id parent_id = entry.Get(syncable::PARENT_ID);
     if (parent_id == reroot_id) {
@@ -409,7 +409,7 @@ bool ConflictResolver::ProcessConflictSet(WriteTransaction* trans,
     return false;
   }
 
-  VLOG(1) << "Fixing a set containing " << set_size << " items";
+  DVLOG(1) << "Fixing a set containing " << set_size << " items";
 
   // Fix circular conflicts.
   if (AttemptToFixCircularConflict(trans, conflict_set))

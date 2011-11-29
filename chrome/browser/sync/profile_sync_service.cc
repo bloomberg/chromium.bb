@@ -349,7 +349,7 @@ void ProfileSyncService::OnSyncConfigureDone(
 void ProfileSyncService::StartUp() {
   // Don't start up multiple times.
   if (backend_.get()) {
-    VLOG(1) << "Skipping bringing up backend host.";
+    DVLOG(1) << "Skipping bringing up backend host.";
     return;
   }
 
@@ -616,7 +616,7 @@ void ProfileSyncService::OnSyncCycleCompleted() {
         base::Bind(&browser_sync::SessionModelAssociator::DeleteStaleSessions,
                    GetSessionModelAssociator()->AsWeakPtr()));
   }
-  VLOG(2) << "Notifying observers sync cycle completed";
+  DVLOG(2) << "Notifying observers sync cycle completed";
   NotifyObservers();
 }
 
@@ -630,12 +630,12 @@ void ProfileSyncService::OnDataTypesChanged(
   // available.
   if (migrator_.get() &&
       migrator_->state() != browser_sync::BackendMigrator::IDLE) {
-    VLOG(1) << "Dropping OnDataTypesChanged due to migrator busy.";
+    DVLOG(1) << "Dropping OnDataTypesChanged due to migrator busy.";
     return;
   }
 
-  VLOG(2) << "OnDataTypesChanged called with types: "
-          << syncable::ModelTypeSetToString(to_add);
+  DVLOG(2) << "OnDataTypesChanged called with types: "
+           << syncable::ModelTypeSetToString(to_add);
 
   syncable::ModelTypeSet registered_types;
   GetRegisteredDataTypes(&registered_types);
@@ -645,7 +645,7 @@ void ProfileSyncService::OnDataTypesChanged(
                       registered_types.begin(), registered_types.end(),
                       std::inserter(to_register, to_register.end()));
 
-  VLOG(2) << "Enabling types: " << syncable::ModelTypeSetToString(to_register);
+  DVLOG(2) << "Enabling types: " << syncable::ModelTypeSetToString(to_register);
 
   for (syncable::ModelTypeSet::const_iterator it = to_register.begin();
        it != to_register.end(); ++it) {
@@ -677,8 +677,8 @@ void ProfileSyncService::OnDataTypesChanged(
     // Only automatically turn on types if we have already finished set up.
     // Otherwise, just leave the experimental types on by default.
     if (!to_register.empty() && HasSyncSetupCompleted() && migrator_.get()) {
-      VLOG(1) << "Dynamically enabling new datatypes: "
-              << syncable::ModelTypeSetToString(to_register);
+      DVLOG(1) << "Dynamically enabling new datatypes: "
+               << syncable::ModelTypeSetToString(to_register);
       OnMigrationNeededForTypes(to_register);
     }
   }
@@ -765,8 +765,8 @@ void ProfileSyncService::OnPassphraseRequired(
     return;
   }
 
-  VLOG(1) << "Passphrase required with reason: "
-          << sync_api::PassphraseRequiredReasonToString(reason);
+  DVLOG(1) << "Passphrase required with reason: "
+           << sync_api::PassphraseRequiredReasonToString(reason);
   passphrase_required_reason_ = reason;
 
   // First try supplying gaia password as the passphrase.
@@ -776,7 +776,7 @@ void ProfileSyncService::OnPassphraseRequired(
   if (!cached_passphrases_.gaia_passphrase.empty()) {
     std::string gaia_passphrase = cached_passphrases_.gaia_passphrase;
     cached_passphrases_.gaia_passphrase.clear();
-    VLOG(1) << "Attempting gaia passphrase.";
+    DVLOG(1) << "Attempting gaia passphrase.";
     // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
     SetPassphrase(gaia_passphrase, false);
     return;
@@ -787,7 +787,7 @@ void ProfileSyncService::OnPassphraseRequired(
   if (!cached_passphrases_.explicit_passphrase.empty()) {
     std::string explicit_passphrase = cached_passphrases_.explicit_passphrase;
     cached_passphrases_.explicit_passphrase.clear();
-    VLOG(1) << "Attempting explicit passphrase.";
+    DVLOG(1) << "Attempting explicit passphrase.";
     // SetPassphrase will re-cache this passphrase if the syncer isn't ready.
     SetPassphrase(explicit_passphrase, true);
     return;
@@ -798,12 +798,12 @@ void ProfileSyncService::OnPassphraseRequired(
   // track the auth error in passphrase_required_reason_ in case the user later
   // re-enables an encrypted data type.
   if (!IsPassphraseRequiredForDecryption()) {
-    VLOG(1) << "Decrypting and no encrypted datatypes enabled"
-            << ", accepted passphrase.";
+    DVLOG(1) << "Decrypting and no encrypted datatypes enabled"
+             << ", accepted passphrase.";
     ResolvePassphraseRequired();
   } else if (WizardIsVisible()) {
     // Prompt the user for a password.
-    VLOG(1) << "Prompting user for passphrase.";
+    DVLOG(1) << "Prompting user for passphrase.";
     wizard_.Step(SyncSetupWizard::ENTER_PASSPHRASE);
   }
 
@@ -811,7 +811,7 @@ void ProfileSyncService::OnPassphraseRequired(
 }
 
 void ProfileSyncService::OnPassphraseAccepted() {
-  VLOG(1) << "Received OnPassphraseAccepted.";
+  DVLOG(1) << "Received OnPassphraseAccepted.";
   // Reset passphrase_required_reason_ since we know we no longer require the
   // passphrase. We do this here rather than down in ResolvePassphraseRequired()
   // because that can be called by OnPassphraseRequired() if no encrypted data
@@ -852,15 +852,15 @@ void ProfileSyncService::OnEncryptedTypesChanged(
     bool encrypt_everything) {
   encrypted_types_ = encrypted_types;
   encrypt_everything_ = encrypt_everything;
-  VLOG(1) << "Encrypted types changed to "
-          << syncable::ModelTypeSetToString(encrypted_types_)
-          << " (encrypt everything is set to "
-          << (encrypt_everything_ ? "true" : "false") << ")";
+  DVLOG(1) << "Encrypted types changed to "
+           << syncable::ModelTypeSetToString(encrypted_types_)
+           << " (encrypt everything is set to "
+           << (encrypt_everything_ ? "true" : "false") << ")";
   DCHECK_GT(encrypted_types_.count(syncable::PASSWORDS), 0u);
 }
 
 void ProfileSyncService::OnEncryptionComplete() {
-  VLOG(1) << "Encryption complete";
+  DVLOG(1) << "Encryption complete";
   if (encryption_pending_ && encrypt_everything_) {
     encryption_pending_ = false;
     // The user had chosen to encrypt datatypes. This is the last thing to
@@ -1145,7 +1145,7 @@ void ProfileSyncService::OnUserCancelledDialog() {
 void ProfileSyncService::ChangePreferredDataTypes(
     const syncable::ModelTypeSet& preferred_types) {
 
-  VLOG(1) << "ChangePreferredDataTypes invoked";
+  DVLOG(1) << "ChangePreferredDataTypes invoked";
   syncable::ModelTypeSet registered_types;
   GetRegisteredDataTypes(&registered_types);
   syncable::ModelTypeSet registered_preferred_types;
@@ -1237,8 +1237,8 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   if (IsPassphraseRequiredForDecryption()) {
     // We need a passphrase still. We don't bother to attempt to configure
     // until we receive an OnPassphraseAccepted (which triggers a configure).
-    VLOG(1) << "ProfileSyncService::ConfigureDataTypeManager bailing out "
-            << "because a passphrase required";
+    DVLOG(1) << "ProfileSyncService::ConfigureDataTypeManager bailing out "
+             << "because a passphrase required";
     return;
   }
   sync_api::ConfigureReason reason = sync_api::CONFIGURE_REASON_UNKNOWN;
@@ -1315,7 +1315,7 @@ void ProfileSyncService::DeactivateDataType(syncable::ModelType type) {
 void ProfileSyncService::SetPassphrase(const std::string& passphrase,
                                        bool is_explicit) {
   if (ShouldPushChanges() || IsPassphraseRequired()) {
-    VLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit");
+    DVLOG(1) << "Setting " << (is_explicit ? "explicit" : "implicit");
     backend_->SetPassphrase(passphrase, is_explicit);
   } else {
     if (is_explicit) {
@@ -1379,10 +1379,10 @@ void ProfileSyncService::Observe(int type,
           content::Details<DataTypeManager::ConfigureResult>(details).ptr();
 
       DataTypeManager::ConfigureStatus status = result->status;
-      VLOG(1) << "PSS SYNC_CONFIGURE_DONE called with status: " << status;
+      DVLOG(1) << "PSS SYNC_CONFIGURE_DONE called with status: " << status;
       if (status == DataTypeManager::ABORTED &&
           expect_sync_configuration_aborted_) {
-        VLOG(0) << "ProfileSyncService::Observe Sync Configure aborted";
+        DVLOG(0) << "ProfileSyncService::Observe Sync Configure aborted";
         expect_sync_configuration_aborted_ = false;
         return;
       }
@@ -1545,11 +1545,11 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
     // There is nothing more to configure. So inform the listeners,
     NotifyObservers();
 
-    VLOG(1) << "ConfigureDataTypeManager not invoked because of an "
-            << "Unrecoverable error.";
+    DVLOG(1) << "ConfigureDataTypeManager not invoked because of an "
+             << "Unrecoverable error.";
   } else {
-    VLOG(0) << "ConfigureDataTypeManager not invoked because backend is not "
-            << "initialized";
+    DVLOG(0) << "ConfigureDataTypeManager not invoked because backend is not "
+             << "initialized";
   }
 }
 

@@ -211,9 +211,9 @@ void RegistrationManager::TryRegisterType(syncable::ModelType model_type,
     base::TimeDelta delay =
         (status->delay <= base::TimeDelta()) ?
         base::TimeDelta() : status->delay;
-    VLOG(2) << "Registering "
-            << syncable::ModelTypeToString(model_type) << " in "
-            << delay.InMilliseconds() << " ms";
+    DVLOG(2) << "Registering "
+             << syncable::ModelTypeToString(model_type) << " in "
+             << delay.InMilliseconds() << " ms";
     status->registration_timer.Stop();
     status->registration_timer.Start(FROM_HERE,
         delay, status, &RegistrationManager::RegistrationStatus::DoRegister);
@@ -227,12 +227,12 @@ void RegistrationManager::TryRegisterType(syncable::ModelType model_type,
                          kRegistrationDelayMaxJitter);
     status->next_delay =
         base::TimeDelta::FromSeconds(static_cast<int64>(next_delay_seconds));
-    VLOG(2) << "New next delay for "
-            << syncable::ModelTypeToString(model_type) << " is "
-            << status->next_delay.InSeconds() << " seconds";
+    DVLOG(2) << "New next delay for "
+             << syncable::ModelTypeToString(model_type) << " is "
+             << status->next_delay.InSeconds() << " seconds";
   } else {
-    VLOG(2) << "Not a retry -- registering "
-            << syncable::ModelTypeToString(model_type) << " immediately";
+    DVLOG(2) << "Not a retry -- registering "
+             << syncable::ModelTypeToString(model_type) << " immediately";
     status->delay = base::TimeDelta();
     status->next_delay = base::TimeDelta();
     status->DoRegister();

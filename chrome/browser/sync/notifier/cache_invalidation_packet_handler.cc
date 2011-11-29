@@ -58,17 +58,17 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
   virtual ~CacheInvalidationListenTask() {}
 
   virtual int ProcessStart() {
-    VLOG(2) << "CacheInvalidationListenTask started";
+    DVLOG(2) << "CacheInvalidationListenTask started";
     return STATE_RESPONSE;
   }
 
   virtual int ProcessResponse() {
     const buzz::XmlElement* stanza = NextStanza();
     if (stanza == NULL) {
-      VLOG(2) << "CacheInvalidationListenTask blocked";
+      DVLOG(2) << "CacheInvalidationListenTask blocked";
       return STATE_BLOCKED;
     }
-    VLOG(2) << "CacheInvalidationListenTask response received";
+    DVLOG(2) << "CacheInvalidationListenTask response received";
     std::string data;
     if (GetCacheInvalidationIqPacketData(stanza, &data)) {
       callback_->Run(data);
@@ -83,14 +83,14 @@ class CacheInvalidationListenTask : public buzz::XmppTask {
   }
 
   virtual bool HandleStanza(const buzz::XmlElement* stanza) {
-    VLOG(1) << "Stanza received: "
-            << notifier::XmlElementToString(*stanza);
+    DVLOG(1) << "Stanza received: "
+             << notifier::XmlElementToString(*stanza);
     if (IsValidCacheInvalidationIqPacket(stanza)) {
-      VLOG(2) << "Queueing stanza";
+      DVLOG(2) << "Queueing stanza";
       QueueStanza(stanza);
       return true;
     }
-    VLOG(2) << "Stanza skipped";
+    DVLOG(2) << "Stanza skipped";
     return false;
   }
 
@@ -150,10 +150,10 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
     scoped_ptr<buzz::XmlElement> stanza(
         MakeCacheInvalidationIqPacket(to_jid_, task_id(), msg_,
                                       seq_, sid_, channel_context_));
-    VLOG(1) << "Sending message: "
-            << notifier::XmlElementToString(*stanza.get());
+    DVLOG(1) << "Sending message: "
+             << notifier::XmlElementToString(*stanza.get());
     if (SendStanza(stanza.get()) != buzz::XMPP_RETURN_OK) {
-      VLOG(2) << "Error when sending message";
+      DVLOG(2) << "Error when sending message";
       return STATE_ERROR;
     }
     return STATE_RESPONSE;
@@ -162,23 +162,23 @@ class CacheInvalidationSendMessageTask : public buzz::XmppTask {
   virtual int ProcessResponse() {
     const buzz::XmlElement* stanza = NextStanza();
     if (stanza == NULL) {
-      VLOG(2) << "CacheInvalidationSendMessageTask blocked...";
+      DVLOG(2) << "CacheInvalidationSendMessageTask blocked...";
       return STATE_BLOCKED;
     }
-    VLOG(2) << "CacheInvalidationSendMessageTask response received: "
-            << notifier::XmlElementToString(*stanza);
+    DVLOG(2) << "CacheInvalidationSendMessageTask response received: "
+             << notifier::XmlElementToString(*stanza);
     // TODO(akalin): Handle errors here.
     return STATE_DONE;
   }
 
   virtual bool HandleStanza(const buzz::XmlElement* stanza) {
-    VLOG(1) << "Stanza received: "
-            << notifier::XmlElementToString(*stanza);
+    DVLOG(1) << "Stanza received: "
+             << notifier::XmlElementToString(*stanza);
     if (!MatchResponseIq(stanza, to_jid_, task_id())) {
-      VLOG(2) << "Stanza skipped";
+      DVLOG(2) << "Stanza skipped";
       return false;
     }
-    VLOG(2) << "Queueing stanza";
+    DVLOG(2) << "Queueing stanza";
     QueueStanza(stanza);
     return true;
   }

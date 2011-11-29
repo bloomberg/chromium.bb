@@ -47,7 +47,7 @@ BackendMigrator::~BackendMigrator() {
 
 #define SLOG(severity) LOG(severity) << name_ << ": "
 
-#define SVLOG(verbose_level) VLOG(verbose_level) << name_ << ": "
+#define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
 void BackendMigrator::MigrateTypes(const syncable::ModelTypeSet& types) {
   const ModelTypeSet old_to_migrate = to_migrate_;
@@ -58,11 +58,11 @@ void BackendMigrator::MigrateTypes(const syncable::ModelTypeSet& types) {
                    std::inserter(temp, temp.end()));
     std::swap(temp, to_migrate_);
   }
-  SVLOG(1) << "MigrateTypes called with " << ModelTypeSetToString(types)
-           << ", old_to_migrate = " << ModelTypeSetToString(old_to_migrate)
-          << ", to_migrate_ = " << ModelTypeSetToString(to_migrate_);
+  SDVLOG(1) << "MigrateTypes called with " << ModelTypeSetToString(types)
+            << ", old_to_migrate = " << ModelTypeSetToString(old_to_migrate)
+            << ", to_migrate_ = " << ModelTypeSetToString(to_migrate_);
   if (old_to_migrate == to_migrate_) {
-    SVLOG(1) << "MigrateTypes called with no new types; ignoring";
+    SDVLOG(1) << "MigrateTypes called with no new types; ignoring";
     return;
   }
 
@@ -71,7 +71,7 @@ void BackendMigrator::MigrateTypes(const syncable::ModelTypeSet& types) {
 
   if (state_ == WAITING_TO_START) {
     if (!TryStart())
-      SVLOG(1) << "Manager not configured; waiting";
+      SDVLOG(1) << "Manager not configured; waiting";
     return;
   }
 
@@ -118,10 +118,10 @@ void BackendMigrator::RestartMigration() {
                       to_migrate_.begin(), to_migrate_.end(),
                       std::inserter(difference, difference.end()));
   bool configure_with_nigori = to_migrate_.count(syncable::NIGORI) == 0;
-  SVLOG(1) << "BackendMigrator disabling types "
-           << ModelTypeSetToString(to_migrate_) << "; configuring "
-           << ModelTypeSetToString(difference)
-           << (configure_with_nigori ? " with nigori" : " without nigori");
+  SDVLOG(1) << "BackendMigrator disabling types "
+            << ModelTypeSetToString(to_migrate_) << "; configuring "
+            << ModelTypeSetToString(difference)
+            << (configure_with_nigori ? " with nigori" : " without nigori");
 
   // Add nigori for config or not based upon if the server told us to migrate
   // nigori or not.
@@ -142,7 +142,7 @@ void BackendMigrator::Observe(int type,
 
   // |manager_|'s methods aren't re-entrant, and we're notified from
   // them, so post a task to avoid problems.
-  SVLOG(1) << "Posting OnConfigureDone from Observer";
+  SDVLOG(1) << "Posting OnConfigureDone from Observer";
   MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&BackendMigrator::OnConfigureDone,
@@ -172,13 +172,13 @@ syncable::ModelTypeSet GetUnsyncedDataTypes(sync_api::UserShare* user_share) {
 
 void BackendMigrator::OnConfigureDone(
     const DataTypeManager::ConfigureResult& result) {
-  SVLOG(1) << "OnConfigureDone with requested types "
-           << ModelTypeSetToString(result.requested_types)
-           << ", status " << result.status
-           << ", and to_migrate_ = " << ModelTypeSetToString(to_migrate_);
+  SDVLOG(1) << "OnConfigureDone with requested types "
+            << ModelTypeSetToString(result.requested_types)
+            << ", status " << result.status
+            << ", and to_migrate_ = " << ModelTypeSetToString(to_migrate_);
   if (state_ == WAITING_TO_START) {
     if (!TryStart())
-      SVLOG(1) << "Manager still not configured; still waiting";
+      SDVLOG(1) << "Manager still not configured; still waiting";
     return;
   }
 
@@ -192,7 +192,7 @@ void BackendMigrator::OnConfigureDone(
   // This intersection check is to determine if our disable request
   // was interrupted by a user changing preferred types.
   if (state_ == DISABLING_TYPES && !intersection.empty()) {
-    SVLOG(1) << "Disable request interrupted by user changing types";
+    SDVLOG(1) << "Disable request interrupted by user changing types";
     RestartMigration();
     return;
   }
@@ -229,15 +229,15 @@ void BackendMigrator::OnConfigureDone(
     // may have chosen to disable types during the migration.
     ModelTypeSet full_set;
     service_->GetPreferredDataTypes(&full_set);
-    SVLOG(1) << "BackendMigrator re-enabling types: "
-             << syncable::ModelTypeSetToString(full_set);
+    SDVLOG(1) << "BackendMigrator re-enabling types: "
+              << syncable::ModelTypeSetToString(full_set);
     manager_->Configure(full_set, sync_api::CONFIGURE_REASON_MIGRATION);
   } else if (state_ == REENABLING_TYPES) {
     // We're done!
     ChangeState(IDLE);
 
-    SVLOG(1) << "BackendMigrator: Migration complete for: "
-             << syncable::ModelTypeSetToString(to_migrate_);
+    SDVLOG(1) << "BackendMigrator: Migration complete for: "
+              << syncable::ModelTypeSetToString(to_migrate_);
     to_migrate_.clear();
   }
 }
@@ -251,7 +251,7 @@ syncable::ModelTypeSet
   return to_migrate_;
 }
 
-#undef SVLOG
+#undef SDVLOG
 
 #undef SLOG
 

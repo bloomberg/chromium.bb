@@ -76,7 +76,7 @@ base::WeakPtr<SyncableService>
 void AutofillDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
-  VLOG(1) << "AutofillDataTypeController::StopModels() : State = " << state();
+  DVLOG(1) << "AutofillDataTypeController::StopModels() : State = " << state();
   notification_registrar_.RemoveAll();
 }
 

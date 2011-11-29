@@ -50,10 +50,10 @@ bool WriteNode::UpdateEntryWithEncryption(
       scoped_ptr<DictionaryValue> value(entry->ToValue());
       std::string info;
       base::JSONWriter::Write(value.get(), true, &info);
-      VLOG(2) << "Encrypting specifics of type "
-              << syncable::ModelTypeToString(type)
-              << " with content: "
-              << info;
+      DVLOG(2) << "Encrypting specifics of type "
+               << syncable::ModelTypeToString(type)
+               << " with content: "
+               << info;
     }
     syncable::AddDefaultExtensionValue(type, &generated_specifics);
     if (!cryptographer->Encrypt(new_specifics,
@@ -73,8 +73,8 @@ bool WriteNode::UpdateEntryWithEncryption(
     if ((!old_specifics.has_encrypted() &&
          !generated_specifics.has_encrypted()) ||
          cryptographer->CanDecryptUsingDefaultKey(old_specifics.encrypted())) {
-      VLOG(2) << "Specifics of type " << syncable::ModelTypeToString(type)
-              << " already match, dropping change.";
+      DVLOG(2) << "Specifics of type " << syncable::ModelTypeToString(type)
+               << " already match, dropping change.";
       return true;
     }
     // TODO(zea): Add some way to keep track of how often we're reencrypting
@@ -229,8 +229,8 @@ void WriteNode::SetEntitySpecifics(
   syncable::ModelType new_specifics_type =
       syncable::GetModelTypeFromSpecifics(new_value);
   DCHECK_NE(new_specifics_type, syncable::UNSPECIFIED);
-  VLOG(1) << "Writing entity specifics of type "
-          << syncable::ModelTypeToString(new_specifics_type);
+  DVLOG(1) << "Writing entity specifics of type "
+           << syncable::ModelTypeToString(new_specifics_type);
   // GetModelType() can be unspecified if this is the first time this
   // node is being initialized (see PutModelType()).  Otherwise, it
   // should match |new_specifics_type|.

@@ -152,7 +152,7 @@ class SyncerTest : public testing::Test,
   }
 
   virtual void OnSyncEngineEvent(const SyncEngineEvent& event) OVERRIDE {
-    VLOG(1) << "HandleSyncEngineEvent in unittest " << event.what_happened;
+    DVLOG(1) << "HandleSyncEngineEvent in unittest " << event.what_happened;
     // we only test for entry-specific events, not status changed ones.
     switch (event.what_happened) {
       case SyncEngineEvent::STATUS_CHANGED:

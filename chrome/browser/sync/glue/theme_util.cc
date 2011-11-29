@@ -81,18 +81,18 @@ void SetCurrentThemeFromThemeSpecifics(
     // (i.e., those not on either Google gallery).
     std::string id(theme_specifics.custom_theme_id());
     GURL update_url(theme_specifics.custom_theme_update_url());
-    VLOG(1) << "Applying theme " << id << " with update_url " << update_url;
+    DVLOG(1) << "Applying theme " << id << " with update_url " << update_url;
     ExtensionServiceInterface* extensions_service =
         profile->GetExtensionService();
     CHECK(extensions_service);
     const Extension* extension = extensions_service->GetExtensionById(id, true);
     if (extension) {
       if (!extension->is_theme()) {
-        VLOG(1) << "Extension " << id << " is not a theme; aborting";
+        DVLOG(1) << "Extension " << id << " is not a theme; aborting";
         return;
       }
       if (!extensions_service->IsExtensionEnabled(id)) {
-        VLOG(1) << "Theme " << id << " is not enabled; aborting";
+        DVLOG(1) << "Theme " << id << " is not enabled; aborting";
         return;
       }
       // An enabled theme extension with the given id was found, so

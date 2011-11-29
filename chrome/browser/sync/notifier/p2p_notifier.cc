@@ -249,13 +249,13 @@ void P2PNotifier::OnNotificationStateChange(bool notifications_enabled) {
 void P2PNotifier::OnIncomingNotification(
     const notifier::Notification& notification) {
   DCHECK(parent_message_loop_proxy_->BelongsToCurrentThread());
-  VLOG(1) << "Received notification " << notification.ToString();
+  DVLOG(1) << "Received notification " << notification.ToString();
   if (!logged_in_) {
-    VLOG(1) << "Not logged in yet -- not emitting notification";
+    DVLOG(1) << "Not logged in yet -- not emitting notification";
     return;
   }
   if (!notifications_enabled_) {
-    VLOG(1) << "Notifications not enabled -- not emitting notification";
+    DVLOG(1) << "Notifications not enabled -- not emitting notification";
     return;
   }
   if (notification.channel != kSyncP2PNotificationChannel) {
@@ -270,12 +270,12 @@ void P2PNotifier::OnIncomingNotification(
         P2PNotificationData(unique_id_, NOTIFY_ALL, enabled_types_);
   }
   if (!notification_data.IsTargeted(unique_id_)) {
-    VLOG(1) << "Not a target of the notification -- "
-            << "not emitting notification";
+    DVLOG(1) << "Not a target of the notification -- "
+             << "not emitting notification";
     return;
   }
   if (notification_data.GetChangedTypes().empty()) {
-    VLOG(1) << "No changed types -- not emitting notification";
+    DVLOG(1) << "No changed types -- not emitting notification";
     return;
   }
   const syncable::ModelTypePayloadMap& type_payloads =
@@ -299,7 +299,7 @@ void P2PNotifier::SendNotificationData(
   notifier::Notification notification;
   notification.channel = kSyncP2PNotificationChannel;
   notification.data = notification_data.ToString();
-  VLOG(1) << "Sending XMPP notification: " << notification.ToString();
+  DVLOG(1) << "Sending XMPP notification: " << notification.ToString();
   talk_mediator_->SendNotification(notification);
 }
 

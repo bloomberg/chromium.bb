@@ -130,7 +130,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
   while (!ExitRequested()) {
     TRACE_EVENT1("sync", "SyncerStateMachine",
                  "state", SyncerStepToString(current_step));
-    VLOG(1) << "Syncer step:" << SyncerStepToString(current_step);
+    DVLOG(1) << "Syncer step:" << SyncerStepToString(current_step);
 
     switch (current_step) {
       case SYNCER_BEGIN:
@@ -215,13 +215,13 @@ void Syncer::SyncShare(sessions::SyncSession* session,
         WriteTransaction trans(FROM_HERE, SYNCER, dir);
         sessions::ScopedSetSessionWriteTransaction set_trans(session, &trans);
 
-        VLOG(1) << "Getting the Commit IDs";
+        DVLOG(1) << "Getting the Commit IDs";
         GetCommitIdsCommand get_commit_ids_command(
             session->context()->max_commit_batch_size());
         get_commit_ids_command.Execute(session);
 
         if (!session->status_controller().commit_ids().empty()) {
-          VLOG(1) << "Building a commit message";
+          DVLOG(1) << "Building a commit message";
           BuildCommitCommand build_commit_command;
           build_commit_command.Execute(session);
 
@@ -277,7 +277,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       }
       case APPLY_UPDATES_TO_RESOLVE_CONFLICTS: {
         StatusController* status = session->mutable_status_controller();
-        VLOG(1) << "Applying updates to resolve conflicts";
+        DVLOG(1) << "Applying updates to resolve conflicts";
         ApplyUpdatesCommand apply_updates;
 
         // We only care to resolve conflicts again if we made progress on the
@@ -311,10 +311,10 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       default:
         LOG(ERROR) << "Unknown command: " << current_step;
     }
-    VLOG(2) << "last step: " << SyncerStepToString(last_step) << ", "
-        << "current step: " << SyncerStepToString(current_step) << ", "
-        << "next step: " << SyncerStepToString(next_step) << ", "
-        << "snapshot: " << session->TakeSnapshot().ToString();
+    DVLOG(2) << "last step: " << SyncerStepToString(last_step) << ", "
+             << "current step: " << SyncerStepToString(current_step) << ", "
+             << "next step: " << SyncerStepToString(next_step) << ", "
+             << "snapshot: " << session->TakeSnapshot().ToString();
     if (last_step == current_step)
       break;
     current_step = next_step;

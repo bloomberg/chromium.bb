@@ -31,9 +31,9 @@ void CleanupDisabledTypesCommand::ExecuteImpl(sessions::SyncSession* session) {
                       enabled_types.begin(), enabled_types.end(),
                       std::inserter(to_cleanup, to_cleanup.end()));
 
-  VLOG(1) << "all_types = " << ModelTypeSetToString(all_types)
-          << ", enabled_types = " << ModelTypeSetToString(enabled_types)
-          << ", to_cleanup = " << ModelTypeSetToString(to_cleanup);
+  DVLOG(1) << "all_types = " << ModelTypeSetToString(all_types)
+           << ", enabled_types = " << ModelTypeSetToString(enabled_types)
+           << ", to_cleanup = " << ModelTypeSetToString(to_cleanup);
 
   // Because a full directory purge is slow, we avoid purging
   // undesired types unless we have reason to believe they were
@@ -69,9 +69,9 @@ void CleanupDisabledTypesCommand::ExecuteImpl(sessions::SyncSession* session) {
     swap(to_cleanup, temp);
   }
 
-  VLOG(1) << "previous_enabled_types = "
-          << ModelTypeSetToString(previous_enabled_types)
-          << ", to_cleanup = " << ModelTypeSetToString(to_cleanup);
+  DVLOG(1) << "previous_enabled_types = "
+           << ModelTypeSetToString(previous_enabled_types)
+           << ", to_cleanup = " << ModelTypeSetToString(to_cleanup);
 
   if (to_cleanup.empty())
     return;

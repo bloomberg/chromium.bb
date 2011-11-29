@@ -228,7 +228,7 @@ void SigninManager::OnGetUserInfoFailure(const GoogleServiceAuthError& error) {
 void SigninManager::OnTokenAuthFailure(const GoogleServiceAuthError& error) {
   DCHECK(!browser_sync::IsUsingOAuth());
 #if !defined(OS_CHROMEOS)
-  VLOG(1) << "Unable to retrieve the token auth.";
+  DVLOG(1) << "Unable to retrieve the token auth.";
   CleanupNotificationRegistration();
 #endif
 }
@@ -257,7 +257,7 @@ void SigninManager::OnClientLoginFailure(const GoogleServiceAuthError& error) {
 void SigninManager::OnOAuthGetAccessTokenSuccess(const std::string& token,
                                                  const std::string& secret) {
   DCHECK(browser_sync::IsUsingOAuth());
-  VLOG(1) << "SigninManager::OnOAuthGetAccessTokenSuccess";
+  DVLOG(1) << "SigninManager::OnOAuthGetAccessTokenSuccess";
   profile_->GetTokenService()->UpdateOAuthCredentials(token, secret);
 }
 
@@ -271,7 +271,7 @@ void SigninManager::OnOAuthWrapBridgeSuccess(const std::string& service_name,
                                              const std::string& token,
                                              const std::string& expires_in) {
   DCHECK(browser_sync::IsUsingOAuth());
-  VLOG(1) << "SigninManager::OnOAuthWrapBridgeSuccess";
+  DVLOG(1) << "SigninManager::OnOAuthWrapBridgeSuccess";
 }
 
 void SigninManager::OnOAuthWrapBridgeFailure(
@@ -293,7 +293,7 @@ void SigninManager::OnUserInfoSuccess(const std::string& email) {
   if (!token_service->HasOAuthCredentials())
     return;
 
-  VLOG(1) << "Sync signin for " << email << " is complete.";
+  DVLOG(1) << "Sync signin for " << email << " is complete.";
   oauth_username_ = email;
   profile_->GetPrefs()->SetString(
       prefs::kGoogleServicesUsername, oauth_username_);

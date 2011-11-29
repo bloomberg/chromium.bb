@@ -29,7 +29,7 @@ VerifyUpdatesCommand::~VerifyUpdatesCommand() {}
 
 void VerifyUpdatesCommand::ModelChangingExecuteImpl(
     sessions::SyncSession* session) {
-  VLOG(1) << "Beginning Update Verification";
+  DVLOG(1) << "Beginning Update Verification";
   ScopedDirLookup dir(session->context()->directory_manager(),
                       session->context()->account_name());
   if (!dir.good()) {
@@ -41,7 +41,7 @@ void VerifyUpdatesCommand::ModelChangingExecuteImpl(
   const GetUpdatesResponse& updates = status->updates_response().get_updates();
   int update_count = updates.entries().size();
 
-  VLOG(1) << update_count << " entries to verify";
+  DVLOG(1) << update_count << " entries to verify";
   for (int i = 0; i < update_count; i++) {
     const SyncEntity& update =
         *reinterpret_cast<const SyncEntity *>(&(updates.entries(i)));

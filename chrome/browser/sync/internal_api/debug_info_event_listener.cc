@@ -112,8 +112,8 @@ void DebugInfoEventListener::CreateAndAddEvent(
 void DebugInfoEventListener::AddEventToQueue(
   const sync_pb::DebugEventInfo& event_info) {
   if (events_.size() >= sync_api::kMaxEntries) {
-    VLOG(1) << "DebugInfoEventListener::AddEventToQueue Dropping an old event "
-            << "because of full queue";
+    DVLOG(1) << "DebugInfoEventListener::AddEventToQueue Dropping an old event "
+             << "because of full queue";
 
     events_.pop();
     events_dropped_ = true;

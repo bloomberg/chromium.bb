@@ -18,10 +18,10 @@ void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
   // Always send out a cycle ended notification, regardless of end-state.
   SyncEngineEvent event(SyncEngineEvent::SYNC_CYCLE_ENDED);
   sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
-  VLOG(1) << "Sending snapshot: " << snapshot.ToString();
+  DVLOG(1) << "Sending snapshot: " << snapshot.ToString();
   event.snapshot = &snapshot;
   session->context()->NotifyListeners(event);
-  VLOG(1) << this << " sent sync end snapshot";
+  DVLOG(1) << this << " sent sync end snapshot";
 }
 
 }  // namespace browser_sync

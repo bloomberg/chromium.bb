@@ -75,7 +75,7 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
       response_trace << " total time: "
                      << response.profiling_data().total_request_time() << "ms";
     }
-    VLOG(1) << response_trace.str();
+    DVLOG(1) << response_trace.str();
   }
 }
 
@@ -109,7 +109,7 @@ bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
       return false;
     }
 
-    VLOG(1) << "New store birthday: " << response->store_birthday();
+    DVLOG(1) << "New store birthday: " << response->store_birthday();
     dir->set_store_birthday(response->store_birthday());
     return true;
   }

@@ -664,7 +664,7 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
       syncable::Id new_predecessor;
       ASSERT_TRUE(item.PutPredecessor(new_predecessor));
     }
-    VLOG(1) << "FakeServerUpdater finishing.";
+    DVLOG(1) << "FakeServerUpdater finishing.";
     is_finished_.Signal();
   }
 
@@ -1116,7 +1116,7 @@ TEST_F(ProfileSyncServiceAutofillTest, DISABLED_ServerChangeRace) {
 
   AutofillEntry syncapi_entry(MakeAutofillEntry("syncapi", "entry", 2));
   ASSERT_TRUE(AddAutofillSyncNode(syncapi_entry));
-  VLOG(1) << "Syncapi update finished.";
+  DVLOG(1) << "Syncapi update finished.";
 
   // If we reach here, it means syncapi succeeded and we didn't deadlock. Yay!
   // Signal FakeServerUpdater that it can complete.
@@ -1132,7 +1132,7 @@ TEST_F(ProfileSyncServiceAutofillTest, DISABLED_ServerChangeRace) {
   EXPECT_EQ(3U, sync_entries.size());
   EXPECT_EQ(0U, sync_profiles.size());
   for (size_t i = 0; i < sync_entries.size(); i++) {
-    VLOG(1) << "Entry " << i << ": " << sync_entries[i].key().name()
-            << ", " << sync_entries[i].key().value();
+    DVLOG(1) << "Entry " << i << ": " << sync_entries[i].key().name()
+             << ", " << sync_entries[i].key().value();
   }
 }

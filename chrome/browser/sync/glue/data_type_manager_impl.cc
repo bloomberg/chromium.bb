@@ -108,8 +108,8 @@ bool DataTypeManagerImpl::GetControllersNeedingStart(
       if (needs_start)
         needs_start->push_back(dtc->second.get());
       if (dtc->second->state() == DataTypeController::DISABLED) {
-        VLOG(1) << "Found " << syncable::ModelTypeToString(dtc->second->type())
-                << " in disabled state.";
+        DVLOG(1) << "Found " << syncable::ModelTypeToString(dtc->second->type())
+                 << " in disabled state.";
       }
     }
   }
@@ -150,8 +150,8 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
   last_requested_types_ = desired_types;
   // Only proceed if we're in a steady state or blocked.
   if (state_ != STOPPED && state_ != CONFIGURED && state_ != BLOCKED) {
-    VLOG(1) << "Received configure request while configuration in flight. "
-            << "Postponing until current configuration complete.";
+    DVLOG(1) << "Received configure request while configuration in flight. "
+             << "Postponing until current configuration complete.";
     needs_reconfigure_ = true;
     last_configure_reason_ = reason;
     last_enable_nigori_ = enable_nigori;
@@ -177,7 +177,7 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
             dtc->state() == DataTypeController::RUNNING ||
             dtc->state() == DataTypeController::DISABLED)) {
       needs_stop_.push_back(dtc);
-      VLOG(1) << "Will stop " << dtc->name();
+      DVLOG(1) << "Will stop " << dtc->name();
     }
   }
   // Sort these according to kStartOrder.
@@ -195,7 +195,7 @@ void DataTypeManagerImpl::ConfigureImpl(const TypeSet& desired_types,
 
 void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
                                   bool enable_nigori) {
-  VLOG(1) << "Restarting...";
+  DVLOG(1) << "Restarting...";
   last_restart_time_ = base::Time::Now();
 
   DCHECK(state_ == STOPPED || state_ == CONFIGURED || state_ == BLOCKED);
@@ -207,7 +207,7 @@ void DataTypeManagerImpl::Restart(sync_api::ConfigureReason reason,
 
   // Stop requested data types.
   for (size_t i = 0; i < needs_stop_.size(); ++i) {
-    VLOG(1) << "Stopping " << needs_stop_[i]->name();
+    DVLOG(1) << "Stopping " << needs_stop_[i]->name();
     needs_stop_[i]->Stop();
   }
   needs_stop_.clear();
@@ -252,8 +252,8 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
   // Note: we do this whether or not GetControllersNeedingStart is true,
   // because we may need to stop datatypes.
   SetBlockedAndNotify();
-  VLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
-          << " busy.";
+  DVLOG(1) << "Reconfiguring due to previous configure attempt occuring while"
+           << " busy.";
 
   // Unwind the stack before executing configure. The method configure and its
   // callees are not re-entrant.
@@ -293,7 +293,7 @@ void DataTypeManagerImpl::StartNextType() {
   // If there are any data types left to start, start the one at the
   // front of the list.
   if (!needs_start_.empty()) {
-    VLOG(1) << "Starting " << needs_start_[0]->name();
+    DVLOG(1) << "Starting " << needs_start_[0]->name();
     TRACE_EVENT_BEGIN1("sync", "ModelAssociation",
                        "DataType", ModelTypeToString(needs_start_[0]->type()));
     needs_start_[0]->Start(
@@ -310,7 +310,7 @@ void DataTypeManagerImpl::StartNextType() {
   // things like encryption, which may still need to be sorted out before we
   // can announce we're "Done" configuration entirely.
   if (GetControllersNeedingStart(NULL)) {
-    VLOG(1) << "GetControllersNeedingStart returned true. DTM blocked";
+    DVLOG(1) << "GetControllersNeedingStart returned true. DTM blocked";
     SetBlockedAndNotify();
     return;
   }
@@ -443,7 +443,7 @@ void DataTypeManagerImpl::FinishStop() {
     if (dtc->state() != DataTypeController::NOT_RUNNING &&
         dtc->state() != DataTypeController::STOPPING) {
       dtc->Stop();
-      VLOG(1) << "Stopped " << dtc->name();
+      DVLOG(1) << "Stopped " << dtc->name();
     }
   }
 
@@ -474,26 +474,26 @@ void DataTypeManagerImpl::NotifyStart() {
 void DataTypeManagerImpl::NotifyDone(const ConfigureResult& result) {
   AddToConfigureTime();
 
-  VLOG(1) << "Total time spent configuring: "
-          << configure_time_delta_.InSecondsF() << "s";
+  DVLOG(1) << "Total time spent configuring: "
+           << configure_time_delta_.InSecondsF() << "s";
   switch (result.status) {
     case DataTypeManager::OK:
-      VLOG(1) << "NotifyDone called with result: OK";
+      DVLOG(1) << "NotifyDone called with result: OK";
       UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.OK",
                           configure_time_delta_);
       break;
     case DataTypeManager::ABORTED:
-      VLOG(1) << "NotifyDone called with result: ABORTED";
+      DVLOG(1) << "NotifyDone called with result: ABORTED";
       UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.ABORTED",
                           configure_time_delta_);
       break;
     case DataTypeManager::UNRECOVERABLE_ERROR:
-      VLOG(1) << "NotifyDone called with result: UNRECOVERABLE_ERROR";
+      DVLOG(1) << "NotifyDone called with result: UNRECOVERABLE_ERROR";
       UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.UNRECOVERABLE_ERROR",
                           configure_time_delta_);
       break;
     case DataTypeManager::PARTIAL_SUCCESS:
-      VLOG(1) << "NotifyDone called with result: PARTIAL_SUCCESS";
+      DVLOG(1) << "NotifyDone called with result: PARTIAL_SUCCESS";
       UMA_HISTOGRAM_TIMES("Sync.ConfigureTime.PARTIAL_SUCCESS",
                           configure_time_delta_);
       break;
@@ -514,8 +514,8 @@ DataTypeManager::State DataTypeManagerImpl::state() {
 void DataTypeManagerImpl::SetBlockedAndNotify() {
   state_ = BLOCKED;
   AddToConfigureTime();
-  VLOG(1) << "Accumulated spent configuring: "
-          << configure_time_delta_.InSecondsF() << "s";
+  DVLOG(1) << "Accumulated spent configuring: "
+           << configure_time_delta_.InSecondsF() << "s";
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_SYNC_CONFIGURE_BLOCKED,
       content::Source<DataTypeManager>(this),

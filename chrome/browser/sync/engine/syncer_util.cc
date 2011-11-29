@@ -71,8 +71,8 @@ namespace browser_sync {
 int SyncerUtil::GetUnsyncedEntries(syncable::BaseTransaction* trans,
                                    std::vector<int64> *handles) {
   trans->directory()->GetUnsyncedMetaHandles(trans, handles);
-  VLOG_IF(1, !handles->empty()) << "Have " << handles->size()
-                                << " unsynced items.";
+  DVLOG_IF(1, !handles->empty()) << "Have " << handles->size()
+                                 << " unsynced items.";
   return handles->size();
 }
 
@@ -232,9 +232,9 @@ syncable::Id SyncerUtil::FindLocalIdToUpdate(
       // Just a quick sanity check.
       DCHECK(!local_entry.Get(ID).ServerKnows());
 
-      VLOG(1) << "Reuniting lost commit response IDs. server id: "
-              << update.id() << " local id: " << local_entry.Get(ID)
-              << " new version: " << new_version;
+      DVLOG(1) << "Reuniting lost commit response IDs. server id: "
+               << update.id() << " local id: " << local_entry.Get(ID)
+               << " new version: " << new_version;
 
       return local_entry.Get(ID);
     }
@@ -255,8 +255,8 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
   syncable::Id id = entry->Get(ID);
 
   if (entry->Get(IS_UNSYNCED)) {
-    VLOG(1) << "Skipping update, returning conflict for: " << id
-            << " ; it's unsynced.";
+    DVLOG(1) << "Skipping update, returning conflict for: " << id
+             << " ; it's unsynced.";
     return CONFLICT;
   }
   if (!entry->Get(SERVER_IS_DEL)) {
@@ -273,8 +273,8 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     }
     if (entry->Get(PARENT_ID) != new_parent) {
       if (!entry->Get(IS_DEL) && !IsLegalNewParent(trans, id, new_parent)) {
-        VLOG(1) << "Not updating item " << id
-                << ", illegal new parent (would cause loop).";
+        DVLOG(1) << "Not updating item " << id
+                 << ", illegal new parent (would cause loop).";
         return CONFLICT;
       }
     }
@@ -284,7 +284,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     if (!handles.empty()) {
       // If we have still-existing children, then we need to deal with
       // them before we can process this change.
-      VLOG(1) << "Not deleting directory; it's not empty " << *entry;
+      DVLOG(1) << "Not deleting directory; it's not empty " << *entry;
       return CONFLICT;
     }
   }
@@ -314,8 +314,8 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
       // we will properly encrypt all appropriate unsynced data.
       // Note: we return CONFLICT_ENCRYPTION instead of CONFLICT. See
       // explanation below.
-      VLOG(1) << "Marking nigori node update as conflicting due to being unable"
-              << " to encrypt all necessary unsynced changes.";
+      DVLOG(1) << "Marking nigori node update as conflicting due to being "
+               << "unable to encrypt all necessary unsynced changes.";
       return CONFLICT_ENCRYPTION;
     }
 
@@ -336,9 +336,9 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
   if (specifics.has_encrypted() &&
       !cryptographer->CanDecrypt(specifics.encrypted())) {
     // We can't decrypt this node yet.
-    VLOG(1) << "Received an undecryptable "
-            << syncable::ModelTypeToString(entry->GetServerModelType())
-            << " update, returning encryption_conflict.";
+    DVLOG(1) << "Received an undecryptable "
+             << syncable::ModelTypeToString(entry->GetServerModelType())
+             << " update, returning encryption_conflict.";
     return CONFLICT_ENCRYPTION;
   } else if (specifics.HasExtension(sync_pb::password) &&
              entry->Get(UNIQUE_SERVER_TAG).empty()) {
@@ -346,19 +346,19 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     const sync_pb::PasswordSpecifics& password =
         specifics.GetExtension(sync_pb::password);
     if (!cryptographer->CanDecrypt(password.encrypted())) {
-      VLOG(1) << "Received an undecryptable password update, returning "
-              << "encryption_conflict.";
+      DVLOG(1) << "Received an undecryptable password update, returning "
+               << "encryption_conflict.";
       return CONFLICT_ENCRYPTION;
     }
   } else {
     if (specifics.has_encrypted()) {
-      VLOG(2) << "Received a decryptable "
-              << syncable::ModelTypeToString(entry->GetServerModelType())
-              << " update, applying normally.";
+      DVLOG(2) << "Received a decryptable "
+               << syncable::ModelTypeToString(entry->GetServerModelType())
+               << " update, applying normally.";
     } else {
-      VLOG(2) << "Received an unencrypted "
-              << syncable::ModelTypeToString(entry->GetServerModelType())
-              << " update, applying normally.";
+      DVLOG(2) << "Received an unencrypted "
+               << syncable::ModelTypeToString(entry->GetServerModelType())
+               << " update, applying normally.";
     }
   }
 
@@ -485,8 +485,8 @@ void SyncerUtil::SplitServerInformationIntoNewEntry(
   CopyServerFields(entry, &new_entry);
   ClearServerData(entry);
 
-  VLOG(1) << "Splitting server information, local entry: " << *entry
-          << " server entry: " << new_entry;
+  DVLOG(1) << "Splitting server information, local entry: " << *entry
+           << " server entry: " << new_entry;
 }
 
 // This function is called on an entry when we can update the user-facing data
@@ -498,7 +498,7 @@ void SyncerUtil::UpdateLocalDataFromServerData(
   DCHECK(!entry->Get(IS_UNSYNCED));
   DCHECK(entry->Get(IS_UNAPPLIED_UPDATE));
 
-  VLOG(2) << "Updating entry : " << *entry;
+  DVLOG(2) << "Updating entry : " << *entry;
   // Start by setting the properties that determine the model_type.
   entry->Put(SPECIFICS, entry->Get(SERVER_SPECIFICS));
   entry->Put(IS_DIR, entry->Get(SERVER_IS_DIR));
@@ -737,8 +737,8 @@ VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
   // (where items go to version 0 when they're deleted), or else
   // removed entirely (if this type of undeletion is indeed impossible).
   CHECK(target->good());
-  VLOG(1) << "Server update is attempting undelete. " << *target
-          << "Update:" << SyncerProtoUtil::SyncEntityDebugString(update);
+  DVLOG(1) << "Server update is attempting undelete. " << *target
+           << "Update:" << SyncerProtoUtil::SyncEntityDebugString(update);
   // Move the old one aside and start over.  It's too tricky to get the old one
   // back into a state that would pass CheckTreeInvariants().
   if (target->Get(IS_DEL)) {

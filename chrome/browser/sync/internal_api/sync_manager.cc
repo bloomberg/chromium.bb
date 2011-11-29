@@ -609,7 +609,7 @@ bool SyncManager::Init(
     bool setup_for_test_mode) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(post_factory);
-  VLOG(1) << "SyncManager starting Init...";
+  DVLOG(1) << "SyncManager starting Init...";
   string server_string(sync_server_and_path);
   return data_->Init(database_location,
                      event_handler,
@@ -749,7 +749,7 @@ bool SyncManager::SyncInternal::Init(
 
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  VLOG(1) << "Starting SyncInternal initialization.";
+  DVLOG(1) << "Starting SyncInternal initialization.";
 
   weak_handle_this_ = MakeWeakHandle(weak_ptr_factory_.GetWeakPtr());
 
@@ -777,7 +777,7 @@ bool SyncManager::SyncInternal::Init(
   // Test mode does not use a syncer context or syncer thread.
   if (!setup_for_test_mode_) {
     // Build a SyncSessionContext and store the worker in it.
-    VLOG(1) << "Sync is bringing up SyncSessionContext.";
+    DVLOG(1) << "Sync is bringing up SyncSessionContext.";
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(&allstatus_);
     listeners.push_back(this);
@@ -916,7 +916,7 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
   DCHECK(share_.name.empty());
   share_.name = credentials.email;
 
-  VLOG(1) << "Signing in user: " << username_for_share();
+  DVLOG(1) << "Signing in user: " << username_for_share();
   if (!OpenDirectory())
     return false;
 
@@ -928,11 +928,11 @@ bool SyncManager::SyncInternal::SignIn(const SyncCredentials& credentials) {
   if (lookup.good()) {
     unique_id = lookup->cache_guid();
     state = lookup->GetNotificationState();
-    VLOG(1) << "Read notification unique ID: " << unique_id;
+    DVLOG(1) << "Read notification unique ID: " << unique_id;
     if (VLOG_IS_ON(1)) {
       std::string encoded_state;
       base::Base64Encode(state, &encoded_state);
-      VLOG(1) << "Read notification state: " << encoded_state;
+      DVLOG(1) << "Read notification state: " << encoded_state;
     }
     allstatus_.SetUniqueId(unique_id);
   } else {
@@ -1011,7 +1011,7 @@ void SyncManager::SyncInternal::SetPassphrase(
     const std::string& passphrase, bool is_explicit) {
   // We do not accept empty passphrases.
   if (passphrase.empty()) {
-    VLOG(1) << "Rejecting empty passphrase.";
+    DVLOG(1) << "Rejecting empty passphrase.";
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
         OnPassphraseRequired(sync_api::REASON_SET_PASSPHRASE_FAILED));
     return;
@@ -1040,12 +1040,12 @@ void SyncManager::SyncInternal::SetPassphrase(
       if (cryptographer->DecryptPendingKeys(params)) {
         succeeded = true;
       } else {
-        VLOG(1) << "Passphrase failed to decrypt pending keys.";
+        DVLOG(1) << "Passphrase failed to decrypt pending keys.";
       }
     } else {
-      VLOG(1) << "Not trying the passphrase because the explicit flags dont "
-              << "match. Nigori node's explicit flag is "
-              << node.GetNigoriSpecifics().using_explicit_passphrase();
+      DVLOG(1) << "Not trying the passphrase because the explicit flags dont "
+               << "match. Nigori node's explicit flag is "
+               << node.GetNigoriSpecifics().using_explicit_passphrase();
     }
 
     if (!succeeded) {
@@ -1058,7 +1058,7 @@ void SyncManager::SyncInternal::SetPassphrase(
     // this passphrase get applied as soon as possible.
     RequestNudge(FROM_HERE);
   } else {
-    VLOG(1) << "No pending keys, adding provided passphrase.";
+    DVLOG(1) << "No pending keys, adding provided passphrase.";
 
     // Prevent an implicit SetPassphrase request from changing an explicitly
     // set passphrase.
@@ -1082,7 +1082,7 @@ void SyncManager::SyncInternal::SetPassphrase(
   // pending keys.
   ReEncryptEverything(&trans);
 
-  VLOG(1) << "Passphrase accepted, bootstrapping encryption.";
+  DVLOG(1) << "Passphrase accepted, bootstrapping encryption.";
   std::string bootstrap_token;
   cryptographer->GetBootstrapToken(&bootstrap_token);
   FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
@@ -1115,8 +1115,8 @@ void SyncManager::SyncInternal::RefreshEncryption() {
   Cryptographer* cryptographer = trans.GetCryptographer();
 
   if (!cryptographer->is_ready()) {
-    VLOG(1) << "Attempting to encrypt datatypes when cryptographer not "
-            << "initialized, prompting for passphrase.";
+    DVLOG(1) << "Attempting to encrypt datatypes when cryptographer not "
+             << "initialized, prompting for passphrase.";
     // TODO(zea): this isn't really decryption, but that's the only way we have
     // to prompt the user for a passsphrase. See http://crbug.com/91379.
     FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
@@ -1238,7 +1238,7 @@ void SyncManager::StopSyncingForShutdown(const base::Closure& callback) {
 
 void SyncManager::SyncInternal::StopSyncingForShutdown(
     const base::Closure& callback) {
-  VLOG(2) << "StopSyncingForShutdown";
+  DVLOG(2) << "StopSyncingForShutdown";
   if (scheduler())  // May be null in tests.
     scheduler()->RequestStop(callback);
   else
@@ -1309,9 +1309,9 @@ void SyncManager::SyncInternal::ShutdownOnSyncThread() {
 }
 
 void SyncManager::SyncInternal::OnIPAddressChanged() {
-  VLOG(1) << "IP address change detected";
+  DVLOG(1) << "IP address change detected";
   if (!observing_ip_address_changes_) {
-    VLOG(1) << "IP address change dropped.";
+    DVLOG(1) << "IP address change dropped.";
     return;
   }
 
@@ -1599,13 +1599,13 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
       // If we've completed a sync cycle and the cryptographer isn't ready
       // yet, prompt the user for a passphrase.
       if (cryptographer->has_pending_keys()) {
-        VLOG(1) << "OnPassPhraseRequired Sent";
+        DVLOG(1) << "OnPassPhraseRequired Sent";
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                           OnPassphraseRequired(sync_api::REASON_DECRYPTION));
       } else if (!cryptographer->is_ready() &&
                  event.snapshot->initial_sync_ended.test(syncable::NIGORI)) {
-        VLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
-                << "ready";
+        DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
+                 << "ready";
         FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                           OnPassphraseRequired(sync_api::REASON_ENCRYPTION));
       }
@@ -1622,7 +1622,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
     }
 
     if (!event.snapshot->has_more_to_sync) {
-      VLOG(1) << "Sending OnSyncCycleCompleted";
+      DVLOG(1) << "Sending OnSyncCycleCompleted";
       FOR_EACH_OBSERVER(SyncManager::Observer, observers_,
                         OnSyncCycleCompleted(event.snapshot));
     }
@@ -1640,7 +1640,7 @@ void SyncManager::SyncInternal::OnSyncEngineEvent(
             syncable::ModelTypePayloadMapToSet(event.snapshot->source.types);
         sync_notifier_->SendNotification(changed_types);
       } else {
-        VLOG(1) << "Not sending notification: sync_notifier_ is NULL";
+        DVLOG(1) << "Not sending notification: sync_notifier_ is NULL";
       }
     }
   }
@@ -1694,15 +1694,15 @@ void SyncManager::SyncInternal::ProcessJsMessage(
   }
 
   if (!reply_handler.IsInitialized()) {
-    VLOG(1) << "Uninitialized reply handler; dropping unknown message "
+    DVLOG(1) << "Uninitialized reply handler; dropping unknown message "
             << name << " with args " << args.ToString();
     return;
   }
 
   JsMessageHandler js_message_handler = js_message_handlers_[name];
   if (js_message_handler.is_null()) {
-    VLOG(1) << "Dropping unknown message " << name
-              << " with args " << args.ToString();
+    DVLOG(1) << "Dropping unknown message " << name
+             << " with args " << args.ToString();
     return;
   }
 
@@ -1873,8 +1873,8 @@ void SyncManager::SyncInternal::OnEncryptedTypesChanged(
 
 void SyncManager::SyncInternal::OnNotificationStateChange(
     bool notifications_enabled) {
-  VLOG(1) << "P2P: Notifications enabled = "
-          << (notifications_enabled ? "true" : "false");
+  DVLOG(1) << "P2P: Notifications enabled = "
+           << (notifications_enabled ? "true" : "false");
   allstatus_.SetNotificationsEnabled(notifications_enabled);
   if (scheduler()) {
     scheduler()->set_notifications_enabled(notifications_enabled);
@@ -1944,7 +1944,7 @@ void SyncManager::SyncInternal::StoreState(
   if (VLOG_IS_ON(1)) {
     std::string encoded_state;
     base::Base64Encode(state, &encoded_state);
-    VLOG(1) << "Writing notification state: " << encoded_state;
+    DVLOG(1) << "Writing notification state: " << encoded_state;
   }
   lookup->SetNotificationState(state);
   lookup->SaveChanges();
@@ -2002,7 +2002,7 @@ bool SyncManager::ReceivedExperimentalTypes(syncable::ModelTypeSet* to_add)
   ReadTransaction trans(FROM_HERE, GetUserShare());
   ReadNode node(&trans);
   if (!node.InitByTagLookup(kNigoriTag)) {
-    VLOG(1) << "Couldn't find Nigori node.";
+    DVLOG(1) << "Couldn't find Nigori node.";
     return false;
   }
   if (node.GetNigoriSpecifics().sync_tabs()) {

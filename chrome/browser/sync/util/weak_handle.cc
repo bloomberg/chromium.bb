@@ -26,7 +26,7 @@ void WeakHandleCoreBase::PostToOwnerThread(
     const tracked_objects::Location& from_here,
     const base::Closure& fn) const {
   if (!owner_loop_proxy_->PostTask(from_here, fn)) {
-    VLOG(1) << "Could not post task from " << from_here.ToString();
+    DVLOG(1) << "Could not post task from " << from_here.ToString();
   }
 }
 

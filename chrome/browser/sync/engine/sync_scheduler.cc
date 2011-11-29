@@ -148,10 +148,10 @@ SyncScheduler::WaitInterval::WaitInterval(Mode mode, TimeDelta length)
 
 #define SLOG(severity) LOG(severity) << name_ << ": "
 
-#define SVLOG(verbose_level) VLOG(verbose_level) << name_ << ": "
+#define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
-#define SVLOG_LOC(from_here, verbose_level)             \
-  VLOG_LOC(from_here, verbose_level) << name_ << ": "
+#define SDVLOG_LOC(from_here, verbose_level)             \
+  DVLOG_LOC(from_here, verbose_level) << name_ << ": "
 
 namespace {
 
@@ -204,8 +204,8 @@ SyncScheduler::~SyncScheduler() {
 void SyncScheduler::CheckServerConnectionManagerStatus(
     HttpResponse::ServerConnectionCode code) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG(2) << "New server connection code: "
-           << HttpResponse::GetServerConnectionCodeString(code);
+  SDVLOG(2) << "New server connection code: "
+            << HttpResponse::GetServerConnectionCodeString(code);
   bool old_server_connection_ok = server_connection_ok_;
 
   // Note, be careful when adding cases here because if the SyncScheduler
@@ -217,19 +217,19 @@ void SyncScheduler::CheckServerConnectionManagerStatus(
   if (HttpResponse::CONNECTION_UNAVAILABLE == code ||
       HttpResponse::SYNC_AUTH_ERROR == code) {
     server_connection_ok_ = false;
-    SVLOG(2) << "Sync auth error or unavailable connection: "
-             << "server connection is down";
+    SDVLOG(2) << "Sync auth error or unavailable connection: "
+              << "server connection is down";
   } else if (HttpResponse::SERVER_CONNECTION_OK == code) {
     server_connection_ok_ = true;
-    SVLOG(2) << "Sync server connection is ok: "
-             << "server connection is up, doing canary job";
+    SDVLOG(2) << "Sync server connection is ok: "
+              << "server connection is up, doing canary job";
     DoCanaryJob();
   }
 
   if (old_server_connection_ok != server_connection_ok_) {
     const char* transition =
         server_connection_ok_ ? "down -> up" : "up -> down";
-    SVLOG(2) << "Server connection changed: " << transition;
+    SDVLOG(2) << "Server connection changed: " << transition;
   }
 }
 
@@ -238,8 +238,8 @@ void SyncScheduler::Start(Mode mode, const base::Closure& callback) {
   std::string thread_name = MessageLoop::current()->thread_name();
   if (thread_name.empty())
     thread_name = "<Main thread>";
-  SVLOG(2) << "Start called from thread "
-           << thread_name << " with mode " << GetModeString(mode);
+  SDVLOG(2) << "Start called from thread "
+            << thread_name << " with mode " << GetModeString(mode);
   if (!started_) {
     started_ = true;
     WatchConnectionManager();
@@ -275,7 +275,7 @@ void SyncScheduler::WatchConnectionManager() {
 
 void SyncScheduler::StartImpl(Mode mode, const base::Closure& callback) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG(2) << "In StartImpl with mode " << GetModeString(mode);
+  SDVLOG(2) << "In StartImpl with mode " << GetModeString(mode);
 
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(!session_context_->account_name().empty());
@@ -300,10 +300,10 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideWhileInWaitInterval(
   DCHECK_NE(job.purpose, SyncSessionJob::CLEAR_USER_DATA);
   DCHECK_NE(job.purpose, SyncSessionJob::CLEANUP_DISABLED_TYPES);
 
-  SVLOG(2) << "DecideWhileInWaitInterval with WaitInterval mode "
-           << WaitInterval::GetModeString(wait_interval_->mode)
-           << (wait_interval_->had_nudge ? " (had nudge)" : "")
-           << (job.is_canary_job ? " (canary)" : "");
+  SDVLOG(2) << "DecideWhileInWaitInterval with WaitInterval mode "
+            << WaitInterval::GetModeString(wait_interval_->mode)
+            << (wait_interval_->had_nudge ? " (had nudge)" : "")
+            << (job.is_canary_job ? " (canary)" : "");
 
   if (job.purpose == SyncSessionJob::POLL)
     return DROP;
@@ -353,14 +353,14 @@ SyncScheduler::JobProcessDecision SyncScheduler::DecideOnJob(
 
   // Freshness condition
   if (job.scheduled_start < last_sync_session_end_time_) {
-    SVLOG(2) << "Dropping job because of freshness";
+    SDVLOG(2) << "Dropping job because of freshness";
     return DROP;
   }
 
   if (server_connection_ok_)
     return CONTINUE;
 
-  SVLOG(2) << "Bad server connection. Using that to decide on job.";
+  SDVLOG(2) << "Bad server connection. Using that to decide on job.";
   return job.purpose == SyncSessionJob::NUDGE ? SAVE : DROP;
 }
 
@@ -368,7 +368,7 @@ void SyncScheduler::InitOrCoalescePendingJob(const SyncSessionJob& job) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(job.purpose != SyncSessionJob::CONFIGURATION);
   if (pending_nudge_.get() == NULL) {
-    SVLOG(2) << "Creating a pending nudge job";
+    SDVLOG(2) << "Creating a pending nudge job";
     SyncSession* s = job.session.get();
     scoped_ptr<SyncSession> session(new SyncSession(s->context(),
         s->delegate(), s->source(), s->routing_info(), s->workers()));
@@ -380,7 +380,7 @@ void SyncScheduler::InitOrCoalescePendingJob(const SyncSessionJob& job) {
     return;
   }
 
-  SVLOG(2) << "Coalescing a pending nudge";
+  SDVLOG(2) << "Coalescing a pending nudge";
   pending_nudge_->session->Coalesce(*(job.session.get()));
   pending_nudge_->scheduled_start = job.scheduled_start;
 
@@ -393,10 +393,10 @@ bool SyncScheduler::ShouldRunJob(const SyncSessionJob& job) {
   DCHECK(started_);
 
   JobProcessDecision decision = DecideOnJob(job);
-  SVLOG(2) << "Should run "
-           << SyncSessionJob::GetPurposeString(job.purpose)
-           << " job in mode " << GetModeString(mode_)
-           << ": " << GetDecisionString(decision);
+  SDVLOG(2) << "Should run "
+            << SyncSessionJob::GetPurposeString(job.purpose)
+            << " job in mode " << GetModeString(mode_)
+            << ": " << GetDecisionString(decision);
   if (decision != SAVE)
     return decision == CONTINUE;
 
@@ -413,10 +413,10 @@ void SyncScheduler::SaveJob(const SyncSessionJob& job) {
   // TODO(sync): Should we also check that job.purpose !=
   // CLEANUP_DISABLED_TYPES?  (See http://crbug.com/90868.)
   if (job.purpose == SyncSessionJob::NUDGE) {
-    SVLOG(2) << "Saving a nudge job";
+    SDVLOG(2) << "Saving a nudge job";
     InitOrCoalescePendingJob(job);
   } else if (job.purpose == SyncSessionJob::CONFIGURATION){
-    SVLOG(2) << "Saving a configuration job";
+    SDVLOG(2) << "Saving a configuration job";
     DCHECK(wait_interval_.get());
     DCHECK(mode_ == CONFIGURATION_MODE);
 
@@ -462,7 +462,7 @@ void SyncScheduler::ScheduleNudge(
     NudgeSource source, const ModelTypeBitSet& types,
     const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG_LOC(nudge_location, 2)
+  SDVLOG_LOC(nudge_location, 2)
       << "Nudge scheduled with delay " << delay.InMilliseconds() << " ms, "
       << "source " << GetNudgeSourceString(source) << ", "
       << "types " << syncable::ModelTypeBitSetToString(types);
@@ -484,7 +484,7 @@ void SyncScheduler::ScheduleNudgeWithPayloads(
     NudgeSource source, const ModelTypePayloadMap& types_with_payloads,
     const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG_LOC(nudge_location, 2)
+  SDVLOG_LOC(nudge_location, 2)
       << "Nudge scheduled with delay " << delay.InMilliseconds() << " ms, "
       << "source " << GetNudgeSourceString(source) << ", "
       << "payloads "
@@ -514,7 +514,7 @@ void SyncScheduler::ScheduleNudgeImpl(
     bool is_canary_job, const tracked_objects::Location& nudge_location) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
-  SVLOG_LOC(nudge_location, 2)
+  SDVLOG_LOC(nudge_location, 2)
       << "In ScheduleNudgeImpl with delay "
       << delay.InMilliseconds() << " ms, "
       << "source " << GetUpdatesSourceString(source) << ", "
@@ -535,19 +535,19 @@ void SyncScheduler::ScheduleNudgeImpl(
 
   if (pending_nudge_.get()) {
     if (IsBackingOff() && delay > TimeDelta::FromSeconds(1)) {
-      SVLOG(2) << "Dropping the nudge because we are in backoff";
+      SDVLOG(2) << "Dropping the nudge because we are in backoff";
       return;
     }
 
-    SVLOG(2) << "Coalescing pending nudge";
+    SDVLOG(2) << "Coalescing pending nudge";
     pending_nudge_->session->Coalesce(*(job.session.get()));
 
     if (!IsBackingOff()) {
-      SVLOG(2) << "Dropping a nudge because"
-               << " we are not in backoff and the job was coalesced";
+      SDVLOG(2) << "Dropping a nudge because"
+                << " we are not in backoff and the job was coalesced";
       return;
     } else {
-      SVLOG(2) << "Rescheduling pending nudge";
+      SDVLOG(2) << "Rescheduling pending nudge";
       SyncSession* s = pending_nudge_->session.get();
       job.session.reset(new SyncSession(s->context(), s->delegate(),
           s->source(), s->routing_info(), s->workers()));
@@ -610,7 +610,7 @@ void SyncScheduler::ScheduleConfig(
     GetUpdatesCallerInfo::GetUpdatesSource source) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK(IsConfigRelatedUpdateSourceValue(source));
-  SVLOG(2) << "Scheduling a config";
+  SDVLOG(2) << "Scheduling a config";
   ModelSafeRoutingInfo routes;
   std::vector<ModelSafeWorker*> workers;
   GetModelSafeParamsForTypes(types, session_context_->registrar(),
@@ -630,7 +630,7 @@ void SyncScheduler::ScheduleConfigImpl(
     const sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
 
-  SVLOG(2) << "In ScheduleConfigImpl";
+  SDVLOG(2) << "In ScheduleConfigImpl";
   // TODO(tim): config-specific GetUpdatesCallerInfo value?
   SyncSession* session = new SyncSession(session_context_.get(), this,
       SyncSourceInfo(source,
@@ -662,10 +662,10 @@ const char* SyncScheduler::GetDecisionString(
 void SyncScheduler::PostTask(
     const tracked_objects::Location& from_here,
     const char* name, const base::Closure& task) {
-  SVLOG_LOC(from_here, 3) << "Posting " << name << " task";
+  SDVLOG_LOC(from_here, 3) << "Posting " << name << " task";
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (!started_) {
-    SVLOG(1) << "Not posting task as scheduler is stopped.";
+    SDVLOG(1) << "Not posting task as scheduler is stopped.";
     return;
   }
   sync_loop_->PostTask(from_here, task);
@@ -674,11 +674,11 @@ void SyncScheduler::PostTask(
 void SyncScheduler::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const char* name, const base::Closure& task, int64 delay_ms) {
-  SVLOG_LOC(from_here, 3) << "Posting " << name << " task with "
-                          << delay_ms << " ms delay";
+  SDVLOG_LOC(from_here, 3) << "Posting " << name << " task with "
+                           << delay_ms << " ms delay";
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (!started_) {
-    SVLOG(1) << "Not posting task as scheduler is stopped.";
+    SDVLOG(1) << "Not posting task as scheduler is stopped.";
     return;
   }
   sync_loop_->PostDelayedTask(from_here, task, delay_ms);
@@ -690,7 +690,7 @@ void SyncScheduler::ScheduleSyncSessionJob(
     sessions::SyncSession* session,
     const tracked_objects::Location& from_here) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG_LOC(from_here, 2)
+  SDVLOG_LOC(from_here, 2)
       << "In ScheduleSyncSessionJob with "
       << SyncSessionJob::GetPurposeString(purpose)
       << " job and " << delay.InMilliseconds() << " ms delay";
@@ -698,7 +698,7 @@ void SyncScheduler::ScheduleSyncSessionJob(
   SyncSessionJob job(purpose, TimeTicks::Now() + delay,
                      make_linked_ptr(session), false, from_here);
   if (purpose == SyncSessionJob::NUDGE) {
-    SVLOG_LOC(from_here, 2) << "Resetting pending_nudge";
+    SDVLOG_LOC(from_here, 2) << "Resetting pending_nudge";
     DCHECK(!pending_nudge_.get() || pending_nudge_->session.get() == session);
     pending_nudge_.reset(new SyncSessionJob(job));
   }
@@ -752,8 +752,8 @@ void SyncScheduler::DoSyncSessionJob(const SyncSessionJob& job) {
   if (job.purpose == SyncSessionJob::NUDGE) {
     if (pending_nudge_.get() == NULL ||
         pending_nudge_->session != job.session) {
-      SVLOG(2) << "Dropping a nudge in "
-               << "DoSyncSessionJob because another nudge was scheduled";
+      SDVLOG(2) << "Dropping a nudge in "
+                << "DoSyncSessionJob because another nudge was scheduled";
       return;  // Another nudge must have been scheduled in in the meantime.
     }
     pending_nudge_.reset();
@@ -764,8 +764,8 @@ void SyncScheduler::DoSyncSessionJob(const SyncSessionJob& job) {
 
     job.session->RebaseRoutingInfoWithLatest(session.get());
   }
-  SVLOG(2) << "DoSyncSessionJob with "
-           << SyncSessionJob::GetPurposeString(job.purpose) << " job";
+  SDVLOG(2) << "DoSyncSessionJob with "
+            << SyncSessionJob::GetPurposeString(job.purpose) << " job";
 
   SyncerStep begin(SYNCER_END);
   SyncerStep end(SYNCER_END);
@@ -773,14 +773,14 @@ void SyncScheduler::DoSyncSessionJob(const SyncSessionJob& job) {
 
   bool has_more_to_sync = true;
   while (ShouldRunJob(job) && has_more_to_sync) {
-    SVLOG(2) << "Calling SyncShare.";
+    SDVLOG(2) << "Calling SyncShare.";
     // Synchronously perform the sync session from this thread.
     syncer_->SyncShare(job.session.get(), begin, end);
     has_more_to_sync = job.session->HasMoreToSync();
     if (has_more_to_sync)
       job.session->ResetTransientState();
   }
-  SVLOG(2) << "Done SyncShare looping.";
+  SDVLOG(2) << "Done SyncShare looping.";
 
   FinishSyncSessionJob(job);
 }
@@ -822,14 +822,14 @@ void SyncScheduler::FinishSyncSessionJob(const SyncSessionJob& job) {
   last_sync_session_end_time_ = now;
   UpdateCarryoverSessionState(job);
   if (IsSyncingCurrentlySilenced()) {
-    SVLOG(2) << "We are currently throttled; not scheduling the next sync.";
+    SDVLOG(2) << "We are currently throttled; not scheduling the next sync.";
     // TODO(sync): Investigate whether we need to check job.purpose
     // here; see DCHECKs in SaveJob().  (See http://crbug.com/90868.)
     SaveJob(job);
     return;  // Nothing to do.
   }
 
-  SVLOG(2) << "Updating the next polling time after SyncMain";
+  SDVLOG(2) << "Updating the next polling time after SyncMain";
   ScheduleNextSync(job);
 }
 
@@ -848,9 +848,9 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
       old_job.session->status_controller().unsynced_handles().size();
   const bool work_to_do =
       num_server_changes_remaining > 0 || num_unsynced_handles > 0;
-  SVLOG(2) << "num server changes remaining: " << num_server_changes_remaining
-           << ", num unsynced handles: " << num_unsynced_handles
-           << ", syncer has work to do: " << work_to_do;
+  SDVLOG(2) << "num server changes remaining: " << num_server_changes_remaining
+            << ", num unsynced handles: " << num_unsynced_handles
+            << ", syncer has work to do: " << work_to_do;
 
   AdjustPolling(&old_job);
 
@@ -863,7 +863,7 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
     // jobs like this don't run a full sync cycle.  So we don't need
     // special code here.
     wait_interval_.reset();
-    SVLOG(2) << "Job succeeded so not scheduling more jobs";
+    SDVLOG(2) << "Job succeeded so not scheduling more jobs";
     return;
   }
 
@@ -876,7 +876,7 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
   // have anything similar to had_nudge.
   if (IsBackingOff() && wait_interval_->timer.IsRunning() &&
       mode_ == NORMAL_MODE) {
-    SVLOG(2) << "A nudge during backoff failed";
+    SDVLOG(2) << "A nudge during backoff failed";
     // We weren't continuing but we're in backoff; must have been a nudge.
     DCHECK_EQ(SyncSessionJob::NUDGE, old_job.purpose);
     DCHECK(!wait_interval_->had_nudge);
@@ -887,11 +887,11 @@ void SyncScheduler::ScheduleNextSync(const SyncSessionJob& old_job) {
     RestartWaiting();
   } else if (old_job.session->source().updates_source ==
              GetUpdatesCallerInfo::SYNC_CYCLE_CONTINUATION) {
-    SVLOG(2) << "Job failed with source continuation";
+    SDVLOG(2) << "Job failed with source continuation";
     // We don't seem to have made forward progress. Start or extend backoff.
     HandleConsecutiveContinuationError(old_job);
   } else {
-    SVLOG(2) << "Failed. Schedule a job with continuation as source";
+    SDVLOG(2) << "Failed. Schedule a job with continuation as source";
     // We weren't continuing and we aren't in backoff.  Schedule a normal
     // continuation.
     if (old_job.purpose == SyncSessionJob::CONFIGURATION) {
@@ -946,10 +946,10 @@ void SyncScheduler::HandleConsecutiveContinuationError(
   TimeDelta length = delay_provider_->GetDelay(
       IsBackingOff() ? wait_interval_->length : TimeDelta::FromSeconds(1));
 
-  SVLOG(2) << "In handle continuation error with "
-           << SyncSessionJob::GetPurposeString(old_job.purpose)
-           << " job. The time delta(ms) is "
-           << length.InMilliseconds();
+  SDVLOG(2) << "In handle continuation error with "
+            << SyncSessionJob::GetPurposeString(old_job.purpose)
+            << " job. The time delta(ms) is "
+            << length.InMilliseconds();
 
   // This will reset the had_nudge variable as well.
   wait_interval_.reset(new WaitInterval(WaitInterval::EXPONENTIAL_BACKOFF,
@@ -999,7 +999,7 @@ TimeDelta SyncScheduler::GetRecommendedDelay(const TimeDelta& last_delay) {
 void SyncScheduler::RequestStop(const base::Closure& callback) {
   syncer_->RequestEarlyExit();  // Safe to call from any thread.
   DCHECK(weak_handle_this_.IsInitialized());
-  SVLOG(3) << "Posting StopImpl";
+  SDVLOG(3) << "Posting StopImpl";
   weak_handle_this_.Call(FROM_HERE,
                          &SyncScheduler::StopImpl,
                          callback);
@@ -1007,7 +1007,7 @@ void SyncScheduler::RequestStop(const base::Closure& callback) {
 
 void SyncScheduler::StopImpl(const base::Closure& callback) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG(2) << "StopImpl called";
+  SDVLOG(2) << "StopImpl called";
 
   // Kill any in-flight method calls.
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -1023,7 +1023,7 @@ void SyncScheduler::StopImpl(const base::Closure& callback) {
 
 void SyncScheduler::DoCanaryJob() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG(2) << "Do canary job";
+  SDVLOG(2) << "Do canary job";
   DoPendingJobIfPossible(true);
 }
 
@@ -1032,10 +1032,10 @@ void SyncScheduler::DoPendingJobIfPossible(bool is_canary_job) {
   SyncSessionJob* job_to_execute = NULL;
   if (mode_ == CONFIGURATION_MODE && wait_interval_.get()
       && wait_interval_->pending_configure_job.get()) {
-    SVLOG(2) << "Found pending configure job";
+    SDVLOG(2) << "Found pending configure job";
     job_to_execute = wait_interval_->pending_configure_job.get();
   } else if (mode_ == NORMAL_MODE && pending_nudge_.get()) {
-    SVLOG(2) << "Found pending nudge job";
+    SDVLOG(2) << "Found pending nudge job";
     // Pending jobs mostly have time from the past. Reset it so this job
     // will get executed.
     if (pending_nudge_->scheduled_start < TimeTicks::Now())
@@ -1052,7 +1052,7 @@ void SyncScheduler::DoPendingJobIfPossible(bool is_canary_job) {
   }
 
   if (job_to_execute != NULL) {
-    SVLOG(2) << "Executing pending job";
+    SDVLOG(2) << "Executing pending job";
     SyncSessionJob copy = *job_to_execute;
     copy.is_canary_job = is_canary_job;
     DoSyncSessionJob(copy);
@@ -1064,8 +1064,8 @@ SyncSession* SyncScheduler::CreateSyncSession(const SyncSourceInfo& source) {
   ModelSafeRoutingInfo routes;
   std::vector<ModelSafeWorker*> workers;
   session_context_->registrar()->GetModelSafeRoutingInfo(&routes);
-  VLOG(2) << "Creating sync session with routes "
-          << ModelSafeRoutingInfoToString(routes);
+  DVLOG(2) << "Creating sync session with routes "
+           << ModelSafeRoutingInfoToString(routes);
   session_context_->registrar()->GetWorkers(&workers);
   SyncSourceInfo info(source);
 
@@ -1089,7 +1089,7 @@ void SyncScheduler::PollTimerCallback() {
 void SyncScheduler::Unthrottle() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   DCHECK_EQ(WaitInterval::THROTTLED, wait_interval_->mode);
-  SVLOG(2) << "Unthrottled.";
+  SDVLOG(2) << "Unthrottled.";
   DoCanaryJob();
   wait_interval_.reset();
 }
@@ -1139,7 +1139,7 @@ void SyncScheduler::OnReceivedSessionsCommitDelay(
 
 void SyncScheduler::OnShouldStopSyncingPermanently() {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG(2) << "OnShouldStopSyncingPermanently";
+  SDVLOG(2) << "OnShouldStopSyncingPermanently";
   syncer_->RequestEarlyExit();  // Thread-safe.
   Notify(SyncEngineEvent::STOP_SYNCING_PERMANENTLY);
 }
@@ -1147,7 +1147,7 @@ void SyncScheduler::OnShouldStopSyncingPermanently() {
 void SyncScheduler::OnActionableError(
     const sessions::SyncSessionSnapshot& snap) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
-  SVLOG(2) << "OnActionableError";
+  SDVLOG(2) << "OnActionableError";
   SyncEngineEvent event(SyncEngineEvent::ACTIONABLE_ERROR);
   sessions::SyncSessionSnapshot snapshot(snap);
   event.snapshot = &snapshot;
@@ -1158,7 +1158,7 @@ void SyncScheduler::OnSyncProtocolError(
     const sessions::SyncSessionSnapshot& snapshot) {
   DCHECK_EQ(MessageLoop::current(), sync_loop_);
   if (ShouldRequestEarlyExit(snapshot.errors.sync_protocol_error)) {
-    SVLOG(2) << "Sync Scheduler requesting early exit.";
+    SDVLOG(2) << "Sync Scheduler requesting early exit.";
     syncer_->RequestEarlyExit();  // Thread-safe.
   }
   if (IsActionableError(snapshot.errors.sync_protocol_error))
@@ -1185,9 +1185,9 @@ base::TimeDelta SyncScheduler::sessions_commit_delay() const {
   return sessions_commit_delay_;
 }
 
-#undef SVLOG_LOC
+#undef SDVLOG_LOC
 
-#undef SVLOG
+#undef SDVLOG
 
 #undef SLOG
 

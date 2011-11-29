@@ -234,7 +234,7 @@ void NonFrontendDataTypeController::Stop() {
 void NonFrontendDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state_ == STOPPING || state_ == NOT_RUNNING || state_ == DISABLED);
-  VLOG(1) << "NonFrontendDataTypeController::StopModels(): State = " << state_;
+  DVLOG(1) << "NonFrontendDataTypeController::StopModels(): State = " << state_;
   // Do nothing by default.
 }
 

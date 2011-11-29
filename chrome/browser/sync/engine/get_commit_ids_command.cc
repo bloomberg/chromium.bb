@@ -62,7 +62,7 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
       ordered_commit_set_->GetAllCommitIds();
 
   for (size_t i = 0; i < verified_commit_ids.size(); i++)
-    VLOG(1) << "Debug commit batch result:" << verified_commit_ids[i];
+    DVLOG(1) << "Debug commit batch result:" << verified_commit_ids[i];
 
   status->set_commit_set(*ordered_commit_set_.get());
 }
@@ -88,8 +88,8 @@ bool IsEntryReadyForCommit(const syncable::ModelTypeSet& encrypted_types,
     // conflict, so there's no point in attempting to commit.
     DCHECK(entry.Get(syncable::IS_UNAPPLIED_UPDATE));  // In conflict.
     // TODO(zea): switch this to DVLOG once it's clear bug 100660 is fixed.
-    VLOG(1) << "Excluding entry from commit due to version mismatch "
-            << entry;
+    DVLOG(1) << "Excluding entry from commit due to version mismatch "
+             << entry;
     return false;
   }
 
@@ -101,8 +101,8 @@ bool IsEntryReadyForCommit(const syncable::ModelTypeSet& encrypted_types,
     // due to the cryptographer not being initialized or the user hasn't
     // provided the most recent passphrase).
     // TODO(zea): switch this to DVLOG once it's clear bug 100660 is fixed.
-    VLOG(1) << "Excluding entry from commit due to lack of encryption "
-            << entry;
+    DVLOG(1) << "Excluding entry from commit due to lack of encryption "
+             << entry;
     return false;
   }
 
@@ -285,8 +285,8 @@ void GetCommitIdsCommand::AddDeletes(const vector<int64>& unsynced_handles,
         if (entry.Get(syncable::ID).ServerKnows() &&
             entry.Get(syncable::PARENT_ID) !=
                 entry.Get(syncable::SERVER_PARENT_ID)) {
-          VLOG(1) << "Inserting moved and deleted entry, will be missed by "
-                     "delete roll." << entry.Get(syncable::ID);
+          DVLOG(1) << "Inserting moved and deleted entry, will be missed by "
+                   << "delete roll." << entry.Get(syncable::ID);
 
           ordered_commit_set_->AddCommitItem(metahandle,
               entry.Get(syncable::ID),

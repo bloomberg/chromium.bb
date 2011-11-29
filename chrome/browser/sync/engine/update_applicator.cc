@@ -32,7 +32,7 @@ UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
       routing_info_(routes),
       application_results_(end - begin) {
   size_t item_count = end - begin;
-  VLOG(1) << "UpdateApplicator created for " << item_count << " items.";
+  DVLOG(1) << "UpdateApplicator created for " << item_count << " items.";
 }
 
 UpdateApplicator::~UpdateApplicator() {
@@ -48,7 +48,7 @@ bool UpdateApplicator::AttemptOneApplication(
     if (!progress_)
       return false;
 
-    VLOG(1) << "UpdateApplicator doing additional pass.";
+    DVLOG(1) << "UpdateApplicator doing additional pass.";
     pointer_ = begin_;
     progress_ = false;
 
@@ -83,8 +83,8 @@ bool UpdateApplicator::AttemptOneApplication(
       NOTREACHED();
       break;
   }
-  VLOG(1) << "Apply Status for " << entry.Get(syncable::META_HANDLE)
-          << " is " << updateResponse;
+  DVLOG(1) << "Apply Status for " << entry.Get(syncable::META_HANDLE)
+           << " is " << updateResponse;
 
   return true;
 }
@@ -107,7 +107,7 @@ bool UpdateApplicator::SkipUpdate(const syncable::Entry& entry) {
       !routing_info_.count(type) &&
       type != syncable::UNSPECIFIED &&
       type != syncable::TOP_LEVEL_FOLDER) {
-    VLOG(1) << "Skipping update application, type not permitted.";
+    DVLOG(1) << "Skipping update application, type not permitted.";
     return true;
   }
   return false;

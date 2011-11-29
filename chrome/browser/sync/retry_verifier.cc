@@ -61,10 +61,10 @@ void FillDelayTable(DelayInfo* delay_table, int count) {
 // harness as |kExponentialBackoffVerificationTimeoutMs|.
 bool IsRetryOnTime(DelayInfo* delay_table, int retry_count,
                    const base::TimeDelta& time_elapsed) {
-  VLOG(1) << "Retry Count : " << retry_count
-          << " Time elapsed : " << time_elapsed.InSeconds()
-          << " Retry table min: " << delay_table[retry_count].min_delay
-          << " Retry table max: " << delay_table[retry_count].max_delay;
+  DVLOG(1) << "Retry Count : " << retry_count
+           << " Time elapsed : " << time_elapsed.InSeconds()
+           << " Retry table min: " << delay_table[retry_count].min_delay
+           << " Retry table max: " << delay_table[retry_count].max_delay;
   return ((time_elapsed.InSeconds() >= delay_table[retry_count].min_delay));
 }
 

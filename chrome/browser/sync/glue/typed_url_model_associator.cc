@@ -85,7 +85,7 @@ bool TypedUrlModelAssociator::FixupURLAndGetVisits(
   // create a new visit whose timestamp is the same as the last_visit time.
   // This is a workaround for http://crbug.com/84258.
   if (visits->empty()) {
-    VLOG(1) << "Found empty visits for URL: " << url->url();
+    DVLOG(1) << "Found empty visits for URL: " << url->url();
     history::VisitRow visit(
         url->id(), url->last_visit(), 0, content::PAGE_TRANSITION_TYPED, 0);
     visits->push_back(visit);
@@ -125,7 +125,7 @@ bool TypedUrlModelAssociator::ShouldIgnoreUrl(
 }
 
 bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
-  VLOG(1) << "Associating TypedUrl Models";
+  DVLOG(1) << "Associating TypedUrl Models";
   DCHECK(expected_loop_ == MessageLoop::current());
   if (IsAbortPending())
     return false;
@@ -289,7 +289,8 @@ bool TypedUrlModelAssociator::AssociateModels(SyncError* error) {
         // even though we gracefully handle this case by throwing away this
         // node.
         DCHECK_EQ(typed_url.visits_size(), typed_url.visit_transitions_size());
-        VLOG(1) << "Deleting obsolete sync node with no visit transition info.";
+        DVLOG(1) << "Deleting obsolete sync node with no visit "
+                 << "transition info.";
         obsolete_nodes.push_back(sync_child_node.GetId());
         continue;
       }

@@ -187,8 +187,8 @@ SyncExtensionHelper::ExtensionStateMap
     extension_state_map[id].enabled_state = ExtensionState::ENABLED;
     extension_state_map[id].incognito_enabled =
         extension_service->IsIncognitoEnabled(id);
-    VLOG(2) << "Extension " << (*it)->id() << " in profile "
-            << profile_debug_name << " is enabled";
+    DVLOG(2) << "Extension " << (*it)->id() << " in profile "
+             << profile_debug_name << " is enabled";
   }
 
   const ExtensionList* disabled_extensions =
@@ -199,8 +199,8 @@ SyncExtensionHelper::ExtensionStateMap
     extension_state_map[id].enabled_state = ExtensionState::DISABLED;
     extension_state_map[id].incognito_enabled =
         extension_service->IsIncognitoEnabled(id);
-    VLOG(2) << "Extension " << (*it)->id() << " in profile "
-            << profile_debug_name << " is disabled";
+    DVLOG(2) << "Extension " << (*it)->id() << " in profile "
+             << profile_debug_name << " is disabled";
   }
 
   const PendingExtensionManager* pending_extension_manager =
@@ -212,8 +212,8 @@ SyncExtensionHelper::ExtensionStateMap
     extension_state_map[id].enabled_state = ExtensionState::PENDING;
     extension_state_map[id].incognito_enabled =
         extension_service->IsIncognitoEnabled(id);
-    VLOG(2) << "Extension " << it->first << " in profile "
-            << profile_debug_name << " is pending";
+    DVLOG(2) << "Extension " << it->first << " in profile "
+             << profile_debug_name << " is pending";
   }
 
   return extension_state_map;
@@ -224,8 +224,8 @@ bool SyncExtensionHelper::ExtensionStatesMatch(
   const ExtensionStateMap& state_map1 = GetExtensionStates(profile1);
   const ExtensionStateMap& state_map2 = GetExtensionStates(profile2);
   if (state_map1.size() != state_map2.size()) {
-    VLOG(1) << "Number of extensions for profile " << profile1->GetDebugName()
-            << " does not match profile " << profile2->GetDebugName();
+    DVLOG(1) << "Number of extensions for profile " << profile1->GetDebugName()
+             << " does not match profile " << profile2->GetDebugName();
     return false;
   }
 
@@ -233,12 +233,12 @@ bool SyncExtensionHelper::ExtensionStatesMatch(
   ExtensionStateMap::const_iterator it2 = state_map2.begin();
   while (it1 != state_map1.end()) {
     if (it1->first != it2->first) {
-      VLOG(1) << "Extensions for profile " << profile1->GetDebugName()
-              << " do not match profile " << profile2->GetDebugName();
+      DVLOG(1) << "Extensions for profile " << profile1->GetDebugName()
+               << " do not match profile " << profile2->GetDebugName();
       return false;
     } else if (!it1->second.Equals(it2->second)) {
-      VLOG(1) << "Extension states for profile " << profile1->GetDebugName()
-              << " do not match profile " << profile2->GetDebugName();
+      DVLOG(1) << "Extension states for profile " << profile1->GetDebugName()
+               << " do not match profile " << profile2->GetDebugName();
       return false;
     }
     ++it1;
@@ -353,8 +353,8 @@ scoped_refptr<Extension> SyncExtensionHelper::GetExtension(
     EXPECT_EQ(expected_id, extension->id());
     return NULL;
   }
-  VLOG(2) << "created extension with name = "
-          << name << ", id = " << expected_id;
+  DVLOG(2) << "created extension with name = "
+           << name << ", id = " << expected_id;
   (it->second)[name] = extension;
   id_to_name_[expected_id] = name;
   return extension;

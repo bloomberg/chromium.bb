@@ -284,13 +284,13 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
     // Note that the server's get_time path doesn't require authentication.
     string get_time_path =
         MakeSyncServerPath(kSyncServerGetTimePath, post_body);
-    VLOG(1) << "Requesting get_time from:" << get_time_path;
+    DVLOG(1) << "Requesting get_time from:" << get_time_path;
 
     string blank_post_body;
     bool ok = post.get()->Init(get_time_path.c_str(), blank_post_body,
         blank_post_body, &response);
     if (!ok) {
-      VLOG(1) << "Unable to check the time";
+      DVLOG(1) << "Unable to check the time";
       continue;
     }
     string time_response;
@@ -304,7 +304,7 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
       continue;
     }
     *out_time = atoi(time_response.c_str());
-    VLOG(1) << "Server was reachable.";
+    DVLOG(1) << "Server was reachable.";
     return true;
   }
   return false;
@@ -400,7 +400,7 @@ bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
                                  const std::string& share) {
   syncable::ScopedDirLookup dir(manager, share);
   if (!dir.good()) {
-    VLOG(1) << "Dir lookup failed";
+    DVLOG(1) << "Dir lookup failed";
     return false;
   }
   string birthday = dir->store_birthday();

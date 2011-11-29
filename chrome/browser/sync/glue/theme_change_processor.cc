@@ -123,7 +123,7 @@ void ThemeChangeProcessor::StopImpl() {
 
 void ThemeChangeProcessor::StartObserving() {
   DCHECK(profile_);
-  VLOG(1) << "Observing BROWSER_THEME_CHANGED";
+  DVLOG(1) << "Observing BROWSER_THEME_CHANGED";
   notification_registrar_.Add(
       this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
       content::Source<ThemeService>(
@@ -132,7 +132,7 @@ void ThemeChangeProcessor::StartObserving() {
 
 void ThemeChangeProcessor::StopObserving() {
   DCHECK(profile_);
-  VLOG(1) << "Unobserving all notifications";
+  DVLOG(1) << "Unobserving all notifications";
   notification_registrar_.RemoveAll();
 }
 

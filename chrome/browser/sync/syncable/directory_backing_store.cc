@@ -491,7 +491,7 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
       return FAILED_NEWER_VERSION;
     }
     // Fallback (re-sync everything) migration path.
-    VLOG(1) << "Old/null sync database, version " << version_on_disk;
+    DVLOG(1) << "Old/null sync database, version " << version_on_disk;
     // Delete the existing database (if any), and create a fresh one.
     DropAllTables();
     last_result = CreateTables();
@@ -508,7 +508,7 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
       string db_create_version = statement.column_text(0);
       int db_create_time = statement.column_int(1);
       statement.reset();
-      VLOG(1) << "DB created at " << db_create_time << " by version " <<
+      DVLOG(1) << "DB created at " << db_create_time << " by version " <<
           db_create_version;
     }
     // COMMIT TRANSACTION rolls back on failure.
@@ -1117,7 +1117,7 @@ bool DirectoryBackingStore::MigrateVersion76To77() {
 }
 
 int DirectoryBackingStore::CreateTables() {
-  VLOG(1) << "First run, creating tables";
+  DVLOG(1) << "First run, creating tables";
   // Create two little tables share_version and share_info
   int result = ExecQuery(load_dbhandle_,
                          "CREATE TABLE share_version ("

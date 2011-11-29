@@ -68,25 +68,25 @@ SyncNotifier* CreateDefaultSyncNotifier(
       notifier_options.xmpp_host_port =
           StringToHostPortPair(value, notifier::kDefaultXmppPort);
     }
-    VLOG(1) << "Using " << notifier_options.xmpp_host_port.ToString()
-            << " for test sync notification server.";
+    DVLOG(1) << "Using " << notifier_options.xmpp_host_port.ToString()
+             << " for test sync notification server.";
   }
 
   notifier_options.try_ssltcp_first =
       command_line.HasSwitch(switches::kSyncTrySsltcpFirstForXmpp);
   if (notifier_options.try_ssltcp_first)
-    VLOG(1) << "Trying SSL/TCP port before XMPP port for notifications.";
+    DVLOG(1) << "Trying SSL/TCP port before XMPP port for notifications.";
 
   notifier_options.invalidate_xmpp_login =
       command_line.HasSwitch(switches::kSyncInvalidateXmppLogin);
   if (notifier_options.invalidate_xmpp_login) {
-    VLOG(1) << "Invalidating sync XMPP login.";
+    DVLOG(1) << "Invalidating sync XMPP login.";
   }
 
   notifier_options.allow_insecure_connection =
       command_line.HasSwitch(switches::kSyncAllowInsecureXmppConnection);
   if (notifier_options.allow_insecure_connection) {
-    VLOG(1) << "Allowing insecure XMPP connections.";
+    DVLOG(1) << "Allowing insecure XMPP connections.";
   }
 
   if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {

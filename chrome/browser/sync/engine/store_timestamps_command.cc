@@ -47,14 +47,14 @@ void StoreTimestampsCommand::ExecuteImpl(sessions::SyncSession* session) {
   DCHECK(forward_progress_types.any() ||
          updates.changes_remaining() == 0);
   if (VLOG_IS_ON(1)) {
-    VLOG_IF(1, forward_progress_types.any())
+    DVLOG_IF(1, forward_progress_types.any())
         << "Get Updates got new progress marker for types: "
         << forward_progress_types.to_string() << " out of possible: "
         << status->updates_request_types().to_string();
   }
   if (updates.has_changes_remaining()) {
     int64 changes_left = updates.changes_remaining();
-    VLOG(1) << "Changes remaining: " << changes_left;
+    DVLOG(1) << "Changes remaining: " << changes_left;
     status->set_num_server_changes_remaining(changes_left);
   }
 }

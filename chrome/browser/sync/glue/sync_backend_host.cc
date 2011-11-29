@@ -55,7 +55,7 @@ using sync_api::SyncCredentials;
 
 #define SLOG(severity) LOG(severity) << name_ << ": "
 
-#define SVLOG(verbose_level) VLOG(verbose_level) << name_ << ": "
+#define SVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
 SyncBackendHost::SyncBackendHost(const std::string& name,
                                  Profile* profile,

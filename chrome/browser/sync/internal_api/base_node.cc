@@ -107,8 +107,8 @@ bool BaseNode::DecryptIfNecessary() {
       std::string title = GetTitle();
       std::string server_legal_title;
       SyncAPINameToServerName(title, &server_legal_title);
-      VLOG(1) << "Reading from legacy bookmark, manually returning title "
-              << title;
+      DVLOG(1) << "Reading from legacy bookmark, manually returning title "
+               << title;
       unencrypted_data_.CopyFrom(specifics);
       unencrypted_data_.MutableExtension(sync_pb::bookmark)->set_title(
           server_legal_title);
@@ -125,9 +125,9 @@ bool BaseNode::DecryptIfNecessary() {
       syncable::ModelTypeToString(GetModelType()) << ".";
     return false;
   }
-  VLOG(2) << "Decrypted specifics of type "
-          << syncable::ModelTypeToString(GetModelType())
-          << " with content: " << plaintext_data;
+  DVLOG(2) << "Decrypted specifics of type "
+           << syncable::ModelTypeToString(GetModelType())
+           << " with content: " << plaintext_data;
   return true;
 }
 

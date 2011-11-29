@@ -53,7 +53,7 @@ bool SharedChangeProcessor::Connect(
 
 bool SharedChangeProcessor::Disconnect() {
   // May be called from any thread.
-  VLOG(1) << "Disconnecting change processor.";
+  DVLOG(1) << "Disconnecting change processor.";
   AutoLock lock(monitor_lock_);
   bool was_connected = !disconnected_;
   disconnected_ = true;

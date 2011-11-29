@@ -17,8 +17,8 @@ void UserSettings::SetAuthTokenForService(
     const std::string& service_name,
     const std::string& long_lived_service_token) {
 
-  VLOG(1) << "Saving auth token " << long_lived_service_token
-          << " for " << email << "for service " << service_name;
+  DVLOG(1) << "Saving auth token " << long_lived_service_token
+           << " for " << email << "for service " << service_name;
 
   std::string encrypted_service_token;
   if (!Encryptor::EncryptString(long_lived_service_token,
@@ -60,13 +60,13 @@ bool UserSettings::GetLastUserAndServiceToken(const std::string& service_name,
     }
     *username = query.column_string(0);
 
-    VLOG(1) << "Found service token for:" << *username << " @ " << service_name
-            << " returning: " << *service_token;
+    DVLOG(1) << "Found service token for:" << *username << " @ " << service_name
+             << " returning: " << *service_token;
 
     return true;
   }
 
-  VLOG(1) << "Couldn't find service token for " << service_name;
+  DVLOG(1) << "Couldn't find service token for " << service_name;
 
   return false;
 }

@@ -64,14 +64,14 @@ void ChromeInvalidationClient::Start(
 
   max_invalidation_versions_ = initial_max_invalidation_versions;
   if (max_invalidation_versions_.empty()) {
-    VLOG(2) << "No initial max invalidation versions for any type";
+    DVLOG(2) << "No initial max invalidation versions for any type";
   } else {
     for (InvalidationVersionMap::const_iterator it =
              max_invalidation_versions_.begin();
          it != max_invalidation_versions_.end(); ++it) {
-      VLOG(2) << "Initial max invalidation version for "
-              << syncable::ModelTypeToString(it->first) << " is "
-              << it->second;
+      DVLOG(2) << "Initial max invalidation version for "
+               << syncable::ModelTypeToString(it->first) << " is "
+               << it->second;
     }
   }
   invalidation_version_tracker_ = invalidation_version_tracker;
@@ -151,7 +151,7 @@ void ChromeInvalidationClient::Invalidate(
     const invalidation::Invalidation& invalidation,
     const invalidation::AckHandle& ack_handle) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "Invalidate: " << InvalidationToString(invalidation);
+  DVLOG(1) << "Invalidate: " << InvalidationToString(invalidation);
   syncable::ModelType model_type;
   if (!ObjectIdToRealModelType(invalidation.object_id(), &model_type)) {
     LOG(WARNING) << "Could not get invalidation model type; "
@@ -176,9 +176,9 @@ void ChromeInvalidationClient::Invalidate(
     client->Acknowledge(ack_handle);
     return;
   }
-  VLOG(2) << "Setting max invalidation version for "
-          << syncable::ModelTypeToString(model_type) << " to "
-          << invalidation.version();
+  DVLOG(2) << "Setting max invalidation version for "
+           << syncable::ModelTypeToString(model_type) << " to "
+           << invalidation.version();
   max_invalidation_versions_[model_type] = invalidation.version();
   invalidation_version_tracker_.Call(
       FROM_HERE,
@@ -203,7 +203,7 @@ void ChromeInvalidationClient::InvalidateUnknownVersion(
     const invalidation::ObjectId& object_id,
     const invalidation::AckHandle& ack_handle) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "InvalidateUnknownVersion";
+  DVLOG(1) << "InvalidateUnknownVersion";
 
   syncable::ModelType model_type;
   if (!ObjectIdToRealModelType(object_id, &model_type)) {
@@ -228,7 +228,7 @@ void ChromeInvalidationClient::InvalidateAll(
     invalidation::InvalidationClient* client,
     const invalidation::AckHandle& ack_handle) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "InvalidateAll";
+  DVLOG(1) << "InvalidateAll";
   EmitInvalidation(registered_types_, std::string());
   // TODO(akalin): We should really acknowledge only after we get the
   // updates from the sync server. (see http://crbug.com/76482).
@@ -251,8 +251,8 @@ void ChromeInvalidationClient::InformRegistrationStatus(
       const invalidation::ObjectId& object_id,
       InvalidationListener::RegistrationState new_state) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "InformRegistrationStatus: "
-          << ObjectIdToString(object_id) << " " << new_state;
+  DVLOG(1) << "InformRegistrationStatus: "
+           << ObjectIdToString(object_id) << " " << new_state;
 
   syncable::ModelType model_type;
   if (!ObjectIdToRealModelType(object_id, &model_type)) {
@@ -272,10 +272,10 @@ void ChromeInvalidationClient::InformRegistrationFailure(
     bool is_transient,
     const std::string& error_message) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "InformRegistrationFailure: "
-          << ObjectIdToString(object_id)
-          << "is_transient=" << is_transient
-          << ", message=" << error_message;
+  DVLOG(1) << "InformRegistrationFailure: "
+           << ObjectIdToString(object_id)
+           << "is_transient=" << is_transient
+           << ", message=" << error_message;
 
   syncable::ModelType model_type;
   if (!ObjectIdToRealModelType(object_id, &model_type)) {
@@ -301,7 +301,7 @@ void ChromeInvalidationClient::ReissueRegistrations(
     const std::string& prefix,
     int prefix_length) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "AllRegistrationsLost";
+  DVLOG(1) << "AllRegistrationsLost";
   registration_manager_->MarkAllRegistrationsLost();
 }
 

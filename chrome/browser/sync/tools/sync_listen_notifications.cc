@@ -78,9 +78,9 @@ class NullInvalidationVersionTracker
   virtual void SetMaxVersion(
       syncable::ModelType model_type,
       int64 max_invalidation_version) OVERRIDE {
-    VLOG(1) << "Setting max invalidation version for "
-            << syncable::ModelTypeToString(model_type) << " to "
-            << max_invalidation_version;
+    DVLOG(1) << "Setting max invalidation version for "
+             << syncable::ModelTypeToString(model_type) << " to "
+             << max_invalidation_version;
   }
 };
 

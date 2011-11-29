@@ -79,14 +79,14 @@ int SessionsSyncPerfTest::GetTabCount(int profile) {
   SyncedSessionVector sessions;
 
   if (!GetLocalSession(profile, &local_session)) {
-    VLOG(1) << "GetLocalSession returned false";
+    DVLOG(1) << "GetLocalSession returned false";
     return -1;
   }
 
   if (!GetSessionData(profile, &sessions)) {
     // Foreign session data may be empty.  In this case we only count tabs in
     // the local session.
-    VLOG(1) << "GetSessionData returned false";
+    DVLOG(1) << "GetSessionData returned false";
   }
 
   sessions.push_back(local_session);

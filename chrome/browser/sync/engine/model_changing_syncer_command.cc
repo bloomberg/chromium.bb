@@ -40,8 +40,8 @@ void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
     ModelSafeGroup group = worker->GetModelSafeGroup();
     // Skip workers whose group isn't active.
     if (active_groups.find(group) == active_groups.end()) {
-      VLOG(2) << "Skipping worker for group "
-              << ModelSafeGroupToString(group);
+      DVLOG(2) << "Skipping worker for group "
+               << ModelSafeGroupToString(group);
       continue;
     }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
 
   SyncerProtoUtil::AddRequestBirthday(dir, &client_to_server_message);
 
-  VLOG(1) << "Clearing server data";
+  DVLOG(1) << "Clearing server data";
 
   bool ok = SyncerProtoUtil::PostClientToServerMessage(
       client_to_server_message,
@@ -75,7 +75,7 @@ void ClearDataCommand::ExecuteImpl(SyncSession* session) {
 
   session->delegate()->OnShouldStopSyncingPermanently();
 
-  VLOG(1) << "ClearData succeeded.";
+  DVLOG(1) << "ClearData succeeded.";
 }
 
 }  // namespace browser_sync

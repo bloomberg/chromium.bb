@@ -55,21 +55,21 @@ void InvalidationNotifier::RemoveObserver(SyncNotifierObserver* observer) {
 void InvalidationNotifier::SetUniqueId(const std::string& unique_id) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   invalidation_client_id_ = unique_id;
-  VLOG(1) << "Setting unique ID to " << unique_id;
+  DVLOG(1) << "Setting unique ID to " << unique_id;
   CHECK(!invalidation_client_id_.empty());
 }
 
 void InvalidationNotifier::SetState(const std::string& state) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   invalidation_state_ = state;
-  VLOG(1) << "Setting new state";
+  DVLOG(1) << "Setting new state";
 }
 
 void InvalidationNotifier::UpdateCredentials(
     const std::string& email, const std::string& token) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
   CHECK(!invalidation_client_id_.empty());
-  VLOG(1) << "Updating credentials for " << email;
+  DVLOG(1) << "Updating credentials for " << email;
   buzz::XmppClientSettings xmpp_client_settings =
       notifier::MakeXmppClientSettings(notifier_options_,
                                        email, token, SYNC_SERVICE_NAME);
@@ -77,7 +77,7 @@ void InvalidationNotifier::UpdateCredentials(
     login_->UpdateXmppSettings(xmpp_client_settings);
   } else {
     notifier::ConnectionOptions options;
-    VLOG(1) << "First time updating credentials: connecting";
+    DVLOG(1) << "First time updating credentials: connecting";
     login_.reset(
         new notifier::Login(this,
                             xmpp_client_settings,
@@ -107,13 +107,13 @@ void InvalidationNotifier::SendNotification(
 void InvalidationNotifier::OnConnect(
     base::WeakPtr<buzz::XmppTaskParentInterface> base_task) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "OnConnect";
+  DVLOG(1) << "OnConnect";
   if (state_ >= STARTED) {
     invalidation_client_.ChangeBaseTask(base_task);
   } else {
-    VLOG(1) << "First time connecting: starting invalidation client with id "
-            << invalidation_client_id_ << " and client info "
-            << client_info_;
+    DVLOG(1) << "First time connecting: starting invalidation client with id "
+             << invalidation_client_id_ << " and client info "
+             << client_info_;
     invalidation_client_.Start(
         invalidation_client_id_, client_info_, invalidation_state_,
         initial_max_invalidation_versions_,
@@ -126,7 +126,7 @@ void InvalidationNotifier::OnConnect(
 
 void InvalidationNotifier::OnDisconnect() {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "OnDisconnect";
+  DVLOG(1) << "OnDisconnect";
 }
 
 void InvalidationNotifier::OnInvalidate(
@@ -143,7 +143,7 @@ void InvalidationNotifier::OnSessionStatusChanged(bool has_session) {
 
 void InvalidationNotifier::WriteState(const std::string& state) {
   DCHECK(non_thread_safe_.CalledOnValidThread());
-  VLOG(1) << "WriteState";
+  DVLOG(1) << "WriteState";
   FOR_EACH_OBSERVER(SyncNotifierObserver, observers_, StoreState(state));
 }
 

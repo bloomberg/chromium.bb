@@ -66,7 +66,7 @@ void TypedUrlChangeProcessor::Observe(
   if (!observing_)
     return;
 
-  VLOG(1) << "Observed typed_url change.";
+  DVLOG(1) << "Observed typed_url change.";
   DCHECK(running());
   DCHECK(chrome::NOTIFICATION_HISTORY_TYPED_URLS_MODIFIED == type ||
          chrome::NOTIFICATION_HISTORY_URLS_DELETED == type ||

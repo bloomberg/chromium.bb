@@ -400,7 +400,7 @@ bool SyncTest::SetUpLocalPythonTestServer() {
   if (server_type_ == LOCAL_PYTHON_SERVER) {
     std::string sync_service_url = sync_server_.GetURL("chromiumsync").spec();
     cl->AppendSwitchASCII(switches::kSyncServiceURL, sync_service_url);
-    VLOG(1) << "Started local python sync server at " << sync_service_url;
+    DVLOG(1) << "Started local python sync server at " << sync_service_url;
   }
 
   int xmpp_port = 0;
@@ -423,8 +423,8 @@ bool SyncTest::SetUpLocalPythonTestServer() {
     // The local XMPP server only supports insecure connections.
     cl->AppendSwitch(switches::kSyncAllowInsecureXmppConnection);
   }
-  VLOG(1) << "Started local python XMPP server at "
-          << xmpp_host_port_pair.ToString();
+  DVLOG(1) << "Started local python XMPP server at "
+           << xmpp_host_port_pair.ToString();
 
   return true;
 }
@@ -447,8 +447,8 @@ bool SyncTest::SetUpLocalTestServer() {
   const int kMaxWaitTime = TestTimeouts::action_max_timeout_ms();
   const int kNumIntervals = 15;
   if (WaitForTestServerToStart(kMaxWaitTime, kNumIntervals)) {
-    VLOG(1) << "Started local test server at "
-            << cl->GetSwitchValueASCII(switches::kSyncServiceURL) << ".";
+    DVLOG(1) << "Started local test server at "
+             << cl->GetSwitchValueASCII(switches::kSyncServiceURL) << ".";
     return true;
   } else {
     LOG(ERROR) << "Could not start local test server at "

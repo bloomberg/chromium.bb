@@ -148,14 +148,14 @@ syncable::ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
   }
 
   // TODO(akalin): Use SVLOG/SLOG if we add any more logging.
-  VLOG(1) << name_ << ": Adding types "
-          << syncable::ModelTypeSetToString(types_to_add)
-          << " (with newly-added types "
-          << syncable::ModelTypeSetToString(newly_added_types)
-          << ") and removing types "
-          << syncable::ModelTypeSetToString(types_to_remove)
-          << " to get new routing info "
-          << ModelSafeRoutingInfoToString(routing_info_);
+  DVLOG(1) << name_ << ": Adding types "
+           << syncable::ModelTypeSetToString(types_to_add)
+           << " (with newly-added types "
+           << syncable::ModelTypeSetToString(newly_added_types)
+           << ") and removing types "
+           << syncable::ModelTypeSetToString(types_to_remove)
+           << " to get new routing info "
+           << ModelSafeRoutingInfoToString(routing_info_);
 
   return newly_added_types;
 }

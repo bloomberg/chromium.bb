@@ -69,7 +69,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     }
   }
 
-  VLOG(1) << "Getting updates for types " << enabled_types.to_string();
+  DVLOG(1) << "Getting updates for types " << enabled_types.to_string();
   DCHECK(enabled_types.any());
 
   // We want folders for our associated types, always.  If we were to set
@@ -94,7 +94,7 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
       &update_response,
       session);
 
-  VLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
+  DVLOG(2) << SyncerProtoUtil::ClientToServerResponseDebugString(
       update_response);
 
   StatusController* status = session->mutable_status_controller();
@@ -108,11 +108,11 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   status->mutable_updates_response()->CopyFrom(update_response);
 
-  VLOG(1) << "GetUpdates "
-          << " returned " << update_response.get_updates().entries_size()
-          << " updates and indicated "
-          << update_response.get_updates().changes_remaining()
-          << " updates left on server.";
+  DVLOG(1) << "GetUpdates "
+           << " returned " << update_response.get_updates().entries_size()
+           << " updates and indicated "
+           << update_response.get_updates().changes_remaining()
+           << " updates left on server.";
 }
 
 void DownloadUpdatesCommand::AppendClientDebugInfoIfNeeded(
@@ -121,7 +121,7 @@ void DownloadUpdatesCommand::AppendClientDebugInfoIfNeeded(
   // We want to send the debug info only once per sync cycle. Check if it has
   // already been sent.
   if (!session->status_controller().debug_info_sent()) {
-    VLOG(1) << "Sending client debug info ...";
+    DVLOG(1) << "Sending client debug info ...";
     // could be null in some unit tests.
     if (session->context()->debug_info_getter()) {
       session->context()->debug_info_getter()->GetAndClearDebugInfo(

@@ -129,7 +129,7 @@ void TypedUrlDataTypeController::Observe(
 void TypedUrlDataTypeController::StopModels() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(state() == STOPPING || state() == NOT_RUNNING || state() == DISABLED);
-  VLOG(1) << "TypedUrlDataTypeController::StopModels(): State = " << state();
+  DVLOG(1) << "TypedUrlDataTypeController::StopModels(): State = " << state();
   notification_registrar_.RemoveAll();
 }
 

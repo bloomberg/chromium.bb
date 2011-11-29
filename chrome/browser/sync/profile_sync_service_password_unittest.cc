@@ -94,7 +94,7 @@ ACTION_P(AcquireSyncTransaction, password_test_service) {
   // is already held by this thread, deadlock if held by another thread).
   sync_api::WriteTransaction trans(
       FROM_HERE, password_test_service->GetUserShare());
-  VLOG(1) << "Sync transaction acquired.";
+  DVLOG(1) << "Sync transaction acquired.";
 }
 
 static void QuitMessageLoop() {

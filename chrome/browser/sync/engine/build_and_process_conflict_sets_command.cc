@@ -82,7 +82,7 @@ bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
         unapplied_count++;
     }
     if (conflict_set->size() == unsynced_count && 0 == unapplied_count) {
-      VLOG(1) << "Skipped transactional commit attempt.";
+      DVLOG(1) << "Skipped transactional commit attempt.";
     } else if (conflict_set->size() == unapplied_count && 0 == unsynced_count &&
           ApplyUpdatesTransactionally(trans, conflict_set, resolver,
                                       cryptographer, routes, status)) {
@@ -278,8 +278,8 @@ void BuildAndProcessConflictSetsCommand::MergeSetsForIntroducedLoops(
   while (!parent_id.IsRoot()) {
     syncable::Entry parent(trans, syncable::GET_BY_ID, parent_id);
     if (!parent.good()) {
-      VLOG(1) << "Bad parent in loop check, skipping. Bad parent id: "
-              << parent_id << " entry: " << *entry;
+      DVLOG(1) << "Bad parent in loop check, skipping. Bad parent id: "
+               << parent_id << " entry: " << *entry;
       return;
     }
     if (parent.Get(syncable::IS_UNSYNCED) &&

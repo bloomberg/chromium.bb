@@ -170,8 +170,8 @@ bool SessionModelAssociator::AssociateWindows(bool reload_tabs) {
     if (ShouldSyncWindow(*i) && (*i)->GetTabCount() && (*i)->HasWindow()) {
       sync_pb::SessionWindow window_s;
       SessionID::id_type window_id = (*i)->GetSessionId();
-      VLOG(1) << "Associating window " << window_id << " with " <<
-          (*i)->GetTabCount() << " tabs.";
+      DVLOG(1) << "Associating window " << window_id << " with "
+               << (*i)->GetTabCount() << " tabs.";
       window_s.set_window_id(window_id);
       window_s.set_selected_tab_index((*i)->GetActiveIndex());
       if ((*i)->IsTypeTabbed()) {
@@ -298,7 +298,7 @@ bool SessionModelAssociator::AssociateTab(const SyncedTabDelegate& tab) {
     sync_id = tablink->second.sync_id();
   }
 
-  VLOG(1) << "Reloading tab " << id << " from window " << tab.GetWindowId();
+  DVLOG(1) << "Reloading tab " << id << " from window " << tab.GetWindowId();
   const SyncedWindowDelegate* window =
       SyncedWindowDelegate::FindSyncedWindowDelegateWithId(
           tab.GetWindowId());
@@ -336,9 +336,9 @@ bool SessionModelAssociator::WriteTabContentsToSyncModel(
     DCHECK(entry);
     if (entry->virtual_url().is_valid()) {
       if (i == max_index - 1) {
-        VLOG(1) << "Associating tab " << tab_id << " with sync id " << sync_id
-            << ", url " << entry->virtual_url().possibly_invalid_spec()
-            << " and title " << entry->title();
+        DVLOG(1) << "Associating tab " << tab_id << " with sync id " << sync_id
+                 << ", url " << entry->virtual_url().possibly_invalid_spec()
+                 << " and title " << entry->title();
       }
       TabNavigation tab_nav;
       tab_nav.SetFromNavigationEntry(*entry);
@@ -517,14 +517,14 @@ bool SessionModelAssociator::AssociateModels(SyncError* error) {
     return false;
   }
 
-  VLOG(1) << "Session models associated.";
+  DVLOG(1) << "Session models associated.";
 
   return true;
 }
 
 bool SessionModelAssociator::DisassociateModels(SyncError* error) {
   DCHECK(CalledOnValidThread());
-  VLOG(1) << "Disassociating local session " << GetCurrentMachineTag();
+  DVLOG(1) << "Disassociating local session " << GetCurrentMachineTag();
   synced_session_tracker_.Clear();
   tab_map_.clear();
   tab_pool_.clear();
@@ -547,7 +547,7 @@ void SessionModelAssociator::InitializeCurrentMachineTag(
   syncable::Directory* dir = trans->GetWrappedWriteTrans()->directory();
   current_machine_tag_ = "session_sync";
   current_machine_tag_.append(dir->cache_guid());
-  VLOG(1) << "Creating machine tag: " << current_machine_tag_;
+  DVLOG(1) << "Creating machine tag: " << current_machine_tag_;
   tab_pool_.set_machine_tag(current_machine_tag_);
 }
 
@@ -691,8 +691,8 @@ bool SessionModelAssociator::AssociateForeignSpecifics(
 
     // Process all the windows and their tab information.
     int num_windows = header.window_size();
-    VLOG(1) << "Associating " << foreign_session_tag << " with "
-            << num_windows << " windows.";
+    DVLOG(1) << "Associating " << foreign_session_tag << " with "
+             << num_windows << " windows.";
     for (int i = 0; i < num_windows; ++i) {
       const sync_pb::SessionWindow& window_s = header.window(i);
       SessionID::id_type window_id = window_s.window_id();
@@ -727,11 +727,11 @@ bool SessionModelAssociator::DisassociateForeignSession(
     const std::string& foreign_session_tag) {
   DCHECK(CalledOnValidThread());
   if (foreign_session_tag == GetCurrentMachineTag()) {
-    VLOG(1) << "Local session deleted! Doing nothing until a navigation is "
-            << "triggered.";
+    DVLOG(1) << "Local session deleted! Doing nothing until a navigation is "
+             << "triggered.";
     return false;
   }
-  VLOG(1) << "Disassociating session " << foreign_session_tag;
+  DVLOG(1) << "Disassociating session " << foreign_session_tag;
   return synced_session_tracker_.DeleteSession(foreign_session_tag);
 }
 
@@ -958,7 +958,8 @@ int64 SessionModelAssociator::TabNodePool::GetFreeTabNode() {
     // to put the node's id in the pool now, since the pool is still empty.
     // The id will be added when that tab is closed and the node is freed.
     tab_syncid_pool_.resize(tab_node_id + 1);
-    VLOG(1) << "Adding sync node " << tab_node.GetId() << " to tab syncid pool";
+    DVLOG(1) << "Adding sync node "
+             << tab_node.GetId() << " to tab syncid pool";
     return tab_node.GetId();
   } else {
     // There are nodes available, grab next free and decrement free pointer.
@@ -1019,8 +1020,8 @@ void SessionModelAssociator::DeleteStaleSessions() {
     if (session_age_in_days > 0 &&  // If false, local clock is not trustworty.
         static_cast<size_t>(session_age_in_days) >
             stale_session_threshold_days_) {
-      VLOG(1) << "Found stale session " << session_tag
-              << " with age " << session_age_in_days << ", deleting.";
+      DVLOG(1) << "Found stale session " << session_tag
+               << " with age " << session_age_in_days << ", deleting.";
       DeleteForeignSession(session_tag);
     }
   }
@@ -1098,7 +1099,7 @@ bool SessionModelAssociator::IsValidTab(const SyncedTabDelegate& tab) const {
 
 void SessionModelAssociator::QuitLoopForSubtleTesting() {
   if (waiting_for_change_) {
-    VLOG(1) << "Quitting MessageLoop for test.";
+    DVLOG(1) << "Quitting MessageLoop for test.";
     waiting_for_change_ = false;
     test_method_factory_.RevokeAll();
     MessageLoop::current()->Quit();
