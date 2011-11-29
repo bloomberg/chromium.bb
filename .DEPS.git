@@ -43,7 +43,7 @@ deps = {
     'src/third_party/cacheinvalidation/files/src/google':
         Var('git_url') + '/external/google-cache-invalidation-api/src/google.git@b638a24e0215731f1c0c3bd2c77f110f49a11305',
     'src/third_party/ffmpeg':
-        Var('git_url') + '/chromium/deps/ffmpeg/source.git@8fc47ac0e2cd4d117d62f01246bb9876297862f8',
+        Var('git_url') + '/chromium/deps/ffmpeg/source.git@ee4803752a65767eaeacd8cf0eac03e0795d0e8b',
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@1cde08e295604898d14367eda0414ade8121ec43',
     'src/third_party/hunspell':
@@ -158,7 +158,7 @@ deps_os = {
         'src/third_party/cygwin':
             Var('git_url') + '/chromium/deps/cygwin.git@06a117a90c15174436bfa20ceebbfdf43b7eb820',
         'src/third_party/ffmpeg/binaries/chromium/win/ia32':
-            Var('git_url') + '/chromium/deps/ffmpeg/binaries/win.git@e40fdea81268593ad563f6fdff1cebe1edfb233c',
+            Var('git_url') + '/chromium/deps/ffmpeg/binaries/win.git@3bbd28913dc9c71bc65b133dfc2f8a19ea84ee46',
         'src/third_party/lighttpd':
             Var('git_url') + '/chromium/deps/lighttpd.git@856e79c6109d4f0abe93c01d4c22419e33c9bee7',
         'src/third_party/mingw-w64/mingw/bin':
