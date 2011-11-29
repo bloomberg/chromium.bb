@@ -1,5 +1,5 @@
 #!/bin/env python
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -107,7 +107,6 @@ class Coverage(object):
     self._dir = tempfile.mkdtemp()
     self._archive = archive
 
-
   def SetUp(self, binaries):
     """Set up the platform specific environment and instrument the binaries for
     coverage.
@@ -157,7 +156,6 @@ class Coverage(object):
       self.instrumented = True
       return True
 
-
   def TearDown(self):
     """Tear down method.
 
@@ -187,7 +185,6 @@ class Coverage(object):
       logging.info('Cleaned up temporary files and folders')
     # Reset the instrumented flag.
     self.instrumented = False
-
 
   def RunTest(self, src_root, test):
     """Run tests and collect the .coverage file
@@ -237,7 +234,6 @@ class Coverage(object):
     logging.info('Counters shut down: %s' % (output))
     # Return the intermediate .coverage file
     return coverage_file
-
 
   def Upload(self, list_coverage, upload_path, sym_path=None, src_root=None):
     """Upload the results to the dashboard.

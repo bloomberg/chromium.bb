@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -14,6 +14,7 @@ import os
 import sys
 import termios
 import tty
+
 
 def YesNo(prompt):
   """Prompts with a yes/no question, returns True if yes."""
@@ -110,11 +111,11 @@ def main():
 
   if len(filenames) < 1:
     parser.print_help()
-    sys.exit(1)
+    return 1
 
   for filename in filenames:
     DiffAndConfirm(filename, opts.should_confirm)
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

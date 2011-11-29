@@ -1,5 +1,5 @@
-#!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -192,7 +192,7 @@ def Time(urls, size, timeout, **kwargs):
   return ret
 
 
-if __name__ == "__main__":
+def main():
   # We're being invoked rather than imported, so run some tests
   path = r"c:\sitecompare\scrapes\ie7\7.0.5380.11"
   windowing.PreparePath(path)
@@ -203,4 +203,8 @@ if __name__ == "__main__":
      "http://www.google.com",
      "http://www.sun.com"],
     path, (1024, 768), (0, 0))
+  return 0
 
+
+if __name__ == "__main__":
+  sys.exit(main())

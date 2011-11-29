@@ -1,13 +1,13 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import sys
 import os
 
-execfile(os.path.join(
-  os.path.dirname(os.path.join(os.path.curdir, __file__)),
-  'syscalls.py'))
+from syscalls import syscalls
+
 
 def parseEvents(z):
   crits =  { }
@@ -48,4 +48,10 @@ def parseEvents(z):
       #raise repr(tid_stack)
       pass
 
-execfile(sys.argv[1])
+
+def main():
+  execfile(sys.argv[1])
+
+
+if __name__ == '__main__':
+  main()

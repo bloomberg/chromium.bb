@@ -1,10 +1,8 @@
-#!/usr/bin/python2.4
-#
-# Copyright 2007 Google Inc. All Rights Reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Imports a set of drivers appropriate to the current OS."""
-
-__author__ = 'jhaas@google.com (Jonathan Haas)'
 
 import sys
 

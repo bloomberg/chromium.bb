@@ -1,10 +1,9 @@
-#!/usr/bin/python2.4
-#
-# Copyright 2007 Google Inc. All Rights Reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Selects the appropriate scraper for Internet Explorer."""
-
-__author__ = 'jhaas@google.com (Jonathan Haas)'
 
 
 def GetScraper(version):
@@ -23,9 +22,7 @@ def GetScraper(version):
   # We only have one version of the IE scraper for now
   return __import__("ie7", globals(), locals(), [''])
 
+
 # if invoked rather than imported, test
 if __name__ == "__main__":
-  version = "7.0.5370.1"
-
-  print GetScraper(version).version
-
+  print GetScraper("7.0.5370.1").version

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -39,9 +39,8 @@ def main():
   args = [swig_bin, platform_flags[sys.platform]] + sys.argv[1:]
   args = [x.replace('/', os.sep) for x in args]
   print "Executing", args
-  sys.exit(subprocess.call(args))
+  return subprocess.call(args)
 
 
 if __name__ == "__main__":
-  main()
-
+  sys.exit(main())

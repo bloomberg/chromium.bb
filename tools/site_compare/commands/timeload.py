@@ -1,5 +1,4 @@
-#!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -39,7 +38,8 @@ def CreateCommand(cmdline):
     ["-bp", "--browserpaths"], "List of paths to browsers. Comma-separated",
     type="string", required=False)
   cmd.AddArgument(
-    ["-bv", "--browserversions"], "List of versions of browsers. Comma-separated",
+    ["-bv", "--browserversions"],
+    "List of versions of browsers. Comma-separated",
     type="string", required=False)
   cmd.AddArgument(
     ["-u", "--url"], "URL to time")
@@ -142,5 +142,3 @@ def ExecuteTimeLoad(command):
     log_file.write(url)
     for b in xrange(num_browsers):
       log_file.write(",%r" % results[url][b])
-
-

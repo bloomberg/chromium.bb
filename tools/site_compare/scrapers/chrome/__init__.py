@@ -1,10 +1,10 @@
-#!/usr/bin/python2.4
-#
-# Copyright 2007 Google Inc. All Rights Reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Selects the appropriate scraper for Chrome."""
 
-__author__ = 'jhaas@google.com (Jonathan Haas)'
 
 def GetScraper(version):
   """Returns the scraper module for the given version.
@@ -30,9 +30,7 @@ def GetScraper(version):
 
   return __import__(scraper_version, globals(), locals(), [''])
 
+
 # if invoked rather than imported, test
 if __name__ == "__main__":
-  version = "0.1.101.0"
-
-  print GetScraper(version).version
-
+  print GetScraper("0.1.101.0").version

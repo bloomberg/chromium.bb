@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -345,9 +345,9 @@ def SendPost(req):
 
 
 def main():
-  if sys.platform[:5] != 'linux': # Run this only on Linux
+  if not sys.platform.startswith('linux'):
     print 'This script is supported only on Linux'
-    os.exit(1)
+    return 0
 
   # Command line parsing
   parser = optparse.OptionParser()
@@ -395,18 +395,19 @@ def main():
     if percent == None:
       # TODO(niranjan): Add logging.
       print 'Failed to generate code coverage'
-      os.exit(1)
+      return 1
     else:
       # TODO(niranjan): Do something with the code coverage numbers
       pass
   else:
     print 'Unsupported platform'
-    os.exit(1)
+    return 1
 
   # Prep coverage results for dashboard and post new set.
   parsed_data = ParseCoverageDataForDashboard(options.lcov_path)
   PostResultsToDashboard(options.lcov_path, parsed_data, options.post_url)
+  return 0
 
 
 if __name__ == '__main__':
-  main()
+  sys.exit(main())

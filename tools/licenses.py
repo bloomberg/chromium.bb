@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -236,6 +236,7 @@ def FindThirdPartyDirs():
 
     return third_party_dirs
 
+
 def ScanThirdPartyDirs():
     """Scan a list of directories and report on any problems we find."""
     third_party_dirs = FindThirdPartyDirs()
@@ -252,6 +253,7 @@ def ScanThirdPartyDirs():
         print path + ": " + error
 
     return len(errors) == 0
+
 
 def GenerateCredits():
     """Generate about:credits, dumping the result to stdout."""
@@ -290,17 +292,22 @@ def GenerateCredits():
     print EvaluateTemplate(file_template, {'entries': '\n'.join(entries)},
                            escape=False)
 
-if __name__ == '__main__':
+
+def main():
     command = 'help'
     if len(sys.argv) > 1:
         command = sys.argv[1]
 
     if command == 'scan':
         if not ScanThirdPartyDirs():
-            sys.exit(1)
+            return 1
     elif command == 'credits':
         if not GenerateCredits():
-            sys.exit(1)
+            return 1
     else:
         print __doc__
-        sys.exit(1)
+        return 1
+
+
+if __name__ == '__main__':
+  sys.exit(main())

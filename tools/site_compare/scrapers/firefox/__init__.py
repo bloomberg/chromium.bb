@@ -1,10 +1,9 @@
-#!/usr/bin/python2.4
-#
-# Copyright 2007 Google Inc. All Rights Reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Selects the appropriate scraper for Firefox."""
-
-__author__ = 'jhaas@google.com (Jonathan Haas)'
 
 
 def GetScraper(version):
@@ -23,9 +22,7 @@ def GetScraper(version):
   # We only have one version of the Firefox scraper for now
   return __import__("firefox2", globals(), locals(), [''])
 
+
 # if invoked rather than imported, test
 if __name__ == "__main__":
-  version = "2.0.0.6"
-
   print GetScraper("2.0.0.6").version
-

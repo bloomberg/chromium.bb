@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -19,6 +19,7 @@ import re
 import subprocess
 import sys
 
+
 def RunGit(command):
   """Run a git subcommand, returning its output."""
   # On Windows, use shell=True to get PATH interpretation.
@@ -30,10 +31,12 @@ def RunGit(command):
   logging.info('Returned "%s"' % out)
   return out
 
+
 def GetOverrideShortBranchName():
   """Returns the user-configured override branch name, if any."""
   override_config_name = 'chromium.sync-branch'
   return RunGit(['config', '--get', override_config_name])
+
 
 def GetGClientBranchName():
   """Returns the name of the magic branch that lets us know that DEPS is
@@ -55,12 +58,14 @@ def GetGClientBranchName():
   print "Please fix your git config value '%s'." % overide_config_name
   sys.exit(1)
 
+
 def GetWebKitRev():
   """Extract the 'webkit_revision' variable out of DEPS."""
   locals = {'Var': lambda _: locals["vars"][_],
             'From': lambda *args: None}
   execfile('DEPS', {}, locals)
   return locals['vars']['webkit_revision']
+
 
 def FindSVNRev(target_rev):
   """Map an SVN revision to a git hash.
@@ -106,6 +111,7 @@ def FindSVNRev(target_rev):
   print "Something has likely gone horribly wrong."
   return None
 
+
 def GetRemote():
   branch = GetOverrideShortBranchName()
   if not branch:
@@ -115,6 +121,7 @@ def GetRemote():
   if remote:
     return remote
   return 'origin'
+
 
 def UpdateGClientBranch(webkit_rev, magic_gclient_branch):
   """Update the magic gclient branch to point at |webkit_rev|.
@@ -139,6 +146,7 @@ def UpdateGClientBranch(webkit_rev, magic_gclient_branch):
                          shell=(os.name == 'nt'))
   return True
 
+
 def UpdateCurrentCheckoutIfAppropriate(magic_gclient_branch):
   """Reset the current gclient branch if that's what we have checked out."""
   branch = RunGit(['symbolic-ref', '-q', 'HEAD'])
@@ -153,6 +161,7 @@ def UpdateCurrentCheckoutIfAppropriate(magic_gclient_branch):
                       'HEAD'], shell=(os.name == 'nt')):
     print "Resetting tree state to new revision."
     subprocess.check_call(['git', 'reset', '--hard'], shell=(os.name == 'nt'))
+
 
 def main():
   parser = optparse.OptionParser()
@@ -181,6 +190,7 @@ def main():
   else:
     print "Already on correct revision."
   return 0
+
 
 if __name__ == '__main__':
   sys.exit(main())

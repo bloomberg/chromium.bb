@@ -1,5 +1,4 @@
-#!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -198,4 +197,3 @@ def Iterate(command, iteration_func):
 
   # We're done
   DetachFromBrowser()
-

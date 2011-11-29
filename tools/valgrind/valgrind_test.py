@@ -1,9 +1,6 @@
-#!/usr/bin/python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-# valgrind_test.py
 
 """Runs an exe through Valgrind and puts the intermediate files in a
 directory.
@@ -1187,7 +1184,3 @@ class ToolFactory:
 
 def CreateTool(tool):
   return ToolFactory().Create(tool)
-
-if __name__ == '__main__':
-  logging.error(sys.argv[0] + " can not be run from command line")
-  sys.exit(1)

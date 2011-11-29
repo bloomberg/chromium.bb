@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-# Copyright (c) 2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -45,6 +44,7 @@ REPO_MAP = {
   "http://google-url.googlecode.com/svn": None,
 }
 
+
 def FindFile(filename):
   """Return the full windows path to a file in the same dir as this code."""
   thisdir = os.path.dirname(os.path.join(os.path.curdir, __file__))
@@ -61,6 +61,7 @@ def ExtractSourceFiles(pdb_filename):
     raise "srctool failed: " + filelist
   return [x for x in filelist.split('\r\n') if len(x) != 0]
 
+
 def ReadSourceStream(pdb_filename):
   """Read the contents of the source information stream from a PDB."""
   srctool = subprocess.Popen([FindFile('pdbstr.exe'),
@@ -73,6 +74,7 @@ def ReadSourceStream(pdb_filename):
   if (res != 0 and res != -1) or data.startswith("pdbstr: "):
     raise "pdbstr failed: " + data
   return data
+
 
 def WriteSourceStream(pdb_filename, data):
   """Write the contents of the source information stream to a PDB."""
@@ -94,6 +96,7 @@ def WriteSourceStream(pdb_filename, data):
     raise "pdbstr failed: " + data
 
   os.unlink(fname)
+
 
 # TODO for performance, we should probably work in directories instead of
 # files.  I'm scared of DEPS and generated files, so for now we query each
@@ -118,6 +121,7 @@ def ExtractSvnInfo(local_filename):
   rev  = int(vals['Revision'])
 
   return [root, path, rev]
+
 
 def UpdatePDB(pdb_filename, verbose=False):
   """Update a pdb file with source information."""
@@ -190,13 +194,19 @@ def UpdatePDB(pdb_filename, verbose=False):
 
   WriteSourceStream(pdb_filename, '\r\n'.join(lines))
 
-if __name__ == '__main__':
+
+def main():
   if len(sys.argv) < 2 or len(sys.argv) > 3:
     print "usage: file.pdb [-v]"
-    sys.exit(1)
+    return 1
 
   verbose = False
   if len(sys.argv) == 3:
     verbose = (sys.argv[2] == '-v')
 
   UpdatePDB(sys.argv[1], verbose=verbose)
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main())

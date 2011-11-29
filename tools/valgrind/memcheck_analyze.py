@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -603,9 +603,9 @@ class MemcheckAnalyzer:
     logging.info("PASS! No errors found!")
     return 0
 
+
 def _main():
   '''For testing only. The MemcheckAnalyzer class should be imported instead.'''
-  retcode = 0
   parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
   parser.add_option("", "--source_dir",
                     help="path to top of source tree for this build"
@@ -617,9 +617,8 @@ def _main():
   filenames = args
 
   analyzer = MemcheckAnalyzer(options.source_dir, use_gdb=True)
-  retcode = analyzer.Report(filenames, None)
+  return analyzer.Report(filenames, None)
 
-  sys.exit(retcode)
 
 if __name__ == "__main__":
-  _main()
+  sys.exit(_main())

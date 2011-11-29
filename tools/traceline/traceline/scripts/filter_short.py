@@ -1,13 +1,18 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This script takes an input JSON, and filters out all system call events that
-# took less than 0.2ms.  This helps trim down the JSON data to only the most
-# interesting / time critical events.
+"""Takes an input JSON, and filters out all system call events that
+took less than 0.2ms.
+
+This helps trim down the JSON data to only the most interesting / time critical
+events.
+"""
 
 import sys
 import re
+
 
 def parseEvents(z):
   print 'parseEvents(['
@@ -20,4 +25,10 @@ def parseEvents(z):
     print '%s,' % re.sub('([0-9])L\\b', '\\1', str(e))
   print '])'
 
-execfile(sys.argv[1])
+
+def main():
+  execfile(sys.argv[1])
+
+
+if __name__ == '__main__':
+  main()

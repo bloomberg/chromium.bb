@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,11 +13,13 @@ for docs on the format.
 import sys
 import hashlib
 
-def usage(argv):
-  print "%s: crx_file" % argv[0]
 
 EXPECTED_CRX_MAGIC_NUM = 'Cr24'
 EXPECTED_CRX_VERSION = 2
+
+
+def usage(argv):
+  print "%s: crx_file" % argv[0]
 
 def HexToInt(hex_chars):
   """ Convert bytes like \xab -> 171 """
@@ -81,12 +83,14 @@ def GetCRXAppID(filename):
   # AppID is the MPDecimal of only the first 128 bits of the hash.
   return HexToMPDecimal(pub_key_hash[:128/8])
 
+
 def main(argv):
   if len(argv) != 2:
     usage(argv)
     return 1
   print 'Raw Bytes: %s' % GetCRXHash(sys.argv[1])
   print 'AppID: %s' % GetCRXAppID(sys.argv[1])
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

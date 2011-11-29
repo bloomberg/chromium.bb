@@ -1,9 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-# chrome_tests.py
 
 ''' Runs various chrome tests through valgrind_test.py.'''
 
@@ -459,7 +457,8 @@ class ChromeTests:
     "views": TestViews,          "views_unittests": TestViews,
   }
 
-def _main(_):
+
+def _main():
   parser = optparse.OptionParser("usage: %prog -b <dir> -t <test> "
                                  "[-t <test> ...]")
   parser.disable_interspersed_args()
@@ -509,5 +508,4 @@ def _main(_):
 
 
 if __name__ == "__main__":
-  ret = _main(sys.argv)
-  sys.exit(ret)
+  sys.exit(_main())

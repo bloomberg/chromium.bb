@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -252,9 +252,9 @@ class TsanAnalyzer(object):
     logging.info("PASS: No reports found")
     return 0
 
-if __name__ == '__main__':
+
+def main():
   '''For testing only. The TsanAnalyzer class should be imported instead.'''
-  retcode = 0
   parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
   parser.add_option("", "--source_dir",
                     help="path to top of source tree for this build"
@@ -266,6 +266,8 @@ if __name__ == '__main__':
   filenames = args
 
   analyzer = TsanAnalyzer(options.source_dir, use_gdb=True)
-  retcode = analyzer.Report(filenames, None)
+  return analyzer.Report(filenames, None)
 
-  sys.exit(retcode)
+
+if __name__ == '__main__':
+  sys.exit(main())

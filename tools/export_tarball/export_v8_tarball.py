@@ -1,10 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-This tool creates a tarball with V8 sources, but without .svn directories.
+"""Creates a tarball with V8 sources, but without .svn directories.
 
 This allows easy packaging of V8, synchronized with browser releases.
 
@@ -33,6 +32,7 @@ _V8_PATTERNS = [
   _V8_BUILD_NUMBER_PATTERN,
   _V8_PATCH_LEVEL_PATTERN]
 
+
 def GetV8Version(v8_directory):
   """
   Returns version number as string based on the string
@@ -50,12 +50,15 @@ def GetV8Version(v8_directory):
 
   return '.'.join(version_components)
 
+
 def GetSourceDirectory():
   return os.path.realpath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..', 'src'))
 
+
 def GetV8Directory():
   return os.path.join(GetSourceDirectory(), 'v8')
+
 
 # Workaround lack of the exclude parameter in add method in python-2.4.
 # TODO(phajdan.jr): remove the workaround when it's not needed on the bot.
@@ -66,6 +69,7 @@ class MyTarFile(tarfile.TarFile):
       return
 
     tarfile.TarFile.add(self, name, arcname=arcname, recursive=recursive)
+
 
 def main(argv):
   parser = optparse.OptionParser()
@@ -98,6 +102,7 @@ def main(argv):
     archive.close()
 
   return 0
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

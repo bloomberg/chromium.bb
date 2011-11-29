@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -99,16 +99,21 @@ class DrMemoryAnalyzer:
     logging.error("Total: %i error reports" % len(to_report))
     return -1
 
-if __name__ == '__main__':
-  '''For testing only. The DrMemoryAnalyzer class should be imported instead.'''
-  retcode = 0
-  parser = optparse.OptionParser("usage: %prog <files to analyze>")
+
+def main():
+  '''For testing only. The DrMemoryAnalyze class should be imported instead.'''
+  parser = optparse.OptionParser("usage: %prog [options] <files to analyze>")
+  parser.add_option("", "--source_dir",
+                    help="path to top of source tree for this build"
+                    "(used to normalize source paths in baseline)")
+
   (options, args) = parser.parse_args()
   if len(args) == 0:
     parser.error("no filename specified")
   filenames = args
 
-  analyzer = DrMemoryAnalyzer()
-  retcode = analyzer.Report(filenames, None, False)
+  return DrMemoryAnalyzer().Report(filenames, None, False)
 
-  sys.exit(retcode)
+
+if __name__ == '__main__':
+  sys.exit(main())

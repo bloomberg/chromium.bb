@@ -1,5 +1,5 @@
-#!/usr/bin/python2.4
-# Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -189,7 +189,8 @@ def DoubleClickInWindow(
   time.sleep(time_between_clicks)
   ClickInWindow(hwnd, offset, button, click_time)
 
-if __name__ == "__main__":
+
+def main():
   # We're being invoked rather than imported. Let's do some tests
 
   screen_size = win32gui.GetClientRect(win32gui.GetDesktopWindow())
@@ -216,3 +217,6 @@ if __name__ == "__main__":
   MoveToLocation((0, 0), 3)
   ClickButton()
 
+
+if __name__ == "__main__":
+  sys.exit(main())

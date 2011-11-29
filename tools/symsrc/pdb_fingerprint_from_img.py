@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-
-# Copyright (c) 2008 The Chromium Authors. All rights reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,11 +15,13 @@ DLL's reference to the PDB, and use that to retrieve the information."""
 import sys
 import pefile
 
+
 __CV_INFO_PDB70_format__ = ('CV_INFO_PDB70',
   ('4s,CvSignature', '16s,Signature', 'L,Age'))
 
 __GUID_format__ = ('GUID',
   ('L,Data1', 'H,Data2', 'H,Data3', '8s,Data4'))
+
 
 def GetPDBInfoFromImg(filename):
   """Returns the PDB fingerprint and the pdb filename given an image file"""
@@ -48,10 +49,16 @@ def GetPDBInfoFromImg(filename):
 
     break
 
-if __name__ == '__main__':
+
+def main():
   if len(sys.argv) != 2:
     print "usage: file.dll"
-    sys.exit(1)
+    return 1
 
-  (fingerprint, file) = GetPDBInfoFromImg(sys.argv[1])
-  print "%s %s" % (fingerprint, file)
+  (fingerprint, filename) = GetPDBInfoFromImg(sys.argv[1])
+  print "%s %s" % (fingerprint, filename)
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main())

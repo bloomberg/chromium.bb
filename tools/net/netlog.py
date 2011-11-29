@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -172,6 +172,4 @@ def main(_):
 
 
 if '__main__' == __name__:
-  ret = main(sys.argv)
-  sys.exit(ret)
-
+  sys.exit(main(sys.argv))

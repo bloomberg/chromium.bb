@@ -1,9 +1,9 @@
-#!/usr/bin/python
-# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+#!/usr/bin/env python
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Print a report of symbols stripped by the linker due to being unused.
+"""Prints a report of symbols stripped by the linker due to being unused.
 
 To use, build with these linker flags:
   -Wl,--gc-sections
@@ -165,6 +165,7 @@ def main():
                skip_paths=opts.skip_paths,
                only_paths=opts.only_paths)
   Output(iter)
+
 
 if __name__ == '__main__':
   main()

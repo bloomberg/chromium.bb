@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -90,6 +90,7 @@ BASE_DIRECTORY = ""
 
 # The directories which contain the sources managed by git.
 GIT_SOURCE_DIRECTORY = set()
+
 
 # Specifies a single rule for an include, which can be either allow or disallow.
 class Rule(object):
@@ -445,7 +446,8 @@ Examples:
   python checkdeps.py
   python checkdeps.py --root c:\\source chrome"""
 
-def main(options, args):
+
+def checkdeps(options, args):
   global VERBOSE
   if options.verbose:
     VERBOSE = True
@@ -469,7 +471,7 @@ def main(options, args):
   else:
     # More than one argument, we don't handle this.
     PrintUsage()
-    sys.exit(1)
+    return 1
 
   print "Using base directory:", BASE_DIRECTORY
   print "Checking:", start_dir
@@ -491,11 +493,12 @@ def main(options, args):
   success = CheckDirectory(base_rules, start_dir)
   if not success:
     print "\nFAILED\n"
-    sys.exit(1)
+    return 1
   print "\nSUCCESS\n"
-  sys.exit(0)
+  return 0
 
-if '__main__' == __name__:
+
+def main():
   option_parser = optparse.OptionParser()
   option_parser.add_option("", "--root", default="", dest="base_directory",
                            help='Specifies the repository root. This defaults '
@@ -504,4 +507,8 @@ if '__main__' == __name__:
   option_parser.add_option("-v", "--verbose", action="store_true",
                            default=False, help="Print debug logging")
   options, args = option_parser.parse_args()
-  main(options, args)
+  return checkdeps(options, args)
+
+
+if '__main__' == __name__:
+  sys.exit(main())

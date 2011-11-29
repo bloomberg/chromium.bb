@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -44,6 +44,7 @@ import threading
 import urllib
 from xml.etree import ElementTree
 import zipfile
+
 
 class PathContext(object):
   """A PathContext is used to carry the information used to construct URLs and
@@ -267,6 +268,7 @@ def RunRevision(context, revision, zipfile, profile, args):
 
   return (subproc.returncode, stdout, stderr)
 
+
 def AskIsGoodBuild(rev, status, stdout, stderr):
   """Ask the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
@@ -276,6 +278,7 @@ def AskIsGoodBuild(rev, status, stdout, stderr):
       return response == 'g'
     if response and response == 'q':
       raise SystemExit()
+
 
 def Bisect(platform,
            good_rev=0,
@@ -533,6 +536,7 @@ def main():
   print CHANGELOG_URL % (last_known_good_rev, first_known_bad_rev)
   print 'Built at revision:'
   print BUILD_VIEWVC_URL % first_known_bad_rev
+
 
 if __name__ == '__main__':
   sys.exit(main())

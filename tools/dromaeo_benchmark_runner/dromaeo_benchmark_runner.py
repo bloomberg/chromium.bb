@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-#
-# Copyright 2009 Google Inc. All Rights Reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Dromaeo benchmark automation script.
 
@@ -47,6 +48,7 @@ import gdata.spreadsheet.service
 
 max_spreadsheet_columns = 20
 test_props = ['mean', 'error']
+
 
 def ParseArguments():
   parser = OptionParser()
@@ -257,7 +259,8 @@ def main():
       spreadsheet_writer.WriteBrowserBenchmarkResults(test_name, test_data)
 
   server.socket.close()
+  return 0
+
 
 if __name__ == '__main__':
-  main()
-
+  sys.exit(main())

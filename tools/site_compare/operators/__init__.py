@@ -1,10 +1,8 @@
-#!/usr/bin/python2.4
-#
-# Copyright 2007 Google Inc. All Rights Reserved.
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Selects the appropriate operator."""
-
-__author__ = 'jhaas@google.com (Jonathan Haas)'
 
 
 def GetOperator(operator):
@@ -23,4 +21,3 @@ def GetOperator(operator):
   module = __import__(operator, globals(), locals(), [''])
 
   return module
-
