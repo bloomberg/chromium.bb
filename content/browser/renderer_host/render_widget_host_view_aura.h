@@ -14,6 +14,11 @@
 #include "ui/gfx/compositor/compositor_observer.h"
 #include "webkit/glue/webcursor.h"
 
+#if defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
+#include "base/callback.h"
+#include "base/memory/ref_counted.h"
+#endif
+
 namespace WebKit {
 class WebTouchEvent;
 }
