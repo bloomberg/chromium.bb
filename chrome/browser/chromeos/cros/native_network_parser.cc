@@ -125,6 +125,7 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
     PROPERTY_INDEX_SUPPORT_NETWORK_SCAN },
   { flimflam::kTechnologyFamilyProperty, PROPERTY_INDEX_TECHNOLOGY_FAMILY },
   { flimflam::kTypeProperty, PROPERTY_INDEX_TYPE },
+  { flimflam::kUIDataProperty, PROPERTY_INDEX_UI_DATA },
   { flimflam::kUsageURLProperty, PROPERTY_INDEX_USAGE_URL },
   { flimflam::kOpenVPNUserProperty, PROPERTY_INDEX_OPEN_VPN_USER },
   { flimflam::kOpenVPNPasswordProperty, PROPERTY_INDEX_OPEN_VPN_PASSWORD },

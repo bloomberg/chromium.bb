@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/network_parser.h"
 
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"  // for debug output only.
 #include "base/stringprintf.h"
 #include "base/values.h"
@@ -201,6 +202,19 @@ bool NetworkParser::ParseValue(PropertyIndex index,
       if (!value.GetAsString(&proxy_config))
         return false;
       network->set_proxy_config(proxy_config);
+      return true;
+    }
+    case PROPERTY_INDEX_UI_DATA: {
+      network->ui_data()->Clear();
+      std::string ui_data_json;
+      if (!value.GetAsString(&ui_data_json))
+        return false;
+      scoped_ptr<base::Value> ui_data(
+          base::JSONReader::Read(ui_data_json, false));
+      if (!ui_data.get() || !ui_data->IsType(base::Value::TYPE_DICTIONARY))
+        return false;
+      network->ui_data()->Swap(
+          static_cast<base::DictionaryValue*>(ui_data.get()));
       return true;
     }
     default:

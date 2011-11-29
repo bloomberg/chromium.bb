@@ -135,6 +135,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_SUPPORT_NETWORK_SCAN,
   PROPERTY_INDEX_TECHNOLOGY_FAMILY,
   PROPERTY_INDEX_TYPE,
+  PROPERTY_INDEX_UI_DATA,
   PROPERTY_INDEX_UNKNOWN,
   PROPERTY_INDEX_USAGE_URL,
   PROPERTY_INDEX_OLP,
@@ -698,6 +699,7 @@ class Network {
                                         std::string* dest);
 
   void set_unique_id(const std::string& unique_id) { unique_id_ = unique_id; }
+  DictionaryValue* ui_data() { return &ui_data_; }
 
  private:
   // This allows NetworkParser and its subclasses access to device
@@ -784,6 +786,11 @@ class Network {
   // These must not be modified after construction.
   std::string service_path_;
   ConnectionType type_;
+
+  // UI-level state that is opaque to the connection manager. It's kept in a
+  // DictionaryValue to allow for simple addition of new settings. The value is
+  // stored in JSON-serialized from in the connection manager.
+  DictionaryValue ui_data_;
 
   // This is the parser we use to parse messages from the native
   // network layer.
