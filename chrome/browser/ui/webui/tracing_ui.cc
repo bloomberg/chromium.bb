@@ -246,75 +246,47 @@ void TracingMessageHandler::OnGpuInfoUpdate() {
       *(gpu_info_val.get()));
 }
 
-// A task used for asynchronously reading a file to a string. Calls the
+// A callback used for asynchronously reading a file to a string. Calls the
 // TaskProxy callback when reading is complete.
-class ReadTraceFileTask : public Task {
- public:
-  ReadTraceFileTask(TaskProxy* proxy, const FilePath& path)
-      : proxy_(proxy),
-        path_(path) {}
+void ReadTraceFileCallback(TaskProxy* proxy, const FilePath& path) {
+  scoped_ptr<std::string> file_contents(new std::string());
+  if (!file_util::ReadFileToString(path, file_contents.get()))
+    return;
 
-  virtual void Run() {
-    std::string* file_contents = new std::string();
-    if (!file_util::ReadFileToString(path_, file_contents)) {
-      delete file_contents;
-      return;
-    }
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&TaskProxy::LoadTraceFileCompleteProxy, proxy_.get(),
-                   file_contents));
-  }
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&TaskProxy::LoadTraceFileCompleteProxy, proxy,
+                 file_contents.release()));
+}
 
- private:
-  // The proxy that defines the completion callback.
-  scoped_refptr<TaskProxy> proxy_;
-
-  // Path of the file to open.
-  const FilePath path_;
-};
-
-// A task used for asynchronously writing a file from a string. Calls the
+// A callback used for asynchronously writing a file from a string. Calls the
 // TaskProxy callback when writing is complete.
-class WriteTraceFileTask : public Task {
- public:
-  WriteTraceFileTask(TaskProxy* proxy,
-                     const FilePath& path,
-                     std::string* contents)
-      : proxy_(proxy)
-      , path_(path)
-      , contents_(contents) {}
+void WriteTraceFileCallback(TaskProxy* proxy,
+                            const FilePath& path,
+                            std::string* contents) {
+  if (!file_util::WriteFile(path, contents->c_str(), contents->size()))
+    return;
 
-  virtual void Run() {
-    if (!file_util::WriteFile(path_, contents_->c_str(), contents_->size()))
-      return;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&TaskProxy::SaveTraceFileCompleteProxy, proxy_.get()));
-  }
-
- private:
-  // The proxy that defines the completion callback.
-  scoped_refptr<TaskProxy> proxy_;
-
-  // Path of the file to save.
-  const FilePath path_;
-
-  // What to save
-  scoped_ptr<std::string> contents_;
-};
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&TaskProxy::SaveTraceFileCompleteProxy, proxy));
+}
 
 void TracingMessageHandler::FileSelected(
     const FilePath& path, int index, void* params) {
-  if (select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE)
+  if (select_trace_file_dialog_type_ == SelectFileDialog::SELECT_OPEN_FILE) {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        new ReadTraceFileTask(new TaskProxy(AsWeakPtr()), path));
-  else
+        base::Bind(&ReadTraceFileCallback,
+                   make_scoped_refptr(new TaskProxy(AsWeakPtr())), path));
+  } else {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        new WriteTraceFileTask(new TaskProxy(AsWeakPtr()), path,
-                               trace_data_to_save_.release()));
+        base::Bind(&WriteTraceFileCallback,
+                   make_scoped_refptr(new TaskProxy(AsWeakPtr())), path,
+                   trace_data_to_save_.release()));
+  }
+
   select_trace_file_dialog_.release();
 }
 

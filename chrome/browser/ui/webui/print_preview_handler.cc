@@ -175,33 +175,10 @@ void ReportPrintSettingsStats(const DictionaryValue& settings) {
 
 }  // namespace
 
-// A Task implementation that stores a PDF file on disk.
-class PrintToPdfTask : public Task {
- public:
-  // Takes ownership of |metafile|.
-  PrintToPdfTask(printing::Metafile* metafile, const FilePath& path)
-      : metafile_(metafile), path_(path) {
-    DCHECK(metafile);
-  }
-
-  ~PrintToPdfTask() {
-    // This has to get deleted on the same thread it was created.
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        new DeleteTask<printing::Metafile>(metafile_.release()));
-  }
-
-  // Task implementation
-  virtual void Run() {
-    metafile_->SaveTo(path_);
-  }
-
- private:
-  // The metafile holding the PDF data.
-  scoped_ptr<printing::Metafile> metafile_;
-
-  // The absolute path where the file will be saved.
-  FilePath path_;
-};
+// Callback that stores a PDF file on disk.
+void PrintToPdfCallback(printing::Metafile* metafile, const FilePath& path) {
+  metafile->SaveTo(path);
+}
 
 // static
 FilePath* PrintPreviewHandler::last_saved_path_ = NULL;
@@ -837,9 +814,9 @@ void PrintPreviewHandler::PostPrintToPdfTask() {
   DCHECK(data.get());
   printing::PreviewMetafile* metafile = new printing::PreviewMetafile;
   metafile->InitFromData(static_cast<const void*>(data->front()), data->size());
-  PrintToPdfTask* task = new PrintToPdfTask(metafile,
-                                            *print_to_pdf_path_);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE, task);
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&PrintToPdfCallback, base::Owned(metafile),
+                                     *print_to_pdf_path_));
   print_to_pdf_path_.reset();
   ActivateInitiatorTabAndClosePreviewTab();
 }
