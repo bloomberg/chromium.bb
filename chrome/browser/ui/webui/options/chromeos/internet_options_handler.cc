@@ -25,6 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros_settings.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
@@ -52,7 +53,185 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
 static const char kOtherNetworksFakePath[] = "?";
+
+// Keys for the network description dictionary passed to the web ui. Make sure
+// to keep the strings in sync with what the Javascript side uses.
+const char kNetworkInfoKeyActivationState[] = "activation_state";
+const char kNetworkInfoKeyConnectable[] = "connectable";
+const char kNetworkInfoKeyConnected[] = "connected";
+const char kNetworkInfoKeyConnecting[] = "connecting";
+const char kNetworkInfoKeyIconURL[] = "iconURL";
+const char kNetworkInfoKeyNeedsNewPlan[] = "needs_new_plan";
+const char kNetworkInfoKeyNetworkName[] = "networkName";
+const char kNetworkInfoKeyNetworkStatus[] = "networkStatus";
+const char kNetworkInfoKeyNetworkType[] = "networkType";
+const char kNetworkInfoKeyRemembered[] = "remembered";
+const char kNetworkInfoKeyServicePath[] = "servicePath";
+
+// A helper class for building network information dictionaries to be sent to
+// the webui code.
+class NetworkInfoDictionary {
+ public:
+  // Initializes the dictionary with default values.
+  NetworkInfoDictionary();
+
+  // Copies in service path, connect{ing|ed|able} flags and connection type from
+  // the provided network object. Also chooses an appropriate icon based on the
+  // network type.
+  explicit NetworkInfoDictionary(const chromeos::Network* network);
+
+  // Initializes a remembered network entry, pulling information from the passed
+  // network object and the corresponding remembered network object. |network|
+  // may be NULL.
+  NetworkInfoDictionary(const chromeos::Network* network,
+                        const chromeos::Network* remembered);
+
+  // Setters for filling in information.
+  void set_service_path(const std::string& service_path) {
+    service_path_ = service_path;
+  }
+  void set_icon(const SkBitmap& icon) {
+    icon_url_ = icon.isNull() ? "" : web_ui_util::GetImageDataUrl(icon);
+  }
+  void set_name(const std::string& name) {
+    name_ = name;
+  }
+  void set_connecting(bool connecting) {
+    connecting_ = connecting;
+  }
+  void set_connected(bool connected) {
+    connected_ = connected;
+  }
+  void set_connectable(bool connectable) {
+    connectable_ = connectable;
+  }
+  void set_connection_type(chromeos::ConnectionType connection_type) {
+    connection_type_ = connection_type;
+  }
+  void set_remembered(bool remembered) {
+    remembered_ = remembered;
+  }
+  void set_shared(bool shared) {
+    shared_ = shared;
+  }
+  void set_activation_state(chromeos::ActivationState activation_state) {
+    activation_state_ = activation_state;
+  }
+  void set_needs_new_plan(bool needs_new_plan) {
+    needs_new_plan_ = needs_new_plan;
+  }
+
+  // Builds the DictionaryValue representation from the previously set
+  // parameters. Ownership of the returned pointer is transferred to the caller.
+  DictionaryValue* BuildDictionary();
+
+ private:
+  // Values to be filled into the dictionary.
+  std::string service_path_;
+  std::string icon_url_;
+  std::string name_;
+  bool connecting_;
+  bool connected_;
+  bool connectable_;
+  chromeos::ConnectionType connection_type_;
+  bool remembered_;
+  bool shared_;
+  chromeos::ActivationState activation_state_;
+  bool needs_new_plan_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkInfoDictionary);
+};
+
+NetworkInfoDictionary::NetworkInfoDictionary() {
+  set_connecting(false);
+  set_connected(false);
+  set_connectable(false);
+  set_remembered(false);
+  set_shared(false);
+  set_activation_state(chromeos::ACTIVATION_STATE_UNKNOWN);
+  set_needs_new_plan(false);
+}
+
+NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network) {
+  set_service_path(network->service_path());
+  set_icon(chromeos::NetworkMenuIcon::GetBitmap(network));
+  set_name(network->name());
+  set_connecting(network->connecting());
+  set_connected(network->connected());
+  set_connectable(network->connectable());
+  set_connection_type(network->type());
+  set_remembered(false);
+  set_shared(false);
+  set_needs_new_plan(false);
+}
+
+NetworkInfoDictionary::NetworkInfoDictionary(
+    const chromeos::Network* network,
+    const chromeos::Network* remembered) {
+  set_service_path(remembered->service_path());
+  set_icon(
+      chromeos::NetworkMenuIcon::GetBitmap(network ? network : remembered));
+  set_name(remembered->name());
+  set_connecting(network ? network->connecting() : false);
+  set_connected(network ? network->connected() : false);
+  set_connectable(true);
+  set_connection_type(remembered->type());
+  set_remembered(true);
+  set_shared(remembered->profile_type() == chromeos::PROFILE_SHARED);
+  set_needs_new_plan(false);
+}
+
+DictionaryValue* NetworkInfoDictionary::BuildDictionary() {
+  std::string status;
+
+  if (remembered_) {
+    if (shared_)
+      status = l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SHARED_NETWORK);
+  } else {
+    // 802.1X networks can be connected but not have saved credentials, and
+    // hence be "not configured".  Give preference to the "connected" and
+    // "connecting" states.  http://crosbug.com/14459
+    int connection_state = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+    if (connected_)
+      connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+    else if (connecting_)
+      connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+    else if (!connectable_)
+      connection_state = IDS_STATUSBAR_NETWORK_DEVICE_NOT_CONFIGURED;
+    status = l10n_util::GetStringUTF8(connection_state);
+    if (connection_type_ == chromeos::TYPE_CELLULAR) {
+      if (needs_new_plan_) {
+        status = l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL);
+      } else if (activation_state_ != chromeos::ACTIVATION_STATE_ACTIVATED) {
+        status.append(" / ");
+        status.append(chromeos::CellularNetwork::ActivationStateToString(
+            activation_state_));
+      }
+    }
+  }
+
+  scoped_ptr<DictionaryValue> network_info(new DictionaryValue());
+  network_info->SetInteger(kNetworkInfoKeyActivationState,
+                           static_cast<int>(activation_state_));
+  network_info->SetBoolean(kNetworkInfoKeyConnectable, connectable_);
+  network_info->SetBoolean(kNetworkInfoKeyConnected, connected_);
+  network_info->SetBoolean(kNetworkInfoKeyConnecting, connecting_);
+  network_info->SetString(kNetworkInfoKeyIconURL, icon_url_);
+  network_info->SetBoolean(kNetworkInfoKeyNeedsNewPlan, needs_new_plan_);
+  network_info->SetString(kNetworkInfoKeyNetworkName, name_);
+  network_info->SetString(kNetworkInfoKeyNetworkStatus, status);
+  network_info->SetInteger(kNetworkInfoKeyNetworkType,
+                           static_cast<int>(connection_type_));
+  network_info->SetBoolean(kNetworkInfoKeyRemembered, remembered_);
+  network_info->SetString(kNetworkInfoKeyServicePath, service_path_);
+
+  return network_info.release();
+}
+
+}  // namespace
 
 InternetOptionsHandler::InternetOptionsHandler() {
   registrar_.Add(this, chrome::NOTIFICATION_REQUIRE_PIN_SETTING_CHANGE_ENDED,
@@ -1024,78 +1203,6 @@ void InternetOptionsHandler::RefreshCellularPlanCallback(
     cellular->RefreshDataPlansIfNeeded();
 }
 
-ListValue* InternetOptionsHandler::GetNetwork(
-    const std::string& service_path,
-    const SkBitmap& icon,
-    const std::string& name,
-    bool connecting,
-    bool connected,
-    bool connectable,
-    chromeos::ConnectionType connection_type,
-    bool remembered,
-    bool shared,
-    chromeos::ActivationState activation_state,
-    bool needs_new_plan) {
-  ListValue* network = new ListValue();
-
-  std::string status;
-
-  if (remembered) {
-    if (shared)
-      status = l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SHARED_NETWORK);
-  } else {
-    // 802.1X networks can be connected but not have saved credentials, and
-    // hence be "not configured".  Give preference to the "connected" and
-    // "connecting" states.  http://crosbug.com/14459
-    int connection_state = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-    if (connected)
-      connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-    else if (connecting)
-      connection_state = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
-    else if (!connectable)
-      connection_state = IDS_STATUSBAR_NETWORK_DEVICE_NOT_CONFIGURED;
-    status = l10n_util::GetStringUTF8(connection_state);
-    if (connection_type == chromeos::TYPE_CELLULAR) {
-      if (needs_new_plan) {
-        status = l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_NO_PLAN_LABEL);
-      } else if (activation_state != chromeos::ACTIVATION_STATE_ACTIVATED) {
-        status.append(" / ");
-        status.append(chromeos::CellularNetwork::ActivationStateToString(
-            activation_state));
-      }
-    }
-  }
-
-  // To keep the consistency with JS implementation, do not change the order
-  // locally.
-  // TODO(kochi): Use dictionaly for future maintainability.
-  // 0) service path
-  network->Append(Value::CreateStringValue(service_path));
-  // 1) name
-  network->Append(Value::CreateStringValue(name));
-  // 2) status
-  network->Append(Value::CreateStringValue(status));
-  // 3) type
-  network->Append(Value::CreateIntegerValue(static_cast<int>(connection_type)));
-  // 4) connected
-  network->Append(Value::CreateBooleanValue(connected));
-  // 5) connecting
-  network->Append(Value::CreateBooleanValue(connecting));
-  // 6) icon data url
-  network->Append(Value::CreateStringValue(icon.isNull() ? "" :
-      web_ui_util::GetImageDataUrl(icon)));
-  // 7) remembered
-  network->Append(Value::CreateBooleanValue(remembered));
-  // 8) activation state
-  network->Append(Value::CreateIntegerValue(
-                    static_cast<int>(activation_state)));
-  // 9) needs new plan
-  network->Append(Value::CreateBooleanValue(needs_new_plan));
-  // 10) connectable
-  network->Append(Value::CreateBooleanValue(connectable));
-  return network;
-}
-
 ListValue* InternetOptionsHandler::GetWiredList() {
   ListValue* list = new ListValue();
 
@@ -1104,20 +1211,10 @@ ListValue* InternetOptionsHandler::GetWiredList() {
     const chromeos::EthernetNetwork* ethernet_network =
         cros_->ethernet_network();
     if (ethernet_network) {
-      const SkBitmap icon =
-          chromeos::NetworkMenuIcon::GetBitmap(ethernet_network);
-      list->Append(GetNetwork(
-          ethernet_network->service_path(),
-          icon,
-          l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
-          ethernet_network->connecting(),
-          ethernet_network->connected(),
-          ethernet_network->connectable(),
-          chromeos::TYPE_ETHERNET,
-          false,
-          false,
-          chromeos::ACTIVATION_STATE_UNKNOWN,
-          false));
+      NetworkInfoDictionary network_dict(ethernet_network);
+      network_dict.set_name(
+          l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)),
+      list->Append(network_dict.BuildDictionary());
     }
   }
   return list;
@@ -1129,73 +1226,51 @@ ListValue* InternetOptionsHandler::GetWirelessList() {
   const chromeos::WifiNetworkVector& wifi_networks = cros_->wifi_networks();
   for (chromeos::WifiNetworkVector::const_iterator it =
       wifi_networks.begin(); it != wifi_networks.end(); ++it) {
-    const SkBitmap icon = chromeos::NetworkMenuIcon::GetBitmap(*it);
-    list->Append(GetNetwork(
-        (*it)->service_path(),
-        icon,
-        (*it)->name(),
-        (*it)->connecting(),
-        (*it)->connected(),
-        cros_->CanConnectToNetwork(*it),
-        chromeos::TYPE_WIFI,
-        false,
-        false,
-        chromeos::ACTIVATION_STATE_UNKNOWN,
-        false));
+    NetworkInfoDictionary network_dict(*it);
+    network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
+    list->Append(network_dict.BuildDictionary());
   }
 
   // Add "Other WiFi network..." if wifi is enabled.
   if (cros_->wifi_enabled()) {
-    list->Append(GetNetwork(
-        kOtherNetworksFakePath,
+    NetworkInfoDictionary network_dict;
+    network_dict.set_service_path(kOtherNetworksFakePath);
+    network_dict.set_icon(
         chromeos::NetworkMenuIcon::GetConnectedBitmap(
-            chromeos::NetworkMenuIcon::ARCS),
-        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS),
-        false,
-        false,
-        true,
-        chromeos::TYPE_WIFI,
-        false,
-        false,
-        chromeos::ACTIVATION_STATE_UNKNOWN,
-        false));
+            chromeos::NetworkMenuIcon::ARCS));
+    network_dict.set_name(
+        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS));
+    network_dict.set_connectable(true);
+    network_dict.set_connection_type(chromeos::TYPE_WIFI);
+    list->Append(network_dict.BuildDictionary());
   }
 
   const chromeos::CellularNetworkVector cellular_networks =
       cros_->cellular_networks();
   for (chromeos::CellularNetworkVector::const_iterator it =
       cellular_networks.begin(); it != cellular_networks.end(); ++it) {
-    const SkBitmap icon = chromeos::NetworkMenuIcon::GetBitmap(*it);
-    list->Append(GetNetwork(
-        (*it)->service_path(),
-        icon,
-        (*it)->name(),
-        (*it)->connecting(),
-        (*it)->connected(),
-        cros_->CanConnectToNetwork(*it),
-        chromeos::TYPE_CELLULAR,
-        false,
-        false,
-        (*it)->activation_state(),
-        (*it)->SupportsDataPlan() && (*it)->restricted_pool()));
+    NetworkInfoDictionary network_dict(*it);
+    network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
+    network_dict.set_activation_state((*it)->activation_state());
+    network_dict.set_needs_new_plan(
+        (*it)->SupportsDataPlan() && (*it)->restricted_pool());
+    list->Append(network_dict.BuildDictionary());
   }
 
   const chromeos::NetworkDevice* cellular_device = cros_->FindCellularDevice();
   if (cellular_device && cellular_device->support_network_scan() &&
       cros_->cellular_enabled()) {
-    list->Append(GetNetwork(
-        kOtherNetworksFakePath,
+    NetworkInfoDictionary network_dict;
+    network_dict.set_service_path(kOtherNetworksFakePath);
+    network_dict.set_icon(
         chromeos::NetworkMenuIcon::GetDisconnectedBitmap(
-            chromeos::NetworkMenuIcon::BARS),
-        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS),
-        false,
-        false,
-        true,
-        chromeos::TYPE_CELLULAR,
-        false,
-        false,
-        chromeos::ACTIVATION_STATE_ACTIVATED,
-        false));
+            chromeos::NetworkMenuIcon::BARS));
+    network_dict.set_name(
+        l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_OTHER_CELLULAR_NETWORKS));
+    network_dict.set_connectable(true);
+    network_dict.set_connection_type(chromeos::TYPE_CELLULAR);
+    network_dict.set_activation_state(chromeos::ACTIVATION_STATE_ACTIVATED);
+    list->Append(network_dict.BuildDictionary());
   }
 
   return list;
@@ -1208,19 +1283,9 @@ ListValue* InternetOptionsHandler::GetVPNList() {
       cros_->virtual_networks();
   for (chromeos::VirtualNetworkVector::const_iterator it =
       virtual_networks.begin(); it != virtual_networks.end(); ++it) {
-    const SkBitmap icon = chromeos::NetworkMenuIcon::GetBitmap(*it);
-    list->Append(GetNetwork(
-        (*it)->service_path(),
-        icon,
-        (*it)->name(),
-        (*it)->connecting(),
-        (*it)->connected(),
-        cros_->CanConnectToNetwork(*it),
-        chromeos::TYPE_VPN,
-        false,
-        false,
-        chromeos::ACTIVATION_STATE_UNKNOWN,
-        false));
+    NetworkInfoDictionary network_dict(*it);
+    network_dict.set_connectable(cros_->CanConnectToNetwork(*it));
+    list->Append(network_dict.BuildDictionary());
   }
 
   return list;
@@ -1236,23 +1301,8 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
     chromeos::WifiNetwork* wifi = static_cast<chromeos::WifiNetwork*>(
         cros_->FindNetworkByUniqueId(remembered->unique_id()));
 
-    // Set in_active_profile.
-    bool shared =
-        remembered->profile_type() == chromeos::PROFILE_SHARED;
-    const SkBitmap icon =
-        chromeos::NetworkMenuIcon::GetBitmap(wifi ? wifi : remembered);
-    list->Append(GetNetwork(
-        remembered->service_path(),
-        icon,
-        remembered->name(),
-        wifi ? wifi->connecting() : false,
-        wifi ? wifi->connected() : false,
-        true,
-        chromeos::TYPE_WIFI,
-        true,
-        shared,
-        chromeos::ACTIVATION_STATE_UNKNOWN,
-        false));
+    NetworkInfoDictionary network_dict(wifi, remembered);
+    list->Append(network_dict.BuildDictionary());
   }
 
   for (chromeos::VirtualNetworkVector::const_iterator rit =
@@ -1262,23 +1312,8 @@ ListValue* InternetOptionsHandler::GetRememberedList() {
     chromeos::VirtualNetwork* vpn = static_cast<chromeos::VirtualNetwork*>(
         cros_->FindNetworkByUniqueId(remembered->unique_id()));
 
-    // Set in_active_profile.
-    bool shared =
-        remembered->profile_type() == chromeos::PROFILE_SHARED;
-    const SkBitmap icon =
-        chromeos::NetworkMenuIcon::GetBitmap(vpn ? vpn : remembered);
-    list->Append(GetNetwork(
-        remembered->service_path(),
-        icon,
-        remembered->name(),
-        vpn ? vpn->connecting() : false,
-        vpn ? vpn->connected() : false,
-        true,
-        chromeos::TYPE_WIFI,
-        true,
-        shared,
-        chromeos::ACTIVATION_STATE_UNKNOWN,
-        false));
+    NetworkInfoDictionary network_dict(vpn, remembered);
+    list->Append(network_dict.BuildDictionary());
   }
 
   return list;

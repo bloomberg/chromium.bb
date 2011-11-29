@@ -26,8 +26,8 @@ class Value;
 
 namespace chromeos {
 
-class NetworkParser;
 class NetworkDeviceParser;
+class NetworkParser;
 
 // This is the list of all implementation classes that are allowed
 // access to the internals of the network library classes.

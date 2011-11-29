@@ -112,19 +112,7 @@ cr.define('options.internet', function() {
    */
   function NetworkItem(network) {
     var el = cr.doc.createElement('div');
-    el.data = {
-      servicePath: network[0],
-      networkName: network[1],
-      networkStatus: network[2],
-      networkType: network[3],
-      connected: network[4],
-      connecting: network[5],
-      iconURL: network[6],
-      remembered: network[7],
-      activation_state: network[8],
-      needs_new_plan: network[9],
-      connectable: network[10]
-    };
+    el.data = network;
     NetworkItem.decorate(el);
     return el;
   }

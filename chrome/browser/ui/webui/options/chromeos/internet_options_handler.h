@@ -112,19 +112,6 @@ class InternetOptionsHandler
   base::DictionaryValue* CreateDictionaryFromCellularApn(
       const chromeos::CellularApn& apn);
 
-  // Creates the map of a network.
-  base::ListValue* GetNetwork(const std::string& service_path,
-                              const SkBitmap& icon,
-                              const std::string& name,
-                              bool connecting,
-                              bool connected,
-                              bool connectable,
-                              chromeos::ConnectionType connection_type,
-                              bool remembered,
-                              bool shared,
-                              chromeos::ActivationState activation_state,
-                              bool restricted_ip);
-
   // Creates the map of wired networks.
   base::ListValue* GetWiredList();
   // Creates the map of wireless networks.
