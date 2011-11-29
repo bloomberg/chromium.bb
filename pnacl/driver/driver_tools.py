@@ -71,6 +71,7 @@ INITIAL_ENV = {
   'SRPC'        : '1',    # Use SRPC sandboxed toolchain
   'MC_DIRECT'           : '1',
   'USE_EMULATOR'        : '0',
+  'USE_BOOTSTRAP'       : '${BUILD_OS==linux ? 1 : 0}',
   'DRIVER_FLAGS'        : '', # Flags passed to the driver
   'LIBMODE'             : '${@DetectLibMode}',  # glibc or newlib
   'LIBMODE_GLIBC'       : '${LIBMODE==glibc ? 1 : 0}',
@@ -140,6 +141,7 @@ INITIAL_ENV = {
       '${BASE_NACL}/toolchain/linux_arm-trusted/run_under_qemu_arm',
 
   'SEL_LDR'       : '${SCONS_STAGING}/sel_ldr${EXEC_EXT}',
+  'BOOTSTRAP_LDR' : '${SCONS_STAGING}/nacl_helper_bootstrap${EXEC_EXT}',
 
   # c.f. http://code.google.com/p/nativeclient/issues/detail?id=1968
   # LLVM_AS is used to compile a .ll file to a bitcode file (".po")
@@ -154,9 +156,12 @@ INITIAL_ENV = {
 
   # Note: -a enables sel_ldr debug mode allowing us to access to local files
   #       this is only needed if we compile/run the translators in non-srpc mode
-  'LD_SB'         : '${SEL_LDR} -a -B ${IRT_BLOB} -- ${BASE_SB}/nonsrpc/bin/ld',
-  'LLC_SB'        : '${SEL_LDR} -a -B ${IRT_BLOB} -- ${RUNNABLE_LD} ' +
-                    '${BASE_SB}/nonsrpc/bin/llc',
+  'SB_PREFIX'     : '${USE_BOOTSTRAP ? ${BOOTSTRAP_LDR}} ${SEL_LDR} '
+                    '${USE_BOOTSTRAP ? --r_debug=0xXXXXXXXXXXXXXXXXX} ' +
+                    '-a -B ${IRT_BLOB} --',
+
+  'LD_SB'         : '${SB_PREFIX} ${BASE_SB}/nonsrpc/bin/ld',
+  'LLC_SB'        : '${SB_PREFIX} ${RUNNABLE_LD} ${BASE_SB}/nonsrpc/bin/llc',
   'SB_DYNAMIC'    : '0',
   'NNACL_LIBDIR'  : '${BASE_NACL}/toolchain/${SCONS_OS}_x86/' +
                     'x86_64-nacl/${ARCH  == X8632 ? lib32 : lib}',
@@ -1693,15 +1698,10 @@ def DriverExit(code):
 def CheckTranslatorPrerequisites():
   """ Assert that the scons artifacts for running the sandboxed translator
       exist: sel_universal, sel_ldr and the irt blob. """
-  sel_universal = env.getone('SEL_UNIVERSAL')
-  if not pathtools.exists(sel_universal):
-    Log.Fatal('Could not find sel_universal [%s]', sel_universal)
-  sel_ldr = env.getone('SEL_LDR')
-  if not pathtools.exists(sel_ldr):
-    Log.Fatal('Could not find sel_ldr [%s]', sel_ldr)
-  irt_blob = env.getone('IRT_BLOB')
-  if not pathtools.exists(irt_blob):
-    Log.Fatal('Could not find irt_blob [%s]', irt_blob)
+  for var in ['SEL_UNIVERSAL', 'SEL_LDR', 'BOOTSTRAP_LDR', 'IRT_BLOB']:
+    needed_file = env.getone(var)
+    if not pathtools.exists(needed_file):
+      Log.Fatal('Could not find %s [%s]', var, needed_file)
 
 
 def DriverOpen(filename, mode, fail_ok = False):
