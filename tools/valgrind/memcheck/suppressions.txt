@@ -3205,15 +3205,18 @@
    bug_77990
    Memcheck:Leak
    fun:calloc
-   fun:PR_Calloc
+   ...
    fun:error_get_my_stack
    fun:nss_ClearErrorStack
    fun:NSSArena_Destroy
    fun:nssList_Destroy
    fun:nssCertificateStore_RemoveCertLOCKED
    fun:nssCertificate_Destroy
-   fun:NSSCertificate_Destroy
-   fun:CERT_DestroyCertificate
+   ...
+   fun:ssl_DestroySID
+   fun:ssl_FreeLockedSID
+   fun:UncacheSID
+   fun:SSL_ClearSessionCache
 }
 {
    bug_78201
