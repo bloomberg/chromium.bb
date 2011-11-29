@@ -239,8 +239,12 @@ class Main(object):
       raise RuntimeError('Chrome could not be found')
     driver_exe = os.path.expanduser(driver_exe)
     chrome_exe = os.path.expanduser(chrome_exe)
+    # Increase number of http client threads to 10 to prevent hangs.
+    # The hang seems to occur because Chrome keeps too many multiple
+    # simultaneous connections open to our webserver.
     server = ChromeDriverLauncher(
-        os.path.expanduser(driver_exe), test_paths.WEBDRIVER_TEST_DATA).Launch()
+        os.path.expanduser(driver_exe), test_paths.WEBDRIVER_TEST_DATA,
+        http_threads=10).Launch()
     driver = WebDriver(server.GetUrl(),
                        {'chrome.binary': os.path.expanduser(chrome_exe)})
     # The tests expect a webserver. Since ChromeDriver also operates as one,
@@ -258,7 +262,6 @@ class Main(object):
       verbosity = 2
     result = py_unittest_util.GTestTextTestRunner(verbosity=verbosity).run(
         filtered_suite)
-    driver.quit()
     server.Kill()
     sys.exit(not result.wasSuccessful())
 

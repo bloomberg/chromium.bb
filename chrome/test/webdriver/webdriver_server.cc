@@ -168,11 +168,15 @@ void* ProcessHttpRequest(mg_event event_raised,
 
 void MakeMongooseOptions(const std::string& port,
                          const std::string& root,
+                         int http_threads,
+                         bool enable_keep_alive,
                          std::vector<std::string>* out_options) {
   out_options->push_back("listening_ports");
   out_options->push_back(port);
   out_options->push_back("enable_keep_alive");
-  out_options->push_back("yes");
+  out_options->push_back(enable_keep_alive ? "yes" : "no");
+  out_options->push_back("num_threads");
+  out_options->push_back(base::IntToString(http_threads));
   if (!root.empty()) {
     out_options->push_back("document_root");
     out_options->push_back(root);
@@ -205,6 +209,8 @@ int main(int argc, char *argv[]) {
   std::string root;
   std::string url_base;
   bool verbose = false;
+  int http_threads = 4;
+  bool enable_keep_alive = true;
   if (cmd_line->HasSwitch("port"))
     port = cmd_line->GetSwitchValueASCII("port");
   // The 'root' flag allows the user to specify a location to serve files from.
@@ -217,6 +223,15 @@ int main(int argc, char *argv[]) {
   // Whether or not to do verbose logging.
   if (cmd_line->HasSwitch("verbose"))
     verbose = true;
+  if (cmd_line->HasSwitch("http-threads")) {
+    if (!base::StringToInt(cmd_line->GetSwitchValueASCII("http-threads"),
+                           &http_threads)) {
+      std::cerr << "'http-threads' option must be an integer";
+      return 1;
+    }
+  }
+  if (cmd_line->HasSwitch("disable-keep-alive"))
+    enable_keep_alive = false;
 
   webdriver::InitWebDriverLogging(
       verbose ? logging::LOG_INFO : logging::LOG_WARNING);
@@ -229,7 +244,7 @@ int main(int argc, char *argv[]) {
   webdriver::InitCallbacks(&dispatcher, &shutdown_event, root.empty());
 
   std::vector<std::string> args;
-  MakeMongooseOptions(port, root, &args);
+  MakeMongooseOptions(port, root, http_threads, enable_keep_alive, &args);
   scoped_array<const char*> options(new const char*[args.size() + 1]);
   for (size_t i = 0; i < args.size(); ++i) {
     options[i] = args[i].c_str();
@@ -257,11 +272,9 @@ int main(int argc, char *argv[]) {
             << "version=" << chrome::kChromeVersion << std::endl;
 
   // Run until we receive command to shutdown.
+  // Don't call mg_stop because mongoose will hang if clients are still
+  // connected when keep-alive is enabled.
   shutdown_event.Wait();
 
-  // We should not reach here since the service should never quit.
-  // TODO(jmikhail): register a listener for SIGTERM and break the
-  // message loop gracefully.
-  mg_stop(ctx);
   return (EXIT_SUCCESS);
 }

@@ -17,6 +17,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "chrome/test/webdriver/commands/command.h"
 #include "chrome/test/webdriver/http_response.h"
@@ -84,15 +85,6 @@ void DispatchCommand(Command* const command,
   command->Finish();
 }
 
-void Shutdown(struct mg_connection* connection,
-              const struct mg_request_info* request_info,
-              void* user_data) {
-  base::WaitableEvent* shutdown_event =
-      reinterpret_cast<base::WaitableEvent*>(user_data);
-  mg_printf(connection, "HTTP/1.1 200 OK\r\n\r\n");
-  shutdown_event->Signal();
-}
-
 void SendOkWithBody(struct mg_connection* connection,
                     const std::string& content) {
   const char* response_fmt = "HTTP/1.1 200 OK\r\n"
@@ -101,6 +93,15 @@ void SendOkWithBody(struct mg_connection* connection,
   std::string response = base::StringPrintf(
       response_fmt, content.length(), content.c_str());
   mg_write(connection, response.data(), response.length());
+}
+
+void Shutdown(struct mg_connection* connection,
+              const struct mg_request_info* request_info,
+              void* user_data) {
+  base::WaitableEvent* shutdown_event =
+      reinterpret_cast<base::WaitableEvent*>(user_data);
+  mg_printf(connection, "HTTP/1.1 200 OK\r\n\r\n\r\n");
+  shutdown_event->Signal();
 }
 
 void SendHealthz(struct mg_connection* connection,
@@ -125,6 +126,12 @@ void SendLog(struct mg_connection* connection,
     content = "No ChromeDriver log found";
   }
   SendOkWithBody(connection, content);
+}
+
+void SimulateHang(struct mg_connection* connection,
+                  const struct mg_request_info* request_info,
+                  void* user_data) {
+  base::PlatformThread::Sleep(1000 * 60 * 5);
 }
 
 void SendNoContentResponse(struct mg_connection* connection,
@@ -342,6 +349,7 @@ Dispatcher::Dispatcher(const std::string& url_base)
   // Overwrite mongoose's default handler for /favicon.ico to always return a
   // 204 response so we don't spam the logs with 404s.
   AddCallback("/favicon.ico", &SendNoContentResponse, NULL);
+  AddCallback("/hang", &SimulateHang, NULL);
 }
 
 Dispatcher::~Dispatcher() {}

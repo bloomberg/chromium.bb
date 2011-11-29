@@ -11,12 +11,14 @@ it to the appropriate place in the WebDriver tree instead.
 import binascii
 from distutils import archive_util
 import hashlib
+import httplib
 import os
 import platform
 import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import unittest
 import urllib
@@ -413,6 +415,43 @@ class SessionTest(ChromeDriverTest):
       drivers += [self.GetNewDriver()]
     for driver in drivers:
       driver.quit()
+
+
+class ShutdownTest(ChromeDriverTest):
+
+  def setUp(self):
+    super(ShutdownTest, self).setUp()
+    self._custom_server = ChromeDriverLauncher(self.GetDriverPath()).Launch()
+    self._custom_factory = ChromeDriverFactory(self.custom_server,
+                                               self.GetChromePath())
+
+  def tearDown(self):
+    self._custom_server.Kill()
+    super(ShutdownTest, self).tearDown()
+
+  def testShutdownWithSession(self):
+    driver = self.custom_factory.GetNewDriver()
+    driver.get(self.custom_server.GetUrl() + '/status')
+    driver.find_element_by_tag_name('body')
+    self.custom_server.Kill()
+
+  def testShutdownWithBusySession(self):
+    def _Hang(driver):
+      """Waits for the process to quit and then notifies."""
+      try:
+        driver.get(self.custom_server.GetUrl() + '/hang')
+      except httplib.BadStatusLine:
+        pass
+
+    driver = self.custom_factory.GetNewDriver()
+    wait_thread = threading.Thread(target=_Hang, args=(driver,))
+    wait_thread.start()
+    wait_thread.join(5)
+    self.assertTrue(wait_thread.isAlive())
+
+    self.custom_server.Kill()
+    wait_thread.join(10)
+    self.assertFalse(wait_thread.isAlive())
 
 
 class MouseTest(ChromeDriverTest):
