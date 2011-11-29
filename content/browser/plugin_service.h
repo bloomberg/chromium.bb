@@ -163,6 +163,12 @@ class CONTENT_EXPORT PluginService
   // back to the provided function on the calling MessageLoop on completion.
   void GetPluginGroups(const GetPluginGroupsCallback& callback);
 
+  // Returns information about a pepper plugin if it exists, otherwise NULL.
+  // The caller does not own the pointer, and it's not guaranteed to live past
+  // the call stack.
+  content::PepperPluginInfo* GetRegisteredPpapiPluginInfo(
+      const FilePath& plugin_path);
+
   // Tells all the renderer processes associated with the given browser context
   // to throw away their cache of the plugin list, and optionally also reload
   // all the pages with plugins. If |browser_context| is NULL, purges the cache
@@ -211,9 +217,6 @@ class CONTENT_EXPORT PluginService
                        const content::NotificationDetails& details) OVERRIDE;
 
   void RegisterPepperPlugins();
-
-  content::PepperPluginInfo* GetRegisteredPpapiPluginInfo(
-      const FilePath& plugin_path);
 
   // Function that is run on the FILE thread to load the plugins synchronously.
   void GetPluginsInternal(base::MessageLoopProxy* target_loop,

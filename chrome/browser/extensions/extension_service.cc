@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_number_conversions.h"
@@ -75,6 +76,7 @@
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -88,11 +90,11 @@
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/user_metrics.h"
-#include "content/common/pepper_plugin_registry.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/pepper_plugin_info.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/registry_controlled_domain.h"
 #include "webkit/database/database_tracker.h"
@@ -2470,48 +2472,45 @@ void ExtensionService::UpdatePluginListWithNaClModules() {
   // there is a MIME type that module wants to handle, so we need to add that
   // MIME type to plugins which handle NaCl modules in order to allow the
   // individual modules to handle these types.
-  const content::PepperPluginInfo* pepper_info = NULL;
-  std::vector<content::PepperPluginInfo> plugins;
-  PepperPluginRegistry::ComputeList(&plugins);
+  FilePath path;
+  if (!PathService::Get(chrome::FILE_NACL_PLUGIN, &path))
+    return;
+  const content::PepperPluginInfo* pepper_info =
+      PluginService::GetInstance()->GetRegisteredPpapiPluginInfo(path);
+  if (!pepper_info)
+    return;
 
-  // Search the entire plugin list for plugins that handle the NaCl MIME type.
-  // There can be multiple plugins like this, for instance the internal NaCl
-  // plugin and a plugin registered by --register-pepper-plugins during tests.
-  for (size_t i = 0; i < plugins.size(); ++i) {
-    pepper_info = &plugins[i];
-    CHECK(pepper_info);
-    std::vector<webkit::WebPluginMimeType>::const_iterator mime_iter;
-    // Check each MIME type the plugins handle for the NaCl MIME type.
-    for (mime_iter = pepper_info->mime_types.begin();
-         mime_iter != pepper_info->mime_types.end(); ++mime_iter) {
-      if (mime_iter->mime_type == kNaClPluginMimeType) {
-        // This plugin handles "application/x-nacl".
+  std::vector<webkit::WebPluginMimeType>::const_iterator mime_iter;
+  // Check each MIME type the plugins handle for the NaCl MIME type.
+  for (mime_iter = pepper_info->mime_types.begin();
+       mime_iter != pepper_info->mime_types.end(); ++mime_iter) {
+    if (mime_iter->mime_type == kNaClPluginMimeType) {
+      // This plugin handles "application/x-nacl".
 
-        PluginService::GetInstance()->
-            UnregisterInternalPlugin(pepper_info->path);
+      PluginService::GetInstance()->
+          UnregisterInternalPlugin(pepper_info->path);
 
-        webkit::WebPluginInfo info = pepper_info->ToWebPluginInfo();
+      webkit::WebPluginInfo info = pepper_info->ToWebPluginInfo();
 
-        for (ExtensionService::NaClModuleInfoList::const_iterator iter =
-            nacl_module_list_.begin();
-            iter != nacl_module_list_.end(); ++iter) {
-          // Add the MIME type specified in the extension to this NaCl plugin,
-          // With an extra "nacl" argument to specify the location of the NaCl
-          // manifest file.
-          webkit::WebPluginMimeType mime_type_info;
-          mime_type_info.mime_type = iter->mime_type;
-          mime_type_info.additional_param_names.push_back(UTF8ToUTF16("nacl"));
-          mime_type_info.additional_param_values.push_back(
-              UTF8ToUTF16(iter->url.spec()));
-          info.mime_types.push_back(mime_type_info);
-        }
-
-        PluginService::GetInstance()->RefreshPlugins();
-        PluginService::GetInstance()->RegisterInternalPlugin(info);
-        // This plugin has been modified, no need to check the rest of its
-        // types, but continue checking other plugins.
-        break;
+      for (ExtensionService::NaClModuleInfoList::const_iterator iter =
+          nacl_module_list_.begin();
+          iter != nacl_module_list_.end(); ++iter) {
+        // Add the MIME type specified in the extension to this NaCl plugin,
+        // With an extra "nacl" argument to specify the location of the NaCl
+        // manifest file.
+        webkit::WebPluginMimeType mime_type_info;
+        mime_type_info.mime_type = iter->mime_type;
+        mime_type_info.additional_param_names.push_back(UTF8ToUTF16("nacl"));
+        mime_type_info.additional_param_values.push_back(
+            UTF8ToUTF16(iter->url.spec()));
+        info.mime_types.push_back(mime_type_info);
       }
+
+      PluginService::GetInstance()->RefreshPlugins();
+      PluginService::GetInstance()->RegisterInternalPlugin(info);
+      // This plugin has been modified, no need to check the rest of its
+      // types, but continue checking other plugins.
+      break;
     }
   }
 }
