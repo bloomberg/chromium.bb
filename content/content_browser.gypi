@@ -328,8 +328,8 @@
     'browser/plugin_service_filter.h',
     'browser/power_save_blocker.h',
     'browser/power_save_blocker_common.cc',
+    'browser/power_save_blocker_linux.cc',
     'browser/power_save_blocker_mac.cc',
-    'browser/power_save_blocker_stub.cc',
     'browser/power_save_blocker_win.cc',
     'browser/ppapi_plugin_process_host.cc',
     'browser/ppapi_plugin_process_host.h',
@@ -654,9 +654,6 @@
           },
         },
       },
-      'sources!': [
-        'browser/power_save_blocker_stub.cc',
-      ],
     }],
     ['toolkit_uses_gtk == 1', {
       'dependencies': [
@@ -690,9 +687,6 @@
       ],
     }],
     ['OS=="mac"', {
-      'sources!': [
-        'browser/power_save_blocker_stub.cc',
-      ],
       'sources': [
         # Build necessary Mozilla sources
         '../third_party/mozilla/ComplexTextInputPanel.h',
