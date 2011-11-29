@@ -1791,10 +1791,6 @@
    fun:browser_sync::DataTypeManagerImpl::FinishStop
    fun:browser_sync::DataTypeManagerImpl::Stop
    fun:ProfileSyncService::Shutdown
-   fun:~ProfileSyncService
-   fun:~TestProfileSyncService
-   fun:scoped_ptr::reset
-   fun:ProfileSyncServiceTypedUrlTest::TearDown
 }
 {
    bug_105699
