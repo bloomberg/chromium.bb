@@ -41,34 +41,6 @@
 
 #endif
 
-// In the touch build, this fails reliably. http://crbug.com/85191
-#if defined(TOUCH_UI)
-#define MAYBE_GetViewsOfCreatedWindow DISABLED_GetViewsOfCreatedWindow
-#else
-#define MAYBE_GetViewsOfCreatedWindow GetViewsOfCreatedWindow
-#endif
-
-// In the touch build, this fails unreliably. http://crbug.com/85226
-#if defined(TOUCH_UI)
-#define MAYBE_GetViewsOfCreatedPopup FLAKY_GetViewsOfCreatedPopup
-#else
-#define MAYBE_GetViewsOfCreatedPopup GetViewsOfCreatedPopup
-#endif
-
-// In the touch build, this fails reliably. http://crbug.com/85190
-#if defined(TOUCH_UI)
-#define MAYBE_TabEvents DISABLED_TabEvents
-#else
-#define MAYBE_TabEvents TabEvents
-#endif
-
-// In the touch build, this fails unreliably. http://crbug.com/85193
-#if defined(TOUCH_UI)
-#define MAYBE_TabMove FLAKY_TabMove
-#else
-#define MAYBE_TabMove TabMove
-#endif
-
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
   // The test creates a tab and checks that the URL of the new tab
   // is that of the new tab page.  Make sure the pref that controls
@@ -91,11 +63,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabPinned) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "pinned.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabMove) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabMove) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "move.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_TabEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, TabEvents) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "events.html")) << message_;
 }
 
@@ -228,11 +200,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabledByPref) {
   ASSERT_TRUE(RunExtensionTest("tabs/incognito_disabled")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetViewsOfCreatedPopup) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, GetViewsOfCreatedPopup) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_popup.html"))
       << message_;
 }
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_GetViewsOfCreatedWindow) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, GetViewsOfCreatedWindow) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_window.html"))
       << message_;
 }

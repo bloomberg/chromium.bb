@@ -2083,12 +2083,6 @@
             ['exclude', '^browser/bookmarks/bookmark_node_data_unittest.cc'],
           ],
         }],
-        ['touchui==0', {
-          'sources/': [
-            ['exclude', '^browser/ui/touch/'],
-            ['exclude', '^browser/ui/webui/chromeos/login/'],
-          ],
-        }],
         ['file_manager_extension==0', {
           'sources!': [
             'browser/ui/views/select_file_dialog_extension_unittest.cc',

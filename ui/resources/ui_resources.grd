@@ -100,12 +100,7 @@
       <include name="IDR_TEXTBUTTON_TOP_P" file="textbutton_t_p.png" type="BINDATA" />
       <include name="IDR_TEXTBUTTON_TOP_RIGHT_H" file="textbutton_tr_h.png" type="BINDATA" />
       <include name="IDR_TEXTBUTTON_TOP_RIGHT_P" file="textbutton_tr_p.png" type="BINDATA" />
-      <if expr="not pp_ifdef('touchui')">
-          <include name="IDR_THROBBER" file="throbber.png" type="BINDATA" />
-      </if>
-      <if expr="pp_ifdef('touchui')">
-          <include name="IDR_THROBBER" file="large_throbber.png" type="BINDATA" />
-      </if>
+      <include name="IDR_THROBBER" file="throbber.png" type="BINDATA" />
       <include name="IDR_WINDOW_BOTTOM_CENTER" file="window_bottom_center.png" type="BINDATA" />
       <include name="IDR_WINDOW_BOTTOM_LEFT_CORNER" file="window_bottom_left_corner.png" type="BINDATA" />
       <include name="IDR_WINDOW_BOTTOM_RIGHT_CORNER" file="window_bottom_right_corner.png" type="BINDATA" />

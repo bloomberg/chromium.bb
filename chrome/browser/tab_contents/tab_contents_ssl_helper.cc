@@ -248,11 +248,8 @@ void TabContentsSSLHelper::SelectClientCertificate(
 
 void TabContentsSSLHelper::ShowClientCertificateRequestDialog(
     scoped_refptr<SSLClientAuthHandler> handler) {
-  // TODO(rhashimoto): WebUI certificate selector for touch.
-#if !defined(TOUCH_UI)
   browser::ShowSSLClientCertificateSelector(
       tab_contents_, handler->cert_request_info(), handler);
-#endif
 }
 
 void TabContentsSSLHelper::OnVerifyClientCertificateError(

@@ -39,8 +39,6 @@
 // In some environments this test fails about 1/6 http://crbug/84850
 #if defined(OS_LINUX)
 #define MAYBE_KillExtension DISABLED_KillExtension
-#elif defined(TOUCH_UI)
-#define MAYBE_KillExtension FLAKY_KillExtension
 #else
 #define MAYBE_KillExtension KillExtension
 #endif

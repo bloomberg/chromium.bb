@@ -332,16 +332,11 @@ void WebUILoginView::InitStatusArea() {
       width() - widget_size.width() - kStatusAreaCornerPadding;
   gfx::Rect widget_bounds(widget_x, kStatusAreaCornerPadding,
                           widget_size.width(), widget_size.height());
-#if defined(TOUCH_UI)
-  views::Widget::InitParams widget_params(
-      views::Widget::InitParams::TYPE_CONTROL);
-#else
   // TODO(nkostylev|oshima): Make status area in the same window as
   // |webui_login_| once RenderWidgetHostViewViews and compositor are
   // ready.
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
-#endif
   widget_params.bounds = widget_bounds;
   widget_params.transparent = true;
   widget_params.parent_widget = login_window_;

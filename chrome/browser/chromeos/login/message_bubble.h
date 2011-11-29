@@ -77,7 +77,7 @@ class MessageBubble : public Bubble,
   // Overridden from NativeWidgetGtk/NativeWidgetViews.
   virtual void Close() OVERRIDE;
 
-#if !defined(TOUCH_UI) && defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK)
   virtual gboolean OnButtonPress(GtkWidget* widget,
                                  GdkEventButton* event) OVERRIDE;
 #endif
@@ -92,7 +92,7 @@ class MessageBubble : public Bubble,
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-#if !defined(TOUCH_UI) && defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK)
   // Overridden from NativeWidgetGtk.
   virtual void OnActiveChanged() OVERRIDE;
   virtual void SetMouseCapture() OVERRIDE;

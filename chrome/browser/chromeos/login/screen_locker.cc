@@ -356,18 +356,7 @@ void ScreenLocker::Show() {
     VLOG(1) << "Show: Locking screen";
     ScreenLocker* locker =
         new ScreenLocker(UserManager::Get()->logged_in_user());
-#if defined(TOUCH_UI)
-    // The views screen locker does not reliably work on TOUCH_UI builds. In
-    // order to effectively "lock" the screen we will sign out the user for now.
-    // TODO(flackr): Implement lock screen in WebUI and remove this hack
-    // (crbug.com/105267).
-    if (ScreenLocker::UseWebUILockScreen())
-      locker->Init();
-    else
-      locker->Signout();
-#else
     locker->Init();
-#endif
   } else {
     // PowerManager re-sends lock screen signal if it doesn't
     // receive the response within timeout. Just send complete

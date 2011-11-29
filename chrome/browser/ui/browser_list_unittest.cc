@@ -4,10 +4,6 @@
 
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/ui/browser_list.h"
-#if defined(TOUCH_UI)
-// TODO(alicet): clean up dependency on defaults when max tab count is removed.
-#include "chrome/browser/defaults.h"
-#endif
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -78,13 +74,7 @@ TEST_F(BrowserListTest, TabContentsIteratorVerifyCount) {
   for (size_t i = 0; i < 41; ++i)
     browser()->NewTab();
 
-#if defined(TOUCH_UI)
-  // TODO(alicet): clean up max tab count.
-  size_t max_tab_count = browser_defaults::kMaxTabCount;
-  EXPECT_EQ(max_tab_count + 1U, CountAllTabs());
-#else
   EXPECT_EQ(42U, CountAllTabs());
-#endif
   // Close all remaining tabs to keep all the destructors happy.
   browser3->CloseAllTabs();
 }

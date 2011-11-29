@@ -177,7 +177,7 @@ MessageBubble* MessageBubble::ShowNoGrab(
   return bubble;
 }
 
-#if !defined(TOUCH_UI) && defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK)
 // TODO(saintlou): Unclear if we need this for the !gtk case.
 void MessageBubble::OnActiveChanged() {
   if (parent_ && IsActive()) {
@@ -198,7 +198,7 @@ void MessageBubble::Close() {
   Bubble::Close();
 }
 
-#if !defined(TOUCH_UI) && defined(TOOLKIT_USES_GTK)
+#if defined(TOOLKIT_USES_GTK)
 gboolean MessageBubble::OnButtonPress(GtkWidget* widget,
                                       GdkEventButton* event) {
   NativeWidgetGtk::OnButtonPress(widget, event);

@@ -406,7 +406,6 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
   // TODO(nkostylev): May add login UI implementation callback call.
   if (!ready_for_browser_launch_) {
     // Add the appropriate first-login URL.
-#if !defined(TOUCH_UI)
     PrefService* prefs = g_browser_process->local_state();
     const std::string current_locale =
         StringToLowerASCII(prefs->GetString(prefs::kApplicationLocale));
@@ -421,7 +420,6 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
       start_url = base::StringPrintf(url, current_locale.c_str());
     }
     CommandLine::ForCurrentProcess()->AppendArg(start_url);
-#endif
 
     ServicesCustomizationDocument* customization =
       ServicesCustomizationDocument::GetInstance();

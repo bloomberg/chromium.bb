@@ -71,8 +71,7 @@ TEST_F('OptionsWebUITest', 'MAYBE_testSetBooleanPrefTriggers', function() {
 
 // Not meant to run on ChromeOS at this time.
 // Not finishing in windows. http://crbug.com/81723
-GEN('#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN) \\');
-GEN('    || defined(TOUCH_UI)');
+GEN('#if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)');
 GEN('#define MAYBE_testRefreshStaysOnCurrentPage \\');
 GEN('    DISABLED_testRefreshStaysOnCurrentPage');
 GEN('#else');
