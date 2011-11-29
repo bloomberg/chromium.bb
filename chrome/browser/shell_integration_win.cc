@@ -9,6 +9,7 @@
 #include <propkey.h>
 #include <propvarutil.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -16,7 +17,6 @@
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
@@ -76,130 +76,33 @@ std::wstring GetProfileIdFromPath(const FilePath& profile_path) {
   return profile_id;
 }
 
-// Migrates existing chromium shortucts for Win7.
-class MigrateChromiumShortcutsTask : public Task {
- public:
-  MigrateChromiumShortcutsTask() { }
+bool GetShortcutAppId(IShellLink* shell_link, std::wstring* app_id) {
+  DCHECK(shell_link);
+  DCHECK(app_id);
 
-  virtual void Run();
+  app_id->clear();
 
- private:
-  void MigrateWin7Shortcuts();
-  void MigrateWin7ShortcutsInPath(const FilePath& path) const;
+  base::win::ScopedComPtr<IPropertyStore> property_store;
+  if (FAILED(property_store.QueryFrom(shell_link)))
+    return false;
 
-  // Get expected app id for given chrome shortcut.
-  // Returns true if the shortcut point to chrome and expected app id is
-  // successfully derived.
-  bool GetExpectedAppId(IShellLink* shell_link,
-                        std::wstring* expected_app_id) const;
+  PROPVARIANT appid_value;
+  PropVariantInit(&appid_value);
+  if (FAILED(property_store->GetValue(PKEY_AppUserModel_ID, &appid_value)))
+    return false;
 
-  // Get app id associated with given shortcut.
-  bool GetShortcutAppId(IShellLink* shell_link, std::wstring* app_id) const;
+  if (appid_value.vt == VT_LPWSTR || appid_value.vt == VT_BSTR)
+    app_id->assign(appid_value.pwszVal);
 
-  FilePath chrome_exe_;
-
-  DISALLOW_COPY_AND_ASSIGN(MigrateChromiumShortcutsTask);
-};
-
-void MigrateChromiumShortcutsTask::Run() {
-  // This should run on the file thread.
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-
-  MigrateWin7Shortcuts();
+  PropVariantClear(&appid_value);
+  return true;
 }
 
-void MigrateChromiumShortcutsTask::MigrateWin7Shortcuts() {
-  // Get full path of chrome.
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe_))
-    return;
-
-  // Locations to check for shortcuts migration.
-  static const struct {
-    int location_id;
-    const wchar_t* sub_dir;
-  } kLocations[] = {
-    {
-      base::DIR_APP_DATA,
-      L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar"
-    }, {
-      chrome::DIR_USER_DESKTOP,
-      NULL
-    }, {
-      base::DIR_START_MENU,
-      NULL
-    }, {
-      base::DIR_APP_DATA,
-      L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\StartMenu"
-    }
-  };
-
-  for (int i = 0; i < arraysize(kLocations); ++i) {
-    FilePath path;
-    if (!PathService::Get(kLocations[i].location_id, &path)) {
-      NOTREACHED();
-      continue;
-    }
-
-    if (kLocations[i].sub_dir)
-      path = path.Append(kLocations[i].sub_dir);
-
-    MigrateWin7ShortcutsInPath(path);
-  }
-}
-
-void MigrateChromiumShortcutsTask::MigrateWin7ShortcutsInPath(
-    const FilePath& path) const {
-  // Enumerate all pinned shortcuts in the given path directly.
-  file_util::FileEnumerator shortcuts_enum(
-      path,
-      false,  // not recursive
-      file_util::FileEnumerator::FILES,
-      FILE_PATH_LITERAL("*.lnk"));
-
-  for (FilePath shortcut = shortcuts_enum.Next(); !shortcut.empty();
-       shortcut = shortcuts_enum.Next()) {
-    // Load the shortcut.
-    base::win::ScopedComPtr<IShellLink> shell_link;
-    if (FAILED(shell_link.CreateInstance(CLSID_ShellLink,
-                                         NULL,
-                                         CLSCTX_INPROC_SERVER))) {
-      NOTREACHED();
-      return;
-    }
-
-    base::win::ScopedComPtr<IPersistFile> persist_file;
-    if (FAILED(persist_file.QueryFrom(shell_link)) ||
-        FAILED(persist_file->Load(shortcut.value().c_str(), STGM_READ))) {
-      NOTREACHED();
-      return;
-    }
-
-    // Get expected app id from shortcut.
-    std::wstring expected_app_id;
-    if (!GetExpectedAppId(shell_link, &expected_app_id) ||
-        expected_app_id.empty())
-      continue;
-
-    // Get existing app id from shortcut if any.
-    std::wstring existing_app_id;
-    GetShortcutAppId(shell_link, &existing_app_id);
-
-    if (expected_app_id != existing_app_id) {
-      file_util::UpdateShortcutLink(NULL,
-                                    shortcut.value().c_str(),
-                                    NULL,
-                                    NULL,
-                                    NULL,
-                                    NULL,
-                                    0,
-                                    expected_app_id.c_str());
-    }
-  }
-}
-
-bool MigrateChromiumShortcutsTask::GetExpectedAppId(
-    IShellLink* shell_link,
-    std::wstring* expected_app_id) const {
+// Gets expected app id for given chrome shortcut. Returns true if the shortcut
+// points to chrome and expected app id is successfully derived.
+bool GetExpectedAppId(const FilePath& chrome_exe,
+                      IShellLink* shell_link,
+                      std::wstring* expected_app_id) {
   DCHECK(shell_link);
   DCHECK(expected_app_id);
 
@@ -207,11 +110,9 @@ bool MigrateChromiumShortcutsTask::GetExpectedAppId(
 
   // Check if the shortcut points to chrome_exe.
   std::wstring source;
-  if (FAILED(shell_link->GetPath(WriteInto(&source, MAX_PATH),
-                                 MAX_PATH,
-                                 NULL,
+  if (FAILED(shell_link->GetPath(WriteInto(&source, MAX_PATH), MAX_PATH, NULL,
                                  SLGP_RAWPATH)) ||
-      lstrcmpi(chrome_exe_.value().c_str(), source.c_str()))
+      lstrcmpi(chrome_exe.value().c_str(), source.c_str()))
     return false;
 
   std::wstring arguments;
@@ -245,33 +146,91 @@ bool MigrateChromiumShortcutsTask::GetExpectedAppId(
   return true;
 }
 
-bool MigrateChromiumShortcutsTask::GetShortcutAppId(
-    IShellLink* shell_link,
-    std::wstring* app_id) const {
-  DCHECK(shell_link);
-  DCHECK(app_id);
+void MigrateWin7ShortcutsInPath(
+    const FilePath& chrome_exe, const FilePath& path) {
+  // Enumerate all pinned shortcuts in the given path directly.
+  file_util::FileEnumerator shortcuts_enum(
+      path, false,  // not recursive
+      file_util::FileEnumerator::FILES, FILE_PATH_LITERAL("*.lnk"));
 
-  app_id->clear();
+  for (FilePath shortcut = shortcuts_enum.Next(); !shortcut.empty();
+       shortcut = shortcuts_enum.Next()) {
+    // Load the shortcut.
+    base::win::ScopedComPtr<IShellLink> shell_link;
+    if (FAILED(shell_link.CreateInstance(CLSID_ShellLink, NULL,
+                                         CLSCTX_INPROC_SERVER))) {
+      NOTREACHED();
+      return;
+    }
 
-  base::win::ScopedComPtr<IPropertyStore> property_store;
-  if (FAILED(property_store.QueryFrom(shell_link)))
-    return false;
+    base::win::ScopedComPtr<IPersistFile> persist_file;
+    if (FAILED(persist_file.QueryFrom(shell_link)) ||
+        FAILED(persist_file->Load(shortcut.value().c_str(), STGM_READ))) {
+      NOTREACHED();
+      return;
+    }
 
-  PROPVARIANT appid_value;
-  PropVariantInit(&appid_value);
-  if (FAILED(property_store->GetValue(PKEY_AppUserModel_ID,
-                                      &appid_value)))
-    return false;
+    // Get expected app id from shortcut.
+    std::wstring expected_app_id;
+    if (!GetExpectedAppId(chrome_exe, shell_link, &expected_app_id) ||
+        expected_app_id.empty())
+      continue;
 
-  if (appid_value.vt == VT_LPWSTR ||
-      appid_value.vt == VT_BSTR)
-    app_id->assign(appid_value.pwszVal);
+    // Get existing app id from shortcut if any.
+    std::wstring existing_app_id;
+    GetShortcutAppId(shell_link, &existing_app_id);
 
-  PropVariantClear(&appid_value);
-  return true;
+    if (expected_app_id != existing_app_id) {
+      file_util::UpdateShortcutLink(NULL, shortcut.value().c_str(), NULL, NULL,
+                                    NULL, NULL, 0, expected_app_id.c_str());
+    }
+  }
 }
 
-};
+void MigrateChromiumShortcutsCallback() {
+  // This should run on the file thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+
+  // Get full path of chrome.
+  FilePath chrome_exe;
+  if (!PathService::Get(base::FILE_EXE, &chrome_exe))
+    return;
+
+  // Locations to check for shortcuts migration.
+  static const struct {
+    int location_id;
+    const wchar_t* sub_dir;
+  } kLocations[] = {
+    {
+      base::DIR_APP_DATA,
+      L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar"
+    }, {
+      chrome::DIR_USER_DESKTOP,
+      NULL
+    }, {
+      base::DIR_START_MENU,
+      NULL
+    }, {
+      base::DIR_APP_DATA,
+      L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\StartMenu"
+    }
+  };
+
+  for (int i = 0; i < arraysize(kLocations); ++i) {
+    FilePath path;
+    if (!PathService::Get(kLocations[i].location_id, &path)) {
+      NOTREACHED();
+      continue;
+    }
+
+    if (kLocations[i].sub_dir)
+      path = path.Append(kLocations[i].sub_dir);
+
+    MigrateWin7ShortcutsInPath(chrome_exe, path);
+  }
+}
+
+}  // namespace
 
 bool ShellIntegration::CanSetAsDefaultBrowser() {
   return BrowserDistribution::GetDistribution()->CanSetAsDefault();
@@ -544,5 +503,6 @@ void ShellIntegration::MigrateChromiumShortcuts() {
     return;
 
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, new MigrateChromiumShortcutsTask());
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&MigrateChromiumShortcutsCallback));
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
@@ -21,30 +22,21 @@ using content::BrowserThread;
 
 namespace {
 
-// A Task used to coordinate when the database has finished processing
+// A callback used to coordinate when the database has finished processing
 // requests. See note in BlockTillServiceProcessesRequests for details.
 //
-// When Run() schedules a QuitTask on the message loop it was created with.
-class QuitTask2 : public Task {
- public:
-  QuitTask2() : main_loop_(MessageLoop::current()) {}
-
-  virtual void Run() {
-    main_loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask());
-  }
-
- private:
-  MessageLoop* main_loop_;
-};
+// Schedules a QuitClosure on the message loop it was created with.
+void QuitCallback(MessageLoop* message_loop) {
+  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+}
 
 // Blocks the caller until thread has finished servicing all pending
 // requests.
 static void WaitForThreadToProcessRequests(BrowserThread::ID identifier) {
   // Schedule a task on the thread that is processed after all
   // pending requests on the thread.
-  BrowserThread::PostTask(identifier, FROM_HERE, new QuitTask2());
-  // Run the current message loop. QuitTask2, when run, invokes Quit,
-  // which unblocks this.
+  BrowserThread::PostTask(identifier, FROM_HERE,
+                          base::Bind(&QuitCallback, MessageLoop::current()));
   MessageLoop::current()->Run();
 }
 
