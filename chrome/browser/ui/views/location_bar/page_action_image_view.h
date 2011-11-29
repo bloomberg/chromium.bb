@@ -25,7 +25,7 @@ class MenuRunner;
 class PageActionImageView : public views::ImageView,
                             public ImageLoadingTracker::Observer,
                             public ExtensionContextMenuModel::PopupDelegate,
-                            public ExtensionPopup::Observer,
+                            public views::Widget::Observer,
                             public content::NotificationObserver {
  public:
   PageActionImageView(LocationBarView* owner,
@@ -56,8 +56,8 @@ class PageActionImageView : public views::ImageView,
   // Overridden from ExtensionContextMenuModelModel::Delegate
   virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
 
-  // Overridden from ExtensionPopup::Observer
-  virtual void ExtensionPopupIsClosing(ExtensionPopup* popup) OVERRIDE;
+  // Overridden from views::Widget::Observer
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,

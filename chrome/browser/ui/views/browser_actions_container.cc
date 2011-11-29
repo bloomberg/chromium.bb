@@ -391,6 +391,8 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   if (model_)
     model_->RemoveObserver(this);
   StopShowFolderDropMenuTimer();
+  if (popup_)
+    popup_->GetWidget()->RemoveObserver(this);
   HidePopup();
   DeleteBrowserActionViews();
 }
@@ -509,17 +511,11 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
   // since buttons can be activated from the overflow menu (chevron). In that
   // case we show the popup as originating from the chevron.
   View* reference_view = button->parent()->IsVisible() ? button : chevron_;
-  gfx::Point origin;
-  View::ConvertPointToScreen(reference_view, &origin);
-  gfx::Rect rect = reference_view->bounds();
-  rect.set_origin(origin);
-
   views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
       views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
-
-  popup_ = ExtensionPopup::Show(button->GetPopupUrl(), browser_, rect,
-                                arrow_location, inspect_with_devtools,
-                                this);
+  popup_ = ExtensionPopup::ShowPopup(button->GetPopupUrl(), browser_,
+               reference_view, arrow_location, inspect_with_devtools);
+  popup_->GetWidget()->AddObserver(this);
   popup_button_ = button;
   popup_button_->SetButtonPushed();
 }
@@ -797,9 +793,9 @@ void BrowserActionsContainer::InspectPopup(ExtensionAction* action) {
   OnBrowserActionExecuted(GetBrowserActionView(action)->button(), true);
 }
 
-void BrowserActionsContainer::ExtensionPopupIsClosing(ExtensionPopup* popup) {
-  // ExtensionPopup is ref-counted, so we don't need to delete it.
-  DCHECK_EQ(popup_, popup);
+void BrowserActionsContainer::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(popup_->GetWidget(), widget);
+  popup_->GetWidget()->RemoveObserver(this);
   popup_ = NULL;
   popup_button_->SetButtonNotPushed();
   popup_button_ = NULL;
@@ -817,7 +813,7 @@ void BrowserActionsContainer::MoveBrowserAction(const std::string& extension_id,
 
 void BrowserActionsContainer::HidePopup() {
   if (popup_)
-    popup_->Close();
+    popup_->GetWidget()->Close();
 }
 
 void BrowserActionsContainer::TestExecuteBrowserAction(int index) {

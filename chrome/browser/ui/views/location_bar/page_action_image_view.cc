@@ -61,7 +61,8 @@ PageActionImageView::PageActionImageView(LocationBarView* owner,
 
 PageActionImageView::~PageActionImageView() {
   if (popup_)
-    HidePopup();
+    popup_->GetWidget()->RemoveObserver(this);
+  HidePopup();
 }
 
 void PageActionImageView::ExecuteAction(int button,
@@ -81,21 +82,16 @@ void PageActionImageView::ExecuteAction(int button,
     if (popup_showing)
       return;
 
-    gfx::Rect screen_bounds(GetImageBounds());
-    gfx::Point origin(screen_bounds.origin());
-    View::ConvertPointToScreen(this, &origin);
-    screen_bounds.set_origin(origin);
-
     views::BubbleBorder::ArrowLocation arrow_location = base::i18n::IsRTL() ?
         views::BubbleBorder::TOP_LEFT : views::BubbleBorder::TOP_RIGHT;
 
-    popup_ = ExtensionPopup::Show(
+    popup_ = ExtensionPopup::ShowPopup(
         page_action_->GetPopupUrl(current_tab_id_),
         owner_->browser(),
-        screen_bounds,
+        this,
         arrow_location,
-        inspect_with_devtools,
-        this);  // ExtensionPopup::Observer
+        inspect_with_devtools);
+    popup_->GetWidget()->AddObserver(this);
   } else {
     Profile* profile = owner_->browser()->profile();
     ExtensionService* service = profile->GetExtensionService();
@@ -238,9 +234,9 @@ void PageActionImageView::InspectPopup(ExtensionAction* action) {
                 true);  // |inspect_with_devtools|.
 }
 
-void PageActionImageView::ExtensionPopupIsClosing(ExtensionPopup* popup) {
-  DCHECK_EQ(popup_, popup);
-  // ExtensionPopup is ref-counted, so we don't need to delete it.
+void PageActionImageView::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(popup_->GetWidget(), widget);
+  popup_->GetWidget()->RemoveObserver(this);
   popup_ = NULL;
 }
 
@@ -256,5 +252,5 @@ void PageActionImageView::Observe(int type,
 
 void PageActionImageView::HidePopup() {
   if (popup_)
-    popup_->Close();
+    popup_->GetWidget()->Close();
 }

@@ -30,6 +30,7 @@ views::Widget* CreateViewsBubble(views::BubbleDelegateView* delegate);
 // is locked, use CreateViewsBubble instead.
 views::Widget* CreateViewsBubbleAboveLockScreen(
     views::BubbleDelegateView* delegate);
+
 }  // namespace browser
 
 #endif  // CHROME_BROWSER_UI_VIEWS_WINDOW_H_

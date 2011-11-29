@@ -263,7 +263,7 @@ class BrowserActionsContainer
       public ExtensionToolbarModel::Observer,
       public BrowserActionOverflowMenuController::Observer,
       public ExtensionContextMenuModel::PopupDelegate,
-      public ExtensionPopup::Observer {
+      public views::Widget::Observer {
  public:
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
   virtual ~BrowserActionsContainer();
@@ -358,8 +358,8 @@ class BrowserActionsContainer
   // Overridden from ExtensionContextMenuModel::PopupDelegate
   virtual void InspectPopup(ExtensionAction* action) OVERRIDE;
 
-  // Overriden from ExtensionPopup::Delegate
-  virtual void ExtensionPopupIsClosing(ExtensionPopup* popup) OVERRIDE;
+  // Overridden from views::Widget::Observer
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // Moves a browser action with |id| to |new_index|.
   void MoveBrowserAction(const std::string& extension_id, size_t new_index);

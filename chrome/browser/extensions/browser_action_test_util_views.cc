@@ -67,7 +67,7 @@ bool BrowserActionTestUtil::HasPopup() {
 }
 
 gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
-  return GetContainer(browser_)->TestGetPopup()->view()->bounds();
+  return GetContainer(browser_)->TestGetPopup()->bounds();
 }
 
 bool BrowserActionTestUtil::HidePopup() {
