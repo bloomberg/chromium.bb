@@ -157,7 +157,7 @@ void ConnectionToClient::NotifyIfChannelsReady() {
 
 void ConnectionToClient::CloseOnError() {
   CloseChannels();
-  handler_->OnConnectionFailed(this);
+  handler_->OnConnectionFailed(this, session_->error());
 }
 
 void ConnectionToClient::CloseChannels() {

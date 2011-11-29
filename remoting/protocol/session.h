@@ -38,7 +38,7 @@ class Session : public base::NonThreadSafe {
     // session-accept.
     CONNECTING,
 
-    // Session has been accepted, but channels are connected yet.
+    // Session has been accepted.
     CONNECTED,
 
     // Session has been closed.
@@ -54,6 +54,7 @@ class Session : public base::NonThreadSafe {
     PEER_IS_OFFLINE,
     SESSION_REJECTED,
     INCOMPATIBLE_PROTOCOL,
+    AUTHENTICATION_FAILED,
     CHANNEL_CONNECTION_ERROR,
   };
 

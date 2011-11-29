@@ -39,7 +39,8 @@ class ConnectionToClient : public base::NonThreadSafe {
     virtual void OnConnectionClosed(ConnectionToClient* connection) = 0;
 
     // Called when the network connection has failed.
-    virtual void OnConnectionFailed(ConnectionToClient* connection) = 0;
+    virtual void OnConnectionFailed(ConnectionToClient* connection,
+                                    Session::Error error) = 0;
 
     // Called when sequence number is updated.
     virtual void OnSequenceNumberUpdated(ConnectionToClient* connection,

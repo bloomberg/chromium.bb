@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "remoting/base/encoder.h"
-#include "remoting/host/access_verifier.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
@@ -66,14 +65,12 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public protocol::SessionManager::Listener {
  public:
   // Factory methods that must be used to create ChromotingHost
-  // instances.  Returned instance takes ownership of
-  // |access_verifier|. It does NOT take ownership of |context|,
-  // and |environment|, but they should not be deleted until
-  // returned host is destroyed.
+  // instances. It does NOT take ownership of |context|, and
+  // |environment|, but they should not be deleted until returned host
+  // is destroyed.
   static ChromotingHost* Create(ChromotingHostContext* context,
                                 MutableHostConfig* config,
                                 DesktopEnvironment* environment,
-                                AccessVerifier* access_verifier,
                                 bool allow_nat_traversal);
 
   // Asynchronously start the host process.
@@ -103,6 +100,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ////////////////////////////////////////////////////////////////////////////
   // ClientSession::EventHandler implementation.
   virtual void OnSessionAuthenticated(ClientSession* client) OVERRIDE;
+  virtual void OnSessionAuthenticationFailed(ClientSession* client) OVERRIDE;
   virtual void OnSessionClosed(ClientSession* session) OVERRIDE;
   virtual void OnSessionSequenceNumber(ClientSession* session,
                                        int64 sequence_number) OVERRIDE;
@@ -152,12 +150,10 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
     kStopped,
   };
 
-  // Takes ownership of |access_verifier|, and adds a reference to
-  // |config|. Caller keeps ownership of |context| and |environment|.
+  // Caller keeps ownership of |context| and |environment|.
   ChromotingHost(ChromotingHostContext* context,
                  MutableHostConfig* config,
                  DesktopEnvironment* environment,
-                 AccessVerifier* access_verifier,
                  bool allow_nat_traversal);
   virtual ~ChromotingHost();
 
@@ -187,7 +183,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ChromotingHostContext* context_;
   DesktopEnvironment* desktop_environment_;
   scoped_refptr<MutableHostConfig> config_;
-  scoped_ptr<AccessVerifier> access_verifier_;
   bool allow_nat_traversal_;
 
   // Connection objects.

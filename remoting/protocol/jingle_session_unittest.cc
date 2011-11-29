@@ -15,6 +15,7 @@
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
+#include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/jingle_session.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -54,7 +55,6 @@ const int kMessageSize = 1024;
 const int kMessages = 100;
 const int kTestDataSize = kMessages * kMessageSize;
 const int kUdpWriteDelayMs = 10;
-const char kTestToken[] = "a_dummy_token";
 const char kChannelName[] = "test_channel";
 
 const char kHostJid[] = "host1@gmail.com/123";
@@ -244,7 +244,8 @@ class JingleSessionTest : public testing::Test {
     }
 
     client_session_.reset(client_server_->Connect(
-        kHostJid, kTestHostPublicKey, kTestToken,
+        kHostJid, kTestHostPublicKey,
+        GenerateSupportAuthToken(kClientJid, kTestSharedSecret),
         CandidateSessionConfig::CreateDefault(),
         base::Bind(&MockSessionCallback::OnStateChange,
                    base::Unretained(&client_connection_callback_))));
@@ -669,7 +670,8 @@ TEST_F(JingleSessionTest, RejectConnection) {
   }
 
   client_session_.reset(client_server_->Connect(
-      kHostJid, kTestHostPublicKey, kTestToken,
+      kHostJid, kTestHostPublicKey,
+      GenerateSupportAuthToken(kClientJid, kTestSharedSecret),
       CandidateSessionConfig::CreateDefault(),
       base::Bind(&MockSessionCallback::OnStateChange,
                  base::Unretained(&client_connection_callback_))));

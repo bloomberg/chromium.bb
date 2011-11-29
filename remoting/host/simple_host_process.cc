@@ -41,12 +41,11 @@
 #include "remoting/host/disconnect_window.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/heartbeat_sender.h"
+#include "remoting/host/host_secret.h"
 #include "remoting/host/local_input_monitor.h"
 #include "remoting/host/log_to_server.h"
 #include "remoting/host/json_host_config.h"
 #include "remoting/host/register_support_host_request.h"
-#include "remoting/host/self_access_verifier.h"
-#include "remoting/host/support_access_verifier.h"
 #include "remoting/proto/video.pb.h"
 
 #if defined(TOOLKIT_USES_GTK)
@@ -133,27 +132,16 @@ class SimpleHost {
     // ChromotingHost could cause a crash condition if SetIT2MeAccessCode is
     // called after the ChromotingHost is destroyed (for example, at shutdown).
     // Fix this.
-    scoped_ptr<remoting::AccessVerifier> access_verifier;
     scoped_ptr<remoting::RegisterSupportHostRequest> register_request;
     scoped_ptr<remoting::HeartbeatSender> heartbeat_sender;
     scoped_ptr<remoting::LogToServer> log_to_server;
     if (is_it2me_) {
-      scoped_ptr<remoting::SupportAccessVerifier> support_access_verifier(
-          new remoting::SupportAccessVerifier());
       register_request.reset(new remoting::RegisterSupportHostRequest());
       if (!register_request->Init(
               config, base::Bind(&SimpleHost::SetIT2MeAccessCode,
-                                 base::Unretained(this),
-                                 support_access_verifier.get()))) {
+                                 base::Unretained(this)))) {
         return 1;
       }
-      access_verifier.reset(support_access_verifier.release());
-    } else {
-      scoped_ptr<remoting::SelfAccessVerifier> self_access_verifier(
-          new remoting::SelfAccessVerifier());
-      if (!self_access_verifier->Init(config))
-        return 1;
-      access_verifier.reset(self_access_verifier.release());
     }
     log_to_server.reset(new remoting::LogToServer(
         context.network_message_loop()));
@@ -181,8 +169,8 @@ class SimpleHost {
       desktop_environment.reset(DesktopEnvironment::Create(&context));
     }
 
-    host_ = ChromotingHost::Create(&context, config, desktop_environment.get(),
-                                   access_verifier.release(), false);
+    host_ = ChromotingHost::Create(
+        &context, config, desktop_environment.get(), false);
     host_->set_it2me(is_it2me_);
 
     if (protocol_config_.get()) {
@@ -227,12 +215,11 @@ class SimpleHost {
  private:
   // TODO(wez): This only needs to be a member because it needs access to the
   // ChromotingHost, which has to be created after the SupportAccessVerifier.
-  void SetIT2MeAccessCode(remoting::SupportAccessVerifier* access_verifier,
-                          bool successful, const std::string& support_id,
+  void SetIT2MeAccessCode(bool successful, const std::string& support_id,
                           const base::TimeDelta& lifetime) {
-    access_verifier->OnIT2MeHostRegistered(successful, support_id);
     if (successful) {
-      std::string access_code = support_id + access_verifier->host_secret();
+      std::string host_secret = remoting::GenerateSupportHostSecret();
+      std::string access_code = support_id + host_secret;
       std::cout << "Support id: " << access_code << std::endl;
 
       // Tell the ChromotingHost the access code, to use as shared-secret.

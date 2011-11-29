@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 #define REMOTING_HOST_HOST_MOCK_OBJECTS_H_
 
-#include "remoting/host/access_verifier.h"
 #include "remoting/host/capturer.h"
 #include "remoting/host/curtain.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -99,6 +98,7 @@ class MockClientSessionEventHandler : public ClientSession::EventHandler {
   virtual ~MockClientSessionEventHandler();
 
   MOCK_METHOD1(OnSessionAuthenticated, void(ClientSession* client));
+  MOCK_METHOD1(OnSessionAuthenticationFailed, void(ClientSession* client));
   MOCK_METHOD1(OnSessionClosed, void(ClientSession* client));
   MOCK_METHOD1(OnSessionFailed, void(ClientSession* client));
   MOCK_METHOD2(OnSessionSequenceNumber, void(ClientSession* client,
@@ -129,18 +129,6 @@ class MockUserAuthenticator : public UserAuthenticator {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockUserAuthenticator);
-};
-
-class MockAccessVerifier : public AccessVerifier {
- public:
-  MockAccessVerifier();
-  virtual ~MockAccessVerifier();
-
-  MOCK_METHOD2(VerifyPermissions, bool(const std::string& client_jid,
-                                       const std::string& token));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockAccessVerifier);
 };
 
 }  // namespace remoting

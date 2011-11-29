@@ -109,9 +109,12 @@ void ClientSession::OnConnectionClosed(
 }
 
 void ClientSession::OnConnectionFailed(
-    protocol::ConnectionToClient* connection) {
+    protocol::ConnectionToClient* connection,
+    protocol::Session::Error error) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(connection_.get(), connection);
+  if (error == protocol::Session::AUTHENTICATION_FAILED)
+    event_handler_->OnSessionAuthenticationFailed(this);
   // TODO(sergeyu): Log failure reason?
   event_handler_->OnSessionClosed(this);
 }

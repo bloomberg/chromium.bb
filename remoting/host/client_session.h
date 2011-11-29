@@ -31,8 +31,19 @@ class ClientSession : public protocol::HostStub,
    public:
     virtual ~EventHandler() {}
 
+    // Called after authentication has finished successfully.
     virtual void OnSessionAuthenticated(ClientSession* client) = 0;
+
+    // Called after authentication has failed. Must not tear down this
+    // object. OnSessionClosed() is notified after this handler
+    // returns.
+    virtual void OnSessionAuthenticationFailed(ClientSession* client) = 0;
+
+    // Called after connection has failed or after the client closed it.
     virtual void OnSessionClosed(ClientSession* client) = 0;
+
+    // Called to notify of each message's sequence number. The
+    // callback must not tear down this object.
     virtual void OnSessionSequenceNumber(ClientSession* client,
                                          int64 sequence_number) = 0;
   };
@@ -54,8 +65,8 @@ class ClientSession : public protocol::HostStub,
       protocol::ConnectionToClient* connection) OVERRIDE;
   virtual void OnConnectionClosed(
       protocol::ConnectionToClient* connection) OVERRIDE;
-  virtual void OnConnectionFailed(
-      protocol::ConnectionToClient* connection) OVERRIDE;
+  virtual void OnConnectionFailed(protocol::ConnectionToClient* connection,
+                                  protocol::Session::Error error) OVERRIDE;
   virtual void OnSequenceNumberUpdated(
       protocol::ConnectionToClient* connection, int64 sequence_number) OVERRIDE;
 

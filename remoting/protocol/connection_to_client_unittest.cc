@@ -98,7 +98,9 @@ TEST_F(ConnectionToClientTest, StateChange) {
   session_->state_change_callback().Run(protocol::Session::CLOSED);
   message_loop_.RunAllPending();
 
-  EXPECT_CALL(handler_, OnConnectionFailed(viewer_.get()));
+  EXPECT_CALL(handler_, OnConnectionFailed(
+      viewer_.get(), Session::SESSION_REJECTED));
+  session_->set_error(Session::SESSION_REJECTED);
   session_->state_change_callback().Run(protocol::Session::FAILED);
   message_loop_.RunAllPending();
 }

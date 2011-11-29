@@ -118,8 +118,7 @@ class HostNPScriptObject : public HostStatusObserver {
   void LogDebugInfo(const std::string& message);
 
   // Callbacks invoked during session setup.
-  void OnReceivedSupportID(remoting::SupportAccessVerifier* access_verifier,
-                           bool success,
+  void OnReceivedSupportID(bool success,
                            const std::string& support_id,
                            const base::TimeDelta& lifetime);
   void NotifyAccessCode(bool success);

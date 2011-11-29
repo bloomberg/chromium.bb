@@ -14,6 +14,7 @@
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 #include "remoting/base/constants.h"
+#include "remoting/protocol/auth_util.h"
 #include "remoting/protocol/jingle_datagram_connector.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/jingle_stream_connector.h"
@@ -99,6 +100,7 @@ void JingleSession::CloseInternal(int result, Error error) {
           reason = cricket::STR_TERMINATE_SUCCESS;
           break;
         case SESSION_REJECTED:
+        case AUTHENTICATION_FAILED:
           reason = cricket::STR_TERMINATE_DECLINE;
           break;
         case INCOMPATIBLE_PROTOCOL:
@@ -395,6 +397,9 @@ void JingleSession::AcceptConnection() {
     delete this;
     return;
   }
+
+  if (!VerifySupportAuthToken(jid_, shared_secret_, initiator_token()))
+    CloseInternal(net::ERR_CONNECTION_FAILED, AUTHENTICATION_FAILED);
 }
 
 void JingleSession::AddChannelConnector(

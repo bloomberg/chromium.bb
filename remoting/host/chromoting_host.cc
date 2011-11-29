@@ -20,7 +20,6 @@
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
 #include "remoting/host/screen_recorder.h"
-#include "remoting/host/user_authenticator.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/connection_to_client.h"
 #include "remoting/protocol/client_stub.h"
@@ -38,21 +37,17 @@ namespace remoting {
 ChromotingHost* ChromotingHost::Create(ChromotingHostContext* context,
                                        MutableHostConfig* config,
                                        DesktopEnvironment* environment,
-                                       AccessVerifier* access_verifier,
                                        bool allow_nat_traversal) {
-  return new ChromotingHost(context, config, environment, access_verifier,
-                            allow_nat_traversal);
+  return new ChromotingHost(context, config, environment, allow_nat_traversal);
 }
 
 ChromotingHost::ChromotingHost(ChromotingHostContext* context,
                                MutableHostConfig* config,
                                DesktopEnvironment* environment,
-                               AccessVerifier* access_verifier,
                                bool allow_nat_traversal)
     : context_(context),
       desktop_environment_(environment),
       config_(config),
-      access_verifier_(access_verifier),
       allow_nat_traversal_(allow_nat_traversal),
       stopping_recorders_(0),
       state_(kInitial),
@@ -76,7 +71,6 @@ void ChromotingHost::Start() {
 
   LOG(INFO) << "Starting host";
   DCHECK(!signal_strategy_.get());
-  DCHECK(access_verifier_.get());
 
   // Make sure this object is not started.
   if (state_ != kInitial)
@@ -208,6 +202,14 @@ void ChromotingHost::OnSessionAuthenticated(ClientSession* client) {
   desktop_environment_->OnConnect(username);
 }
 
+void ChromotingHost::OnSessionAuthenticationFailed(ClientSession* client) {
+  // Notify observers.
+  for (StatusObserverList::iterator it = status_observers_.begin();
+       it != status_observers_.end(); ++it) {
+    (*it)->OnAccessDenied();
+  }
+}
+
 void ChromotingHost::OnSessionClosed(ClientSession* client) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
 
@@ -303,19 +305,6 @@ void ChromotingHost::OnIncomingSession(
     return;
   }
 
-  // Check that the client has access to the host.
-  if (!access_verifier_->VerifyPermissions(session->jid(),
-                                           session->initiator_token())) {
-    *response = protocol::SessionManager::DECLINE;
-
-    // Notify observers.
-    for (StatusObserverList::iterator it = status_observers_.begin();
-         it != status_observers_.end(); ++it) {
-      (*it)->OnAccessDenied();
-    }
-    return;
-  }
-
   // If we are running Me2Mom and already have an authenticated client then
   // one of the connections may be an attacker, so both are suspect.
   if (is_it2me_ && AuthenticatedClientsCount() > 0) {
@@ -341,9 +330,6 @@ void ChromotingHost::OnIncomingSession(
   }
 
   session->set_config(config);
-  session->set_receiver_token(
-      GenerateHostAuthToken(session->initiator_token()));
-
   // Provide the Access Code as shared secret for SSL channel authentication.
   session->set_shared_secret(access_code_);
 
@@ -414,12 +400,6 @@ Encoder* ChromotingHost::CreateEncoder(const protocol::SessionConfig& config) {
   }
 
   return NULL;
-}
-
-std::string ChromotingHost::GenerateHostAuthToken(
-    const std::string& encoded_client_token) {
-  // TODO(ajwong): Return the signature of this instead.
-  return encoded_client_token;
 }
 
 int ChromotingHost::AuthenticatedClientsCount() const {

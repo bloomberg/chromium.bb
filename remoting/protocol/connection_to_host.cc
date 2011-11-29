@@ -167,6 +167,7 @@ void ConnectionToHost::OnSessionStateChange(
           CloseOnError(HOST_IS_OFFLINE);
           break;
         case Session::SESSION_REJECTED:
+        case Session::AUTHENTICATION_FAILED:
           CloseOnError(SESSION_REJECTED);
           break;
         case Session::INCOMPATIBLE_PROTOCOL:

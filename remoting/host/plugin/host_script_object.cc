@@ -16,11 +16,11 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_key_pair.h"
+#include "remoting/host/host_secret.h"
 #include "remoting/host/in_memory_host_config.h"
 #include "remoting/host/plugin/host_log_handler.h"
 #include "remoting/host/plugin/policy_hack/nat_policy.h"
 #include "remoting/host/register_support_host_request.h"
-#include "remoting/host/support_access_verifier.h"
 
 namespace remoting {
 
@@ -480,10 +480,6 @@ void HostNPScriptObject::FinishConnect(
   host_config->SetString(kXmppAuthTokenConfigPath, auth_token);
   host_config->SetString(kXmppAuthServiceConfigPath, auth_service);
 
-  // Create an access verifier and fetch the host secret.
-  scoped_ptr<SupportAccessVerifier> access_verifier;
-  access_verifier.reset(new SupportAccessVerifier());
-
   // Generate a key pair for the Host to use.
   // TODO(wez): Move this to the worker thread.
   HostKeyPair host_key_pair;
@@ -496,8 +492,7 @@ void HostNPScriptObject::FinishConnect(
   if (!register_request->Init(
           host_config.get(),
           base::Bind(&HostNPScriptObject::OnReceivedSupportID,
-                     base::Unretained(this),
-                     access_verifier.get()))) {
+                     base::Unretained(this)))) {
     SetState(kError);
     return;
   }
@@ -517,7 +512,7 @@ void HostNPScriptObject::FinishConnect(
   LOG(INFO) << "NAT state: " << nat_traversal_enabled_;
   host_ = ChromotingHost::Create(
       &host_context_, host_config_, desktop_environment_.get(),
-      access_verifier.release(), nat_traversal_enabled_);
+      nat_traversal_enabled_);
   host_->AddStatusObserver(this);
   host_->AddStatusObserver(register_request_.get());
   if (enable_log_to_server_) {
@@ -644,7 +639,6 @@ void HostNPScriptObject::OnNatPolicyUpdate(bool nat_traversal_enabled) {
 }
 
 void HostNPScriptObject::OnReceivedSupportID(
-    SupportAccessVerifier* access_verifier,
     bool success,
     const std::string& support_id,
     const base::TimeDelta& lifetime) {
@@ -657,8 +651,8 @@ void HostNPScriptObject::OnReceivedSupportID(
     return;
   }
 
-  access_verifier->OnIT2MeHostRegistered(success, support_id);
-  std::string access_code = support_id + access_verifier->host_secret();
+  std::string host_secret = GenerateSupportHostSecret();
+  std::string access_code = support_id + host_secret;
   host_->set_access_code(access_code);
 
   {

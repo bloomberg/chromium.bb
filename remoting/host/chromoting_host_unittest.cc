@@ -97,11 +97,9 @@ class ChromotingHostTest : public testing::Test {
         new DesktopEnvironment(&context_, capturer, event_executor_, curtain_,
                                disconnect_window_, continue_window_,
                                local_input_monitor_));
-    MockAccessVerifier* access_verifier = new MockAccessVerifier();
 
-    host_ = ChromotingHost::Create(&context_, config_,
-                                   desktop_environment_.get(),
-                                   access_verifier, false);
+    host_ = ChromotingHost::Create(
+        &context_, config_,desktop_environment_.get(), false);
     session_ = new MockSession();
     session2_ = new MockSession();
     session_config_ = SessionConfig::GetDefault();

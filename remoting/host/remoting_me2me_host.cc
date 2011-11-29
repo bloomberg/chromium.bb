@@ -28,7 +28,6 @@
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/json_host_config.h"
-#include "remoting/host/self_access_verifier.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "ui/gfx/gtk_util.h"
@@ -87,21 +86,12 @@ class HostProcess {
       return 1;
     }
 
-    // Initialize AccessVerifier.
-    scoped_ptr<remoting::SelfAccessVerifier> self_access_verifier(
-        new remoting::SelfAccessVerifier());
-    if (!self_access_verifier->Init(host_config_)) {
-      context.Stop();
-      return 1;
-    }
-
     // Create the DesktopEnvironment and ChromotingHost.
     scoped_ptr<DesktopEnvironment> desktop_environment(
         DesktopEnvironment::Create(&context));
 
-    host_ = ChromotingHost::Create(&context, host_config_,
-                                   desktop_environment.get(),
-                                   self_access_verifier.release(), false);
+    host_ = ChromotingHost::Create(
+        &context, host_config_, desktop_environment.get(), false);
 
     // Initialize HeartbeatSender.
     scoped_ptr<remoting::HeartbeatSender> heartbeat_sender(

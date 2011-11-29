@@ -63,8 +63,4 @@ MockUserAuthenticator::MockUserAuthenticator() {}
 
 MockUserAuthenticator::~MockUserAuthenticator() {}
 
-MockAccessVerifier::MockAccessVerifier() {}
-
-MockAccessVerifier::~MockAccessVerifier() {}
-
 }  // namespace remoting
