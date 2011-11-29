@@ -78,6 +78,11 @@ def Main(args):
   nacl_integration_script = os.path.join(
       src_dir, 'native_client/build/buildbot_chrome_nacl_stage.py')
   cmd = [sys.executable,
+         '/b/build/scripts/slave/runtest.py',
+         '--run-python-script',
+         '--target=',
+         '--build-dir=',
+         '--',
          nacl_integration_script,
          '--disable_tests=%s' % ','.join(tests_to_disable)] + args
   sys.stdout.write('Running %s\n' % ' '.join(cmd))
