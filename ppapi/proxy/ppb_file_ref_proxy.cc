@@ -73,7 +73,7 @@ class FileRef : public FileRefImpl {
 
 FileRef::FileRef(const PPB_FileRef_CreateInfo& info)
     : FileRefImpl(FileRefImpl::InitAsProxy(), info),
-      next_callback_id_(0) {
+      next_callback_id_(1) {
 }
 
 FileRef::~FileRef() {
