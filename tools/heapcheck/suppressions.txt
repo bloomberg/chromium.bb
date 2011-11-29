@@ -303,18 +303,6 @@
   fun:MessageLoop::RunTask
 }
 {
-  bug_38487
-  Heapcheck:Leak
-  fun:browser_sync::TypedUrlDataTypeController::Stop
-  fun:browser_sync::DataTypeManagerImpl::FinishStop
-  fun:browser_sync::DataTypeManagerImpl::Stop
-  fun:ProfileSyncService::Shutdown
-  fun:~ProfileSyncService
-  fun:~TestingProfileSyncService
-  fun:scoped_ptr::reset
-  fun:ProfileSyncServiceTypedUrlTest::TearDown
-}
-{
   bug_38490
   Heapcheck:Leak
   ...
@@ -1767,4 +1755,44 @@
    fun:WTF::String::fromUTF8
    fun:WebKit::WebString::fromUTF8
    fun:PeerConnectionHandlerTest_Basic_Test::TestBody
+}
+{
+   bug_105667_a
+   Heapcheck:Leak
+   fun:browser_sync::TypedUrlDataTypeController::StartAssociationAsync
+   fun:browser_sync::NonFrontendDataTypeController::Start
+   fun:browser_sync::DataTypeManagerImpl::StartNextType
+   fun:browser_sync::DataTypeManagerImpl::DownloadReady
+   fun:base::internal::RunnableAdapter::Run
+   fun:base::internal::InvokeHelper::MakeItSo
+   fun:base::internal::Invoker::Run
+   fun:base::Callback::Run
+   fun:browser_sync::SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop
+   fun:browser_sync::SyncBackendHostForProfileSyncTest::StartConfiguration
+   fun:browser_sync::SyncBackendHost::ConfigureDataTypes
+   fun:browser_sync::DataTypeManagerImpl::Restart
+   fun:browser_sync::DataTypeManagerImpl::ConfigureImpl
+   fun:browser_sync::DataTypeManagerImpl::Configure
+   fun:ProfileSyncService::ConfigureDataTypeManager
+   fun:ProfileSyncService::OnBackendInitialized
+   fun:TestProfileSyncService::OnBackendInitialized
+   fun:browser_sync::SyncBackendHost::HandleInitializationCompletedOnFrontendLoop
+   fun:browser_sync::SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop
+   fun:base::internal::RunnableAdapter::Run
+   fun:base::internal::InvokeHelper::MakeItSo
+   fun:base::internal::Invoker::Run
+   fun:base::Callback::Run
+}
+{
+   bug_105667_b
+   Heapcheck:Leak
+   fun:browser_sync::TypedUrlDataTypeController::StopAssociationAsync
+   fun:browser_sync::NonFrontendDataTypeController::Stop
+   fun:browser_sync::DataTypeManagerImpl::FinishStop
+   fun:browser_sync::DataTypeManagerImpl::Stop
+   fun:ProfileSyncService::Shutdown
+   fun:~ProfileSyncService
+   fun:~TestProfileSyncService
+   fun:scoped_ptr::reset
+   fun:ProfileSyncServiceTypedUrlTest::TearDown
 }

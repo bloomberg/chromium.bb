@@ -5140,6 +5140,46 @@
    fun:_ZN20NavigationController7LoadURLERK4GURLS2_N7content14PageTransitionERKSs
    fun:_ZN11BalloonHost4InitEv
 }
+{
+   bug_105667_a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12browser_sync26TypedUrlDataTypeController21StartAssociationAsyncEv
+   fun:_ZN12browser_sync29NonFrontendDataTypeController5StartEP14CallbackRunnerI6Tuple2INS_18DataTypeController11StartResultERK9SyncErrorEE
+   fun:_ZN12browser_sync19DataTypeManagerImpl13StartNextTypeEv
+   fun:_ZN12browser_sync19DataTypeManagerImpl13DownloadReadyEb
+   fun:_ZN4base8internal15RunnableAdapterIMN12browser_sync19DataTypeManagerImplEFvbEE3RunEPS3_RKb
+   fun:_ZN4base8internal12InvokeHelperILb1EvNS0_15RunnableAdapterIMN12browser_sync19DataTypeManagerImplEFvbEEEFvRKNS_7WeakPtrIS4_EERKbEE8MakeItSoES7_SB_SD_
+   fun:_ZN4base8internal7InvokerILi1ENS0_9BindStateINS0_15RunnableAdapterIMN12browser_sync19DataTypeManagerImplEFvbEEEFvPS5_bEFvNS_7WeakPtrIS5_EEEEESA_E3RunEPNS0_13BindStateBaseERKb
+   fun:_ZNK4base8CallbackIFvbEE3RunERKb
+   fun:_ZN12browser_sync15SyncBackendHost38FinishConfigureDataTypesOnFrontendLoopEv
+   fun:_ZN12browser_sync33SyncBackendHostForProfileSyncTest18StartConfigurationERKN4base8CallbackIFvvEEE
+   fun:_ZN12browser_sync15SyncBackendHost18ConfigureDataTypesERKSt3setIN8syncable9ModelTypeESt4lessIS3_ESaIS3_EES9_N8sync_api15ConfigureReasonEN4base8CallbackIFvbEEEb
+   fun:_ZN12browser_sync19DataTypeManagerImpl7RestartEN8sync_api15ConfigureReasonEb
+   fun:_ZN12browser_sync19DataTypeManagerImpl13ConfigureImplERKSt3setIN8syncable9ModelTypeESt4lessIS3_ESaIS3_EEN8sync_api15ConfigureReasonEb
+   fun:_ZN12browser_sync19DataTypeManagerImpl9ConfigureERKSt3setIN8syncable9ModelTypeESt4lessIS3_ESaIS3_EEN8sync_api15ConfigureReasonE
+   fun:_ZN18ProfileSyncService24ConfigureDataTypeManagerEv
+   fun:_ZN18ProfileSyncService20OnBackendInitializedERKN12browser_sync10WeakHandleINS0_9JsBackendEEEb
+   fun:_ZN22TestProfileSyncService20OnBackendInitializedERKN12browser_sync10WeakHandleINS0_9JsBackendEEEb
+   fun:_ZN12browser_sync15SyncBackendHost43HandleInitializationCompletedOnFrontendLoopERKNS_10WeakHandleINS_9JsBackendEEEb
+   fun:_ZN12browser_sync15SyncBackendHost4Core43HandleInitializationCompletedOnFrontendLoopERKNS_10WeakHandleINS_9JsBackendEEEb
+   fun:_ZN4base8internal15RunnableAdapterIMN12browser_sync15SyncBackendHost4CoreEFvRKNS2_10WeakHandleINS2_9JsBackendEEEbEE3RunEPS4_S9_RKb
+   fun:_ZN4base8internal12InvokeHelperILb0EvNS0_15RunnableAdapterIMN12browser_sync15SyncBackendHost4CoreEFvRKNS3_10WeakHandleINS3_9JsBackendEEEbEEEFvRKPS5_SA_RKbEE8MakeItSoESD_SG_SA_SI_
+}
+{
+   bug_105667_b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12browser_sync26TypedUrlDataTypeController20StopAssociationAsyncEv
+   fun:_ZN12browser_sync29NonFrontendDataTypeController4StopEv
+   fun:_ZN12browser_sync19DataTypeManagerImpl10FinishStopEv
+   fun:_ZN12browser_sync19DataTypeManagerImpl4StopEv
+   fun:_ZN18ProfileSyncService8ShutdownEb
+   fun:_ZN18ProfileSyncServiceD2Ev
+   fun:_ZN22TestProfileSyncServiceD0Ev
+   fun:_ZN10scoped_ptrI22TestProfileSyncServiceE5resetEPS0_
+   fun:_ZN30ProfileSyncServiceTypedUrlTest8TearDownEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
