@@ -145,7 +145,8 @@ RenderTextWin::RenderTextWin()
     : RenderText(),
       script_control_(),
       script_state_(),
-      string_width_(0) {
+      string_width_(0),
+      needs_layout_(false) {
   // Omitting default constructors for script_* would leave POD uninitialized.
   HRESULT hr = 0;
 
@@ -168,10 +169,12 @@ RenderTextWin::~RenderTextWin() {
 }
 
 int RenderTextWin::GetStringWidth() {
+  EnsureLayout();
   return string_width_;
 }
 
 void RenderTextWin::Draw(Canvas* canvas) {
+  EnsureLayout();
   DrawSelection(canvas);
   DrawVisualText(canvas);
   DrawCursor(canvas);
@@ -181,6 +184,7 @@ SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
   if (text().empty())
     return SelectionModel();
 
+  EnsureLayout();
   // Find the run that contains the point and adjust the argument location.
   Point p(ToTextPoint(point));
   size_t run_index = GetRunContainingPoint(p);
@@ -210,6 +214,8 @@ SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
 
 Rect RenderTextWin::GetCursorBounds(const SelectionModel& selection,
                                     bool insert_mode) {
+  EnsureLayout();
+
   // Highlight the logical cursor (selection end) when not in insert mode.
   size_t pos = insert_mode ? selection.caret_pos() : selection.selection_end();
   size_t run_index = GetRunContainingPosition(pos);
@@ -262,6 +268,8 @@ Rect RenderTextWin::GetCursorBounds(const SelectionModel& selection,
 SelectionModel RenderTextWin::GetLeftSelectionModel(
     const SelectionModel& selection,
     BreakType break_type) {
+  EnsureLayout();
+
   if (break_type == LINE_BREAK || text().empty())
     return LeftEndSelectionModel();
   if (break_type == CHARACTER_BREAK)
@@ -273,6 +281,8 @@ SelectionModel RenderTextWin::GetLeftSelectionModel(
 SelectionModel RenderTextWin::GetRightSelectionModel(
     const SelectionModel& selection,
     BreakType break_type) {
+  EnsureLayout();
+
   if (break_type == LINE_BREAK || text().empty())
     return RightEndSelectionModel();
   if (break_type == CHARACTER_BREAK)
@@ -284,6 +294,8 @@ SelectionModel RenderTextWin::GetRightSelectionModel(
 SelectionModel RenderTextWin::LeftEndSelectionModel() {
   if (text().empty())
     return SelectionModel(0, 0, SelectionModel::LEADING);
+
+  EnsureLayout();
   size_t cursor = base::i18n::IsRTL() ? text().length() : 0;
   internal::TextRun* run = runs_[visual_to_logical_[0]];
   bool rtl = run->script_analysis.fRTL;
@@ -296,6 +308,8 @@ SelectionModel RenderTextWin::LeftEndSelectionModel() {
 SelectionModel RenderTextWin::RightEndSelectionModel() {
   if (text().empty())
     return SelectionModel(0, 0, SelectionModel::LEADING);
+
+  EnsureLayout();
   size_t cursor = base::i18n::IsRTL() ? 0 : text().length();
   internal::TextRun* run = runs_[visual_to_logical_[runs_.size() - 1]];
   bool rtl = run->script_analysis.fRTL;
@@ -306,6 +320,7 @@ SelectionModel RenderTextWin::RightEndSelectionModel() {
 }
 
 std::vector<Rect> RenderTextWin::GetSubstringBounds(size_t from, size_t to) {
+  DCHECK(!needs_layout_);
   ui::Range range(from, to);
   DCHECK(ui::Range(0, text().length()).Contains(range));
   Point display_offset(GetUpdatedDisplayOffset());
@@ -363,6 +378,7 @@ bool RenderTextWin::IsCursorablePosition(size_t position) {
   if (position == 0 || position == text().length())
     return true;
 
+  EnsureLayout();
   size_t run_index = GetRunContainingPosition(position);
   if (run_index >= runs_.size())
     return false;
@@ -376,13 +392,12 @@ bool RenderTextWin::IsCursorablePosition(size_t position) {
 }
 
 void RenderTextWin::UpdateLayout() {
-  // TODO(msw): Skip complex processing if ScriptIsComplex returns false.
-  ItemizeLogicalText();
-  if (!runs_.empty())
-    LayoutVisualText();
+  // Layout is performed lazily as needed for drawing/metrics.
+  needs_layout_ = true;
 }
 
 size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
+  EnsureLayout();
   size_t run_index = GetRunContainingPosition(index);
   internal::TextRun* run = run_index < runs_.size() ? runs_[run_index] : NULL;
   int start = run ? run->range.start() : 0;
@@ -401,9 +416,20 @@ size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
   return std::max(std::min(ch, length) + start, 0);
 }
 
+void RenderTextWin::EnsureLayout() {
+  if (!needs_layout_)
+    return;
+  // TODO(msw): Skip complex processing if ScriptIsComplex returns false.
+  ItemizeLogicalText();
+  if (!runs_.empty())
+    LayoutVisualText();
+  needs_layout_ = false;
+}
+
 void RenderTextWin::ItemizeLogicalText() {
   STLDeleteContainerPointers(runs_.begin(), runs_.end());
   runs_.clear();
+  string_width_ = 0;
   if (text().empty())
     return;
 
@@ -556,6 +582,7 @@ void RenderTextWin::LayoutVisualText() {
 }
 
 size_t RenderTextWin::GetRunContainingPosition(size_t position) const {
+  DCHECK(!needs_layout_);
   // Find the text run containing the argument position.
   size_t run = 0;
   for (; run < runs_.size(); ++run)
@@ -566,6 +593,7 @@ size_t RenderTextWin::GetRunContainingPosition(size_t position) const {
 }
 
 size_t RenderTextWin::GetRunContainingPoint(const Point& point) const {
+  DCHECK(!needs_layout_);
   // Find the text run containing the argument point (assumed already offset).
   size_t run = 0;
   for (; run < runs_.size(); ++run)
@@ -590,6 +618,7 @@ SelectionModel RenderTextWin::LastSelectionModelInsideRun(
 
 SelectionModel RenderTextWin::LeftSelectionModel(
     const SelectionModel& selection) {
+  DCHECK(!needs_layout_);
   size_t caret = selection.caret_pos();
   SelectionModel::CaretPlacement caret_placement = selection.caret_placement();
   size_t run_index = GetRunContainingPosition(caret);
@@ -626,6 +655,7 @@ SelectionModel RenderTextWin::LeftSelectionModel(
 
 SelectionModel RenderTextWin::RightSelectionModel(
     const SelectionModel& selection) {
+  DCHECK(!needs_layout_);
   size_t caret = selection.caret_pos();
   SelectionModel::CaretPlacement caret_placement = selection.caret_placement();
   size_t run_index = GetRunContainingPosition(caret);

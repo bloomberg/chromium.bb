@@ -80,6 +80,7 @@ class RenderTextWin : public RenderText {
  private:
   virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;
 
+  void EnsureLayout();
   void ItemizeLogicalText();
   void LayoutVisualText();
 
@@ -115,6 +116,8 @@ class RenderTextWin : public RenderText {
 
   scoped_array<int> visual_to_logical_;
   scoped_array<int> logical_to_visual_;
+
+  bool needs_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderTextWin);
 };
