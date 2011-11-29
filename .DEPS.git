@@ -23,7 +23,7 @@ deps = {
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@d5391dd20f9bf8b1dd60d060b0810c30c2d68c70',
     'src/native_client':
-        Var('git_url') + '/native_client/src/native_client.git@6799691b54c2057d309598c866cbe5eea5015666',
+        Var('git_url') + '/native_client/src/native_client.git@d7fe78fe08697c93e742683a3e3a52198ae9511f',
     'src/native_client_sdk/src/site_scons':
         Var('git_url') + '/native_client/src/native_client/site_scons.git@5e8a60cf79724ba18e7ec636900da80de87fb125',
     'src/sdch/open-vcdiff':
@@ -230,10 +230,10 @@ hooks = [
     'f7b73f3d9073b75bb1ef6b583eaf56f397ca80ed',
     '--file-hash',
     'win_x86',
-    '75ee1d6f8c758d9580b2c35773b14d0ab6847372',
+    '8c216e597f6a13809d40f156e414b3209d9a159c',
     '--file-hash',
     'linux_x86',
-    '33afa1cefa7fd2a7270b309298dbbf93361d90db',
+    '6052b7a1fd6829050bbc72b82ffc0f10c7478f0d',
     '--save-downloads-dir',
     'src/native_client_sdk/src/build_tools/toolchain_archives'
 ],
