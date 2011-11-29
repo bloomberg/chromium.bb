@@ -3586,17 +3586,6 @@
    fun:_ZN20ChildProcessLauncher7Context6NotifyEbi
 }
 {
-   bug_86483b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7history14HistoryBackend12AddPageVisitERK4GURLN4base4TimeElN7content14PageTransitionENS_11VisitSourceE
-   fun:_ZN7history14HistoryBackend7AddPageE13scoped_refptrINS_18HistoryAddPageArgsEE
-   fun:_ZN4base8internal15RunnableAdapterIMN7history14HistoryBackendEFv13scoped_refptrINS2_18HistoryAddPageArgsEEEE3RunEPS3_RKS6_
-   fun:_ZN4base8internal12InvokeHelperILb0EvNS0_15RunnableAdapterIMN7history14HistoryBackendEFv13scoped_refptrINS3_18HistoryAddPageArgsEEEEEFvRKPS4_PS6_EE8MakeItSoESA_SD_SE_
-   fun:_ZN4base8internal7InvokerILi2ENS0_9BindStateINS0_15RunnableAdapterIMN7history14HistoryBackendEFv13scoped_refptrINS4_18HistoryAddPageArgsEEEEEFvPS5_S8_ESD_EESD_E3RunEPNS0_13BindStateBaseE
-   fun:_ZNK4base8CallbackIFvvEE3RunEv
-}
-{
    bug_87094a
    Memcheck:Leak
    fun:_Znw*

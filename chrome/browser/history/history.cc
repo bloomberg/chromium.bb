@@ -105,8 +105,8 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
     // Send the notification to the history service on the main thread.
     message_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&HistoryService::BroadcastNotifications,
-                   history_service_.get(), type, details));
+        base::Bind(&HistoryService::BroadcastNotificationsHelper,
+                   history_service_.get(), type, base::Owned(details)));
   }
 
   virtual void DBLoaded(int backend_id) OVERRIDE {
@@ -773,12 +773,9 @@ void HistoryService::ExpireHistoryBetween(
            restrict_urls, begin_time, end_time);
 }
 
-void HistoryService::BroadcastNotifications(
+void HistoryService::BroadcastNotificationsHelper(
     int type,
-    history::HistoryDetails* details_deleted) {
-  // We take ownership of the passed-in pointer and delete it. It was made for
-  // us on another thread, so the caller doesn't know when we will handle it.
-  scoped_ptr<history::HistoryDetails> details(details_deleted);
+    history::HistoryDetails* details) {
   // TODO(evanm): this is currently necessitated by generate_profile, which
   // runs without a browser process. generate_profile should really create
   // a browser process, at which point this check can then be nuked.
@@ -795,7 +792,7 @@ void HistoryService::BroadcastNotifications(
   // The details object just contains the pointer to the object that the
   // backend has allocated for us. The receiver of the notification will cast
   // this to the proper type.
-  content::Details<history::HistoryDetails> det(details_deleted);
+  content::Details<history::HistoryDetails> det(details);
 
   content::NotificationService::current()->Notify(type, source, det);
 }

@@ -612,12 +612,10 @@ class HistoryService : public CancelableRequestProvider,
   // Broadcasts the given notification. This is called by the backend so that
   // the notification will be broadcast on the main thread.
   //
-  // The |details_deleted| pointer will be sent as the "details" for the
-  // notification. The function takes ownership of the pointer and deletes it
-  // when the notification is sent (it is coming from another thread, so must
-  // be allocated on the heap).
-  void BroadcastNotifications(int type,
-                              history::HistoryDetails* details_deleted);
+  // Compared to BroadcastNotifications(), this function does not take
+  // ownership of |details|.
+  void BroadcastNotificationsHelper(int type,
+                                    history::HistoryDetails* details);
 
   // Initializes the backend.
   void LoadBackendIfNecessary();
