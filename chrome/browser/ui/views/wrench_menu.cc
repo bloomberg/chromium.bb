@@ -750,8 +750,13 @@ void WrenchMenu::ExecuteCommand(int id, int mouse_event_flags) {
 bool WrenchMenu::GetAccelerator(int id, ui::Accelerator* accelerator) {
   if (is_bookmark_command(id))
     return false;
+  IDToEntry::iterator ix = id_to_entry_.find(id);
+  if (ix == id_to_entry_.end()) {
+    // There is no entry for this id.
+    return false;
+  }
 
-  const Entry& entry = id_to_entry_.find(id)->second;
+  const Entry& entry = ix->second;
   int command_id = entry.first->GetCommandIdAt(entry.second);
   if (command_id == IDC_CUT || command_id == IDC_ZOOM_MINUS) {
     // These have special child views; don't show the accelerator for them.
