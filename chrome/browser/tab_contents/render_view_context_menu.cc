@@ -39,7 +39,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
-#include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/browser/tab_contents/spellchecker_submenu_observer.h"
 #include "chrome/browser/tab_contents/spelling_menu_observer.h"
 #include "chrome/browser/translate/translate_manager.h"
@@ -609,6 +608,10 @@ void RenderViewContextMenu::AddMenuItem(int command_id,
   menu_model_.AddItem(command_id, title);
 }
 
+void RenderViewContextMenu::AddSeparator() {
+  menu_model_.AddSeparator();
+}
+
 void RenderViewContextMenu::AddSubMenu(int command_id,
                                        const string16& label,
                                        ui::MenuModel* model) {
@@ -839,28 +842,6 @@ void RenderViewContextMenu::AppendSearchProvider() {
 }
 
 void RenderViewContextMenu::AppendEditableItems() {
-  if (!params_.dictionary_suggestions.empty()) {
-    menu_model_.AddSeparator();
-
-    // |spellcheck_host| can be null when the suggested word is
-    // provided by Web SpellCheck API.
-    SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
-    if (spellcheck_host && spellcheck_host->GetMetrics())
-      spellcheck_host->GetMetrics()->RecordSuggestionStats(1);
-  }
-
-  // If word is misspelled, give option for "Add to dictionary"
-  if (!params_.misspelled_word.empty()) {
-    if (params_.dictionary_suggestions.empty()) {
-      menu_model_.AddItem(IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
-          l10n_util::GetStringUTF16(
-              IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));
-    }
-    menu_model_.AddItemWithStringId(IDC_SPELLCHECK_ADD_TO_DICTIONARY,
-                                    IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY);
-    menu_model_.AddSeparator();
-  }
-
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_UNDO,
                                   IDS_CONTENT_CONTEXT_UNDO);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_REDO,
@@ -1211,9 +1192,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !profile_->IsOffTheRecord() && params_.link_url.is_valid() &&
              incognito_avail != IncognitoModePrefs::DISABLED;
 
-    case IDC_SPELLCHECK_ADD_TO_DICTIONARY:
-      return !params_.misspelled_word.empty();
-
     case IDC_PRINT:
       if (g_browser_process->local_state() &&
           !g_browser_process->local_state()->GetBoolean(
@@ -1222,9 +1200,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       }
       return params_.media_type == WebContextMenuData::MediaTypeNone ||
              params_.media_flags & WebContextMenuData::MediaCanPrint;
-
-    case IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS:
-      return false;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDC_CONTENT_CONTEXT_GOTOURL:
@@ -1670,17 +1645,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
               content::PAGE_TRANSITION_LINK);
       break;
     }
-
-    case IDC_SPELLCHECK_ADD_TO_DICTIONARY: {
-      // GetSpellCheckHost() can return null when the suggested word is
-      // provided by Web SpellCheck API.
-      if (profile_->GetSpellCheckHost())
-        profile_->GetSpellCheckHost()->AddWord(
-            UTF16ToUTF8(params_.misspelled_word));
-      SpellCheckerPlatform::AddWord(params_.misspelled_word);
-      break;
-    }
-
     case IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS: {
       WindowOpenDisposition disposition =
           ForceNewTabDispositionFromEventFlags(event_flags);

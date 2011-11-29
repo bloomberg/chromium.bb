@@ -90,6 +90,10 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver,
   // words. ('spelling_menu_observer.cc' describes its format.)
   bool succeeded_;
 
+  // The misspelled word. When we choose the "Add to dictionary" item, we add
+  // this word to the custom-word dictionary.
+  string16 misspelled_word_;
+
   // The string representing the result of this call. This string is a
   // suggestion when this call finished successfully. Otherwise it is error
   // text. Until we receive a response from the Spelling service, this string

@@ -508,6 +508,9 @@ are declared in build/common.gypi.
         <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
           Loading suggestion
         </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any suggestions from the Spelling service">
+          No suggestions from Google
+        </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
           &amp;Spell-checker options
         </message>
@@ -725,6 +728,9 @@ are declared in build/common.gypi.
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLING_CHECKING" desc="The place-holder message shown while the Spelling service is checking text">
           Loading suggestion
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_SPELLING_NO_SUGGESTIONS_FROM_GOOGLE" desc="The message shown when we cannot get any suggestions from the Spelling service">
+          No suggestions from Google
         </message>
         <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
           &amp;Spell-checker Options
