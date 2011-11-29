@@ -175,7 +175,8 @@ Value* PrefModelAssociator::MergePreference(
   }
 
   if (name == prefs::kContentSettingsPatterns ||
-      name == prefs::kGeolocationContentSettings) {
+      name == prefs::kGeolocationContentSettings ||
+      name == prefs::kContentSettingsPatternPairs) {
     return MergeDictionaryValues(*local_pref.GetValue(), server_value);
   }
 
