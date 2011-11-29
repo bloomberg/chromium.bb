@@ -141,6 +141,7 @@ class InputMethodEngine {
                               const char* text,
                               int selection_start,
                               int selection_end,
+                              int cursor,
                               const std::vector<SegmentInfo>& segments,
                               std::string* error) = 0;
 

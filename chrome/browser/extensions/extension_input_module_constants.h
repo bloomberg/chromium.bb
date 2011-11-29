@@ -21,6 +21,7 @@ extern const char kCandidatesKey[];
 extern const char kCheckedKey[];
 extern const char kContextIdKey[];
 extern const char kCtrlKeyKey[];
+extern const char kCursorKey[];
 extern const char kCursorVisibleKey[];
 extern const char kEnabledKey[];
 extern const char kEndKey[];

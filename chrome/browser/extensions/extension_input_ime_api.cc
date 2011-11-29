@@ -508,26 +508,27 @@ bool SetCompositionFunction::RunImpl() {
   std::string text;
   int selection_start;
   int selection_end;
+  int cursor;
   std::vector<chromeos::InputMethodEngine::SegmentInfo> segments;
 
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kContextIdKey,
                                                &context_id));
   EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kTextKey, &text));
+  EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kCursorKey, &cursor));
   if (args->HasKey(keys::kSelectionStartKey)) {
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kSelectionStartKey,
                                                  &selection_start));
   } else {
-    selection_start = 0;
+    selection_start = cursor;
   }
   if (args->HasKey(keys::kSelectionEndKey)) {
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kSelectionEndKey,
                                                  &selection_end));
   } else {
-    selection_end = 0;
+    selection_end = cursor;
   }
 
   if (args->HasKey(keys::kSegmentsKey)) {
-    // TODO: Handle segments
     ListValue* segment_list;
     EXTENSION_FUNCTION_VALIDATE(args->GetList(keys::kSegmentsKey,
                                               &segment_list));
@@ -553,7 +554,7 @@ bool SetCompositionFunction::RunImpl() {
   }
 
   if (engine->SetComposition(context_id, text.c_str(), selection_start,
-                             selection_end, segments, &error_)) {
+                             selection_end, cursor, segments, &error_)) {
     result_.reset(Value::CreateBooleanValue(true));
   } else {
     result_.reset(Value::CreateBooleanValue(false));

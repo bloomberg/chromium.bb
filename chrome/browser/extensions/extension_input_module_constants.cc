@@ -16,6 +16,7 @@ const char kCandidatesKey[] = "candidates";
 const char kCheckedKey[] = "checked";
 const char kContextIdKey[] = "contextID";
 const char kCtrlKeyKey[] = "ctrlKey";
+const char kCursorKey[] = "cursor";
 const char kCursorVisibleKey[] = "cursorVisible";
 const char kEnabledKey[] = "enabled";
 const char kEndKey[] = "end";

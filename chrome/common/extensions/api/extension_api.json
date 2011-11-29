@@ -3407,10 +3407,16 @@
               },
               "selectionStart": {
                 "description": "Position in the text that the selection starts at.",
+                "optional": true,
                 "type": "integer"
               },
               "selectionEnd": {
                 "description": "Position in the text that the selection ends at.",
+                "optional": true,
+                "type": "integer"
+              },
+              "cursor": {
+                "description": "Position in the text of the cursor.",
                 "type": "integer"
               },
               "segments": {
