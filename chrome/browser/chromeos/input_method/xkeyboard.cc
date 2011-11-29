@@ -127,16 +127,17 @@ XKeyboard::XKeyboard(const InputMethodUtil& util)
   std::string layout;
   for (size_t i = 0; i < arraysize(kKeepRightAltInputMethods); ++i) {
     layout = util.GetKeyboardLayoutName(kKeepRightAltInputMethods[i]);
-    // The empty check is necessary since TOUCH_UI build does not support some
-    // of the kKeepRightAltInputMethods elements. For example, when TOUCH_UI is
-    // defined, util.GetKeyboardLayoutName("xkb:us:intl:eng") would return "".
+    // The empty check is necessary since USE_VIRTUAL_KEYBOARD build does not
+    // support some of the kKeepRightAltInputMethods elements. For example,
+    // when USE_VIRTUAL_KEYBOARD is defined,
+    // util.GetKeyboardLayoutName("xkb:us:intl:eng") would return "".
     if (!layout.empty()) {
       keep_right_alt_xkb_layout_names_.insert(layout);
     }
   }
   for (size_t i = 0; i < arraysize(kCapsLockRemapped); ++i) {
     layout = util.GetKeyboardLayoutName(kCapsLockRemapped[i]);
-    // The empty check is for TOUCH_UI build. See above.
+    // The empty check is for USE_VIRTUAL_KEYBOARD build. See above.
     if (!layout.empty()) {
       caps_lock_remapped_xkb_layout_names_.insert(layout);
     }

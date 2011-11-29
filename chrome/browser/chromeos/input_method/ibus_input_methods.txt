@@ -47,40 +47,40 @@
 
 # U.S. English
 xkb:us::eng	us	eng
-xkb:us:intl:eng	us(intl)	eng	!defined(TOUCH_UI)
-xkb:us:altgr-intl:eng	us(altgr-intl)	eng	!defined(TOUCH_UI)
-xkb:us:dvorak:eng	us(dvorak)	eng	!defined(TOUCH_UI)
-xkb:us:colemak:eng	us(colemak)	eng	!defined(TOUCH_UI)
-english-m	us	en-US	!defined(TOUCH_UI)
+xkb:us:intl:eng	us(intl)	eng	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:us:altgr-intl:eng	us(altgr-intl)	eng	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:us:dvorak:eng	us(dvorak)	eng	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:us:colemak:eng	us(colemak)	eng	!defined(USE_VIRTUAL_KEYBOARD)
+english-m	us	en-US	!defined(USE_VIRTUAL_KEYBOARD)
 # U.S. English entiries have to be above the Dutch entry so that xkb:us:intl:eng
 # will be selected as the default keyboard when the UI language is set to Dutch.
 
 # Dutch
-xkb:be::nld	be	nld	!defined(TOUCH_UI)
+xkb:be::nld	be	nld	!defined(USE_VIRTUAL_KEYBOARD)
 # We don't support xkb:nl::nld. See b/4430951.
 
 # French
 xkb:fr::fra	fr	fra
-xkb:be::fra	be	fra	!defined(TOUCH_UI)
-xkb:ca::fra	ca	fra	!defined(TOUCH_UI)
-xkb:ch:fr:fra	ch(fr)	fra	!defined(TOUCH_UI)
+xkb:be::fra	be	fra	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:ca::fra	ca	fra	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:ch:fr:fra	ch(fr)	fra	!defined(USE_VIRTUAL_KEYBOARD)
 
 # German
-xkb:de::ger	de	ger	!defined(TOUCH_UI)
-xkb:de:neo:ger	de(neo)	ger	!defined(TOUCH_UI)
-xkb:be::ger	be	ger	!defined(TOUCH_UI)
-xkb:ch::ger	ch	ger	!defined(TOUCH_UI)
+xkb:de::ger	de	ger	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:de:neo:ger	de(neo)	ger	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:be::ger	be	ger	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:ch::ger	ch	ger	!defined(USE_VIRTUAL_KEYBOARD)
 
 # Japanese
 mozc	us	ja
-mozc-jp	jp	ja	!defined(TOUCH_UI)
-mozc-dv	us(dvorak)	ja	!defined(TOUCH_UI)
-xkb:jp::jpn	jp	jpn	!defined(TOUCH_UI)
-zinnia-japanese	handwriting-vk,jp	ja	defined(TOUCH_UI)
+mozc-jp	jp	ja	!defined(USE_VIRTUAL_KEYBOARD)
+mozc-dv	us(dvorak)	ja	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:jp::jpn	jp	jpn	!defined(USE_VIRTUAL_KEYBOARD)
+zinnia-japanese	handwriting-vk,jp	ja	defined(USE_VIRTUAL_KEYBOARD)
 
 # Russian
-xkb:ru::rus	ru	rus	!defined(TOUCH_UI)
-xkb:ru:phonetic:rus	ru(phonetic)	rus	!defined(TOUCH_UI)
+xkb:ru::rus	ru	rus	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:ru:phonetic:rus	ru(phonetic)	rus	!defined(USE_VIRTUAL_KEYBOARD)
 
 # Thai
 m17n:th:kesmanee	us	th
@@ -89,7 +89,7 @@ m17n:th:tis820	us	th
 
 # Simplified Chinese
 pinyin	us	zh-CN
-pinyin-dv	us(dvorak)	zh-CN	!defined(TOUCH_UI)
+pinyin-dv	us(dvorak)	zh-CN	!defined(USE_VIRTUAL_KEYBOARD)
 # TODO(yusukes): Define zh_CN_dvorak if it's *really* necessary.
 
 # Traditional Chinese
@@ -167,36 +167,36 @@ m17n:kn:itrans	us	kn
 m17n:am:sera	us	am
 
 # ibux-xkb-layouts input methods (keyboard layouts).
-xkb:br::por	br	por	!defined(TOUCH_UI)
-xkb:bg::bul	bg	bul	!defined(TOUCH_UI)
-xkb:bg:phonetic:bul	bg(phonetic)	bul	!defined(TOUCH_UI)
-xkb:ca:eng:eng	ca(eng)	eng	!defined(TOUCH_UI)
-xkb:cz::cze	cz	cze	!defined(TOUCH_UI)
-xkb:ee::est	ee	est	!defined(TOUCH_UI)
-xkb:es::spa	es	spa	!defined(TOUCH_UI)
-xkb:es:cat:cat	es(cat)	cat	!defined(TOUCH_UI)
-xkb:dk::dan	dk	dan	!defined(TOUCH_UI)
-xkb:gr::gre	gr	gre	!defined(TOUCH_UI)
-xkb:il::heb	il	heb	!defined(TOUCH_UI)
-xkb:latam::spa	latam	spa	!defined(TOUCH_UI)
-xkb:lt::lit	lt	lit	!defined(TOUCH_UI)
-xkb:lv:apostrophe:lav	lv(apostrophe)	lav	!defined(TOUCH_UI)
-xkb:hr::scr	hr	scr	!defined(TOUCH_UI)
-xkb:gb:extd:eng	gb(extd)	eng	!defined(TOUCH_UI)
-xkb:gb:dvorak:eng	gb(dvorak)	eng	!defined(TOUCH_UI)
-xkb:fi::fin	fi	fin	!defined(TOUCH_UI)
-xkb:hu::hun	hu	hun	!defined(TOUCH_UI)
-xkb:it::ita	it	ita	!defined(TOUCH_UI)
-xkb:no::nob	no	nob	!defined(TOUCH_UI)
-xkb:pl::pol	pl	pol	!defined(TOUCH_UI)
-xkb:pt::por	pt	por	!defined(TOUCH_UI)
-xkb:ro::rum	ro	rum	!defined(TOUCH_UI)
-xkb:se::swe	se	swe	!defined(TOUCH_UI)
-xkb:sk::slo	sk	slo	!defined(TOUCH_UI)
-xkb:si::slv	si	slv	!defined(TOUCH_UI)
-xkb:rs::srp	rs	srp	!defined(TOUCH_UI)
-xkb:tr::tur	tr	tur	!defined(TOUCH_UI)
-xkb:ua::ukr	ua	ukr	!defined(TOUCH_UI)
+xkb:br::por	br	por	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:bg::bul	bg	bul	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:bg:phonetic:bul	bg(phonetic)	bul	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:ca:eng:eng	ca(eng)	eng	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:cz::cze	cz	cze	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:ee::est	ee	est	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:es::spa	es	spa	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:es:cat:cat	es(cat)	cat	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:dk::dan	dk	dan	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:gr::gre	gr	gre	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:il::heb	il	heb	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:latam::spa	latam	spa	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:lt::lit	lt	lit	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:lv:apostrophe:lav	lv(apostrophe)	lav	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:hr::scr	hr	scr	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:gb:extd:eng	gb(extd)	eng	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:gb:dvorak:eng	gb(dvorak)	eng	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:fi::fin	fi	fin	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:hu::hun	hu	hun	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:it::ita	it	ita	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:no::nob	no	nob	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:pl::pol	pl	pol	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:pt::por	pt	por	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:ro::rum	ro	rum	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:se::swe	se	swe	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:sk::slo	sk	slo	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:si::slv	si	slv	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:rs::srp	rs	srp	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:tr::tur	tr	tur	!defined(USE_VIRTUAL_KEYBOARD)
+xkb:ua::ukr	ua	ukr	!defined(USE_VIRTUAL_KEYBOARD)
 
 # TODO(yusukes): Support xkb:latam:deadtilde:spa and/or xkb:latam:nodeadkeys:spa
 # if necessary.

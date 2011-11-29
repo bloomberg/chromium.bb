@@ -8,13 +8,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(TOUCH_UI)
-// Since TOUCH_UI build only supports a few keyboard layouts, we skip the tests
-// for now.
+#if defined(USE_VIRTUAL_KEYBOARD)
+// Since USE_VIRTUAL_KEYBOARD build only supports a few keyboard layouts, we
+// skip the tests for now.
 #define TestCreateInputMethodDescriptor DISABLED_TestCreateInputMethodDescriptor
 #define TestInputMethodIdIsWhitelisted DISABLED_TestInputMethodIdIsWhitelisted
 #define TestXkbLayoutIsSupported DISABLED_TestXkbLayoutIsSupported
-#endif  // TOUCH_UI
+#endif  // USE_VIRTUAL_KEYBOARD
 
 namespace chromeos {
 namespace input_method {
