@@ -107,21 +107,19 @@ class BookmarkStorage : public content::NotificationObserver,
   // a pending save, it is saved immediately.
   void BookmarkModelDeleted();
 
-  // ImportantFileWriter::DataSerializer
+  // Callback from backend with the results of the bookmark file. This may be
+  // called multiple times, with different paths. This happens when we migrate
+  // bookmark data from database.
+  void OnLoadFinished(bool file_exists,
+                      const FilePath& path);
+
+  // ImportantFileWriter::DataSerializer implementation.
   virtual bool SerializeData(std::string* output) OVERRIDE;
 
  private:
   friend class base::RefCountedThreadSafe<BookmarkStorage>;
 
   virtual ~BookmarkStorage();
-
-  class LoadTask;
-
-  // Callback from backend with the results of the bookmark file.
-  // This may be called multiple times, with different paths. This happens when
-  // we migrate bookmark data from database.
-  void OnLoadFinished(bool file_exists,
-                      const FilePath& path);
 
   // Loads bookmark data from |file| and notifies the model when finished.
   void DoLoadBookmarks(const FilePath& file);

@@ -30,89 +30,62 @@ const FilePath::CharType kBackupExtension[] = FILE_PATH_LITERAL("bak");
 // How often we save.
 const int kSaveDelayMS = 2500;
 
-class BackupTask : public Task {
- public:
-  explicit BackupTask(const FilePath& path) : path_(path) {
+void BackupCallback(const FilePath& path) {
+  FilePath backup_path = path.ReplaceExtension(kBackupExtension);
+  file_util::CopyFile(path, backup_path);
+}
+
+// Adds node to the model's index, recursing through all children as well.
+void AddBookmarksToIndex(BookmarkLoadDetails* details,
+                         BookmarkNode* node) {
+  if (node->is_url()) {
+    if (node->url().is_valid())
+      details->index()->Add(node);
+  } else {
+    for (int i = 0; i < node->child_count(); ++i)
+      AddBookmarksToIndex(details, node->GetChild(i));
+  }
+}
+
+void LoadCallback(const FilePath& path,
+                  BookmarkStorage* storage,
+                  BookmarkLoadDetails* details) {
+  bool bookmark_file_exists = file_util::PathExists(path);
+  if (bookmark_file_exists) {
+    JSONFileValueSerializer serializer(path);
+    scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));
+
+    if (root.get()) {
+      // Building the index can take a while, so we do it on the background
+      // thread.
+      int64 max_node_id = 0;
+      BookmarkCodec codec;
+      TimeTicks start_time = TimeTicks::Now();
+      codec.Decode(details->bb_node(), details->other_folder_node(),
+                   details->synced_folder_node(), &max_node_id, *root.get());
+      details->set_max_id(std::max(max_node_id, details->max_id()));
+      details->set_computed_checksum(codec.computed_checksum());
+      details->set_stored_checksum(codec.stored_checksum());
+      details->set_ids_reassigned(codec.ids_reassigned());
+      UMA_HISTOGRAM_TIMES("Bookmarks.DecodeTime",
+                          TimeTicks::Now() - start_time);
+
+      start_time = TimeTicks::Now();
+      AddBookmarksToIndex(details, details->bb_node());
+      AddBookmarksToIndex(details, details->other_folder_node());
+      AddBookmarksToIndex(details, details->synced_folder_node());
+      UMA_HISTOGRAM_TIMES("Bookmarks.CreateBookmarkIndexTime",
+                          TimeTicks::Now() - start_time);
+    }
   }
 
-  virtual void Run() {
-    FilePath backup_path = path_.ReplaceExtension(kBackupExtension);
-    file_util::CopyFile(path_, backup_path);
-  }
-
- private:
-  const FilePath path_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackupTask);
-};
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BookmarkStorage::OnLoadFinished, storage,
+                 bookmark_file_exists, path));
+}
 
 }  // namespace
-
-class BookmarkStorage::LoadTask : public Task {
- public:
-  LoadTask(const FilePath& path,
-           BookmarkStorage* storage,
-           BookmarkLoadDetails* details)
-      : path_(path),
-        storage_(storage),
-        details_(details) {
-  }
-
-  virtual void Run() {
-    bool bookmark_file_exists = file_util::PathExists(path_);
-    if (bookmark_file_exists) {
-      JSONFileValueSerializer serializer(path_);
-      scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));
-
-      if (root.get()) {
-        // Building the index can take a while, so we do it on the background
-        // thread.
-        int64 max_node_id = 0;
-        BookmarkCodec codec;
-        TimeTicks start_time = TimeTicks::Now();
-        codec.Decode(details_->bb_node(), details_->other_folder_node(),
-                     details_->synced_folder_node(), &max_node_id, *root.get());
-        details_->set_max_id(std::max(max_node_id, details_->max_id()));
-        details_->set_computed_checksum(codec.computed_checksum());
-        details_->set_stored_checksum(codec.stored_checksum());
-        details_->set_ids_reassigned(codec.ids_reassigned());
-        UMA_HISTOGRAM_TIMES("Bookmarks.DecodeTime",
-                            TimeTicks::Now() - start_time);
-
-        start_time = TimeTicks::Now();
-        AddBookmarksToIndex(details_->bb_node());
-        AddBookmarksToIndex(details_->other_folder_node());
-        AddBookmarksToIndex(details_->synced_folder_node());
-        UMA_HISTOGRAM_TIMES("Bookmarks.CreateBookmarkIndexTime",
-                            TimeTicks::Now() - start_time);
-      }
-    }
-
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &BookmarkStorage::OnLoadFinished, storage_.get(),
-            bookmark_file_exists, path_));
-  }
-
- private:
-  // Adds node to the model's index, recursing through all children as well.
-  void AddBookmarksToIndex(BookmarkNode* node) {
-    if (node->is_url()) {
-      if (node->url().is_valid())
-        details_->index()->Add(node);
-    } else {
-      for (int i = 0; i < node->child_count(); ++i)
-        AddBookmarksToIndex(node->GetChild(i));
-    }
-  }
-
-  const FilePath path_;
-  scoped_refptr<BookmarkStorage> storage_;
-  BookmarkLoadDetails* details_;
-
-  DISALLOW_COPY_AND_ASSIGN(LoadTask);
-};
 
 // BookmarkLoadDetails ---------------------------------------------------------
 
@@ -142,8 +115,8 @@ BookmarkStorage::BookmarkStorage(Profile* profile, BookmarkModel* model)
       tmp_history_path_(
           profile->GetPath().Append(chrome::kHistoryBookmarksFileName)) {
   writer_.set_commit_interval(base::TimeDelta::FromMilliseconds(kSaveDelayMS));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, new BackupTask(writer_.path()));
+  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                          base::Bind(&BackupCallback, writer_.path()));
 }
 
 BookmarkStorage::~BookmarkStorage() {
@@ -160,7 +133,9 @@ void BookmarkStorage::LoadBookmarks(BookmarkLoadDetails* details) {
 
 void BookmarkStorage::DoLoadBookmarks(const FilePath& path) {
   BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE, new LoadTask(path, this, details_.get()));
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&LoadCallback, path, make_scoped_refptr(this),
+                 details_.get()));
 }
 
 void BookmarkStorage::MigrateFromHistory() {

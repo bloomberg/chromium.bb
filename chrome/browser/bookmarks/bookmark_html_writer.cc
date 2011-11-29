@@ -9,6 +9,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
@@ -83,9 +84,9 @@ const char kFolderChildrenEnd[] = "</DL><p>";
 const size_t kIndentSize = 4;
 
 // Class responsible for the actual writing. Takes ownership of favicons_map.
-class Writer : public Task {
+class Writer : public base::RefCountedThreadSafe<Writer> {
  public:
-  Writer(Value* bookmarks,
+  Writer(base::Value* bookmarks,
          const FilePath& path,
          BookmarkFaviconFetcher::URLFaviconMap* favicons_map,
          BookmarksExportObserver* observer)
@@ -95,16 +96,10 @@ class Writer : public Task {
         observer_(observer) {
   }
 
-  virtual void Run() {
-    RunImpl();
-    NotifyOnFinish();
-  }
-
   // Writing bookmarks and favicons data to file.
-  virtual void RunImpl() {
-    if (!OpenFile()) {
+  void DoWrite() {
+    if (!OpenFile())
       return;
-    }
 
     Value* roots;
     if (!Write(kHeader) ||
@@ -150,6 +145,8 @@ class Writer : public Task {
     Write(kNewline);
     // File stream close is forced so that unit test could read it.
     file_stream_.Close();
+
+    NotifyOnFinish();
   }
 
  private:
@@ -374,6 +371,8 @@ class Writer : public Task {
   // How much we indent when writing a bookmark/folder. This is modified
   // via IncrementIndent and DecrementIndent.
   std::string indent_;
+
+  DISALLOW_COPY_AND_ASSIGN(Writer);
 };
 
 }  // namespace
@@ -430,11 +429,11 @@ void BookmarkFaviconFetcher::ExecuteWriter() {
   // for the duration of the write), as such we make a copy of the
   // BookmarkModel using BookmarkCodec then write from that.
   BookmarkCodec codec;
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      new Writer(codec.Encode(profile_->GetBookmarkModel()),
-                 path_,
-                 favicons_map_.release(),
-                 observer_));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&Writer::DoWrite,
+                 new Writer(codec.Encode(profile_->GetBookmarkModel()),
+                            path_, favicons_map_.release(), observer_)));
   if (fetcher != NULL) {
     MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
     fetcher = NULL;
