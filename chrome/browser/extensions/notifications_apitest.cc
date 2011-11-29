@@ -9,7 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsNoPermission) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_NotificationsNoPermission) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
@@ -17,7 +17,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsNoPermission) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermissionManifest) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
+                       DISABLED_NotificationsHasPermissionManifest) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
@@ -27,13 +28,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NotificationsHasPermissionManifest) {
 }
 
 // http://crbug.com/98061
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_NotificationsHasPermission DISABLED_NotificationsHasPermission
-#else
-#define MAYBE_NotificationsHasPermission NotificationsHasPermission
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_NotificationsHasPermission) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_NotificationsHasPermission) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
   // Notifications not supported on linux/views yet.
 #else
