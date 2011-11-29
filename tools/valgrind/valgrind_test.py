@@ -756,7 +756,7 @@ class DrMemory(BaseTool):
     self.RegisterOptionParserHook(DrMemory.ExtendOptionParser)
 
   def ToolName(self):
-    return "DrMemory"
+    return "drmemory"
 
   def ExtendOptionParser(self, parser):
     parser.add_option("", "--suppressions", default=[],
@@ -780,8 +780,6 @@ class DrMemory(BaseTool):
 
   def ToolCommand(self):
     """Get the tool command to run."""
-    tool_name = self.ToolName()
-
     # WINHEAP is what Dr. Memory supports as there are issues w/ both
     # jemalloc (http://code.google.com/p/drmemory/issues/detail?id=320) and
     # tcmalloc (http://code.google.com/p/drmemory/issues/detail?id=314)
