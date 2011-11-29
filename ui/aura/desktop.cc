@@ -242,6 +242,11 @@ void Desktop::OnHostResized(const gfx::Size& size) {
                     OnDesktopResized(bounds.size()));
 }
 
+void Desktop::OnNativeScreenResized(const gfx::Size& size) {
+  if (use_fullscreen_host_window_)
+    SetHostSize(size);
+}
+
 void Desktop::SetActiveWindow(Window* window, Window* to_focus) {
   if (!window)
     return;
@@ -602,7 +607,7 @@ gfx::Rect Desktop::GetInitialHostWindowBounds() const {
       base::StringToInt(parts[1], &parsed_height) && parsed_height > 0) {
     bounds.set_size(gfx::Size(parsed_width, parsed_height));
   } else if (use_fullscreen_host_window_) {
-    bounds = gfx::Rect(DesktopHost::GetNativeDisplaySize());
+    bounds = gfx::Rect(DesktopHost::GetNativeScreenSize());
   }
 
   return bounds;

@@ -254,6 +254,9 @@ class DesktopHostLinux : public DesktopHost {
   Display* xdisplay_;
   ::Window xwindow_;
 
+  // The native root window.
+  ::Window root_window_;
+
   // Current Aura cursor.
   gfx::NativeCursor current_cursor_;
 
@@ -267,9 +270,10 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
     : desktop_(NULL),
       xdisplay_(base::MessagePumpX::GetDefaultXDisplay()),
       xwindow_(0),
+      root_window_(DefaultRootWindow(xdisplay_)),
       current_cursor_(aura::kCursorNull),
       bounds_(bounds) {
-  xwindow_ = XCreateSimpleWindow(xdisplay_, DefaultRootWindow(xdisplay_),
+  xwindow_ = XCreateSimpleWindow(xdisplay_, root_window_,
                                  bounds.x(), bounds.y(),
                                  bounds.width(), bounds.height(),
                                  0, 0, 0);
@@ -280,6 +284,7 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
                     StructureNotifyMask | PropertyChangeMask |
                     PointerMotionMask;
   XSelectInput(xdisplay_, xwindow_, event_mask);
+  XSelectInput(xdisplay_, root_window_, StructureNotifyMask);
   XFlush(xdisplay_);
 
   // TODO(sadrul): reenable once 103981 is fixed.
@@ -325,7 +330,13 @@ base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
       break;
     }
     case ConfigureNotify: {
-      DCHECK_EQ(xdisplay_, xev->xconfigure.display);
+      if (xev->xconfigure.window == root_window_) {
+        desktop_->OnNativeScreenResized(
+            gfx::Size(xev->xconfigure.width, xev->xconfigure.height));
+        handled = true;
+        break;
+      }
+
       DCHECK_EQ(xwindow_, xev->xconfigure.window);
       DCHECK_EQ(xwindow_, xev->xconfigure.event);
 
@@ -506,7 +517,7 @@ void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
       // The fields used below are in the same place for all of events
       // above. Using xmotion from XEvent's unions to avoid repeating
       // the code.
-      xevent.xmotion.root = DefaultRootWindow(xdisplay_);
+      xevent.xmotion.root = root_window_;
       xevent.xmotion.time = CurrentTime;
 
       gfx::Point point(xevent.xmotion.x, xevent.xmotion.y);
@@ -535,7 +546,7 @@ DesktopHost* DesktopHost::Create(const gfx::Rect& bounds) {
 }
 
 // static
-gfx::Size DesktopHost::GetNativeDisplaySize() {
+gfx::Size DesktopHost::GetNativeScreenSize() {
   ::Display* xdisplay = base::MessagePumpX::GetDefaultXDisplay();
   return gfx::Size(DisplayWidth(xdisplay, 0), DisplayHeight(xdisplay, 0));
 }

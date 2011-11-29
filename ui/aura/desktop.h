@@ -92,6 +92,9 @@ class AURA_EXPORT Desktop : public ui::CompositorDelegate,
   // Called when the host changes size.
   void OnHostResized(const gfx::Size& size);
 
+  // Called when the native screen's resolution changes.
+  void OnNativeScreenResized(const gfx::Size& size);
+
   // Sets the active window to |window| and the focused window to |to_focus|.
   // If |to_focus| is NULL, |window| is focused. Does nothing if |window| is
   // NULL.

@@ -107,7 +107,7 @@ DesktopHost* DesktopHost::Create(const gfx::Rect& bounds) {
 }
 
 // static
-gfx::Size DesktopHost::GetNativeDisplaySize() {
+gfx::Size DesktopHost::GetNativeScreenSize() {
   return gfx::Size(GetSystemMetrics(SM_CXSCREEN),
                    GetSystemMetrics(SM_CYSCREEN));
 }
