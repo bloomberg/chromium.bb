@@ -27,7 +27,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD0(OpenDownload, void());
   MOCK_METHOD0(ShowDownloadInShell, void());
   MOCK_METHOD0(DangerousDownloadValidated, void());
-  MOCK_METHOD1(Update, void(int64));
+  MOCK_METHOD2(UpdateProgress, void(int64, int64));
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(MarkAsComplete, void());
   MOCK_METHOD0(DelayedDownloadOpened, void());

@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time.h"
 #include "content/browser/power_save_blocker.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
@@ -61,6 +62,9 @@ class CONTENT_EXPORT BaseFile {
   // Informs the OS that this file came from the internet.
   void AnnotateWithSourceInformation();
 
+  // Calculate and return the current speed in bytes per second.
+  int64 CurrentSpeed() const;
+
   FilePath full_path() const { return full_path_; }
   bool in_progress() const { return file_stream_ != NULL; }
   int64 bytes_so_far() const { return bytes_so_far_; }
@@ -89,6 +93,9 @@ class CONTENT_EXPORT BaseFile {
   friend class BaseFileTest;
   FRIEND_TEST_ALL_PREFIXES(BaseFileTest, IsEmptySha256Hash);
 
+  // Split out from CurrentSpeed to enable testing.
+  int64 CurrentSpeedAtTime(base::TimeTicks current_time) const;
+
   static const size_t kSha256HashLen = 32;
   static const unsigned char kEmptySha256Hash[kSha256HashLen];
 
@@ -103,6 +110,9 @@ class CONTENT_EXPORT BaseFile {
 
   // Amount of data received up so far, in bytes.
   int64 bytes_so_far_;
+
+  // Start time for calculating speed.
+  base::TimeTicks start_tick_;
 
   // RAII handle to keep the system from sleeping while we're downloading.
   PowerSaveBlocker power_save_blocker_;

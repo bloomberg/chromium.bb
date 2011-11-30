@@ -199,6 +199,7 @@ BaseFile::BaseFile(const FilePath& full_path,
       referrer_url_(referrer_url),
       file_stream_(file_stream),
       bytes_so_far_(received_bytes),
+      start_tick_(base::TimeTicks::Now()),
       power_save_blocker_(PowerSaveBlocker::kPowerSaveBlockPreventSystemSleep),
       calculate_hash_(false),
       detached_(false) {
@@ -242,6 +243,12 @@ net::Error BaseFile::Initialize(bool calculate_hash) {
 net::Error BaseFile::AppendDataToFile(const char* data, size_t data_len) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(!detached_);
+
+  // NOTE(benwells): The above DCHECK won't be present in release builds,
+  // so we log any occurences to see how common this error is in the wild.
+  if (detached_)
+    download_stats::RecordDownloadCount(
+        download_stats::APPEND_TO_DETACHED_FILE_COUNT);
 
   if (!file_stream_.get())
     return LOG_ERROR("get", net::ERR_INVALID_HANDLE);
@@ -470,4 +477,15 @@ std::string BaseFile::DebugString() const {
                             full_path_.value().c_str(),
                             bytes_so_far_,
                             detached_ ? 'T' : 'F');
+}
+
+int64 BaseFile::CurrentSpeedAtTime(base::TimeTicks current_time) const {
+  base::TimeDelta diff = current_time - start_tick_;
+  int64 diff_ms = diff.InMilliseconds();
+  return diff_ms == 0 ? 0 : bytes_so_far() * 1000 / diff_ms;
+}
+
+int64 BaseFile::CurrentSpeed() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  return CurrentSpeedAtTime(base::TimeTicks::Now());
 }

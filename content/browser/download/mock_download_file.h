@@ -73,6 +73,7 @@ class MockDownloadFile : virtual public DownloadFile {
   virtual FilePath FullPath() const OVERRIDE;
   virtual bool InProgress() const OVERRIDE;
   virtual int64 BytesSoFar() const OVERRIDE;
+  virtual int64 CurrentSpeed() const OVERRIDE;
   virtual bool GetSha256Hash(std::string* hash) OVERRIDE;
   virtual void CancelDownloadRequest() OVERRIDE;
   virtual int Id() const OVERRIDE;

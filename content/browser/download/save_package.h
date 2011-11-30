@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task.h"
+#include "base/time.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/content_export.h"
@@ -231,6 +232,13 @@ class CONTENT_EXPORT SavePackage
                             saved_failed_items_.size());
   }
 
+  // The current speed in files per second. This is used to update the
+  // DownloadItem associated to this SavePackage. The files per second is
+  // presented by the DownloadItem to the UI as bytes per second, which is
+  // not correct but matches the way the total and received number of files is
+  // presented as the total and received bytes.
+  int64 CurrentSpeed() const;
+
   // Helper function for preparing suggested name for the SaveAs Dialog. The
   // suggested name is determined by the web document's title.
   FilePath GetSuggestedNameForSaveAs(
@@ -274,6 +282,9 @@ class CONTENT_EXPORT SavePackage
 
   // The title of the page the user wants to save.
   string16 title_;
+
+  // Used to calculate package download speed (in files per second).
+  base::TimeTicks start_tick_;
 
   // Indicates whether the actual saving job is finishing or not.
   bool finished_;

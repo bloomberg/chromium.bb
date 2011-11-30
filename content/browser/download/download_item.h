@@ -124,8 +124,9 @@ class CONTENT_EXPORT DownloadItem {
   // Called when the user has validated the download of a dangerous file.
   virtual void DangerousDownloadValidated() = 0;
 
-  // Received a new chunk of data
-  virtual void Update(int64 bytes_so_far) = 0;
+  // Called periodically from the download thread, or from the UI thread
+  // for saving packages.
+  virtual void UpdateProgress(int64 bytes_so_far, int64 bytes_per_sec) = 0;
 
   // Cancel the download operation. We need to distinguish between cancels at
   // exit (DownloadManager destructor) from user interface initiated cancels

@@ -29,6 +29,9 @@ const int kTestDataLength1 = arraysize(kTestData1) - 1;
 const int kTestDataLength2 = arraysize(kTestData2) - 1;
 const int kTestDataLength3 = arraysize(kTestData3) - 1;
 const int kTestDataLength4 = arraysize(kTestData4) - 1;
+const int kElapsedTimeSeconds = 5;
+const base::TimeDelta kElapsedTimeDelta = base::TimeDelta::FromSeconds(
+    kElapsedTimeSeconds);
 
 }  // namespace
 
@@ -142,6 +145,16 @@ class BaseFileTest : public testing::Test {
     duplicate_file.AppendDataToFile(kTestData4, kTestDataLength4);
     // Detach the file so it isn't deleted on destruction of |duplicate_file|.
     duplicate_file.Detach();
+  }
+
+  int64 CurrentSpeedAtTime(base::TimeTicks current_time) {
+    EXPECT_TRUE(base_file_.get());
+    return base_file_->CurrentSpeedAtTime(current_time);
+  }
+
+  base::TimeTicks StartTick() {
+    EXPECT_TRUE(base_file_.get());
+    return base_file_->start_tick_;
   }
 
  protected:
@@ -411,4 +424,44 @@ TEST_F(BaseFileTest, IsEmptySha256Hash) {
   std::string not_empty(BaseFile::kSha256HashLen, '\x01');
   EXPECT_FALSE(BaseFile::IsEmptySha256Hash(not_empty));
   EXPECT_FALSE(BaseFile::IsEmptySha256Hash(""));
+}
+
+// Test that calculating speed after no writes.
+TEST_F(BaseFileTest, SpeedWithoutWrite) {
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
+  base::TimeTicks current = StartTick() + kElapsedTimeDelta;
+  ASSERT_EQ(0, CurrentSpeedAtTime(current));
+  base_file_->Finish();
+}
+
+// Test that calculating speed after a single write.
+TEST_F(BaseFileTest, SpeedAfterSingleWrite) {
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
+  base::TimeTicks current = StartTick() + kElapsedTimeDelta;
+  int64 expected_speed = kTestDataLength1 / kElapsedTimeSeconds;
+  ASSERT_EQ(expected_speed, CurrentSpeedAtTime(current));
+  base_file_->Finish();
+}
+
+// Test that calculating speed after a multiple writes.
+TEST_F(BaseFileTest, SpeedAfterMultipleWrite) {
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData2));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData3));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData4));
+  base::TimeTicks current = StartTick() + kElapsedTimeDelta;
+  int64 expected_speed = (kTestDataLength1 + kTestDataLength2 +
+      kTestDataLength3 + kTestDataLength4) / kElapsedTimeSeconds;
+  ASSERT_EQ(expected_speed, CurrentSpeedAtTime(current));
+  base_file_->Finish();
+}
+
+// Test that calculating speed after no delay - should not divide by 0.
+TEST_F(BaseFileTest, SpeedAfterNoElapsedTime) {
+  ASSERT_EQ(net::OK, base_file_->Initialize(false));
+  ASSERT_EQ(net::OK, AppendDataToFile(kTestData1));
+  ASSERT_EQ(0, CurrentSpeedAtTime(StartTick()));
+  base_file_->Finish();
 }

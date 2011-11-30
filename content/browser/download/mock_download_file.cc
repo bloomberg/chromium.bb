@@ -103,6 +103,10 @@ int64 MockDownloadFile::BytesSoFar() const {
   return data_.length();
 }
 
+int64 MockDownloadFile::CurrentSpeed() const {
+  return 0;
+}
+
 bool MockDownloadFile::GetSha256Hash(std::string* hash) {
   return false;
 }

@@ -74,6 +74,10 @@ int64 DownloadFileImpl::BytesSoFar() const {
   return file_.bytes_so_far();
 }
 
+int64 DownloadFileImpl::CurrentSpeed() const {
+  return file_.CurrentSpeed();
+}
+
 bool DownloadFileImpl::GetSha256Hash(std::string* hash) {
   return file_.GetSha256Hash(hash);
 }

@@ -105,7 +105,8 @@ class CONTENT_EXPORT DownloadManager
 
   // Notifications sent from the download thread to the UI thread
   virtual void StartDownload(int32 id) = 0;
-  virtual void UpdateDownload(int32 download_id, int64 size) = 0;
+  virtual void UpdateDownload(int32 download_id, int64 bytes_so_far,
+                              int64 bytes_per_sec) = 0;
 
   // |download_id| is the ID of the download.
   // |size| is the number of bytes that have been downloaded.

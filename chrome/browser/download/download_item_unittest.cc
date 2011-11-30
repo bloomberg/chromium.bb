@@ -107,6 +107,7 @@ class DownloadItemTest : public testing::Test {
 namespace {
 
 const int kDownloadChunkSize = 1000;
+const int kDownloadSpeed = 1000;
 const int kDummyDBHandle = 10;
 const FilePath::CharType kDummyPath[] = FILE_PATH_LITERAL("/testpath");
 
@@ -126,8 +127,9 @@ TEST_F(DownloadItemTest, NotificationAfterUpdate) {
   DownloadItem* item = CreateDownloadItem(DownloadItem::IN_PROGRESS);
   MockObserver observer(item);
 
-  item->Update(kDownloadChunkSize);
+  item->UpdateProgress(kDownloadChunkSize, kDownloadSpeed);
   ASSERT_TRUE(observer.CheckUpdated());
+  EXPECT_EQ(kDownloadSpeed, item->CurrentSpeed());
 }
 
 TEST_F(DownloadItemTest, NotificationAfterCancel) {

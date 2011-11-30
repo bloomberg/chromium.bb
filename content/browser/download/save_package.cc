@@ -123,6 +123,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
       title_(tab_contents->GetTitle()),
+      start_tick_(base::TimeTicks::Now()),
       finished_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
@@ -149,6 +150,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       download_(NULL),
       page_url_(GetUrlToBeSaved()),
       title_(tab_contents->GetTitle()),
+      start_tick_(base::TimeTicks::Now()),
       finished_(false),
       user_canceled_(false),
       disk_error_occurred_(false),
@@ -174,6 +176,7 @@ SavePackage::SavePackage(TabContents* tab_contents,
       download_(NULL),
       saved_main_file_path_(file_full_path),
       saved_main_directory_path_(directory_full_path),
+      start_tick_(base::TimeTicks::Now()),
       finished_(true),
       user_canceled_(false),
       disk_error_occurred_(false),
@@ -706,7 +709,7 @@ void SavePackage::SaveFinished(int32 save_id, int64 size, bool is_success) {
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
   if (download_)
-    download_->Update(completed_count());
+    download_->UpdateProgress(completed_count(), CurrentSpeed());
 
   if (save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM &&
       save_item->url() == page_url_ && !save_item->received_bytes()) {
@@ -748,7 +751,7 @@ void SavePackage::SaveFailed(const GURL& save_url) {
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
   if (download_)
-    download_->Update(completed_count());
+    download_->UpdateProgress(completed_count(), CurrentSpeed());
 
   if (save_type_ == SAVE_AS_ONLY_HTML ||
       save_item->save_source() == SaveFileCreateInfo::SAVE_FILE_FROM_DOM) {
@@ -819,6 +822,12 @@ int SavePackage::PercentComplete() {
     return 100;
   else
     return completed_count() / all_save_items_count_;
+}
+
+int64 SavePackage::CurrentSpeed() const {
+  base::TimeDelta diff = base::TimeTicks::Now() - start_tick_;
+  int64 diff_ms = diff.InMilliseconds();
+  return diff_ms == 0 ? 0 : completed_count() * 1000 / diff_ms;
 }
 
 // Continue processing the save page job after one SaveItem has been

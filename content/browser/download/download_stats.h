@@ -69,6 +69,13 @@ enum DownloadCountTypes {
   // Counts interruptions that happened at the end of the download.
   INTERRUPTED_AT_END_COUNT,
 
+  // Counts errors due to writes to BaseFiles that have been detached already.
+  // This can happen when saving web pages as complete packages. It happens
+  // when we get messages to append data to files that have already finished and
+  // been detached, but haven't yet been removed from the list of files in
+  // progress.
+  APPEND_TO_DETACHED_FILE_COUNT,
+
   DOWNLOAD_COUNT_TYPES_LAST_ENTRY
 };
 

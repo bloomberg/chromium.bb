@@ -132,6 +132,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadManager* download_manager,
       referrer_url_(info.referrer_url),
       total_bytes_(info.total_bytes),
       received_bytes_(info.received_bytes),
+      bytes_per_sec_(0),
       start_tick_(base::TimeTicks()),
       state_(static_cast<DownloadState>(info.state)),
       start_time_(info.start_time),
@@ -178,6 +179,7 @@ DownloadItemImpl::DownloadItemImpl(
       referrer_charset_(info.referrer_charset),
       total_bytes_(info.total_bytes),
       received_bytes_(0),
+      bytes_per_sec_(0),
       last_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
@@ -211,6 +213,7 @@ DownloadItemImpl::DownloadItemImpl(DownloadManager* download_manager,
       referrer_url_(GURL()),
       total_bytes_(0),
       received_bytes_(0),
+      bytes_per_sec_(0),
       last_reason_(DOWNLOAD_INTERRUPT_REASON_NONE),
       start_tick_(base::TimeTicks::Now()),
       state_(IN_PROGRESS),
@@ -339,7 +342,7 @@ void DownloadItemImpl::UpdateSize(int64 bytes_so_far) {
 // Updates from the download thread may have been posted while this download
 // was being cancelled in the UI thread, so we'll accept them unless we're
 // complete.
-void DownloadItemImpl::Update(int64 bytes_so_far) {
+void DownloadItemImpl::UpdateProgress(int64 bytes_so_far, int64 bytes_per_sec) {
   // TODO(rdsmith): Change to DCHECK after http://crbug.com/85408 resolved.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -347,6 +350,7 @@ void DownloadItemImpl::Update(int64 bytes_so_far) {
     NOTREACHED();
     return;
   }
+  bytes_per_sec_ = bytes_per_sec;
   UpdateSize(bytes_so_far);
   UpdateObservers();
 }
@@ -524,9 +528,7 @@ bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
 int64 DownloadItemImpl::CurrentSpeed() const {
   if (is_paused_)
     return 0;
-  base::TimeDelta diff = base::TimeTicks::Now() - start_tick_;
-  int64 diff_ms = diff.InMilliseconds();
-  return diff_ms == 0 ? 0 : received_bytes_ * 1000 / diff_ms;
+  return bytes_per_sec_;
 }
 
 int DownloadItemImpl::PercentComplete() const {

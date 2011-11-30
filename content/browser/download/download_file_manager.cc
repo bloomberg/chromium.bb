@@ -120,7 +120,8 @@ void DownloadFileManager::UpdateInProgressDownloads() {
     if (manager) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
           base::Bind(&DownloadManager::UpdateDownload, manager,
-                     global_id.local(), download_file->BytesSoFar()));
+                     global_id.local(), download_file->BytesSoFar(),
+                     download_file->CurrentSpeed()));
     }
   }
 }

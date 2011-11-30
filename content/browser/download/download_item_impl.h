@@ -64,7 +64,7 @@ class CONTENT_EXPORT DownloadItemImpl : public DownloadItem {
   virtual void OpenDownload() OVERRIDE;
   virtual void ShowDownloadInShell() OVERRIDE;
   virtual void DangerousDownloadValidated() OVERRIDE;
-  virtual void Update(int64 bytes_so_far) OVERRIDE;
+  virtual void UpdateProgress(int64 bytes_so_far, int64 bytes_per_sec) OVERRIDE;
   virtual void Cancel(bool user_cancel) OVERRIDE;
   virtual void MarkAsComplete() OVERRIDE;
   virtual void DelayedDownloadOpened() OVERRIDE;
@@ -216,6 +216,9 @@ class CONTENT_EXPORT DownloadItemImpl : public DownloadItem {
   // Current received bytes
   int64 received_bytes_;
 
+  // Current speed. Calculated by the DownloadFile.
+  int64 bytes_per_sec_;
+
   // Sha256 hash of the content.  This might be empty either because
   // the download isn't done yet or because the hash isn't needed
   // (ChromeDownloadManagerDelegate::GenerateFileHash() returned false).
@@ -224,7 +227,7 @@ class CONTENT_EXPORT DownloadItemImpl : public DownloadItem {
   // Last reason.
   InterruptReason last_reason_;
 
-  // Start time for calculating remaining time
+  // Start time for recording statistics.
   base::TimeTicks start_tick_;
 
   // The current state of this download

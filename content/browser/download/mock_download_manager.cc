@@ -50,7 +50,8 @@ bool MockDownloadManager::Init(content::BrowserContext* browser_context) {
 void MockDownloadManager::StartDownload(int32 id) {
 }
 
-void MockDownloadManager::UpdateDownload(int32 download_id, int64 size) {
+void MockDownloadManager::UpdateDownload(int32 download_id, int64 bytes_so_far,
+                                         int64 bytes_per_sec) {
 }
 
 void MockDownloadManager::OnResponseCompleted(int32 download_id, int64 size,

@@ -378,13 +378,14 @@ void DownloadManagerImpl::ContinueDownloadWithPath(
   delegate_->AddItemToPersistentStore(download);
 }
 
-void DownloadManagerImpl::UpdateDownload(int32 download_id, int64 size) {
+void DownloadManagerImpl::UpdateDownload(int32 download_id, int64 bytes_so_far,
+                                         int64 bytes_per_sec) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DownloadMap::iterator it = active_downloads_.find(download_id);
   if (it != active_downloads_.end()) {
     DownloadItem* download = it->second;
     if (download->IsInProgress()) {
-      download->Update(size);
+      download->UpdateProgress(bytes_so_far, bytes_per_sec);
       UpdateDownloadProgress();  // Reflect size updates.
       delegate_->UpdateItemInPersistentStore(download);
     }
