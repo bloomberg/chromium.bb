@@ -475,6 +475,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plug-in.
   WebPluginAcceleratedSurface* surface_;  // Weak ref.
+  bool composited_;  // If CA plugin, whether it's rendering via compositor.
   CARenderer* renderer_;  // Renders layer_ to surface_.
   scoped_ptr<base::RepeatingTimer<WebPluginDelegateImpl> > redraw_timer_;
 

@@ -109,6 +109,13 @@ class WebPluginImpl : public WebPlugin,
   virtual std::string GetCookies(const GURL& url,
                                  const GURL& first_party_for_cookies) OVERRIDE;
   virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;
+#if defined(OS_MACOSX)
+  virtual void AcceleratedPluginEnabledRendering() OVERRIDE;
+  virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
+                                                   int32 height,
+                                                   uint32 surface_id) OVERRIDE;
+  virtual void AcceleratedPluginSwappedIOSurface() OVERRIDE;
+#endif
 
   // Given a (maybe partial) url, completes using the base url.
   GURL CompleteURL(const char* url);
@@ -255,6 +262,12 @@ class WebPluginImpl : public WebPlugin,
 
   bool windowless_;
   gfx::PluginWindowHandle window_;
+#if defined(OS_MACOSX)
+  bool next_io_surface_allocated_;
+  int32 next_io_surface_width_;
+  int32 next_io_surface_height_;
+  uint32 next_io_surface_id_;
+#endif
   bool accepts_input_events_;
   base::WeakPtr<WebPluginPageDelegate> page_delegate_;
   WebKit::WebFrame* webframe_;

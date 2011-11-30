@@ -674,8 +674,8 @@ void WebPluginProxy::BindFakePluginWindowHandle(bool opaque) {
 WebPluginAcceleratedSurface* WebPluginProxy::GetAcceleratedSurface(
     gfx::GpuPreference gpu_preference) {
   if (!accelerated_surface_.get())
-    accelerated_surface_.reset(new WebPluginAcceleratedSurfaceProxy(
-        this, gpu_preference));
+    accelerated_surface_.reset(
+        WebPluginAcceleratedSurfaceProxy::Create(this, gpu_preference));
   return accelerated_surface_.get();
 }
 
@@ -709,6 +709,22 @@ void WebPluginProxy::AllocSurfaceDIB(const size_t size,
 
 void WebPluginProxy::FreeSurfaceDIB(TransportDIB::Id dib_id) {
   Send(new PluginHostMsg_FreeTransportDIB(route_id_, dib_id));
+}
+
+void WebPluginProxy::AcceleratedPluginEnabledRendering() {
+  Send(new PluginHostMsg_AcceleratedPluginEnabledRendering(route_id_));
+}
+
+void WebPluginProxy::AcceleratedPluginAllocatedIOSurface(int32 width,
+                                                         int32 height,
+                                                         uint32 surface_id) {
+  Send(new PluginHostMsg_AcceleratedPluginAllocatedIOSurface(
+      route_id_, width, height, surface_id));
+}
+
+void WebPluginProxy::AcceleratedPluginSwappedIOSurface() {
+  Send(new PluginHostMsg_AcceleratedPluginSwappedIOSurface(
+      route_id_));
 }
 #endif
 

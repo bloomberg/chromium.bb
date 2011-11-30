@@ -14,4 +14,9 @@ const char kLang[]                          = "lang";
 // path should point to a locale.pak file.
 const char kLocalePak[]                     = "locale_pak";
 
+#if defined(OS_MACOSX)
+const char kDisableCompositedCoreAnimationPlugins[] =
+    "disable-composited-core-animation-plugins";
+#endif
+
 }  // namespace switches

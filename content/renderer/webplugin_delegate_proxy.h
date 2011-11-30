@@ -187,6 +187,13 @@ class WebPluginDelegateProxy
   void OnAcceleratedSurfaceFreeTransportDIB(TransportDIB::Id dib_id);
   void OnAcceleratedSurfaceBuffersSwapped(gfx::PluginWindowHandle window,
                                           uint64 surface_id);
+
+  // New accelerated plugin implementation.
+  void OnAcceleratedPluginEnabledRendering();
+  void OnAcceleratedPluginAllocatedIOSurface(int32 width,
+                                             int32 height,
+                                             uint32 surface_id);
+  void OnAcceleratedPluginSwappedIOSurface();
 #endif
 
   void OnURLRedirectResponse(bool allow, int resource_id);
@@ -270,6 +277,9 @@ class WebPluginDelegateProxy
   base::WeakPtr<RenderViewImpl> render_view_;
   webkit::npapi::WebPlugin* plugin_;
   bool uses_shared_bitmaps_;
+#if defined(OS_MACOSX)
+  bool uses_compositor_;
+#endif
   gfx::PluginWindowHandle window_;
   scoped_refptr<PluginChannelHost> channel_host_;
   std::string mime_type_;

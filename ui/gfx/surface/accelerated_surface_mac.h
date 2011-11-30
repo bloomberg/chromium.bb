@@ -64,11 +64,11 @@ class SURFACE_EXPORT AcceleratedSurface {
   // the height or width changes. Returns a unique id of the IOSurface to
   // which the surface is bound, or 0 if no changes were made or an error
   // occurred. MakeCurrent() will have been called on the new surface.
-  uint64 SetSurfaceSize(const gfx::Size& size);
+  uint32 SetSurfaceSize(const gfx::Size& size);
 
-  // Returns the id of this surface's IOSruface, or 0 for
+  // Returns the id of this surface's IOSurface, or 0 for
   // transport DIB surfaces.
-  uint64 GetSurfaceId();
+  uint32 GetSurfaceId();
 
   // Sets the GL context to be the current one for drawing. Returns true if
   // it succeeded.
@@ -148,7 +148,7 @@ class SURFACE_EXPORT AcceleratedSurface {
   base::mac::ScopedCFTypeRef<CFTypeRef> io_surface_;
 
   // The id of |io_surface_| or 0 if that's NULL.
-  uint64 io_surface_id_;
+  uint32 io_surface_id_;
 
   // TODO(dspringer): If we end up keeping this TransportDIB mechanism, this
   // should really be a scoped_ptr_malloc<>, with a deallocate functor that

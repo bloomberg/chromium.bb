@@ -267,6 +267,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       buffer_context_(NULL),
       layer_(nil),
       surface_(NULL),
+      composited_(false),
       renderer_(nil),
       containing_window_has_focus_(false),
       initial_window_focus_(false),
@@ -402,11 +403,16 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         // without any drawing; returning false would be a more confusing user
         // experience (since it triggers a missing plugin placeholder).
         if (surface_ && surface_->context()) {
+          composited_ = surface_->IsComposited();
           renderer_ = [[CARenderer rendererWithCGLContext:surface_->context()
                                                   options:NULL] retain];
           [renderer_ setLayer:layer_];
         }
-        plugin_->BindFakePluginWindowHandle(false);
+        if (composited_) {
+          plugin_->AcceleratedPluginEnabledRendering();
+        } else {
+          plugin_->BindFakePluginWindowHandle(false);
+        }
       }
       break;
     }
@@ -415,9 +421,10 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
       break;
   }
 
-  // Let the WebPlugin know that we are windowless (unless this is a
-  // Core Animation plugin, in which case BindFakePluginWindowHandle will take
-  // care of setting up the appropriate window handle).
+  // Let the WebPlugin know that we are windowless, unless this is a Core
+  // Animation plugin, in which case AcceleratedPluginEnabledRendering
+  // calls SetWindow. Rendering breaks if SetWindow is called before
+  // accelerated rendering is enabled.
   if (!layer_)
     plugin_->SetWindow(NULL);
 
@@ -1035,7 +1042,8 @@ void WebPluginDelegateImpl::PluginVisibilityChanged() {
 #endif
   if (instance()->drawing_model() == NPDrawingModelCoreAnimation) {
     bool plugin_visible = container_is_visible_ && !clip_rect_.IsEmpty();
-    if (plugin_visible && !redraw_timer_->IsRunning() && windowed_handle()) {
+    if (plugin_visible && !redraw_timer_->IsRunning() &&
+        (composited_ || windowed_handle())) {
       redraw_timer_->Start(FROM_HERE,
           base::TimeDelta::FromMilliseconds(kCoreAnimationRedrawPeriodMs),
           this, &WebPluginDelegateImpl::DrawLayerInSurface);
@@ -1062,7 +1070,10 @@ void WebPluginDelegateImpl::StartIme() {
 
 void WebPluginDelegateImpl::DrawLayerInSurface() {
   // If we haven't plumbed up the surface yet, don't try to draw.
-  if (!windowed_handle() || !renderer_)
+  if (!renderer_)
+    return;
+
+  if (!composited_ && !windowed_handle())
     return;
 
   [renderer_ beginFrameAtTime:CACurrentMediaTime() timeStamp:NULL];
@@ -1084,8 +1095,10 @@ void WebPluginDelegateImpl::DrawLayerInSurface() {
 
 // Update the size of the surface to match the current size of the plug-in.
 void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
-  // Will only have a window handle when using a Core Animation drawing model.
-  if (!windowed_handle() || !layer_)
+  if (!surface_ || !layer_)
+    return;
+
+  if (!composited_ && !windowed_handle())
     return;
 
   [CATransaction begin];
@@ -1097,10 +1110,15 @@ void WebPluginDelegateImpl::UpdateAcceleratedSurface() {
 
   [renderer_ setBounds:[layer_ bounds]];
   surface_->SetSize(window_rect_.size());
+  if (composited_) {
+    // Kick off the drawing timer, if necessary.
+    PluginVisibilityChanged();
+  }
 }
 
 void WebPluginDelegateImpl::set_windowed_handle(
     gfx::PluginWindowHandle handle) {
+  DCHECK(!composited_);
   windowed_handle_ = handle;
   surface_->SetWindowHandle(handle);
   UpdateAcceleratedSurface();

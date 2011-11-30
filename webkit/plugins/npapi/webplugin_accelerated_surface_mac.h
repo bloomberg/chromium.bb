@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,10 @@ class WebPluginAcceleratedSurface {
   // Sets the window handle used throughout the browser to identify this
   // surface.
   virtual void SetWindowHandle(gfx::PluginWindowHandle window) = 0;
+
+  // Indicates whether the new code path which renders the plugins via
+  // the compositor should be used.
+  virtual bool IsComposited() = 0;
 
   // Sets the size of the surface.
   virtual void SetSize(const gfx::Size& size) = 0;

@@ -382,6 +382,9 @@ IPC_MESSAGE_ROUTED1(PluginHostMsg_FocusChanged,
 
 IPC_MESSAGE_ROUTED0(PluginHostMsg_StartIme)
 
+//----------------------------------------------------------------------
+// Legacy Core Animation plugin implementation rendering directly to screen.
+
 // This message, used in Mac OS X 10.5 and earlier, is sent from the plug-in
 // process to the renderer process to indicate that the plug-in allocated a
 // new TransportDIB that holds the GPU's rendered image.  This information is
@@ -435,6 +438,29 @@ IPC_MESSAGE_ROUTED1(PluginHostMsg_FreeTransportDIB,
 IPC_MESSAGE_ROUTED2(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
                     gfx::PluginWindowHandle /* window */,
                     uint64 /* surface_id */)
+
+//----------------------------------------------------------------------
+// New Core Animation plugin implementation rendering via compositor.
+
+// Notifies the renderer process that this plugin will be using the
+// accelerated rendering path.
+IPC_MESSAGE_ROUTED0(PluginHostMsg_AcceleratedPluginEnabledRendering)
+
+// Notifies the renderer process that the plugin allocated a new
+// IOSurface into which it is rendering. The renderer process forwards
+// this IOSurface to the GPU process, causing it to be bound to a
+// texture from which the compositor can render. Any previous
+// IOSurface allocated by this plugin must be implicitly released by
+// the receipt of this message.
+IPC_MESSAGE_ROUTED3(PluginHostMsg_AcceleratedPluginAllocatedIOSurface,
+                    int32 /* width */,
+                    int32 /* height */,
+                    uint32 /* surface_id */)
+
+// Notifies the renderer process that the plugin produced a new frame
+// of content into its IOSurface, and therefore that the compositor
+// needs to redraw.
+IPC_MESSAGE_ROUTED0(PluginHostMsg_AcceleratedPluginSwappedIOSurface)
 #endif
 
 IPC_MESSAGE_CONTROL1(PluginHostMsg_ClearSiteDataResult,

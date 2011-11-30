@@ -156,6 +156,13 @@ class WebPlugin {
   // Returns the accelerated surface abstraction for accelerated plugins.
   virtual WebPluginAcceleratedSurface* GetAcceleratedSurface(
       gfx::GpuPreference gpu_preference);
+
+  // Composited Core Animation plugin support.
+  virtual void AcceleratedPluginEnabledRendering() = 0;
+  virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
+                                                   int32 height,
+                                                   uint32 surface_id) = 0;
+  virtual void AcceleratedPluginSwappedIOSurface() = 0;
 #endif
 
   // Handles NPN_URLRedirectResponse calls issued by plugins in response to

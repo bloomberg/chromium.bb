@@ -201,6 +201,9 @@ bool PluginProcessHost::Init(const webkit::WebPluginInfo& info,
   // any associated values) if present in the browser command line
   static const char* const kSwitchNames[] = {
     switches::kDisableBreakpad,
+#if defined(OS_MACOSX)
+    switches::kDisableCompositedCoreAnimationPlugins,
+#endif
     switches::kDisableLogging,
     switches::kEnableDCHECK,
     switches::kEnableLogging,

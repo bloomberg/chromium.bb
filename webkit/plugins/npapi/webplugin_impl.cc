@@ -489,38 +489,31 @@ WebPluginImpl::~WebPluginImpl() {
 }
 
 void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
-#if defined(OS_MACOSX)
-  // The only time this is called twice, and the second time with a
-  // non-zero PluginWindowHandle, is the case when this WebPluginImpl
-  // is created on behalf of the GPU plugin. This entire code path
-  // will go away soon, as soon as the GPU plugin becomes the GPU
-  // process, so it is being separated out for easy deletion.
-
-  // The logic we want here is: if (window) DCHECK(!window_);
-  DCHECK(!(window_ && window));
-  window_ = window;
-  // Lie to ourselves about being windowless even if we got a fake
-  // plugin window handle, so we continue to get input events.
-  windowless_ = true;
-  accepts_input_events_ = true;
-  // We do not really need to notify the page delegate that a plugin
-  // window was created -- so don't.
-#else
   if (window) {
     DCHECK(!windowless_);
     window_ = window;
+#if defined(OS_MACOSX)
+    // TODO(kbr): remove. http://crbug.com/105344
+
+    // Lie to ourselves about being windowless even if we got a fake
+    // plugin window handle, so we continue to get input events.
+    windowless_ = true;
+    accepts_input_events_ = true;
+    // We do not really need to notify the page delegate that a plugin
+    // window was created -- so don't.
+#else
     accepts_input_events_ = false;
     if (page_delegate_) {
       // Tell the view delegate that the plugin window was created, so that it
       // can create necessary container widgets.
       page_delegate_->CreatedPluginWindow(window);
     }
+#endif
   } else {
     DCHECK(!window_);  // Make sure not called twice.
     windowless_ = true;
     accepts_input_events_ = true;
   }
-#endif
 }
 
 void WebPluginImpl::SetAcceptsInputEvents(bool accepts) {
@@ -753,6 +746,39 @@ void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {
     }
   }
 }
+
+#if defined(OS_MACOSX)
+void WebPluginImpl::AcceleratedPluginEnabledRendering() {
+}
+
+void WebPluginImpl::AcceleratedPluginAllocatedIOSurface(int32 width,
+                                                        int32 height,
+                                                        uint32 surface_id) {
+  next_io_surface_allocated_ = true;
+  next_io_surface_width_ = width;
+  next_io_surface_height_ = height;
+  next_io_surface_id_ = surface_id;
+}
+
+void WebPluginImpl::AcceleratedPluginSwappedIOSurface() {
+  if (container_) {
+    // Deferring the call to setBackingIOSurfaceId is an attempt to
+    // work around garbage occasionally showing up in the plugin's
+    // area during live resizing of Core Animation plugins. The
+    // assumption was that by the time this was called, the plugin
+    // process would have populated the newly allocated IOSurface. It
+    // is not 100% clear at this point why any garbage is getting
+    // through. More investigation is needed. http://crbug.com/105346
+    if (next_io_surface_allocated_) {
+      container_->setBackingIOSurfaceId(next_io_surface_width_,
+                                        next_io_surface_height_,
+                                        next_io_surface_id_);
+      next_io_surface_allocated_ = false;
+    }
+    container_->commitBackingTexture();
+  }
+}
+#endif
 
 void WebPluginImpl::Invalidate() {
   if (container_)

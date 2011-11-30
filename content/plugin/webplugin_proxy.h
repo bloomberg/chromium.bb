@@ -136,10 +136,13 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
 
   virtual void StartIme() OVERRIDE;
 
-  virtual void BindFakePluginWindowHandle(bool opaque) OVERRIDE;
-
   virtual webkit::npapi::WebPluginAcceleratedSurface*
       GetAcceleratedSurface(gfx::GpuPreference gpu_preference) OVERRIDE;
+
+  //----------------------------------------------------------------------
+  // Legacy Core Animation plugin implementation rendering directly to screen.
+
+  virtual void BindFakePluginWindowHandle(bool opaque) OVERRIDE;
 
   // Tell the browser (via the renderer) to invalidate because the
   // accelerated buffers have changed.
@@ -168,6 +171,20 @@ class WebPluginProxy : public webkit::npapi::WebPlugin {
   virtual void AllocSurfaceDIB(const size_t size,
                                TransportDIB::Handle* dib_handle);
   virtual void FreeSurfaceDIB(TransportDIB::Id dib_id);
+
+  //----------------------------------------------------------------------
+  // New accelerated plugin implementation which renders via the compositor.
+
+  // Tells the renderer, and from there the GPU process, that the plugin
+  // is using accelerated rather than software rendering.
+  virtual void AcceleratedPluginEnabledRendering() OVERRIDE;
+
+  // Tells the renderer, and from there the GPU process, that the plugin
+  // allocated the given IOSurface to be used as its backing store.
+  virtual void AcceleratedPluginAllocatedIOSurface(int32 width,
+                                                   int32 height,
+                                                   uint32 surface_id) OVERRIDE;
+  virtual void AcceleratedPluginSwappedIOSurface() OVERRIDE;
 #endif
 
   virtual void URLRedirectResponse(bool allow, int resource_id) OVERRIDE;

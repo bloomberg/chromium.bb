@@ -169,6 +169,9 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
     : render_view_(render_view),
       plugin_(NULL),
       uses_shared_bitmaps_(false),
+#if defined(OS_MACOSX)
+      uses_compositor_(false),
+#endif
       window_(gfx::kNullPluginWindow),
       mime_type_(mime_type),
       instance_id_(MSG_ROUTING_NONE),
@@ -435,6 +438,13 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnAcceleratedSurfaceFreeTransportDIB)
     IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
+    // Used only on 10.6 and later.
+    IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedPluginEnabledRendering,
+                        OnAcceleratedPluginEnabledRendering)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedPluginAllocatedIOSurface,
+                        OnAcceleratedPluginAllocatedIOSurface)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_AcceleratedPluginSwappedIOSurface,
+                        OnAcceleratedPluginSwappedIOSurface)
 #endif
     IPC_MESSAGE_HANDLER(PluginHostMsg_URLRedirectResponse,
                         OnURLRedirectResponse)
@@ -1030,7 +1040,11 @@ void WebPluginDelegateProxy::ImeCompositionCompleted(const string16& text,
 #endif  // OS_MACOSX
 
 void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
+#if defined(OS_MACOSX)
+  uses_shared_bitmaps_ = !window && !uses_compositor_;
+#else
   uses_shared_bitmaps_ = !window;
+#endif
   window_ = window;
   if (plugin_)
     plugin_->SetWindow(window);
@@ -1385,6 +1399,24 @@ void WebPluginDelegateProxy::OnAcceleratedSurfaceBuffersSwapped(
     gfx::PluginWindowHandle window, uint64 surface_id) {
   if (render_view_)
     render_view_->AcceleratedSurfaceBuffersSwapped(window, surface_id);
+}
+
+void WebPluginDelegateProxy::OnAcceleratedPluginEnabledRendering() {
+  uses_compositor_ = true;
+  OnSetWindow(NULL);
+}
+
+void WebPluginDelegateProxy::OnAcceleratedPluginAllocatedIOSurface(
+    int32 width,
+    int32 height,
+    uint32 surface_id) {
+  if (plugin_)
+    plugin_->AcceleratedPluginAllocatedIOSurface(width, height, surface_id);
+}
+
+void WebPluginDelegateProxy::OnAcceleratedPluginSwappedIOSurface() {
+  if (plugin_)
+    plugin_->AcceleratedPluginSwappedIOSurface();
 }
 #endif
 
