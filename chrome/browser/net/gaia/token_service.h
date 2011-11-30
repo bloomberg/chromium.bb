@@ -51,6 +51,7 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
+class TokenServiceTest;
 
 namespace net {
 class URLRequestContextGetter;
@@ -155,6 +156,14 @@ class TokenService : public GaiaAuthConsumer,
   virtual bool HasTokenForService(const char* service) const;
   const std::string& GetTokenForService(const char* const service) const;
 
+  // OAuth login token is an all-powerful token that allows creating OAuth2
+  // tokens for any other scope (i.e. down-scoping).
+  // Typical use is to create an OAuth2 token for appropriate scope and then
+  // use that token to call a Google API.
+  virtual bool HasOAuthLoginToken() const;
+  const std::string& GetOAuth2LoginRefreshToken() const;
+  const std::string& GetOAuth2LoginAccessToken() const;
+
   // For tests only. Doesn't save to the WebDB.
   void IssueAuthTokenForTest(const std::string& service,
                              const std::string& auth_token);
@@ -165,6 +174,11 @@ class TokenService : public GaiaAuthConsumer,
   virtual void OnIssueAuthTokenFailure(
       const std::string& service,
       const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnOAuthLoginTokenSuccess(const std::string& refresh_token,
+                                        const std::string& access_token,
+                                        int expires_in_secs) OVERRIDE;
+  virtual void OnOAuthLoginTokenFailure(const GoogleServiceAuthError& error)
+      OVERRIDE;
 
   // GaiaOAuthConsumer implementation.
   virtual void OnOAuthGetAccessTokenSuccess(const std::string& token,
@@ -197,11 +211,19 @@ class TokenService : public GaiaAuthConsumer,
   void FireTokenRequestFailedNotification(const std::string& service,
                                           const GoogleServiceAuthError& error);
 
-  void LoadTokensIntoMemory(const std::map<std::string, std::string>& in_toks,
-                            std::map<std::string, std::string>* out_toks);
+  void LoadTokensIntoMemory(
+      const std::map<std::string, std::string>& db_tokens,
+      std::map<std::string, std::string>* in_memory_tokens);
+  void LoadSingleTokenIntoMemory(
+      const std::map<std::string, std::string>& db_tokens,
+      std::map<std::string, std::string>* in_memory_tokens,
+      const std::string& service);
 
   void SaveAuthTokenToDB(const std::string& service,
                          const std::string& auth_token);
+
+  // Returns the index of the given service.
+  static int GetServiceIndex(const std::string& service);
 
   // The profile with which this instance was initialized, or NULL.
   Profile* profile_;
@@ -252,6 +274,7 @@ class TokenService : public GaiaAuthConsumer,
 
   content::NotificationRegistrar registrar_;
 
+  friend class TokenServiceTest;
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryBasic);
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryAdvanced);
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, FullIntegrationNewServicesAdded);

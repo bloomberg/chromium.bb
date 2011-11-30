@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -67,6 +68,13 @@ const char kIssueAuthTokenUrl[] =
     "https://www.google.com/accounts/IssueAuthToken";
 const char kSearchDomainCheckUrl[] =
     "https://www.google.com/searchdomaincheck?format=domain&type=chrome";
+const char kOAuth2LoginTokenValidResponse[] =
+    "{"
+    "  \"refresh_token\": \"rt1\","
+    "  \"access_token\": \"at1\","
+    "  \"expires_in\": 3600,"
+    "  \"token_type\": \"Bearer\""
+    "}";
 }
 
 // Helper class that checks whether a sync test server is running or not.
@@ -371,6 +379,10 @@ void SyncTest::SetupMockGaiaResponses() {
   fake_factory_->SetFakeResponse(kGetUserInfoUrl, "email=user@gmail.com", true);
   fake_factory_->SetFakeResponse(kIssueAuthTokenUrl, "auth", true);
   fake_factory_->SetFakeResponse(kSearchDomainCheckUrl, ".google.com", true);
+  fake_factory_->SetFakeResponse(
+      GaiaUrls::GetInstance()->client_login_to_oauth2_url(),
+      kOAuth2LoginTokenValidResponse,
+      true);
 }
 
 // Start up a local sync server based on the value of server_type_, which
