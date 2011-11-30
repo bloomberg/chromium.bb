@@ -35,9 +35,17 @@
       <include name="IDR_FOLDER_CLOSED_RTL" file="folder_closed_rtl.png" type="BINDATA" />
       <include name="IDR_FOLDER_OPEN" file="folder_open.png" type="BINDATA" />
       <include name="IDR_FOLDER_OPEN_RTL" file="folder_open_rtl.png" type="BINDATA" />
-      <include name="IDR_FRAME" file="frame_default.png" type="BINDATA" />
-      <include name="IDR_FRAME_APP_PANEL" file="frame_app_panel_default.png" type="BINDATA" />
-      <include name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" type="BINDATA" />
+      <if expr="pp_ifdef('use_aura')">
+        <!-- TODO(jamescook): Delete these when Aura uses its own custom window frame, BrowserNonClientFrameViewAura. -->
+        <include name="IDR_FRAME" file="aura/frame_default.png" type="BINDATA" />
+        <include name="IDR_FRAME_APP_PANEL" file="aura/frame_app_panel_default.png" type="BINDATA" />
+        <include name="IDR_FRAME_INACTIVE" file="aura/frame_default_inactive.png" type="BINDATA" />
+      </if>
+      <if expr="not pp_ifdef('use_aura')">
+        <include name="IDR_FRAME" file="frame_default.png" type="BINDATA" />
+        <include name="IDR_FRAME_APP_PANEL" file="frame_app_panel_default.png" type="BINDATA" />
+        <include name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" type="BINDATA" />
+      </if>
       <if expr="pp_ifdef('use_aura')">
         <!-- TODO(jamescook): Delete these when Aura uses its own custom window frame, BrowserNonClientFrameViewAura. -->
         <include name="IDR_MAXIMIZE" file="aura/maximize.png" type="BINDATA" />
