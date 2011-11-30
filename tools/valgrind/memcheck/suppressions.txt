@@ -5226,6 +5226,15 @@
    fun:_ZN4base8internal7InvokerILi4ENS0_9BindStateINS0_15RunnableAdapterIMN12_GLOBAL__N_112RequestProxyEFvRKN3net16URLRequestStatusERKSsRKNS_4TimeEEEEFvPS5_S9_SB_SE_EFvSI_S7_SsSC_EEESJ_E3RunEPNS0_13BindStateBaseE
    fun:_ZNK4base8CallbackIFvvEE3RunEv
 }
+{
+   bug_105864
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEESA_
+   fun:_ZN4base16MessageLoopProxy16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIFvvEEES9_
+   fun:_ZN7content13BrowserThread16PostTaskAndReplyENS0_2IDERKN15tracked_objects8LocationERKN4base8CallbackIFvvEEESB_
+   fun:_ZN16ProfileInfoCache30SetGAIAPictureOfProfileAtIndexEjPKN3gfx5ImageE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
