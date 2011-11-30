@@ -1810,3 +1810,9 @@
    ...
    fun:webkit_media::BufferedDataSourceTest::Initialize
 }
+{
+   bug_100914_d
+   Heapcheck:Leak
+   fun:webkit_media::MockBufferedDataSource::MockBufferedDataSource
+   fun:webkit_media::BufferedDataSourceTest::BufferedDataSourceTest
+}
