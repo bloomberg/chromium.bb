@@ -92,16 +92,16 @@ bool JavaNPObject::Invoke(NPObject* np_object, NPIdentifier np_identifier,
 
 bool JavaNPObject::HasProperty(NPObject* np_object,
                                NPIdentifier np_identifier) {
-  // LIVECONNECT_COMPLIANCE: Return false to indicate that the property is not
-  // present. We should support this correctly.
+  // LIVECONNECT_COMPLIANCE: Existing behavior is to return false to indicate
+  // that the property is not present. Spec requires supporting this correctly.
   return false;
 }
 
 bool JavaNPObject::GetProperty(NPObject* np_object,
                                NPIdentifier np_identifier,
                                NPVariant* result) {
-  // LIVECONNECT_COMPLIANCE: Return false to indicate that the property is
-  // undefined. We should support this correctly.
+  // LIVECONNECT_COMPLIANCE: Existing behavior is to return false to indicate
+  // that the property is undefined. Spec requires supporting this correctly.
   return false;
 }
 
@@ -145,15 +145,17 @@ NPVariant CallJNIMethod(jobject object, const JavaType& return_type,
       VOID_TO_NPVARIANT(result);
       break;
     case JavaType::TypeArray:
-      // TODO(steveblock): Handle arrays
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to not call methods that
+      // return arrays. Spec requires calling the method and converting the
+      // result to a JavaScript array.
       VOID_TO_NPVARIANT(result);
       break;
     case JavaType::TypeString: {
       ScopedJavaLocalRef<jstring> java_string(env, static_cast<jstring>(
           env->CallObjectMethodA(object, id, parameters)));
       if (!java_string.obj()) {
-        // LIVECONNECT_COMPLIANCE: Return undefined to maintain existing
-        // behavior. We should return a null string.
+        // LIVECONNECT_COMPLIANCE: Existing behavior is to return undefined.
+        // Spec requires returning a null string.
         VOID_TO_NPVARIANT(result);
         break;
       }
@@ -195,8 +197,8 @@ jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
                              static_cast<jbyte>(NPVARIANT_TO_INT32(variant));
       break;
     case JavaType::TypeChar:
-      // LIVECONNECT_COMPLIANCE: Convert double to 0 to maintain existing
-      // behavior.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert double to 0.
+      // Spec requires converting doubles the same as int32.
       result.c = is_double ? 0 :
                              static_cast<jchar>(NPVARIANT_TO_INT32(variant));
       break;
@@ -221,8 +223,8 @@ jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
                              NPVARIANT_TO_INT32(variant);
       break;
     case JavaType::TypeObject:
-      // LIVECONNECT_COMPLIANCE: Convert to null to maintain existing behavior.
-      // We should handle object equivalents of primitive types.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to null. Spec
+      // requires handling object equivalents of primitive types.
       result.l = NULL;
       break;
     case JavaType::TypeString:
@@ -232,13 +234,13 @@ jvalue CoerceJavaScriptNumberToJavaValue(const NPVariant& variant,
                        base::IntToString(NPVARIANT_TO_INT32(variant)));
       break;
     case JavaType::TypeBoolean:
-      // LIVECONNECT_COMPLIANCE: Convert to false to maintain existing behavior.
-      // We should convert to false for o or NaN, true otherwise.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to false. Spec
+      // requires converting to false for 0 or NaN, true otherwise.
       result.z = JNI_FALSE;
       break;
     case JavaType::TypeArray:
-      // LIVECONNECT_COMPLIANCE: Convert to null to maintain existing behavior.
-      // We should raise a JavaScript exception.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to null. Spec
+      // requires raising a JavaScript exception.
       result.l = NULL;
       break;
     case JavaType::TypeVoid:
@@ -260,8 +262,8 @@ jvalue CoerceJavaScriptBooleanToJavaValue(const NPVariant& variant,
       result.z = boolean_value ? JNI_TRUE : JNI_FALSE;
       break;
     case JavaType::TypeObject:
-      // LIVECONNECT_COMPLIANCE: Convert to NULL to maintain existing behavior.
-      // We should handle java.lang.Boolean and java.lang.Object.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+      // requires handling java.lang.Boolean and java.lang.Object.
       result.l = NULL;
       break;
     case JavaType::TypeString:
@@ -275,15 +277,15 @@ jvalue CoerceJavaScriptBooleanToJavaValue(const NPVariant& variant,
     case JavaType::TypeLong:
     case JavaType::TypeFloat:
     case JavaType::TypeDouble: {
-      // LIVECONNECT_COMPLIANCE: Convert to 0 to maintain existing behavior. We
-      // should convert to 0 or 1.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to 0. Spec
+      // requires converting to 0 or 1.
       jvalue null_value = {0};
       result = null_value;
       break;
     }
     case JavaType::TypeArray:
-      // LIVECONNECT_COMPLIANCE: Convert to NULL to maintain existing behavior.
-      // We should raise a JavaScript exception.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+      // requires raising a JavaScript exception.
       result.l = NULL;
       break;
     case JavaType::TypeVoid:
@@ -307,8 +309,8 @@ jvalue CoerceJavaScriptStringToJavaValue(const NPVariant& variant,
                             NPVARIANT_TO_STRING(variant).UTF8Length));
       break;
     case JavaType::TypeObject:
-      // LIVECONNECT_COMPLIANCE: Convert to NULL to maintain existing behavior.
-      // We should handle java.lang.Object.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+      // requires handling java.lang.Object.
       result.l = NULL;
       break;
     case JavaType::TypeByte:
@@ -317,25 +319,25 @@ jvalue CoerceJavaScriptStringToJavaValue(const NPVariant& variant,
     case JavaType::TypeLong:
     case JavaType::TypeFloat:
     case JavaType::TypeDouble: {
-      // LIVECONNECT_COMPLIANCE: Convert to 0 to maintain existing behavior. we
-      // should use valueOf() method of corresponding object type.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to 0. Spec
+      // requires using valueOf() method of corresponding object type.
       jvalue null_value = {0};
       result = null_value;
       break;
     }
     case JavaType::TypeChar:
-      // LIVECONNECT_COMPLIANCE: Convert to 0 to maintain existing behavior. we
-      // should use java.lang.Short.decode().
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to 0. Spec
+      // requires using java.lang.Short.decode().
       result.c = 0;
       break;
     case JavaType::TypeBoolean:
-      // LIVECONNECT_COMPLIANCE: Convert to false to maintain existing behavior.
-      // We should convert the empty string to false, otherwise true.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to false. Spec
+      // requires converting the empty string to false, otherwise true.
       result.z = JNI_FALSE;
       break;
     case JavaType::TypeArray:
-      // LIVECONNECT_COMPLIANCE: Convert to NULL to maintain existing behavior.
-      // We should raise a JavaScript exception.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+      // requires raising a JavaScript exception.
       result.l = NULL;
       break;
     case JavaType::TypeVoid:
@@ -365,15 +367,15 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
   jvalue result;
   switch (target_type.type) {
     case JavaType::TypeObject:
-      // LIVECONNECT_COMPLIANCE: Pass all Java objects to maintain existing
-      // behavior. We should pass only Java objects which are
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to pass all Java objects.
+      // Spec requires passing only Java objects which are
       // assignment-compatibile.
       result.l = AttachCurrentThread()->NewLocalRef(
           JavaBoundObject::GetJavaObject(object));
       break;
     case JavaType::TypeString:
-      // LIVECONNECT_COMPLIANCE: Convert to "undefined" to maintain existing
-      // behavior. We should call toString() on the Java object.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to
+      // "undefined". Spec requires calling toString() on the Java object.
       result.l = ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined");
       break;
     case JavaType::TypeByte:
@@ -383,20 +385,20 @@ jvalue CoerceJavaScriptObjectToJavaValue(const NPVariant& variant,
     case JavaType::TypeFloat:
     case JavaType::TypeDouble:
     case JavaType::TypeChar: {
-      // LIVECONNECT_COMPLIANCE: Convert to 0 to maintain existing behavior. We
-      // should raise a JavaScript exception.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to 0. Spec
+      // requires raising a JavaScript exception.
       jvalue null_value = {0};
       result = null_value;
       break;
     }
     case JavaType::TypeBoolean:
-      // LIVECONNECT_COMPLIANCE: Convert to false to maintain existing behavior.
-      // We should raise a JavaScript exception.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to false. Spec
+      // requires raising a JavaScript exception.
       result.z = JNI_FALSE;
       break;
     case JavaType::TypeArray:
-      // LIVECONNECT_COMPLIANCE: Convert to NULL to maintain existing behavior.
-      // We should raise a JavaScript exception.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+      // requires raising a JavaScript exception.
       result.l = NULL;
       break;
     case JavaType::TypeVoid:
@@ -419,8 +421,8 @@ jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(const NPVariant& variant,
       break;
     case JavaType::TypeString:
       if (variant.type == NPVariantType_Void) {
-        // LIVECONNECT_COMPLIANCE: Convert undefined to "undefined" to maintain
-        // existing behavior. We should convert undefined to NULL.
+        // LIVECONNECT_COMPLIANCE: Existing behavior is to convert undefined to
+        // "undefined". Spec requires converting undefined to NULL.
         result.l =  ConvertUTF8ToJavaString(AttachCurrentThread(), "undefined");
       } else {
         result.l = NULL;
@@ -441,8 +443,8 @@ jvalue CoerceJavaScriptNullOrUndefinedToJavaValue(const NPVariant& variant,
       result.z = JNI_FALSE;
       break;
     case JavaType::TypeArray:
-      // LIVECONNECT_COMPLIANCE: Convert to NULL to maintain existing behavior.
-      // We should raise a JavaScript exception.
+      // LIVECONNECT_COMPLIANCE: Existing behavior is to convert to NULL. Spec
+      // requires raising a JavaScript exception.
       result.l = NULL;
       break;
     case JavaType::TypeVoid:
