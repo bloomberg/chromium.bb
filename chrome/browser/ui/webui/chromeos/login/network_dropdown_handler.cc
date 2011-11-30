@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/values.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 #include "content/browser/webui/web_ui.h"
@@ -66,7 +68,7 @@ void NetworkDropdownHandler::HandleNetworkItemChosen(
 
 void NetworkDropdownHandler::HandleNetworkDropdownShow(
     const base::ListValue* args) {
-  DCHECK(args->GetSize() == 2);
+  DCHECK(args->GetSize() == 3);
   std::string element_id;
   if (!args->GetString(0, &element_id))
     NOTREACHED();
@@ -74,7 +76,17 @@ void NetworkDropdownHandler::HandleNetworkDropdownShow(
   if (!args->GetBoolean(1, &oobe))
     NOTREACHED();
 
+
+  double last_network_type = -1;  // Javascript passes integer as double.
+  if (!args->GetDouble(2, &last_network_type))
+    NOTREACHED();
+
   dropdown_.reset(new NetworkDropdown(web_ui_, GetNativeWindow(), oobe));
+
+  if (last_network_type >= 0) {
+    dropdown_->SetLastNetworkType(
+        static_cast<ConnectionType>(last_network_type));
+  }
 }
 
 void NetworkDropdownHandler::HandleNetworkDropdownHide(

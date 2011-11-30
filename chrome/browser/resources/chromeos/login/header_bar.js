@@ -84,8 +84,9 @@ cr.define('login', function() {
    * @param {Integer} state Current state of the network (see NET_STATE).
    * @param {string} network Name of the network.
    * @param {string} reason Reason the callback was called.
+   * @param {int} last Last active network type.
    */
-  HeaderBar.handleAddUser = function(state, network, reason) {
+  HeaderBar.handleAddUser = function(state, network, reason, last) {
     if (state != NET_STATE.OFFLINE) {
       Oobe.showSigninUI();
     } else {
@@ -101,8 +102,9 @@ cr.define('login', function() {
    * @param {Integer} state Current state of the network (see NET_STATE).
    * @param {string} network Name of the network.
    * @param {string} reason Reason the callback was called.
+   * @param {int} last Last active network type.
    */
-  HeaderBar.bubbleWatchdog = function(state, network, reason) {
+  HeaderBar.bubbleWatchdog = function(state, network, reason, last) {
     if (state != NET_STATE.OFFLINE) {
       $('bubble').hideForElement($('add-user-button'));
       chrome.send('loginRemoveNetworkStateObserver',

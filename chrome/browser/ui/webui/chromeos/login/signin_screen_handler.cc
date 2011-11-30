@@ -105,7 +105,8 @@ class NetworkStateInformer
   // Removes observer's callback.
   void RemoveObserver(const std::string& callback);
 
-  // Sends current network state, network name and reason using the callback.
+  // Sends current network state, network name, reason and last network type
+  // using the callback.
   void SendState(const std::string& callback, const std::string& reason);
 
   // NetworkLibrary::NetworkManagerObserver implementation:
@@ -125,6 +126,7 @@ class NetworkStateInformer
   content::NotificationRegistrar registrar_;
   base::hash_set<std::string> observers_;
   std::string active_network_;
+  ConnectionType last_network_type_;
   std::string network_name_;
   State state_;
   WebUI* web_ui_;
@@ -132,7 +134,10 @@ class NetworkStateInformer
 
 // NetworkStateInformer implementation -----------------------------------------
 
-NetworkStateInformer::NetworkStateInformer(WebUI* web_ui) : web_ui_(web_ui) {
+NetworkStateInformer::NetworkStateInformer(WebUI* web_ui)
+    : last_network_type_(TYPE_WIFI),
+      state_(OFFLINE),
+      web_ui_(web_ui) {
   NetworkLibrary* cros = CrosLibrary::Get()->GetNetworkLibrary();
   UpdateState(cros);
   cros->AddNetworkManagerObserver(this);
@@ -159,8 +164,9 @@ void NetworkStateInformer::SendState(const std::string& callback,
   base::FundamentalValue state_value(state_);
   base::StringValue network_value(network_name_);
   base::StringValue reason_value(reason);
-  web_ui_->CallJavascriptFunction(callback, state_value,
-                                  network_value, reason_value);
+  base::FundamentalValue last_network_value(last_network_type_);
+  web_ui_->CallJavascriptFunction(callback, state_value, network_value,
+                                  reason_value, last_network_value);
 }
 
 void NetworkStateInformer::OnNetworkManagerChanged(NetworkLibrary* cros) {
@@ -178,6 +184,9 @@ void NetworkStateInformer::Observe(
 }
 
 bool NetworkStateInformer::UpdateState(NetworkLibrary* cros) {
+  if (cros->active_network())
+    last_network_type_ = cros->active_network()->type();
+
   State new_state;
   std::string new_active_network;
   if (!cros->Connected()) {

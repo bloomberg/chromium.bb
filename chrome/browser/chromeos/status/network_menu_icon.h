@@ -44,6 +44,11 @@ class NetworkMenuIcon : public ui::AnimationDelegate {
   NetworkMenuIcon(Delegate* delegate, Mode mode);
   virtual ~NetworkMenuIcon();
 
+  // Setter for |last_network_type_|
+  void set_last_network_type(ConnectionType last_network_type) {
+    last_network_type_ = last_network_type;
+  }
+
   // Generates and returns the icon bitmap. This will never return NULL.
   // Also sets |text| if not NULL. Behavior varies depending on |mode_|.
   const SkBitmap GetIconAndText(string16* text);

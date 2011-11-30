@@ -46,11 +46,11 @@ cr.define('oobe', function() {
     },
 
     onBeforeShow: function(data) {
-      cr.ui.DropDown.setActive('networks-list', true, true);
+      cr.ui.DropDown.show('networks-list', true, -1);
     },
 
     onBeforeHide: function() {
-      cr.ui.DropDown.setActive('networks-list', false, true);
+      cr.ui.DropDown.hide('networks-list');
     },
 
     /**

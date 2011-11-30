@@ -67,23 +67,6 @@ cr.define('login', function() {
       this.updateLocalizedContent_();
     },
 
-    onBeforeShow: function() {
-      cr.ui.DropDown.setActive('offline-networks-list', true, false);
-
-      $('error-guest-signin').hidden = $('guestSignin').hidden ||
-          !$('add-user-header-bar-item').hidden;
-    },
-
-    onBeforeHide: function() {
-      cr.ui.DropDown.setActive('offline-networks-list', false, false);
-    },
-
-    update: function() {
-      chrome.send('loginRequestNetworkState',
-                  ['login.ErrorMessageScreen.updateState',
-                   'update']);
-    },
-
     /**
      * Updates localized content of the screen that is not updated via template.
      */
@@ -117,10 +100,31 @@ cr.define('login', function() {
       };
     },
 
+    onBeforeShow: function(lastNetworkType) {
+      cr.ui.DropDown.show('offline-networks-list', false, lastNetworkType);
+
+      $('error-guest-signin').hidden = $('guestSignin').hidden ||
+          !$('add-user-header-bar-item').hidden;
+    },
+
+    onBeforeHide: function() {
+      cr.ui.DropDown.hide('offline-networks-list');
+    },
+
+    update: function() {
+      chrome.send('loginRequestNetworkState',
+                  ['login.ErrorMessageScreen.updateState',
+                   'update']);
+    },
+
     /**
      * Shows or hides offline message based on network on/offline state.
+     * @param {Integer} state Current state of the network (see NET_STATE).
+     * @param {string} network Name of the current network.
+     * @param {string} reason Reason the callback was called.
+     * @param {int} lastNetworkType Last active network type.
      */
-    updateState_: function(state, network, reason) {
+    updateState_: function(state, network, reason, lastNetworkType) {
       var currentScreen = Oobe.getInstance().currentScreen;
       var offlineMessage = this;
       var isOnline = (state == NET_STATE.ONLINE);
@@ -141,7 +145,7 @@ cr.define('login', function() {
         console.log('Show offline message, state=' + state +
                     ', network=' + network +
                     ', isUnderCaptivePortal=' + isUnderCaptivePortal);
-        offlineMessage.onBeforeShow();
+        offlineMessage.onBeforeShow(lastNetworkType);
 
         if (isUnderCaptivePortal) {
           if (isProxyError) {
@@ -197,9 +201,11 @@ cr.define('login', function() {
    * @param {Integer} state Current state of the network (see NET_STATE).
    * @param {string} network Name of the current network.
    * @param {string} reason Reason the callback was called.
+   * @param {int} lastNetworkType Last active network type.
    */
-  ErrorMessageScreen.updateState = function(state, network, reason) {
-    $('error-message').updateState_(state, network, reason);
+  ErrorMessageScreen.updateState = function(
+      state, network, reason, lastNetworkType) {
+    $('error-message').updateState_(state, network, reason, lastNetworkType);
   };
 
   /**
