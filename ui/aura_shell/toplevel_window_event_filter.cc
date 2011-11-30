@@ -10,6 +10,7 @@
 #include "ui/aura/event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura_shell/window_util.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 
@@ -124,6 +125,12 @@ bool IsBottomEdge(int window_component) {
       window_component == HTGROWBOX;
 }
 
+void ToggleMaximizedState(aura::Window* window) {
+  window->SetIntProperty(aura::kShowStateKey,
+                         IsWindowMaximized(window) ? ui::SHOW_STATE_NORMAL
+                                                   : ui::SHOW_STATE_MAXIMIZED);
+}
+
 }  // namespace
 
 ToplevelWindowEventFilter::ToplevelWindowEventFilter(aura::Window* owner)
@@ -152,6 +159,10 @@ bool ToplevelWindowEventFilter::PreHandleMouseEvent(aura::Window* target,
       // mouse-drag-release-press case, where the mouse is released and
       // pressed without mouse move event.
       UpdateWindowComponentForEvent(target, event);
+      if (window_component_ == HTCAPTION &&
+          event->flags() & ui::EF_IS_DOUBLE_CLICK) {
+        ToggleMaximizedState(target);
+      }
       mouse_down_bounds_ = target->bounds();
       mouse_down_offset_in_parent_ = event->location();
       aura::Window::ConvertPointToWindow(target, target->parent(),

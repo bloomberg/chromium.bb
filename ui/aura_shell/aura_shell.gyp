@@ -105,6 +105,8 @@
         'toplevel_window_event_filter.h',
         'window_frame.cc',
         'window_frame.h',
+        'window_util.cc',
+        'window_util.h',
         'workspace_controller.cc',
         'workspace_controller.h',
         'workspace/workspace.cc',

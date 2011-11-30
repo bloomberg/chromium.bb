@@ -12,6 +12,7 @@
 #include "ui/aura/test/test_stacking_client.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura_shell/toplevel_window_event_filter.h"
+#include "ui/aura_shell/window_util.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 
@@ -221,7 +222,7 @@ TEST_F(ToplevelWindowEventFilterTest, Client) {
 TEST_F(ToplevelWindowEventFilterTest, LeftPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTLEFT));
   TestWindowDelegate* window_delegate =
-    static_cast<TestWindowDelegate*>(w1->delegate());
+      static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_min_size(gfx::Size(40, 40));
 
   // Simulate a large left-to-right drag.  Window width should be clamped to
@@ -234,7 +235,7 @@ TEST_F(ToplevelWindowEventFilterTest, LeftPastMinimum) {
 TEST_F(ToplevelWindowEventFilterTest, RightPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTRIGHT));
   TestWindowDelegate* window_delegate =
-    static_cast<TestWindowDelegate*>(w1->delegate());
+      static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_min_size(gfx::Size(40, 40));
   gfx::Point position = w1->bounds().origin();
 
@@ -248,7 +249,7 @@ TEST_F(ToplevelWindowEventFilterTest, RightPastMinimum) {
 TEST_F(ToplevelWindowEventFilterTest, TopLeftPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTTOPLEFT));
   TestWindowDelegate* window_delegate =
-    static_cast<TestWindowDelegate*>(w1->delegate());
+      static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_min_size(gfx::Size(40, 40));
 
   // Simulate a large top-left to bottom-right drag.  Window width should be
@@ -261,7 +262,7 @@ TEST_F(ToplevelWindowEventFilterTest, TopLeftPastMinimum) {
 TEST_F(ToplevelWindowEventFilterTest, TopRightPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTTOPRIGHT));
   TestWindowDelegate* window_delegate =
-    static_cast<TestWindowDelegate*>(w1->delegate());
+      static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_min_size(gfx::Size(40, 40));
 
   // Simulate a large top-right to bottom-left drag.  Window size should be
@@ -275,7 +276,7 @@ TEST_F(ToplevelWindowEventFilterTest, TopRightPastMinimum) {
 TEST_F(ToplevelWindowEventFilterTest, BottomLeftPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMLEFT));
   TestWindowDelegate* window_delegate =
-    static_cast<TestWindowDelegate*>(w1->delegate());
+      static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_min_size(gfx::Size(40, 40));
 
   // Simulate a large bottom-left to top-right drag.  Window size should be
@@ -289,7 +290,7 @@ TEST_F(ToplevelWindowEventFilterTest, BottomLeftPastMinimum) {
 TEST_F(ToplevelWindowEventFilterTest, BottomRightPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMRIGHT));
   TestWindowDelegate* window_delegate =
-    static_cast<TestWindowDelegate*>(w1->delegate());
+      static_cast<TestWindowDelegate*>(w1->delegate());
   window_delegate->set_min_size(gfx::Size(40, 40));
   gfx::Point position = w1->bounds().origin();
 
@@ -298,6 +299,19 @@ TEST_F(ToplevelWindowEventFilterTest, BottomRightPastMinimum) {
   DragFromCenterBy(w1.get(), -333, -444);
   EXPECT_EQ(position, w1->bounds().origin());
   EXPECT_EQ(gfx::Size(40, 40), w1->bounds().size());
+}
+
+TEST_F(ToplevelWindowEventFilterTest, DoubleClickCaptionTogglesMaximize) {
+  scoped_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
+  EXPECT_FALSE(IsWindowMaximized(w1.get()));
+
+  aura::test::EventGenerator generator(w1.get());
+  generator.DoubleClickLeftButton();
+
+  EXPECT_TRUE(IsWindowMaximized(w1.get()));
+  generator.DoubleClickLeftButton();
+
+  EXPECT_FALSE(IsWindowMaximized(w1.get()));
 }
 
 }  // namespace test

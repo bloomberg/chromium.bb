@@ -37,11 +37,6 @@ EventGenerator::EventGenerator(Window* window)
 EventGenerator::~EventGenerator() {
 }
 
-void EventGenerator::ClickLeftButton() {
-  PressLeftButton();
-  ReleaseLeftButton();
-}
-
 void EventGenerator::PressLeftButton() {
   if ((flags_ & ui::EF_LEFT_BUTTON_DOWN) == 0) {
     flags_ |= ui::EF_LEFT_BUTTON_DOWN;
@@ -56,6 +51,18 @@ void EventGenerator::ReleaseLeftButton() {
     MouseEvent mouseev(ui::ET_MOUSE_RELEASED, current_location_, 0);
     Dispatch(mouseev);
   }
+}
+
+void EventGenerator::ClickLeftButton() {
+  PressLeftButton();
+  ReleaseLeftButton();
+}
+
+void EventGenerator::DoubleClickLeftButton() {
+  flags_ |= ui::EF_IS_DOUBLE_CLICK;
+  PressLeftButton();
+  flags_ ^= ui::EF_IS_DOUBLE_CLICK;
+  ReleaseLeftButton();
 }
 
 void EventGenerator::MoveMouseTo(const gfx::Point& point) {
