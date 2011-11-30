@@ -446,7 +446,7 @@ cr.define('ntp4', function() {
 
       chrome.send('launchApp',
                   [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, url,
-                   e.altKey, e.ctrlKey, e.metaKey, e.shiftKey, e.button]);
+                   e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
 
       // Don't allow the click to trigger a link or anything
       e.preventDefault();
@@ -461,7 +461,7 @@ cr.define('ntp4', function() {
       if (e.keyIdentifier == 'Enter') {
         chrome.send('launchApp',
                     [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, '',
-                     e.altKey, e.ctrlKey, e.metaKey, e.shiftKey, 0]);
+                     0, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
         e.preventDefault();
         e.stopPropagation();
       }

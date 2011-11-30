@@ -11,6 +11,7 @@
 #include "chrome/browser/sessions/tab_restore_service_delegate.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
 
@@ -65,21 +66,21 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
   if (!delegate || !tab_restore_service_)
     return;
 
-  int session_to_restore;
-  if (!ExtractIntegerValue(args, &session_to_restore))
-    return;
+  double index = -1.0;
+  CHECK(args->GetDouble(1, &index));
 
-  const TabRestoreService::Entries& entries = tab_restore_service_->entries();
-  int index = 0;
-  for (TabRestoreService::Entries::const_iterator iter = entries.begin();
-       iter != entries.end(); ++iter, ++index) {
-    if (session_to_restore == (*iter)->id)
-      break;
-  }
   // There are actually less than 20 restore tab items displayed in the UI.
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.SessionRestore", index, 20);
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.SessionRestore",
+                            static_cast<int>(index), 20);
 
-  tab_restore_service_->RestoreEntryById(delegate, session_to_restore, true);
+  double session_to_restore = 0.0;
+  CHECK(args->GetDouble(0, &session_to_restore));
+
+  WindowOpenDisposition disposition =
+      web_ui_util::GetDispositionFromClick(args, 2);
+  tab_restore_service_->RestoreEntryById(delegate,
+                                         static_cast<int>(session_to_restore),
+                                         disposition);
   // The current tab has been nuked at this point; don't touch any member
   // variables.
 }
