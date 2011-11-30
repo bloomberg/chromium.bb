@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/view_menu_delegate.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class WizardControllerTest_SwitchLanguage_Test;
 

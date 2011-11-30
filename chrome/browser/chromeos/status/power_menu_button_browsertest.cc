@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"

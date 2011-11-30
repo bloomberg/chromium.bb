@@ -19,7 +19,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/views/events/event.h"
 #include "ui/views/ime/input_method_base.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 // Forward declarations, so that we don't need to include ibus.h in this file.
 typedef struct _GAsyncResult GAsyncResult;

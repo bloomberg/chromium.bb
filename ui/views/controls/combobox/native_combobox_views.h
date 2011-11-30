@@ -8,7 +8,7 @@
 
 #include "ui/views/controls/combobox/native_combobox_wrapper.h"
 #include "ui/views/controls/menu/menu_delegate.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace gfx {
 class Canvas;

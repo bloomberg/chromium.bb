@@ -12,7 +12,7 @@
 #include "base/timer.h"
 #include "chrome/browser/ui/views/dom_view.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class Profile;
 class TabContentsDelegate;

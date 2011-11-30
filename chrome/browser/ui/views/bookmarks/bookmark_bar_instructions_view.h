@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/views/controls/link_listener.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 class Label;

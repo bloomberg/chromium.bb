@@ -13,7 +13,7 @@
 #include "chrome/browser/automation/ui_controls_internal.h"
 #include "ui/aura/desktop.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace {
 

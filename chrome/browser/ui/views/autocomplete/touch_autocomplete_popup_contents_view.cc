@@ -12,7 +12,7 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 
 // TouchAutocompleteResultView ------------------------------------------------

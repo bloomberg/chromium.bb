@@ -9,7 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string16.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 class GridLayout;

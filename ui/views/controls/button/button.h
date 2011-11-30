@@ -6,7 +6,7 @@
 #define UI_VIEWS_CONTROLS_BUTTON_BUTTON_H_
 #pragma once
 
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

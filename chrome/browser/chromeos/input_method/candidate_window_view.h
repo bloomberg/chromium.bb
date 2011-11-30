@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_CANDIDATE_WINDOW_VIEW_H_
 
 #include "chrome/browser/chromeos/input_method/ibus_ui_controller.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace chromeos {
 namespace input_method {

@@ -4,7 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/layout/grid_layout.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 using views::ColumnSet;
 using views::GridLayout;

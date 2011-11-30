@@ -8,7 +8,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/insets.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace gfx{
 class Canvas;

@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

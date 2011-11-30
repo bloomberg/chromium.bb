@@ -7,7 +7,7 @@
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/aura/chrome_shell_delegate.h"

@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 ClickHandler::ClickHandler(const views::View* owner,
                            LocationBarView* location_bar)

@@ -10,7 +10,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class AutocompleteResultViewModel;
 namespace gfx {

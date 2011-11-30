@@ -5,7 +5,7 @@
 #include "ui/aura_shell/launcher/view_model.h"
 
 #include "base/logging.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace aura_shell {
 

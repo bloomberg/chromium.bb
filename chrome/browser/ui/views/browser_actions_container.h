@@ -26,7 +26,7 @@
 #include "ui/views/controls/menu/view_menu_delegate.h"
 #include "ui/views/controls/resize_area_delegate.h"
 #include "ui/views/drag_controller.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class Browser;
 class BrowserActionOverflowMenuController;

@@ -9,8 +9,8 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/views/view.h"
 #include "views/painter.h"
-#include "views/view.h"
 
 namespace views {
 

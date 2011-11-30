@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
 #include "ui/aura/desktop.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace ui_controls {
 

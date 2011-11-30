@@ -6,7 +6,7 @@
 #include "chrome/browser/chromeos/brightness_bubble.h"
 #include "chrome/browser/chromeos/setting_level_bubble_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 typedef InProcessBrowserTest BrightnessBubbleTest;
 

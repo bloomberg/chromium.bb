@@ -4,7 +4,7 @@
 
 #include "views/paint_lock.h"
 
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

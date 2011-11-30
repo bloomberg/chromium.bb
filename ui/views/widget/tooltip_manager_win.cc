@@ -17,9 +17,9 @@
 #include "ui/base/win/hwnd_util.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/monitor_win.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 
 namespace views {
 

@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_search.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace ui {
 enum TouchStatus;

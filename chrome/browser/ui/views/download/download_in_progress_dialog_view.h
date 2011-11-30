@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/string16.h"
+#include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "views/view.h"
 
 class Browser;
 

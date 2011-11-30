@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -19,7 +20,6 @@
 #include "base/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
-#include "base/i18n/time_formatting.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
@@ -39,7 +39,7 @@
 #include "ui/base/keycodes/keyboard_codes.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/view.h"
+#include "ui/views/view.h"
 #endif
 
 namespace {

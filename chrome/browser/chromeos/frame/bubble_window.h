@@ -15,7 +15,7 @@
 // in a matter of days / crbug.com/98322.
 #include "ui/views/widget/native_widget_gtk.h"
 #else // TOOLKIT_USES_GTK
-#include "views/view.h"
+#include "ui/views/view.h"
 #endif
 
 namespace views {

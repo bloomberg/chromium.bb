@@ -8,8 +8,8 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 
 namespace views {
 namespace examples {

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/singleton.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 // This class is a simple storage place for storing/retrieving views.  It is
 // used for example in the FocusManager to store/restore focused views when the

@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
+#include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "views/view.h"
 
 class ImporterHost;
 class ImporterObserver;

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/gtest_prod_util.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 class ProgressBar;

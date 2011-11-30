@@ -14,7 +14,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

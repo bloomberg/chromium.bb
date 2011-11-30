@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/focus/focus_search.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

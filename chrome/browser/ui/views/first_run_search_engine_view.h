@@ -11,8 +11,8 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "ui/gfx/size.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "views/view.h"
 
 class Profile;
 class TemplateURL;

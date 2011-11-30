@@ -12,7 +12,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace chromeos {
 

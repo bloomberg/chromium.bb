@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_container.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class NativeTabContentsContainer;
 class RenderViewHost;

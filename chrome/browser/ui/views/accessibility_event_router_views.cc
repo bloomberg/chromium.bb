@@ -17,8 +17,8 @@
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 
 using views::FocusManager;
 

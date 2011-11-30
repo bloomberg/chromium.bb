@@ -17,7 +17,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "views/view.h"
+#include "ui/views/view.h"
 #endif
 
 class DownloadItem;

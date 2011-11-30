@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 #include "ui/views/events/event.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 
 namespace views {
 

@@ -9,8 +9,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 
 class FirstRunBubbleTest : public views::ViewsTestBase {
  public:

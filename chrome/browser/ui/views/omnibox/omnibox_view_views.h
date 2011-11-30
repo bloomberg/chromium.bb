@@ -16,7 +16,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "ui/base/range/range.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditController;

@@ -9,7 +9,7 @@
 #include "base/timer.h"
 #include "ui/gfx/point.h"
 #include "ui/views/touchui/touch_selection_controller.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 #include "views/views_export.h"
 
 namespace views {

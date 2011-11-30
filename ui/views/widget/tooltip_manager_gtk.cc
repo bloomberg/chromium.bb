@@ -9,8 +9,8 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/native_widget_gtk.h"
-#include "views/view.h"
 
 // WARNING: this implementation is good for a start, but it doesn't give us
 // control of tooltip positioning both on mouse events and when showing from

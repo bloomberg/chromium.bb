@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/stringprintf.h"
 #include "ui/views/examples/examples_window.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 namespace examples {

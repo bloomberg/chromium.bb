@@ -14,7 +14,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 ThemeBackground::ThemeBackground(BrowserView* browser_view)
     : browser_view_(browser_view) {

@@ -19,7 +19,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace chromeos {
 

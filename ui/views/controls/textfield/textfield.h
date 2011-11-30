@@ -19,7 +19,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 #if !defined(OS_LINUX)
 #include "base/logging.h"

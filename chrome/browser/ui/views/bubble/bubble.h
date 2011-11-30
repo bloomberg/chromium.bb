@@ -11,7 +11,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 #if defined(USE_AURA)
 #include "ui/views/widget/native_widget_aura.h"

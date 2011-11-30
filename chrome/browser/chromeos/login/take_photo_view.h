@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/views/controls/button/button.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class PhotoCaptureObserver;
 class SkBitmap;

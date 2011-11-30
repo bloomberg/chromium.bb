@@ -10,7 +10,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/color_utils.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type)
     : separator_color_(SK_ColorBLACK),

@@ -13,7 +13,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/examples/example_combobox_model.h"
 #include "ui/views/layout/grid_layout.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace {
 

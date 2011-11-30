@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class DOMView;
 class GURL;

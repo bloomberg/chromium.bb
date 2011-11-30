@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/animation/animation_container.h"
 #include "ui/base/animation/slide_animation.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 // Duration in milliseconds for animations.
 static const int kAnimationDuration = 200;

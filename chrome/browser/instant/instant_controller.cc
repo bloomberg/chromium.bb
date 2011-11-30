@@ -32,8 +32,8 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 #endif
 
 InstantController::InstantController(Profile* profile,

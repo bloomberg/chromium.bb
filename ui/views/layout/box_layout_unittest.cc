@@ -4,7 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/layout/box_layout.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class StaticSizedView : public views::View {
  public:

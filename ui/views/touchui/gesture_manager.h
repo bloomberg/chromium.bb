@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/memory/singleton.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace ui {
 enum TouchStatus;

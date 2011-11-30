@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "ui/gfx/size.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class GURL;
 class PageActionImageView;

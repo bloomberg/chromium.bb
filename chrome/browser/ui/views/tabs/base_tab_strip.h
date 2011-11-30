@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/views/tabs/base_tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "ui/views/animation/bounds_animator.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class BaseTab;
 class TabDragController;

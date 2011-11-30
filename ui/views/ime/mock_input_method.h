@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/views/ime/input_method_base.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

@@ -5,10 +5,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/native_widget_test_utils.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 
 namespace views {
 

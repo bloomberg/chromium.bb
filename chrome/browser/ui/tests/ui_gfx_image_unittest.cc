@@ -16,7 +16,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/views/controls/image_view.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 #endif
 
 namespace {

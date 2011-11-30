@@ -11,7 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/focus/focus_manager.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 class FocusSearch;

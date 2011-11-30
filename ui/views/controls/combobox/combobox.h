@@ -10,7 +10,7 @@
 
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/combobox/native_combobox_wrapper.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace ui {
 class ComboboxModel;

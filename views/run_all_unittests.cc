@@ -7,7 +7,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/gfx/compositor/test/compositor_test_support.h"
 #include "ui/gfx/test/gfx_test_utils.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class ViewTestSuite : public base::TestSuite {
  public:

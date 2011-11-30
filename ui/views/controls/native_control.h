@@ -9,7 +9,7 @@
 #include <windows.h>
 
 #include "ui/base/keycodes/keyboard_codes.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

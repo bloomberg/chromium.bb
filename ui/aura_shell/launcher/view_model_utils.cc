@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ui/aura_shell/launcher/view_model.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace aura_shell {
 

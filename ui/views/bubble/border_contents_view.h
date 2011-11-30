@@ -8,7 +8,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

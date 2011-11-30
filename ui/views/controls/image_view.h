@@ -7,7 +7,7 @@
 #pragma once
 
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace gfx {
 class Canvas;

@@ -28,10 +28,10 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/events/event.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/native_widget.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/view.h"
 
 namespace {
 SkColor kTooltipBackground = 0xFF7F7F00;

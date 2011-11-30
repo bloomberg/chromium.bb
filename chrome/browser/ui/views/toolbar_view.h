@@ -20,8 +20,8 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/view_menu_delegate.h"
+#include "ui/views/view.h"
 #include "views/accessible_pane_view.h"
-#include "views/view.h"
 
 class BrowserActionsContainer;
 class Browser;

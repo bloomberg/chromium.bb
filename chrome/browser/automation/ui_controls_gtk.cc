@@ -17,8 +17,8 @@
 #include "ui/gfx/rect.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 #endif
 
 namespace {

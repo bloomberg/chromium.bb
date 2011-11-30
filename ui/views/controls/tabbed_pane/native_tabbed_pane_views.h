@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ui/views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

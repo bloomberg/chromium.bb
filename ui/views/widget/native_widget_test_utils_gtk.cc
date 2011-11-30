@@ -4,9 +4,9 @@
 
 #include "ui/views/widget/native_widget_test_utils.h"
 
+#include "ui/views/view.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 
 namespace views {
 namespace internal {

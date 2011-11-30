@@ -10,7 +10,7 @@
 #include "base/stl_util.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/layout/layout_constants.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

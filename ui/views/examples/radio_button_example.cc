@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/layout/grid_layout.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 namespace examples {

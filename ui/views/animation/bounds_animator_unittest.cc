@@ -6,7 +6,7 @@
 #include "ui/base/animation/slide_animation.h"
 #include "ui/base/animation/test_animation_delegate.h"
 #include "ui/views/animation/bounds_animator.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 using views::BoundsAnimator;
 using ui::Animation;

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "ui/base/keycodes/keyboard_code_conversion.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/root_view.h"
-#include "views/view.h"
 
 namespace views {
 

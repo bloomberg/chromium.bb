@@ -9,9 +9,9 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "views/view.h"
 
 namespace views {
 

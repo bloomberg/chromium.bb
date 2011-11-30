@@ -15,8 +15,8 @@
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/table/table_view_observer.h"
+#include "ui/views/view.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "views/view.h"
 
 // This header file exists only for testing.  Chrome should access the
 // certificate selector only through the cross-platform interface

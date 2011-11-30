@@ -11,8 +11,8 @@
 #include "base/message_loop.h"
 #include "ui/base/events.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "views/view.h"
 
 namespace views {
 

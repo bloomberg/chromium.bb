@@ -6,7 +6,7 @@
 
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/fill_layout.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 namespace examples {

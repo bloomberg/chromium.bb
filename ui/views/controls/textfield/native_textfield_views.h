@@ -16,8 +16,8 @@
 #include "ui/views/controls/textfield/textfield_views_model.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/touchui/touch_selection_controller.h"
+#include "ui/views/view.h"
 #include "views/border.h"
-#include "views/view.h"
 
 namespace base {
 class Time;

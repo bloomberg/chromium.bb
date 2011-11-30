@@ -7,7 +7,7 @@
 #include "base/callback.h"
 #include "chrome/browser/automation/ui_controls_internal.h"
 #include "ui/gfx/point.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace ui_controls {
 

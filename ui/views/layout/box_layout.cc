@@ -6,7 +6,7 @@
 
 #include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

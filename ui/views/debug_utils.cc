@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 #ifndef NDEBUG
 #include <iostream>

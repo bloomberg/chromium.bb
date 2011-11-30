@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_ABSTRACT_TAB_STRIP_VIEW_H_
 #pragma once
 
-#include "views/view.h"
+#include "ui/views/view.h"
 
 // This interface is the way the browser view sees a tab strip's view.
 class AbstractTabStripView : public views::View {

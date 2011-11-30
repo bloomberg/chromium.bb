@@ -9,7 +9,7 @@
 #include <string>
 
 #include "ui/gfx/native_widget_types.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

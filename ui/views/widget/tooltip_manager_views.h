@@ -9,10 +9,10 @@
 #include "base/message_loop.h"
 #include "base/timer.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "views/view.h"
 
 #if defined(USE_X11)
 typedef union _XEvent XEvent;

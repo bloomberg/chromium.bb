@@ -10,8 +10,8 @@
 
 #include "base/string16.h"
 #include "ui/gfx/size.h"
+#include "ui/views/view.h"
 #include "views/painter.h"
-#include "views/view.h"
 
 namespace gfx {
 class Canvas;

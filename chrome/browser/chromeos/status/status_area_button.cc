@@ -8,8 +8,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skbitmap_operations.h"
+#include "ui/views/view.h"
 #include "views/border.h"
-#include "views/view.h"
 
 namespace {
 

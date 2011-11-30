@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/string16.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 

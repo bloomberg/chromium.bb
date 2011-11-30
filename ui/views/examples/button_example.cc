@@ -9,7 +9,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/layout/fill_layout.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 namespace examples {

@@ -12,7 +12,7 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class BaseTab;
 class TabController;

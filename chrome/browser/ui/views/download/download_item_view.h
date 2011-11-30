@@ -33,7 +33,7 @@
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/events/event.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 class BaseDownloadItemModel;
 class DownloadShelfView;

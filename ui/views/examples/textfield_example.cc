@@ -10,7 +10,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 namespace examples {

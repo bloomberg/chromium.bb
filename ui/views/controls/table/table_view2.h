@@ -16,7 +16,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/table/native_table_wrapper.h"
 #include "ui/views/controls/table/table_view.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace ui {
 struct TableColumn;

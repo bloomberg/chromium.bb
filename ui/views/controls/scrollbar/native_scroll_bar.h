@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
-#include "views/view.h"
+#include "ui/views/view.h"
 
 namespace views {
 
