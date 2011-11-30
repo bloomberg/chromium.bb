@@ -4544,7 +4544,7 @@
    bug_100914_b
    Memcheck:Leak
    ...
-   fun:_ZN12webkit_media22MockBufferedDataSource24CreateMockResourceLoaderEll
+   fun:_ZN12webkit_media22MockBufferedDataSource24CreateMockResourceLoaderE??
 }
 {
    bug_100916
