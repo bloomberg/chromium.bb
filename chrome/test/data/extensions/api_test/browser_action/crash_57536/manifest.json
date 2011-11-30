@@ -5,5 +5,6 @@
    },
    "description": "An extension testing crash http://crbug.com/57536 where cached extension causes browser action container to crash",
    "name": "Test crash http://crbug.com/57536",
+   "manifest_version": 2,
    "version": "1.0"
 }

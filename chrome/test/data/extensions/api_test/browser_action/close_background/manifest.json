@@ -1,10 +1,11 @@
 {
-   "name": "Close Background Page",
-   "description": "Click the browser action to close the background page.",
-   "version": "1",
-   "background_page": "background.html",
-   "browser_action": {
-	"default_icon" : "icon.png",
-	"default_title": "close background page"
-   }
+  "name": "Close Background Page",
+  "description": "Click the browser action to close the background page.",
+  "version": "1",
+  "manifest_version": 2,
+  "background_page": "background.html",
+  "browser_action": {
+    "default_icon" : "icon.png",
+    "default_title": "close background page"
+  }
 }

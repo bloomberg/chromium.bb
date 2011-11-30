@@ -1,6 +1,7 @@
 {
   "name": "A page action which removes a popup.",
   "version": "1.0",
+  "manifest_version": 2,
   "background_page": "background.html",
   "permissions": [
     "tabs", "http://*/*"
