@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
+#include "content/common/child_process_info.h"
 #include "ipc/ipc_switches.h"
 #include "printing/page_range.h"
 #include "ui/base/ui_base_switches.h"
@@ -27,8 +28,7 @@
 
 ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     Client* client, base::MessageLoopProxy* client_message_loop_proxy)
-        : ServiceChildProcessHost(ChildProcessInfo::UTILITY_PROCESS),
-          client_(client),
+        : client_(client),
           client_message_loop_proxy_(client_message_loop_proxy),
           waiting_for_reply_(false) {
   process_id_ = ChildProcessInfo::GenerateChildProcessUniqueId();
@@ -95,10 +95,6 @@ bool ServiceUtilityProcessHost::StartGetPrinterCapsAndDefaults(
 
 bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox,
                                              const FilePath& exposed_dir) {
-  // Name must be set or metrics_service will crash in any test which
-  // launches a UtilityProcessHost.
-  set_name(ASCIIToUTF16("utility process"));
-
   if (!CreateChannel())
     return false;
 

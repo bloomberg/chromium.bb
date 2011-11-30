@@ -15,13 +15,13 @@
 #include "content/common/sandbox_policy.h"
 #endif  // defined(OS_WIN)
 
-ServiceChildProcessHost::ServiceChildProcessHost(ProcessType type)
-    : ChildProcessInfo(type, -1) {
+ServiceChildProcessHost::ServiceChildProcessHost()
+    : handle_(base::kNullProcessHandle) {
 }
 
 ServiceChildProcessHost::~ServiceChildProcessHost() {
   // We need to kill the child process when the host dies.
-  base::KillProcess(handle(), content::RESULT_CODE_NORMAL_EXIT, false);
+  base::KillProcess(handle_, content::RESULT_CODE_NORMAL_EXIT, false);
 }
 
 bool ServiceChildProcessHost::Launch(CommandLine* cmd_line,
@@ -36,11 +36,10 @@ bool ServiceChildProcessHost::Launch(CommandLine* cmd_line,
   if (no_sandbox) {
     base::ProcessHandle process = base::kNullProcessHandle;
     cmd_line->AppendSwitch(switches::kNoSandbox);
-    base::LaunchProcess(*cmd_line, base::LaunchOptions(), &process);
-    set_handle(process);
+    base::LaunchProcess(*cmd_line, base::LaunchOptions(), &handle_);
   } else {
-    set_handle(sandbox::StartProcessWithAccess(cmd_line, exposed_dir));
+    handle_ = sandbox::StartProcessWithAccess(cmd_line, exposed_dir);
   }
-  return (handle() != base::kNullProcessHandle);
+  return (handle_ != base::kNullProcessHandle);
 #endif  // !defined(OS_WIN)
 }

@@ -8,20 +8,19 @@
 
 #include "base/process.h"
 #include "content/common/child_process_host.h"
-#include "content/common/child_process_info.h"
 
 class CommandLine;
 
 // Plugins/workers and other child processes that live on the IO thread should
 // derive from this class.
 //
-class ServiceChildProcessHost : public ChildProcessHost,
-                                public ChildProcessInfo {
+class ServiceChildProcessHost : public ChildProcessHost {
  public:
   virtual ~ServiceChildProcessHost();
 
  protected:
-  explicit ServiceChildProcessHost(ProcessType type);
+  ServiceChildProcessHost();
+
   // Derived classes call this to launch the child process synchronously.
   // TODO(sanjeevr): Determine whether we need to make the launch asynchronous.
   // |exposed_dir| is the path to tbe exposed to the sandbox. This is ignored
@@ -29,6 +28,13 @@ class ServiceChildProcessHost : public ChildProcessHost,
   bool Launch(CommandLine* cmd_line,
               bool no_sandbox,
               const FilePath& exposed_dir);
+
+  base::ProcessHandle handle() const { return handle_; }
+
+ private:
+  base::ProcessHandle handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceChildProcessHost);
 };
 
 #endif  // CHROME_SERVICE_SERVICE_CHILD_PROCESS_HOST_H_
