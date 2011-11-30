@@ -65,6 +65,8 @@ class BaseTool(object):
     self._parser.add_option("-t", "--timeout",
                       dest="timeout", metavar="TIMEOUT", default=10000,
                       help="timeout in seconds for the run (default 10000)")
+    self._parser.add_option("", "--build_dir",
+                            help="the location of the compiler output")
     self._parser.add_option("", "--source_dir",
                             help="path to top of source tree for this build"
                                  "(used to normalize source paths in baseline)")
@@ -844,6 +846,19 @@ class DrMemory(BaseTool):
       proc += ["-debug"]
 
     proc += ["-logdir", common.NormalizeWindowsPath(self.log_dir)]
+
+    if self._options.build_dir:
+      # The other case is only possible with -t cmdline.
+      # Anyways, if we omit -symcache_dir the -logdir's value is used which
+      # should be fine.
+      symcache_dir = os.path.join(self._options.build_dir, "drmemory.symcache")
+      if not os.path.exists(symcache_dir):
+        try:
+          os.mkdir(symcache_dir)
+        except OSError:
+          logging.warning("Can't create symcache dir?")
+      if os.path.exists(symcache_dir):
+        proc += ["-symcache_dir", symcache_dir]
 
     # Use -no_summary to suppress DrMemory's summary and init-time
     # notifications.  We generate our own with drmemory_analyze.py.

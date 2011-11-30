@@ -73,6 +73,10 @@ class ChromeTests:
       else:
         self._options.build_dir = None
 
+    if self._options.build_dir:
+      build_dir = os.path.abspath(self._options.build_dir)
+      self._command_preamble += ["--build_dir=%s" % (self._options.build_dir)]
+
   def _EnsureBuildDirFound(self):
     if not self._options.build_dir:
       raise BuildDirNotFound("Oops, couldn't find a build dir, please "
