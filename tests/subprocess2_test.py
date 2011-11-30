@@ -19,6 +19,7 @@ except ImportError:
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import subprocess
 import subprocess2
 
 from testing_support import auto_stub
@@ -82,8 +83,8 @@ class DefaultsTest(auto_stub.TestCase):
       results['args'] = args
     def communicate():
       return None, None
-    self.mock(subprocess2.subprocess.Popen, '__init__', __init__)
-    self.mock(subprocess2.subprocess.Popen, 'communicate', communicate)
+    self.mock(subprocess.Popen, '__init__', __init__)
+    self.mock(subprocess.Popen, 'communicate', communicate)
     return results
 
   def test_check_call_defaults(self):
@@ -158,9 +159,9 @@ class DefaultsTest(auto_stub.TestCase):
     self.assertEquals(expected, results)
 
 
-class S2Test(unittest.TestCase):
+class BaseTestCase(unittest.TestCase):
   def setUp(self):
-    super(S2Test, self).setUp()
+    super(BaseTestCase, self).setUp()
     self.exe_path = __file__
     self.exe = [sys.executable, self.exe_path, '--child']
     self.states = {}
@@ -172,8 +173,135 @@ class S2Test(unittest.TestCase):
   def tearDown(self):
     for fileno, fl in self.states.iteritems():
       self.assertEquals(fl, fcntl.fcntl(fileno, fcntl.F_GETFL))
-    super(S2Test, self).tearDown()
+    super(BaseTestCase, self).tearDown()
 
+
+class RegressionTest(BaseTestCase):
+  # Regression tests to ensure that subprocess and subprocess2 have the same
+  # behavior.
+  def _run_test(self, function):
+    """Runs tests in 12 combinations:
+    - LF output with universal_newlines=False
+    - CR output with universal_newlines=False
+    - CRLF output with universal_newlines=False
+    - LF output with universal_newlines=True
+    - CR output with universal_newlines=True
+    - CRLF output with universal_newlines=True
+
+    Once with subprocess, once with subprocess2.
+
+    First |function| argument is the conversion for the original expected LF
+    string to the right EOL.
+    Second |function| argument is the executable and initial flag to run, to
+    control what EOL is used by the child process.
+    Third |function| argument is universal_newlines value.
+    """
+    noop = lambda x: x
+    for subp in (subprocess, subprocess2):
+      function(noop, self.exe, False, subp)
+      function(convert_to_cr, self.exe + ['--cr'], False, subp)
+      function(convert_to_crlf, self.exe + ['--crlf'], False, subp)
+      function(noop, self.exe, True, subp)
+      function(noop, self.exe + ['--cr'], True, subp)
+      function(noop, self.exe + ['--crlf'], True, subp)
+
+  def _check_pipes(self, subp, e, stdout, stderr):
+    """On exception, look if the exception members are set correctly."""
+    if subp is subprocess:
+      # subprocess never save the output.
+      self.assertFalse(hasattr(e, 'stdout'))
+      self.assertFalse(hasattr(e, 'stderr'))
+    elif subp is subprocess2:
+      self.assertEquals(stdout, e.stdout)
+      self.assertEquals(stderr, e.stderr)
+    else:
+      self.fail()
+
+  def test_check_output_no_stdout(self):
+    try:
+      subprocess2.check_output(self.exe, stdout=subprocess2.PIPE)
+      self.fail()
+    except ValueError:
+      pass
+    
+    if (sys.version_info[0] * 10 + sys.version_info[1]) >= 27:
+      # python 2.7+
+      try:
+        # pylint: disable=E1101
+        subprocess.check_output(self.exe, stdout=subprocess.PIPE)
+        self.fail()
+      except ValueError:
+        pass
+
+  def test_check_output_throw_stdout(self):
+    def fn(c, e, un, subp):
+      if not hasattr(subp, 'check_output'):
+        return
+      try:
+        subp.check_output(
+            e + ['--fail', '--stdout'], universal_newlines=un)
+        self.fail()
+      except subp.CalledProcessError, e:
+        self._check_pipes(subp, e, c('A\nBB\nCCC\n'), None)
+        self.assertEquals(64, e.returncode)
+    self._run_test(fn)
+
+  def test_check_output_throw_no_stderr(self):
+    def fn(c, e, un, subp):
+      if not hasattr(subp, 'check_output'):
+        return
+      try:
+        subp.check_output(
+            e + ['--fail', '--stderr'], universal_newlines=un)
+        self.fail()
+      except subp.CalledProcessError, e:
+        self._check_pipes(subp, e, c(''), None)
+        self.assertEquals(64, e.returncode)
+    self._run_test(fn)
+
+  def test_check_output_throw_stderr(self):
+    def fn(c, e, un, subp):
+      if not hasattr(subp, 'check_output'):
+        return
+      try:
+        subp.check_output(
+            e + ['--fail', '--stderr'],
+            stderr=subp.PIPE,
+            universal_newlines=un)
+        self.fail()
+      except subp.CalledProcessError, e:
+        self._check_pipes(subp, e, '', c('a\nbb\nccc\n'))
+        self.assertEquals(64, e.returncode)
+    self._run_test(fn)
+
+  def test_check_output_throw_stderr_stdout(self):
+    def fn(c, e, un, subp):
+      if not hasattr(subp, 'check_output'):
+        return
+      try:
+        subp.check_output(
+            e + ['--fail', '--stderr'],
+            stderr=subp.STDOUT,
+            universal_newlines=un)
+        self.fail()
+      except subp.CalledProcessError, e:
+        self._check_pipes(subp, e, c('a\nbb\nccc\n'), None)
+        self.assertEquals(64, e.returncode)
+    self._run_test(fn)
+
+  def test_check_call_throw(self):
+    for subp in (subprocess, subprocess2):
+      try:
+        subp.check_call(self.exe + ['--fail', '--stderr'])
+        self.fail()
+      except subp.CalledProcessError, e:
+        self._check_pipes(subp, e, None, None)
+        self.assertEquals(64, e.returncode)
+
+
+class S2Test(BaseTestCase):
+  # Tests that can only run in subprocess2, e.g. new functionalities.
+  # In particular, subprocess2.communicate() doesn't exist in subprocess.
   def _run_test(self, function):
     """Runs tests in 6 combinations:
     - LF output with universal_newlines=False
@@ -198,20 +326,16 @@ class S2Test(unittest.TestCase):
     function(noop, self.exe + ['--crlf'], True)
 
   def test_timeout(self):
-    out, returncode = subprocess2.communicate(
-        self.exe + ['--sleep_first', '--stdout'],
-        timeout=0.01,
-        stdout=subprocess2.PIPE,
-        shell=False)
-    self.assertEquals(subprocess2.TIMED_OUT, returncode)
-    self.assertEquals(('', None), out)
-
-  def test_check_output_no_stdout(self):
-    try:
-      subprocess2.check_output(self.exe, stdout=subprocess2.PIPE)
-      self.fail()
-    except TypeError:
-      pass
+    # timeout doesn't exist in subprocess.
+    def fn(c, e, un):
+      out, returncode = subprocess2.communicate(
+          self.exe + ['--sleep_first', '--stdout'],
+          timeout=0.01,
+          stdout=subprocess2.PIPE,
+          shell=False)
+      self.assertEquals(subprocess2.TIMED_OUT, returncode)
+      self.assertEquals(('', None), out)
+    self._run_test(fn)
 
   def test_stdout_void(self):
     def fn(c, e, un):
@@ -261,65 +385,6 @@ class S2Test(unittest.TestCase):
       self.assertEquals(None, err)
       self.assertEquals(0, code)
     self._run_test(fn)
-
-  def test_check_output_throw_stdout(self):
-    def fn(c, e, un):
-      try:
-        subprocess2.check_output(
-            e + ['--fail', '--stdout'], universal_newlines=un)
-        self.fail()
-      except subprocess2.CalledProcessError, e:
-        self.assertEquals(c('A\nBB\nCCC\n'), e.stdout)
-        self.assertEquals(None, e.stderr)
-        self.assertEquals(64, e.returncode)
-    self._run_test(fn)
-
-  def test_check_output_throw_no_stderr(self):
-    def fn(c, e, un):
-      try:
-        subprocess2.check_output(
-            e + ['--fail', '--stderr'], universal_newlines=un)
-        self.fail()
-      except subprocess2.CalledProcessError, e:
-        self.assertEquals(c(''), e.stdout)
-        self.assertEquals(None, e.stderr)
-        self.assertEquals(64, e.returncode)
-    self._run_test(fn)
-
-  def test_check_output_throw_stderr(self):
-    def fn(c, e, un):
-      try:
-        subprocess2.check_output(
-            e + ['--fail', '--stderr'], stderr=subprocess2.PIPE,
-            universal_newlines=un)
-        self.fail()
-      except subprocess2.CalledProcessError, e:
-        self.assertEquals('', e.stdout)
-        self.assertEquals(c('a\nbb\nccc\n'), e.stderr)
-        self.assertEquals(64, e.returncode)
-    self._run_test(fn)
-
-  def test_check_output_throw_stderr_stdout(self):
-    def fn(c, e, un):
-      try:
-        subprocess2.check_output(
-            e + ['--fail', '--stderr'], stderr=subprocess2.STDOUT,
-            universal_newlines=un)
-        self.fail()
-      except subprocess2.CalledProcessError, e:
-        self.assertEquals(c('a\nbb\nccc\n'), e.stdout)
-        self.assertEquals(None, e.stderr)
-        self.assertEquals(64, e.returncode)
-    self._run_test(fn)
-
-  def test_check_call_throw(self):
-    try:
-      subprocess2.check_call(self.exe + ['--fail', '--stderr'])
-      self.fail()
-    except subprocess2.CalledProcessError, e:
-      self.assertEquals(None, e.stdout)
-      self.assertEquals(None, e.stderr)
-      self.assertEquals(64, e.returncode)
 
 
 def child_main(args):

@@ -310,4 +310,6 @@ def check_output(args, **kwargs):
   - As per doc, "The stdout argument is not allowed as it is used internally."
   """
   kwargs.setdefault('stdin', VOID)
+  if 'stdout' in kwargs:
+    raise ValueError('stdout argument not allowed, it will be overridden.')
   return check_call_out(args, stdout=PIPE, **kwargs)[0]
