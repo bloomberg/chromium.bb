@@ -12,14 +12,11 @@
 #include "base/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/gfx/image/image.h"
 
 class AvatarMenuModelObserver;
 class Browser;
 class ProfileInfoInterface;
-
-namespace gfx {
-class Image;
-}
 
 // This class is the model for the menu-like interface that appears when the
 // avatar icon is clicked in the browser window frame. This class will notify
@@ -33,7 +30,7 @@ class AvatarMenuModel : public content::NotificationObserver {
     ~Item();
 
     // The icon to be displayed next to the item.
-    const gfx::Image& icon;
+    gfx::Image icon;
 
     // Whether or not the current browser is using this profile.
     bool active;

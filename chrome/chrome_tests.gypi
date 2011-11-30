@@ -1570,6 +1570,7 @@
         'browser/profiles/profile_dependency_manager_unittest.cc',
         'browser/profiles/profile_info_cache_unittest.cc',
         'browser/profiles/profile_info_cache_unittest.h',
+        'browser/profiles/profile_info_util_unittest.cc',
         'browser/profiles/profile_manager_unittest.cc',
         'browser/renderer_host/web_cache_manager_unittest.cc',
         'browser/resources/print_preview/print_preview_utils.js',

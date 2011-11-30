@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,7 +22,6 @@
 #include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/image/image.h"
 
 using content::BrowserThread;
 
@@ -151,7 +151,13 @@ void AvatarMenuModel::RebuildMenu() {
 
   const size_t count = profile_info_->GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
-    Item* item = new Item(i, profile_info_->GetAvatarIconOfProfileAtIndex(i));
+    bool is_gaia_picture =
+        profile_info_->IsUsingGAIAPictureOfProfileAtIndex(i) &&
+        profile_info_->GetGAIAPictureOfProfileAtIndex(i);
+    gfx::Image icon = profiles::GetAvatarIconForMenu(
+        profile_info_->GetAvatarIconOfProfileAtIndex(i), is_gaia_picture);
+
+    Item* item = new Item(i, icon);
     item->name = profile_info_->GetNameOfProfileAtIndex(i);
     item->sync_state = profile_info_->GetUserNameOfProfileAtIndex(i);
     if (item->sync_state.empty()) {

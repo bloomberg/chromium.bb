@@ -1970,6 +1970,8 @@
         'browser/profiles/profile_info_cache.h',
         'browser/profiles/profile_info_cache_observer.h',
         'browser/profiles/profile_info_interface.h',
+        'browser/profiles/profile_info_util.cc',
+        'browser/profiles/profile_info_util.h',
         'browser/profiles/profile_io_data.cc',
         'browser/profiles/profile_io_data.h',
         'browser/profiles/profile_keyed_service_factory.cc',
