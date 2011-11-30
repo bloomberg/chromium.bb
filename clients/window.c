@@ -90,6 +90,10 @@ struct display {
 	PFNGLEGLIMAGETARGETTEXTURE2DOESPROC image_target_texture_2d;
 	PFNEGLCREATEIMAGEKHRPROC create_image;
 	PFNEGLDESTROYIMAGEKHRPROC destroy_image;
+
+	display_output_handler_t output_configure_handler;
+
+	void *user_data;
 };
 
 enum {
@@ -168,6 +172,9 @@ struct output {
 	struct wl_output *output;
 	struct rectangle allocation;
 	struct wl_list link;
+
+	display_output_handler_t destroy_handler;
+	void *user_data;
 };
 
 enum {
@@ -2076,10 +2083,14 @@ display_handle_mode(void *data,
 		    int refresh)
 {
 	struct output *output = data;
+	struct display *display = output->display;
 
 	if (flags & WL_OUTPUT_MODE_CURRENT) {
 		output->allocation.width = width;
 		output->allocation.height = height;
+		if (display->output_configure_handler)
+			(*display->output_configure_handler)(
+						output, display->user_data);
 	}
 }
 
@@ -2107,9 +2118,50 @@ display_add_output(struct display *d, uint32_t id)
 }
 
 void
+display_set_output_configure_handler(struct display *display,
+				     display_output_handler_t handler)
+{
+	struct output *output;
+
+	display->output_configure_handler = handler;
+	if (!handler)
+		return;
+
+	wl_list_for_each(output, &display->output_list, link)
+		(*display->output_configure_handler)(output,
+						     display->user_data);
+}
+
+void
+output_set_user_data(struct output *output, void *data)
+{
+	output->user_data = data;
+}
+
+void *
+output_get_user_data(struct output *output)
+{
+	return output->user_data;
+}
+
+void
+output_set_destroy_handler(struct output *output,
+			   display_output_handler_t handler)
+{
+	output->destroy_handler = handler;
+	/* FIXME: implement this, once we have way to remove outputs */
+}
+
+void
 output_get_allocation(struct output *output, struct rectangle *allocation)
 {
 	*allocation = output->allocation;
+}
+
+struct wl_output *
+output_get_wl_output(struct output *output)
+{
+	return output->output;
 }
 
 static void
@@ -2393,6 +2445,18 @@ display_create(int *argc, char **argv[], const GOptionEntry *option_entries)
 	init_xkb(d);
 
 	return d;
+}
+
+void
+display_set_user_data(struct display *display, void *data)
+{
+	display->user_data = data;
+}
+
+void *
+display_get_user_data(struct display *display)
+{
+	return display->user_data;
 }
 
 struct wl_display *

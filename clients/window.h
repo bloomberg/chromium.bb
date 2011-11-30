@@ -49,6 +49,12 @@ struct rectangle {
 struct display *
 display_create(int *argc, char **argv[], const GOptionEntry *option_entries);
 
+void
+display_set_user_data(struct display *display, void *data);
+
+void *
+display_get_user_data(struct display *display);
+
 struct wl_display *
 display_get_display(struct display *display);
 
@@ -60,6 +66,19 @@ display_get_shell(struct display *display);
 
 struct output *
 display_get_output(struct display *display);
+
+typedef void (*display_output_handler_t)(struct output *output, void *data);
+
+/*
+ * The output configure handler is called, when a new output is connected
+ * and we know its current mode, or when the current mode changes.
+ * Test and set the output user data in your handler to know, if the
+ * output is new. Note: 'data' in the configure handler is the display
+ * user data.
+ */
+void
+display_set_output_configure_handler(struct display *display,
+				     display_output_handler_t handler);
 
 struct wl_data_source *
 display_create_data_source(struct display *display);
@@ -359,7 +378,19 @@ input_receive_selection_data(struct input *input, const char *mime_type,
 			     data_func_t func, void *data);
 
 void
+output_set_user_data(struct output *output, void *data);
+
+void *
+output_get_user_data(struct output *output);
+
+void
+output_set_destroy_handler(struct output *output,
+			   display_output_handler_t handler);
+
+void
 output_get_allocation(struct output *output, struct rectangle *allocation);
 
+struct wl_output *
+output_get_wl_output(struct output *output);
 
 #endif
