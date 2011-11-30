@@ -41,7 +41,7 @@ message DeviceRegisterRequest {
 
 // Response from server to device register request.
 message DeviceRegisterResponse {
-  // Device mangement token for this registration.  This token MUST be
+  // Device management token for this registration.  This token MUST be
   // part of HTTP Authorization header for all future requests from
   // device to server.
   required string device_management_token = 1;
@@ -127,7 +127,7 @@ message PolicyData {
 
   // The serialized value of the actual policy protobuf.  This can be
   // deserialized to an instance of, for example, ChromeSettingsProto
-  // or ChromeUserSettingsProto.
+  // or ChromeDeviceSettingsProto.
   optional bytes policy_value = 4;
 
   // The device display name assigned by the server.  It is only
@@ -290,6 +290,33 @@ message SessionStatusReportResponse {
   optional string error_message = 2;
 }
 
+// Request from device to server to determine whether the device should
+// go through enterprise enrollment. Unlike the other requests, this request is
+// not authenticated.
+message DeviceAutoEnrollmentRequest {
+  // SHA-256 hash of the device's serial number, mod |modulus|.
+  // Should always be present.
+  optional int64 remainder = 1;
+
+  // Modulus of the hash used by the client. Should always be present.
+  optional int64 modulus = 2;
+}
+
+// Response from server to auto-enrollment detection request.
+message DeviceAutoEnrollmentResponse {
+  // If this field is present, the other fields are ignored and the client
+  // should send a new DeviceAutoEnrollmentRequest with a new |remainder|
+  // computed using this new |modulus|. If this field is empty, the client's
+  // request was accepted.
+  optional int64 modulus = 1;
+
+  // List of hashes in the client's hash bucket. If the client's hash matches
+  // any in this list, the client device should do enterprise enrollment.
+  // If it matches none, enrollment should be optional.
+  // Each entry has exactly 256 bits (32 bytes).
+  repeated bytes hashes = 2;
+}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -297,19 +324,28 @@ message SessionStatusReportResponse {
 // * HTTP method is POST
 // * Data mime type is application/x-protobuffer
 // * HTTP parameters are (all required, all case sensitive):
-//   * request: MUST BE one of register/unregister/policy/ping/status
+//   * request: MUST BE one of
+//     * register
+//     * unregister
+//     * policy
+//     * ping
+//     * status
+//     * enterprise_check
+//
 //   * devicetype: MUST BE "1" for Android or "2" for Chrome OS.
 //   * apptype: MUST BE Android or Chrome.
 //   * deviceid: MUST BE no more than 64-char in [\x21-\x7E].
 //   * agent: MUST BE no more than 64-char long.
 // * HTTP Authorization header MUST be in the following formats:
-//   * For register and ping requests
+//   * For register and ping requests, using Gaia authentication:
 //     Authorization: GoogleLogin auth=<auth cookie for Mobile Sync>
 //
-//   * For unregister, policy and status requests
+//   * For unregister, policy and status requests:
 //      Authorization: GoogleDMToken token=<dm token from register>
 //
-//   * OAuth is NOT supported yet.
+//   * The Authorization header isn't used for enterprise_check requests, nor
+//     for register requests using OAuth. In the latter case, the OAuth token is
+//     passed in the "oauth" parameter.
 //
 // DeviceManagementRequest should only contain one request which matches the
 // HTTP query parameter - request, as listed below. Other requests within the
@@ -334,6 +370,9 @@ message DeviceManagementRequest {
   // Update status.
   optional DeviceStatusReportRequest device_status_report_request = 4;
   optional SessionStatusReportRequest session_status_report_request = 5;
+
+  // Auto-enrollment detection.
+  optional DeviceAutoEnrollmentRequest auto_enrollment_request = 6;
 }
 
 // Response from server to device.
@@ -370,4 +409,7 @@ message DeviceManagementResponse {
 
   // Session status report response.
   optional SessionStatusReportResponse session_status_report_response = 7;
+
+  // Auto-enrollment detection response.
+  optional DeviceAutoEnrollmentResponse auto_enrollment_response = 8;
 }
