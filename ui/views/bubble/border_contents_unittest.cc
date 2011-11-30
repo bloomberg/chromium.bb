@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/bubble/border_contents.h"
+#include "ui/views/bubble/border_contents_view.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test BorderContentsTest;
 
-class TestBorderContents : public BorderContents {
+class TestBorderContentsView : public views::BorderContentsView {
  public:
-  TestBorderContents() {}
+  TestBorderContentsView() {}
 
   void set_monitor_bounds(const gfx::Rect& bounds) {
     monitor_bounds_ = bounds;
   }
 
   views::BubbleBorder* bubble_border() const {
-    return BorderContents::bubble_border();
+    return BorderContentsView::bubble_border();
   }
 
  protected:
@@ -27,13 +27,13 @@ class TestBorderContents : public BorderContents {
  private:
   gfx::Rect monitor_bounds_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestBorderContents);
+  DISALLOW_COPY_AND_ASSIGN(TestBorderContentsView);
 };
 
 // Tests that the arrow is moved appropriately when the info-bubble does not fit
 // the screen.
 TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
-  TestBorderContents border_contents;
+  TestBorderContentsView border_contents;
   border_contents.Init();
 
   gfx::Insets insets;
@@ -194,7 +194,7 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBounds) {
 // Tests that the arrow is not moved when the info-bubble does not fit the
 // screen but moving it would make matter worse.
 TEST_F(BorderContentsTest, BorderContentsSizeAndGetBoundsDontMoveArrow) {
-  TestBorderContents border_contents;
+  TestBorderContentsView border_contents;
   border_contents.Init();
   gfx::Rect contents_bounds;
   gfx::Rect window_bounds;
@@ -217,7 +217,7 @@ TEST_F(BorderContentsTest, BorderContentsSizeAndGetBoundsDontMoveArrow) {
 
 // Test that the 'allow offscreen' prevents the bubble from moving.
 TEST_F(BorderContentsTest, BorderContentsSizeAndGetBoundsAllowOffscreen) {
-  TestBorderContents border_contents;
+  TestBorderContentsView border_contents;
   border_contents.Init();
   gfx::Rect contents_bounds;
   gfx::Rect window_bounds;

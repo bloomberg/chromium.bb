@@ -508,6 +508,7 @@
       ],
       'sources': [
         '../ui/views/animation/bounds_animator_unittest.cc',
+        '../ui/views/bubble/border_contents_unittest.cc',
         '../ui/views/bubble/bubble_delegate_unittest.cc',
         '../ui/views/bubble/bubble_frame_view_unittest.cc',
         '../ui/views/controls/combobox/native_combobox_views_unittest.cc',
