@@ -72,16 +72,12 @@ class NonFrontendDataTypeControllerFake : public NonFrontendDataTypeController {
   virtual bool StartAssociationAsync() {
     mock_->StartAssociationAsync();
     return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &NonFrontendDataTypeControllerFake::StartAssociation));
+        base::Bind(&NonFrontendDataTypeControllerFake::StartAssociation, this));
   }
   virtual bool StopAssociationAsync() {
     mock_->StopAssociationAsync();
     return BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-        NewRunnableMethod(
-            this,
-            &NonFrontendDataTypeControllerFake::StopAssociation));
+        base::Bind(&NonFrontendDataTypeControllerFake::StopAssociation, this));
   }
 
   // We mock the following methods because their default implementations do
@@ -180,8 +176,7 @@ class NonFrontendDataTypeControllerTest : public testing::Test {
   void WaitForDTC() {
     WaitableEvent done(true, false);
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-       NewRunnableFunction(&NonFrontendDataTypeControllerTest::SignalDone,
-                           &done));
+        base::Bind(&NonFrontendDataTypeControllerTest::SignalDone, &done));
     done.TimedWait(base::TimeDelta::FromMilliseconds(
         TestTimeouts::action_timeout_ms()));
     if (!done.IsSignaled()) {
@@ -381,9 +376,9 @@ TEST_F(NonFrontendDataTypeControllerTest, OnUnrecoverableError) {
   EXPECT_EQ(DataTypeController::RUNNING, non_frontend_dtc_->state());
   // This should cause non_frontend_dtc_->Stop() to be called.
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-      NewRunnableMethod(
-          non_frontend_dtc_.get(),
+      base::Bind(
           &NonFrontendDataTypeControllerFake::OnUnrecoverableError,
+          non_frontend_dtc_.get(),
           FROM_HERE,
           std::string("Test")));
   WaitForDTC();

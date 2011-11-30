@@ -109,7 +109,7 @@ class ShuntedHttpBridge : public HttpBridge {
     // We don't actually want to make a request for this test, so just callback
     // as if it completed.
     test_->GetIOThreadLoop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &ShuntedHttpBridge::CallOnURLFetchComplete));
+        base::Bind(&ShuntedHttpBridge::CallOnURLFetchComplete, this));
   }
  private:
   ~ShuntedHttpBridge() {}
@@ -136,8 +136,8 @@ TEST_F(HttpBridgeTest, TestUsesSameHttpNetworkSession) {
   // URLRequestContextGetter::GetURLRequestContext on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableFunction(&HttpBridgeTest::TestSameHttpNetworkSession,
-                          MessageLoop::current(), this));
+      base::Bind(&HttpBridgeTest::TestSameHttpNetworkSession,
+                 MessageLoop::current(), this));
   MessageLoop::current()->Run();
 }
 
@@ -278,8 +278,8 @@ TEST_F(HttpBridgeTest, Abort) {
   int os_error = 0;
   int response_code = 0;
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, NewRunnableFunction(
-                          &HttpBridgeTest::Abort, http_bridge));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&HttpBridgeTest::Abort, http_bridge));
   bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
   EXPECT_FALSE(success);
   EXPECT_EQ(net::ERR_ABORTED, os_error);
