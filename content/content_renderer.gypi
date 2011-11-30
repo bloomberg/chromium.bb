@@ -7,6 +7,7 @@
     '../jingle/jingle.gyp:jingle_glue',
     '../net/net.gyp:net',
     '../ppapi/ppapi_internal.gyp:ppapi_proxy',
+    '../ppapi/ppapi_internal.gyp:ppapi_shared',
     '../skia/skia.gyp:skia',
     '../third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
     '../third_party/icu/icu.gyp:icuuc',

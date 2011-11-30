@@ -155,6 +155,7 @@
         '../third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine_core',
         '../ui/gfx/gl/gl.gyp:gl',
         '../ui/ui.gyp:ui',
+        '../v8/tools/gyp/v8.gyp:v8',
         '../webkit/support/webkit_support.gyp:database',
         '../webkit/support/webkit_support.gyp:glue',
         '../webkit/support/webkit_support.gyp:quota',
