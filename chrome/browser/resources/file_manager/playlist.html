@@ -105,7 +105,7 @@ function setPlaylistOffset(offset) {
 function updateUI() {
   var main = $('main');
   if (currentPlaylist) {
-    main.innerHTML = '';
+    main.textContent = '';
     var main = $('main');
     for (var x = 0; x < currentPlaylist.length; x++) {
       var rowdiv = document.createElement('div');

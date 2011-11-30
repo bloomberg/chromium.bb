@@ -434,3 +434,7 @@ ImageUtil.ImageLoader.prototype.copyStrip_ = function(
         }, 0);
   }
 };
+
+ImageUtil.removeChildren = function(element) {
+  element.textContent = '';
+};

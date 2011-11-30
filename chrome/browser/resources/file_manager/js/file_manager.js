@@ -434,6 +434,10 @@ FileManager.prototype = {
         dirEntry.fullPath == ARCHIVE_DIRECTORY;
   }
 
+  function removeChildren(element) {
+    element.textContent = '';
+  };
+
   // Public statics.
 
   /**
@@ -1828,8 +1832,8 @@ FileManager.prototype = {
     };
 
     this.previewSummary_.textContent = str('COMPUTING_SELECTION');
-    this.taskButtons_.innerHTML = '';
-    this.previewThumbnails_.innerHTML = '';
+    removeChildren(this.taskButtons_);
+    removeChildren(this.previewThumbnails_);
 
     if (!selection.indexes.length) {
       this.updateCommonActionButtons_();
@@ -1913,7 +1917,7 @@ FileManager.prototype = {
     }
 
     if (this.dialogType_ == FileManager.DialogType.FULL_PAGE) {
-      this.taskButtons_.innerHTML = '';
+      removeChildren(this.taskButtons_);
       // Some internal tasks cannot be defined in terms of file patterns,
       // so we pass selection to check for them manually.
       if (selection.directoryCount == 0 && selection.fileCount > 0) {
@@ -2069,7 +2073,7 @@ FileManager.prototype = {
    * @param {Array.<Task>} tasksList The tasks list.
    */
   FileManager.prototype.onTasksFound_ = function(selection, tasksList) {
-    this.taskButtons_.innerHTML = '';
+    removeChildren(this.taskButtons_);
 
     for (var i = 0; i < tasksList.length; i++) {
       var task = tasksList[i];
@@ -2389,7 +2393,7 @@ FileManager.prototype = {
    */
   FileManager.prototype.updateBreadcrumbs_ = function() {
     var bc = this.dialogDom_.querySelector('.breadcrumbs');
-    bc.innerHTML = '';
+    removeChildren(bc);
 
     var fullPath = this.currentDirEntry_.fullPath.replace(/\/$/, '');
     var pathNames = fullPath.split('/');

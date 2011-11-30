@@ -20,7 +20,7 @@ function ImageEditor(
   this.modes_ = modes;
   this.displayStringFunction_ = displayStringFunction;
 
-  this.container_.innerHTML = '';
+  ImageUtil.removeChildren(this.container_);
 
   var document = this.container_.ownerDocument;
 
@@ -661,7 +661,7 @@ ImageEditor.Toolbar = function(parent, displayStringFunction, updateCallback) {
 };
 
 ImageEditor.Toolbar.prototype.clear = function() {
-  this.wrapper_.innerHTML = '';
+  ImageUtil.removeChildren(this.wrapper_);
 };
 
 ImageEditor.Toolbar.prototype.create_ = function(tagName) {

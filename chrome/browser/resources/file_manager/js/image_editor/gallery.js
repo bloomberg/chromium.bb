@@ -46,7 +46,7 @@ Gallery.prototype = { __proto__: RibbonClient.prototype };
 Gallery.open = function(parentDirEntry, items, selectedItem,
    closeCallback, metadataProvider, shareActions, displayStringFunction) {
   var container = document.querySelector('.gallery');
-  container.innerHTML = '';
+  ImageUtil.removeChildren(container);
   var gallery = new Gallery(container, closeCallback, metadataProvider,
       shareActions, displayStringFunction);
   gallery.load(parentDirEntry, items, selectedItem);

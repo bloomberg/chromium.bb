@@ -603,7 +603,7 @@ HidingControlsAnimation.prototype = {
 
 function setupPlaybackControls() {
   var element = $('playercontrols');
-  playercontrols.innerHTML = ''; // clear out other
+  element.textContent = '';
   var controlsclass = '';
   if (hidingControlsAnimation) {
     hidingControlsAnimation.cleanup();
