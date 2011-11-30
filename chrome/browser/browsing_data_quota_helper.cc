@@ -36,18 +36,18 @@ BrowsingDataQuotaHelper::BrowsingDataQuotaHelper(
 BrowsingDataQuotaHelper::~BrowsingDataQuotaHelper() {
 }
 
-bool operator <(const BrowsingDataQuotaHelper::QuotaInfo& lhs,
-                const BrowsingDataQuotaHelper::QuotaInfo& rhs) {
-  if (lhs.host != rhs.host)
-    return lhs.host < rhs.host;
-  if (lhs.temporary_usage != rhs.temporary_usage)
-    return lhs.temporary_usage < rhs.temporary_usage;
-  return lhs.persistent_usage < rhs.persistent_usage;
+bool BrowsingDataQuotaHelper::QuotaInfo::operator <(
+    const BrowsingDataQuotaHelper::QuotaInfo& rhs) const {
+  if (this->host != rhs.host)
+    return this->host < rhs.host;
+  if (this->temporary_usage != rhs.temporary_usage)
+    return this->temporary_usage < rhs.temporary_usage;
+  return this->persistent_usage < rhs.persistent_usage;
 }
 
-bool operator ==(const BrowsingDataQuotaHelper::QuotaInfo& lhs,
-                 const BrowsingDataQuotaHelper::QuotaInfo& rhs) {
-  return lhs.host == rhs.host &&
-      lhs.temporary_usage == rhs.temporary_usage &&
-      lhs.persistent_usage == rhs.persistent_usage;
+bool BrowsingDataQuotaHelper::QuotaInfo::operator ==(
+    const BrowsingDataQuotaHelper::QuotaInfo& rhs) const {
+  return this->host == rhs.host &&
+      this->temporary_usage == rhs.temporary_usage &&
+      this->persistent_usage == rhs.persistent_usage;
 }

@@ -47,6 +47,12 @@ class BrowsingDataQuotaHelper
               int64 persistent_usage);
     ~QuotaInfo();
 
+    // Certain versions of MSVC 2008 have bad implementations of ADL for nested
+    // classes so they require these operators to be declared here instead of in
+    // the global namespace.
+    bool operator <(const QuotaInfo& rhs) const;
+    bool operator ==(const QuotaInfo& rhs) const;
+
     std::string host;
     int64 temporary_usage;
     int64 persistent_usage;
@@ -73,10 +79,5 @@ class BrowsingDataQuotaHelper
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataQuotaHelper);
 };
-
-bool operator <(const BrowsingDataQuotaHelper::QuotaInfo& lhs,
-                const BrowsingDataQuotaHelper::QuotaInfo& rhs);
-bool operator ==(const BrowsingDataQuotaHelper::QuotaInfo& lhs,
-                 const BrowsingDataQuotaHelper::QuotaInfo& rhs);
 
 #endif  // CHROME_BROWSER_BROWSING_DATA_QUOTA_HELPER_H_
