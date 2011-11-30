@@ -18,7 +18,6 @@
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/views/frame/browser_bubble_host.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/tab_contents/tab_contents_container.h"
 #include "chrome/browser/ui/views/tabs/abstract_tab_strip_view.h"
@@ -41,7 +40,6 @@
 
 class BookmarkBarView;
 class Browser;
-class BrowserBubble;
 class BrowserViewLayout;
 class ContentsContainer;
 class DownloadShelfView;
@@ -81,8 +79,7 @@ class Menu;
 //  A ClientView subclass that provides the contents of a browser window,
 //  including the TabStrip, toolbars, download shelves, the content area etc.
 //
-class BrowserView : public BrowserBubbleHost,
-                    public BrowserWindow,
+class BrowserView : public BrowserWindow,
                     public BrowserWindowTesting,
                     public content::NotificationObserver,
                     public TabStripModelObserver,

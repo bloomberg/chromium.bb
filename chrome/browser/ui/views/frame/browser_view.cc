@@ -628,8 +628,6 @@ void BrowserView::SetBounds(const gfx::Rect& bounds) {
 }
 
 void BrowserView::Close() {
-  BrowserBubbleHost::Close();
-
   frame_->Close();
 }
 
@@ -1676,8 +1674,6 @@ void BrowserView::OnWidgetMove() {
   // status_bubble_ may be NULL if this is invoked during construction.
   if (status_bubble_.get())
     status_bubble_->Reposition();
-
-  BrowserBubbleHost::WindowMoved();
 
   browser::HideBookmarkBubbleView();
 

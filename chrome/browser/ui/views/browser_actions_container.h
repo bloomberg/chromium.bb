@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
-#include "chrome/browser/ui/views/browser_bubble.h"
 #include "chrome/browser/ui/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "content/public/browser/notification_observer.h"

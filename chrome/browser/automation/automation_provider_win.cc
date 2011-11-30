@@ -343,9 +343,7 @@ void AutomationProvider::ConnectExternalTab(
 
 void AutomationProvider::OnBrowserMoved(int tab_handle) {
   ExternalTabContainer* external_tab = GetExternalTabForHandle(tab_handle);
-  if (external_tab) {
-    external_tab->WindowMoved();
-  } else {
+  if (!external_tab) {
     DLOG(WARNING) <<
       "AutomationProvider::OnBrowserMoved called with invalid tab handle.";
   }

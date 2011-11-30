@@ -18,7 +18,6 @@
 #include "chrome/browser/infobars/infobar_container.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/ui/blocked_content/blocked_content_tab_helper_delegate.h"
-#include "chrome/browser/ui/views/frame/browser_bubble_host.h"
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
@@ -51,7 +50,6 @@ class ExternalTabContainer : public TabContentsDelegate,
                              public base::RefCounted<ExternalTabContainer>,
                              public ui::AcceleratorTarget,
                              public InfoBarContainer::Delegate,
-                             public BrowserBubbleHost,
                              public BlockedContentTabHelperDelegate {
  public:
   typedef std::map<uintptr_t, scoped_refptr<ExternalTabContainer> > PendingTabs;
