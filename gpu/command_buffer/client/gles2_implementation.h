@@ -157,7 +157,7 @@ class GLES2Implementation {
       void* transfer_buffer,
       int32 transfer_buffer_id,
       bool share_resources,
-      bool bind_generates_resource = true);  // Will remove in 2 CLs!
+      bool bind_generates_resource);
 
   ~GLES2Implementation();
 

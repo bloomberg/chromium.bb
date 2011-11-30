@@ -229,7 +229,8 @@ bool PluginGraphics3D::InitFromBrowserResource(PP_Resource res) {
             transfer_buffer.size,
             transfer_buffer.ptr,
             transfer_buffer_id,
-            false));
+            false,
+            true));
         return true;
       }
     }
