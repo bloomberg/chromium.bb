@@ -64,16 +64,17 @@ class ProcessCountTest(pyauto.PyUITest):
     browser_info = [x for x in proc_info['browsers']
                     if x['process_name'] == self.chrome_proc_name]
     assert len(browser_info) == 1
-    # Utility processes may show up any time.  Ignore them.
+    # Utility & GPU processes may show up any time.  Ignore them.
     processes = [x for x in browser_info[0]['processes']
-                 if x['child_process_type'] != 'Utility']
+                 if x['child_process_type'] not in ('Utility', 'GPU')]
     num_actual = len(processes)
 
     self.assertEqual(num_actual, num_expected,
-                     msg='Number of processes (ignoring Utility processes) '
+                     msg='Number of processes (ignoring Utility/GPU processes) '
                          'should be %d, but was %d.\n'
-                         'Actual process info:\n%s' % (
-                         num_expected, num_actual, self.pformat(proc_info)))
+                         'Actual processes:\n%s' % (
+                         num_expected, num_actual,
+                         [x['child_process_type'] for x in processes]))
 
   def testProcessCountFreshProfile(self):
     """Verifies the process count in a fresh profile."""
@@ -93,11 +94,7 @@ class ProcessCountTest(pyauto.PyUITest):
     """Verifies the process count when the flash process is running."""
     flash_url = self.GetFileURLForDataPath('plugin', 'flash.swf')
     self.NavigateToURL(flash_url)
-    if self.IsChromeOS():
-      # Flash triggers an extra GPU process on ChromeOS.
-      self._VerifyProcessCount(self.proc_count_fresh_profile + 2)
-    else:
-      self._VerifyProcessCount(self.proc_count_fresh_profile + 1)
+    self._VerifyProcessCount(self.proc_count_fresh_profile + 1)
 
   def testProcessCountExtensionProcess(self):
     """Verifies the process count when an extension is installed."""
@@ -134,11 +131,7 @@ class ProcessCountTest(pyauto.PyUITest):
     for _ in xrange(3):
       self.AppendTab(pyauto.GURL('about:blank'), 1)
 
-    if self.IsChromeOS():
-      # Flash triggers an extra GPU process on ChromeOS.
-      self._VerifyProcessCount(self.proc_count_fresh_profile + 9)
-    else:
-      self._VerifyProcessCount(self.proc_count_fresh_profile + 8)
+    self._VerifyProcessCount(self.proc_count_fresh_profile + 8)
 
 
 if __name__ == '__main__':
