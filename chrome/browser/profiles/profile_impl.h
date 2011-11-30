@@ -87,6 +87,7 @@ class ProfileImpl : public Profile,
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;
+  virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
   virtual AutocompleteClassifier* GetAutocompleteClassifier() OVERRIDE;
@@ -254,6 +255,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<SpeechInputPreferences> speech_input_preferences_;
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher_;
   scoped_ptr<FindBarState> find_bar_state_;
+  scoped_ptr<GAIAInfoUpdateService> gaia_info_update_service_;
   scoped_refptr<HistoryService> history_service_;
   scoped_ptr<FaviconService> favicon_service_;
   scoped_ptr<AutocompleteClassifier> autocomplete_classifier_;

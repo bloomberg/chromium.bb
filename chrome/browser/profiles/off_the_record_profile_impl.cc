@@ -245,6 +245,10 @@ SSLHostState* OffTheRecordProfileImpl::GetSSLHostState() {
   return ssl_host_state_.get();
 }
 
+GAIAInfoUpdateService* OffTheRecordProfileImpl::GetGAIAInfoUpdateService() {
+  return NULL;
+}
+
 HistoryService* OffTheRecordProfileImpl::GetHistoryService(
     ServiceAccessType sat) {
   if (sat == EXPLICIT_ACCESS)

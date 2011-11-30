@@ -63,6 +63,7 @@
 #include "chrome/browser/prefs/pref_value_store.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -898,6 +899,12 @@ FindBarState* ProfileImpl::GetFindBarState() {
   return find_bar_state_.get();
 }
 
+GAIAInfoUpdateService* ProfileImpl::GetGAIAInfoUpdateService() {
+  if (!gaia_info_update_service_.get())
+    gaia_info_update_service_.reset(new GAIAInfoUpdateService(this));
+  return gaia_info_update_service_.get();
+}
+
 HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
   // If saving history is disabled, only allow explicit access.
   if (GetPrefs()->GetBoolean(prefs::kSavingBrowserHistoryDisabled) &&
@@ -1359,6 +1366,9 @@ void ProfileImpl::InitSyncService(const std::string& cros_user) {
   sync_service_->Initialize();
 
   UpdateProfileUserNameCache();
+  // Force the GAIA info update service to be initialized since it depends on
+  // the sync service.
+  GetGAIAInfoUpdateService();
 }
 
 ChromeBlobStorageContext* ProfileImpl::GetBlobStorageContext() {

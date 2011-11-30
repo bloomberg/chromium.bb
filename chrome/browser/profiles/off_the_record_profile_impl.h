@@ -53,6 +53,7 @@ class OffTheRecordProfileImpl : public Profile,
   virtual ExtensionSpecialStoragePolicy*
       GetExtensionSpecialStoragePolicy() OVERRIDE;
   virtual SSLHostState* GetSSLHostState() OVERRIDE;
+  virtual GAIAInfoUpdateService* GetGAIAInfoUpdateService() OVERRIDE;
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) OVERRIDE;
   virtual HistoryService* GetHistoryServiceWithoutCreating() OVERRIDE;
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) OVERRIDE;

@@ -28,6 +28,42 @@ SkBitmap* CreateBitmap(int width, int height) {
   return bitmap;
 }
 
+gfx::Image CreateImage() {
+  return gfx::Image(CreateBitmap(100, 50));
+}
+
+bool IsEqual(const gfx::Image& image1, const gfx::Image& image2) {
+  const SkBitmap& bmp1 = *image1.ToSkBitmap();
+  const SkBitmap& bmp2 = *image2.ToSkBitmap();
+
+  if (bmp1.width() != bmp2.width() ||
+      bmp1.height() != bmp2.height() ||
+      bmp1.config() != SkBitmap::kARGB_8888_Config ||
+      bmp2.config() != SkBitmap::kARGB_8888_Config) {
+    return false;
+  }
+
+  SkAutoLockPixels lock1(bmp1);
+  SkAutoLockPixels lock2(bmp2);
+  if (!bmp1.getPixels() || !bmp2.getPixels())
+    return false;
+
+  for (int y = 0; y < bmp1.height(); ++y) {
+    for (int x = 0; x < bmp1.width(); ++x) {
+      if (*bmp1.getAddr32(x,y) != *bmp2.getAddr32(x,y))
+        return false;
+    }
+  }
+
+  return true;
+}
+
+bool IsEmpty(const gfx::Image& image) {
+  const SkBitmap& bmp = *image.ToSkBitmap();
+  return bmp.isNull() ||
+         (bmp.width() == 0 && bmp.height() == 0);
+}
+
 PlatformImage CreatePlatformImage() {
   scoped_ptr<SkBitmap> bitmap(CreateBitmap(25, 25));
 #if defined(OS_MACOSX)

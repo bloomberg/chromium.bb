@@ -889,7 +889,7 @@ void UserManager::OnDownloadComplete(ProfileDownloader* downloader,
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_IMAGE_UPDATED,
         content::Source<UserManager>(this),
-        content::Details<const SkBitmap>(&downloader->GetProfilePicture()));
+        content::Details<const SkBitmap>(&downloaded_profile_image_));
   } else {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,

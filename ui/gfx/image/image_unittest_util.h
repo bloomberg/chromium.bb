@@ -23,6 +23,12 @@ typedef const SkBitmap* PlatformImage;
 
 SkBitmap* CreateBitmap(int width, int height);
 
+gfx::Image CreateImage();
+
+bool IsEqual(const gfx::Image& image1, const gfx::Image& image2);
+
+bool IsEmpty(const gfx::Image& image);
+
 PlatformImage CreatePlatformImage();
 
 gfx::Image::RepresentationType GetPlatformRepresentationType();
