@@ -59,7 +59,14 @@ class TestingProfile : public Profile {
   // for this profile. This constructor is meant to be used by
   // TestingProfileManager::CreateTestingProfile. If you need to create multi-
   // profile profiles, use that factory method instead of this directly.
+  // Exception: if you need to create multi-profile profiles for testing the
+  // ProfileManager, then use the constructor below instead.
   explicit TestingProfile(const FilePath& path);
+
+  // Multi-profile aware constructor that takes the path to a directory managed
+  // for this profile and a delegate. This constructor is meant to be used
+  // for unittesting the ProfileManager.
+  TestingProfile(const FilePath& path, Delegate* delegate);
 
   virtual ~TestingProfile();
 
@@ -305,6 +312,9 @@ class TestingProfile : public Profile {
   // Common initialization between the two constructors.
   void Init();
 
+  // Finishes initialization when a profile is created asynchronously.
+  void FinishInit();
+
   // Destroys favicon service if it has been created.
   void DestroyFaviconService();
 
@@ -414,6 +424,9 @@ class TestingProfile : public Profile {
 
   // The QuotaManager, only available if set explicitly via SetQuotaManager.
   scoped_refptr<quota::QuotaManager> quota_manager_;
+
+  // Weak pointer to a delegate for indicating that a profile was created.
+  Delegate* delegate_;
 };
 
 #endif  // CHROME_TEST_BASE_TESTING_PROFILE_H_

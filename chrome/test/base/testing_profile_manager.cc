@@ -21,7 +21,7 @@ class ProfileManager : public ::ProfileManager {
       : ::ProfileManager(user_data_dir) {}
 
  protected:
-  virtual Profile* CreateProfile(const FilePath& file_path) {
+  virtual Profile* CreateProfileHelper(const FilePath& file_path) OVERRIDE {
     return new TestingProfile(file_path);
   }
 };
