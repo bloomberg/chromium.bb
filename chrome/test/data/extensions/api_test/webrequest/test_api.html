@@ -1,23 +1,23 @@
 <script>
 chrome.test.runTests([
   function addListeners() {
-    chrome.experimental.webRequest.onBeforeRequest.addListener(
+    chrome.webRequest.onBeforeRequest.addListener(
         function(details) {});
-    chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
+    chrome.webRequest.onBeforeSendHeaders.addListener(
         function(details) {});
-    chrome.experimental.webRequest.onSendHeaders.addListener(
+    chrome.webRequest.onSendHeaders.addListener(
         function(details) {});
-    chrome.experimental.webRequest.onHeadersReceived.addListener(
+    chrome.webRequest.onHeadersReceived.addListener(
         function(details) {});
-    chrome.experimental.webRequest.onBeforeRedirect.addListener(
+    chrome.webRequest.onBeforeRedirect.addListener(
         function(details) {});
-    chrome.experimental.webRequest.onResponseStarted.addListener(
+    chrome.webRequest.onResponseStarted.addListener(
         function(details) {});
-    chrome.experimental.webRequest.onCompleted.addListener(
+    chrome.webRequest.onCompleted.addListener(
         function(details) {});
-    chrome.experimental.webRequest.onErrorOccurred.addListener(
+    chrome.webRequest.onErrorOccurred.addListener(
         function(details) {});
-    chrome.experimental.webRequest.onAuthRequired.addListener(
+    chrome.webRequest.onAuthRequired.addListener(
         function(details) {});
     chrome.test.succeed();
   },
@@ -30,7 +30,7 @@ chrome.test.runTests([
     }
     var cb1 = newCallback(1);
     var cb2 = newCallback(2);
-    var event = chrome.experimental.webRequest.onBeforeRequest;
+    var event = chrome.webRequest.onBeforeRequest;
     event.addListener(cb1);
     event.addListener(cb2);
     chrome.test.assertTrue(event.hasListener(cb1));
@@ -49,13 +49,13 @@ chrome.test.runTests([
   function specialEvents() {
     var goodFilter = {urls: ["http://*.google.com/*"]};
     var goodExtraInfo = ["blocking"];
-    chrome.experimental.webRequest.onBeforeRequest.addListener(
+    chrome.webRequest.onBeforeRequest.addListener(
         function(details) {},
         goodFilter, goodExtraInfo);
 
     // Try a bad RequestFilter.
     try {
-      chrome.experimental.webRequest.onBeforeRequest.addListener(
+      chrome.webRequest.onBeforeRequest.addListener(
           function(details) {},
           {badFilter: 42}, goodExtraInfo);
       chrome.test.fail();
@@ -65,7 +65,7 @@ chrome.test.runTests([
 
     // Try a bad ExtraInfoSpec.
     try {
-      chrome.experimental.webRequest.onBeforeRequest.addListener(
+      chrome.webRequest.onBeforeRequest.addListener(
           function(details) {},
           goodFilter, ["badExtraInfo"]);
       chrome.test.fail();
@@ -75,11 +75,11 @@ chrome.test.runTests([
 
     // This extraInfoSpec should only work for onBeforeSendHeaders.
     var headersExtraInfo = ["requestHeaders"];
-    chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
+    chrome.webRequest.onBeforeSendHeaders.addListener(
         function(details) {},
         goodFilter, headersExtraInfo);
     try {
-      chrome.experimental.webRequest.onBeforeRequest.addListener(
+      chrome.webRequest.onBeforeRequest.addListener(
           function(details) {},
           goodFilter, headersExtraInfo);
       chrome.test.fail();
@@ -89,11 +89,11 @@ chrome.test.runTests([
 
     // ExtraInfoSpec with "responseHeaders" should work for onCompleted.
     headersExtraInfo = ["responseHeaders"];
-    chrome.experimental.webRequest.onCompleted.addListener(
+    chrome.webRequest.onCompleted.addListener(
         function(details) {},
         goodFilter, headersExtraInfo);
     try {
-      chrome.experimental.webRequest.onBeforeRequest.addListener(
+      chrome.webRequest.onBeforeRequest.addListener(
           function(details) {},
           goodFilter, headersExtraInfo);
       chrome.test.fail();
@@ -104,10 +104,10 @@ chrome.test.runTests([
     // Try a bad URL pattern. The error happens asynchronously. We're just
     // verifying that the browser doesn't crash.
     var emptyCallback = function (details) {};
-    chrome.experimental.webRequest.onBeforeRequest.addListener(
+    chrome.webRequest.onBeforeRequest.addListener(
         emptyCallback,
         {urls: ["badpattern://*"]});
-    chrome.experimental.webRequest.onBeforeRequest.removeListener(
+    chrome.webRequest.onBeforeRequest.removeListener(
         emptyCallback);
 
     chrome.test.succeed();

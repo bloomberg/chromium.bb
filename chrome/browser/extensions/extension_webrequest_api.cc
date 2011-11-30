@@ -1477,6 +1477,18 @@ bool WebRequestAddEventListener::RunImpl() {
       extension_info_map()->extensions().GetByID(extension_id());
   std::string extension_name = extension ? extension->name() : extension_id();
 
+  // We check automatically whether the extension has the 'webRequest'
+  // permission. For blocking calls we require the additional permission
+  // 'webRequestBlocking'.
+  if ((extra_info_spec &
+          (ExtensionWebRequestEventRouter::ExtraInfoSpec::BLOCKING |
+           ExtensionWebRequestEventRouter::ExtraInfoSpec::ASYNC_BLOCKING)) &&
+       !extension->HasAPIPermission(
+           ExtensionAPIPermission::kWebRequestBlocking)) {
+    error_ = keys::kBlockingPermissionRequired;
+    return false;
+  }
+
   ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
       profile_id(), extension_id(), extension_name,
       event_name, sub_event_name, filter,

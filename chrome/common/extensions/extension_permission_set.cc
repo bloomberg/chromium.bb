@@ -324,6 +324,9 @@ ExtensionPermissionsInfo::ExtensionPermissionsInfo()
       ExtensionAPIPermission::kWebRequest, "webRequest", 0,
       ExtensionPermissionMessage::kNone, none);
   RegisterPermission(
+        ExtensionAPIPermission::kWebRequestBlocking, "webRequestBlocking", 0,
+        ExtensionPermissionMessage::kNone, none);
+  RegisterPermission(
       ExtensionAPIPermission::kWebSocketProxyPrivate,
       "webSocketProxyPrivate", 0,
       ExtensionPermissionMessage::kNone, none);

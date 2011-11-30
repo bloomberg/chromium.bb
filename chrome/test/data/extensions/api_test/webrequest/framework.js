@@ -236,40 +236,40 @@ function intersect(array1, array2) {
 }
 
 function initListeners(filter, extraInfoSpec) {
-  chrome.experimental.webRequest.onBeforeRequest.addListener(
+  chrome.webRequest.onBeforeRequest.addListener(
       function(details) {
     return captureEvent("onBeforeRequest", details);
   }, filter, intersect(extraInfoSpec, ["blocking"]));
-  chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
+  chrome.webRequest.onBeforeSendHeaders.addListener(
       function(details) {
     return captureEvent("onBeforeSendHeaders", details);
   }, filter, intersect(extraInfoSpec, ["blocking", "requestHeaders"]));
-  chrome.experimental.webRequest.onSendHeaders.addListener(
+  chrome.webRequest.onSendHeaders.addListener(
       function(details) {
     return captureEvent("onSendHeaders", details);
   }, filter, intersect(extraInfoSpec, ["requestHeaders"]));
-  chrome.experimental.webRequest.onHeadersReceived.addListener(
+  chrome.webRequest.onHeadersReceived.addListener(
       function(details) {
     return captureEvent("onHeadersReceived", details);
   }, filter, intersect(extraInfoSpec, ["blocking", "responseHeaders"]));
-  chrome.experimental.webRequest.onAuthRequired.addListener(
+  chrome.webRequest.onAuthRequired.addListener(
       function(details, callback) {
     return captureEvent("onAuthRequired", details, callback);
   }, filter, intersect(extraInfoSpec, ["asyncBlocking", "blocking",
                                        "responseHeaders"]));
-  chrome.experimental.webRequest.onResponseStarted.addListener(
+  chrome.webRequest.onResponseStarted.addListener(
       function(details) {
     return captureEvent("onResponseStarted", details);
   }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
-  chrome.experimental.webRequest.onBeforeRedirect.addListener(
+  chrome.webRequest.onBeforeRedirect.addListener(
       function(details) {
     return captureEvent("onBeforeRedirect", details);
   }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
-  chrome.experimental.webRequest.onCompleted.addListener(
+  chrome.webRequest.onCompleted.addListener(
       function(details) {
     return captureEvent("onCompleted", details);
   }, filter, intersect(extraInfoSpec, ["responseHeaders"]));
-  chrome.experimental.webRequest.onErrorOccurred.addListener(
+  chrome.webRequest.onErrorOccurred.addListener(
       function(details) {
     return captureEvent("onErrorOccurred", details);
   }, filter);
@@ -285,13 +285,13 @@ function removeListeners() {
     }
     chrome.test.assertFalse(event.hasListeners());
   }
-  helper(chrome.experimental.webRequest.onBeforeRequest);
-  helper(chrome.experimental.webRequest.onBeforeSendHeaders);
-  helper(chrome.experimental.webRequest.onAuthRequired);
-  helper(chrome.experimental.webRequest.onSendHeaders);
-  helper(chrome.experimental.webRequest.onHeadersReceived);
-  helper(chrome.experimental.webRequest.onResponseStarted);
-  helper(chrome.experimental.webRequest.onBeforeRedirect);
-  helper(chrome.experimental.webRequest.onCompleted);
-  helper(chrome.experimental.webRequest.onErrorOccurred);
+  helper(chrome.webRequest.onBeforeRequest);
+  helper(chrome.webRequest.onBeforeSendHeaders);
+  helper(chrome.webRequest.onAuthRequired);
+  helper(chrome.webRequest.onSendHeaders);
+  helper(chrome.webRequest.onHeadersReceived);
+  helper(chrome.webRequest.onResponseStarted);
+  helper(chrome.webRequest.onBeforeRedirect);
+  helper(chrome.webRequest.onCompleted);
+  helper(chrome.webRequest.onErrorOccurred);
 }

@@ -5808,7 +5808,7 @@
     ]
   },
   {
-    "namespace": "experimental.webRequest",
+    "namespace": "webRequest",
     "types": [
       {
         "id": "RequestFilter",

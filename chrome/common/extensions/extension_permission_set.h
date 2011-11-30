@@ -123,6 +123,7 @@ class ExtensionAPIPermission {
     kUnlimitedStorage,
     kWebNavigation,
     kWebRequest,
+    kWebRequestBlocking,
     kWebSocketProxyPrivate,
     kWebstorePrivate,
     kEnumBoundary

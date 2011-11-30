@@ -625,6 +625,7 @@ TEST(ExtensionPermissionSetTest, PermissionMessages) {
   skip.insert(ExtensionAPIPermission::kProxy);
   skip.insert(ExtensionAPIPermission::kWebNavigation);
   skip.insert(ExtensionAPIPermission::kWebRequest);
+  skip.insert(ExtensionAPIPermission::kWebRequestBlocking);
 
   // This permission requires explicit user action (context menu handler)
   // so we won't prompt for it for now.

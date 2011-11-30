@@ -2,23 +2,25 @@
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-Use the <code>chrome.experimental.webRequest</code> module to intercept, block,
+Use the <code>chrome.webRequest</code> module to intercept, block,
 or modify requests in-flight. This module is still experimental. For
 information on how to use experimental APIs, see the
 <a href="experimental.html">chrome.experimental.* APIs</a> page.
 </p>
 
 <h2 id="manifest">Manifest</h2>
-<p>You must declare the "experimental" permission in the <a
+<p>You must declare the "webRequest" permission in the <a
   href="manifest.html">extension manifest</a> to use the webRequest settings
 API, along with <a href="manifest.html#permissions">host permissions</a>
-for any hosts whose network requests you want to access.
+for any hosts whose network requests you want to access. If you want to
+use the webRequest API in a blocking fashion, you need to request
+the "webRequestBlocking" permission in addition.
 For example:</p>
 <pre>{
   "name": "My extension",
   ...
   <b>"permissions": [
-    "experimental",
+    "webRequest",
     "*://*.google.com"
   ]</b>,
   ...
@@ -155,7 +157,7 @@ HTTP redirection or HTTP authentication.</p>
 <h3 id="subscription">Subscription</h3>
 
 <p>For each signal XXX of the webRequest API, the API provides a function
-<code>chrome.experimental.webRequest.XXX.addListener()</code> with the following
+<code>chrome.webRequest.XXX.addListener()</code> with the following
 signature.</p>
 
 <pre>
@@ -163,7 +165,7 @@ var callback = function(details) {...};
 var opt_filter = {...};
 var opt_extraInfoSpec = [...];
 
-chrome.experimental.webRequest.XXX.addListener(
+chrome.webRequest.XXX.addListener(
   callback, opt_filter, opt_extraInfoSpec);
 </pre>
 
@@ -224,7 +226,7 @@ process which roughly corresponds to a tab. Requests that are answered from the
 in-memory cache are invisible to the webRequest API. If a request handler
 changes its behavior (for example the behavior according to which requests are
 blocked), a simple page refresh might not respect this changed behavior.
-<code>chrome.experimental.webRequest.handlerBehaviorChanged()</code> needs to be
+<code>chrome.webRequest.handlerBehaviorChanged()</code> needs to be
 called to flush the in-memory cache. This is a very expensive operation and
 should not be done often.
 </p>
@@ -246,7 +248,7 @@ unexpected results.
 <p>The following example illustrates how to block all requests to
 <code>www.evil.com</code>:</p>
 <pre>
-chrome.experimental.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
     return {cancel: details.url.indexOf("://www.evil.com/") != -1};
   },
@@ -254,11 +256,14 @@ chrome.experimental.webRequest.onBeforeRequest.addListener(
   ["blocking"]);
 </pre>
 
+<p>As this function uses a blocking signal handler, it requires the "webRequest"
+as well as the "webRequestBlocking" permission in the manifest file.</p>
+
 <p>The following example achives the same goal in a more efficient way because
 requests that are not targeted to <code>www.evil.com</code> do not need to be
 passed to the extension:</p>
 <pre>
-chrome.experimental.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
   function(details) { return {cancel: true}; },
   {urls: ["*://www.evil.com/*"]},
   ["blocking"]);
@@ -267,7 +272,7 @@ chrome.experimental.webRequest.onBeforeRequest.addListener(
 <p>The following example illustrates how the User-Agent header can be deleted
 from all requests:</p>
 <pre>
-chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
+chrome.webRequest.onBeforeSendHeaders.addListener(
   function(details) {
     delete details.requestHeaders['User-Agent'];
     return {requestHeaders: details.requestHeaders};
@@ -300,7 +305,7 @@ function getFrameUrl(windowId, tabId, frameId, frameUrl) {
   return (frameUrl[windowId] || {})[tabId + "-" + frameId];
 }
 
-chrome.experimental.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
   function(d) {
     if (d.type == 'main_frame' || d.type == 'sub_frame') {
       recordFrameUrl(d.windowId, d.tabId, d.frameId, d.frameUrl);

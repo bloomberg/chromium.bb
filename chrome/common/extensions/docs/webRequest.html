@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
     <script type="text/javascript" src="js/sidebar.js"></script>
-  <meta name="description" content="Documentation for the chrome.experimental.webRequest module, which is part of the Google Chrome  extension APIs."><title>WebRequest API - Google Chrome Extensions - Google Code</title></head>
+  <meta name="description" content="Documentation for the chrome.webRequest module, which is part of the Google Chrome  extension APIs."><title>WebRequest API - Google Chrome Extensions - Google Code</title></head>
   <body>  <div id="gc-container" class="labs">
       <div id="devModeWarning">
         You are viewing extension docs in chrome via the 'file:' scheme: are you expecting to see local changes when you refresh? You'll need run chrome with --allow-file-access-from-files.
@@ -353,7 +353,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.experimental.webRequest</a>
+                <a href="#apiReference">API reference: chrome.webRequest</a>
                 <ol>
                   <li style="display: none; ">
             <a href="#properties">Properties</a>
@@ -366,11 +366,11 @@
                   <li>
             <a href="#global-methods">Methods</a>
             <ol>
-              <li style="display: none; ">
-                <a href="#method-anchor">methodName</a>
-              </li><li style="display: none; ">
+              <li>
                 <a href="#method-anchor">methodName</a>
               </li><li>
+                <a href="#method-anchor">methodName</a>
+              </li><li style="">
                 <a href="#method-handlerBehaviorChanged">handlerBehaviorChanged</a>
               </li>
             </ol>
@@ -481,22 +481,24 @@
 
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-Use the <code>chrome.experimental.webRequest</code> module to intercept, block,
+Use the <code>chrome.webRequest</code> module to intercept, block,
 or modify requests in-flight. This module is still experimental. For
 information on how to use experimental APIs, see the
 <a href="experimental.html">chrome.experimental.* APIs</a> page.
 </p>
 
 <h2 id="manifest">Manifest</h2>
-<p>You must declare the "experimental" permission in the <a href="manifest.html">extension manifest</a> to use the webRequest settings
+<p>You must declare the "webRequest" permission in the <a href="manifest.html">extension manifest</a> to use the webRequest settings
 API, along with <a href="manifest.html#permissions">host permissions</a>
-for any hosts whose network requests you want to access.
+for any hosts whose network requests you want to access. If you want to
+use the webRequest API in a blocking fashion, you need to request
+the "webRequestBlocking" permission in addition.
 For example:</p>
 <pre>{
   "name": "My extension",
   ...
   <b>"permissions": [
-    "experimental",
+    "webRequest",
     "*://*.google.com"
   ]</b>,
   ...
@@ -630,14 +632,14 @@ HTTP redirection or HTTP authentication.</p>
 <h3 id="subscription">Subscription</h3>
 
 <p>For each signal XXX of the webRequest API, the API provides a function
-<code>chrome.experimental.webRequest.XXX.addListener()</code> with the following
+<code>chrome.webRequest.XXX.addListener()</code> with the following
 signature.</p>
 
 <pre>var callback = function(details) {...};
 var opt_filter = {...};
 var opt_extraInfoSpec = [...];
 
-chrome.experimental.webRequest.XXX.addListener(
+chrome.webRequest.XXX.addListener(
   callback, opt_filter, opt_extraInfoSpec);
 </pre>
 
@@ -697,7 +699,7 @@ process which roughly corresponds to a tab. Requests that are answered from the
 in-memory cache are invisible to the webRequest API. If a request handler
 changes its behavior (for example the behavior according to which requests are
 blocked), a simple page refresh might not respect this changed behavior.
-<code>chrome.experimental.webRequest.handlerBehaviorChanged()</code> needs to be
+<code>chrome.webRequest.handlerBehaviorChanged()</code> needs to be
 called to flush the in-memory cache. This is a very expensive operation and
 should not be done often.
 </p>
@@ -718,7 +720,7 @@ unexpected results.
 
 <p>The following example illustrates how to block all requests to
 <code>www.evil.com</code>:</p>
-<pre>chrome.experimental.webRequest.onBeforeRequest.addListener(
+<pre>chrome.webRequest.onBeforeRequest.addListener(
   function(details) {
     return {cancel: details.url.indexOf("://www.evil.com/") != -1};
   },
@@ -726,10 +728,13 @@ unexpected results.
   ["blocking"]);
 </pre>
 
+<p>As this function uses a blocking signal handler, it requires the "webRequest"
+as well as the "webRequestBlocking" permission in the manifest file.</p>
+
 <p>The following example achives the same goal in a more efficient way because
 requests that are not targeted to <code>www.evil.com</code> do not need to be
 passed to the extension:</p>
-<pre>chrome.experimental.webRequest.onBeforeRequest.addListener(
+<pre>chrome.webRequest.onBeforeRequest.addListener(
   function(details) { return {cancel: true}; },
   {urls: ["*://www.evil.com/*"]},
   ["blocking"]);
@@ -737,7 +742,7 @@ passed to the extension:</p>
 
 <p>The following example illustrates how the User-Agent header can be deleted
 from all requests:</p>
-<pre>chrome.experimental.webRequest.onBeforeSendHeaders.addListener(
+<pre>chrome.webRequest.onBeforeSendHeaders.addListener(
   function(details) {
     delete details.requestHeaders['User-Agent'];
     return {requestHeaders: details.requestHeaders};
@@ -770,7 +775,7 @@ function getFrameUrl(windowId, tabId, frameId, frameUrl) {
   return (frameUrl[windowId] || {})[tabId + "-" + frameId];
 }
 
-chrome.experimental.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
   function(d) {
     if (d.type == 'main_frame' || d.type == 'sub_frame') {
       recordFrameUrl(d.windowId, d.tabId, d.frameId, d.frameUrl);
@@ -792,7 +797,7 @@ chrome.windows.onRemoved.addListener(
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.experimental.webRequest</h2>
+        <h2>API reference: chrome.webRequest</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -818,73 +823,7 @@ chrome.windows.onRemoved.addListener(
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
-            <div class="apiItem" style="display: none; ">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
-
-              <div class="summary"><span>void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4>Returns</h4>
-                <dl>
-                  <div>
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
-                  <dl>
-                    <div>
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-                <!-- MIN_VERSION -->
-                <p>
-                  This function was added in version <b><span></span></b>.
-                  If you require this function, the manifest key
-                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
-                  can ensure that your extension won't be run in an earlier browser version.
-                </p>
-              </div> <!-- /description -->
-
-            </div><div class="apiItem" style="display: none; ">
+            <div class="apiItem">
               <a></a> <!-- method-anchor -->
               <h4>method name</h4>
 
@@ -951,12 +890,78 @@ chrome.windows.onRemoved.addListener(
               </div> <!-- /description -->
 
             </div><div class="apiItem">
+              <a></a> <!-- method-anchor -->
+              <h4>method name</h4>
+
+              <div class="summary"><span>void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
+                      <var><span></span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo">Undocumented.</p>
+                <p>
+                  A description from the json schema def of the function goes here.
+                </p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4>Returns</h4>
+                <dl>
+                  <div>
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>;</pre>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+                <!-- MIN_VERSION -->
+                <p>
+                  This function was added in version <b><span></span></b>.
+                  If you require this function, the manifest key
+                  <a href="manifest.html#minimum_chrome_version">minimum_chrome_version</a>
+                  can ensure that your extension won't be run in an earlier browser version.
+                </p>
+              </div> <!-- /description -->
+
+            </div><div class="apiItem" style="">
               <a name="method-handlerBehaviorChanged"></a> <!-- method-anchor -->
               <h4>handlerBehaviorChanged</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.experimental.webRequest.handlerBehaviorChanged</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.webRequest.handlerBehaviorChanged</span>(<span class="optional"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
@@ -1096,7 +1101,7 @@ chrome.windows.onRemoved.addListener(
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.webRequest.</span><span>onAuthRequired</span><span class="subdued">.addListener</span>(function(<span>object details, function callback</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onAuthRequired</span><span class="subdued">.addListener</span>(function(<span>object details, function callback</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
 
               <div class="description">
@@ -2122,7 +2127,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -2356,7 +2361,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -2510,7 +2515,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-BlockingResponse">BlockingResponse</a>
+                        <a href="webRequest.html#type-BlockingResponse">BlockingResponse</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -2575,7 +2580,7 @@ chrome.windows.onRemoved.addListener(
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.webRequest.</span><span>onBeforeRedirect</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onBeforeRedirect</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
 
               <div class="description">
@@ -3464,7 +3469,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -3628,7 +3633,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -3782,7 +3787,7 @@ chrome.windows.onRemoved.addListener(
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.webRequest.</span><span>onBeforeRequest</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onBeforeRequest</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
 
               <div class="description">
@@ -4427,7 +4432,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -4581,7 +4586,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-BlockingResponse">BlockingResponse</a>
+                        <a href="webRequest.html#type-BlockingResponse">BlockingResponse</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -4646,7 +4651,7 @@ chrome.windows.onRemoved.addListener(
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.webRequest.</span><span>onBeforeSendHeaders</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onBeforeSendHeaders</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
 
               <div class="description">
@@ -5263,7 +5268,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -5359,7 +5364,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -5513,7 +5518,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-BlockingResponse">BlockingResponse</a>
+                        <a href="webRequest.html#type-BlockingResponse">BlockingResponse</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -5578,7 +5583,7 @@ chrome.windows.onRemoved.addListener(
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.webRequest.</span><span>onCompleted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onCompleted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
 
               <div class="description">
@@ -6399,7 +6404,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -6563,7 +6568,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -6717,7 +6722,7 @@ chrome.windows.onRemoved.addListener(
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.webRequest.</span><span>onErrorOccurred</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onErrorOccurred</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter</span>);
               </div>
 
               <div class="description">
@@ -7566,7 +7571,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -7641,7 +7646,7 @@ chrome.windows.onRemoved.addListener(
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.webRequest.</span><span>onHeadersReceived</span><span class="subdued">.addListener</span>(function(<span>object deails</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onHeadersReceived</span><span class="subdued">.addListener</span>(function(<span>object deails</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
 
               <div class="description">
@@ -8326,7 +8331,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -8422,7 +8427,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -8576,7 +8581,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-BlockingResponse">BlockingResponse</a>
+                        <a href="webRequest.html#type-BlockingResponse">BlockingResponse</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -8641,7 +8646,7 @@ chrome.windows.onRemoved.addListener(
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.webRequest.</span><span>onResponseStarted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onResponseStarted</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
 
               <div class="description">
@@ -9462,7 +9467,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -9626,7 +9631,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -9780,7 +9785,7 @@ chrome.windows.onRemoved.addListener(
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.experimental.webRequest.</span><span>onSendHeaders</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
+                <span class="subdued">chrome.webRequest.</span><span>onSendHeaders</span><span class="subdued">.addListener</span>(function(<span>object details</span>) <span class="subdued">{...}</span><span>, RequestFilter filter, array of string extraInfoSpec</span>);
               </div>
 
               <div class="description">
@@ -10397,7 +10402,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -10493,7 +10498,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-RequestFilter">RequestFilter</a>
+                        <a href="webRequest.html#type-RequestFilter">RequestFilter</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -11510,7 +11515,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -11578,7 +11583,7 @@ chrome.windows.onRemoved.addListener(
                     <span class="enum" style="display: none; ">enumerated</span>
                     <span id="typeTemplate">
                       <span>
-                        <a href="experimental.webRequest.html#type-HttpHeaders">HttpHeaders</a>
+                        <a href="webRequest.html#type-HttpHeaders">HttpHeaders</a>
                       </span>
                       <span style="display: none; ">
                         <span>

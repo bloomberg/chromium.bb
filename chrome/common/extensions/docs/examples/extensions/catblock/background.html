@@ -4,7 +4,7 @@
 // Simple extension to replace lolcat images from
 // http://icanhascheezburger.com/ with loldog images instead.
 
-chrome.experimental.webRequest.onBeforeRequest.addListener(
+chrome.webRequest.onBeforeRequest.addListener(
   function(info) {
     console.log("Cat intercepted: " + info.url);
     // Redirect the lolcal request to a random loldog URL.

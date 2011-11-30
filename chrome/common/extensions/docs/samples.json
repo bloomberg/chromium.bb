@@ -79,18 +79,6 @@
     "chrome.experimental.speechInput.start": "experimental.speechInput.html#method-start",
     "chrome.experimental.speechInput.stop": "experimental.speechInput.html#method-stop",
     "chrome.experimental.storage.onChanged": "experimental.storage.html#event-onChanged",
-    "chrome.experimental.webRequest.addEventListener": "experimental.webRequest.html#method-addEventListener",
-    "chrome.experimental.webRequest.eventHandled": "experimental.webRequest.html#method-eventHandled",
-    "chrome.experimental.webRequest.handlerBehaviorChanged": "experimental.webRequest.html#method-handlerBehaviorChanged",
-    "chrome.experimental.webRequest.onAuthRequired": "experimental.webRequest.html#event-onAuthRequired",
-    "chrome.experimental.webRequest.onBeforeRedirect": "experimental.webRequest.html#event-onBeforeRedirect",
-    "chrome.experimental.webRequest.onBeforeRequest": "experimental.webRequest.html#event-onBeforeRequest",
-    "chrome.experimental.webRequest.onBeforeSendHeaders": "experimental.webRequest.html#event-onBeforeSendHeaders",
-    "chrome.experimental.webRequest.onCompleted": "experimental.webRequest.html#event-onCompleted",
-    "chrome.experimental.webRequest.onErrorOccurred": "experimental.webRequest.html#event-onErrorOccurred",
-    "chrome.experimental.webRequest.onHeadersReceived": "experimental.webRequest.html#event-onHeadersReceived",
-    "chrome.experimental.webRequest.onResponseStarted": "experimental.webRequest.html#event-onResponseStarted",
-    "chrome.experimental.webRequest.onSendHeaders": "experimental.webRequest.html#event-onSendHeaders",
     "chrome.extension.connect": "extension.html#method-connect",
     "chrome.extension.getBackgroundPage": "extension.html#method-getBackgroundPage",
     "chrome.extension.getExtensionTabs": "extension.html#method-getExtensionTabs",
@@ -191,6 +179,18 @@
     "chrome.webNavigation.onDOMContentLoaded": "webNavigation.html#event-onDOMContentLoaded",
     "chrome.webNavigation.onErrorOccurred": "webNavigation.html#event-onErrorOccurred",
     "chrome.webNavigation.onReferenceFragmentUpdated": "webNavigation.html#event-onReferenceFragmentUpdated",
+    "chrome.webRequest.addEventListener": "webRequest.html#method-addEventListener",
+    "chrome.webRequest.eventHandled": "webRequest.html#method-eventHandled",
+    "chrome.webRequest.handlerBehaviorChanged": "webRequest.html#method-handlerBehaviorChanged",
+    "chrome.webRequest.onAuthRequired": "webRequest.html#event-onAuthRequired",
+    "chrome.webRequest.onBeforeRedirect": "webRequest.html#event-onBeforeRedirect",
+    "chrome.webRequest.onBeforeRequest": "webRequest.html#event-onBeforeRequest",
+    "chrome.webRequest.onBeforeSendHeaders": "webRequest.html#event-onBeforeSendHeaders",
+    "chrome.webRequest.onCompleted": "webRequest.html#event-onCompleted",
+    "chrome.webRequest.onErrorOccurred": "webRequest.html#event-onErrorOccurred",
+    "chrome.webRequest.onHeadersReceived": "webRequest.html#event-onHeadersReceived",
+    "chrome.webRequest.onResponseStarted": "webRequest.html#event-onResponseStarted",
+    "chrome.webRequest.onSendHeaders": "webRequest.html#event-onSendHeaders",
     "chrome.windows.create": "windows.html#method-create",
     "chrome.windows.get": "windows.html#method-get",
     "chrome.windows.getAll": "windows.html#method-getAll",
@@ -495,13 +495,13 @@
     },
     {
       "api_calls": [
-        "chrome.experimental.webRequest.onBeforeRequest"
+        "chrome.webRequest.onBeforeRequest"
       ],
       "crx_path": null,
       "description": "I can't has cheezburger!",
       "features": [
         "background_page",
-        "experimental"
+        "webRequestBlocking"
       ],
       "icon": null,
       "id": "7f4d3fac7ae1ad4d514a15cd0b2c48c57a58c55e",
@@ -512,13 +512,13 @@
         "http:\/\/",
         "http:\/\/"
       ],
-      "search_string": "CATBLOCK I CANT HAS CHEEZBURGER! BACKGROUND_PAGE EXPERIMENTAL CHROME.EXPERIMENTAL.WEBREQUEST.ONBEFOREREQUEST",
+      "search_string": "CATBLOCK I CANT HAS CHEEZBURGER! BACKGROUND_PAGE WEBREQUESTBLOCKING CHROME.WEBREQUEST.ONBEFOREREQUEST",
       "source_files": [
         "background.html",
         "loldogs.js",
         "manifest.json"
       ],
-      "source_hash": "4070880eb00534fe9a5220293b9c798c0994a196",
+      "source_hash": "253beeba9cda9c03cb266f1db7bf25a46d1d4e19",
       "zip_path": "examples\/extensions\/catblock.zip"
     },
     {

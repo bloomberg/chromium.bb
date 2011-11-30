@@ -35,21 +35,24 @@ const char kAuthCredentialsKey[] = "authCredentials";
 const char kUsernameKey[] = "username";
 const char kPasswordKey[] = "password";
 
-const char kOnBeforeRedirect[] = "experimental.webRequest.onBeforeRedirect";
-const char kOnBeforeRequest[] = "experimental.webRequest.onBeforeRequest";
-const char kOnBeforeSendHeaders[] =
-    "experimental.webRequest.onBeforeSendHeaders";
-const char kOnCompleted[] = "experimental.webRequest.onCompleted";
-const char kOnErrorOccurred[] = "experimental.webRequest.onErrorOccurred";
-const char kOnHeadersReceived[] = "experimental.webRequest.onHeadersReceived";
-const char kOnResponseStarted[] = "experimental.webRequest.onResponseStarted";
-const char kOnSendHeaders[] = "experimental.webRequest.onSendHeaders";
-const char kOnAuthRequired[] = "experimental.webRequest.onAuthRequired";
+const char kOnBeforeRedirect[] = "webRequest.onBeforeRedirect";
+const char kOnBeforeRequest[] = "webRequest.onBeforeRequest";
+const char kOnBeforeSendHeaders[] = "webRequest.onBeforeSendHeaders";
+const char kOnCompleted[] = "webRequest.onCompleted";
+const char kOnErrorOccurred[] = "webRequest.onErrorOccurred";
+const char kOnHeadersReceived[] = "webRequest.onHeadersReceived";
+const char kOnResponseStarted[] = "webRequest.onResponseStarted";
+const char kOnSendHeaders[] = "webRequest.onSendHeaders";
+const char kOnAuthRequired[] = "webRequest.onAuthRequired";
 
 
 const char kInvalidRedirectUrl[] = "redirectUrl '*' is not a valid URL.";
 const char kInvalidBlockingResponse[] =
     "cancel cannot be true in the presence of other keys.";
 const char kInvalidRequestFilterUrl[] = "'*' is not a valid URL pattern.";
+const char kBlockingPermissionRequired[] =
+        "You do not have permission to use blocking webRequest listeners. "
+        "Be sure to declare the webRequestBlocking permission in your "
+        "manifest.";
 
 }  // namespace extension_webrequest_api_constants

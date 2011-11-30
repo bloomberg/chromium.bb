@@ -346,20 +346,20 @@ class ExtensionWebRequestEventRouter {
 class WebRequestAddEventListener : public SyncIOThreadExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.webRequest.addEventListener");
+  DECLARE_EXTENSION_FUNCTION_NAME("webRequest.addEventListener");
 };
 
 class WebRequestEventHandled : public SyncIOThreadExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION_NAME("experimental.webRequest.eventHandled");
+  DECLARE_EXTENSION_FUNCTION_NAME("webRequest.eventHandled");
 };
 
 class WebRequestHandlerBehaviorChanged : public SyncIOThreadExtensionFunction {
  public:
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION_NAME(
-      "experimental.webRequest.handlerBehaviorChanged");
+      "webRequest.handlerBehaviorChanged");
 
  private:
   virtual void GetQuotaLimitHeuristics(

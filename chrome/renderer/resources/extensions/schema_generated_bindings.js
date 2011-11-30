@@ -231,7 +231,7 @@ var chrome = chrome || {};
     // subEvent listener.
     chromeHidden.validate(Array.prototype.slice.call(arguments, 1),
                           this.extraArgSchemas_);
-    chrome.experimental.webRequest.addEventListener(
+    chrome.webRequest.addEventListener(
         cb, opt_filter, opt_extraInfo, this.eventName_, subEventName);
 
     var subEvent = new chrome.Event(subEventName, this.argSchemas_);
@@ -242,10 +242,10 @@ var chrome = chrome || {};
         var requestId = arguments[0].requestId;
         try {
           var result = cb.apply(null, arguments);
-          chrome.experimental.webRequest.eventHandled(
+          chrome.webRequest.eventHandled(
               eventName, subEventName, requestId, result);
         } catch (e) {
-          chrome.experimental.webRequest.eventHandled(
+          chrome.webRequest.eventHandled(
               eventName, subEventName, requestId);
           throw e;
         }
@@ -256,7 +256,7 @@ var chrome = chrome || {};
         var details = arguments[0];
         var requestId = details.requestId;
         var handledCallback = function(response) {
-          chrome.experimental.webRequest.eventHandled(
+          chrome.webRequest.eventHandled(
               eventName, subEventName, requestId, response);
         };
         cb.apply(null, [details, handledCallback]);
@@ -715,7 +715,7 @@ var chrome = chrome || {};
           }
 
           var eventName = apiDef.namespace + "." + eventDef.name;
-          if (apiDef.namespace == "experimental.webRequest") {
+          if (apiDef.namespace == "webRequest") {
             module[eventDef.name] = new chrome.WebRequestEvent(eventName,
                 eventDef.parameters, eventDef.extraParameters);
           } else {
@@ -978,21 +978,21 @@ var chrome = chrome || {};
       sendRequest(this.name, [parseResult], this.definition.parameters);
     };
 
-    apiFunctions["experimental.webRequest.addEventListener"].handleRequest =
+    apiFunctions["webRequest.addEventListener"].handleRequest =
         function() {
       var args = Array.prototype.slice.call(arguments);
       sendRequest(this.name, args, this.definition.parameters,
                   {forIOThread: true});
     };
 
-    apiFunctions["experimental.webRequest.eventHandled"].handleRequest =
+    apiFunctions["webRequest.eventHandled"].handleRequest =
         function() {
       var args = Array.prototype.slice.call(arguments);
       sendRequest(this.name, args, this.definition.parameters,
                   {forIOThread: true});
     };
 
-    apiFunctions["experimental.webRequest.handlerBehaviorChanged"].
+    apiFunctions["webRequest.handlerBehaviorChanged"].
         handleRequest = function() {
       var args = Array.prototype.slice.call(arguments);
       sendRequest(this.name, args, this.definition.parameters,
