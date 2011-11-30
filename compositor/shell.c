@@ -55,7 +55,10 @@ struct wl_shell {
 	struct wl_list backgrounds;
 	struct wl_list panels;
 
-	struct wl_resource *screensaver;
+	struct {
+		struct wl_resource *binding;
+		struct wl_list surfaces;
+	} screensaver;
 };
 
 enum shell_surface_type {
@@ -64,6 +67,7 @@ enum shell_surface_type {
 	SHELL_SURFACE_PANEL,
 	SHELL_SURFACE_BACKGROUND,
 	SHELL_SURFACE_LOCK,
+	SHELL_SURFACE_SCREENSAVER,
 
 	SHELL_SURFACE_TOPLEVEL,
 	SHELL_SURFACE_TRANSIENT,
@@ -302,10 +306,11 @@ reset_shell_surface_type(struct shell_surface *surface)
 		wl_list_remove(&surface->link);
 		wl_list_init(&surface->link);
 		break;
+	case SHELL_SURFACE_SCREENSAVER:
 	case SHELL_SURFACE_LOCK:
 		wl_resource_post_error(&surface->resource,
 				       WL_DISPLAY_ERROR_INVALID_METHOD,
-				       "cannot reassign lock surface type");
+				       "cannot reassign surface type");
 		return -1;
 	case SHELL_SURFACE_NONE:
 	case SHELL_SURFACE_TOPLEVEL:
@@ -479,6 +484,49 @@ static const struct wl_shell_interface shell_implementation = {
 };
 
 static void
+launch_screensaver(struct wl_shell *shell)
+{
+	if (shell->screensaver.binding)
+		return;
+
+	/* TODO: exec() the screensaver process */
+}
+
+static void
+terminate_screensaver(struct wl_shell *shell)
+{
+	/* TODO */
+}
+
+static void
+show_screensaver(struct wl_shell *shell, struct shell_surface *surface)
+{
+	struct wl_list *list;
+
+	if (shell->lock_surface)
+		list = &shell->lock_surface->surface->link;
+	else
+		list = &shell->compositor->surface_list;
+
+	wl_list_remove(&surface->surface->link);
+	wl_list_insert(list, &surface->surface->link);
+	wlsc_surface_configure(surface->surface,
+			       surface->surface->x,
+			       surface->surface->y,
+			       surface->surface->width,
+			       surface->surface->height);
+	surface->surface->output = surface->output;
+}
+
+static void
+hide_screensaver(struct wl_shell *shell, struct shell_surface *surface)
+{
+	wl_list_remove(&surface->surface->link);
+	wl_list_init(&surface->surface->link);
+	surface->surface->output = NULL;
+}
+
+static void
 desktop_shell_set_background(struct wl_client *client,
 			     struct wl_resource *resource,
 			     struct wl_resource *output_resource,
@@ -595,6 +643,12 @@ resume_desktop(struct wl_shell *shell)
 {
 	struct wlsc_surface *surface;
 	struct wl_list *list;
+	struct shell_surface *tmp;
+
+	wl_list_for_each(tmp, &shell->screensaver.surfaces, link)
+		hide_screensaver(shell, tmp);
+
+	terminate_screensaver(shell);
 
 	wl_list_for_each(surface, &shell->hidden_surface_list, link)
 		wlsc_surface_configure(surface, surface->x, surface->y,
@@ -662,6 +716,7 @@ move_binding(struct wl_input_device *device, uint32_t time,
 		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_BACKGROUND:
 		case SHELL_SURFACE_FULLSCREEN:
+		case SHELL_SURFACE_SCREENSAVER:
 			return;
 		default:
 			break;
@@ -691,6 +746,7 @@ resize_binding(struct wl_input_device *device, uint32_t time,
 		case SHELL_SURFACE_PANEL:
 		case SHELL_SURFACE_BACKGROUND:
 		case SHELL_SURFACE_FULLSCREEN:
+		case SHELL_SURFACE_SCREENSAVER:
 			return;
 		default:
 			break;
@@ -738,6 +794,14 @@ activate(struct wlsc_shell *base, struct wlsc_surface *es,
 	case SHELL_SURFACE_PANEL:
 		/* already put on top */
 		break;
+	case SHELL_SURFACE_SCREENSAVER:
+		/* always below lock surface */
+		if (shell->lock_surface) {
+			wl_list_remove(&es->link);
+			wl_list_insert(&shell->lock_surface->surface->link,
+				       &es->link);
+		}
+		break;
 	default:
 		if (!shell->locked) {
 			/* bring panel back to top */
@@ -759,6 +823,7 @@ lock(struct wlsc_shell *base)
 	struct wlsc_surface *cur;
 	struct wlsc_surface *tmp;
 	struct wlsc_input_device *device;
+	struct shell_surface *shsurf;
 	uint32_t time;
 
 	if (shell->locked)
@@ -788,6 +853,11 @@ lock(struct wlsc_shell *base)
 		wl_list_remove(&cur->link);
 		wl_list_insert(shell->hidden_surface_list.prev, &cur->link);
 	}
+
+	launch_screensaver(shell);
+
+	wl_list_for_each(shsurf, &shell->screensaver.surfaces, link)
+		show_screensaver(shell, shsurf);
 
 	/* reset pointer foci */
 	wlsc_compositor_repick(shell->compositor);
@@ -829,26 +899,60 @@ unlock(struct wlsc_shell *base)
 }
 
 static void
+center_on_output(struct wlsc_surface *surface, struct wlsc_output *output)
+{
+	struct wlsc_mode *mode = output->current;
+
+	surface->x = output->x + (mode->width - surface->width) / 2;
+	surface->y = output->y + (mode->height - surface->height) / 2;
+}
+
+static void
 map(struct wlsc_shell *base,
     struct wlsc_surface *surface, int32_t width, int32_t height)
 {
 	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
 	struct wlsc_compositor *compositor = shell->compositor;
 	struct wl_list *list;
-	enum shell_surface_type surface_type;
+	struct shell_surface *shsurf;
+	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
+	int do_configure;
 
-	surface_type = get_shell_surface_type(surface);
+	shsurf = get_shell_surface(surface);
+	if (shsurf)
+		surface_type = shsurf->type;
 
-	if (shell->locked)
+	if (shell->locked) {
 		list = &shell->hidden_surface_list;
-	else
+		do_configure = 0;
+	} else {
 		list = &compositor->surface_list;
+		do_configure = 1;
+	}
+
+	surface->width = width;
+	surface->height = height;
+
+	/* initial positioning, see also configure() */
+	switch (surface_type) {
+	case SHELL_SURFACE_TOPLEVEL:
+		surface->x = 10 + random() % 400;
+		surface->y = 10 + random() % 400;
+		break;
+	case SHELL_SURFACE_SCREENSAVER:
+	case SHELL_SURFACE_FULLSCREEN:
+		center_on_output(surface, surface->fullscreen_output);
+		break;
+	default:
+		;
+	}
 
 	/* surface stacking order, see also activate() */
 	switch (surface_type) {
 	case SHELL_SURFACE_BACKGROUND:
 		/* background always visible, at the bottom */
 		wl_list_insert(compositor->surface_list.prev, &surface->link);
+		do_configure = 1;
 		break;
 	case SHELL_SURFACE_PANEL:
 		/* panel always on top, hidden while locked */
@@ -860,6 +964,13 @@ map(struct wlsc_shell *base,
 
 		wlsc_compositor_repick(compositor);
 		wlsc_compositor_wake(compositor);
+		do_configure = 1;
+		break;
+	case SHELL_SURFACE_SCREENSAVER:
+		/* If locked, show it. */
+		if (shell->locked)
+			show_screensaver(shell, shsurf);
+		do_configure = 0;
 		break;
 	default:
 		/* everything else just below the panel */
@@ -873,14 +984,7 @@ map(struct wlsc_shell *base,
 		}
 	}
 
-	if (surface_type == SHELL_SURFACE_TOPLEVEL) {
-		surface->x = 10 + random() % 400;
-		surface->y = 10 + random() % 400;
-	}
-
-	surface->width = width;
-	surface->height = height;
-	if (!shell->locked || surface_type == SHELL_SURFACE_LOCK)
+	if (do_configure)
 		wlsc_surface_configure(surface,
 				       surface->x, surface->y, width, height);
 
@@ -889,22 +993,44 @@ map(struct wlsc_shell *base,
 }
 
 static void
-configure(struct wlsc_shell *shell, struct wlsc_surface *surface,
+configure(struct wlsc_shell *base, struct wlsc_surface *surface,
 	  int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct wlsc_mode *current;
+	struct wl_shell *shell = container_of(base, struct wl_shell, shell);
+	int do_configure = !shell->locked;
+	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
+	struct shell_surface *shsurf;
 
-	switch (get_shell_surface_type(surface)) {
+	shsurf = get_shell_surface(surface);
+	if (shsurf)
+		surface_type = shsurf->type;
+
+	surface->width = width;
+	surface->height = height;
+
+	switch (surface_type) {
+	case SHELL_SURFACE_SCREENSAVER:
+		do_configure = !do_configure;
+		/* fall through */
 	case SHELL_SURFACE_FULLSCREEN:
-		current = surface->fullscreen_output->current;
-		x = (current->width - surface->width) / 2;
-		y = (current->height - surface->height) / 2;
+		center_on_output(surface, surface->fullscreen_output);
 		break;
 	default:
 		break;
 	}
 
-	wlsc_surface_configure(surface, x, y, width, height);
+	/*
+	 * wlsc_surface_configure() will assign an output, which means
+	 * the surface is supposed to be in compositor->surface_list.
+	 * Be careful with that, and make sure we stay on the right output.
+	 * XXX: would a fullscreen surface need the same handling?
+	 */
+	if (do_configure) {
+		wlsc_surface_configure(surface, x, y, width, height);
+
+		if (surface_type == SHELL_SURFACE_SCREENSAVER)
+			surface->output = shsurf->output;
+	}
 }
 
 static void
@@ -989,7 +1115,11 @@ screensaver_set_surface(struct wl_client *client,
 	if (reset_shell_surface_type(surface))
 		return;
 
-	/* TODO */
+	surface->type = SHELL_SURFACE_SCREENSAVER;
+
+	surface->surface->fullscreen_output = output;
+	surface->output = output;
+	wl_list_insert(shell->screensaver.surfaces.prev, &surface->link);
 }
 
 static const struct screensaver_interface screensaver_implementation = {
@@ -1001,7 +1131,7 @@ unbind_screensaver(struct wl_resource *resource)
 {
 	struct wl_shell *shell = resource->data;
 
-	shell->screensaver = NULL;
+	shell->screensaver.binding = NULL;
 	free(resource);
 }
 
@@ -1016,9 +1146,9 @@ bind_screensaver(struct wl_client *client,
 					&screensaver_implementation,
 					id, shell);
 
-	if (shell->screensaver == NULL) {
+	if (shell->screensaver.binding == NULL) {
 		resource->destroy = unbind_screensaver;
-		shell->screensaver = resource;
+		shell->screensaver.binding = resource;
 		return;
 	}
 
@@ -1050,6 +1180,7 @@ shell_init(struct wlsc_compositor *ec)
 	wl_list_init(&shell->hidden_surface_list);
 	wl_list_init(&shell->backgrounds);
 	wl_list_init(&shell->panels);
+	wl_list_init(&shell->screensaver.surfaces);
 
 	if (wl_display_add_global(ec->wl_display, &wl_shell_interface,
 				  shell, bind_shell) == NULL)
