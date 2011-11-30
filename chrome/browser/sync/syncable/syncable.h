@@ -371,6 +371,8 @@ struct EntryKernel {
     return id_fields[field - ID_FIELDS_BEGIN];
   }
 
+  syncable::ModelType GetServerModelType() const;
+
   // Does a case in-sensitive search for a given string, which must be
   // lower case.
   bool ContainsString(const std::string& lowercase_query) const;
@@ -487,9 +489,6 @@ class Entry {
   EntryKernel* kernel_;
 
  private:
-  // Like GetServerModelType() but without the DCHECKs.
-  ModelType GetServerModelTypeHelper() const;
-
   DISALLOW_COPY_AND_ASSIGN(Entry);
 };
 
@@ -969,9 +968,17 @@ class Directory {
   void GetUnsyncedMetaHandles(BaseTransaction* trans,
                               UnsyncedMetaHandles* result);
 
-  // Get all the metahandles for unapplied updates
+  // Returns all server types with unapplied updates.  A subset of
+  // those types can then be passed into
+  // GetUnappliedUpdateMetaHandles() below.
+  syncable::ModelTypeBitSet GetServerTypesWithUnappliedUpdates(
+      BaseTransaction* trans) const;
+
+  // Get all the metahandles for unapplied updates for a given set of
+  // server types.
   typedef std::vector<int64> UnappliedUpdateMetaHandles;
   void GetUnappliedUpdateMetaHandles(BaseTransaction* trans,
+                                     syncable::ModelTypeBitSet server_types,
                                      UnappliedUpdateMetaHandles* result);
 
   // Checks tree metadata consistency.
@@ -1103,7 +1110,8 @@ class Directory {
     EntryKernel needle;
 
     // 3 in-memory indices on bits used extremely frequently by the syncer.
-    MetahandleSet* const unapplied_update_metahandles;
+    // |unapplied_update_metahandles| is keyed by the server model type.
+    MetahandleSet unapplied_update_metahandles[MODEL_TYPE_COUNT];
     MetahandleSet* const unsynced_metahandles;
     // Contains metahandles that are most likely dirty (though not
     // necessarily).  Dirtyness is confirmed in TakeSnapshotForSaveChanges().

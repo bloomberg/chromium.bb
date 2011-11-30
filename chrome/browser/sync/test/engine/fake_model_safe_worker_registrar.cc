@@ -15,6 +15,8 @@ FakeModelSafeWorkerRegistrar::FakeModelSafeWorkerRegistrar(
        it != routes_.end(); ++it) {
     groups.insert(it->second);
   }
+  // Sessions always expect a passive worker to be present.
+  groups.insert(GROUP_PASSIVE);
 
   for (std::set<ModelSafeGroup>::const_iterator it = groups.begin();
        it != groups.end(); ++it) {

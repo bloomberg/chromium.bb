@@ -22,9 +22,15 @@ namespace browser_sync {
 
 using sessions::SyncSession;
 using sessions::StatusController;
+using sessions::UpdateProgress;
 
 ProcessUpdatesCommand::ProcessUpdatesCommand() {}
 ProcessUpdatesCommand::~ProcessUpdatesCommand() {}
+
+std::set<ModelSafeGroup> ProcessUpdatesCommand::GetGroupsToChange(
+    const sessions::SyncSession& session) const {
+  return session.GetEnabledGroupsWithVerifiedUpdates();
+}
 
 bool ProcessUpdatesCommand::ModelNeutralExecuteImpl(SyncSession* session) {
   const GetUpdatesResponse& updates =

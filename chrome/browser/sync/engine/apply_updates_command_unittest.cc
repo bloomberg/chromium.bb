@@ -57,12 +57,11 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
         make_scoped_refptr(new FakeModelWorker(GROUP_UI)));
     workers()->push_back(
         make_scoped_refptr(new FakeModelWorker(GROUP_PASSWORD)));
-    workers()->push_back(
-        make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));
     (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_UI;
     (*mutable_routing_info())[syncable::PASSWORDS] = GROUP_PASSWORD;
     (*mutable_routing_info())[syncable::NIGORI] = GROUP_PASSIVE;
     SyncerCommandTest::SetUp();
+    ExpectNoGroupsToChange(apply_updates_command_);
   }
 
   // Create a new unapplied folder node with a parent.
@@ -160,6 +159,7 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
                                    DefaultBookmarkSpecifics(),
                                    "parent");
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_UI);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -195,6 +195,7 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
                                    DefaultBookmarkSpecifics(),
                                    "parent");
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_UI);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -218,6 +219,7 @@ TEST_F(ApplyUpdatesCommandTest, NestedItemsWithUnknownParent) {
                                    DefaultBookmarkSpecifics(),
                                    "some_item");
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_UI);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -254,6 +256,7 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
                                    DefaultBookmarkSpecifics(),
                                    root_server_id);
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_UI);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -292,6 +295,7 @@ TEST_F(ApplyUpdatesCommandTest, DecryptablePassword) {
       specifics.MutableExtension(sync_pb::password)->mutable_encrypted());
   CreateUnappliedNewItem("item", specifics, false);
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_PASSWORD);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -320,6 +324,7 @@ TEST_F(ApplyUpdatesCommandTest, UndecryptableData) {
   encrypted_password.MutableExtension(sync_pb::password);
   CreateUnappliedNewItem("item3", encrypted_password, false);
 
+  ExpectGroupsToChange(apply_updates_command_, GROUP_UI, GROUP_PASSWORD);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -394,6 +399,7 @@ TEST_F(ApplyUpdatesCommandTest, SomeUndecryptablePassword) {
     CreateUnappliedNewItem("item2", specifics, false);
   }
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_PASSWORD);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -448,6 +454,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdate) {
                          specifics, true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_PASSIVE);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -499,6 +506,7 @@ TEST_F(ApplyUpdatesCommandTest, NigoriUpdateForDisabledTypes) {
                          specifics, true);
   EXPECT_FALSE(cryptographer->has_pending_keys());
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_PASSIVE);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -586,6 +594,7 @@ TEST_F(ApplyUpdatesCommandTest, EncryptUnsyncedChanges) {
     EXPECT_EQ(2*batch_s+1, handles.size());
   }
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_PASSIVE);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
@@ -688,6 +697,7 @@ TEST_F(ApplyUpdatesCommandTest, CannotEncryptUnsyncedChanges) {
     EXPECT_EQ(2*batch_s+1, handles.size());
   }
 
+  ExpectGroupToChange(apply_updates_command_, GROUP_PASSIVE);
   apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->mutable_status_controller();
