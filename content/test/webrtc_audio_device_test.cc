@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -239,7 +240,7 @@ bool WebRTCAudioDeviceTest::OnMessageReceived(const IPC::Message& message) {
       return true;
   }
 
-  bool handled = true;
+  bool handled ALLOW_UNUSED = true;
   bool message_is_ok = true;
   IPC_BEGIN_MESSAGE_MAP_EX(WebRTCAudioDeviceTest, message, message_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareSampleRate,

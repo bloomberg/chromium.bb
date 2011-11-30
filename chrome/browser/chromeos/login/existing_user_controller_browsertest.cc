@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_mock.h"
@@ -85,8 +86,7 @@ class MockLoginPerformerDelegate : public LoginPerformer::Delegate {
                       const std::string&,
                       const GaiaAuthConsumer::ClientLoginResult&,
                       bool, bool) {
-    LoginPerformer* login_performer = controller_->login_performer_.release();
-    login_performer = NULL;
+    ignore_result(controller_->login_performer_.release());
     controller_->ActivateWizard(WizardController::kUserImageScreenName);
   }
 
