@@ -8537,12 +8537,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SSL_CHECKREVOCATION" desc="The label of the 'Check for server certificate revocation' checkbox">
         Check for server certificate revocation
       </message>
-      <message name="IDS_OPTIONS_SSL_USESSL3" desc="The label of the 'Use SSL 3.0' checkbox (Only used on Linux.)">
-        Use SSL 3.0
-      </message>
-      <message name="IDS_OPTIONS_SSL_USETLS1" desc="The label of the 'Use TLS 1.0' checkbox (Only used on Linux.)">
-        Use TLS 1.0
-      </message>
 
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
