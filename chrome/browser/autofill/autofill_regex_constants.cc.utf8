@@ -274,14 +274,6 @@ const char kAreaCodeNotextRe[] =
 const char kAreaCodeRe[] =
     "area.*code|acode|area"
     "|지역.?번호";  // ko-KR
-const char kFaxRe[] =
-    "fax"
-    "|télécopie|telecopie"  // fr-FR
-    "|ファックス"  // ja-JP
-    "|факс"  // ru
-    "|传真"  // zh-CN
-    "|傳真"  // zh-TW
-    "|팩스(.?번호)?";  // ko-KR
 const char kPhonePrefixSeparatorRe[] =
     "^-$|^\\)$";
 const char kPhoneSuffixSeparatorRe[] =
