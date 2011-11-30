@@ -78,7 +78,19 @@ void Window::Init(ui::Layer::LayerType layer_type) {
   layer_.reset(new ui::Layer(layer_type));
   layer_->SetVisible(false);
   layer_->set_delegate(this);
-  UpdateLayerName(name_);
+
+#if !defined(NDEBUG)
+  std::string layer_name(name_);
+  if (layer_name.empty())
+    layer_name.append("Unnamed Window");
+
+  if (id_ != -1) {
+    char id_buf[10];
+    base::snprintf(id_buf, sizeof(id_buf), " %d", id_);
+    layer_name.append(id_buf);
+  }
+  layer_->set_name(layer_name);
+#endif
 
   Desktop::GetInstance()->WindowInitialized(this);
 }
@@ -87,13 +99,6 @@ void Window::SetType(WindowType type) {
   // Cannot change type after the window is initialized.
   DCHECK(!layer());
   type_ = type;
-}
-
-void Window::SetName(const std::string& name) {
-  name_ = name;
-
-  if (layer())
-    UpdateLayerName(name_);
 }
 
 void Window::Show() {
@@ -536,23 +541,6 @@ void Window::OnStackingChanged() {
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
   if (delegate_)
     delegate_->OnPaint(canvas);
-}
-
-void Window::UpdateLayerName(const std::string& name) {
-#if !defined(NDEBUG)
-  DCHECK(layer());
-
-  std::string layer_name(name_);
-  if (layer_name.empty())
-    layer_name.append("Unnamed Window");
-
-  if (id_ != -1) {
-    char id_buf[10];
-    base::snprintf(id_buf, sizeof(id_buf), " %d", id_);
-    layer_name.append(id_buf);
-  }
-  layer()->set_name(layer_name);
-#endif
 }
 
 }  // namespace aura

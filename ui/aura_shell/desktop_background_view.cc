@@ -55,7 +55,7 @@ views::Widget* CreateDesktopBackground() {
       AddChild(desktop_widget->GetNativeView());
   desktop_widget->SetContentsView(view);
   desktop_widget->Show();
-  desktop_widget->GetNativeView()->SetName("DesktopBackgroundView");
+  desktop_widget->GetNativeView()->set_name("DesktopBackgroundView");
   return desktop_widget;
 }
 
