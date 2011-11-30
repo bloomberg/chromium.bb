@@ -121,8 +121,6 @@ Widget* BubbleDelegateView::CreateBubble(BubbleDelegateView* bubble_delegate) {
 
   bubble_delegate->SizeToContents();
   bubble_widget->AddObserver(bubble_delegate);
-  if (parent && parent->GetTopLevelWidget())
-    parent->GetTopLevelWidget()->DisableInactiveRendering();
   return bubble_widget;
 }
 
@@ -185,6 +183,9 @@ void BubbleDelegateView::Show() {
     border_widget_->Show();
   GetWidget()->Show();
   GetFocusManager()->SetFocusedView(GetInitiallyFocusedView());
+  if (anchor_view() && anchor_view()->GetWidget() &&
+      anchor_view()->GetWidget()->GetTopLevelWidget())
+    anchor_view()->GetWidget()->GetTopLevelWidget()->DisableInactiveRendering();
 }
 
 void BubbleDelegateView::StartFade(bool fade_in) {
