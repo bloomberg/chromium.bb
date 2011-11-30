@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TEST_NAVIGATION_OBSERVER_H_
-#define CHROME_TEST_TEST_NAVIGATION_OBSERVER_H_
+#ifndef CHROME_TEST_BASE_TEST_NAVIGATION_OBSERVER_H_
+#define CHROME_TEST_BASE_TEST_NAVIGATION_OBSERVER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
@@ -11,6 +11,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class JsInjectionReadyObserver;
 class NavigationController;
 class RenderViewHost;
 
@@ -22,17 +23,6 @@ class RenderViewHost;
 class TestNavigationObserver : public content::NotificationObserver {
  public:
   class RVHOSendJS;
-
-  // Interface to notify when JavaScript injection is possible.
-  class JsInjectionReadyObserver {
-   public:
-    JsInjectionReadyObserver();
-    virtual ~JsInjectionReadyObserver();
-
-    // Called to indicate page entry committed and ready for JavaScript
-    // injection.
-    virtual void OnJsInjectionReady(RenderViewHost* render_view_host) = 0;
-  };
 
   // Create and register a new TestNavigationObserver against the
   // |controller|. When |js_injection_ready_observer| is non-null, notify with
@@ -92,4 +82,4 @@ class TestNavigationObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestNavigationObserver);
 };
 
-#endif  // CHROME_TEST_TEST_NAVIGATION_OBSERVER_H_
+#endif  // CHROME_TEST_BASE_TEST_NAVIGATION_OBSERVER_H_

@@ -71,7 +71,9 @@ enum NotificationType {
   // traversal. The source is the browser, there are no details.
   NOTIFICATION_FOCUS_RETURNED_TO_BROWSER,
 
-  // Sent after an HtmlDialog dialog has been shown. The source is the dialog.
+  // Sent after an HtmlDialog dialog has been shown. The source is the
+  // dialog. The details is a Details<RenderViewHost> with a pointer to the RVH
+  // for the shown dialog.
   NOTIFICATION_HTML_DIALOG_SHOWN,
 
   // Application-modal dialogs -----------------------------------------------

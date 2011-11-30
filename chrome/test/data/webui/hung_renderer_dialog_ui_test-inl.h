@@ -18,21 +18,21 @@ class HungRendererDialogUITest : public WebUIBrowserTest {
   HungRendererDialogUITest();
   virtual ~HungRendererDialogUITest();
 
- private:
-  virtual void SetUpOnMainThread() OVERRIDE;
+ protected:
+  void ShowHungRendererDialogInternal();
 };
 
-void HungRendererDialogUITest::SetUpOnMainThread() {
+void HungRendererDialogUITest::ShowHungRendererDialogInternal() {
   // Force the flag so that we will use the WebUI version of the Dialog.
   ChromeWebUI::OverrideMoreWebUI(true);
 
   // Choose which tab contents to report as hung.  In this case, the default
   // tab contents will be about:blank.
-  ASSERT_TRUE(browser() != NULL);
+  ASSERT_TRUE(browser());
   TabContents* tab_contents = browser()->GetSelectedTabContents();
 
   // The TestHtmlDialogObserver will catch our dialog when it gets created.
-  TestHtmlDialogObserver dialog_observer;
+  TestHtmlDialogObserver dialog_observer(this);
 
   // Show a disabled Hung Renderer Dialog that won't kill processes or restart
   // hang timers.
@@ -49,5 +49,4 @@ void HungRendererDialogUITest::SetUpOnMainThread() {
   // Tell the test which WebUI instance we are dealing with and complete
   // initialization of this test.
   SetWebUIInstance(webui);
-  WebUIBrowserTest::SetUpOnMainThread();
 }

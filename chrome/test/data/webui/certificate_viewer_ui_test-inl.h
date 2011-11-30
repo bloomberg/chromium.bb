@@ -22,11 +22,11 @@ class CertificateViewerUITest : public WebUIBrowserTest {
   CertificateViewerUITest();
   virtual ~CertificateViewerUITest();
 
- private:
-  virtual void SetUpOnMainThread() OVERRIDE;
+ protected:
+  void ShowCertificateViewer();
 };
 
-void CertificateViewerUITest::SetUpOnMainThread() {
+void CertificateViewerUITest::ShowCertificateViewer() {
   // Enable more WebUI to use WebUI certificate viewer.
   ChromeWebUI::OverrideMoreWebUI(true);
 
@@ -37,8 +37,8 @@ void CertificateViewerUITest::SetUpOnMainThread() {
   ASSERT_TRUE(browser());
   ASSERT_TRUE(browser()->window());
 
-  TestHtmlDialogObserver dialog_observer;
-  ShowCertificateViewer(browser()->window()->GetNativeHandle(), google_cert);
+  TestHtmlDialogObserver dialog_observer(this);
+  ::ShowCertificateViewer(browser()->window()->GetNativeHandle(), google_cert);
   WebUI* webui = dialog_observer.GetWebUI();
   webui->tab_contents()->render_view_host()->SetWebUIProperty(
       "expectedUrl", chrome::kChromeUICertificateViewerURL);

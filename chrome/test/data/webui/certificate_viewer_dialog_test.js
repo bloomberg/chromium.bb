@@ -17,6 +17,14 @@ CertificateViewerUITest.prototype = {
    * @override
    */
   typedefCppFixture: 'CertificateViewerUITest',
+
+  /**
+   * Show the certificate viewer dialog.
+   */
+  testGenPreamble: function() {
+    GEN('ShowCertificateViewer();');
+  },
+
 };
 
 /**

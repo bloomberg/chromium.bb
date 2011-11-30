@@ -12,7 +12,8 @@
 #include "base/string16.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/test_navigation_observer.h"
+#include "chrome/test/base/js_injection_ready_observer.h"
+#include "chrome/test/base/test_navigation_observer.h"
 
 class RenderViewHost;
 class WebUIMessageHandler;
@@ -37,7 +38,7 @@ class Value;
 // and the lone test within this class.
 class WebUIBrowserTest
     : public InProcessBrowserTest,
-      public TestNavigationObserver::JsInjectionReadyObserver {
+      public JsInjectionReadyObserver {
  public:
   typedef std::vector<const base::Value*> ConstValueVector;
   virtual ~WebUIBrowserTest();
@@ -101,23 +102,23 @@ class WebUIBrowserTest
   // the javascript for the given |preload_test_fixture| and
   // |preload_test_name|. chrome.send will be overridden to allow javascript
   // handler mocking.
-  void BrowsePreload(const GURL& browse_to,
-                     const std::string& preload_test_fixture,
-                     const std::string& preload_test_name);
+  void BrowsePreload(const GURL& browse_to);
 
   // Called by javascript-generated test bodies to browse to a page and preload
   // the javascript for the given |preload_test_fixture| and
   // |preload_test_name|. chrome.send will be overridden to allow javascript
   // handler mocking.
-  void BrowsePrintPreload(const GURL& browse_to,
-                          const std::string& preload_test_fixture,
-                          const std::string& preload_test_name);
+  void BrowsePrintPreload(const GURL& browse_to);
 
  protected:
   // URL to dummy WebUI page for testing framework.
   static const char kDummyURL[];
 
   WebUIBrowserTest();
+
+  // Accessors for preload test fixture and name.
+  void set_preload_test_fixture(const std::string& preload_test_fixture);
+  void set_preload_test_name(const std::string& preload_test_name);
 
   // Set up & tear down console error catching.
   virtual void SetUpOnMainThread() OVERRIDE;
@@ -140,7 +141,7 @@ class WebUIBrowserTest
   static GURL WebUITestDataPathToURL(const FilePath::StringType& path);
 
  private:
-  // TestNavigationObserver::JsInjectionReadyObserver implementation.
+  // JsInjectionReadyObserver implementation.
   virtual void OnJsInjectionReady(RenderViewHost* render_view_host) OVERRIDE;
 
   // Builds a string containing all added javascript libraries.

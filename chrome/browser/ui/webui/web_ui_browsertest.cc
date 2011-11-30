@@ -175,13 +175,7 @@ void WebUIBrowserTest::PreLoadJavascriptLibraries(
   libraries_preloaded_ = true;
 }
 
-void WebUIBrowserTest::BrowsePreload(const GURL& browse_to,
-                                     const std::string& preload_test_fixture,
-                                     const std::string& preload_test_name) {
-  // Remember for callback OnJsInjectionReady().
-  preload_test_fixture_ = preload_test_fixture;
-  preload_test_name_ = preload_test_name;
-
+void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
   TestNavigationObserver navigation_observer(
       content::Source<NavigationController>(
           &browser()->GetSelectedTabContentsWrapper()->controller()),
@@ -193,14 +187,7 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to,
   navigation_observer.WaitForObservation();
 }
 
-void WebUIBrowserTest::BrowsePrintPreload(
-    const GURL& browse_to,
-    const std::string& preload_test_fixture,
-    const std::string& preload_test_name) {
-  // Remember for callback OnJsInjectionReady().
-  preload_test_fixture_ = preload_test_fixture;
-  preload_test_name_ = preload_test_name;
-
+void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
   ui_test_utils::NavigateToURL(browser(), browse_to);
 
   TestTabStripModelObserver tabstrip_observer(
@@ -222,6 +209,16 @@ WebUIBrowserTest::WebUIBrowserTest()
     : test_handler_(new WebUITestHandler()),
       libraries_preloaded_(false),
       override_selected_web_ui_(NULL) {}
+
+void WebUIBrowserTest::set_preload_test_fixture(
+    const std::string& preload_test_fixture) {
+  preload_test_fixture_ = preload_test_fixture;
+}
+
+void WebUIBrowserTest::set_preload_test_name(
+    const std::string& preload_test_name) {
+  preload_test_name_ = preload_test_name;
+}
 
 namespace {
 

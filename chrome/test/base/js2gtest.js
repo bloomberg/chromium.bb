@@ -66,6 +66,14 @@ var typedeffedCppFixtures = {};
  */
 var genIncludes = [];
 
+/**
+ * When true, add calls to set_preload_test_(fixture|name). This is needed when
+ * |testType| === 'browser' to send an injection message before the page loads,
+ * but is not required or supported for |testType| === 'unit'.
+ * @type {boolean}
+ */
+var addSetPreloadInfo;
+
 // Generate the file to stdout.
 print('// GENERATED FILE');
 print('// ' + arguments.join(' '));
@@ -81,10 +89,12 @@ if (testType === 'unit') {
   print('#include "chrome/test/base/v8_unit_test.h"');
   testing.Test.prototype.typedefCppFixture = 'V8UnitTest';
   testF = 'TEST_F';
+  addSetPreloadInfo = false;
 } else {
   print('#include "chrome/browser/ui/webui/web_ui_browsertest.h"');
   testing.Test.prototype.typedefCppFixture = 'WebUIBrowserTest';
   testF = 'IN_PROC_BROWSER_TEST_F';
+  addSetPreloadInfo = true;
 }
 print('#include "googleurl/src/gurl.h"');
 print('#include "testing/gtest/include/gtest/gtest.h"');
@@ -156,22 +166,23 @@ function TEST_F(testFixture, testFunction, testBody) {
   }
 
   print(testF + '(' + testFixture + ', ' + testFunction + ') {');
-  if (testGenPreamble)
-    testGenPreamble(testFixture, testFunction);
   for (var i = 0; i < extraLibraries.length; i++) {
     print('  AddLibrary(FilePath(FILE_PATH_LITERAL("' +
         extraLibraries[i].replace(/\\/g, '/') + '")));');
   }
   print('  AddLibrary(FilePath(FILE_PATH_LITERAL("' +
       jsFileBase.replace(/\\/g, '/') + '")));');
-  if (browsePreload) {
-    print('  BrowsePreload(GURL("' + browsePreload + '"), "' + testFixture +
-          '", "' + testFunction + '");');
-    }
+  if (addSetPreloadInfo) {
+    print('  set_preload_test_fixture("' + testFixture + '");');
+    print('  set_preload_test_name("' + testFunction + '");');
+  }
+  if (testGenPreamble)
+    testGenPreamble(testFixture, testFunction);
+  if (browsePreload)
+    print('  BrowsePreload(GURL("' + browsePreload + '"));');
   if (browsePrintPreload) {
     print('  BrowsePrintPreload(GURL(WebUITestDataPathToURL(\n' +
-          '      FILE_PATH_LITERAL("' + browsePrintPreload + '"))),\n' +
-          '      "' + testFixture + '", "' + testFunction + '");');
+          '      FILE_PATH_LITERAL("' + browsePrintPreload + '"))));');
   }
   print('  ' + testPredicate + '(RunJavascriptTestF(' + isAsyncParam +
         '"' + testFixture + '", ' +

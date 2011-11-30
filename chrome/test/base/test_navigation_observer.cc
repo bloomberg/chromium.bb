@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/test/test_navigation_observer.h"
+#include "chrome/test/base/test_navigation_observer.h"
 
+#include "chrome/test/base/js_injection_ready_observer.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -34,16 +35,9 @@ class TestNavigationObserver::RVHOSendJS
   DISALLOW_COPY_AND_ASSIGN(RVHOSendJS);
 };
 
-TestNavigationObserver::JsInjectionReadyObserver::JsInjectionReadyObserver() {
-}
-
-TestNavigationObserver::JsInjectionReadyObserver::~JsInjectionReadyObserver() {
-}
-
 TestNavigationObserver::TestNavigationObserver(
     const content::NotificationSource& source,
-    TestNavigationObserver::JsInjectionReadyObserver*
-        js_injection_ready_observer,
+    JsInjectionReadyObserver* js_injection_ready_observer,
     int number_of_navigations)
     : navigation_started_(false),
       navigations_completed_(0),
@@ -71,7 +65,7 @@ void TestNavigationObserver::WaitForObservation() {
 }
 
 TestNavigationObserver::TestNavigationObserver(
-    TestNavigationObserver::JsInjectionReadyObserver*
+    JsInjectionReadyObserver*
         js_injection_ready_observer,
     int number_of_navigations)
     : navigation_started_(false),

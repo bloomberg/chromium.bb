@@ -17,6 +17,13 @@ HungRendererDialogUITest.prototype = {
    * @override
    */
   typedefCppFixture: 'HungRendererDialogUITest',
+
+  /**
+   * Show the hung renderer dialog.
+   */
+  testGenPreamble: function() {
+    GEN('ShowHungRendererDialogInternal();');
+  },
 };
 
 // Include the bulk of c++ code.

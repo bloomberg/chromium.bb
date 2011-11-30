@@ -163,21 +163,7 @@ PrintPreviewWebUITest.prototype = {
   },
 };
 
-GEN('#include "base/command_line.h"');
-GEN('#include "chrome/browser/ui/webui/web_ui_browsertest.h"');
-GEN('#include "chrome/common/chrome_switches.h"');
-GEN('');
-GEN('class PrintPreviewWebUITest');
-GEN('    : public WebUIBrowserTest {');
-GEN(' protected:');
-GEN('  // WebUIBrowserTest override.');
-GEN('  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {');
-GEN('    WebUIBrowserTest::SetUpCommandLine(command_line);');
-GEN('    command_line->AppendSwitch(switches::kEnablePrintPreview);');
-GEN('  }');
-GEN('');
-GEN('};');
-GEN('');
+GEN('#include "chrome/test/data/webui/print_preview.h"');
 
 /**
  * The expected length of the |printer-list| element.

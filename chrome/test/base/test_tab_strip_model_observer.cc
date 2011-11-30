@@ -12,8 +12,7 @@
 
 TestTabStripModelObserver::TestTabStripModelObserver(
     TabStripModel* tab_strip_model,
-    TestTabStripModelObserver::JsInjectionReadyObserver*
-        js_injection_ready_observer)
+    JsInjectionReadyObserver* js_injection_ready_observer)
     : TestNavigationObserver(js_injection_ready_observer, 1),
       tab_strip_model_(tab_strip_model) {
   tab_strip_model_->AddObserver(this);

@@ -23,7 +23,7 @@ WebUIBrowserAsyncGenTest.prototype = {
     expectFalse(this.tornDown);
     expectFalse(this.running);
     this.tornDown = true;
-    chrome.send('tornDown');
+    chrome.send('tearDown');
     testing.Test.prototype.tearDown.call(this);
   },
 
@@ -46,18 +46,8 @@ WebUIBrowserAsyncGenTest.prototype = {
   running: false,
 };
 
-// Include the bulk of c++ code.
-GEN('#include "chrome/test/data/webui/async_gen-inl.h"');
-GEN('');
-
-// Constructors and destructors must be provided in .cc to prevent clang errors.
-GEN('WebUIBrowserAsyncGenTest::WebUIBrowserAsyncGenTest() {}');
-GEN('WebUIBrowserAsyncGenTest::~WebUIBrowserAsyncGenTest() {}');
-GEN('WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::');
-GEN('    AsyncWebUIMessageHandler() {}');
-GEN('WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::');
-GEN('    ~AsyncWebUIMessageHandler() {}');
-GEN('');
+// Include the c++ test fixture.
+GEN('#include "chrome/test/data/webui/async_gen.h"');
 
 /**
  * Will be set to continuation test #1.

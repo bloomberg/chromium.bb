@@ -5,6 +5,8 @@
 #include "chrome/test/base/test_html_dialog_observer.h"
 
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/test/base/js_injection_ready_observer.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/browser/tab_contents/navigation_controller.h"
 #include "content/browser/tab_contents/tab_contents.h"
@@ -12,10 +14,11 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
-#include "chrome/test/base/ui_test_utils.h"
 
-TestHtmlDialogObserver::TestHtmlDialogObserver()
-    : web_ui_(NULL), done_(false), running_(false) {
+TestHtmlDialogObserver::TestHtmlDialogObserver(
+    JsInjectionReadyObserver* js_injection_ready_observer)
+    : js_injection_ready_observer_(js_injection_ready_observer),
+      web_ui_(NULL), done_(false), running_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
                  content::NotificationService::AllSources());
 }
@@ -29,6 +32,10 @@ void TestHtmlDialogObserver::Observe(
     const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_HTML_DIALOG_SHOWN:
+      if (js_injection_ready_observer_) {
+        js_injection_ready_observer_->OnJsInjectionReady(
+            content::Details<RenderViewHost>(details).ptr());
+      }
       web_ui_ = content::Source<WebUI>(source).ptr();
       registrar_.Remove(this, chrome::NOTIFICATION_HTML_DIALOG_SHOWN,
                         content::NotificationService::AllSources());

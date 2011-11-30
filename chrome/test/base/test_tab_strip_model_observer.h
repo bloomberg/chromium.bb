@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/tabs/tab_strip_model_observer.h"
-#include "chrome/test/test_navigation_observer.h"
+#include "chrome/test/base/test_navigation_observer.h"
 
 class TabStripModel;
 

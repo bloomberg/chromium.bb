@@ -43,7 +43,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/automation/javascript_execution_controller.h"
 #include "chrome/test/base/bookmark_load_observer.h"
-#include "chrome/test/test_navigation_observer.h"
+#include "chrome/test/base/test_navigation_observer.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"

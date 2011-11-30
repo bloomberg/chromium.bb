@@ -69,7 +69,8 @@ var testing = {};
 
     /**
      * When set to a function, will be called in the context of the test
-     * generation inside the function, and before any generated C++.
+     * generation inside the function, after AddLibrary calls and before
+     * generated C++.
      * @type {function(string,string)}
      */
     testGenPreamble: null,
