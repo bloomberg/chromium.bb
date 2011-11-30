@@ -151,7 +151,11 @@ cr.define('cr.ui.login', function() {
           !oldStep.classList.contains('hidden')) {
         oldStep.addEventListener('webkitTransitionEnd', function f(e) {
           oldStep.removeEventListener('webkitTransitionEnd', f);
-          oldStep.classList.add('hidden');
+          if (oldStep.classList.contains('faded') ||
+              oldStep.classList.contains('left') ||
+              oldStep.classList.contains('right')) {
+            oldStep.classList.add('hidden');
+          }
         });
       } else {
         // First screen on OOBE launch.
