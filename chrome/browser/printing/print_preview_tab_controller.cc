@@ -78,6 +78,14 @@ PrintPreviewTabDelegate::PrintPreviewTabDelegate(
   initiator_tab->tab_contents()->GetContainerBounds(&rect);
   size_.set_width(std::max(rect.width(), kMinDialogSize.width()) - kBorder);
   size_.set_height(std::max(rect.height(), kMinDialogSize.height()) - kBorder);
+
+#if defined(OS_MACOSX)
+  // Limit the maximum size on MacOS X.
+  // http://crbug.com/105815
+  const gfx::Size kMaxDialogSize(1000, 660);
+  size_.set_width(std::min(size_.width(), kMaxDialogSize.width()));
+  size_.set_height(std::min(size_.height(), kMaxDialogSize.height()));
+#endif
 }
 
 PrintPreviewTabDelegate::~PrintPreviewTabDelegate() {
