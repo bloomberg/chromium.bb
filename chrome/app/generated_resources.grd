@@ -5204,18 +5204,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
         No such file or directory
       </message>
 
-      <!-- Javascript Dialog Box strings -->
-      <message name="IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE" desc="Title for Javascript alert originating from a webpage if there is no hostname to display">
-        Javascript Alert
+      <!-- JavaScript Dialog Box strings -->
+      <message name="IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE" desc="Title for JavaScript alert originating from a webpage if there is no hostname to display">
+        JavaScript Alert
       </message>
-      <message name="IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE" desc="Title for Javascript prompt and confirm originating from a webpage if there is no hostname to display">
-        Javascript
+      <message name="IDS_JAVASCRIPT_MESSAGEBOX_DEFAULT_TITLE" desc="Title for JavaScript prompt and confirm originating from a webpage if there is no hostname to display">
+        JavaScript
       </message>
-      <message name="IDS_JAVASCRIPT_ALERT_TITLE" desc="Title for Javascript alert originating from a webpage">
+      <message name="IDS_JAVASCRIPT_ALERT_TITLE" desc="Title for JavaScript alert originating from a webpage">
         The page at <ph name="SITE">$1<ex>http://www.google.com</ex> says:
         </ph>
       </message>
-      <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for Javascript prompt and confirm originating from a webpage">
+      <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for JavaScript prompt and confirm originating from a webpage">
         The page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
       </message>
       <message name="IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION" desc="Optional UI shown on the message box, in the form of a checkbox, allowing the user to suppress additional message boxes from the page.">
