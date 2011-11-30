@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/intents/web_intent_picker_controller.h"
 #include "chrome/browser/ui/sad_tab_observer.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
+#include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/per_tab_prefs_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -250,8 +251,6 @@ const size_t kPerScriptFontDefaultsLength = arraysize(kPerScriptFontDefaults);
 TabContentsWrapper::TabContentsWrapper(TabContents* contents)
     : TabContentsObserver(contents),
       delegate_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          synced_tab_delegate_(new TabContentsWrapperSyncedTabDelegate(this))),
       in_destructor_(false),
       tab_contents_(contents) {
   DCHECK(contents);
@@ -296,6 +295,7 @@ TabContentsWrapper::TabContentsWrapper(TabContents* contents)
 #endif
   search_engine_tab_helper_.reset(new SearchEngineTabHelper(contents));
   ssl_helper_.reset(new TabContentsSSLHelper(this));
+  synced_tab_delegate_.reset(new TabContentsWrapperSyncedTabDelegate(this));
   content_settings_.reset(new TabSpecificContentSettings(contents));
   translate_tab_helper_.reset(new TranslateTabHelper(contents));
   web_intent_picker_controller_.reset(new WebIntentPickerController(

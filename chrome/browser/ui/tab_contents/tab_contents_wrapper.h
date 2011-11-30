@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/prefs/pref_change_registrar.h"
-#include "chrome/browser/ui/tab_contents/tab_contents_wrapper_synced_tab_delegate.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -125,10 +124,6 @@ class TabContentsWrapper : public TabContentsObserver,
   TabContentsWrapperDelegate* delegate() const { return delegate_; }
   void set_delegate(TabContentsWrapperDelegate* d) { delegate_ = d; }
 
-  browser_sync::SyncedTabDelegate* synced_tab_delegate() const {
-    return synced_tab_delegate_.get();
-  }
-
   TabContents* tab_contents() const { return tab_contents_.get(); }
   NavigationController& controller() const {
     return tab_contents()->controller();
@@ -210,6 +205,10 @@ class TabContentsWrapper : public TabContentsObserver,
 
   TabContentsSSLHelper* ssl_helper() { return ssl_helper_.get(); }
 
+  TabContentsWrapperSyncedTabDelegate* synced_tab_delegate() {
+    return synced_tab_delegate_.get();
+  }
+
   TabSpecificContentSettings* content_settings() {
     return content_settings_.get();
   }
@@ -267,9 +266,6 @@ class TabContentsWrapper : public TabContentsObserver,
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  // Helper which implements the SyncedTabDelegate interface.
-  scoped_ptr<TabContentsWrapperSyncedTabDelegate> synced_tab_delegate_;
-
   // Data for current page -----------------------------------------------------
 
   // Shows an info-bar to users when they search from a known search engine and
@@ -315,6 +311,7 @@ class TabContentsWrapper : public TabContentsObserver,
 
   scoped_ptr<SearchEngineTabHelper> search_engine_tab_helper_;
   scoped_ptr<TabContentsSSLHelper> ssl_helper_;
+  scoped_ptr<TabContentsWrapperSyncedTabDelegate> synced_tab_delegate_;
 
   // The TabSpecificContentSettings object is used to query the blocked content
   // state by various UI elements.

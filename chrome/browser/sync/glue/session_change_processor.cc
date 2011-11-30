@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/internal_api/change_record.h"
 #include "chrome/browser/sync/internal_api/read_node.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/ui/sync/tab_contents_wrapper_synced_tab_delegate.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/navigation_controller.h"
@@ -35,7 +36,7 @@ namespace {
 // from a NavigationController, if it exists. Returns |NULL| otherwise.
 SyncedTabDelegate* ExtractSyncedTabDelegate(
     const content::NotificationSource& source) {
-  TabContentsWrapper* tab =  TabContentsWrapper::GetCurrentWrapperForContents(
+  TabContentsWrapper* tab = TabContentsWrapper::GetCurrentWrapperForContents(
       content::Source<NavigationController>(source).ptr()->tab_contents());
   if (!tab)
     return NULL;
