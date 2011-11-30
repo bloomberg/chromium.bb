@@ -25,7 +25,8 @@ class SingleClientBookmarksSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientBookmarksSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, OfflineToOnline) {
+// This test is flaky; http://crbug.com/105902.
+IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, FLAKY_OfflineToOnline) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   DisableNetwork(GetProfile(0));
