@@ -19,6 +19,7 @@ class ProfileInfoCacheTest : public testing::Test {
   virtual ~ProfileInfoCacheTest();
 
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   ProfileInfoCache* GetCache();
   FilePath GetProfilePath(const std::string& base_name);

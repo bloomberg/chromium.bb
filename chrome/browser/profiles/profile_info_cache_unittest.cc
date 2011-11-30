@@ -36,6 +36,12 @@ void ProfileInfoCacheTest::SetUp() {
   ASSERT_TRUE(testing_profile_manager_.SetUp());
 }
 
+void ProfileInfoCacheTest::TearDown() {
+  // Drain the UI thread to make sure all tasks are completed. This prevents
+  // memory leaks.
+  ui_loop_.RunAllPending();
+}
+
 ProfileInfoCache* ProfileInfoCacheTest::GetCache() {
   return testing_profile_manager_.profile_info_cache();
 }
