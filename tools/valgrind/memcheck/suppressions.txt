@@ -4535,10 +4535,16 @@
    fun:_ZN16CrxUpdateService19ProcessPendingItemsEv
 }
 {
-   bug_100914
+   bug_100914_a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN12webkit_media18BufferedDataSource20CreateResourceLoaderEll
+}
+{
+   bug_100914_b
+   Memcheck:Leak
+   ...
+   fun:_ZN12webkit_media22MockBufferedDataSource24CreateMockResourceLoaderEll
 }
 {
    bug_100916

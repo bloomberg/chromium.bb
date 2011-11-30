@@ -1792,3 +1792,21 @@
    fun:browser_sync::DataTypeManagerImpl::Stop
    fun:ProfileSyncService::Shutdown
 }
+{
+   bug_100914_a
+   Heapcheck:Leak
+   ...
+   fun:webkit_media::MockBufferedDataSource::CreateMockResourceLoader
+}
+{
+   bug_100914_b
+   Heapcheck:Leak
+   ...
+   fun:BufferedDataSourceTest
+}
+{
+   bug_100914_c
+   Heapcheck:Leak
+   ...
+   fun:webkit_media::BufferedDataSourceTest::Initialize
+}
