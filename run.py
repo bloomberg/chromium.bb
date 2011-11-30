@@ -196,6 +196,9 @@ def main(argv):
     # X86-64 glibc static has validation problems without stub out (-s)
     if arch == 'x86-64' and is_glibc_static:
       sel_ldr_options += ['-s']
+  if env.quiet:
+    # Don't print sel_ldr logs
+    sel_ldr_options += ['-l', '/dev/null']
 
   # Tell the user
   if is_dynamic:
@@ -358,13 +361,16 @@ def Run(args, cwd = None, capture = False):
       return
 
   stdout_pipe = None
+  stderr_pipe = None
   if capture:
     stdout_pipe = subprocess.PIPE
+  if env.quiet and not env.paranoid:
+    stderr_pipe = subprocess.PIPE
 
   p = None
   try:
-    p = subprocess.Popen(args, stdout=stdout_pipe, cwd = cwd)
-    (stdout_contents,_) = p.communicate()
+    p = subprocess.Popen(args, stdout=stdout_pipe, stderr=stderr_pipe, cwd=cwd)
+    (stdout_contents, stderr_contents) = p.communicate()
   except KeyboardInterrupt, e:
     if p:
       p.kill()
@@ -373,6 +379,13 @@ def Run(args, cwd = None, capture = False):
     if p:
       p.kill()
     raise e
+
+  if env.quiet and not env.paranoid:
+    # Filter out sel_ldr's un-suppressable output when -a is given
+    for line in stderr_contents.split('\n'):
+      if (not line.startswith('DEBUG MODE') and
+          not line.endswith('ACL CHECKS') and line != ''):
+        print >> sys.stderr, line
 
   if p.returncode != 0:
     if capture:
