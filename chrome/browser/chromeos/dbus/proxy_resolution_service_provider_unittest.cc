@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_exported_object.h"
@@ -61,7 +62,8 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
  public:
   ProxyResolutionServiceProviderTest()
       : signal_received_successfully_(false),
-        mock_resolver_(NULL) {
+        mock_resolver_(NULL),
+        response_received_(false) {
   }
 
   virtual void SetUp() {
@@ -102,12 +104,12 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
                                   kLibCrosServiceName,
                                   kLibCrosServicePath);
     // |mock_object_proxy_|'s CallMethodAndBlock() will use
-    // CreateResponse() to return responses.
+    // MockCallMethodAndBlock() to return responses.
     EXPECT_CALL(*mock_object_proxy_,
                 CallMethodAndBlock(_, _))
         .WillOnce(Invoke(
             this,
-            &ProxyResolutionServiceProviderTest::CreateResponse));
+            &ProxyResolutionServiceProviderTest::MockCallMethodAndBlock));
     // |mock_object_proxy_|'s ConnectToSignal will use
     // MockConnectToSignal().
     EXPECT_CALL(*mock_object_proxy_,
@@ -185,6 +187,9 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
   scoped_ptr<ProxyResolutionServiceProvider> proxy_resolution_service_;
   dbus::ExportedObject::MethodCallCallback resolve_network_proxy_;
   dbus::ObjectProxy::SignalCallback on_signal_callback_;
+  MessageLoop message_loop_;
+  bool response_received_;
+  scoped_ptr<dbus::Response> response_;
 
  private:
   // Behaves as |mock_exported_object_|'s ExportMethod().
@@ -237,24 +242,40 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     LOG(ERROR) << "Unexpected source URL: " << source_url;
   }
 
-  // Creates a response for |mock_object_proxy_|.
-  dbus::Response* CreateResponse(
+  // Calls exported method and waits for a response for |mock_object_proxy_|.
+  dbus::Response* MockCallMethodAndBlock(
       dbus::MethodCall* method_call,
       Unused) {
-    if (method_call->GetInterface() ==
-        kLibCrosServiceInterface &&
-        method_call->GetMember() == kResolveNetworkProxy) {
-      // Set the serial number to non-zero, so
-      // dbus_message_new_method_return() won't emit a warning.
-      method_call->SetSerial(1);
-      // Run the callback captured in MockExportMethod(). This will send
-      // a signal, which will be received by |on_signal_callback_|.
-      dbus::Response* response = resolve_network_proxy_.Run(method_call);
-      return response;
+    if (method_call->GetInterface() != kLibCrosServiceInterface ||
+        method_call->GetMember() != kResolveNetworkProxy) {
+      LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
+      return NULL;
     }
+    // Set the serial number to non-zero, so
+    // dbus_message_new_method_return() won't emit a warning.
+    method_call->SetSerial(1);
+    // Run the callback captured in MockExportMethod(). In addition to returning
+    // a response that the caller will ignore, this will send a signal, which
+    // will be received by |on_signal_callback_|.
+    resolve_network_proxy_.Run(
+        method_call,
+        base::Bind(&ProxyResolutionServiceProviderTest::OnResponse,
+                   base::Unretained(this)));
+    // Wait for a response.
+    while (!response_received_) {
+      message_loop_.Run();
+    }
+    // Return response.
+    return response_.release();
+  }
 
-    LOG(ERROR) << "Unexpected method call: " << method_call->ToString();
-    return NULL;
+  // Receives a response and makes it available to MockCallMethodAndBlock().
+  void OnResponse(dbus::Response* response) {
+    response_.reset(response);
+    response_received_ = true;
+    if (message_loop_.is_running()) {
+        message_loop_.Quit();
+    }
   }
 
   // Behaves as |mock_object_proxy_|'s ConnectToSignal().
