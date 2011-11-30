@@ -97,10 +97,15 @@ class CONTENT_EXPORT BrowserAccessibility {
   // of its parent.
   BrowserAccessibility* GetNextSibling();
 
-  // Returns the bounds of this object in screen coordinates.
-  gfx::Rect GetBoundsRect();
+  // Returns the bounds of this object in coordinates relative to the
+  // top-left corner of the overall web area.
+  gfx::Rect GetLocalBoundsRect();
 
-  // Returns the deepest descendant that contains the specified point.
+  // Returns the bounds of this object in screen coordinates.
+  gfx::Rect GetGlobalBoundsRect();
+
+  // Returns the deepest descendant that contains the specified point
+  // (in global screen coordinates).
   BrowserAccessibility* BrowserAccessibilityForPoint(const gfx::Point& point);
 
   //

@@ -478,8 +478,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 // This is relative to webkit's top-left origin, not Cocoa's
 // bottom-left origin.
 - (NSPoint)origin {
-  return NSMakePoint(browserAccessibility_->location().x(),
-                     browserAccessibility_->location().y());
+  gfx::Rect bounds = browserAccessibility_->GetLocalBoundsRect();
+  return NSMakePoint(bounds.x(), bounds.y());
 }
 
 - (id)parent {
@@ -568,9 +568,8 @@ NSDictionary* attributeToMethodNameMap = nil;
 
 // Returns the size of this object.
 - (NSValue*)size {
-  return  [NSValue valueWithSize:NSMakeSize(
-      browserAccessibility_->location().width(),
-      browserAccessibility_->location().height())];
+  gfx::Rect bounds = browserAccessibility_->GetLocalBoundsRect();
+  return  [NSValue valueWithSize:NSMakeSize(bounds.width(), bounds.height())];
 }
 
 // Returns a subrole based upon the role.

@@ -207,7 +207,7 @@ STDMETHODIMP BrowserAccessibilityWin::accHitTest(LONG x_left,
     return E_INVALIDARG;
 
   gfx::Point point(x_left, y_top);
-  if (!GetBoundsRect().Contains(point)) {
+  if (!GetGlobalBoundsRect().Contains(point)) {
     // Return S_FALSE and VT_EMPTY when the outside the object's boundaries.
     child->vt = VT_EMPTY;
     return S_FALSE;
@@ -238,7 +238,7 @@ STDMETHODIMP BrowserAccessibilityWin::accLocation(LONG* x_left, LONG* y_top,
   if (!target)
     return E_INVALIDARG;
 
-  gfx::Rect bounds = target->GetBoundsRect();
+  gfx::Rect bounds = target->GetGlobalBoundsRect();
   *x_left = bounds.x();
   *y_top  = bounds.y();
   *width  = bounds.width();

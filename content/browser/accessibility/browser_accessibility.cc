@@ -126,13 +126,8 @@ BrowserAccessibility* BrowserAccessibility::GetNextSibling() {
   return NULL;
 }
 
-gfx::Rect BrowserAccessibility::GetBoundsRect() {
+gfx::Rect BrowserAccessibility::GetLocalBoundsRect() {
   gfx::Rect bounds = location_;
-
-  // Adjust the bounds by the top left corner of the containing view's bounds
-  // in screen coordinates.
-  gfx::Point top_left = manager_->GetViewBounds().origin();
-  bounds.Offset(top_left);
 
   // Adjust top left position by the root document's scroll offset.
   BrowserAccessibility* root = manager_->GetRoot();
@@ -145,13 +140,24 @@ gfx::Rect BrowserAccessibility::GetBoundsRect() {
   return bounds;
 }
 
+gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() {
+  gfx::Rect bounds = GetLocalBoundsRect();
+
+  // Adjust the bounds by the top left corner of the containing view's bounds
+  // in screen coordinates.
+  gfx::Point top_left = manager_->GetViewBounds().origin();
+  bounds.Offset(top_left);
+
+  return bounds;
+}
+
 BrowserAccessibility* BrowserAccessibility::BrowserAccessibilityForPoint(
     const gfx::Point& point) {
   // Walk the children recursively looking for the BrowserAccessibility that
   // most tightly encloses the specified point.
   for (int i = children_.size() - 1; i >= 0; --i) {
     BrowserAccessibility* child = children_[i];
-    if (child->GetBoundsRect().Contains(point))
+    if (child->GetGlobalBoundsRect().Contains(point))
       return child->BrowserAccessibilityForPoint(point);
   }
   return this;
