@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
@@ -17,7 +17,7 @@
 class CommandLine;
 
 namespace base {
-  class MessageLoopProxy;
+class MessageLoopProxy;
 }
 
 // Return the IPC channel to connect to the service process.

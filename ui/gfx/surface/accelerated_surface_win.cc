@@ -262,7 +262,7 @@ void AcceleratedSurface::Destroy() {
 void AcceleratedSurface::AsyncPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_id,
-    base::Closure completion_task) {
+    const base::Closure& completion_task) {
   const int kRound = 64;
   gfx::Size quantized_size(
       std::max(1, (size.width() + kRound - 1) / kRound * kRound),
@@ -429,7 +429,7 @@ void AcceleratedSurface::DoResize(const gfx::Size& size) {
 void AcceleratedSurface::DoPresentAndAcknowledge(
     const gfx::Size& size,
     int64 surface_id,
-    base::Closure completion_task) {
+    const base::Closure& completion_task) {
   TRACE_EVENT1("surface", "DoPresentAndAcknowledge", "surface_id", surface_id);
 
   HRESULT hr;

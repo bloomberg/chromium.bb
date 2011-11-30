@@ -8,7 +8,7 @@
 
 #include <d3d9.h>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop_proxy.h"
 #include "base/synchronization/lock.h"
@@ -31,7 +31,7 @@ class SURFACE_EXPORT AcceleratedSurface
   // this surface will be held while the completion callback runs.
   void AsyncPresentAndAcknowledge(const gfx::Size& size,
                                   int64 surface_id,
-                                  base::Closure completion_task);
+                                  const base::Closure& completion_task);
 
   // Synchronously present a frame with no acknowledgement.
   void Present();
@@ -43,7 +43,7 @@ class SURFACE_EXPORT AcceleratedSurface
   void DoResize(const gfx::Size& size);
   void DoPresentAndAcknowledge(const gfx::Size& size,
                                int64 surface_id,
-                               base::Closure completion_task);
+                               const base::Closure& completion_task);
 
   // Immutable and accessible from any thread without the lock.
   const int thread_affinity_;
