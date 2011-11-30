@@ -132,8 +132,7 @@ TestingProfile::TestingProfile()
       testing_prefs_(NULL),
       incognito_(false),
       last_session_exited_cleanly_(true),
-      profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
-      delegate_(NULL) {
+      profile_dependency_manager_(ProfileDependencyManager::GetInstance()) {
   if (!temp_dir_.CreateUniqueTempDir()) {
     LOG(ERROR) << "Failed to create unique temporary directory.";
 
@@ -161,7 +160,6 @@ TestingProfile::TestingProfile()
   profile_path_ = temp_dir_.path();
 
   Init();
-  FinishInit();
 }
 
 TestingProfile::TestingProfile(const FilePath& path)
@@ -170,29 +168,8 @@ TestingProfile::TestingProfile(const FilePath& path)
       incognito_(false),
       last_session_exited_cleanly_(true),
       profile_path_(path),
-      profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
-      delegate_(NULL) {
+      profile_dependency_manager_(ProfileDependencyManager::GetInstance()) {
   Init();
-  FinishInit();
-}
-
-TestingProfile::TestingProfile(const FilePath& path,
-                               Delegate* delegate)
-    : start_time_(Time::Now()),
-      testing_prefs_(NULL),
-      incognito_(false),
-      last_session_exited_cleanly_(true),
-      profile_path_(path),
-      profile_dependency_manager_(ProfileDependencyManager::GetInstance()),
-      delegate_(delegate) {
-  Init();
-  if (delegate_) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&TestingProfile::FinishInit,
-                                                base::Unretained(this)));
-  } else {
-    FinishInit();
-  }
 }
 
 void TestingProfile::Init() {
@@ -201,16 +178,11 @@ void TestingProfile::Init() {
   // Install profile keyed service factory hooks for dummy/test services
   DesktopNotificationServiceFactory::GetInstance()->SetTestingFactory(
       this, CreateTestDesktopNotificationService);
-}
 
-void TestingProfile::FinishInit() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_PROFILE_CREATED,
       content::Source<Profile>(static_cast<Profile*>(this)),
       content::NotificationService::NoDetails());
-
-  if (delegate_)
-    delegate_->OnProfileCreated(this, true);
 }
 
 TestingProfile::~TestingProfile() {

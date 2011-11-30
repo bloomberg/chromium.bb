@@ -322,7 +322,7 @@ Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
   if (NULL != profile)
     return profile;
 
-  profile = CreateProfileHelper(profile_dir);
+  profile = CreateProfile(profile_dir);
   DCHECK(profile);
   if (profile) {
     bool result = AddProfile(profile);
@@ -350,7 +350,7 @@ void ProfileManager::CreateProfileAsync(const FilePath& user_data_dir,
   } else {
     // Initiate asynchronous creation process.
     ProfileInfo* info =
-        RegisterProfile(CreateProfileAsyncHelper(user_data_dir, this),
+        RegisterProfile(Profile::CreateProfileAsync(user_data_dir, this),
                         false);
     info->observers.push_back(observer);
   }
@@ -486,13 +486,8 @@ void ProfileManager::DoFinalInitLogging(Profile* profile) {
                                  new ProfileSizeTask(profile), 112000);
 }
 
-Profile* ProfileManager::CreateProfileHelper(const FilePath& path) {
+Profile* ProfileManager::CreateProfile(const FilePath& path) {
   return Profile::CreateProfile(path);
-}
-
-Profile* ProfileManager::CreateProfileAsyncHelper(const FilePath& path,
-                                                  Delegate* delegate) {
-  return Profile::CreateProfileAsync(path, delegate);
 }
 
 void ProfileManager::OnProfileCreated(Profile* profile, bool success) {
