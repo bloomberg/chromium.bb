@@ -90,6 +90,21 @@ class NsisScript(path_set.PathSet):
     if file_filter:
       self._files = set(file_filter(self._files))
 
+    def IsCygwinSymlink(path):
+      if not os.path.isfile(path):
+        return False
+      data = open(path, 'rb').read(10)
+      return data == '!<symlink>'
+
+    # Pick out cygwin symlinks.
+    all_files = self._files
+    self._files = set()
+    for f in all_files:
+      if IsCygwinSymlink(f):
+        self._symlinks.add(f)
+      else:
+        self._files.add(f)
+
   def CreateInstallNameScript(self, cwd='.'):
     '''Write out the installer name script.
 
