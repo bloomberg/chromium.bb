@@ -678,6 +678,20 @@
   fun:WebRTCAudioDeviceTest::SetUp
 }
 {
+  bug_103711g
+  ThreadSanitizer:Race
+  fun:webrtc::EventWrapper::~EventWrapper
+  fun:webrtc::EventPosix::~EventPosix
+  fun:webrtc::ProcessThreadImpl::~ProcessThreadImpl
+  fun:webrtc::ProcessThread::DestroyProcessThread
+  fun:webrtc::voe::SharedData::~SharedData
+  fun:webrtc::VoiceEngineImpl::~VoiceEngineImpl
+  fun:webrtc::VoiceEngine::Delete
+  fun:WebRTCAutoDelete::reset
+  fun:WebRTCAutoDelete::~WebRTCAutoDelete
+  fun:WebRTCAudioDeviceTest_Construct_Test::TestBody
+}
+{
    bug_104769
    ThreadSanitizer:Race
    fun:timeout_correct
