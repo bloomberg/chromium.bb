@@ -25,6 +25,27 @@
 set -o nounset
 set -o errexit
 
+readonly SCRIPT_DIR=$(dirname $0)
+
+# this where we create the ARMEL "jail"
+readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-trusted
+
+readonly TMP=/tmp/arm-crosstool-natty
+
+readonly REQUIRED_TOOLS="wget"
+
+readonly MAKE_OPTS="-j8"
+
+######################################################################
+# Package Config
+######################################################################
+
+# this where we get the cross toolchain from for the manual install:
+readonly CROSS_ARM_TC_REPO=http://mirror.pnl.gov/ubuntu
+# this is where we get all the armel packages from
+readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports
+#
+readonly PACKAGE_LIST="${ARMEL_REPO}/dists/natty/main/binary-armel/Packages.bz2"
 
 # Optional:
 # gdb-arm-linux-gnueabi
@@ -51,24 +72,7 @@ readonly CROSS_ARM_TC_PACKAGES="\
 
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-# TODO(robertm): We should probably pull these in from a separte file.
-#                Do this after the GeneratePackageListXXX() have been revised.
-readonly CROSS_ARM_TC_DEP_FILES_64="\
-  universe/g/gcc-4.5-armel-cross/cpp-4.5-arm-linux-gnueabi_4.5.2-8ubuntu3cross1.47_amd64.deb \
-  universe/g/gcc-4.5-armel-cross/g++-4.5-arm-linux-gnueabi_4.5.2-8ubuntu3cross1.47_amd64.deb \
-  universe/g/gcc-4.5-armel-cross/gcc-4.5-arm-linux-gnueabi_4.5.2-8ubuntu3cross1.47_amd64.deb \
-  universe/g/gcc-4.5-armel-cross/gcc-4.5-arm-linux-gnueabi-base_4.5.2-8ubuntu3cross1.47_amd64.deb \
-  universe/g/gcc-4.5-armel-cross/libgomp1-armel-cross_4.5.2-8ubuntu3cross1.47_all.deb \
-  universe/g/gcc-4.5-armel-cross/libmudflap0-armel-cross_4.5.2-8ubuntu3cross1.47_all.deb \
-  universe/g/gcc-4.5-armel-cross/libstdc++6-4.5-dev-armel-cross_4.5.2-8ubuntu3cross1.47_all.deb \
-  universe/g/gcc-4.5-armel-cross/libstdc++6-armel-cross_4.5.2-8ubuntu3cross1.47_all.deb \
-  universe/a/armel-cross-toolchain-base/binutils-arm-linux-gnueabi_2.21.0.20110327-2ubuntu2cross1.62_amd64.deb \
-  universe/a/armel-cross-toolchain-base/libgcc1-armel-cross_4.5.2-8ubuntu3cross1.62_all.deb \
-  universe/a/armel-cross-toolchain-base/libc6-armel-cross_2.13-0ubuntu13cross1.62_all.deb \
-  universe/a/armel-cross-toolchain-base/libc6-dev-armel-cross_2.13-0ubuntu13cross1.62_all.deb \
-  universe/a/armel-cross-toolchain-base/linux-libc-dev-armel-cross_2.6.38-8.42cross1.62_all.deb \
-  main/m/mpfr4/libmpfr4_3.0.0-7_amd64.deb \
-  main/c/cloog-ppl/libcloog-ppl0_0.15.9-2_amd64.deb"
+readonly CROSS_ARM_TC_DEP_FILES_64="$(cat ${SCRIPT_DIR}/packagelist.amd64.crosstool)"
 
 readonly CROSS_ARM_TC_DEP_FILES_32="\
 ${CROSS_ARM_TC_DEP_FILES_64//_amd64.deb/_i386.deb}"
@@ -87,6 +91,7 @@ else
   exit -1
 fi
 
+# These are good enough for native client
 readonly ARMEL_BASE_PACKAGES="\
   libssl-dev \
   libssl0.9.8 \
@@ -100,65 +105,100 @@ readonly ARMEL_BASE_PACKAGES="\
   libxt-dev \
   libxt6"
 
+# These are needed for chrome
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_BASE_DEP_FILES="\
-  main/o/openssl/libssl-dev_0.9.8g-16ubuntu3_armel.deb \
-  main/o/openssl/libssl0.9.8_0.9.8g-16ubuntu3_armel.deb \
-  main/g/gcc-4.5/libgcc1_4.5.2-8ubuntu4_armel.deb \
-  main/e/eglibc/libc6_2.13-0ubuntu13_armel.deb \
-  main/e/eglibc/libc6-dev_2.13-0ubuntu13_armel.deb \
-  main/g/gcc-4.5/libstdc++6_4.5.2-8ubuntu4_armel.deb \
-  main/libx/libx11/libx11-dev_1.4.2-1ubuntu3_armel.deb \
-  main/libx/libx11/libx11-6_1.4.2-1ubuntu3_armel.deb \
-  main/x/x11proto-core/x11proto-core-dev_7.0.20-1_all.deb \
-  main/libx/libxt/libxt-dev_1.0.9-1ubuntu1_armel.deb \
-  main/libx/libxt/libxt6_1.0.9-1ubuntu1_armel.deb"
+readonly ARMEL_BASE_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.armel.base)"
 
 readonly ARMEL_EXTRA_PACKAGES="\
+  krb5-multidev \
+  libasound2-dev
+  libatk1.0-0 \
+  libatk1.0-dev \
+  libbz2-1.0 \
+  libbz2-dev \
+  libcairo2 \
+  libcairo2-dev \
+  libcups2 \
   libcups2-dev \
-  libx11-dev \
-  libx11-6 \
-  x11proto-core-dev \
-  libxt-dev \
-  libxt6 \
+  libdbus-1-3 \
+  libdbus-1-dev \
+  libexpat1 \
+  libexpat1-dev \
+  libfontconfig1 \
+  libfontconfig1-dev \
+  libfreetype6 \
+  libfreetype6-dev \
+  libgconf2-4 \
+  libgconf2-dev \
+  libgdk-pixbuf2.0-0 \
+  libgdk-pixbuf2.0-dev \
+  libgtk2.0-0 \
+  libgtk2.0-dev \
+  libglib2.0-0 \
+  libglib2.0-dev \
+  libgnome-keyring-dev \
+  libkrb5-dev \
+  libnspr4 \
+  libnspr4-dev \
+  libnss3 \
+  libnss3-dev \
+  liborbit2 \
+  libpam0g \
+  libpam0g-dev \
+  libpango1.0-0 \
+  libpango1.0-dev \
+  libpcre3 \
+  libpcre3-dev \
+  libpixman-1-0 \
+  libpixman-1-dev \
+  libpng12-0 \
+  libpng12-dev \
+  libselinux1 \
   libxext-dev \
   libxext6 \
   libxau-dev \
   libxau6 \
+  libxcb1 \
+  libxcb1-dev \
+  libxcb-render0 \
+  libxcb-render0-dev \
+  libxcb-shm0 \
+  libxcb-shm0-dev \
+  libxcomposite1 \
+  libxcomposite-dev \
+  libxcursor1 \
+  libxcursor-dev \
+  libxdamage1 \
+  libxdamage-dev \
+  libxdmcp6 \
+  libxfixes3 \
+  libxfixes-dev \
+  libxi6 \
+  libxi-dev \
+  libxinerama1 \
+  libxinerama-dev \
+  libxrandr2 \
+  libxrandr-dev \
+  libxrender1 \
+  libxrender-dev \
+  libxss-dev \
+  libxtst6 \
+  libxtst-dev \
+  x11proto-composite-dev \
+  x11proto-damage-dev \
+  x11proto-fixes-dev \
+  x11proto-input-dev \
+  x11proto-record-dev \
+  x11proto-render-dev \
+  x11proto-scrnsaver-dev \
+  x11proto-xext-dev \
   zlib1g \
   zlib1g-dev"
 
 # NOTE: the package listing here should be updated using the
 # GeneratePackageListXXX() functions below
-readonly ARMEL_EXTRA_DEP_FILES="
-  main/z/zlib/zlib1g_1.2.3.4.dfsg-3ubuntu3_armel.deb \
-  main/c/cups/libcups2-dev_1.4.6-5ubuntu1_armel.deb \
-  main/libx/libx11/libx11-dev_1.4.2-1ubuntu3_armel.deb \
-  main/libx/libx11/libx11-6_1.4.2-1ubuntu3_armel.deb \
-  main/x/x11proto-core/x11proto-core-dev_7.0.20-1_all.deb \
-  main/libx/libxt/libxt-dev_1.0.9-1ubuntu1_armel.deb \
-  main/libx/libxt/libxt6_1.0.9-1ubuntu1_armel.deb \
-  main/libx/libxext/libxext-dev_1.2.0-2ubuntu1_armel.deb \
-  main/libx/libxext/libxext6_1.2.0-2ubuntu1_armel.deb \
-  main/libx/libxau/libxau-dev_1.0.6-1ubuntu1_armel.deb \
-  main/libx/libxau/libxau6_1.0.6-1ubuntu1_armel.deb \
-  main/z/zlib/zlib1g-dev_1.2.3.4.dfsg-3ubuntu3_armel.deb"
-
-# this where we get the cross toolchain from for the manual install:
-readonly CROSS_ARM_TC_REPO=http://mirror.pnl.gov/ubuntu
-# this is where we get all the armel packages from
-readonly ARMEL_REPO=http://ports.ubuntu.com/ubuntu-ports
-#
-readonly PACKAGE_LIST="${ARMEL_REPO}/dists/natty/main/binary-armel/Packages.bz2"
-# this where we create the ARMEL "jail"
-readonly INSTALL_ROOT=$(pwd)/toolchain/linux_arm-trusted
-
-readonly TMP=/tmp/arm-crosstool-natty
-
-readonly REQUIRED_TOOLS="wget"
-
-readonly MAKE_OPTS="-j8"
+readonly ARMEL_EXTRA_DEP_FILES="$(cat ${SCRIPT_DIR}/packagelist.armel.extra)"
 
 ######################################################################
 # Helper
@@ -319,13 +359,12 @@ HacksAndPatches() {
   Banner "Misc Hacks & Patches"
   # these are linker scripts with absolute pathnames in them
   # which we rewrite here
+  lscripts="${rel_path}/usr/lib/arm-linux-gnueabi/libpthread.so \
+            ${rel_path}/usr/lib/arm-linux-gnueabi/libc.so"
+
   SubBanner "Rewriting Linker Scripts"
-  sed -i -e 's|/usr/lib/arm-linux-gnueabi/||g' \
-    ${rel_path}/usr/lib/arm-linux-gnueabi/libpthread.so \
-    ${rel_path}/usr/lib/arm-linux-gnueabi/libc.so
-  sed -i -e 's|/lib/arm-linux-gnueabi/||g' \
-    ${rel_path}/usr/lib/arm-linux-gnueabi/libpthread.so \
-    ${rel_path}/usr/lib/arm-linux-gnueabi/libc.so
+  sed -i -e 's|/usr/lib/arm-linux-gnueabi/||g'  ${lscripts}
+  sed -i -e 's|/lib/arm-linux-gnueabi/||g' ${lscripts}
 
   # libssl.so and libcrypto.so cannot be used because they have
   # a dependency on libz.so. We don't download libz, although
@@ -336,6 +375,12 @@ HacksAndPatches() {
   rm -fv ${rel_path}/usr/lib/libssl.so.0.9.8
   rm -fv ${rel_path}/usr/lib/libssl.so
   rm -fv ${rel_path}/lib/libssl.so.0.9.8
+
+  # This is for chrome's ./build/linux/pkg-config-wrapper
+  # which overwrites PKG_CONFIG_PATH internally
+  SubBanner "Package Configs Symlink"
+  mkdir -p  ${rel_path}/usr/share
+  ln -s  ../lib/arm-linux-gnueabi/pkgconfig ${rel_path}/usr/share/pkgconfig
 }
 
 
@@ -374,6 +419,10 @@ CleanupJailSymlinks() {
       usr/lib/arm-linux-gnueabi/*)
         # Relativize the symlink.
         ln -snfv "../../..${target}" "${link}"
+        ;;
+      usr/lib/*)
+        # Relativize the symlink.
+        ln -snfv "../..${target}" "${link}"
         ;;
     esac
     # make sure we catch new bad links
@@ -459,29 +508,31 @@ BuildJail() {
 #@
 #@ ExperimentalBuildBigJail
 ExperimentalBuildBigJail() {
+  ClearInstallDir
   InstallMissingArmLibrariesAndHeadersIntoJail ${ARMEL_BASE_DEP_FILES}
   InstallMissingArmLibrariesAndHeadersIntoJail ${ARMEL_EXTRA_DEP_FILES}
   CleanupJailSymlinks
+  HacksAndPatches
 }
 
 #@
 #@ Regenerat Package List
 #@
 #@ This will need some manual intervention, e.g.
-#@ pool/ needs to be stripped and special characters like "+" cause problems
+#@ pool/ needs to be stripped and special characters like may "+" cause problems
 GeneratePackageList() {
   DownloadOrCopy ${PACKAGE_LIST} ${TMP}/Packages.bz2
   bzcat ${TMP}/Packages.bz2 | egrep '^(Package:|Filename:)' > ${TMP}/Packages
   echo  ${ARMEL_EXTRA_PACKAGES}
   echo "# BEGIN:"
   for pkg in $@ ; do
-    egrep -A 1 "${pkg}\$" ${TMP}/Packages | egrep -o "pool/.*"
+    grep  -A 1 "${pkg}\$" ${TMP}/Packages | egrep -o "pool/.*"
   done
   echo "# END:"
 }
 
 GeneratePackageListBase() {
-  GeneratePackageList ${ARMEL_BASE_PACKAGES}
+  GeneratePackageList "${ARMEL_BASE_PACKAGES}"
 }
 
 GeneratePackageListExtra() {
