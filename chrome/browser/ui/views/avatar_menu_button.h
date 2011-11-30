@@ -15,6 +15,7 @@
 
 namespace gfx {
 class Canvas;
+class Image;
 }
 class Browser;
 
@@ -36,8 +37,8 @@ class AvatarMenuButton : public views::MenuButton,
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool HitTest(const gfx::Point& point) const OVERRIDE;
 
-  // views::TextButton
-  virtual void SetIcon(const SkBitmap& icon) OVERRIDE;
+  virtual void SetIcon(const gfx::Image& icon,
+                       bool is_gaia_picture);
 
   void ShowAvatarBubble();
 
@@ -49,6 +50,12 @@ class AvatarMenuButton : public views::MenuButton,
   bool has_menu_;
   bool set_taskbar_decoration_;
   scoped_ptr<ui::MenuModel> menu_model_;
+
+  // Use a scoped ptr because gfx::Image doesn't have a default constructor.
+  scoped_ptr<gfx::Image> icon_;
+  SkBitmap button_icon_;
+  bool is_gaia_picture_;
+  int old_height_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuButton);
 };
