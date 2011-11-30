@@ -577,6 +577,7 @@
           'sources!': [
             # TODO(port)
             'browser/npapi_interactive_test.cc',
+            'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
             'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
             'browser/ui/views/button_dropdown_test.cc',
             'browser/ui/views/find_bar_host_interactive_uitest.cc',
@@ -1887,6 +1888,7 @@
         'browser/ui/views/bookmarks/bookmark_context_menu_test.cc',
         'browser/ui/views/bookmarks/bookmark_editor_view_unittest.cc',
         'browser/ui/views/bubble/border_contents_unittest.cc',
+        'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
         'browser/ui/views/first_run_bubble_unittest.cc',
         'browser/ui/views/first_run_search_engine_view_unittest.cc',
@@ -2958,6 +2960,7 @@
             'browser/tab_first_render_watcher_browsertest.cc',
             'browser/ui/panels/panel_browser_view_browsertest.cc',
             'browser/ui/views/browser_actions_container_browsertest.cc',
+            'browser/ui/views/crypto_module_password_dialog_view_unittest.cc',
             'browser/ui/views/dom_view_browsertest.cc',
             'browser/ui/views/html_dialog_view_browsertest.cc',
           ],

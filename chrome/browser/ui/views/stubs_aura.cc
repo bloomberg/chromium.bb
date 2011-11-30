@@ -49,27 +49,6 @@ void ShowAboutIPCDialog() {
   NOTIMPLEMENTED();
 }
 
-#if defined(USE_NSS)
-crypto::CryptoModuleBlockingPasswordDelegate*
-    NewCryptoModuleBlockingDialogDelegate(
-        CryptoModulePasswordReason reason,
-        const std::string& server) {
-  // TODO(saintlou):
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-void ShowCryptoModulePasswordDialog(
-    const std::string& module_name,
-    bool retry,
-    CryptoModulePasswordReason reason,
-    const std::string& server,
-    const CryptoModulePasswordCallback& callback) {
-  // TODO(saintlou):
-  NOTIMPLEMENTED();
-}
-#endif
-
 }  // namespace browser
 
 #if defined(OS_WIN)
