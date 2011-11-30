@@ -98,11 +98,11 @@
           'dependencies': [
             'installer_util_strings',
             'common_constants',
-            'chrome_resources.gyp:chrome_resources',
-            'chrome_resources.gyp:chrome_strings',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+            '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
+            '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
             '<(DEPTH)/content/content.gyp:content_common',
             '<(DEPTH)/courgette/courgette.gyp:courgette_lib',
             '<(DEPTH)/third_party/bspatch/bspatch.gyp:bspatch',
@@ -182,8 +182,8 @@
           'type': 'static_library',
           'dependencies': [
             'common_constants',
-            'chrome_resources.gyp:chrome_resources',
-            'chrome_resources.gyp:chrome_strings',
+            '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
+            '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
           ],
           'sources': [
             'installer/util/master_preferences.cc',

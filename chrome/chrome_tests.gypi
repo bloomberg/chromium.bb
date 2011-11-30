@@ -3,12 +3,6 @@
 # found in the LICENSE file.
 {
   'variables' : {
-    # Variables for js2gtest rules
-    'gypv8sh': '../tools/gypv8sh.py',
-    'js2gtest': 'test/base/js2gtest.js',
-    'mock_js': 'third_party/mock4js/mock4js.js',
-    'test_api_js': 'test/data/webui/test_api.js',
-
     'pyautolib_sources': [
       'app/chrome_command_ids.h',
       'app/chrome_dll_resource.h',
@@ -32,6 +26,9 @@
       }],
     ],
   },
+  'includes': [
+    'js_unittest_vars.gypi',
+  ],
   'targets': [
     {
       # This target contains mocks and test utilities that don't belong in
@@ -1180,6 +1177,10 @@
       'include_dirs': [
         '..',
       ],
+      # TODO(scr): Use this in browser_tests too.
+      'includes': [
+        'js_unittest_rules.gypi',
+      ],
       'defines': [
         'CLD_WINDOWS',
       ],
@@ -2022,50 +2023,6 @@
         '../webkit/fileapi/file_system_test_helper.h',
         '../webkit/quota/mock_storage_client.cc',
         '../webkit/quota/mock_storage_client.h',
-      ],
-      'rules': [
-        {
-          'rule_name': 'copyjs',
-          'extension': 'js',
-          'msvs_external_rule': 1,
-          'inputs': [
-            '../build/cp.py',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).<(_extension)',
-          ],
-          'action': [
-            'python',
-            '<@(_inputs)',
-            '<(RULE_INPUT_PATH)',
-            '<@(_outputs)',
-          ],
-        },
-        {
-          'rule_name': 'js2unit',
-          'extension': 'gtestjs',
-          'msvs_external_rule': 1,
-          'inputs': [
-            '<(gypv8sh)',
-            '<(PRODUCT_DIR)/v8_shell<(EXECUTABLE_SUFFIX)',
-            '<(mock_js)',
-            '<(test_api_js)',
-            '<(js2gtest)',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT)-gen.cc',
-            '<(PRODUCT_DIR)/test_data/chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).<(_extension)',
-          ],
-          'process_outputs_as_sources': 1,
-          'action': [
-            'python',
-            '<@(_inputs)',
-            'unit',
-            '<(RULE_INPUT_PATH)',
-            'chrome/<(RULE_INPUT_DIRNAME)/<(RULE_INPUT_ROOT).<(_extension)',
-            '<@(_outputs)',
-          ],
-        },
       ],
       'conditions': [
         ['target_arch!="arm"', {

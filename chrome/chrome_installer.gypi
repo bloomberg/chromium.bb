@@ -71,11 +71,11 @@
           'dependencies': [
             'installer_util',
             'installer_util_strings',
-            '../content/content.gyp:content_common',
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/base/base.gyp:base_i18n',
             '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
+            '<(DEPTH)/content/content.gyp:content_common',
             '<(DEPTH)/testing/gmock.gyp:gmock',
             '<(DEPTH)/testing/gtest.gyp:gtest',
           ],

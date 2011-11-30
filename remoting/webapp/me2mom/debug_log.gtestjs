@@ -1,0 +1,26 @@
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * Test fixture for debug logging routines.
+ * @constructor
+ * @extends {testing.Test}
+ */
+function DebugLogUnitTest () {}
+
+DebugLogUnitTest.prototype = {
+  __proto__: testing.Test.prototype,
+
+  /** @inheritDoc */
+  extraLibraries: [
+    'debug_log.js',
+  ],
+};
+
+// Dummy test to verify that the JS Unittest framework is working and that
+// debug_log.js loads without console errors.
+// TODO(garykac): Replace this with real tests.
+TEST_F('DebugLogUnitTest', 'TestJsLoad', function() {
+  assertTrue(true);
+});
