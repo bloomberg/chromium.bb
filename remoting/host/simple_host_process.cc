@@ -223,7 +223,7 @@ class SimpleHost {
       std::cout << "Support id: " << access_code << std::endl;
 
       // Tell the ChromotingHost the access code, to use as shared-secret.
-      host_->set_access_code(access_code);
+      host_->SetSharedSecret(access_code);
     } else {
       LOG(ERROR) << "If you haven't done so recently, try running"
                  << " remoting/tools/register_host.py.";

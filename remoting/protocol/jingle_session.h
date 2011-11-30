@@ -7,16 +7,15 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/task.h"
-#include "crypto/rsa_private_key.h"
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/session.h"
 #include "third_party/libjingle/source/talk/base/sigslot.h"
 #include "third_party/libjingle/source/talk/p2p/base/session.h"
 
 namespace remoting {
-
 namespace protocol {
 
+class Authenticator;
 class JingleChannelConnector;
 class JingleSessionManager;
 
@@ -41,12 +40,6 @@ class JingleSession : public protocol::Session,
   virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
   virtual const SessionConfig& config() OVERRIDE;
   virtual void set_config(const SessionConfig& config) OVERRIDE;
-  virtual const std::string& initiator_token() OVERRIDE;
-  virtual void set_initiator_token(const std::string& initiator_token) OVERRIDE;
-  virtual const std::string& receiver_token() OVERRIDE;
-  virtual void set_receiver_token(const std::string& receiver_token) OVERRIDE;
-  virtual void set_shared_secret(const std::string& secret) OVERRIDE;
-  virtual const std::string& shared_secret() OVERRIDE;
   virtual void Close() OVERRIDE;
 
  private:
@@ -56,31 +49,17 @@ class JingleSession : public protocol::Session,
 
   typedef std::map<std::string, JingleChannelConnector*> ChannelConnectorsMap;
 
-  // Create a JingleSession used in client mode. A server certificate is
-  // required.
-  static JingleSession* CreateClientSession(JingleSessionManager* manager,
-                                            const std::string& host_public_key);
-
-  // Create a JingleSession used in server mode. A server certificate and
-  // private key is provided. |key| is copied in the constructor.
-  //
-  // TODO(sergeyu): Remove |certificate| and |key| when we stop using TLS.
-  static JingleSession* CreateServerSession(
-      JingleSessionManager* manager,
-      const std::string& certificate,
-      crypto::RSAPrivateKey* key);
-
-  // TODO(sergeyu): Change type of |peer_public_key| to RSAPublicKey.
+  // Takes ownership of |authenticator|.
   JingleSession(JingleSessionManager* jingle_session_manager,
-                const std::string& local_cert,
-                crypto::RSAPrivateKey* local_private_key,
-                const std::string& peer_public_key);
+                cricket::Session* cricket_session,
+                Authenticator* authenticator);
   virtual ~JingleSession();
 
   // Called by JingleSessionManager.
   void set_candidate_config(const CandidateSessionConfig* candidate_config);
-  const std::string& local_certificate() const;
-  void Init(cricket::Session* cricket_session);
+
+  // Sends session-initiate for new session.
+  void SendSessionInitiate();
 
   // Close all the channels and terminate the session. |result|
   // defines error code that should returned to currently opened
@@ -123,24 +102,15 @@ class JingleSession : public protocol::Session,
 
   void SetState(State new_state);
 
+  static cricket::SessionDescription* CreateSessionDescription(
+      const CandidateSessionConfig* candidate_config,
+      const buzz::XmlElement* authenticator_message);
+
   // JingleSessionManager that created this session. Guaranteed to
   // exist throughout the lifetime of the session.
   JingleSessionManager* jingle_session_manager_;
 
-  // Certificates used for connection. Currently only receiving side
-  // has a certificate.
-  std::string local_cert_;
-  std::string remote_cert_;
-
-  // Private key used in SSL server sockets.
-  scoped_ptr<crypto::RSAPrivateKey> local_private_key_;
-
-  // Public key of the peer.
-  std::string peer_public_key_;
-
-  // Shared secret to use in channel authentication.  This is currently only
-  // used in IT2Me.
-  std::string shared_secret_;
+  scoped_ptr<Authenticator> authenticator_;
 
   State state_;
   StateChangeCallback state_change_callback_;
@@ -158,9 +128,6 @@ class JingleSession : public protocol::Session,
 
   SessionConfig config_;
   bool config_set_;
-
-  std::string initiator_token_;
-  std::string receiver_token_;
 
   // These data members are only set on the receiving side.
   scoped_ptr<const CandidateSessionConfig> candidate_config_;

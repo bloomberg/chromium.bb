@@ -4,7 +4,6 @@
 
 #include "remoting/protocol/content_description.h"
 
-#include "base/base64.h"
 #include "base/logging.h"
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
@@ -29,8 +28,6 @@ const char kEventTag[] = "event";
 const char kVideoTag[] = "video";
 const char kResolutionTag[] = "initial-resolution";
 const char kAuthenticationTag[] = "authentication";
-const char kCertificateTag[] = "certificate";
-const char kAuthTokenTag[] = "auth-token";
 
 const char kTransportAttr[] = "transport";
 const char kVersionAttr[] = "version";
@@ -150,11 +147,9 @@ bool ParseChannelConfig(const XmlElement* element, bool codec_required,
 
 ContentDescription::ContentDescription(
     const CandidateSessionConfig* candidate_config,
-    const std::string& auth_token,
-    const std::string& certificate)
+    const buzz::XmlElement* authenticator_message)
     : candidate_config_(candidate_config),
-      auth_token_(auth_token),
-      certificate_(certificate) {
+      authenticator_message_(authenticator_message) {
 }
 
 ContentDescription::~ContentDescription() { }
@@ -167,8 +162,7 @@ ContentDescription::~ContentDescription() { }
 //     <video transport="srtp" codec="vp8" version="1" />
 //     <initial-resolution width="800" height="600" />
 //     <authentication>
-//       <certificate>[BASE64 Encoded Certificate]</certificate>
-//       <auth-token>...</auth-token>  // IT2Me only.
+//      Message created by Authenticator implementation.
 //     </authentication>
 //   </description>
 //
@@ -203,31 +197,10 @@ XmlElement* ContentDescription::ToXml() const {
                               config()->initial_resolution().height));
   root->AddElement(resolution_tag);
 
-  if (!certificate().empty() || !auth_token().empty()) {
-    XmlElement* authentication_tag = new XmlElement(
-        QName(kChromotingXmlNamespace, kAuthenticationTag));
-
-    if (!certificate().empty()) {
-      XmlElement* certificate_tag = new XmlElement(
-          QName(kChromotingXmlNamespace, kCertificateTag));
-
-      std::string base64_cert;
-      if (!base::Base64Encode(certificate(), &base64_cert)) {
-        LOG(DFATAL) << "Cannot perform base64 encode on certificate";
-      }
-
-      certificate_tag->SetBodyText(base64_cert);
-      authentication_tag->AddElement(certificate_tag);
-    }
-
-    if (!auth_token().empty()) {
-      XmlElement* auth_token_tag = new XmlElement(
-          QName(kChromotingXmlNamespace, kAuthTokenTag));
-      auth_token_tag->SetBodyText(auth_token());
-      authentication_tag->AddElement(auth_token_tag);
-    }
-
-    root->AddElement(authentication_tag);
+  if (authenticator_message_.get()) {
+    DCHECK(authenticator_message_->Name() ==
+           QName(kChromotingXmlNamespace, kAuthenticationTag));
+    root->AddElement(new XmlElement(*authenticator_message_));
   }
 
   return root;
@@ -287,38 +260,19 @@ ContentDescription* ContentDescription::ParseXml(
       return NULL;
     }
     ScreenResolution resolution(width, height);
-    if (!resolution.IsValid()) {
+    if (!resolution.IsValid())
       return NULL;
-    }
 
     *config->mutable_initial_resolution() = resolution;
 
-    // Parse authentication information.
-    std::string certificate;
-    std::string auth_token;
+    scoped_ptr<XmlElement> authenticator_message;
     child = element->FirstNamed(QName(kChromotingXmlNamespace,
                                       kAuthenticationTag));
-    if (child) {
-      // Parse the certificate.
-      const XmlElement* cert_tag =
-          child->FirstNamed(QName(kChromotingXmlNamespace, kCertificateTag));
-      if (cert_tag) {
-        std::string base64_cert = cert_tag->BodyText();
-        if (!base::Base64Decode(base64_cert, &certificate)) {
-          LOG(ERROR) << "Failed to decode certificate received from the peer.";
-          return NULL;
-        }
-      }
+    if (child)
+      authenticator_message.reset(new XmlElement(*child));
 
-      // Parse auth-token.
-      const XmlElement* auth_token_tag =
-          child->FirstNamed(QName(kChromotingXmlNamespace, kAuthTokenTag));
-      if (auth_token_tag) {
-        auth_token = auth_token_tag->BodyText();
-      }
-    }
-
-    return new ContentDescription(config.release(), auth_token, certificate);
+    return new ContentDescription(
+        config.release(), authenticator_message.release());
   }
   LOG(ERROR) << "Invalid description: " << element->Str();
   return NULL;

@@ -10,14 +10,19 @@
 #include "base/time.h"
 #include "base/test/test_timeouts.h"
 #include "crypto/nss_util.h"
+#include "crypto/rsa_private_key.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 #include "net/socket/stream_socket.h"
+#include "remoting/base/constants.h"
 #include "remoting/protocol/auth_util.h"
+#include "remoting/protocol/authenticator.h"
+#include "remoting/protocol/channel_authenticator.h"
 #include "remoting/protocol/jingle_session.h"
 #include "remoting/protocol/jingle_session_manager.h"
+#include "remoting/protocol/v1_authenticator.h"
 #include "remoting/jingle_glue/jingle_thread.h"
 #include "remoting/jingle_glue/fake_signal_strategy.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -108,6 +113,124 @@ class MockSessionCallback {
   MOCK_METHOD1(OnStateChange, void(Session::State));
 };
 
+class FakeChannelAuthenticator : public ChannelAuthenticator {
+ public:
+  FakeChannelAuthenticator(bool accept)
+      : accept_(accept) {
+  }
+  virtual ~FakeChannelAuthenticator() {}
+
+  virtual void SecureAndAuthenticate(
+      net::StreamSocket* socket, const DoneCallback& done_callback) OVERRIDE {
+    if (accept_) {
+      done_callback.Run(net::OK, socket);
+    } else {
+      delete socket;
+      done_callback.Run(net::ERR_FAILED, NULL);
+    }
+  }
+
+ private:
+  bool accept_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeChannelAuthenticator);
+};
+
+class FakeClientAuthenticator : public Authenticator {
+ public:
+  FakeClientAuthenticator(bool accept, bool accept_channel)
+      : accept_(accept),
+        accept_channel_(accept_channel),
+        state_(MESSAGE_READY) {
+  }
+  virtual ~FakeClientAuthenticator() {}
+
+  virtual State state() const OVERRIDE {
+    return state_;
+  }
+
+  virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE {
+    EXPECT_EQ(WAITING_MESSAGE, state_);
+    state_ = accept_ ? ACCEPTED : REJECTED;
+  }
+
+  virtual buzz::XmlElement* GetNextMessage() OVERRIDE {
+    EXPECT_EQ(MESSAGE_READY, state_);
+    state_ = WAITING_MESSAGE;
+    return new buzz::XmlElement(
+        buzz::QName(kChromotingXmlNamespace, "authentication"));
+  }
+
+  virtual ChannelAuthenticator* CreateChannelAuthenticator() const OVERRIDE {
+    return new FakeChannelAuthenticator(accept_channel_);
+  }
+
+ protected:
+  bool accept_;
+  bool accept_channel_;
+  State state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeClientAuthenticator);
+};
+
+class FakeHostAuthenticator : public Authenticator {
+ public:
+  FakeHostAuthenticator(bool accept, bool accept_channel)
+      : accept_(accept),
+        accept_channel_(accept_channel),
+        state_(WAITING_MESSAGE) {
+  }
+  virtual ~FakeHostAuthenticator() {}
+
+  virtual State state() const OVERRIDE {
+    return state_;
+  }
+
+  virtual void ProcessMessage(const buzz::XmlElement* message) OVERRIDE {
+    EXPECT_EQ(WAITING_MESSAGE, state_);
+    state_ = MESSAGE_READY;
+  }
+
+  virtual buzz::XmlElement* GetNextMessage() OVERRIDE {
+    EXPECT_EQ(MESSAGE_READY, state_);
+    state_ = accept_ ? ACCEPTED : REJECTED;
+    return new buzz::XmlElement(
+        buzz::QName(kChromotingXmlNamespace, "authentication"));
+  }
+
+  virtual ChannelAuthenticator* CreateChannelAuthenticator() const OVERRIDE {
+    return new FakeChannelAuthenticator(accept_channel_);
+  }
+
+ protected:
+  bool accept_;
+  bool accept_channel_;
+  State state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeHostAuthenticator);
+};
+
+class FakeHostAuthenticatorFactory : public AuthenticatorFactory {
+ public:
+  FakeHostAuthenticatorFactory(bool accept, bool accept_channel)
+      : accept_(accept),
+        accept_channel_(accept_channel) {
+  }
+  virtual ~FakeHostAuthenticatorFactory() {}
+
+  virtual Authenticator* CreateAuthenticator(
+      const std::string& remote_jid,
+      const buzz::XmlElement* first_message) OVERRIDE {
+    return new FakeHostAuthenticator(accept_, accept_channel_);
+  }
+
+ private:
+  bool accept_;
+  bool accept_channel_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeHostAuthenticatorFactory);
+};
+
 }  // namespace
 
 class JingleSessionTest : public testing::Test {
@@ -125,7 +248,6 @@ class JingleSessionTest : public testing::Test {
                    base::Unretained(&host_connection_callback_)));
 
     session->set_config(SessionConfig::GetDefault());
-    session->set_shared_secret(kTestSharedSecret);
   }
 
  protected:
@@ -148,7 +270,7 @@ class JingleSessionTest : public testing::Test {
     }
   }
 
-  void CreateServerPair() {
+  void CreateServerPair(bool use_fake_auth) {
     FilePath certs_dir;
     PathService::Get(base::DIR_SOURCE_ROOT, &certs_dir);
     certs_dir = certs_dir.AppendASCII("net");
@@ -180,16 +302,24 @@ class JingleSessionTest : public testing::Test {
     host_server_.reset(new JingleSessionManager(
         base::MessageLoopProxy::current()));
     host_server_->Init(
-        kHostJid, host_signal_strategy_.get(), &host_server_listener_,
-        private_key.release(), cert_der, false);
+        kHostJid, host_signal_strategy_.get(), &host_server_listener_, false);
+
+    if (use_fake_auth) {
+      host_server_->set_authenticator_factory(
+          new FakeHostAuthenticatorFactory(true, false));
+    } else {
+      host_server_->set_authenticator_factory(
+          new V1HostAuthenticatorFactory(
+              cert_der, private_key.release(), kTestSharedSecret));
+    }
 
     EXPECT_CALL(client_server_listener_, OnSessionManagerInitialized())
         .Times(1);
     client_server_.reset(new JingleSessionManager(
         base::MessageLoopProxy::current()));
     client_server_->Init(
-        kClientJid, client_signal_strategy_.get(), &client_server_listener_,
-        NULL, "", false);
+        kClientJid, client_signal_strategy_.get(),
+        &client_server_listener_, false);
   }
 
   void CloseSessionManager() {
@@ -205,7 +335,7 @@ class JingleSessionTest : public testing::Test {
     client_signal_strategy_.reset();
   }
 
-  bool InitiateConnection(const char* shared_secret) {
+  bool InitiateConnection(bool use_fake_auth) {
     int not_connected_peers = 2;
 
     EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
@@ -243,14 +373,17 @@ class JingleSessionTest : public testing::Test {
           .Times(AtMost(1));
     }
 
+    Authenticator* authenticator;
+    if (use_fake_auth) {
+      authenticator = new FakeClientAuthenticator(true, true);
+    } else {
+      authenticator = new V1ClientAuthenticator(kClientJid, kTestSharedSecret);
+    }
     client_session_.reset(client_server_->Connect(
-        kHostJid, kTestHostPublicKey,
-        GenerateSupportAuthToken(kClientJid, kTestSharedSecret),
+        kHostJid, authenticator,
         CandidateSessionConfig::CreateDefault(),
         base::Bind(&MockSessionCallback::OnStateChange,
                    base::Unretained(&client_connection_callback_))));
-
-    client_session_->set_shared_secret(shared_secret);
 
     return RunMessageLoopWithTimeout(TestTimeouts::action_max_timeout_ms());
   }
@@ -370,6 +503,8 @@ class TCPChannelTester : public ChannelTesterBase {
 
   void OnChannelReady(int id, net::StreamSocket* socket) {
     if (!socket) {
+      host_session_->CancelChannelCreation(kChannelName);
+      client_session_->CancelChannelCreation(kChannelName);
       Done();
       return;
     }
@@ -645,13 +780,13 @@ class UDPChannelTester : public ChannelTesterBase {
 
 // Verify that we can create and destory server objects without a connection.
 TEST_F(JingleSessionTest, CreateAndDestoy) {
-  CreateServerPair();
+  CreateServerPair(false);
 }
 
 // Verify that incoming session can be rejected, and that the status
 // of the connection is set to CLOSED in this case.
 TEST_F(JingleSessionTest, RejectConnection) {
-  CreateServerPair();
+  CreateServerPair(false);
 
   // Reject incoming session.
   EXPECT_CALL(host_server_listener_, OnIncomingSession(_, _))
@@ -669,9 +804,10 @@ TEST_F(JingleSessionTest, RejectConnection) {
         .WillOnce(InvokeWithoutArgs(&QuitCurrentThread));
   }
 
+  Authenticator* authenticator =
+      new V1ClientAuthenticator(kClientJid, kTestSharedSecretBad);
   client_session_.reset(client_server_->Connect(
-      kHostJid, kTestHostPublicKey,
-      GenerateSupportAuthToken(kClientJid, kTestSharedSecret),
+      kHostJid, authenticator,
       CandidateSessionConfig::CreateDefault(),
       base::Bind(&MockSessionCallback::OnStateChange,
                  base::Unretained(&client_connection_callback_))));
@@ -681,14 +817,14 @@ TEST_F(JingleSessionTest, RejectConnection) {
 
 // Verify that we can connect two endpoints.
 TEST_F(JingleSessionTest, Connect) {
-  CreateServerPair();
-  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
+  CreateServerPair(false);
+  ASSERT_TRUE(InitiateConnection(false));
 }
 
 // Verify that we can't connect two endpoints with mismatched secrets.
 TEST_F(JingleSessionTest, ConnectBadChannelAuth) {
-  CreateServerPair();
-  ASSERT_TRUE(InitiateConnection(kTestSharedSecretBad));
+  CreateServerPair(true);
+  ASSERT_TRUE(InitiateConnection(true));
   scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(host_session_.get(), client_session_.get(),
                            kMessageSize, kMessages));
@@ -701,8 +837,8 @@ TEST_F(JingleSessionTest, ConnectBadChannelAuth) {
 
 // Verify that data can be transmitted over the event channel.
 TEST_F(JingleSessionTest, TestTcpChannel) {
-  CreateServerPair();
-  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
+  CreateServerPair(false);
+  ASSERT_TRUE(InitiateConnection(false));
   scoped_refptr<TCPChannelTester> tester(
       new TCPChannelTester(host_session_.get(), client_session_.get(),
                            kMessageSize, kMessages));
@@ -716,8 +852,8 @@ TEST_F(JingleSessionTest, TestTcpChannel) {
 
 // Verify that data can be transmitted over the video RTP channel.
 TEST_F(JingleSessionTest, TestUdpChannel) {
-  CreateServerPair();
-  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
+  CreateServerPair(false);
+  ASSERT_TRUE(InitiateConnection(false));
   scoped_refptr<UDPChannelTester> tester(
       new UDPChannelTester(host_session_.get(), client_session_.get()));
   tester->Start();
@@ -731,8 +867,8 @@ TEST_F(JingleSessionTest, TestUdpChannel) {
 // Send packets of different size to get the latency for sending data
 // using sockets from JingleSession.
 TEST_F(JingleSessionTest, FLAKY_TestSpeed) {
-  CreateServerPair();
-  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
+  CreateServerPair(false);
+  ASSERT_TRUE(InitiateConnection(false));
   scoped_refptr<ChannelSpeedTester> tester;
 
   tester = new ChannelSpeedTester(host_session_.get(),
@@ -743,7 +879,7 @@ TEST_F(JingleSessionTest, FLAKY_TestSpeed) {
             << tester->GetElapsedTime().InMilliseconds() << " ms.";
 
   CloseSessions();
-  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
+  ASSERT_TRUE(InitiateConnection(false));
 
   tester = new ChannelSpeedTester(host_session_.get(),
                                   client_session_.get(), 1024);
@@ -753,7 +889,7 @@ TEST_F(JingleSessionTest, FLAKY_TestSpeed) {
             << tester->GetElapsedTime().InMilliseconds() << " ms.";
 
   CloseSessions();
-  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
+  ASSERT_TRUE(InitiateConnection(false));
 
   tester = new ChannelSpeedTester(host_session_.get(),
                                   client_session_.get(), 51200);
@@ -763,7 +899,7 @@ TEST_F(JingleSessionTest, FLAKY_TestSpeed) {
             << tester->GetElapsedTime().InMilliseconds() << " ms.";
 
   CloseSessions();
-  ASSERT_TRUE(InitiateConnection(kTestSharedSecret));
+  ASSERT_TRUE(InitiateConnection(false));
 
   tester = new ChannelSpeedTester(host_session_.get(),
                                   client_session_.get(), 512000);

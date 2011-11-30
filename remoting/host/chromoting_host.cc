@@ -18,7 +18,6 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/event_executor.h"
 #include "remoting/host/host_config.h"
-#include "remoting/host/host_key_pair.h"
 #include "remoting/host/screen_recorder.h"
 #include "remoting/jingle_glue/xmpp_signal_strategy.h"
 #include "remoting/protocol/connection_to_client.h"
@@ -27,6 +26,7 @@
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/session_config.h"
+#include "remoting/protocol/v1_authenticator.h"
 
 using remoting::protocol::ConnectionToClient;
 using remoting::protocol::InputStub;
@@ -76,6 +76,12 @@ void ChromotingHost::Start() {
   if (state_ != kInitial)
     return;
   state_ = kStarted;
+
+  // Assign key and certificate to server.
+  if (!key_pair_.Load(config_)) {
+    LOG(ERROR) << "Failed to load key pair for the host.";
+    return;
+  }
 
   // Use an XMPP connection to the Talk network for session signalling.
   std::string xmpp_login;
@@ -153,6 +159,14 @@ void ChromotingHost::Shutdown(const base::Closure& shutdown_task) {
 void ChromotingHost::AddStatusObserver(HostStatusObserver* observer) {
   DCHECK_EQ(state_, kInitial);
   status_observers_.push_back(observer);
+}
+
+void ChromotingHost::SetSharedSecret(const std::string& shared_secret) {
+  DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
+  session_manager_->set_authenticator_factory(
+      new protocol::V1HostAuthenticatorFactory(
+          key_pair_.GenerateCertificate(), key_pair_.CopyPrivateKey(),
+          shared_secret));
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -260,14 +274,8 @@ void ChromotingHost::OnStateChange(
     protocol::JingleSessionManager* server =
         new protocol::JingleSessionManager(context_->network_message_loop());
 
-    // Assign key and certificate to server.
-    HostKeyPair key_pair;
-    CHECK(key_pair.Load(config_))
-        << "Failed to load server authentication data";
-
-    server->Init(local_jid_, signal_strategy_.get(), this,
-                 key_pair.CopyPrivateKey(), key_pair.GenerateCertificate(),
-                 allow_nat_traversal_);
+    server->Init(local_jid_, signal_strategy_.get(),
+                 this, allow_nat_traversal_);
 
     session_manager_.reset(server);
 
@@ -330,8 +338,6 @@ void ChromotingHost::OnIncomingSession(
   }
 
   session->set_config(config);
-  // Provide the Access Code as shared secret for SSL channel authentication.
-  session->set_shared_secret(access_code_);
 
   *response = protocol::SessionManager::ACCEPT;
 

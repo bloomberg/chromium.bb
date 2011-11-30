@@ -156,14 +156,6 @@ class FakeSession : public Session {
   virtual const SessionConfig& config() OVERRIDE;
   virtual void set_config(const SessionConfig& config) OVERRIDE;
 
-  virtual const std::string& initiator_token() OVERRIDE;
-  virtual void set_initiator_token(const std::string& initiator_token) OVERRIDE;
-  virtual const std::string& receiver_token() OVERRIDE;
-  virtual void set_receiver_token(const std::string& receiver_token) OVERRIDE;
-
-  virtual void set_shared_secret(const std::string& secret) OVERRIDE;
-  virtual const std::string& shared_secret() OVERRIDE;
-
   virtual void Close() OVERRIDE;
 
  public:
@@ -174,11 +166,6 @@ class FakeSession : public Session {
 
   std::map<std::string, FakeSocket*> stream_channels_;
   std::map<std::string, FakeUdpSocket*> datagram_channels_;
-
-  std::string initiator_token_;
-  std::string receiver_token_;
-
-  std::string shared_secret_;
 
   std::string jid_;
 

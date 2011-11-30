@@ -52,15 +52,14 @@
 #include "base/threading/non_thread_safe.h"
 #include "remoting/protocol/session.h"
 
-namespace crypto {
-class RSAPrivateKey;
-}  // namespace base
-
 namespace remoting {
 
 class SignalStrategy;
 
 namespace protocol {
+
+class Authenticator;
+class AuthenticatorFactory;
 
 // Generic interface for Chromoting session manager.
 //
@@ -113,8 +112,6 @@ class SessionManager : public base::NonThreadSafe {
   virtual void Init(const std::string& local_jid,
                     SignalStrategy* signal_strategy,
                     Listener* listener,
-                    crypto::RSAPrivateKey* private_key,
-                    const std::string& certificate,
                     bool allow_nat_traversal) = 0;
 
   // Tries to create a session to the host |jid|. Must be called only
@@ -123,15 +120,14 @@ class SessionManager : public base::NonThreadSafe {
   //
   // |host_jid| is the full jid of the host to connect to.
   // |host_public_key| is used to for authentication.
-  // |client_oauth_token| is a short-lived OAuth token identify the client.
+  // |authenticator| is a client authenticator for the session.
   // |config| contains the session configurations that the client supports.
   // |state_change_callback| is called when the connection state changes.
   //
   // Ownership of the |config| is passed to the new session.
   virtual Session* Connect(
       const std::string& host_jid,
-      const std::string& host_public_key,
-      const std::string& client_token,
+      Authenticator* authenticator,
       CandidateSessionConfig* config,
       const Session::StateChangeCallback& state_change_callback) = 0;
 
@@ -139,6 +135,12 @@ class SessionManager : public base::NonThreadSafe {
   // sessions are destroyed. No callbacks are called after this method
   // returns.
   virtual void Close() = 0;
+
+  // Set authenticator factory that should be used to authenticate
+  // incoming connection. No connections will be accepted if
+  // authenticator factory isn't set.
+  virtual void set_authenticator_factory(
+      AuthenticatorFactory* authenticator_factory) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionManager);

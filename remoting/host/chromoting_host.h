@@ -14,6 +14,7 @@
 #include "remoting/host/capturer.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/desktop_environment.h"
+#include "remoting/host/host_key_pair.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/ui_strings.h"
 #include "remoting/jingle_glue/jingle_thread.h"
@@ -91,6 +92,11 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // started.
   void AddStatusObserver(HostStatusObserver* observer);
 
+  // Sets shared secret for the host. All incoming connections are
+  // rejected if shared secret isn't set. Must be called on the
+  // network thread after the host is started.
+  void SetSharedSecret(const std::string& shared_secret);
+
   ////////////////////////////////////////////////////////////////////////////
   // SignalStrategy::StatusObserver implementation.
   virtual void OnStateChange(
@@ -118,9 +124,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // TODO(wez): ChromotingHost shouldn't need to know about Me2Mom.
   void set_it2me(bool is_it2me) {
     is_it2me_ = is_it2me;
-  }
-  void set_access_code(const std::string& access_code) {
-    access_code_ = access_code;
   }
 
   // Notify all active client sessions that local input has been detected, and
@@ -183,6 +186,7 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   ChromotingHostContext* context_;
   DesktopEnvironment* desktop_environment_;
   scoped_refptr<MutableHostConfig> config_;
+  HostKeyPair key_pair_;
   bool allow_nat_traversal_;
 
   // Connection objects.

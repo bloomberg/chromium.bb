@@ -28,6 +28,7 @@ class IqRequest;
 
 namespace protocol {
 
+class Authenticator;
 class PepperChannel;
 class PepperSessionManager;
 
@@ -53,12 +54,6 @@ class PepperSession : public Session {
   virtual const CandidateSessionConfig* candidate_config() OVERRIDE;
   virtual const SessionConfig& config() OVERRIDE;
   virtual void set_config(const SessionConfig& config) OVERRIDE;
-  virtual const std::string& initiator_token() OVERRIDE;
-  virtual void set_initiator_token(const std::string& initiator_token) OVERRIDE;
-  virtual const std::string& receiver_token() OVERRIDE;
-  virtual void set_receiver_token(const std::string& receiver_token) OVERRIDE;
-  virtual void set_shared_secret(const std::string& secret) OVERRIDE;
-  virtual const std::string& shared_secret() OVERRIDE;
   virtual void Close() OVERRIDE;
 
  private:
@@ -71,8 +66,7 @@ class PepperSession : public Session {
 
   // Start cs connection by sending session-initiate message.
   void StartConnection(const std::string& peer_jid,
-                       const std::string& peer_public_key,
-                       const std::string& client_token,
+                       Authenticator* authenticator,
                        CandidateSessionConfig* config,
                        const StateChangeCallback& state_change_callback);
 
@@ -110,7 +104,6 @@ class PepperSession : public Session {
 
   PepperSessionManager* session_manager_;
   std::string peer_jid_;
-  std::string peer_public_key_;
   scoped_ptr<CandidateSessionConfig> candidate_config_;
   StateChangeCallback state_change_callback_;
 
@@ -118,12 +111,9 @@ class PepperSession : public Session {
   State state_;
   Error error_;
 
-  std::string remote_cert_;
   SessionConfig config_;
 
-  std::string shared_secret_;
-  std::string initiator_token_;
-  std::string receiver_token_;
+  scoped_ptr<Authenticator> authenticator_;
 
   scoped_ptr<IqRequest> initiate_request_;
   scoped_ptr<IqRequest> transport_info_request_;

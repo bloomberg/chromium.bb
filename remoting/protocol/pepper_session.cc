@@ -10,6 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/jingle_glue/iq_sender.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/pepper_session_manager.h"
@@ -56,15 +57,15 @@ Session::Error PepperSession::error() {
 
 void PepperSession::StartConnection(
     const std::string& peer_jid,
-    const std::string& peer_public_key,
-    const std::string& client_token,
+    Authenticator* authenticator,
     CandidateSessionConfig* config,
     const StateChangeCallback& state_change_callback) {
   DCHECK(CalledOnValidThread());
+  DCHECK(authenticator);
+  DCHECK_EQ(authenticator->state(), Authenticator::MESSAGE_READY);
 
   peer_jid_ = peer_jid;
-  peer_public_key_ = peer_public_key;
-  initiator_token_ = client_token;
+  authenticator_.reset(authenticator);
   candidate_config_.reset(config);
   state_change_callback_ = state_change_callback;
 
@@ -79,7 +80,8 @@ void PepperSession::StartConnection(
                         session_id_);
   message.from = session_manager_->local_jid_;
   message.description.reset(
-      new ContentDescription(candidate_config_->Clone(), initiator_token_, ""));
+      new ContentDescription(candidate_config_->Clone(),
+                             authenticator_->GetNextMessage()));
   initiate_request_.reset(session_manager_->iq_sender()->SendIq(
       message.ToXml(),
       base::Bind(&PepperSession::OnSessionInitiateResponse,
@@ -112,12 +114,14 @@ void PepperSession::CreateStreamChannel(
       const StreamChannelCallback& callback) {
   DCHECK(!channels_[name]);
 
-  PepperStreamChannel* channel = new PepperStreamChannel(this, name, callback);
+  ChannelAuthenticator* channel_authenticator =
+      authenticator_->CreateChannelAuthenticator();
+  PepperStreamChannel* channel = new PepperStreamChannel(
+      this, name, callback);
   channels_[name] = channel;
   channel->Connect(session_manager_->pp_instance_,
                    session_manager_->transport_config_,
-                   new V1ClientChannelAuthenticator(
-                       remote_cert_, shared_secret_));
+                   channel_authenticator);
 }
 
 void PepperSession::CreateDatagramChannel(
@@ -154,37 +158,6 @@ void PepperSession::set_config(const SessionConfig& config) {
   DCHECK(CalledOnValidThread());
   // set_config() should never be called on the client.
   NOTREACHED();
-}
-
-const std::string& PepperSession::initiator_token() {
-  DCHECK(CalledOnValidThread());
-  return initiator_token_;
-}
-
-void PepperSession::set_initiator_token(const std::string& initiator_token) {
-  DCHECK(CalledOnValidThread());
-  initiator_token_ = initiator_token;
-}
-
-const std::string& PepperSession::receiver_token() {
-  DCHECK(CalledOnValidThread());
-  return receiver_token_;
-}
-
-void PepperSession::set_receiver_token(const std::string& receiver_token) {
-  DCHECK(CalledOnValidThread());
-  // set_receiver_token() should not be called on the client side.
-  NOTREACHED();
-}
-
-void PepperSession::set_shared_secret(const std::string& secret) {
-  DCHECK(CalledOnValidThread());
-  shared_secret_ = secret;
-}
-
-const std::string& PepperSession::shared_secret() {
-  DCHECK(CalledOnValidThread());
-  return shared_secret_;
 }
 
 void PepperSession::Close() {
@@ -234,6 +207,26 @@ void PepperSession::OnAccept(const JingleMessage& message,
                              JingleMessageReply* reply) {
   if (state_ != CONNECTING) {
     *reply = JingleMessageReply(JingleMessageReply::UNEXPECTED_REQUEST);
+    return;
+  }
+
+  const buzz::XmlElement* auth_message =
+      message.description->authenticator_message();
+  if (!auth_message) {
+    DLOG(WARNING) << "Received session-accept without authentication message "
+                  << auth_message->Str();
+    OnError(INCOMPATIBLE_PROTOCOL);
+    return;
+  }
+
+  DCHECK(authenticator_->state() == Authenticator::WAITING_MESSAGE);
+  authenticator_->ProcessMessage(auth_message);
+  // Support for more than two auth message is not implemented yet.
+  DCHECK(authenticator_->state() != Authenticator::WAITING_MESSAGE &&
+         authenticator_->state() != Authenticator::MESSAGE_READY);
+
+  if (authenticator_->state() == Authenticator::REJECTED) {
+    OnError(AUTHENTICATION_FAILED);
     return;
   }
 
@@ -296,12 +289,6 @@ void PepperSession::OnTerminate(const JingleMessage& message,
 bool PepperSession::InitializeConfigFromDescription(
     const ContentDescription* description) {
   DCHECK(description);
-
-  remote_cert_ = description->certificate();
-  if (remote_cert_.empty()) {
-    LOG(ERROR) << "session-accept does not specify certificate";
-    return false;
-  }
 
   if (!description->config()->GetFinalConfig(&config_)) {
     LOG(ERROR) << "session-accept does not specify configuration";

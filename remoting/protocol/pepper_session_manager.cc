@@ -8,6 +8,7 @@
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/jingle_info_request.h"
 #include "remoting/jingle_glue/signal_strategy.h"
+#include "remoting/protocol/authenticator.h"
 #include "remoting/protocol/jingle_messages.h"
 #include "remoting/protocol/pepper_session.h"
 #include "third_party/libjingle/source/talk/base/socketaddress.h"
@@ -33,15 +34,11 @@ void PepperSessionManager::Init(
     const std::string& local_jid,
     SignalStrategy* signal_strategy,
     SessionManager::Listener* listener,
-    crypto::RSAPrivateKey* private_key,
-    const std::string& certificate,
     bool allow_nat_traversal) {
   listener_ = listener;
   local_jid_ = local_jid;
   signal_strategy_ = signal_strategy;
   iq_sender_.reset(new IqSender(signal_strategy_));
-  private_key_.reset(private_key);
-  certificate_ = certificate;
   allow_nat_traversal_ = allow_nat_traversal;
 
   signal_strategy_->AddListener(this);
@@ -76,13 +73,12 @@ void PepperSessionManager::OnJingleInfo(
 
 Session* PepperSessionManager::Connect(
     const std::string& host_jid,
-    const std::string& host_public_key,
-    const std::string& client_token,
+    Authenticator* authenticator,
     CandidateSessionConfig* config,
     const Session::StateChangeCallback& state_change_callback) {
   PepperSession* session = new PepperSession(this);
-  session->StartConnection(host_jid, host_public_key, client_token,
-                           config, state_change_callback);
+  session->StartConnection(host_jid, authenticator, config,
+                           state_change_callback);
   sessions_[session->session_id_] = session;
   return session;
 }
@@ -97,6 +93,12 @@ void PepperSessionManager::Close() {
   jingle_info_request_.reset();
 
   signal_strategy_->RemoveListener(this);
+}
+
+void PepperSessionManager::set_authenticator_factory(
+    AuthenticatorFactory* authenticator_factory) {
+  DCHECK(CalledOnValidThread());
+  authenticator_factory_.reset(authenticator_factory);
 }
 
 bool PepperSessionManager::OnIncomingStanza(const buzz::XmlElement* stanza) {

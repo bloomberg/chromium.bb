@@ -653,7 +653,7 @@ void HostNPScriptObject::OnReceivedSupportID(
 
   std::string host_secret = GenerateSupportHostSecret();
   std::string access_code = support_id + host_secret;
-  host_->set_access_code(access_code);
+  host_->SetSharedSecret(access_code);
 
   {
     base::AutoLock lock(access_code_lock_);

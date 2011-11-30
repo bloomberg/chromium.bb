@@ -17,6 +17,7 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/jingle_session_manager.h"
 #include "remoting/protocol/pepper_session_manager.h"
+#include "remoting/protocol/v1_authenticator.h"
 #include "remoting/protocol/video_reader.h"
 #include "remoting/protocol/video_stub.h"
 #include "remoting/protocol/util.h"
@@ -100,7 +101,7 @@ void ConnectionToHost::InitSession() {
 
   session_manager_.reset(new PepperSessionManager(pp_instance_));
   session_manager_->Init(
-      local_jid_, signal_strategy_.get(), this, NULL, "", allow_nat_traversal_);
+      local_jid_, signal_strategy_.get(), this, allow_nat_traversal_);
 }
 
 const SessionConfig& ConnectionToHost::config() {
@@ -132,15 +133,12 @@ void ConnectionToHost::OnSessionManagerInitialized() {
   // After SessionManager is initialized we can try to connect to the host.
   CandidateSessionConfig* candidate_config =
       CandidateSessionConfig::CreateDefault();
-  std::string client_token =
-      protocol::GenerateSupportAuthToken(local_jid_, access_code_);
+  V1ClientAuthenticator* authenticator =
+      new V1ClientAuthenticator(local_jid_, access_code_);
   session_.reset(session_manager_->Connect(
-      host_jid_, host_public_key_, client_token, candidate_config,
+      host_jid_, authenticator, candidate_config,
       base::Bind(&ConnectionToHost::OnSessionStateChange,
                  base::Unretained(this))));
-
-  // Set the shared-secret for securing SSL channels.
-  session_->set_shared_secret(access_code_);
 }
 
 void ConnectionToHost::OnIncomingSession(
