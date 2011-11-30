@@ -311,6 +311,10 @@ def ShortBranchName(branch):
 class Changelist(object):
   def __init__(self, branchref=None):
     # Poke settings so we get the "configure your server" message if necessary.
+    global settings
+    if not settings:
+      # Happens when git_cl.py is used as a utility library.
+      settings = Settings()
     settings.GetDefaultServerUrl()
     self.branchref = branchref
     if self.branchref:
