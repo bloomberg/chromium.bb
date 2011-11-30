@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_event_router_forwarder.h"
 
+#include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_event_router.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -67,9 +68,9 @@ void ExtensionEventRouterForwarder::HandleEvent(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this,
+        base::Bind(
             &ExtensionEventRouterForwarder::HandleEvent,
+            this,
             extension_id, event_name, event_args, profile_ptr,
             use_profile_to_restrict_events, event_url));
     return;
