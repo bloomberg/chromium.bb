@@ -46,8 +46,8 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
     READ,
     READ_COMPLETE,
     WAIT_FOR_DATA_READY_DONE,
-    CREATE,
-    CREATE_COMPLETE,
+    CREATE_OR_OPEN,
+    CREATE_OR_OPEN_COMPLETE,
     WRITE,
     WRITE_COMPLETE,
     SET_DONE,
@@ -88,13 +88,13 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
   int DoOpenComplete(int rv);
   int DoReadComplete(int rv);
   int DoWriteComplete(int rv);
-  int DoCreateComplete(int rv);
+  int DoCreateOrOpenComplete(int rv);
 
   int DoGetBackend();
   int DoOpen();
   int DoRead();
   int DoWrite();
-  int DoCreate();
+  int DoCreateOrOpen();
 
   // DoWaitForDataReadyDone is the terminal state of the read operation.
   int DoWaitForDataReadyDone();
@@ -109,6 +109,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedSSLHostInfo
   CallbackImpl* callback_;
   State state_;
   bool ready_;
+  bool found_entry_;  // Controls the behavior of DoCreateOrOpen.
   std::string new_data_;
   const std::string hostname_;
   HttpCache* const http_cache_;

@@ -44,6 +44,7 @@ DiskCacheBasedSSLHostInfo::DiskCacheBasedSSLHostInfo(
                                  &DiskCacheBasedSSLHostInfo::OnIOComplete)),
       state_(GET_BACKEND),
       ready_(false),
+      found_entry_(false),
       hostname_(hostname),
       http_cache_(http_cache),
       backend_(NULL),
@@ -82,7 +83,7 @@ void DiskCacheBasedSSLHostInfo::Persist() {
   if (!backend_)
     return;
 
-  state_ = CREATE;
+  state_ = CREATE_OR_OPEN;
   DoLoop(OK);
 }
 
@@ -132,11 +133,11 @@ int DiskCacheBasedSSLHostInfo::DoLoop(int rv) {
       case WAIT_FOR_DATA_READY_DONE:
         rv = DoWaitForDataReadyDone();
         break;
-      case CREATE:
-        rv = DoCreate();
+      case CREATE_OR_OPEN:
+        rv = DoCreateOrOpen();
         break;
-      case CREATE_COMPLETE:
-        rv = DoCreateComplete(rv);
+      case CREATE_OR_OPEN_COMPLETE:
+        rv = DoCreateOrOpenComplete(rv);
         break;
       case WRITE:
         rv = DoWrite();
@@ -170,6 +171,7 @@ int DiskCacheBasedSSLHostInfo::DoOpenComplete(int rv) {
   if (rv == OK) {
     entry_ = callback_->entry();
     state_ = READ;
+    found_entry_ = true;
   } else {
     state_ = WAIT_FOR_DATA_READY_DONE;
   }
@@ -190,7 +192,7 @@ int DiskCacheBasedSSLHostInfo::DoWriteComplete(int rv) {
   return OK;
 }
 
-int DiskCacheBasedSSLHostInfo::DoCreateComplete(int rv) {
+int DiskCacheBasedSSLHostInfo::DoCreateOrOpenComplete(int rv) {
   if (rv != OK) {
     state_ = SET_DONE;
   } else {
@@ -232,9 +234,12 @@ int DiskCacheBasedSSLHostInfo::DoWrite() {
                            new_data_.size(), callback_, true /* truncate */);
 }
 
-int DiskCacheBasedSSLHostInfo::DoCreate() {
+int DiskCacheBasedSSLHostInfo::DoCreateOrOpen() {
   DCHECK(entry_ == NULL);
-  state_ = CREATE_COMPLETE;
+  state_ = CREATE_OR_OPEN_COMPLETE;
+  if (found_entry_)
+    return backend_->OpenEntry(key(), callback_->entry_pointer(), callback_);
+
   return backend_->CreateEntry(key(), callback_->entry_pointer(), callback_);
 }
 
@@ -264,7 +269,7 @@ bool DiskCacheBasedSSLHostInfo::IsCallbackPending() const {
     case GET_BACKEND_COMPLETE:
     case OPEN_COMPLETE:
     case READ_COMPLETE:
-    case CREATE_COMPLETE:
+    case CREATE_OR_OPEN_COMPLETE:
     case WRITE_COMPLETE:
       return true;
     default:
