@@ -74,7 +74,7 @@ views::Widget* StatusAreaHostAura::CreateStatusArea() {
   status_area_widget_->Init(params);
   status_area_widget_->SetContentsView(status_area_view_);
   status_area_widget_->Show();
-  status_area_widget_->GetNativeView()->set_name("StatusAreaView");
+  status_area_widget_->GetNativeView()->SetName("StatusAreaView");
 
   return status_area_widget_;
 }

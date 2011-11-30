@@ -64,7 +64,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   void set_id(int id) { id_ = id; }
 
   const std::string& name() const { return name_; }
-  void set_name(const std::string& name) { name_ = name; }
+  void SetName(const std::string& name);
 
   const string16 title() const { return title_; }
   void set_title(const string16& title) { title_ = title; }
@@ -296,6 +296,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   // Overridden from ui::LayerDelegate:
   virtual void OnPaintLayer(gfx::Canvas* canvas) OVERRIDE;
+
+  // Updates the layer name with a name based on the window's name and id.
+  void UpdateLayerName(const std::string& name);
 
   WindowType type_;
 

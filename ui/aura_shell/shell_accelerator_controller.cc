@@ -9,6 +9,7 @@
 #include "ui/aura_shell/shell.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
+#include "ui/gfx/compositor/debug_utils.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/screen_rotation.h"
@@ -24,6 +25,7 @@ struct AcceleratorData {
 } kAcceleratorData[] = {
   { ui::VKEY_F11, false, false, false },
   { ui::VKEY_HOME, false, true, false },
+  { ui::VKEY_L, false, false, true },
 };
 
 // Registers the accelerators with ShellAcceleratorController.
@@ -117,6 +119,10 @@ bool ShellAcceleratorController::AcceleratorPressed(
   } else if (accelerator.key_code() == ui::VKEY_HOME &&
              accelerator.IsCtrlDown()) {
     RotateScreen();
+    return true;
+  } else if (accelerator.key_code() == ui::VKEY_L &&
+             accelerator.IsAltDown()) {
+    ui::PrintLayerHierarchy(aura::Desktop::GetInstance()->layer());
     return true;
   }
 #endif

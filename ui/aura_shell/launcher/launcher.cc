@@ -38,7 +38,7 @@ Launcher::Launcher(aura::Window* window_container)
   widget_->SetBounds(gfx::Rect(0, 0, pref.width(), pref.height()));
   widget_->SetContentsView(launcher_view);
   widget_->Show();
-  widget_->GetNativeView()->set_name("LauncherView");
+  widget_->GetNativeView()->SetName("LauncherView");
 }
 
 Launcher::~Launcher() {

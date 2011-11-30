@@ -139,7 +139,7 @@ void WebUILoginDisplayHost::LoadURL(const GURL& url) {
 
     login_window_->Show();
 #if defined(USE_AURA)
-    login_window_->GetNativeView()->set_name("WebUILoginView");
+    login_window_->GetNativeView()->SetName("WebUILoginView");
 #endif
     login_view_->OnWindowCreated();
   }

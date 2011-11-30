@@ -160,7 +160,7 @@ void ModalContainerLayoutManager::CreateModalScreen() {
   params.bounds = gfx::Rect(0, 0, container_->bounds().width(),
                             container_->bounds().height());
   modal_screen_->Init(params);
-  modal_screen_->GetNativeView()->set_name(
+  modal_screen_->GetNativeView()->SetName(
       "ModalContainerLayoutManager.ModalScreen");
   modal_screen_->SetContentsView(new ScreenView);
   modal_screen_->GetNativeView()->layer()->SetOpacity(0.0f);
