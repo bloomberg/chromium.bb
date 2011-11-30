@@ -271,16 +271,22 @@ bool DataTypeManagerImpl::ProcessReconfigure() {
   return true;
 }
 
-void DataTypeManagerImpl::DownloadReady(bool success) {
+void DataTypeManagerImpl::DownloadReady(
+    const syncable::ModelTypeSet& failed_configuration_types) {
   DCHECK_EQ(state_, DOWNLOAD_PENDING);
 
-  // Ignore |success| if we need to reconfigure anyway.
+  // Ignore |failed_configuration_types| if we need to reconfigure
+  // anyway.
   if (ProcessReconfigure()) {
     return;
   }
 
-  if (!success) {
-    SyncError error(FROM_HERE, "Download failed", needs_start_[0]->type());
+  if (!failed_configuration_types.empty()) {
+    std::string error_msg =
+        "Configuration failed for types " +
+        syncable::ModelTypeSetToString(failed_configuration_types);
+    SyncError error(FROM_HERE, error_msg,
+                    *failed_configuration_types.begin());
     Abort(UNRECOVERABLE_ERROR, error);
     return;
   }

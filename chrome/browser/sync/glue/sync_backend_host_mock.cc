@@ -9,7 +9,7 @@ namespace browser_sync {
 using ::testing::_;
 
 ACTION(InvokeTask) {
-  arg3.Run(true);
+  arg3.Run(syncable::ModelTypeSet());
 }
 
 SyncBackendHostMock::SyncBackendHostMock() {

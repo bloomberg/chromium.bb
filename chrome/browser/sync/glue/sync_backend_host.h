@@ -189,14 +189,14 @@ class SyncBackendHost {
   void Shutdown(bool sync_disabled);
 
   // Changes the set of data types that are currently being synced.
-  // The ready_task will be run when all of the requested data types
-  // are up-to-date and ready for activation.  The task will be
-  // cancelled upon shutdown.
+  // The ready_task will be run when configuration is done with the
+  // set of all types that failed configuration (i.e., if its argument
+  // is non-empty, then an error was encountered).
   virtual void ConfigureDataTypes(
       const syncable::ModelTypeSet& types_to_add,
       const syncable::ModelTypeSet& types_to_remove,
       sync_api::ConfigureReason reason,
-      base::Callback<void(bool)> ready_task,
+      base::Callback<void(const syncable::ModelTypeSet&)> ready_task,
       bool enable_nigori);
 
   // Makes an asynchronous call to syncer to switch to config mode. When done
@@ -418,6 +418,12 @@ class SyncBackendHost {
         const WeakHandle<JsBackend>& js_backend,
         bool success);
 
+    // Called when configuration of the Nigori node has completed as
+    // part of the initialization process.
+    void HandleNigoriConfigurationCompletedOnFrontendLoop(
+        const WeakHandle<JsBackend>& js_backend,
+        const syncable::ModelTypeSet& failed_configuration_types);
+
    private:
     friend class base::RefCountedThreadSafe<SyncBackendHost::Core>;
     friend class SyncBackendHostForProfileSyncTest;
@@ -542,9 +548,10 @@ class SyncBackendHost {
     PendingConfigureDataTypesState();
     ~PendingConfigureDataTypesState();
 
-    // A task that should be called once data type configuration is
-    // complete.
-    base::Callback<void(bool)> ready_task;
+    // The ready_task will be run when configuration is done with the
+    // set of all types that failed configuration (i.e., if its
+    // argument is non-empty, then an error was encountered).
+    base::Callback<void(const syncable::ModelTypeSet&)> ready_task;
 
     // The set of types that we are waiting to be initially synced in a
     // configuration cycle.

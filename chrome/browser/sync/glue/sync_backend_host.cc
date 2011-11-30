@@ -250,7 +250,7 @@ void SyncBackendHost::ConfigureDataTypes(
     const syncable::ModelTypeSet& types_to_add,
     const syncable::ModelTypeSet& types_to_remove,
     sync_api::ConfigureReason reason,
-    base::Callback<void(bool)> ready_task,
+    base::Callback<void(const syncable::ModelTypeSet&)> ready_task,
     bool enable_nigori) {
   syncable::ModelTypeSet types_to_add_with_nigori = types_to_add;
   syncable::ModelTypeSet types_to_remove_with_nigori = types_to_remove;
@@ -723,6 +723,15 @@ void SyncBackendHost::Core::HandleInitializationCompletedOnFrontendLoop(
   host_->HandleInitializationCompletedOnFrontendLoop(js_backend, success);
 }
 
+void SyncBackendHost::Core::HandleNigoriConfigurationCompletedOnFrontendLoop(
+    const WeakHandle<JsBackend>& js_backend,
+    const syncable::ModelTypeSet& failed_configuration_types) {
+  if (!host_)
+    return;
+  host_->HandleInitializationCompletedOnFrontendLoop(
+      js_backend, failed_configuration_types.empty());
+}
+
 void SyncBackendHost::Core::StartSavingChanges() {
   // We may already be shut down.
   if (!sync_loop_)
@@ -835,17 +844,23 @@ void SyncBackendHost::Core::HandleSyncCycleCompletedOnFrontendLoop(
     DCHECK(
         std::includes(state->types_to_add.begin(), state->types_to_add.end(),
                       state->added_types.begin(), state->added_types.end()));
+    syncable::ModelTypeSet initial_sync_ended =
+        syncable::ModelTypeBitSetToSet(snapshot->initial_sync_ended);
+    syncable::ModelTypeSet failed_configuration_types;
+    std::set_difference(
+        state->added_types.begin(), state->added_types.end(),
+        initial_sync_ended.begin(), initial_sync_ended.end(),
+        std::inserter(failed_configuration_types,
+                      failed_configuration_types.end()));
     SVLOG(1)
         << "Added types: "
         << syncable::ModelTypeSetToString(state->added_types)
         << ", configured types: "
-        << syncable::ModelTypeBitSetToString(snapshot->initial_sync_ended);
-    syncable::ModelTypeBitSet added_types =
-        syncable::ModelTypeBitSetFromSet(state->added_types);
-    bool found_all_added =
-        (added_types & snapshot->initial_sync_ended) == added_types;
-    state->ready_task.Run(found_all_added);
-    if (!found_all_added)
+        << syncable::ModelTypeSetToString(initial_sync_ended)
+        << ", failed configuration types: "
+        << syncable::ModelTypeSetToString(failed_configuration_types);
+    state->ready_task.Run(failed_configuration_types);
+    if (!failed_configuration_types.empty())
       return;
   }
 
@@ -916,9 +931,10 @@ void SyncBackendHost::HandleInitializationCompletedOnFrontendLoop(
           syncable::ModelTypeSet(),
           syncable::ModelTypeSet(),
           sync_api::CONFIGURE_REASON_NEW_CLIENT,
+          // Calls back into this function.
           base::Bind(
               &SyncBackendHost::Core::
-                  HandleInitializationCompletedOnFrontendLoop,
+                  HandleNigoriConfigurationCompletedOnFrontendLoop,
               core_.get(), js_backend),
           true);
       break;
@@ -995,7 +1011,8 @@ void SyncBackendHost::FinishConfigureDataTypesOnFrontendLoop() {
   if (pending_config_mode_state_->added_types.empty()) {
     SVLOG(1) << "No new types added; calling ready_task directly";
     // No new types - just notify the caller that the types are available.
-    pending_config_mode_state_->ready_task.Run(true);
+    const syncable::ModelTypeSet failed_configuration_types;
+    pending_config_mode_state_->ready_task.Run(failed_configuration_types);
   } else {
     pending_download_state_.reset(pending_config_mode_state_.release());
 

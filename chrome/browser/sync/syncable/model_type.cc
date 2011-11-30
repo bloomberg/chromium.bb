@@ -372,6 +372,17 @@ ModelTypeBitSet ModelTypeBitSetFromSet(const ModelTypeSet& set) {
   return bitset;
 }
 
+ModelTypeSet ModelTypeBitSetToSet(const ModelTypeBitSet& bit_set) {
+  ModelTypeSet set;
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    syncable::ModelType type = syncable::ModelTypeFromInt(i);
+    if (bit_set[type]) {
+      set.insert(type);
+    }
+  }
+  return set;
+}
+
 ListValue* ModelTypeBitSetToValue(const ModelTypeBitSet& model_types) {
   ListValue* value = new ListValue();
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
