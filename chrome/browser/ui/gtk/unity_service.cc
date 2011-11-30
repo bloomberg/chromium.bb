@@ -53,7 +53,11 @@ void EnsureMethodsLoaded() {
     return;
   attempted_load = true;
 
+  // TODO(erg): When unity stabilizes its interface, switch all this to looking
+  // up just ".so" instead of specific versions.
   void* unity_lib = dlopen("libunity.so.4", RTLD_LAZY);
+  if (!unity_lib)
+    unity_lib = dlopen("libunity.so.6", RTLD_LAZY);
   if (!unity_lib)
     return;
 
