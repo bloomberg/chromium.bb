@@ -688,6 +688,16 @@
    fun:MessageLoop::Run
 }
 {
+  bug_104776_maybe_benign
+  ThreadSanitizer:Race
+  fun:base::StatisticsRecorder::StatisticsRecorder
+  fun:BrowserMain
+  fun:::RunNamedProcessTypeMain
+  fun:content::ContentMain
+  fun:ChromeMain
+  fun:main
+}
+{
   bug_105579
   ThreadSanitizer:Race
   fun:net::SdchManager::EnableSdchSupport
