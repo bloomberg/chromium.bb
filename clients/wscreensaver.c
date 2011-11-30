@@ -53,8 +53,7 @@ struct wscreensaver {
 
 	struct display *display;
 
-	/* per output, if fullscreen mode */
-	struct ModeInfo *modeinfo;
+	struct ModeInfo *demomode;
 
 	struct {
 		EGLDisplay display;
@@ -177,6 +176,7 @@ create_modeinfo(struct wscreensaver *wscr, struct window *window)
 {
 	struct ModeInfo *mi;
 	struct rectangle drawarea;
+	static int instance;
 
 	mi = calloc(1, sizeof *mi);
 	if (!mi)
@@ -189,7 +189,7 @@ create_modeinfo(struct wscreensaver *wscr, struct window *window)
 
 	mi->window = window;
 
-	mi->instance_number = 0; /* XXX */
+	mi->instance_number = instance++; /* XXX */
 	mi->width = drawarea.width;
 	mi->height = drawarea.height;
 
@@ -197,12 +197,13 @@ create_modeinfo(struct wscreensaver *wscr, struct window *window)
 }
 
 static struct ModeInfo *
-create_wscreensaver_instance(struct wscreensaver *wscr)
+create_wscreensaver_instance(struct wscreensaver *screensaver,
+			     struct wl_output *output, int width, int height)
 {
 	struct ModeInfo *mi;
 	struct window *window;
 	
-	window = window_create(wscr->display, 400, 300);
+	window = window_create(screensaver->display, width, height);
 	if (!window) {
 		fprintf(stderr, "%s: creating a window failed.\n", progname);
 		return NULL;
@@ -211,44 +212,91 @@ create_wscreensaver_instance(struct wscreensaver *wscr)
 	window_set_transparent(window, 0);
 	window_set_title(window, progname);
 
-	mi = create_modeinfo(wscr, window);
+	if (screensaver->interface) {
+		window_set_custom(window);
+		window_set_decoration(window, 0);
+		screensaver_set_surface(screensaver->interface,
+					window_get_wl_shell_surface(window),
+					output);
+	}
+
+	mi = create_modeinfo(screensaver, window);
 	if (!mi)
 		return NULL;
 
-	wscr->plugin->init(mi);
+	screensaver->plugin->init(mi);
 
 	frame_callback(mi, NULL, 0);
 	return mi;
 }
 
-/* returns error message, or NULL if success */
-static const char *
+static void
+handle_output_destroy(struct output *output, void *data)
+{
+	/* struct ModeInfo *mi = data;
+	 * TODO */
+}
+
+static void
+handle_output_configure(struct output *output, void *data)
+{
+	struct wscreensaver *screensaver = data;
+	struct ModeInfo *mi;
+	struct rectangle area;
+
+	/* skip existing outputs */
+	if (output_get_user_data(output))
+		return;
+
+	output_get_allocation(output, &area);
+	mi = create_wscreensaver_instance(screensaver,
+					  output_get_wl_output(output),
+					  area.width, area.height);
+	output_set_user_data(output, mi);
+	output_set_destroy_handler(output, handle_output_destroy);
+}
+
+static int
 init_wscreensaver(struct wscreensaver *wscr, struct display *display)
 {
 	int size;
 	const char prefix[] = "wscreensaver::";
 	char *str;
 
+	display_set_user_data(display, wscr);
 	wscr->display = display;
 	wscr->plugin = plugins[0];
 
 	size = sizeof(prefix) + strlen(wscr->plugin->name);
 	str = malloc(size);
-	if (!str)
-		return "out of memory";
+	if (!str) {
+		fprintf(stderr, "init: out of memory\n");
+		return -1;
+	}
 	snprintf(str, size, "%s%s", prefix, wscr->plugin->name);
 	progname = str;
 
 	wscr->egl.display = display_get_egl_display(wscr->display);
-	if (!wscr->egl.display)
-		return "no EGL display";
+	if (!wscr->egl.display) {
+		fprintf(stderr, "init: no EGL display\n");
+		return -1;
+	}
 
 	eglBindAPI(EGL_OPENGL_API);
 	wscr->egl.config = display_get_rgb_egl_config(wscr->display);
 
-	wscr->modeinfo = create_wscreensaver_instance(wscr);
+	if (demo_mode) {
+		struct wl_output *o =
+			output_get_wl_output(display_get_output(display));
+		/* only one instance */
+		wscr->demomode =
+			create_wscreensaver_instance(wscr, o, 400, 300);
+		return 0;
+	}
 
-	return NULL;
+	display_set_output_configure_handler(display, handle_output_configure);
+
+	return 0;
 }
 
 static void
@@ -273,7 +321,6 @@ int main(int argc, char *argv[])
 {
 	struct display *d;
 	struct wscreensaver screensaver = { 0 };
-	const char *msg;
 
 	init_frand();
 
@@ -284,9 +331,9 @@ int main(int argc, char *argv[])
 	}
 
 	if (!demo_mode) {
+		/* iterates already known globals immediately */
 		wl_display_add_global_listener(display_get_display(d),
 					       global_handler, &screensaver);
-		wl_display_roundtrip(display_get_display(d));
 		if (!screensaver.interface) {
 			fprintf(stderr,
 				"Server did not offer screensaver interface,"
@@ -295,9 +342,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	msg = init_wscreensaver(&screensaver, d);
-	if (msg) {
-		fprintf(stderr, "wscreensaver init failed: %s\n", msg);
+	if (init_wscreensaver(&screensaver, d) < 0) {
+		fprintf(stderr, "wscreensaver init failed.\n");
 		return EXIT_FAILURE;
 	}
 
