@@ -55,7 +55,7 @@ DragDropController::~DragDropController() {
   Cleanup();
 }
 
-void DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
+int DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
                                           int operation) {
   DCHECK(!drag_drop_in_progress_);
   aura::Window* capture_window = Desktop::GetInstance()->capture_window();
@@ -75,12 +75,13 @@ void DragDropController::StartDragAndDrop(const ui::OSExchangeData& data,
       drag_image_->GetPreferredSize()));
   drag_image_->SetWidgetVisible(true);
 
-  dragged_window_ = Desktop::GetInstance()->GetEventHandlerForPoint(location);
+  dragged_window_ = NULL;
 
   if (should_block_during_drag_drop_) {
     MessageLoopForUI::current()->RunWithDispatcher(
         Desktop::GetInstance()->GetDispatcher());
   }
+  return drag_operation_;
 }
 
 void DragDropController::DragUpdate(aura::Window* target,
@@ -92,18 +93,15 @@ void DragDropController::DragUpdate(aura::Window* target,
     dragged_window_ = target;
     if ((delegate = GetDragDropDelegate(dragged_window_))) {
       aura::DropTargetEvent e(*drag_data_, event.location(), drag_operation_);
-      if (delegate->CanDrop(e))
-        delegate->OnDragEntered(e);
+      delegate->OnDragEntered(e);
     }
   } else {
     if ((delegate = GetDragDropDelegate(dragged_window_))) {
       aura::DropTargetEvent e(*drag_data_, event.location(), drag_operation_);
-      delegate->OnDragUpdated(e);
-      // TODO(varunjain): uncomment the following lines when cursor issue with
-      // X for tests is fixed.
-      // gfx::NativeCursor cursor = (op == ui::DragDropTypes::DRAG_NONE)?
-      //     aura::kCursorMove : aura::kCursorHand;
-      // Desktop::GetInstance()->SetCursor(cursor);
+      int op = delegate->OnDragUpdated(e);
+       gfx::NativeCursor cursor = (op == ui::DragDropTypes::DRAG_NONE)?
+           aura::kCursorMove : aura::kCursorHand;
+       Desktop::GetInstance()->SetCursor(cursor);
     }
   }
 
@@ -120,9 +118,8 @@ void DragDropController::Drop(aura::Window* target,
   DCHECK(target == dragged_window_);
   if ((delegate = GetDragDropDelegate(dragged_window_))) {
     aura::DropTargetEvent e(*drag_data_, event.location(), drag_operation_);
-    if (delegate->CanDrop(e))
-      delegate->OnPerformDrop(e);
-    // TODO(varunjain): else Do drag widget flying back animation
+    drag_operation_ = delegate->OnPerformDrop(e);
+    // TODO(varunjain): if drag_op is 0, do drag widget flying back animation
   }
 
   Cleanup();
@@ -133,8 +130,13 @@ void DragDropController::Drop(aura::Window* target,
 void DragDropController::DragCancel() {
   // TODO(varunjain): Do drag widget flying back animation
   Cleanup();
+  drag_operation_ = 0;
   if (should_block_during_drag_drop_)
     MessageLoop::current()->Quit();
+}
+
+bool DragDropController::IsDragDropInProgress() {
+  return drag_drop_in_progress_;
 }
 
 bool DragDropController::PreHandleKeyEvent(aura::Window* target,
@@ -175,7 +177,6 @@ ui::TouchStatus DragDropController::PreHandleTouchEvent(
 void DragDropController::Cleanup() {
   drag_image_.reset();
   drag_data_ = NULL;
-  drag_operation_ = 0;
   drag_drop_in_progress_ = false;
 }
 

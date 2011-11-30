@@ -15,14 +15,9 @@ class DropTargetEvent;
 // Delegate interface for drag and drop actions on aura::Window.
 class AURA_EXPORT WindowDragDropDelegate {
  public:
-  // A window that supports drag and drop must override this and return true if
-  // data contains a type that may be dropped on this window.
-  virtual bool CanDrop(const DropTargetEvent& event) = 0;
-
   // OnDragEntered is invoked when the mouse enters this window during a drag &
-  // drop session and CanDrop returns true. This is immediately
-  // followed by an invocation of OnDragUpdated, and eventually one of
-  // OnDragExited or OnPerformDrop.
+  // drop session. This is immediately followed by an invocation of
+  // OnDragUpdated, and eventually one of OnDragExited or OnPerformDrop.
   virtual void OnDragEntered(const DropTargetEvent& event) = 0;
 
   // Invoked during a drag and drop session while the mouse is over the window.

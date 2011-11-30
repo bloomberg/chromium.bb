@@ -658,14 +658,6 @@ void NativeWidgetAura::OnWindowVisibilityChanged(bool visible) {
   delegate_->OnNativeWidgetVisibilityChanged(visible);
 }
 
-bool NativeWidgetAura::CanDrop(const aura::DropTargetEvent& event) {
-  DCHECK(drop_helper_.get() != NULL);
-  View* view = drop_helper_->target_view();
-  if (view)
-    return view->CanDrop(event.data());
-  return false;
-}
-
 void NativeWidgetAura::OnDragEntered(const aura::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != NULL);
   drop_helper_->OnDragOver(event.data(), event.location(),

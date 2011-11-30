@@ -39,13 +39,14 @@ class AURA_SHELL_EXPORT DragDropController : public aura::DragDropClient,
   }
 
   // Overridden from aura::DragDropClient:
-  virtual void StartDragAndDrop(const ui::OSExchangeData& data,
+  virtual int StartDragAndDrop(const ui::OSExchangeData& data,
                                 int operation) OVERRIDE;
   virtual void DragUpdate(aura::Window* target,
                           const aura::MouseEvent& event) OVERRIDE;
   virtual void Drop(aura::Window* target,
                     const aura::MouseEvent& event) OVERRIDE;
   virtual void DragCancel() OVERRIDE;
+  virtual bool IsDragDropInProgress() OVERRIDE;
 
   // Overridden from aura::EventFilter:
   virtual bool PreHandleKeyEvent(aura::Window* target,

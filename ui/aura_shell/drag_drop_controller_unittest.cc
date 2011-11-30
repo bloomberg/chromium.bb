@@ -119,11 +119,11 @@ class TestDragDropController : public internal::DragDropController {
   string16 drag_string_;
 
  private:
-  void StartDragAndDrop(const ui::OSExchangeData& data,
-                        int operation) OVERRIDE {
-    DragDropController::StartDragAndDrop(data, operation);
+  int StartDragAndDrop(const ui::OSExchangeData& data,
+                       int operation) OVERRIDE {
     drag_start_received_ = true;
     data.GetString(&drag_string_);
+    return DragDropController::StartDragAndDrop(data, operation);
   }
 
   void DragUpdate(aura::Window* target,
@@ -358,7 +358,7 @@ TEST_F(DragDropControllerTest, DragDropInMultipleViewsMultipleWidgetsTest) {
   EXPECT_TRUE(drag_view1->drag_done_received_);
 
   EXPECT_EQ(1, drag_view2->num_drag_enters_);
-  num_expected_updates = num_drags - num_expected_updates - 2;
+  num_expected_updates = num_drags - num_expected_updates - 1;
   EXPECT_EQ(num_expected_updates, drag_view2->num_drag_updates_);
   EXPECT_EQ(1, drag_view2->num_drops_);
   EXPECT_EQ(0, drag_view2->num_drag_exits_);

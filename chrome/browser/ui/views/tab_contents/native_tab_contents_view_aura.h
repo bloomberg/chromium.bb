@@ -7,7 +7,16 @@
 #pragma once
 
 #include "chrome/browser/ui/views/tab_contents/native_tab_contents_view.h"
+#include "ui/base/events.h"
 #include "ui/views/widget/native_widget_aura.h"
+
+namespace aura {
+class DropTargetEvent;
+}
+
+namespace ui {
+class OSExchangeDataProviderAura;
+}
 
 class TabContents;
 
@@ -19,8 +28,6 @@ class NativeTabContentsViewAura : public views::NativeWidgetAura,
   virtual ~NativeTabContentsViewAura();
 
   TabContents* GetTabContents() const;
-
-  void EndDragging();
 
  private:
   // Overridden from NativeTabContentsView:
@@ -43,8 +50,18 @@ class NativeTabContentsViewAura : public views::NativeWidgetAura,
   virtual void OnBoundsChanged(const gfx::Rect& old_bounds,
                                const gfx::Rect& new_bounds) OVERRIDE;
   virtual bool OnMouseEvent(aura::MouseEvent* event) OVERRIDE;
+  virtual void OnDragEntered(const aura::DropTargetEvent& event) OVERRIDE;
+  virtual int OnDragUpdated(const aura::DropTargetEvent& event) OVERRIDE;
+  virtual void OnDragExited() OVERRIDE;
+  virtual int OnPerformDrop(const aura::DropTargetEvent& event) OVERRIDE;
+
+  // Informs the renderer that the drag operation it initiated has ended and
+  // |ops| drag operations were applied.
+  void EndDrag(WebKit::WebDragOperationsMask ops);
 
   internal::NativeTabContentsViewDelegate* delegate_;
+
+  WebKit::WebDragOperationsMask current_drag_op_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTabContentsViewAura);
 };

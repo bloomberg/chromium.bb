@@ -141,7 +141,6 @@ class VIEWS_EXPORT NativeWidgetAura : public internal::NativeWidgetPrivate,
   virtual void OnWindowVisibilityChanged(bool visible) OVERRIDE;
 
   // Overridden from aura::WindowDragDropDelegate:
-  virtual bool CanDrop(const aura::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragEntered(const aura::DropTargetEvent& event) OVERRIDE;
   virtual int OnDragUpdated(const aura::DropTargetEvent& event) OVERRIDE;
   virtual void OnDragExited() OVERRIDE;

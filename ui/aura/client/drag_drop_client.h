@@ -22,8 +22,9 @@ class AURA_EXPORT DragDropClient {
  public:
   virtual ~DragDropClient() {}
 
-  // Initiates a drag and drop session
-  virtual void StartDragAndDrop(const ui::OSExchangeData& data,
+  // Initiates a drag and drop session. Returns the drag operation that was
+  // applied at the end of the drag drop session.
+  virtual int StartDragAndDrop(const ui::OSExchangeData& data,
                                 int operation) = 0;
 
   // Called when mouse is dragged during a drag and drop.
@@ -34,6 +35,9 @@ class AURA_EXPORT DragDropClient {
 
   // Called when a drag and drop session is cancelled.
   virtual void DragCancel() = 0;
+
+  // Returns true if a drag and drop session is in progress.
+  virtual bool IsDragDropInProgress() = 0;
 };
 
 }  // namespace aura

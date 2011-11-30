@@ -497,6 +497,17 @@ bool RenderWidgetHostViewAura::OnMouseEvent(aura::MouseEvent* event) {
   else if (CanRendererHandleEvent(event->native_event()))
     host_->ForwardMouseEvent(content::MakeWebMouseEvent(event));
 
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+      window_->SetCapture();
+      break;
+    case ui::ET_MOUSE_RELEASED:
+      window_->ReleaseCapture();
+      break;
+    default:
+      break;
+  }
+
   // Return true so that we receive released/drag events.
   return true;
 }
