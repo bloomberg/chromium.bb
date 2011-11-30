@@ -168,6 +168,12 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // generated based on the path.
     REQUIRE_KEY = 1 << 0,
 
+    // Requires the extension to have an up-to-date manifest version.
+    // Typically, we'll support multiple manifest versions during a version
+    // transition.  This flag signals that we want to require the most modern
+    // manifest version that Chrome understands.
+    REQUIRE_MODERN_MANIFEST_VERSION = 1 << 1,
+
     // |STRICT_ERROR_CHECKS| enables extra error checking, such as
     // checks that URL patterns do not contain ports.  This error
     // checking may find an error that a previous version of
@@ -178,20 +184,20 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     // tied to a specific version of Chrome (such as a component
     // extension).  Most callers will set the |STRICT_ERROR_CHECKS| bit when
     // Extension::ShouldDoStrictErrorChecking(location) returns true.
-    STRICT_ERROR_CHECKS = 1 << 1,
+    STRICT_ERROR_CHECKS = 1 << 2,
 
     // |ALLOW_FILE_ACCESS| indicates that the user is allowing this extension
     // to have file access. If it's not present, then permissions and content
     // scripts that match file:/// URLs will be filtered out.
-    ALLOW_FILE_ACCESS = 1 << 2,
+    ALLOW_FILE_ACCESS = 1 << 3,
 
     // |FROM_WEBSTORE| indicates that the extension was installed from the
     // Chrome Web Store.
-    FROM_WEBSTORE = 1 << 3,
+    FROM_WEBSTORE = 1 << 4,
 
     // |FROM_BOOKMARK| indicates the extension was created using a mock App
     // created from a bookmark.
-    FROM_BOOKMARK = 1 << 4,
+    FROM_BOOKMARK = 1 << 5,
   };
 
   static scoped_refptr<Extension> Create(const FilePath& path,

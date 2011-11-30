@@ -118,6 +118,8 @@ const Extension* ComponentLoader::Add(
 
 const Extension* ComponentLoader::Load(const ComponentExtensionInfo& info) {
   int flags = Extension::REQUIRE_KEY;
+  // TODO(abarth): We should REQUIRE_MODERN_MANIFEST_VERSION once we've updated
+  //               our component extensions to the new manifest version.
   if (Extension::ShouldDoStrictErrorChecking(Extension::COMPONENT))
     flags |= Extension::STRICT_ERROR_CHECKS;
   std::string error;

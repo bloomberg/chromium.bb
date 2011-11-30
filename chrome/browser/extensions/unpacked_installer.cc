@@ -108,7 +108,7 @@ void UnpackedInstaller::LoadFromCommandLine(const FilePath& path_in) {
   if (service_weak_->extension_prefs()->HasAllowFileAccessSetting(id))
     allow_file_access = service_weak_->extension_prefs()->AllowFileAccess(id);
 
-  int flags = Extension::NO_FLAGS;
+  int flags = Extension::REQUIRE_MODERN_MANIFEST_VERSION;
   if (allow_file_access)
     flags |= Extension::ALLOW_FILE_ACCESS;
   if (Extension::ShouldDoStrictErrorChecking(Extension::LOAD))
@@ -156,8 +156,9 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
 
 void UnpackedInstaller::LoadWithFileAccess(bool allow_file_access) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  int flags = allow_file_access ?
-      Extension::ALLOW_FILE_ACCESS : Extension::NO_FLAGS;
+  int flags = Extension::REQUIRE_MODERN_MANIFEST_VERSION;
+  if (allow_file_access)
+    flags |= Extension::ALLOW_FILE_ACCESS;
   if (Extension::ShouldDoStrictErrorChecking(Extension::LOAD))
     flags |= Extension::STRICT_ERROR_CHECKS;
   std::string error;

@@ -52,6 +52,7 @@ namespace errors = extension_manifest_errors;
 
 namespace {
 
+const int kModernManifestVersion = 1;
 const int kPEMOutputColumns = 65;
 
 // KEY MARKERS
@@ -1470,6 +1471,12 @@ bool Extension::InitFromValue(const DictionaryValue& source, int flags,
   } else {
     // Version 1 was the original version, which lacked a version indicator.
     manifest_version_ = 1;
+  }
+
+  if (flags & REQUIRE_MODERN_MANIFEST_VERSION &&
+      manifest_version() < kModernManifestVersion) {
+    *error = errors::kInvalidManifestVersion;
+    return false;
   }
 
   if (source.HasKey(keys::kPublicKey)) {
