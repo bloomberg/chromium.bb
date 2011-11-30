@@ -7142,7 +7142,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
           click
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Run<ph name="END_BOLD">&lt;/strong&gt;</ph>,
           type
-          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>%windir%&#92;network diagnostic&#92;xpnetdiag.exe<ph name="END_BOLD">&lt;/strong&gt;</ph>,
+          <!-- GRIT maps \n to line breaks, but leaves \\'s alone, so we need to be a bit more creative in escaping backslashes. -->
+          <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>%windir%&amp;#92;network diagnostic&amp;#92;xpnetdiag.exe<ph name="END_BOLD">&lt;/strong&gt;</ph>,
           and then click
           <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>OK<ph name="END_BOLD">&lt;/strong&gt;</ph>.
         </message>
