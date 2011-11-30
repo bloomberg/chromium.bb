@@ -1829,3 +1829,11 @@
    fun:MessageLoopForUI
    fun:ProfileInfoCacheTest
 }
+{
+   bug_105864_c
+   Heapcheck:Leak
+   fun:MessageLoop::MessageLoop
+   fun:MessageLoopForUI::MessageLoopForUI
+   fun:ProfileInfoCacheTest::ProfileInfoCacheTest
+}
+
