@@ -4,6 +4,7 @@
 
 #include "net/dns/watching_file_reader.h"
 
+#include "base/bind.h"
 #include "base/message_loop.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -105,23 +106,15 @@ class WatchingFileReaderTest : public testing::Test {
   }
 
  protected:
-  friend class BreakTask;
-  class BreakTask : public Task {
-   public:
-    BreakTask(WatchingFileReaderTest* test, std::string breakpoint)
-      : test_(test), breakpoint_(breakpoint) {}
-    virtual ~BreakTask() {}
-    virtual void Run() OVERRIDE {
-      test_->breakpoint_ = breakpoint_;
-      MessageLoop::current()->QuitNow();
-    }
-   private:
-    WatchingFileReaderTest* test_;
-    std::string breakpoint_;
-  };
+  void BreakCallback(std::string breakpoint) {
+    breakpoint_ = breakpoint;
+    MessageLoop::current()->QuitNow();
+  }
 
   void BreakNow(std::string b) {
-    message_loop_->PostTask(FROM_HERE, new BreakTask(this, b));
+    message_loop_->PostTask(FROM_HERE,
+        base::Bind(&WatchingFileReaderTest::BreakCallback,
+                   base::Unretained(this), b));
   }
 
   void RunUntilBreak(std::string b) {
