@@ -59,7 +59,10 @@ class ProfileInfoCache : public ProfileInfoInterface,
       size_t index) const OVERRIDE;
   virtual string16 GetGAIANameOfProfileAtIndex(size_t index) const OVERRIDE;
   virtual bool IsUsingGAIANameOfProfileAtIndex(size_t index) const OVERRIDE;
-  virtual const gfx::Image& GetGAIAPictureOfProfileAtIndex(
+  // Returns the GAIA picture for the given profile. This may return NULL
+  // if the profile does not have a GAIA picture or if the picture must be
+  // loaded from disk.
+  virtual const gfx::Image* GetGAIAPictureOfProfileAtIndex(
       size_t index) const OVERRIDE;
   virtual bool IsUsingGAIAPictureOfProfileAtIndex(
       size_t index) const OVERRIDE;
@@ -73,7 +76,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
                                            bool running_background_apps);
   void SetGAIANameOfProfileAtIndex(size_t index, const string16& name);
   void SetIsUsingGAIANameOfProfileAtIndex(size_t index, bool value);
-  void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image& image);
+  void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image* image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
 
   // Returns unique name that can be assigned to a newly created profile.
@@ -155,6 +158,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // A cache of gaia profile pictures. This cache is updated lazily so it needs
   // to be mutable.
   mutable std::map<std::string, gfx::Image*> gaia_pictures_;
+  // Marks a gaia profile picture as loading. This prevents a picture from
+  // loading multiple times.
+  mutable std::map<std::string, bool> gaia_pictures_loading_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };

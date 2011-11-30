@@ -43,6 +43,8 @@ const char kAvatarIconKey[] = "avatar_icon";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kBackgroundAppsKey[] = "background_apps";
 const char kHasMigratedToGAIAInfoKey[] = "has_migrated_to_gaia_info";
+const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
+
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
 const char kGAIAPictureFileName[] = "Google Profile Picture.png";
 
@@ -107,7 +109,7 @@ typedef std::vector<unsigned char> ImageData;
 // Writes |data| to disk and takes ownership of the pointer. On completion
 // |success| is set to true on success and false on failure.
 void SaveBitmap(ImageData* data,
-                FilePath image_path,
+                const FilePath& image_path,
                 bool* success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_ptr<ImageData> data_owner(data);
@@ -133,7 +135,7 @@ void SaveBitmap(ImageData* data,
 // Reads a PNG from disk and decodes it. If the bitmap was successfully read
 // from disk the then |out_image| will contain the bitmap image, otherwise it
 // will be NULL.
-void ReadBitmap(FilePath image_path,
+void ReadBitmap(const FilePath& image_path,
                 gfx::Image** out_image) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   *out_image = NULL;
@@ -153,6 +155,11 @@ void ReadBitmap(FilePath image_path,
   }
 
   *out_image = image;
+}
+
+void DeleteBitmap(const FilePath& image_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  file_util::Delete(image_path, false);
 }
 
 }  // namespace
@@ -256,11 +263,11 @@ size_t ProfileInfoCache::GetIndexOfProfileWithPath(
 }
 
 string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
-  if (IsUsingGAIANameOfProfileAtIndex(index))
-    return GetGAIANameOfProfileAtIndex(index);
-
   string16 name;
-  GetInfoForProfileAtIndex(index)->GetString(kNameKey, &name);
+  if (IsUsingGAIANameOfProfileAtIndex(index))
+    name = GetGAIANameOfProfileAtIndex(index);
+  if (name.empty())
+    GetInfoForProfileAtIndex(index)->GetString(kNameKey, &name);
   return name;
 }
 
@@ -276,8 +283,11 @@ string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(size_t index) const {
 
 const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
     size_t index) const {
-  if (IsUsingGAIAPictureOfProfileAtIndex(index))
-    return GetGAIAPictureOfProfileAtIndex(index);
+  if (IsUsingGAIAPictureOfProfileAtIndex(index)) {
+    const gfx::Image* image = GetGAIAPictureOfProfileAtIndex(index);
+    if (image)
+      return *image;
+  }
 
   int resource_id = GetDefaultAvatarIconResourceIDAtIndex(
       GetAvatarIconIndexOfProfileAtIndex(index));
@@ -304,34 +314,43 @@ bool ProfileInfoCache::IsUsingGAIANameOfProfileAtIndex(size_t index) const {
   return value;
 }
 
-const gfx::Image& ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
+const gfx::Image* ProfileInfoCache::GetGAIAPictureOfProfileAtIndex(
     size_t index) const {
   FilePath path = GetPathOfProfileAtIndex(index);
   std::string key = CacheKeyFromProfilePath(path);
-  if (gaia_pictures_.count(key)) {
-    return *gaia_pictures_[key];
-  }
 
-  // The GAIA picture is not in the cache yet. Load it from disk and return
-  // a blank picture for now.
-  gaia_pictures_[key] = new gfx::Image(new SkBitmap());
+  // If the picture is already loaded then use it.
+  if (gaia_pictures_.count(key))
+    return gaia_pictures_[key];
 
-  FilePath image_path = path.AppendASCII(kGAIAPictureFileName);
+  std::string file_name;
+  GetInfoForProfileAtIndex(index)->GetString(
+      kGAIAPictureFileNameKey, &file_name);
+
+  // If the picture is not on disk or it is already being loaded then return
+  // NULL.
+  if (file_name.empty() || gaia_pictures_loading_[key])
+    return NULL;
+
+  gaia_pictures_loading_[key] = true;
+  FilePath image_path = path.AppendASCII(file_name);
   gfx::Image** image = new gfx::Image*;
   BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
       base::Bind(&ReadBitmap, image_path, image),
       base::Bind(&ProfileInfoCache::OnGAIAPictureLoaded,
           const_cast<ProfileInfoCache*>(this)->AsWeakPtr(), path, image));
 
-  return *gaia_pictures_[key];
+  return NULL;
 }
 
 void ProfileInfoCache::OnGAIAPictureLoaded(FilePath path,
                                            gfx::Image** image) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  std::string key = CacheKeyFromProfilePath(path);
+  gaia_pictures_loading_[key] = false;
+
   if (*image) {
-    std::string key = CacheKeyFromProfilePath(path);
     delete gaia_pictures_[key];
     gaia_pictures_[key] = *image;
   }
@@ -447,29 +466,51 @@ void ProfileInfoCache::SetIsUsingGAIANameOfProfileAtIndex(size_t index,
 }
 
 void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
-                                                      const gfx::Image& image) {
+                                                      const gfx::Image* image) {
   FilePath path = GetPathOfProfileAtIndex(index);
   std::string key = CacheKeyFromProfilePath(path);
 
-  delete gaia_pictures_[key];
-  gaia_pictures_[key] = new gfx::Image(image);
-
-  scoped_ptr<ImageData> data(new ImageData);
-  if (!gfx::PNGEncodedDataFromImage(image, data.get())) {
-    LOG(ERROR) << "Failed to PNG encode the image.";
-  } else {
-    FilePath image_path = path.AppendASCII(kGAIAPictureFileName);
-    bool* success = new bool;
-    BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&SaveBitmap, data.release(), image_path, success),
-        base::Bind(&ProfileInfoCache::OnGAIAPictureSaved, AsWeakPtr(),
-                   path, success));
+  // Delete the old bitmap from cache.
+  std::map<std::string, gfx::Image*>::iterator it = gaia_pictures_.find(key);
+  if (it != gaia_pictures_.end()) {
+    delete it->second;
+    gaia_pictures_.erase(it);
   }
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
+  std::string old_file_name;
+  GetInfoForProfileAtIndex(index)->GetString(
+      kGAIAPictureFileNameKey, &old_file_name);
+  std::string new_file_name;
+
+  if (!image) {
+    // Delete the old bitmap from disk.
+    if (!old_file_name.empty()) {
+      FilePath image_path = path.AppendASCII(old_file_name);
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(&DeleteBitmap, image_path));
+    }
+  } else {
+    // Save the new bitmap to disk.
+    gaia_pictures_[key] = new gfx::Image(*image);
+    scoped_ptr<ImageData> data(new ImageData);
+    if (!gfx::PNGEncodedDataFromImage(*image, data.get())) {
+      LOG(ERROR) << "Failed to PNG encode the image.";
+    } else {
+      new_file_name =
+          old_file_name.empty() ? kGAIAPictureFileName : old_file_name;
+      FilePath image_path = path.AppendASCII(new_file_name);
+      bool* success = new bool;
+      BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
+          base::Bind(&SaveBitmap, data.release(), image_path, success),
+          base::Bind(&ProfileInfoCache::OnGAIAPictureSaved, AsWeakPtr(),
+                     path, success));
+    }
+  }
+
+  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  info->SetString(kGAIAPictureFileNameKey, new_file_name);
+  // This takes ownership of |info|.
+  SetInfoForProfileAtIndex(index, info.release());
 }
 
 void ProfileInfoCache::SetIsUsingGAIAPictureOfProfileAtIndex(size_t index,

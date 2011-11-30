@@ -69,7 +69,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   EXPECT_TRUE(gfx::test::IsEqual(
       image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
   EXPECT_TRUE(gfx::test::IsEqual(
-      image, GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
+      image, *GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
@@ -88,8 +88,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
   EXPECT_EQ(string16(), GetCache()->GetGAIANameOfProfileAtIndex(index));
   EXPECT_TRUE(gfx::test::IsEqual(
       old_image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
-  EXPECT_TRUE(gfx::test::IsEmpty(
-      GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
+  EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(index));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, NoMigration) {
@@ -118,7 +117,7 @@ TEST_F(GAIAInfoUpdateServiceTest, NoMigration) {
   EXPECT_TRUE(gfx::test::IsEqual(
       old_image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
   EXPECT_TRUE(gfx::test::IsEqual(
-      new_image, GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
+      new_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, ShouldUseGAIAProfileInfo) {

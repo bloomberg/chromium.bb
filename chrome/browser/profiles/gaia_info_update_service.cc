@@ -82,7 +82,7 @@ void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
 
   cache.SetGAIANameOfProfileAtIndex(profile_index, full_name);
   gfx::Image gfx_image(new SkBitmap(bitmap));
-  cache.SetGAIAPictureOfProfileAtIndex(profile_index, gfx_image);
+  cache.SetGAIAPictureOfProfileAtIndex(profile_index, &gfx_image);
 
   // If this profile hasn't switched to using GAIA information for the profile
   // name and picture then switch it now. Once the profile has switched this

@@ -263,10 +263,8 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
       GetProfilePath("path_2"), ASCIIToUTF16("name_2"), string16(), 0);
 
   // Sanity check.
-  EXPECT_TRUE(
-      GetCache()->GetGAIAPictureOfProfileAtIndex(0).ToSkBitmap()->isNull());
-  EXPECT_TRUE(
-      GetCache()->GetGAIAPictureOfProfileAtIndex(1).ToSkBitmap()->isNull());
+  EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
+  EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(1));
   EXPECT_FALSE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(0));
   EXPECT_FALSE(GetCache()->IsUsingGAIAPictureOfProfileAtIndex(1));
 
@@ -279,25 +277,24 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
 
   // Set GAIA picture.
   gfx::Image gaia_image(gfx::test::CreateImage());
-  GetCache()->SetGAIAPictureOfProfileAtIndex(1, gaia_image);
-  EXPECT_TRUE(
-      GetCache()->GetGAIAPictureOfProfileAtIndex(0).ToSkBitmap()->isNull());
+  GetCache()->SetGAIAPictureOfProfileAtIndex(1, &gaia_image);
+  EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
   EXPECT_TRUE(gfx::test::IsEqual(
-      gaia_image, GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
+      gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
   EXPECT_TRUE(gfx::test::IsEqual(
       profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 
   // Use GAIA picture as profile picture.
   GetCache()->SetIsUsingGAIAPictureOfProfileAtIndex(1, true);
   EXPECT_TRUE(gfx::test::IsEqual(
-      gaia_image, GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
+      gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
   EXPECT_TRUE(gfx::test::IsEqual(
       gaia_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 
   // Don't use GAIA picture as profile picture.
   GetCache()->SetIsUsingGAIAPictureOfProfileAtIndex(1, false);
   EXPECT_TRUE(gfx::test::IsEqual(
-      gaia_image, GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
+      gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(1)));
   EXPECT_TRUE(gfx::test::IsEqual(
       profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 }
@@ -316,9 +313,9 @@ TEST_F(ProfileInfoCacheTest, MAYBE_PersistGAIAPicture) {
   ui_test_utils::WindowedNotificationObserver save_observer(
       chrome::NOTIFICATION_PROFILE_CACHE_PICTURE_SAVED,
       content::NotificationService::AllSources());
-  GetCache()->SetGAIAPictureOfProfileAtIndex(0, gaia_image);
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_image);
   EXPECT_TRUE(gfx::test::IsEqual(
-      gaia_image, GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
+      gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
 
   // Wait for the file to be written to disk then reset the cache.
   save_observer.Wait();
@@ -329,11 +326,31 @@ TEST_F(ProfileInfoCacheTest, MAYBE_PersistGAIAPicture) {
   ui_test_utils::WindowedNotificationObserver read_observer(
       chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
       content::NotificationService::AllSources());
-  EXPECT_TRUE(
-      GetCache()->GetGAIAPictureOfProfileAtIndex(0).ToSkBitmap()->isNull());
+  EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
   read_observer.Wait();
   EXPECT_TRUE(gfx::test::IsEqual(
-    gaia_image, GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
+    gaia_image, *GetCache()->GetGAIAPictureOfProfileAtIndex(0)));
+}
+
+TEST_F(ProfileInfoCacheTest, EmptyGAIAInfo) {
+  string16 profile_name = ASCIIToUTF16("name_1");
+  int id = ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(0);
+  const gfx::Image& profile_image(
+      ResourceBundle::GetSharedInstance().GetImageNamed(id));
+
+  GetCache()->AddProfileToCache(
+      GetProfilePath("path_1"), profile_name, string16(), 0);
+
+  // Set empty GAIA info.
+  GetCache()->SetGAIANameOfProfileAtIndex(0, string16());
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, NULL);
+  GetCache()->SetIsUsingGAIANameOfProfileAtIndex(0, true);
+  GetCache()->SetIsUsingGAIAPictureOfProfileAtIndex(0, true);
+
+  // Verify that the profile name and picture are not empty.
+  EXPECT_EQ(profile_name, GetCache()->GetNameOfProfileAtIndex(0));
+  EXPECT_TRUE(gfx::test::IsEqual(
+      profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(0)));
 }
 
 }  // namespace
