@@ -32,7 +32,7 @@ class COMPOSITOR_EXPORT SharedResourcesCC
 
   virtual gfx::ScopedMakeCurrent* GetScopedMakeCurrent() OVERRIDE;
 
-  virtual void* GetDisplay();
+  virtual void* GetDisplay() OVERRIDE;
 
   gfx::GLShareGroup* GetShareGroup();
 

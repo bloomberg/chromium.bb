@@ -17,13 +17,14 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSize.h"
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/canvas_skia.h"
-#if defined(USE_WEBKIT_COMPOSITOR)
-#include "ui/gfx/compositor/compositor_cc.h"
-#endif
 #include "ui/gfx/compositor/compositor_switches.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/point3.h"
+
+#if defined(USE_WEBKIT_COMPOSITOR)
+#include "ui/gfx/compositor/compositor_cc.h"
+#endif
 
 namespace {
 
