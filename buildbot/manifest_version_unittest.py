@@ -262,6 +262,8 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     manifest_version._RemoveDirs(self.manager._TMP_MANIFEST_DIR)
     repository.CloneGitRepo(self.manager._TMP_MANIFEST_DIR,
                             self.manifest_repo)
+    self.mox.StubOutWithMock(self.manager, '_GetSpecAge')
+    self.manager._GetSpecAge('1.2.5').AndReturn(100)
     self.mox.ReplayAll()
     self.manager._LoadSpecs(info)
     self.mox.VerifyAll()

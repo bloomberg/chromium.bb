@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import tempfile
+import time
 
 from chromite.buildbot import constants
 from chromite.buildbot import repository
@@ -365,6 +366,9 @@ class BuildSpecsManager(object):
   STATUS_INFLIGHT = 'inflight'
   STATUS_COMPLETED = [STATUS_PASSED, STATUS_FAILED]
 
+  # Max timeout before assuming other builders have failed.
+  LONG_MAX_TIMEOUT_SECONDS = 1200
+
   @classmethod
   def GetManifestDir(cls):
     """Get the directory where specs are checked out to."""
@@ -400,7 +404,6 @@ class BuildSpecsManager(object):
 
     # Specs.
     self.all = None
-    self.unprocessed = None
     self.latest = None
     self.latest_unprocessed = None
     self.compare_versions_fn = VersionInfo.VersionCompare
@@ -422,6 +425,12 @@ class BuildSpecsManager(object):
       matched_manifests = [os.path.splitext(m)[0] for m in matched_manifests]
 
     return sorted(matched_manifests, key=self.compare_versions_fn)
+
+  def _GetSpecAge(self, version):
+    cmd = ['git', 'log', '-1', '--format=%ct', '%s.xml' % version]
+    result = cros_lib.RunCommand(cmd, cwd=self.all_specs_dir,
+                                 redirect_stdout=True)
+    return time.time() - int(result.output.strip())
 
   def _LoadSpecs(self, version_info, version=None):
     """Loads the specifications from the working directory.
@@ -458,33 +467,15 @@ class BuildSpecsManager(object):
     self.passed = self._GetMatchingSpecs(version_info, self.pass_dir)
     failed = self._GetMatchingSpecs(version_info, self.fail_dir)
     inflight = self._GetMatchingSpecs(version_info, self.inflight_dir)
-    processed = sorted(set(self.passed + failed + inflight),
-                            key=self.compare_versions_fn)
-    self.unprocessed = sorted(set(self.all).difference(set(processed)),
-                              key=self.compare_versions_fn)
+    processed = set(self.passed + failed + inflight)
 
-    if self.all: self.latest = self.all[-1]
-    latest_processed = None
-    if processed:
-      latest_processed = processed[-1]
-      logging.debug('Last processed build for %s is %s' % (
-          self.build_name, latest_processed))
+    if self.all:
+      self.latest = self.all[-1]
 
-      # Remove unprocessed candidates that are older than the latest processed.
-      to_be_removed = []
-      for build in self.unprocessed:
-        build1 = self.compare_versions_fn(build)
-        build2 = self.compare_versions_fn(latest_processed)
-
-        if build1 > build2:
-          logging.debug('Still need to build %s' % build)
-        else:
-          to_be_removed.append(build)
-
-      for build in to_be_removed:
-        self.unprocessed.remove(build)
-
-    if self.unprocessed: self.latest_unprocessed = self.unprocessed[-1]
+      # Check if we have a fresh spec file.
+      if (self.latest not in processed and
+          self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS):
+        self.latest_unprocessed = self.latest
 
   def _GetCurrentVersionInfo(self, sync=True):
     """Returns the current version info from the version file.
@@ -593,7 +584,7 @@ class BuildSpecsManager(object):
         logging.debug('Using version %s' % version_info.VersionString())
         self._LoadSpecs(version_info)
         self._PrepSpecChanges()
-        if not self.unprocessed:
+        if not self.latest_unprocessed:
           self.current_version = self._CreateNewBuildSpec(version_info)
         else:
           self.current_version = self.latest_unprocessed

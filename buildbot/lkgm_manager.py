@@ -114,7 +114,6 @@ class LKGMManager(manifest_version.BuildSpecsManager):
   # has been slower often.
   CHROME_LONG_MAX_TIMEOUT_SECONDS = 3600
   # Max timeout before assuming other builders have failed.
-  LONG_MAX_TIMEOUT_SECONDS = 1200
   MAX_TIMEOUT_SECONDS = 300
   # Polling timeout for checking git repo for other build statuses.
   SLEEP_TIMEOUT = 30
