@@ -44,10 +44,11 @@ PPB_AudioInput_Impl::~PPB_AudioInput_Impl() {
 }
 
 // static
-PP_Resource PPB_AudioInput_Impl::Create(PP_Instance instance,
-                                   PP_Resource config,
-                                   PPB_AudioInput_Callback audio_input_callback,
-                                   void* user_data) {
+PP_Resource PPB_AudioInput_Impl::Create(
+    PP_Instance instance,
+    PP_Resource config,
+    PPB_AudioInput_Callback audio_input_callback,
+    void* user_data) {
   scoped_refptr<PPB_AudioInput_Impl>
       audio_input(new PPB_AudioInput_Impl(instance));
   if (!audio_input->Init(config, audio_input_callback, user_data))
@@ -111,7 +112,8 @@ PP_Bool PPB_AudioInput_Impl::StopCapture() {
   return PP_TRUE;
 }
 
-int32_t PPB_AudioInput_Impl::OpenTrusted(PP_Resource config,
+int32_t PPB_AudioInput_Impl::OpenTrusted(
+    PP_Resource config,
     PP_CompletionCallback create_callback) {
   // Validate the config and keep a reference to it.
   EnterResourceNoLock<PPB_AudioConfig_API> enter(config, true);
