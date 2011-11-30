@@ -467,7 +467,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   gfx::PluginWindowHandle GetCompositingSurface();
 
   // Called to handled a keyboard event before sending it to the renderer.
-  // This is overridden by RenderView to send upwards to its delegate.
+  // This is overridden by RenderViewHost to send upwards to its delegate.
   // Returns true if the event was handled, and then the keyboard event will
   // not be sent to the renderer anymore. Otherwise, if the |event| would
   // be handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
@@ -475,26 +475,28 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Channel::Listener,
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                       bool* is_keyboard_shortcut);
 
-  // Called when a keyboard event was not processed by the renderer. This is
-  // overridden by RenderView to send upwards to its delegate.
+  // "RenderWidgetHostDelegate" ------------------------------------------------
+  // There is no RenderWidgetHostDelegate but the following methods serve the
+  // same purpose. They are overridden by RenderViewHost to send upwards to its
+  // delegate.
+
+  // Called when a keyboard event was not processed by the renderer.
   virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
-  // Called when a mousewheel event was not processed by the renderer. This is
-  // overridden by RenderView to send upwards to its delegate.
+  // Called when a mousewheel event was not processed by the renderer.
   virtual void UnhandledWheelEvent(const WebKit::WebMouseWheelEvent& event) {}
 
   // Notification that the user has made some kind of input that could
-  // perform an action. The render view host overrides this to forward the
-  // information to its delegate (see corresponding function in
-  // RenderViewHostDelegate). The gestures that count are 1) any mouse down
+  // perform an action. The gestures that count are 1) any mouse down
   // event and 2) enter or space key presses.
   virtual void OnUserGesture() {}
 
   // Callbacks for notification when the renderer becomes unresponsive to user
-  // input events, and subsequently responsive again. RenderViewHost overrides
-  // these to tell its delegate to show the user a warning.
+  // input events, and subsequently responsive again.
   virtual void NotifyRendererUnresponsive() {}
   virtual void NotifyRendererResponsive() {}
+
+  // ---------------------------------------------------------------------------
 
   // RenderViewHost overrides this method to impose further restrictions on when
   // to allow mouse lock.
