@@ -809,7 +809,11 @@ void BrowserTitlebar::UpdateAvatar() {
   Profile* profile = browser_window_->browser()->profile();
   size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
   if (index != std::string::npos) {
-    avatar_button_->SetIcon(cache.GetAvatarIconOfProfileAtIndex(index));
+    bool is_gaia_picture =
+        cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
+        cache.GetGAIAPictureOfProfileAtIndex(index);
+    avatar_button_->SetIcon(
+        cache.GetAvatarIconOfProfileAtIndex(index), is_gaia_picture);
 
     BubbleGtk::ArrowLocationGtk arrow_location =
         display_avatar_on_left_ ^ base::i18n::IsRTL() ?
