@@ -113,7 +113,7 @@ class PromoResourceService
   //       {
   //         "answer_id": "1067976",
   //         "name": "promo_start",
-  //         "question": "1:24:10:20:7",
+  //         "question": "1:24:10:20:7:0",
   //         "tooltip":
   //       "Click \u003ca href=http://www.google.com\u003ehere\u003c/a\u003e!",
   //         "inproduct": "10/8/09 12:00",
@@ -141,12 +141,15 @@ class PromoResourceService
   // field. The "question" field gives the type of builds that should be shown
   // this promo (see the BuildType enum in web_resource_service.cc), the
   // number of hours that each promo group should see it, the maximum promo
-  // group that should see it, the maximum number of views of the promo, and
-  // the platforms that this promo is suitable for, separated by ":".
-  // For example, "7:24:5:10:7" would indicate that all groups with ids less
+  // group that should see it, the maximum number of views of the promo,the
+  // platforms that this promo is suitable for, and a mask of features which
+  // must be present in order for the promo to be shown (0 => no feaures needed
+  // 1 => user must be logged in to gplus), separated by ":".
+  // For example, "7:24:5:10:7:0" would indicate that all groups with ids less
   // than 5, and with dev, beta and stable builds on Windows, Mac and Linux,
-  // should see the promo a maximum of 10 times. The groups ramp up so one
-  // additional group sees the promo every 24 hours.
+  // should see the promo a maximum of 10 times, the promo is suitable for Mac
+  // Linux and Windows platforms, and no features are required to show it. The
+  // groups ramp up so one additional group sees the promo every 24 hours.
   //
   void UnpackNotificationSignal(const base::DictionaryValue& parsed_json);
 
@@ -227,7 +230,8 @@ class PromoResourceService
   void UnpackNTPSignInPromoSignal(const base::DictionaryValue& parsed_json);
 
   // NotificationPromo::Delegate override.
-  virtual void OnNewNotification(double start, double end) OVERRIDE;
+  virtual void OnNotificationParsed(double start, double end,
+                                    bool new_notification) OVERRIDE;
 
   // The profile this service belongs to.
   Profile* profile_;

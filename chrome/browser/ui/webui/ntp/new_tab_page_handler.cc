@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
@@ -66,16 +67,16 @@ void NewTabPageHandler::RegisterMessages() {
 }
 
 void NewTabPageHandler::HandleCloseNotificationPromo(const ListValue* args) {
-  NotificationPromo notification_promo(
-      Profile::FromWebUI(web_ui())->GetPrefs(), NULL);
-  notification_promo.HandleClosed();
+  scoped_refptr<NotificationPromo> notification_promo =
+      NotificationPromo::Create(Profile::FromWebUI(web_ui()), NULL);
+  notification_promo->HandleClosed();
   Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 
 void NewTabPageHandler::HandleNotificationPromoViewed(const ListValue* args) {
-  NotificationPromo notification_promo(
-      Profile::FromWebUI(web_ui_)->GetPrefs(), NULL);
-  if (notification_promo.HandleViewed())
+  scoped_refptr<NotificationPromo> notification_promo =
+      NotificationPromo::Create(Profile::FromWebUI(web_ui_), NULL);
+  if (notification_promo->HandleViewed())
     Notify(chrome::NOTIFICATION_PROMO_RESOURCE_STATE_CHANGED);
 }
 

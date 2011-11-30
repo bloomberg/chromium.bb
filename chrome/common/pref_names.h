@@ -454,6 +454,8 @@ extern const char kNTPMostVisitedURLsBlacklist[];
 extern const char kNTPMostVisitedPinnedURLs[];
 extern const char kNTPPromoResourceCache[];
 extern const char kNTPPromoResourceCacheUpdate[];
+extern const char kNTPPromoIsLoggedInToPlus[];
+extern const char kNTPPromoFeatureMask[];
 extern const char kNTPPromoResourceServer[];
 extern const char kNTPDateResourceServer[];
 extern const char kNTPShownBookmarksFolder[];

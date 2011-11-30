@@ -1270,6 +1270,12 @@ const char kNTPPromoResourceCache[] = "ntp.promo_resource_cache";
 // Last time of update of promo_resource_cache.
 const char kNTPPromoResourceCacheUpdate[] = "ntp.promo_resource_cache_update";
 
+// Is user logged into G+ (used for G+ extension promo).
+const char kNTPPromoIsLoggedInToPlus[] = "ntp.promo_is_logged_in_to_plus";
+
+// Bit mask used to decide when to show the NTP Promo.
+const char kNTPPromoFeatureMask[] = "ntp.promo_feature_mask";
+
 // Serves promo resources for the NTP.
 const char kNTPPromoResourceServer[] = "ntp.web_resource_server";
 

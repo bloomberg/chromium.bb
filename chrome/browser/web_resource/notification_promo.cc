@@ -4,13 +4,19 @@
 
 #include "chrome/browser/web_resource/notification_promo.h"
 
+#include "base/bind.h"
 #include "base/rand_util.h"
 #include "base/string_number_conversions.h"
+#include "base/string_split.h"
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/web_resource/promo_resource_service.h"
 #include "chrome/common/pref_names.h"
+#include "googleurl/src/gurl.h"
+#include "net/base/cookie_store.h"
+#include "net/url_request/url_request_context.h"
 
 namespace {
 
@@ -33,6 +39,10 @@ static const char kTextProperty[] = "tooltip";
 static const char kTimeProperty[] = "inproduct";
 static const char kParamsProperty[] = "question";
 
+static const char kGPlusDomainUrl[] = "http://plus.google.com/";
+static const char kGPlusDomainSecureCookieId[] = "SID=";
+static const char kSplitStringToken = ';';
+
 // Time getters.
 double GetTimeFromDict(const DictionaryValue* dict) {
   std::string time_str;
@@ -52,9 +62,10 @@ double GetTimeFromPrefs(PrefService* prefs, const char* pref) {
 
 }  // namespace
 
-NotificationPromo::NotificationPromo(PrefService* prefs, Delegate* delegate)
-    : prefs_(prefs),
+NotificationPromo::NotificationPromo(Profile* profile, Delegate* delegate)
+    : profile_(profile),
       delegate_(delegate),
+      prefs_(profile_->GetPrefs()),
       start_(0.0),
       end_(0.0),
       build_(PromoResourceService::NO_BUILD),
@@ -62,14 +73,20 @@ NotificationPromo::NotificationPromo(PrefService* prefs, Delegate* delegate)
       max_group_(0),
       max_views_(0),
       platform_(PLATFORM_NONE),
+      feature_mask_(NO_FEATURE),
       group_(0),
       views_(0),
       text_(),
-      closed_(false) {
-  DCHECK(prefs);
+      closed_(false),
+      gplus_(false) {
+  DCHECK(profile);
+  DCHECK(prefs_);
 }
 
-void NotificationPromo::InitFromJson(const DictionaryValue& json) {
+NotificationPromo::~NotificationPromo() {}
+
+void NotificationPromo::InitFromJson(const DictionaryValue& json,
+                                     bool do_cookie_check) {
   DictionaryValue* dict;
   if (json.GetDictionary(kHeaderProperty, &dict)) {
     ListValue* answers;
@@ -82,8 +99,45 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json) {
       }
     }
   }
+  if (do_cookie_check) {
+    scoped_refptr<net::URLRequestContextGetter> getter(
+        profile_->GetRequestContext());
+    content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+          base::Bind(&NotificationPromo::GetCookies, this, getter));
+  } else {
+    CheckForNewNotification(false);
+  }
+}
 
-  CheckForNewNotification();
+// static
+bool NotificationPromo::CheckForGPlusCookie(const std::string& cookies) {
+  std::vector<std::string> cookie_list;
+  base::SplitString(cookies, kSplitStringToken, &cookie_list);
+  for (std::vector<std::string>::const_iterator current = cookie_list.begin();
+       current != cookie_list.end();
+       ++current) {
+    if ((*current).find(kGPlusDomainSecureCookieId) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void NotificationPromo::GetCookiesCallback(const std::string& cookies) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  bool found_cookie = NotificationPromo::CheckForGPlusCookie(cookies);
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&NotificationPromo::CheckForNewNotification, this,
+                 found_cookie));
+}
+
+void NotificationPromo::GetCookies(
+    scoped_refptr<net::URLRequestContextGetter> getter) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  getter->GetURLRequestContext()->cookie_store()->
+      GetCookiesWithOptionsAsync(
+          GURL(kGPlusDomainUrl), net::CookieOptions(),
+          base::Bind(&NotificationPromo::GetCookiesCallback, this));
 }
 
 void NotificationPromo::Parse(const DictionaryValue* dict) {
@@ -112,6 +166,7 @@ void NotificationPromo::ParseParams(const DictionaryValue* dict) {
   max_group_ = GetNextQuestionValue(question, &index, &err);
   max_views_ = GetNextQuestionValue(question, &index, &err);
   platform_ = GetNextQuestionValue(question, &index, &err);
+  feature_mask_ = GetNextQuestionValue(question, &index, &err);
 
   if (err ||
       OutOfBounds(build_, PromoResourceService::NO_BUILD,
@@ -126,32 +181,48 @@ void NotificationPromo::ParseParams(const DictionaryValue* dict) {
         ", time_slice=" << time_slice_ <<
         ", max_group=" << max_group_ <<
         ", max_views=" << max_views_ <<
-        ", platform_=" << platform_;
+        ", platform_=" << platform_ <<
+        ", feature_mask=" << feature_mask_;
     build_ = PromoResourceService::NO_BUILD;
     time_slice_ = 0;
     max_group_ = 0;
     max_views_ = 0;
     platform_ = PLATFORM_NONE;
+    feature_mask_ = 0;
   }
 }
 
-void NotificationPromo::CheckForNewNotification() {
+void NotificationPromo::CheckForNewNotification(bool found_cookie) {
+  double start = 0.0;
+  double end = 0.0;
+  bool new_notification = false;
+
+  gplus_ = found_cookie;
   const double old_start = GetTimeFromPrefs(prefs_, prefs::kNTPPromoStart);
   const double old_end = GetTimeFromPrefs(prefs_, prefs::kNTPPromoEnd);
-  const bool has_platform = prefs_->HasPrefPath(prefs::kNTPPromoPlatform);
-
+  const bool old_gplus = prefs_->GetBoolean(prefs::kNTPPromoIsLoggedInToPlus);
+  const bool has_feature_mask =
+      prefs_->HasPrefPath(prefs::kNTPPromoFeatureMask);
   // Trigger a new notification if the times have changed, or if
-  // we previously never wrote out a platform preference. This handles
-  // the case where we update to a new client in the middle of a promo.
-  if (old_start != start_ || old_end != end_ || !has_platform)
+  // we previously never wrote out a feature_mask, or if the user's gplus
+  // cookies have changed.
+  if (old_start != start_ || old_end != end_ || old_gplus != gplus_ ||
+      !has_feature_mask) {
     OnNewNotification();
+    start = StartTimeWithOffset();
+    end = end_;
+    new_notification = true;
+  }
+  if (delegate_) {
+    // If no change needed, call delegate with default values (this
+    // is for testing purposes).
+    delegate_->OnNotificationParsed(start, end, new_notification);
+  }
 }
 
 void NotificationPromo::OnNewNotification() {
   group_ = NewGroup();
   WritePrefs();
-  if (delegate_)
-    delegate_->OnNewNotification(StartTimeWithOffset(), end_);
 }
 
 // static
@@ -196,8 +267,19 @@ void NotificationPromo::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kNTPPromoClosed,
                              false,
                              PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterBooleanPref(prefs::kNTPPromoIsLoggedInToPlus,
+                             false,
+                             PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterIntegerPref(prefs::kNTPPromoFeatureMask,
+                             0,
+                             PrefService::UNSYNCABLE_PREF);
 }
 
+// static
+NotificationPromo* NotificationPromo::Create(Profile *profile,
+    NotificationPromo::Delegate * delegate) {
+  return new NotificationPromo(profile, delegate);
+}
 
 void NotificationPromo::WritePrefs() {
   prefs_->SetDouble(prefs::kNTPPromoStart, start_);
@@ -213,6 +295,8 @@ void NotificationPromo::WritePrefs() {
   prefs_->SetInteger(prefs::kNTPPromoGroup, group_);
   prefs_->SetInteger(prefs::kNTPPromoViews, views_);
   prefs_->SetBoolean(prefs::kNTPPromoClosed, closed_);
+  prefs_->SetBoolean(prefs::kNTPPromoIsLoggedInToPlus, gplus_);
+  prefs_->SetInteger(prefs::kNTPPromoFeatureMask, feature_mask_);
 }
 
 void NotificationPromo::InitFromPrefs() {
@@ -227,6 +311,12 @@ void NotificationPromo::InitFromPrefs() {
   group_ = prefs_->GetInteger(prefs::kNTPPromoGroup);
   views_ = prefs_->GetInteger(prefs::kNTPPromoViews);
   closed_ = prefs_->GetBoolean(prefs::kNTPPromoClosed);
+
+  if (prefs_->HasPrefPath(prefs::kNTPPromoIsLoggedInToPlus))
+    gplus_ = prefs_->GetBoolean(prefs::kNTPPromoIsLoggedInToPlus);
+
+  if (prefs_->HasPrefPath(prefs::kNTPPromoFeatureMask))
+    feature_mask_ = prefs_->GetInteger(prefs::kNTPPromoFeatureMask);
 }
 
 bool NotificationPromo::CanShow() const {
@@ -237,7 +327,8 @@ bool NotificationPromo::CanShow() const {
       IsPlatformAllowed(platform_) &&
       IsBuildAllowed(build_) &&
       base::Time::FromDoubleT(StartTimeWithOffset()) < base::Time::Now() &&
-      base::Time::FromDoubleT(end_) > base::Time::Now();
+      base::Time::FromDoubleT(end_) > base::Time::Now() &&
+      (!(feature_mask_ & NotificationPromo::FEATURE_GPLUS) || gplus_);
 }
 
 void NotificationPromo::HandleClosed() {
@@ -282,7 +373,7 @@ int NotificationPromo::CurrentPlatform() {
 #elif defined(OS_LINUX)
   return PLATFORM_LINUX;
 #else
-   return PLATFORM_NONE;
+  return PLATFORM_NONE;
 #endif
 }
 
@@ -322,5 +413,7 @@ bool NotificationPromo::operator==(const NotificationPromo& other) const {
          group_ == other.group_ &&
          views_ == other.views_ &&
          text_ == other.text_ &&
-         closed_ == other.closed_;
+         closed_ == other.closed_ &&
+         gplus_ == other.gplus_ &&
+         feature_mask_ == other.feature_mask_;
 }

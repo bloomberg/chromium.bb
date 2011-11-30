@@ -157,8 +157,11 @@ void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
   UnpackNTPSignInPromoSignal(parsed_json);
 }
 
-void PromoResourceService::OnNewNotification(double start, double end) {
-  ScheduleNotification(start, end);
+void PromoResourceService::OnNotificationParsed(double start, double end,
+                                                bool new_notification) {
+  if (new_notification) {
+    ScheduleNotification(start, end);
+  }
 }
 
 void PromoResourceService::ScheduleNotification(double promo_start,
@@ -215,14 +218,16 @@ std::string PromoResourceService::GetPromoLocale() {
 
 void PromoResourceService::UnpackNotificationSignal(
     const DictionaryValue& parsed_json) {
-  NotificationPromo notification_promo(prefs_, this);
-  notification_promo.InitFromJson(parsed_json);
+  scoped_refptr<NotificationPromo> notification_promo =
+      NotificationPromo::Create(profile_, this);
+  notification_promo->InitFromJson(parsed_json, false);
 }
 
 bool PromoResourceService::CanShowNotificationPromo(Profile* profile) {
-  NotificationPromo notification_promo(profile->GetPrefs(), NULL);
-  notification_promo.InitFromPrefs();
-  return notification_promo.CanShow();
+  scoped_refptr<NotificationPromo> notification_promo =
+      NotificationPromo::Create(profile, NULL);
+  notification_promo->InitFromPrefs();
+  return notification_promo->CanShow();
 }
 
 void PromoResourceService::UnpackWebStoreSignal(
