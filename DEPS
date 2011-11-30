@@ -112,9 +112,8 @@ deps = {
   "src/native_client_sdk/src/site_scons":
     Var("nacl_trunk") + "/src/native_client/site_scons@" + Var("nacl_revision"),
 
-  # TODO(bradnelson): Switch to googlecode_url once mirroring is up.
   "src/third_party/pymox/src":
-    "http://pymox.googlecode.com/svn/trunk@70",
+    (Var("googlecode_url") % "pymox") + "/trunk@70",
 
   "src/chrome/test/data/extensions/api_test/permissions/nacl_enabled/bin":
     Var("nacl_trunk") + "/src/native_client/tests/prebuilt@" +
