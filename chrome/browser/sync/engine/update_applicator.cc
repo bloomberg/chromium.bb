@@ -97,12 +97,12 @@ void UpdateApplicator::Advance() {
 bool UpdateApplicator::SkipUpdate(const syncable::Entry& entry) {
   syncable::ModelType type = entry.GetServerModelType();
   ModelSafeGroup g = GetGroupForModelType(type, routing_info_);
-  // The set of updates passed to the UpdateApplicator should already
-  // be group-filtered.
-  if (g != group_filter_) {
-    NOTREACHED();
+  // The extra routing_info count check here is to support GetUpdateses for
+  // a subset of the globally enabled types, and not attempt to update items
+  // if their type isn't permitted in the current run.  These would typically
+  // be unapplied items from a previous sync.
+  if (g != group_filter_)
     return true;
-  }
   if (g == GROUP_PASSIVE &&
       !routing_info_.count(type) &&
       type != syncable::UNSPECIFIED &&

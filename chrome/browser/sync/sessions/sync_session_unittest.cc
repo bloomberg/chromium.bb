@@ -10,12 +10,9 @@
 #include "base/message_loop.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
-#include "chrome/browser/sync/sessions/session_state.h"
-#include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/syncable/syncable_id.h"
 #include "chrome/browser/sync/test/engine/fake_model_worker.h"
 #include "chrome/browser/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,13 +27,13 @@ class SyncSessionTest : public testing::Test,
                         public SyncSession::Delegate,
                         public ModelSafeWorkerRegistrar {
  public:
-  SyncSessionTest() : controller_invocations_allowed_(false) {}
+  SyncSessionTest() : controller_invocations_allowed_(false) {
+    GetModelSafeRoutingInfo(&routes_);
+  }
 
   SyncSession* MakeSession() {
-    std::vector<ModelSafeWorker*> workers;
-    GetWorkers(&workers);
-    return new SyncSession(context_.get(), this, SyncSourceInfo(),
-                           routes_, workers);
+    return new SyncSession(context_.get(), this, SyncSourceInfo(), routes_,
+                           std::vector<ModelSafeWorker*>());
   }
 
   virtual void SetUp() {
@@ -44,17 +41,7 @@ class SyncSessionTest : public testing::Test,
         std::vector<SyncEngineEventListener*>(), NULL));
     routes_.clear();
     routes_[syncable::BOOKMARKS] = GROUP_UI;
-    routes_[syncable::AUTOFILL] = GROUP_DB;
-    scoped_refptr<ModelSafeWorker> passive_worker(
-        new FakeModelWorker(GROUP_PASSIVE));
-    scoped_refptr<ModelSafeWorker> ui_worker(
-        new FakeModelWorker(GROUP_UI));
-    scoped_refptr<ModelSafeWorker> db_worker(
-        new FakeModelWorker(GROUP_DB));
-    workers_.clear();
-    workers_.push_back(passive_worker);
-    workers_.push_back(ui_worker);
-    workers_.push_back(db_worker);
+    routes_[syncable::AUTOFILL] = GROUP_UI;
     session_.reset(MakeSession());
   }
   virtual void TearDown() {
@@ -90,15 +77,9 @@ class SyncSessionTest : public testing::Test,
   }
 
   // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {
-    out->clear();
-    for (std::vector<scoped_refptr<ModelSafeWorker> >::const_iterator it =
-             workers_.begin(); it != workers_.end(); ++it) {
-      out->push_back(it->get());
-    }
-  }
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) OVERRIDE {}
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) OVERRIDE {
-    *out = routes_;
+    out->swap(routes_);
   }
 
   StatusController* status() { return session_->mutable_status_controller(); }
@@ -125,48 +106,8 @@ class SyncSessionTest : public testing::Test,
   bool controller_invocations_allowed_;
   scoped_ptr<SyncSession> session_;
   scoped_ptr<SyncSessionContext> context_;
-  std::vector<scoped_refptr<ModelSafeWorker> > workers_;
   ModelSafeRoutingInfo routes_;
 };
-
-TEST_F(SyncSessionTest, EnabledGroupsEmpty) {
-  routes_.clear();
-  workers_.clear();
-  scoped_ptr<SyncSession> session(MakeSession());
-  std::set<ModelSafeGroup> expected_enabled_groups;
-  expected_enabled_groups.insert(GROUP_PASSIVE);
-  EXPECT_EQ(expected_enabled_groups, session->GetEnabledGroups());
-}
-
-TEST_F(SyncSessionTest, EnabledGroups) {
-  scoped_ptr<SyncSession> session(MakeSession());
-  std::set<ModelSafeGroup> expected_enabled_groups;
-  expected_enabled_groups.insert(GROUP_PASSIVE);
-  expected_enabled_groups.insert(GROUP_UI);
-  expected_enabled_groups.insert(GROUP_DB);
-  EXPECT_EQ(expected_enabled_groups, session->GetEnabledGroups());
-}
-
-TEST_F(SyncSessionTest, EnabledGroupsWithConflictsEmpty) {
-  scoped_ptr<SyncSession> session(MakeSession());
-  // Auto-create conflict progress.  This shouldn't put that group in
-  // conflict.
-  session->mutable_status_controller()->
-      GetUnrestrictedMutableConflictProgressForTest(GROUP_PASSIVE);
-  EXPECT_TRUE(session->GetEnabledGroupsWithConflicts().empty());
-}
-
-TEST_F(SyncSessionTest, EnabledGroupsWithConflicts) {
-  scoped_ptr<SyncSession> session(MakeSession());
-  // Put GROUP_UI in conflict.
-  session->mutable_status_controller()->
-      GetUnrestrictedMutableConflictProgressForTest(GROUP_UI)->
-      AddConflictingItemById(syncable::Id());
-  std::set<ModelSafeGroup> expected_enabled_groups_with_conflicts;
-  expected_enabled_groups_with_conflicts.insert(GROUP_UI);
-  EXPECT_EQ(expected_enabled_groups_with_conflicts,
-            session->GetEnabledGroupsWithConflicts());
-}
 
 TEST_F(SyncSessionTest, ScopedContextHelpers) {
   ConflictResolver resolver;
@@ -347,13 +288,9 @@ TEST_F(SyncSessionTest, Coalesce) {
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
   SyncSourceInfo source_two(sync_pb::GetUpdatesCallerInfo::LOCAL, all_types);
 
-  scoped_refptr<ModelSafeWorker> passive_worker(
-      new FakeModelWorker(GROUP_PASSIVE));
   scoped_refptr<ModelSafeWorker> db_worker(new FakeModelWorker(GROUP_DB));
   scoped_refptr<ModelSafeWorker> ui_worker(new FakeModelWorker(GROUP_UI));
-  workers_one.push_back(passive_worker);
   workers_one.push_back(db_worker);
-  workers_two.push_back(passive_worker);
   workers_two.push_back(db_worker);
   workers_two.push_back(ui_worker);
   routes_one[syncable::AUTOFILL] = GROUP_DB;
@@ -362,22 +299,7 @@ TEST_F(SyncSessionTest, Coalesce) {
   SyncSession one(context_.get(), this, source_one, routes_one, workers_one);
   SyncSession two(context_.get(), this, source_two, routes_two, workers_two);
 
-  std::set<ModelSafeGroup> expected_enabled_groups_one;
-  expected_enabled_groups_one.insert(GROUP_PASSIVE);
-  expected_enabled_groups_one.insert(GROUP_DB);
-
-  std::set<ModelSafeGroup> expected_enabled_groups_two;
-  expected_enabled_groups_two.insert(GROUP_PASSIVE);
-  expected_enabled_groups_two.insert(GROUP_DB);
-  expected_enabled_groups_two.insert(GROUP_UI);
-
-  EXPECT_EQ(expected_enabled_groups_one, one.GetEnabledGroups());
-  EXPECT_EQ(expected_enabled_groups_two, two.GetEnabledGroups());
-
   one.Coalesce(two);
-
-  EXPECT_EQ(expected_enabled_groups_two, one.GetEnabledGroups());
-  EXPECT_EQ(expected_enabled_groups_two, two.GetEnabledGroups());
 
   EXPECT_EQ(two.source().updates_source, one.source().updates_source);
   EXPECT_EQ(all_types, one.source().types);
@@ -404,37 +326,18 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
   SyncSourceInfo source_one(sync_pb::GetUpdatesCallerInfo::PERIODIC, one_type);
   SyncSourceInfo source_two(sync_pb::GetUpdatesCallerInfo::LOCAL, all_types);
 
-  scoped_refptr<ModelSafeWorker> passive_worker(
-      new FakeModelWorker(GROUP_PASSIVE));
   scoped_refptr<ModelSafeWorker> db_worker(new FakeModelWorker(GROUP_DB));
   scoped_refptr<ModelSafeWorker> ui_worker(new FakeModelWorker(GROUP_UI));
-  workers_one.push_back(passive_worker);
   workers_one.push_back(db_worker);
-  workers_two.push_back(passive_worker);
   workers_two.push_back(db_worker);
   workers_two.push_back(ui_worker);
   routes_one[syncable::AUTOFILL] = GROUP_DB;
-  routes_two[syncable::AUTOFILL] = GROUP_DB;
+  routes_two[syncable::AUTOFILL] = GROUP_UI;
   routes_two[syncable::BOOKMARKS] = GROUP_UI;
   SyncSession one(context_.get(), this, source_one, routes_one, workers_one);
   SyncSession two(context_.get(), this, source_two, routes_two, workers_two);
 
-  std::set<ModelSafeGroup> expected_enabled_groups_one;
-  expected_enabled_groups_one.insert(GROUP_PASSIVE);
-  expected_enabled_groups_one.insert(GROUP_DB);
-
-  std::set<ModelSafeGroup> expected_enabled_groups_two;
-  expected_enabled_groups_two.insert(GROUP_PASSIVE);
-  expected_enabled_groups_two.insert(GROUP_DB);
-  expected_enabled_groups_two.insert(GROUP_UI);
-
-  EXPECT_EQ(expected_enabled_groups_one, one.GetEnabledGroups());
-  EXPECT_EQ(expected_enabled_groups_two, two.GetEnabledGroups());
-
-  two.RebaseRoutingInfoWithLatest(one);
-
-  EXPECT_EQ(expected_enabled_groups_one, one.GetEnabledGroups());
-  EXPECT_EQ(expected_enabled_groups_one, two.GetEnabledGroups());
+  two.RebaseRoutingInfoWithLatest(&one);
 
   // Make sure the source has not been touched.
   EXPECT_EQ(two.source().updates_source,
@@ -450,7 +353,7 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestRemoveOneType) {
       std::find(two.workers().begin(), two.workers().end(), ui_worker);
   EXPECT_NE(it_db, two.workers().end());
   EXPECT_EQ(it_ui, two.workers().end());
-  EXPECT_EQ(two.workers().size(), 2U);
+  EXPECT_EQ(two.workers().size(), 1U);
 
   // Make sure the model safe routing info is reduced to one type.
   ModelSafeRoutingInfo::const_iterator it =
@@ -472,14 +375,10 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   SyncSourceInfo source_second(sync_pb::GetUpdatesCallerInfo::LOCAL,
       all_types);
 
-  scoped_refptr<ModelSafeWorker> passive_worker(
-      new FakeModelWorker(GROUP_PASSIVE));
   scoped_refptr<FakeModelWorker> db_worker(new FakeModelWorker(GROUP_DB));
   scoped_refptr<FakeModelWorker> ui_worker(new FakeModelWorker(GROUP_UI));
-  workers_first.push_back(passive_worker);
   workers_first.push_back(db_worker);
   workers_first.push_back(ui_worker);
-  workers_second.push_back(passive_worker);
   workers_second.push_back(db_worker);
   workers_second.push_back(ui_worker);
   routes_first[syncable::AUTOFILL] = GROUP_DB;
@@ -491,18 +390,7 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   SyncSession second(context_.get(), this, source_second, routes_second,
       workers_second);
 
-  std::set<ModelSafeGroup> expected_enabled_groups;
-  expected_enabled_groups.insert(GROUP_PASSIVE);
-  expected_enabled_groups.insert(GROUP_DB);
-  expected_enabled_groups.insert(GROUP_UI);
-
-  EXPECT_EQ(expected_enabled_groups, first.GetEnabledGroups());
-  EXPECT_EQ(expected_enabled_groups, second.GetEnabledGroups());
-
-  second.RebaseRoutingInfoWithLatest(first);
-
-  EXPECT_EQ(expected_enabled_groups, first.GetEnabledGroups());
-  EXPECT_EQ(expected_enabled_groups, second.GetEnabledGroups());
+  second.RebaseRoutingInfoWithLatest(&first);
 
   // Make sure the source has not been touched.
   EXPECT_EQ(second.source().updates_source,
@@ -512,17 +400,13 @@ TEST_F(SyncSessionTest, RebaseRoutingInfoWithLatestWithSameType) {
   EXPECT_EQ(all_types, second.source().types);
 
   // Make sure the workers are still the same.
-  std::vector<ModelSafeWorker*>::const_iterator it_passive =
-      std::find(second.workers().begin(), second.workers().end(),
-                passive_worker);
   std::vector<ModelSafeWorker*>::const_iterator it_db =
       std::find(second.workers().begin(), second.workers().end(), db_worker);
   std::vector<ModelSafeWorker*>::const_iterator it_ui =
       std::find(second.workers().begin(), second.workers().end(), ui_worker);
-  EXPECT_NE(it_passive, second.workers().end());
   EXPECT_NE(it_db, second.workers().end());
   EXPECT_NE(it_ui, second.workers().end());
-  EXPECT_EQ(second.workers().size(), 3U);
+  EXPECT_EQ(second.workers().size(), 2U);
 
   // Make sure the model safe routing info is reduced to first type.
   ModelSafeRoutingInfo::const_iterator it1 =

@@ -762,7 +762,7 @@ void SyncScheduler::DoSyncSessionJob(const SyncSessionJob& job) {
     // and update any disabled or modified entries in the job.
     scoped_ptr<SyncSession> session(CreateSyncSession(job.session->source()));
 
-    job.session->RebaseRoutingInfoWithLatest(*session);
+    job.session->RebaseRoutingInfoWithLatest(session.get());
   }
   SDVLOG(2) << "DoSyncSessionJob with "
             << SyncSessionJob::GetPurposeString(job.purpose) << " job";

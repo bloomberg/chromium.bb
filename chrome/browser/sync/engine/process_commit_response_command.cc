@@ -4,7 +4,6 @@
 
 #include "chrome/browser/sync/engine/process_commit_response_command.h"
 
-#include <cstddef>
 #include <set>
 #include <string>
 #include <vector>
@@ -59,27 +58,6 @@ void ResetErrorCounters(StatusController* status) {
 
 ProcessCommitResponseCommand::ProcessCommitResponseCommand() {}
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
-
-std::set<ModelSafeGroup> ProcessCommitResponseCommand::GetGroupsToChange(
-    const sessions::SyncSession& session) const {
-  std::set<ModelSafeGroup> groups_with_commits;
-  syncable::ScopedDirLookup dir(session.context()->directory_manager(),
-                                session.context()->account_name());
-  if (!dir.good()) {
-    LOG(ERROR) << "Scoped dir lookup failed!";
-    return groups_with_commits;
-  }
-
-  syncable::ReadTransaction trans(FROM_HERE, dir);
-  const StatusController& status = session.status_controller();
-  for (size_t i = 0; i < status.commit_ids().size(); ++i) {
-    groups_with_commits.insert(
-        GetGroupForModelType(status.GetUnrestrictedCommitModelTypeAt(i),
-                             session.routing_info()));
-  }
-
-  return groups_with_commits;
-}
 
 bool ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
     sessions::SyncSession* session) {

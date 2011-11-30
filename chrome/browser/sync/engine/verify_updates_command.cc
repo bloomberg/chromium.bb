@@ -27,21 +27,6 @@ using syncable::SYNCER;
 VerifyUpdatesCommand::VerifyUpdatesCommand() {}
 VerifyUpdatesCommand::~VerifyUpdatesCommand() {}
 
-std::set<ModelSafeGroup> VerifyUpdatesCommand::GetGroupsToChange(
-    const sessions::SyncSession& session) const {
-  std::set<ModelSafeGroup> groups_with_updates;
-
-  const GetUpdatesResponse& updates =
-      session.status_controller().updates_response().get_updates();
-  for (int i = 0; i < updates.entries().size(); i++) {
-    groups_with_updates.insert(
-        GetGroupForModelType(syncable::GetModelType(updates.entries(i)),
-                             session.routing_info()));
-  }
-
-  return groups_with_updates;
-}
-
 void VerifyUpdatesCommand::ModelChangingExecuteImpl(
     sessions::SyncSession* session) {
   DVLOG(1) << "Beginning Update Verification";
