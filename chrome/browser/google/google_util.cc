@@ -179,7 +179,7 @@ bool IsOrganicFirstRun(const std::string& brand) {
 bool IsInternetCafeBrandCode(const std::string& brand) {
   const char* const kBrands[] = {
     "CHIQ", "CHSG", "HLJY", "NTMO", "OOBA", "OOBB", "OOBC", "OOBD", "OOBE",
-    "OOBF", "OOBG", "OOBH", "OOBI", "OOBJ",
+    "OOBF", "OOBG", "OOBH", "OOBI", "OOBJ", "IDCM",
   };
   const char* const* end = &kBrands[arraysize(kBrands)];
   const char* const* found = std::find(&kBrands[0], end, brand);
