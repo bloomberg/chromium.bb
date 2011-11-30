@@ -45,7 +45,7 @@ OfflineResourceHandler::OfflineResourceHandler(
 
 OfflineResourceHandler::~OfflineResourceHandler() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!appcache_completion_callback_.get());
+  DCHECK(appcache_completion_callback_.IsCancelled());
 }
 
 bool OfflineResourceHandler::OnUploadProgress(int request_id,
@@ -77,26 +77,24 @@ bool OfflineResourceHandler::OnResponseCompleted(
 }
 
 void OfflineResourceHandler::OnRequestClosed() {
-  if (appcache_completion_callback_) {
-    appcache_completion_callback_->Cancel();
-    appcache_completion_callback_.release();
-    Release();  // Balanced with OnWillStart
-  }
+  if (!appcache_completion_callback_.IsCancelled())
+    appcache_completion_callback_.Cancel();
+
   next_handler_->OnRequestClosed();
 }
 
 void OfflineResourceHandler::OnCanHandleOfflineComplete(int rv) {
-  CHECK(appcache_completion_callback_);
-  appcache_completion_callback_ = NULL;
+  // Cancel() to break the circular reference cycle.
+  appcache_completion_callback_.Cancel();
+
   if (deferred_request_id_ == -1) {
-    LOG(WARNING) << "OnCanHandleOfflineComplete called after completion: "
-                 << " this=" << this;
-    NOTREACHED();
+    DLOG(FATAL) << "OnCanHandleOfflineComplete called after completion: "
+                << " this=" << this;
     return;
   }
+
   if (rv == net::OK) {
     Resume();
-    Release();  // Balanced with OnWillStart
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
@@ -107,24 +105,29 @@ void OfflineResourceHandler::OnCanHandleOfflineComplete(int rv) {
 bool OfflineResourceHandler::OnWillStart(int request_id,
                                          const GURL& url,
                                          bool* defer) {
-  if (ShouldShowOfflinePage(url)) {
-    deferred_request_id_ = request_id;
-    deferred_url_ = url;
-    DVLOG(1) << "OnWillStart: this=" << this << ", request id=" << request_id
-             << ", url=" << url;
-    AddRef();  //  Balanced with OnCanHandleOfflineComplete
-    DCHECK(!appcache_completion_callback_);
-    appcache_completion_callback_ =
-        new net::CancelableOldCompletionCallback<OfflineResourceHandler>(
-            this, &OfflineResourceHandler::OnCanHandleOfflineComplete);
-    appcache_service_->CanHandleMainResourceOffline(
-        url, request_->first_party_for_cookies(),
-        appcache_completion_callback_);
+  if (!ShouldShowOfflinePage(url))
+    return next_handler_->OnWillStart(request_id, url, defer);
 
-    *defer = true;
-    return true;
-  }
-  return next_handler_->OnWillStart(request_id, url, defer);
+  deferred_request_id_ = request_id;
+  deferred_url_ = url;
+  DVLOG(1) << "OnWillStart: this=" << this << ", request id=" << request_id
+           << ", url=" << url;
+
+  DCHECK(appcache_completion_callback_.IsCancelled());
+
+  // |appcache_completion_callback_| holds a reference to |this|, so there is a
+  // circular reference; however, either
+  // OfflineResourceHandler::OnCanHandleOfflineComplete cancels the callback
+  // (thus dropping the reference), or CanHandleMainResourceOffline calls the
+  // callback which Resets it.
+  appcache_completion_callback_.Reset(
+      base::Bind(&OfflineResourceHandler::OnCanHandleOfflineComplete, this));
+  appcache_service_->CanHandleMainResourceOffline(
+      url, request_->first_party_for_cookies(),
+      appcache_completion_callback_.callback());
+
+  *defer = true;
+  return true;
 }
 
 // We'll let the original event handler provide a buffer, and reuse it for
@@ -161,7 +164,6 @@ void OfflineResourceHandler::OnBlockingPageComplete(bool proceed) {
     ClearRequestInfo();
     rdh_->CancelRequest(process_host_id_, request_id, false);
   }
-  Release();  // Balanced with OnWillStart
 }
 
 void OfflineResourceHandler::ClearRequestInfo() {

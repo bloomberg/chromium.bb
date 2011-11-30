@@ -28,6 +28,52 @@ AppCacheInfoCollection::~AppCacheInfoCollection() {}
 
 // AsyncHelper -------
 
+class AppCacheService::NewAsyncHelper
+    : public AppCacheStorage::Delegate {
+ public:
+  NewAsyncHelper(AppCacheService* service,
+                 const net::CompletionCallback& callback)
+      : service_(service), callback_(callback) {
+    service_->pending_new_helpers_.insert(this);
+  }
+
+  virtual ~NewAsyncHelper() {
+    if (service_)
+      service_->pending_new_helpers_.erase(this);
+  }
+
+  virtual void Start() = 0;
+  virtual void Cancel();
+
+ protected:
+  void CallCallback(int rv) {
+    if (!callback_.is_null()) {
+      // Defer to guarantee async completion.
+      MessageLoop::current()->PostTask(
+          FROM_HERE, base::Bind(&DeferredCallCallback, callback_, rv));
+    }
+    callback_.Reset();
+  }
+
+  static void DeferredCallCallback(const net::CompletionCallback& callback,
+                                   int rv) {
+    callback.Run(rv);
+  }
+
+  AppCacheService* service_;
+  net::CompletionCallback callback_;
+};
+
+void AppCacheService::NewAsyncHelper::Cancel() {
+  if (!callback_.is_null()) {
+    callback_.Run(net::ERR_ABORTED);
+    callback_.Reset();
+  }
+
+  service_->storage()->CancelDelegateCallbacks(this);
+  service_ = NULL;
+}
+
 class AppCacheService::AsyncHelper
     : public AppCacheStorage::Delegate {
  public:
@@ -75,12 +121,14 @@ void AppCacheService::AsyncHelper::Cancel() {
 
 // CanHandleOfflineHelper -------
 
-class AppCacheService::CanHandleOfflineHelper : AsyncHelper {
+class AppCacheService::CanHandleOfflineHelper : NewAsyncHelper {
  public:
   CanHandleOfflineHelper(
       AppCacheService* service, const GURL& url,
-      const GURL& first_party, net::OldCompletionCallback* callback)
-      : AsyncHelper(service, callback), url_(url), first_party_(first_party) {
+      const GURL& first_party, const net::CompletionCallback& callback)
+      : NewAsyncHelper(service, callback),
+        url_(url),
+        first_party_(first_party) {
   }
 
   virtual void Start() {
@@ -90,6 +138,7 @@ class AppCacheService::CanHandleOfflineHelper : AsyncHelper {
       delete this;
       return;
     }
+
     service_->storage()->FindResponseForMainRequest(url_, GURL(), this);
   }
 
@@ -102,6 +151,7 @@ class AppCacheService::CanHandleOfflineHelper : AsyncHelper {
 
   GURL url_;
   GURL first_party_;
+
   DISALLOW_COPY_AND_ASSIGN(CanHandleOfflineHelper);
 };
 
@@ -426,6 +476,10 @@ AppCacheService::~AppCacheService() {
                 pending_helpers_.end(),
                 std::mem_fun(&AsyncHelper::Cancel));
   STLDeleteElements(&pending_helpers_);
+  std::for_each(pending_new_helpers_.begin(),
+                pending_new_helpers_.end(),
+                std::mem_fun(&NewAsyncHelper::Cancel));
+  STLDeleteElements(&pending_new_helpers_);
   if (quota_client_)
     quota_client_->NotifyAppCacheDestroyed();
 
@@ -446,7 +500,7 @@ void AppCacheService::Initialize(const FilePath& cache_directory,
 void AppCacheService::CanHandleMainResourceOffline(
     const GURL& url,
     const GURL& first_party,
-    net::OldCompletionCallback* callback) {
+    const net::CompletionCallback& callback) {
   CanHandleOfflineHelper* helper =
       new CanHandleOfflineHelper(this, url, first_party, callback);
   helper->Start();

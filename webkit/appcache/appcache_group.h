@@ -147,7 +147,7 @@ class APPCACHE_EXPORT AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   // Updates that have been queued for the next run.
   QueuedUpdates queued_updates_;
   ObserverList<UpdateObserver> queued_observers_;
-  base::CancelableCallback restart_update_task_;
+  base::CancelableClosure restart_update_task_;
   scoped_ptr<HostObserver> host_observer_;
 
   // True if we're in our destructor.

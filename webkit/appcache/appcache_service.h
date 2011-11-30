@@ -71,7 +71,7 @@ class APPCACHE_EXPORT AppCacheService {
   // This method always completes asynchronously.
   void CanHandleMainResourceOffline(const GURL& url,
                                     const GURL& first_party,
-                                    net::OldCompletionCallback* callback);
+                                    const net::CompletionCallback& callback);
 
   // Populates 'collection' with info about all of the appcaches stored
   // within the service, 'callback' is invoked upon completion. The service
@@ -149,6 +149,7 @@ class APPCACHE_EXPORT AppCacheService {
   friend class AppCacheServiceTest;
 
   class AsyncHelper;
+  class NewAsyncHelper;
   class CanHandleOfflineHelper;
   class DeleteHelper;
   class DeleteOriginHelper;
@@ -156,6 +157,7 @@ class APPCACHE_EXPORT AppCacheService {
   class CheckResponseHelper;
 
   typedef std::set<AsyncHelper*> PendingAsyncHelpers;
+  typedef std::set<NewAsyncHelper*> PendingNewAsyncHelpers;
   typedef std::map<int, AppCacheBackendImpl*> BackendMap;
 
   AppCachePolicy* appcache_policy_;
@@ -164,6 +166,7 @@ class APPCACHE_EXPORT AppCacheService {
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<quota::QuotaManagerProxy> quota_manager_proxy_;
   PendingAsyncHelpers pending_helpers_;
+  PendingNewAsyncHelpers pending_new_helpers_;
   BackendMap backends_;  // One 'backend' per child process.
   // Context for use during cache updates.
   net::URLRequestContext* request_context_;

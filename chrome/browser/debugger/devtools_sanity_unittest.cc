@@ -188,7 +188,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
       content::NotificationRegistrar registrar;
       registrar.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                     content::NotificationService::AllSources());
-      base::CancelableCallback timeout(
+      base::CancelableClosure timeout(
           base::Bind(&TimeoutCallback, "Extension load timed out."));
       MessageLoop::current()->PostDelayedTask(
           FROM_HERE, timeout.callback(), 4 * 1000);
@@ -211,7 +211,7 @@ class DevToolsExtensionDebugTest : public DevToolsSanityTest,
     content::NotificationRegistrar registrar;
     registrar.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
                   content::NotificationService::AllSources());
-    base::CancelableCallback timeout(
+    base::CancelableClosure timeout(
         base::Bind(&TimeoutCallback, "Extension host load timed out."));
     MessageLoop::current()->PostDelayedTask(
         FROM_HERE, timeout.callback(), 4 * 1000);

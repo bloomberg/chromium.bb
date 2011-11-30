@@ -52,7 +52,7 @@ class OfflineResourceHandler : public ResourceHandler {
   void OnBlockingPageComplete(bool proceed);
 
  private:
-  // Erase the state assocaited with a deferred load request.
+  // Erase the state associated with a deferred load request.
   void ClearRequestInfo();
   bool IsRemote(const GURL& url) const;
 
@@ -80,8 +80,7 @@ class OfflineResourceHandler : public ResourceHandler {
   int deferred_request_id_;
   GURL deferred_url_;
 
-  scoped_refptr<net::CancelableOldCompletionCallback<OfflineResourceHandler> >
-      appcache_completion_callback_;
+  net::CancelableCompletionCallback appcache_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OfflineResourceHandler);
 };
