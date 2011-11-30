@@ -1442,8 +1442,7 @@ gboolean BrowserWindowGtk::OnConfigure(GtkWidget* widget,
 void BrowserWindowGtk::OnDebouncedBoundsChanged() {
   gint x, y;
   gtk_window_get_position(window_, &x, &y);
-  gfx::Point origin(x, y);
-  bounds_.set_origin(origin);
+  bounds_.set_origin(gfx::Point(x, y));
   if (!IsFullscreen() && !IsMaximized())
     restored_bounds_ = bounds_;
   SaveWindowPosition();
