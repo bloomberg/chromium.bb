@@ -18,6 +18,7 @@
 class Extension;
 class PanelBrowserView;
 class PanelSettingsMenuModel;
+class SkPaint;
 namespace gfx {
 class Font;
 }
@@ -141,20 +142,22 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
 
   // Custom draw the frame.
   void PaintFrameBorder(gfx::Canvas* canvas);
-  void PaintClientEdge(gfx::Canvas* canvas);
 
   // Called by MouseWatcher to notify if the mouse enters or leaves the window.
   void OnMouseEnterOrLeaveWindow(bool mouse_entered);
 
   // Retrieves the drawing metrics based on the current painting state.
+  SkColor GetDefaultTitleColor(PaintState paint_state) const;
   SkColor GetTitleColor(PaintState paint_state) const;
-  gfx::Font* GetTitleFont() const;
+  const SkPaint& GetDefaultFrameTheme(PaintState paint_state) const;
   SkBitmap* GetFrameTheme(PaintState paint_state) const;
 
   // Make settings button visible if either of the conditions is met:
   // 1) The panel is active, i.e. having focus.
   // 2) The mouse is over the panel.
   void UpdateSettingsButtonVisibility(bool active, bool cursor_in_view);
+
+  bool UsingDefaultTheme() const;
 
   const Extension* GetExtension() const;
 

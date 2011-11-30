@@ -8,6 +8,7 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_browser_view.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -27,6 +28,7 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
@@ -41,24 +43,56 @@ namespace {
 // The height in pixels of the titlebar.
 const int kTitlebarHeight = 24;
 
-// The thickness in pixels of the frame border.
-const int kFrameBorderThickness = 1;
+// The thickness in pixels of the border.
+const int kBorderThickness = 1;
 
-// The spacing in pixels between the icon and the border/text.
-const int kIconSpacing = 4;
+// No client edge is present.
+const int kPanelClientEdgeThickness = 0;
+
+// The spacing in pixels between the icon and the left border.
+const int kIconAndBorderSpacing = 4;
 
 // The height and width in pixels of the icon.
 const int kIconSize = 16;
 
-// The spacing in pixels between buttons or the button and the adjacent control.
-const int kButtonSpacing = 6;
+// The spacing in pixels between the title and the icon on the left, or the
+// button on the right.
+const int kTitleSpacing = 8;
+
+// The spacing in pixels between the close button and the right border.
+const int kCloseButtonAndBorderSpacing = 8;
+
+// The spacing in pixels between the close button and the settings button.
+const int kSettingsButtonAndCloseButtonSpacing = 8;
 
 // This value is experimental and subjective.
 const int kUpdateSettingsVisibilityAnimationMs = 120;
 
-// Colors used in painting the titlebar for drawing attention.
-const SkColor kBackgroundColorForAttention = 0xfffa983a;
-const SkColor kTitleTextColorForAttention = SK_ColorWHITE;
+// Colors used to draw active titlebar under default theme.
+const SkColor kActiveTitleTextDefaultColor = SK_ColorBLACK;
+const SkColor kActiveBackgroundDefaultColorStart = 0xfff0f8fa;
+const SkColor kActiveBackgroundDefaultColorEnd = 0xffc1d2dd;
+
+// Colors used to draw inactive titlebar under default theme.
+const SkColor kInactiveTitleTextDefaultColor = 0x80888888;
+const SkColor kInactiveBackgroundDefaultColorStart = 0xffffffff;
+const SkColor kInactiveBackgroundDefaultColorEnd = 0xffe7edf1;
+
+// Alpha value used in drawing inactive titlebar under default theme.
+const U8CPU kInactiveAlphaBlending = 0x80;
+
+// Colors used to draw titlebar for drawing attention under default theme.
+// It is also used in non-default theme since attention color is not defined
+// in the theme.
+const SkColor kAttentionTitleTextDefaultColor = SK_ColorWHITE;
+const SkColor kAttentionBackgroundDefaultColorStart = 0xffffab57;
+const SkColor kAttentionBackgroundDefaultColorEnd = 0xfff59338;
+
+// Color used to draw the border.
+const SkColor kBorderColor = 0xc0000000;
+
+// Color used to draw the divider line between the titlebar and the client area.
+const SkColor kDividerColor = 0xffb5b5b5;
 
 struct ButtonResources {
   SkBitmap* normal_image;
@@ -66,8 +100,12 @@ struct ButtonResources {
   SkBitmap* hover_image;
   SkBitmap* pushed_image;
 
-  void SetResources(int normal_image_id, int mask_image_id, int hover_image_id,
-                    int pushed_image_id) {
+  ButtonResources(int normal_image_id, int mask_image_id, int hover_image_id,
+                  int pushed_image_id)
+      : normal_image(NULL),
+        mask_image(NULL),
+        hover_image(NULL),
+        pushed_image(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     normal_image = rb.GetBitmapNamed(normal_image_id);
     mask_image = mask_image_id ? rb.GetBitmapNamed(mask_image_id) : NULL;
@@ -86,9 +124,17 @@ struct EdgeResources {
   SkBitmap* bottom_left;
   SkBitmap* left;
 
-  void SetResources(int top_left_id, int top_id, int top_right_id, int right_id,
-                    int bottom_right_id, int bottom_id, int bottom_left_id,
-                    int left_id) {
+  EdgeResources(int top_left_id, int top_id, int top_right_id, int right_id,
+                int bottom_right_id, int bottom_id, int bottom_left_id,
+                int left_id)
+      : top_left(NULL),
+        top(NULL),
+        top_right(NULL),
+        right(NULL),
+        bottom_right(NULL),
+        bottom(NULL),
+        bottom_left(NULL),
+        left(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     top_left = rb.GetBitmapNamed(top_left_id);
     top = rb.GetBitmapNamed(top_id);
@@ -101,50 +147,81 @@ struct EdgeResources {
   }
 };
 
-ButtonResources settings_button_resources;
-ButtonResources close_button_resources;
-EdgeResources frame_edges;
-EdgeResources client_edges;
-gfx::Font* title_font = NULL;
-SkBitmap* background_bitmap_for_attention = NULL;
-
-void LoadImageResources() {
-  settings_button_resources.SetResources(
-      IDR_BALLOON_WRENCH, 0, IDR_BALLOON_WRENCH_H, IDR_BALLOON_WRENCH_P);
-
-  close_button_resources.SetResources(
-      IDR_TAB_CLOSE, IDR_TAB_CLOSE_MASK, IDR_TAB_CLOSE_H, IDR_TAB_CLOSE_P);
-
-  frame_edges.SetResources(
-      IDR_WINDOW_TOP_LEFT_CORNER, IDR_WINDOW_TOP_CENTER,
-      IDR_WINDOW_TOP_RIGHT_CORNER, IDR_WINDOW_RIGHT_SIDE,
-      IDR_PANEL_BOTTOM_RIGHT_CORNER, IDR_WINDOW_BOTTOM_CENTER,
-      IDR_PANEL_BOTTOM_LEFT_CORNER, IDR_WINDOW_LEFT_SIDE);
-
-  client_edges.SetResources(
-      IDR_APP_TOP_LEFT, IDR_APP_TOP_CENTER,
-      IDR_APP_TOP_RIGHT, IDR_CONTENT_RIGHT_SIDE,
-      IDR_CONTENT_BOTTOM_RIGHT_CORNER, IDR_CONTENT_BOTTOM_CENTER,
-      IDR_CONTENT_BOTTOM_LEFT_CORNER, IDR_CONTENT_LEFT_SIDE);
+SkPaint* CreateGradientPaint(SkColor start_color, SkColor end_color) {
+  SkShader* shader = gfx::CreateGradientShader(
+      0, kTitlebarHeight, start_color, end_color);
+  SkPaint* paint = new SkPaint();
+  paint->setStyle(SkPaint::kFill_Style);
+  paint->setAntiAlias(true);
+  paint->setShader(shader);
+  shader->unref();
+  return paint;
 }
 
-void EnsureResourcesInitialized() {
-  static bool resources_initialized = false;
-  if (resources_initialized)
-    return;
-  resources_initialized = true;
+const ButtonResources& GetSettingsButtonResources() {
+  static ButtonResources* buttons = NULL;
+  if (!buttons) {
+    buttons = new ButtonResources(IDR_BALLOON_WRENCH, 0,
+                                  IDR_BALLOON_WRENCH_H, IDR_BALLOON_WRENCH_P);
+  }
+  return *buttons;
+}
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  title_font = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont));
+const ButtonResources& GetCloseButtonResources() {
+  static ButtonResources* buttons = NULL;
+  if (!buttons) {
+    buttons = new ButtonResources(IDR_TAB_CLOSE, IDR_TAB_CLOSE_MASK,
+                                  IDR_TAB_CLOSE_H, IDR_TAB_CLOSE_P);
+  }
+  return *buttons;
+}
 
-  // Creates a bitmap of the specified color.
-  background_bitmap_for_attention = new SkBitmap();
-  background_bitmap_for_attention->setConfig(
-      SkBitmap::kARGB_8888_Config, 16, 16);
-  background_bitmap_for_attention->allocPixels();
-  background_bitmap_for_attention->eraseColor(kBackgroundColorForAttention);
+const EdgeResources& GetFrameEdges() {
+  static EdgeResources* edges = NULL;
+  if (!edges) {
+    edges = new EdgeResources(
+        IDR_WINDOW_TOP_LEFT_CORNER, IDR_WINDOW_TOP_CENTER,
+        IDR_WINDOW_TOP_RIGHT_CORNER, IDR_WINDOW_RIGHT_SIDE,
+        IDR_PANEL_BOTTOM_RIGHT_CORNER, IDR_WINDOW_BOTTOM_CENTER,
+        IDR_PANEL_BOTTOM_LEFT_CORNER, IDR_WINDOW_LEFT_SIDE);
+  }
+  return *edges;
+}
 
-  LoadImageResources();
+const gfx::Font& GetTitleFont() {
+  static gfx::Font* font = NULL;
+  if (!font) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    font = new gfx::Font(rb.GetFont(ResourceBundle::BoldFont));
+  }
+  return *font;
+}
+
+const SkPaint& GetActiveBackgroundDefaultPaint() {
+  static SkPaint* paint = NULL;
+  if (!paint) {
+    paint = CreateGradientPaint(kActiveBackgroundDefaultColorStart,
+                                kActiveBackgroundDefaultColorEnd);
+  }
+  return *paint;
+}
+
+const SkPaint& GetInactiveBackgroundDefaultPaint() {
+  static SkPaint* paint = NULL;
+  if (!paint) {
+    paint = CreateGradientPaint(kInactiveBackgroundDefaultColorStart,
+                                kInactiveBackgroundDefaultColorEnd);
+  }
+  return *paint;
+}
+
+const SkPaint& GetAttentionBackgroundDefaultPaint() {
+  static SkPaint* paint = NULL;
+  if (!paint) {
+    paint = CreateGradientPaint(kAttentionBackgroundDefaultColorStart,
+                                kAttentionBackgroundDefaultColorEnd);
+  }
+  return *paint;
 }
 
 }  // namespace
@@ -239,9 +316,10 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
       title_icon_(NULL),
       title_label_(NULL),
       is_settings_button_visible_(false) {
-  EnsureResourcesInitialized();
   frame->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
 
+  const ButtonResources& settings_button_resources =
+      GetSettingsButtonResources();
   settings_button_ =  new views::MenuButton(NULL, string16(), this, false);
   settings_button_->SetIcon(*(settings_button_resources.normal_image));
   settings_button_->SetHoverIcon(*(settings_button_resources.hover_image));
@@ -255,6 +333,7 @@ PanelBrowserFrameView::PanelBrowserFrameView(BrowserFrame* frame,
   settings_button_->SetVisible(is_settings_button_visible_);
   AddChildView(settings_button_);
 
+  const ButtonResources& close_button_resources = GetCloseButtonResources();
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
                           close_button_resources.normal_image);
@@ -340,33 +419,19 @@ int PanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
 void PanelBrowserFrameView::GetWindowMask(const gfx::Size& size,
                                           gfx::Path* window_mask) {
-  // For panel, the window shape is rectangle with top-left and top-right
-  // corners rounded.
-  if (size.height() <= Panel::kMinimizedPanelHeight) {
-    // For minimize panel, we need to produce the window mask applicable to
-    // the 3-pixel lines.
-    window_mask->moveTo(0, SkIntToScalar(size.height()));
-    window_mask->lineTo(0, 1);
-    window_mask->lineTo(1, 0);
-    window_mask->lineTo(SkIntToScalar(size.width()) - 1, 0);
-    window_mask->lineTo(SkIntToScalar(size.width()), 1);
-    window_mask->lineTo(SkIntToScalar(size.width()),
-                        SkIntToScalar(size.height()));
-  } else {
-    window_mask->moveTo(0, 3);
-    window_mask->lineTo(1, 2);
-    window_mask->lineTo(1, 1);
-    window_mask->lineTo(2, 1);
-    window_mask->lineTo(3, 0);
-    window_mask->lineTo(SkIntToScalar(size.width() - 3), 0);
-    window_mask->lineTo(SkIntToScalar(size.width() - 2), 1);
-    window_mask->lineTo(SkIntToScalar(size.width() - 1), 1);
-    window_mask->lineTo(SkIntToScalar(size.width() - 1), 2);
-    window_mask->lineTo(SkIntToScalar(size.width()), 3);
-    window_mask->lineTo(SkIntToScalar(size.width()),
-                        SkIntToScalar(size.height()));
-    window_mask->lineTo(0, SkIntToScalar(size.height()));
-  }
+  window_mask->moveTo(0, 3);
+  window_mask->lineTo(1, 2);
+  window_mask->lineTo(1, 1);
+  window_mask->lineTo(2, 1);
+  window_mask->lineTo(3, 0);
+  window_mask->lineTo(SkIntToScalar(size.width() - 3), 0);
+  window_mask->lineTo(SkIntToScalar(size.width() - 2), 1);
+  window_mask->lineTo(SkIntToScalar(size.width() - 1), 1);
+  window_mask->lineTo(SkIntToScalar(size.width() - 1), 2);
+  window_mask->lineTo(SkIntToScalar(size.width() - 1), 3);
+  window_mask->lineTo(SkIntToScalar(size.width()),
+                      SkIntToScalar(size.height()));
+  window_mask->lineTo(0, SkIntToScalar(size.height()));
   window_mask->close();
 }
 
@@ -390,15 +455,13 @@ void PanelBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 
   UpdateControlStyles(paint_state);
   PaintFrameBorder(canvas);
-  PaintClientEdge(canvas);
 }
 
 void PanelBrowserFrameView::OnThemeChanged() {
-  LoadImageResources();
 }
 
 gfx::Size PanelBrowserFrameView::GetMinimumSize() {
-  // This makes the panel be able to shrink to very small, like 3-pixel lines.
+  // This makes the panel be able to shrink to very small, like 4-pixel lines.
   // Since the panel cannot be resized by the user, we do not need to enforce
   // the minimum size.
   return gfx::Size();
@@ -413,7 +476,7 @@ void PanelBrowserFrameView::Layout() {
   // Layout the close button.
   gfx::Size close_button_size = close_button_->GetPreferredSize();
   close_button_->SetBounds(
-      width() - kFrameBorderThickness - kButtonSpacing -
+      width() - kBorderThickness - kCloseButtonAndBorderSpacing -
           close_button_size.width(),
       (NonClientTopBorderHeight() - close_button_size.height()) / 2,
       close_button_size.width(),
@@ -422,7 +485,8 @@ void PanelBrowserFrameView::Layout() {
   // Layout the settings button.
   gfx::Size settings_button_size = settings_button_->GetPreferredSize();
   settings_button_->SetBounds(
-      close_button_->x() - kButtonSpacing - settings_button_size.width(),
+      close_button_->x() - kSettingsButtonAndCloseButtonSpacing -
+          settings_button_size.width(),
       (NonClientTopBorderHeight() - settings_button_size.height()) / 2,
       settings_button_size.width(),
       settings_button_size.height());
@@ -440,18 +504,18 @@ void PanelBrowserFrameView::Layout() {
   // Layout the icon.
   int icon_y = (NonClientTopBorderHeight() - kIconSize) / 2;
   title_icon_->SetBounds(
-      kFrameBorderThickness + kIconSpacing,
+      kBorderThickness + kIconAndBorderSpacing,
       icon_y,
       kIconSize,
       kIconSize);
 
   // Layout the title.
-  int title_x = title_icon_->bounds().right() + kIconSpacing;
+  int title_x = title_icon_->bounds().right() + kTitleSpacing;
   int title_height = BrowserFrame::GetTitleFont().GetHeight();
   title_label_->SetBounds(
       title_x,
       icon_y + ((kIconSize - title_height - 1) / 2),
-      std::max(0, settings_button_->x() - kButtonSpacing - title_x),
+      std::max(0, settings_button_->x() - kTitleSpacing - title_x),
       title_height);
 
   // Calculate the client area bounds.
@@ -553,11 +617,11 @@ void PanelBrowserFrameView::AnimationCanceled(const ui::Animation* animation) {
 }
 
 int PanelBrowserFrameView::NonClientBorderThickness() const {
-  return kFrameBorderThickness + kClientEdgeThickness;
+  return kBorderThickness + kPanelClientEdgeThickness;
 }
 
 int PanelBrowserFrameView::NonClientTopBorderHeight() const {
-  return kFrameBorderThickness + kTitlebarHeight + kClientEdgeThickness;
+  return kBorderThickness + kTitlebarHeight + kPanelClientEdgeThickness;
 }
 
 gfx::Size PanelBrowserFrameView::NonClientAreaSize() const {
@@ -565,23 +629,56 @@ gfx::Size PanelBrowserFrameView::NonClientAreaSize() const {
                    NonClientTopBorderHeight() + NonClientBorderThickness());
 }
 
-SkColor PanelBrowserFrameView::GetTitleColor(PaintState paint_state) const {
+bool PanelBrowserFrameView::UsingDefaultTheme() const {
+  ThemeService* theme_service = ThemeServiceFactory::GetForProfile(
+      panel_browser_view_->panel()->browser()->profile());
+  return theme_service->UsingDefaultTheme();
+}
+
+SkColor PanelBrowserFrameView::GetDefaultTitleColor(
+    PaintState paint_state) const {
   switch (paint_state) {
     case PAINT_AS_INACTIVE:
-      return GetThemeProvider()->GetColor(
-          ThemeService::COLOR_BACKGROUND_TAB_TEXT);
+      return kActiveTitleTextDefaultColor;
     case PAINT_AS_ACTIVE:
-      return GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT);
+      return kInactiveTitleTextDefaultColor;
     case PAINT_FOR_ATTENTION:
-      return kTitleTextColorForAttention;
+      return kAttentionTitleTextDefaultColor;
     default:
       NOTREACHED();
       return SkColor();
   }
 }
 
-gfx::Font* PanelBrowserFrameView::GetTitleFont() const {
-  return title_font;
+SkColor PanelBrowserFrameView::GetTitleColor(PaintState paint_state) const {
+  switch (paint_state) {
+    case PAINT_AS_INACTIVE:
+      return SkColorSetA(
+          GetThemeProvider()->GetColor(ThemeService::COLOR_BACKGROUND_TAB_TEXT),
+          kInactiveAlphaBlending);
+    case PAINT_AS_ACTIVE:
+      return GetThemeProvider()->GetColor(ThemeService::COLOR_TAB_TEXT);
+    case PAINT_FOR_ATTENTION:
+      return kAttentionTitleTextDefaultColor;
+    default:
+      NOTREACHED();
+      return SkColor();
+  }
+}
+
+const SkPaint& PanelBrowserFrameView::GetDefaultFrameTheme(
+    PaintState paint_state) const {
+  switch (paint_state) {
+    case PAINT_AS_INACTIVE:
+      return GetInactiveBackgroundDefaultPaint();
+    case PAINT_AS_ACTIVE:
+      return GetActiveBackgroundDefaultPaint();
+    case PAINT_FOR_ATTENTION:
+      return GetAttentionBackgroundDefaultPaint();
+    default:
+      NOTREACHED();
+      return GetInactiveBackgroundDefaultPaint();
+  }
 }
 
 SkBitmap* PanelBrowserFrameView::GetFrameTheme(PaintState paint_state) const {
@@ -591,7 +688,8 @@ SkBitmap* PanelBrowserFrameView::GetFrameTheme(PaintState paint_state) const {
     case PAINT_AS_ACTIVE:
       return GetThemeProvider()->GetBitmapNamed(IDR_THEME_TOOLBAR);
     case PAINT_FOR_ATTENTION:
-      return background_bitmap_for_attention;
+      // Background color for drawing attention is same regardless of the
+      // theme. GetDefaultFrameTheme should be used.
     default:
       NOTREACHED();
       return NULL;
@@ -607,24 +705,25 @@ void PanelBrowserFrameView::UpdateControlStyles(PaintState paint_state) {
 
   SkColor title_color = GetTitleColor(paint_state_);
   title_label_->SetEnabledColor(title_color);
-  title_label_->SetFont(*GetTitleFont());
+  title_label_->SetFont(GetTitleFont());
 
   close_button_->SetBackground(title_color,
-                               close_button_resources.normal_image,
-                               close_button_resources.mask_image);
+                               GetCloseButtonResources().normal_image,
+                               GetCloseButtonResources().mask_image);
 }
 
 void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
-  SkBitmap* theme_frame = GetFrameTheme(paint_state_);
-
-  // Draw the theme frame.
-  canvas->TileImageInt(*theme_frame, 0, 0, width(), height());
-
-  // No need to paint other stuff if panel is minimized.
-  if (height() <= Panel::kMinimizedPanelHeight)
-    return;
+  // Paint the background.
+  if (paint_state_ == PAINT_FOR_ATTENTION || UsingDefaultTheme()) {
+    const SkPaint& paint = GetDefaultFrameTheme(paint_state_);
+    canvas->DrawRectInt(0, 0, width(), kTitlebarHeight, paint);
+  } else {
+    SkBitmap* bitmap = GetFrameTheme(paint_state_);
+    canvas->TileImageInt(*bitmap, 0, 0, width(), kTitlebarHeight);
+  }
 
   // Draw the top border.
+  const EdgeResources& frame_edges = GetFrameEdges();
   canvas->DrawBitmapInt(*(frame_edges.top_left), 0, 0);
   canvas->TileImageInt(
       *(frame_edges.top), frame_edges.top_left->width(), 0,
@@ -661,52 +760,12 @@ void PanelBrowserFrameView::PaintFrameBorder(gfx::Canvas* canvas) {
       frame_edges.left->width(),
       height() - frame_edges.top_left->height() -
           frame_edges.bottom_left->height());
-}
 
-void PanelBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) {
-  int client_area_top = client_view_bounds_.y();
-
-  // No need to paint other stuff if panel is minimized.
-  if (height() <= Panel::kMinimizedPanelHeight)
-    return;
-
-  // Draw the top edge.
-  int top_edge_y = client_area_top - client_edges.top->height();
-  canvas->DrawBitmapInt(
-      *(client_edges.top_left),
-      client_view_bounds_.x() - client_edges.top_left->width(),
-      top_edge_y);
-  canvas->TileImageInt(
-      *(client_edges.top), client_view_bounds_.x(), top_edge_y,
-      client_view_bounds_.width(), client_edges.top->height());
-  canvas->DrawBitmapInt(
-      *(client_edges.top_right), client_view_bounds_.right(), top_edge_y);
-
-  // Draw the right edge.
-  int client_area_bottom =
-      std::max(client_area_top, client_view_bounds_.bottom());
-  int client_area_height = client_area_bottom - client_area_top;
-  canvas->TileImageInt(
-      *(client_edges.right), client_view_bounds_.right(), client_area_top,
-      client_edges.right->width(), client_area_height);
-
-  // Draw the bottom edge.
-  canvas->DrawBitmapInt(
-      *(client_edges.bottom_right), client_view_bounds_.right(),
-      client_area_bottom);
-  canvas->TileImageInt(
-      *(client_edges.bottom), client_view_bounds_.x(), client_area_bottom,
-      client_view_bounds_.width(), client_edges.bottom_right->height());
-  canvas->DrawBitmapInt(
-      *(client_edges.bottom_left),
-      client_view_bounds_.x() - client_edges.bottom_left->width(),
-      client_area_bottom);
-
-  // Draw the left edge.
-  canvas->TileImageInt(
-      *(client_edges.left),
-      client_view_bounds_.x() - client_edges.left->width(),
-      client_area_top, client_edges.left->width(), client_area_height);
+  // Draw the divider between the titlebar and the client area.
+  if (height() > kTitlebarHeight) {
+    canvas->DrawRectInt(kDividerColor, kBorderThickness, kTitlebarHeight,
+                        width() - 1 - 2 * kBorderThickness, kBorderThickness);
+  }
 }
 
 string16 PanelBrowserFrameView::GetTitleText() const {

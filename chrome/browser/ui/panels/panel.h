@@ -42,8 +42,8 @@ class Panel : public BrowserWindow,
    MINIMIZED
   };
 
-  // The panel can be minimized to 3-pixel lines.
-  static const int kMinimizedPanelHeight = 3;
+  // The panel can be minimized to 4-pixel lines.
+  static const int kMinimizedPanelHeight = 4;
 
   virtual ~Panel();
 
