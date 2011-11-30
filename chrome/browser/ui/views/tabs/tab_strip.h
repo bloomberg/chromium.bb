@@ -14,7 +14,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/image_button.h"
-#include "views/mouse_watcher.h"
+#include "ui/views/mouse_watcher.h"
 
 class Tab;
 class TabStripSelectionModel;

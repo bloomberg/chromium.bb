@@ -27,10 +27,10 @@
 #include "ui/views/controls/textfield/textfield_views_model.h"
 #include "ui/views/events/event.h"
 #include "ui/views/ime/input_method.h"
+#include "ui/views/metrics.h"
 #include "ui/views/widget/widget.h"
 #include "views/background.h"
 #include "views/border.h"
-#include "views/metrics.h"
 #include "views/views_delegate.h"
 
 #if defined(OS_LINUX)

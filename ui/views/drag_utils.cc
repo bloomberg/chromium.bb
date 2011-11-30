@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/drag_utils.h"
+#include "ui/views/drag_utils.h"
 
 #include "base/file_util.h"
 #include "base/logging.h"
@@ -14,8 +14,6 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/text_button.h"
-
-using ui::OSExchangeData;
 
 namespace drag_utils {
 
@@ -30,7 +28,7 @@ static const SkColor kFileDragImageTextColor = SK_ColorBLACK;
 void SetURLAndDragImage(const GURL& url,
                         const string16& title,
                         const SkBitmap& icon,
-                        OSExchangeData* data) {
+                        ui::OSExchangeData* data) {
   DCHECK(url.is_valid() && data);
 
   data->SetURL(url, title);
@@ -57,7 +55,7 @@ void SetURLAndDragImage(const GURL& url,
 
 void CreateDragImageForFile(const FilePath& file_name,
                             const SkBitmap* icon,
-                            OSExchangeData* data_object) {
+                            ui::OSExchangeData* data_object) {
   DCHECK(icon);
   DCHECK(data_object);
 
@@ -95,9 +93,9 @@ void CreateDragImageForFile(const FilePath& file_name,
 void SetDragImageOnDataObject(const gfx::Canvas& canvas,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
-                              OSExchangeData* data_object) {
+                              ui::OSExchangeData* data_object) {
   SetDragImageOnDataObject(
       canvas.AsCanvasSkia()->ExtractBitmap(), size, cursor_offset, data_object);
 }
 
-} // namespace drag_utils
+}  // namespace drag_utils

@@ -49,8 +49,8 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/resize_area.h"
-#include "views/drag_utils.h"
-#include "views/metrics.h"
+#include "ui/views/drag_utils.h"
+#include "ui/views/metrics.h"
 
 // Horizontal spacing between most items in the container, as well as after the
 // last item or chevron (if visible).

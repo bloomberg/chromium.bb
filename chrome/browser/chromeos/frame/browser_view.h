@@ -13,8 +13,8 @@
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/menu/menu_listener.h"
-#include "views/context_menu_controller.h"
 
 class StatusAreaButton;
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_DRAG_UTILS_H_
-#define VIEWS_DRAG_UTILS_H_
+#ifndef UI_VIEWS_DRAG_UTILS_H_
+#define UI_VIEWS_DRAG_UTILS_H_
 #pragma once
 
 #include <string>
@@ -33,7 +33,7 @@ namespace drag_utils {
 VIEWS_EXPORT void SetURLAndDragImage(const GURL& url,
                                      const string16& title,
                                      const SkBitmap& icon,
-                                     OSExchangeData* data);
+                                     ui::OSExchangeData* data);
 
 // Creates a dragging image to be displayed when the user drags a file from
 // Chrome (via the download manager, for example). The drag image is set into
@@ -41,7 +41,7 @@ VIEWS_EXPORT void SetURLAndDragImage(const GURL& url,
 // portion will be truncated in the drag image.
 VIEWS_EXPORT void CreateDragImageForFile(const FilePath& file_name,
                                          const SkBitmap* icon,
-                                         OSExchangeData* data_object);
+                                         ui::OSExchangeData* data_object);
 
 // Sets the drag image on data_object from the supplied canvas. width/height
 // are the size of the image to use, and the offsets give the location of
@@ -49,7 +49,7 @@ VIEWS_EXPORT void CreateDragImageForFile(const FilePath& file_name,
 VIEWS_EXPORT void SetDragImageOnDataObject(const gfx::Canvas& canvas,
                                            const gfx::Size& size,
                                            const gfx::Point& cursor_offset,
-                                           OSExchangeData* data_object);
+                                           ui::OSExchangeData* data_object);
 
 // Sets the drag image on data_object from the supplied bitmap. width/height
 // are the size of the image to use, and the offsets give the location of
@@ -57,8 +57,8 @@ VIEWS_EXPORT void SetDragImageOnDataObject(const gfx::Canvas& canvas,
 VIEWS_EXPORT void SetDragImageOnDataObject(const SkBitmap& bitmap,
                                            const gfx::Size& size,
                                            const gfx::Point& cursor_offset,
-                                           OSExchangeData* data_object);
+                                           ui::OSExchangeData* data_object);
 
-} // namespace drag_utils
+}  // namespace drag_utils
 
-#endif  // #ifndef VIEWS_DRAG_UTILS_H_
+#endif  // UI_VIEWS_DRAG_UTILS_H_

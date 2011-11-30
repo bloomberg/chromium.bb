@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "views/metrics.h"
+#include "ui/views/metrics.h"
 
 // static
 const char ReloadButton::kViewClassName[] = "browser/ui/views/ReloadButton";

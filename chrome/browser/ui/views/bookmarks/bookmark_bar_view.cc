@@ -56,10 +56,10 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_item_view.h"
+#include "ui/views/drag_utils.h"
+#include "ui/views/metrics.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
-#include "views/drag_utils.h"
-#include "views/metrics.h"
 #include "views/view_constants.h"
 
 using views::CustomButton;

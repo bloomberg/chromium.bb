@@ -58,7 +58,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/native_textfield_views.h"
-#include "views/drag_utils.h"
+#include "ui/views/drag_utils.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/first_run_bubble.h"

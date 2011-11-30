@@ -27,7 +27,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "net/base/net_util.h"
-#include "views/drag_utils.h"
+#include "ui/views/drag_utils.h"
 #include "webkit/glue/webdropdata.h"
 
 using content::BrowserThread;

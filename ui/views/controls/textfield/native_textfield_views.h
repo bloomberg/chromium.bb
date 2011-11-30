@@ -11,12 +11,12 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/font.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
 #include "ui/views/controls/textfield/textfield_views_model.h"
+#include "ui/views/drag_controller.h"
 #include "ui/views/touchui/touch_selection_controller.h"
 #include "views/border.h"
-#include "views/context_menu_controller.h"
-#include "views/drag_controller.h"
 #include "views/view.h"
 
 namespace base {
@@ -60,8 +60,8 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   virtual bool OnKeyPressed(const KeyEvent& event) OVERRIDE;
   virtual bool GetDropFormats(
       int* formats,
-      std::set<OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
-  virtual bool CanDrop(const OSExchangeData& data) OVERRIDE;
+      std::set<ui::OSExchangeData::CustomFormat>* custom_formats) OVERRIDE;
+  virtual bool CanDrop(const ui::OSExchangeData& data) OVERRIDE;
   virtual int OnDragUpdated(const DropTargetEvent& event) OVERRIDE;
   virtual int OnPerformDrop(const DropTargetEvent& event) OVERRIDE;
   virtual void OnDragDone() OVERRIDE;
@@ -82,7 +82,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public TouchSelectionClientView,
   // Overridden from DragController:
   virtual void WriteDragDataForView(View* sender,
                                     const gfx::Point& press_pt,
-                                    OSExchangeData* data) OVERRIDE;
+                                    ui::OSExchangeData* data) OVERRIDE;
   virtual int GetDragOperationsForView(View* sender,
                                        const gfx::Point& p) OVERRIDE;
   virtual bool CanStartDragForView(View* sender,

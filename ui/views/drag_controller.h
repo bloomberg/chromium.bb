@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_EVENTS_DRAG_CONTROLLER_H_
-#define VIEWS_EVENTS_DRAG_CONTROLLER_H_
+#ifndef UI_VIEWS_DRAG_CONTROLLER_H_
+#define UI_VIEWS_DRAG_CONTROLLER_H_
 #pragma once
 
 #include "views/views_export.h"
@@ -27,7 +27,7 @@ class VIEWS_EXPORT DragController {
   // Writes the data for the drag.
   virtual void WriteDragDataForView(View* sender,
                                     const gfx::Point& press_pt,
-                                    OSExchangeData* data) = 0;
+                                    ui::OSExchangeData* data) = 0;
 
   // Returns the supported drag operations (see DragDropTypes for possible
   // values). A drag is only started if this returns a non-zero value.
@@ -47,4 +47,4 @@ class VIEWS_EXPORT DragController {
 
 }  // namespace views
 
-#endif  // VIEWS_EVENTS_DRAG_CONTROLLER_H_
+#endif  // UI_VIEWS_DRAG_CONTROLLER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTEXT_MENU_CONTROLLER_H_
-#define VIEWS_CONTEXT_MENU_CONTROLLER_H_
+#ifndef UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_
+#define UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_
 #pragma once
 
 #include "views/views_export.h"
@@ -44,4 +44,4 @@ class VIEWS_EXPORT ContextMenuController {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTEXT_MENU_CONTROLLER_H_
+#endif  // UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_

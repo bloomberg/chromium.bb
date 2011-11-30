@@ -2,21 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/metrics.h"
+#include "ui/views/metrics.h"
 
-#include <windows.h>
+#include <gtk/gtk.h>
 
 namespace views {
 
 int GetDoubleClickInterval() {
-  return ::GetDoubleClickTime();
+  GdkDisplay* display = gdk_display_get_default();
+  return display ? display->double_click_time : 500;
 }
 
 int GetMenuShowDelay() {
-  static DWORD delay = 0;
-  if (!delay && !SystemParametersInfo(SPI_GETMENUSHOWDELAY, 0, &delay, 0))
-    delay = kDefaultMenuShowDelay;
-  return delay;
+  return kDefaultMenuShowDelay;
 }
 
 }  // namespace views

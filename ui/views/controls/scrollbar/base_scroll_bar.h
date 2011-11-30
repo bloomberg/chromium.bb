@@ -6,10 +6,10 @@
 #define UI_VIEWS_CONTROLS_SCROLLBAR_BASE_SCROLL_BAR_H_
 #pragma once
 
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
-#include "views/context_menu_controller.h"
 #include "views/repeat_controller.h"
 
 namespace views {

@@ -2,22 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/drag_utils.h"
+#include "ui/views/drag_utils.h"
 
 #include <objidl.h>
 #include <shlobj.h>
 #include <shobjidl.h>
 
 #include "base/win/scoped_comptr.h"
-#include "ui/base/dragdrop/os_exchange_data.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/skbitmap_operations.h"
-
-using ui::OSExchangeData;
-using ui::OSExchangeDataProviderWin;
 
 namespace drag_utils {
 
@@ -59,7 +56,7 @@ static HBITMAP CreateHBITMAPFromSkBitmap(const SkBitmap& sk_bitmap) {
 void SetDragImageOnDataObject(const SkBitmap& sk_bitmap,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
-                              OSExchangeData* data_object) {
+                              ui::OSExchangeData* data_object) {
   DCHECK(data_object && !size.IsEmpty());
   // InitializeFromBitmap() doesn't expect an alpha channel and is confused
   // by premultiplied colors, so unpremultiply the bitmap.
@@ -69,7 +66,7 @@ void SetDragImageOnDataObject(const SkBitmap& sk_bitmap,
 
   // Attach 'bitmap' to the data_object.
   SetDragImageOnDataObject(bitmap, size, cursor_offset,
-      OSExchangeDataProviderWin::GetIDataObject(*data_object));
+      ui::OSExchangeDataProviderWin::GetIDataObject(*data_object));
 }
 
-} // namespace drag_utils
+}  // namespace drag_utils

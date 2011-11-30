@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_METRICS_H_
-#define VIEWS_METRICS_H_
+#ifndef UI_VIEWS_METRICS_H_
+#define UI_VIEWS_METRICS_H_
 #pragma once
 
 #include "views/views_export.h"
@@ -25,4 +25,4 @@ VIEWS_EXPORT int GetMenuShowDelay();
 
 }  // namespace views
 
-#endif  // VIEWS_METRICS_H_
+#endif  // UI_VIEWS_METRICS_H_

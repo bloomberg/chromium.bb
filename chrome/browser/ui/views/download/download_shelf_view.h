@@ -14,8 +14,8 @@
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
+#include "ui/views/mouse_watcher.h"
 #include "views/accessible_pane_view.h"
-#include "views/mouse_watcher.h"
 
 class BaseDownloadItemModel;
 class Browser;

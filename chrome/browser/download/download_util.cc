@@ -58,7 +58,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "views/drag_utils.h"
+#include "ui/views/drag_utils.h"
 #endif
 
 #if defined(TOOLKIT_USES_GTK)

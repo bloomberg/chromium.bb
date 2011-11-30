@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/drag_utils.h"
+#include "ui/views/drag_utils.h"
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -12,18 +12,15 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
-using ui::OSExchangeData;
-using ui::OSExchangeDataProviderAura;
-
 namespace drag_utils {
 
 void SetDragImageOnDataObject(const SkBitmap& bitmap,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
-                              OSExchangeData* data_object) {
-  OSExchangeDataProviderAura& provider(
-      static_cast<OSExchangeDataProviderAura&>(data_object->provider()));
+                              ui::OSExchangeData* data_object) {
+  ui::OSExchangeDataProviderAura& provider(
+      static_cast<ui::OSExchangeDataProviderAura&>(data_object->provider()));
   provider.set_drag_image(bitmap);
 }
 
-} // namespace drag_utils
+}  // namespace drag_utils

@@ -24,7 +24,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/native/native_view_host.h"
-#include "views/drag_controller.h"
+#include "ui/views/drag_controller.h"
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"

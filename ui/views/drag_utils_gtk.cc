@@ -1,8 +1,8 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/drag_utils.h"
+#include "ui/views/drag_utils.h"
 
 #include <gtk/gtk.h>
 
@@ -15,17 +15,14 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
-using ui::OSExchangeData;
-using ui::OSExchangeDataProviderGtk;
-
 namespace drag_utils {
 
 void SetDragImageOnDataObject(const SkBitmap& bitmap,
                               const gfx::Size& size,
                               const gfx::Point& cursor_offset,
-                              OSExchangeData* data_object) {
-  OSExchangeDataProviderGtk& provider(
-      static_cast<OSExchangeDataProviderGtk&>(data_object->provider()));
+                              ui::OSExchangeData* data_object) {
+  ui::OSExchangeDataProviderGtk& provider(
+      static_cast<ui::OSExchangeDataProviderGtk&>(data_object->provider()));
 
   // Convert the bitmap into a GdkPixbuf.
   GdkPixbuf* canvas_pixbuf = gfx::GdkPixbufFromSkBitmap(&bitmap);
@@ -46,4 +43,4 @@ void SetDragImageOnDataObject(const SkBitmap& bitmap,
   g_object_unref(pixbuf);
 }
 
-} // namespace drag_utils
+}  // namespace drag_utils
