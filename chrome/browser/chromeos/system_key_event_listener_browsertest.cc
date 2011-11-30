@@ -17,15 +17,25 @@
 
 #include <X11/Xlib.h>  // should be here since it #defines lots of macros.
 
+#if defined(USE_VIRTUAL_KEYBOARD)
+// Since USE_VIRTUAL_KEYBOARD build only supports a few keyboard layouts, we
+// skip the tests for now.
+#define TestInputMethod DISABLED_TestInputMethod
+#define TestInputMethodWithNumLock DISABLED_TestInputMethodWithNumLock
+#define TestKoreanInputMethod DISABLED_TestKoreanInputMethod
+#endif
+
 namespace chromeos {
 namespace {
 
 static const char* active_input_methods[] = {
   "xkb:us::eng",  // The first one should be US Qwerty.
+#if !defined(USE_VIRTUAL_KEYBOARD)
   "xkb:us:dvorak:eng",
   "xkb:kr:kr104:kor",  // for testing XK_space with ShiftMask.
   // TODO(yusukes): Add "mozc-jp", "xkb:jp::jpn", and "mozc-hangul" to test
   // more IME hot keys once build bots start supporting ibus-daemon.
+#endif
 };
 
 class CapsLockObserver : public SystemKeyEventListener::CapsLockObserver {
