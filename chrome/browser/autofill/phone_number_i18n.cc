@@ -10,7 +10,7 @@
 #include "base/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_country.h"
-#include "third_party/libphonenumber/cpp/src/phonenumberutil.h"
+#include "third_party/libphonenumber/src/phonenumber_api.h"
 
 using i18n::phonenumbers::PhoneNumber;
 using i18n::phonenumbers::PhoneNumberUtil;
@@ -108,7 +108,7 @@ bool ParsePhoneNumberInternal(const string16& value,
   *city_code = UTF8ToUTF16(area_code);
   *country_code = string16();
 
-  PhoneNumberUtil::NormalizeDigitsOnly(&number_text);
+  phone_util->NormalizeDigitsOnly(&number_text);
   string16 normalized_number(UTF8ToUTF16(number_text));
   // Check if parsed number has country code and it was not inferred from the
   // locale.
@@ -148,7 +148,7 @@ string16 NormalizePhoneNumber(const string16& value,
     return string16();
   }
   std::string result_utf8(UTF16ToUTF8(result));
-  PhoneNumberUtil::NormalizeDigitsOnly(&result_utf8);
+  PhoneNumberUtil::GetInstance()->NormalizeDigitsOnly(&result_utf8);
   return UTF8ToUTF16(result_utf8);
 }
 
@@ -176,7 +176,9 @@ bool ConstructPhoneNumber(const string16& country_code,
   std::string normalized_number(UTF16ToUTF8(city_code));
   normalized_number.append(UTF16ToUTF8(number));
 
-  PhoneNumberUtil::NormalizeDigitsOnly(&normalized_number);
+  PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
+
+  phone_util->NormalizeDigitsOnly(&normalized_number);
 
   int64 number_int = 0;
   if (!base::StringToInt64(normalized_number, &number_int) || !number_int)
@@ -184,8 +186,6 @@ bool ConstructPhoneNumber(const string16& country_code,
 
   PhoneNumber i18n_number;
   i18n_number.set_national_number(static_cast<uint64>(number_int));
-
-  PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
 
   int country_int = phone_util->GetCountryCodeForRegion(
       SanitizeLocaleCode(locale));

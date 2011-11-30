@@ -2,7 +2,7 @@ Name: International Phone Number Library
 Short Name: libphonenumber
 URL: http://libphonenumber.googlecode.com/svn/trunk/
 Version: unknown
-Revision: 277
+Revision: 403
 Security Critical: yes
 
 This directory contains the source code of International Phone Number Library
@@ -17,15 +17,13 @@ This library depends on
 Additional files, not in the original library:
   libphonenumber.gyp
   README.chromium
+  src/LICENSE # Taken from http://code.google.com/p/libphonenumber.
+  src/phonenumber_api.h
 
-Until the changes are upstreamed library is included directly, with patches
-in patches/version277.patch and patches/version277a.patch applied.
-
-The folders included in our repository for now are
-  cpp/
-  resource/
-
-TODO(georgey) : remove following lines when updated to version after 186
-  cpp/src/phonelibutil.cc made icu::Transliteration member of PhoneUtil
-  to improve performance, Not needed in recent versions.
-
+The library is mapped through the DEPS file into src/ folder. To update:
+1. Get the latest version number from
+  http://code.google.com/p/libphonenumber/source/list
+2. Locally update this file and DEPS.
+3. run 'gclient sync'
+4. Adjust libphonenumber.gyp if necessary.
+5. Verify that all compiles and all of the tests are successfull.
