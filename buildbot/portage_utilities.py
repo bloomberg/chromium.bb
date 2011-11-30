@@ -92,6 +92,14 @@ class _BlackListManager(object):
     return False
 
 
+class EBuildVersionFormatException(Exception):
+  def __init__(self, filename):
+    self.filename = filename
+    message = ('Ebuild file name %s '
+               'does not match expected format.' % filename)
+    super(EBuildVersionFormatException, self).__init__(message)
+
+
 class EBuild(object):
   """Wrapper class for information about an ebuild."""
 
@@ -165,14 +173,20 @@ class EBuild(object):
     git_commit_cmd = 'git commit -am "%s"' % message
     cls._RunCommand(git_commit_cmd)
 
+  _package_version_re = re.compile(
+    r'.*-(([0-9][0-9a-z_.]*)(-r[0-9]+)?)[.]ebuild')
+
   def __init__(self, path):
     """Sets up data about an ebuild from its path."""
-    from portage.versions import pkgsplit
     _path, self._category, self._pkgname, filename = path.rsplit('/', 3)
-    _pkgname, self._version_no_rev, rev = pkgsplit(
-        filename.replace('.ebuild', ''))
-    self.current_revision = int(rev.replace('r', ''))
-    self.version = '%s-%s' % (self._version_no_rev, rev)
+    m = self._package_version_re.match(filename)
+    if not m:
+      raise EBuildVersionFormatException(filename)
+    self.version, self._version_no_rev, revision = m.groups()
+    if revision is not None:
+      self.current_revision = int(revision.replace('-r', ''))
+    else:
+      self.current_revision = 0
     self.package = '%s/%s' % (self._category, self._pkgname)
 
     self._ebuild_path_no_version = os.path.join(
@@ -313,53 +327,63 @@ def BestEBuild(ebuilds):
 
 
 def _FindUprevCandidates(files, blacklist):
-  """Return a list of uprev candidates from specified list of files.
+  """Return the uprev candidate ebuild from a specified list of files.
 
-  Usually an uprev candidate is a the stable ebuild in a cros_workon directory.
-  However, if no such stable ebuild exists (someone just checked in the 9999
-  ebuild), this is the unstable ebuild.
+  Usually an uprev candidate is a the stable ebuild in a cros_workon
+  directory.  However, if no such stable ebuild exists (someone just
+  checked in the 9999 ebuild), this is the unstable ebuild.
+
+  If the package isn't a cros_workon package, return None.
 
   Args:
-    files: List of files.
+    files: List of files in a package directory.
   """
-  workon_dir = False
   stable_ebuilds = []
   unstable_ebuilds = []
   for path in files:
-    if path.endswith('.ebuild') and not os.path.islink(path):
-      ebuild = EBuild(path)
-      if ebuild.is_workon and not blacklist.IsPackageBlackListed(path):
-        workon_dir = True
-        if ebuild.is_stable:
-          stable_ebuilds.append(ebuild)
-        else:
-          unstable_ebuilds.append(ebuild)
+    if not path.endswith('.ebuild') or os.path.islink(path):
+      continue
+    ebuild = EBuild(path)
+    if not ebuild.is_workon or blacklist.IsPackageBlackListed(path):
+      continue
+    if ebuild.is_stable:
+      stable_ebuilds.append(ebuild)
+    else:
+      unstable_ebuilds.append(ebuild)
 
-  # If we found a workon ebuild in this directory, apply some sanity checks.
-  if workon_dir:
-    if len(unstable_ebuilds) > 1:
-      cros_build_lib.Die('Found multiple unstable ebuilds in %s' %
-                         os.path.dirname(path))
-    if len(stable_ebuilds) > 1:
-      stable_ebuilds = [BestEBuild(stable_ebuilds)]
-
-      # Print a warning if multiple stable ebuilds are found in the same
-      # directory. Storing multiple stable ebuilds is error-prone because
-      # the older ebuilds will not get rev'd.
-      cros_build_lib.Warning('Found multiple stable ebuilds in %s' %
-                             os.path.dirname(path))
-
-    if not unstable_ebuilds:
-      cros_build_lib.Die('Missing 9999 ebuild in %s' % os.path.dirname(path))
-    if not stable_ebuilds:
-      cros_build_lib.Warning('Missing stable ebuild in %s' %
-                             os.path.dirname(path))
-      return unstable_ebuilds[0]
-
-  if stable_ebuilds:
-    return stable_ebuilds[0]
-  else:
+  # If both ebuild lists are empty, the passed in file list was for
+  # a non-workon package.
+  if not unstable_ebuilds:
+    if stable_ebuilds:
+      path = os.path.dirname(stable_ebuilds[0].ebuild_path)
+      cros_build_lib.Die('Missing 9999 ebuild in %s' % path)
     return None
+
+  path = os.path.dirname(unstable_ebuilds[0].ebuild_path)
+  if len(unstable_ebuilds) > 1:
+    cros_build_lib.Die('Found multiple unstable ebuilds in %s' % path)
+
+  if not stable_ebuilds:
+    cros_build_lib.Warning('Missing stable ebuild in %s' % path)
+    return unstable_ebuilds[0]
+
+  if len(stable_ebuilds) == 1:
+    return stable_ebuilds[0]
+
+  stable_versions = set(ebuild._version_no_rev for ebuild in stable_ebuilds)
+  if len(stable_versions) > 1:
+    package = stable_ebuilds[0].package
+    message = 'Found multiple stable ebuild versions in %s:' % path
+    for version in stable_versions:
+      message += '\n    %s-%s' % (package, version)
+    cros_build_lib.Die(message)
+
+  uprev_ebuild = max(stable_ebuilds, key=lambda eb: eb.current_revision)
+  for ebuild in stable_ebuilds:
+    if ebuild != uprev_ebuild:
+      cros_build_lib.Warning('Ignoring stable ebuild revision %s in %s' %
+                             (ebuild.version, path))
+  return uprev_ebuild
 
 
 def BuildEBuildDictionary(overlays, use_all, packages):

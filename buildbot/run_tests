@@ -48,6 +48,7 @@ run_test() {
 sudo true
 
 all_tests=(
+  portage_utilities_unittest.py
   cbuildbot_unittest.py
   cbuildbot_config_unittest.py
   cbuildbot_commands_unittest.py
@@ -58,7 +59,6 @@ all_tests=(
   patch_unittest.py
   prebuilt_unittest.py
   validation_pool_unittest.py
-  "portage_utilities_unittest.py yes"
   "cros_mark_as_stable_unittest.py yes"
   "cros_mark_chrome_as_stable_unittest.py yes"
 )

@@ -79,7 +79,7 @@ class EBuildTest(mox.MoxTestBase):
     self.assertEquals(fake_ebuild._pkgname, 'test_package')
     self.assertEquals(fake_ebuild._version_no_rev, '9999')
     self.assertEquals(fake_ebuild.current_revision, 0)
-    self.assertEquals(fake_ebuild.version, '9999-r0')
+    self.assertEquals(fake_ebuild.version, '9999')
     self.assertEquals(fake_ebuild.package, 'to/test_package')
     self.assertEquals(fake_ebuild._ebuild_path_no_version,
                       '/path/to/test_package/test_package')
