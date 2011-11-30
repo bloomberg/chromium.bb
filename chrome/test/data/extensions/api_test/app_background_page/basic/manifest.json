@@ -1,6 +1,7 @@
 {
   "name": "app_background_page/basic",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Tests that web-extent background pages can be opened, shared, and closed.",
   "background_page": "test.html",
   "permissions": ["tabs", "http://a.com/*"],

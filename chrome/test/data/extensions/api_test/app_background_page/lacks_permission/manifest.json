@@ -1,6 +1,7 @@
 {
   "name": "app_background_page/lacks_permission",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Tests that an attempt to open a web-extent background page without permission results in a standard popup",
   "background_page": "test.html",
   "permissions": ["tabs", "http://a.com/*"],

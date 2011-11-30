@@ -1,6 +1,7 @@
 {
   "name": "app_process",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Tests that app URLs with the background permission are grouped into the same process.",
   "app": {
     "urls": [

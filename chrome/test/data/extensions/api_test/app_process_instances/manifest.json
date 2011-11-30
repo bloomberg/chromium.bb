@@ -1,6 +1,7 @@
 {
   "name": "app_process_instances",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Tests that app URLs without the background permission are not consolidated.",
   "app": {
     "urls": [
