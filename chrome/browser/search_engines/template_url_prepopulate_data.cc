@@ -1193,7 +1193,7 @@ const PrepopulatedEngine google = {
       L"client=chrome&hl={language}&q={searchTerms}",
   L"{google:baseURL}webhp?{google:RLZ}sourceid=chrome-instant&"
       L"{google:instantFieldTrialGroupParameter}"
-      L"ie={inputEncoding}&ion=1{searchTerms}&nord=1",
+      L"ie={inputEncoding}&ion=1{searchTerms}",
   SEARCH_ENGINE_GOOGLE,
   IDR_SEARCH_ENGINE_LOGO_GOOGLE,
   1,
@@ -3329,7 +3329,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 int GetDataVersion(PrefService* prefs) {
   // Increment this if you change the above data in ways that mean users with
   // existing data should get a new version.
-  const int kCurrentDataVersion = 36;
+  const int kCurrentDataVersion = 37;
   if (!prefs)
     return kCurrentDataVersion;
   // If a version number exist in the preferences file, it overrides the
