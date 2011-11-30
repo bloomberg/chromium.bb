@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/dialog_style.h"
 #include "chrome/browser/ui/views/window.h"
-#include "chrome/browser/ui/webui/web_ui_util.cc"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
