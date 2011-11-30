@@ -427,8 +427,9 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSNumber*)focused {
+  BrowserAccessibilityManager* manager = browserAccessibility_->manager();
   NSNumber* ret = [NSNumber numberWithBool:
-      GetState(browserAccessibility_, WebAccessibility::STATE_FOCUSED)];
+      manager->GetFocus(NULL) == browserAccessibility_];
   return ret;
 }
 
