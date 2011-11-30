@@ -12,16 +12,6 @@
     'host_plugin_mime_type': 'application/vnd.chromium.remoting-host',
     'host_plugin_description': 'Allow another user to access your computer securely over the Internet.',
 
-    # Variables for common_constants (used by JS unittests).
-    'variables': {
-      'version_py_path': '../chrome/tools/build/version.py',
-      'version_path': '../chrome/VERSION',
-    },
-    'version_py_path': '<(version_py_path)',
-    'version_path': '<(version_path)',
-    'version_full':
-        '<!(python <(version_py_path) -f <(version_path) -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
-
     'conditions': [
       ['OS=="mac"', {
         'conditions': [
@@ -149,12 +139,6 @@
     ],
   },
 
-  'includes': [
-    # The common_constants target is needed for the JS unittests.
-    '../chrome/common_constants.gypi',
-    '../chrome/js_unittest_vars.gypi',
-  ],
-
   'target_defaults': {
     'defines': [
     ],
@@ -164,14 +148,6 @@
   },
 
   'conditions': [
-    ['OS == "win"', {
-      'includes': [
-        # Required for JS unittests.
-        '../chrome/chrome_common.gypi',
-        '../chrome/chrome_installer.gypi',
-        '../chrome/chrome_installer_util.gypi',
-      ],
-    }],  # 'OS == "win"'
     ['os_posix == 1', {
       'targets': [
         # Simple webserver for testing remoting client plugin.
@@ -890,7 +866,6 @@
       'target_name': 'remoting_unittests',
       'type': 'executable',
       'dependencies': [
-        'common_constants',  # from common_constants.gypi
         'remoting_base',
         'remoting_client',
         'remoting_host',
@@ -903,18 +878,11 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui',
-        '../v8/tools/gyp/v8.gyp:v8',
       ],
       'include_dirs': [
         '../testing/gmock/include',
       ],
-      'includes': [
-        '../chrome/js_unittest_rules.gypi',
-      ],
       'sources': [
-        '../chrome/test/base/v8_unit_test.cc',
-        '../chrome/test/base/v8_unit_test.h',
-        '../chrome/test/base/run_all_remoting_unittests.cc',
         'base/auth_token_util_unittest.cc',
         'base/codec_test.cc',
         'base/codec_test.h',
@@ -964,8 +932,7 @@
         'protocol/rtp_video_reader_unittest.cc',
         'protocol/rtp_video_writer_unittest.cc',
         'protocol/v1_authenticator_unittest.cc',
-        'webapp/me2mom/debug_log.gtestjs',
-        'webapp/me2mom/debug_log.js',
+        'run_all_unittests.cc',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {
@@ -986,12 +953,6 @@
             ],
           ],
         }],
-        ['OS == "win"', {
-          'dependencies': [
-            # Required for JS unittests.
-            'installer_util',
-          ],
-        }],  # 'OS == "win"'
       ],  # end of 'conditions'
     },  # end of target 'remoting_unittests'
   ],  # end of targets
