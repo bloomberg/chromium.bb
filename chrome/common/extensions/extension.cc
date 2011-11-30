@@ -87,11 +87,12 @@ static const char* kBaseCrxKeys[] = {
   keys::kDefaultLocale,
   keys::kDescription,
   keys::kIcons,
+  keys::kManifestVersion,
   keys::kName,
   keys::kPublicKey,
   keys::kSignature,
-  keys::kVersion,
   keys::kUpdateURL
+  keys::kVersion,
 };
 
 bool IsBaseCrxKey(const std::string& key) {
