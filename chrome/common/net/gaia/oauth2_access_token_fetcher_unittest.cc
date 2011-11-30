@@ -35,6 +35,8 @@ using testing::_;
 using testing::Return;
 
 namespace {
+typedef std::vector<std::string> ScopeList;
+
 static const char kValidTokenResponse[] =
     "{"
     "  \"access_token\": \"at1\","
@@ -78,7 +80,7 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
  public:
   OAuth2AccessTokenFetcherTest()
     : ui_thread_(BrowserThread::UI, &message_loop_),
-      fetcher_(&consumer_, profile_.GetRequestContext(), "test") {
+      fetcher_(&consumer_, profile_.GetRequestContext()) {
   }
 
   virtual ~OAuth2AccessTokenFetcherTest() { }
@@ -114,14 +116,14 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
 TEST_F(OAuth2AccessTokenFetcherTest, GetAccessTokenRequestFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(false, 0, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
-  fetcher_.Start("client_id", "client_secret", "refresh_token");
+  fetcher_.Start("client_id", "client_secret", "refresh_token", ScopeList());
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
 TEST_F(OAuth2AccessTokenFetcherTest, GetAccessTokenResponseCodeFailure) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(true, RC_FORBIDDEN, "");
   EXPECT_CALL(consumer_, OnGetTokenFailure(_)).Times(1);
-  fetcher_.Start("client_id", "client_secret", "refresh_token");
+  fetcher_.Start("client_id", "client_secret", "refresh_token", ScopeList());
   fetcher_.OnURLFetchComplete(url_fetcher);
 }
 
@@ -129,8 +131,50 @@ TEST_F(OAuth2AccessTokenFetcherTest, Success) {
   TestURLFetcher* url_fetcher = SetupGetAccessToken(
       true, RC_REQUEST_OK, kValidTokenResponse);
   EXPECT_CALL(consumer_, OnGetTokenSuccess("at1")).Times(1);
-  fetcher_.Start("client_id", "client_secret", "refresh_token");
+  fetcher_.Start("client_id", "client_secret", "refresh_token", ScopeList());
   fetcher_.OnURLFetchComplete(url_fetcher);
+}
+
+TEST_F(OAuth2AccessTokenFetcherTest, MakeGetAccessTokenBody) {
+  {  // No scope.
+    std::string body =
+        "client_id=cid1&"
+        "client_secret=cs1&"
+        "grant_type=refresh_token&"
+        "refresh_token=rt1";
+    EXPECT_EQ(body, OAuth2AccessTokenFetcher::MakeGetAccessTokenBody(
+        "cid1", "cs1", "rt1", ScopeList()));
+  }
+
+  {  // One scope.
+    std::string body =
+        "client_id=cid1&"
+        "client_secret=cs1&"
+        "grant_type=refresh_token&"
+        "refresh_token=rt1&"
+        "scope=https://www.googleapis.com/foo";
+    ScopeList scopes;
+    scopes.push_back("https://www.googleapis.com/foo");
+    EXPECT_EQ(body, OAuth2AccessTokenFetcher::MakeGetAccessTokenBody(
+        "cid1", "cs1", "rt1", scopes));
+  }
+
+  {  // Multiple scopes.
+    std::string body =
+        "client_id=cid1&"
+        "client_secret=cs1&"
+        "grant_type=refresh_token&"
+        "refresh_token=rt1&"
+        "scope=https://www.googleapis.com/foo+"
+        "https://www.googleapis.com/bar+"
+        "https://www.googleapis.com/baz";
+    ScopeList scopes;
+    scopes.push_back("https://www.googleapis.com/foo");
+    scopes.push_back("https://www.googleapis.com/bar");
+    scopes.push_back("https://www.googleapis.com/baz");
+    EXPECT_EQ(body, OAuth2AccessTokenFetcher::MakeGetAccessTokenBody(
+        "cid1", "cs1", "rt1", scopes));
+  }
 }
 
 TEST_F(OAuth2AccessTokenFetcherTest, ParseGetAccessTokenResponse) {

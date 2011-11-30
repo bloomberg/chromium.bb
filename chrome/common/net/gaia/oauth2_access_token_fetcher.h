@@ -43,13 +43,19 @@ class URLRequestStatus;
 class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
  public:
   OAuth2AccessTokenFetcher(OAuth2AccessTokenConsumer* consumer,
-                           net::URLRequestContextGetter* getter,
-                           const std::string& source);
+                           net::URLRequestContextGetter* getter);
   virtual ~OAuth2AccessTokenFetcher();
 
+  // Starts the flow with the given parameters.
+  // |scopes| can be empty. If it is empty then the access token will have the
+  // same scope as the refresh token. If not empty, then access token will have
+  // the scopes specified. In this case, the access token will successfully be
+  // generated only if refresh token has login scope of a list of scopes that is
+  // a super-set of the specified scopes.
   void Start(const std::string& client_id,
              const std::string& client_secret,
-             const std::string& refresh_token);
+             const std::string& refresh_token,
+             const std::vector<std::string>& scopes);
 
   void CancelRequest();
 
@@ -74,16 +80,17 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
 
   // Other helpers.
   static GURL MakeGetAccessTokenUrl();
-  static std::string MakeGetAccessTokenBody(const std::string& client_id,
-                                            const std::string& client_secret,
-                                            const std::string& refresh_token);
+  static std::string MakeGetAccessTokenBody(
+      const std::string& client_id,
+      const std::string& client_secret,
+      const std::string& refresh_token,
+      const std::vector<std::string>& scopes);
   static bool ParseGetAccessTokenResponse(const content::URLFetcher* source,
                                           std::string* access_token);
 
   // State that is set during construction.
   OAuth2AccessTokenConsumer* const consumer_;
   net::URLRequestContextGetter* const getter_;
-  std::string source_;
   State state_;
 
   // While a fetch is in progress.
@@ -91,10 +98,13 @@ class OAuth2AccessTokenFetcher : public content::URLFetcherDelegate {
   std::string client_id_;
   std::string client_secret_;
   std::string refresh_token_;
+  std::vector<std::string> scopes_;
 
   friend class OAuth2AccessTokenFetcherTest;
   FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenFetcherTest,
                            ParseGetAccessTokenResponse);
+  FRIEND_TEST_ALL_PREFIXES(OAuth2AccessTokenFetcherTest,
+                           MakeGetAccessTokenBody);
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2AccessTokenFetcher);
 };

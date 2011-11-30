@@ -6,8 +6,10 @@
 
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/json/json_reader.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/common/net/gaia/gaia_urls.h"
@@ -27,9 +29,16 @@ using net::URLRequestStatus;
 namespace {
 static const char kGetAccessTokenBodyFormat[] =
     "client_id=%s&"
-    "client_secret=%s"
+    "client_secret=%s&"
     "grant_type=refresh_token&"
     "refresh_token=%s";
+
+static const char kGetAccessTokenBodyWithScopeFormat[] =
+    "client_id=%s&"
+    "client_secret=%s&"
+    "grant_type=refresh_token&"
+    "refresh_token=%s&"
+    "scope=%s";
 
 static const char kAccessTokenKey[] = "access_token";
 
@@ -81,11 +90,9 @@ static URLFetcher* CreateFetcher(URLRequestContextGetter* getter,
 
 OAuth2AccessTokenFetcher::OAuth2AccessTokenFetcher(
     OAuth2AccessTokenConsumer* consumer,
-    URLRequestContextGetter* getter,
-    const std::string& source)
+    URLRequestContextGetter* getter)
     : consumer_(consumer),
       getter_(getter),
-      source_(source),
       state_(INITIAL) { }
 
 OAuth2AccessTokenFetcher::~OAuth2AccessTokenFetcher() { }
@@ -96,10 +103,12 @@ void OAuth2AccessTokenFetcher::CancelRequest() {
 
 void OAuth2AccessTokenFetcher::Start(const std::string& client_id,
                                      const std::string& client_secret,
-                                     const std::string& refresh_token) {
+                                     const std::string& refresh_token,
+                                     const std::vector<std::string>& scopes) {
   client_id_ = client_id;
   client_secret_ = client_secret;
   refresh_token_ = refresh_token;
+  scopes_ = scopes;
   StartGetAccessToken();
 }
 
@@ -109,7 +118,8 @@ void OAuth2AccessTokenFetcher::StartGetAccessToken() {
   fetcher_.reset(CreateFetcher(
       getter_,
       MakeGetAccessTokenUrl(),
-      MakeGetAccessTokenBody(client_id_, client_secret_, refresh_token_),
+      MakeGetAccessTokenBody(
+          client_id_, client_secret_, refresh_token_, scopes_),
       this));
   fetcher_->Start();  // OnURLFetchComplete will be called.
 }
@@ -162,12 +172,28 @@ GURL OAuth2AccessTokenFetcher::MakeGetAccessTokenUrl() {
 std::string OAuth2AccessTokenFetcher::MakeGetAccessTokenBody(
     const std::string& client_id,
     const std::string& client_secret,
-    const std::string& refresh_token) {
-  return StringPrintf(
-      kGetAccessTokenBodyFormat,
-      net::EscapeUrlEncodedData(client_id, true).c_str(),
-      net::EscapeUrlEncodedData(client_secret, true).c_str(),
-      net::EscapeUrlEncodedData(refresh_token, true).c_str());
+    const std::string& refresh_token,
+    const std::vector<std::string>& scopes) {
+  std::string enc_client_id = net::EscapeUrlEncodedData(client_id, true);
+  std::string enc_client_secret =
+      net::EscapeUrlEncodedData(client_secret, true);
+  std::string enc_refresh_token =
+      net::EscapeUrlEncodedData(refresh_token, true);
+  if (scopes.empty()) {
+    return StringPrintf(
+        kGetAccessTokenBodyFormat,
+        enc_client_id.c_str(),
+        enc_client_secret.c_str(),
+        enc_refresh_token.c_str());
+  } else {
+    std::string scopes_string = JoinString(scopes, ' ');
+    return StringPrintf(
+        kGetAccessTokenBodyWithScopeFormat,
+        enc_client_id.c_str(),
+        enc_client_secret.c_str(),
+        enc_refresh_token.c_str(),
+        net::EscapeUrlEncodedData(scopes_string, true).c_str());
+  }
 }
 
 // static
