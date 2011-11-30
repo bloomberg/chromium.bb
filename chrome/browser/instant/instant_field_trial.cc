@@ -46,24 +46,23 @@ void InstantFieldTrial::Activate() {
   if (base::FieldTrialList::IsOneTimeRandomizationEnabled())
     trial->UseOneTimeRandomization();
 
-  // Each group is of total size 10% (5% each for the _a and _b variants).
   g_instant_experiment_a = trial->AppendGroup("InstantExperimentA", 50);
   g_instant_experiment_b = trial->AppendGroup("InstantExperimentB", 50);
 
   g_hidden_experiment_a = trial->AppendGroup("HiddenExperimentA", 50);
   g_hidden_experiment_b = trial->AppendGroup("HiddenExperimentB", 50);
 
-  g_silent_experiment_a = trial->AppendGroup("SilentExperimentA", 50);
-  g_silent_experiment_b = trial->AppendGroup("SilentExperimentB", 50);
+  g_silent_experiment_a = trial->AppendGroup("SilentExperimentA", 340);
+  g_silent_experiment_b = trial->AppendGroup("SilentExperimentB", 340);
 
   g_suggest_experiment_a = trial->AppendGroup("SuggestExperimentA", 50);
   g_suggest_experiment_b = trial->AppendGroup("SuggestExperimentB", 50);
 
-  g_uma_control_a = trial->AppendGroup("UmaControlA", 50);
-  g_uma_control_b = trial->AppendGroup("UmaControlB", 50);
+  g_uma_control_a = trial->AppendGroup("UmaControlA", 5);
+  g_uma_control_b = trial->AppendGroup("UmaControlB", 5);
 
-  g_all_control_a = trial->AppendGroup("AllControlA", 50);
-  g_all_control_b = trial->AppendGroup("AllControlB", 50);
+  g_all_control_a = trial->AppendGroup("AllControlA", 5);
+  g_all_control_b = trial->AppendGroup("AllControlB", 5);
 }
 
 // static
