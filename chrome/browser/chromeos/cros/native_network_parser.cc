@@ -112,6 +112,7 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kProxyConfigProperty, PROPERTY_INDEX_PROXY_CONFIG },
   { flimflam::kRoamingStateProperty, PROPERTY_INDEX_ROAMING_STATE },
   { flimflam::kSIMLockStatusProperty, PROPERTY_INDEX_SIM_LOCK },
+  { flimflam::kSSIDProperty, PROPERTY_INDEX_SSID },
   { flimflam::kSaveCredentialsProperty, PROPERTY_INDEX_SAVE_CREDENTIALS },
   { flimflam::kScanningProperty, PROPERTY_INDEX_SCANNING },
   { flimflam::kSecurityProperty, PROPERTY_INDEX_SECURITY },
@@ -139,6 +140,41 @@ EnumMapper<PropertyIndex>::Pair property_index_table[] = {
   { flimflam::kWifiPhyMode, PROPERTY_INDEX_WIFI_PHY_MODE },
 };
 
+EnumMapper<ConnectionType>::Pair network_type_table[] = {
+  { flimflam::kTypeEthernet, TYPE_ETHERNET },
+  { flimflam::kTypeWifi, TYPE_WIFI },
+  { flimflam::kTypeWimax, TYPE_WIMAX },
+  { flimflam::kTypeBluetooth, TYPE_BLUETOOTH },
+  { flimflam::kTypeCellular, TYPE_CELLULAR },
+  { flimflam::kTypeVPN, TYPE_VPN },
+};
+
+EnumMapper<ConnectionSecurity>::Pair network_security_table[] = {
+  { flimflam::kSecurityNone, SECURITY_NONE },
+  { flimflam::kSecurityWep, SECURITY_WEP },
+  { flimflam::kSecurityWpa, SECURITY_WPA },
+  { flimflam::kSecurityRsn, SECURITY_RSN },
+  { flimflam::kSecurityPsk, SECURITY_PSK },
+  { flimflam::kSecurity8021x, SECURITY_8021X },
+};
+
+EnumMapper<EAPMethod>::Pair network_eap_method_table[] = {
+  { flimflam::kEapMethodPEAP, EAP_METHOD_PEAP },
+  { flimflam::kEapMethodTLS, EAP_METHOD_TLS },
+  { flimflam::kEapMethodTTLS, EAP_METHOD_TTLS },
+  { flimflam::kEapMethodLEAP, EAP_METHOD_LEAP },
+};
+
+EnumMapper<EAPPhase2Auth>::Pair network_eap_auth_table[] = {
+  { flimflam::kEapPhase2AuthPEAPMD5, EAP_PHASE_2_AUTH_MD5 },
+  { flimflam::kEapPhase2AuthPEAPMSCHAPV2, EAP_PHASE_2_AUTH_MSCHAPV2 },
+  { flimflam::kEapPhase2AuthTTLSMD5, EAP_PHASE_2_AUTH_MD5 },
+  { flimflam::kEapPhase2AuthTTLSMSCHAPV2, EAP_PHASE_2_AUTH_MSCHAPV2 },
+  { flimflam::kEapPhase2AuthTTLSMSCHAP, EAP_PHASE_2_AUTH_MSCHAP },
+  { flimflam::kEapPhase2AuthTTLSPAP, EAP_PHASE_2_AUTH_PAP },
+  { flimflam::kEapPhase2AuthTTLSCHAP, EAP_PHASE_2_AUTH_CHAP },
+};
+
 // Serve the singleton mapper instance.
 const EnumMapper<PropertyIndex>* get_native_mapper() {
   CR_DEFINE_STATIC_LOCAL(EnumMapper<PropertyIndex>, mapper,
@@ -146,20 +182,6 @@ const EnumMapper<PropertyIndex>* get_native_mapper() {
        arraysize(property_index_table),
        PROPERTY_INDEX_UNKNOWN));
   return &mapper;
-}
-
-ConnectionType ParseNetworkType(const std::string& type) {
-  static EnumMapper<ConnectionType>::Pair table[] = {
-    { flimflam::kTypeEthernet, TYPE_ETHERNET },
-    { flimflam::kTypeWifi, TYPE_WIFI },
-    { flimflam::kTypeWimax, TYPE_WIMAX },
-    { flimflam::kTypeBluetooth, TYPE_BLUETOOTH },
-    { flimflam::kTypeCellular, TYPE_CELLULAR },
-    { flimflam::kTypeVPN, TYPE_VPN },
-  };
-  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionType>, parser,
-      (table, arraysize(table), TYPE_UNKNOWN));
-  return parser.Get(type);
 }
 
 }  // namespace
@@ -391,7 +413,7 @@ bool NativeNetworkDeviceParser::ParseValue(
 }
 
 ConnectionType NativeNetworkDeviceParser::ParseType(const std::string& type) {
-  return ParseNetworkType(type);
+  return NativeNetworkParser::network_type_mapper()->Get(type);
 }
 
 bool NativeNetworkDeviceParser::ParseApnList(const ListValue& list,
@@ -505,9 +527,50 @@ const EnumMapper<PropertyIndex>* NativeNetworkParser::property_mapper() {
   return get_native_mapper();
 }
 
+// static
+const EnumMapper<ConnectionType>* NativeNetworkParser::network_type_mapper() {
+  CR_DEFINE_STATIC_LOCAL(
+      EnumMapper<ConnectionType>,
+      network_type_mapper,
+      (network_type_table, arraysize(network_type_table), TYPE_UNKNOWN));
+  return &network_type_mapper;
+}
+
+// static
+const EnumMapper<ConnectionSecurity>*
+    NativeNetworkParser::network_security_mapper() {
+  CR_DEFINE_STATIC_LOCAL(
+      EnumMapper<ConnectionSecurity>,
+      network_security_mapper,
+      (network_security_table, arraysize(network_security_table),
+          SECURITY_UNKNOWN));
+  return &network_security_mapper;
+}
+
+// static
+const EnumMapper<EAPMethod>* NativeNetworkParser::network_eap_method_mapper() {
+  CR_DEFINE_STATIC_LOCAL(
+      EnumMapper<EAPMethod>,
+      network_eap_method_mapper,
+      (network_eap_method_table, arraysize(network_eap_method_table),
+          EAP_METHOD_UNKNOWN));
+  return &network_eap_method_mapper;
+}
+
+// static
+const EnumMapper<EAPPhase2Auth>*
+    NativeNetworkParser::network_eap_auth_mapper() {
+  CR_DEFINE_STATIC_LOCAL(
+      EnumMapper<EAPPhase2Auth>,
+      network_eap_auth_mapper,
+      (network_eap_auth_table, arraysize(network_eap_auth_table),
+          EAP_PHASE_2_AUTH_AUTO));
+  return &network_eap_auth_mapper;
+}
+
 const ConnectionType NativeNetworkParser::ParseConnectionType(
     const std::string& connection_type) {
-  return ParseNetworkType(connection_type);
+  return network_type_mapper()->Get(connection_type);
 }
 
 Network* NativeNetworkParser::CreateNewNetwork(
@@ -612,7 +675,7 @@ bool NativeNetworkParser::ParseValue(PropertyIndex index,
 }
 
 ConnectionType NativeNetworkParser::ParseType(const std::string& type) {
-  return ParseNetworkType(type);
+  return network_type_mapper()->Get(type);
 }
 
 ConnectionType NativeNetworkParser::ParseTypeFromDictionary(
@@ -1034,45 +1097,16 @@ bool NativeWifiNetworkParser::ParseValue(PropertyIndex index,
 
 ConnectionSecurity NativeWifiNetworkParser::ParseSecurity(
     const std::string& security) {
-  static EnumMapper<ConnectionSecurity>::Pair table[] = {
-    { flimflam::kSecurityNone, SECURITY_NONE },
-    { flimflam::kSecurityWep, SECURITY_WEP },
-    { flimflam::kSecurityWpa, SECURITY_WPA },
-    { flimflam::kSecurityRsn, SECURITY_RSN },
-    { flimflam::kSecurityPsk, SECURITY_PSK },
-    { flimflam::kSecurity8021x, SECURITY_8021X },
-  };
-  CR_DEFINE_STATIC_LOCAL(EnumMapper<ConnectionSecurity>, parser,
-      (table, arraysize(table), SECURITY_UNKNOWN));
-  return parser.Get(security);
+  return network_security_mapper()->Get(security);
 }
 
 EAPMethod NativeWifiNetworkParser::ParseEAPMethod(const std::string& method) {
-  static EnumMapper<EAPMethod>::Pair table[] = {
-    { flimflam::kEapMethodPEAP, EAP_METHOD_PEAP },
-    { flimflam::kEapMethodTLS, EAP_METHOD_TLS },
-    { flimflam::kEapMethodTTLS, EAP_METHOD_TTLS },
-    { flimflam::kEapMethodLEAP, EAP_METHOD_LEAP },
-  };
-  CR_DEFINE_STATIC_LOCAL(EnumMapper<EAPMethod>, parser,
-      (table, arraysize(table), EAP_METHOD_UNKNOWN));
-  return parser.Get(method);
+  return network_eap_method_mapper()->Get(method);
 }
 
 EAPPhase2Auth NativeWifiNetworkParser::ParseEAPPhase2Auth(
     const std::string& auth) {
-  static EnumMapper<EAPPhase2Auth>::Pair table[] = {
-    { flimflam::kEapPhase2AuthPEAPMD5, EAP_PHASE_2_AUTH_MD5 },
-    { flimflam::kEapPhase2AuthPEAPMSCHAPV2, EAP_PHASE_2_AUTH_MSCHAPV2 },
-    { flimflam::kEapPhase2AuthTTLSMD5, EAP_PHASE_2_AUTH_MD5 },
-    { flimflam::kEapPhase2AuthTTLSMSCHAPV2, EAP_PHASE_2_AUTH_MSCHAPV2 },
-    { flimflam::kEapPhase2AuthTTLSMSCHAP, EAP_PHASE_2_AUTH_MSCHAP },
-    { flimflam::kEapPhase2AuthTTLSPAP, EAP_PHASE_2_AUTH_PAP },
-    { flimflam::kEapPhase2AuthTTLSCHAP, EAP_PHASE_2_AUTH_CHAP },
-  };
-  CR_DEFINE_STATIC_LOCAL(EnumMapper<EAPPhase2Auth>, parser,
-      (table, arraysize(table), EAP_PHASE_2_AUTH_AUTO));
-  return parser.Get(auth);
+  return network_eap_auth_mapper()->Get(auth);
 }
 
 // -------------------- NativeVirtualNetworkParser --------------------

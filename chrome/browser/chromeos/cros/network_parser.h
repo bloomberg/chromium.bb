@@ -52,8 +52,10 @@ class EnumMapper {
 
   EnumMapper(const Pair* list, size_t num_entries, EnumType unknown)
       : unknown_value_(unknown) {
-    for (size_t i = 0; i < num_entries; ++i, ++list)
+    for (size_t i = 0; i < num_entries; ++i, ++list) {
       enum_map_[list->key] = list->value;
+      inverse_enum_map_[list->value] = list->key;
+    }
   }
 
   EnumType Get(const std::string& type) const {
@@ -63,10 +65,20 @@ class EnumMapper {
     return unknown_value_;
   }
 
+  std::string GetKey(EnumType type) const {
+    InverseEnumMapConstIter iter = inverse_enum_map_.find(type);
+    if (iter != inverse_enum_map_.end())
+      return iter->second;
+    return std::string();
+  }
+
  private:
   typedef typename std::map<std::string, EnumType> EnumMap;
+  typedef typename std::map<EnumType, std::string> InverseEnumMap;
   typedef typename EnumMap::const_iterator EnumMapConstIter;
+  typedef typename InverseEnumMap::const_iterator InverseEnumMapConstIter;
   EnumMap enum_map_;
+  InverseEnumMap inverse_enum_map_;
   EnumType unknown_value_;
   DISALLOW_COPY_AND_ASSIGN(EnumMapper);
 };
@@ -121,19 +133,24 @@ class NetworkParser {
  public:
   virtual ~NetworkParser();
 
-  // Called when a new network is encountered.  Returns NULL upon failure.
+  // Called when a new network is encountered.  In addition to setting the
+  // members on the Network object, the Network's property_map_ variable
+  // will include all the property and corresponding value in |info|.
+  // Returns NULL upon failure.
   virtual Network* CreateNetworkFromInfo(const std::string& service_path,
                                          const base::DictionaryValue& info);
 
   // Called when an existing network is has new information that needs
-  // to be updated.  Returns false upon failure.
+  // to be updated.  Network's property_map_ variable will be updated.
+  // Returns false upon failure.
   virtual bool UpdateNetworkFromInfo(const base::DictionaryValue& info,
                                      Network* network);
 
   // Called when an individual attribute of an existing network has
   // changed.  |index| is a return value that supplies the appropriate
   // property index for the given key.  |index| is filled in even if
-  // the update fails.  Returns false upon failure.
+  // the update fails.  Network's property_map_ variable will be updated.
+  // Returns false upon failure.
   virtual bool UpdateStatus(const std::string& key,
                             const base::Value& value,
                             Network* network,

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_CROS_NETWORK_LIBRARY_H_
 #pragma once
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -131,6 +132,7 @@ enum PropertyIndex {
   PROPERTY_INDEX_SERVING_OPERATOR,
   PROPERTY_INDEX_SIGNAL_STRENGTH,
   PROPERTY_INDEX_SIM_LOCK,
+  PROPERTY_INDEX_SSID,
   PROPERTY_INDEX_STATE,
   PROPERTY_INDEX_SUPPORT_NETWORK_SCAN,
   PROPERTY_INDEX_TECHNOLOGY_FAMILY,
@@ -673,6 +675,9 @@ class Network {
   NetworkParser* network_parser() { return network_parser_.get(); }
   void SetNetworkParser(NetworkParser* parser);
 
+  // Updates property_map_ for the corresponding property index.
+  void UpdatePropertyMap(PropertyIndex index, const base::Value& value);
+
   // Set the state and update flags if necessary.
   void SetState(ConnectionState state);
 
@@ -702,6 +707,8 @@ class Network {
   DictionaryValue* ui_data() { return &ui_data_; }
 
  private:
+  typedef std::map<PropertyIndex, base::Value*> PropertyMap;
+
   // This allows NetworkParser and its subclasses access to device
   // privates so that they can be reconstituted during parsing.  The
   // parsers only access things through the private set_ functions so
@@ -795,6 +802,10 @@ class Network {
   // This is the parser we use to parse messages from the native
   // network layer.
   scoped_ptr<NetworkParser> network_parser_;
+
+  // This map stores the set of properties for the network.
+  // Not all properties in this map are exposed via get methods.
+  PropertyMap property_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Network);
 };
