@@ -39,8 +39,9 @@ void* GLSurfaceNSView::GetHandle() {
   return view_;
 }
 
-void GLSurfaceNSView::SetGLContext(GLContextNSView* context) {
-  context_ = context;
+bool GLSurfaceNSView::OnMakeCurrent(GLContext* context) {
+  context_ = static_cast<GLContextNSView *>(context);
+  return true;
 }
 
 }  // namespace gfx

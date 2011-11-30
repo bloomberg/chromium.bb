@@ -43,15 +43,15 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
     case kGLImplementationDesktopGL: {
       scoped_refptr<GLContext> context;
 #if defined(USE_AURA)
-      DCHECK(!compatible_surface->IsOffscreen());
-      context = new GLContextNSView(share_group);
-      if (!context->Initialize(compatible_surface, gpu_preference))
-        return NULL;
+      if (compatible_surface->IsOffscreen())
+        context = new GLContextCGL(share_group);
+      else
+        context = new GLContextNSView(share_group);
 #else
       context = new GLContextCGL(share_group);
+#endif // USE_AURA
       if (!context->Initialize(compatible_surface, gpu_preference))
         return NULL;
-#endif // USE_AURA
 
       return context;
     }

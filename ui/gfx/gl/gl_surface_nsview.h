@@ -29,7 +29,7 @@ class GLSurfaceNSView : public GLSurface {
   virtual void* GetHandle() OVERRIDE;
 
   // Allow the surface to call back to context when in need of |FlushBuffer|.
-  void SetGLContext(GLContextNSView* context);
+  virtual bool OnMakeCurrent(GLContext* context) OVERRIDE;
 
  private:
   // Weak.  An |NSView*|.

@@ -46,9 +46,6 @@ bool GLContextNSView::Initialize(GLSurface* surface,
     return false;
   }
 
-  // Allow the surface to call back when in need of |FlushBuffer|.
-  static_cast<GLSurfaceNSView*>(surface)->SetGLContext(this);
-
   return true;
 }
 
@@ -64,6 +61,12 @@ bool GLContextNSView::MakeCurrent(GLSurface* surface) {
   if ([view window])
     [context_ setView:view];
   [context_ makeCurrentContext];
+
+  if (!surface->OnMakeCurrent(this)) {
+    LOG(ERROR) << "Unable to make gl context current.";
+    return false;
+  }
+
   return true;
 }
 
