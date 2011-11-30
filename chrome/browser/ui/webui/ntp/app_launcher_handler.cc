@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/extension_icon_source.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
-#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -40,6 +39,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_apps.h"
+#include "content/browser/disposition_utils.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
 #include "googleurl/src/gurl.h"
@@ -49,6 +49,7 @@
 #include "ui/base/animation/animation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "webkit/glue/window_open_disposition.h"
 
 namespace {
 
@@ -508,12 +509,25 @@ void AppLauncherHandler::HandleGetApps(const ListValue* args) {
 
 void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
   std::string extension_id;
-  CHECK(args->GetString(0, &extension_id));
   double source = -1.0;
-  CHECK(args->GetDouble(1, &source));
   std::string url;
+  bool alt_key = false;
+  bool ctrl_key = false;
+  bool meta_key = false;
+  bool shift_key = false;
+  double button = 0.0;
+
+  CHECK(args->GetString(0, &extension_id));
+  CHECK(args->GetDouble(1, &source));
   if (args->GetSize() > 2)
     CHECK(args->GetString(2, &url));
+  if (args->GetSize() > 3) {
+    CHECK(args->GetBoolean(3, &alt_key));
+    CHECK(args->GetBoolean(4, &ctrl_key));
+    CHECK(args->GetBoolean(5, &meta_key));
+    CHECK(args->GetBoolean(6, &shift_key));
+    CHECK(args->GetDouble(7, &button));
+  }
 
   extension_misc::AppLaunchBucket launch_bucket =
       static_cast<extension_misc::AppLaunchBucket>(
@@ -532,8 +546,13 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
 
   Profile* profile = extension_service_->profile();
 
-  WindowOpenDisposition disposition = args->GetSize() > 3 ?
-        web_ui_util::GetDispositionFromClick(args, 3) : CURRENT_TAB;
+  // If the user pressed special keys when clicking, override the saved
+  // preference for launch container.
+  bool middle_button = (button == 1.0);
+  WindowOpenDisposition disposition =
+        disposition_utils::DispositionFromClick(middle_button, alt_key,
+                                                ctrl_key, meta_key, shift_key);
+
   if (extension_id != extension_misc::kWebStoreAppId) {
     RecordAppLaunchByID(launch_bucket);
     extension_service_->apps_promo()->ExpireDefaultApps();

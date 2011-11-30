@@ -17,7 +17,6 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class NavigationController;
 class Profile;
@@ -154,13 +153,12 @@ class TabRestoreService : public BaseSessionService {
   void RestoreMostRecentEntry(TabRestoreServiceDelegate* delegate);
 
   // Restores an entry by id. If there is no entry with an id matching |id|,
-  // this does nothing. If |delegate| is NULL, this creates a new window for the
-  // entry. |disposition| is respected, but the attributes (tabstrip index,
-  // browser window) of the tab when it was closed will be respected if
-  // disposition is UNKNOWN.
+  // this does nothing. If |replace_existing_tab| is true and id identifies a
+  // tab, the newly created tab replaces the selected tab in |delegate|. If
+  // |delegate| is NULL, this creates a new window for the entry.
   void RestoreEntryById(TabRestoreServiceDelegate* delegate,
                         SessionID::id_type id,
-                        WindowOpenDisposition disposition);
+                        bool replace_existing_tab);
 
   // Loads the tabs and previous session. This does nothing if the tabs
   // from the previous session have already been loaded.
@@ -265,13 +263,13 @@ class TabRestoreService : public BaseSessionService {
       std::vector<Entry*>* loaded_entries);
 
   // This is a helper function for RestoreEntryById() for restoring a single
-  // tab. If |delegate| is NULL, this creates a new window for the entry. This
-  // returns the TabRestoreServiceDelegate into which the tab was restored.
-  // |disposition| will be respected, but if it is UNKNOWN then the tab's
-  // original attributes will be respected instead.
+  // tab. If |replace_existing_tab| is true, the newly created tab replaces the
+  // selected tab in |delegate|. If |delegate| is NULL, this creates a new
+  // window for the entry. This returns the TabRestoreServiceDelegate into which
+  // the tab was restored.
   TabRestoreServiceDelegate* RestoreTab(const Tab& tab,
                                         TabRestoreServiceDelegate* delegate,
-                                        WindowOpenDisposition disposition);
+                                        bool replace_existing_tab);
 
   // Returns true if |tab| has more than one navigation. If |tab| has more
   // than one navigation |tab->current_navigation_index| is constrained based

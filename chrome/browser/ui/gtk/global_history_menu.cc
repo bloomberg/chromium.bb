@@ -382,7 +382,7 @@ void GlobalHistoryMenu::OnRecentlyClosedItemActivated(GtkWidget* sender) {
       TabRestoreServiceFactory::GetForProfile(browser_->profile());
   if (item->session_id && service) {
     service->RestoreEntryById(browser_->tab_restore_service_delegate(),
-                              item->session_id, UNKNOWN);
+                              item->session_id, false);
   } else {
     DCHECK(item->url.is_valid());
     browser_->OpenURL(OpenURLParams(item->url, GURL(), disposition,

@@ -302,12 +302,12 @@ void TabRestoreService::RestoreMostRecentEntry(
   if (entries_.empty())
     return;
 
-  RestoreEntryById(delegate, entries_.front()->id, UNKNOWN);
+  RestoreEntryById(delegate, entries_.front()->id, false);
 }
 
 void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
                                          SessionID::id_type id,
-                                         WindowOpenDisposition disposition) {
+                                         bool replace_existing_tab) {
   Entries::iterator i = GetEntryIteratorById(id);
   if (i == entries_.end()) {
     // Don't hoark here, we allow an invalid id.
@@ -339,7 +339,7 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
   // new browser into which we restore the tabs.
   if (entry->type == TAB) {
     Tab* tab = static_cast<Tab*>(entry);
-    delegate = RestoreTab(*tab, delegate, disposition);
+    delegate = RestoreTab(*tab, delegate, replace_existing_tab);
     delegate->ShowBrowserWindow();
   } else if (entry->type == WINDOW) {
     TabRestoreServiceDelegate* current_delegate = delegate;
@@ -356,8 +356,8 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
             delegate->AddRestoredTab(tab.navigations, delegate->GetTabCount(),
                                      tab.current_navigation_index,
                                      tab.extension_app_id,
-                                     static_cast<int>(tab_i) ==
-                                         window->selected_tab_index,
+                                     (static_cast<int>(tab_i) ==
+                                         window->selected_tab_index),
                                      tab.pinned, tab.from_last_session,
                                      tab.session_storage_namespace);
         if (restored_tab) {
@@ -377,7 +377,7 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
            tab_i != window->tabs.end(); ++tab_i) {
         const Tab& tab = *tab_i;
         if (tab.id == id) {
-          delegate = RestoreTab(tab, delegate, disposition);
+          delegate = RestoreTab(tab, delegate, replace_existing_tab);
           window->tabs.erase(tab_i);
           // If restoring the tab leaves the window with nothing else, delete it
           // as well.
@@ -401,7 +401,7 @@ void TabRestoreService::RestoreEntryById(TabRestoreServiceDelegate* delegate,
     }
     delegate->ShowBrowserWindow();
 
-    if (disposition == CURRENT_TAB && current_delegate &&
+    if (replace_existing_tab && current_delegate &&
         current_delegate->GetSelectedTabContents()) {
       current_delegate->CloseTab();
     }
@@ -909,35 +909,31 @@ void TabRestoreService::CreateEntriesFromCommands(
 TabRestoreServiceDelegate* TabRestoreService::RestoreTab(
     const Tab& tab,
     TabRestoreServiceDelegate* delegate,
-    WindowOpenDisposition disposition) {
-  if (disposition == CURRENT_TAB && delegate) {
+    bool replace_existing_tab) {
+  // |browser| will be NULL in cases where one isn't already available (eg,
+  // when invoked on Mac OS X with no windows open). In this case, create a
+  // new browser into which we restore the tabs.
+  if (replace_existing_tab && delegate) {
     delegate->ReplaceRestoredTab(tab.navigations,
                                  tab.current_navigation_index,
                                  tab.from_last_session,
                                  tab.extension_app_id,
                                  tab.session_storage_namespace);
   } else {
-    // We only respsect the tab's original browser if there's no disposition.
-    if (disposition == UNKNOWN && tab.has_browser())
+    if (tab.has_browser())
       delegate = TabRestoreServiceDelegate::FindDelegateWithID(tab.browser_id);
 
     int tab_index = -1;
-
-    // |delegate| will be NULL in cases where one isn't already available (eg,
-    // when invoked on Mac OS X with no windows open). In this case, create a
-    // new browser into which we restore the tabs.
-    if (delegate && disposition != NEW_WINDOW) {
+    if (delegate) {
       tab_index = tab.tabstrip_index;
     } else {
       delegate = TabRestoreServiceDelegate::Create(profile());
-      if (tab.has_browser())
+      if (tab.has_browser()) {
         UpdateTabBrowserIDs(tab.browser_id, delegate->GetSessionID().id());
+      }
     }
 
-    // Place the tab at the end if the tab index is no longer valid or
-    // we were passed a specific disposition.
-    if (tab_index < 0 || tab_index > delegate->GetTabCount() ||
-        disposition != UNKNOWN) {
+    if (tab_index < 0 || tab_index > delegate->GetTabCount()) {
       tab_index = delegate->GetTabCount();
     }
 
@@ -945,9 +941,7 @@ TabRestoreServiceDelegate* TabRestoreService::RestoreTab(
                              tab_index,
                              tab.current_navigation_index,
                              tab.extension_app_id,
-                             disposition != NEW_BACKGROUND_TAB,
-                             tab.pinned,
-                             tab.from_last_session,
+                             true, tab.pinned, tab.from_last_session,
                              tab.session_storage_namespace);
   }
   RecordAppLaunch(profile(), tab);

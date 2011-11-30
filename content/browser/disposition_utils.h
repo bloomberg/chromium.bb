@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_DISPOSITION_UTILS_H_
 #pragma once
 
-#include "base/logging.h"
 #include "content/common/content_export.h"
 #include "webkit/glue/window_open_disposition.h"
 

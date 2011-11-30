@@ -44,7 +44,7 @@
       TabRestoreServiceFactory::GetForProfile(bridge_->profile());
   if (node->session_id && service) {
     service->RestoreEntryById(browser->tab_restore_service_delegate(),
-        node->session_id, UNKNOWN);
+        node->session_id, false);
   } else {
     DCHECK(node->url.is_valid());
     browser->OpenURL(node->url, GURL(), disposition,

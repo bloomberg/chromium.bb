@@ -224,11 +224,6 @@ bool WebUIMessageHandler::ExtractIntegerValue(const ListValue* value,
   std::string string_value;
   if (value->GetString(0, &string_value))
     return base::StringToInt(string_value, out_int);
-  double double_value;
-  if (value->GetDouble(0, &double_value)) {
-    *out_int = static_cast<int>(double_value);
-    return true;
-  }
   NOTREACHED();
   return false;
 }

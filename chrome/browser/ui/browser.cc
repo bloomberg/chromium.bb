@@ -1289,7 +1289,6 @@ TabContents* Browser::AddRestoredTab(
     // contains similar logic.
     new_tab->view()->SizeContents(window_->GetRestoredBounds().size());
     new_tab->HideContents();
-    new_tab->controller().LoadIfNecessary();
   }
   SessionService* session_service =
       SessionServiceFactory::GetForProfileIfExisting(profile_);

@@ -89,20 +89,20 @@ cr.define('ntp4', function() {
         a.href = data.url;
         a.style.backgroundImage = 'url(chrome://favicon/' + data.url + ')';
         a.textContent = data.title;
+        // TODO(estade): add app ping url.
       }
 
-      function onClick(e) {
+      function onActivate(e) {
         chrome.send('recordAppLaunchByURL',
                     [encodeURIComponent(data.url),
                      ntp4.APP_LAUNCH.NTP_RECENTLY_CLOSED]);
-        var index = Array.prototype.indexOf.call(a.parentNode.children, a);
-        chrome.send('reopenTab', [data.sessionId, index,
-            e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
+        // TODO(estade): don't convert to string.
+        chrome.send('reopenTab', [String(data.sessionId)]);
         // We are likely deleted by this point!
 
         e.preventDefault();
       }
-      a.addEventListener('click', onClick);
+      a.addEventListener('activate', onActivate);
 
       this.menu.appendChild(a);
       cr.ui.decorate(a, MenuItem);
