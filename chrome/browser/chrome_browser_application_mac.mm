@@ -369,7 +369,7 @@ void SwizzleInit() {
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  content::mac::ScopedSendingEvent sendingEventScoper;
+  base::mac::ScopedSendingEvent sendingEventScoper;
   for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {
     [handler hookForEvent:event];
   }

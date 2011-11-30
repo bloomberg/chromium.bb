@@ -6,11 +6,11 @@
 
 #include "content/browser/tab_contents/popup_menu_helper_mac.h"
 
+#import "base/mac/scoped_sending_event.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
-#import "content/common/mac/scoped_sending_event.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #import "ui/base/cocoa/base_view.h"
@@ -54,7 +54,7 @@ void PopupMenuHelper::ShowPopupMenu(
     // setting flags in -[CrApplication sendEvent:], but since
     // web-content menus are initiated by IPC message the setup has to
     // be done manually.
-    content::mac::ScopedSendingEvent sending_event_scoper;
+    base::mac::ScopedSendingEvent sending_event_scoper;
 
     // Now run a SYNCHRONOUS NESTED EVENT LOOP until the pop-up is finished.
     [menu_runner runMenuInView:cocoa_view

@@ -5,13 +5,13 @@
 #include "chrome/browser/tab_contents/render_view_context_menu_mac.h"
 
 #include "base/compiler_specific.h"
+#import "base/mac/scoped_sending_event.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/menu_controller.h"
-#import "content/common/mac/scoped_sending_event.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -88,7 +88,7 @@ void RenderViewContextMenuMac::PlatformInit() {
     // setting flags in -[CrApplication sendEvent:], but since
     // web-content menus are initiated by IPC message the setup has to
     // be done manually.
-    content::mac::ScopedSendingEvent sendingEventScoper;
+    base::mac::ScopedSendingEvent sendingEventScoper;
 
     // Show the menu.
     [NSMenu popUpContextMenu:[menuController_ menu]
