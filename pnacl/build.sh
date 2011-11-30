@@ -232,6 +232,9 @@ SBTC_PRODUCTION=${SBTC_PRODUCTION:-false}
 # Which toolchain to use for each arch.
 if ${LIBMODE_NEWLIB}; then
   SBTC_BUILD_WITH_PNACL="arm x8632 x8664"
+  if ${PNACL_IN_CROS_CHROOT}; then
+    SBTC_BUILD_WITH_PNACL="arm"
+  fi
 else
   SBTC_BUILD_WITH_PNACL="x8632 x8664"
 fi
