@@ -188,7 +188,7 @@ body {
 }
 
 .gallery[tools] .arrow[active] div{
-  opacity: 0.17;
+  opacity: 0.25;
 }
 
 .gallery[tools] .arrow[active] div:hover{
