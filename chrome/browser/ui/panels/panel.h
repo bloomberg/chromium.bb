@@ -207,19 +207,6 @@ class Panel : public BrowserWindow,
   gfx::Size restored_size() const { return restored_size_; }
   void set_restored_size(const gfx::Size& size) { restored_size_ = size; }
 
- protected:
-  virtual void DestroyBrowser() OVERRIDE;
-
- private:
-  friend class PanelManager;
-  friend class PanelBrowserTest;
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, RestoredBounds);
-
-  // Panel can only be created using PanelManager::CreatePanel().
-  // |requested_size| is the desired size for the panel, but actual
-  // size may differ after panel layout.
-  Panel(Browser* browser, const gfx::Size& requested_size);
-
   // Panel must be initialized to be "fully created" and ready for use.
   // Only called by PanelManager.
   bool initialized() const { return initialized_; }
@@ -236,6 +223,19 @@ class Panel : public BrowserWindow,
 
   // Sets minimum and maximum size for the panel.
   void SetSizeRange(const gfx::Size& min_size, const gfx::Size& max_size);
+
+ protected:
+  virtual void DestroyBrowser() OVERRIDE;
+
+ private:
+  friend class PanelManager;
+  friend class PanelBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, RestoredBounds);
+
+  // Panel can only be created using PanelManager::CreatePanel().
+  // |requested_size| is the desired size for the panel, but actual
+  // size may differ after panel layout.
+  Panel(Browser* browser, const gfx::Size& requested_size);
 
   // NULL might be returned if the tab has not been added.
   RenderViewHost* GetRenderViewHost() const;

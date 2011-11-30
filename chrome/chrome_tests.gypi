@@ -155,6 +155,8 @@
         'browser/ui/browser.h',
         'browser/ui/panels/base_panel_browser_test.cc',
         'browser/ui/panels/base_panel_browser_test.h',
+        'browser/ui/panels/test_panel_mouse_watcher.cc',
+        'browser/ui/panels/test_panel_mouse_watcher.h',
         'browser/ui/tab_contents/test_tab_contents_wrapper.cc',
         'browser/ui/tab_contents/test_tab_contents_wrapper.h',
         'common/pref_store_observer_mock.cc',

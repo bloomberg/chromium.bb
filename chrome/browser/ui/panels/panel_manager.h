@@ -10,20 +10,23 @@
 #include "base/basictypes.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/panels/auto_hiding_desktop_bar.h"
 #include "chrome/browser/ui/panels/panel.h"
-#include "chrome/browser/ui/panels/panel_mouse_watcher_observer.h"
 #include "ui/gfx/rect.h"
 
+// TODO(jennb): Clean up by removing functions below that cause this
+// to be required.
+#ifdef UNIT_TEST
+#include "chrome/browser/ui/panels/panel_strip.h"
+#include "chrome/browser/ui/panels/panel_mouse_watcher.h"
+#endif
+
 class Browser;
-class Panel;
 class PanelMouseWatcher;
+class PanelStrip;
 
 // This class manages a set of panels.
-// Note that the ref count is needed by using PostTask in the implementation.
-class PanelManager : public PanelMouseWatcherObserver,
-                     public AutoHidingDesktopBar::Observer {
+class PanelManager : public AutoHidingDesktopBar::Observer {
  public:
   typedef std::vector<Panel*> Panels;
 
@@ -39,6 +42,9 @@ class PanelManager : public PanelMouseWatcherObserver,
 
   void Remove(Panel* panel);
   void RemoveAll();
+
+  // Asynchronous confirmation of panel having been removed.
+  void OnPanelRemoved(Panel* panel);
 
   // Drags the given panel.
   void StartDragging(Panel* panel);
@@ -72,29 +78,30 @@ class PanelManager : public PanelMouseWatcherObserver,
   // Returns NULL if such window cannot be found.
   BrowserWindow* GetNextBrowserWindowToActivate(Panel* panel) const;
 
-  int num_panels() const { return panels_.size(); }
+  int num_panels() const;
   bool is_dragging_panel() const;
-  const Panels& panels() const { return panels_; }
-
-  int GetMaxPanelWidth() const;
-  int GetMaxPanelHeight() const;
   int StartingRightPosition() const;
-
-  // Moves a panel to the panel strip. The panel does not currently
-  // belong in any other strip. This may cause other panels to be
-  // bumped out of the panel strip.
-  void MoveToPanelStrip(Panel* panel);
+  const Panels& panels() const;
 
   // Moves a panel to the overflow strip. The panel does not currently
   // belong in any other strip.
   // |is_new| is true if the panel was just created.
   void MoveToOverflowStrip(Panel* panel, bool is_new);
 
-  // Overridden from PanelMouseWatcherObserver:
-  virtual void OnMouseMove(const gfx::Point& mouse_position) OVERRIDE;
+  AutoHidingDesktopBar* auto_hiding_desktop_bar() const {
+    return auto_hiding_desktop_bar_;
+  }
+
+  PanelMouseWatcher* mouse_watcher() const {
+    return panel_mouse_watcher_.get();
+  }
+
+  PanelStrip* panel_strip() const {
+    return panel_strip_.get();
+  }
 
 #ifdef UNIT_TEST
-  static int horizontal_spacing() { return kPanelsHorizontalSpacing; }
+  static int horizontal_spacing() { return PanelStrip::horizontal_spacing(); }
 
   const gfx::Rect& work_area() const {
     return work_area_;
@@ -103,6 +110,10 @@ class PanelManager : public PanelMouseWatcherObserver,
   void set_auto_hiding_desktop_bar(
       AutoHidingDesktopBar* auto_hiding_desktop_bar) {
     auto_hiding_desktop_bar_ = auto_hiding_desktop_bar;
+  }
+
+  void set_mouse_watcher(PanelMouseWatcher* watcher) {
+    panel_mouse_watcher_.reset(watcher);
   }
 
   void enable_auto_sizing(bool enabled) {
@@ -114,28 +125,16 @@ class PanelManager : public PanelMouseWatcherObserver,
   }
 
   void remove_delays_for_testing() {
-    remove_delays_for_testing_ = true;
+    panel_strip_->remove_delays_for_testing();
   }
 
   int minimized_panel_count() {
-    return minimized_panel_count_;
-  }
-
-  // Tests should disable mouse watching if mouse movements will be simulated.
-  void disable_mouse_watching() {
-    mouse_watching_disabled_ = true;
+    return panel_strip_->minimized_panel_count();
   }
 #endif
 
  private:
   friend struct base::DefaultLazyInstanceTraits<PanelManager>;
-  FRIEND_TEST_ALL_PREFIXES(PanelBrowserTest, SizeClamping);
-
-  enum TitlebarAction {
-    NO_ACTION,
-    BRING_UP,
-    BRING_DOWN
-  };
 
   PanelManager();
   virtual ~PanelManager();
@@ -153,45 +152,15 @@ class PanelManager : public PanelMouseWatcherObserver,
   // Adjusts the work area to exclude the influence of auto-hiding desktop bars.
   void AdjustWorkAreaForAutoHidingDesktopBars();
 
-  // Keep track of the minimized panels to control mouse watching.
-  void IncrementMinimizedPanels();
-  void DecrementMinimizedPanels();
+  // Positions the various groupings of panels.
+  void Layout();
 
-  // Handles all the panels that're delayed to be removed.
-  void DelayedRemove();
-
-  // Does the remove. Called from Remove and DelayedRemove.
-  void DoRemove(Panel* panel);
-
-  // Rearranges the positions of the panels starting from the given iterator.
-  // This is called when the display space has been changed, i.e. working
-  // area being changed or a panel being closed.
-  void Rearrange(Panels::iterator iter_to_start, int rightmost_position);
-
-  // Help functions to drag the given panel.
-  void DragLeft();
-  void DragRight();
-
-  // Does the real job of bringing up or down the titlebars.
-  void DoBringUpOrDownTitlebars(bool bring_up);
-  // The callback for a delyed task, checks if it still need to perform
-  // the delayed action.
-  void DelayedBringUpOrDownTitlebarsCheck();
-
-  int GetRightMostAvailablePosition() const;
-
-  Panels panels_;
-
-  // Stores the panels that are pending to remove. We want to delay the removal
-  // when we're in the process of the dragging.
-  Panels panels_pending_to_remove_;
+  scoped_ptr<PanelStrip> panel_strip_;
 
   // Use a mouse watcher to know when to bring up titlebars to "peek" at
   // minimized panels. Mouse movement is only tracked when there is a minimized
   // panel.
   scoped_ptr<PanelMouseWatcher> panel_mouse_watcher_;
-  int minimized_panel_count_;
-  bool are_titlebars_up_;
 
   // The maximum work area avaialble. This area does not include the area taken
   // by the always-visible (non-auto-hiding) desktop bars.
@@ -203,41 +172,12 @@ class PanelManager : public PanelMouseWatcherObserver,
   // right of the screen edges) when they become fully visible.
   gfx::Rect adjusted_work_area_;
 
-  // Panel to drag.
-  size_t dragging_panel_index_;
-
-  // Original x coordinate of the panel to drag. This is used to get back to
-  // the original position when we cancel the dragging.
-  int dragging_panel_original_x_;
-
-  // Bounds of the panel to drag. It is first set to the original bounds when
-  // the dragging happens. Then it is updated to the position that will be set
-  // to when the dragging ends.
-  gfx::Rect dragging_panel_bounds_;
-
   scoped_refptr<AutoHidingDesktopBar> auto_hiding_desktop_bar_;
-
-  // Delayed transitions support. Sometimes transitions between minimized and
-  // title-only states are delayed, for better usability with Taskbars/Docks.
-  TitlebarAction delayed_titlebar_action_;
-  bool remove_delays_for_testing_;
-  // Owned by MessageLoop after posting.
-  base::WeakPtrFactory<PanelManager> titlebar_action_factory_;
 
   // Whether or not bounds will be updated when the preferred content size is
   // changed. The testing code could set this flag to false so that other tests
   // will not be affected.
   bool auto_sizing_enabled_;
-
-  bool mouse_watching_disabled_;  // For tests to simulate mouse movements.
-
-  static const int kPanelsHorizontalSpacing = 4;
-
-  // Absolute minimum width and height for panels, including non-client area.
-  // Should only be big enough to accomodate a close button on the reasonably
-  // recognisable titlebar.
-  static const int kPanelMinWidth;
-  static const int kPanelMinHeight;
 
   DISALLOW_COPY_AND_ASSIGN(PanelManager);
 };

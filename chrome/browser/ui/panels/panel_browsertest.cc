@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/panels/panel_settings_menu_model.h"
+#include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -64,8 +65,8 @@ class PanelBrowserTest : public BasePanelBrowserTest {
     EXPECT_EQ(browser_count - 1, BrowserList::size());
   }
 
-  void MoveMouse(gfx::Point position) {
-    PanelManager::GetInstance()->OnMouseMove(position);
+  void MoveMouse(const gfx::Point& position) {
+    PanelManager::GetInstance()->mouse_watcher()->NotifyMouseMovement(position);
     MessageLoopForUI::current()->RunAllPending();
   }
 
@@ -513,12 +514,11 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanel) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreateBigPanel) {
-  PanelManager* panel_manager = PanelManager::GetInstance();
   Panel* panel = CreatePanelWithBounds("BigPanel", testing_work_area());
   gfx::Rect bounds = panel->GetBounds();
-  EXPECT_EQ(panel_manager->GetMaxPanelWidth(), bounds.width());
+  EXPECT_EQ(panel->max_size().width(), bounds.width());
   EXPECT_LT(bounds.width(), testing_work_area().width());
-  EXPECT_EQ(panel_manager->GetMaxPanelHeight(), bounds.height());
+  EXPECT_EQ(panel->max_size().height(), bounds.height());
   EXPECT_LT(bounds.height(), testing_work_area().height());
   panel->Close();
 }
@@ -885,7 +885,8 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_AutoResize) {
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
   // Disable mouse watcher. We don't care about mouse movements in this test.
   PanelManager* panel_manager = PanelManager::GetInstance();
-  panel_manager->disable_mouse_watching();
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  panel_manager->set_mouse_watcher(mouse_watcher);
   Panel* panel = CreatePanelWithBounds("PanelTest", gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(Panel::EXPANDED, panel->expansion_state());
   EXPECT_EQ(panel->GetBounds(), panel->GetRestoredBounds());
@@ -950,18 +951,38 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, RestoredBounds) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestore) {
-  // Disable mouse watcher.  We'll simulate mouse movements for test.
-  PanelManager::GetInstance()->disable_mouse_watching();
+  // We'll simulate mouse movements for test.
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  PanelManager::GetInstance()->set_mouse_watcher(mouse_watcher);
 
   // Test with one panel.
   CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
   TestMinimizeRestore();
 
+  PanelManager::GetInstance()->RemoveAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreTwoPanels) {
+  // We'll simulate mouse movements for test.
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  PanelManager::GetInstance()->set_mouse_watcher(mouse_watcher);
+
   // Test with two panels.
+  CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
   CreatePanelWithBounds("PanelTest2", gfx::Rect(0, 0, 110, 110));
   TestMinimizeRestore();
 
+  PanelManager::GetInstance()->RemoveAll();
+}
+
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MinimizeRestoreThreePanels) {
+  // We'll simulate mouse movements for test.
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  PanelManager::GetInstance()->set_mouse_watcher(mouse_watcher);
+
   // Test with three panels.
+  CreatePanelWithBounds("PanelTest1", gfx::Rect(0, 0, 100, 100));
+  CreatePanelWithBounds("PanelTest2", gfx::Rect(0, 0, 110, 110));
   CreatePanelWithBounds("PanelTest3", gfx::Rect(0, 0, 120, 120));
   TestMinimizeRestore();
 
@@ -1119,6 +1140,10 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionBasic) {
 }
 
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
+  // We'll simulate mouse movements for test.
+  PanelMouseWatcher* mouse_watcher = new TestPanelMouseWatcher();
+  PanelManager::GetInstance()->set_mouse_watcher(mouse_watcher);
+
   CreatePanelParams params("Initially Active", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
   NativePanel* native_panel = panel->native_panel();
@@ -1138,11 +1163,13 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DrawAttentionWhileMinimized) {
 
   // Test that we cannot bring up other minimized panel if the mouse is over
   // the panel that draws attension.
-  EXPECT_FALSE(PanelManager::GetInstance()->
-      ShouldBringUpTitlebars(panel->GetBounds().x(), panel->GetBounds().y()));
+  gfx::Point hover_point(panel->GetBounds().origin());
+  MoveMouse(hover_point);
+  EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
 
   // Test that we cannot bring down the panel that is drawing the attention.
-  PanelManager::GetInstance()->BringUpOrDownTitlebars(false);
+  hover_point.set_y(hover_point.y() - 200);
+  MoveMouse(hover_point);
   EXPECT_EQ(Panel::TITLE_ONLY, panel->expansion_state());
 
   // Test that the attention is cleared when activated.
@@ -1505,13 +1532,14 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, SizeClamping) {
   // minimum sizes to be applied to facilitate auto-sizing.
   CreatePanelParams params("Panel", gfx::Rect(), SHOW_AS_ACTIVE);
   Panel* panel = CreatePanelWithParams(params);
-  EXPECT_EQ(PanelManager::kPanelMinWidth, panel->GetBounds().width());
-  EXPECT_EQ(PanelManager::kPanelMinHeight, panel->GetBounds().height());
+  EXPECT_EQ(panel->min_size().width(), panel->GetBounds().width());
+  EXPECT_EQ(panel->min_size().height(), panel->GetBounds().height());
+  int reasonable_width = panel->min_size().width() + 10;
+  int reasonable_height = panel->min_size().height() + 20;
+
   panel->Close();
 
   // Using reasonable actual sizes should avoid clamping.
-  int reasonable_width = PanelManager::kPanelMinWidth + 10;
-  int reasonable_height = PanelManager::kPanelMinHeight + 20;
   CreatePanelParams params1("Panel1",
                             gfx::Rect(0, 0,
                                       reasonable_width, reasonable_height),
