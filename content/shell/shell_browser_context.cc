@@ -46,7 +46,8 @@ class ShellGeolocationPermissionContext : public GeolocationPermissionContext {
       int render_process_id,
       int render_view_id,
       int bridge_id,
-      const GURL& requesting_frame) OVERRIDE {
+      const GURL& requesting_frame,
+      base::Callback<void(bool)> callback) OVERRIDE {
     NOTIMPLEMENTED();
   }
 

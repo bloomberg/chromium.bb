@@ -62,7 +62,8 @@ class GeolocationInfoBarQueueController : content::NotificationObserver {
                             int render_view_id,
                             int bridge_id,
                             const GURL& requesting_frame,
-                            const GURL& emebedder);
+                            const GURL& emebedder,
+                            base::Callback<void(bool)> callback);
 
   // Cancels a specific infobar request.
   void CancelInfoBarRequest(int render_process_id,
@@ -235,7 +236,8 @@ struct GeolocationInfoBarQueueController::PendingInfoBarRequest {
                         int render_view_id,
                         int bridge_id,
                         const GURL& requesting_frame,
-                        const GURL& embedder);
+                        const GURL& embedder,
+                        base::Callback<void(bool)> callback);
 
   bool IsForTab(int p_render_process_id, int p_render_view_id) const;
   bool IsForPair(const GURL& p_requesting_frame,
@@ -249,6 +251,7 @@ struct GeolocationInfoBarQueueController::PendingInfoBarRequest {
   int bridge_id;
   GURL requesting_frame;
   GURL embedder;
+  base::Callback<void(bool)> callback;
   InfoBarDelegate* infobar_delegate;
 };
 
@@ -257,12 +260,14 @@ GeolocationInfoBarQueueController::PendingInfoBarRequest::PendingInfoBarRequest(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
-    const GURL& embedder)
+    const GURL& embedder,
+    base::Callback<void(bool)> callback)
     : render_process_id(render_process_id),
       render_view_id(render_view_id),
       bridge_id(bridge_id),
       requesting_frame(requesting_frame),
       embedder(embedder),
+      callback(callback),
       infobar_delegate(NULL) {
 }
 
@@ -336,7 +341,8 @@ void GeolocationInfoBarQueueController::CreateInfoBarRequest(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
-    const GURL& embedder) {
+    const GURL& embedder,
+    base::Callback<void(bool)> callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We shouldn't get duplicate requests.
@@ -346,7 +352,7 @@ void GeolocationInfoBarQueueController::CreateInfoBarRequest(
       pending_infobar_requests_.end());
 
   pending_infobar_requests_.push_back(PendingInfoBarRequest(render_process_id,
-      render_view_id, bridge_id, requesting_frame, embedder));
+      render_view_id, bridge_id, requesting_frame, embedder, callback));
   ShowQueuedInfoBar(render_process_id, render_view_id);
 }
 
@@ -418,7 +424,8 @@ void GeolocationInfoBarQueueController::OnPermissionSet(
 
       geolocation_permission_context_->NotifyPermissionSet(
           copied_request.render_process_id, copied_request.render_view_id,
-          copied_request.bridge_id, copied_request.requesting_frame, allowed);
+          copied_request.bridge_id, copied_request.requesting_frame,
+          copied_request.callback, allowed);
     } else {
       ++i;
     }
@@ -512,14 +519,14 @@ ChromeGeolocationPermissionContext::~ChromeGeolocationPermissionContext() {
 
 void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
     int render_process_id, int render_view_id, int bridge_id,
-    const GURL& requesting_frame) {
+    const GURL& requesting_frame, base::Callback<void(bool)> callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(
             &ChromeGeolocationPermissionContext::RequestGeolocationPermission,
             this, render_process_id, render_view_id, bridge_id,
-            requesting_frame));
+            requesting_frame, callback));
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -533,7 +540,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
       // Make sure the extension is in the calling process.
       if (extensions->process_map()->Contains(ext->id(), render_process_id)) {
         NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                            requesting_frame, true);
+                            requesting_frame, callback, true);
         return;
       }
     }
@@ -551,7 +558,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
                  << render_process_id << "," << render_view_id << ","
                  << bridge_id << " (can't prompt user without a visible tab)";
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                        requesting_frame, false);
+                        requesting_frame, callback, false);
     return;
   }
 
@@ -561,7 +568,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
                  << requesting_frame << "," << embedder
                  << " (geolocation is not supported in popups)";
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                        requesting_frame, false);
+                        requesting_frame, callback, false);
     return;
   }
 
@@ -573,14 +580,14 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
           std::string());
   if (content_setting == CONTENT_SETTING_BLOCK) {
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                        requesting_frame, false);
+                        requesting_frame, callback, false);
   } else if (content_setting == CONTENT_SETTING_ALLOW) {
     NotifyPermissionSet(render_process_id, render_view_id, bridge_id,
-                        requesting_frame, true);
+                        requesting_frame, callback, true);
   } else {  // setting == ask. Prompt the user.
     geolocation_infobar_queue_controller_->CreateInfoBarRequest(
         render_process_id, render_view_id, bridge_id, requesting_frame,
-        embedder);
+        embedder, callback);
   }
 }
 
@@ -597,6 +604,7 @@ void ChromeGeolocationPermissionContext::NotifyPermissionSet(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame,
+    base::Callback<void(bool)> callback,
     bool allowed) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -608,8 +616,7 @@ void ChromeGeolocationPermissionContext::NotifyPermissionSet(
                                                  allowed);
   }
 
-  SetGeolocationPermissionResponse(render_process_id, render_view_id, bridge_id,
-                                   allowed);
+  callback.Run(allowed);
 
   if (allowed) {
     BrowserThread::PostTask(

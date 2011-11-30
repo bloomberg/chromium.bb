@@ -11,10 +11,10 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/test_url_constants.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/base/mock_host_resolver.h"
 
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedAppTest, ProcessOverflow) {
       browser(), base_url.Resolve("isolated_apps/app1/main.html"),
       CURRENT_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), GURL(chrome::kTestNewTabURL),
+      browser(), GURL(chrome::kChromeUINewTabURL),
       NEW_FOREGROUND_TAB, ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), base_url.Resolve("hosted_app/main.html"),

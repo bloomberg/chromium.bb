@@ -29,7 +29,6 @@
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/geoposition.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "net/base/net_util.h"

@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bind.h"
 #include "content/browser/geolocation/geolocation_permission_context.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -19,6 +20,15 @@
 using content::BrowserThread;
 
 namespace {
+
+void SendGeolocationPermissionResponse(
+    int render_process_id, int render_view_id, int bridge_id, bool allowed) {
+  RenderViewHost* r = RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!r)
+    return;
+  r->Send(new GeolocationMsg_PermissionSet(render_view_id, bridge_id, allowed));
+}
+
 class GeolocationDispatcherHostImpl : public GeolocationDispatcherHost,
                                       public GeolocationObserver {
  public:
@@ -116,7 +126,10 @@ void GeolocationDispatcherHostImpl::OnRequestPermission(
            << render_view_id << ":" << bridge_id;
   geolocation_permission_context_->RequestGeolocationPermission(
       render_process_id_, render_view_id, bridge_id,
-      requesting_frame);
+      requesting_frame,
+      base::Bind(
+          &SendGeolocationPermissionResponse, render_process_id_,
+          render_view_id, bridge_id));
 }
 
 void GeolocationDispatcherHostImpl::OnCancelPermissionRequest(
