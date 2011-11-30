@@ -1078,11 +1078,12 @@ function updateCommandsBasedOnSelection(e) {
   if (e.target == document.activeElement) {
     // Paste only needs to be updated when the tree selection changes.
     var commandNames = ['copy', 'cut', 'delete', 'rename-folder', 'edit',
-        'add-new-bookmark', 'new-folder', 'open-in-new-tab',
-        'open-in-new-window', 'open-incognito-window', 'open-in-same-window'];
+      'add-new-bookmark', 'new-folder', 'open-in-new-tab',
+      'open-in-new-window', 'open-incognito-window', 'open-in-same-window',
+      'show-in-folder'];
 
     if (e.target == tree) {
-      commandNames.push('paste', 'show-in-folder', 'sort');
+      commandNames.push('paste', 'sort');
     }
 
     commandNames.forEach(function(baseId) {
