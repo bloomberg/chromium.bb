@@ -333,4 +333,4 @@ def GetPreferredTrySlaves(project, change):
       f.LocalPath().endswith(('.mm', '.m')) for f in change.AffectedFiles())
   if only_objc_files:
     return ['mac']
-  return ['win', 'linux', 'mac', 'win_shared', 'linux_shared']
+  return ['win', 'linux', 'mac']
