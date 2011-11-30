@@ -321,6 +321,7 @@ OutOfProcessPPAPITest.Flash_GetCommandLineArgs
 OutOfProcessPPAPITest.Flash_GetProxyForURL
 OutOfProcessPPAPITest.Flash_GetLocalTimeZoneOffset
 OutOfProcessPPAPITest.InputEvent
+OutOfProcessPPAPITest.URLLoader
 PPAPITest.Flash_GetLocalTimeZoneOffset
 PPAPITest.Flash_GetProxyForURL
 PPAPITest.Flash_SetInstanceAlwaysOnTop
