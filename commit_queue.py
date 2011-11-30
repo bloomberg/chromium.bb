@@ -110,7 +110,8 @@ def gen_parser():
   """
   parser = optparse.OptionParser(version=__version__)
   # Remove description formatting
-  parser.format_description = lambda x: parser.description
+  parser.format_description = (
+      lambda _: parser.description)  # pylint: disable=E1101
   # Add common parsing.
   old_parser_args = parser.parse_args
 

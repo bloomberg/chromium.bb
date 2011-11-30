@@ -124,7 +124,7 @@ def wait_for_port_to_bind(host, port, process):
     # immediately, it fails with EINVAL and never gets a chance to
     # connect (putting us into a hard spin and then failing).
     # Linux doesn't need this.
-    time.sleep(0.1)
+    time.sleep(0.2)
 
   try:
     start = datetime.datetime.utcnow()

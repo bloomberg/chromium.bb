@@ -302,7 +302,8 @@ def main():
       default='http://codereview.chromium.org',
       help='Host to use, default is %default')
   # Remove description formatting
-  parser.format_description = lambda x: parser.description
+  parser.format_description = (
+      lambda _: parser.description)  # pylint: disable=E1101
   options, args = parser.parse_args()
   if args:
     parser.error('Args unsupported')

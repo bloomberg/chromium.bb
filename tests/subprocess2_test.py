@@ -125,9 +125,6 @@ class DefaultsTest(auto_stub.TestCase):
     # Cleanup code in subprocess.py needs this member to be set.
     # pylint: disable=W0201
     proc._child_created = None
-    # Since subprocess.Popen.__init__() is not called, proc.returncode shouldn't
-    # be present.
-    self.assertFalse(hasattr(proc, 'returncode'))
     expected = {
         'args': ['foo'],
         'a': True,

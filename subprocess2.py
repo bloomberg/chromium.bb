@@ -182,7 +182,8 @@ class Popen(subprocess.Popen):
     fix('stderr')
 
     self.start = time.time()
-
+    # Silence pylint on MacOSX
+    self.returncode = None
     try:
       super(Popen, self).__init__(args, **kwargs)
     except OSError, e:
