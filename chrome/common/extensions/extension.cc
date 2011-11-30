@@ -91,7 +91,7 @@ static const char* kBaseCrxKeys[] = {
   keys::kName,
   keys::kPublicKey,
   keys::kSignature,
-  keys::kUpdateURL
+  keys::kUpdateURL,
   keys::kVersion,
 };
 
