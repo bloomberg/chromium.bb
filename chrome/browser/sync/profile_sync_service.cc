@@ -555,10 +555,10 @@ void ProfileSyncService::OnUnrecoverableError(
 
 void ProfileSyncService::OnBackendInitialized(
     const WeakHandle<JsBackend>& js_backend, bool success) {
-  if (HasSyncSetupCompleted()) {
-    UMA_HISTOGRAM_BOOLEAN("Sync.FirstBackendInitializeSuccess", success);
+  if (!HasSyncSetupCompleted()) {
+    UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeFirstTimeSuccess", success);
   } else {
-    UMA_HISTOGRAM_BOOLEAN("Sync.RestoreBackendInitializeSuccess", success);
+    UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeRestoreSuccess", success);
   }
 
   if (!success) {
