@@ -29,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/browser/user_metrics.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
@@ -687,6 +688,46 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   } else {
     GetContentSettingsMap()->
         SetDefaultContentSetting(content_type, default_setting);
+  }
+  switch (content_type) {
+    case CONTENT_SETTINGS_TYPE_COOKIES:
+      UserMetrics::RecordAction(UserMetricsAction(
+          "ContentSetting_DefaultCookieSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_IMAGES:
+      UserMetrics::RecordAction(UserMetricsAction(
+          "ContentSetting_DefaultImagesSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+      UserMetrics::RecordAction(UserMetricsAction(
+          "ContentSetting_DefaultJavaScriptSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_PLUGINS:
+      UserMetrics::RecordAction(UserMetricsAction(
+          "ContentSetting_DefaultPluginsSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_POPUPS:
+      UserMetrics::RecordAction(UserMetricsAction(
+          "ContentSettings_DefaultPopupsSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+      UserMetrics::RecordAction(UserMetricsAction(
+          "ContentSettings_DefaultNotificationsSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+      UserMetrics::RecordAction(UserMetricsAction(
+          "ContentSetting_DefaultGeolocationSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_INTENTS:
+      UserMetrics::RecordAction(UserMetricsAction(
+          "ContentSetting_DefaultHandlersSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_MOUSELOCK:
+      UserMetrics::RecordAction(UserMetricsAction(
+          "ContentSettings_DefaultMouseLockSettingChanged"));
+      break;
+    default:
+      break;
   }
 }
 

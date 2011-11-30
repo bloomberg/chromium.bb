@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/content_settings_rule.h"
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -109,15 +110,51 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
   // Read global defaults.
   ReadDefaultSettings(true);
 
-  ContentSetting cookie_setting = ValueToContentSetting(
-      default_settings_[CONTENT_SETTINGS_TYPE_COOKIES].get());
-  if (cookie_setting == CONTENT_SETTING_BLOCK) {
-    UserMetrics::RecordAction(
-        UserMetricsAction("CookieBlockingEnabledPerDefault"));
-  } else {
-    UserMetrics::RecordAction(
-        UserMetricsAction("CookieBlockingDisabledPerDefault"));
-  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultCookiesSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_COOKIES].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultImagesSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_IMAGES].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultJavaScriptSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_JAVASCRIPT].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultPluginsSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_PLUGINS].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultPopupsSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_POPUPS].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultLocationSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_GEOLOCATION].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultNotificationsSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_NOTIFICATIONS].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultHandlersSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_INTENTS].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
+  UMA_HISTOGRAM_ENUMERATION(
+      "ContentSettings.DefaultMouseCursorSetting",
+      ValueToContentSetting(
+          default_settings_[CONTENT_SETTINGS_TYPE_MOUSELOCK].get()),
+      CONTENT_SETTING_NUM_SETTINGS);
 
   pref_change_registrar_.Init(prefs_);
   pref_change_registrar_.Add(prefs::kDefaultContentSettings, this);
