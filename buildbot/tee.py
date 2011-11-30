@@ -33,12 +33,14 @@ def _output(line, output_files, complain):
           continue
         elif ex.errno != errno.EAGAIN:
           raise
+
       if offset < len(line) and complain:
         flags = fcntl.fcntl(f.fileno(), fcntl.F_GETFL, 0)
         if flags & os.O_NONBLOCK:
           warning = '\nWarning: %s/%d is non-blocking.\n' % (f.name,
                                                              f.fileno())
           _output(warning, output_files, False)
+
         warning = '\nWarning: Short write for %s/%d.\n' % (f.name,
                                                            f.fileno())
         _output(warning, output_files, False)
