@@ -362,6 +362,7 @@ class RenderViewImpl : public RenderWidget,
   virtual void focusNext();
   virtual void focusPrevious();
   virtual void focusedNodeChanged(const WebKit::WebNode& node);
+  virtual void didUpdateLayout();
   virtual void navigateBackForwardSoon(int offset);
   virtual int historyBackListCount();
   virtual int historyForwardListCount();
@@ -495,6 +496,8 @@ class RenderViewImpl : public RenderWidget,
   virtual void willReleaseScriptContext(WebKit::WebFrame* frame,
                                         v8::Handle<v8::Context>,
                                         int world_id);
+  // TODO(levin): Remove didUpdateLayout after it is moved from WebFrameClient
+  // to WebViewClient.
   virtual void didUpdateLayout(WebKit::WebFrame* frame);
   virtual void didChangeScrollOffset(WebKit::WebFrame* frame);
   virtual void numberOfWheelEventHandlersChanged(unsigned num_handlers);

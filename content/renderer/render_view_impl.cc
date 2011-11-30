@@ -1746,6 +1746,20 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& node) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FocusedNodeChanged(node));
 }
 
+void RenderViewImpl::didUpdateLayout() {
+  // We don't always want to set up a timer, only if we've been put in that
+  // mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
+  // message.
+  if (!send_preferred_size_changes_ || !webview())
+    return;
+
+  if (check_preferred_size_timer_.IsRunning())
+    return;
+  check_preferred_size_timer_.Start(FROM_HERE,
+                                    TimeDelta::FromMilliseconds(0), this,
+                                    &RenderViewImpl::CheckPreferredSize);
+}
+
 void RenderViewImpl::navigateBackForwardSoon(int offset) {
   Send(new ViewHostMsg_GoToEntryAtOffset(routing_id_, offset));
 }
@@ -2877,17 +2891,7 @@ void RenderViewImpl::willReleaseScriptContext(WebFrame* frame,
 }
 
 void RenderViewImpl::didUpdateLayout(WebFrame* frame) {
-  // We don't always want to set up a timer, only if we've been put in that
-  // mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
-  // message.
-  if (!send_preferred_size_changes_ || !webview())
-    return;
-
-  if (check_preferred_size_timer_.IsRunning())
-    return;
-  check_preferred_size_timer_.Start(FROM_HERE,
-                                    TimeDelta::FromMilliseconds(0), this,
-                                    &RenderViewImpl::CheckPreferredSize);
+  didUpdateLayout();
 }
 
 void RenderViewImpl::CheckPreferredSize() {
@@ -3871,8 +3875,7 @@ void RenderViewImpl::OnEnablePreferredSizeChangedMode() {
 
   // Start off with an initial preferred size notification (in case
   // |didUpdateLayout| was already called).
-  if (webview())
-    didUpdateLayout(webview()->mainFrame());
+  didUpdateLayout();
 }
 
 void RenderViewImpl::OnDisableScrollbarsForSmallWindows(
