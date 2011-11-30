@@ -509,6 +509,7 @@
       '-enterprise.EnterpriseTestReverse.testEnableSPDY',
       # crbug.com/105948
       '-autofill.AutofillTest.testDisplayLineItemForEntriesWithNoCCNum',
+      '-autofill.AutofillTest.testPostalCodeAndStateLabelsBasedOnCountry',
     ],
 
     'mac': [
