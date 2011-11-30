@@ -64,7 +64,7 @@ void RotateScreen() {
   scoped_ptr<ui::LayerAnimationSequence> screen_rotation(
       new ui::LayerAnimationSequence(new ui::ScreenRotation(delta)));
   screen_rotation->AddObserver(aura::Desktop::GetInstance());
-  aura::Desktop::GetInstance()->layer()->GetAnimator()->ScheduleAnimation(
+  aura::Desktop::GetInstance()->layer()->GetAnimator()->StartAnimation(
       screen_rotation.release());
 }
 #endif
