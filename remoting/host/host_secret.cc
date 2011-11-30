@@ -4,7 +4,7 @@
 
 #include "remoting/host/host_secret.h"
 
-#include <vector>
+#include <string>
 
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -17,11 +17,12 @@ namespace {
 // 5 digits means 100K possible host secrets with uniform distribution, which
 // should be enough for short-term passwords, given that we rate-limit guesses
 // in the cloud and expire access codes after a small number of attempts.
-const int kMaxHostSecret = 100000;
+const int kHostSecretLength = 5;
+const char kHostSecretAlphabet[] = "0123456789";
 
 // Generates cryptographically strong random number in the range [0, max).
 int CryptoRandomInt(int max) {
-  uint64 random_int32;
+  uint32 random_int32;
   base::RandBytes(&random_int32, sizeof(random_int32));
   return random_int32 % max;
 }
@@ -29,7 +30,13 @@ int CryptoRandomInt(int max) {
 }  // namespace
 
 std::string GenerateSupportHostSecret() {
-  return base::IntToString(CryptoRandomInt(kMaxHostSecret));
+  std::string result;
+  int alphabet_size = strlen(kHostSecretAlphabet);
+  result.resize(kHostSecretLength);
+  for (int i = 0; i < kHostSecretLength; ++i) {
+    result[i] = kHostSecretAlphabet[CryptoRandomInt(alphabet_size)];
+  }
+  return result;
 }
 
 }  // namespace remoting
