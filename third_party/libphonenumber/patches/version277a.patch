@@ -1,0 +1,21 @@
+diff -Naur src-orig/default_logger.h src/default_logger.h
+--- src-orig/default_logger.h	2011-07-02 16:27:58.000000000 -0700
++++ src/default_logger.h	2011-07-02 16:28:29.000000000 -0700
+@@ -17,6 +17,8 @@
+ #ifndef I18N_PHONENUMBERS_DEFAULT_LOGGER_H_
+ #define I18N_PHONENUMBERS_DEFAULT_LOGGER_H_
+ 
++#include <stdio.h>
++
+ #include <string>
+ 
+ #include "logger.h"
+@@ -45,7 +47,7 @@
+ struct ConvertToString<int> {
+   static inline string DoWork(const int& n) {
+     char buffer[16];
+-    std::snprintf(buffer, sizeof(buffer), "%d", n);
++    snprintf(buffer, sizeof(buffer), "%d", n);
+     return string(buffer);
+   }
+ };
