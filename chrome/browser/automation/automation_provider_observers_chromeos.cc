@@ -21,7 +21,8 @@ using chromeos::NetworkLibrary;
 
 NetworkManagerInitObserver::NetworkManagerInitObserver(
     AutomationProvider* automation)
-    : automation_(automation->AsWeakPtr()) {}
+    : automation_(automation->AsWeakPtr()) {
+}
 
 NetworkManagerInitObserver::~NetworkManagerInitObserver() {
     CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
@@ -41,7 +42,8 @@ bool NetworkManagerInitObserver::Init() {
 
 void NetworkManagerInitObserver::OnNetworkManagerChanged(NetworkLibrary* obj) {
   if (!obj->wifi_scanning()) {
-    automation_->OnNetworkLibraryInit();
+    if (automation_)
+      automation_->OnNetworkLibraryInit();
     delete this;
   }
 }
@@ -61,7 +63,8 @@ void LoginWebuiReadyObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_LOGIN_WEBUI_READY);
-  automation_->OnLoginWebuiReady();
+  if (automation_)
+    automation_->OnLoginWebuiReady();
   delete this;
 }
 
@@ -444,8 +447,10 @@ void PhotoCaptureObserver::OnCaptureSuccess(
 void PhotoCaptureObserver::OnCaptureFailure(
     chromeos::TakePhotoDialog* take_photo_dialog,
     chromeos::TakePhotoView* take_photo_view) {
-  AutomationJSONReply(automation_,
-                      reply_message_.release()).SendError("Capture failure");
+  if (automation_) {
+    AutomationJSONReply(automation_,
+                        reply_message_.release()).SendError("Capture failure");
+  }
   delete this;
 }
 
@@ -456,18 +461,22 @@ void PhotoCaptureObserver::OnCapturingStopped(
   const SkBitmap& photo = take_photo_view->GetImage();
   chromeos::UserManager* user_manager = chromeos::UserManager::Get();
   if (!user_manager) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendError(
-                            "No user manager");
+    if (automation_) {
+      AutomationJSONReply(
+          automation_,
+          reply_message_.release()).SendError("No user manager");
+    }
     delete this;
     return;
   }
 
   const chromeos::User& user = user_manager->logged_in_user();
   if (user.email().empty()) {
-    AutomationJSONReply(automation_,
-                        reply_message_.release()).SendError(
-                            "User email is not set");
+    if (automation_) {
+      AutomationJSONReply(
+          automation_,
+          reply_message_.release()).SendError("User email is not set");
+    }
     delete this;
     return;
   }
@@ -480,6 +489,9 @@ void PhotoCaptureObserver::OnCapturingStopped(
 void PhotoCaptureObserver::LocalStateChanged(
     chromeos::UserManager* user_manager) {
   user_manager->RemoveObserver(this);
-  AutomationJSONReply(automation_, reply_message_.release()).SendSuccess(NULL);
+  if (automation_) {
+    AutomationJSONReply(
+        automation_, reply_message_.release()).SendSuccess(NULL);
+  }
   delete this;
 }
