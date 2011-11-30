@@ -22,14 +22,19 @@ class ProfileDownloaderDelegate {
 
   // Returns the desired side length of the profile image. If 0, returns image
   // of the originally uploaded size.
-  virtual int GetDesiredImageSideLength() = 0;
+  virtual int GetDesiredImageSideLength() const = 0;
+
+  // Returns the cached URL. If the cache URL matches the new image URL
+  // the image will not be downloaded. Return an empty string when there is no
+  // cached URL.
+  virtual std::string GetCachedPictureURL() const = 0;
 
   // Returns the browser profile associated with this download request.
   virtual Profile* GetBrowserProfile() = 0;
 
   // Whether we should use an OAuth refresh token or the Picasa token from
   // ClientLogin. The latter is currently used in ChromeOS.
-  virtual bool ShouldUseOAuthRefreshToken() = 0;
+  virtual bool ShouldUseOAuthRefreshToken() const = 0;
 
   // Called when the download is complete. On success delegate should query
   // the downloader for values.

@@ -1476,6 +1476,10 @@ const char kSyncPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
 // Time when the user's GAIA info was last updated (represented as an int64).
 const char kProfileGAIAInfoUpdateTime[] = "profile.gaia_info_update_time";
 
+// The URL from which the GAIA profile picture was downloaded. This is cached to
+// prevent the same picture from being downloaded multiple times.
+const char kProfileGAIAInfoPictureURL[] = "profile.gaia_info_picture_url";
+
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";
 const char kWebAppCreateInAppsMenu[] = "browser.web_app.create_in_apps_menu";

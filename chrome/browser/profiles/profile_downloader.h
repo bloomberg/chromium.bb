@@ -29,6 +29,13 @@ class ProfileDownloader : public content::URLFetcherDelegate,
                           public content::NotificationObserver,
                           public OAuth2AccessTokenConsumer {
  public:
+  enum PictureStatus {
+    PICTURE_SUCCESS,
+    PICTURE_FAILED,
+    PICTURE_DEFAULT,
+    PICTURE_CACHED,
+  };
+
   explicit ProfileDownloader(ProfileDownloaderDelegate* delegate);
   virtual ~ProfileDownloader();
 
@@ -45,6 +52,14 @@ class ProfileDownloader : public content::URLFetcherDelegate,
   // For users with no profile picture set (that is, they have the default
   // profile picture) this will return an Null bitmap.
   virtual SkBitmap GetProfilePicture() const;
+
+  // Gets the profile picture status.
+  virtual PictureStatus GetProfilePictureStatus() const;
+
+  // Gets the URL for the profile picture. This can be cached so that the same
+  // picture is not downloaded multiple times. This value should only be used
+  // when the picture status is PICTURE_SUCCESS.
+  virtual std::string GetProfilePictureURL() const;
 
  private:
   // Overriden from content::URLFetcherDelegate:
@@ -91,6 +106,8 @@ class ProfileDownloader : public content::URLFetcherDelegate,
   content::NotificationRegistrar registrar_;
   string16 profile_full_name_;
   SkBitmap profile_picture_;
+  PictureStatus picture_status_;
+  std::string picture_url_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileDownloader);
 };

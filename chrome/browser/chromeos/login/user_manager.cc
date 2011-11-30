@@ -832,7 +832,7 @@ void UserManager::CheckOwnership() {
                  is_owner));
 }
 
-int UserManager::GetDesiredImageSideLength() {
+int UserManager::GetDesiredImageSideLength() const {
   return login::kUserImageSize;
 }
 
@@ -840,8 +840,13 @@ Profile* UserManager::GetBrowserProfile() {
   return ProfileManager::GetDefaultProfile();
 }
 
-bool UserManager::ShouldUseOAuthRefreshToken() {
+bool UserManager::ShouldUseOAuthRefreshToken() const {
   return false;
+}
+
+std::string UserManager::GetCachedPictureURL() const {
+  // Currently the profile picture URL is not cached on ChromeOS.
+  return std::string();
 }
 
 void UserManager::OnDownloadComplete(ProfileDownloader* downloader,

@@ -184,7 +184,8 @@ bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) const {
 }
 
 ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
-    : delegate_(delegate) {
+    : delegate_(delegate),
+      picture_status_(PICTURE_FAILED) {
   DCHECK(delegate_);
 }
 
@@ -224,6 +225,15 @@ string16 ProfileDownloader::GetProfileFullName() const {
 
 SkBitmap ProfileDownloader::GetProfilePicture() const {
   return profile_picture_;
+}
+
+ProfileDownloader::PictureStatus ProfileDownloader::GetProfilePictureStatus()
+    const {
+  return picture_status_;
+}
+
+std::string ProfileDownloader::GetProfilePictureURL() const {
+  return picture_url_;
 }
 
 void ProfileDownloader::StartFetchingImage() {
@@ -280,10 +290,19 @@ void ProfileDownloader::OnURLFetchComplete(const content::URLFetcher* source) {
       return;
     }
     if (IsDefaultProfileImageURL(image_url)) {
+      VLOG(1) << "User has default profile picture";
+      picture_status_ = PICTURE_DEFAULT;
+      delegate_->OnDownloadComplete(this, true);
+      return;
+    }
+    if (!image_url.empty() && image_url == delegate_->GetCachedPictureURL()) {
+      VLOG(1) << "Picture URL matches cached picture URL";
+      picture_status_ = PICTURE_CACHED;
       delegate_->OnDownloadComplete(this, true);
       return;
     }
     VLOG(1) << "Fetching profile image from " << image_url;
+    picture_url_ = image_url;
     profile_image_fetcher_.reset(content::URLFetcher::Create(
         GURL(image_url), content::URLFetcher::GET, this));
     profile_image_fetcher_->SetRequestContext(
@@ -310,6 +329,7 @@ void ProfileDownloader::OnImageDecoded(const ImageDecoder* decoder,
       skia::ImageOperations::RESIZE_BEST,
       image_size,
       image_size);
+  picture_status_ = PICTURE_SUCCESS;
   delegate_->OnDownloadComplete(this, true);
 }
 

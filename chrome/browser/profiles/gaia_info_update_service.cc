@@ -78,9 +78,11 @@ bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
 void GAIAInfoUpdateService::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterInt64Pref(
       prefs::kProfileGAIAInfoUpdateTime, 0, PrefService::UNSYNCABLE_PREF);
+  prefs->RegisterStringPref(
+      prefs::kProfileGAIAInfoPictureURL, "", PrefService::UNSYNCABLE_PREF);
 }
 
-int GAIAInfoUpdateService::GetDesiredImageSideLength() {
+int GAIAInfoUpdateService::GetDesiredImageSideLength() const {
   return 256;
 }
 
@@ -88,8 +90,12 @@ Profile* GAIAInfoUpdateService::GetBrowserProfile() {
   return profile_;
 }
 
-bool GAIAInfoUpdateService::ShouldUseOAuthRefreshToken() {
+bool GAIAInfoUpdateService::ShouldUseOAuthRefreshToken() const {
   return true;
+}
+
+std::string GAIAInfoUpdateService::GetCachedPictureURL() const {
+  return profile_->GetPrefs()->GetString(prefs::kProfileGAIAInfoPictureURL);
 }
 
 void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
@@ -107,6 +113,9 @@ void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
 
   string16 full_name = downloader->GetProfileFullName();
   SkBitmap bitmap = downloader->GetProfilePicture();
+  ProfileDownloader::PictureStatus picture_status =
+      downloader->GetProfilePictureStatus();
+  std::string picture_url = downloader->GetProfilePictureURL();
   profile_image_downloader_.reset();
 
   ProfileInfoCache& cache =
@@ -116,8 +125,14 @@ void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
     return;
 
   cache.SetGAIANameOfProfileAtIndex(profile_index, full_name);
-  gfx::Image gfx_image(new SkBitmap(bitmap));
-  cache.SetGAIAPictureOfProfileAtIndex(profile_index, &gfx_image);
+  if (picture_status == ProfileDownloader::PICTURE_SUCCESS) {
+    profile_->GetPrefs()->SetString(prefs::kProfileGAIAInfoPictureURL,
+                                    picture_url);
+    gfx::Image gfx_image(new SkBitmap(bitmap));
+    cache.SetGAIAPictureOfProfileAtIndex(profile_index, &gfx_image);
+  } else if (picture_status == ProfileDownloader::PICTURE_DEFAULT) {
+    cache.SetGAIAPictureOfProfileAtIndex(profile_index, NULL);
+  }
 
   // If this profile hasn't switched to using GAIA information for the profile
   // name and picture then switch it now. Once the profile has switched this

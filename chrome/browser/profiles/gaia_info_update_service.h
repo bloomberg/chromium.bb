@@ -36,9 +36,10 @@ class GAIAInfoUpdateService : public ProfileDownloaderDelegate,
   static void RegisterUserPrefs(PrefService* prefs);
 
   // ProfileDownloaderDelegate:
-  virtual int GetDesiredImageSideLength() OVERRIDE;
+  virtual int GetDesiredImageSideLength() const OVERRIDE;
   virtual Profile* GetBrowserProfile() OVERRIDE;
-  virtual bool ShouldUseOAuthRefreshToken() OVERRIDE;
+  virtual bool ShouldUseOAuthRefreshToken() const OVERRIDE;
+  virtual std::string GetCachedPictureURL() const OVERRIDE;
   virtual void OnDownloadComplete(ProfileDownloader* downloader,
                                   bool success) OVERRIDE;
 

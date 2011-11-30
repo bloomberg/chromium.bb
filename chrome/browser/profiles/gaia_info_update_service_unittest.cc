@@ -34,6 +34,9 @@ class ProfileDownloaderMock : public ProfileDownloader {
 
   MOCK_CONST_METHOD0(GetProfileFullName, string16());
   MOCK_CONST_METHOD0(GetProfilePicture, SkBitmap());
+  MOCK_CONST_METHOD0(GetProfilePictureStatus,
+                     ProfileDownloader::PictureStatus());
+  MOCK_CONST_METHOD0(GetProfilePictureURL, std::string());
 };
 
 class GAIAInfoUpdateServiceMock : public GAIAInfoUpdateService {
@@ -74,6 +77,13 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   gfx::Image image = gfx::test::CreateImage();
   SkBitmap bmp = image;
   EXPECT_CALL(downloader, GetProfilePicture()).WillOnce(Return(bmp));
+  EXPECT_CALL(downloader, GetProfilePictureStatus()).
+      WillOnce(Return(ProfileDownloader::PICTURE_SUCCESS));
+  std::string url("foo.com");
+  EXPECT_CALL(downloader, GetProfilePictureURL()).WillOnce(Return(url));
+
+  // No URL should be cached yet.
+  EXPECT_EQ(std::string(), service.GetCachedPictureURL());
 
   service.OnDownloadComplete(&downloader, true);
 
@@ -86,6 +96,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
       image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
   EXPECT_TRUE(gfx::test::IsEqual(
       image, *GetCache()->GetGAIAPictureOfProfileAtIndex(index)));
+  EXPECT_EQ(url, service.GetCachedPictureURL());
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
@@ -94,6 +105,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
   gfx::Image old_image = GetCache()->GetAvatarIconOfProfileAtIndex(index);
 
   GAIAInfoUpdateService service(profile());
+  EXPECT_EQ(std::string(), service.GetCachedPictureURL());
   NiceMock<ProfileDownloaderMock> downloader(&service);
 
   service.OnDownloadComplete(&downloader, false);
@@ -105,6 +117,7 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {
   EXPECT_TRUE(gfx::test::IsEqual(
       old_image, GetCache()->GetAvatarIconOfProfileAtIndex(index)));
   EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(index));
+  EXPECT_EQ(std::string(), service.GetCachedPictureURL());
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, NoMigration) {
@@ -122,6 +135,9 @@ TEST_F(GAIAInfoUpdateServiceTest, NoMigration) {
   gfx::Image new_image = gfx::test::CreateImage();
   SkBitmap new_bmp = new_image;
   EXPECT_CALL(downloader, GetProfilePicture()).WillOnce(Return(new_bmp));
+  EXPECT_CALL(downloader, GetProfilePictureStatus()).
+      WillOnce(Return(ProfileDownloader::PICTURE_SUCCESS));
+  EXPECT_CALL(downloader, GetProfilePictureURL()).WillOnce(Return(""));
 
   service.OnDownloadComplete(&downloader, true);
 
