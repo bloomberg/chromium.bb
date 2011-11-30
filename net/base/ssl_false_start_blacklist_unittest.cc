@@ -26,6 +26,8 @@ TEST(SSLFalseStartBlacklistTest, IsMember) {
   EXPECT_TRUE(SSLFalseStartBlacklist::IsMember("a.b.example.com"));
   EXPECT_FALSE(SSLFalseStartBlacklist::IsMember("aexample.com"));
   EXPECT_FALSE(SSLFalseStartBlacklist::IsMember("com"));
+
+  EXPECT_TRUE(SSLFalseStartBlacklist::IsMember("www.toto-dream.com"));
 }
 
 }  // namespace net
