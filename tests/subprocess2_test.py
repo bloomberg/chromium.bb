@@ -142,6 +142,7 @@ class DefaultsTest(auto_stub.TestCase):
         env['LANGUAGE'] = 'en_US.UTF-8'
         expected['env'] = env
     self.assertEquals(expected, results)
+    self.assertTrue(time.time() >= proc.start)
 
   def test_check_output_defaults(self):
     results = self._fake_communicate()
