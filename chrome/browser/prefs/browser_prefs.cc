@@ -39,6 +39,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/printing/print_job_manager.h"
+#include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -191,6 +192,7 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   policy::URLBlacklistManager::RegisterPrefs(user_prefs);
 #endif
   SyncPromoUI::RegisterUserPrefs(user_prefs);
+  GAIAInfoUpdateService::RegisterUserPrefs(user_prefs);
   chrome_browser_net::HttpServerPropertiesManager::RegisterPrefs(user_prefs);
 #if !defined(OS_CHROMEOS)
   default_apps::RegisterUserPrefs(user_prefs);

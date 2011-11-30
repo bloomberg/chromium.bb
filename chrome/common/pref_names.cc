@@ -1467,6 +1467,9 @@ const char kSyncPromoShowOnFirstRunAllowed[] =
 // The bubble is used to confirm that the user is signed into sync.
 const char kSyncPromoShowNTPBubble[] = "sync_promo.show_ntp_bubble";
 
+// Time when the user's GAIA info was last updated (represented as an int64).
+const char kProfileGAIAInfoUpdateTime[] = "profile.gaia_info_update_time";
+
 // Create web application shortcut dialog preferences.
 const char kWebAppCreateOnDesktop[] = "browser.web_app.create_on_desktop";
 const char kWebAppCreateInAppsMenu[] = "browser.web_app.create_in_apps_menu";

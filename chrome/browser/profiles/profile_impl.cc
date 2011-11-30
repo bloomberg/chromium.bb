@@ -900,8 +900,10 @@ FindBarState* ProfileImpl::GetFindBarState() {
 }
 
 GAIAInfoUpdateService* ProfileImpl::GetGAIAInfoUpdateService() {
-  if (!gaia_info_update_service_.get())
+  if (!gaia_info_update_service_.get() &&
+      GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(this)) {
     gaia_info_update_service_.reset(new GAIAInfoUpdateService(this));
+  }
   return gaia_info_update_service_.get();
 }
 

@@ -6,7 +6,9 @@
 
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_info_cache_unittest.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -34,6 +36,18 @@ class ProfileDownloaderMock : public ProfileDownloader {
   MOCK_CONST_METHOD0(GetProfilePicture, SkBitmap());
 };
 
+class GAIAInfoUpdateServiceMock : public GAIAInfoUpdateService {
+ public:
+  explicit GAIAInfoUpdateServiceMock(Profile* profile)
+      : GAIAInfoUpdateService(profile) {
+  }
+
+  virtual ~GAIAInfoUpdateServiceMock() {
+  }
+
+  MOCK_METHOD0(Update, void());
+};
+
 class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
  protected:
   GAIAInfoUpdateServiceTest() : profile_(NULL) {
@@ -48,6 +62,8 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
  private:
   Profile* profile_;
 };
+
+} // namespace
 
 TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   GAIAInfoUpdateService service(profile());
@@ -125,4 +141,38 @@ TEST_F(GAIAInfoUpdateServiceTest, ShouldUseGAIAProfileInfo) {
   EXPECT_FALSE(GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(profile()));
 }
 
-} // namespace
+TEST_F(GAIAInfoUpdateServiceTest, ScheduleUpdate) {
+  GAIAInfoUpdateService service(profile());
+  EXPECT_TRUE(service.timer_.IsRunning());
+  service.timer_.Stop();
+  EXPECT_FALSE(service.timer_.IsRunning());
+  service.ScheduleNextUpdate();
+  EXPECT_TRUE(service.timer_.IsRunning());
+}
+
+TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                   "pat@example.com");
+  string16 gaia_name = UTF8ToUTF16("Pat Foo");
+  GetCache()->SetGAIANameOfProfileAtIndex(0, gaia_name);
+  gfx::Image gaia_picture = gfx::test::CreateImage();
+  GetCache()->SetGAIAPictureOfProfileAtIndex(0, &gaia_picture);
+
+  GAIAInfoUpdateService service(profile());
+  // Log out.
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "");
+
+  // Verify that the GAIA name and picture are unset.
+  EXPECT_TRUE(GetCache()->GetGAIANameOfProfileAtIndex(0).empty());
+  EXPECT_EQ(NULL, GetCache()->GetGAIAPictureOfProfileAtIndex(0));
+}
+
+TEST_F(GAIAInfoUpdateServiceTest, LogIn) {
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "");
+  GAIAInfoUpdateServiceMock service(profile());
+
+  // Log in.
+  EXPECT_CALL(service, Update());
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                   "pat@example.com");
+}
