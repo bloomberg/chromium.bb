@@ -16,6 +16,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class Extension;
+class ExtensionTabHelperDelegate;
 class TabContentsWrapper;
 struct WebApplicationInfo;
 
@@ -37,6 +38,9 @@ class ExtensionTabHelper
 
   // Copies the internal state from another ExtensionTabHelper.
   void CopyStateFrom(const ExtensionTabHelper& source);
+
+  ExtensionTabHelperDelegate* delegate() const { return delegate_; }
+  void set_delegate(ExtensionTabHelperDelegate* d) { delegate_ = d; }
 
   // Call this after updating a page action to notify clients about the changes.
   void PageActionStateChanged();
@@ -133,6 +137,9 @@ class ExtensionTabHelper
                                              int callback_id) OVERRIDE;
 
   // Data for app extensions ---------------------------------------------------
+
+  // Delegate for notifying our owner about stuff. Not owned by us.
+  ExtensionTabHelperDelegate* delegate_;
 
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.

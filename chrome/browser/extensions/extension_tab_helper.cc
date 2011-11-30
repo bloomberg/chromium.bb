@@ -26,6 +26,7 @@
 
 ExtensionTabHelper::ExtensionTabHelper(TabContentsWrapper* wrapper)
     : TabContentsObserver(wrapper->tab_contents()),
+      delegate_(NULL),
       extension_app_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           extension_function_dispatcher_(wrapper->profile(), this)),
@@ -140,13 +141,13 @@ void ExtensionTabHelper::OnDidGetApplicationInfo(
     int32 page_id, const WebApplicationInfo& info) {
   web_app_info_ = info;
 
-  if (wrapper_->delegate())
-    wrapper_->delegate()->OnDidGetApplicationInfo(wrapper_, page_id);
+  if (delegate_)
+    delegate_->OnDidGetApplicationInfo(wrapper_, page_id);
 }
 
 void ExtensionTabHelper::OnInstallApplication(const WebApplicationInfo& info) {
-  if (wrapper_->delegate())
-    wrapper_->delegate()->OnInstallApplication(wrapper_, info);
+  if (delegate_)
+    delegate_->OnInstallApplication(wrapper_, info);
 }
 
 void ExtensionTabHelper::OnInlineWebstoreInstall(

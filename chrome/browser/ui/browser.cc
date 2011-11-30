@@ -4989,6 +4989,7 @@ void Browser::SetAsDelegate(TabContentsWrapper* tab, Browser* delegate) {
   tab->blocked_content_tab_helper()->set_delegate(delegate);
   tab->bookmark_tab_helper()->set_delegate(delegate);
   tab->constrained_window_tab_helper()->set_delegate(delegate);
+  tab->extension_tab_helper()->set_delegate(delegate);
   tab->search_engine_tab_helper()->set_delegate(delegate);
 }
 

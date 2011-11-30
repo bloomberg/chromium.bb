@@ -9,20 +9,11 @@
 #include "base/basictypes.h"
 
 class TabContentsWrapper;
-struct WebApplicationInfo;
 
 // Objects implement this interface to get notified about changes in the
 // TabContentsWrapper and to provide necessary functionality.
 class TabContentsWrapperDelegate {
  public:
-  // Notification that a user's request to install an application has completed.
-  virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
-                                       int32 page_id);
-
-  // Notification when an application programmatically requests installation.
-  virtual void OnInstallApplication(TabContentsWrapper* source,
-                                    const WebApplicationInfo& app_info);
-
   virtual void SwapTabContents(TabContentsWrapper* old_tc,
                                TabContentsWrapper* new_tc) = 0;
 

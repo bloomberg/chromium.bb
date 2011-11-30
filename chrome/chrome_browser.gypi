@@ -1110,6 +1110,8 @@
         'browser/extensions/extension_sync_data.h',
         'browser/extensions/extension_tab_helper.cc',
         'browser/extensions/extension_tab_helper.h',
+        'browser/extensions/extension_tab_helper_delegate.cc',
+        'browser/extensions/extension_tab_helper_delegate.h',
         'browser/extensions/extension_tab_id_map.cc',
         'browser/extensions/extension_tab_id_map.h',
         'browser/extensions/extension_tab_util.cc',

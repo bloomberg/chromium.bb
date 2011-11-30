@@ -6,13 +6,3 @@
 
 TabContentsWrapperDelegate::~TabContentsWrapperDelegate() {
 }
-
-// Notification when an application programmatically requests installation.
-void TabContentsWrapperDelegate::OnInstallApplication(
-    TabContentsWrapper* source,
-    const WebApplicationInfo& app_info) {
-}
-
-void TabContentsWrapperDelegate::OnDidGetApplicationInfo(
-    TabContentsWrapper* source, int32 page_id) {
-}

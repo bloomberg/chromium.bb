@@ -19,6 +19,7 @@
 #include "base/string16.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
+#include "chrome/browser/extensions/extension_tab_helper_delegate.h"
 #include "chrome/browser/event_disposition.h"
 #include "chrome/browser/instant/instant_delegate.h"
 #include "chrome/browser/prefs/pref_member.h"
@@ -80,6 +81,7 @@ class Browser : public TabHandlerDelegate,
                 public ConstrainedWindowTabHelperDelegate,
                 public BlockedContentTabHelperDelegate,
                 public BookmarkTabHelperDelegate,
+                public ExtensionTabHelperDelegate,
                 public PageNavigator,
                 public CommandUpdater::CommandUpdaterDelegate,
                 public content::NotificationObserver,
@@ -1028,12 +1030,6 @@ class Browser : public TabHandlerDelegate,
   virtual void LostMouseLock() OVERRIDE;
 
   // Overridden from TabContentsWrapperDelegate:
-  virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
-                                       int32 page_id) OVERRIDE;
-  virtual void OnInstallApplication(
-      TabContentsWrapper* source,
-      const WebApplicationInfo& app_info) OVERRIDE;
-
   // Note that the caller is responsible for deleting |old_tab_contents|.
   virtual void SwapTabContents(TabContentsWrapper* old_tab_contents,
                                TabContentsWrapper* new_tab_contents) OVERRIDE;
@@ -1056,6 +1052,13 @@ class Browser : public TabHandlerDelegate,
   // Overridden from BookmarkTabHelperDelegate:
   virtual void URLStarredChanged(TabContentsWrapper* source,
                                  bool starred) OVERRIDE;
+
+  // Overridden from ExtensionTabHelperDelegate:
+  virtual void OnDidGetApplicationInfo(TabContentsWrapper* source,
+                                       int32 page_id) OVERRIDE;
+  virtual void OnInstallApplication(
+      TabContentsWrapper* source,
+      const WebApplicationInfo& app_info) OVERRIDE;
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path,
