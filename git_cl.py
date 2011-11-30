@@ -920,10 +920,6 @@ def CMDupload(parser, args):
   upload_args.extend(['--server', cl.GetRietveldServer()])
   if options.emulate_svn_auto_props:
     upload_args.append('--emulate_svn_auto_props')
-  if options.send_mail:
-    if not options.reviewers:
-      DieWithError("Must specify reviewers to send email.")
-    upload_args.append('--send_mail')
   if options.from_logs and not options.message:
     print 'Must set message for subject line if using desc_from_logs'
     return 1
@@ -951,6 +947,10 @@ def CMDupload(parser, args):
     upload_args.extend(['--description', change_desc.description])
     if change_desc.reviewers:
       upload_args.extend(['--reviewers', change_desc.reviewers])
+    if options.send_mail:
+      if not change_desc.reviewers:
+        DieWithError("Must specify reviewers to send email.")
+      upload_args.append('--send_mail')
     cc = ','.join(filter(None, (cl.GetCCList(), options.cc)))
     if cc:
       upload_args.extend(['--cc', cc])

@@ -6,6 +6,7 @@
 """Unit tests for git_cl.py."""
 
 import os
+import StringIO
 import sys
 import unittest
 
@@ -69,8 +70,12 @@ class TestGitCl(TestCase):
       self.assertEquals([], self.calls)
     super(TestGitCl, self).tearDown()
 
+  @classmethod
+  def _upload_calls(cls):
+    return cls._git_base_calls() + cls._git_upload_calls()
+
   @staticmethod
-  def _upload_calls():
+  def _git_base_calls():
     return [
         (['git', 'update-index', '--refresh', '-q'], ''),
         (['git', 'diff-index', 'HEAD'], ''),
@@ -89,6 +94,11 @@ class TestGitCl(TestCase):
         (['git', 'config', 'user.email'], 'me@example.com'),
         (['git', 'diff', '--no-ext-diff', '--stat', '-M', 'master...'], '+dat'),
         (['git', 'log', '--pretty=format:%s\n\n%b', 'master..'], 'desc\n'),
+    ]
+
+  @staticmethod
+  def _git_upload_calls():
+    return [
         (['git', 'config', 'rietveld.cc'], ''),
         (['git', 'config', '--get-regexp', '^svn-remote\\.'], (('', None), 0)),
         (['git', 'rev-parse', '--show-cdup'], ''),
@@ -176,6 +186,36 @@ class TestGitCl(TestCase):
         description,
         description,
         ['--reviewers', 'reviewer@example.com,another@example.com'])
+
+  def test_reviewer_send_mail(self):
+    # --send-mail can be used without -r if R= is used
+    description = 'Foo Bar\nR=reviewer@example.com\n'
+    self._run_reviewer_test(
+        ['--send-mail'],
+        'desc\n\nBUG=\nTEST=\n',
+        description.strip('\n'),
+        description,
+        ['--reviewers', 'reviewer@example.com', '--send_mail'])
+
+  def test_reviewer_send_mail_no_rev(self):
+    # Fails without a reviewer.
+    class FileMock(object):
+      buf = StringIO.StringIO()
+      def write(self, content):
+        self.buf.write(content)
+
+    mock = FileMock()
+    try:
+      self.calls = self._git_base_calls()
+      def RunEditor(desc, _):
+        return desc
+      self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
+      self.mock(sys, 'stderr', mock)
+      git_cl.main(['upload', '--send-mail'])
+      self.fail()
+    except SystemExit:
+      self.assertEquals(
+          'Must specify reviewers to send email.\n', mock.buf.getvalue())
 
 
 if __name__ == '__main__':
