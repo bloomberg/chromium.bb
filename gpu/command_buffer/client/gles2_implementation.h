@@ -202,6 +202,13 @@ class GLES2Implementation {
   void FreeUnusedSharedMemory();
 
  private:
+  // Used to track whether an extension is available
+  enum ExtensionStatus {
+      kAvailableExtensionStatus,
+      kUnavailableExtensionStatus,
+      kUnknownExtensionStatus
+  };
+
   // Wraps RingBufferWrapper to provide aligned allocations.
   class AlignedRingBuffer : public RingBufferWrapper {
    public:
@@ -338,6 +345,9 @@ class GLES2Implementation {
     return static_cast<T>(result_buffer_);
   }
 
+  // Lazily determines if GL_ANGLE_pack_reverse_row_order is available
+  bool IsAnglePackReverseRowOrderAvailable();
+
   // Gets the GLError through our wrapper.
   GLenum GetGLError();
 
@@ -432,6 +442,8 @@ class GLES2Implementation {
   std::queue<int32> swap_buffers_tokens_;
   std::queue<int32> rate_limit_tokens_;
 
+  ExtensionStatus angle_pack_reverse_row_order_status;
+
   GLState gl_state_;
 
   // pack alignment as last set by glPixelStorei
@@ -442,6 +454,9 @@ class GLES2Implementation {
 
   // unpack yflip as last set by glPixelstorei
   bool unpack_flip_y_;
+
+  // pack reverse row order as last set by glPixelstorei
+  bool pack_reverse_row_order_;
 
   scoped_array<TextureUnit> texture_units_;
 

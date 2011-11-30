@@ -397,6 +397,14 @@ void FeatureInfo::AddFeatures(const char* desired_features) {
   if (ext.HaveAndDesire("GL_CHROMIUM_front_buffer_cached")) {
     AddExtensionString("GL_CHROMIUM_front_buffer_cached");
   }
+
+  if (ext.Desire("GL_ANGLE_pack_reverse_row_order") &&
+      ext.Have("GL_ANGLE_pack_reverse_row_order")) {
+    AddExtensionString("GL_ANGLE_pack_reverse_row_order");
+    feature_flags_.angle_pack_reverse_row_order = true;
+    validators_.pixel_store.AddValue(GL_PACK_REVERSE_ROW_ORDER_ANGLE);
+    validators_.g_l_state.AddValue(GL_PACK_REVERSE_ROW_ORDER_ANGLE);
+  }
 }
 
 void FeatureInfo::AddExtensionString(const std::string& str) {

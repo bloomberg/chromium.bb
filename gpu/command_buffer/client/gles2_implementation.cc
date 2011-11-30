@@ -540,9 +540,11 @@ GLES2Implementation::GLES2Implementation(
           helper,
           static_cast<char*>(transfer_buffer) + kStartingOffset),
       transfer_buffer_id_(transfer_buffer_id),
+      angle_pack_reverse_row_order_status(kUnknownExtensionStatus),
       pack_alignment_(4),
       unpack_alignment_(4),
       unpack_flip_y_(false),
+      pack_reverse_row_order_(false),
       active_texture_unit_(0),
       bound_framebuffer_(0),
       bound_renderbuffer_(0),
@@ -646,6 +648,41 @@ void GLES2Implementation::FreeUnusedSharedMemory() {
 void GLES2Implementation::WaitForCmd() {
   TRACE_EVENT0("gpu", "GLES2::WaitForCmd");
   helper_->CommandBufferHelper::Finish();
+}
+
+namespace {
+bool IsExtensionAvailable(GLES2Implementation* gles2, const char ext[]) {
+  const char* extensions = reinterpret_cast<const char*>(
+      gles2->GetString(GL_EXTENSIONS));
+  int length = strlen(ext);
+  while (true) {
+    int n = strcspn(extensions, " ");
+    if (n == length && 0 == strncmp(ext, extensions, length)) {
+      return true;
+    }
+    if ('\0' == extensions[n]) {
+      return false;
+    }
+    extensions += n+1;
+  }
+}
+}
+
+bool GLES2Implementation::IsAnglePackReverseRowOrderAvailable() {
+  switch (angle_pack_reverse_row_order_status) {
+    case kAvailableExtensionStatus:
+      return true;
+    case kUnavailableExtensionStatus:
+      return false;
+    default:
+      if (IsExtensionAvailable(this, "GL_ANGLE_pack_reverse_row_order")) {
+          angle_pack_reverse_row_order_status = kAvailableExtensionStatus;
+          return true;
+      } else {
+          angle_pack_reverse_row_order_status = kUnavailableExtensionStatus;
+          return false;
+      }
+  }
 }
 
 GLenum GLES2Implementation::GetError() {
@@ -1221,6 +1258,10 @@ void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
     case GL_UNPACK_FLIP_Y_CHROMIUM:
         unpack_flip_y_ = (param != 0);
         return;
+    case GL_PACK_REVERSE_ROW_ORDER_ANGLE:
+        pack_reverse_row_order_ =
+            IsAnglePackReverseRowOrderAvailable() ? (param != 0) : false;
+        break;
     default:
         break;
   }
@@ -1975,12 +2016,24 @@ void GLES2Implementation::ReadPixels(
           result_shm_id(), result_shm_offset());
       WaitForCmd();
       if (*result != 0) {
+        // when doing a y-flip we have to iterate through top-to-bottom chunks
+        // of the dst. The service side handles reversing the rows within a
+        // chunk.
+        int8* rows_dst;
+        if (pack_reverse_row_order_) {
+            rows_dst = dest + (height - num_rows) * padded_row_size;
+        } else {
+            rows_dst = dest;
+        }
         // We have to copy 1 row at a time to avoid writing pad bytes.
         const int8* src = static_cast<const int8*>(buffer);
         for (GLint yy = 0; yy < num_rows; ++yy) {
-          memcpy(dest, src, unpadded_row_size);
-          dest += padded_row_size;
+          memcpy(rows_dst, src, unpadded_row_size);
+          rows_dst += padded_row_size;
           src += padded_row_size;
+        }
+        if (!pack_reverse_row_order_) {
+          dest = rows_dst;
         }
       }
       transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
@@ -1998,6 +2051,10 @@ void GLES2Implementation::ReadPixels(
     GLsizeiptr element_size = temp_size;
     max_size -= max_size % element_size;
     GLint max_sub_row_pixels = max_size / element_size;
+    if (pack_reverse_row_order_) {
+      // start at the last row when flipping y.
+      dest = dest + (height - 1) * padded_row_size;
+    }
     for (; height; --height) {
       GLint temp_width = width;
       GLint temp_xoffset = xoffset;
@@ -2025,7 +2082,7 @@ void GLES2Implementation::ReadPixels(
         temp_width -= num_pixels;
       }
       ++yoffset;
-      dest += padded_row_size;
+      dest += pack_reverse_row_order_ ? -padded_row_size : padded_row_size;
     }
   }
 }
@@ -2520,6 +2577,10 @@ void GLES2Implementation::RequestExtensionCHROMIUM(const char* extension) {
   SetBucketAsCString(kResultBucketId, extension);
   helper_->RequestExtensionCHROMIUM(kResultBucketId);
   helper_->SetBucketSize(kResultBucketId, 0);
+  if (kUnavailableExtensionStatus == angle_pack_reverse_row_order_status &&
+      !strcmp(extension, "GL_ANGLE_pack_reverse_row_order")) {
+    angle_pack_reverse_row_order_status = kUnknownExtensionStatus;
+  }
 }
 
 void GLES2Implementation::RateLimitOffscreenContextCHROMIUM() {

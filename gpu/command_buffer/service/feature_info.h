@@ -26,6 +26,7 @@ class FeatureInfo {
           chromium_webglsl(false),
           chromium_stream_texture(false),
           angle_translated_shader_source(false),
+          angle_pack_reverse_row_order(false),
           arb_texture_rectangle(false) {
     }
 
@@ -38,6 +39,7 @@ class FeatureInfo {
     bool chromium_webglsl;
     bool chromium_stream_texture;
     bool angle_translated_shader_source;
+    bool angle_pack_reverse_row_order;
     bool arb_texture_rectangle;
   };
 

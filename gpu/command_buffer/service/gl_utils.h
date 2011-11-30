@@ -42,6 +42,9 @@
 // GL_ANGLE_translated_shader_source
 #define GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE 0x93A0
 
+// GL_ANGLE_pack_reverse_row_order
+#define GL_PACK_REVERSE_ROW_ORDER_ANGLE    0x93A4
+
 #define GL_GLEXT_PROTOTYPES 1
 
 // Define this for extra GL error debugging (slower).
