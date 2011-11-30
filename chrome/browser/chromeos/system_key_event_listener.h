@@ -43,6 +43,7 @@ class SystemKeyEventListener : public MessageLoopForUI::Observer {
   // Defines the delete on exit Singleton traits we like.  Best to have this
   // and const/dest private as recommended for Singletons.
   friend struct DefaultSingletonTraits<SystemKeyEventListener>;
+  friend class SystemKeyEventListenerTest;
 
   SystemKeyEventListener();
   virtual ~SystemKeyEventListener();

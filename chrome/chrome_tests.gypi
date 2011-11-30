@@ -2490,6 +2490,7 @@
         'browser/chromeos/status/power_menu_button_browsertest.cc',
         'browser/chromeos/status/status_area_view_browsertest.cc',
         'browser/chromeos/setting_level_bubble_browsertest.cc',
+        'browser/chromeos/system_key_event_listener_browsertest.cc',
         'browser/chromeos/tab_closeable_state_watcher_browsertest.cc',
         'browser/chromeos/volume_bubble_browsertest.cc',
         'browser/content_settings/content_settings_browsertest.cc',
