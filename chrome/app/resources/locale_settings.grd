@@ -241,15 +241,6 @@
         en-US
       </message>
 
-      <!-- The width and height of the Import dialog box in characters and lines (See -->
-      <!-- above). -->
-      <message name="IDS_IMPORT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        60
-      </message>
-      <message name="IDS_IMPORT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        14
-      </message>
-
       <!-- The width and height of the About dialog box in characters and lines (See -->
       <!-- above). -->
       <message name="IDS_ABOUT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
@@ -296,15 +287,6 @@
       </message>
       <message name="IDS_PAGEINFOBUBBLE_HEIGHT_LINES" use_name_for_id="true">
         30
-      </message>
-
-      <!-- The width and height of the Search Engines dialog box in characters and -->
-      <!-- lines (See above). -->
-      <message name="IDS_SEARCHENGINES_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        95
-      </message>
-      <message name="IDS_SEARCHENGINES_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        25
       </message>
 
       <!-- The width and height of the Edit Bookmark dialog box in characters and lines -->
@@ -356,26 +338,17 @@
       <message name="IDS_FIRSTRUNBUBBLE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         93
       </message>
-      <message name="IDS_FIRSTRUNBUBBLE_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        12
-      </message>
 
       <!-- The width and height of the First Run Search Information OEM -->
       <!-- bubble in characters and lines (See above). -->
       <message name="IDS_FIRSTRUNOEMBUBBLE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         37
       </message>
-      <message name="IDS_FIRSTRUNOEMBUBBLE_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        3
-      </message>
 
       <!-- The width and height of the First Run Omnibox Information minimal -->
       <!-- bubble in characters and lines (See above). -->
       <message name="IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         82
-      </message>
-      <message name="IDS_FIRSTRUN_MINIMAL_BUBBLE_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        5
       </message>
 
       <!-- The minimum width of javascript alert popups. -->
@@ -419,16 +392,6 @@
       <!-- not use the language/locale code. -->
       <message name="IDS_FLASH_STORAGE_URL" use_name_for_id="true">
         http://www.adobe.com/go/settmgr_storage_en
-      </message>
-
-      <!-- The width of the sync setup wizard / login dialog in characters. -->
-      <message name="IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS" use_name_for_id="true">
-        60
-      </message>
-
-      <!-- The height of the sync setup wizard / login dialog in lines. -->
-      <message name="IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES" use_name_for_id="true">
-        19
       </message>
 
       <message name="IDS_SYNC_GET_ACCESS_CODE_URL" translateable="false">
@@ -503,15 +466,6 @@
         </message>
         <message name="IDS_CAPTCHA_INPUT_DIALOG_HEIGHT_LINES" use_name_for_id="true">
           13
-        </message>
-
-        <!-- The width and height of the TPM setting dialog box in -->
-        <!-- characters and lines (See above). -->
-        <message name="IDS_TPM_INFO_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-          80
-        </message>
-        <message name="IDS_TPM_INFO_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-          10
         </message>
 
         <!-- The width and height of the password changed dialog box in -->

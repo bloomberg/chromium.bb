@@ -73,7 +73,7 @@ def CheckForUnusedGrdIDsInSources(grd_files, src_dirs):
     return 1
 
   # The regex for deciding what is a source file
-  src_regex = re.compile('\.(([chm])|(mm)|(cc)|(cp)|(cpp)|(xib))$')
+  src_regex = re.compile('\.(([chm])|(mm)|(cc)|(cp)|(cpp)|(xib)|(py))$')
 
   ids_left = all_ids.copy()
 
@@ -141,6 +141,7 @@ def main():
       os.path.join(chrome_app_res_dir, 'locale_settings_win.grd'),
       os.path.join(chrome_app_dir, 'theme', 'theme_resources.grd'),
       os.path.join(chrome_dir, 'browser', 'browser_resources.grd'),
+      os.path.join(chrome_dir, 'browser', 'resources', 'shared_resources.grd'),
       os.path.join(chrome_dir, 'common', 'common_resources.grd'),
       os.path.join(chrome_dir, 'renderer', 'renderer_resources.grd'),
       os.path.join(src_dir, 'ui', 'gfx', 'gfx_resources.grd'),
@@ -153,12 +154,14 @@ def main():
   if len(src_dirs) == 0:
     src_dirs = [
       os.path.join(src_dir, 'app'),
-      os.path.join(src_dir, 'content'),
       os.path.join(src_dir, 'chrome'),
+      os.path.join(src_dir, 'chrome_frame'),
+      os.path.join(src_dir, 'content'),
       os.path.join(src_dir, 'ui'),
       os.path.join(src_dir, 'views'),
       # nsNSSCertHelper.cpp has a bunch of ids
       os.path.join(src_dir, 'third_party', 'mozilla_security_manager'),
+      os.path.join(chrome_dir, 'installer'),
     ]
 
   return CheckForUnusedGrdIDsInSources(grd_files, src_dirs)

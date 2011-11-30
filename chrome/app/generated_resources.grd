@@ -6160,9 +6160,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_ADD_NEW_INSTRUCTIONS" desc="Placeholder text before the user adds a new exception" >
         Add a new hostname pattern
       </message>
-      <message name="IDS_EXCEPTIONS_NOT_SET_BUTTON" desc="A label to display in the exception page's action column when a site's content setting has not yet been set for a given domain.">
-        Not set
-      </message>
       <message name="IDS_EXCEPTIONS_GEOLOCATION_EMBEDDED_ON_HOST" desc="Template text for a child row in the Geolocation Exceptions page view. Controls the permission setting for the parent page when embedded on the specified site.">
         embedded on <ph name="URL">$1<ex>www.google.com</ex></ph>
       </message>
@@ -6218,14 +6215,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Manage intents...
         </message>
       </if>
-
-      <!-- Cookie/Images/JavaScript/Plugins/Pop-ups/Location exception editor dialogs -->
-      <message name="IDS_EXCEPTION_EDITOR_PATTERN_TITLE" desc="Title of the pattern field in the exception editor">
-        Hostname Pattern:
-      </message>
-      <message name="IDS_EXCEPTION_EDITOR_OTR_TITLE" desc="Title of the incognito checkbox in the exception editor">
-        Only apply to this incognito session
-      </message>
 
       <!-- Automatic updates -->
       <if expr="is_macosx">
