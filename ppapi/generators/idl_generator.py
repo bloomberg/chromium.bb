@@ -262,4 +262,3 @@ def Main(args):
 if __name__ == '__main__':
   GeneratorReleaseTest('Test Gen', 'testgen', 'Generator Class Test.')
   sys.exit(Main(sys.argv[1:]))
-

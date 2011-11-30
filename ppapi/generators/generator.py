@@ -6,14 +6,13 @@
 
 import sys
 
-from idl_ast import IDLAst
+# Note: some of these files are imported to register cmdline options.
 from idl_generator import Generator
-from idl_log import ErrOut, InfoOut, WarnOut
-from idl_node import IDLAttribute, IDLNode
-from idl_option import GetOption, Option, ParseOptions
+from idl_option import ParseOptions
 from idl_outfile import IDLOutFile
 from idl_parser import ParseFiles
 from idl_c_header import HGen
+from idl_gen_pnacl import PnaclGen
 
 
 def Main(args):
@@ -29,4 +28,3 @@ if __name__ == '__main__':
   if not args: args = ['--wnone', '--cgen', '--range=start,end']
 
   sys.exit(Main(args))
-

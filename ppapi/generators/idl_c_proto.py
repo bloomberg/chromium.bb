@@ -342,7 +342,7 @@ class CGen(object):
   #   rtype - The store or return type of the object.
   #   name - The name of the object.
   #   arrays - A list of array dimensions as [] or [<fixed_num>].
-  #   args -  None of not a function, otherwise  a list of parameters.
+  #   args -  None if not a function, otherwise a list of parameters.
   #
   def GetComponents(self, node, release, mode):
     self.LogEnter('GetComponents mode %s for %s %s' % (mode, node, release))
@@ -375,17 +375,23 @@ class CGen(object):
     return (rtype, name, arrayspec, callspec)
 
 
-  def Compose(self, rtype, name, arrayspec, callspec, prefix, func_as_ptr):
+  def Compose(self, rtype, name, arrayspec, callspec, prefix, func_as_ptr,
+              ptr_prefix, include_name):
     self.LogEnter('Compose: %s %s' % (rtype, name))
     arrayspec = ''.join(arrayspec)
-    name = '%s%s%s' % (prefix, name, arrayspec)
+    if not include_name:
+      name = prefix + arrayspec
+    else:
+      name = prefix + name + arrayspec
     if callspec is None:
       out = '%s %s' % (rtype, name)
     else:
       params = []
       for ptype, pname, parray, pspec in callspec:
-        params.append(self.Compose(ptype, pname, parray, pspec, '', True))
-      if func_as_ptr: name = '(*%s)' % name
+        params.append(self.Compose(ptype, pname, parray, pspec, '', True,
+                                   ptr_prefix='', include_name=True))
+      if func_as_ptr:
+        name = '(%s*%s)' % (ptr_prefix, name)
       out = '%s %s(%s)' % (rtype, name, ', '.join(params))
     self.LogExit('Exit Compose: %s' % out)
     return out
@@ -396,11 +402,18 @@ class CGen(object):
   # Returns the 'C' style signature of the object
   #  prefix - A prefix for the object's name
   #  func_as_ptr - Formats a function as a function pointer
+  #  ptr_prefix - A prefix that goes before the "*" for a function pointer
+  #  include_name - If true, include member name in the signature.
+  #                 If false, leave it out. In any case, prefix and ptr_prefix
+  #                 are always included.
   #
-  def GetSignature(self, node, release, mode, prefix='', func_as_ptr=True):
-    self.LogEnter('GetSignature %s %s as func=%s' % (node, mode, func_as_ptr))
+  def GetSignature(self, node, release, mode, prefix='', func_as_ptr=True,
+                   ptr_prefix='', include_name=True):
+    self.LogEnter('GetSignature %s %s as func=%s' %
+                  (node, mode, func_as_ptr))
     rtype, name, arrayspec, callspec = self.GetComponents(node, release, mode)
-    out = self.Compose(rtype, name, arrayspec, callspec, prefix, func_as_ptr)
+    out = self.Compose(rtype, name, arrayspec, callspec, prefix,
+                       func_as_ptr, ptr_prefix, include_name)
     self.LogExit('Exit GetSignature: %s' % out)
     return out
 
@@ -451,12 +464,22 @@ class CGen(object):
     self.LogExit('Exit DefineMember')
     return out
 
-  def DefineStructInternals(self, node, release, suffix='', comment=True):
+  def GetStructName(self, node, release, include_version=False):
+    suffix = ''
+    if include_version:
+      ver_num = node.GetVersion(release)
+      suffix = ('_%s' % ver_num).replace('.', '_')
+    return node.GetName() + suffix
+
+  def DefineStructInternals(self, node, release,
+                            include_version=False, comment=True):
     out = ''
     if node.GetProperty('union'):
-      out += 'union %s%s {\n' % (node.GetName(), suffix)
+      out += 'union %s {\n' % (
+          self.GetStructName(node, release, include_version))
     else:
-      out += 'struct %s%s {\n' % (node.GetName(), suffix)
+      out += 'struct %s {\n' % (
+          self.GetStructName(node, release, include_version))
 
     # Generate Member Functions
     members = []
@@ -476,13 +499,13 @@ class CGen(object):
     build_list = node.GetUniqueReleases(releases)
 
     # Build the most recent one with comments
-    out = self.DefineStructInternals(node, build_list[-1], comment=True)
+    out = self.DefineStructInternals(node, build_list[-1],
+                                     include_version=False, comment=True)
 
     # Build the rest without comments and with the version number appended
     for rel in build_list[0:-1]:
-      ver_num = node.GetVersion(rel)
-      ver = ("_%s" % ver_num).replace('.', '_')
-      out += '\n' + self.DefineStructInternals(node, rel, suffix=ver,
+      out += '\n' + self.DefineStructInternals(node, rel,
+                                               include_version=True,
                                                comment=False)
 
     self.LogExit('Exit DefineStruct')

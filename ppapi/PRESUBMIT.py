@@ -6,8 +6,42 @@ import os
 import sys
 import subprocess
 
+def RunCmdAndCheck(cmd, ppapi_dir, err_string, output_api):
+  results = []
+  p = subprocess.Popen(cmd, cwd=os.path.join(ppapi_dir, 'generators'),
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
+  (p_stdout, p_stderr) = p.communicate()
+  if p.returncode:
+    results.append(
+        output_api.PresubmitError(err_string,
+                                  long_text=p_stderr))
+  return results
+
+
+def RunUnittests(input_api, output_api):
+  # Run some Generator unittests if the generator source was changed.
+  results = []
+  files = input_api.LocalPaths()
+  generator_files = []
+  for filename in files:
+    name_parts = filename.split(os.sep)
+    if name_parts[0:2] == ['ppapi', 'generators']:
+      generator_files.append(filename)
+  if generator_files != []:
+    cmd = [ sys.executable, 'idl_gen_pnacl.py', '--wnone', '--test']
+    ppapi_dir = input_api.PresubmitLocalPath()
+    results.extend(RunCmdAndCheck(cmd,
+                                  ppapi_dir,
+                                  'PPAPI IDL Pnacl unittest failed.',
+                                  output_api))
+  return results
+
+
 def CheckChange(input_api, output_api):
   results = []
+
+  results.extend(RunUnittests(input_api, output_api))
 
   # Verify all modified *.idl have a matching *.h
   files = input_api.LocalPaths()
@@ -51,15 +85,10 @@ def CheckChange(input_api, output_api):
 
   # Only generate output for IDL files references (as *.h or *.idl) in this CL
   cmd.append('--out=' + ','.join([name + '.idl' for name in both]))
-
-  p = subprocess.Popen(cmd, cwd=os.path.join(ppapi_dir, 'generators'),
-                       stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE)
-  (p_stdout, p_stderr) = p.communicate()
-  if p.returncode:
-    results.append(
-        output_api.PresubmitError('PPAPI IDL Diff detected: Run the generator.',
-                                  long_text=p_stderr))
+  results.extend(RunCmdAndCheck(cmd,
+                                ppapi_dir,
+                                'PPAPI IDL Diff detected: Run the generator.',
+                                output_api))
   return results
 
 def CheckChangeOnUpload(input_api, output_api):
@@ -69,4 +98,3 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
 #  return []
   return CheckChange(input_api, output_api)
-
