@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::NiceMock;
 using content::BrowserThread;
 
@@ -25,9 +26,6 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
                                  GoogleServiceAuthError::State error_state,
                                  bool is_signed_in,
                                  bool is_error) {
-  GoogleServiceAuthError auth_error(error_state);
-  service->UpdateAuthErrorState(auth_error);
-
   EXPECT_CALL(*service, HasSyncSetupCompleted())
               .WillRepeatedly(Return(is_signed_in));
   if (error_state == GoogleServiceAuthError::SERVICE_UNAVAILABLE) {
@@ -37,6 +35,9 @@ void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
     EXPECT_CALL(*service, GetAuthenticatedUsername())
                 .WillRepeatedly(Return(UTF8ToUTF16("foo")));
   }
+
+  GoogleServiceAuthError auth_error(error_state);
+  EXPECT_CALL(*service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));
 
   error->OnStateChanged();
 

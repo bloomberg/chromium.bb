@@ -132,16 +132,28 @@ void GetStatusLabelsForAuthError(const AuthError& auth_error,
 // Returns the message that should be displayed when the user is authenticated
 // and can connect to the sync server. If the user hasn't yet authenticated, an
 // empty string is returned.
-string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
+string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
+                                   StatusLabelStyle style) {
   string16 label;
   string16 user_name(service->GetAuthenticatedUsername());
   if (user_name.empty())
     return label;
 
-  return l10n_util::GetStringFUTF16(
-      IDS_SYNC_ACCOUNT_SYNCING_TO_USER,
-      user_name,
-      ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
+  // Message may also carry additional advice with an HTML link, if acceptable.
+  switch (style) {
+    case PLAIN_TEXT:
+      return l10n_util::GetStringFUTF16(
+          IDS_SYNC_ACCOUNT_SYNCING_TO_USER,
+          user_name);
+    case WITH_HTML:
+      return l10n_util::GetStringFUTF16(
+          IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK,
+          user_name,
+          ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
+    default:
+      NOTREACHED();
+      return NULL;
+  }
 }
 
 void GetStatusForActionableError(
@@ -175,6 +187,7 @@ void GetStatusForActionableError(
 
 // status_label and link_label must either be both NULL or both non-NULL.
 MessageType GetStatusInfo(ProfileSyncService* service,
+                          StatusLabelStyle style,
                           string16* status_label,
                           string16* link_label) {
   DCHECK_EQ(status_label == NULL, link_label == NULL);
@@ -237,7 +250,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
         // current synced status.  Return SYNC_PROMO so that
         // the configure link will still be shown.
         if (status_label && link_label) {
-          status_label->assign(GetSyncedStateStatusLabel(service));
+          status_label->assign(GetSyncedStateStatusLabel(service, style));
           link_label->assign(
               l10n_util::GetStringUTF16(IDS_SYNC_PASSWORD_SYNC_ATTENTION));
         }
@@ -247,7 +260,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
 
     // There is no error. Display "Last synced..." message.
     if (status_label)
-      status_label->assign(GetSyncedStateStatusLabel(service));
+      status_label->assign(GetSyncedStateStatusLabel(service, style));
     return SYNCED;
   } else {
     // Either show auth error information with a link to re-login, auth in prog,
@@ -329,17 +342,18 @@ MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
   }
 
   // Fallback to default.
-  return GetStatusInfo(service, status_label, link_label);
+  return GetStatusInfo(service, WITH_HTML, status_label, link_label);
 }
 
 }  // namespace
 
 MessageType GetStatusLabels(ProfileSyncService* service,
+                            StatusLabelStyle style,
                             string16* status_label,
                             string16* link_label) {
   DCHECK(status_label);
   DCHECK(link_label);
-  return sync_ui_util::GetStatusInfo(service, status_label, link_label);
+  return sync_ui_util::GetStatusInfo(service, style, status_label, link_label);
 }
 
 MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
@@ -390,7 +404,7 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
 }
 
 MessageType GetStatus(ProfileSyncService* service) {
-  return sync_ui_util::GetStatusInfo(service, NULL, NULL);
+  return sync_ui_util::GetStatusInfo(service, WITH_HTML, NULL, NULL);
 }
 
 string16 GetSyncMenuLabel(ProfileSyncService* service) {

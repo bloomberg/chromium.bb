@@ -256,7 +256,8 @@ void PersonalOptionsHandler::OnStateChanged() {
   bool managed = service->IsManaged();
   bool sync_setup_completed = service->HasSyncSetupCompleted();
   bool status_has_error = sync_ui_util::GetStatusLabels(
-      service, &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
+      service, sync_ui_util::WITH_HTML, &status_label, &link_label) ==
+          sync_ui_util::SYNC_ERROR;
 
   string16 start_stop_button_label;
   bool is_start_stop_button_visible = false;
