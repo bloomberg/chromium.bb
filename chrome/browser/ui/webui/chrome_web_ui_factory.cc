@@ -11,6 +11,7 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/bug_report_ui.h"
 #include "chrome/browser/ui/webui/constrained_html_ui.h"
@@ -103,12 +104,18 @@ ChromeWebUI* NewWebUI<ExtensionWebUI>(TabContents* contents, const GURL& url) {
   return NULL;
 }
 
+// Special case for older about: handlers.
+template<>
+ChromeWebUI* NewWebUI<AboutUI>(TabContents* contents, const GURL& url) {
+  return new AboutUI(contents, url.host());
+}
+
 // Returns a function that can be used to create the right type of WebUI for a
 // tab, based on its URL. Returns NULL if the URL doesn't have WebUI associated
 // with it. Even if the factory function is valid, it may yield a NULL WebUI
 // when invoked for a particular tab - see NewWebUI<ExtensionWebUI>.
-static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
-                                                    const GURL& url) {
+WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
+                                             const GURL& url) {
   if (url.host() == chrome::kChromeUIDialogHost)
     return &NewWebUI<ConstrainedHtmlUI>;
 
@@ -140,11 +147,6 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
   if (url.host() == chrome::kChromeUINewTabHost ||
       url.SchemeIs(chrome::kChromeInternalScheme))
     return &NewWebUI<NewTabUI>;
-
-  // Return a generic Web UI so chrome:chrome-urls can navigate to Web UI pages.
-  if (url.host() == chrome::kChromeUIAboutHost ||
-      url.host() == chrome::kChromeUIChromeURLsHost)
-    return &NewWebUI<ChromeWebUI>;
 
   // We must compare hosts only since some of the Web UIs append extra stuff
   // after the host name.
@@ -269,6 +271,34 @@ static WebUIFactoryFunction GetWebUIFactoryFunction(Profile* profile,
       return &NewWebUI<NewTabUI>;
   }
 #endif
+
+  if (url.host() == chrome::kChromeUIChromeURLsHost ||
+      url.host() == chrome::kChromeUICreditsHost ||
+      url.host() == chrome::kChromeUIDNSHost ||
+      url.host() == chrome::kChromeUIHistogramsHost ||
+      url.host() == chrome::kChromeUIMemoryHost ||
+      url.host() == chrome::kChromeUIMemoryRedirectHost ||
+      url.host() == chrome::kChromeUIStatsHost ||
+      url.host() == chrome::kChromeUITaskManagerHost ||
+      url.host() == chrome::kChromeUITermsHost ||
+      url.host() == chrome::kChromeUIVersionHost
+#if defined(USE_TCMALLOC)
+      || url.host() == chrome::kChromeUITCMallocHost
+#endif
+#if defined(OS_LINUX) || defined(OS_OPENBSD)
+      || url.host() == chrome::kChromeUILinuxProxyConfigHost
+      || url.host() == chrome::kChromeUISandboxHost
+#endif
+#if defined(OS_CHROMEOS)
+      || url.host() == chrome::kChromeUICryptohomeHost
+      || url.host() == chrome::kChromeUIDiscardsHost
+      || url.host() == chrome::kChromeUINetworkHost
+      || url.host() == chrome::kChromeUIOSCreditsHost
+#endif
+      ) {
+    return &NewWebUI<AboutUI>;
+  }
+
   DLOG(WARNING) << "Unknown WebUI:" << url;
   return NULL;
 }

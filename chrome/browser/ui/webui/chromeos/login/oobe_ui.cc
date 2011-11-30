@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
@@ -153,7 +154,9 @@ OobeUI::OobeUI(TabContents* contents)
   profile->GetChromeURLDataManager()->AddDataSource(theme);
 
   // Set up the chrome://terms/ data source, for EULA content.
-  InitializeAboutDataSource(chrome::kChromeUITermsHost, profile);
+  AboutUIHTMLSource* about_source =
+      new AboutUIHTMLSource(chrome::kChromeUITermsHost, profile);
+  profile->GetChromeURLDataManager()->AddDataSource(about_source);
 
   // Set up the chrome://oobe/ source.
   OobeUIHTMLSource* html_source = new OobeUIHTMLSource(localized_strings);

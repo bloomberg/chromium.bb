@@ -65,43 +65,43 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
         GURL(chrome_prefix + chrome::kChromeUIMemoryHost),
         GURL(chrome_prefix + chrome::kChromeUIMemoryHost),
         false,
-        true
+        false
       },
       {
         GURL(chrome_prefix + chrome::kChromeUIDefaultHost),
         GURL(chrome_prefix + chrome::kChromeUIVersionHost),
         false,
-        true
+        false
       },
       {
         GURL(chrome_prefix + chrome::kChromeUIAboutHost),
         GURL(chrome_prefix + chrome::kChromeUIChromeURLsHost),
         false,
-        true
+        false
       },
       {
         GURL(chrome_prefix + chrome::kChromeUICacheHost),
         GURL(chrome_prefix + chrome::kChromeUINetworkViewCacheHost),
         false,
-        true
+        false
       },
       {
         GURL(chrome_prefix + chrome::kChromeUIGpuHost),
         GURL(chrome_prefix + chrome::kChromeUIGpuInternalsHost),
         false,
-        true
+        false
       },
       {
         GURL(chrome_prefix + chrome::kChromeUISyncHost),
         GURL(chrome_prefix + chrome::kChromeUISyncInternalsHost),
         false,
-        true
+        false
       },
       {
         GURL(chrome_prefix + "host/path?query#ref"),
         GURL(chrome_prefix + "host/path?query#ref"),
         false,
-        true
+        false
       }
   };
   MessageLoopForUI message_loop;
@@ -119,5 +119,5 @@ TEST_F(BrowserAboutHandlerTest, WillHandleBrowserAboutURL) {
 
   // Crash the browser process for chrome://inducebrowsercrashforrealz.
   GURL url(chrome_prefix + chrome::kChromeUIBrowserCrashHost);
-  EXPECT_DEATH(WillHandleBrowserAboutURL(&url, NULL), "");
+  EXPECT_DEATH(HandleNonNavigationAboutURL(url), "");
 }

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Contains code for handling "about:" URLs in the browser process.
-
 #ifndef CHROME_BROWSER_BROWSER_ABOUT_HANDLER_H_
 #define CHROME_BROWSER_BROWSER_ABOUT_HANDLER_H_
 #pragma once
@@ -23,18 +21,11 @@ namespace content {
 class BrowserContext;
 }
 
-// Register a data source for a known source name. Safe to call multiple times.
-// |name| may be an unkown host (e.g. "chrome://foo/"); only handle known hosts.
-// In general case WillHandleBrowserAboutURL will initialize all data sources.
-// But in some case like navigating to chrome://oobe on boot and loading
-// chrome://terms in an iframe there, kChromeUITermsHost data source needs to
-// be initialized separately.
-void InitializeAboutDataSource(const std::string& name,
-                               content::BrowserContext* browser_context);
-
 // Returns true if the given URL will be handled by the browser about handler.
-// |url| should have been processed by URLFixerUpper::FixupURL, which replaces
-// the about: scheme with chrome:// for all about:foo URLs except "about:blank".
+// Nowadays, these go through the webui, so the return is always false.
+// Either way, |url| will be processed by URLFixerUpper::FixupURL, which
+// replaces the about: scheme with chrome:// for all about:foo URLs except
+// "about:blank".
 // Some |url| host values will be replaced with their respective redirects.
 //
 // This is used by BrowserURLHandler.
@@ -88,6 +79,6 @@ class AboutTcmallocOutputs {
 // Glue between the callback task and the method in the singleton.
 void AboutTcmallocRendererCallback(base::ProcessId pid,
                                    const std::string& output);
-#endif
+#endif  // defined(USE_TCMALLOC)
 
 #endif  // CHROME_BROWSER_BROWSER_ABOUT_HANDLER_H_

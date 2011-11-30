@@ -3621,6 +3621,8 @@
         'browser/ui/virtual_keyboard/virtual_keyboard_manager.h',
         'browser/ui/web_applications/web_app_ui.cc',
         'browser/ui/web_applications/web_app_ui.h',
+        'browser/ui/webui/about_ui.cc',
+        'browser/ui/webui/about_ui.h',
         'browser/ui/webui/active_downloads_ui.cc',
         'browser/ui/webui/active_downloads_ui.h',
         'browser/ui/webui/aura/app_list_ui.cc',

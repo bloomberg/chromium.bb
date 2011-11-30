@@ -1035,7 +1035,9 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
   handler->AddHandlerPair(BrowserURLHandler::null_handler(),
                           &ExtensionWebUI::HandleChromeURLOverrideReverse);
 
-  // about:
+  // about: handler. Must come before chrome: handler, since it will
+  // rewrite about: urls to chrome: URLs and then expect chrome: to
+  // actually handle them.
   handler->AddHandlerPair(&WillHandleBrowserAboutURL,
                           BrowserURLHandler::null_handler());
   // chrome: & friends.

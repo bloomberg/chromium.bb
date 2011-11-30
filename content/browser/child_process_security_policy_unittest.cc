@@ -129,8 +129,8 @@ TEST_F(ChildProcessSecurityPolicyTest, AboutTest) {
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("abOuT:cAChe")));
 
   // These requests for about: pages should be denied.
-  p->GrantRequestURL(kRendererID, GURL(chrome::kTestMemoryURL));
-  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kTestMemoryURL)));
+  p->GrantRequestURL(kRendererID, GURL(chrome::kTestGpuCleanURL));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kTestGpuCleanURL)));
 
   p->GrantRequestURL(kRendererID, GURL(chrome::kAboutCrashURL));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL(chrome::kAboutCrashURL)));
