@@ -361,6 +361,12 @@ RenderViewImpl::RenderViewImpl(
   if (opener_id != MSG_ROUTING_NONE)
     opener_id_ = opener_id;
 
+#if defined(ENABLE_NOTIFICATIONS)
+  notification_provider_ = new NotificationProvider(this);
+#else
+  notification_provider_ = NULL;
+#endif
+
   webwidget_ = WebView::create(this);
 
   if (counter) {
@@ -373,12 +379,6 @@ RenderViewImpl::RenderViewImpl(
   }
 
   intents_dispatcher_ = new IntentsDispatcher(this);
-
-#if defined(ENABLE_NOTIFICATIONS)
-  notification_provider_ = new NotificationProvider(this);
-#else
-  notification_provider_ = NULL;
-#endif
 
   RenderThread::Get()->AddRoute(routing_id_, this);
   // Take a reference on behalf of the RenderThread.  This will be balanced
