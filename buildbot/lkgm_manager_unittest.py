@@ -72,10 +72,10 @@ class LKGMCandidateInfoTest(mox.MoxTestBase):
 
   def testVersionCompare(self):
     """Tests whether our comparision method works."""
-    info1 = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc1')
-    info2 = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc2')
-    info3 = lkgm_manager._LKGMCandidateInfo('1.2.200.4-rc1')
-    info4 = lkgm_manager._LKGMCandidateInfo('1.4.3.4-rc1')
+    info1 = lkgm_manager._LKGMCandidateInfo('1.2.3-rc1')
+    info2 = lkgm_manager._LKGMCandidateInfo('1.2.3-rc2')
+    info3 = lkgm_manager._LKGMCandidateInfo('1.2.200-rc1')
+    info4 = lkgm_manager._LKGMCandidateInfo('1.4.3-rc1')
 
     self.assertTrue(info2 > info1)
     self.assertTrue(info3 > info1)
@@ -117,83 +117,39 @@ class LKGMManagerTest(mox.MoxTestBase):
                                                   'build-name', '%(builder)s')
     self.manager.SLEEP_TIMEOUT = 1
 
-  def _CommonTestLatestCandidateByVersion(self, version, expected_candidate,
-                                          no_all=False):
-    """Common helper function for latest candidate tests.
-
-    Helper function to test given a version whether we can the right candidate
-    back.
-
-    Args:
-      version: The Chrome OS version to look for the latest candidate of.
-      expected_candidate: What we expect to come back.
-    """
-    if not no_all:
-      self.manager.all = ['1.2.4-rc1',
-                          '1.2.4-rc2',
-                          '1.2.4-rc9',
-                          '1.2.5-rc1',
-                          '1.2.6-rc2',
-                          '1.3.4-rc1',
-                          ]
-
-    info_for_test = manifest_version.VersionInfo(version)
-    candidate = self.manager._GetLatestCandidateByVersion(info_for_test)
-    self.assertEqual(candidate.VersionString(), expected_candidate)
-
-  def testGetLatestCandidateByVersionCommonCase(self):
-    """Tests whether we can get the latest candidate under the common case.
-
-    This test tests whether or not we get the right candidate when we have
-    many of the same candidate version around but with different rc's.
-    """
-    self._CommonTestLatestCandidateByVersion('1.2.4', '1.2.4-rc9')
-
-  def testGetLatestCandidateByVersionOnlyOne(self):
-    """Tests whether we can get the latest candidate with only one rc."""
-    self._CommonTestLatestCandidateByVersion('1.2.6', '1.2.6-rc2')
-
-  def testGetLatestCandidateByVersionNone(self):
-    """Tests whether we can get the latest candidate with no rc's."""
-    self._CommonTestLatestCandidateByVersion('1.2.7', '1.2.7-rc1')
-
-  def testGetLatestCandidateByVersionNoneNoAll(self):
-    """Tests whether we can get the latest candidate with no rc's at all."""
-    self._CommonTestLatestCandidateByVersion('10.0.1', '10.0.1-rc1', True)
-
   def _GetPathToManifest(self, info):
     return os.path.join(self.manager.all_specs_dir, '%s.xml' %
                         info.VersionString())
 
   def testCreateNewCandidate(self):
-    """Tests that we can create a new candidate and uprev and old rc."""
+    """Tests that we can create a new candidate and uprev an old rc."""
     # Let's stub out other LKGMManager calls cause they're already
     # unit tested.
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             '_GetLatestCandidateByVersion')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_CreateNewBuildSpec')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
-    my_info = manifest_version.VersionInfo('1.2.3.4')
-    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
-    new_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc13')
+    my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
+    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
+    new_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc13')
+
+    def IsMostRecentCandidate(obj):
+      return obj.VersionString() == most_recent_candidate.VersionString()
 
     lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
-    lkgm_manager.LKGMManager._GetLatestCandidateByVersion(my_info).AndReturn(
-        most_recent_candidate)
     lkgm_manager.LKGMManager._PrepSpecChanges()
-    lkgm_manager.LKGMManager._CreateNewBuildSpec(
-        most_recent_candidate).AndReturn(new_candidate.VersionString())
+    lkgm_manager.LKGMManager._CreateNewBuildSpec(mox.Func(
+        IsMostRecentCandidate)).AndReturn(new_candidate.VersionString())
     lkgm_manager.LKGMManager._SetInFlight()
     lkgm_manager.LKGMManager._PushSpecChanges(
         mox.StrContains(new_candidate.VersionString()))
 
     self.mox.ReplayAll()
+    self.manager.latest = most_recent_candidate.VersionString()
     candidate_path = self.manager.CreateNewCandidate()
     self.assertEqual(candidate_path, self._GetPathToManifest(new_candidate))
     self.mox.VerifyAll()
@@ -204,25 +160,24 @@ class LKGMManagerTest(mox.MoxTestBase):
     # unit tested.
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
-    self.mox.StubOutWithMock(lkgm_manager.LKGMManager,
-                             '_GetLatestCandidateByVersion')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_CreateNewBuildSpec')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_SetInFlight')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
 
+    my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
+    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
 
-    my_info = manifest_version.VersionInfo('1.2.3.4')
-    most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3.4-rc12')
+    def IsMostRecentCandidate(obj):
+      return obj.VersionString() == most_recent_candidate.VersionString()
 
     lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
-    lkgm_manager.LKGMManager._GetLatestCandidateByVersion(my_info).AndReturn(
-        most_recent_candidate)
     lkgm_manager.LKGMManager._PrepSpecChanges()
-    lkgm_manager.LKGMManager._CreateNewBuildSpec(
-        most_recent_candidate).AndReturn(None)
+    lkgm_manager.LKGMManager._CreateNewBuildSpec(mox.Func(
+        IsMostRecentCandidate)).AndReturn(None)
 
     self.mox.ReplayAll()
+    self.manager.latest = most_recent_candidate.VersionString()
     candidate = self.manager.CreateNewCandidate()
     self.assertEqual(candidate, None)
     self.mox.VerifyAll()
@@ -235,7 +190,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
-    my_info = manifest_version.VersionInfo('1.2.3')
+    my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.3-rc12')
 
     lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
@@ -259,7 +214,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PrepSpecChanges')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_PushSpecChanges')
 
-    my_info = manifest_version.VersionInfo('1.2.4')
+    my_info = lkgm_manager._LKGMCandidateInfo('1.2.4')
     most_recent_candidate = lkgm_manager._LKGMCandidateInfo('1.2.4-rc12',
                                                             CHROME_BRANCH)
 
@@ -287,7 +242,7 @@ class LKGMManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_GetCurrentVersionInfo')
     self.mox.StubOutWithMock(lkgm_manager.LKGMManager, '_LoadSpecs')
 
-    my_info = manifest_version.VersionInfo('1.2.3.4')
+    my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
     lkgm_manager.LKGMManager._GetCurrentVersionInfo().AndReturn(my_info)
     lkgm_manager.LKGMManager._LoadSpecs(my_info)
 

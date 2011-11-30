@@ -198,8 +198,6 @@ class VersionInfo(object):
 
   def __init__(self, version_string=None, chrome_branch=None,
                incr_type='build', version_file=None):
-    # TODO(sosa): Remove default.
-    self.chrome_branch = '14'
     if version_file:
       self.version_file = version_file
       logging.debug('Using VERSION _FILE = %s', version_file)
@@ -396,35 +394,40 @@ class BuildSpecsManager(object):
     self.fail_dir = None
     self.inflight_dir = None
 
-    # A list of versions this builder has successfully built.
-    self.passed = None
-
     # Path to specs for builder.  Requires passing %(builder)s.
     self.specs_for_builder = None
 
     # Specs.
-    self.all = None
     self.latest = None
+    self.latest_passed = None
+    self.latest_processed = None
     self.latest_unprocessed = None
     self.compare_versions_fn = VersionInfo.VersionCompare
 
     self.current_version = None
     self.rel_working_dir = ''
 
-  def _GetMatchingSpecs(self, version_info, directory):
-    """Returns the sorted list of buildspecs that match '*.xml in a directory.'
+  def _LatestSpecFromList(self, specs):
+    """Find the latest spec in a list of specs.
+
     Args:
-      version_info: Info class for version information of cros.
+      specs: List of specs.
+    Returns:
+      The latest spec if specs is non-empty.
+      None otherwise.
+    """
+    if specs:
+      return max(specs, key=self.compare_versions_fn)
+
+  def _LatestSpecFromDir(self, version_info, directory):
+    """Returns the latest buildspec that match '*.xml' in a directory.
+    Args:
       directory: Directory of the buildspecs.
     """
-    matched_manifests = []
     if os.path.exists(directory):
-      all_manifests = os.listdir(directory)
       match_string = version_info.BuildPrefix() + '*.xml'
-      matched_manifests = fnmatch.filter(all_manifests, match_string)
-      matched_manifests = [os.path.splitext(m)[0] for m in matched_manifests]
-
-    return sorted(matched_manifests, key=self.compare_versions_fn)
+      specs = fnmatch.filter(os.listdir(directory), match_string)
+      return self._LatestSpecFromList([os.path.splitext(m)[0] for m in specs])
 
   def _GetSpecAge(self, version):
     cmd = ['git', 'log', '-1', '--format=%ct', '%s.xml' % version]
@@ -460,26 +463,26 @@ class BuildSpecsManager(object):
       _RemoveDirs(self._TMP_MANIFEST_DIR)
       repository.CloneGitRepo(self._TMP_MANIFEST_DIR, self.manifest_repo)
 
-    # Build lists of specs.
-    self.all = self._GetMatchingSpecs(version_info, self.all_specs_dir)
+    # Calculate latest spec that passed.
+    self.latest_passed = self._LatestSpecFromDir(version_info, self.pass_dir)
 
-    # Build list of unprocessed specs.
-    self.passed = self._GetMatchingSpecs(version_info, self.pass_dir)
-    failed = self._GetMatchingSpecs(version_info, self.fail_dir)
-    inflight = self._GetMatchingSpecs(version_info, self.inflight_dir)
-    processed = set(self.passed + failed + inflight)
+    # Calculate latest processed spec.
+    dirs = (self.pass_dir, self.fail_dir,  self.inflight_dir)
+    self.latest_processed = self._LatestSpecFromList(
+        filter(None, [self._LatestSpecFromDir(version_info, d) for d in dirs]))
 
-    if self.all:
-      self.latest = self.all[-1]
-
-      # Check if we have a fresh spec file.
-      if (self.latest not in processed and
-          self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS):
-        self.latest_unprocessed = self.latest
+    # Calculate latest unprocessed spec (that is newer than
+    # LONG_MAX_TIMEOUT_SECONDS)
+    self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
+    self.latest_unprocessed = None
+    if (self.latest != self.latest_processed and
+        self._GetSpecAge(self.latest) < self.LONG_MAX_TIMEOUT_SECONDS):
+      self.latest_unprocessed = self.latest
 
   def _GetCurrentVersionInfo(self, sync=True):
     """Returns the current version info from the version file.
     Args:
+      sync: Whether to sync the tree.
     """
     if sync: self.cros_source.Sync(repository.RepoRepository.DEFAULT_MANIFEST)
     version_file_path = self.cros_source.GetRelativePath(constants.VERSION_FILE)
@@ -507,7 +510,7 @@ class BuildSpecsManager(object):
         return None
 
     version = version_info.VersionString()
-    if version in self.all:
+    if self.latest == version:
       message = ('Automatic: %s - Updating to a new version number from %s' % (
                  self.build_name, version))
       version = version_info.IncrementVersion(message, dry_run=self.dry_run)
@@ -524,7 +527,7 @@ class BuildSpecsManager(object):
 
   def DidLastBuildSucceed(self):
     """Returns True if this is our first build or the last build succeeded."""
-    return not self.latest or self.latest in self.passed
+    return self.latest_processed == self.latest_passed
 
   def GetBuildStatus(self, builder, version_info):
     """Given a builder, version, verison_info returns the build status."""

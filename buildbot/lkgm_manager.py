@@ -70,7 +70,7 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
 
   def __init__(self, version_string=None, chrome_branch=None,
                version_file=None):
-    self.revision_number = None
+    self.revision_number = 1
     if version_string:
       match = re.search(self.LKGM_RE, version_string)
       assert match, 'LKGM did not re %s' % self.LKGM_RE
@@ -82,13 +82,15 @@ class _LKGMCandidateInfo(manifest_version.VersionInfo):
     else:
       super(_LKGMCandidateInfo, self).__init__(version_file=version_file,
                                                incr_type='branch')
-    if not self.revision_number:
-      self.revision_number = 1
 
   def VersionString(self):
     """returns the full version string of the lkgm candidate"""
     return '%s.%s.%s-rc%s' % (self.build_number, self.branch_build_number,
                               self.patch_number, self.revision_number)
+
+  def BuildPrefix(self):
+    """Returns the build prefix to match the buildspecs in manifest-versions"""
+    return super(_LKGMCandidateInfo, self).VersionString()
 
   @classmethod
   def VersionCompare(cls, version_string):
@@ -181,19 +183,14 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     return function_success
 
-  def _GetLatestCandidateByVersion(self, version_info):
-    """Returns the latest lkgm candidate corresponding to the version file.
+  def _GetCurrentVersionInfo(self, sync=True):
+    """Returns the current version info from the version file.
     Args:
-      version_info: Info class for version information of cros.
+      sync: Whether to sync the tree.
     """
-    if self.all:
-      matched_lkgms = filter(
-          lambda ver: ver.startswith(version_info.VersionString()), self.all)
-      if matched_lkgms:
-        return _LKGMCandidateInfo(sorted(matched_lkgms,
-                                         key=self.compare_versions_fn)[-1])
-
-    return _LKGMCandidateInfo(version_info.VersionString())
+    version_info = super(LKGMManager, self)._GetCurrentVersionInfo(sync)
+    return _LKGMCandidateInfo(version_info.VersionString(),
+                              chrome_branch=version_info.chrome_branch)
 
   def AddPatchesToManifest(self, manifest, patches):
     """Adds list of patches to given manifest specified by manifest_path."""
@@ -225,9 +222,13 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       try:
         version_info = self._GetCurrentVersionInfo()
         self._LoadSpecs(version_info)
-        lkgm_info = self._GetLatestCandidateByVersion(version_info)
+        # Grab the latest revision number from manifest-versions, if available.
+        # Otherwise, we default to 'rc1'.
+        if self.latest:
+          version_info = _LKGMCandidateInfo(self.latest,
+              chrome_branch=version_info.chrome_branch)
         self._PrepSpecChanges()
-        self.current_version = self._CreateNewBuildSpec(lkgm_info)
+        self.current_version = self._CreateNewBuildSpec(version_info)
         path_to_new_build_spec = self.GetLocalManifest(self.current_version)
         if patches: self.AddPatchesToManifest(path_to_new_build_spec, patches)
         if self.current_version:

@@ -269,7 +269,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.VerifyAll()
     self.assertEqual(self.manager.latest_unprocessed, '1.2.5')
 
-  def testGetMatchingSpecs(self):
+  def testLatestSpecFromDir(self):
     """Tests whether we can get sorted specs correctly from a directory."""
     self.mox.StubOutWithMock(manifest_version, '_RemoveDirs')
     self.mox.StubOutWithMock(repository, 'CloneGitRepo')
@@ -290,10 +290,10 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     TouchFile(m4)
 
     self.mox.ReplayAll()
-    specs = self.manager._GetMatchingSpecs(info, specs_dir)
+    spec = self.manager._LatestSpecFromDir(info, specs_dir)
     self.mox.VerifyAll()
     # Should be the latest on the 99.1 branch
-    self.assertEqual(specs[-1], '99.3.3')
+    self.assertEqual(spec, '99.3.3')
 
   def testCreateNewBuildSpecNoCopy(self):
     """Tests whether we can create a new build spec correctly.
@@ -312,7 +312,6 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     repository.RepoRepository.ExportManifest(mox.IgnoreArg())
 
     self.mox.ReplayAll()
-    self.manager.all = []
     version = self.manager._CreateNewBuildSpec(info)
     self.mox.VerifyAll()
     self.assertEqual(FAKE_VERSION_STRING, version)
@@ -322,6 +321,7 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
     self.mox.StubOutWithMock(manifest_version.VersionInfo, 'IncrementVersion')
     self.mox.StubOutWithMock(repository.RepoRepository, 'ExportManifest')
     self.mox.StubOutWithMock(repository.RepoRepository, 'Sync')
+    self.mox.StubOutWithMock(repository.RepoRepository, 'IsManifestDifferent')
 
     version_file = VersionInfoTest.CreateFakeVersionFile(self.tmpdir)
     info = manifest_version.VersionInfo(version_file=version_file,
@@ -335,10 +335,11 @@ class BuildSpecsManagerTest(mox.MoxTestBase):
 
     repository.RepoRepository.Sync('default')
     repository.RepoRepository.ExportManifest(mox.IgnoreArg())
+    repository.RepoRepository.IsManifestDifferent(mox.IgnoreArg()
+       ).AndReturn(True)
 
     self.mox.ReplayAll()
-    # Add to existing so we are forced to increment.
-    self.manager.all = [FAKE_VERSION_STRING]
+    self.manager.latest = FAKE_VERSION_STRING
     version = self.manager._CreateNewBuildSpec(info)
     self.mox.VerifyAll()
     self.assertEqual(FAKE_VERSION_STRING_NEXT, version)
