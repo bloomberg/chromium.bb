@@ -1188,44 +1188,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopStart() {
 
 void ChromeBrowserMainParts::PreCreateThreads() {
   result_code_ = PreCreateThreadsImpl();
-
-  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
-    chrome_extra_parts_[i]->PreMainMessageLoopRun();
-}
-
-void ChromeBrowserMainParts::PreStartThread(
-    content::BrowserThread::ID thread_id) {
-  browser_process_->PreStartThread(thread_id);
-}
-
-void ChromeBrowserMainParts::PostStartThread(
-    content::BrowserThread::ID thread_id) {
-  browser_process_->PostStartThread(thread_id);
-  switch (thread_id) {
-    case BrowserThread::FILE:
-      // Now the command line has been mutated based on about:flags,
-      // and the file thread has been started, we can set up metrics
-      // and initialize field trials.
-      metrics_ = SetupMetricsAndFieldTrials(local_state_);
-
-#if defined(USE_LINUX_BREAKPAD)
-      // Needs to be called after we have chrome::DIR_USER_DATA and
-      // g_browser_process.  This happens in PreCreateThreads.
-      g_browser_process->file_thread()->message_loop()->PostTask(
-          FROM_HERE, base::Bind(&GetLinuxDistroCallback));
-
-      if (IsCrashReportingEnabled(local_state_))
-        InitCrashReporter();
-#endif
-      break;
-
-    default:
-      break;
-  }
-}
-
-void ChromeBrowserMainParts::PreMainMessageLoopRun() {
-  result_code_ = PreMainMessageLoopRunImpl();
 }
 
 int ChromeBrowserMainParts::PreCreateThreadsImpl() {
@@ -1421,6 +1383,44 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif
 
   return content::RESULT_CODE_NORMAL_EXIT;
+}
+
+void ChromeBrowserMainParts::PreStartThread(
+    content::BrowserThread::ID thread_id) {
+  browser_process_->PreStartThread(thread_id);
+}
+
+void ChromeBrowserMainParts::PostStartThread(
+    content::BrowserThread::ID thread_id) {
+  browser_process_->PostStartThread(thread_id);
+  switch (thread_id) {
+    case BrowserThread::FILE:
+      // Now the command line has been mutated based on about:flags,
+      // and the file thread has been started, we can set up metrics
+      // and initialize field trials.
+      metrics_ = SetupMetricsAndFieldTrials(local_state_);
+
+#if defined(USE_LINUX_BREAKPAD)
+      // Needs to be called after we have chrome::DIR_USER_DATA and
+      // g_browser_process.  This happens in PreCreateThreads.
+      g_browser_process->file_thread()->message_loop()->PostTask(
+          FROM_HERE, base::Bind(&GetLinuxDistroCallback));
+
+      if (IsCrashReportingEnabled(local_state_))
+        InitCrashReporter();
+#endif
+      break;
+
+    default:
+      break;
+  }
+}
+
+void ChromeBrowserMainParts::PreMainMessageLoopRun() {
+  result_code_ = PreMainMessageLoopRunImpl();
+
+  for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
+    chrome_extra_parts_[i]->PreMainMessageLoopRun();
 }
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {

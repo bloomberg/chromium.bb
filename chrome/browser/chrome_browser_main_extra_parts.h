@@ -24,12 +24,12 @@ class ChromeBrowserMainExtraParts {
   virtual void PreEarlyInitialization();
   virtual void PostEarlyInitialization();
 
-  // PreMainMessageLoopStart methods.
-  virtual void PreMainMessageLoopStart();
-  virtual void PostMainMessageLoopStart();
-
   // ToolkitInitialized methods.
   virtual void ToolkitInitialized();
+
+  // MainMessageLoopStart methods.
+  virtual void PreMainMessageLoopStart();
+  virtual void PostMainMessageLoopStart();
 
   // MainMessageLoopRun methods.
   virtual void PostBrowserProcessInit();
