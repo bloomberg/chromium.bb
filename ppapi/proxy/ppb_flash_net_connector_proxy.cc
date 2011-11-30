@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_net_connector.h"
 #include "ppapi/proxy/enter_proxy.h"
@@ -34,18 +35,9 @@ void StringToNetAddress(const std::string& str, PP_NetAddress_Private* addr) {
   memcpy(addr->data, str.data(), addr->size);
 }
 
-class AbortCallbackTask : public Task {
- public:
-  AbortCallbackTask(PP_CompletionCallback callback)
-      : callback_(callback) {}
-
-  virtual void Run() {
-    PP_RunCompletionCallback(&callback_, PP_ERROR_ABORTED);
-  }
-
- private:
-  PP_CompletionCallback callback_;
-};
+void AbortCallback(PP_CompletionCallback callback) {
+  PP_RunCompletionCallback(&callback, PP_ERROR_ABORTED);
+}
 
 class FlashNetConnector : public PPB_Flash_NetConnector_API,
                           public Resource {
@@ -99,8 +91,8 @@ FlashNetConnector::FlashNetConnector(const HostResource& resource)
 
 FlashNetConnector::~FlashNetConnector() {
   if (callback_.func) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     new AbortCallbackTask(callback_));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&AbortCallback, callback_));
   }
 }
 

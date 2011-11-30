@@ -8,6 +8,7 @@
 #include <cstring>
 #include <map>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
@@ -35,19 +36,10 @@ namespace {
 typedef std::map<uint32, TCPSocket*> IDToSocketMap;
 IDToSocketMap* g_id_to_socket = NULL;
 
-class AbortCallbackTask : public Task {
- public:
-  explicit AbortCallbackTask(PP_CompletionCallback callback)
-      : callback_(callback) {}
-  virtual ~AbortCallbackTask() {}
-  virtual void Run() {
-    if (callback_.func)
-      PP_RunCompletionCallback(&callback_, PP_ERROR_ABORTED);
-  }
-
- private:
-  PP_CompletionCallback callback_;
-};
+void AbortCallback(PP_CompletionCallback callback) {
+  if (callback.func)
+    PP_RunCompletionCallback(&callback, PP_ERROR_ABORTED);
+}
 
 }  // namespace
 
@@ -384,8 +376,8 @@ void TCPSocket::PostAbortAndClearIfNecessary(
   DCHECK(callback);
 
   if (callback->func) {
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     new AbortCallbackTask(*callback));
+    MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(&AbortCallback, *callback));
     *callback = PP_BlockUntilComplete();
   }
 }
