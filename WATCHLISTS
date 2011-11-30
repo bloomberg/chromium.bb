@@ -283,6 +283,9 @@
     'browser_compositor': {
       'filepath': 'ui/gfx/compositor/.*'
     },
+    'browser_gl': {
+      'filepath': 'ui/gfx/gl/.*'
+    },
     'textinput': {
       'filepath': 'content/browser/renderer_host/gtk_im.*'\
                   '|content/browser/renderer_host/gtk_key.*'\
@@ -406,7 +409,7 @@
                'prasadt@chromium.org', 'dcheng@chromium.org',
                'jianli@chromium.org'],
     'importer': ['tfarina@chromium.org'],
-    'views': ['dhollowa@chromium.org', 'tfarina@chromium.org'],
+    'views': ['tfarina@chromium.org'],
     'accelerator_table_linux': ['mazda@chromium.org',
                                 'derat+watch@chromium.org'],
     'downloads_ui': ['asanka@chromium.org', 'rdsmith@chromium.org'],
@@ -422,11 +425,13 @@
                       'hashimoto+watch@chromium.org',
                       'yoshiki+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
-    'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
+    'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org',
+             'dhollowa@chromium.org'],
     'views_core': ['ben+watch@chromium.org'],
-    'tools_emacs': ['fischman+watch@chromium.org'],
+    'tools_emacs': ['fischman+watch@chromium.org', 'dhollowa@chromium.org'],
     'browser_compositor': ['backer@chromium.org', 'vollick@chromium.org',
-                           'piman+watch@chromium.org'],
+                           'piman+watch@chromium.org', 'dhollowa@chromium.org'],
+    'browser_gl': ['dhollowa@chromium.org'],
     'textinput': ['penghuang+watch@chromium.org',
                   'suzhe@chromium.org',
                   'yusukes+watch@chromium.org'],
