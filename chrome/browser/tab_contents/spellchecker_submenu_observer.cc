@@ -207,9 +207,9 @@ void SpellCheckerSubMenuObserver::ExecuteCommand(int command_id) {
       // "Stop asking Google for spelling suggestions" item, we directly update
       // the profile and stop integrating the spelling service immediately.
       if (!integrate_spelling_service_) {
-        gfx::Rect bounds = rvh->view()->GetViewBounds();
-        bounds.Inset(bounds.width() / 2, 0);
-        ConfirmBubbleModel::Show(rvh->view()->GetNativeView(), bounds.origin(),
+        gfx::Rect rect = rvh->view()->GetViewBounds();
+        ConfirmBubbleModel::Show(rvh->view()->GetNativeView(),
+                                 gfx::Point(rect.CenterPoint().x(), rect.y()),
                                  new SpellingBubbleModel(proxy_->GetProfile()));
       } else {
         Profile* profile = proxy_->GetProfile();

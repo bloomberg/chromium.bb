@@ -10,8 +10,7 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/confirm_bubble_view.h"
-#include "ui/gfx/rect.h"
-#include "ui/views/widget/widget.h"
+#include "chrome/browser/ui/views/window.h"
 #endif
 
 ConfirmBubbleModel::ConfirmBubbleModel() {
@@ -45,16 +44,9 @@ void ConfirmBubbleModel::Show(gfx::NativeView view,
                               const gfx::Point& origin,
                               ConfirmBubbleModel* model) {
 #if defined(TOOLKIT_VIEWS)
-  views::Widget* parent = views::Widget::GetTopLevelWidgetForNativeView(view);
-  if (!parent)
-    return;
-
-  ConfirmBubbleView* bubble_view = new ConfirmBubbleView(model);
-  Bubble* bubble = Bubble::Show(parent, gfx::Rect(origin, gfx::Size()),
-                                views::BubbleBorder::NONE,
-                                views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR,
-                                bubble_view, bubble_view);
-  bubble->SizeToContents();
+  ConfirmBubbleView* bubble_view = new ConfirmBubbleView(origin, model);
+  browser::CreateViewsBubble(bubble_view);
+  bubble_view->Show();
 #else
   NOTIMPLEMENTED();  // Bug 99130: Implement it.
 #endif

@@ -24,23 +24,15 @@ const int kMaxMessageWidth = 400;
 
 }  // namespace
 
-ConfirmBubbleView::ConfirmBubbleView(ConfirmBubbleModel* model)
-    : model_(model) {
+ConfirmBubbleView::ConfirmBubbleView(const gfx::Point& anchor_point,
+                                     ConfirmBubbleModel* model)
+    : BubbleDelegateView(NULL, views::BubbleBorder::NONE, SK_ColorWHITE),
+      anchor_point_(anchor_point),
+      model_(model) {
   DCHECK(model);
 }
 
 ConfirmBubbleView::~ConfirmBubbleView() {
-}
-
-void ConfirmBubbleView::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
-}
-
-bool ConfirmBubbleView::CloseOnEscape() {
-  return true;
-}
-
-bool ConfirmBubbleView::FadeInOnShow() {
-  return false;
 }
 
 void ConfirmBubbleView::ButtonPressed(views::Button* sender,
@@ -56,12 +48,11 @@ void ConfirmBubbleView::LinkClicked(views::Link* source, int event_flags) {
   model_->LinkClicked();
 }
 
-void ConfirmBubbleView::ViewHierarchyChanged(bool is_add,
-                                             views::View* parent,
-                                             views::View* child) {
-  if (!is_add || child != this)
-    return;
+gfx::Point ConfirmBubbleView::GetAnchorPoint() {
+  return anchor_point_;
+}
 
+void ConfirmBubbleView::Init() {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
@@ -88,7 +79,6 @@ void ConfirmBubbleView::ViewHierarchyChanged(bool is_add,
   DCHECK(!title_text.empty());
   views::Label* title_label = new views::Label(title_text);
   title_label->SetFont(bundle.GetFont(ResourceBundle::MediumFont));
-  title_label->SetBackgroundColor(Bubble::kBackgroundColor);
   layout->AddView(title_label);
 
   views::ImageButton* close_button = new views::ImageButton(this);
@@ -111,7 +101,6 @@ void ConfirmBubbleView::ViewHierarchyChanged(bool is_add,
   message_label->SetBounds(0, 0, message_width, 0);
   message_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   message_label->SetMultiLine(true);
-  message_label->SetBackgroundColor(Bubble::kBackgroundColor);
   layout->StartRow(0, 1);
   layout->AddView(message_label);
 
@@ -122,7 +111,6 @@ void ConfirmBubbleView::ViewHierarchyChanged(bool is_add,
     layout->StartRow(0, 1);
     views::Link* link_label = new views::Link(link_text);
     link_label->set_listener(this);
-    link_label->SetBackgroundColor(Bubble::kBackgroundColor);
     layout->AddView(link_label);
   }
   layout->AddPaddingRow(0, views::kLabelToControlVerticalSpacing);

@@ -8,10 +8,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/views/bubble/bubble.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
-#include "views/view.h"
 
 class ConfirmBubbleModel;
 
@@ -34,20 +33,15 @@ class ConfirmBubbleModel;
 //   |          [OK] [Cancel] |
 //   +------------------------+
 //
-class ConfirmBubbleView : public BubbleDelegate,
+class ConfirmBubbleView : public views::BubbleDelegateView,
                           public views::ButtonListener,
-                          public views::LinkListener,
-                          public views::View {
+                          public views::LinkListener {
  public:
-  explicit ConfirmBubbleView(ConfirmBubbleModel* model);
+  explicit ConfirmBubbleView(const gfx::Point& anchor_point,
+                             ConfirmBubbleModel* model);
 
  protected:
   virtual ~ConfirmBubbleView();
-
-  // BubbleDelegate implementation.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
-  virtual bool CloseOnEscape() OVERRIDE;
-  virtual bool FadeInOnShow() OVERRIDE;
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender,
@@ -56,12 +50,14 @@ class ConfirmBubbleView : public BubbleDelegate,
   // views::LinkListener implementation.
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // views::View implementation.
-  virtual void ViewHierarchyChanged(bool is_add,
-                                    views::View* parent,
-                                    views::View* child) OVERRIDE;
+  // views::BubbleDelegateView implementation.
+  virtual gfx::Point GetAnchorPoint() OVERRIDE;
+  virtual void Init() OVERRIDE;
 
  private:
+  // The screen point where this bubble is anchored.
+  gfx::Point anchor_point_;
+
   // The model to customize this bubble view.
   scoped_ptr<ConfirmBubbleModel> model_;
 
