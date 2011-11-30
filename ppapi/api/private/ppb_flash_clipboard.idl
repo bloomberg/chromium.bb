@@ -29,9 +29,7 @@ enum PP_Flash_Clipboard_Type {
   /** The standard clipboard. */
   PP_FLASH_CLIPBOARD_TYPE_STANDARD = 0,
   /** The selection clipboard (e.g., on Linux). */
-  PP_FLASH_CLIPBOARD_TYPE_SELECTION = 1,
-  /** The drag clipboard. */
-  PP_FLASH_CLIPBOARD_TYPE_DRAG = 2
+  PP_FLASH_CLIPBOARD_TYPE_SELECTION = 1
 };
 
 /**

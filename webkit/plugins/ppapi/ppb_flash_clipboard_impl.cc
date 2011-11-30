@@ -38,8 +38,6 @@ WebKit::WebClipboard::Buffer ConvertClipboardType(
       return WebKit::WebClipboard::BufferStandard;
     case PP_FLASH_CLIPBOARD_TYPE_SELECTION:
       return WebKit::WebClipboard::BufferSelection;
-    case PP_FLASH_CLIPBOARD_TYPE_DRAG:
-      return WebKit::WebClipboard::BufferDrag;
     default:
       NOTREACHED();
       return WebKit::WebClipboard::BufferStandard;

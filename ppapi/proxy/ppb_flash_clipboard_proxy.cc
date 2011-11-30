@@ -23,8 +23,7 @@ typedef thunk::EnterFunctionNoLock<PPB_Flash_Clipboard_FunctionAPI>
 
 bool IsValidClipboardType(PP_Flash_Clipboard_Type clipboard_type) {
   return clipboard_type == PP_FLASH_CLIPBOARD_TYPE_STANDARD ||
-         clipboard_type == PP_FLASH_CLIPBOARD_TYPE_SELECTION ||
-         clipboard_type == PP_FLASH_CLIPBOARD_TYPE_DRAG;
+         clipboard_type == PP_FLASH_CLIPBOARD_TYPE_SELECTION;
 }
 
 bool IsValidClipboardFormat(PP_Flash_Clipboard_Format format) {

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_clipboard.idl modified Mon Nov 14 13:36:44 2011. */
+/* From private/ppb_flash_clipboard.idl modified Wed Nov 23 12:39:42 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_CLIPBOARD_H_
@@ -42,9 +42,7 @@ typedef enum {
   /** The standard clipboard. */
   PP_FLASH_CLIPBOARD_TYPE_STANDARD = 0,
   /** The selection clipboard (e.g., on Linux). */
-  PP_FLASH_CLIPBOARD_TYPE_SELECTION = 1,
-  /** The drag clipboard. */
-  PP_FLASH_CLIPBOARD_TYPE_DRAG = 2
+  PP_FLASH_CLIPBOARD_TYPE_SELECTION = 1
 } PP_Flash_Clipboard_Type;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Flash_Clipboard_Type, 4);
 
