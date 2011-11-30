@@ -1816,3 +1816,9 @@
    fun:webkit_media::MockBufferedDataSource::MockBufferedDataSource
    fun:webkit_media::BufferedDataSourceTest::BufferedDataSourceTest
 }
+{
+   bug_105864
+   Heapcheck:Leak
+   ...
+   fun:ProfileInfoCache::SetGAIAPictureOfProfileAtIndex
+}
