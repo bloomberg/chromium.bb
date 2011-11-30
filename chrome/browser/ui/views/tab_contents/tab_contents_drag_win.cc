@@ -142,14 +142,9 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
   if (drag_drop_thread_->StartWithOptions(options)) {
     drag_drop_thread_->message_loop()->PostTask(
         FROM_HERE,
-        NewRunnableMethod(this,
-                          &TabContentsDragWin::StartBackgroundDragging,
-                          drop_data,
-                          ops,
-                          page_url,
-                          page_encoding,
-                          image,
-                          image_offset));
+        base::Bind(&TabContentsDragWin::StartBackgroundDragging, this,
+                   drop_data, ops, page_url, page_encoding, image,
+                   image_offset));
   }
 
   // Install a hook procedure to monitor the messages so that we can forward

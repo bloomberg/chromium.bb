@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/task.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/infobars/infobar_tab_helper.h"
 #include "chrome/browser/prefs/pref_service.h"
@@ -127,10 +126,9 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &ChromeQuotaPermissionContext::RequestQuotaPermission,
-            origin_url, type, requested_quota, render_process_id,
-            render_view_id, callback));
+        base::Bind(&ChromeQuotaPermissionContext::RequestQuotaPermission, this,
+                   origin_url, type, requested_quota, render_process_id,
+                   render_view_id, callback));
     return;
   }
 

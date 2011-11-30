@@ -1085,15 +1085,9 @@ void SafeBrowsingService::ReportSafeBrowsingHit(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &SafeBrowsingService::ReportSafeBrowsingHitOnIOThread,
-          malicious_url,
-          page_url,
-          referrer_url,
-          is_subresource,
-          threat_type,
-          post_data));
+      base::Bind(&SafeBrowsingService::ReportSafeBrowsingHitOnIOThread, this,
+                 malicious_url, page_url, referrer_url, is_subresource,
+                 threat_type, post_data));
 }
 
 void SafeBrowsingService::AddObserver(Observer* observer) {

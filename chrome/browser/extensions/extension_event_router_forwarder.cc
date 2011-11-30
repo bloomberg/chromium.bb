@@ -68,11 +68,9 @@ void ExtensionEventRouterForwarder::HandleEvent(
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &ExtensionEventRouterForwarder::HandleEvent,
-            this,
-            extension_id, event_name, event_args, profile_ptr,
-            use_profile_to_restrict_events, event_url));
+        base::Bind(&ExtensionEventRouterForwarder::HandleEvent, this,
+                   extension_id, event_name, event_args, profile_ptr,
+                   use_profile_to_restrict_events, event_url));
     return;
   }
 
