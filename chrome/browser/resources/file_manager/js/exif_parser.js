@@ -29,170 +29,177 @@ function ExifParser(parent) {
 ExifParser.prototype = {__proto__: ImageParser.prototype};
 
 ExifParser.prototype.parse = function(file, callback, errorCallback) {
+  var metadata = this.createDefaultMetadata();
+  this.requestSlice(file, callback, errorCallback, metadata, 0);
+};
+
+ExifParser.prototype.requestSlice = function (
+    file, callback, errorCallback, metadata, filePos, opt_length) {
+  // Read at least 1Kb so that we do not issue too many read requests.
+  opt_length = Math.max(1024, opt_length || 0);
+
   var self = this;
-  var currentStep = -1;
+  var reader = new FileReader();
+  reader.onerror = errorCallback;
+  reader.onload = function() { self.parseSlice(
+      file, callback, errorCallback, metadata, filePos, reader.result);
+  };
+  reader.readAsArrayBuffer(file.webkitSlice(filePos, filePos + opt_length));
+};
 
-  function nextStep(var_args) {
-    self.vlog('exif nextStep: ' + steps[currentStep + 1].name);
-    try {
-      steps[++currentStep].apply(null, arguments);
-    } catch(e) {
-      onError(e.stack || e.toString());
+ExifParser.prototype.parseSlice = function(
+    file, callback, errorCallback, metadata, filePos, buf) {
+  try {
+    var br = new ByteReader(buf);
+
+    if (!br.canRead(4)) {
+      // We never ask for less than 4 bytes. This can only mean we reached EOF.
+      throw new Error('Unexpected EOF @' + (filePos + buf.byteLength));
     }
+
+    if (filePos == 0) {
+      // First slice, check for the SOI mark.
+      var firstMark = this.readMark(br);
+      if (firstMark != EXIF_MARK_SOI)
+        throw new Error('Invalid file header: ' + firstMark.toString(16));
+    }
+
+    var self = this;
+    function reread(opt_offset, opt_bytes) {
+      self.requestSlice(file, callback, errorCallback, metadata,
+          filePos + br.tell() + (opt_offset || 0), opt_bytes);
+    }
+
+    while (true) {
+      if (!br.canRead(4)) {
+        // Cannot read the mark and the length, request a minimum-size slice.
+        reread();
+        return;
+      }
+
+      var mark = this.readMark(br);
+      if (mark == EXIF_MARK_SOS)
+        throw new Error('SOS marker found before SOF');
+
+      var markLength = this.readMarkLength(br);
+
+      var nextSectionStart = br.tell() + markLength;
+      if (!br.canRead(markLength)) {
+        // Get the entire section.
+        reread(-4, markLength + 4);
+        return;
+      }
+
+      if (mark == EXIF_MARK_EXIF) {
+        this.parseExifSection(metadata, buf, br);
+      } else if (mark == EXIF_MARK_SOF) {
+        // The most reliable size information is encoded in the SOF section.
+        br.seek(1, ByteReader.SEEK_CUR); // Skip the precision byte.
+        var height = br.readScalar(2);
+        var width = br.readScalar(2);
+        ExifParser.setImageSize(metadata, width, height);
+        callback(metadata);  // We are done!
+        return;
+      }
+
+      br.seek(nextSectionStart, ByteReader.SEEK_BEG);
+    }
+  } catch (e) {
+    errorCallback(e.toString());
+  }
+};
+
+ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
+  var magic = br.readString(6);
+  if (magic != 'Exif\0\0') {
+    // Some JPEG files may have sections marked with EXIF_MARK_EXIF
+    // but containing something else (e.g. XML text). Ignore such sections.
+    this.vlog('Invalid EXIF magic: ' + magic + br.readString(100));
+    return;
   }
 
-  function onError(err) {
-    errorCallback(err, steps[currentStep].name);
+  // Offsets inside the EXIF block are based after the magic string.
+  // Create a new ByteReader based on the current position to make offset
+  // calculations simpler.
+  br = new ByteReader(buf, br.tell());
+
+  var order = br.readScalar(2);
+  if (order == EXIF_ALIGN_LITTLE) {
+    br.setByteOrder(ByteReader.LITTLE_ENDIAN);
+  } else if (order != EXIF_ALIGN_BIG) {
+    this.log('Invalid alignment value: ' + order.toString(16));
+    return;
   }
 
-  var steps =
-  [ // Step one, read the file header into a byte array.
-    function readHeader(file) {
-      var reader = new FileReader();
-      reader.onerror = onError;
-      reader.onload = function(event) { nextStep(file, reader.result) };
-      reader.readAsArrayBuffer(file.webkitSlice(0, 1024));
-    },
+  var tag = br.readScalar(2);
+  if (tag != EXIF_TAG_TIFF) {
+    this.log('Invalid TIFF tag: ' + tag.toString(16));
+    return;
+  }
 
-    // Step two, find the exif marker and read all exif data.
-    function findExif(file, buf) {
-      var br = new ByteReader(buf);
-      var mark = self.readMark(br);
-      if (mark != EXIF_MARK_SOI)
-        return onError('Invalid file header: ' + mark.toString(16));
+  metadata.littleEndian = (order == EXIF_ALIGN_LITTLE);
+  metadata.ifd = {
+    image: {},
+    thumbnail: {}
+  };
+  var directoryOffset = br.readScalar(4);
 
-      while (true) {
-        if (mark == EXIF_MARK_SOS || br.eof()) {
-          return onError('Unable to find EXIF or SOF marker');
-        }
+  // Image directory.
+  this.vlog('Read image directory.');
+  br.seek(directoryOffset);
+  directoryOffset = this.readDirectory(br, metadata.ifd.image);
+  metadata.imageTransform = this.parseOrientation(metadata.ifd.image);
 
-        mark = self.readMark(br);
-        if (mark == EXIF_MARK_SOF) {
-          // If we reached this section first then there is no EXIF data.
-          // Extract image dimensions and return.
+  // Thumbnail Directory chained from the end of the image directory.
+  if (directoryOffset) {
+    this.vlog('Read thumbnail directory.');
+    br.seek(directoryOffset);
+    this.readDirectory(br, metadata.ifd.thumbnail);
+    // If no thumbnail orientation is encoded, assume same orientation as
+    // the primary image.
+    metadata.thumbnailTransform =
+        this.parseOrientation(metadata.ifd.thumbnail) ||
+        metadata.imageTransform;
+  }
 
-          // TODO(kaznacheev) Here we are assuming that SOF section lies within
-          // first 1024 bytes. This must be true for any normal JPEG file
-          // with no EXIF data. Still might want to handle this more carefully.
-          if (br.tell() + 7 < buf.byteLength) {
-            br.seek(3, ByteReader.SEEK_CUR);
-            var metadata = self.createDefaultMetadata();
-            metadata.width = br.readScalar(2);
-            metadata.height = br.readScalar(2);
-            callback(metadata);
-            return;
-          }
-        }
-        if (mark == EXIF_MARK_EXIF) {
-          var length = self.readMarkLength(br);
+  // EXIF Directory may be specified as a tag in the image directory.
+  if (EXIF_TAG_EXIFDATA in metadata.ifd.image) {
+    this.vlog('Read EXIF directory.');
+    directoryOffset = metadata.ifd.image[EXIF_TAG_EXIFDATA].value;
+    br.seek(directoryOffset);
+    metadata.ifd.exif = {};
+    this.readDirectory(br, metadata.ifd.exif);
+  }
 
-          // Offsets inside the EXIF block are based after this bit of
-          // magic, so we verify and discard it here, before exif parsing,
-          // to make offset calculations simpler.
-          var magic = br.readString(6);
-          if (magic != 'Exif\0\0')
-            return onError('Invalid EXIF magic: ' + magic.toString(16));
+  // GPS Directory may also be linked from the image directory.
+  if (EXIF_TAG_GPSDATA in metadata.ifd.image) {
+    this.vlog('Read GPS directory.');
+    directoryOffset = metadata.ifd.image[EXIF_TAG_GPSDATA].value;
+    br.seek(directoryOffset);
+    metadata.ifd.gps = {};
+    this.readDirectory(br, metadata.ifd.gps);
+  }
 
-          var pos = br.tell();
-          var reader = new FileReader();
-          reader.onerror = onError;
-          reader.onload = function(event) { nextStep(file, reader.result) };
-          reader.readAsArrayBuffer(file.webkitSlice(pos, pos + length - 6));
-          return;
-        }
+  // Thumbnail may be linked from the image directory.
+  if (EXIF_TAG_JPG_THUMB_OFFSET in metadata.ifd.thumbnail &&
+      EXIF_TAG_JPG_THUMB_LENGTH in metadata.ifd.thumbnail) {
+    this.vlog('Read thumbnail image.');
+    br.seek(metadata.ifd.thumbnail[EXIF_TAG_JPG_THUMB_OFFSET].value);
+    metadata.thumbnailURL = br.readImage(
+        metadata.ifd.thumbnail[EXIF_TAG_JPG_THUMB_LENGTH].value);
+  } else {
+    this.vlog('Image has EXIF data, but no JPG thumbnail.');
+  }
+};
 
-        self.skipMarkData(br);
-      }
-    },
-
-    // Step three, parse the exif data.
-    function readDirectories(file, buf) {
-      var br = new ByteReader(buf);
-      var order = br.readScalar(2);
-      if (order == EXIF_ALIGN_LITTLE) {
-        br.setByteOrder(ByteReader.LITTLE_ENDIAN);
-      } else if (order != EXIF_ALIGN_BIG) {
-        return onError('Invalid alignment value: ' + order.toString(16));
-      }
-
-      var tag = br.readScalar(2);
-      if (tag != EXIF_TAG_TIFF)
-        return onError('Invalid TIFF tag: ' + tag.toString(16));
-
-      var metadata = self.createDefaultMetadata();
-      metadata.littleEndian = (order == EXIF_ALIGN_LITTLE);
-      metadata.ifd = {
-        image: {},
-        thumbnail: {}
-      };
-      var directoryOffset = br.readScalar(4);
-
-      // Image directory.
-      self.vlog('Read image directory.');
-      br.seek(directoryOffset);
-      directoryOffset = self.readDirectory(br, metadata.ifd.image);
-      metadata.imageTransform = self.parseOrientation(metadata.ifd.image);
-
-      // Thumbnail Directory chained from the end of the image directory.
-      if (directoryOffset) {
-        self.vlog('Read thumbnail directory.');
-        br.seek(directoryOffset);
-        self.readDirectory(br, metadata.ifd.thumbnail);
-        // If no thumbnail orientation is encoded, assume same orientation as
-        // the primary image.
-        metadata.thumbnailTransform =
-            self.parseOrientation(metadata.ifd.thumbnail) ||
-            metadata.imageTransform;
-      }
-
-      // EXIF Directory may be specified as a tag in the image directory.
-      if (EXIF_TAG_EXIFDATA in metadata.ifd.image) {
-        self.vlog('Read EXIF directory.');
-        directoryOffset = metadata.ifd.image[EXIF_TAG_EXIFDATA].value;
-        br.seek(directoryOffset);
-        metadata.ifd.exif = {};
-        self.readDirectory(br, metadata.ifd.exif);
-
-        if (EXIF_TAG_X_DIMENSION in metadata.ifd.exif &&
-            EXIF_TAG_Y_DIMENSION in metadata.ifd.exif) {
-          if (metadata.imageTransform && metadata.imageTransform.rotate90) {
-            metadata.width = metadata.ifd.exif[EXIF_TAG_Y_DIMENSION].value;
-            metadata.height = metadata.ifd.exif[EXIF_TAG_X_DIMENSION].value;
-          } else {
-            metadata.width = metadata.ifd.exif[EXIF_TAG_X_DIMENSION].value;
-            metadata.height = metadata.ifd.exif[EXIF_TAG_Y_DIMENSION].value;
-          }
-        }
-      }
-
-      // GPS Directory may also be linked from the image directory.
-      if (EXIF_TAG_GPSDATA in metadata.ifd.image) {
-        self.vlog('Read GPS directory.');
-        directoryOffset = metadata.ifd.image[EXIF_TAG_GPSDATA].value;
-        br.seek(directoryOffset);
-        metadata.ifd.gps = {};
-        self.readDirectory(br, metadata.ifd.gps);
-      }
-
-      // Thumbnail may be linked from the image directory.
-      if (EXIF_TAG_JPG_THUMB_OFFSET in metadata.ifd.thumbnail &&
-          EXIF_TAG_JPG_THUMB_LENGTH in metadata.ifd.thumbnail) {
-        self.vlog('Read thumbnail image.');
-        br.seek(metadata.ifd.thumbnail[EXIF_TAG_JPG_THUMB_OFFSET].value);
-        metadata.thumbnailURL = br.readImage(
-            metadata.ifd.thumbnail[EXIF_TAG_JPG_THUMB_LENGTH].value);
-      } else {
-        self.vlog('Image has EXIF data, but no JPG thumbnail.');
-      }
-
-      nextStep(metadata);
-    },
-
-    // Step four, we're done.
-    callback
-  ];
-
-  nextStep(file);
+ExifParser.setImageSize = function(metadata, width, height) {
+  if (metadata.imageTransform && metadata.imageTransform.rotate90) {
+    metadata.width = height;
+    metadata.height = width;
+  } else {
+    metadata.width = width;
+    metadata.height = height;
+  }
 };
 
 ExifParser.prototype.readMark = function(br) {
@@ -202,15 +209,6 @@ ExifParser.prototype.readMark = function(br) {
 ExifParser.prototype.readMarkLength = function(br) {
   // Length includes the 2 bytes used to store the length.
   return br.readScalar(2) - 2;
-};
-
-ExifParser.prototype.readMarkData = function(br) {
-  var length = this.readMarkLength(br);
-  return br.readSlice(length);
-};
-
-ExifParser.prototype.skipMarkData = function(br) {
-  br.seek(this.readMarkLength(br), ByteReader.SEEK_CUR);
 };
 
 ExifParser.prototype.readDirectory = function(br, tags) {
