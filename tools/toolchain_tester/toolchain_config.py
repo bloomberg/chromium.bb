@@ -72,6 +72,9 @@ GLOBAL_CFLAGS = ' '.join(['-DSTACK_SIZE=0x40000',
                           '-DNO_TRAMPOLINES',
                           '-DNO_LABEL_VALUES',])
 
+CLANG_CFLAGS = ' '.join(['-fwrapv',
+                         '-fdiagnostics-show-category=name'])
+
 ######################################################################
 # LOCAL GCC
 ######################################################################
@@ -199,12 +202,12 @@ TOOLCHAIN_CONFIGS['nacl_gcc_x8664_O3'] = ToolchainConfig(
 ######################################################################
 PNACL_ROOT = 'toolchain/pnacl_linux_x86_64_newlib'
 
-PNACL_LLVM_GCC = PNACL_ROOT + '/bin/pnacl-gcc'
+PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang'
 
 # NOTE: Our driver supports going from .c to .nexe in one go
 #       but it maybe useful to inspect the bitcode file so we
 #       split the compilation into two steps.
-PNACL_LD = PNACL_ROOT + '/bin/pnacl-gcc'
+PNACL_LD = PNACL_ROOT + '/bin/pnacl-clang'
 
 COMMANDS_llvm_pnacl_arm = [
     ('compile-bc',
@@ -222,25 +225,26 @@ COMMANDS_llvm_pnacl_arm = [
 TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O0'] = ToolchainConfig(
     desc='pnacl llvm [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
-    tools_needed=[PNACL_LLVM_GCC, PNACL_LD, EMU_SCRIPT, SEL_LDR_ARM],
-    CC = PNACL_LLVM_GCC,
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, SEL_LDR_ARM],
+    CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch arm',
     EMU = EMU_SCRIPT,
     SEL_LDR = SEL_LDR_ARM,
     IRT = IRT_ARM,
-    CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
 
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_arm_O3'] = ToolchainConfig(
     desc='pnacl llvm with optimizations [arm]',
     commands=COMMANDS_llvm_pnacl_arm,
-    tools_needed=[PNACL_LLVM_GCC, PNACL_LD, EMU_SCRIPT, SEL_LDR_ARM],
-    CC = PNACL_LLVM_GCC,
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, EMU_SCRIPT, SEL_LDR_ARM],
+    CC = PNACL_FRONTEND,
     LD = PNACL_LD  + ' -arch arm',
     EMU = EMU_SCRIPT,
     SEL_LDR = SEL_LDR_ARM,
     IRT = IRT_ARM,
-    CFLAGS = '-O3 -D__OPTIMIZE__ -fwrapv -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS  + ' '
+              + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [X8632]
@@ -263,22 +267,23 @@ COMMANDS_llvm_pnacl_x86_O0 = [
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_LLVM_GCC, PNACL_LD, SEL_LDR_X32],
-    CC = PNACL_LLVM_GCC,
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, SEL_LDR_X32],
+    CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch x86-32',
     SEL_LDR = SEL_LDR_X32,
     IRT = IRT_X32,
-    CFLAGS = '-O0  -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0  -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8632]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_LLVM_GCC, PNACL_LD, SEL_LDR_X32],
-    CC = PNACL_LLVM_GCC,
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, SEL_LDR_X32],
+    CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch x86-32',
     SEL_LDR = SEL_LDR_X32,
     IRT = IRT_X32,
-    CFLAGS = '-O3 -D__OPTIMIZE__ -fwrapv -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS + ' '
+             + GLOBAL_CFLAGS)
 
 ######################################################################
 # PNACL + SEL_LDR [X8664]
@@ -287,19 +292,20 @@ TOOLCHAIN_CONFIGS['llvm_pnacl_x8632_O3'] = ToolchainConfig(
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O0'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_LLVM_GCC, PNACL_LD, SEL_LDR_X64],
-    CC = PNACL_LLVM_GCC,
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, SEL_LDR_X64],
+    CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch x86-64',
     SEL_LDR = SEL_LDR_X64,
     IRT = IRT_X64,
-    CFLAGS = '-O0 -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O0 -static ' + CLANG_CFLAGS + ' ' + GLOBAL_CFLAGS)
 
 TOOLCHAIN_CONFIGS['llvm_pnacl_x8664_O3'] = ToolchainConfig(
     desc='pnacl llvm [x8664]',
     commands=COMMANDS_llvm_pnacl_x86_O0,
-    tools_needed=[PNACL_LLVM_GCC, PNACL_LD, SEL_LDR_X64],
-    CC = PNACL_LLVM_GCC,
+    tools_needed=[PNACL_FRONTEND, PNACL_LD, SEL_LDR_X64],
+    CC = PNACL_FRONTEND,
     LD = PNACL_LD + ' -arch x86-64',
     SEL_LDR = SEL_LDR_X64,
     IRT = IRT_X64,
-    CFLAGS = '-O3  -fwrapv -static ' + GLOBAL_CFLAGS)
+    CFLAGS = '-O3 -D__OPTIMIZE__ -static ' + CLANG_CFLAGS + ' '
+             + GLOBAL_CFLAGS)

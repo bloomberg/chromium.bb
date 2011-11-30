@@ -164,9 +164,9 @@ def ParseCommandLineArgs(argv):
         if line.startswith('#'): continue
         if line in EXCLUDE:
           Print('ERROR: duplicate exclude: [%s]' % line)
-        EXCLUDE[line] = None
+        EXCLUDE[line] = a
       f.close()
-      Print('Size of exludes now: %d' % len(EXCLUDE))
+      Print('Size of excludes now: %d' % len(EXCLUDE))
     elif o == 'append':
       tag, value = a.split(":", 1)
       APPEND.append((tag, value))
@@ -244,10 +244,10 @@ def main(argv):
       num_errors += 1
 
   if CHECK_EXCLUDES:
-    Banner('Unnecessary exludes:')
+    Banner('Unnecessary excludes:')
     for e in EXCLUDE:
       if e not in USED_EXCLUDES:
-        Print(e)
+        Print(e + ' (' + EXCLUDE[e] + ')')
   return num_errors > 0
 
 if __name__ == '__main__':

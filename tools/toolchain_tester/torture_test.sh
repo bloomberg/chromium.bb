@@ -18,7 +18,6 @@
 ######################################################################
 
 set -o nounset
-set -o errexit
 
 readonly TEST_ROOT=${TEST_ROOT:-/tmp/nacl_compiler_test}
 readonly TEST_TARBALL_URL=${TEST_TARBALL_URL:-http://gcc.petsads.us/releases/gcc-4.6.1/gcc-testsuite-4.6.1.tar.bz2}
@@ -126,6 +125,7 @@ standard_tests() {
       --exclude=tools/toolchain_tester/${exclude} \
       --exclude=tools/toolchain_tester/known_failures_base.txt \
       --config=${config} \
+      --append="CFLAGS:-std=gnu89" \
       "$@" \
       ${TEST_PATH_C}/*c ${TEST_PATH_C}/ieee/*c
 }

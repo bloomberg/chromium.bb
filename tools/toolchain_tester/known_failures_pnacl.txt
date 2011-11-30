@@ -4,45 +4,38 @@
 # ======================================================================
 # failures in phase sel_ldr
 # ======================================================================
-# signed/unsigned mixup
-20080506-1.c
-# modulo operation with negative numbers
-pr34070-1.c
-# signed/unsigned mixup
-pr34070-2.c
 # select function via ternary operator - looks like a complete miscompile
 pr34971.c
-# signed/unsigned mixup
-pr35163.c
-# div weirdness
-pr36077.c
-# bitfield magic
-pr40404.c
 # alignment issues using __alignof__
 alloca-1.c
 # setjmp/longjmp TODO
 built-in-setjmp.c
-# preprocessor push/pop_macro feature
-pushpop_macro.c
-# simd style vectors (broken for x8632)
-simd-2.c
+# ??? (funny shenanigans with bitfields)
+bitfld-5.c
+bitfld-3.c
+# local version of llabs overrides libc version
+20021127-1.c
+# va_arg structure passing codegen on arm
+20030914-2.c
+va-arg-4.c
+# postincrement of argument in definition prototype (is that even legal?)
+970217-1.c
+# bad shift of a 40-bit bitfield
+pr32244-1.c
+# incorrect handling of wide char literal
+# (it throws a warning, may just need the right flag)
+wchar_t-1.c
 # ======================================================================
-# failures in phase translate-x8632
+# failures in phase translate
 # ======================================================================
 # llvm does not know that "fabs(x) >= 0"
 20020720-1.c
-# hangs compiler
-pr20621-1.c
 # undef signal
 fp-cmp-1.c
 # undef signal
 fp-cmp-2.c
 # undef signal
 fp-cmp-3.c
-# undef signbit
-20080502-1.c
-# undef signbit
-pr35456.c
 # undef isinfl
 pr39228.c
 # undef signal
@@ -53,46 +46,61 @@ va-arg-pack-1.c
 builtin-prefetch-2.c
 # vector broken on ARM
 simd-6.c
+# uses __builtin_return_address (llc assert binary operator types.
+# perhaps __builtin_return_address does not have the right type on x8664?)
+20030323-1.c
+20010122-1.c
+# DCE not performed at -O0 (wontfix?)
+medce-1.c
+fp-cmp-7.c
 # ======================================================================
 # failures in phase compile-bc
 # ======================================================================
-# complex va_arg - frontend assert
-20020412-1.c
-# compiler hangs  (uses unsupported vectors)
-pr23135.c
-# uses __builtin_return_address (internal compiler error x86-64)
-20010122-1.c
-# uses __builtin_return_address (internal compiler error x86-64)
-20030323-1.c
+# undefined reference to conjf (from builtin_conjf; should work?)
+20020411-1.c
+# unknown builtin __builtin_malloc (wontfix?)
+20071018-1.c
+20071120-1.c
+pr36765.c
+pr43008.c
 # ======================================================================
 # additional failures at -O3
 # ======================================================================
-# uses "&&" extension
-20071210-1.c
 # uses  __builtin_constant_p
 bcp-1.c
 # uses __builtin_constant_p
 builtin-constant.c
-# select function via ? - looks like a complete miscompile
-pr34768-2.c
-# int overflow
-pr45262.c
 # llvm does not know how to evaluate "(x<y) && (x>y)" and "(x==y) && (x!=y)"
 compare-fp-3.c
-# requires -fwrapv
-# pr22493-1.c
-# requires -fwrapv
-# pr33779-2.c
 # ======================================================================
 # wont fixes - misc reasons
 # ======================================================================
-# llvm properly diagnoses the issue and warns that the program will
-# abort when code is reached
-call-trap-1.c
-va-arg-trap-1.c
-pr34768-1.c
-# long long with bitfields (this is rather idiosyncratic behavior and probably a wont fix)
-
+# fields must have a constant size: 'variable length array in structure'
+# extension will never be supported
+20070919-1.c
+20020412-1.c
+20040308-1.c
+20040423-1.c
+20041218-2.c
+align-nest.c
+pr41935.c
+# mode attribute only supported for integer and float types
+20050107-1.c
+20050119-1.c
+20050119-2.c
+simd-1.c
+pr23135.c
+# asm - invalid output constraint =t (is apparently undocumented in gcc)
+990413-2.c
+# main() declared as void (error in clang, not in gcc)
+20091229-1.c
+# <scumbagsteve> implicit return type int
+# does not return a value </scumbagsteve> (error only in clang)
+920728-1.c
+# __builtin_nan result is not a compile-time constant
+builtin-nan-1.c
+# __builtin_apply and friends not supported by clang
+pr47237.c
 # ======================================================================
 # wont fixes - nested functions
 # ======================================================================
@@ -120,69 +128,9 @@ pr22061-4.c
 20030501-1.c
 # nested function
 20040520-1.c
-# ======================================================================
-# wont fixes - asm
-# ======================================================================
-# asm
-pr41239.c
-# asm
-pr43385.c
-# asm
-pr43560.c
-# asm
-pr44852.c
-# asm
-pr45695.c
-# asm
-pr47925.c
-# asm
-pr49218.c
-# asm
-pr49390.c
-# asm
-memcpy-chk.c
-# asm
-memmove-chk.c
-# asm
-mempcpy-chk.c
-# asm
-strcat-chk.c
-# asm
-strncat-chk.c
-# asm
-20001009-2.c
-# asm
-20020107-1.c
-# asm
-20050203-1.c
-# asm
-20061031-1.c
-# asm
+# nested function
 20061220-1.c
-# ??? TODO
-20070919-1.c
-# asm
-20071211-1.c
-# asm
-20071220-2.c
-# asm
-20080122-1.c
-# asm
-960312-1.c
-# asm
-990130-1.c
-# asm
-pr38533.c
-# asm
-pr40022.c
-# asm
-20030222-1.c
-# asm
-990413-2.c
-# asm
-20071220-1.c
-# asm
-bitfld-5.c
+
 # ======================================================================
 # wont fixes - complex va_arg (e.g. structs passed as va_args)
 # ======================================================================
