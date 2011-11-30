@@ -1001,7 +1001,7 @@ def TestNamespaceFiles(filter):
     InfoOut.Log("Passed namespace test.")
   return errs
 
-default_dirs = ['.', 'trusted', 'dev']
+default_dirs = ['.', 'trusted', 'dev', 'private']
 def ParseFiles(filenames):
   parser = IDLParser()
   filenodes = []
