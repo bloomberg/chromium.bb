@@ -13,6 +13,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/resource_loader_bridge.h"
+#include "webkit/plugins/npapi/plugin_host.h"
 
 NPIdentifier_Param::NPIdentifier_Param()
     : identifier() {
@@ -234,7 +235,7 @@ void ParamTraits<NPIdentifier_Param>::Log(const param_type& p, std::string* l) {
   if (WebKit::WebBindings::identifierIsString(p.identifier)) {
     NPUTF8* str = WebKit::WebBindings::utf8FromIdentifier(p.identifier);
     l->append(str);
-    NPN_MemFree(str);
+    webkit::npapi::PluginHost::Singleton()->host_functions()->memfree(str);
   } else {
     l->append(base::IntToString(
         WebKit::WebBindings::intFromIdentifier(p.identifier)));

@@ -10,6 +10,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/plugins/npapi/plugin_instance.h"
+#include "webkit/plugins/npapi/plugin_host.h"
 
 using WebKit::WebBindings;
 
@@ -384,7 +385,8 @@ bool NPObjectProxy::NPNEnumerate(NPObject *obj,
 
   *count = static_cast<unsigned int>(value_param.size());
   *value = static_cast<NPIdentifier *>(
-      NPN_MemAlloc(sizeof(NPIdentifier) * *count));
+      webkit::npapi::PluginHost::Singleton()->host_functions()->memalloc(
+          sizeof(NPIdentifier) * *count));
   for (unsigned int i = 0; i < *count; ++i)
     (*value)[i] = CreateNPIdentifier(value_param[i]);
 

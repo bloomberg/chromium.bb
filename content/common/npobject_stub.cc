@@ -14,6 +14,7 @@
 #include "third_party/npapi/bindings/npruntime.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "webkit/plugins/npapi/plugin_constants_win.h"
+#include "webkit/plugins/npapi/plugin_host.h"
 
 using WebKit::WebBindings;
 
@@ -324,7 +325,7 @@ void NPObjectStub::OnEnumeration(std::vector<NPIdentifier_Param>* value,
     value->push_back(param);
   }
 
-  NPN_MemFree(value_np);
+  webkit::npapi::PluginHost::Singleton()->host_functions()->memfree(value_np);
 }
 
 void NPObjectStub::OnConstruct(const std::vector<NPVariant_Param>& args,
