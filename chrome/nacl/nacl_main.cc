@@ -12,31 +12,12 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/nacl/nacl_listener.h"
 #include "chrome/nacl/nacl_main_platform_delegate.h"
-#include "content/common/child_process.h"
 #include "content/common/hi_res_timer_manager.h"
 #include "content/public/common/main_function_params.h"
-
-// This function provides some ways to test crash and assertion handling
-// behavior of the renderer.
-static void HandleNaClTestParameters(const CommandLine& command_line) {
-// The message box doesn't work in the 64 bit binaries anyways, so no need to
-// link to it since the 64 bit binary doesn't link with chrome or content.
-#if !defined(NACL_WIN64)
-  if (command_line.HasSwitch(switches::kNaClStartupDialog)) {
-    ChildProcess::WaitForDebugger("NativeClient");
-  }
-#endif
-}
 
 // main() routine for the NaCl loader process.
 int NaClMain(const content::MainFunctionParams& parameters) {
   const CommandLine& parsed_command_line = parameters.command_line;
-
-  // This function allows pausing execution using the --nacl-startup-dialog
-  // flag allowing us to attach a debugger.
-  // Do not move this function down since that would mean we can't easily debug
-  // whatever occurs before it.
-  HandleNaClTestParameters(parsed_command_line);
 
   // The main thread of the plugin services IO.
   MessageLoopForIO main_message_loop;

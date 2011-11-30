@@ -31,7 +31,6 @@ include_rules = [
 
   "-content/common",
   # TODO(jam): remove all the exceptions. BUG=98716
-  "+content/common/child_process.h",
   "+content/common/child_process_host.h",
   "+content/common/child_process_info.h",
   "+content/common/chrome_application_mac.h",

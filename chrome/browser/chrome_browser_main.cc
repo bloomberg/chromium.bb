@@ -93,7 +93,6 @@
 #include "chrome/common/profiling.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
-#include "content/common/child_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/main_function_params.h"
@@ -1858,13 +1857,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // it won't still be accessible after browser is destroyed.
   record_search_engine_ = is_first_run_ && !profile_->IsOffTheRecord();
 #endif
-
-  // ChildProcess:: is a misnomer unless you consider context.  Use
-  // of --wait-for-debugger only makes sense when Chrome itself is a
-  // child process (e.g. when launched by PyAuto).
-  if (parsed_command_line().HasSwitch(switches::kWaitForDebugger)) {
-    ChildProcess::WaitForDebugger("Browser");
-  }
 
 #if defined(OS_CHROMEOS)
   // Wait until here to start the out-of-memory priority manager so that

@@ -5,12 +5,14 @@
 #include "content/browser/browser_main.h"
 
 #include "base/allocator/allocator_shim.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/notification_service_impl.h"
+#include "content/common/child_process.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 
@@ -35,6 +37,12 @@ bool ExitedMainMessageLoop() {
 // Main routine for running as the Browser process.
 int BrowserMain(const content::MainFunctionParams& parameters) {
   TRACE_EVENT_BEGIN_ETW("BrowserMain", 0, "");
+
+  // ChildProcess:: is a misnomer unless you consider context.  Use
+  // of --wait-for-debugger only makes sense when Chrome itself is a
+  // child process (e.g. when launched by PyAuto).
+  if (parameters.command_line.HasSwitch(switches::kWaitForDebugger))
+    ChildProcess::WaitForDebugger("Browser");
 
   NotificationServiceImpl main_notification_service;
 

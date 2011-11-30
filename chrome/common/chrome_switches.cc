@@ -781,9 +781,6 @@ const char kNaClDebugPorts[]                = "nacl-debug-ports";
 // command line. Useful values might be "valgrind" or "xterm -e gdb --args".
 const char kNaClLoaderCmdPrefix[]           = "nacl-loader-cmd-prefix";
 
-// Causes the Native Client process to display a dialog on launch.
-const char kNaClStartupDialog[]             = "nacl-startup-dialog";
-
 // Sets the base logging level for the net log. Log 0 logs the most data.
 // Intended primarily for use with --log-net-log.
 const char kNetLogLevel[]                   = "net-log-level";
