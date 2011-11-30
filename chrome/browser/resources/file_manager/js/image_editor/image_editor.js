@@ -367,8 +367,11 @@ ImageEditor.prototype.leaveMode = function(commit) {
   this.currentMode_.cleanUpUI();
   if (commit) {
     var self = this;
-    this.commandQueue_.execute(this.currentMode_.getCommand());
-    this.updateUndoRedo();
+    var command = this.currentMode_.getCommand();
+    if (command) {  // Could be null if the user did not do anything.
+      this.commandQueue_.execute(command);
+      this.updateUndoRedo();
+    }
   }
   this.currentMode_.cleanUpCaches();
   this.currentMode_ = null;
