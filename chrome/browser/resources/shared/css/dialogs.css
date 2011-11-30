@@ -39,6 +39,16 @@
   padding: 15px;
 }
 
+[hidden] {
+  display: none;
+}
+
+.cr-dialog-title {
+  font-weight: bold;
+  font-size: 120%;
+  padding-bottom: 10px;
+}
+
 .cr-dialog-text {
   padding-bottom: 10px;
 }

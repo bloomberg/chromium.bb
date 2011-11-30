@@ -49,7 +49,12 @@ GURL GetFileBrowserUrlWithParams(
 // |dir|.
 void ViewFolder(const FilePath& dir);
 
-void ViewItem(const FilePath& full_path, bool enqueue);
+// Opens file in the browser.
+void ViewFile(const FilePath& full_path, bool enqueue);
+
+// Tries to open |file| directly in the browser. Returns false if the browser
+// can't directly handle this type of file.
+bool TryViewingFile(const FilePath& file, bool enqueue);
 
 }  // namespace file_manager_util
 

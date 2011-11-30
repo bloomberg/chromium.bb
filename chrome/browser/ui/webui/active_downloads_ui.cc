@@ -83,7 +83,7 @@ ChromeWebUIDataSource* CreateActiveDownloadsUIHTMLSource() {
   source->AddLocalizedString("showallfiles",
                              IDS_FILE_BROWSER_MORE_FILES);
   source->AddLocalizedString("error_unknown_file_type",
-                             IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE);
+                             IDS_FILE_BROWSER_ERROR_UNKNOWN_FILE_TYPE);
 
   FilePath default_download_path;
   if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS,

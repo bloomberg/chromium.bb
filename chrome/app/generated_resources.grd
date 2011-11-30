@@ -10095,6 +10095,19 @@ Keep your key file in a safe place. You will need it to create new versions of y
         PDF document
       </message>
 
+      <message name="IDS_FILE_BROWSER_ENQUEUE" desc="Enqueue file menu item used for media playback">
+        Enqueue
+      </message>
+      <message name="IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE" desc="Title of error message propmt when user attempts to open a non-supported file in file browser.">
+        <ph name="FILENAME">$1</ph>
+      </message>
+      <message name="IDS_FILE_BROWSER_ERROR_VIEWING_FILE" desc="Error message when user attempts to open a non-supported file in file browser.">
+        To view this file, convert it to a format that's viewable on the web. For example, you can upload it to Google Docs.
+      </message>
+      <message name="IDS_FILE_BROWSER_ERROR_UNKNOWN_FILE_TYPE" desc="Error message when user attempts to open a file of unknown type in file browser.">
+        <ph name="FILENAME">$1</ph> - Unknown file type.
+      </message>
+
       <!-- Bookmark manager -->
       <message name="IDS_BOOKMARK_MANAGER_TITLE" desc="Title of the bookmark manager window.">
         Bookmark Manager
@@ -11506,66 +11519,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <!-- File Selection Dialog Policy - Infobar -->
     <message name="IDS_FILE_SELECTION_DIALOG_INFOBAR" desc="Infobar message on disallowed file selection dialog.">
       Access to local files on your machine is disabled by your administrator.
-    </message>
-
-    <!-- Filebrowser Strings -->
-    <message name="IDS_FILEBROWSER_TITLE" desc="Title of the filebrowser">
-      Content Browser
-    </message>
-    <message name="IDS_FILEBROWSER_PAUSE" desc="Action which allows the user to pause a current download">
-      pause
-    </message>
-    <message name="IDS_FILEBROWSER_RESUME" desc="Action which allows the user to resume a paused download">
-      resume
-    </message>
-    <message name="IDS_FILEBROWSER_SCANNING" desc="Notification to the user that we have detected a device and are now mounting it">
-      Scanning Device...
-    </message>
-    <message name="IDS_FILEBROWSER_CONFIRM_YES" desc="Confirm yes to a previous question.">
-      Yes
-    </message>
-    <message name="IDS_FILEBROWSER_CONFIRM_CANCEL" desc="Cancel a previous question.">
-      Cancel
-    </message>
-    <message name="IDS_FILEBROWSER_CONFIRM_DOWNLOAD" desc="Used to download a dangerous file.">
-      Allow Download?
-    </message>
-    <message name="IDS_FILEBROWSER_PROMPT_FILENAME" desc="Prompts the user for a filename.">
-      File name:
-    </message>
-    <message name="IDS_FILEBROWSER_SAVE" desc="Save button text">
-      Save
-    </message>
-    <message name="IDS_FILEBROWSER_NEW_FOLDER" desc="New Folder Button">
-      New Folder
-    </message>
-    <message name="IDS_FILEBROWSER_OPEN" desc="Open Button text">
-      Open
-    </message>
-    <message name="IDS_FILEBROWSER_UPLOAD_EMAIL" desc="Upload to email menu item">
-      Email
-    </message>
-    <message name="IDS_FILEBROWSER_DELETE" desc="Delete file menu item">
-      Delete
-    </message>
-    <message name="IDS_FILEBROWSER_ENQUEUE" desc="Enqueue file menu item used for media playback">
-      Enqueue
-    </message>
-    <message name="IDS_FILEBROWSER_ERROR_TITLE" desc="Title text of an error message prompt.">
-      Error
-    </message>
-    <message name="IDS_FILEBROWSER_ERROR_VIEWING_FILE_TITLE" desc="Title of error message propmt when user attempts to open a non-supported file in file browser.">
-      <ph name="FILENAME">$1</ph>
-    </message>
-    <message name="IDS_FILEBROWSER_ERROR_VIEWING_FILE" desc="Error message when user attempts to open a non-supported file in file browser.">
-      To view this file, convert it to a format that's viewable on the web. For example, you can upload it to Google Docs.
-    </message>
-    <message name="IDS_FILEBROWSER_ERROR_UNKNOWN_FILE_TYPE" desc="Error message when user attempts to open a file of unknown type in file browser.">
-      <ph name="FILENAME">$1</ph> - Unknown file type.
-    </message>
-    <message name="IDS_FILEBROWSER_SHOW_ALL_DOWNLOADS"
-             desc="Link label shown at the bottom of the downloads panel">
-      Show all downloads
     </message>
 
     <!-- Status Area Strings (not ChromeOS specifc) -->

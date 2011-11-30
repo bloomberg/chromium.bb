@@ -1121,14 +1121,19 @@ void ViewFilesFunction::GetLocalPathsResponseOnUIThread(
     const std::string& internal_task_id,
     const FilePathList& files) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  bool success = true;
   for (FilePathList::const_iterator iter = files.begin();
        iter != files.end();
        ++iter) {
-    file_manager_util::ViewItem(*iter,
-                                internal_task_id == kEnqueueTaskId ||
-                                // Start the first one, enqueue others.
-                                iter != files.begin());
+    bool handled = file_manager_util::TryViewingFile(*iter,
+        // Start the first one, enqueue others.
+        internal_task_id == kEnqueueTaskId || iter != files.begin());
+    // If there is no default browser-defined handler for viewing this type
+    // of file, try to see if we have any extension installed for it instead.
+    if (!handled && files.size() == 1)
+      success = false;
   }
+  result_.reset(Value::CreateBooleanValue(success));
   SendResponse(true);
 }
 
@@ -1630,6 +1635,7 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, MANY_ENTRIES_SELECTED);
 
   SET_STRING(IDS_FILE_BROWSER, PLAYBACK_ERROR);
+  SET_STRING(IDS_FILE_BROWSER, ERROR_VIEWING_FILE);
 
   // MP3 metadata extractor plugin
   SET_STRING(IDS_FILE_BROWSER, ID3_ALBUM);  // TALB
@@ -1667,7 +1673,7 @@ bool FileDialogStringsFunction::RunImpl() {
   SET_STRING(IDS_FILE_BROWSER, PLAIN_TEXT_FILE_TYPE);
   SET_STRING(IDS_FILE_BROWSER, PDF_DOCUMENT_FILE_TYPE);
 
-  SET_STRING(IDS_FILEBROWSER, ENQUEUE);
+  SET_STRING(IDS_FILE_BROWSER, ENQUEUE);
 #undef SET_STRING
 
   // TODO(serya): Create a new string in .grd file for this one in M13.

@@ -3743,6 +3743,7 @@ FileManager.prototype = {
     if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
       currentDirUrl += '/';
 
+    var self = this;
     if (this.dialogType_ == FileManager.DialogType.SELECT_SAVEAS_FILE) {
       // Save-as doesn't require a valid selection from the list, since
       // we're going to take the filename from the text input.
@@ -3752,7 +3753,6 @@ FileManager.prototype = {
       if (!this.validateFileName_(filename))
         return;
 
-      var self = this;
       function resolveCallback(victim) {
         if (victim instanceof FileError) {
           // File does not exist.  Closes the window and does not return.
@@ -3781,7 +3781,7 @@ FileManager.prototype = {
       return;
     }
 
-    var ary = [];
+    var files = [];
     var selectedIndexes = this.currentList_.selectionModel.selectedIndexes;
 
     // All other dialog types require at least one selected list item.
@@ -3797,13 +3797,13 @@ FileManager.prototype = {
         continue;
       }
 
-      ary.push(currentDirUrl + encodeURIComponent(entry.name));
+      files.push(currentDirUrl + encodeURIComponent(entry.name));
     }
 
     // Multi-file selection has no other restrictions.
     if (this.dialogType_ == FileManager.DialogType.SELECT_OPEN_MULTI_FILE) {
       // Closes the window and does not return.
-      this.selectFiles_(ary);
+      this.selectFiles_(files);
       return;
     }
 
@@ -3822,13 +3822,37 @@ FileManager.prototype = {
           return;
         }
       }
-      chrome.fileBrowserPrivate.viewFiles(ary, "default");
+      chrome.fileBrowserPrivate.viewFiles(files, "default", function(success) {
+        if (success || files.length != 1)
+          return;
+        // Run the default task if the browser wasn't able to handle viewing.
+        chrome.fileBrowserPrivate.getFileTasks(
+            files,
+            function(tasksList) {
+              // Run the top task from the list when double click can't
+              // be handled by the browser internally.
+              if (tasksList && tasksList.length == 1) {
+                var task = tasksList[0];
+                var task_parts = task.taskId.split('|');
+                if (task_parts[0] == self.getExtensionId_())
+                  task.internal = true;
+
+                self.dispatchFileTask_(task, files);
+              } else {
+                var fileUrl = files[0];
+                self.alert.showWithTitle(
+                    unescape(fileUrl.substr(fileUrl.lastIndexOf('/') + 1)),
+                    str('ERROR_VIEWING_FILE'),
+                    function() {});
+              }
+            });
+      });
       // Window stays open.
       return;
     }
 
     // Everything else must have exactly one.
-    if (ary.length > 1)
+    if (files.length > 1)
       throw new Error('Too many files selected!');
 
     var selectedEntry = this.dataModel_.item(selectedIndexes[0]);
@@ -3842,7 +3866,7 @@ FileManager.prototype = {
     }
 
     // Closes the window and does not return.
-    this.selectFile_(ary[0], this.getSelectedFilterIndex_(ary[0]));
+    this.selectFile_(files[0], this.getSelectedFilterIndex_(files[0]));
   };
 
   /**

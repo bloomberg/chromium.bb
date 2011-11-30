@@ -7616,6 +7616,18 @@
             "name": "id",
             "type": "string",
             "description": "File browser handler id as for internal tasks."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name" : "success",
+                "type": "boolean",
+                "description": "True if the selected files can be viewed by the browser."
+              }
+            ]
           }
         ]
       },

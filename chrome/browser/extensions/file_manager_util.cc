@@ -283,19 +283,28 @@ void ViewFolder(const FilePath& dir) {
   browser->ShowSingletonTabRespectRef(GURL(url));
 }
 
-void ViewItem(const FilePath& full_path, bool enqueue) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    bool result = BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&ViewItem, full_path, enqueue));
-    DCHECK(result);
-    return;
+void ViewFile(const FilePath& full_path, bool enqueue) {
+  if (!TryViewingFile(full_path, enqueue)) {
+    Browser* browser = BrowserList::GetLastActive();
+    if (!browser)
+      return;
+    browser::ShowErrorBox(
+        browser->window()->GetNativeHandle(),
+        l10n_util::GetStringFUTF16(
+            IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
+            UTF8ToUTF16(full_path.BaseName().value())),
+        l10n_util::GetStringUTF16(
+            IDS_FILE_BROWSER_ERROR_VIEWING_FILE));
   }
+}
+
+bool TryViewingFile(const FilePath& full_path, bool enqueue) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // There is nothing we can do if the browser is not present.
   Browser* browser = BrowserList::GetLastActive();
   if (!browser)
-    return;
+    return true;
 
   std::string ext = full_path.Extension();
   // For things supported natively by the browser, we should open it
@@ -306,7 +315,7 @@ void ViewItem(const FilePath& full_path, bool enqueue) {
     path = "file://";
     path.append(net::EscapeUrlEncodedData(full_path.value(), false));
     browser->AddSelectedTabWithURL(GURL(path), content::PAGE_TRANSITION_LINK);
-    return;
+    return true;
   }
 #if defined(OS_CHROMEOS)
   if (IsSupportedAVExtension(ext.data())) {
@@ -323,7 +332,7 @@ void ViewItem(const FilePath& full_path, bool enqueue) {
       mediaplayer->PopupMediaPlayer(browser);
       mediaplayer->ForcePlayMediaFile(browser->profile(), full_path);
     }
-    return;
+    return true;
   }
 #endif  // OS_CHROMEOS
 
@@ -334,14 +343,7 @@ void ViewItem(const FilePath& full_path, bool enqueue) {
   UMA_HISTOGRAM_ENUMERATION("FileBrowser.OpeningFileType",
                             extension_index,
                             arraysize(kUMATrackingExtensions) - 1);
-
-  browser::ShowErrorBox(
-      browser->window()->GetNativeHandle(),
-      l10n_util::GetStringFUTF16(
-          IDS_FILEBROWSER_ERROR_VIEWING_FILE_TITLE,
-          UTF8ToUTF16(full_path.BaseName().value())),
-      l10n_util::GetStringUTF16(
-          IDS_FILEBROWSER_ERROR_VIEWING_FILE));
+  return false;
 }
 
 }  // namespace file_manager_util

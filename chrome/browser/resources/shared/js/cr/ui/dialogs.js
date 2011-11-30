@@ -44,6 +44,10 @@ cr.define('cr.ui.dialogs', function() {
     this.frame_.className = 'cr-dialog-frame';
     this.container_.appendChild(this.frame_);
 
+    this.title_ = doc.createElement('div');
+    this.title_.className = 'cr-dialog-title';
+    this.frame_.appendChild(this.title_);
+
     this.text_ = doc.createElement('div');
     this.text_.className = 'cr-dialog-text';
     this.frame_.appendChild(this.text_);
@@ -110,12 +114,24 @@ cr.define('cr.ui.dialogs', function() {
   };
 
   BaseDialog.prototype.show = function(message, onOk, onCancel, onShow) {
+    this.showWithTitle(null, message, onOk, onCancel, onShow);
+  }
+
+  BaseDialog.prototype.showWithTitle = function(title, message,
+      onOk, onCancel, onShow) {
     this.previousActiveElement_ = this.document_.activeElement;
     this.parentNode_.appendChild(this.container_);
 
     this.onOk_ = onOk;
     this.onCancel_ = onCancel;
 
+    if (title) {
+      this.title_.textContent = title;
+      this.title_.hidden = false;
+    } else {
+      this.title_.textContent = "";
+      this.title_.hidden = true;
+    }
     this.text_.textContent = message;
 
     var top = (this.document_.body.clientHeight -
