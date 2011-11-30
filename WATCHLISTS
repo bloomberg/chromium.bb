@@ -300,9 +300,12 @@
       'filepath': 'chrome/browser/chromeos/input_method/.*'\
                   '|chrome/browser/chromeos/extensions/input_method.*'\
                   '|chrome/browser/chromeos/status/input_method.*'\
-                  '|chrome/browser/extensions/extension_input_.*'
+                  '|chrome/browser/extensions/extension_input_.*'\
                   '|chrome/browser/resources/keyboard.*'\
-                  '|chrome/browser/resources/options/language.*'
+                  '|chrome/browser/resources/options/language.*'\
+                  '|chrome/browser/ui/webui/options/'\
+                  'chromeos/.*(language|keyboard).*'\
+                  '|chrome/browser/ui/webui/options/language.*'
     },
     'omnibox': {
       'filepath': 'chrome/browser/autocomplete/.*'\
