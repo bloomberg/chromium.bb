@@ -217,6 +217,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
   // Returns the topmost Window with a delegate containing |local_point|.
   Window* GetTopWindowContainingPoint(const gfx::Point& local_point);
 
+  // Returns this window's toplevel window (the highest-up-the-tree anscestor
+  // that has a delegate set).  The toplevel window may be |this|.
+  Window* GetToplevelWindow();
+
   // Claims or relinquishes the claim to focus.
   void Focus();
   void Blur();

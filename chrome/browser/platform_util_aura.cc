@@ -25,9 +25,7 @@ void OpenExternal(const GURL& url) {
 }
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return NULL;
+  return view->GetToplevelWindow();
 }
 
 gfx::NativeView GetParent(gfx::NativeView view) {
@@ -35,14 +33,11 @@ gfx::NativeView GetParent(gfx::NativeView view) {
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
-  return false;
+  return window->IsActive();
 }
 
 void ActivateWindow(gfx::NativeWindow window) {
-  // TODO(beng):
-  NOTIMPLEMENTED();
+  window->Activate();
 }
 
 bool IsVisible(gfx::NativeView view) {

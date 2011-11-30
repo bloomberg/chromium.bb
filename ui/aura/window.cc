@@ -344,6 +344,15 @@ Window* Window::GetTopWindowContainingPoint(const gfx::Point& local_point) {
   return GetWindowForPoint(local_point, false, false);
 }
 
+Window* Window::GetToplevelWindow() {
+  Window* topmost_window_with_delegate = NULL;
+  for (aura::Window* window = this; window != NULL; window = window->parent()) {
+    if (window->delegate())
+      topmost_window_with_delegate = window;
+  }
+  return topmost_window_with_delegate;
+}
+
 void Window::Focus() {
   DCHECK(GetFocusManager());
   GetFocusManager()->SetFocusedWindow(this);

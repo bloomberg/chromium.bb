@@ -250,6 +250,25 @@ TEST_F(WindowTest, GetTopWindowContainingPoint) {
   EXPECT_EQ(NULL, root->GetTopWindowContainingPoint(gfx::Point(260, 260)));
 }
 
+TEST_F(WindowTest, GetToplevelWindow) {
+  const gfx::Rect kBounds(0, 0, 10, 10);
+  TestWindowDelegate delegate;
+
+  Window* root = aura::Desktop::GetInstance();
+  scoped_ptr<Window> w1(CreateTestWindowWithId(1, root));
+  scoped_ptr<Window> w11(
+      CreateTestWindowWithDelegate(&delegate, 11, kBounds, w1.get()));
+  scoped_ptr<Window> w111(CreateTestWindowWithId(111, w11.get()));
+  scoped_ptr<Window> w1111(
+      CreateTestWindowWithDelegate(&delegate, 1111, kBounds, w111.get()));
+
+  EXPECT_TRUE(root->GetToplevelWindow() == NULL);
+  EXPECT_TRUE(w1->GetToplevelWindow() == NULL);
+  EXPECT_EQ(w11.get(), w11->GetToplevelWindow());
+  EXPECT_EQ(w11.get(), w111->GetToplevelWindow());
+  EXPECT_EQ(w11.get(), w1111->GetToplevelWindow());
+}
+
 // Various destruction assertions.
 TEST_F(WindowTest, DestroyTest) {
   DestroyTrackingDelegateImpl parent_delegate;
