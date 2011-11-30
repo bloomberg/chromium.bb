@@ -14,7 +14,7 @@ const struct ModifierKeysSelectItem {
   int message_id;
   chromeos::input_method::ModifierKey value;
 } kModifierKeysSelectItems[] = {
-  { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH_LABEL,
+  { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_SEARCH,
     chromeos::input_method::kSearchKey },
   { IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_LEFT_CTRL,
     chromeos::input_method::kLeftControlKey },

@@ -12786,10 +12786,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The title for the Mozc Japanese input settings dialog">
         Japanese Input Settings
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_RESET_TO_DEFAULTS_BUTTON"
-               desc="The label for the reset to default button for resetting the Mozc preferences to the default values">
-        Reset to defaults
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_MOZC_PREEDIT_METHOD"
                desc="The combobox description for the Mozc input method preference">
         Input Method
@@ -12986,18 +12982,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The slider label for a Mozc input method preference">
         Maximum number of suggestions
       </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_NO_REMAP"
-               desc="The label for 'Configure modifier keys' drop-down">
-        Do not swap modifier keys
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_REMAP_CTRL_ALT"
-               desc="The label for 'Configure modifier keys' drop-down">
-        Swap Left Control and Left Alt keys
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_MODIFIER_REMAP_SEARCH_CTRL"
-               desc="The label for 'Configure modifier keys' drop-down">
-        Swap Search and Left Control keys
-      </message>
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
                desc="The label for the configure button for input methods">
         Configure...
@@ -13145,22 +13129,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_CAPS_LOCK"
                desc="The dropdown list item for 'Customize modifier keys' overlay">
         Caps Lock
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
-               desc="The label for the Chrome OS configuration dialog">
-        fast
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
-               desc="The label for the Chrome OS configuration dialog">
-        fast
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
-               desc="The label for the Chrome OS configuration dialog">
-        fast
-      </message>
-      <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_XKB_KEY_REPEAT_SPEED_FAST"
-               desc="The label for the Chrome OS configuration dialog">
-        fast
       </message>
       <message name="IDS_STATUSBAR_ACCESSIBILITY_ENABLED" desc="The tooltip for the status bar button to indicate that accessibility is enabled.">
         Accessibility features are enabled.
