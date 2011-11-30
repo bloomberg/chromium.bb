@@ -8230,9 +8230,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill Settings
         </message>
-        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the Autofill options button.">
-          Autofill Settings...
-        </message>
         <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
           <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph> Autofill settings
         </message>
@@ -8242,9 +8239,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill Preferences
         </message>
-        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the Autofill options button.">
-          Autofill Preferences...
-        </message>
         <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
           <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph> Autofill Preferences
         </message>
@@ -8253,9 +8247,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <if expr="is_win">
         <message name="IDS_AUTOFILL_OPTIONS_TITLE" desc="The title of the Autofill dialog.">
           Autofill Options
-        </message>
-        <message name="IDS_AUTOFILL_OPTIONS" desc="The value of the Autofill options button.">
-          Autofill options...
         </message>
         <message name="IDS_AUTOFILL_OPTIONS_POPUP" desc="The value of the Autofill options menu entry.">
           <ph name="PRODUCT_NAME_SHORT">$1<ex>Chrome</ex></ph> Autofill options
@@ -8331,9 +8322,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Add a Credit Card
         </message>
       </if>
-      <message name="IDS_AUTOFILL_LIST_HEADER_SUMMARY" desc="The text on the list view header over the summary.">
-        Summary
-      </message>
       <message name="IDS_AUTOFILL_MAC_ADDRESS_LINE_SEPARATOR" desc="The separator character used to join multi-line addresses on the Mac.">
         , '''
       </message>
