@@ -12,6 +12,7 @@
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/download/download_file_manager.h"
 #include "content/browser/download/save_file_manager.h"
+#include "content/browser/plugin_service.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
@@ -42,11 +43,12 @@ ShellBrowserMainParts::ShellBrowserMainParts(
 ShellBrowserMainParts::~ShellBrowserMainParts() {
 }
 
-void ShellBrowserMainParts::PreCreateThreads() {
+void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new ShellBrowserContext(this));
 
   Shell::PlatformInitialize();
   net::NetModule::SetResourceProvider(Shell::PlatformResourceProvider);
+  PluginService::GetInstance()->Init();
 
   Shell::CreateNewWindow(browser_context_.get(),
                          GetStartupURL(),

@@ -35,10 +35,10 @@ class ShellBrowserMainParts : public BrowserMainParts {
   virtual void PreMainMessageLoopStart() OVERRIDE {}
   virtual void ToolkitInitialized() OVERRIDE {}
   virtual void PostMainMessageLoopStart() OVERRIDE {}
-  virtual void PreCreateThreads() OVERRIDE;
+  virtual void PreCreateThreads() OVERRIDE {}
   virtual void PreStartThread(BrowserThread::ID id) OVERRIDE {}
   virtual void PostStartThread(BrowserThread::ID id) OVERRIDE {}
-  virtual void PreMainMessageLoopRun() OVERRIDE {}
+  virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
   virtual void PreStopThread(BrowserThread::ID id) OVERRIDE;
