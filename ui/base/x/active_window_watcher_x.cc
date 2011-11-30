@@ -6,6 +6,8 @@
 
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
+#include "ui/base/gtk/gtk_compat.h"
+#include "ui/base/gtk/gdk_x_compat.h"
 
 #include "ui/base/x/active_window_watcher_x_observer.h"
 #include "ui/base/x/root_window_property_watcher_x.h"
@@ -84,7 +86,8 @@ void ActiveWindowWatcherX::NotifyActiveWindowChanged() {
   // reason.)
   if (format == 32 && num_items == 1) {
     int xid = *reinterpret_cast<int*>(property);
-    GdkWindow* active_window = gdk_window_lookup(xid);
+    GdkDisplay* display = gdk_display_get_default();
+    GdkWindow* active_window = gdk_x11_window_lookup_for_display(display, xid);
     FOR_EACH_OBSERVER(ActiveWindowWatcherXObserver, observers_,
                       ActiveWindowChanged(active_window));
   }

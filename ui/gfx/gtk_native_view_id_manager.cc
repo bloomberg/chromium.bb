@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "ui/base/gtk/gtk_compat.h"
+#include "ui/base/gtk/gdk_x_compat.h"
 #include "ui/gfx/gtk_preserve_window.h"
 
 // -----------------------------------------------------------------------------
@@ -174,7 +175,7 @@ void GtkNativeViewManager::ReleasePermanentXID(XID xid) {
       gtk_preserve_window_set_preserve(i->second.widget, FALSE);
     } else {
       GdkWindow* window = reinterpret_cast<GdkWindow*>(
-          gdk_xid_table_lookup(xid));
+          gdk_x11_window_lookup_for_display(gdk_display_get_default(), xid));
       DCHECK(window);
       gdk_window_destroy(window);
     }

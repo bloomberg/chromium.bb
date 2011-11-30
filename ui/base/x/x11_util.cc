@@ -31,6 +31,8 @@
 #include <gdk/gdk.h>
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+#include "ui/base/gtk/gtk_compat.h"
+#include "ui/base/gtk/gdk_x_compat.h"
 #else
 // TODO(sad): Use the new way of handling X errors when
 // http://codereview.chromium.org/7889040/ lands.
@@ -241,7 +243,7 @@ XID GetX11WindowFromGdkWindow(GdkWindow* window) {
 
 GtkWindow* GetGtkWindowFromX11Window(XID xid) {
   GdkWindow* gdk_window =
-      gdk_window_lookup_for_display(gdk_display_get_default(), xid);
+      gdk_x11_window_lookup_for_display(gdk_display_get_default(), xid);
   if (!gdk_window)
     return NULL;
   GtkWindow* gtk_window = NULL;
