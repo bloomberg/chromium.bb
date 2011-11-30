@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,7 @@ enum SearchEngineType {
   SEARCH_ENGINE_NETI,
   SEARCH_ENGINE_OK,
   SEARCH_ENGINE_POGODAK,
-  SEARCH_ENGINE_POGODOK_MK,
+  SEARCH_ENGINE_POGODOK_MK,  // Defunct. Deletion would corrupt UMA stats.
   SEARCH_ENGINE_RAMBLER,
   SEARCH_ENGINE_SANOOK,
   SEARCH_ENGINE_SAPO,

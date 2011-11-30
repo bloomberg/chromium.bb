@@ -288,7 +288,6 @@
         <include name="IDR_SEARCH_ENGINE_LOGO_NETSPRINT" file="google_chrome/search_netsprint.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_OK" file="google_chrome/search_ok.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_POGODAK" file="google_chrome/search_pogodak.png" type="BINDATA" />
-        <include name="IDR_SEARCH_ENGINE_LOGO_POGODOK_MK" file="google_chrome/search_pogodok_mk.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_RAMBLER" file="google_chrome/search_rambler.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_SANOOK" file="google_chrome/search_sanook.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_SAPO" file="google_chrome/search_sapo.png" type="BINDATA" />
@@ -322,7 +321,6 @@
         <include name="IDR_SEARCH_ENGINE_LOGO_NETSPRINT" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_OK" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_POGODAK" file="notused.png" type="BINDATA" />
-        <include name="IDR_SEARCH_ENGINE_LOGO_POGODOK_MK" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_RAMBLER" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_SANOOK" file="notused.png" type="BINDATA" />
         <include name="IDR_SEARCH_ENGINE_LOGO_SAPO" file="notused.png" type="BINDATA" />
