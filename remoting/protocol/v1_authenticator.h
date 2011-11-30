@@ -19,8 +19,8 @@ namespace protocol {
 
 class V1ClientAuthenticator : public Authenticator {
  public:
-  explicit V1ClientAuthenticator(const std::string& local_jid,
-                                     const std::string& shared_secret);
+  V1ClientAuthenticator(const std::string& local_jid,
+                        const std::string& shared_secret);
   virtual ~V1ClientAuthenticator();
 
   // Authenticator interface.
@@ -40,10 +40,11 @@ class V1ClientAuthenticator : public Authenticator {
 
 class V1HostAuthenticator : public Authenticator {
  public:
-  explicit V1HostAuthenticator(const std::string& local_cert,
-                                   crypto::RSAPrivateKey* local_private_key,
-                                   const std::string& shared_secret,
-                                   const std::string& remote_jid);
+  // Doesn't take ownership of |local_private_key|.
+  V1HostAuthenticator(const std::string& local_cert,
+                      crypto::RSAPrivateKey* local_private_key,
+                      const std::string& shared_secret,
+                      const std::string& remote_jid);
   virtual ~V1HostAuthenticator();
 
   // Authenticator interface.
@@ -66,8 +67,8 @@ class V1HostAuthenticatorFactory : public AuthenticatorFactory {
  public:
   // Doesn't take ownership of |local_private_key|.
   V1HostAuthenticatorFactory(const std::string& local_cert,
-                                 crypto::RSAPrivateKey* local_private_key,
-                                 const std::string& shared_secret);
+                             crypto::RSAPrivateKey* local_private_key,
+                             const std::string& shared_secret);
   virtual ~V1HostAuthenticatorFactory();
 
   // AuthenticatorFactory interface.
