@@ -129,9 +129,9 @@ bool DownloadResourceHandler::OnResponseStarted(
 
   if (!response->headers ||
       !response->headers->EnumerateHeader(NULL,
-                                          "Accepts-Ranges",
-                                          &accepts_ranges_)) {
-    accepts_ranges_ = "";
+                                          "Accept-Ranges",
+                                          &accept_ranges_)) {
+    accept_ranges_ = "";
   }
 
   info->prompt_user_for_save_location =
@@ -248,7 +248,7 @@ bool DownloadResourceHandler::OnResponseCompleted(
     reason = DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;  // User canceled.
   }
 
-  download_stats::RecordAcceptsRanges(accepts_ranges_, bytes_read_);
+  download_stats::RecordAcceptsRanges(accept_ranges_, bytes_read_);
 
   if (!download_id_.IsValid())
     CallStartedCB(error_code);

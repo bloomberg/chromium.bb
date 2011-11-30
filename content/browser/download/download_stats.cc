@@ -109,19 +109,19 @@ void RecordAcceptsRanges(const std::string& accepts_ranges,
   static const int kBuckets = 50;
 
   if (LowerCaseEqualsASCII(accepts_ranges, "none")) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.KBytes.AcceptRangesNone",
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.AcceptRangesNone.KBytes",
                                 download_len,
                                 1,
                                 max,
                                 kBuckets);
   } else if (LowerCaseEqualsASCII(accepts_ranges, "bytes")) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.KBytes.AcceptRangesBytes",
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.AcceptRangesBytes.KBytes",
                                 download_len,
                                 1,
                                 max,
                                 kBuckets);
   } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.KBytes.AcceptRangesMissingOrInvalid",
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.AcceptRangesMissingOrInvalid.KBytes",
                                 download_len,
                                 1,
                                 max,
