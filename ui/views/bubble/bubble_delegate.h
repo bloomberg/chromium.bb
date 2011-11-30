@@ -87,6 +87,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // bubble to the setting before StartFade() was called.
   void ResetFade();
 
+  // The default bubble background color.
+  static const SkColor kBackgroundColor;
+
  protected:
   // View overrides:
   virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;

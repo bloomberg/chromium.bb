@@ -41,9 +41,6 @@ class ScreenLockView : public ThrobberHostView,
   // Enable/Disable signout button.
   void SetSignoutEnabled(bool enabled);
 
-  // Returns the bounds of the password field in ScreenLocker's coordinate.
-  gfx::Rect GetPasswordBoundsRelativeTo(const views::View* view);
-
   // views::View:
   virtual void SetEnabled(bool enabled);
   virtual void Layout() OVERRIDE;
@@ -63,6 +60,8 @@ class ScreenLockView : public ThrobberHostView,
   // UserView::Delegate:
   virtual void OnSignout() OVERRIDE;
   virtual bool IsUserSelected() const OVERRIDE;
+
+  views::Textfield* password_field() { return password_field_; }
 
  private:
   friend class test::ScreenLockerTester;

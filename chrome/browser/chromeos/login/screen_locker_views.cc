@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/status/status_area_view_chromeos.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "chrome/browser/prefs/pref_service.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/user_metrics.h"
@@ -31,9 +32,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/textfield/textfield.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"
+#include "ui/views/widget/native_widget_gtk.h"
 #endif
 
 namespace {
@@ -793,29 +796,21 @@ void ScreenLockerViews::ShowCaptchaAndErrorMessage(const GURL& captcha_url,
 
 void ScreenLockerViews::ClearErrors() {
   if (error_info_) {
-    error_info_->Close();
+    error_info_->GetWidget()->Close();
     error_info_ = NULL;
   }
 }
 
-void ScreenLockerViews::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+void ScreenLockerViews::OnWidgetClosing(views::Widget* widget) {
+  if (!error_info_ || error_info_->GetWidget() != widget)
+    return;
+
   error_info_ = NULL;
   SetSignoutEnabled(true);
   if (mouse_event_relay_.get()) {
     MessageLoopForUI::current()->RemoveObserver(mouse_event_relay_.get());
     mouse_event_relay_.reset();
   }
-}
-
-bool ScreenLockerViews::CloseOnEscape() {
-  return true;
-}
-
-bool ScreenLockerViews::FadeInOnShow() {
-  return false;
-}
-
-void ScreenLockerViews::OnLinkActivated(size_t index) {
 }
 
 void ScreenLockerViews::OnCaptchaEntered(const std::string& captcha) {
@@ -870,27 +865,26 @@ void ScreenLockerViews::OnWindowManagerReady() {
 void ScreenLockerViews::ShowErrorBubble(
     const string16& message,
     views::BubbleBorder::ArrowLocation arrow_location) {
-  if (error_info_)
-    error_info_->Close();
+  ClearErrors();
 
-  gfx::Rect rect = screen_lock_view_->GetPasswordBoundsRelativeTo(
-      lock_widget_->GetRootView());
-  gfx::Rect lock_widget_bounds = lock_widget_->GetClientAreaScreenBounds();
-  rect.Offset(lock_widget_bounds.x(), lock_widget_bounds.y());
-  error_info_ = MessageBubble::ShowNoGrab(
-      lock_window_,
-      rect,
+  // TODO(nkostylev): Add help link.
+  std::vector<string16> help_links;
+  error_info_ = new MessageBubble(
+      screen_lock_view_->password_field(),
       arrow_location,
       ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING),
-      UTF16ToWide(message),
-      UTF16ToWide(string16()),  // TODO(nkostylev): Add help link.
-      this);
+      message,
+      help_links);
+  browser::CreateViewsBubbleAboveLockScreen(error_info_);
+  error_info_->Show();
+  error_info_->GetWidget()->AddObserver(this);
 
   if (mouse_event_relay_.get())
     MessageLoopForUI::current()->RemoveObserver(mouse_event_relay_.get());
+  // TODO(oshima|msw): Investigate MouseEventRelay problems: crosbug.com/23324.
   mouse_event_relay_.reset(
       new MouseEventRelay(lock_widget_->GetNativeView()->window,
-                          error_info_->GetNativeView()->window));
+                          error_info_->GetWidget()->GetNativeView()->window));
   MessageLoopForUI::current()->AddObserver(mouse_event_relay_.get());
 }
 

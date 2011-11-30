@@ -24,9 +24,12 @@
 #include "ui/views/controls/textfield/native_textfield_wrapper.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/widget/native_widget_gtk.h"
 #include "views/background.h"
 #include "views/border.h"
+
+#if defined(TOOLKIT_USES_GTK)
+#include "ui/views/widget/native_widget_gtk.h"
+#endif
 
 namespace chromeos {
 
@@ -198,12 +201,6 @@ void ScreenLockView::ClearAndSetFocusToPassword() {
 
 void ScreenLockView::SetSignoutEnabled(bool enabled) {
   user_view_->SetSignoutEnabled(enabled);
-}
-
-gfx::Rect ScreenLockView::GetPasswordBoundsRelativeTo(const views::View* view) {
-  gfx::Point p;
-  views::View::ConvertPointToView(password_field_, view, &p);
-  return gfx::Rect(p, size());
 }
 
 void ScreenLockView::SetEnabled(bool enabled) {

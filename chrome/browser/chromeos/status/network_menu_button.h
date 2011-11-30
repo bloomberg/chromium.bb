@@ -53,7 +53,8 @@ class NetworkMenuButton : public StatusAreaButton,
                           public NetworkLibrary::NetworkManagerObserver,
                           public NetworkLibrary::NetworkObserver,
                           public NetworkLibrary::CellularDataPlanObserver,
-                          public MessageBubbleDelegate {
+                          public views::Widget::Observer,
+                          public MessageBubbleLinkListener {
  public:
   explicit NetworkMenuButton(StatusAreaButton::Delegate* delegate);
   virtual ~NetworkMenuButton();
@@ -89,10 +90,10 @@ class NetworkMenuButton : public StatusAreaButton,
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt) OVERRIDE;
 
-  // MessageBubbleDelegate implementation:
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
-  virtual bool CloseOnEscape() OVERRIDE;
-  virtual bool FadeInOnShow() OVERRIDE;
+  // views::Widget::Observer implementation:
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+
+  // MessageBubbleLinkListener implementation:
   virtual void OnLinkActivated(size_t index) OVERRIDE;
 
  private:

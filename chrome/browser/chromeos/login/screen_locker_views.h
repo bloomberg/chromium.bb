@@ -10,6 +10,10 @@
 #include "chrome/browser/chromeos/login/message_bubble.h"
 #include "chrome/browser/chromeos/login/screen_locker_delegate.h"
 
+#if defined(TOOLKIT_USES_GTK)
+#include "ui/base/gtk/gtk_signal.h"
+#endif
+
 namespace chromeos {
 
 class BackgroundView;
@@ -28,9 +32,9 @@ class ScreenLockerTester;
 // shows a BackgroundView and a Signout button as well as creating a
 // ScreenLockView to allow the user to log in.
 class ScreenLockerViews : public ScreenLockerDelegate,
-                          public MessageBubbleDelegate,
                           public CaptchaView::Delegate,
-                          public ui::AcceleratorTarget {
+                          public ui::AcceleratorTarget,
+                          public views::Widget::Observer {
  public:
   // Interface that helps switching from ScreenLockView to CaptchaView.
   class ScreenLockViewContainer {
@@ -67,11 +71,8 @@ class ScreenLockerViews : public ScreenLockerDelegate,
                                           const string16& message) OVERRIDE;
   virtual void ClearErrors() OVERRIDE;
 
-  // Overridden from views::BubbleDelegate.
-  virtual void BubbleClosing(Bubble* bubble, bool closed_by_escape) OVERRIDE;
-  virtual bool CloseOnEscape() OVERRIDE;
-  virtual bool FadeInOnShow() OVERRIDE;
-  virtual void OnLinkActivated(size_t index) OVERRIDE;
+  // views::Widget::Observer implementation:
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
 
   // CaptchaView::Delegate implementation:
   virtual void OnCaptchaEntered(const std::string& captcha) OVERRIDE;

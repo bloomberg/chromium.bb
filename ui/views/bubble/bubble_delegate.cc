@@ -71,6 +71,9 @@ Widget* CreateBorderWidget(BubbleDelegateView* bubble, Widget* parent) {
 
 }  // namespace
 
+// TODO(msw): Use NativeTheme/color_helper (crbug.com/105023).
+const SkColor BubbleDelegateView::kBackgroundColor = SK_ColorWHITE;
+
 BubbleDelegateView::BubbleDelegateView()
     : close_on_esc_(true),
       close_on_deactivate_(true),

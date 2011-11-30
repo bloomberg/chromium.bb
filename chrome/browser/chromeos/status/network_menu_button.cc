@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/views/window.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -129,7 +130,7 @@ NetworkMenuButton::~NetworkMenuButton() {
   if (!cellular_device_path_.empty())
     netlib->RemoveNetworkDeviceObserver(cellular_device_path_, this);
   if (mobile_data_bubble_)
-    mobile_data_bubble_->Close();
+    mobile_data_bubble_->GetWidget()->Close();
 }
 
 // static
@@ -238,21 +239,19 @@ void NetworkMenuButton::NetworkMenuIconChanged() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// MessageBubbleDelegate implementation:
+// views::Widget::Observer implementation:
 
-void NetworkMenuButton::BubbleClosing(Bubble* bubble, bool closed_by_escape) {
+void NetworkMenuButton::OnWidgetClosing(views::Widget* widget) {
+  if (!mobile_data_bubble_ || mobile_data_bubble_->GetWidget() != widget)
+    return;
+
   mobile_data_bubble_ = NULL;
   deal_info_url_.clear();
   deal_topup_url_.clear();
 }
 
-bool NetworkMenuButton::CloseOnEscape() {
-  return true;
-}
-
-bool NetworkMenuButton::FadeInOnShow() {
-  return false;
-}
+////////////////////////////////////////////////////////////////////////////////
+// MessageBubbleLinkListener implementation:
 
 void NetworkMenuButton::OnLinkActivated(size_t index) {
   // If we have deal info URL defined that means that there're
@@ -260,7 +259,7 @@ void NetworkMenuButton::OnLinkActivated(size_t index) {
   // to navigate to second link.
   // mobile_data_bubble_ will be set to NULL in BubbleClosing callback.
   if (deal_info_url_.empty() && mobile_data_bubble_)
-    mobile_data_bubble_->Close();
+    mobile_data_bubble_->GetWidget()->Close();
 
   std::string deal_url_to_open;
   if (index == 0) {
@@ -410,13 +409,12 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
     }
 
     // Add deal text if it's defined.
-    std::wstring notification_text;
-    std::wstring default_text =
-        UTF16ToWide(l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE));
+    string16 notification_text;
+    string16 default_text =
+        l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
     if (!deal_text.empty()) {
-      notification_text = StringPrintf(L"%ls\n\n%ls",
-                                       UTF8ToWide(deal_text).c_str(),
-                                       default_text.c_str());
+      notification_text =
+          UTF8ToUTF16(deal_text) + UTF8ToUTF16("\n\n") + default_text;
     } else {
       notification_text = default_text;
     }
@@ -428,18 +426,20 @@ void NetworkMenuButton::ShowOptionalMobileDataPromoNotification(
     else
       link_message_id = IDS_STATUSBAR_NETWORK_VIEW_ACCOUNT;
 
-    std::vector<std::wstring> links;
-    links.push_back(UTF16ToWide(l10n_util::GetStringUTF16(link_message_id)));
+    std::vector<string16> links;
+    links.push_back(l10n_util::GetStringUTF16(link_message_id));
     if (!deal_info_url_.empty())
-      links.push_back(UTF16ToWide(l10n_util::GetStringUTF16(IDS_LEARN_MORE)));
-    mobile_data_bubble_ = MessageBubble::ShowWithLinks(
-        GetWidget(),
-        button_bounds,
-        views::BubbleBorder::TOP_RIGHT ,
+      links.push_back(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+    mobile_data_bubble_ = new MessageBubble(
+        this,
+        views::BubbleBorder::TOP_RIGHT,
         ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_NOTIFICATION_3G),
         notification_text,
-        links,
-        this);
+        links);
+    mobile_data_bubble_->set_link_listener(this);
+    browser::CreateViewsBubbleAboveLockScreen(mobile_data_bubble_);
+    mobile_data_bubble_->Show();
+    mobile_data_bubble_->GetWidget()->AddObserver(this);
 
     check_for_promo_ = false;
     SetShow3gPromoNotification(false);
