@@ -90,18 +90,22 @@ class NsisScript(path_set.PathSet):
     if file_filter:
       self._files = set(file_filter(self._files))
 
-    def IsCygwinSymlink(path):
+    def ReadCygwinSymlink(path):
       if not os.path.isfile(path):
-        return False
-      data = open(path, 'rb').read(10)
-      return data == '!<symlink>'
+        return None
+      header = open(path, 'rb').read(12)
+      if header != '!<symlink>\xff\xfe':
+        return None
+      data = open(path, 'rb').read()[12:]
+      return ''.join([ch for ch in data if ch != '\x00'])
 
     # Pick out cygwin symlinks.
     all_files = self._files
     self._files = set()
     for f in all_files:
-      if IsCygwinSymlink(f):
-        self._symlinks.add(f)
+      link = ReadCygwinSymlink(f)
+      if link:
+        self._symlinks[f] = link
       else:
         self._files.add(f)
 
