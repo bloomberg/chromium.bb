@@ -538,19 +538,22 @@ void Desktop::WindowDetachedFromDesktop(Window* detached) {
 
   // If the ancestor of the capture window is detached,
   // release the capture.
-  aura::Window* window = capture_window_;
-  while (window && window != detached)
-    window = window->parent();
-  if (window && window != this)
+  if (detached->Contains(capture_window_) && detached != this)
     ReleaseCapture(capture_window_);
 
-  // If the ancestor of the capture window is detached,
+  // If the ancestor of the focused window is detached,
   // release the focus.
-  window = focused_window_;
-  while (window && window != detached)
-    window = window->parent();
-  if (window)
+  if (detached->Contains(focused_window_))
     SetFocusedWindow(NULL);
+
+  // If the ancestor of any event handler windows are detached, release the
+  // pointer to those windows.
+  if (detached->Contains(mouse_pressed_handler_))
+    mouse_pressed_handler_ = NULL;
+  if (detached->Contains(mouse_moved_handler_))
+    mouse_moved_handler_ = NULL;
+  if (detached->Contains(touch_event_handler_))
+    touch_event_handler_ = NULL;
 }
 
 void Desktop::OnLayerAnimationEnded(

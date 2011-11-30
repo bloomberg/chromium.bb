@@ -137,6 +137,28 @@ TEST_F(WindowTest, GetChildById) {
   EXPECT_EQ(w111.get(), w1->GetChildById(111));
 }
 
+// Make sure that Window::Contains correctly handles children, grandchildren,
+// and not containing NULL or parents.
+TEST_F(WindowTest, Contains) {
+  Window parent(NULL);
+  parent.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  Window child1(NULL);
+  child1.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+  Window child2(NULL);
+  child2.Init(ui::Layer::LAYER_HAS_NO_TEXTURE);
+
+  child1.SetParent(&parent);
+  child2.SetParent(&child1);
+
+  EXPECT_TRUE(parent.Contains(&parent));
+  EXPECT_TRUE(parent.Contains(&child1));
+  EXPECT_TRUE(parent.Contains(&child2));
+
+  EXPECT_FALSE(parent.Contains(NULL));
+  EXPECT_FALSE(child1.Contains(&parent));
+  EXPECT_FALSE(child2.Contains(&child1));
+}
+
 TEST_F(WindowTest, ConvertPointToWindow) {
   // Window::ConvertPointToWindow is mostly identical to
   // Layer::ConvertPointToLayer, except NULL values for |source| are permitted,

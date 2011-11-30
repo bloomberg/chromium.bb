@@ -146,6 +146,9 @@ class AURA_EXPORT Window : public ui::LayerDelegate {
 
   const Windows& children() const { return children_; }
 
+  // Returns true if this Window contains |other| somewhere in its children.
+  bool Contains(const Window* other) const;
+
   // Adds or removes |child| as a transient child of this window. Transient
   // children get the following behavior:
   // . The transient parent destroys any transient children when it is

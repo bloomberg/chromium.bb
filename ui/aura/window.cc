@@ -277,6 +277,14 @@ void Window::RemoveChild(Window* child) {
   child->OnParentChanged();
 }
 
+bool Window::Contains(const Window* other) const {
+  for (const Window* parent = other; parent; parent = parent->parent_) {
+    if (parent == this)
+      return true;
+  }
+  return false;
+}
+
 Window* Window::GetChildById(int id) {
   return const_cast<Window*>(const_cast<const Window*>(this)->GetChildById(id));
 }
