@@ -39,19 +39,14 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     return;
 
   if (browser_view_->IsOffTheRecord()) {
-    avatar_button_->SetIcon(
-        gfx::Image(new SkBitmap(browser_view_->GetOTRAvatarIcon())), false);
+    avatar_button_->SetIcon(browser_view_->GetOTRAvatarIcon());
   } else {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
     Profile* profile = browser_view_->browser()->profile();
     size_t index = cache.GetIndexOfProfileWithPath(profile->GetPath());
     if (index != std::string::npos) {
-      bool is_gaia_picture =
-          cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
-          cache.GetGAIAPictureOfProfileAtIndex(index);
-      avatar_button_->SetIcon(
-          cache.GetAvatarIconOfProfileAtIndex(index), is_gaia_picture);
+      avatar_button_->SetIcon(cache.GetAvatarIconOfProfileAtIndex(index));
       avatar_button_->SetText(cache.GetNameOfProfileAtIndex(index));
     }
   }

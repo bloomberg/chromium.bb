@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "grit/generated_resources.h"
@@ -35,6 +34,7 @@ const SkColor kColor = SK_ColorWHITE;
 
 const int kItemHeight = 44;
 const int kItemMarginY = 4;
+const int kIconWidth = 38;
 const int kIconMarginX = 6;
 const int kSeparatorPaddingY = 5;
 
@@ -226,26 +226,17 @@ gfx::Size ProfileItemView::GetPreferredSize() {
   int width = std::max(name_label_->GetPreferredSize().width(),
                        sync_state_label_->GetPreferredSize().width());
   width = std::max(edit_link_->GetPreferredSize().width(), width);
-  return gfx::Size(profiles::kAvatarIconWidth + kIconMarginX + width,
-                   kItemHeight);
+  return gfx::Size(kIconWidth + kIconMarginX + width, kItemHeight);
 }
 
 void ProfileItemView::Layout() {
   // Profile icon.
-  gfx::Rect icon_rect;
-  if (item_.active) {
-    // If this is the active item then the icon is already scaled and so
-    // just use the preferred size.
-    icon_rect.set_size(image_view_->GetPreferredSize());
-    icon_rect.set_y((height() - icon_rect.height()) / 2);
-  } else {
-    const SkBitmap& icon = image_view_->GetImage();
-    icon_rect = GetCenteredAndScaledRect(icon.width(), icon.height(), 0, 0,
-        profiles::kAvatarIconWidth, height());
-  }
+  const SkBitmap& icon = image_view_->GetImage();
+  gfx::Rect icon_rect = GetCenteredAndScaledRect(
+      icon.width(), icon.height(), 0, 0, kIconWidth, height());
   image_view_->SetBoundsRect(icon_rect);
 
-  int label_x = profiles::kAvatarIconWidth + kIconMarginX;
+  int label_x = icon_rect.right() + kIconMarginX;
   int max_label_width = std::max(width() - label_x, 0);
   gfx::Size name_size = name_label_->GetPreferredSize();
   name_size.set_width(std::min(name_size.width(), max_label_width));
@@ -306,8 +297,8 @@ void ProfileItemView::OnFocusStateChanged(bool has_focus) {
 
 // static
 SkBitmap ProfileItemView::GetBadgedIcon(const SkBitmap& icon) {
-  gfx::Rect icon_rect = GetCenteredAndScaledRect(icon.width(), icon.height(),
-      0, 0, profiles::kAvatarIconWidth, kItemHeight);
+  gfx::Rect icon_rect = GetCenteredAndScaledRect(
+      icon.width(), icon.height(), 0, 0, kIconWidth, kItemHeight);
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   SkBitmap badge = rb.GetImageNamed(IDR_PROFILE_SELECTED);
@@ -370,7 +361,7 @@ gfx::Size AvatarMenuBubbleView::GetPreferredSize() {
 
   gfx::Size add_profile_size = add_profile_link_->GetPreferredSize();
   max_width = std::max(max_width,
-      add_profile_size.width() + profiles::kAvatarIconWidth + kIconMarginX);
+                       add_profile_size.width() +  kIconWidth + kIconMarginX);
   total_height += add_profile_link_->GetPreferredSize().height();
 
   const int kBubbleViewMaxWidth = 800;
@@ -395,8 +386,8 @@ void AvatarMenuBubbleView::Layout() {
   separator_->SetBounds(0, y, width(), separator_height);
   y += kSeparatorPaddingY + separator_height;
 
-  add_profile_link_->SetBounds(profiles::kAvatarIconWidth + kIconMarginX, y,
-      width(), add_profile_link_->GetPreferredSize().height());
+  add_profile_link_->SetBounds(kIconWidth + kIconMarginX, y, width(),
+                               add_profile_link_->GetPreferredSize().height());
 }
 
 bool AvatarMenuBubbleView::AcceleratorPressed(
