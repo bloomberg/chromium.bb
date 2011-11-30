@@ -7,46 +7,46 @@
 #pragma once
 
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "ui/gfx/gl/gl_bindings.h"
+
+namespace gfx {
+class GLContext;
+class GLSurface;
+}
 
 namespace ui {
 
 // WebGraphicsContext3D that does nothing. Suitable for testing.
 class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
  public:
-  TestWebGraphicsContext3D() {};
-  virtual ~TestWebGraphicsContext3D() {}
+  TestWebGraphicsContext3D();
+  virtual ~TestWebGraphicsContext3D();
 
   virtual bool initialize(Attributes attributes,
                           WebKit::WebView* view,
-                          bool render_directly_to_web_view) {
-    return false;
-  }
-  virtual bool makeContextCurrent() { return true; }
-  virtual int width() { return 0; }
-  virtual int height() { return 0; }
+                          bool render_directly_to_web_view);
+  virtual bool makeContextCurrent();
+  virtual int width();
+  virtual int height();
   virtual void reshape(int width, int height) {}
-  virtual bool isGLES2Compliant() { return false; }
+  virtual bool isGLES2Compliant();
   virtual bool readBackFramebuffer(unsigned char* pixels,
                                    size_t bufferSize,
                                    WebKit::WebGLId framebuffer,
                                    int width,
-                                   int height) {
-    return false;
-  }
-  virtual WebKit::WebGLId getPlatformTextureId() { return 0; }
+                                   int height);
+  virtual WebKit::WebGLId getPlatformTextureId();
   virtual void prepareTexture() {}
   virtual void postSubBufferCHROMIUM(int x, int y, int width, int height) {}
   virtual void synthesizeGLError(WebKit::WGC3Denum value) {}
-  virtual bool isContextLost() { return false; }
+  virtual bool isContextLost();
   virtual void* mapBufferSubDataCHROMIUM(WebKit::WGC3Denum target,
                                          WebKit::WGC3Dintptr offset,
                                          WebKit::WGC3Dsizeiptr size,
-                                         WebKit::WGC3Denum access) {
-    return 0;
-  }
+                                         WebKit::WGC3Denum access);
   virtual void unmapBufferSubDataCHROMIUM(const void* data) {}
   virtual void* mapTexSubImage2DCHROMIUM(WebKit::WGC3Denum target,
                                          WebKit::WGC3Dint level,
@@ -56,14 +56,10 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
                                          WebKit::WGC3Dsizei height,
                                          WebKit::WGC3Denum format,
                                          WebKit::WGC3Denum type,
-                                         WebKit::WGC3Denum access) {
-    return 0;
-  }
+                                         WebKit::WGC3Denum access);
   virtual void unmapTexSubImage2DCHROMIUM(const void* data) {}
   virtual void setVisibilityCHROMIUM(bool visible) {}
-  virtual WebKit::WebString getRequestableExtensionsCHROMIUM() {
-    return WebKit::WebString();
-  }
+  virtual WebKit::WebString getRequestableExtensionsCHROMIUM();
   virtual void requestExtensionCHROMIUM(const char*) {}
   virtual void blitFramebufferCHROMIUM(WebKit::WGC3Dint src_x0,
                                        WebKit::WGC3Dint src_y0,
@@ -113,9 +109,7 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
                              WebKit::WGC3Dintptr offset,
                              WebKit::WGC3Dsizeiptr size,
                              const void* data) {}
-  virtual WebKit::WGC3Denum checkFramebufferStatus(WebKit::WGC3Denum target) {
-    return GL_FRAMEBUFFER_COMPLETE;
-  }
+  virtual WebKit::WGC3Denum checkFramebufferStatus(WebKit::WGC3Denum target);
   virtual void clear(WebKit::WGC3Dbitfield mask) {}
   virtual void clearColor(WebKit::WGC3Dclampf red,
                           WebKit::WGC3Dclampf green,
@@ -175,65 +169,42 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   virtual void generateMipmap(WebKit::WGC3Denum target) {}
   virtual bool getActiveAttrib(WebKit::WebGLId program,
                                WebKit::WGC3Duint index,
-                               ActiveInfo& info) {
-    return false;
-  }
+                               ActiveInfo& info);
   virtual bool getActiveUniform(WebKit::WebGLId program,
                                 WebKit::WGC3Duint index,
-                                ActiveInfo& info) {
-    return false;
-  }
+                                ActiveInfo& info);
   virtual void getAttachedShaders(WebKit::WebGLId program,
                                   WebKit::WGC3Dsizei maxCount,
                                   WebKit::WGC3Dsizei* count,
                                   WebKit::WebGLId* shaders) {}
   virtual WebKit::WGC3Dint getAttribLocation(WebKit::WebGLId program,
-                                             const WebKit::WGC3Dchar* name) {
-    return 0;
-  }
+                                             const WebKit::WGC3Dchar* name);
   virtual void getBooleanv(WebKit::WGC3Denum pname,
                            WebKit::WGC3Dboolean* value) {}
   virtual void getBufferParameteriv(WebKit::WGC3Denum target,
                                     WebKit::WGC3Denum pname,
                                     WebKit::WGC3Dint* value) {}
-  virtual Attributes getContextAttributes() { return Attributes(); }
-  virtual WebKit::WGC3Denum getError() { return 0; }
+  virtual Attributes getContextAttributes();
+  virtual WebKit::WGC3Denum getError();
   virtual void getFloatv(WebKit::WGC3Denum pname, WebKit::WGC3Dfloat* value) {}
   virtual void getFramebufferAttachmentParameteriv(WebKit::WGC3Denum target,
                                                    WebKit::WGC3Denum attachment,
                                                    WebKit::WGC3Denum pname,
                                                    WebKit::WGC3Dint* value) {}
-  virtual void getIntegerv(WebKit::WGC3Denum pname, WebKit::WGC3Dint* value) {
-    if (pname == GL_MAX_TEXTURE_SIZE)
-      *value = 1024;
-  }
+  virtual void getIntegerv(WebKit::WGC3Denum pname, WebKit::WGC3Dint* value);
   virtual void getProgramiv(WebKit::WebGLId program,
                             WebKit::WGC3Denum pname,
-                            WebKit::WGC3Dint* value) {
-    if (pname == GL_LINK_STATUS)
-      *value = 1;
-  }
-  virtual WebKit::WebString getProgramInfoLog(WebKit::WebGLId program) {
-    return WebKit::WebString();
-  }
+                            WebKit::WGC3Dint* value);
+  virtual WebKit::WebString getProgramInfoLog(WebKit::WebGLId program);
   virtual void getRenderbufferParameteriv(WebKit::WGC3Denum target,
                                           WebKit::WGC3Denum pname,
                                           WebKit::WGC3Dint* value) {}
   virtual void getShaderiv(WebKit::WebGLId shader,
                            WebKit::WGC3Denum pname,
-                           WebKit::WGC3Dint* value) {
-    if (pname == GL_COMPILE_STATUS)
-      *value = 1;
-  }
-  virtual WebKit::WebString getShaderInfoLog(WebKit::WebGLId shader) {
-    return WebKit::WebString();
-  }
-  virtual WebKit::WebString getShaderSource(WebKit::WebGLId shader) {
-    return WebKit::WebString();
-  }
-  virtual WebKit::WebString getString(WebKit::WGC3Denum name) {
-    return WebKit::WebString();
-  }
+                           WebKit::WGC3Dint* value);
+  virtual WebKit::WebString getShaderInfoLog(WebKit::WebGLId shader);
+  virtual WebKit::WebString getShaderSource(WebKit::WebGLId shader);
+  virtual WebKit::WebString getString(WebKit::WGC3Denum name);
   virtual void getTexParameterfv(WebKit::WGC3Denum target,
                                  WebKit::WGC3Denum pname,
                                  WebKit::WGC3Dfloat* value) {}
@@ -247,9 +218,7 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
                             WebKit::WGC3Dint location,
                             WebKit::WGC3Dint* value) {}
   virtual WebKit::WGC3Dint getUniformLocation(WebKit::WebGLId program,
-                                              const WebKit::WGC3Dchar* name) {
-    return 0;
-  }
+                                              const WebKit::WGC3Dchar* name);
   virtual void getVertexAttribfv(WebKit::WGC3Duint index,
                                  WebKit::WGC3Denum pname,
                                  WebKit::WGC3Dfloat* value) {}
@@ -257,31 +226,15 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
                                  WebKit::WGC3Denum pname,
                                  WebKit::WGC3Dint* value) {}
   virtual WebKit::WGC3Dsizeiptr getVertexAttribOffset(WebKit::WGC3Duint index,
-                                                      WebKit::WGC3Denum pname) {
-    return 0;
-  }
+                                                      WebKit::WGC3Denum pname);
   virtual void hint(WebKit::WGC3Denum target, WebKit::WGC3Denum mode) {}
-  virtual WebKit::WGC3Dboolean isBuffer(WebKit::WebGLId buffer) {
-    return false;
-  }
-  virtual WebKit::WGC3Dboolean isEnabled(WebKit::WGC3Denum cap) {
-    return false;
-  }
-  virtual WebKit::WGC3Dboolean isFramebuffer(WebKit::WebGLId framebuffer) {
-    return false;
-  }
-  virtual WebKit::WGC3Dboolean isProgram(WebKit::WebGLId program) {
-    return false;
-  }
-  virtual WebKit::WGC3Dboolean isRenderbuffer(WebKit::WebGLId renderbuffer) {
-    return false;
-  }
-  virtual WebKit::WGC3Dboolean isShader(WebKit::WebGLId shader) {
-    return false;
-  }
-  virtual WebKit::WGC3Dboolean isTexture(WebKit::WebGLId texture) {
-    return false;
-  }
+  virtual WebKit::WGC3Dboolean isBuffer(WebKit::WebGLId buffer);
+  virtual WebKit::WGC3Dboolean isEnabled(WebKit::WGC3Denum cap);
+  virtual WebKit::WGC3Dboolean isFramebuffer(WebKit::WebGLId framebuffer);
+  virtual WebKit::WGC3Dboolean isProgram(WebKit::WebGLId program);
+  virtual WebKit::WGC3Dboolean isRenderbuffer(WebKit::WebGLId renderbuffer);
+  virtual WebKit::WGC3Dboolean isShader(WebKit::WebGLId shader);
+  virtual WebKit::WGC3Dboolean isTexture(WebKit::WebGLId texture);
   virtual void lineWidth(WebKit::WGC3Dfloat) {}
   virtual void linkProgram(WebKit::WebGLId program) {}
   virtual void pixelStorei(WebKit::WGC3Denum pname, WebKit::WGC3Dint param) {}
@@ -443,20 +396,23 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
                         WebKit::WGC3Dint y,
                         WebKit::WGC3Dsizei width,
                         WebKit::WGC3Dsizei height) {}
-  virtual WebKit::WebGLId createBuffer() { return 1; }
-  virtual WebKit::WebGLId createFramebuffer() { return 1; }
-  virtual WebKit::WebGLId createProgram() { return 1; }
-  virtual WebKit::WebGLId createRenderbuffer() { return 1; }
-  virtual WebKit::WebGLId createShader(WebKit::WGC3Denum value) { return 1; }
-  virtual WebKit::WebGLId createTexture() { return 1; }
-  virtual void deleteBuffer(WebKit::WebGLId id) {}
-  virtual void deleteFramebuffer(WebKit::WebGLId id) {}
-  virtual void deleteProgram(WebKit::WebGLId id) {}
-  virtual void deleteRenderbuffer(WebKit::WebGLId id) {}
-  virtual void deleteShader(WebKit::WebGLId id) {}
-  virtual void deleteTexture(WebKit::WebGLId id) {}
+  virtual WebKit::WebGLId createBuffer();
+  virtual WebKit::WebGLId createFramebuffer();
+  virtual WebKit::WebGLId createProgram();
+  virtual WebKit::WebGLId createRenderbuffer();
+  virtual WebKit::WebGLId createShader(WebKit::WGC3Denum value);
+  virtual WebKit::WebGLId createTexture();
+  virtual void deleteBuffer(WebKit::WebGLId) {}
+  virtual void deleteFramebuffer(WebKit::WebGLId) {}
+  virtual void deleteProgram(WebKit::WebGLId) {}
+  virtual void deleteRenderbuffer(WebKit::WebGLId) {}
+  virtual void deleteShader(WebKit::WebGLId) {}
+  virtual void deleteTexture(WebKit::WebGLId) {}
 
  private:
+  scoped_refptr<gfx::GLContext> gl_context_;
+  scoped_refptr<gfx::GLSurface> gl_surface_;
+
   DISALLOW_COPY_AND_ASSIGN(TestWebGraphicsContext3D);
 };
 
