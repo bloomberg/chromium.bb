@@ -415,7 +415,8 @@ class SessionRestoreImpl : public content::NotificationObserver {
         clobber_existing_tab_(clobber_existing_tab),
         always_create_tabbed_browser_(always_create_tabbed_browser),
         urls_to_open_(urls_to_open),
-        restore_started_(base::TimeTicks::Now()) {
+        restore_started_(base::TimeTicks::Now()),
+        browser_shown_(false) {
     // When asynchronous its possible for there to be no windows. To make sure
     // Chrome doesn't prematurely exit AddRef the process. We'll release in the
     // destructor when restore is done.
@@ -559,6 +560,14 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   void OnGotSession(SessionService::Handle handle,
                     std::vector<SessionWindow*>* windows) {
+    base::TimeDelta time_to_got_sessions =
+        base::TimeTicks::Now() - restore_started_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "SessionRestore.TimeToGotSessions",
+        time_to_got_sessions,
+        base::TimeDelta::FromMilliseconds(10),
+        base::TimeDelta::FromSeconds(1000),
+        100);
 #if defined(OS_CHROMEOS)
     chromeos::BootTimesLoader::Get()->AddLoginTimeMarker(
         "SessionRestore-GotSession", false);
@@ -574,6 +583,15 @@ class SessionRestoreImpl : public content::NotificationObserver {
   }
 
   Browser* ProcessSessionWindows(std::vector<SessionWindow*>* windows) {
+    base::TimeDelta time_to_process_sessions =
+        base::TimeTicks::Now() - restore_started_;
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "SessionRestore.TimeToProcessSessions",
+        time_to_process_sessions,
+        base::TimeDelta::FromMilliseconds(10),
+        base::TimeDelta::FromSeconds(1000),
+        100);
+
     if (windows->empty()) {
       // Restore was unsuccessful.
       return FinishedTabCreation(false, false);
@@ -744,6 +762,18 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // TODO(jcampan): http://crbug.com/8123 we should not need to set the
     //                initial focus explicitly.
     browser->GetSelectedTabContents()->view()->SetInitialFocus();
+
+    if (!browser_shown_) {
+      browser_shown_ = true;
+      base::TimeDelta time_to_first_show =
+          base::TimeTicks::Now() - restore_started_;
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "SessionRestore.TimeToFirstShow",
+          time_to_first_show,
+          base::TimeDelta::FromMilliseconds(10),
+          base::TimeDelta::FromSeconds(1000),
+          100);
+    }
   }
 
   // Appends the urls in |urls| to |browser|.
@@ -809,6 +839,11 @@ class SessionRestoreImpl : public content::NotificationObserver {
 
   // The time we started the restore.
   base::TimeTicks restore_started_;
+
+  // Set to true after the first browser is shown.
+  bool browser_shown_;
+
+  DISALLOW_COPY_AND_ASSIGN(SessionRestoreImpl);
 };
 
 }  // namespace
