@@ -91,7 +91,6 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type)
       can_compose_inline_(true),
       popup_type_(popup_type),
       pending_window_rect_count_(0),
-      suppress_next_char_events_(false),
       is_accelerated_compositing_active_(false),
       animation_update_pending_(false),
       animation_task_posted_(false),
@@ -446,11 +445,6 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   const WebInputEvent* input_event =
       reinterpret_cast<const WebInputEvent*>(data);
 
-  bool is_keyboard_shortcut = false;
-  // is_keyboard_shortcut flag is only available for RawKeyDown events.
-  if (input_event->type == WebInputEvent::RawKeyDown)
-    message.ReadBool(&iter, &is_keyboard_shortcut);
-
   bool prevent_default = false;
   if (WebInputEvent::isMouseEventType(input_event->type)) {
     prevent_default = WillHandleMouseEvent(
@@ -458,17 +452,8 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   }
 
   bool processed = prevent_default;
-  if (input_event->type != WebInputEvent::Char || !suppress_next_char_events_) {
-    suppress_next_char_events_ = false;
-    if (!processed && webwidget_)
-      processed = webwidget_->handleInputEvent(*input_event);
-  }
-
-  // If this RawKeyDown event corresponds to a browser keyboard shortcut and
-  // it's not processed by webkit, then we need to suppress the upcoming Char
-  // events.
-  if (!processed && is_keyboard_shortcut)
-    suppress_next_char_events_ = true;
+  if (!processed && webwidget_)
+    processed = webwidget_->handleInputEvent(*input_event);
 
   IPC::Message* response =
       new ViewHostMsg_HandleInputEvent_ACK(routing_id_, input_event->type,
