@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/xkeyboard.h"
+#include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -17,6 +18,61 @@
 #include <X11/Xlib.h>  // should be here since it #defines lots of macros.
 
 namespace chromeos {
+namespace {
+
+static const char* active_input_methods[] = {
+  "xkb:us::eng",  // The first one should be US Qwerty.
+  "xkb:us:dvorak:eng",
+  "xkb:kr:kr104:kor",  // for testing XK_space with ShiftMask.
+  // TODO(yusukes): Add "mozc-jp", "xkb:jp::jpn", and "mozc-hangul" to test
+  // more IME hot keys once build bots start supporting ibus-daemon.
+};
+
+class CapsLockObserver : public SystemKeyEventListener::CapsLockObserver {
+ public:
+  CapsLockObserver() {
+  }
+
+ private:
+  virtual void OnCapsLockChange(bool enabled) OVERRIDE {
+    MessageLoopForUI::current()->Quit();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(CapsLockObserver);
+};
+
+class InputMethodObserver : public input_method::InputMethodManager::Observer {
+ public:
+  InputMethodObserver() {
+  }
+
+  const std::string& current_input_method_id() const {
+    return current_input_method_id_;
+  }
+
+ private:
+  virtual void InputMethodChanged(
+      input_method::InputMethodManager* manager,
+      const input_method::InputMethodDescriptor& current_input_method,
+      size_t num_active_input_methods) OVERRIDE {
+    current_input_method_id_ = current_input_method.id();
+  }
+  virtual void ActiveInputMethodsChanged(
+      input_method::InputMethodManager* manager,
+      const input_method::InputMethodDescriptor& current_input_method,
+      size_t num_active_input_methods) OVERRIDE {
+  }
+  virtual void PropertyListChanged(
+      input_method::InputMethodManager* manager,
+      const input_method::ImePropertyList& current_ime_properties) OVERRIDE {
+  }
+
+  std::string current_input_method_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputMethodObserver);
+};
+
+}  // namespace
 
 class SystemKeyEventListenerTest : public InProcessBrowserTest {
  public:
@@ -29,21 +85,9 @@ class SystemKeyEventListenerTest : public InProcessBrowserTest {
   }
 
  protected:
-  class CapsLockObserver : public SystemKeyEventListener::CapsLockObserver {
-   public:
-    CapsLockObserver() {
-    }
-
-   private:
-    virtual void OnCapsLockChange(bool enabled) {
-      MessageLoopForUI::current()->Quit();
-    }
-
-    DISALLOW_COPY_AND_ASSIGN(CapsLockObserver);
-  };
-
   // Start listening for X events.
   virtual void SetUpOnMainThread() OVERRIDE {
+    ActivateInputMethods();
     SystemKeyEventListener::Initialize();
     listener_ = SystemKeyEventListener::GetInstance();
   }
@@ -52,6 +96,7 @@ class SystemKeyEventListenerTest : public InProcessBrowserTest {
   virtual void CleanUpOnMainThread() OVERRIDE {
     SystemKeyEventListener::Shutdown();
     listener_ = NULL;
+    DeactivateInputMethods();
     MessageLoopForUI::current()->RunAllPending();
   }
 
@@ -65,11 +110,34 @@ class SystemKeyEventListenerTest : public InProcessBrowserTest {
     return listener_->ProcessedXEvent(event.get());
   }
 
+  // Enables input methods in active_input_methods[].
+  void ActivateInputMethods() {
+    input_method::ImeConfigValue value;
+    value.type = input_method::ImeConfigValue::kValueTypeStringList;
+    for (size_t i = 0; i < arraysize(active_input_methods); ++i)
+      value.string_list_value.push_back(active_input_methods[i]);
+    manager_->SetImeConfig(language_prefs::kGeneralSectionName,
+                           language_prefs::kPreloadEnginesConfigName,
+                           value);
+  }
+
+  // Disables all input methods except US Qwerty.
+  void DeactivateInputMethods() {
+    input_method::ImeConfigValue value;
+    value.type = input_method::ImeConfigValue::kValueTypeStringList;
+    value.string_list_value.push_back(active_input_methods[0]);  // Qwerty
+    manager_->SetImeConfig(language_prefs::kGeneralSectionName,
+                           language_prefs::kPreloadEnginesConfigName,
+                           value);
+  }
+
   input_method::InputMethodManager* manager_;
   const bool initial_caps_lock_state_;
   const unsigned int num_lock_mask_;
   SystemKeyEventListener* listener_;
-  CapsLockObserver observer_;
+
+  CapsLockObserver caps_lock_observer_;
+  InputMethodObserver input_method_observer_;
 
  private:
   XEvent* SynthesizeKeyEvent(KeySym keysym, int modifiers, bool is_press) {
@@ -103,7 +171,7 @@ class SystemKeyEventListenerTest : public InProcessBrowserTest {
 // Tests if the current Caps Lock status is toggled and OnCapsLockChange method
 // is called when both Shift keys are pressed.
 IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLock) {
-  listener_->AddCapsLockObserver(&observer_);
+  listener_->AddCapsLockObserver(&caps_lock_observer_);
 
   // Press both Shift keys. Note that ProcessedXEvent() returns false even when
   // the second Shift key is pressed.
@@ -143,14 +211,14 @@ IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLock) {
       initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
 
   // Restore the original state.
-  listener_->RemoveCapsLockObserver(&observer_);
+  listener_->RemoveCapsLockObserver(&caps_lock_observer_);
   manager_->GetXKeyboard()->SetCapsLockEnabled(initial_caps_lock_state_);
 }
 
 // Tests the same above, but with Num Lock. Pressing both Shift keys should
 // toggle Caps Lock even when Num Lock is enabled. See crosbug.com/23067.
 IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLockWithNumLock) {
-  listener_->AddCapsLockObserver(&observer_);
+  listener_->AddCapsLockObserver(&caps_lock_observer_);
 
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, num_lock_mask_, true));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | num_lock_mask_, true));
@@ -184,14 +252,14 @@ IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLockWithNumLock) {
   EXPECT_EQ(
       initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
 
-  listener_->RemoveCapsLockObserver(&observer_);
+  listener_->RemoveCapsLockObserver(&caps_lock_observer_);
   manager_->GetXKeyboard()->SetCapsLockEnabled(initial_caps_lock_state_);
 }
 
-// Test pressing Shift_L+R with an another modifier like Control. Caps Lock
+// Tests pressing Shift_L+R with an another modifier like Control. Caps Lock
 // status should not be changed this time.
 IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLockWithControl) {
-  listener_->AddCapsLockObserver(&observer_);
+  listener_->AddCapsLockObserver(&caps_lock_observer_);
 
   EXPECT_FALSE(SendFakeEvent(XK_Shift_L, ControlMask, true));
   EXPECT_FALSE(SendFakeEvent(XK_Shift_R, ShiftMask | ControlMask, true));
@@ -200,10 +268,84 @@ IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestCapsLockWithControl) {
   EXPECT_EQ(
       initial_caps_lock_state_, manager_->GetXKeyboard()->CapsLockIsEnabled());
 
-  listener_->RemoveCapsLockObserver(&observer_);
+  listener_->RemoveCapsLockObserver(&caps_lock_observer_);
   manager_->GetXKeyboard()->SetCapsLockEnabled(initial_caps_lock_state_);
 }
 
-// TODO(yusukes): Test IME hot keys.
+// Tests IME hot keys.
+IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestInputMethod) {
+  manager_->AddObserver(&input_method_observer_);
+
+  // Press Shift+Alt to select the second IME.
+  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, 0, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Meta_L, ShiftMask, true));
+  EXPECT_TRUE(SendFakeEvent(XK_Meta_L, ShiftMask | Mod1Mask, false));
+  EXPECT_TRUE(SendFakeEvent(XK_Shift_L, ShiftMask, false));
+  // Do not call ui_test_utils::RunMessageLoop() here since the observer gets
+  // notified before returning from the SendFakeEvent call.
+  EXPECT_TRUE(input_method_observer_.current_input_method_id() ==
+              active_input_methods[1]);
+
+  // Press Control+space to move back to the previous one.
+  EXPECT_FALSE(SendFakeEvent(XK_Control_L, 0, true));
+  EXPECT_TRUE(SendFakeEvent(XK_space, ControlMask, true));
+  EXPECT_TRUE(SendFakeEvent(XK_space, ControlMask, false));
+  EXPECT_TRUE(SendFakeEvent(XK_Control_L, ControlMask, false));
+  EXPECT_TRUE(input_method_observer_.current_input_method_id() ==
+              active_input_methods[0]);
+
+  manager_->RemoveObserver(&input_method_observer_);
+}
+
+// Tests IME hot keys with Num Lock. See crosbug.com/23067.
+IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestInputMethodWithNumLock) {
+  manager_->AddObserver(&input_method_observer_);
+
+  EXPECT_FALSE(SendFakeEvent(XK_Shift_L, num_lock_mask_, true));
+  EXPECT_FALSE(SendFakeEvent(XK_Meta_L, ShiftMask | num_lock_mask_, true));
+  EXPECT_TRUE(
+      SendFakeEvent(XK_Meta_L, ShiftMask | Mod1Mask | num_lock_mask_, false));
+  EXPECT_TRUE(SendFakeEvent(XK_Shift_L, ShiftMask | num_lock_mask_, false));
+  EXPECT_TRUE(input_method_observer_.current_input_method_id() ==
+              active_input_methods[1]);
+
+  EXPECT_FALSE(SendFakeEvent(XK_Control_L, num_lock_mask_, true));
+  EXPECT_TRUE(SendFakeEvent(XK_space, ControlMask | num_lock_mask_, true));
+  EXPECT_TRUE(SendFakeEvent(XK_space, ControlMask | num_lock_mask_, false));
+  EXPECT_TRUE(SendFakeEvent(XK_Control_L, ControlMask | num_lock_mask_, false));
+  EXPECT_TRUE(input_method_observer_.current_input_method_id() ==
+              active_input_methods[0]);
+
+  manager_->RemoveObserver(&input_method_observer_);
+}
+
+// Tests if Shift+space selects the Korean layout.
+IN_PROC_BROWSER_TEST_F(SystemKeyEventListenerTest, TestKoreanInputMethod) {
+  manager_->AddObserver(&input_method_observer_);
+
+  // Press Shift+space
+  EXPECT_FALSE(SendFakeEvent(XK_Shift_R, 0, true));
+  EXPECT_TRUE(SendFakeEvent(XK_space, ShiftMask, true));
+  EXPECT_TRUE(SendFakeEvent(XK_space, ShiftMask, false));
+  EXPECT_TRUE(SendFakeEvent(XK_Shift_R, ShiftMask, false));
+  EXPECT_TRUE(input_method_observer_.current_input_method_id() ==
+              active_input_methods[2]);
+
+  // Press Control+space.
+  EXPECT_FALSE(SendFakeEvent(XK_Control_L, 0, true));
+  EXPECT_TRUE(SendFakeEvent(XK_space, ControlMask, true));
+  EXPECT_TRUE(SendFakeEvent(XK_space, ControlMask, false));
+  EXPECT_TRUE(SendFakeEvent(XK_Control_L, ControlMask, false));
+  EXPECT_TRUE(input_method_observer_.current_input_method_id() ==
+              active_input_methods[0]);
+
+  // TODO(yusukes): Add tests for input method specific hot keys like XK_Henkan,
+  // XK_Muhenkan, XK_ZenkakuHankaku, and XK_Hangul. This is not so easy since 1)
+  // we have to enable "mozc-jp" and "mozc-hangul" that require ibus-daemon, and
+  // 2) to let XKeysymToKeycode() handle e.g. XK_Henkan etc, we have to change
+  // the XKB layout to "jp" first.
+
+  manager_->RemoveObserver(&input_method_observer_);
+}
 
 }  // namespace chromeos
