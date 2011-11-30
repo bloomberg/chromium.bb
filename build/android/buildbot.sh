@@ -51,6 +51,19 @@ android_gyp
 echo "@@@BUILD_STEP Compile@@@"
 make -j4
 
+# Linking DumpRenderTree appears to hang forever?
+# EXPERIMENTAL_TARGETS="DumpRenderTree webkit_unit_tests"
+EXPERIMENTAL_TARGETS="webkit_unit_tests"
+for target in ${EXPERIMENTAL_TARGETS} ; do
+  echo "@@@BUILD_STEP Experimental Compile $target @@@"
+  set +e
+  make -j4 "${target}"
+  set -e
+  if [ $? -ne 0 ] ; then
+    echo "@@@STEP_WARNINGS@@@"
+  fi
+done
+
 echo "@@@BUILD_STEP Run Tests@@@"
 build/android/run_tests.py -e --xvfb
 
