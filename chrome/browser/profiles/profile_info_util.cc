@@ -35,6 +35,24 @@ gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
   return gfx::Image(new SkBitmap(canvas.ExtractBitmap()));
 }
 
+gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
+                                 bool is_gaia_picture) {
+  if (!is_gaia_picture)
+    return image;
+
+  int length = std::min(kAvatarIconWidth, kAvatarIconHeight) - 2;
+  SkBitmap bmp = skia::ImageOperations::Resize(
+      image, skia::ImageOperations::RESIZE_BEST, length, length);
+  gfx::CanvasSkia canvas(kAvatarIconWidth, kAvatarIconHeight, false);
+
+  // Draw the icon centered on the canvas.
+  int x = (kAvatarIconWidth - length) / 2;
+  int y = (kAvatarIconHeight - length) / 2;
+  canvas.DrawBitmapInt(bmp, x, y);
+
+  return gfx::Image(new SkBitmap(canvas.ExtractBitmap()));
+}
+
 gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,
                                     bool is_gaia_picture,
                                     int dst_width,

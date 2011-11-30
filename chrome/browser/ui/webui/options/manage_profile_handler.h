@@ -66,6 +66,16 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   //   };
   void RequestProfileInfo(const base::ListValue* args);
 
+  // Callback for the 'profileIconSelectionChanged' message. Used to update the
+  // name in the manager profile dialog based on the selected icon.
+  void ProfileIconSelectionChanged(const base::ListValue* args);
+
+  // Send all profile icons to the overlay.
+  void SendProfileIcons();
+
+  // URL for the current profile's GAIA picture.
+  std::string gaia_picture_url_;
+
   DISALLOW_COPY_AND_ASSIGN(ManageProfileHandler);
 };
 

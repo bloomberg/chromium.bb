@@ -11,9 +11,12 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/gaia_info_update_service.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/notification_service.h"
@@ -62,20 +65,46 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("requestProfileInfo",
       base::Bind(&ManageProfileHandler::RequestProfileInfo,
                  base::Unretained(this)));
+  web_ui_->RegisterMessageCallback("profileIconSelectionChanged",
+      base::Bind(&ManageProfileHandler::ProfileIconSelectionChanged,
+                 base::Unretained(this)));
 }
 
 void ManageProfileHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED)
+  if (type == chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED) {
     SendProfileNames();
-  else
+    SendProfileIcons();
+  } else {
     OptionsPageUIHandler::Observe(type, source, details);
+  }
 }
 
 void ManageProfileHandler::RequestDefaultProfileIcons(const ListValue* args) {
+  SendProfileIcons();
+}
+
+void ManageProfileHandler::SendProfileIcons() {
   ListValue image_url_list;
+
+  // First add the GAIA picture if it's available.
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  Profile* profile = Profile::FromWebUI(web_ui_);
+  size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
+  if (profile_index != std::string::npos) {
+    const gfx::Image* icon =
+        cache.GetGAIAPictureOfProfileAtIndex(profile_index);
+    if (icon) {
+      gfx::Image icon2 = profiles::GetAvatarIconForWebUI(*icon, true);
+      gaia_picture_url_ = web_ui_util::GetImageDataUrl(icon2);
+      image_url_list.Append(Value::CreateStringValue(gaia_picture_url_));
+    }
+  }
+
+  // Next add the default avatar icons.
   for (size_t i = 0; i < ProfileInfoCache::GetDefaultAvatarIconCount(); i++) {
     std::string url = ProfileInfoCache::GetDefaultAvatarIconUrl(i);
     image_url_list.Append(Value::CreateStringValue(url));
@@ -117,21 +146,42 @@ void ManageProfileHandler::SetProfileNameAndIcon(const ListValue* args) {
   if (!args->GetString(1, &new_profile_name))
     return;
 
-  cache.SetNameOfProfileAtIndex(profile_index, new_profile_name);
-  // The index in the cache may have changed if a new name triggered an
-  // alphabetical resort.
-  profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
-  if (profile_index == std::string::npos)
+  if (new_profile_name == cache.GetGAIANameOfProfileAtIndex(profile_index)) {
+    // Set the profile to use the GAIA name as the profile name. Note, this
+    // is a little weird if the user typed their GAIA name manually but
+    // it's not a big deal.
+    cache.SetIsUsingGAIANameOfProfileAtIndex(profile_index, true);
+    // Using the GAIA name as the profile name can invalidate the profile index.
+    profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
+    if (profile_index == std::string::npos)
+      return;
+  } else {
+    cache.SetNameOfProfileAtIndex(profile_index, new_profile_name);
+    // Changing the profile name can invalidate the profile index.
+    profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
+    if (profile_index == std::string::npos)
+      return;
+
+    cache.SetIsUsingGAIANameOfProfileAtIndex(profile_index, false);
+    // Unsetting the GAIA name as the profile name can invalidate the profile
+    // index.
+    profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);
+    if (profile_index == std::string::npos)
+      return;
+  }
+
+  std::string icon_url;
+  if (!args->GetString(2, &icon_url))
     return;
 
-  string16 icon_url;
   size_t new_icon_index;
-  if (!args->GetString(2, &icon_url) ||
-      !cache.IsDefaultAvatarIconUrl(UTF16ToUTF8(icon_url), &new_icon_index))
-    return;
-
-  ProfileMetrics::LogProfileAvatarSelection(new_icon_index);
-  cache.SetAvatarIconOfProfileAtIndex(profile_index, new_icon_index);
+  if (icon_url == gaia_picture_url_) {
+    cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, true);
+  } else if (cache.IsDefaultAvatarIconUrl(icon_url, &new_icon_index)) {
+    ProfileMetrics::LogProfileAvatarSelection(new_icon_index);
+    cache.SetAvatarIconOfProfileAtIndex(profile_index, new_icon_index);
+    cache.SetIsUsingGAIAPictureOfProfileAtIndex(profile_index, false);
+  }
 
   ProfileMetrics::LogProfileUpdate(profile_file_path);
 }
@@ -154,32 +204,87 @@ void ManageProfileHandler::DeleteProfile(const ListValue* args) {
 void ManageProfileHandler::RequestProfileInfo(const ListValue* args) {
   DCHECK(args);
 
-  DictionaryValue profile_value;
-
   Value* index_value;
   double index_double;
   if (!args->Get(0, &index_value) || !index_value->GetAsDouble(&index_double))
     return;
 
   int index = static_cast<int>(index_double);
-
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   int profile_count = cache.GetNumberOfProfiles();
   if (index < 0 && index >= profile_count)
     return;
 
-  FilePath current_profile_path =
-      web_ui_->tab_contents()->browser_context()->GetPath();
-  size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(index);
   FilePath profile_path = cache.GetPathOfProfileAtIndex(index);
+  FilePath current_profile_path = Profile::FromWebUI(web_ui_)->GetPath();
+  bool is_current_profile =
+      profile_path == Profile::FromWebUI(web_ui_)->GetPath();
+
+  DictionaryValue profile_value;
   profile_value.SetString("name", cache.GetNameOfProfileAtIndex(index));
-  profile_value.SetString("iconURL",
-                           cache.GetDefaultAvatarIconUrl(icon_index));
   profile_value.Set("filePath", base::CreateFilePathValue(profile_path));
-  profile_value.SetBoolean("isCurrentProfile",
-                            profile_path == current_profile_path);
+  profile_value.SetBoolean("isCurrentProfile", is_current_profile);
+
+  bool is_gaia_picture =
+      cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
+      cache.GetGAIAPictureOfProfileAtIndex(index);
+  if (is_gaia_picture) {
+    gfx::Image icon = profiles::GetAvatarIconForWebUI(
+        cache.GetAvatarIconOfProfileAtIndex(index), true);
+    profile_value.SetString("iconURL", web_ui_util::GetImageDataUrl(icon));
+  } else {
+    size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(index);
+    profile_value.SetString("iconURL",
+                             cache.GetDefaultAvatarIconUrl(icon_index));
+  }
 
   web_ui_->CallJavascriptFunction("ManageProfileOverlay.setProfileInfo",
                                   profile_value);
+
+  // Ensure that we have the most up to date GAIA picture.
+  if (is_current_profile) {
+    GAIAInfoUpdateService* service =
+        Profile::FromWebUI(web_ui_)->GetGAIAInfoUpdateService();
+    if (service)
+      service->Update();
+  }
+}
+
+void ManageProfileHandler::ProfileIconSelectionChanged(
+    const base::ListValue* args) {
+  DCHECK(args);
+
+  Value* file_path_value;
+  FilePath file_path;
+  if (!args->Get(0, &file_path_value) ||
+      !base::GetValueAsFilePath(*file_path_value, &file_path)) {
+    return;
+  }
+
+  // Currently this only supports editing the current profile's info.
+  if (file_path != Profile::FromWebUI(web_ui_)->GetPath())
+    return;
+
+  std::string icon_url;
+  if (!args->GetString(1, &icon_url))
+    return;
+
+  if (icon_url != gaia_picture_url_)
+    return;
+
+  // If the selection is the GAIA picture then also show the GAIA name in the
+  // text field.
+  ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t i = cache.GetIndexOfProfileWithPath(file_path);
+  if (i == std::string::npos)
+    return;
+  string16 gaia_name = cache.GetGAIANameOfProfileAtIndex(i);
+  if (gaia_name.empty())
+    return;
+
+  StringValue gaia_name_value(gaia_name);
+  web_ui_->CallJavascriptFunction("ManageProfileOverlay.setProfileName",
+                                  gaia_name_value);
 }

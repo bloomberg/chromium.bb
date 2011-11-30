@@ -17,6 +17,10 @@ extern const int kAvatarIconHeight;
 gfx::Image GetAvatarIconForMenu(const gfx::Image& image,
                                 bool is_gaia_picture);
 
+// Returns a version of |image| suitable for use in WebUI.
+gfx::Image GetAvatarIconForWebUI(const gfx::Image& image,
+                                 bool is_gaia_picture);
+
 // Returns a version of |image| suitable for use in title bars. The returned
 // image is scaled to fit |dst_width| and |dst_height|.
 gfx::Image GetAvatarIconForTitleBar(const gfx::Image& image,

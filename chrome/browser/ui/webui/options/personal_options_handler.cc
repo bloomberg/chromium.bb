@@ -20,12 +20,14 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/webui/web_ui_util.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -408,14 +410,25 @@ void PersonalOptionsHandler::SendProfilesInfo() {
       web_ui_->tab_contents()->browser_context()->GetPath();
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
     DictionaryValue* profile_value = new DictionaryValue();
-    size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(i);
     FilePath profile_path = cache.GetPathOfProfileAtIndex(i);
     profile_value->SetString("name", cache.GetNameOfProfileAtIndex(i));
-    profile_value->SetString("iconURL",
-                             cache.GetDefaultAvatarIconUrl(icon_index));
     profile_value->Set("filePath", base::CreateFilePathValue(profile_path));
     profile_value->SetBoolean("isCurrentProfile",
                               profile_path == current_profile_path);
+
+    bool is_gaia_picture =
+        cache.IsUsingGAIAPictureOfProfileAtIndex(i) &&
+        cache.GetGAIAPictureOfProfileAtIndex(i);
+    if (is_gaia_picture) {
+      gfx::Image icon = profiles::GetAvatarIconForWebUI(
+          cache.GetAvatarIconOfProfileAtIndex(i), true);
+      profile_value->SetString("iconURL", web_ui_util::GetImageDataUrl(icon));
+    } else {
+      size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(i);
+      profile_value->SetString("iconURL",
+                               cache.GetDefaultAvatarIconUrl(icon_index));
+    }
+
     profile_info_list.Append(profile_value);
   }
 

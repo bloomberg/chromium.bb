@@ -43,6 +43,9 @@ cr.define('options', function() {
       var self = this;
       var iconGrid = $('manage-profile-icon-grid');
       options.ProfilesIconGrid.decorate(iconGrid);
+      iconGrid.addEventListener('change', function(e) {
+        self.onIconGridSelectionChanged_();
+      });
 
       $('manage-profile-name').oninput = this.onNameChanged_.bind(this);
       $('manage-profile-cancel').onclick =
@@ -91,6 +94,16 @@ cr.define('options', function() {
       this.profileInfo_ = profileInfo;
       $('manage-profile-name').value = profileInfo.name;
       $('manage-profile-icon-grid').selectedItem = profileInfo.iconURL;
+    },
+
+    /**
+     * Sets the name of the currently edited profile.
+     * @private
+     */
+    setProfileName_: function(name) {
+      if (this.profileInfo_)
+        this.profileInfo_.name = name;
+      $('manage-profile-name').value = name;
     },
 
     /**
@@ -179,6 +192,16 @@ cr.define('options', function() {
     },
 
     /**
+     * Called when the selected icon in the icon grid changes.
+     * @private
+     */
+    onIconGridSelectionChanged_: function() {
+      var iconURL = $('manage-profile-icon-grid').selectedItem;
+      chrome.send('profileIconSelectionChanged',
+                  [this.profileInfo_.filePath, iconURL]);
+    },
+
+    /**
      * Display the "Manage Profile" dialog.
      * @param {Object} profileInfo The profile object of the profile to manage.
      * @private
@@ -217,6 +240,7 @@ cr.define('options', function() {
     'receiveDefaultProfileIcons',
     'receiveProfileNames',
     'setProfileInfo',
+    'setProfileName',
     'showManageDialog',
     'showDeleteDialog',
   ].forEach(function(name) {
