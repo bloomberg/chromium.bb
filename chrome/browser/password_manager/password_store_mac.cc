@@ -687,7 +687,10 @@ bool MacKeychainPasswordFormAdapter::ExtractSignonRealmComponents(
     *port = realm_as_url.has_port() ? atoi(realm_as_url.port().c_str()) : 0;
   if (security_domain) {
     // Strip the leading '/' off of the path to get the security domain.
-    *security_domain = realm_as_url.path().substr(1);
+    if (realm_as_url.path().length() > 0)
+      *security_domain = realm_as_url.path().substr(1);
+    else
+      security_domain->clear();
   }
   return true;
 }
