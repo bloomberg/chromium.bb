@@ -840,6 +840,10 @@ Profile* UserManager::GetBrowserProfile() {
   return ProfileManager::GetDefaultProfile();
 }
 
+bool UserManager::ShouldUseOAuthRefreshToken() {
+  return false;
+}
+
 void UserManager::OnDownloadComplete(ProfileDownloader* downloader,
                                      bool success) {
   ProfileDownloadResult result;

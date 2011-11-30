@@ -17,14 +17,17 @@
 #include "content/public/common/url_fetcher_delegate.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "chrome/common/net/gaia/oauth2_access_token_consumer.h"
 
 class ProfileDownloaderDelegate;
+class OAuth2AccessTokenFetcher;
 
 // Downloads user profile information. The profile picture is decoded in a
 // sandboxed process.
 class ProfileDownloader : public content::URLFetcherDelegate,
                           public ImageDecoder::Delegate,
-                          public content::NotificationObserver {
+                          public content::NotificationObserver,
+                          public OAuth2AccessTokenConsumer {
  public:
   explicit ProfileDownloader(ProfileDownloaderDelegate* delegate);
   virtual ~ProfileDownloader();
@@ -57,6 +60,10 @@ class ProfileDownloader : public content::URLFetcherDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // Overriden from OAuth2AccessTokenConsumer:
+  virtual void OnGetTokenSuccess(const std::string& access_token) OVERRIDE;
+  virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
+
   // Parses the entry response from Picasa and gets the nick name and
   // and profile image URL. Returns false to indicate a parsing error.
   bool GetProfileNickNameAndImageURL(const std::string& data,
@@ -69,10 +76,18 @@ class ProfileDownloader : public content::URLFetcherDelegate,
   // Issues the first request to get user profile image.
   void StartFetchingImage();
 
+  // Gets the authorization header.
+  const char* GetAuthorizationHeader() const;
+
+  // Starts fetching OAuth2 access token. This is needed before the GAIA info
+  // can be downloaded.
+  void StartFetchingOAuth2AccessToken();
+
   ProfileDownloaderDelegate* delegate_;
   std::string auth_token_;
   scoped_ptr<content::URLFetcher> user_entry_fetcher_;
   scoped_ptr<content::URLFetcher> profile_image_fetcher_;
+  scoped_ptr<OAuth2AccessTokenFetcher> oauth2_access_token_fetcher_;
   content::NotificationRegistrar registrar_;
   string16 profile_full_name_;
   SkBitmap profile_picture_;

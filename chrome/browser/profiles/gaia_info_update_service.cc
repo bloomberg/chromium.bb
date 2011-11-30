@@ -88,6 +88,10 @@ Profile* GAIAInfoUpdateService::GetBrowserProfile() {
   return profile_;
 }
 
+bool GAIAInfoUpdateService::ShouldUseOAuthRefreshToken() {
+  return true;
+}
+
 void GAIAInfoUpdateService::OnDownloadComplete(ProfileDownloader* downloader,
                                                bool success) {
   // Save the last updated time.

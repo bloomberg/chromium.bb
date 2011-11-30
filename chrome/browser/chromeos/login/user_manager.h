@@ -214,6 +214,7 @@ class UserManager : public ProfileDownloaderDelegate,
   // ProfileDownloaderDelegate implementation.
   virtual int GetDesiredImageSideLength() OVERRIDE;
   virtual Profile* GetBrowserProfile() OVERRIDE;
+  virtual bool ShouldUseOAuthRefreshToken() OVERRIDE;
   virtual void OnDownloadComplete(ProfileDownloader* downloader,
                                   bool success) OVERRIDE;
 

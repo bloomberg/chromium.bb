@@ -18,6 +18,8 @@
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/net/gaia/gaia_constants.h"
+#include "chrome/common/net/gaia/gaia_urls.h"
+#include "chrome/common/net/gaia/oauth2_access_token_fetcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -32,12 +34,22 @@ using content::BrowserThread;
 
 namespace {
 
-// Template for optional authorization header.
-const char kAuthorizationHeader[] = "Authorization: GoogleLogin auth=%s";
+// Template for optional authorization header when using the ClientLogin access
+// token.
+const char kClientAccessAuthorizationHeader[] =
+    "Authorization: GoogleLogin auth=%s";
+
+// Template for optional authorization header when using an OAuth access token.
+const char kOAuthAccessAuthorizationHeader[] =
+    "Authorization: Bearer %s";
 
 // URL requesting Picasa API for user info.
 const char kUserEntryURL[] =
     "http://picasaweb.google.com/data/entry/api/user/default?alt=json";
+
+// OAuth scope for the Picasa API.
+const char kPicasaScope[] = "http://picasaweb.google.com/data/";
+
 // Path in JSON dictionary to user's photo thumbnail URL.
 const char kPhotoThumbnailURLPath[] = "entry.gphoto$thumbnail.$t";
 
@@ -187,7 +199,12 @@ void ProfileDownloader::Start() {
     delegate_->OnDownloadComplete(this, false);
     return;
   }
-  if (service->HasTokenForService(GaiaConstants::kPicasaService)) {
+
+  if (delegate_->ShouldUseOAuthRefreshToken() &&
+      service->HasOAuthLoginToken()) {
+    StartFetchingOAuth2AccessToken();
+  } else if (!delegate_->ShouldUseOAuthRefreshToken() &&
+      service->HasTokenForService(GaiaConstants::kPicasaService)) {
     auth_token_ =
         service->GetTokenForService(GaiaConstants::kPicasaService);
     StartFetchingImage();
@@ -217,9 +234,29 @@ void ProfileDownloader::StartFetchingImage() {
       delegate_->GetBrowserProfile()->GetRequestContext());
   if (!auth_token_.empty()) {
     user_entry_fetcher_->SetExtraRequestHeaders(
-        base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
+        base::StringPrintf(GetAuthorizationHeader(), auth_token_.c_str()));
   }
   user_entry_fetcher_->Start();
+}
+
+const char* ProfileDownloader::GetAuthorizationHeader() const {
+  return delegate_->ShouldUseOAuthRefreshToken() ?
+      kOAuthAccessAuthorizationHeader : kClientAccessAuthorizationHeader;
+}
+
+void ProfileDownloader::StartFetchingOAuth2AccessToken() {
+  TokenService* service = delegate_->GetBrowserProfile()->GetTokenService();
+  DCHECK(!service->GetOAuth2LoginRefreshToken().empty());
+
+  std::vector<std::string> scopes;
+  scopes.push_back(kPicasaScope);
+  oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
+      this, delegate_->GetBrowserProfile()->GetRequestContext()));
+  oauth2_access_token_fetcher_->Start(
+      GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
+      GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
+      service->GetOAuth2LoginRefreshToken(),
+      scopes);
 }
 
 ProfileDownloader::~ProfileDownloader() {}
@@ -253,7 +290,7 @@ void ProfileDownloader::OnURLFetchComplete(const content::URLFetcher* source) {
         delegate_->GetBrowserProfile()->GetRequestContext());
     if (!auth_token_.empty()) {
       profile_image_fetcher_->SetExtraRequestHeaders(
-          base::StringPrintf(kAuthorizationHeader, auth_token_.c_str()));
+          base::StringPrintf(GetAuthorizationHeader(), auth_token_.c_str()));
     }
     profile_image_fetcher_->Start();
   } else if (source == profile_image_fetcher_.get()) {
@@ -290,16 +327,37 @@ void ProfileDownloader::Observe(
 
   TokenService::TokenAvailableDetails* token_details =
       content::Details<TokenService::TokenAvailableDetails>(details).ptr();
+  std::string service = delegate_->ShouldUseOAuthRefreshToken() ?
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken :
+      GaiaConstants::kPicasaService;
+
   if (type == chrome::NOTIFICATION_TOKEN_AVAILABLE) {
-    if (token_details->service() == GaiaConstants::kPicasaService) {
+    if (token_details->service() == service) {
       registrar_.RemoveAll();
-      auth_token_ = token_details->token();
-      StartFetchingImage();
+      if (delegate_->ShouldUseOAuthRefreshToken()) {
+        StartFetchingOAuth2AccessToken();
+      } else {
+        auth_token_ = token_details->token();
+        StartFetchingImage();
+      }
     }
   } else {
-    if (token_details->service() == GaiaConstants::kPicasaService) {
+    if (token_details->service() == service) {
       LOG(WARNING) << "ProfileDownloader: token request failed";
       delegate_->OnDownloadComplete(this, false);
     }
   }
+}
+
+// Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
+// used to start fetching user data.
+void ProfileDownloader::OnGetTokenSuccess(const std::string& access_token) {
+  auth_token_ = access_token;
+  StartFetchingImage();
+}
+
+// Callback for OAuth2AccessTokenFetcher on failure.
+void ProfileDownloader::OnGetTokenFailure(const GoogleServiceAuthError& error) {
+  LOG(WARNING) << "ProfileDownloader: token request using refresh token failed";
+  delegate_->OnDownloadComplete(this, false);
 }

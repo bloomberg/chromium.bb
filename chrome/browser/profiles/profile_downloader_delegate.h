@@ -27,6 +27,10 @@ class ProfileDownloaderDelegate {
   // Returns the browser profile associated with this download request.
   virtual Profile* GetBrowserProfile() = 0;
 
+  // Whether we should use an OAuth refresh token or the Picasa token from
+  // ClientLogin. The latter is currently used in ChromeOS.
+  virtual bool ShouldUseOAuthRefreshToken() = 0;
+
   // Called when the download is complete. On success delegate should query
   // the downloader for values.
   virtual void OnDownloadComplete(ProfileDownloader* downloader,
