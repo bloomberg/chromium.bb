@@ -469,4 +469,7 @@ TEST_PPAPI_IN_PROCESS(WebSocket_IsWebSocket)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_ValidConnect)
 TEST_PPAPI_IN_PROCESS_WITH_WS(WebSocket_TextSendReceive)
 
+TEST_PPAPI_IN_PROCESS(AudioConfig_Everything)
+TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_Everything)
+
 #endif // ADDRESS_SANITIZER
