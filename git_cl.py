@@ -48,6 +48,10 @@ POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
 DESCRIPTION_BACKUP_FILE = '~/.git_cl_description_backup'
 
 
+# Initialized in main()
+settings = None
+
+
 def DieWithError(message):
   print >> sys.stderr, message
   sys.exit(1)
@@ -151,6 +155,7 @@ class Settings(object):
     self.tree_status_url = None
     self.viewvc_url = None
     self.updated = False
+    self.did_migrate_check = False
 
   def LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
@@ -272,10 +277,6 @@ class Settings(object):
     return RunGit(['config', param], **kwargs).strip()
 
 
-settings = Settings()
-
-
-did_migrate_check = False
 def CheckForMigration():
   """Migrate from the old issue format, if found.
 
@@ -285,8 +286,7 @@ def CheckForMigration():
   """
 
   # Don't run more than once.
-  global did_migrate_check
-  if did_migrate_check:
+  if settings.did_migrate_check:
     return
 
   gitdir = RunGit(['rev-parse', '--git-dir']).strip()
@@ -300,7 +300,7 @@ def CheckForMigration():
               issue])
     store.close()
     os.remove(storepath)
-  did_migrate_check = True
+  settings.did_migrate_check = True
 
 
 def ShortBranchName(branch):
@@ -642,12 +642,15 @@ class ChangeDescription(object):
 # The first line will also be used as the subject of the review.
 """
     initial_text += self.description
-    if 'R=' not in self.description and self.reviewers:
+    if ('\nR=' not in self.description and
+        '\nTBR=' not in self.description and
+        self.reviewers):
       initial_text += '\nR=' + self.reviewers
-    if 'BUG=' not in self.description:
+    if '\nBUG=' not in self.description:
       initial_text += '\nBUG='
-    if 'TEST=' not in self.description:
+    if '\nTEST=' not in self.description:
       initial_text += '\nTEST='
+    initial_text = initial_text.rstrip('\n') + '\n'
     content = gclient_utils.RunEditor(initial_text, True)
     if not content:
       DieWithError('Running editor failed')
@@ -657,25 +660,17 @@ class ChangeDescription(object):
     self._ParseDescription(content)
 
   def _ParseDescription(self, description):
+    """Updates the list of reviewers and subject from the description."""
     if not description:
       self.description = description
       return
 
-    parsed_lines = []
-    reviewers_regexp = re.compile('\s*R=(.+)')
-    reviewers = ''
-    subject = ''
-    for l in description.splitlines():
-      if not subject:
-        subject = l
-      matched_reviewers = reviewers_regexp.match(l)
-      if matched_reviewers:
-        reviewers = matched_reviewers.group(1)
-      parsed_lines.append(l)
-
-    self.description = '\n'.join(parsed_lines) + '\n'
-    self.subject = subject
-    self.reviewers = reviewers
+    self.description = description.strip('\n') + '\n'
+    self.subject = description.split('\n', 1)[0]
+    # Retrieves all reviewer lines
+    regexp = re.compile(r'^\s*(TBR|R)=(.+)$', re.MULTILINE)
+    self.reviewers = ','.join(
+        i.group(2).strip() for i in regexp.finditer(self.description))
 
   def IsEmpty(self):
     return not self.description
@@ -1376,6 +1371,10 @@ def GenUsage(parser, command):
 def main(argv):
   """Doesn't parse the arguments here, just find the right subcommand to
   execute."""
+  # Reload settings.
+  global settings
+  settings = Settings()
+
   # Do it late so all commands are listed.
   CMDhelp.usage_more = ('\n\nCommands are:\n' + '\n'.join([
       '  %-10s %s' % (fn[3:], Command(fn[3:]).__doc__.split('\n')[0].strip())
