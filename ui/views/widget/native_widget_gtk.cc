@@ -167,15 +167,6 @@ void EnumerateChildWidgetsForNativeWidgets(GtkWidget* child_widget,
   }
 }
 
-void RemoveExposeHandlerIfExists(GtkWidget* widget) {
-  gulong id = reinterpret_cast<gulong>(g_object_get_data(G_OBJECT(widget),
-                                                         kExposeHandlerIdKey));
-  if (id) {
-    g_signal_handler_disconnect(G_OBJECT(widget), id);
-    g_object_set_data(G_OBJECT(widget), kExposeHandlerIdKey, 0);
-  }
-}
-
 GtkWindowType WindowTypeToGtkWindowType(Widget::InitParams::Type type) {
   switch (type) {
     case Widget::InitParams::TYPE_BUBBLE:
@@ -638,11 +629,21 @@ void NativeWidgetGtk::UpdateFreezeUpdatesProperty(GtkWindow* window,
 
 // static
 void NativeWidgetGtk::RegisterChildExposeHandler(GtkWidget* child) {
-  RemoveExposeHandlerIfExists(child);
+  UnregisterChildExposeHandler(child);
   gulong id = g_signal_connect_after(child, "expose-event",
                                      G_CALLBACK(&ChildExposeHandler), NULL);
   g_object_set_data(G_OBJECT(child), kExposeHandlerIdKey,
                     reinterpret_cast<void*>(id));
+}
+
+// static
+void NativeWidgetGtk::UnregisterChildExposeHandler(GtkWidget* child) {
+  gulong id = reinterpret_cast<gulong>(g_object_get_data(G_OBJECT(child),
+                                                         kExposeHandlerIdKey));
+  if (id) {
+    g_signal_handler_disconnect(G_OBJECT(child), id);
+    g_object_set_data(G_OBJECT(child), kExposeHandlerIdKey, 0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1847,7 +1848,7 @@ void NativeWidgetGtk::OnChildExpose(GtkWidget* child) {
     painted_ = true;
     UpdateFreezeUpdatesProperty(GTK_WINDOW(widget_), false /* remove */);
   }
-  RemoveExposeHandlerIfExists(child);
+  UnregisterChildExposeHandler(child);
 }
 
 // static

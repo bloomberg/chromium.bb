@@ -149,6 +149,8 @@ void NativeViewHostGtk::NativeViewDetaching(bool destroyed) {
   GtkWidget* host_widget = host_->native_view();
   DCHECK(host_widget);
 
+  views::NativeWidgetGtk::UnregisterChildExposeHandler(host_widget);
+
   g_signal_handler_disconnect(G_OBJECT(host_widget), destroy_signal_id_);
   destroy_signal_id_ = 0;
 

@@ -130,16 +130,18 @@ class VIEWS_EXPORT NativeWidgetGtk : public internal::NativeWidgetPrivate,
   // which does not support this property.
   static void UpdateFreezeUpdatesProperty(GtkWindow* window, bool enable);
 
-  // Registers a expose handler that removes FREEZE_UPDATES property.
-  // If you are adding a GtkWidget with its own GdkWindow that may
-  // fill the entire area of the NativeWidgetGtk to the view hierachy, you
-  // need use this function to tell WM that when the widget is ready
-  // to be shown.
-  // Caller of this method do not need to disconnect this because the
-  // handler will be removed upon the first invocation of the handler,
-  // or when the widget is re-attached, and expose won't be emitted on
-  // detached widget.
+  // Registers/Unregisters a expose handler that removes
+  // FREEZE_UPDATES property.  If you are adding a GtkWidget with its
+  // own GdkWindow that may fill the entire area of the
+  // NativeWidgetGtk to the view hierachy, you need use this function
+  // to tell WM that when the widget is ready to be shown.  Caller of
+  // this method do not need to unregister the handler if the widget
+  // receives the expose event for sure because the handler will be
+  // removed upon the first invocation of the handler. If the
+  // widget may be detached without expose event, the caller must
+  // unregister the handler using/ UnregisterChildExposeHandler.
   static void RegisterChildExposeHandler(GtkWidget* widget);
+  static void UnregisterChildExposeHandler(GtkWidget* widget);
 
   // Overridden from internal::NativeWidgetPrivate:
   virtual void InitNativeWidget(const Widget::InitParams& params) OVERRIDE;
