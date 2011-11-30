@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/time.h"
 #include "base/timer.h"
-#include "chrome/browser/prefs/pref_change_registrar.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/webui/chrome_url_data_manager.h"
 #include "chrome/browser/ui/webui/chrome_web_ui.h"
@@ -44,9 +43,6 @@ class NewTabUI : public ChromeWebUI,
 
   // The current preference version.
   static int current_pref_version() { return current_pref_version_; }
-
-  // Returns whether NTP4 is enabled.
-  static bool NTP4Enabled();
 
   // Returns whether NTP4 bookmark features are enabled.
   static bool NTP4BookmarkFeaturesEnabled();
@@ -93,8 +89,6 @@ class NewTabUI : public ChromeWebUI,
 
   content::NotificationRegistrar registrar_;
 
-  // Tracks updates of the kShowBookmarkBar preference.
-  PrefChangeRegistrar pref_change_registrar_;
   // The time when we started benchmarking.
   base::TimeTicks start_;
   // The last time we got a paint notification.

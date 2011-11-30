@@ -97,10 +97,8 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
 
     AddMessageHandler((new NewTabPageHandler())->Attach(this));
-    if (NTP4Enabled()) {
-      AddMessageHandler((new BookmarksHandler())->Attach(this));
-      AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
-    }
+    AddMessageHandler((new BookmarksHandler())->Attach(this));
+    AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
   }
 
   if (NTPLoginHandler::ShouldShow(GetProfile()))
@@ -119,9 +117,6 @@ NewTabUI::NewTabUI(TabContents* contents)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
                      ThemeServiceFactory::GetForProfile(GetProfile())));
-  // Listen for bookmark bar visibility changes.
-  pref_change_registrar_.Init(GetProfile()->GetPrefs());
-  pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
 }
 
 NewTabUI::~NewTabUI() {
@@ -192,21 +187,6 @@ void NewTabUI::Observe(int type,
       CallJavascriptFunction("themeChanged", args);
       break;
     }
-    case chrome::NOTIFICATION_PREF_CHANGED: {
-      const std::string& pref_name =
-          *content::Details<std::string>(details).ptr();
-      if (pref_name == prefs::kShowBookmarkBar) {
-        if (!NTP4Enabled() && CanShowBookmarkBar()) {
-          if (GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
-            CallJavascriptFunction("bookmarkBarAttached");
-          else
-            CallJavascriptFunction("bookmarkBarDetached");
-        }
-      } else {
-        NOTREACHED();
-      }
-      break;
-    }
     case content::NOTIFICATION_RENDER_WIDGET_HOST_DID_PAINT: {
       last_paint_ = base::TimeTicks::Now();
       break;
@@ -227,8 +207,7 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   NewTabPageHandler::RegisterUserPrefs(prefs);
   AppLauncherHandler::RegisterUserPrefs(prefs);
   MostVisitedHandler::RegisterUserPrefs(prefs);
-  if (NTP4Enabled())
-    BookmarksHandler::RegisterUserPrefs(prefs);
+  BookmarksHandler::RegisterUserPrefs(prefs);
 }
 
 // static
@@ -268,18 +247,9 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
 }
 
 // static
-bool NewTabUI::NTP4Enabled() {
-#if defined(TOUCH_UI)
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kNewTabPage);
-#else
-  return true;
-#endif
-}
-
-// static
 bool NewTabUI::NTP4BookmarkFeaturesEnabled() {
   CommandLine* cl = CommandLine::ForCurrentProcess();
-  return NTP4Enabled() && cl->HasSwitch(switches::kEnableNTPBookmarkFeatures);
+  return cl->HasSwitch(switches::kEnableNTPBookmarkFeatures);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

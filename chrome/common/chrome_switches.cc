@@ -788,11 +788,6 @@ const char kNaClStartupDialog[]             = "nacl-startup-dialog";
 // Intended primarily for use with --log-net-log.
 const char kNetLogLevel[]                   = "net-log-level";
 
-// Disables the latest incarnation of the new tab page. Only intended for
-// testing use. For TOUCH_UI, the meaning is inverted (i.e. default is to
-// disable NTP4, and passing the flag will enable it).
-const char kNewTabPage[]                    = "new-tab-page";
-
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";

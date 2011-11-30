@@ -424,41 +424,11 @@ void NTPResourceCache::CreateNewTabHTML() {
       NewTabUI::NTP4BookmarkFeaturesEnabled() ? "true" : "false");
 
   // Load the new tab page appropriate for this build
-  // Note that some builds (eg. TOUCHUI) don't make use of everything we
-  // do here (all of the template data, etc.), but we keep the back end
-  // consistent across builds, supporting the union of all NTP front-ends
-  // for simplicity.
   std::string full_html;
-  if (NewTabUI::NTP4Enabled()) {
-    base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-        GetRawDataResource(IDR_NEW_TAB_4_HTML));
-    full_html = jstemplate_builder::GetI18nTemplateHtml(new_tab_html,
-                                                        &localized_strings);
-  } else {
-    base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
-        GetRawDataResource(IDR_NEW_TAB_HTML));
-
-    // Inject the template data into the HTML so that it is available before any
-    // layout is needed.
-    std::string json_html;
-    jstemplate_builder::AppendJsonHtml(&localized_strings, &json_html);
-
-    static const base::StringPiece template_data_placeholder(
-        "<!-- template data placeholder -->");
-    size_t pos = new_tab_html.find(template_data_placeholder);
-
-    if (pos != base::StringPiece::npos) {
-      full_html.assign(new_tab_html.data(), pos);
-      full_html.append(json_html);
-      size_t after_offset = pos + template_data_placeholder.size();
-      full_html.append(new_tab_html.data() + after_offset,
-                       new_tab_html.size() - after_offset);
-    } else {
-      NOTREACHED();
-      full_html.assign(new_tab_html.data(), new_tab_html.size());
-    }
-  }
-
+  base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().
+      GetRawDataResource(IDR_NEW_TAB_4_HTML));
+  full_html = jstemplate_builder::GetI18nTemplateHtml(new_tab_html,
+                                                      &localized_strings);
   new_tab_html_ = base::RefCountedString::TakeString(&full_html);
 }
 
@@ -579,11 +549,9 @@ void NTPResourceCache::CreateNewTabCSS() {
   subst.push_back(SkColorToRGBComponents(color_text));  // $23
 
   // Get our template.
-  int ntp_css_resource_id = NewTabUI::NTP4Enabled() ?
-      IDR_NEW_TAB_4_THEME_CSS : IDR_NEW_TAB_THEME_CSS;
   static const base::StringPiece new_tab_theme_css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
-          ntp_css_resource_id));
+          IDR_NEW_TAB_4_THEME_CSS));
 
   // Create the string from our template and the replacements.
   std::string css_string;

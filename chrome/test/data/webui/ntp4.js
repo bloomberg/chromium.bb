@@ -18,17 +18,9 @@ NTP4WebUITest.prototype = {
   browsePreload: 'chrome://newtab',
 };
 
-// TODO(danakj): Fix this test to work with the TOUCH_UI version of NTP.
-// http://crbug.com/99895
-GEN('#if defined(TOUCH_UI)');
-GEN('#define MAYBE_TestBrowsePages DISABLED_TestBrowsePages');
-GEN('#else');
-GEN('#define MAYBE_TestBrowsePages TestBrowsePages');
-GEN('#endif');
-
 // Test loading new tab page and selecting each card doesn't have console
 // errors.
-TEST_F('NTP4WebUITest', 'MAYBE_TestBrowsePages', function() {
+TEST_F('NTP4WebUITest', 'TestBrowsePages', function() {
 // This tests the ntp4 new tab page which is not used on touch builds.
   var cardSlider = ntp4.getCardSlider();
   assertNotEquals(null, cardSlider);
