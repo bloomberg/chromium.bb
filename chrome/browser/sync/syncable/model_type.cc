@@ -650,15 +650,17 @@ bool NotificationTypeToRealModelType(const std::string& notification_type,
     return true;
   } else if (notification_type == kAppSettingNotificationType) {
     *model_type = APP_SETTINGS;
+    return true;
   } else if (notification_type == kExtensionSettingNotificationType) {
     *model_type = EXTENSION_SETTINGS;
     return true;
   } else if (notification_type == kAppNotificationNotificationType) {
     *model_type = APP_NOTIFICATIONS;
     return true;
+  } else {
+    *model_type = UNSPECIFIED;
+    return false;
   }
-  *model_type = UNSPECIFIED;
-  return false;
 }
 
 ModelTypeSet GetAllRealModelTypes() {
