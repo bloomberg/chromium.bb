@@ -158,9 +158,15 @@ Buffer CommandBufferProxy::GetRingBuffer() {
   DCHECK(ring_buffer_.get());
   // Return locally cached ring buffer.
   Buffer buffer;
-  buffer.ptr = ring_buffer_->memory();
-  buffer.size = num_entries_ * sizeof(gpu::CommandBufferEntry);
-  buffer.shared_memory = ring_buffer_.get();
+  if (ring_buffer_.get()) {
+    buffer.ptr = ring_buffer_->memory();
+    buffer.size = num_entries_ * sizeof(gpu::CommandBufferEntry);
+    buffer.shared_memory = ring_buffer_.get();
+  } else {
+    buffer.ptr = NULL;
+    buffer.size = 0;
+    buffer.shared_memory = NULL;
+  }
   return buffer;
 }
 
