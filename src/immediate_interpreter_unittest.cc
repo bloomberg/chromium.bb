@@ -1180,4 +1180,67 @@ TEST(ImmediateInterpreterTest, WiggleSuppressTest) {
   }
 }
 
+TEST(ImmediateInterpreterTest, ClickTest) {
+  ImmediateInterpreter ii(NULL);
+  HardwareProperties hwprops = {
+    0,  // left edge
+    0,  // top edge
+    100,  // right edge
+    100,  // bottom edge
+    1,  // x pixels/mm
+    1,  // y pixels/mm
+    96,  // x screen DPI
+    96,  // y screen DPI
+    2,  // max fingers
+    5,  // max touch
+    1,  // t5r2
+    0,  // semi-mt
+    1  // is button pad
+  };
+  ii.SetHardwareProperties(hwprops);
+
+  FingerState finger_states[] = {
+    // TM, Tm, WM, Wm, Press, Orientation, X, Y, TrID
+    {0, 0, 0, 0, 10, 0, 50, 50, 1},
+    {0, 0, 0, 0, 10, 0, 70, 50, 2},
+  };
+  HardwareState hardware_state[] = {
+    // time, buttons, finger count, touch count, finger states pointer
+    { 0,    0, 0, 0, NULL },
+    { 1,    1, 0, 0, NULL },
+    { 1.01, 1, 2, 3, &finger_states[0] },
+    { 3,    0, 0, 0, NULL },
+    { 4,    1, 0, 0, NULL },
+    { 4.01, 1, 2, 2, &finger_states[0] },
+    { 6,    0, 0, 0, NULL },
+  };
+
+  for (size_t i = 0; i < arraysize(hardware_state); ++i) {
+    LOG(INFO) << "running i=" << i;
+    Gesture* result = ii.SyncInterpret(&hardware_state[i], NULL);
+    LOG(INFO) << "i="<< i << " res: " << (result != NULL);
+    switch (i) {
+      case 0:  // fallthrough
+      case 1:  // fallthrough
+      case 4:
+        EXPECT_FALSE(result);
+        break;
+      case 2:  // fallthrough
+      case 5:
+        ASSERT_TRUE(result);
+        EXPECT_EQ(kGestureTypeButtonsChange, result->type);
+        EXPECT_EQ(GESTURES_BUTTON_RIGHT, result->details.buttons.down);
+        EXPECT_EQ(0, result->details.buttons.up);
+        break;
+      case 3:  // fallthrough
+      case 6:
+        ASSERT_TRUE(result);
+        EXPECT_EQ(kGestureTypeButtonsChange, result->type);
+        EXPECT_EQ(GESTURES_BUTTON_RIGHT, result->details.buttons.up);
+        EXPECT_EQ(0, result->details.buttons.down);
+        break;
+    }
+  }
+}
+
 }  // namespace gestures

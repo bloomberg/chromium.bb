@@ -882,7 +882,7 @@ void ImmediateInterpreter::FillStartPositions(const HardwareState& hwstate) {
 
 int ImmediateInterpreter::EvaluateButtonType(
     const HardwareState& hwstate) {
-  if (hw_props_.supports_t5r2 && hwstate.finger_cnt > 2)
+  if (hw_props_.supports_t5r2 && hwstate.touch_cnt > 2)
     return GESTURES_BUTTON_RIGHT;
   int num_pointing = pointing_.size();
   if (num_pointing <= 1)
@@ -923,7 +923,7 @@ void ImmediateInterpreter::UpdateButtons(const HardwareState& hwstate) {
     // We send non-left buttons immediately, but delay left in case future
     // packets indicate non-left button.
     if (button_type_ != GESTURES_BUTTON_LEFT ||
-        button_down_timeout_ >= hwstate.timestamp ||
+        button_down_timeout_ <= hwstate.timestamp ||
         phys_up_edge) {
       // Send button down
       if (result_.type == kGestureTypeButtonsChange)
