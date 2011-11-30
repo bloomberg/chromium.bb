@@ -6,8 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-// TODO(alicet): clean up dependencies on defaults.h and max tab count.
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"

@@ -2975,9 +2975,6 @@ Browser* Browser::AsBrowser() {
 // Browser, TabStripModelDelegate implementation:
 
 TabContentsWrapper* Browser::AddBlankTab(bool foreground) {
-  if (tab_count() >= browser_defaults::kMaxTabCount)
-    return NULL;
-
   return AddBlankTabAt(-1, foreground);
 }
 
@@ -4526,10 +4523,6 @@ void Browser::UpdateCommandsForTabState() {
   TabContentsWrapper* current_tab_wrapper = GetSelectedTabContentsWrapper();
   if (!current_tab || !current_tab_wrapper)  // May be NULL during tab restore.
     return;
-
-  command_updater_.UpdateCommandEnabled(
-      IDC_NEW_TAB,
-      tab_count() < browser_defaults::kMaxTabCount);
 
   // Navigation commands
   NavigationController& nc = current_tab->controller();

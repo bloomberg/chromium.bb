@@ -80,11 +80,6 @@ extern const ui::ResourceBundle::FontStyle kAssociatedNetworkFontStyle;
 // Preferred infobar border padding in pixels.
 extern const int kInfoBarBorderPaddingVertical;
 
-// Max tab count allowed.
-// TODO(alicet): This is added to allow different tab limits for touch_ui.
-// This is temporary, and should be removed asap.
-extern const int kMaxTabCount;
-
 //=============================================================================
 // Runtime "const" - set only once after parsing command line option and should
 // never be modified after that.
