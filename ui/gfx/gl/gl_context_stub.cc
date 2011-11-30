@@ -21,7 +21,6 @@ void GLContextStub::Destroy() {
 }
 
 bool GLContextStub::MakeCurrent(GLSurface* surface) {
-  SetCurrent(this, surface);
   return true;
 }
 

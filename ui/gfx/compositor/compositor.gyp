@@ -60,8 +60,7 @@
         'layer_animator.h',
         'screen_rotation.cc',
         'screen_rotation.h',
-        # UI tests need TestWebGraphicsContext3D, so we always build it.
-        'test_web_graphics_context_3d.cc',
+        # This is needed for ui tests, so it's always compiled.
         'test_web_graphics_context_3d.h',
       ],
       'conditions': [

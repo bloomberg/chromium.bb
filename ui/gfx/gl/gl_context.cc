@@ -69,7 +69,8 @@ GLShareGroup* GLContext::share_group() {
   return share_group_.get();
 }
 
-bool GLContext::LosesAllContextsOnContextLost() {
+bool GLContext::LosesAllContextsOnContextLost()
+{
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:
       return false;

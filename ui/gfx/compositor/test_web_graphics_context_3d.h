@@ -7,15 +7,9 @@
 #pragma once
 
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 #include "ui/gfx/gl/gl_bindings.h"
-
-namespace gfx {
-class GLContext;
-class GLSurface;
-}
 
 namespace ui {
 
@@ -27,7 +21,9 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
 
   virtual bool initialize(Attributes attributes,
                           WebKit::WebView* view,
-                          bool render_directly_to_web_view);
+                          bool render_directly_to_web_view) {
+    return false;
+  }
   virtual bool makeContextCurrent() { return true; }
   virtual int width() { return 0; }
   virtual int height() { return 0; }
@@ -461,9 +457,6 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
   virtual void deleteTexture(WebKit::WebGLId id) {}
 
  private:
-  scoped_refptr<gfx::GLContext> gl_context_;
-  scoped_refptr<gfx::GLSurface> gl_surface_;
-
   DISALLOW_COPY_AND_ASSIGN(TestWebGraphicsContext3D);
 };
 
