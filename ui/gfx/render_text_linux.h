@@ -7,6 +7,7 @@
 #pragma once
 
 #include <pango/pango.h>
+#include <vector>
 
 #include "ui/gfx/render_text.h"
 
@@ -21,7 +22,6 @@ class RenderTextLinux : public RenderText {
   // Overridden from RenderText:
   virtual base::i18n::TextDirection GetTextDirection() OVERRIDE;
   virtual int GetStringWidth() OVERRIDE;
-  virtual void Draw(Canvas* canvas) OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
   virtual Rect GetCursorBounds(const SelectionModel& position,
                                bool insert_mode) OVERRIDE;
@@ -34,8 +34,14 @@ class RenderTextLinux : public RenderText {
                                                 BreakType break_type) OVERRIDE;
   virtual SelectionModel LeftEndSelectionModel() OVERRIDE;
   virtual SelectionModel RightEndSelectionModel() OVERRIDE;
+  virtual void GetSubstringBounds(size_t from,
+                                  size_t to,
+                                  std::vector<Rect>* bounds) OVERRIDE;
+  virtual void SetSelectionModel(const SelectionModel& model) OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
   virtual void UpdateLayout() OVERRIDE;
+  virtual void EnsureLayout() OVERRIDE;
+  virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
 
  private:
   virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;
@@ -69,10 +75,6 @@ class RenderTextLinux : public RenderText {
   SelectionModel LeftSelectionModelByWord(const SelectionModel& current);
   SelectionModel RightSelectionModelByWord(const SelectionModel& current);
 
-  // If |layout_| is NULL, create and setup |layout_|, retain and ref
-  // |current_line_|. Return |layout_|.
-  PangoLayout* EnsureLayout();
-
   // Unref |layout_| and |pango_line_|. Set them to NULL.
   void ResetLayout();
 
@@ -96,6 +98,15 @@ class RenderTextLinux : public RenderText {
   size_t Utf16IndexToUtf8Index(size_t index) const;
   size_t Utf8IndexToUtf16Index(size_t index) const;
 
+  // Calculate the visual bounds containing the logical substring within |from|
+  // to |to| into |bounds|.
+  void CalculateSubstringBounds(size_t from,
+                                size_t to,
+                                std::vector<Rect>* bounds);
+
+  // Save the visual bounds of logical selection into |bounds|.
+  void GetSelectionBounds(std::vector<Rect>* bounds);
+
   // Pango Layout.
   PangoLayout* layout_;
   // A single line layout resulting from laying out via |layout_|.
@@ -105,6 +116,9 @@ class RenderTextLinux : public RenderText {
   PangoLogAttr* log_attrs_;
   // Number of attributes in |log_attrs_|.
   int num_log_attrs_;
+
+  // Vector of the visual bounds containing the logical substring of selection.
+  std::vector<Rect> selection_visual_bounds_;
 
   // The text in the |layout_|.
   const char* layout_text_;

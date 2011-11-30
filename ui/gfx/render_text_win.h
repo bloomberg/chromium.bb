@@ -60,7 +60,6 @@ class RenderTextWin : public RenderText {
 
   // Overridden from RenderText:
   virtual int GetStringWidth() OVERRIDE;
-  virtual void Draw(Canvas* canvas) OVERRIDE;
   virtual SelectionModel FindCursorPosition(const Point& point) OVERRIDE;
   virtual Rect GetCursorBounds(const SelectionModel& selection,
                                bool insert_mode) OVERRIDE;
@@ -73,14 +72,17 @@ class RenderTextWin : public RenderText {
                                                 BreakType break_type) OVERRIDE;
   virtual SelectionModel LeftEndSelectionModel() OVERRIDE;
   virtual SelectionModel RightEndSelectionModel() OVERRIDE;
-  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to) OVERRIDE;
+  virtual void GetSubstringBounds(size_t from,
+                                  size_t to,
+                                  std::vector<Rect>* bounds) OVERRIDE;
   virtual bool IsCursorablePosition(size_t position) OVERRIDE;
   virtual void UpdateLayout() OVERRIDE;
+  virtual void EnsureLayout() OVERRIDE;
+  virtual void DrawVisualText(Canvas* canvas) OVERRIDE;
 
  private:
   virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) OVERRIDE;
 
-  void EnsureLayout();
   void ItemizeLogicalText();
   void LayoutVisualText();
 
@@ -99,11 +101,6 @@ class RenderTextWin : public RenderText {
   // The returned value represents a cursor/caret position without a selection.
   SelectionModel LeftSelectionModel(const SelectionModel& selection);
   SelectionModel RightSelectionModel(const SelectionModel& selection);
-
-  // Draw the text, cursor, and selection.
-  void DrawSelection(Canvas* canvas);
-  void DrawVisualText(Canvas* canvas);
-  void DrawCursor(Canvas* canvas);
 
   // National Language Support native digit and digit substitution settings.
   SCRIPT_DIGITSUBSTITUTE digit_substitute_;

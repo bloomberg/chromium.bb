@@ -123,6 +123,8 @@ void RenderText::SetText(const string16& text) {
   // Reset selection model. SetText should always followed by SetSelectionModel
   // or SetCursorPosition in upper layer.
   SetSelectionModel(SelectionModel(0, 0, SelectionModel::LEADING));
+
+  UpdateLayout();
 }
 
 void RenderText::ToggleInsertMode() {
@@ -344,57 +346,13 @@ int RenderText::GetStringWidth() {
 }
 
 void RenderText::Draw(Canvas* canvas) {
-  // Clip the canvas to the text display area.
-  canvas->ClipRect(display_rect_);
+  EnsureLayout();
 
-  // Draw the selection.
-  std::vector<Rect> selection(GetSubstringBounds(GetSelectionStart(),
-                                                 GetCursorPosition()));
-  SkColor selection_color =
-      focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
-  for (std::vector<Rect>::const_iterator i = selection.begin();
-       i < selection.end(); ++i) {
-    Rect r(*i);
-    canvas->FillRect(selection_color, r);
+  if (!text().empty()) {
+    DrawSelection(canvas);
+    DrawVisualText(canvas);
   }
-
-  // Create a temporary copy of the style ranges for composition and selection.
-  StyleRanges style_ranges(style_ranges_);
-  ApplyCompositionAndSelectionStyles(&style_ranges);
-
-  // Draw the text.
-  Rect bounds(display_rect_);
-  bounds.Offset(GetUpdatedDisplayOffset());
-  for (StyleRanges::const_iterator i = style_ranges.begin();
-       i < style_ranges.end(); ++i) {
-    const Font& font = !i->underline ? i->font :
-        i->font.DeriveFont(0, i->font.GetStyle() | Font::UNDERLINED);
-    string16 text = text_.substr(i->range.start(), i->range.length());
-    bounds.set_width(font.GetStringWidth(text));
-    canvas->DrawStringInt(text, font, i->foreground, bounds);
-
-    // Draw the strikethrough.
-    if (i->strike) {
-      SkPaint paint;
-      paint.setAntiAlias(true);
-      paint.setStyle(SkPaint::kFill_Style);
-      paint.setColor(i->foreground);
-      paint.setStrokeWidth(kStrikeWidth);
-      canvas->GetSkCanvas()->drawLine(SkIntToScalar(bounds.x()),
-                                      SkIntToScalar(bounds.bottom()),
-                                      SkIntToScalar(bounds.right()),
-                                      SkIntToScalar(bounds.y()),
-                                      paint);
-    }
-
-    bounds.set_x(bounds.x() + bounds.width());
-  }
-
-  // Paint cursor. Replace cursor is drawn as rectangle for now.
-  Rect cursor(GetUpdatedCursorBounds());
-  if (cursor_visible() && focused())
-    canvas->DrawRectInt(kCursorColor, cursor.x(), cursor.y(),
-                        cursor.width(), cursor.height());
+  DrawCursor(canvas);
 }
 
 SelectionModel RenderText::FindCursorPosition(const Point& point) {
@@ -424,13 +382,6 @@ SelectionModel RenderText::FindCursorPosition(const Point& point) {
     }
   }
   return SelectionModel(left_pos);
-}
-
-Rect RenderText::GetCursorBounds(const SelectionModel& selection,
-                                 bool insert_mode) {
-  size_t from = selection.selection_end();
-  size_t to = insert_mode ? from : std::min(text_.length(), from + 1);
-  return GetSubstringBounds(from, to)[0];
 }
 
 const Rect& RenderText::GetUpdatedCursorBounds() {
@@ -549,22 +500,21 @@ SelectionModel RenderText::RightEndSelectionModel() {
   return SelectionModel(cursor, caret_pos, placement);
 }
 
-size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) {
-  return IndexOfAdjacentGrapheme(position, false);
+void RenderText::SetSelectionModel(const SelectionModel& model) {
+  DCHECK_LE(model.selection_start(), text().length());
+  selection_model_.set_selection_start(model.selection_start());
+  DCHECK_LE(model.selection_end(), text().length());
+  selection_model_.set_selection_end(model.selection_end());
+  DCHECK_LT(model.caret_pos(),
+            std::max(text().length(), static_cast<size_t>(1)));
+  selection_model_.set_caret_pos(model.caret_pos());
+  selection_model_.set_caret_placement(model.caret_placement());
+
+  cached_bounds_and_offset_valid_ = false;
 }
 
-std::vector<Rect> RenderText::GetSubstringBounds(size_t from, size_t to) {
-  size_t start = std::min(from, to);
-  size_t end = std::max(from, to);
-  const Font& font = default_style_.font;
-  int start_x = font.GetStringWidth(text().substr(0, start));
-  int end_x = font.GetStringWidth(text().substr(0, end));
-  Rect rect(start_x, 0, end_x - start_x, font.GetHeight());
-  rect.Offset(display_rect_.origin());
-  rect.Offset(GetUpdatedDisplayOffset());
-  // Center the rect vertically in |display_rect_|.
-  rect.Offset(Point(0, (display_rect_.height() - rect.height()) / 2));
-  return std::vector<Rect>(1, rect);
+size_t RenderText::GetIndexOfPreviousGrapheme(size_t position) {
+  return IndexOfAdjacentGrapheme(position, false);
 }
 
 void RenderText::ApplyCompositionAndSelectionStyles(
@@ -603,20 +553,6 @@ Point RenderText::ToViewPoint(const Point& point) {
   if (base::i18n::IsRTL())
     p.Offset(display_rect().width() - GetStringWidth() - 1, 0);
   return p;
-}
-
-void RenderText::SetSelectionModel(const SelectionModel& selection_model) {
-  DCHECK_LE(selection_model.selection_start(), text().length());
-  selection_model_.set_selection_start(selection_model.selection_start());
-  DCHECK_LE(selection_model.selection_end(), text().length());
-  selection_model_.set_selection_end(selection_model.selection_end());
-  DCHECK_LT(selection_model.caret_pos(),
-            std::max(text().length(), static_cast<size_t>(1)));
-  selection_model_.set_caret_pos(selection_model.caret_pos());
-  selection_model_.set_caret_placement(selection_model.caret_placement());
-
-  cached_bounds_and_offset_valid_ = false;
-  UpdateLayout();
 }
 
 void RenderText::MoveCursorTo(size_t position, bool select) {
@@ -662,6 +598,23 @@ void RenderText::UpdateCachedBoundsAndOffset() {
   }
   display_offset_.Offset(delta_offset, 0);
   cursor_bounds_.Offset(delta_offset, 0);
+}
+
+void RenderText::DrawSelection(Canvas* canvas) {
+  std::vector<Rect> sel;
+  GetSubstringBounds(GetSelectionStart(), GetCursorPosition(), &sel);
+  SkColor color = focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
+  for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
+    canvas->FillRect(color, *i);
+}
+
+void RenderText::DrawCursor(Canvas* canvas) {
+  // Paint cursor. Replace cursor is drawn as rectangle for now.
+  // TODO(msw): Draw a better cursor with a better indication of association.
+  if (cursor_visible() && focused()) {
+    Rect r(GetUpdatedCursorBounds());
+    canvas->DrawRectInt(kCursorColor, r.x(), r.y(), r.width(), r.height());
+  }
 }
 
 }  // namespace gfx

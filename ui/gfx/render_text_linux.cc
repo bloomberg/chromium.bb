@@ -5,7 +5,6 @@
 #include "ui/gfx/render_text_linux.h"
 
 #include <pango/pangocairo.h>
-
 #include <algorithm>
 
 #include "base/i18n/break_iterator.h"
@@ -58,48 +57,14 @@ base::i18n::TextDirection RenderTextLinux::GetTextDirection() {
 }
 
 int RenderTextLinux::GetStringWidth() {
-  PangoLayout* layout = EnsureLayout();
+  EnsureLayout();
   int width;
-  pango_layout_get_pixel_size(layout, &width, NULL);
+  pango_layout_get_pixel_size(layout_, &width, NULL);
   return width;
 }
 
-void RenderTextLinux::Draw(Canvas* canvas) {
-  PangoLayout* layout = EnsureLayout();
-  Rect bounds(display_rect());
-
-  // Clip the canvas to the text display area.
-  SkCanvas* canvas_skia = canvas->GetSkCanvas();
-
-  skia::ScopedPlatformPaint scoped_platform_paint(canvas_skia);
-  cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
-  cairo_save(cr);
-  cairo_rectangle(cr, bounds.x(), bounds.y(), bounds.width(), bounds.height());
-  cairo_clip(cr);
-
-  int text_width, text_height;
-  pango_layout_get_pixel_size(layout, &text_width, &text_height);
-  Point offset(ToViewPoint(Point()));
-  // Vertically centered.
-  int text_y = offset.y() + ((bounds.height() - text_height) / 2);
-  // TODO(xji): need to use SkCanvas->drawPosText() for gpu acceleration.
-  cairo_move_to(cr, offset.x(), text_y);
-  pango_cairo_show_layout(cr, layout);
-
-  cairo_restore(cr);
-
-  // Paint cursor.
-  bounds = GetUpdatedCursorBounds();
-  if (cursor_visible() && focused())
-      canvas->DrawRectInt(kCursorColor,
-                          bounds.x(),
-                          bounds.y(),
-                          bounds.width(),
-                          bounds.height());
-}
-
 SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
-  PangoLayout* layout = EnsureLayout();
+  EnsureLayout();
 
   if (text().empty())
     return SelectionModel(0, 0, SelectionModel::LEADING);
@@ -113,7 +78,7 @@ SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
     return RightEndSelectionModel();
 
   int caret_pos, trailing;
-  pango_layout_xy_to_index(layout, p.x() * PANGO_SCALE, p.y() * PANGO_SCALE,
+  pango_layout_xy_to_index(layout_, p.x() * PANGO_SCALE, p.y() * PANGO_SCALE,
                            &caret_pos, &trailing);
 
   size_t selection_end = caret_pos;
@@ -133,12 +98,12 @@ SelectionModel RenderTextLinux::FindCursorPosition(const Point& point) {
 
 Rect RenderTextLinux::GetCursorBounds(const SelectionModel& selection,
                                       bool insert_mode) {
-  PangoLayout* layout = EnsureLayout();
+  EnsureLayout();
 
   size_t caret_pos = insert_mode ? selection.caret_pos() :
                                    selection.selection_end();
   PangoRectangle pos;
-  pango_layout_index_to_pos(layout, Utf16IndexToUtf8Index(caret_pos), &pos);
+  pango_layout_index_to_pos(layout_, Utf16IndexToUtf8Index(caret_pos), &pos);
 
   SelectionModel::CaretPlacement caret_placement = selection.caret_placement();
   int x = pos.x;
@@ -220,6 +185,33 @@ SelectionModel RenderTextLinux::RightEndSelectionModel() {
   return SelectionModel(0, 0, SelectionModel::LEADING);
 }
 
+void RenderTextLinux::SetSelectionModel(const SelectionModel& model) {
+  if (GetSelectionStart() != model.selection_start() ||
+      GetCursorPosition() != model.selection_end()) {
+    selection_visual_bounds_.clear();
+  }
+
+  RenderText::SetSelectionModel(model);
+}
+
+void RenderTextLinux::GetSubstringBounds(size_t from,
+                                         size_t to,
+                                         std::vector<Rect>* bounds) {
+  DCHECK(from <= text().length());
+  DCHECK(to <= text().length());
+
+  bounds->clear();
+  if (from == to)
+    return;
+
+  EnsureLayout();
+
+  if (from == GetSelectionStart() && to == GetCursorPosition())
+    GetSelectionBounds(bounds);
+  else
+    CalculateSubstringBounds(from, to, bounds);
+}
+
 bool RenderTextLinux::IsCursorablePosition(size_t position) {
   if (position == 0 && text().empty())
     return true;
@@ -231,6 +223,64 @@ bool RenderTextLinux::IsCursorablePosition(size_t position) {
 
 void RenderTextLinux::UpdateLayout() {
   ResetLayout();
+}
+
+void RenderTextLinux::EnsureLayout() {
+  if (layout_ == NULL) {
+    CanvasSkia canvas(display_rect().width(), display_rect().height(), false);
+    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
+    cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
+
+    layout_ = pango_cairo_create_layout(cr);
+    SetupPangoLayout(
+        layout_,
+        text(),
+        default_style().font,
+        display_rect().width(),
+        base::i18n::GetFirstStrongCharacterDirection(text()),
+        CanvasSkia::DefaultCanvasTextAlignment());
+
+    // No width set so that the x-axis position is relative to the start of the
+    // text. ToViewPoint and ToTextPoint take care of the position conversion
+    // between text space and view spaces.
+    pango_layout_set_width(layout_, -1);
+    // TODO(xji): If RenderText will be used for displaying purpose, such as
+    // label, we will need to remove the single-line-mode setting.
+    pango_layout_set_single_paragraph_mode(layout_, true);
+    SetupPangoAttributes(layout_);
+
+    current_line_ = pango_layout_get_line_readonly(layout_, 0);
+    pango_layout_line_ref(current_line_);
+
+    pango_layout_get_log_attrs(layout_, &log_attrs_, &num_log_attrs_);
+
+    layout_text_ = pango_layout_get_text(layout_);
+    layout_text_len_ = strlen(layout_text_);
+  }
+}
+
+void RenderTextLinux::DrawVisualText(Canvas* canvas) {
+  Rect bounds(display_rect());
+
+  // Clip the canvas to the text display area.
+  SkCanvas* canvas_skia = canvas->GetSkCanvas();
+
+  skia::ScopedPlatformPaint scoped_platform_paint(canvas_skia);
+  cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
+  cairo_save(cr);
+  cairo_rectangle(cr, bounds.x(), bounds.y(), bounds.width(), bounds.height());
+  cairo_clip(cr);
+
+  int text_width, text_height;
+  pango_layout_get_pixel_size(layout_, &text_width, &text_height);
+  Point offset(ToViewPoint(Point()));
+  // Vertically centered.
+  int text_y = offset.y() + ((bounds.height() - text_height) / 2);
+  // TODO(xji): need to use SkCanvas->drawPosText() for gpu acceleration.
+  cairo_move_to(cr, offset.x(), text_y);
+  pango_cairo_show_layout(cr, layout_);
+
+  cairo_restore(cr);
 }
 
 size_t RenderTextLinux::IndexOfAdjacentGrapheme(size_t index, bool next) {
@@ -474,41 +524,6 @@ SelectionModel RenderTextLinux::RightSelectionModelByWord(
   return right_end;
 }
 
-PangoLayout* RenderTextLinux::EnsureLayout() {
-  if (layout_ == NULL) {
-    CanvasSkia canvas(display_rect().width(), display_rect().height(), false);
-    skia::ScopedPlatformPaint scoped_platform_paint(canvas.sk_canvas());
-    cairo_t* cr = scoped_platform_paint.GetPlatformSurface();
-
-    layout_ = pango_cairo_create_layout(cr);
-    SetupPangoLayout(
-        layout_,
-        text(),
-        default_style().font,
-        display_rect().width(),
-        base::i18n::GetFirstStrongCharacterDirection(text()),
-        CanvasSkia::DefaultCanvasTextAlignment());
-
-    // No width set so that the x-axis position is relative to the start of the
-    // text. ToViewPoint and ToTextPoint take care of the position conversion
-    // between text space and view spaces.
-    pango_layout_set_width(layout_, -1);
-    // TODO(xji): If RenderText will be used for displaying purpose, such as
-    // label, we will need to remove the single-line-mode setting.
-    pango_layout_set_single_paragraph_mode(layout_, true);
-    SetupPangoAttributes(layout_);
-
-    current_line_ = pango_layout_get_line_readonly(layout_, 0);
-    pango_layout_line_ref(current_line_);
-
-    pango_layout_get_log_attrs(layout_, &log_attrs_, &num_log_attrs_);
-
-    layout_text_ = pango_layout_get_text(layout_);
-    layout_text_len_ = strlen(layout_text_);
-  }
-  return layout_;
-}
-
 void RenderTextLinux::ResetLayout() {
   // set_cached_bounds_and_offset_valid(false) is done in RenderText for every
   // operation that triggers ResetLayout().
@@ -525,44 +540,25 @@ void RenderTextLinux::ResetLayout() {
     log_attrs_ = NULL;
     num_log_attrs_ = 0;
   }
+  if (!selection_visual_bounds_.empty())
+    selection_visual_bounds_.clear();
   layout_text_ = NULL;
   layout_text_len_ = 0;
 }
 
 void RenderTextLinux::SetupPangoAttributes(PangoLayout* layout) {
   PangoAttrList* attrs = pango_attr_list_new();
-  // Set selection background color.
-  // TODO(xji): There's a bug in pango that it can't use two colors in one
-  // glyph. Please refer to https://bugzilla.gnome.org/show_bug.cgi?id=648157
-  // for detail. So for example, if a font has "ffi" ligature, but you select
-  // half of that glyph, you either get the entire "ffi" ligature
-  // selection-colored, or none of it.
-  // We could use clipping to render selection.
-  // Use pango_glyph_item_get_logical_widths to find the exact boundaries of
-  // selection, then cairo_clip that, paint background, set color to white and
-  // redraw the layout.
-  SkColor selection_color =
-      focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
-  size_t start = std::min(MinOfSelection(), text().length());
-  size_t end = std::min(MaxOfSelection(), text().length());
-  PangoAttribute* pango_attr;
-  if (end > start) {
-    pango_attr = pango_attr_background_new(
-        ConvertColorFrom8BitTo16Bit(SkColorGetR(selection_color)),
-        ConvertColorFrom8BitTo16Bit(SkColorGetG(selection_color)),
-        ConvertColorFrom8BitTo16Bit(SkColorGetB(selection_color)));
-    AppendPangoAttribute(start, end, pango_attr, attrs);
-  }
 
   StyleRanges ranges_of_style(style_ranges());
   ApplyCompositionAndSelectionStyles(&ranges_of_style);
 
   PlatformFont* default_platform_font = default_style().font.platform_font();
 
+  PangoAttribute* pango_attr;
   for (StyleRanges::const_iterator i = ranges_of_style.begin();
        i < ranges_of_style.end(); ++i) {
-    start = std::min(i->range.start(), text().length());
-    end = std::min(i->range.end(), text().length());
+    size_t start = std::min(i->range.start(), text().length());
+    size_t end = std::min(i->range.end(), text().length());
     if (start >= end)
       continue;
 
@@ -655,6 +651,42 @@ size_t RenderTextLinux::Utf8IndexToUtf16Index(size_t index) const {
   DCHECK(ec == U_BUFFER_OVERFLOW_ERROR ||
          ec == U_STRING_NOT_TERMINATED_WARNING);
   return utf16_index;
+}
+
+void RenderTextLinux::CalculateSubstringBounds(size_t from,
+                                               size_t to,
+                                               std::vector<Rect>* bounds) {
+  int* ranges;
+  int n_ranges;
+  size_t from_in_utf8 = Utf16IndexToUtf8Index(from);
+  size_t to_in_utf8 = Utf16IndexToUtf8Index(to);
+  pango_layout_line_get_x_ranges(
+      current_line_,
+      std::min(from_in_utf8, to_in_utf8),
+      std::max(from_in_utf8, to_in_utf8),
+      &ranges,
+      &n_ranges);
+
+  int height;
+  pango_layout_get_pixel_size(layout_, NULL, &height);
+
+  int y = (display_rect().height() - height) / 2;
+
+  for (int i = 0; i < n_ranges; ++i) {
+    int x = PANGO_PIXELS(ranges[2 * i]);
+    int width = PANGO_PIXELS(ranges[2 * i + 1]) - x;
+    Rect rect(x, y, width, height);
+    rect.set_origin(ToViewPoint(rect.origin()));
+    bounds->push_back(rect);
+  }
+  g_free(ranges);
+}
+
+void RenderTextLinux::GetSelectionBounds(std::vector<Rect>* bounds) {
+  if (selection_visual_bounds_.empty())
+    CalculateSubstringBounds(GetSelectionStart(), GetCursorPosition(),
+                             &selection_visual_bounds_);
+  *bounds = selection_visual_bounds_;
 }
 
 }  // namespace gfx

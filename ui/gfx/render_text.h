@@ -21,9 +21,6 @@
 
 namespace gfx {
 
-// Strike line width.
-const int kStrikeWidth = 2;
-
 // Color settings for text, backgrounds and cursor.
 // These are tentative, and should be derived from theme, system
 // settings and current settings.
@@ -172,7 +169,7 @@ class UI_EXPORT RenderText {
   // may be outside the visible region if the text is longer than the textfield.
   // Subsequent text, cursor, or bounds changes may invalidate returned values.
   virtual Rect GetCursorBounds(const SelectionModel& selection,
-                               bool insert_mode);
+                               bool insert_mode) = 0;
 
   // Compute the current cursor bounds, panning the text to show the cursor in
   // the display rect if necessary. These bounds are in local coordinates.
@@ -209,24 +206,35 @@ class UI_EXPORT RenderText {
   virtual SelectionModel LeftEndSelectionModel();
   virtual SelectionModel RightEndSelectionModel();
 
-  // Get the logical index of the grapheme preceeding the argument |position|.
-  virtual size_t GetIndexOfPreviousGrapheme(size_t position);
+  // Sets the selection model, the argument is assumed to be valid.
+  virtual void SetSelectionModel(const SelectionModel& model);
 
   // Get the visual bounds containing the logical substring within |from| to
-  // |to|. These bounds could be visually discontinuous if the substring is
-  // split by a LTR/RTL level change. These bounds are in local coordinates, but
-  // may be outside the visible region if the text is longer than the textfield.
+  // |to| into |bounds|. If |from| equals to |to|, |bounds| is set as empty.
+  // These bounds could be visually discontinuous if the substring is split by a
+  // LTR/RTL level change. These bounds are in local coordinates, but may be
+  // outside the visible region if the text is longer than the textfield.
   // Subsequent text, cursor, or bounds changes may invalidate returned values.
-  // TODO(msw) Re-evaluate this function's necessity and signature.
-  virtual std::vector<Rect> GetSubstringBounds(size_t from, size_t to);
+  virtual void GetSubstringBounds(size_t from,
+                                  size_t to,
+                                  std::vector<Rect>* bounds) = 0;
 
   // Return true if cursor can appear in front of the character at |position|,
   // which means it is a grapheme boundary or the first character in the text.
   virtual bool IsCursorablePosition(size_t position) = 0;
 
-  // Updates the layout so that the next draw request can correctly
+  // Update the layout so that the next draw request can correctly
   // render the text and its attributes.
   virtual void UpdateLayout() = 0;
+
+  // Ensure the text is laid out.
+  virtual void EnsureLayout() = 0;
+
+  // Draw the text.
+  virtual void DrawVisualText(Canvas* canvas) = 0;
+
+  // Get the logical index of the grapheme preceding the argument |position|.
+  size_t GetIndexOfPreviousGrapheme(size_t position);
 
   // Apply composition style (underline) to composition range and selection
   // style (foreground) to selection range.
@@ -249,9 +257,6 @@ class UI_EXPORT RenderText {
   // The return value is bounded by 0 and the text length, inclusive.
   virtual size_t IndexOfAdjacentGrapheme(size_t index, bool next) = 0;
 
-  // Sets the selection model, the argument is assumed to be valid.
-  void SetSelectionModel(const SelectionModel& selection_model);
-
   // Set the cursor to |position|, with the caret trailing the previous
   // grapheme, or if there is no previous grapheme, leading the cursor position.
   // If |select| is false, the selection start is moved to the same position.
@@ -262,6 +267,10 @@ class UI_EXPORT RenderText {
   // Update the cached bounds and display offset to ensure that the current
   // cursor is within the visible display area.
   void UpdateCachedBoundsAndOffset();
+
+  // Draw the selection and cursor.
+  void DrawSelection(Canvas* canvas);
+  void DrawCursor(Canvas* canvas);
 
   // Logical UTF-16 string data to be drawn.
   string16 text_;

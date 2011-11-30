@@ -173,13 +173,6 @@ int RenderTextWin::GetStringWidth() {
   return string_width_;
 }
 
-void RenderTextWin::Draw(Canvas* canvas) {
-  EnsureLayout();
-  DrawSelection(canvas);
-  DrawVisualText(canvas);
-  DrawCursor(canvas);
-}
-
 SelectionModel RenderTextWin::FindCursorPosition(const Point& point) {
   if (text().empty())
     return SelectionModel();
@@ -319,13 +312,18 @@ SelectionModel RenderTextWin::RightEndSelectionModel() {
   return SelectionModel(cursor, caret, placement);
 }
 
-std::vector<Rect> RenderTextWin::GetSubstringBounds(size_t from, size_t to) {
+void RenderTextWin::GetSubstringBounds(size_t from,
+                                       size_t to,
+                                       std::vector<Rect>* bounds) {
   DCHECK(!needs_layout_);
   ui::Range range(from, to);
   DCHECK(ui::Range(0, text().length()).Contains(range));
   Point display_offset(GetUpdatedDisplayOffset());
-  std::vector<Rect> bounds;
   HRESULT hr = 0;
+
+  bounds->clear();
+  if (from == to)
+    return;
 
   // Add a Rect for each run/selection intersection.
   // TODO(msw): The bounds should probably not always be leading the range ends.
@@ -364,14 +362,13 @@ std::vector<Rect> RenderTextWin::GetSubstringBounds(size_t from, size_t to) {
       rect.Offset(0, (display_rect().height() - rect.height()) / 2);
       rect.set_origin(ToViewPoint(rect.origin()));
       // Union this with the last rect if they're adjacent.
-      if (!bounds.empty() && rect.SharesEdgeWith(bounds.back())) {
-        rect = rect.Union(bounds.back());
-        bounds.pop_back();
+      if (!bounds->empty() && rect.SharesEdgeWith(bounds->back())) {
+        rect = rect.Union(bounds->back());
+        bounds->pop_back();
       }
-      bounds.push_back(rect);
+      bounds->push_back(rect);
     }
   }
-  return bounds;
 }
 
 bool RenderTextWin::IsCursorablePosition(size_t position) {
@@ -396,6 +393,72 @@ void RenderTextWin::UpdateLayout() {
   needs_layout_ = true;
 }
 
+void RenderTextWin::EnsureLayout() {
+  if (!needs_layout_)
+    return;
+  // TODO(msw): Skip complex processing if ScriptIsComplex returns false.
+  ItemizeLogicalText();
+  if (!runs_.empty())
+    LayoutVisualText();
+  needs_layout_ = false;
+}
+
+void RenderTextWin::DrawVisualText(Canvas* canvas) {
+  SkCanvas* canvas_skia = canvas->GetSkCanvas();
+
+  Point offset(ToViewPoint(Point()));
+  // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
+  size_t height = default_style().font.GetHeight();
+
+  SkScalar x = SkIntToScalar(offset.x());
+  SkScalar y = SkIntToScalar(offset.y());
+  // Center the text vertically in the display area.
+  y += (display_rect().height() - height) / 2;
+  // Offset by the font size to account for Skia expecting y to be the bottom.
+  y += default_style().font.GetFontSize();
+
+  SkPaint paint;
+  paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
+  paint.setStyle(SkPaint::kFill_Style);
+  paint.setAntiAlias(true);
+  paint.setSubpixelText(true);
+  paint.setLCDRenderText(true);
+
+  std::vector<SkPoint> pos;
+  for (size_t i = 0; i < runs_.size(); ++i) {
+    // Get the run specified by the visual-to-logical map.
+    internal::TextRun* run = runs_[visual_to_logical_[i]];
+
+    // TODO(msw): Font default/fallback and style integration.
+    SkTypeface::Style style = SkTypeface::kNormal;
+    SkTypeface* typeface =
+        SkTypeface::CreateFromName(run->font.GetFontName().c_str(), style);
+    if (typeface) {
+      paint.setTypeface(typeface);
+      // |paint| adds its own ref. Release the ref from CreateFromName.
+      typeface->unref();
+    }
+    paint.setTextSize(run->font.GetFontSize());
+    paint.setColor(run->foreground);
+
+    SkScalar run_x = x;
+
+    // Based on WebCore::skiaDrawText.
+    pos.resize(run->glyph_count);
+    for (int glyph = 0; glyph < run->glyph_count; glyph++) {
+        pos[glyph].set(x + run->offsets[glyph].du,
+                       y + run->offsets[glyph].dv);
+        x += SkIntToScalar(run->advance_widths[glyph]);
+    }
+
+    size_t byte_length = run->glyph_count * sizeof(WORD);
+    canvas_skia->drawPosText(run->glyphs.get(), byte_length, &pos[0], paint);
+
+    if (run->strike || run->underline)
+      DrawTextRunDecorations(canvas_skia, paint, *run, run_x, y);
+  }
+}
+
 size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
   EnsureLayout();
   size_t run_index = GetRunContainingPosition(index);
@@ -414,16 +477,6 @@ size_t RenderTextWin::IndexOfAdjacentGrapheme(size_t index, bool next) {
       ch++;
   }
   return std::max(std::min(ch, length) + start, 0);
-}
-
-void RenderTextWin::EnsureLayout() {
-  if (!needs_layout_)
-    return;
-  // TODO(msw): Skip complex processing if ScriptIsComplex returns false.
-  ItemizeLogicalText();
-  if (!runs_.empty())
-    LayoutVisualText();
-  needs_layout_ = false;
 }
 
 void RenderTextWin::ItemizeLogicalText() {
@@ -688,82 +741,6 @@ SelectionModel RenderTextWin::RightSelectionModel(
   internal::TextRun* next = runs_[visual_to_logical_[visual_index + 1]];
   return next->script_analysis.fRTL ? LastSelectionModelInsideRun(next) :
                                       FirstSelectionModelInsideRun(next);
-}
-
-void RenderTextWin::DrawSelection(Canvas* canvas) {
-  std::vector<Rect> sel(
-      GetSubstringBounds(GetSelectionStart(), GetCursorPosition()));
-  SkColor color = focused() ? kFocusedSelectionColor : kUnfocusedSelectionColor;
-  for (std::vector<Rect>::const_iterator i = sel.begin(); i < sel.end(); ++i)
-    canvas->FillRect(color, *i);
-}
-
-void RenderTextWin::DrawVisualText(Canvas* canvas) {
-  if (text().empty())
-    return;
-
-  SkCanvas* canvas_skia = canvas->GetSkCanvas();
-
-  Point offset(ToViewPoint(Point()));
-  // TODO(msw): Establish a vertical baseline for strings of mixed font heights.
-  size_t height = default_style().font.GetHeight();
-
-  SkScalar x = SkIntToScalar(offset.x());
-  SkScalar y = SkIntToScalar(offset.y());
-  // Center the text vertically in the display area.
-  y += (display_rect().height() - height) / 2;
-  // Offset by the font size to account for Skia expecting y to be the bottom.
-  y += default_style().font.GetFontSize();
-
-  SkPaint paint;
-  paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setAntiAlias(true);
-  paint.setSubpixelText(true);
-  paint.setLCDRenderText(true);
-
-  std::vector<SkPoint> pos;
-  for (size_t i = 0; i < runs_.size(); ++i) {
-    // Get the run specified by the visual-to-logical map.
-    internal::TextRun* run = runs_[visual_to_logical_[i]];
-
-    // TODO(msw): Font default/fallback and style integration.
-    SkTypeface::Style style = SkTypeface::kNormal;
-    SkTypeface* typeface =
-        SkTypeface::CreateFromName(run->font.GetFontName().c_str(), style);
-    if (typeface) {
-      paint.setTypeface(typeface);
-      // |paint| adds its own ref. Release the ref from CreateFromName.
-      typeface->unref();
-    }
-    paint.setTextSize(run->font.GetFontSize());
-    paint.setColor(run->foreground);
-
-    SkScalar run_x = x;
-
-    // Based on WebCore::skiaDrawText.
-    pos.resize(run->glyph_count);
-    for (int glyph = 0; glyph < run->glyph_count; glyph++) {
-        pos[glyph].set(x + run->offsets[glyph].du,
-                       y + run->offsets[glyph].dv);
-        x += SkIntToScalar(run->advance_widths[glyph]);
-    }
-
-    size_t byte_length = run->glyph_count * sizeof(WORD);
-    canvas_skia->drawPosText(run->glyphs.get(), byte_length, &pos[0], paint);
-
-    if (run->strike || run->underline)
-      DrawTextRunDecorations(canvas_skia, paint, *run, run_x, y);
-  }
-}
-
-void RenderTextWin::DrawCursor(Canvas* canvas) {
-  // Paint cursor. Replace cursor is drawn as rectangle for now.
-  // TODO(msw): Draw a better cursor with a better indication of association.
-  if (cursor_visible() && focused()) {
-    Rect r(GetUpdatedCursorBounds());
-    canvas->DrawRectInt(kCursorColor, r.x(), r.y(), r.width(), r.height());
-  }
 }
 
 RenderText* RenderText::CreateRenderText() {
