@@ -337,6 +337,11 @@ void PPB_WebSocket_Impl::didReceiveMessageError() {
   DLOG(INFO) << "didReceiveMessageError is not implemented yet.";
 }
 
+void PPB_WebSocket_Impl::didUpdateBufferedAmount(unsigned long bufferedAmount) {
+  // TODO(toyoshim): Must implement.
+  DLOG(INFO) << "didUpdateBufferedAmount is not implemented yet.";
+}
+
 void PPB_WebSocket_Impl::didStartClosingHandshake() {
   // TODO(toyoshim): Must implement.
   DLOG(INFO) << "didStartClosingHandshake is not implemented yet.";
