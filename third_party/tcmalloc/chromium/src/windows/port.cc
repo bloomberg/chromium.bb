@@ -259,6 +259,31 @@ extern void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size,
   return result;
 }
 
+size_t TCMalloc_SystemAddGuard(void* start, size_t size) {
+  static size_t pagesize = 0;
+  if (pagesize == 0) {
+    SYSTEM_INFO system_info;
+    GetSystemInfo(&system_info);
+    pagesize = system_info.dwPageSize;
+  }
+
+  // We know that TCMalloc_SystemAlloc will give us a correct page alignment
+  // regardless, so we can just assert to detect erroneous callers.
+  assert(reinterpret_cast<size_t>(start) % pagesize == 0);
+
+  // Add a guard page to catch metadata corruption. We're using the
+  // PAGE_GUARD flag rather than NO_ACCESS because we want the unique
+  // exception in crash reports.
+  DWORD permissions = 0;
+  if (size > pagesize &&
+      VirtualProtect(start, pagesize, PAGE_READONLY | PAGE_GUARD,
+                     &permissions)) {
+    return pagesize;
+  }
+
+  return 0;
+}
+
 void TCMalloc_SystemRelease(void* start, size_t length) {
   if (VirtualFree(start, length, MEM_DECOMMIT))
     return;

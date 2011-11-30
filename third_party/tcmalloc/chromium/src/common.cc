@@ -34,6 +34,10 @@
 #include "common.h"
 #include "system-alloc.h"
 
+#if defined(HAVE_UNISTD_H) && defined(HAVE_GETPAGESIZE)
+#include <unistd.h>                     // for getpagesize
+#endif
+
 namespace tcmalloc {
 
 // Note: the following only works for "n"s that fit in 32-bits, but
@@ -201,7 +205,13 @@ void SizeMap::Dump(TCMalloc_Printer* out) {
 // Metadata allocator -- keeps stats about how many bytes allocated.
 static uint64_t metadata_system_bytes_ = 0;
 void* MetaDataAlloc(size_t bytes) {
-  void* result = TCMalloc_SystemAlloc(bytes, NULL);
+  static size_t pagesize;
+#ifdef HAVE_GETPAGESIZE
+  if (pagesize == 0)
+    pagesize = getpagesize();
+#endif
+
+  void* result = TCMalloc_SystemAlloc(bytes, NULL, pagesize);
   if (result != NULL) {
     metadata_system_bytes_ += bytes;
   }

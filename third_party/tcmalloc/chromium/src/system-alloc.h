@@ -77,6 +77,11 @@ extern void TCMalloc_SystemRelease(void* start, size_t length);
 // function to fail.
 extern void TCMalloc_SystemCommit(void* start, size_t length);
 
+// Guards the first page in the supplied range of memory and returns the size
+// of the guard page. Will return 0 if a guard cannot be added to the page
+// (e.g. start is not aligned or size is not large enough).
+extern size_t TCMalloc_SystemAddGuard(void* start, size_t size);
+
 // The current system allocator.
 extern PERFTOOLS_DLL_DECL SysAllocator* sys_alloc;
 

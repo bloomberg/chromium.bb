@@ -38,6 +38,7 @@
 #include "common.h"            // for MetaDataAlloc
 #include "free_list.h"          // for FL_Push/FL_Pop
 #include "internal_logging.h"  // for ASSERT, CRASH
+#include "system-alloc.h"      // for TCMalloc_SystemAddGuard
 
 namespace tcmalloc {
 
@@ -74,7 +75,20 @@ class PageHeapAllocator {
                 "tcmalloc data (%d bytes, object-size %d)\n",
                 kAllocIncrement, static_cast<int>(sizeof(T)));
         }
-        free_avail_ = kAllocIncrement;
+
+        // This guard page protects the metadata from being corrupted by a
+        // buffer overrun. We currently have no mechanism for freeing it, since
+        // we never release the metadata buffer. If that changes we'll need to
+        // add something like TCMalloc_SystemRemoveGuard.
+        size_t guard_size = TCMalloc_SystemAddGuard(free_area_,
+                                                    kAllocIncrement);
+        free_area_ += guard_size;
+        free_avail_ = kAllocIncrement - guard_size;
+        if (free_avail_ < sizeof(T)) {
+          CRASH("FATAL ERROR: Insufficient memory to guard internal tcmalloc "
+                "data (%d bytes, object-size %d, guard-size %d)\n",
+                kAllocIncrement, static_cast<int>(sizeof(T)), guard_size);
+        }
       }
       result = free_area_;
       free_area_ += sizeof(T);

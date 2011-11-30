@@ -103,8 +103,7 @@ union MemoryAligner {
 
 static SpinLock spinlock(SpinLock::LINKER_INITIALIZED);
 
-#if defined(HAVE_MMAP) || defined(MADV_DONTNEED)
-// Page size is initialized on demand (only needed for mmap-based allocators)
+#ifdef HAVE_GETPAGESIZE
 static size_t pagesize = 0;
 #endif
 
@@ -482,6 +481,21 @@ void* TCMalloc_SystemAlloc(size_t size, size_t *actual_size,
     }
   }
   return result;
+}
+
+size_t TCMalloc_SystemAddGuard(void* start, size_t size) {
+#ifdef HAVE_GETPAGESIZE
+  if (pagesize == 0)
+    pagesize = getpagesize();
+
+  if (size < pagesize || (reinterpret_cast<size_t>(start) % pagesize) != 0)
+    return 0;
+
+  if (!mprotect(start, pagesize, PROT_NONE))
+    return pagesize;
+#endif
+
+  return 0;
 }
 
 void TCMalloc_SystemRelease(void* start, size_t length) {
