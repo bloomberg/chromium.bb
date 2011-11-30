@@ -38,7 +38,7 @@ setlocal
 set CLIENT_ROOT=%~dp0%..\..
 set CONFIG=%1
 
-if (%2)==() goto setdefaultbase
+if (%2)==() goto setdefault
 if (%3)==() goto usage
 set DRIVE=%2
 set INSTALL_ROOT=%3
