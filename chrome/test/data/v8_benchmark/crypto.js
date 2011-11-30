@@ -31,7 +31,7 @@
 
 
 // The code has been adapted for use as a benchmark by Google.
-var Crypto = new BenchmarkSuite('Crypto', 203037, [
+var Crypto = new BenchmarkSuite('Crypto', 266181, [
   new Benchmark("Encrypt", encrypt),
   new Benchmark("Decrypt", decrypt)
 ]);
@@ -1406,7 +1406,7 @@ function rng_seed_int(x) {
 
 // Mix in the current time (w/milliseconds) into the pool
 function rng_seed_time() {
-  // Use pre-computed date to avoid making the benchmark 
+  // Use pre-computed date to avoid making the benchmark
   // results dependent on the current date.
   rng_seed_int(1122926989487);
 }

@@ -33,7 +33,7 @@
 // also has to deal with a lot of changes to the large tree object
 // graph.
 
-var Splay = new BenchmarkSuite('Splay', 126125, [
+var Splay = new BenchmarkSuite('Splay', 81491, [
   new Benchmark("Splay", SplayRun, SplaySetup, SplayTearDown)
 ]);
 
@@ -46,16 +46,16 @@ var kSplayTreePayloadDepth = 5;
 var splayTree = null;
 
 
-function GeneratePayloadTree(depth, key) {
+function GeneratePayloadTree(depth, tag) {
   if (depth == 0) {
     return {
       array  : [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
-      string : 'String for key ' + key + ' in leaf node'
+      string : 'String for key ' + tag + ' in leaf node'
     };
   } else {
     return {
-      left:  GeneratePayloadTree(depth - 1, key),
-      right: GeneratePayloadTree(depth - 1, key)
+      left:  GeneratePayloadTree(depth - 1, tag),
+      right: GeneratePayloadTree(depth - 1, tag)
     };
   }
 }
@@ -74,7 +74,8 @@ function InsertNewNode() {
   do {
     key = GenerateKey();
   } while (splayTree.find(key) != null);
-  splayTree.insert(key, GeneratePayloadTree(kSplayTreePayloadDepth, key));
+  var payload = GeneratePayloadTree(kSplayTreePayloadDepth, String(key));
+  splayTree.insert(key, payload);
   return key;
 }
 
@@ -230,8 +231,23 @@ SplayTree.prototype.find = function(key) {
 
 
 /**
+ * @return {SplayTree.Node} Node having the maximum key value.
+ */
+SplayTree.prototype.findMax = function(opt_startNode) {
+  if (this.isEmpty()) {
+    return null;
+  }
+  var current = opt_startNode || this.root_;
+  while (current.right) {
+    current = current.right;
+  }
+  return current;
+};
+
+
+/**
  * @return {SplayTree.Node} Node having the maximum key value that
- *     is less or equal to the specified key value.
+ *     is less than the specified key value.
  */
 SplayTree.prototype.findGreatestLessThan = function(key) {
   if (this.isEmpty()) {
@@ -242,7 +258,7 @@ SplayTree.prototype.findGreatestLessThan = function(key) {
   this.splay_(key);
   // Now the result is either the root node or the greatest node in
   // the left subtree.
-  if (this.root_.key <= key) {
+  if (this.root_.key < key) {
     return this.root_;
   } else if (this.root_.left) {
     return this.findMax(this.root_.left);

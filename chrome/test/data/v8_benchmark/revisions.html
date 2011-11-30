@@ -1,7 +1,7 @@
 <html>
 <head>
 <title>V8 Benchmark Suite Revisions</title>
-<link type="text/css" rel="stylesheet" href="style.css"></link>
+<link type="text/css" rel="stylesheet" href="style.css" />
 </head>
 <body>
 <div>
@@ -18,6 +18,28 @@ a description of the changes made.  Note that benchmark results are
 not comparable unless both results are run with the same revision of
 the benchmark suite.
 
+</p>
+
+<div class="subtitle"><h3>Version 6 (<a href="http://v8.googlecode.com/svn/data/benchmarks/v6/run.html">link</a>)</h3></div>
+
+<p>Removed dead code from the RayTrace benchmark and fixed a couple of
+typos in the DeltaBlue implementation. Changed the Splay benchmark to
+avoid converting the same numeric key to a string over and over again
+and to avoid inserting and removing the same element repeatedly thus
+increasing pressure on the memory subsystem. Changed the RegExp
+benchmark to exercise the regular expression engine on different input
+strings.</p>
+
+<p>Furthermore, the benchmark runner was changed to run the benchmarks
+for at least a few times to stabilize the reported numbers on slower
+machines.</p>
+
+<div class="subtitle"><h3>Version 5 (<a href="http://v8.googlecode.com/svn/data/benchmarks/v5/run.html">link</a>)</h3></div>
+
+<p>Removed duplicate line in random seed code, and changed the name of
+the Object.prototype.inherits function in the DeltaBlue benchmark to
+inheritsFrom to avoid name clashes when running in Chromium with
+extensions enabled.
 </p>
 
 <div class="subtitle"><h3>Version 4 (<a href="http://v8.googlecode.com/svn/data/benchmarks/v4/run.html">link</a>)</h3></div>

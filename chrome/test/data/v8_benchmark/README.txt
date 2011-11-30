@@ -52,3 +52,28 @@ memory management subsystem of the JavaScript engine.
 Furthermore, all the unused parts of the Prototype library were
 removed from the RayTrace benchmark. This does not affect the running
 of the benchmark.
+
+
+Changes from Version 4 to Version 5
+===================================
+
+Removed duplicate line in random seed code, and changed the name of
+the Object.prototype.inherits function in the DeltaBlue benchmark to
+inheritsFrom to avoid name clashes when running in Chromium with
+extensions enabled.
+
+
+Changes from Version 5 to Version 6
+===================================
+
+Removed dead code from the RayTrace benchmark and fixed a couple of
+typos in the DeltaBlue implementation. Changed the Splay benchmark to
+avoid converting the same numeric key to a string over and over again
+and to avoid inserting and removing the same element repeatedly thus
+increasing pressure on the memory subsystem. Changed the RegExp
+benchmark to exercise the regular expression engine on different
+input strings.
+
+Furthermore, the benchmark runner was changed to run the benchmarks
+for at least a few times to stabilize the reported numbers on slower
+machines.
