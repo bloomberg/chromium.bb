@@ -5266,6 +5266,28 @@
    fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_9PaintInfoERKNS_8IntPointE
    fun:_ZN7WebCore11RenderBlock13paintContentsERNS_9PaintInfoERKNS_8IntPointE
 }
+{
+   bug_105961
+   Memcheck:Leak
+   fun:malloc
+   ...
+   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKN3WTF6StringEiPNS3_7HashMapIPNS_12CSSStyleRuleENS3_6RefPtrINS_17CSSRuleSourceDataEEENS3_7PtrHashIS9_EENS3_10HashTraitsIS9_EENSF_ISC_EEEE
+   fun:_ZN7WebCore13CSSStyleSheet17parseStringAtLineERKN3WTF6StringEbi
+   fun:_ZN7WebCore13CSSStyleSheet11parseStringERKN3WTF6StringEb
+   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
+   fun:_ZN7WebCoreL20loadFullDefaultStyleEv
+   fun:_ZN7WebCoreL34ensureDefaultStyleSheetsForElementEPNS_7ElementE
+   fun:_ZN7WebCore16CSSStyleSelector15styleForElementEPNS_7ElementEPNS_11RenderStyleEbb
+   fun:_ZN7WebCore8Document41styleForElementIgnoringPendingStylesheetsEPNS_7ElementE
+   fun:_ZN7WebCore7Element13computedStyleENS_8PseudoIdE
+   fun:_ZN7WebCore16HTMLTitleElement17textWithDirectionEv
+   fun:_ZN7WebCore16HTMLTitleElement15childrenChangedEbPNS_4NodeES2_i
+   fun:_ZN7WebCore13ContainerNode14parserAddChildEN3WTF10PassRefPtrINS_4NodeEEE
+   fun:_ZN7WebCore20HTMLConstructionSite12attachAtSiteERKNS0_14AttachmentSiteEN3WTF10PassRefPtrINS_4NodeEEE
+   fun:_ZN7WebCore20HTMLConstructionSite14insertTextNodeERKN3WTF6StringE
+   fun:_ZN7WebCore15HTMLTreeBuilder22processCharacterBufferERNS0_28ExternalCharacterTokenBufferE
+   fun:_ZN7WebCore15HTMLTreeBuilder16processCharacterERNS_15AtomicHTMLTokenE
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
