@@ -2674,8 +2674,8 @@
    write(buf)
    ...
    fun:_ZN9file_util9WriteFileERK8FilePathPKci
-   fun:_ZN12_GLOBAL__N_110SaveBitmapEPSt6vectorIhSaIhEE8FilePathPb
-   fun:_ZN4base8internal15RunnableAdapterIPFvPSt6vectorIhSaIhEE8FilePathPbEE3RunERKS5_RKS6_RKS7_
+   fun:_ZN12_GLOBAL__N_110SaveBitmapEPSt6vectorIhSaIhEE*8FilePathPb
+   fun:_ZN4base8internal15RunnableAdapterIPFvPSt6vectorIhSaIhEE*8FilePathPbEE3Run*
 }
 {
    bug_64804
