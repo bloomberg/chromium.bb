@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser/avatar_button_controller.h"
@@ -357,8 +358,10 @@ willPositionSheet:(NSWindow*)sheet
   // Now lay out incognito badge together with the tab strip.
   if ([self shouldShowAvatar]) {
     NSView* avatarButton = [avatarButtonController_ view];
-    [avatarButton setFrameSize:NSMakeSize(tabStripHeight,
-                                          tabStripHeight - 5.0)];
+    CGFloat buttonHeight = std::min(
+        static_cast<CGFloat>(profiles::kAvatarIconHeight), tabStripHeight);
+    [avatarButton setFrameSize:NSMakeSize(profiles::kAvatarIconWidth,
+                                          buttonHeight)];
 
     // Actually place the badge *above* |maxY|, by +2 to miss the divider.  On
     // Lion or later, shift the badge left to move it away from the fullscreen

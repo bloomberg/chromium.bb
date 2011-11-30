@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/browser.h"
@@ -122,7 +123,8 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
     [self setView:button];
 
     if (browser_->profile()->IsOffTheRecord()) {
-      [self setImage:gfx::GetCachedImageWithName(@"otr_icon.pdf")];
+      [self setImage:[self compositeImageWithShadow:
+          gfx::GetCachedImageWithName(@"otr_icon.pdf")]];
       [self setOpenMenuOnClick:NO];
     } else {
       observer_.reset(new AvatarButtonControllerInternal::Observer(self));
@@ -146,7 +148,7 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
 }
 
 - (void)setImage:(NSImage*)image {
-  [self.buttonView setImage:[self compositeImageWithShadow:image]];
+  [self.buttonView setImage:image];
 }
 
 - (void)showAvatarBubble {
@@ -237,7 +239,13 @@ const CGFloat kMenuYOffsetAdjust = 1.0;
   size_t index =
       cache.GetIndexOfProfileWithPath(browser_->profile()->GetPath());
   if (index != std::string::npos) {
-    [self setImage:cache.GetAvatarIconOfProfileAtIndex(index).ToNSImage()];
+    BOOL is_gaia_picture =
+        cache.IsUsingGAIAPictureOfProfileAtIndex(index) &&
+        cache.GetGAIAPictureOfProfileAtIndex(index);
+    gfx::Image icon = profiles::GetAvatarIconForTitleBar(
+        cache.GetAvatarIconOfProfileAtIndex(index), is_gaia_picture,
+        profiles::kAvatarIconWidth, profiles::kAvatarIconHeight);
+    [self setImage:icon.ToNSImage()];
 
     const string16& name = cache.GetNameOfProfileAtIndex(index);
     NSString* nsName = base::SysUTF16ToNSString(name);
