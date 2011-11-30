@@ -310,7 +310,7 @@ class JingleSessionTest : public testing::Test {
     } else {
       host_server_->set_authenticator_factory(
           new V1HostAuthenticatorFactory(
-              cert_der, private_key.release(), kTestSharedSecret));
+              cert_der, private_key.get(), kTestSharedSecret));
     }
 
     EXPECT_CALL(client_server_listener_, OnSessionManagerInitialized())

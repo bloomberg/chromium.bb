@@ -165,7 +165,7 @@ void ChromotingHost::SetSharedSecret(const std::string& shared_secret) {
   DCHECK(context_->network_message_loop()->BelongsToCurrentThread());
   session_manager_->set_authenticator_factory(
       new protocol::V1HostAuthenticatorFactory(
-          key_pair_.GenerateCertificate(), key_pair_.CopyPrivateKey(),
+          key_pair_.GenerateCertificate(), key_pair_.private_key(),
           shared_secret));
 }
 
