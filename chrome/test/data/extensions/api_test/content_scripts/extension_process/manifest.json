@@ -1,6 +1,7 @@
 {
   "name": "content_script_extension_process",
   "version": "1.0",
+  "manifest_version": 2,
   "description": "Content scripts should get injected into web pages, even when the webpages are in an extension process.",
   "background_page": "background.html",
   "content_scripts": [

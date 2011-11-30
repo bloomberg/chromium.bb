@@ -1,6 +1,7 @@
 {
   "name": "cross origin xhr tests",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Sanity check that cross-origin XHR works for extension content scripts.",
   "background_page": "test.html",
   "content_scripts": [ {

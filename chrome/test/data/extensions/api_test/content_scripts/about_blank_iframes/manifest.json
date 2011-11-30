@@ -1,6 +1,7 @@
 {
   "name": "about:blank iframes",
   "version": "1.0",
+  "manifest_version": 2,
   "description": "Tests that content scripts are not injected into about:blank iframes, even after document.write().",
   "background_page": "test.html",
   "permissions": ["tabs"],

@@ -1,6 +1,7 @@
 {
   "name": "chrome.clear API Test: One at a time.",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Checks that chrome.experimental.clear APIs can only be called if one's not already running.",
   "background_page": "background.html",
   "permissions": [

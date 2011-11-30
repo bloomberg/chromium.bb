@@ -2,6 +2,7 @@
   "key" : "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCvmgKDDMPKFymmxwaAyZ+qLbqwcsbZ0xUo1joEGxzNziHHfq53O2cxYx4JERINXPic9lVfzaljIDLR2fnLZPJfh9iMnauSf/DpMcmbdqcLJvg3MoS0e59D16tgij9PSdJFbi1l2PFgSAWvoGVdY5cmiNsHYDIfa8YFwXq5i1A1QwIDAQAB",
   "name": "chrome.decodeJPEG",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Test for decodeJPEG.decode",
   "background_page": "background.html",
   "permissions": ["chromePrivate"]

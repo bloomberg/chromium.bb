@@ -1,6 +1,7 @@
 {
   "name": "Test context menu creation from multiple extension pages.",
   "version": "1.0",
+  "manifest_version": 2,
   "permissions": [
     "contextMenus"
   ],

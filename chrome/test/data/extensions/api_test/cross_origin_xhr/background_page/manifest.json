@@ -1,6 +1,7 @@
 {
   "name": "cross origin xhr tests",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Sanity check that cross-origin XHR works for extensions. The majority of this is implemented (and tested) in WebKit, but we have a sanity test here just to make sure the integration with Chromium keeps working.",
   "background_page": "test.html",
   "permissions": ["http://a.com/", "http://*.b.com/"]
