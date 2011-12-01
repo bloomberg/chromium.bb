@@ -8,7 +8,7 @@
 
 #include <set>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "content/public/browser/notification_types.h"
