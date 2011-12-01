@@ -25,12 +25,6 @@ class RenderView;
 
 // This is a base class for chrome extension bindings.  Common features that
 // are shared by different modules go here.
-//
-// TODO(aa): Remove the extension-system specific bits of this and move to
-// renderer/, or even to renderer/bindings and use DEPS to enforce separation
-// from extension system.
-//
-// TODO(aa): Add unit testing for this class.
 class ChromeV8Extension : public v8::Extension {
  public:
   typedef std::set<ChromeV8Extension*> InstanceSet;
@@ -47,11 +41,6 @@ class ChromeV8Extension : public v8::Extension {
   virtual ~ChromeV8Extension();
 
   ExtensionDispatcher* extension_dispatcher() { return extension_dispatcher_; }
-
-  // Returns a hidden variable for use by the bindings in the specified context
-  // that is unreachable by the page for the current context.
-  static v8::Handle<v8::Value> GetChromeHidden(
-      const v8::Handle<v8::Context>& context);
 
   void ContextWillBeReleased(ChromeV8Context* context);
 

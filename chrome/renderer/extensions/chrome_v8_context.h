@@ -46,6 +46,18 @@ class ChromeV8Context {
     web_frame_ = NULL;
   }
 
+  // Returns a special Chrome-specific hidden object that is associated with a
+  // context, but not reachable from the JavaScript in that context. This is
+  // used by our v8::Extension implementations as a way to share code and as a
+  // bridge between C++ and JavaScript.
+  static v8::Handle<v8::Value> GetOrCreateChromeHidden(
+      v8::Handle<v8::Context> context);
+
+  // Return the chromeHidden object associated with this context, or an empty
+  // handle if no chrome hidden has been created (by GetOrCreateChromeHidden)
+  // yet for this context.
+  v8::Handle<v8::Value> GetChromeHidden() const;
+
   // Returns the RenderView associated with this context. Can return NULL if the
   // context is in the process of being destroyed.
   content::RenderView* GetRenderView() const;

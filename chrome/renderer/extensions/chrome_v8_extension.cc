@@ -25,12 +25,6 @@ using WebKit::WebView;
 
 namespace {
 
-const char kChromeHidden[] = "chromeHidden";
-
-#ifndef NDEBUG
-const char kValidateCallbacks[] = "validateCallbacks";
-#endif
-
 static base::LazyInstance<ChromeV8Extension::InstanceSet> g_instances =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -198,29 +192,7 @@ ChromeV8ExtensionHandler* ChromeV8Extension::CreateHandler(
 
 v8::Handle<v8::Value> ChromeV8Extension::GetChromeHidden(
     const v8::Arguments& args) {
-  return GetChromeHidden(v8::Context::GetCurrent());
-}
-
-v8::Handle<v8::Value> ChromeV8Extension::GetChromeHidden(
-    const v8::Handle<v8::Context>& context) {
-  v8::Local<v8::Object> global = context->Global();
-  v8::Local<v8::Value> hidden = global->GetHiddenValue(
-      v8::String::New(kChromeHidden));
-
-  if (hidden.IsEmpty() || hidden->IsUndefined()) {
-    hidden = v8::Object::New();
-    global->SetHiddenValue(v8::String::New(kChromeHidden), hidden);
-
-#ifndef NDEBUG
-    // Tell schema_generated_bindings.js to validate callbacks and events
-    // against their schema definitions in api/extension_api.json.
-    v8::Local<v8::Object>::Cast(hidden)
-        ->Set(v8::String::New(kValidateCallbacks), v8::True());
-#endif
-  }
-
-  DCHECK(hidden->IsObject());
-  return v8::Local<v8::Object>::Cast(hidden);
+  return ChromeV8Context::GetOrCreateChromeHidden(v8::Context::GetCurrent());
 }
 
 v8::Handle<v8::Value> ChromeV8Extension::Print(const v8::Arguments& args) {

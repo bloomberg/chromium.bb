@@ -14,6 +14,17 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "v8/include/v8.h"
 
+namespace {
+
+const char kChromeHidden[] = "chromeHidden";
+
+#ifndef NDEBUG
+const char kValidateCallbacks[] = "validateCallbacks";
+#endif
+
+}  // namespace
+
+
 ChromeV8Context::ChromeV8Context(v8::Handle<v8::Context> v8_context,
                                  WebKit::WebFrame* web_frame,
                                  const std::string& extension_id)
@@ -29,6 +40,34 @@ ChromeV8Context::~ChromeV8Context() {
   VLOG(1) << "Destroyed context for extension\n"
           << "  id:    " << extension_id_;
   v8_context_.Dispose();
+}
+
+// static
+v8::Handle<v8::Value> ChromeV8Context::GetOrCreateChromeHidden(
+    v8::Handle<v8::Context> context) {
+  v8::Local<v8::Object> global = context->Global();
+  v8::Local<v8::Value> hidden = global->GetHiddenValue(
+      v8::String::New(kChromeHidden));
+
+  if (hidden.IsEmpty() || hidden->IsUndefined()) {
+    hidden = v8::Object::New();
+    global->SetHiddenValue(v8::String::New(kChromeHidden), hidden);
+
+#ifndef NDEBUG
+    // Tell schema_generated_bindings.js to validate callbacks and events
+    // against their schema definitions in api/extension_api.json.
+    v8::Local<v8::Object>::Cast(hidden)
+        ->Set(v8::String::New(kValidateCallbacks), v8::True());
+#endif
+  }
+
+  DCHECK(hidden->IsObject());
+  return v8::Local<v8::Object>::Cast(hidden);
+}
+
+v8::Handle<v8::Value> ChromeV8Context::GetChromeHidden() const {
+  v8::Local<v8::Object> global = v8_context_->Global();
+  return global->GetHiddenValue(v8::String::New(kChromeHidden));
 }
 
 content::RenderView* ChromeV8Context::GetRenderView() const {
@@ -48,8 +87,10 @@ bool ChromeV8Context::CallChromeHiddenMethod(
 
   // Look up the function name, which may be a sub-property like
   // "Port.dispatchOnMessage" in the hidden global variable.
-  v8::Local<v8::Value> value = v8::Local<v8::Value>::New(
-      ChromeV8Extension::GetChromeHidden(v8_context_));
+  v8::Local<v8::Value> value = v8::Local<v8::Value>::New(GetChromeHidden());
+  if (value.IsEmpty())
+    return false;
+
   std::vector<std::string> components;
   base::SplitStringDontTrim(function_name, '.', &components);
   for (size_t i = 0; i < components.size(); ++i) {
