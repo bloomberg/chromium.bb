@@ -158,7 +158,8 @@ static void Backtrace(CONTEXT *initial_context) {
      *   ---- Bar()'s AddrFrame points here
      */
     if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64) {
-      DWORD64 frame_size = frame.AddrFrame.Offset - frame.AddrStack.Offset;
+      /* frame_size must be signed for the check to be useful. */
+      long long frame_size = frame.AddrFrame.Offset - frame.AddrStack.Offset;
       if (frame_number > 0 && frame_size < 32) {
         fprintf(stderr, "Error: frame_size=%i, which is too small\n",
                 frame_size);
