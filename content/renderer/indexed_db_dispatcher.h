@@ -39,6 +39,7 @@ class IndexedDBDispatcher : public IPC::Channel::Listener {
 
   // IPC::Channel::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+  void Send(IPC::Message* msg);
 
   void RequestIDBFactoryGetDatabaseNames(
       WebKit::WebIDBCallbacks* callbacks,

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,14 +26,14 @@ RendererWebIDBTransactionImpl::~RendererWebIDBTransactionImpl() {
   // object since inside WebKit, they hold a reference to the object wich owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  RenderThreadImpl::current()->Send(new IndexedDBHostMsg_TransactionDestroyed(
+  ChildThread::current()->Send(new IndexedDBHostMsg_TransactionDestroyed(
       idb_transaction_id_));
 }
 
 int RendererWebIDBTransactionImpl::mode() const
 {
   int mode;
-  RenderThreadImpl::current()->Send(new IndexedDBHostMsg_TransactionMode(
+  ChildThread::current()->Send(new IndexedDBHostMsg_TransactionMode(
       idb_transaction_id_, &mode));
   return mode;
 }
@@ -43,7 +43,7 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
     WebKit::WebExceptionCode& ec)
 {
   int object_store_id;
-  RenderThreadImpl::current()->Send(
+  ChildThread::current()->Send(
       new IndexedDBHostMsg_TransactionObjectStore(
           idb_transaction_id_, name, &object_store_id, &ec));
   if (!object_store_id)
@@ -53,13 +53,13 @@ WebIDBObjectStore* RendererWebIDBTransactionImpl::objectStore(
 
 void RendererWebIDBTransactionImpl::abort()
 {
-  RenderThreadImpl::current()->Send(new IndexedDBHostMsg_TransactionAbort(
+  ChildThread::current()->Send(new IndexedDBHostMsg_TransactionAbort(
       idb_transaction_id_));
 }
 
 void RendererWebIDBTransactionImpl::didCompleteTaskEvents()
 {
-  RenderThreadImpl::current()->Send(
+  ChildThread::current()->Send(
       new IndexedDBHostMsg_TransactionDidCompleteTaskEvents(
           idb_transaction_id_));
 }

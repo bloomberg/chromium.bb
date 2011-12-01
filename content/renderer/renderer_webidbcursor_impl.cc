@@ -22,7 +22,7 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
   // object since inside WebKit, they hold a reference to the object wich owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  RenderThreadImpl::current()->Send(new IndexedDBHostMsg_CursorDestroyed(
+  ChildThread::current()->Send(new IndexedDBHostMsg_CursorDestroyed(
       idb_cursor_id_));
   IndexedDBDispatcher* dispatcher =
       RenderThreadImpl::current()->indexed_db_dispatcher();
@@ -31,7 +31,7 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
 
 unsigned short RendererWebIDBCursorImpl::direction() const {
   int direction;
-  RenderThreadImpl::current()->Send(
+  ChildThread::current()->Send(
       new IndexedDBHostMsg_CursorDirection(idb_cursor_id_, &direction));
   return direction;
 }

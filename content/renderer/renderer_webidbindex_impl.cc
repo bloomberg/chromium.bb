@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,34 +25,34 @@ RendererWebIDBIndexImpl::~RendererWebIDBIndexImpl() {
   // object since inside WebKit, they hold a reference to the object wich owns
   // this object. But, if that ever changed, then we'd need to invalidate
   // any such pointers.
-  RenderThreadImpl::current()->Send(new IndexedDBHostMsg_IndexDestroyed(
+  ChildThread::current()->Send(new IndexedDBHostMsg_IndexDestroyed(
       idb_index_id_));
 }
 
 WebString RendererWebIDBIndexImpl::name() const {
   string16 result;
-  RenderThreadImpl::current()->Send(
+  ChildThread::current()->Send(
       new IndexedDBHostMsg_IndexName(idb_index_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBIndexImpl::storeName() const {
   string16 result;
-  RenderThreadImpl::current()->Send(
+  ChildThread::current()->Send(
       new IndexedDBHostMsg_IndexStoreName(idb_index_id_, &result));
   return result;
 }
 
 WebString RendererWebIDBIndexImpl::keyPath() const {
   NullableString16 result;
-  RenderThreadImpl::current()->Send(
+  ChildThread::current()->Send(
       new IndexedDBHostMsg_IndexKeyPath(idb_index_id_, &result));
   return result;
 }
 
 bool RendererWebIDBIndexImpl::unique() const {
   bool result;
-  RenderThreadImpl::current()->Send(
+  ChildThread::current()->Send(
       new IndexedDBHostMsg_IndexUnique(idb_index_id_, &result));
   return result;
 }
