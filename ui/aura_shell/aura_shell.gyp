@@ -90,8 +90,6 @@
         'shell_accelerator_filter.h',
         'shell_delegate.h',
         'shell_factory.h',
-        'shell_tooltip_manager.cc',
-        'shell_tooltip_manager.h',
         'shell_window_ids.h',
         'show_state_controller.h',
         'show_state_controller.cc',

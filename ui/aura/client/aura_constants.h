@@ -40,10 +40,6 @@ AURA_EXPORT extern const char kDesktopDragDropClientKey[];
 // A property key to store the drag and drop delegate for a window. The type of
 // the value is |aura::WindowDragDropDelegate*|.
 AURA_EXPORT extern const char kDragDropDelegateKey[];
-
-// A property key to store the tooltip client for the desktop. The type of
-// the value is |aura::TooltipClient*|.
-AURA_EXPORT extern const char kDesktopTooltipClientKey[];
 }  // namespace aura
 
 #endif  // UI_AURA_CLIENT_AURA_CONSTANTS_H_
