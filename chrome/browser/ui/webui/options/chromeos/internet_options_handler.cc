@@ -530,10 +530,6 @@ void InternetOptionsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES));
   localized_strings->SetString("enableDataRoaming",
       l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING));
-  localized_strings->SetString("importNetworkSettings",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_IMPORT_NETWORK_SETTINGS));
-  localized_strings->SetString("invalidNetworkSettings",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_INVALID_NETWORK_SETTINGS));
   localized_strings->SetString("generalNetworkingTitle",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_CONTROL_TITLE));
@@ -582,9 +578,6 @@ void InternetOptionsHandler::RegisterMessages() {
   web_ui_->RegisterMessageCallback("disableCellular",
       base::Bind(&InternetOptionsHandler::DisableCellularCallback,
                  base::Unretained(this)));
-  web_ui_->RegisterMessageCallback("importNetworkSettings",
-      base::Bind(&InternetOptionsHandler::ImportNetworkSettingsCallback,
-                 base::Unretained(this)));
   web_ui_->RegisterMessageCallback("buyDataPlan",
       base::Bind(&InternetOptionsHandler::BuyDataPlanCallback,
                  base::Unretained(this)));
@@ -626,20 +619,6 @@ void InternetOptionsHandler::EnableCellularCallback(const ListValue* args) {
 
 void InternetOptionsHandler::DisableCellularCallback(const ListValue* args) {
   cros_->EnableCellularNetworkDevice(false);
-}
-
-void InternetOptionsHandler::ImportNetworkSettingsCallback(
-    const ListValue* args) {
-  std::string onc_blob;
-  if (args->GetSize() != 1 ||
-      !args->GetString(0, &onc_blob)) {
-    NOTREACHED();
-    return;
-  }
-
-  if (!cros_->LoadOncNetworks(onc_blob))
-    web_ui_->CallJavascriptFunction(
-        "options.InternetOptions.invalidNetworkSettings");
 }
 
 void InternetOptionsHandler::BuyDataPlanCallback(const ListValue* args) {

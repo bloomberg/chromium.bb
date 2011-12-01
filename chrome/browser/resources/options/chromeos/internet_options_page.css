@@ -80,13 +80,6 @@ html[dir='rtl'] .network-item-text {
   background: right center no-repeat;
 }
 
-input[type='file'] {
-  margin-top: 5px;
-}
-
-#import-network-settings {
-  margin-top: 10px;
-}
 .network-item[connected] > * > .network-name-label {
   font-weight: bold;
 }

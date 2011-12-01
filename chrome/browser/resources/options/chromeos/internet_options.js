@@ -90,14 +90,6 @@ cr.define('options', function() {
         chrome.send('coreOptionsUserMetricsAction',
             ['Options_ShowProxySettings']);
       });
-      $('upload-network-settings').addEventListener('change', function(event) {
-        var file = event.target.files[0];
-        var reader = new FileReader();
-        reader.onloadend = function(e) {
-          chrome.send('importNetworkSettings', [this.result]);
-        };
-        reader.readAsText(file);
-      }, false);
       $('buyplanDetails').addEventListener('click', function(event) {
         chrome.send('buyDataPlan', []);
         OptionsPage.closeOverlay();
