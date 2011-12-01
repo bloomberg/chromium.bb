@@ -72,7 +72,7 @@ std::string PasswordsSyncPerfTest::NextPassword() {
 }
 
 // Flaky on Windows, timing out on Mac, see http://crbug.com/105999
-#if defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_P0 DISABLED_P0
 #else
 #define MAYBE_P0 P0
