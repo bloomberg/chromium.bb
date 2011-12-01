@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_contents/spellchecker_submenu_observer.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -13,6 +14,7 @@
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
 #include "chrome/browser/tab_contents/spelling_bubble_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -88,13 +90,18 @@ void SpellCheckerSubMenuObserver::InitMenu(const ContextMenuParams& params) {
   // spelling suggestions" item. On the other hand, if we have integrated the
   // spelling service, we show "Stop asking Google for spelling suggestions"
   // item.
-  integrate_spelling_service_ =
-      profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
-  int spelling_message = integrate_spelling_service_ ?
-      IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE :
-      IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE;
-  submenu_model_.AddCheckItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-                              l10n_util::GetStringUTF16(spelling_message));
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  bool experimental_spell_check_features =
+    command_line->HasSwitch(switches::kExperimentalSpellcheckerFeatures);
+  if (experimental_spell_check_features) {
+    integrate_spelling_service_ =
+        profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
+    int spelling_message = integrate_spelling_service_ ?
+        IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE :
+        IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE;
+    submenu_model_.AddCheckItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
+                                l10n_util::GetStringUTF16(spelling_message));
+  }
 #endif
 
   proxy_->AddSubMenu(

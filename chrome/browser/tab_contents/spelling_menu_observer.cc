@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/stringprintf.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellchecker_platform_engine.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/public/common/url_fetcher.h"
@@ -126,13 +128,18 @@ void SpellingMenuObserver::InitMenu(const ContextMenuParams& params) {
         l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY));
 
 #if defined(OS_WIN)
-    bool integrate_spelling_service =
-        profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
-    int spelling_message = integrate_spelling_service ?
-        IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE :
-        IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE;
-    proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
-                        l10n_util::GetStringUTF16(spelling_message));
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+    bool experimental_spell_check_features =
+        command_line->HasSwitch(switches::kExperimentalSpellcheckerFeatures);
+    if (experimental_spell_check_features) {
+      bool integrate_spelling_service =
+          profile->GetPrefs()->GetBoolean(prefs::kSpellCheckUseSpellingService);
+      int spelling_message = integrate_spelling_service ?
+          IDS_CONTENT_CONTEXT_SPELLING_STOP_ASKING_GOOGLE :
+          IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE;
+      proxy_->AddMenuItem(IDC_CONTENT_CONTEXT_SPELLING_TOGGLE,
+                          l10n_util::GetStringUTF16(spelling_message));
+    }
 #endif
   }
 
