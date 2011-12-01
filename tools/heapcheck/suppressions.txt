@@ -1795,3 +1795,18 @@
    fun:webkit_media::MockBufferedDataSource::MockBufferedDataSource
    fun:webkit_media::BufferedDataSourceTest::BufferedDataSourceTest
 }
+{
+   bug_106109
+   Heapcheck:Leak
+   ...
+   fun:::DefaultFocusManagerFactory::CreateFocusManager
+   fun:views::FocusManagerFactory::Create
+   fun:views::Widget::OnNativeWidgetCreated
+   fun:views::NativeWidgetGtk::InitNativeWidget
+   fun:views::Widget::Init
+   fun:views::Widget::CreateWindowWithParentAndBounds
+   fun:views::Widget::CreateWindowWithBounds
+   fun:AccessibilityEventRouterViewsTest::CreateWindowWithContents
+   fun:AccessibilityEventRouterViewsTest_TestFocusNotification_Test::TestBody
+}
+
