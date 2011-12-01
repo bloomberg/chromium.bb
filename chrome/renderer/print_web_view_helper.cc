@@ -464,7 +464,9 @@ void PrintWebViewHelper::PrintPage(WebKit::WebFrame* frame) {
     print_preview_context_.InitWithFrame(frame);
 
     old_print_pages_params_.reset();  // Same as in RequestPrintPreview().
-    IPC::SyncMessage* msg = new PrintHostMsg_ScriptedPrintPreview(routing_id());
+    IPC::SyncMessage* msg = new PrintHostMsg_ScriptedPrintPreview(
+        routing_id(),
+        print_preview_context_.IsModifiable());
     msg->EnableMessagePumping();
     Send(msg);
   } else {

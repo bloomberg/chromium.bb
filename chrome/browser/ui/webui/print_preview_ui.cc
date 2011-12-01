@@ -73,6 +73,7 @@ base::LazyInstance<PrintPreviewRequestIdMapWithLock>
 PrintPreviewUI::PrintPreviewUI(TabContents* contents)
     : ConstrainedHtmlUI(contents),
       initial_preview_start_time_(base::TimeTicks::Now()),
+      source_is_modifiable_(true),
       tab_closed_(false) {
   // WebUI owns |handler_|.
   handler_ = new PrintPreviewHandler();
@@ -121,8 +122,15 @@ void PrintPreviewUI::SetInitiatorTabURLAndTitle(
   initiator_tab_title_ = job_title;
 }
 
-void PrintPreviewUI::SetSourceIsModifiable(bool source_is_modifiable) {
-  source_is_modifiable_ = source_is_modifiable;
+// static
+void PrintPreviewUI::SetSourceIsModifiable(
+    TabContentsWrapper* print_preview_tab,
+    bool source_is_modifiable) {
+  if (!print_preview_tab || !print_preview_tab->web_ui())
+    return;
+  PrintPreviewUI* print_preview_ui =
+      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
+  print_preview_ui->source_is_modifiable_ = source_is_modifiable;
 }
 
 // static

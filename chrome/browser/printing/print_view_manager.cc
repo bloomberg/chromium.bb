@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/print_view_manager.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -258,7 +260,8 @@ void PrintViewManager::OnPrintingFailed(int cookie) {
       content::NotificationService::NoDetails());
 }
 
-void PrintViewManager::OnScriptedPrintPreview(IPC::Message* reply_msg) {
+void PrintViewManager::OnScriptedPrintPreview(bool source_is_modifiable,
+                                              IPC::Message* reply_msg) {
   BrowserThread::CurrentlyOn(BrowserThread::UI);
   ScriptedPrintPreviewClosureMap& map =
       g_scripted_print_preview_closure_map.Get();
@@ -279,6 +282,13 @@ void PrintViewManager::OnScriptedPrintPreview(IPC::Message* reply_msg) {
     return;
   }
 
+  PrintPreviewTabController* tab_controller =
+      PrintPreviewTabController::GetInstance();
+  if (!tab_controller) {
+    Send(reply_msg);
+    return;
+  }
+
   print_preview_state_ = SCRIPTED_PREVIEW;
   base::Closure callback =
       base::Bind(&PrintViewManager::OnScriptedPrintPreviewReply,
@@ -287,7 +297,10 @@ void PrintViewManager::OnScriptedPrintPreview(IPC::Message* reply_msg) {
   map[rph] = callback;
   scripted_print_preview_rph_ = rph;
 
-  PrintPreviewTabController::PrintPreview(tab_);
+  tab_controller->PrintPreview(tab_);
+  PrintPreviewUI::SetSourceIsModifiable(
+      tab_controller->GetPrintPreviewForTab(tab_),
+      source_is_modifiable);
 }
 
 void PrintViewManager::OnScriptedPrintPreviewReply(IPC::Message* reply_msg) {

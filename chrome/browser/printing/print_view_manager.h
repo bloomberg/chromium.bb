@@ -99,7 +99,8 @@ class PrintViewManager : public content::NotificationObserver,
   void OnDidPrintPage(const PrintHostMsg_DidPrintPage_Params& params);
   void OnPrintingFailed(int cookie);
 
-  void OnScriptedPrintPreview(IPC::Message* reply_msg);
+  void OnScriptedPrintPreview(bool source_is_modifiable,
+                              IPC::Message* reply_msg);
   void OnScriptedPrintPreviewReply(IPC::Message* reply_msg);
 
   // Processes a NOTIFY_PRINT_JOB_EVENT notification.

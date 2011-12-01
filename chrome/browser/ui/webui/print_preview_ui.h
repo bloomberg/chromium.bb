@@ -52,7 +52,9 @@ class PrintPreviewUI : public ConstrainedHtmlUI {
 
   bool source_is_modifiable() { return source_is_modifiable_; }
 
-  void SetSourceIsModifiable(bool source_is_modifiable);
+  // Set |source_is_modifiable_| for |print_preview_tab|'s PrintPreviewUI.
+  static void SetSourceIsModifiable(TabContentsWrapper* print_preview_tab,
+                                    bool source_is_modifiable);
 
   // Determines whether to cancel a print preview request based on
   // |preview_ui_addr| and |request_id|.

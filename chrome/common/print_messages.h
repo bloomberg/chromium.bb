@@ -390,4 +390,5 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_PrintPreviewInvalidPrinterSettings,
 
 // Run a nested message loop in the renderer until print preview for
 // window.print() finishes.
-IPC_SYNC_MESSAGE_ROUTED0_0(PrintHostMsg_ScriptedPrintPreview)
+IPC_SYNC_MESSAGE_ROUTED1_0(PrintHostMsg_ScriptedPrintPreview,
+                           bool /* is_modifiable */)

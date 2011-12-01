@@ -100,13 +100,8 @@ PrintPreviewUI* PrintPreviewMessageHandler::OnFailure(int document_cookie) {
 void PrintPreviewMessageHandler::OnRequestPrintPreview(
     bool source_is_modifiable) {
   PrintPreviewTabController::PrintPreview(tab_contents_wrapper());
-
-  TabContentsWrapper* print_preview_tab = GetPrintPreviewTab();
-  if (!print_preview_tab || !print_preview_tab->web_ui())
-    return;
-  PrintPreviewUI* print_preview_ui =
-      static_cast<PrintPreviewUI*>(print_preview_tab->web_ui());
-  print_preview_ui->SetSourceIsModifiable(source_is_modifiable);
+  PrintPreviewUI::SetSourceIsModifiable(GetPrintPreviewTab(),
+                                        source_is_modifiable);
 }
 
 void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
