@@ -26,16 +26,14 @@
 int main(int argc, char **argv) {
   struct NaClApp app[2];
   struct GioMemoryFileSnapshot gio_file;
-  struct GioMemoryFileSnapshot gio_irt_file;
   NaClHandle handle_pair[2];
   int i;
   char *domain1_args[] = {"prog", "domain1"};
   char *domain2_args[] = {"prog", "domain2"};
   int return_code;
 
-  if (argc != 2 && argc != 3)
-    NaClLog(LOG_FATAL,
-            "Expected 1 or 2 arguments: executable filename [IRT filename]\n");
+  if (argc != 2)
+    NaClLog(LOG_FATAL, "Expected 1 argument: executable filename\n");
 
   NaClAllModulesInit();
 
@@ -44,43 +42,22 @@ int main(int argc, char **argv) {
 
   NaClFileNameForValgrind(argv[1]);
   if (GioMemoryFileSnapshotCtor(&gio_file, argv[1]) == 0)
-    NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed on \"%s\"\n",
-            argv[1]);
-
-  if (argc == 3) {
-    NaClFileNameForValgrind(argv[2]);
-    if (GioMemoryFileSnapshotCtor(&gio_irt_file, argv[2]) == 0)
-      NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed on \"%s\"\n",
-              argv[2]);
-  }
+    NaClLog(LOG_FATAL, "GioMemoryFileSnapshotCtor() failed\n");
 
   for (i = 0; i < 2; i++) {
     if (!NaClAppCtor(&app[i]))
       NaClLog(LOG_FATAL, "NaClAppCtor() failed\n");
 
-#if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 && \
-     NACL_WINDOWS)
     /* Use a smaller guest address space size, because 32-bit Windows
        does not let us allocate 2GB of address space.  We don't do this
        for x86-64 because there is an assertion in NaClAllocateSpace()
-       that requires 4GB.
-
-       NOTE: Current layout of the IRT image puts it above 512MB (see
-       irt_code_addr et al in SConstruct).  So the version of this test
-       that loads the IRT too cannot work with the reduced address space.
-       But this test is disabled on Windows anyway.  */
-
+       that requires 4GB. */
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
     app[i].addr_bits = 29; /* 512MB per process */
 #endif
 
     if (NaClAppLoadFile((struct Gio *) &gio_file, &app[i]) != LOAD_OK)
       NaClLog(LOG_FATAL, "NaClAppLoadFile() failed\n");
-
-    if (argc == 3) {
-      if (NaClAppLoadFileDynamically(&app[i],
-                                     (struct Gio *) &gio_irt_file) != LOAD_OK)
-        NaClLog(LOG_FATAL, "NaClAppLoadFileDynamically() failed\n");
-    }
 
     NaClAppInitialDescriptorHookup(&app[i]);
 
