@@ -36,7 +36,7 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
       PlatformThread::YieldCurrentThread();
     }
 
-    for (unsigned i = 0; i < 10000; ++i) {
+    for (unsigned i = 0; i < 1000; ++i) {
       TestData copy;
       base::subtle::Atomic32 version;
       do {
@@ -66,7 +66,7 @@ TEST(GamepadSeqLockTest, ManyThreads) {
 
   ANNOTATE_BENIGN_RACE_SIZED(&data, sizeof(data), "Racey reads are discarded");
 
-  static const unsigned kNumReaderThreads = 100;
+  static const unsigned kNumReaderThreads = 10;
   BasicSeqLockTestThread threads[kNumReaderThreads];
   PlatformThreadHandle handles[kNumReaderThreads];
 
