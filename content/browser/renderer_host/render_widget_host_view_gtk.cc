@@ -37,6 +37,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScreenInfo.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
+#include "ui/base/gtk/gtk_compat.h"
 #include "ui/base/text/text_elider.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_native_view_id_manager.h"
@@ -240,7 +241,7 @@ class RenderWidgetHostViewGtkWidget {
                              RenderWidgetHostViewGtk* host_view) {
     // Whenever we lose focus, set the cursor back to that of our parent window,
     // which should be the default arrow.
-    gdk_window_set_cursor(widget->window, NULL);
+    gdk_window_set_cursor(gtk_widget_get_window(widget), NULL);
     // If we are showing a context menu, maintain the illusion that webkit has
     // focus.
     if (!host_view->is_showing_context_menu_) {
@@ -270,7 +271,7 @@ class RenderWidgetHostViewGtkWidget {
       host_view->was_imcontext_focused_before_grab_ =
           host_view->im_context_->is_focused();
       if (host_view->was_imcontext_focused_before_grab_) {
-        gdk_window_set_cursor(widget->window, NULL);
+        gdk_window_set_cursor(gtk_widget_get_window(widget), NULL);
         host_view->im_context_->OnFocusOut();
       }
     }
@@ -340,8 +341,10 @@ class RenderWidgetHostViewGtkWidget {
       // If the mouse event happens outside our popup, force the popup to
       // close.  We do this so a hung renderer doesn't prevent us from
       // releasing the x pointer grab.
-      bool click_in_popup = x >= 0 && y >= 0 && x < widget->allocation.width &&
-          y < widget->allocation.height;
+      GtkAllocation allocation;
+      gtk_widget_get_allocation(widget, &allocation);
+      bool click_in_popup = x >= 0 && y >= 0 && x < allocation.width &&
+          y < allocation.height;
       // Only Shutdown on mouse downs. Mouse ups can occur outside the render
       // view if the user drags for DnD or while using the scrollbar on a select
       // dropdown. Don't shutdown if we are not a popup.
@@ -622,7 +625,7 @@ void RenderWidgetHostViewGtk::InitAsPopup(
     // Now grab all of X's input.
     if (do_x_grab_) {
       gdk_pointer_grab(
-          parent_->window,
+          gtk_widget_get_window(parent_),
           TRUE,  // Only events outside of the window are reported with respect
                  // to |parent_->window|.
           static_cast<GdkEventMask>(GDK_BUTTON_PRESS_MASK |
@@ -631,7 +634,7 @@ void RenderWidgetHostViewGtk::InitAsPopup(
           NULL,
           GDK_CURRENT_TIME);
       // We grab keyboard events too so things like alt+tab are eaten.
-      gdk_keyboard_grab(parent_->window, TRUE, GDK_CURRENT_TIME);
+      gdk_keyboard_grab(gtk_widget_get_window(parent_), TRUE, GDK_CURRENT_TIME);
     }
   }
 }
@@ -765,7 +768,7 @@ bool RenderWidgetHostViewGtk::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewGtk::GetViewBounds() const {
-  GdkWindow* gdk_window = view_.get()->window;
+  GdkWindow* gdk_window = gtk_widget_get_window(view_.get());
   if (!gdk_window)
     return gfx::Rect(requested_size_);
   GdkRectangle window_rect;
@@ -1000,9 +1003,10 @@ void RenderWidgetHostViewGtk::DoPopupOrFullscreenInit(GtkWindow* window,
 
 BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
     const gfx::Size& size) {
+  gint depth = gdk_visual_get_depth(gtk_widget_get_visual(view_.get()));
   return new BackingStoreGtk(host_, size,
                              ui::GetVisualFromGtkWidget(view_.get()),
-                             gtk_widget_get_visual(view_.get())->depth);
+                             depth);
 }
 
 void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(
@@ -1046,18 +1050,19 @@ void RenderWidgetHostViewGtk::ModifyEventForEdgeDragging(
       gdk_screen_get_monitor_geometry(screen, monitor, &geometry);
       drag_monitor_size.SetSize(geometry.width, geometry.height);
     }
-
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(widget, &allocation);
     // Check X and Y independently, as the user could be dragging into a corner.
     if (event->x == 0 && event->x_root == 0) {
       new_dragged_at_horizontal_edge = dragged_at_horizontal_edge_ - 1;
-    } else if (widget->allocation.width - 1 == static_cast<gint>(event->x) &&
+    } else if (allocation.width - 1 == static_cast<gint>(event->x) &&
         drag_monitor_size.width() - 1 == static_cast<gint>(event->x_root)) {
       new_dragged_at_horizontal_edge = dragged_at_horizontal_edge_ + 1;
     }
 
     if (event->y == 0 && event->y_root == 0) {
       new_dragged_at_vertical_edge = dragged_at_vertical_edge_ - 1;
-    } else if (widget->allocation.height - 1 == static_cast<gint>(event->y) &&
+    } else if (allocation.height - 1 == static_cast<gint>(event->y) &&
         drag_monitor_size.height() - 1 == static_cast<gint>(event->y_root)) {
       new_dragged_at_vertical_edge = dragged_at_vertical_edge_ + 1;
     }
@@ -1083,7 +1088,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
     return;
   }
 
-  GdkWindow* window = view_.get()->window;
+  GdkWindow* window = gtk_widget_get_window(view_.get());
   DCHECK(!about_to_validate_and_paint_);
 
   invalid_rect_ = damage_rect;
@@ -1174,7 +1179,7 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
 void RenderWidgetHostViewGtk::ShowCurrentCursor() {
   // The widget may not have a window. If that's the case, abort mission. This
   // is the same issue as that explained above in Paint().
-  if (!view_.get()->window)
+  if (!gtk_widget_get_window(view_.get()))
     return;
 
   // TODO(port): WebKit bug https://bugs.webkit.org/show_bug.cgi?id=16388 is
@@ -1188,7 +1193,7 @@ void RenderWidgetHostViewGtk::ShowCurrentCursor() {
   } else {
     gdk_cursor = current_cursor_.GetNativeCursor();
   }
-  gdk_window_set_cursor(view_.get()->window, gdk_cursor);
+  gdk_window_set_cursor(gtk_widget_get_window(view_.get()), gdk_cursor);
 }
 
 void RenderWidgetHostViewGtk::CreatePluginContainer(
@@ -1240,7 +1245,7 @@ void RenderWidgetHostViewGtk::OnAcceleratedCompositingStateChange() {
 }
 
 void RenderWidgetHostViewGtk::GetScreenInfo(WebKit::WebScreenInfo* results) {
-  GdkWindow* gdk_window = view_.get()->window;
+  GdkWindow* gdk_window = gtk_widget_get_window(view_.get());
   if (!gdk_window) {
     GdkDisplay* display = gdk_display_get_default();
     gdk_window = gdk_display_get_default_group(display);
@@ -1256,7 +1261,7 @@ gfx::Rect RenderWidgetHostViewGtk::GetRootWindowBounds() {
     return gfx::Rect();
 
   GdkRectangle frame_extents;
-  GdkWindow* gdk_window = toplevel->window;
+  GdkWindow* gdk_window = gtk_widget_get_window(toplevel);
   if (!gdk_window)
     return gfx::Rect();
 
@@ -1393,10 +1398,8 @@ gfx::Point RenderWidgetHostViewGtk::GetWidgetCenter() {
   gint window_x = 0;
   gint window_y = 0;
   gdk_window_get_origin(window, &window_x, &window_y);
-  gint window_w = 0;
-  gint window_h = 0;
-  gdk_window_get_size(window, &window_w, &window_h);
-
+  gint window_w = gdk_window_get_width(window);
+  gint window_h = gdk_window_get_height(window);
   widget_center_.SetPoint(window_x + window_w / 2,
                           window_y + window_h / 2);
   widget_center_valid_ = true;

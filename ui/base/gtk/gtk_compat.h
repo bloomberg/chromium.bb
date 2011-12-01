@@ -26,13 +26,31 @@ inline gboolean gtk_widget_is_toplevel(GtkWidget* widget) {
 }
 #endif
 
+#if !GTK_CHECK_VERSION(2, 22, 0)
+inline gint gdk_visual_get_depth(GdkVisual* visual) {
+  return visual->depth;
+}
+#endif
+
 #if !GTK_CHECK_VERSION(2, 24, 0)
 inline void gdk_pixmap_get_size(GdkPixmap* pixmap, gint* width, gint* height) {
   gdk_drawable_get_size(GDK_DRAWABLE(pixmap), width, height);
 }
 
+inline int gdk_window_get_height(GdkWindow* window) {
+  int height;
+  gdk_drawable_get_size(GDK_DRAWABLE(window), NULL, &height);
+  return height;
+}
+
 inline GdkScreen* gdk_window_get_screen(GdkWindow* window) {
   return gdk_drawable_get_screen(GDK_DRAWABLE(window));
+}
+
+inline int gdk_window_get_width(GdkWindow* window) {
+  int width;
+  gdk_drawable_get_size(GDK_DRAWABLE(window), &width, NULL);
+  return width;
 }
 #endif
 
