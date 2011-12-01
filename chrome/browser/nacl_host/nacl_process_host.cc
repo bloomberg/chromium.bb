@@ -492,7 +492,10 @@ void NaClProcessHost::SendStart(base::PlatformFile irt_file) {
   // mappable with PROT_EXEC.  Rather than requiring an extra IPC
   // round trip out of the sandbox, we create an FD here.
   base::SharedMemory memory_buffer;
-  if (!memory_buffer.CreateAnonymous(/* size= */ 1)) {
+  base::SharedMemoryCreateOptions options;
+  options.size = 1;
+  options.executable = true;
+  if (!memory_buffer.Create(options)) {
     LOG(ERROR) << "Failed to allocate memory buffer";
     delete this;
     return;
