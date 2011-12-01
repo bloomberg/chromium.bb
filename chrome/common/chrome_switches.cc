@@ -642,9 +642,6 @@ const char kForceCompositingMode[]          = "force-compositing-mode";
 // omitted. The default value is "www.google.com".
 const char kGaiaHost[]                       = "gaia-host";
 
-// Enables using GAIA information to populate profile name and icon.
-const char kGaiaProfileInfo[]                = "gaia-profile-info";
-
 // Specifies a custom name for the GSSAPI library to load.
 const char kGSSAPILibraryName[]             = "gssapi-library-name";
 

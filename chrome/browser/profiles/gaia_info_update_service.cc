@@ -4,7 +4,6 @@
 
 #include "chrome/browser/profiles/gaia_info_update_service.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,7 +11,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -64,12 +62,6 @@ bool GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(Profile* profile) {
   // Sync must be allowed.
   if (!profile->GetOriginalProfile()->IsSyncAccessible())
     return false;
-
-  // TODO(sail): For now put this feature behind a flag.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kGaiaProfileInfo)) {
-    return false;
-  }
 
   return true;
 }

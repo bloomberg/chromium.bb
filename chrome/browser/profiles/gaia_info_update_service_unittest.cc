@@ -153,8 +153,9 @@ TEST_F(GAIAInfoUpdateServiceTest, NoMigration) {
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, ShouldUseGAIAProfileInfo) {
-  // Currently this is disabled by default.
-  EXPECT_FALSE(GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(profile()));
+  bool sync_enabled = profile()->GetOriginalProfile()->IsSyncAccessible();
+  EXPECT_EQ(sync_enabled,
+            GAIAInfoUpdateService::ShouldUseGAIAProfileInfo(profile()));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, ScheduleUpdate) {
