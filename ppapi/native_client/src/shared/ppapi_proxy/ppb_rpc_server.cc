@@ -1843,6 +1843,162 @@ static void PPB_Scrollbar_ScrollByDispatcher(
   );
 }
 
+static void PPB_TCPSocket_Private_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_TCPSocket_Private_IsTCPSocketDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_IsTCPSocket(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_TCPSocket_Private_ConnectDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_Connect(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->arrays.str,
+      inputs[2]->u.ival,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_TCPSocket_Private_ConnectWithNetAddressDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_ConnectWithNetAddress(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_TCPSocket_Private_GetLocalAddressDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_GetLocalAddress(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_TCPSocket_Private_GetRemoteAddressDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_GetRemoteAddress(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_TCPSocket_Private_SSLHandshakeDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_SSLHandshake(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->arrays.str,
+      inputs[2]->u.ival,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_TCPSocket_Private_ReadDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_Read(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_TCPSocket_Private_WriteDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_Write(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival,
+      inputs[3]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_TCPSocket_Private_DisconnectDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbTCPSocketPrivateRpcServer::PPB_TCPSocket_Private_Disconnect(
+      rpc,
+      done,
+      inputs[0]->u.ival
+  );
+}
+
 static void PPB_Testing_ReadImageDataDispatcher(
     NaClSrpcRpc* rpc,
     NaClSrpcArg** inputs,
@@ -1898,6 +2054,114 @@ static void PPB_Testing_GetLiveObjectsForInstanceDispatcher(
       done,
       inputs[0]->u.ival,
       &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_UDPSocket_Private_CreateDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_Create(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_UDPSocket_Private_IsUDPSocketDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_IsUDPSocket(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_UDPSocket_Private_BindDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_Bind(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_UDPSocket_Private_RecvFromDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_RecvFrom(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.ival,
+      inputs[2]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_UDPSocket_Private_GetRecvFromAddressDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_GetRecvFromAddress(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      &(outputs[0]->u.count), outputs[0]->arrays.carr,
+      &(outputs[1]->u.ival)
+  );
+}
+
+static void PPB_UDPSocket_Private_SendToDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_SendTo(
+      rpc,
+      done,
+      inputs[0]->u.ival,
+      inputs[1]->u.count, inputs[1]->arrays.carr,
+      inputs[2]->u.ival,
+      inputs[3]->u.count, inputs[3]->arrays.carr,
+      inputs[4]->u.ival,
+      &(outputs[0]->u.ival)
+  );
+}
+
+static void PPB_UDPSocket_Private_CloseDispatcher(
+    NaClSrpcRpc* rpc,
+    NaClSrpcArg** inputs,
+    NaClSrpcArg** outputs,
+    NaClSrpcClosure* done
+) {
+  UNREFERENCED_PARAMETER(outputs);
+  PpbUDPSocketPrivateRpcServer::PPB_UDPSocket_Private_Close(
+      rpc,
+      done,
+      inputs[0]->u.ival
   );
 }
 
@@ -2400,10 +2664,27 @@ NaClSrpcHandlerDesc PpbRpcs::srpc_methods[] = {
   { "PPB_Scrollbar_SetDocumentSize:ii:", PPB_Scrollbar_SetDocumentSizeDispatcher },
   { "PPB_Scrollbar_SetTickMarks:iCi:", PPB_Scrollbar_SetTickMarksDispatcher },
   { "PPB_Scrollbar_ScrollBy:iii:", PPB_Scrollbar_ScrollByDispatcher },
+  { "PPB_TCPSocket_Private_Create:i:i", PPB_TCPSocket_Private_CreateDispatcher },
+  { "PPB_TCPSocket_Private_IsTCPSocket:i:i", PPB_TCPSocket_Private_IsTCPSocketDispatcher },
+  { "PPB_TCPSocket_Private_Connect:isii:i", PPB_TCPSocket_Private_ConnectDispatcher },
+  { "PPB_TCPSocket_Private_ConnectWithNetAddress:iCi:i", PPB_TCPSocket_Private_ConnectWithNetAddressDispatcher },
+  { "PPB_TCPSocket_Private_GetLocalAddress:i:Ci", PPB_TCPSocket_Private_GetLocalAddressDispatcher },
+  { "PPB_TCPSocket_Private_GetRemoteAddress:i:Ci", PPB_TCPSocket_Private_GetRemoteAddressDispatcher },
+  { "PPB_TCPSocket_Private_SSLHandshake:isii:i", PPB_TCPSocket_Private_SSLHandshakeDispatcher },
+  { "PPB_TCPSocket_Private_Read:iii:Ci", PPB_TCPSocket_Private_ReadDispatcher },
+  { "PPB_TCPSocket_Private_Write:iCii:i", PPB_TCPSocket_Private_WriteDispatcher },
+  { "PPB_TCPSocket_Private_Disconnect:i:", PPB_TCPSocket_Private_DisconnectDispatcher },
   { "PPB_Testing_ReadImageData:iiC:i", PPB_Testing_ReadImageDataDispatcher },
   { "PPB_Testing_RunMessageLoop:i:", PPB_Testing_RunMessageLoopDispatcher },
   { "PPB_Testing_QuitMessageLoop:i:", PPB_Testing_QuitMessageLoopDispatcher },
   { "PPB_Testing_GetLiveObjectsForInstance:i:i", PPB_Testing_GetLiveObjectsForInstanceDispatcher },
+  { "PPB_UDPSocket_Private_Create:i:i", PPB_UDPSocket_Private_CreateDispatcher },
+  { "PPB_UDPSocket_Private_IsUDPSocket:i:i", PPB_UDPSocket_Private_IsUDPSocketDispatcher },
+  { "PPB_UDPSocket_Private_Bind:iCi:i", PPB_UDPSocket_Private_BindDispatcher },
+  { "PPB_UDPSocket_Private_RecvFrom:iii:Ci", PPB_UDPSocket_Private_RecvFromDispatcher },
+  { "PPB_UDPSocket_Private_GetRecvFromAddress:i:Ci", PPB_UDPSocket_Private_GetRecvFromAddressDispatcher },
+  { "PPB_UDPSocket_Private_SendTo:iCiCi:i", PPB_UDPSocket_Private_SendToDispatcher },
+  { "PPB_UDPSocket_Private_Close:i:", PPB_UDPSocket_Private_CloseDispatcher },
   { "PPB_URLLoader_Create:i:i", PPB_URLLoader_CreateDispatcher },
   { "PPB_URLLoader_IsURLLoader:i:i", PPB_URLLoader_IsURLLoaderDispatcher },
   { "PPB_URLLoader_Open:iii:i", PPB_URLLoader_OpenDispatcher },

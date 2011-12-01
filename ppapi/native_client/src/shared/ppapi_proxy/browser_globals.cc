@@ -410,4 +410,18 @@ const PPB_PDF* PPBPDFInterface() {
   return ppb;
 }
 
+const PPB_TCPSocket_Private* PPBTCPSocketPrivateInterface() {
+  static const PPB_TCPSocket_Private* ppb =
+      static_cast<const PPB_TCPSocket_Private*>(
+          GetBrowserInterfaceSafe(PPB_TCPSOCKET_PRIVATE_INTERFACE));
+  return ppb;
+}
+
+const PPB_UDPSocket_Private* PPBUDPSocketPrivateInterface() {
+  static const PPB_UDPSocket_Private* ppb =
+      static_cast<const PPB_UDPSocket_Private*>(
+          GetBrowserInterfaceSafe(PPB_UDPSOCKET_PRIVATE_INTERFACE));
+  return ppb;
+}
+
 }  // namespace ppapi_proxy

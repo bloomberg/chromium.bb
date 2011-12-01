@@ -28,7 +28,9 @@
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_mouse_lock.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_pdf.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_scrollbar.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_tcp_socket_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_testing.h"
+#include "native_client/src/shared/ppapi_proxy/plugin_ppb_udp_socket_private.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_loader.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_request_info.h"
 #include "native_client/src/shared/ppapi_proxy/plugin_ppb_url_response_info.h"
@@ -79,8 +81,12 @@ InterfaceMapElement interface_map[] = {
     true },
   { PPB_PDF_INTERFACE, PluginPDF::GetInterface(), true },
   { PPB_SCROLLBAR_DEV_INTERFACE, PluginScrollbar::GetInterface(), true },
+  { PPB_TCPSOCKET_PRIVATE_INTERFACE, PluginTCPSocketPrivate::GetInterface(),
+    true },
   { PPB_TESTING_DEV_INTERFACE_0_7, PluginTesting::GetInterface(), true },
   { PPB_TESTING_DEV_INTERFACE_0_8, PluginTesting::GetInterface(), true },
+  { PPB_UDPSOCKET_PRIVATE_INTERFACE, PluginUDPSocketPrivate::GetInterface(),
+    true },
   { PPB_URLLOADER_INTERFACE, PluginURLLoader::GetInterface(), true },
   { PPB_URLREQUESTINFO_INTERFACE, PluginURLRequestInfo::GetInterface(), true },
   { PPB_URLRESPONSEINFO_INTERFACE, PluginURLResponseInfo::GetInterface(),

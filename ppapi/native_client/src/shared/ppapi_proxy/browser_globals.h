@@ -34,6 +34,8 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppb_tcp_socket_private.h"
+#include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/trusted/ppb_graphics_3d_trusted.h"
 #include "ppapi/c/trusted/ppb_image_data_trusted.h"
 
@@ -115,7 +117,9 @@ const PPB_Messaging* PPBMessagingInterface();
 const PPB_MouseLock* PPBMouseLockInterface();
 const PPB_PDF* PPBPDFInterface();
 const PPB_Scrollbar_Dev* PPBScrollbarInterface();
+const PPB_TCPSocket_Private* PPBTCPSocketPrivateInterface();
 const PPB_Testing_Dev* PPBTestingInterface();
+const PPB_UDPSocket_Private* PPBUDPSocketPrivateInterface();
 const PPB_URLLoader* PPBURLLoaderInterface();
 const PPB_URLRequestInfo* PPBURLRequestInfoInterface();
 const PPB_URLResponseInfo* PPBURLResponseInfoInterface();

@@ -927,6 +927,80 @@ class PpbScrollbarRpcServer {
   void operator=(const PpbScrollbarRpcServer);
 };  // class PpbScrollbarRpcServer
 
+class PpbTCPSocketPrivateRpcServer {
+ public:
+  static void PPB_TCPSocket_Private_Create(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance,
+      PP_Resource* resource);
+  static void PPB_TCPSocket_Private_IsTCPSocket(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource,
+      int32_t* is_tcp_socket);
+  static void PPB_TCPSocket_Private_Connect(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_socket,
+      char* host,
+      int32_t port,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_TCPSocket_Private_ConnectWithNetAddress(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_socket,
+      nacl_abi_size_t addr_bytes, char* addr,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_TCPSocket_Private_GetLocalAddress(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_socket,
+      nacl_abi_size_t* local_addr_bytes, char* local_addr,
+      int32_t* success);
+  static void PPB_TCPSocket_Private_GetRemoteAddress(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_socket,
+      nacl_abi_size_t* remote_addr_bytes, char* remote_addr,
+      int32_t* success);
+  static void PPB_TCPSocket_Private_SSLHandshake(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_socket,
+      char* server_name,
+      int32_t server_port,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_TCPSocket_Private_Read(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_socket,
+      int32_t bytes_to_read,
+      int32_t callback_id,
+      nacl_abi_size_t* buffer_bytes, char* buffer,
+      int32_t* pp_error_or_bytes);
+  static void PPB_TCPSocket_Private_Write(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_socket,
+      nacl_abi_size_t buffer_bytes, char* buffer,
+      int32_t bytes_to_write,
+      int32_t callback_id,
+      int32_t* pp_error_or_bytes);
+  static void PPB_TCPSocket_Private_Disconnect(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource tcp_socket);
+
+ private:
+  PpbTCPSocketPrivateRpcServer();
+  PpbTCPSocketPrivateRpcServer(const PpbTCPSocketPrivateRpcServer&);
+  void operator=(const PpbTCPSocketPrivateRpcServer);
+};  // class PpbTCPSocketPrivateRpcServer
+
 class PpbTestingRpcServer {
  public:
   static void PPB_Testing_ReadImageData(
@@ -955,6 +1029,59 @@ class PpbTestingRpcServer {
   PpbTestingRpcServer(const PpbTestingRpcServer&);
   void operator=(const PpbTestingRpcServer);
 };  // class PpbTestingRpcServer
+
+class PpbUDPSocketPrivateRpcServer {
+ public:
+  static void PPB_UDPSocket_Private_Create(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Instance instance_id,
+      PP_Resource* resource);
+  static void PPB_UDPSocket_Private_IsUDPSocket(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource resource_id,
+      int32_t* is_udp_socket_private);
+  static void PPB_UDPSocket_Private_Bind(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource udp_socket,
+      nacl_abi_size_t addr_bytes, char* addr,
+      int32_t callback_id,
+      int32_t* pp_error);
+  static void PPB_UDPSocket_Private_RecvFrom(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource udp_socket,
+      int32_t num_bytes,
+      int32_t callback_id,
+      nacl_abi_size_t* buffer_bytes, char* buffer,
+      int32_t* pp_error_or_bytes);
+  static void PPB_UDPSocket_Private_GetRecvFromAddress(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource udp_socket,
+      nacl_abi_size_t* addr_bytes, char* addr,
+      int32_t* success);
+  static void PPB_UDPSocket_Private_SendTo(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource udp_socket,
+      nacl_abi_size_t buffer_bytes, char* buffer,
+      int32_t num_bytes,
+      nacl_abi_size_t addr_bytes, char* addr,
+      int32_t callback_id,
+      int32_t* pp_error_or_bytes);
+  static void PPB_UDPSocket_Private_Close(
+      NaClSrpcRpc* rpc,
+      NaClSrpcClosure* done,
+      PP_Resource udp_socket);
+
+ private:
+  PpbUDPSocketPrivateRpcServer();
+  PpbUDPSocketPrivateRpcServer(const PpbUDPSocketPrivateRpcServer&);
+  void operator=(const PpbUDPSocketPrivateRpcServer);
+};  // class PpbUDPSocketPrivateRpcServer
 
 class PpbURLLoaderRpcServer {
  public:

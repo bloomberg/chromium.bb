@@ -1,0 +1,63 @@
+# Copyright (c) 2011 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# RPC methods used to implement PPB_UDPSocket_Private calls from the plugin.
+# See ppapi/c/private/ppb_udp_socket_private.h for interface details.
+
+{
+  'name': 'PpbUDPSocketPrivateRpc',
+  'rpcs': [
+    {'name': 'PPB_UDPSocket_Private_Create',
+     'inputs': [['instance_id', 'PP_Instance'],        # PP_Instance
+                ],
+     'outputs': [['resource', 'PP_Resource'],          # PP_Resource
+                 ]
+    },
+    {'name': 'PPB_UDPSocket_Private_IsUDPSocket',
+     'inputs': [['resource_id', 'PP_Resource'],        # PP_Resource
+                ],
+     'outputs': [['is_udp_socket_private', 'int32_t'], # PP_Bool
+                 ]
+    },
+    {'name': 'PPB_UDPSocket_Private_Bind',
+     'inputs': [['udp_socket', 'PP_Resource'],         # PP_Resource
+                ['addr', 'char[]'],                    # PP_NetAddress_Private*
+                ['callback_id', 'int32_t'],            # PP_CompletionCallback
+		],
+     'outputs': [['pp_error', 'int32_t'],
+                 ]
+    },
+    {'name': 'PPB_UDPSocket_Private_RecvFrom',
+     'inputs': [['udp_socket', 'PP_Resource'],         # PP_Resource
+                ['num_bytes', 'int32_t'],
+                ['callback_id', 'int32_t'],            # PP_CompletionCallback
+                ],
+     'outputs': [['buffer', 'char[]'],                 # char*
+                 ['pp_error_or_bytes', 'int32_t'],
+                 ]
+    },
+    {'name': 'PPB_UDPSocket_Private_GetRecvFromAddress',
+     'inputs': [['udp_socket', 'PP_Resource'],         # PP_Resource
+                ],
+     'outputs': [['addr', 'char[]'],                   # PP_NetAddress_Private*
+                 ['success', 'int32_t'],               # PP_Bool
+		 ]
+    },
+    {'name': 'PPB_UDPSocket_Private_SendTo',
+     'inputs': [['udp_socket', 'PP_Resource'],         # PP_Resource
+                ['buffer', 'char[]'],                  # const char*
+                ['num_bytes', 'int32_t'],
+                ['addr', 'char[]'],                    # PP_NetAddress_Private*
+                ['callback_id', 'int32_t']             # PP_CompletionCallback
+                ],
+     'outputs': [['pp_error_or_bytes', 'int32_t'],
+                 ]
+    },
+    {'name': 'PPB_UDPSocket_Private_Close',
+     'inputs': [['udp_socket', 'PP_Resource'],         # PP_Resource
+                ],
+     'outputs': []
+    },
+   ]
+}
