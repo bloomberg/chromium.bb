@@ -2,6 +2,7 @@
    "name": "processes onupdated test",
    "description": "extension that listens to processes.onUpdated",
    "version": "0.1",
+   "manifest_version": 2,
    "background_page": "background.html",
    "permissions": [ "tabs", "experimental" ]
 }
