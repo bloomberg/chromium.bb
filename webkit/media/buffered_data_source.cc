@@ -225,7 +225,7 @@ void BufferedDataSource::InitializeTask() {
     // responds with 200 instead of 206 we'll fall back into a streaming mode.
     loader_ = CreateResourceLoader(0, kPositionNotSpecified);
     loader_->Start(
-        NewCallback(this, &BufferedDataSource::HttpInitialStartCallback),
+        base::Bind(&BufferedDataSource::HttpInitialStartCallback, this),
         base::Bind(&BufferedDataSource::NetworkEventCallback, this),
         frame_);
   } else {
@@ -235,7 +235,7 @@ void BufferedDataSource::InitializeTask() {
     loader_ = CreateResourceLoader(kPositionNotSpecified,
                                    kPositionNotSpecified);
     loader_->Start(
-        NewCallback(this, &BufferedDataSource::NonHttpInitialStartCallback),
+        base::Bind(&BufferedDataSource::NonHttpInitialStartCallback, this),
         base::Bind(&BufferedDataSource::NetworkEventCallback, this),
         frame_);
   }
@@ -306,7 +306,7 @@ void BufferedDataSource::RestartLoadingTask() {
 
   loader_ = CreateResourceLoader(read_position_, kPositionNotSpecified);
   loader_->Start(
-      NewCallback(this, &BufferedDataSource::PartialReadStartCallback),
+      base::Bind(&BufferedDataSource::PartialReadStartCallback, this),
       base::Bind(&BufferedDataSource::NetworkEventCallback, this),
       frame_);
 }
@@ -374,7 +374,7 @@ void BufferedDataSource::ReadInternal() {
 
   // Perform the actual read with BufferedResourceLoader.
   loader_->Read(read_position_, read_size_, intermediate_read_buffer_.get(),
-                NewCallback(this, &BufferedDataSource::ReadCallback));
+                base::Bind(&BufferedDataSource::ReadCallback, this));
 }
 
 // Method to report the results of the current read request. Also reset all
@@ -446,7 +446,7 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
     loader_ = CreateResourceLoader(kPositionNotSpecified,
                                    kPositionNotSpecified);
     loader_->Start(
-        NewCallback(this, &BufferedDataSource::HttpInitialStartCallback),
+        base::Bind(&BufferedDataSource::HttpInitialStartCallback, this),
         base::Bind(&BufferedDataSource::NetworkEventCallback, this),
         frame_);
     return;

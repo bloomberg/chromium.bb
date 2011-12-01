@@ -108,7 +108,8 @@ class BufferedResourceLoaderTest : public testing::Test {
     EXPECT_CALL(*url_loader_, loadAsynchronously(Truly(CorrectAcceptEncoding),
                                                  loader_.get()));
     loader_->Start(
-        NewCallback(this, &BufferedResourceLoaderTest::StartCallback),
+        base::Bind(&BufferedResourceLoaderTest::StartCallback,
+                   base::Unretained(this)),
         base::Bind(&BufferedResourceLoaderTest::NetworkCallback,
                    base::Unretained(this)),
         view_->mainFrame());
@@ -238,7 +239,8 @@ class BufferedResourceLoaderTest : public testing::Test {
   // Helper method to read from |loader_|.
   void ReadLoader(int64 position, int size, uint8* buffer) {
     loader_->Read(position, size, buffer,
-                  NewCallback(this, &BufferedResourceLoaderTest::ReadCallback));
+                  base::Bind(&BufferedResourceLoaderTest::ReadCallback,
+                             base::Unretained(this)));
   }
 
   // Verifies that data in buffer[0...size] is equal to data_[pos...pos+size].

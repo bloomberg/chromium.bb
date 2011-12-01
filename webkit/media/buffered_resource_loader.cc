@@ -112,11 +112,9 @@ BufferedResourceLoader::BufferedResourceLoader(
       first_byte_position_(first_byte_position),
       last_byte_position_(last_byte_position),
       single_origin_(true),
-      start_callback_(NULL),
       offset_(0),
       content_length_(kPositionNotSpecified),
       instance_size_(kPositionNotSpecified),
-      read_callback_(NULL),
       read_position_(0),
       read_size_(0),
       read_buffer_(NULL),
@@ -139,17 +137,18 @@ BufferedResourceLoader::~BufferedResourceLoader() {
     url_loader_->cancel();
 }
 
-void BufferedResourceLoader::Start(net::OldCompletionCallback* start_callback,
-                                   const base::Closure& event_callback,
-                                   WebFrame* frame) {
+void BufferedResourceLoader::Start(
+    const net::CompletionCallback& start_callback,
+    const base::Closure& event_callback,
+    WebFrame* frame) {
   // Make sure we have not started.
-  DCHECK(!start_callback_.get());
+  DCHECK(start_callback_.is_null());
   DCHECK(event_callback_.is_null());
-  DCHECK(start_callback);
+  DCHECK(!start_callback.is_null());
   DCHECK(!event_callback.is_null());
   CHECK(frame);
 
-  start_callback_.reset(start_callback);
+  start_callback_ = start_callback;
   event_callback_ = event_callback;
 
   if (first_byte_position_ != kPositionNotSpecified) {
@@ -195,9 +194,9 @@ void BufferedResourceLoader::Start(net::OldCompletionCallback* start_callback,
 
 void BufferedResourceLoader::Stop() {
   // Reset callbacks.
-  start_callback_.reset();
+  start_callback_.Reset();
   event_callback_.Reset();
-  read_callback_.reset();
+  read_callback_.Reset();
 
   // Use the internal buffer to signal that we have been stopped.
   // TODO(hclam): Not so pretty to do this.
@@ -219,18 +218,19 @@ void BufferedResourceLoader::Stop() {
   }
 }
 
-void BufferedResourceLoader::Read(int64 position,
-                                  int read_size,
-                                  uint8* buffer,
-                                  net::OldCompletionCallback* read_callback) {
-  DCHECK(!read_callback_.get());
+void BufferedResourceLoader::Read(
+    int64 position,
+    int read_size,
+    uint8* buffer,
+    const net::CompletionCallback& read_callback) {
+  DCHECK(read_callback_.is_null());
   DCHECK(buffer_.get());
-  DCHECK(read_callback);
+  DCHECK(!read_callback.is_null());
   DCHECK(buffer);
   DCHECK_GT(read_size, 0);
 
   // Save the parameter of reading.
-  read_callback_.reset(read_callback);
+  read_callback_ = read_callback;
   read_position_ = position;
   read_size_ = read_size;
   read_buffer_ = buffer;
@@ -347,7 +347,7 @@ void BufferedResourceLoader::willSendRequest(
 
   // The load may have been stopped and |start_callback| is destroyed.
   // In this case we shouldn't do anything.
-  if (!start_callback_.get()) {
+  if (start_callback_.is_null()) {
     // Set the url in the request to an invalid value (empty url).
     newRequest.setURL(WebKit::WebURL());
     return;
@@ -374,7 +374,7 @@ void BufferedResourceLoader::didReceiveResponse(
 
   // The loader may have been stopped and |start_callback| is destroyed.
   // In this case we shouldn't do anything.
-  if (!start_callback_.get())
+  if (start_callback_.is_null())
     return;
 
   bool partial_response = false;
@@ -494,8 +494,8 @@ void BufferedResourceLoader::didFinishLoading(
     instance_size_ = offset_ + buffer_->forward_bytes();
   }
 
-  // If there is a start callback, calls it.
-  if (start_callback_.get()) {
+  // If there is a start callback, run it.
+  if (!start_callback_.is_null()) {
     DoneStart(net::OK);
   }
 
@@ -530,8 +530,8 @@ void BufferedResourceLoader::didFail(
   DCHECK(!completed_);
   completed_ = true;
 
-  // If there is a start callback, calls it.
-  if (start_callback_.get()) {
+  // If there is a start callback, run it.
+  if (!start_callback_.is_null()) {
     DoneStart(error.reason);
   }
 
@@ -623,7 +623,7 @@ bool BufferedResourceLoader::ShouldEnableDefer() {
 
     // Defer if nothing is being requested.
     case kReadThenDefer:
-      return !read_callback_.get();
+      return read_callback_.is_null();
 
     // Defer if we've reached the max capacity of the threshold.
     case kThresholdDefer:
@@ -646,7 +646,7 @@ bool BufferedResourceLoader::ShouldDisableDefer() {
     // We have an outstanding read request, and we have not buffered enough
     // yet to fulfill the request; disable defer to get more data.
     case kReadThenDefer:
-      return read_callback_.get() &&
+      return !read_callback_.is_null() &&
           last_offset_ > static_cast<int>(buffer_->forward_bytes());
 
     // We have less than half the capacity of our threshold, so
@@ -764,8 +764,8 @@ std::string BufferedResourceLoader::GenerateHeaders(
 }
 
 void BufferedResourceLoader::DoneRead(int error) {
-  read_callback_->RunWithParams(Tuple1<int>(error));
-  read_callback_.reset();
+  read_callback_.Run(error);
+  read_callback_.Reset();
   if (buffer_.get() && saved_forward_capacity_) {
     buffer_->set_forward_capacity(saved_forward_capacity_);
     saved_forward_capacity_ = 0;
@@ -779,8 +779,8 @@ void BufferedResourceLoader::DoneRead(int error) {
 }
 
 void BufferedResourceLoader::DoneStart(int error) {
-  start_callback_->RunWithParams(Tuple1<int>(error));
-  start_callback_.reset();
+  start_callback_.Run(error);
+  start_callback_.Reset();
 }
 
 void BufferedResourceLoader::NotifyNetworkEvent() {

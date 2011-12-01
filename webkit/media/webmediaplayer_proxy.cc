@@ -40,8 +40,8 @@ void WebMediaPlayerProxy::Repaint() {
   if (outstanding_repaints_ < kMaxOutstandingRepaints) {
     ++outstanding_repaints_;
 
-    render_loop_->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &WebMediaPlayerProxy::RepaintTask));
+    render_loop_->PostTask(FROM_HERE, base::Bind(
+        &WebMediaPlayerProxy::RepaintTask, this));
   }
 }
 
@@ -99,29 +99,29 @@ void WebMediaPlayerProxy::Detach() {
 
 void WebMediaPlayerProxy::PipelineInitializationCallback(
     PipelineStatus status) {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &WebMediaPlayerProxy::PipelineInitializationTask, status));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::PipelineInitializationTask, this, status));
 }
 
 void WebMediaPlayerProxy::PipelineSeekCallback(PipelineStatus status) {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &WebMediaPlayerProxy::PipelineSeekTask, status));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::PipelineSeekTask, this, status));
 }
 
 void WebMediaPlayerProxy::PipelineEndedCallback(PipelineStatus status) {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &WebMediaPlayerProxy::PipelineEndedTask, status));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::PipelineEndedTask, this, status));
 }
 
 void WebMediaPlayerProxy::PipelineErrorCallback(PipelineStatus error) {
   DCHECK_NE(error, media::PIPELINE_OK);
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &WebMediaPlayerProxy::PipelineErrorTask, error));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::PipelineErrorTask, this, error));
 }
 
 void WebMediaPlayerProxy::NetworkEventCallback(NetworkEvent type) {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &WebMediaPlayerProxy::NetworkEventTask, type));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::NetworkEventTask, this, type));
 }
 
 void WebMediaPlayerProxy::AddDataSource(WebDataSource* data_source) {
@@ -184,14 +184,14 @@ void WebMediaPlayerProxy::PutCurrentFrame(
 }
 
 void WebMediaPlayerProxy::DemuxerOpened(media::ChunkDemuxer* demuxer) {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &WebMediaPlayerProxy::DemuxerOpenedTask,
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::DemuxerOpenedTask, this,
       scoped_refptr<media::ChunkDemuxer>(demuxer)));
 }
 
 void WebMediaPlayerProxy::DemuxerClosed() {
-  render_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &WebMediaPlayerProxy::DemuxerClosedTask));
+  render_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerProxy::DemuxerClosedTask, this));
 }
 
 void WebMediaPlayerProxy::DemuxerFlush() {
