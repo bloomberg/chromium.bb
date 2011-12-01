@@ -254,7 +254,9 @@ WebKit::WebGraphicsContext3D* CompositorCC::createContext3D() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kDisableUIVsync)) {
     context->makeContextCurrent();
-    gfx::GLContext::GetCurrent()->SetSwapInterval(1);
+    gfx::GLContext* gl_context = gfx::GLContext::GetCurrent();
+    gl_context->SetSwapInterval(1);
+    gl_context->ReleaseCurrent(NULL);
   }
 
   return context;
