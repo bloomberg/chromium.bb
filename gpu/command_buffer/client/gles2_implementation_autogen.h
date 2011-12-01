@@ -100,7 +100,7 @@ GLenum CheckFramebufferStatus(GLenum target) {
   Result* result = GetResultAs<Result*>();
   *result = 0;
   helper_->CheckFramebufferStatus(
-      target, result_shm_id(), result_shm_offset());
+      target, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   return *result;
@@ -447,7 +447,7 @@ void GetBooleanv(GLenum pname, GLboolean* params) {
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetBooleanv(pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -466,7 +466,7 @@ void GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetBufferParameteriv(target, pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -487,7 +487,7 @@ void GetFloatv(GLenum pname, GLfloat* params) {
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetFloatv(pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -508,7 +508,7 @@ void GetFramebufferAttachmentParameteriv(
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetFramebufferAttachmentParameteriv(target, attachment, pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -527,7 +527,7 @@ void GetIntegerv(GLenum pname, GLint* params) {
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetIntegerv(pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -546,7 +546,7 @@ void GetProgramiv(GLuint program, GLenum pname, GLint* params) {
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetProgramiv(program, pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -590,7 +590,7 @@ void GetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetRenderbufferParameteriv(target, pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -609,7 +609,7 @@ void GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetShaderiv(shader, pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -682,7 +682,7 @@ void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetTexParameterfv(target, pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -701,7 +701,7 @@ void GetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetTexParameteriv(target, pname,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -729,7 +729,7 @@ GLboolean IsBuffer(GLuint buffer) {
   typedef IsBuffer::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
-  helper_->IsBuffer(buffer, result_shm_id(), result_shm_offset());
+  helper_->IsBuffer(buffer, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   return *result;
@@ -740,7 +740,7 @@ GLboolean IsEnabled(GLenum cap) {
   typedef IsEnabled::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
-  helper_->IsEnabled(cap, result_shm_id(), result_shm_offset());
+  helper_->IsEnabled(cap, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   return *result;
@@ -751,7 +751,7 @@ GLboolean IsFramebuffer(GLuint framebuffer) {
   typedef IsFramebuffer::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
-  helper_->IsFramebuffer(framebuffer, result_shm_id(), result_shm_offset());
+  helper_->IsFramebuffer(framebuffer, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   return *result;
@@ -762,7 +762,7 @@ GLboolean IsProgram(GLuint program) {
   typedef IsProgram::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
-  helper_->IsProgram(program, result_shm_id(), result_shm_offset());
+  helper_->IsProgram(program, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   return *result;
@@ -773,7 +773,8 @@ GLboolean IsRenderbuffer(GLuint renderbuffer) {
   typedef IsRenderbuffer::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
-  helper_->IsRenderbuffer(renderbuffer, result_shm_id(), result_shm_offset());
+  helper_->IsRenderbuffer(
+      renderbuffer, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   return *result;
@@ -784,7 +785,7 @@ GLboolean IsShader(GLuint shader) {
   typedef IsShader::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
-  helper_->IsShader(shader, result_shm_id(), result_shm_offset());
+  helper_->IsShader(shader, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   return *result;
@@ -795,7 +796,7 @@ GLboolean IsTexture(GLuint texture) {
   typedef IsTexture::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
-  helper_->IsTexture(texture, result_shm_id(), result_shm_offset());
+  helper_->IsTexture(texture, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   return *result;
@@ -1232,7 +1233,7 @@ GLuint GetMaxValueInBufferCHROMIUM(
   Result* result = GetResultAs<Result*>();
   *result = 0;
   helper_->GetMaxValueInBufferCHROMIUM(
-      buffer_id, count, type, offset, result_shm_id(), result_shm_offset());
+      buffer_id, count, type, offset, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GPU_CLIENT_LOG("returned " << *result);
   return *result;

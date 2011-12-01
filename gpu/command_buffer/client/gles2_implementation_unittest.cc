@@ -188,8 +188,7 @@ struct Str7 {
 };
 #pragma pack(pop)
 
-// Test fixture for CommandBufferHelper test.
-class GLES2ImplementationTest : public testing::Test {
+class GLES2CommandBufferTestBase : public testing::Test {
  protected:
   static const int32 kNumCommandEntries = 400;
   static const int32 kCommandBufferSizeBytes =
@@ -198,6 +197,196 @@ class GLES2ImplementationTest : public testing::Test {
   static const int32 kTransferBufferId =
       GLES2MockCommandBufferHelper::kTransferBufferId;
   static const uint8 kInitialValue = 0xBD;
+
+  GLES2CommandBufferTestBase()
+      : commands_(NULL),
+        token_(0),
+        offset_(0),
+        initial_offset_(0),
+        alignment_(0) {
+  }
+
+  void SetupCommandBuffer(unsigned int offset, unsigned alignment) {
+    initial_offset_ = offset;
+    offset_ = offset;
+    alignment_ = alignment;
+
+    command_buffer_.reset(new MockGLES2CommandBuffer());
+    command_buffer_->Initialize(kCommandBufferSizeBytes);
+
+    EXPECT_EQ(kTransferBufferId,
+              command_buffer_->CreateTransferBuffer(kTransferBufferSize, -1));
+    transfer_buffer_ = command_buffer_->GetTransferBuffer(kTransferBufferId);
+    ClearTransferBuffer();
+
+    helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
+    helper_->Initialize(kCommandBufferSizeBytes);
+  }
+
+  const void* GetPut() {
+    return helper_->GetSpace(0);
+  }
+
+  size_t MaxTransferBufferSize() {
+    return kTransferBufferSize - initial_offset_;
+  }
+
+  void ClearCommands() {
+    Buffer ring_buffer = command_buffer_->GetRingBuffer();
+    memset(ring_buffer.ptr, kInitialValue, ring_buffer.size);
+  }
+
+  bool NoCommandsWritten() {
+    return static_cast<const uint8*>(static_cast<const void*>(commands_))[0] ==
+           kInitialValue;
+  }
+
+  void ClearTransferBuffer() {
+    memset(transfer_buffer_.ptr, kInitialValue, kTransferBufferSize);
+  }
+
+  unsigned int RoundToAlignment(unsigned int size) {
+    return (size + alignment_ - 1) & ~(alignment_ - 1);
+  }
+
+  int GetNextToken() {
+    return ++token_;
+  }
+
+  uint32 AllocateTransferBuffer(size_t size) {
+    if (offset_ + size > kTransferBufferSize) {
+      offset_ = initial_offset_;
+    }
+    uint32 offset = offset_;
+    offset_ += RoundToAlignment(size);
+    return offset;
+  }
+
+  void* GetTransferAddressFromOffset(uint32 offset, size_t size) {
+    EXPECT_LE(offset + size, transfer_buffer_.size);
+    return static_cast<int8*>(transfer_buffer_.ptr) + offset;
+  }
+
+  template <typename T>
+  T* GetTransferAddressFromOffsetAs(uint32 offset, size_t size) {
+    return static_cast<T*>(GetTransferAddressFromOffset(offset, size));
+  }
+
+  Buffer transfer_buffer_;
+  CommandBufferEntry* commands_;
+  scoped_ptr<MockGLES2CommandBuffer> command_buffer_;
+  scoped_ptr<GLES2CmdHelper> helper_;
+  int token_;
+  uint32 offset_;
+  uint32 initial_offset_;
+  uint32 alignment_;
+};
+
+// GCC requires these declarations, but MSVC requires they not be present
+#ifndef _MSC_VER
+const int32 GLES2CommandBufferTestBase::kNumCommandEntries;
+const int32 GLES2CommandBufferTestBase::kCommandBufferSizeBytes;
+const size_t GLES2CommandBufferTestBase::kTransferBufferSize;
+const int32 GLES2CommandBufferTestBase::kTransferBufferId;
+const uint8 GLES2CommandBufferTestBase::kInitialValue;
+#endif
+
+class TransferBufferTest : public GLES2CommandBufferTestBase {
+ protected:
+  static const unsigned int kStartingOffset = 64;
+  static const unsigned int kAlignment = 4;
+
+  TransferBufferTest() { }
+
+  virtual void SetUp() {
+    SetupCommandBuffer(
+        GLES2Implementation::kStartingOffset,
+        GLES2Implementation::kAlignment);
+
+    transfer_buffer_.reset(new TransferBuffer(
+        helper_.get(),
+        kTransferBufferId,
+        GetTransferAddressFromOffset(0, 0),
+        kTransferBufferSize,
+        kStartingOffset,
+        kAlignment));
+  }
+
+  virtual void TearDown() {
+    transfer_buffer_.reset();
+  }
+
+  scoped_ptr<TransferBuffer> transfer_buffer_;
+};
+
+// GCC requires these declarations, but MSVC requires they not be present
+#ifndef _MSC_VER
+const unsigned int TransferBufferTest::kStartingOffset;
+const unsigned int TransferBufferTest::kAlignment;
+#endif
+
+TEST_F(TransferBufferTest, Basic) {
+  EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+  EXPECT_EQ(kTransferBufferId, transfer_buffer_->GetShmId());
+}
+
+TEST_F(TransferBufferTest, Free) {
+  EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+
+  // Free buffer.
+  EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  transfer_buffer_->Free();
+  // See it's freed.
+  EXPECT_FALSE(transfer_buffer_->HaveBuffer());
+  // See that it gets reallocated.
+  EXPECT_EQ(kTransferBufferId, transfer_buffer_->GetShmId());
+  EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+
+  // Free buffer.
+  EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  transfer_buffer_->Free();
+  // See it's freed.
+  EXPECT_FALSE(transfer_buffer_->HaveBuffer());
+  // See that it gets reallocated.
+  EXPECT_TRUE(transfer_buffer_->GetResultBuffer() != NULL);
+  EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+
+  // Free buffer.
+  EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  transfer_buffer_->Free();
+  // See it's freed.
+  EXPECT_FALSE(transfer_buffer_->HaveBuffer());
+  // See that it gets reallocated.
+  EXPECT_TRUE(transfer_buffer_->GetBuffer() != NULL);
+  EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+
+  // Free buffer.
+  EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  transfer_buffer_->Free();
+  // See it's freed.
+  EXPECT_FALSE(transfer_buffer_->HaveBuffer());
+  // See that it gets reallocated.
+  transfer_buffer_->GetResultOffset();
+  EXPECT_TRUE(transfer_buffer_->HaveBuffer());
+
+  // Test freeing twice.
+  EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  transfer_buffer_->Free();
+  transfer_buffer_->Free();
+}
+
+class GLES2ImplementationTest : public GLES2CommandBufferTestBase {
+ protected:
   static const GLint kMaxCombinedTextureImageUnits = 8;
   static const GLint kMaxCubeMapTextureSize = 64;
   static const GLint kMaxFragmentUniformVectors = 16;
@@ -212,11 +401,7 @@ class GLES2ImplementationTest : public testing::Test {
   static const GLint kNumShaderBinaryFormats = 0;
   static const GLuint kStartId = 1024;
 
-  GLES2ImplementationTest()
-      : commands_(NULL),
-        token_(0),
-        offset_(0) {
-  }
+  GLES2ImplementationTest() { }
 
   virtual void SetUp() {
     Initialize(false, true);
@@ -226,18 +411,9 @@ class GLES2ImplementationTest : public testing::Test {
   }
 
   void Initialize(bool shared_resources, bool bind_generates_resource) {
-    offset_ = GLES2Implementation::kStartingOffset;
-
-    command_buffer_.reset(new MockGLES2CommandBuffer());
-    command_buffer_->Initialize(kCommandBufferSizeBytes);
-
-    EXPECT_EQ(kTransferBufferId,
-              command_buffer_->CreateTransferBuffer(kTransferBufferSize, -1));
-    transfer_buffer_ = command_buffer_->GetTransferBuffer(kTransferBufferId);
-    ClearTransferBuffer();
-
-    helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
-    helper_->Initialize(kCommandBufferSizeBytes);
+    SetupCommandBuffer(
+        GLES2Implementation::kStartingOffset,
+        GLES2Implementation::kAlignment);
 
     GLES2Implementation::GLState state;
     state.max_combined_texture_image_units = kMaxCombinedTextureImageUnits;
@@ -312,64 +488,8 @@ class GLES2ImplementationTest : public testing::Test {
     ClearCommands();
   }
 
-  const void* GetPut() {
-    return helper_->GetSpace(0);
-  }
-
-  size_t MaxTransferBufferSize() {
-    return kTransferBufferSize - GLES2Implementation::kStartingOffset;
-  }
-
-  void ClearCommands() {
-    Buffer ring_buffer = command_buffer_->GetRingBuffer();
-    memset(ring_buffer.ptr, kInitialValue, ring_buffer.size);
-  }
-
-  bool NoCommandsWritten() {
-    return static_cast<const uint8*>(static_cast<const void*>(commands_))[0] ==
-           kInitialValue;
-  }
-
-  void ClearTransferBuffer() {
-    memset(transfer_buffer_.ptr, kInitialValue, kTransferBufferSize);
-  }
-
-  static unsigned int RoundToAlignment(unsigned int size) {
-    return (size + GLES2Implementation::kAlignment - 1) &
-           ~(GLES2Implementation::kAlignment - 1);
-  }
-
-  int GetNextToken() {
-    return ++token_;
-  }
-
-  uint32 AllocateTransferBuffer(size_t size) {
-    if (offset_ + size > kTransferBufferSize) {
-      offset_ = GLES2Implementation::kStartingOffset;
-    }
-    uint32 offset = offset_;
-    offset_ += RoundToAlignment(size);
-    return offset;
-  }
-
-  void* GetTransferAddressFromOffset(uint32 offset, size_t size) {
-    EXPECT_LE(offset + size, transfer_buffer_.size);
-    return static_cast<int8*>(transfer_buffer_.ptr) + offset;
-  }
-
-  template <typename T>
-  T* GetTransferAddressFromOffsetAs(uint32 offset, size_t size) {
-    return static_cast<T*>(GetTransferAddressFromOffset(offset, size));
-  }
-
-  Buffer transfer_buffer_;
-  CommandBufferEntry* commands_;
-  scoped_ptr<MockGLES2CommandBuffer> command_buffer_;
-  scoped_ptr<GLES2CmdHelper> helper_;
   Sequence sequence_;
   scoped_ptr<GLES2Implementation> gl_;
-  int token_;
-  uint32 offset_;
 };
 
 class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
@@ -378,11 +498,6 @@ class GLES2ImplementationStrictSharedTest : public GLES2ImplementationTest {
     Initialize(true, false);
   }
 };
-
-// GCC requires these declarations, but MSVC requires they not be present
-#ifndef _MSC_VER
-const int32 GLES2ImplementationTest::kTransferBufferId;
-#endif
 
 TEST_F(GLES2ImplementationTest, ShaderSource) {
   const uint32 kBucketId = 1;  // This id is hardcoded into GLES2Implemenation
@@ -950,7 +1065,7 @@ TEST_F(GLES2ImplementationTest, FreeUnusedSharedMemory) {
       kTarget, kOffset, kSize, GL_WRITE_ONLY);
   ASSERT_TRUE(mem != NULL);
   gl_->UnmapBufferSubDataCHROMIUM(mem);
-  EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_))\
+  EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
   gl_->FreeUnusedSharedMemory();

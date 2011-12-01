@@ -3389,7 +3389,7 @@ class GETnHandler(TypeHandler):
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->%(func_name)s(%(arg_string)s,
-      result_shm_id(), result_shm_offset());
+      GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -4184,7 +4184,8 @@ TEST_F(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
       comma = ""
       if len(arg_string) > 0:
         comma = ", "
-      file.Write("  helper_->%s(%s%sresult_shm_id(), result_shm_offset());\n" %
+      file.Write(
+          "  helper_->%s(%s%sGetResultShmId(), GetResultShmOffset());\n" %
                  (func.name, arg_string, comma))
       file.Write("  WaitForCmd();\n")
       file.Write('  GPU_CLIENT_LOG("returned " << *result);\n')

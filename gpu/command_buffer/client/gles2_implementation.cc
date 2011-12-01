@@ -519,6 +519,83 @@ class ClientSideBufferHelper {
   DISALLOW_COPY_AND_ASSIGN(ClientSideBufferHelper);
 };
 
+AlignedRingBuffer::~AlignedRingBuffer() {
+}
+
+TransferBuffer::TransferBuffer(
+    CommandBufferHelper* helper,
+    int32 buffer_id,
+    void* buffer,
+    size_t buffer_size,
+    size_t result_size,
+    unsigned int alignment)
+    : helper_(helper),
+      buffer_size_(buffer_size),
+      result_size_(result_size),
+      alignment_(alignment) {
+  Setup(buffer_id, buffer);
+}
+
+TransferBuffer::~TransferBuffer() {
+}
+
+void TransferBuffer::Setup(int32 buffer_id, void* buffer) {
+  GPU_CHECK(!ring_buffer_.get());
+  ring_buffer_.reset(new AlignedRingBuffer(
+      alignment_,
+      buffer_id,
+      result_size_,
+      buffer_size_ - result_size_,
+      helper_,
+      static_cast<char*>(buffer) + result_size_));
+  buffer_id_ = buffer_id;
+  result_buffer_ = buffer;
+  result_shm_offset_ = 0;
+}
+
+void TransferBuffer::Free() {
+  if (buffer_id_) {
+    // TODO(gman): should we check the memory is unused?
+    helper_->command_buffer()->DestroyTransferBuffer(buffer_id_);
+    buffer_id_ = 0;
+    result_buffer_ = NULL;
+    result_shm_offset_ = 0;
+    ring_buffer_.reset();
+  }
+}
+
+void TransferBuffer::AllocateRingBuffer() {
+  if (!buffer_id_) {
+    int32 id = helper_->command_buffer()->CreateTransferBuffer(
+        buffer_size_, -1);
+    GPU_CHECK_NE(-1, id);  // if it fails we're done.
+    gpu::Buffer shm = helper_->command_buffer()->GetTransferBuffer(id);
+    Setup(id, shm.ptr);
+  }
+}
+
+AlignedRingBuffer* TransferBuffer::GetBuffer() {
+  AllocateRingBuffer();
+  return ring_buffer_.get();
+}
+
+void* TransferBuffer::GetResultBuffer() {
+  AllocateRingBuffer();
+  GPU_CHECK(result_buffer_);
+  return result_buffer_;
+}
+
+int TransferBuffer::GetResultOffset() {
+  AllocateRingBuffer();
+  return result_shm_offset_;
+}
+
+int TransferBuffer::GetShmId() {
+  AllocateRingBuffer();
+  GPU_CHECK(buffer_id_);
+  return buffer_id_;
+}
+
 #if !defined(_MSC_VER)
 const size_t GLES2Implementation::kMaxSizeOfSimpleResult;
 #endif
@@ -535,11 +612,12 @@ GLES2Implementation::GLES2Implementation(
       bool bind_generates_resource)
     : helper_(helper),
       transfer_buffer_(
-          kStartingOffset,
-          transfer_buffer_size - kStartingOffset,
           helper,
-          static_cast<char*>(transfer_buffer) + kStartingOffset),
-      transfer_buffer_id_(transfer_buffer_id),
+          transfer_buffer_id,
+          transfer_buffer,
+          transfer_buffer_size,
+          GLES2Implementation::kStartingOffset,
+          GLES2Implementation::kAlignment),
       angle_pack_reverse_row_order_status(kUnknownExtensionStatus),
       pack_alignment_(4),
       unpack_alignment_(4),
@@ -561,9 +639,6 @@ GLES2Implementation::GLES2Implementation(
         switches::kEnableGPUClientLogging);
   });
 
-  // Allocate space for simple GL results.
-  result_buffer_ = transfer_buffer;
-  result_shm_offset_ = 0;
   memset(&reserved_ids_, 0, sizeof(reserved_ids_));
 
   mapped_memory_.reset(new MappedMemoryManager(helper_));
@@ -645,6 +720,12 @@ void GLES2Implementation::FreeUnusedSharedMemory() {
   mapped_memory_->FreeUnused();
 }
 
+void GLES2Implementation::FreeEverything() {
+  Finish();
+  FreeUnusedSharedMemory();
+  transfer_buffer_.Free();
+}
+
 void GLES2Implementation::WaitForCmd() {
   TRACE_EVENT0("gpu", "GLES2::WaitForCmd");
   helper_->CommandBufferHelper::Finish();
@@ -698,7 +779,7 @@ GLenum GLES2Implementation::GetGLError() {
   typedef gles2::GetError::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = GL_NO_ERROR;
-  helper_->GetError(result_shm_id(), result_shm_offset());
+  helper_->GetError(GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   GLenum error = *result;
   if (error == GL_NO_ERROR && error_bits_ != 0) {
@@ -733,22 +814,24 @@ void GLES2Implementation::GetBucketContents(uint32 bucket_id,
   typedef cmd::GetBucketSize::Result Result;
   Result* result = GetResultAs<Result*>();
   *result = 0;
-  helper_->GetBucketSize(bucket_id, result_shm_id(), result_shm_offset());
+  helper_->GetBucketSize(bucket_id, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   uint32 size = *result;
   data->resize(size);
   if (size > 0u) {
-    uint32 max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+    AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+    uint32 max_size = transfer_buffer->GetLargestFreeOrPendingSize();
     uint32 offset = 0;
     while (size) {
       uint32 part_size = std::min(max_size, size);
-      void* buffer = transfer_buffer_.Alloc(part_size);
+      void* buffer = transfer_buffer->Alloc(part_size);
       helper_->GetBucketData(
           bucket_id, offset, part_size,
-          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+          transfer_buffer->GetShmId(),
+          transfer_buffer->GetOffset(buffer));
       WaitForCmd();
       memcpy(&(*data)[offset], buffer, part_size);
-      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+      transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
       offset += part_size;
       size -= part_size;
     }
@@ -764,16 +847,18 @@ void GLES2Implementation::SetBucketContents(
   GPU_DCHECK(data);
   helper_->SetBucketSize(bucket_id, size);
   if (size > 0u) {
-    uint32 max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+    AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+    uint32 max_size = transfer_buffer->GetLargestFreeOrPendingSize();
     uint32 offset = 0;
     while (size) {
       uint32 part_size = std::min(static_cast<size_t>(max_size), size);
-      void* buffer = transfer_buffer_.Alloc(part_size);
+      void* buffer = transfer_buffer->Alloc(part_size);
       memcpy(buffer, static_cast<const int8*>(data) + offset, part_size);
       helper_->SetBucketData(
           bucket_id, offset, part_size,
-          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
-      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+          transfer_buffer->GetShmId(),
+          transfer_buffer->GetOffset(buffer));
+      transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
       offset += part_size;
       size -= part_size;
     }
@@ -1022,18 +1107,19 @@ void GLES2Implementation::GenSharedIdsCHROMIUM(
     }
   });
   TRACE_EVENT0("gpu", "GLES2::GenSharedIdsCHROMIUM");
-  GLsizei max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  GLsizei max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   GLsizei max_num_per = max_size / sizeof(ids[0]);
   while (n) {
     GLsizei num = std::min(n, max_num_per);
-    GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(num);
+    GLint* id_buffer = transfer_buffer->AllocTyped<GLint>(num);
     helper_->GenSharedIdsCHROMIUM(
         namespace_id, id_offset, num,
-        transfer_buffer_id_,
-        transfer_buffer_.GetOffset(id_buffer));
+        transfer_buffer->GetShmId(),
+        transfer_buffer->GetOffset(id_buffer));
     WaitForCmd();
     memcpy(ids, id_buffer, sizeof(*ids) * num);
-    transfer_buffer_.FreePendingToken(id_buffer, helper_->InsertToken());
+    transfer_buffer->FreePendingToken(id_buffer, helper_->InsertToken());
     n -= num;
     ids += num;
   }
@@ -1050,18 +1136,19 @@ void GLES2Implementation::DeleteSharedIdsCHROMIUM(
     }
   });
   TRACE_EVENT0("gpu", "GLES2::DeleteSharedIdsCHROMIUM");
-  GLsizei max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  GLsizei max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   GLsizei max_num_per = max_size / sizeof(ids[0]);
   while (n) {
     GLsizei num = std::min(n, max_num_per);
-    GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(num);
+    GLint* id_buffer = transfer_buffer->AllocTyped<GLint>(num);
     memcpy(id_buffer, ids, sizeof(*ids) * num);
     helper_->DeleteSharedIdsCHROMIUM(
         namespace_id, num,
-        transfer_buffer_id_,
-        transfer_buffer_.GetOffset(id_buffer));
+        transfer_buffer->GetShmId(),
+        transfer_buffer->GetOffset(id_buffer));
     WaitForCmd();
-    transfer_buffer_.FreePendingToken(id_buffer, helper_->InsertToken());
+    transfer_buffer->FreePendingToken(id_buffer, helper_->InsertToken());
     n -= num;
     ids += num;
   }
@@ -1078,18 +1165,19 @@ void GLES2Implementation::RegisterSharedIdsCHROMIUM(
     }
   });
   TRACE_EVENT0("gpu", "GLES2::RegisterSharedIdsCHROMIUM");
-  GLsizei max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  GLsizei max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   GLsizei max_num_per = max_size / sizeof(ids[0]);
   while (n) {
     GLsizei num = std::min(n, max_num_per);
-    GLint* id_buffer = transfer_buffer_.AllocTyped<GLint>(n);
+    GLint* id_buffer = transfer_buffer->AllocTyped<GLint>(n);
     memcpy(id_buffer, ids, sizeof(*ids) * n);
     helper_->RegisterSharedIdsCHROMIUM(
         namespace_id, n,
-        transfer_buffer_id_,
-        transfer_buffer_.GetOffset(id_buffer));
+        transfer_buffer->GetShmId(),
+        transfer_buffer->GetOffset(id_buffer));
     WaitForCmd();
-    transfer_buffer_.FreePendingToken(id_buffer, helper_->InsertToken());
+    transfer_buffer->FreePendingToken(id_buffer, helper_->InsertToken());
     n -= num;
     ids += num;
   }
@@ -1122,7 +1210,7 @@ void GLES2Implementation::GetVertexAttribPointerv(
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetVertexAttribPointerv(
-    index, pname, result_shm_id(), result_shm_offset());
+    index, pname, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(ptr);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -1163,7 +1251,7 @@ GLint GLES2Implementation::GetAttribLocationHelper(
   *result = -1;
   SetBucketAsCString(kResultBucketId, name);
   helper_->GetAttribLocationBucket(
-      program, kResultBucketId, result_shm_id(), result_shm_offset());
+      program, kResultBucketId, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   helper_->SetBucketSize(kResultBucketId, 0);
   return *result;
@@ -1186,7 +1274,7 @@ GLint GLES2Implementation::GetUniformLocationHelper(
   *result = -1;
   SetBucketAsCString(kResultBucketId, name);
   helper_->GetUniformLocationBucket(program, kResultBucketId,
-                                    result_shm_id(), result_shm_offset());
+                                    GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   helper_->SetBucketSize(kResultBucketId, 0);
   return *result;
@@ -1230,18 +1318,21 @@ void GLES2Implementation::ShaderBinary(
     return;
   }
   GLsizei shader_id_size = n * sizeof(*shaders);
-  int8* buffer = transfer_buffer_.AllocTyped<int8>(shader_id_size + length);
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  int8* buffer = transfer_buffer->AllocTyped<int8>(shader_id_size + length);
   void* shader_ids = buffer;
   void* shader_data = buffer + shader_id_size;
   memcpy(shader_ids, shaders, shader_id_size);
   memcpy(shader_data, binary, length);
   helper_->ShaderBinary(
       n,
-      transfer_buffer_id_, transfer_buffer_.GetOffset(shader_ids),
+      transfer_buffer->GetShmId(),
+      transfer_buffer->GetOffset(shader_ids),
       binaryformat,
-      transfer_buffer_id_, transfer_buffer_.GetOffset(shader_data),
+      transfer_buffer->GetShmId(),
+      transfer_buffer->GetOffset(shader_data),
       length);
-  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+  transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
 }
 
 void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
@@ -1334,7 +1425,8 @@ void GLES2Implementation::ShaderSource(
 
   // Concatenate all the strings in to a bucket on the service.
   helper_->SetBucketSize(kResultBucketId, total_size);
-  uint32 max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  uint32 max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   uint32 offset = 0;
   for (GLsizei ii = 0; ii <= count; ++ii) {
     const char* src = ii < count ? source[ii] : "";
@@ -1343,12 +1435,12 @@ void GLES2Implementation::ShaderSource(
           (length ? static_cast<size_t>(length[ii]) : strlen(src)) : 1;
       while (size) {
         uint32 part_size = std::min(size, max_size);
-        void* buffer = transfer_buffer_.Alloc(part_size);
+        void* buffer = transfer_buffer->Alloc(part_size);
         memcpy(buffer, src, part_size);
         helper_->SetBucketData(kResultBucketId, offset, part_size,
-                               transfer_buffer_id_,
-                               transfer_buffer_.GetOffset(buffer));
-        transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+                               transfer_buffer->GetShmId(),
+                               transfer_buffer->GetOffset(buffer));
+        transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
         offset += part_size;
         src += part_size;
         size -= part_size;
@@ -1369,7 +1461,8 @@ void GLES2Implementation::BufferData(
       << size << ", "
       << static_cast<const void*>(data) << ", "
       << GLES2Util::GetStringBufferUsage(usage) << ")");
-  GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  GLsizeiptr max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   if (size > max_size || !data) {
     helper_->BufferData(target, size, 0, 0, usage);
     if (data != NULL) {
@@ -1378,15 +1471,15 @@ void GLES2Implementation::BufferData(
     return;
   }
 
-  void* buffer = transfer_buffer_.Alloc(size);
+  void* buffer = transfer_buffer->Alloc(size);
   memcpy(buffer, data, size);
   helper_->BufferData(
       target,
       size,
-      transfer_buffer_id_,
-      transfer_buffer_.GetOffset(buffer),
+      transfer_buffer->GetShmId(),
+      transfer_buffer->GetOffset(buffer),
       usage);
-  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+  transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
 }
 
 void GLES2Implementation::BufferSubData(
@@ -1405,15 +1498,16 @@ void GLES2Implementation::BufferSubData(
   }
 
   const int8* source = static_cast<const int8*>(data);
-  GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  GLsizeiptr max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   while (size) {
     GLsizeiptr part_size = std::min(size, max_size);
-    void* buffer = transfer_buffer_.Alloc(part_size);
+    void* buffer = transfer_buffer->Alloc(part_size);
     memcpy(buffer, source, part_size);
     helper_->BufferSubData(target, offset, part_size,
-                           transfer_buffer_id_,
-                           transfer_buffer_.GetOffset(buffer));
-    transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+                           transfer_buffer->GetShmId(),
+                           transfer_buffer->GetOffset(buffer));
+    transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
     offset += part_size;
     source += part_size;
     size -= part_size;
@@ -1533,7 +1627,8 @@ void GLES2Implementation::TexImage2D(
   }
 
   // Check if we can send it all at once.
-  unsigned int max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  unsigned int max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   if (size > max_size || !pixels) {
     // No, so send it using TexSubImage2D.
     helper_->TexImage2D(
@@ -1546,7 +1641,7 @@ void GLES2Implementation::TexImage2D(
     return;
   }
 
-  void* buffer = transfer_buffer_.Alloc(size);
+  void* buffer = transfer_buffer->Alloc(size);
   bool copy_success = true;
   if (unpack_flip_y_) {
     copy_success = CopyRectToBufferFlipped(
@@ -1558,9 +1653,9 @@ void GLES2Implementation::TexImage2D(
   if (copy_success) {
     helper_->TexImage2D(
         target, level, internalformat, width, height, border, format, type,
-        transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+        transfer_buffer->GetShmId(), transfer_buffer->GetOffset(buffer));
   }
-  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+  transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
 }
 
 void GLES2Implementation::TexSubImage2D(
@@ -1591,7 +1686,8 @@ void GLES2Implementation::TexSubImage2DImpl(
     return;
   }
   const int8* source = static_cast<const int8*>(pixels);
-  GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  GLsizeiptr max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   uint32 temp_size;
   if (!GLES2Util::ComputeImageDataSize(
       width, 1, format, type, unpack_alignment_, &temp_size)) {
@@ -1619,7 +1715,7 @@ void GLES2Implementation::TexSubImage2DImpl(
       GLint num_rows = std::min(height, max_rows);
       GLsizeiptr part_size =
           (num_rows - 1) * padded_row_size + unpadded_row_size;
-      void* buffer = transfer_buffer_.Alloc(part_size);
+      void* buffer = transfer_buffer->Alloc(part_size);
       GLint y;
       if (unpack_flip_y_) {
         CopyRectToBufferFlipped(
@@ -1632,8 +1728,9 @@ void GLES2Implementation::TexSubImage2DImpl(
       }
       helper_->TexSubImage2D(
           target, level, xoffset, y, width, num_rows, format, type,
-          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer), internal);
-      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+          transfer_buffer->GetShmId(),
+          transfer_buffer->GetOffset(buffer), internal);
+      transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
       yoffset += num_rows;
       source += num_rows * padded_row_size;
       height -= num_rows;
@@ -1653,13 +1750,14 @@ void GLES2Implementation::TexSubImage2DImpl(
       while (temp_width) {
         GLint num_pixels = std::min(width, max_sub_row_pixels);
         GLsizeiptr part_size = num_pixels * element_size;
-        void* buffer = transfer_buffer_.Alloc(part_size);
+        void* buffer = transfer_buffer->Alloc(part_size);
         memcpy(buffer, row_source, part_size);
         GLint y = unpack_flip_y_ ? (original_yoffset + height - 1) : yoffset;
         helper_->TexSubImage2D(
             target, level, temp_xoffset, y, num_pixels, 1, format, type,
-            transfer_buffer_id_, transfer_buffer_.GetOffset(buffer), internal);
-        transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+            transfer_buffer->GetShmId(),
+            transfer_buffer->GetOffset(buffer), internal);
+        transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
         row_source += part_size;
         temp_xoffset += num_pixels;
         temp_width -= num_pixels;
@@ -1676,11 +1774,11 @@ bool GLES2Implementation::GetActiveAttribHelper(
   // Clear the bucket so if the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
   typedef gles2::GetActiveAttrib::Result Result;
-  Result* result = static_cast<Result*>(result_buffer_);
+  Result* result = GetResultAs<Result*>();
   // Set as failed so if the command fails we'll recover.
   result->success = false;
   helper_->GetActiveAttrib(program, index, kResultBucketId,
-                           result_shm_id(), result_shm_offset());
+                           GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   if (result->success) {
     if (size) {
@@ -1742,11 +1840,11 @@ bool GLES2Implementation::GetActiveUniformHelper(
   // Clear the bucket so if the command fails nothing will be in it.
   helper_->SetBucketSize(kResultBucketId, 0);
   typedef gles2::GetActiveUniform::Result Result;
-  Result* result = static_cast<Result*>(result_buffer_);
+  Result* result = GetResultAs<Result*>();
   // Set as failed so if the command fails we'll recover.
   result->success = false;
   helper_->GetActiveUniform(program, index, kResultBucketId,
-                            result_shm_id(), result_shm_offset());
+                            GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   if (result->success) {
     if (size) {
@@ -1815,12 +1913,13 @@ void GLES2Implementation::GetAttachedShaders(
   TRACE_EVENT0("gpu", "GLES2::GetAttachedShaders");
   typedef gles2::GetAttachedShaders::Result Result;
   uint32 size = Result::ComputeSize(maxcount);
-  Result* result = transfer_buffer_.AllocTyped<Result>(size);
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  Result* result = transfer_buffer->AllocTyped<Result>(size);
   result->SetNumResults(0);
   helper_->GetAttachedShaders(
     program,
-    transfer_buffer_id_,
-    transfer_buffer_.GetOffset(result),
+    transfer_buffer->GetShmId(),
+    transfer_buffer->GetOffset(result),
     size);
   int32 token = helper_->InsertToken();
   WaitForCmd();
@@ -1833,7 +1932,7 @@ void GLES2Implementation::GetAttachedShaders(
       GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
     }
   });
-  transfer_buffer_.FreePendingToken(result, token);
+  transfer_buffer->FreePendingToken(result, token);
 }
 
 void GLES2Implementation::GetShaderPrecisionFormat(
@@ -1845,10 +1944,10 @@ void GLES2Implementation::GetShaderPrecisionFormat(
       << static_cast<const void*>(precision) << ", ");
   TRACE_EVENT0("gpu", "GLES2::GetShaderPrecisionFormat");
   typedef gles2::GetShaderPrecisionFormat::Result Result;
-  Result* result = static_cast<Result*>(result_buffer_);
+  Result* result = GetResultAs<Result*>();
   result->success = false;
   helper_->GetShaderPrecisionFormat(
-    shadertype, precisiontype, result_shm_id(), result_shm_offset());
+    shadertype, precisiontype, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   if (result->success) {
     if (range) {
@@ -1917,10 +2016,10 @@ void GLES2Implementation::GetUniformfv(
       << static_cast<const void*>(params) << ")");
   TRACE_EVENT0("gpu", "GLES2::GetUniformfv");
   typedef gles2::GetUniformfv::Result Result;
-  Result* result = static_cast<Result*>(result_buffer_);
+  Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetUniformfv(
-      program, location, result_shm_id(), result_shm_offset());
+      program, location, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -1937,12 +2036,12 @@ void GLES2Implementation::GetUniformiv(
       << static_cast<const void*>(params) << ")");
   TRACE_EVENT0("gpu", "GLES2::GetUniformiv");
   typedef gles2::GetUniformiv::Result Result;
-  Result* result = static_cast<Result*>(result_buffer_);
+  Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetUniformiv(
-      program, location, result_shm_id(), result_shm_offset());
+      program, location, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
-  static_cast<gles2::GetUniformfv::Result*>(result_buffer_)->CopyResult(params);
+  GetResultAs<gles2::GetUniformfv::Result*>()->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (int32 i = 0; i < result->GetNumResults(); ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
@@ -1975,9 +2074,10 @@ void GLES2Implementation::ReadPixels(
 
   TRACE_EVENT0("gpu", "GLES2::ReadPixels");
   typedef gles2::ReadPixels::Result Result;
-  Result* result = static_cast<Result*>(result_buffer_);
+  Result* result = GetResultAs<Result*>();
   int8* dest = reinterpret_cast<int8*>(pixels);
-  GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  GLsizeiptr max_size = transfer_buffer->GetLargestFreeOrPendingSize();
   uint32 temp_size;
   if (!GLES2Util::ComputeImageDataSize(
       width, 1, format, type, pack_alignment_, &temp_size)) {
@@ -2008,12 +2108,12 @@ void GLES2Implementation::ReadPixels(
       // include padding.
       GLsizeiptr part_size =
           unpadded_row_size + padded_row_size * (num_rows - 1);
-      void* buffer = transfer_buffer_.Alloc(part_size);
+      void* buffer = transfer_buffer->Alloc(part_size);
       *result = 0;  // mark as failed.
       helper_->ReadPixels(
           xoffset, yoffset, width, num_rows, format, type,
-          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer),
-          result_shm_id(), result_shm_offset());
+          transfer_buffer->GetShmId(), transfer_buffer->GetOffset(buffer),
+          GetResultShmId(), GetResultShmOffset());
       WaitForCmd();
       if (*result != 0) {
         // when doing a y-flip we have to iterate through top-to-bottom chunks
@@ -2036,7 +2136,7 @@ void GLES2Implementation::ReadPixels(
           dest = rows_dst;
         }
       }
-      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+      transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
       // If it was not marked as successful exit.
       if (*result == 0) {
         return;
@@ -2062,17 +2162,18 @@ void GLES2Implementation::ReadPixels(
       while (temp_width) {
         GLint num_pixels = std::min(width, max_sub_row_pixels);
         GLsizeiptr part_size = num_pixels * element_size;
-        void* buffer = transfer_buffer_.Alloc(part_size);
+        void* buffer = transfer_buffer->Alloc(part_size);
         *result = 0;  // mark as failed.
         helper_->ReadPixels(
             temp_xoffset, yoffset, temp_width, 1, format, type,
-            transfer_buffer_id_, transfer_buffer_.GetOffset(buffer),
-            result_shm_id(), result_shm_offset());
+            transfer_buffer->GetShmId(),
+            transfer_buffer->GetOffset(buffer),
+            GetResultShmId(), GetResultShmOffset());
         WaitForCmd();
         if (*result != 0) {
           memcpy(row_dest, buffer, part_size);
         }
-        transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+        transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
         // If it was not marked as successful exit.
         if (*result == 0) {
           return;
@@ -2360,7 +2461,7 @@ void GLES2Implementation::GetVertexAttribfv(
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetVertexAttribfv(
-      index, pname, result_shm_id(), result_shm_offset());
+      index, pname, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -2388,7 +2489,7 @@ void GLES2Implementation::GetVertexAttribiv(
   Result* result = GetResultAs<Result*>();
   result->SetNumResults(0);
   helper_->GetVertexAttribiv(
-      index, pname, result_shm_id(), result_shm_offset());
+      index, pname, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -2408,7 +2509,7 @@ GLboolean GLES2Implementation::EnableFeatureCHROMIUM(
   *result = 0;
   SetBucketAsCString(kResultBucketId, feature);
   helper_->EnableFeatureCHROMIUM(
-      kResultBucketId, result_shm_id(), result_shm_offset());
+      kResultBucketId, GetResultShmId(), GetResultShmOffset());
   WaitForCmd();
   helper_->SetBucketSize(kResultBucketId, 0);
   GPU_CLIENT_LOG("   returned " << GLES2Util::GetStringBool(*result));
@@ -2626,20 +2727,23 @@ void GLES2Implementation::GetMultipleIntegervCHROMIUM(
   }
   uint32 size_needed =
       count * sizeof(pnames[0]) + num_results * sizeof(results[0]);
-  void* buffer = transfer_buffer_.Alloc(size_needed);
+  AlignedRingBuffer* transfer_buffer = transfer_buffer_.GetBuffer();
+  void* buffer = transfer_buffer->Alloc(size_needed);
   GLenum* pnames_buffer = static_cast<GLenum*>(buffer);
   void* results_buffer = pnames_buffer + count;
   memcpy(pnames_buffer, pnames, count * sizeof(GLenum));
   memset(results_buffer, 0, num_results * sizeof(GLint));
   helper_->GetMultipleIntegervCHROMIUM(
-      transfer_buffer_id_, transfer_buffer_.GetOffset(pnames_buffer),
+      transfer_buffer->GetShmId(),
+      transfer_buffer->GetOffset(pnames_buffer),
       count,
-      transfer_buffer_id_, transfer_buffer_.GetOffset(results_buffer),
+      transfer_buffer->GetShmId(),
+      transfer_buffer->GetOffset(results_buffer),
       size);
   WaitForCmd();
   memcpy(results, results_buffer, size);
   // TODO(gman): We should be able to free without a token.
-  transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+  transfer_buffer->FreePendingToken(buffer, helper_->InsertToken());
   GPU_CLIENT_LOG("  returned");
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (int i = 0; i < num_results; ++i) {
@@ -2696,8 +2800,8 @@ GLuint GLES2Implementation::CreateStreamTextureCHROMIUM(GLuint texture) {
   *result = GL_ZERO;
 
   helper_->CreateStreamTextureCHROMIUM(texture,
-                                       result_shm_id(),
-                                       result_shm_offset());
+                                       GetResultShmId(),
+                                       GetResultShmOffset());
   WaitForCmd();
 
   return *result;

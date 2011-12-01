@@ -76,6 +76,7 @@ namespace gles2 {
 
 class ClientSideBufferHelper;
 class ProgramInfoManager;
+class AlignedRingBuffer;
 
 // Base class for IdHandlers
 class IdHandlerInterface {
@@ -91,6 +92,83 @@ class IdHandlerInterface {
 
   // Marks an id as used for glBind functions. id = 0 does nothing.
   virtual bool MarkAsUsedForBind(GLuint id) = 0;
+};
+
+// Wraps RingBufferWrapper to provide aligned allocations.
+class AlignedRingBuffer : public RingBufferWrapper {
+ public:
+  AlignedRingBuffer(
+      unsigned int alignment,
+      int32 shm_id,
+      RingBuffer::Offset base_offset,
+      unsigned int size,
+      CommandBufferHelper* helper,
+      void* base)
+      : RingBufferWrapper(base_offset, size, helper, base),
+        alignment_(alignment),
+        shm_id_(shm_id) {
+  }
+  ~AlignedRingBuffer();
+
+  // Overrriden from RingBufferWrapper
+  void* Alloc(unsigned int size) {
+    return RingBufferWrapper::Alloc(RoundToAlignment(size));
+  }
+
+  template <typename T>T* AllocTyped(unsigned int count) {
+    return static_cast<T*>(Alloc(count * sizeof(T)));
+  }
+
+  int32 GetShmId() const {
+    return shm_id_;
+  }
+
+ private:
+  unsigned int RoundToAlignment(unsigned int size) {
+    return (size + alignment_ - 1) & ~(alignment_ - 1);
+  }
+
+  unsigned int alignment_;
+  int32 shm_id_;
+};
+
+// Manages the transfer buffer.
+class TransferBuffer {
+ public:
+  TransferBuffer(
+      CommandBufferHelper* helper,
+      int32 buffer_id,
+      void* buffer,
+      size_t buffer_size,
+      size_t result_size,
+      unsigned int alignment);
+  ~TransferBuffer();
+
+  AlignedRingBuffer* GetBuffer();
+  int GetShmId();
+  void* GetResultBuffer();
+  int GetResultOffset();
+
+  void Free();
+
+  // This is for unit testing only.
+  bool HaveBuffer() const {
+    return buffer_id_ != 0;
+  }
+
+ private:
+  void AllocateRingBuffer();
+
+  void Setup(int32 buffer_id, void* buffer);
+
+  CommandBufferHelper* helper_;
+  scoped_ptr<AlignedRingBuffer> ring_buffer_;
+  unsigned int buffer_size_;
+  unsigned int result_size_;
+  unsigned int alignment_;
+  int32 buffer_id_;
+  void* result_buffer_;
+  uint32 result_shm_offset_;
 };
 
 // This class emulates GLES2 over command buffers. It can be used by a client
@@ -200,6 +278,7 @@ class GLES2Implementation {
   void SetSharedMemoryChunkSizeMultiple(unsigned int multiple);
 
   void FreeUnusedSharedMemory();
+  void FreeEverything();
 
  private:
   // Used to track whether an extension is available
@@ -207,31 +286,6 @@ class GLES2Implementation {
       kAvailableExtensionStatus,
       kUnavailableExtensionStatus,
       kUnknownExtensionStatus
-  };
-
-  // Wraps RingBufferWrapper to provide aligned allocations.
-  class AlignedRingBuffer : public RingBufferWrapper {
-   public:
-    AlignedRingBuffer(RingBuffer::Offset base_offset,
-                      unsigned int size,
-                      CommandBufferHelper *helper,
-                      void *base)
-        : RingBufferWrapper(base_offset, size, helper, base) {
-    }
-
-    static unsigned int RoundToAlignment(unsigned int size) {
-      return (size + kAlignment - 1) & ~(kAlignment - 1);
-    }
-
-    // Overrriden from RingBufferWrapper
-    void *Alloc(unsigned int size) {
-      return RingBufferWrapper::Alloc(RoundToAlignment(size));
-    }
-
-    // Overrriden from RingBufferWrapper
-    template <typename T> T *AllocTyped(unsigned int count) {
-      return static_cast<T *>(Alloc(count * sizeof(T)));
-    }
   };
 
   // Base class for mapped resources.
@@ -329,20 +383,18 @@ class GLES2Implementation {
     GLuint bound_texture_cube_map;
   };
 
-  // Gets the shared memory id for the result buffer.
-  uint32 result_shm_id() const {
-    return transfer_buffer_id_;
-  }
-
-  // Gets the shared memory offset for the result buffer.
-  uint32 result_shm_offset() const {
-    return result_shm_offset_;
-  }
-
   // Gets the value of the result.
   template <typename T>
-  T GetResultAs() const {
-    return static_cast<T>(result_buffer_);
+  T GetResultAs() {
+    return static_cast<T>(transfer_buffer_.GetResultBuffer());
+  }
+
+  int32 GetResultShmId() {
+    return transfer_buffer_.GetShmId();
+  }
+
+  uint32 GetResultShmOffset() {
+    return transfer_buffer_.GetResultOffset();
   }
 
   // Lazily determines if GL_ANGLE_pack_reverse_row_order is available
@@ -433,10 +485,7 @@ class GLES2Implementation {
   GLES2Util util_;
   GLES2CmdHelper* helper_;
   scoped_ptr<IdHandlerInterface> id_handlers_[id_namespaces::kNumIdNamespaces];
-  AlignedRingBuffer transfer_buffer_;
-  int transfer_buffer_id_;
-  void* result_buffer_;
-  uint32 result_shm_offset_;
+  TransferBuffer transfer_buffer_;
   std::string last_error_;
 
   std::queue<int32> swap_buffers_tokens_;
