@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
+#include "base/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
@@ -305,11 +306,14 @@ const SkBitmap& BookmarkModel::GetFavicon(const BookmarkNode* node) {
 }
 
 void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
+  // Remove extra whitespace from folder/bookmark names.
+  string16 mutable_title = CollapseWhitespace(title, false);
+
   if (!node) {
     NOTREACHED();
     return;
   }
-  if (node->GetTitle() == title)
+  if (node->GetTitle() == mutable_title)
     return;
 
   if (is_permanent_node(node)) {
@@ -320,7 +324,7 @@ void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
   // The title index doesn't support changing the title, instead we remove then
   // add it back.
   index_->Remove(node);
-  AsMutable(node)->set_title(title);
+  AsMutable(node)->set_title(mutable_title);
   index_->Add(node);
 
   if (store_.get())
@@ -436,7 +440,8 @@ const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
 
   BookmarkNode* new_node = new BookmarkNode(generate_next_node_id(), GURL());
   new_node->set_date_folder_modified(Time::Now());
-  new_node->set_title(title);
+  // Folders shouldn't have line breaks in their titles.
+  new_node->set_title(CollapseWhitespace(title, false));
   new_node->set_type(BookmarkNode::FOLDER);
 
   return AddNode(AsMutable(parent), index, new_node, false);
@@ -446,7 +451,9 @@ const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
                                           int index,
                                           const string16& title,
                                           const GURL& url) {
-  return AddURLWithCreationTime(parent, index, title, url, Time::Now());
+  return AddURLWithCreationTime(parent, index,
+                                CollapseWhitespace(title, false),
+                                url, Time::Now());
 }
 
 const BookmarkNode* BookmarkModel::AddURLWithCreationTime(

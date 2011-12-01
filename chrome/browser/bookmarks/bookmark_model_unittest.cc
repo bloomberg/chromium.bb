@@ -41,6 +41,35 @@ using content::BrowserThread;
 
 namespace {
 
+// Test cases used to test the removal of extra whitespace when adding
+// a new folder/bookmark or updating a title of a folder/bookmark.
+static struct {
+  const std::string input_title;
+  const std::string expected_title;
+} whitespace_test_cases[] = {
+  {"foobar", "foobar"},
+  // Newlines.
+  {"foo\nbar", "foo bar"},
+  {"foo\n\nbar", "foo bar"},
+  {"foo\n\n\nbar", "foo bar"},
+  {"foo\r\nbar", "foo bar"},
+  {"foo\r\n\r\nbar", "foo bar"},
+  {"\nfoo\nbar\n", "foo bar"},
+  // Spaces.
+  {"foo  bar", "foo bar"},
+  {" foo bar ", "foo bar"},
+  {"  foo  bar  ", "foo bar"},
+  // Tabs.
+  {"\tfoo\tbar\t", "foo bar"},
+  {"\tfoo bar\t", "foo bar"},
+  // Mixed cases.
+  {"\tfoo\nbar\t", "foo bar"},
+  {"\tfoo\r\nbar\t", "foo bar"},
+  {"  foo\tbar\n", "foo bar"},
+  {"\t foo \t  bar  \t", "foo bar"},
+  {"\n foo\r\n\tbar\n \t", "foo bar"},
+};
+
 // Helper to get a mutable bookmark node.
 BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
@@ -212,6 +241,22 @@ TEST_F(BookmarkModelTest, AddURL) {
               new_node->id() != model_.synced_node()->id());
 }
 
+TEST_F(BookmarkModelTest, AddURLWithWhitespaceTitle) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(whitespace_test_cases); ++i) {
+    const BookmarkNode* root = model_.bookmark_bar_node();
+    const string16 title(ASCIIToUTF16(whitespace_test_cases[i].input_title));
+    const GURL url("http://foo.com");
+
+    const BookmarkNode* new_node = model_.AddURL(root, i, title, url);
+
+    int size = i + 1;
+    EXPECT_EQ(size, root->child_count());
+    EXPECT_EQ(ASCIIToUTF16(whitespace_test_cases[i].expected_title),
+              new_node->GetTitle());
+    EXPECT_EQ(BookmarkNode::URL, new_node->type());
+  }
+}
+
 TEST_F(BookmarkModelTest, AddURLToSyncedBookmarks) {
   const BookmarkNode* root = model_.synced_node();
   const string16 title(ASCIIToUTF16("foo"));
@@ -253,6 +298,21 @@ TEST_F(BookmarkModelTest, AddFolder) {
   model_.AddFolder(root, 0, title);
   AssertObserverCount(1, 0, 0, 0, 0);
   observer_details_.ExpectEquals(root, NULL, 0, -1);
+}
+
+TEST_F(BookmarkModelTest, AddFolderWithWhitespaceTitle) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(whitespace_test_cases); ++i) {
+    const BookmarkNode* root = model_.bookmark_bar_node();
+    const string16 title(ASCIIToUTF16(whitespace_test_cases[i].input_title));
+
+    const BookmarkNode* new_node = model_.AddFolder(root, i, title);
+
+    int size = i + 1;
+    EXPECT_EQ(size, root->child_count());
+    EXPECT_EQ(ASCIIToUTF16(whitespace_test_cases[i].expected_title),
+              new_node->GetTitle());
+    EXPECT_EQ(BookmarkNode::FOLDER, new_node->type());
+  }
 }
 
 TEST_F(BookmarkModelTest, RemoveURL) {
@@ -307,6 +367,20 @@ TEST_F(BookmarkModelTest, SetTitle) {
   AssertObserverCount(0, 0, 0, 1, 0);
   observer_details_.ExpectEquals(node, NULL, -1, -1);
   EXPECT_EQ(title, node->GetTitle());
+}
+
+TEST_F(BookmarkModelTest, SetTitleWithWhitespace) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(whitespace_test_cases); ++i) {
+    const BookmarkNode* root = model_.bookmark_bar_node();
+    string16 title(ASCIIToUTF16("dummy"));
+    const GURL url("http://foo.com");
+    const BookmarkNode* node = model_.AddURL(root, 0, title, url);
+
+    title = ASCIIToUTF16(whitespace_test_cases[i].input_title);
+    model_.SetTitle(node, title);
+    EXPECT_EQ(ASCIIToUTF16(whitespace_test_cases[i].expected_title),
+              node->GetTitle());
+  }
 }
 
 TEST_F(BookmarkModelTest, SetURL) {

@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_all_tabs_controller.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_cell_single_line.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -564,6 +565,14 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
     [self setTableSelectionPath:selection];
     NSInteger row = [folderTreeView_ selectedRow];
     DCHECK(row >= 0);
+
+    // Put the cell into single-line mode before putting it into edit mode.
+    NSCell* folderCell = [folderTreeView_ preparedCellAtColumn:0 row:row];
+    if ([folderCell
+          respondsToSelector:@selector(setUsesSingleLineMode:)]) {
+      [folderCell setUsesSingleLineMode:YES];
+    }
+
     [folderTreeView_ editColumn:0 row:row withEvent:nil select:YES];
   }
 }
