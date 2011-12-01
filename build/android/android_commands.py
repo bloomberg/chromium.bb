@@ -423,7 +423,11 @@ class AndroidCommands(object):
     # 60 seconds which isn't sufficient for a lot of users of this method.
     push_command = 'push %s %s' % (local_path, device_path)
     logging.info('>>> $' + push_command)
-    self._adb.SendCommand(push_command, timeout_time=30*60)
+    output = self._adb.SendCommand(push_command, timeout_time=30*60)
+    # Success looks like this: "3035 KB/s (12512056 bytes in 4.025s)"
+    # Errors look like this: "failed to copy  ... "
+    if not re.search('^[0-9]', output):
+      logging.critical('PUSH FAILED: ' + output)
 
   def GetFileContents(self, filename):
     """Gets contents from the file specified by |filename|."""

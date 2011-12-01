@@ -65,6 +65,6 @@ for target in ${EXPERIMENTAL_TARGETS} ; do
 done
 
 echo "@@@BUILD_STEP Run Tests@@@"
-build/android/run_tests.py -e --xvfb
+build/android/run_tests.py -e --xvfb --verbose
 
 exit 0
