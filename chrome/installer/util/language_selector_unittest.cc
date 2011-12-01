@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ const wchar_t* const kExactMatchCandidates[] = {
 const wchar_t* const kAliasMatchCandidates[] = {
 #if defined(GOOGLE_CHROME_BUILD)
   L"he", L"nb", L"tl", L"zh-chs",  L"zh-cht", L"zh-hans", L"zh-hant", L"zh-hk",
-  L"zh-mk", L"zh-mo"
+  L"zh-mo"
 #else
   // There is only en-us.
   L"en-us"
@@ -126,3 +126,64 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::ValuesIn(
         &kWildcardMatchCandidates[0],
         &kWildcardMatchCandidates[arraysize(kWildcardMatchCandidates)]));
+
+#if defined(GOOGLE_CHROME_BUILD)
+
+// A fixture for testing aliases that match to an expected translation.  The
+// first member of the tuple is the expected translation, the second is a
+// candidate that should be aliased to the expectation.
+class LanguageSelectorAliasTest
+    : public ::testing::TestWithParam< std::tr1::tuple<const wchar_t*,
+                                                       const wchar_t*> > {
+};
+
+// Test that the candidate language maps to the aliased translation.
+TEST_P(LanguageSelectorAliasTest, AliasesMatch) {
+  installer::LanguageSelector instance(
+      std::vector<std::wstring>(1, std::tr1::get<1>(GetParam())));
+  EXPECT_EQ(std::tr1::get<0>(GetParam()), instance.selected_translation());
+}
+
+INSTANTIATE_TEST_CASE_P(
+    EnGbAliases,
+    LanguageSelectorAliasTest,
+    ::testing::Combine(
+        ::testing::Values(L"en-gb"),
+        ::testing::Values(L"en-au", L"en-ca", L"en-nz", L"en-za")));
+
+INSTANTIATE_TEST_CASE_P(
+    IwAliases,
+    LanguageSelectorAliasTest,
+    ::testing::Combine(
+        ::testing::Values(L"iw"),
+        ::testing::Values(L"he")));
+
+INSTANTIATE_TEST_CASE_P(
+    NoAliases,
+    LanguageSelectorAliasTest,
+    ::testing::Combine(
+        ::testing::Values(L"no"),
+        ::testing::Values(L"nb")));
+
+INSTANTIATE_TEST_CASE_P(
+    FilAliases,
+    LanguageSelectorAliasTest,
+    ::testing::Combine(
+        ::testing::Values(L"fil"),
+        ::testing::Values(L"tl")));
+
+INSTANTIATE_TEST_CASE_P(
+    ZhCnAliases,
+    LanguageSelectorAliasTest,
+    ::testing::Combine(
+        ::testing::Values(L"zh-cn"),
+        ::testing::Values(L"zh-chs", L"zh-hans", L"zh-sg")));
+
+INSTANTIATE_TEST_CASE_P(
+    ZhTwAliases,
+    LanguageSelectorAliasTest,
+    ::testing::Combine(
+        ::testing::Values(L"zh-tw"),
+        ::testing::Values(L"zh-cht", L"zh-hant", L"zh-hk", L"zh-mo")));
+
+#endif  // GOOGLE_CHROME_BUILD

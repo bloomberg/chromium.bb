@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -48,6 +48,13 @@ const LangToOffset kLanguageOffsetPairs[] = {
 // for which translations are available.
 const LangToOffset kLanguageToOffsetExceptions[] = {
 #if defined(GOOGLE_CHROME_BUILD)
+  // Alias some English variants to British English (all others wildcard to US).
+  { L"en-au", IDS_L10N_OFFSET_EN_GB },
+  { L"en-ca", IDS_L10N_OFFSET_EN_GB },
+  { L"en-nz", IDS_L10N_OFFSET_EN_GB },
+  { L"en-za", IDS_L10N_OFFSET_EN_GB },
+  // Alias es-es to es (all others wildcard to es-419).
+  { L"es-es", IDS_L10N_OFFSET_ES },
   // Google web properties use iw for he. Handle both just to be safe.
   { L"he", IDS_L10N_OFFSET_IW },
   // Google web properties use no for nb. Handle both just to be safe.
@@ -61,10 +68,8 @@ const LangToOffset kLanguageToOffsetExceptions[] = {
   // Vista+ aliases for Chinese w/ script subtag.
   { L"zh-hans", IDS_L10N_OFFSET_ZH_CN },
   { L"zh-hant", IDS_L10N_OFFSET_ZH_TW },
-  // Alias Macau and Hong Kong to Taiwan.
+  // Alias Hong Kong and Macau to Taiwan.
   { L"zh-hk", IDS_L10N_OFFSET_ZH_TW },
-  { L"zh-mk", IDS_L10N_OFFSET_ZH_TW },
-  // Windows uses "mo" for Macau.
   { L"zh-mo", IDS_L10N_OFFSET_ZH_TW },
   // Although the wildcard entry for zh would result in this, alias zh-sg so
   // that it will win if it precedes another valid tag in a list of candidates.
