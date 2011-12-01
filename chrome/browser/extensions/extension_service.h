@@ -295,9 +295,14 @@ class ExtensionService
   // with extensions that exist. |external_uninstall| is a magical parameter
   // that is only used to send information to ExtensionPrefs, which external
   // callers should never set to true.
+  //
+  // We pass the |extension_id| by value to avoid having it deleted from under
+  // us incase someone calls it with Extension::id() or another string that we
+  // are going to delete in this function.
+  //
   // TODO(aa): Remove |external_uninstall| -- this information should be passed
   // to ExtensionPrefs some other way.
-  virtual bool UninstallExtension(const std::string& extension_id,
+  virtual bool UninstallExtension(std::string extension_id,
                                   bool external_uninstall,
                                   std::string* error);
 

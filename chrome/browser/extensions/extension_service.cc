@@ -639,15 +639,10 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
 }
 
 bool ExtensionService::UninstallExtension(
-    const std::string& extension_id_unsafe,
+    std::string extension_id,
     bool external_uninstall,
     std::string* error) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // Copy the extension identifier since the reference might have been
-  // obtained via Extension::id() and the extension may be deleted in
-  // this function.
-  std::string extension_id(extension_id_unsafe);
 
   scoped_refptr<const Extension> extension(GetInstalledExtension(extension_id));
 
