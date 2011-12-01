@@ -327,7 +327,13 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, DISABLED_BookmarkAppGetsNormalProcess) {
 // 3. page2 redirects back to a page in the app
 // The final navigation should end up in the app process.
 // See http://crbug.com/61757
-IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
+// This test occasionally timeout on aura. See crbug.com/105957.
+#if defined(USE_AURA)
+#define MAYBE_AppProcessRedirectBack DISABLED_AppProcessRedirectBack
+#else
+#define MAYBE_AppProcessRedirectBack AppProcessRedirectBack
+#endif
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_AppProcessRedirectBack) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 
