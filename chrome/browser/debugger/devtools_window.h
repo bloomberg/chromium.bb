@@ -10,13 +10,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
 #include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
+#include "content/public/browser/devtools_frontend_window_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/render_view_host_observer.h"
 
 namespace IPC {
 class Message;
@@ -37,7 +36,7 @@ class Value;
 class DevToolsWindow : public DevToolsClientHost,
                        private content::NotificationObserver,
                        private TabContentsDelegate,
-                       private content::RenderViewHostObserver {
+                       private content::DevToolsFrontendWindowDelegate {
  public:
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefService* prefs);
@@ -124,17 +123,15 @@ class DevToolsWindow : public DevToolsClientHost,
                                               DevToolsToggleAction action);
   static DevToolsWindow* AsDevToolsWindow(DevToolsClientHost*);
 
-  // content::RenderViewHostObserver overrides.
-  virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
-  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-
-  void OnActivateWindow();
-  void OnCloseWindow();
-  void OnMoveWindow(int x, int y);
-  void OnRequestDockWindow();
-  void OnRequestUndockWindow();
-  void OnSaveAs(const std::string& file_name,
-                const std::string& content);
+  // content::DevToolsClientHandlerDelegate overrides.
+  virtual void ForwardToDevToolsAgent(const IPC::Message& message) OVERRIDE;
+  virtual void ActivateWindow() OVERRIDE;
+  virtual void CloseWindow() OVERRIDE;
+  virtual void MoveWindow(int x, int y) OVERRIDE;
+  virtual void DockWindow() OVERRIDE;
+  virtual void UndockWindow() OVERRIDE;
+  virtual void SaveToFile(const std::string& suggested_file_name,
+                          const std::string& content) OVERRIDE;
   void RequestSetDocked(bool docked);
 
   Profile* profile_;

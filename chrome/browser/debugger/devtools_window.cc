@@ -41,6 +41,7 @@
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/devtools_frontend_window.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
 #include "grit/generated_resources.h"
@@ -164,8 +165,7 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
                                Profile* profile,
                                RenderViewHost* inspected_rvh,
                                bool docked)
-    : content::RenderViewHostObserver(tab_contents->render_view_host()),
-      profile_(profile),
+    : profile_(profile),
       inspected_tab_(NULL),
       tab_contents_(tab_contents),
       browser_(NULL),
@@ -177,6 +177,11 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
   NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();
   entry->favicon().set_bitmap(SkBitmap());
   entry->favicon().set_is_valid(true);
+
+  // Install DevTools front-end message handler.
+  content::SetupDevToolsFrontendDelegate(
+      tab_contents->tab_contents(),
+      this);
 
   // Register on-load actions.
   registrar_.Add(
@@ -287,18 +292,6 @@ void DevToolsWindow::Show(DevToolsToggleAction action) {
   ScheduleAction(action);
 }
 
-void DevToolsWindow::OnActivateWindow() {
-  if (!docked_) {
-    if (!browser_->window()->IsActive()) {
-      browser_->window()->Activate();
-    }
-  } else {
-    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
-    if (inspected_window)
-      tab_contents_->view()->Focus();
-  }
-}
-
 void DevToolsWindow::RequestSetDocked(bool docked) {
   if (docked_ == docked)
     return;
@@ -331,27 +324,6 @@ void DevToolsWindow::RequestSetDocked(bool docked) {
     }
   }
   Show(DEVTOOLS_TOGGLE_ACTION_NONE);
-}
-
-void DevToolsWindow::OnCloseWindow() {
-  DCHECK(docked_);
-  NotifyCloseListener();
-  InspectedTabClosing();
-}
-
-void DevToolsWindow::OnMoveWindow(int x, int y) {
-  if (!docked_) {
-    gfx::Rect bounds = browser_->window()->GetBounds();
-    bounds.Offset(x, y);
-    browser_->window()->SetBounds(bounds);
-  }
-}
-
-void DevToolsWindow::OnSaveAs(const std::string& suggested_file_name,
-                              const std::string& content) {
-  DevToolsFileUtil::SaveAs(tab_contents_->profile(),
-                           suggested_file_name,
-                           content);
 }
 
 RenderViewHost* DevToolsWindow::GetRenderViewHost() {
@@ -670,33 +642,49 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
   return NULL;
 }
 
-void DevToolsWindow::RenderViewHostDestroyed(RenderViewHost* rvh) {
-  // Don't delete |this| here, do it on NOTIFICATION_TAB_CLOSING event.
+void DevToolsWindow::ForwardToDevToolsAgent(const IPC::Message& message) {
+  DevToolsManager::GetInstance()->ForwardToDevToolsAgent(this, message);
 }
 
-bool DevToolsWindow::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(DevToolsWindow, message)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ForwardToAgent, ForwardToDevToolsAgent)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ActivateWindow, OnActivateWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_CloseWindow, OnCloseWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_MoveWindow, OnMoveWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestDockWindow, OnRequestDockWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_RequestUndockWindow,
-                        OnRequestUndockWindow)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAs,
-                        OnSaveAs)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+void DevToolsWindow::ActivateWindow() {
+  if (!docked_) {
+    if (!browser_->window()->IsActive()) {
+      browser_->window()->Activate();
+    }
+  } else {
+    BrowserWindow* inspected_window = GetInspectedBrowserWindow();
+    if (inspected_window)
+      tab_contents_->view()->Focus();
+  }
 }
 
-void DevToolsWindow::OnRequestDockWindow() {
+void DevToolsWindow::CloseWindow() {
+  DCHECK(docked_);
+  NotifyCloseListener();
+  InspectedTabClosing();
+}
+
+void DevToolsWindow::MoveWindow(int x, int y) {
+  if (!docked_) {
+    gfx::Rect bounds = browser_->window()->GetBounds();
+    bounds.Offset(x, y);
+    browser_->window()->SetBounds(bounds);
+  }
+}
+
+void DevToolsWindow::DockWindow() {
   RequestSetDocked(true);
 }
 
-void DevToolsWindow::OnRequestUndockWindow() {
+void DevToolsWindow::UndockWindow() {
   RequestSetDocked(false);
+}
+
+void DevToolsWindow::SaveToFile(const std::string& suggested_file_name,
+                                const std::string& content) {
+  DevToolsFileUtil::SaveAs(tab_contents_->profile(),
+                           suggested_file_name,
+                           content);
 }
 
 content::JavaScriptDialogCreator* DevToolsWindow::GetJavaScriptDialogCreator() {
