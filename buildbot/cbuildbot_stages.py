@@ -59,6 +59,26 @@ class CleanUpStage(bs.BuilderStage):
 
   option_name = 'clean'
 
+  def _CleanChroot(self):
+    commands.CleanupChromeKeywordsFile(self._build_config['board'],
+                                       self._build_root)
+    chroot_tmpdir = os.path.join(self._build_root, 'chroot', 'tmp')
+    if os.path.exists(chroot_tmpdir):
+      cros_lib.RunCommand(['sudo', 'rm', '-rf', chroot_tmpdir],
+                          print_cmd=False)
+      cros_lib.RunCommand(['sudo', 'mkdir', '--mode', '1777', chroot_tmpdir],
+                          print_cmd=False)
+
+  def _DeleteChroot(self):
+    chroot = os.path.join(self._build_root, 'chroot')
+    if os.path.exists(chroot):
+      cros_lib.RunCommand(['cros_sdk', '--delete', '--chroot=%s' % chroot],
+                          self._build_root,
+                          cwd=self._build_root)
+
+  def _PreFlightRinse(self):
+    commands.PreFlightRinse(self._build_root)
+
   def _PerformStage(self):
     if not self._options.buildbot and self._options.clobber:
       if not commands.ValidateClobber(self._build_root):
@@ -66,22 +86,15 @@ class CleanUpStage(bs.BuilderStage):
 
     if self._options.clobber or not os.path.exists(
         os.path.join(self._build_root, '.repo')):
-      chroot = os.path.join(self._build_root, 'chroot')
-      if os.path.exists(chroot):
-        cros_lib.RunCommand(['cros_sdk', '--delete', '--chroot=%s' % chroot],
-                            self._build_root,
-                            cwd=self._build_root)
+      self._DeleteChroot()
       repository.ClearBuildRoot(self._build_root)
     else:
-      commands.PreFlightRinse(self._build_root)
-      commands.CleanupChromeKeywordsFile(self._build_config['board'],
-                                         self._build_root)
-      chroot_tmpdir = os.path.join(self._build_root, 'chroot', 'tmp')
-      if os.path.exists(chroot_tmpdir):
-        cros_lib.RunCommand(['sudo', 'rm', '-rf', chroot_tmpdir],
-                            print_cmd=False)
-        cros_lib.RunCommand(['sudo', 'mkdir', '--mode', '1777', chroot_tmpdir],
-                            print_cmd=False)
+      tasks = [self._PreFlightRinse]
+      if self._build_config['chroot_replace'] and self._options.build:
+        tasks.append(self._DeleteChroot)
+      else:
+        tasks.append(self._CleanChroot)
+      background.RunParallelSteps(tasks)
 
 
 class SyncStage(bs.BuilderStage):
@@ -632,7 +645,7 @@ class VMTestStage(bs.BuilderStage):
   def _PerformStage(self):
     # VM tests should run with higher priority than other tasks
     # because they are usually the bottleneck, and don't use much CPU.
-    commands.SetNiceness(foreground=True)
+    background.SetNiceness(foreground=True)
 
     # These directories are used later to archive test artifacts.
     payloads_dir = None

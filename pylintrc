@@ -52,8 +52,9 @@
 # R0915: Too many statements (N/50)
 # W0122: Use of the exec statement
 # W0141: Used builtin function ''
+# W0142: Used * or ** magic
 # W0511: Used when a warning note as FIXME or XXX is detected.
-disable=C0103,C0111,C0302,C0321,I0011,R0201,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0511
+disable=C0103,C0111,C0302,C0321,I0011,R0201,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0511
 
 
 [REPORTS]

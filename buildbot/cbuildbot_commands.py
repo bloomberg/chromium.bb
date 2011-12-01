@@ -5,11 +5,13 @@
 """Module containing the various individual commands a builder can run."""
 
 import constants
+import logging
 import os
 import re
 import shutil
 import tempfile
 
+from chromite.buildbot import cbuildbot_background as background
 from chromite.buildbot import repository
 from chromite.lib import cros_build_lib as cros_lib
 
@@ -34,39 +36,54 @@ class TestException(Exception):
 
 # =========================== Command Helpers =================================
 
-
 def _BuildRootGitCleanup(buildroot):
   """Put buildroot onto manifest branch. Delete branches created on last run."""
-  def RunCleanupCommands(cmd_list, must_succeed):
-    for command in cmd_list:
-      cros_lib.RunCommand(['repo', 'forall', '-c', "%s" % command],
-                          print_cmd=True, redirect_stdout=True,
-                          redirect_stderr=True, cwd=buildroot,
-                          error_ok=not must_succeed)
-
   manifest_branch = 'remotes/m/' + cros_lib.GetManifestDefaultBranch(buildroot)
-  best_effort_list = ['git am --abort', 'git rebase --abort']
-  must_succeed_list = ['git reset --hard HEAD',
-                       'git checkout %s' % manifest_branch, 'git clean -f -d']
+  tasks = [
+    (False, [['git', 'am', '--abort'],
+             ['git', 'rebase', '--abort']]),
+    (True, [['git', 'reset', '--hard', 'HEAD'],
+             ['git', 'checkout', manifest_branch],
+             ['git', 'clean', '-f', '-d']]),
+    (False, [['git', 'branch', '-D', b] for b in constants.CREATED_BRANCHES])
+  ]
 
-  RunCleanupCommands(best_effort_list, False)
-  RunCleanupCommands(must_succeed_list, True)
+  def RunCleanupCommands(cwd):
+    for check_returncode, cmds in tasks:
+      for cmd in cmds:
+        result = cros_lib.RunCommand(
+            cmd, cwd=cwd, print_cmd=False, redirect_stdout=True,
+            combine_stdout_stderr=True, error_code_ok=True)
+        if check_returncode and result.returncode != 0:
+          logging.info(result.output)
+          logging.warn('Deleting %s because %s failed' % (cwd, cmd))
+          shutil.rmtree(cwd)
+          print '@@@STEP_WARNINGS@@@'
+          return
 
-  # Abandon all branches.
-  for branch in constants.CREATED_BRANCHES:
-    cros_lib.RunCommand(['repo', 'abandon', branch],
-                        print_cmd=True, cwd=buildroot, error_ok=True)
+  # Build list of directories to cleanup.
+  result = cros_lib.RunCommand(['repo', 'list'], print_cmd=False,
+                               redirect_stdout=True, cwd=buildroot)
+  dirs = []
+  for line in result.output.splitlines():
+    subdir, _ = line.split(' ', 1)
+    cwd = os.path.join(buildroot, subdir)
+    if os.path.isdir(cwd):
+      dirs.append([cwd])
+
+  # Cleanup all of the directories.
+  background.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
 
 def _CleanUpMountPoints(buildroot):
   """Cleans up any stale mount points from previous runs."""
   mount_output = cros_lib.OldRunCommand(['mount'], redirect_stdout=True,
                                         print_cmd=False)
-  mount_pts_in_buildroot = cros_lib.OldRunCommand(
+  mount_pts_in_buildroot = cros_lib.RunCommand(
       ['grep', buildroot], input=mount_output, redirect_stdout=True,
-      error_ok=True, print_cmd=False)
+      error_code_ok=True, print_cmd=False)
 
-  for mount_pt_str in mount_pts_in_buildroot.splitlines():
+  for mount_pt_str in mount_pts_in_buildroot.output.splitlines():
     mount_pt = mount_pt_str.rpartition(' type ')[0].partition(' on ')[2]
     cros_lib.OldRunCommand(['sudo', 'umount', '-l', mount_pt], error_ok=True,
                            print_cmd=False)
@@ -122,7 +139,7 @@ def PreFlightRinse(buildroot):
   """Cleans up any leftover state from previous runs."""
   _BuildRootGitCleanup(buildroot)
   _CleanUpMountPoints(buildroot)
-  cros_lib.OldRunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
+  cros_lib.RunCommand(['sudo', 'killall', 'kvm'], error_ok=True)
 
 
 def ManifestCheckout(buildroot, tracking_branch, next_manifest, url):
@@ -969,32 +986,6 @@ def ArchiveHWQual(buildroot, hwqual_name, archive_dir):
          '--output_tag', hwqual_name]
   cros_lib.RunCommand(cmd)
   return '%s.tar.bz2' % hwqual_name
-
-
-def SetNiceness(foreground):
-  """Set the niceness of this process.
-
-  Args:
-    foreground: If set, the process runs with higher priority. This means
-    that the process will be scheduled more often when accessing resources
-    (e.g. cpu and disk).
-  """
-  # Note: -c 2 means best effort priority.
-  pid_str = str(os.getpid())
-  ionice_cmd = ['ionice', '-p', pid_str, '-c', '2']
-  renice_cmd = ['sudo', 'renice']
-  if foreground:
-    # Set this program to foreground priority. ionice and negative niceness
-    # is honored by sudo and passed to subprocesses.
-    ionice_cmd.extend(['-n', '0'])
-    renice_cmd.extend(['-n', '-20', '-p', pid_str])
-  else:
-    # Set this program to background priority. Positive niceness isn't
-    # inherited by sudo, so we just set to zero.
-    ionice_cmd.extend(['-n', '7'])
-    renice_cmd.extend(['-n', '0', '-p', pid_str])
-  cros_lib.RunCommand(ionice_cmd, print_cmd=False)
-  cros_lib.RunCommand(renice_cmd, print_cmd=False, redirect_stdout=True)
 
 
 def UpdateLatestFile(bot_archive_root, set_version):

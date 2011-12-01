@@ -12,10 +12,37 @@ import tempfile
 import traceback
 
 from chromite.buildbot import builderstage as bs
-from chromite.buildbot import cbuildbot_commands as commands
 from chromite.buildbot import cbuildbot_results as results_lib
+from chromite.lib import cros_build_lib as cros_lib
 
 _PRINT_INTERVAL = 1
+
+
+def SetNiceness(foreground):
+  """Set the niceness of this process.
+
+  Args:
+    foreground: If set, the process runs with higher priority. This means
+    that the process will be scheduled more often when accessing resources
+    (e.g. cpu and disk).
+  """
+  # Note: -c 2 means best effort priority.
+  pid_str = str(os.getpid())
+  ionice_cmd = ['ionice', '-p', pid_str, '-c', '2']
+  renice_cmd = ['sudo', 'renice']
+  if foreground:
+    # Set this program to foreground priority. ionice and negative niceness
+    # is honored by sudo and passed to subprocesses.
+    ionice_cmd.extend(['-n', '0'])
+    renice_cmd.extend(['-n', '-20', '-p', pid_str])
+  else:
+    # Set this program to background priority. Positive niceness isn't
+    # inherited by sudo, so we just set to zero.
+    ionice_cmd.extend(['-n', '7'])
+    renice_cmd.extend(['-n', '0', '-p', pid_str])
+  cros_lib.RunCommand(ionice_cmd, print_cmd=False)
+  cros_lib.RunCommand(renice_cmd, print_cmd=False, redirect_stdout=True)
+
 
 class BackgroundException(Exception):
   pass
@@ -83,7 +110,7 @@ class BackgroundSteps(multiprocessing.Process):
     """Run the list of steps."""
 
     # Be nice so that foreground processes get CPU if they need it.
-    commands.SetNiceness(foreground=False)
+    SetNiceness(foreground=False)
 
     stdout_fileno = sys.stdout.fileno()
     stderr_fileno = sys.stderr.fileno()
@@ -137,3 +164,35 @@ def RunParallelSteps(steps):
   # Propagate any exceptions.
   if tracebacks:
     raise BackgroundException('\n' + ''.join(tracebacks))
+
+
+def RunTasksInProcessPool(task, inputs, processes=None):
+  """Run the specified function with each supplied input in a pool of processes.
+
+  This function runs task(*x) for x in inputs in a pool of processes. The
+  output from these tasks is saved to a temporary file and printed as if they
+  were run in sequence.
+
+  If exceptions occur in the steps, we join together the tracebacks and print
+  them after all parallel steps have finished running.
+
+  Args:
+    processes: Number of processes, at most, to launch.
+  """
+
+  def TaskRunner():
+    while True:
+      try:
+        x = queue.get_nowait()
+      except Queue.Empty:
+        return
+      task(*x)
+
+  if not processes:
+    processes = min(multiprocessing.cpu_count(), len(inputs))
+
+  queue = multiprocessing.Queue()
+  for x in inputs:
+    queue.put(x)
+
+  RunParallelSteps([TaskRunner] * processes)
