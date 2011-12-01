@@ -307,7 +307,7 @@ var util = {
   /**
    * Lookup tables used by bytesToSi.
    */
-  units_: ['B', 'k', 'M', 'G', 'T', 'P'],
+  units_: ['B', 'KB', 'MB', 'GB', 'TB', 'PB'],
   scale_: [1, 1e3, 1e6, 1e9, 1e12, 1e15],
 
   /**
