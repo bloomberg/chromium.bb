@@ -173,6 +173,8 @@ def BoringCallers(mangled, use_re_wildcards):
     ("DispatchToMethod*",    "_Z*16DispatchToMethod*"),
     ("base::internal::Invoker*::DoInvoke*",
      "_ZN4base8internal8Invoker*DoInvoke*"),  # Invoker{1,2,3}
+    ("base::internal::RunnableAdapter*::Run*",
+     "_ZN4base8internal15RunnableAdapter*Run*"),
   ]
 
   ret = []
