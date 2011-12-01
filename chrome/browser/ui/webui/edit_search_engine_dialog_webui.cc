@@ -25,8 +25,8 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
-const int kEditSearchEngineDialogWidth = 394;
-const int kEditSearchEngineDialogHeight = 180;
+const int kEditSearchEngineDialogWidth = 440;
+const int kEditSearchEngineDialogHeight = 196;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

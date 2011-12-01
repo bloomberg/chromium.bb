@@ -34,12 +34,13 @@ table {
 }
 
 .action-area {
-  -webkit-box-align: center;
-  -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
+  -webkit-box-sizing: border-box;
+  bottom: 0;
   display: -webkit-box;
   padding: 12px;
-  text-align: end;
+  position: fixed;
+  width: 100%;
 }
 
 .button-strip {
