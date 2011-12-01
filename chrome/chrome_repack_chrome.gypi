@@ -10,9 +10,11 @@
       '<(grit_out_dir)/default_plugin_resources/default_plugin_resources.pak',
       '<(grit_out_dir)/renderer_resources.pak',
       '<(grit_out_dir)/theme_resources.pak',
+      '<(grit_out_dir)/theme_resources_standard.pak',
       '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources.pak',
+      '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_chromium_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
     ],
@@ -21,17 +23,6 @@
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/ui/gfx/gfx_resources.pak',
         ]
-      }],
-      ['touchui==0 or OS == "mac"', {
-        'pak_inputs': [
-          '<(grit_out_dir)/theme_resources_standard.pak',
-          '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_standard/ui_resources_standard.pak',
-        ],
-      }, {  # else: touchui!=0
-        'pak_inputs': [
-          '<(grit_out_dir)/theme_resources_large.pak',
-          '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources_large/ui_resources_large.pak',
-        ],
       }],
     ],
   },

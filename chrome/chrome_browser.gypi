@@ -4145,7 +4145,7 @@
             'browser/password_manager/native_backend_gnome_x.h',
           ],
         }],
-        ['touchui==0', {
+        ['use_virtual_keyboard==0', {
           'sources/': [
             ['exclude', '^browser/extensions/extension_input_ui_api.cc'],
             ['exclude', '^browser/extensions/extension_input_ui_api.h'],
