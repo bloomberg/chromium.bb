@@ -44,15 +44,14 @@ void FailedDatatypesHandler::OnUserChoseDatatypes() {
 }
 
 std::string FailedDatatypesHandler::GetErrorString() const {
-  std::string message;
+  std::string message = "Sync configuration failed when starting ";
   for (std::list<SyncError>::const_iterator it = errors_.begin();
        it != errors_.end(); ++it) {
     if (it != errors_.begin()) {
       message += ", ";
     }
-    message += "Sync configuration failed when starting "
-        + std::string(syncable::ModelTypeToString(it->type()))
-        + ": " + it->message();
+    message += std::string(syncable::ModelTypeToString(it->type())) + " " +
+        it->location().ToString() + ": " + it->message();
   }
   return message;
 }
