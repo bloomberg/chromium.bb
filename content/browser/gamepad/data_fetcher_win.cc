@@ -13,7 +13,7 @@
 #pragma comment(lib, "delayimp.lib")
 #pragma comment(lib, "xinput.lib")
 
-namespace gamepad {
+namespace content {
 
 using namespace WebKit;
 
@@ -78,13 +78,13 @@ bool EnableXInput() {
 
 }
 
-DataFetcherWindows::DataFetcherWindows()
+GamepadDataFetcherWindows::GamepadDataFetcherWindows()
     : xinput_available_(EnableXInput()) {
 }
 
-void DataFetcherWindows::GetGamepadData(WebGamepads* pads,
+void GamepadDataFetcherWindows::GetGamepadData(WebGamepads* pads,
                                         bool devices_changed_hint) {
-  TRACE_EVENT0("GAMEPAD", "DataFetcherWindows::GetGamepadData");
+  TRACE_EVENT0("GAMEPAD", "GetGamepadData");
 
   // If there's no XInput DLL on the system, early out so that we don't
   // call any other XInput functions.
@@ -104,7 +104,7 @@ void DataFetcherWindows::GetGamepadData(WebGamepads* pads,
   if (devices_changed_hint) {
     for (unsigned i = 0; i < WebGamepads::itemsLengthCap; ++i) {
       WebGamepad& pad = pads->items[i];
-      TRACE_EVENT1("GAMEPAD", "DataFetcherWindows::GetCapabilities", "id", i);
+      TRACE_EVENT1("GAMEPAD", "GetCapabilities", "id", i);
       XINPUT_CAPABILITIES caps;
       DWORD res = XInputGetCapabilities(i, XINPUT_FLAG_GAMEPAD, &caps);
       if (res == ERROR_DEVICE_NOT_CONNECTED) {
@@ -170,4 +170,4 @@ void DataFetcherWindows::GetGamepadData(WebGamepads* pads,
   }
 }
 
-} // namespace gamepad
+} // namespace content

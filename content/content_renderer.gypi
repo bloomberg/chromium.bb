@@ -52,6 +52,8 @@
     'renderer/devtools_client.h',
     'renderer/external_popup_menu.cc',
     'renderer/external_popup_menu.h',
+    'renderer/gamepad_shared_memory_reader.cc',
+    'renderer/gamepad_shared_memory_reader.h',
     'renderer/geolocation_dispatcher.cc',
     'renderer/geolocation_dispatcher.h',
     'renderer/gpu/compositor_thread.cc',

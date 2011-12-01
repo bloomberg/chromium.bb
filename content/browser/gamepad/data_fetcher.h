@@ -9,15 +9,15 @@ namespace WebKit {
 class WebGamepads;
 }
 
-namespace gamepad {
+namespace content {
 
-class DataFetcher {
+class GamepadDataFetcher {
  public:
-  virtual ~DataFetcher() {}
+  virtual ~GamepadDataFetcher() {}
   virtual void GetGamepadData(WebKit::WebGamepads* pads,
                               bool devices_changed_hint) = 0;
 };
 
-} // namespace gamepad
+} // namespace content
 
 #endif  // CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_H_

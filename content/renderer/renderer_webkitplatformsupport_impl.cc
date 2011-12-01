@@ -20,6 +20,7 @@
 #include "content/common/webmessageportchannel_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/gpu/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/renderer/media/audio_device.h"
 #include "content/renderer/media/audio_hardware.h"
@@ -33,6 +34,7 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBlobRegistry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/Source/WebKit/chromium/public/WebGamepads.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKey.h"
@@ -76,6 +78,7 @@ using WebKit::WebAudioDevice;
 using WebKit::WebBlobRegistry;
 using WebKit::WebFileSystem;
 using WebKit::WebFrame;
+using WebKit::WebGamepads;
 using WebKit::WebIDBFactory;
 using WebKit::WebIDBKey;
 using WebKit::WebIDBKeyPath;
@@ -617,6 +620,14 @@ WebBlobRegistry* RendererWebKitPlatformSupportImpl::blobRegistry() {
     blob_registry_.reset(new WebBlobRegistryImpl(ChildThread::current()));
   }
   return blob_registry_.get();
+}
+
+//------------------------------------------------------------------------------
+
+void RendererWebKitPlatformSupportImpl::sampleGamepads(WebGamepads& gamepads) {
+  if (!gamepad_shared_memory_reader_.get())
+    gamepad_shared_memory_reader_.reset(new content::GamepadSharedMemoryReader);
+  gamepad_shared_memory_reader_->SampleGamepads(gamepads);
 }
 
 WebKit::WebString RendererWebKitPlatformSupportImpl::userAgent(

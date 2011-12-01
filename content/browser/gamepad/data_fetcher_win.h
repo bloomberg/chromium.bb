@@ -16,17 +16,17 @@
 #include "base/compiler_specific.h"
 #include "content/browser/gamepad/data_fetcher.h"
 
-namespace gamepad {
+namespace content {
 
-class DataFetcherWindows : public DataFetcher {
+class GamepadDataFetcherWindows : public GamepadDataFetcher {
  public:
-  DataFetcherWindows();
+  GamepadDataFetcherWindows();
   virtual void GetGamepadData(WebKit::WebGamepads* pads,
                               bool devices_changed_hint) OVERRIDE;
  private:
   bool xinput_available_;
 };
 
-}  // namespace gamepad
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GAMEPAD_DATA_FETCHER_WIN_H_

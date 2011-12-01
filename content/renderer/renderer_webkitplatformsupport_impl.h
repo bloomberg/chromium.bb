@@ -16,6 +16,10 @@ class RendererClipboardClient;
 class WebSharedWorkerRepositoryImpl;
 class WebFileSystemImpl;
 
+namespace content {
+class GamepadSharedMemoryReader;
+}
+
 namespace IPC {
 class SyncMessage;
 }
@@ -84,6 +88,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
       size_t buffer_size, unsigned channels, double sample_rate,
       WebKit::WebAudioDevice::RenderCallback* callback) OVERRIDE;
   virtual WebKit::WebBlobRegistry* blobRegistry() OVERRIDE;
+  virtual void sampleGamepads(WebKit::WebGamepads&) OVERRIDE;
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url) OVERRIDE;
   virtual void GetPlugins(bool refresh,
                           std::vector<webkit::WebPluginInfo>* plugins) OVERRIDE;
@@ -121,6 +126,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_ptr<WebFileSystemImpl> web_file_system_;
 
   scoped_ptr<WebKit::WebBlobRegistry> blob_registry_;
+
+  scoped_ptr<content::GamepadSharedMemoryReader> gamepad_shared_memory_reader_;
 };
 
 #endif  // CONTENT_RENDERER_RENDERER_WEBKITPLATFORMSUPPORT_IMPL_H_

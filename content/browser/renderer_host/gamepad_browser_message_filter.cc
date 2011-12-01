@@ -29,7 +29,7 @@ bool GamepadBrowserMessageFilter::OnMessageReceived(
 void GamepadBrowserMessageFilter::OnGamepadStartPolling(
     base::SharedMemoryHandle* renderer_handle) {
   if (!provider_) {
-    provider_ = new gamepad::Provider(NULL);
+    provider_ = new content::GamepadProvider(NULL);
     provider_->Start();
   }
   *renderer_handle = provider_->GetRendererSharedMemoryHandle(peer_handle());

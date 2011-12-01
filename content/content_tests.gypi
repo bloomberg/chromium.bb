@@ -226,6 +226,7 @@
         'browser/trace_subscriber_stdio_unittest.cc',
         'common/mac/attributed_string_coder_unittest.mm',
         'common/mac/font_descriptor_unittest.mm',
+        'common/gamepad_seqlock_unittest.cc',
         'common/gpu/gpu_feature_flags_unittest.cc',
         'common/gpu/gpu_info_unittest.cc',
         'common/hi_res_timer_manager_unittest.cc',

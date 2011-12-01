@@ -21,13 +21,13 @@ class Thread;
 
 struct GamepadMsg_Updated_Params;
 
-namespace gamepad {
+namespace content {
 
-class CONTENT_EXPORT Provider :
-    public base::RefCountedThreadSafe<Provider>,
+class CONTENT_EXPORT GamepadProvider :
+    public base::RefCountedThreadSafe<GamepadProvider>,
     public base::SystemMonitor::DevicesChangedObserver {
  public:
-  explicit Provider(DataFetcher* fetcher);
+  explicit GamepadProvider(GamepadDataFetcher* fetcher);
 
   // Starts or Stops the provider. Called from creator_loop_.
   void Start();
@@ -36,14 +36,14 @@ class CONTENT_EXPORT Provider :
       base::ProcessHandle renderer_process);
 
  private:
-  friend class base::RefCountedThreadSafe<Provider>;
+  friend class base::RefCountedThreadSafe<GamepadProvider>;
 
-  virtual ~Provider();
+  virtual ~GamepadProvider();
 
   // Method for starting the polling, runs on polling_thread_.
   void DoInitializePollingThread();
 
-  // Method for polling a DataFetcher. Runs on the polling_thread_.
+  // Method for polling a GamepadDataFetcher. Runs on the polling_thread_.
   void DoPoll();
   void ScheduleDoPoll();
 
@@ -56,23 +56,23 @@ class CONTENT_EXPORT Provider :
   // The Message Loop on which this object was created.
   // Typically the I/O loop, but may be something else during testing.
   scoped_refptr<base::MessageLoopProxy> creator_loop_;
-  scoped_ptr<DataFetcher> provided_fetcher_;
+  scoped_ptr<GamepadDataFetcher> provided_fetcher_;
 
   // When polling_thread_ is running, members below are only to be used
   // from that thread.
-  scoped_ptr<DataFetcher> data_fetcher_;
+  scoped_ptr<GamepadDataFetcher> data_fetcher_;
   base::SharedMemory gamepad_shared_memory_;
   bool devices_changed_;
 
   // Polling is done on this background thread.
   scoped_ptr<base::Thread> polling_thread_;
 
-  static Provider* instance_;
-  base::WeakPtrFactory<Provider> weak_factory_;
+  static GamepadProvider* instance_;
+  base::WeakPtrFactory<GamepadProvider> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(Provider);
+  DISALLOW_COPY_AND_ASSIGN(GamepadProvider);
 };
 
-}  // namespace gamepad
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_GAMEPAD_PROVIDER_H_

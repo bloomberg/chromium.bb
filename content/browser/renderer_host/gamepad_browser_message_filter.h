@@ -23,7 +23,7 @@ class GamepadBrowserMessageFilter : public BrowserMessageFilter {
   void OnGamepadStartPolling(base::SharedMemoryHandle* renderer_handle);
   void OnGamepadStopPolling();
 
-  scoped_refptr<gamepad::Provider> provider_;
+  scoped_refptr<content::GamepadProvider> provider_;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadBrowserMessageFilter);
 };

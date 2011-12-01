@@ -134,6 +134,8 @@
     'common/font_list_x11.cc',
     'common/gamepad_hardware_buffer.h',
     'common/gamepad_messages.h',
+    'common/gamepad_seqlock.cc',
+    'common/gamepad_seqlock.h',
     'common/geolocation_messages.h',
     'common/geoposition.cc',
     'common/geoposition.h',
