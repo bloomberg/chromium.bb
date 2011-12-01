@@ -116,6 +116,8 @@ var customEvents = {
   MARGIN_TEXTBOX_FOCUSED: 'marginTextboxFocused',
   // Fired when a new preview might be needed because of margin changes.
   MARGINS_MAY_HAVE_CHANGED: 'marginsMayHaveChanged',
+  // Fired when the margins selection in the dropdown changes.
+  MARGINS_SELECTION_CHANGED: 'marginsSelectionChanged',
   // Fired when a pdf generation related error occurs.
   PDF_GENERATION_ERROR: 'PDFGenerationError',
   // Fired once the first page of the pdf document is loaded in the plugin.

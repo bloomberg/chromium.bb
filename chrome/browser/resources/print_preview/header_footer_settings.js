@@ -13,6 +13,7 @@ cr.define('print_preview', function() {
   function HeaderFooterSettings() {
     this.headerFooterOption_ = $('header-footer-option');
     this.headerFooterCheckbox_ = $('header-footer');
+    this.headerFooterApplies_ = false;
     this.addEventListeners_();
   }
 
@@ -32,7 +33,7 @@ cr.define('print_preview', function() {
      * @return {boolean} true if Headers and Footers are checked.
      */
     hasHeaderFooter: function() {
-      return this.headerFooterCheckbox_.checked;
+      return this.headerFooterApplies_ && this.headerFooterCheckbox_.checked;
     },
 
     /**
@@ -44,6 +45,14 @@ cr.define('print_preview', function() {
           this.onHeaderFooterChanged_.bind(this);
       document.addEventListener(customEvents.PDF_LOADED,
                                 this.onPDFLoaded_.bind(this));
+      document.addEventListener(customEvents.MARGINS_SELECTION_CHANGED,
+                                this.onMarginsSelectionChanged_.bind(this));
+    },
+
+    onMarginsSelectionChanged_: function(event) {
+      this.headerFooterApplies_ = event.selectedMargins !=
+          print_preview.MarginSettings.MARGINS_VALUE_NO_MARGINS
+      this.setVisible_(this.headerFooterApplies_);
     },
 
     /**
@@ -60,10 +69,20 @@ cr.define('print_preview', function() {
      * @private
      */
     onPDFLoaded_: function() {
-      if (!previewModifiable) {
+      if (!previewModifiable)
+        this.setVisible_(false);
+    },
+
+    /**
+     * Hides or shows |this.headerFooterOption|.
+     * @{param} visible True if |this.headerFooterOption| should be shown.
+     * @private
+     */
+    setVisible_: function(visible) {
+      if (visible)
+        fadeInOption(this.headerFooterOption_);
+      else
         fadeOutOption(this.headerFooterOption_);
-        this.headerFooterCheckbox_.checked = false;
-      }
     },
   };
 
