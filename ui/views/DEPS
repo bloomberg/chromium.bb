@@ -1,5 +1,9 @@
 include_rules = [
   "+grit/ui_resources.h",
-  "+views",
+  "+grit/ui_resources_standard.h",
+  "+grit/ui_resources_large.h",
+  "+grit/ui_strings.h",
+  "+skia/ext",
+  "+net",
+  "+third_party/iaccessible2",
 ]
-

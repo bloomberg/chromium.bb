@@ -631,7 +631,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
         }],
         ['chromeos==1', {
@@ -833,7 +833,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
         }],
         ['use_aura==1', {
@@ -1038,7 +1038,7 @@
         }],
         ['OS=="linux" and toolkit_views==1', {
           'dependencies': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
         }],
         ['os_posix == 1 and OS != "mac"', {
@@ -2321,7 +2321,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
           'sources!': [
             'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
@@ -2958,7 +2958,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
           'sources!': [
             # TODO(estade): port to linux/views.
@@ -3211,7 +3211,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
         }],
       ],
@@ -3548,7 +3548,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
         }],
       ],
@@ -3677,7 +3677,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
         }],
       ],
@@ -3794,7 +3794,7 @@
         }],
         ['toolkit_views==1', {
           'dependencies': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
         }],
       ],
@@ -3928,7 +3928,7 @@
             }],
             ['toolkit_views==1', {
               'dependencies': [
-                '../views/views.gyp:views',
+                '../ui/views/views.gyp:views',
               ],
             }],
           ],

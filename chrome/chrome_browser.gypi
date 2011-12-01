@@ -4523,13 +4523,13 @@
           ],
           'dependencies': [
             '../google_update/google_update.gyp:google_update',
+            '../rlz/rlz.gyp:rlz_lib',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
-            '../views/views.gyp:views',
-            '../rlz/rlz.gyp:rlz_lib',
+            '../ui/views/views.gyp:views',
           ],
           'export_dependent_settings': [
-            '../views/views.gyp:views',
+            '../ui/views/views.gyp:views',
           ],
           'sources': [
             'browser/first_run/upgrade_util.cc',
@@ -4600,7 +4600,7 @@
             }],
             ['OS=="linux" and toolkit_views==1',{
               'dependencies': [
-                '../views/views.gyp:views',
+                '../ui/views/views.gyp:views',
               ],
               'include_dirs': [
                 '<(INTERMEDIATE_DIR)',

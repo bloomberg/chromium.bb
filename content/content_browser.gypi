@@ -692,7 +692,7 @@
     }],
     ['OS=="linux" and toolkit_views==1',{
       'dependencies': [
-        '../views/views.gyp:views',
+        '../ui/views/views.gyp:views',
       ],
     }],
     ['OS=="mac"', {

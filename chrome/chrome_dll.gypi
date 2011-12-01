@@ -29,7 +29,7 @@
                 '../printing/printing.gyp:printing',
                 '../net/net.gyp:net_resources',
                 '../third_party/cld/cld.gyp:cld',
-                '../views/views.gyp:views',
+                '../ui/views/views.gyp:views',
                 '../webkit/support/webkit_support.gyp:webkit_resources',
               ],
               'sources': [
