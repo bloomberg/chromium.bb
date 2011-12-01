@@ -78,3 +78,11 @@
   padding: 2px;
 }
 
+#delete-profile-message {
+  background-repeat: no-repeat;
+  -webkit-padding-start: 48px;
+}
+
+html[dir='rtl'] #delete-profile-message {
+  background-position: right;
+}

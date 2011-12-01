@@ -228,6 +228,8 @@ cr.define('options', function() {
       $('manage-profile-overlay-delete').hidden = false;
       $('delete-profile-message').textContent =
           localStrings.getStringF('deleteProfileMessage', profileInfo.name);
+      $('delete-profile-message').style.backgroundImage = 'url("' +
+          profileInfo.iconURL + '")';
 
       // Intentionally don't show the URL in the location bar as we don't want
       // people trying to navigate here by hand.
