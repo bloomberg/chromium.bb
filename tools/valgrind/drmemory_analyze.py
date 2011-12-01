@@ -9,6 +9,7 @@
 
 from collections import defaultdict
 import common
+import hashlib
 import logging
 import optparse
 import os
@@ -17,6 +18,48 @@ import subprocess
 import sys
 import time
 
+class DrMemoryError:
+  def __init__(self, report, suppression, testcase):
+    self._report = report
+    self._testcase = testcase
+
+    # Chromium-specific transformations of the suppressions:
+    # Replace 'any_test.exe' and 'chrome.dll' with '*', then remove the
+    # Dr.Memory-generated error ids from the name= lines as they don't
+    # make sense in a multiprocess report.
+    supp_lines = suppression.split("\n")
+    for l in xrange(len(supp_lines)):
+      if supp_lines[l].startswith("name="):
+        supp_lines[l] = "name=<insert_a_suppression_name_here>"
+      if supp_lines[l].startswith("chrome.dll!"):
+        supp_lines[l] = supp_lines[l].replace("chrome.dll!", "*!")
+      bang_index = supp_lines[l].find("!")
+      d_exe_index = supp_lines[l].find(".exe!")
+      if bang_index >= 4 and d_exe_index + 4 == bang_index:
+        supp_lines[l] = "*.exe" + supp_lines[l][bang_index:]
+    self._suppression = "\n".join(supp_lines)
+
+  def __str__(self):
+    output = self._report + "\n"
+    if self._testcase:
+      output += "The report came from the `%s` test.\n" % self._testcase
+    output += "Suppression (error hash=#%016X#):\n" % self.ErrorHash()
+    output += "{\n%s\n}\n" % self._suppression
+
+    # TODO(timurrrr): docs on suppressing?
+    #output += ("  For more info on using suppressions see "
+    #           "http://dev.chromium.org/developers/how-tos/using-valgrind#TOC-Suppressing-Errors")
+    return output
+
+  # This is a device-independent hash identifying the suppression.
+  # By printing out this hash we can find duplicate reports between tests and
+  # different shards running on multiple buildbots
+  def ErrorHash(self):
+    return int(hashlib.md5(self._suppression).hexdigest()[:16], 16)
+
+  def __hash__(self):
+    return hash(self._suppression)
+
 
 class DrMemoryAnalyzer:
   ''' Given a set of Dr.Memory output files, parse all the errors out of
@@ -24,6 +67,7 @@ class DrMemoryAnalyzer:
 
   def __init__(self):
     self.known_errors = set()
+    self.error_count = 0;
 
   def ReadLine(self):
     self.line_ = self.cur_fd_.readline()
@@ -36,19 +80,42 @@ class DrMemoryAnalyzer:
       self.ReadLine()
     return result
 
-  def ParseReportFile(self, filename):
+  def ParseReportFile(self, filename, testcase):
     ret = []
+
+    # First, read the generated suppressions file so we can easily lookup a
+    # suppression for a given error.
+    supp_fd = open(filename.replace("results", "suppress"), 'r')
+    generated_suppressions = {}  # Key -> Error #, Value -> Suppression text.
+    for line in supp_fd:
+      # NOTE: this regexp looks fragile. Might break if the generated
+      # suppression format slightly changes.
+      m = re.search("# Suppression for Error #([0-9]+)", line.strip())
+      if not m:
+        continue
+      error_id = int(m.groups()[0])
+      assert error_id not in generated_suppressions
+      # OK, now read the next suppression:
+      cur_supp = ""
+      for supp_line in supp_fd:
+        if supp_line.startswith("#") or supp_line.strip() == "":
+          break
+        cur_supp += supp_line
+      generated_suppressions[error_id] = cur_supp.strip()
+    supp_fd.close()
 
     self.cur_fd_ = open(filename, 'r')
     while True:
       self.ReadLine()
       if (self.line_ == ''): break
 
-      match = re.search("^Error #[0-9]+: (.*)", self.line_)
+      match = re.search("^Error #([0-9]+): (.*)", self.line_)
       if match:
-        self.line_ = match.groups()[0].strip() + "\n"
-        tmp = self.ReadSection()
-        ret.append("".join(tmp).strip())
+        error_id = int(match.groups()[0])
+        self.line_ = match.groups()[1].strip() + "\n"
+        report = "".join(self.ReadSection()).strip()
+        suppression = generated_suppressions[error_id]
+        ret.append(DrMemoryError(report, suppression, testcase))
 
       if re.search("SUPPRESSIONS USED:", self.line_):
         self.ReadLine()
@@ -73,7 +140,7 @@ class DrMemoryAnalyzer:
     to_report = []
     self.used_suppressions = defaultdict(int)
     for f in filenames:
-      cur_reports = self.ParseReportFile(f)
+      cur_reports = self.ParseReportFile(f, testcase)
 
       # Filter out the reports that were there in previous tests.
       for r in cur_reports:
@@ -91,12 +158,10 @@ class DrMemoryAnalyzer:
 
     logging.error("Found %i error reports" % len(to_report))
     for report in to_report:
-      if testcase:
-        logging.error("\n%s\nNote: observed on `%s`\n" %
-                      (report, testcase))
-      else:
-        logging.error("\n%s\n" % report)
+      self.error_count += 1
+      logging.error("Report #%d\n%s" % (self.error_count, report))
     logging.error("Total: %i error reports" % len(to_report))
+    sys.stderr.flush()
     return -1
 
 
