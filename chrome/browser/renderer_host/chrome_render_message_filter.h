@@ -54,9 +54,6 @@ class ChromeRenderMessageFilter : public BrowserMessageFilter {
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
   void OnRendererHistograms(int sequence_number,
                             const std::vector<std::string>& histogram_info);
-  void OnRendererTrackedData(int sequence_number,
-                             const std::string& tracked_data);
-  void OnIsTrackingEnabled();
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);
   void OnUpdatedCacheStats(const WebKit::WebCache::UsageStats& stats);
   void OnFPS(int routing_id, float fps);

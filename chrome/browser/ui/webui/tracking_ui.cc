@@ -163,7 +163,7 @@ TrackingUI::~TrackingUI() {
 }
 
 void TrackingUI::GetData() {
-  TrackingSynchronizer::FetchTrackingDataAsynchronously(ui_weak_ptr_);
+  TrackingSynchronizer::FetchProfilerDataAsynchronously(ui_weak_ptr_);
 }
 
 void TrackingUI::ReceivedData(base::Value* value) {

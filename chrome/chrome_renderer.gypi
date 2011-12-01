@@ -150,8 +150,6 @@
         'renderer/print_web_view_helper_win.cc',
         'renderer/renderer_histogram_snapshots.cc',
         'renderer/renderer_histogram_snapshots.h',
-        'renderer/renderer_tracking.cc',
-        'renderer/renderer_tracking.h',
         'renderer/safe_browsing/feature_extractor_clock.cc',
         'renderer/safe_browsing/feature_extractor_clock.h',
         'renderer/safe_browsing/features.cc',

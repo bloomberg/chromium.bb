@@ -161,7 +161,7 @@ ProfilerUI::~ProfilerUI() {
 }
 
 void ProfilerUI::GetData() {
-  TrackingSynchronizer::FetchTrackingDataAsynchronously(ui_weak_ptr_);
+  TrackingSynchronizer::FetchProfilerDataAsynchronously(ui_weak_ptr_);
 }
 
 void ProfilerUI::ReceivedData(base::Value* value) {

@@ -13,6 +13,7 @@
 #include "base/process_util.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
+#include "content/browser/profiler_message_filter.h"
 #include "content/browser/renderer_host/resource_message_filter.h"
 #include "content/browser/trace_message_filter.h"
 #include "content/common/plugin_messages.h"
@@ -68,6 +69,7 @@ BrowserChildProcessHost::BrowserChildProcessHost(
 #endif
       disconnect_was_alive_(false) {
   AddFilter(new TraceMessageFilter);
+  AddFilter(new ProfilerMessageFilter);
 
   g_child_process_list.Get().push_back(this);
 }

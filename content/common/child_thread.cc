@@ -4,9 +4,12 @@
 
 #include "content/common/child_thread.h"
 
-#include "base/message_loop.h"
-#include "base/string_util.h"
 #include "base/command_line.h"
+#include "base/message_loop.h"
+#include "base/process.h"
+#include "base/process_util.h"
+#include "base/string_util.h"
+#include "base/tracked_objects.h"
 #include "content/common/child_process.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/child_trace_message_filter.h"
@@ -183,6 +186,10 @@ bool ChildThread::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ChildProcessMsg_SetIPCLoggingEnabled,
                         OnSetIPCLoggingEnabled)
 #endif
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_SetProfilerStatus,
+                        OnSetProfilerStatus)
+    IPC_MESSAGE_HANDLER(ChildProcessMsg_GetChildProfilerData,
+                        OnGetChildProfilerData)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_DumpHandles, OnDumpHandles)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -216,6 +223,22 @@ void ChildThread::OnSetIPCLoggingEnabled(bool enable) {
     IPC::Logging::GetInstance()->Disable();
 }
 #endif  //  IPC_MESSAGE_LOG_ENABLED
+
+void ChildThread::OnSetProfilerStatus(bool enable) {
+  tracked_objects::ThreadData::InitializeAndSetTrackingStatus(enable);
+}
+
+void ChildThread::OnGetChildProfilerData(
+    int sequence_number,
+    const std::string& process_type) {
+  scoped_ptr<base::DictionaryValue> value(
+      tracked_objects::ThreadData::ToValue());
+  value->SetString("process_type", process_type);
+  value->SetInteger("process_id", base::GetCurrentProcId());
+
+  Send(new ChildProcessHostMsg_ChildProfilerData(
+      sequence_number, *value.get()));
+}
 
 void ChildThread::OnDumpHandles() {
 #if defined(OS_WIN)

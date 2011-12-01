@@ -238,14 +238,6 @@ IPC_MESSAGE_CONTROL0(ChromeViewMsg_GetCacheResourceStats)
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_GetRendererHistograms,
                      int /* sequence number of Renderer Histograms. */)
 
-// Asks the renderer to send back tracked data (ThreadData in tracked_objects).
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_GetRendererTrackedData,
-                     int /* sequence number of Renderer tracked data. */)
-
-// Asks the renderer to set the tracking status.
-IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetTrackingStatus,
-                     bool /* tracking status */)
-
 // Tells the renderer to create a FieldTrial, and by using a 100% probability
 // for the FieldTrial, forces the FieldTrial to have assigned group name.
 IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,
@@ -493,16 +485,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(ChromeViewHostMsg_GetSearchProviderInstallState,
 IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_RendererHistograms,
                      int, /* sequence number of Renderer Histograms. */
                      std::vector<std::string>)
-
-// Send back tracked data (ThreadData in tracked_objects) as a pickled string.
-IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_RendererTrackedData,
-                     int, /* sequence number of Renderer tracked data. */
-                     std::string  /* pickled Value containing profile data. */)
-
-// Check if tracking is enabled in browser process or not. Browser process
-// responds by sending ChromeViewMsg_SetTrackingStatus message to the process
-// that sent this message.
-IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_IsTrackingEnabled)
 
 #if defined USE_TCMALLOC
 // Send back tcmalloc stats output.

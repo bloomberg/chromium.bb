@@ -6,6 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "base/shared_memory.h"
+#include "base/values.h"
 #include "content/common/content_export.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_macros.h"
@@ -41,6 +42,16 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_EndTracing)
 // Sent to all child processes to get trace buffer fullness.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_GetTraceBufferPercentFull)
 
+// Tell the child process to enable or disable the profiler status.
+IPC_MESSAGE_CONTROL1(ChildProcessMsg_SetProfilerStatus,
+                     bool /* profiler status */)
+
+// Send to all the child processes to send back profiler data (ThreadData in
+// tracked_objects).
+IPC_MESSAGE_CONTROL2(ChildProcessMsg_GetChildProfilerData,
+                     int,         /* sequence number. */
+                     std::string  /* pickled Value of process type. */)
+
 // Sent to child processes to dump their handle table.
 IPC_MESSAGE_CONTROL0(ChildProcessMsg_DumpHandles)
 
@@ -66,6 +77,11 @@ IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceDataCollected,
 // Reply to ChildProcessMsg_GetTraceBufferPercentFull.
 IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_TraceBufferPercentFullReply,
                      float /*trace buffer percent full*/)
+
+// Send back profiler data (ThreadData in tracked_objects).
+IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_ChildProfilerData,
+                     int, /* sequence number. */
+                     DictionaryValue /* profiler data. */)
 
 // Reply to ChildProcessMsg_DumpHandles when handle table dump is complete.
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_DumpHandlesDone)

@@ -18,7 +18,6 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/metrics/histogram_synchronizer.h"
-#include "chrome/browser/metrics/tracking_synchronizer.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
@@ -72,10 +71,6 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RendererHistograms,
                         OnRendererHistograms)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RendererTrackedData,
-                        OnRendererTrackedData)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_IsTrackingEnabled,
-                        OnIsTrackingEnabled)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
                         OnResourceTypeStats)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_UpdatedCacheStats,
@@ -166,19 +161,6 @@ void ChromeRenderMessageFilter::OnRendererHistograms(
     int sequence_number,
     const std::vector<std::string>& histograms) {
   HistogramSynchronizer::DeserializeHistogramList(sequence_number, histograms);
-}
-
-void ChromeRenderMessageFilter::OnRendererTrackedData(
-    int sequence_number,
-    const std::string& tracked_data) {
-  // TODO(rtenneti): Add support for other process types.
-  chrome_browser_metrics::TrackingSynchronizer::DeserializeTrackingList(
-      sequence_number, tracked_data, content::PROCESS_TYPE_RENDERER);
-}
-
-void ChromeRenderMessageFilter::OnIsTrackingEnabled() {
-  chrome_browser_metrics::TrackingSynchronizer::IsTrackingEnabled(
-      render_process_id_);
 }
 
 void ChromeRenderMessageFilter::OnResourceTypeStats(

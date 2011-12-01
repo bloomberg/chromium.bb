@@ -33,6 +33,7 @@
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/tracked_objects.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/browser_child_process_host.h"
 #include "content/browser/browser_context.h"
@@ -48,6 +49,7 @@
 #include "content/browser/in_process_webkit/indexed_db_dispatcher_host.h"
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/plugin_service.h"
+#include "content/browser/profiler_message_filter.h"
 #include "content/browser/renderer_host/blob_message_filter.h"
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
@@ -537,6 +539,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       GetID(), GetBrowserContext()->GetQuotaManager(),
       content::GetContentClient()->browser()->CreateQuotaPermissionContext()));
   channel_->AddFilter(new GamepadBrowserMessageFilter);
+  channel_->AddFilter(new ProfilerMessageFilter());
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {
@@ -940,6 +943,9 @@ void RenderProcessHostImpl::OnChannelConnected(int32 peer_pid) {
   Send(new ChildProcessMsg_SetIPCLoggingEnabled(
       IPC::Logging::GetInstance()->Enabled()));
 #endif
+
+  bool enable = tracked_objects::ThreadData::tracking_status();
+  Send(new ChildProcessMsg_SetProfilerStatus(enable));
 
   // Make sure the child checks with us before exiting, so that we do not try
   // to schedule a new navigation in a swapped out and exiting renderer.
