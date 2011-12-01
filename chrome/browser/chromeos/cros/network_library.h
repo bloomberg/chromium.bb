@@ -621,6 +621,9 @@ class Network {
 
   const std::string& proxy_config() const { return proxy_config_; }
 
+  const DictionaryValue* ui_data() const { return &ui_data_; }
+  DictionaryValue* ui_data() { return &ui_data_; }
+
   void set_notify_failure(bool state) { notify_failure_ = state; }
 
   void SetPreferred(bool preferred);
@@ -704,7 +707,6 @@ class Network {
                                         std::string* dest);
 
   void set_unique_id(const std::string& unique_id) { unique_id_ = unique_id; }
-  DictionaryValue* ui_data() { return &ui_data_; }
 
  private:
   typedef std::map<PropertyIndex, base::Value*> PropertyMap;
