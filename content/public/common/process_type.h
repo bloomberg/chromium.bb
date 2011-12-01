@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "content/common/content_export.h"
+
 namespace content {
 
 // Defines the different process types.
@@ -34,7 +36,7 @@ enum ProcessType {
 
 // Returns an English name of the process type, should only be used for non
 // user-visible strings, or debugging pages like about:memory.
-std::string GetProcessTypeNameInEnglish(ProcessType type);
+CONTENT_EXPORT std::string GetProcessTypeNameInEnglish(ProcessType type);
 
 }  // namespace content
 
