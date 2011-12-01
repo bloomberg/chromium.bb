@@ -8,7 +8,6 @@
 #include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_library_loader.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
-#include "chrome/browser/chromeos/dbus/mock_power_manager_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
@@ -38,7 +37,6 @@ class LoginTestBase : public CrosInProcessBrowserTest {
   }
 
   MockCryptohomeLibrary* mock_cryptohome_library_;
-  MockPowerManagerClient mock_power_manager_client_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LoginTestBase);
@@ -48,12 +46,6 @@ class LoginUserTest : public LoginTestBase {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() {
     LoginTestBase::SetUpInProcessBrowserTestFixture();
-    EXPECT_CALL(mock_power_manager_client_, AddObserver(_))
-       .Times(AtLeast(1))
-       .WillRepeatedly(Return());
-    EXPECT_CALL(mock_power_manager_client_, RemoveObserver(_))
-       .Times(AtLeast(1))
-       .WillRepeatedly(Return());
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
