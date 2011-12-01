@@ -23,7 +23,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_LINUX)
-#include "views/screen.h"
+#include "ui/views/screen.h"
 #endif
 
 #undef min

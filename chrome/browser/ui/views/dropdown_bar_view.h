@@ -8,7 +8,7 @@
 
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
-#include "views/accessible_pane_view.h"
+#include "ui/views/accessible_pane_view.h"
 
 namespace gfx {
 class Canvas;

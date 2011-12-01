@@ -17,6 +17,7 @@
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/text_button.h"
@@ -24,7 +25,6 @@
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
-#include "views/background.h"
 
 namespace {
 

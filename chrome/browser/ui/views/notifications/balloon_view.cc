@@ -40,8 +40,8 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
-#include "views/painter.h"
 
 using views::Widget;
 

@@ -9,7 +9,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/text_input_type.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 

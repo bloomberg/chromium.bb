@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/menu/menu_wrapper.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Point;

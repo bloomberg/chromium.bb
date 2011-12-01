@@ -35,8 +35,8 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "views/painter.h"
 
 namespace {
 

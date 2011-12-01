@@ -11,8 +11,8 @@
 #include "ui/aura/client/window_drag_drop_delegate.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/events.h"
+#include "ui/views/views_export.h"
 #include "ui/views/widget/native_widget_private.h"
-#include "views/views_export.h"
 
 namespace aura {
 class Window;

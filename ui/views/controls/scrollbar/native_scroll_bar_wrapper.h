@@ -6,7 +6,7 @@
 #define UI_VIEWS_CONTROLS_SCROLLBAR_NATIVE_SCROLL_BAR_WRAPPER_H_
 #pragma once
 
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 

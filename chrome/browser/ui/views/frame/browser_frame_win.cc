@@ -15,10 +15,10 @@
 #include "grit/theme_resources.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/font.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_win.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
-#include "views/views_delegate.h"
 
 #pragma comment(lib, "dwmapi.lib")
 

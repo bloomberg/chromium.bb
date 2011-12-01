@@ -23,15 +23,15 @@
 #include "ui/gfx/path.h"
 #include "ui/gfx/point3.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/background.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
-#include "views/background.h"
-#include "views/views_delegate.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_gdi_object.h"

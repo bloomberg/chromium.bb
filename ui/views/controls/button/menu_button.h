@@ -11,8 +11,8 @@
 #include "base/string16.h"
 #include "base/time.h"
 #include "ui/gfx/font.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/text_button.h"
-#include "views/background.h"
 
 namespace views {
 

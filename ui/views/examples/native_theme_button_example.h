@@ -11,8 +11,8 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/examples/example_base.h"
-#include "views/native_theme_delegate.h"
-#include "views/native_theme_painter.h"
+#include "ui/views/native_theme_delegate.h"
+#include "ui/views/native_theme_painter.h"
 
 namespace views {
 class Combobox;

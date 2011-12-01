@@ -21,7 +21,7 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/insets.h"
-#include "views/background.h"
+#include "ui/views/background.h"
 
 namespace views {
 

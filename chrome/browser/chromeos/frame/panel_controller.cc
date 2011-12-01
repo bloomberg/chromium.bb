@@ -32,9 +32,9 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/events/event.h"
+#include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "views/painter.h"
 
 #if defined(TOOLKIT_USES_GTK)
 #include "chrome/browser/chromeos/legacy_window_manager/wm_ipc.h"

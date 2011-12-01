@@ -17,9 +17,9 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/insets.h"
-#include "views/background.h"
-#include "views/border.h"
-#include "views/painter.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
+#include "ui/views/painter.h"
 
 namespace {
 

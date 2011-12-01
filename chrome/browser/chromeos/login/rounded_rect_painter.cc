@@ -9,8 +9,8 @@
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas_skia.h"
-#include "views/border.h"
-#include "views/painter.h"
+#include "ui/views/border.h"
+#include "ui/views/painter.h"
 
 namespace chromeos {
 

@@ -13,9 +13,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/custom_button.h"
-#include "views/border.h"
-#include "views/native_theme_delegate.h"
+#include "ui/views/native_theme_delegate.h"
 
 namespace views {
 

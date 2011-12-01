@@ -31,9 +31,9 @@
 #include "ui/views/ime/mock_input_method.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
-#include "views/views_delegate.h"
 
 // Drag and drop for aura in linux hasn't been implemented yet.
 // Bug http://crbug.com/97845

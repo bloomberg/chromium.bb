@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "build/build_config.h"
 #include "ui/base/accessibility/accessibility_types.h"
-#include "views/views_delegate.h"
+#include "ui/views/views_delegate.h"
 
 class ChromeViewsDelegate : public views::ViewsDelegate {
  public:

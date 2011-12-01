@@ -16,11 +16,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
-#include "views/views_delegate.h"
 
 #if defined(TOOLKIT_VIEWS)
 

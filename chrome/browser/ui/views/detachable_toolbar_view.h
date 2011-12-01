@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_DETACHABLE_TOOLBAR_VIEW_H_
 #pragma once
 
-#include "views/accessible_pane_view.h"
+#include "ui/views/accessible_pane_view.h"
 
 struct SkRect;
 

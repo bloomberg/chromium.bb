@@ -19,10 +19,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/widget/native_widget_gtk.h"
-#include "views/background.h"
 
 #define SET_STATE(state) SetState(state, __PRETTY_FUNCTION__)
 

@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
-#include "views/background.h"
+#include "ui/views/background.h"
 
 class InfoBarBackground : public views::Background {
  public:

@@ -7,7 +7,8 @@
 #pragma once
 
 #include <windows.h>
-#include "views/views_export.h"
+
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Rect;

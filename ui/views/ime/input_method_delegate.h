@@ -6,7 +6,7 @@
 #define UI_VIEWS_IME_INPUT_METHOD_DELEGATE_H_
 #pragma once
 
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 

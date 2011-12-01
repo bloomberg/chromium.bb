@@ -26,11 +26,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
-#include "views/background.h"
 
 // The amount of whitespace to have before the find button.
 static const int kWhiteSpaceAfterMatchCountLabel = 1;

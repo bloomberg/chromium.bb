@@ -8,7 +8,7 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 

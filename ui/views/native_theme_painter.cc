@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/native_theme_painter.h"
+#include "ui/views/native_theme_painter.h"
 
 #include "base/logging.h"
 #include "ui/base/animation/animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/rect.h"
-#include "views/native_theme_delegate.h"
+#include "ui/views/native_theme_delegate.h"
 
 namespace views {
 

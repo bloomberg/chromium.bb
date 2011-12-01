@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Font;

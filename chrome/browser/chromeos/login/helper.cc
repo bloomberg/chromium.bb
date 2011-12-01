@@ -20,8 +20,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/throbber.h"
+#include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
-#include "views/painter.h"
 
 namespace chromeos {
 

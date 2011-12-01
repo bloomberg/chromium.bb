@@ -21,7 +21,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/compositor/layer.h"
 #include "ui/gfx/font.h"
-#include "views/background.h"
+#include "ui/views/background.h"
 
 namespace {
 

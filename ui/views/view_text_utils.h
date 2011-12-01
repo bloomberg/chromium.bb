@@ -1,15 +1,13 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// This file defines utility functions for working with text in views.
 
-#ifndef VIEWS_VIEW_TEXT_UTILS_H_
-#define VIEWS_VIEW_TEXT_UTILS_H_
+#ifndef UI_VIEWS_VIEW_TEXT_UTILS_H_
+#define UI_VIEWS_VIEW_TEXT_UTILS_H_
 #pragma once
 
 #include "base/string16.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Canvas;
@@ -22,6 +20,8 @@ namespace views {
 class Label;
 class Link;
 }
+
+// This file defines utility functions for working with text in views.
 
 namespace view_text_utils {
 
@@ -73,4 +73,4 @@ void WrapIfWordDoesntFit(int word_width,
 
 }  // namespace view_text_utils
 
-#endif  // CHROME_BROWSER_VIEWS_VIEW_TEXT_UTILS_H_
+#endif  // UI_VIEWS_VIEW_TEXT_UTILS_H_

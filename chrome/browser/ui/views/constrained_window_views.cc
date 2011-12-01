@@ -33,12 +33,12 @@
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/non_client_view.h"
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
-#include "views/views_delegate.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "ui/views/widget/native_widget_win.h"

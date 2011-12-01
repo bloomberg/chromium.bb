@@ -6,7 +6,7 @@
 #define UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_
 #pragma once
 
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Point;

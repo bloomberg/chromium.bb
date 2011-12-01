@@ -35,8 +35,8 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/view_text_utils.h"
 #include "ui/views/widget/widget.h"
-#include "views/view_text_utils.h"
 
 namespace {
 

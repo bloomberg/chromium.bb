@@ -27,10 +27,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/events/event.h"
 #include "ui/views/layout/fill_layout.h"
-#include "views/border.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"

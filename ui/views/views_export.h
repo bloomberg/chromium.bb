@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_VIEWS_EXPORT_H_
-#define VIEWS_VIEWS_EXPORT_H_
+#ifndef UI_VIEWS_VIEWS_EXPORT_H_
+#define UI_VIEWS_VIEWS_EXPORT_H_
 #pragma once
 
 // Defines VIEWS_EXPORT so that functionality implemented by the Views module
@@ -26,4 +26,4 @@
 #define VIEWS_EXPORT
 #endif
 
-#endif  // VIEWS_VIEWS_EXPORT_H_
+#endif  // UI_VIEWS_VIEWS_EXPORT_H_

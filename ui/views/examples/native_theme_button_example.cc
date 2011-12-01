@@ -16,7 +16,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/examples/example_combobox_model.h"
 #include "ui/views/layout/grid_layout.h"
-#include "views/native_theme_painter.h"
+#include "ui/views/native_theme_painter.h"
 
 namespace {
 

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/background.h"
 #include "ui/views/view.h"
-#include "views/background.h"
 
 namespace chromeos {
 

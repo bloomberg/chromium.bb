@@ -40,8 +40,8 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/throbber.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/view_text_utils.h"
 #include "ui/views/widget/widget.h"
-#include "views/view_text_utils.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_WIN)

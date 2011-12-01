@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_VIEWS_DELEGATE_H_
-#define VIEWS_VIEWS_DELEGATE_H_
+#ifndef UI_VIEWS_VIEWS_DELEGATE_H_
+#define UI_VIEWS_VIEWS_DELEGATE_H_
 #pragma once
 
 #include <string>
@@ -15,7 +15,7 @@
 #include "base/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/ui_base_types.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Rect;
@@ -88,4 +88,4 @@ class VIEWS_EXPORT ViewsDelegate {
 
 }  // namespace views
 
-#endif  // VIEWS_VIEWS_DELEGATE_H_
+#endif  // UI_VIEWS_VIEWS_DELEGATE_H_

@@ -9,7 +9,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/insets.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 

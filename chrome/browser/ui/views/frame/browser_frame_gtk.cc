@@ -14,9 +14,9 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/font.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
-#include "views/views_delegate.h"
 
 // static
 const gfx::Font& BrowserFrame::GetTitleFont() {

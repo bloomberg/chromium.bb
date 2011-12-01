@@ -11,7 +11,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/view_ids.h"
 #include "ui/gfx/canvas.h"
-#include "views/border.h"
+#include "ui/views/border.h"
 
 // Number of pixels to separate each icon.
 #if defined(TOUCH_UI)

@@ -18,12 +18,12 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
-#include "views/background.h"
 
 namespace {
 

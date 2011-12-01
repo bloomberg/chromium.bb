@@ -11,7 +11,7 @@
 #include "ui/base/events.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/gfx/point.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace ui {
 class OSExchangeData;

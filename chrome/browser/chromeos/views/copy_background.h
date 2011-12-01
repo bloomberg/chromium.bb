@@ -7,7 +7,7 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "views/background.h"
+#include "ui/views/background.h"
 
 namespace views {
 class View;

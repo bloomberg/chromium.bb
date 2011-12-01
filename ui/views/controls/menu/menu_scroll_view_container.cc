@@ -14,11 +14,11 @@
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/native_theme.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
-#include "views/border.h"
 
 using gfx::NativeTheme;
 

@@ -7,8 +7,8 @@
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "views/background.h"
-#include "views/border.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 
 class SkBitmap;
 

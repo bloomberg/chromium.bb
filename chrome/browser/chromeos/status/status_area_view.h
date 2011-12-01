@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "ui/views/accessible_pane_view.h"
 #include "ui/views/view.h"
-#include "views/accessible_pane_view.h"
 
 // This class is used to wrap the small informative widgets in the upper-right
 // of the window title bar. It is used on ChromeOS only.

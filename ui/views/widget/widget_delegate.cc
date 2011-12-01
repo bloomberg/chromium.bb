@@ -8,9 +8,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/view.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
-#include "views/views_delegate.h"
 
 namespace views {
 

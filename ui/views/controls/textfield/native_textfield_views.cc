@@ -18,6 +18,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/render_text.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -28,10 +30,8 @@
 #include "ui/views/events/event.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/metrics.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
-#include "views/background.h"
-#include "views/border.h"
-#include "views/views_delegate.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/gtk_util.h"

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "ui/base/events.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class Canvas;

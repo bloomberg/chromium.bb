@@ -10,8 +10,8 @@
 #include "ui/gfx/point.h"
 #include "ui/views/test/test_views_delegate.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_delegate.h"
-#include "views/views_delegate.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"

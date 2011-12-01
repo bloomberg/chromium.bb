@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "views/accessible_pane_view.h"
+#include "ui/views/accessible_pane_view.h"
 
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/controls/button/text_button.h"

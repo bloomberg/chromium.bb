@@ -17,9 +17,9 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
-#include "views/views_delegate.h"
 
 const int kDefaultMessageWidth = 320;
 

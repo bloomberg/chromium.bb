@@ -19,10 +19,10 @@
 #include "ui/views/controls/menu/menu_scroll_view_container.h"
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/drag_utils.h"
+#include "ui/views/view_constants.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
-#include "views/view_constants.h"
-#include "views/views_delegate.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/desktop.h"

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_NATIVE_THEME_PAINTER_H_
-#define VIEWS_NATIVE_THEME_PAINTER_H_
+#ifndef UI_VIEWS_NATIVE_THEME_PAINTER_H_
+#define UI_VIEWS_NATIVE_THEME_PAINTER_H_
 #pragma once
 
 #include "base/compiler_specific.h"
-#include "views/painter.h"
+#include "ui/views/painter.h"
 
 namespace gfx {
 class Canvas;
@@ -42,4 +42,4 @@ class VIEWS_EXPORT NativeThemePainter : public Painter {
 
 }  // namespace views
 
-#endif  // VIEWS_NATIVE_THEME_PAINTER_H_
+#endif  // UI_VIEWS_NATIVE_THEME_PAINTER_H_

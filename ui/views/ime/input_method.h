@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/i18n/rtl.h"
 #include "ui/base/ime/text_input_type.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace ui {
 class TextInputClient;

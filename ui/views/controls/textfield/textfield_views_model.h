@@ -16,7 +16,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/render_text.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 namespace gfx {
 class RenderText;

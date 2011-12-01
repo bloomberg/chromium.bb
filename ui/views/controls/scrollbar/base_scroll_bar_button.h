@@ -8,7 +8,7 @@
 
 #include "ui/views/controls/button/custom_button.h"
 
-#include "views/repeat_controller.h"
+#include "ui/views/repeat_controller.h"
 
 #if defined(OS_LINUX)
 #include "ui/gfx/screen.h"

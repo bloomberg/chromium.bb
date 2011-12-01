@@ -20,7 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/canvas_skia.h"
 #include "ui/gfx/skia_util.h"
-#include "views/border.h"
+#include "ui/views/border.h"
 
 namespace {
 // Animation parameters.

@@ -21,6 +21,7 @@
 #include "ui/gfx/compositor/test/test_texture.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/button_dropdown.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -32,11 +33,10 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/touchui/gesture_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "views/background.h"
-#include "views/views_delegate.h"
 
 #if defined(OS_WIN)
 #include "ui/views/test/test_views_delegate.h"

@@ -58,9 +58,9 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/metrics.h"
+#include "ui/views/view_constants.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
-#include "views/view_constants.h"
 
 using views::CustomButton;
 using views::DropTargetEvent;

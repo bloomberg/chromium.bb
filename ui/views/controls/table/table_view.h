@@ -15,7 +15,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 #include "ui/base/models/table_model_observer.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 #if defined(OS_WIN)
 #include <windows.h>

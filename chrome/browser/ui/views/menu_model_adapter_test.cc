@@ -15,9 +15,9 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/controls/menu/view_menu_delegate.h"
 #include "ui/views/test/test_views_delegate.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
-#include "views/views_delegate.h"
 
 namespace {
 

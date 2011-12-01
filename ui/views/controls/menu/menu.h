@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/string16.h"
 #include "ui/gfx/native_widget_types.h"
-#include "views/views_export.h"
+#include "ui/views/views_export.h"
 
 class SkBitmap;
 
