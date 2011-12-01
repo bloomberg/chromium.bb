@@ -311,15 +311,6 @@ class NTPTest(pyauto.PyUITest):
     self.assertEquals(expected, test_utils.StripUnmatchedKeys(
         self.GetNTPRecentlyClosed(), expected))
 
-  def testRecentlyClosedShowsUniqueItems(self):
-    """Tests that the Recently Closed section does not show duplicate items"""
-    self.RemoveNTPDefaultThumbnails()
-    self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
-    self.AppendTab(pyauto.GURL(self.PAGES[0]['url']))
-    self.GetBrowserWindow(0).GetTab(1).Close(True)
-    self.GetBrowserWindow(0).GetTab(1).Close(True)
-    self.assertEquals(1, len(self.GetNTPRecentlyClosed()))
-
   def testRecentlyClosedIncognito(self):
     """Tests that we don't record closure of Incognito tabs or windows"""
     #self.RemoveNTPDefaultThumbnails()
