@@ -573,6 +573,12 @@
             '../build/linux/system.gyp:ssl',
           ],
         }],
+        # For troubleshooting crbug.com/103497.
+        ['chromeos==1 and use_aura==1', {
+          'sources': [
+            'browser/printing/print_dialog_cloud_uitest.cc',
+          ],
+        }],
         ['toolkit_uses_gtk == 1 and toolkit_views == 0', {
           'sources!': [
             # TODO(port)
@@ -2779,6 +2785,8 @@
                 ['exclude', '^browser/chromeos/login/screen_locker_tester.cc'],
                 ['exclude', '^browser/chromeos/notifications/'],
                 ['exclude', '^browser/ui/views/status_icons/status_tray_chromeos_browsertest.cc'],
+                # For troubleshooting crbug.com/103497.
+                ['exclude', '^browser/printing/print_dialog_cloud_uitest.cc'],
               ],
             }],
           ],
