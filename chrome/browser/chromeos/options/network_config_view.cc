@@ -13,10 +13,14 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
@@ -185,6 +189,70 @@ void NetworkConfigView::CreateAdvancedButton() {
                         0, views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, column_set_id);
   layout->AddView(advanced_button_);
+}
+
+ControlledSettingIndicatorView::ControlledSettingIndicatorView()
+    : managed_(false),
+      image_view_(NULL) {
+  Init();
+}
+
+ControlledSettingIndicatorView::ControlledSettingIndicatorView(
+    const NetworkPropertyUIData& ui_data)
+    : managed_(false),
+      image_view_(NULL) {
+  Init();
+  Update(ui_data);
+}
+
+ControlledSettingIndicatorView::~ControlledSettingIndicatorView() {}
+
+void ControlledSettingIndicatorView::Update(
+    const NetworkPropertyUIData& ui_data) {
+  if (managed_ == ui_data.managed())
+    return;
+
+  managed_ = ui_data.managed();
+  PreferredSizeChanged();
+}
+
+gfx::Size ControlledSettingIndicatorView::GetPreferredSize() {
+  if (!IsVisible())
+    return gfx::Size();
+
+  return image_view_->GetPreferredSize();
+}
+
+bool ControlledSettingIndicatorView::IsVisible() const {
+  return managed_ && views::View::IsVisible();
+}
+
+void ControlledSettingIndicatorView::Layout() {
+  image_view_->SetBounds(0, 0, width(), height());
+}
+
+void ControlledSettingIndicatorView::OnMouseEntered(
+    const views::MouseEvent& event) {
+  image_view_->SetImage(color_image_);
+}
+
+void ControlledSettingIndicatorView::OnMouseExited(
+    const views::MouseEvent& event) {
+  image_view_->SetImage(gray_image_);
+}
+
+void ControlledSettingIndicatorView::Init() {
+  color_image_ = ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_CONTROLLED_SETTING_MANDATORY).ToSkBitmap();
+  gray_image_ = ResourceBundle::GetSharedInstance().GetImageNamed(
+      IDR_CONTROLLED_SETTING_MANDATORY_GRAY).ToSkBitmap();
+  image_view_ = new views::ImageView();
+  // Disable |image_view_| so mouse events propagate to the parent.
+  image_view_->SetEnabled(false);
+  image_view_->SetImage(gray_image_);
+  image_view_->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
+  AddChildView(image_view_);
 }
 
 }  // namespace chromeos

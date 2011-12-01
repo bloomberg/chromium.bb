@@ -369,6 +369,21 @@ const std::string VPNConfigView::GetUserCertID() const {
 }
 
 void VPNConfigView::Init(VirtualNetwork* vpn) {
+  if (vpn) {
+    ca_cert_ui_data_.UpdateFromNetwork(
+        vpn, NetworkUIData::kPropertyVPNCaCertNss);
+    psk_passphrase_ui_data_.UpdateFromNetwork(
+        vpn, NetworkUIData::kPropertyVPNPskPassphrase);
+    user_cert_ui_data_.UpdateFromNetwork(
+        vpn, NetworkUIData::kPropertyVPNClientCertId);
+    username_ui_data_.UpdateFromNetwork(
+        vpn, NetworkUIData::kPropertyVPNUsername);
+    user_passphrase_ui_data_.UpdateFromNetwork(
+        vpn, NetworkUIData::kPropertyVPNUserPassphrase);
+    group_name_ui_data_.UpdateFromNetwork(
+        vpn, NetworkUIData::kPropertyVPNGroupName);
+  }
+
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
 
@@ -390,6 +405,9 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
                         views::GridLayout::USE_PREF, 0,
                         ChildNetworkConfigView::kInputFieldMinWidth);
   column_set->AddPaddingColumn(0, views::kRelatedControlSmallHorizontalSpacing);
+  // Policy indicator.
+  column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER, 0,
+                        views::GridLayout::USE_PREF, 0, 0);
 
   // Initialize members.
   service_text_modified_ = false;
@@ -471,6 +489,8 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     if (vpn && !vpn->psk_passphrase().empty())
       psk_passphrase_textfield_->SetText(UTF8ToUTF16(vpn->psk_passphrase()));
     layout->AddView(psk_passphrase_textfield_);
+    layout->AddView(
+        new ControlledSettingIndicatorView(psk_passphrase_ui_data_));
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   } else {
     psk_passphrase_label_ = NULL;
@@ -489,6 +509,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
         new ServerCACertComboboxModel(cert_library_);
     server_ca_cert_combobox_ = new views::Combobox(server_ca_cert_model);
     layout->AddView(server_ca_cert_combobox_);
+    layout->AddView(new ControlledSettingIndicatorView(ca_cert_ui_data_));
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   } else {
     server_ca_cert_label_ = NULL;
@@ -506,6 +527,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     user_cert_combobox_ = new views::Combobox(user_cert_model);
     user_cert_combobox_->set_listener(this);
     layout->AddView(user_cert_combobox_);
+    layout->AddView(new ControlledSettingIndicatorView(user_cert_ui_data_));
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   } else {
     user_cert_label_ = NULL;
@@ -518,9 +540,11 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_USERNAME)));
   username_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
   username_textfield_->SetController(this);
+  username_textfield_->SetEnabled(username_ui_data_.editable());
   if (vpn && !vpn->username().empty())
     username_textfield_->SetText(UTF8ToUTF16(vpn->username()));
   layout->AddView(username_textfield_);
+  layout->AddView(new ControlledSettingIndicatorView(username_ui_data_));
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // User passphrase label, input and visble button.
@@ -530,9 +554,11 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
   user_passphrase_textfield_ = new views::Textfield(
       views::Textfield::STYLE_PASSWORD);
   user_passphrase_textfield_->SetController(this);
+  user_passphrase_textfield_->SetEnabled(user_passphrase_ui_data_.editable());
   if (vpn && !vpn->user_passphrase().empty())
     user_passphrase_textfield_->SetText(UTF8ToUTF16(vpn->user_passphrase()));
   layout->AddView(user_passphrase_textfield_);
+  layout->AddView(new ControlledSettingIndicatorView(user_passphrase_ui_data_));
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // OTP label and input.
@@ -567,6 +593,7 @@ void VPNConfigView::Init(VirtualNetwork* vpn) {
     if (vpn && !vpn->group_name().empty())
       group_name_textfield_->SetText(UTF8ToUTF16(vpn->group_name()));
     layout->AddView(group_name_textfield_);
+    layout->AddView(new ControlledSettingIndicatorView(group_name_ui_data_));
     layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
   } else {
     group_name_label_ = NULL;
@@ -662,17 +689,20 @@ void VPNConfigView::UpdateControls() {
   if (psk_passphrase_label_)
     psk_passphrase_label_->SetEnabled(enable_psk_passphrase_);
   if (psk_passphrase_textfield_)
-    psk_passphrase_textfield_->SetEnabled(enable_psk_passphrase_);
+    psk_passphrase_textfield_->SetEnabled(enable_psk_passphrase_ &&
+                                          psk_passphrase_ui_data_.editable());
 
   if (user_cert_label_)
     user_cert_label_->SetEnabled(enable_user_cert_);
   if (user_cert_combobox_)
-    user_cert_combobox_->SetEnabled(enable_user_cert_);
+    user_cert_combobox_->SetEnabled(enable_user_cert_ &&
+                                    user_cert_ui_data_.editable());
 
   if (server_ca_cert_label_)
     server_ca_cert_label_->SetEnabled(enable_server_ca_cert_);
   if (server_ca_cert_combobox_)
-    server_ca_cert_combobox_->SetEnabled(enable_server_ca_cert_);
+    server_ca_cert_combobox_->SetEnabled(enable_server_ca_cert_ &&
+                                         ca_cert_ui_data_.editable());
 
   if (otp_label_)
     otp_label_->SetEnabled(enable_otp_);
@@ -682,7 +712,8 @@ void VPNConfigView::UpdateControls() {
   if (group_name_label_)
     group_name_label_->SetEnabled(enable_group_name_);
   if (group_name_textfield_)
-    group_name_textfield_->SetEnabled(enable_group_name_);
+    group_name_textfield_->SetEnabled(enable_group_name_ &&
+                                      group_name_ui_data_.editable());
 }
 
 void VPNConfigView::UpdateErrorLabel() {

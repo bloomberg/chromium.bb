@@ -11,11 +11,13 @@
 #include "base/compiler_specific.h"
 #include "base/string16.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 #include "ui/views/controls/button/button.h"  // views::ButtonListener
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
+class ImageView;
 class NativeTextButton;
 class View;
 }
@@ -137,6 +139,37 @@ class ChildNetworkConfigView : public views::View {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChildNetworkConfigView);
+};
+
+// Shows an icon with tooltip indicating whether a setting is under policy
+// control.
+class ControlledSettingIndicatorView : public views::View {
+ public:
+  ControlledSettingIndicatorView();
+  explicit ControlledSettingIndicatorView(const NetworkPropertyUIData& ui_data);
+  virtual ~ControlledSettingIndicatorView();
+
+  // Updates the view based on |ui_data|.
+  void Update(const NetworkPropertyUIData& ui_data);
+
+ protected:
+  // views::View:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual bool IsVisible() const OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual void OnMouseEntered(const views::MouseEvent& event) OVERRIDE;
+  virtual void OnMouseExited(const views::MouseEvent& event) OVERRIDE;
+
+ private:
+  // Initializes the view.
+  void Init();
+
+  bool managed_;
+  views::ImageView* image_view_;
+  const SkBitmap* gray_image_;
+  const SkBitmap* color_image_;
+
+  DISALLOW_COPY_AND_ASSIGN(ControlledSettingIndicatorView);
 };
 
 }  // namespace chromeos

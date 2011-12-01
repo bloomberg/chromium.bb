@@ -22,8 +22,8 @@
 
 namespace views {
 class Checkbox;
-class ToggleImageButton;
 class Label;
+class ToggleImageButton;
 }
 
 namespace chromeos {
@@ -108,6 +108,15 @@ class WifiConfigView : public ChildNetworkConfigView,
   void UpdateErrorLabel();
 
   CertLibrary* cert_library_;
+
+  NetworkPropertyUIData eap_method_ui_data_;
+  NetworkPropertyUIData phase_2_auth_ui_data_;
+  NetworkPropertyUIData user_cert_ui_data_;
+  NetworkPropertyUIData server_ca_cert_ui_data_;
+  NetworkPropertyUIData identity_ui_data_;
+  NetworkPropertyUIData identity_anonymous_ui_data_;
+  NetworkPropertyUIData save_credentials_ui_data_;
+  NetworkPropertyUIData passphrase_ui_data_;
 
   views::Textfield* ssid_textfield_;
   views::Combobox* eap_method_combobox_;

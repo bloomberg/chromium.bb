@@ -114,6 +114,13 @@ class VPNConfigView : public ChildNetworkConfigView,
   bool enable_otp_;
   bool enable_group_name_;
 
+  NetworkPropertyUIData ca_cert_ui_data_;
+  NetworkPropertyUIData psk_passphrase_ui_data_;
+  NetworkPropertyUIData user_cert_ui_data_;
+  NetworkPropertyUIData username_ui_data_;
+  NetworkPropertyUIData user_passphrase_ui_data_;
+  NetworkPropertyUIData group_name_ui_data_;
+
   views::Textfield* server_textfield_;
   views::Label* service_text_;
   views::Textfield* service_textfield_;
