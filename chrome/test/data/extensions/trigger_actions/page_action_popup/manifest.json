@@ -1,0 +1,12 @@
+{
+  "name": "A page action with a popup displaying a simple message",
+  "version": "1.0",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs", "http://*/*", "https://*/*"
+  ],
+  "page_action": {
+      "default_icon": "icon.png",
+      "popup": "popup.html"
+  }
+}
