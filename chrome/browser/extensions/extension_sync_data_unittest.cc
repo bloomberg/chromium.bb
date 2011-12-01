@@ -30,6 +30,7 @@ const char kValidUpdateUrl2[] =
     "https://clients2.google.com/service/update2/crx";
 const char kName[] = "MyExtension";
 const char kName2[] = "MyExtension2";
+const char kOAuthClientId[] = "1234abcd";
 
 class ExtensionSyncDataTest : public testing::Test {
 };
@@ -101,7 +102,7 @@ TEST_F(ExtensionSyncDataTest, SyncDataToExtensionSyncDataForApp) {
   extension_specifics->set_name(kName);
   sync_pb::AppNotificationSettings* notif_settings =
       app_specifics->mutable_notification_settings();
-  notif_settings->set_initial_setup_done(true);
+  notif_settings->set_oauth_client_id(kOAuthClientId);
   notif_settings->set_disabled(true);
   SyncData sync_data =
       SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);
@@ -117,8 +118,8 @@ TEST_F(ExtensionSyncDataTest, SyncDataToExtensionSyncDataForApp) {
             extension_sync_data.incognito_enabled());
   EXPECT_EQ(extension_specifics->name(), extension_sync_data.name());
   EXPECT_FALSE(extension_sync_data.uninstalled());
-  EXPECT_EQ(notif_settings->initial_setup_done(),
-      extension_sync_data.notifications_initial_setup_done());
+  EXPECT_EQ(notif_settings->oauth_client_id(),
+            extension_sync_data.notifications_client_id());
   EXPECT_EQ(notif_settings->disabled(),
       extension_sync_data.notifications_disabled());
 }
@@ -137,7 +138,7 @@ TEST_F(ExtensionSyncDataTest, ExtensionSyncDataToSyncDataForApp) {
   input_extension->set_name(kName);
   sync_pb::AppNotificationSettings* notif_settings =
       input_specifics->mutable_notification_settings();
-  notif_settings->set_initial_setup_done(true);
+  notif_settings->set_oauth_client_id(kOAuthClientId);
   notif_settings->set_disabled(true);
   SyncData sync_data =
       SyncData::CreateLocalData("sync_tag", "non_unique_title", entity);

@@ -1,0 +1,10 @@
+{
+  "name": "Notifications Test App",
+  "version": "0.5",
+  "permissions": ["experimental"],
+  "app": {
+    "launch": {
+      "local_path": "launch.html"
+    }
+  }
+}

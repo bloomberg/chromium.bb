@@ -29,7 +29,7 @@ class ExtensionSyncData {
   ExtensionSyncData(const Extension& extension,
                     bool enabled,
                     bool incognito_enabled,
-                    bool notifications_initial_setup_done,
+                    const std::string& notifications_client_id,
                     bool notifications_disabled);
   ~ExtensionSyncData();
 
@@ -56,8 +56,8 @@ class ExtensionSyncData {
   // Used only for debugging.
   const std::string& name() const { return name_; }
 
-  bool notifications_initial_setup_done() const {
-    return notifications_initial_setup_done_;
+  const std::string& notifications_client_id() const {
+    return notifications_client_id_;
   }
 
   bool notifications_disabled() const {
@@ -77,7 +77,7 @@ class ExtensionSyncData {
   Version version_;
   GURL update_url_;
   std::string name_;
-  bool notifications_initial_setup_done_;
+  std::string notifications_client_id_;
   bool notifications_disabled_;
 };
 

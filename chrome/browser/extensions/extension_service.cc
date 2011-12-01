@@ -679,7 +679,7 @@ bool ExtensionService::UninstallExtension(
         *extension,
         IsExtensionEnabled(extension_id),
         IsIncognitoEnabled(extension_id),
-        extension_prefs_->IsAppNotificationSetupDone(extension_id),
+        extension_prefs_->GetAppNotificationClientId(extension_id),
         extension_prefs_->IsAppNotificationDisabled(extension_id));
     sync_change = extension_sync_data.GetSyncChange(SyncChange::ACTION_DELETE);
   }
@@ -1209,7 +1209,7 @@ void ExtensionService::SyncExtensionChangeIfNeeded(const Extension& extension) {
         extension,
         IsExtensionEnabled(extension.id()),
         IsIncognitoEnabled(extension.id()),
-        extension_prefs_->IsAppNotificationSetupDone(extension.id()),
+        extension_prefs_->GetAppNotificationClientId(extension.id()),
         extension_prefs_->IsAppNotificationDisabled(extension.id()));
 
     SyncChangeList sync_change_list(1, extension_sync_data.GetSyncChange(
@@ -1374,7 +1374,7 @@ void ExtensionService::GetSyncDataListHelper(
           extension,
           IsExtensionEnabled(extension.id()),
           IsIncognitoEnabled(extension.id()),
-          extension_prefs_->IsAppNotificationSetupDone(extension.id()),
+          extension_prefs_->GetAppNotificationClientId(extension.id()),
           extension_prefs_->IsAppNotificationDisabled(extension.id())));
     }
   }
@@ -1510,7 +1510,7 @@ void ExtensionService::SetIsIncognitoEnabled(
 
 void ExtensionService::SetAppNotificationSetupDone(
     const std::string& extension_id,
-    bool value) {
+    const std::string& oauth_client_id) {
   const Extension* extension = GetInstalledExtension(extension_id);
   // This method is called when the user sets up app notifications.
   // So it is not expected to be called until the extension is installed.
@@ -1518,7 +1518,7 @@ void ExtensionService::SetAppNotificationSetupDone(
     NOTREACHED();
     return;
   }
-  extension_prefs_->SetAppNotificationSetupDone(extension_id, value);
+  extension_prefs_->SetAppNotificationClientId(extension_id, oauth_client_id);
   SyncExtensionChangeIfNeeded(*extension);
 }
 

@@ -210,8 +210,11 @@ class ExtensionService
   virtual void SetIsIncognitoEnabled(const std::string& extension_id,
                                      bool enabled);
 
+  // When app notification setup is done, we call this to save the developer's
+  // oauth client id which we'll need at uninstall time to revoke the oauth
+  // permission grant for sending notifications.
   virtual void SetAppNotificationSetupDone(const std::string& extension_id,
-      bool value);
+                                           const std::string& oauth_client_id);
 
   virtual void SetAppNotificationDisabled(const std::string& extension_id,
       bool value);

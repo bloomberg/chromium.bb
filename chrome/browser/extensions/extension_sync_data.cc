@@ -14,7 +14,6 @@ ExtensionSyncData::ExtensionSyncData()
       enabled_(false),
       incognito_enabled_(false),
       type_(Extension::SYNC_TYPE_NONE),
-      notifications_initial_setup_done_(false),
       notifications_disabled_(false) {
 }
 
@@ -23,7 +22,6 @@ ExtensionSyncData::ExtensionSyncData(const SyncData& sync_data)
       enabled_(false),
       incognito_enabled_(false),
       type_(Extension::SYNC_TYPE_NONE),
-      notifications_initial_setup_done_(false),
       notifications_disabled_(false) {
   PopulateFromSyncData(sync_data);
 }
@@ -36,7 +34,7 @@ ExtensionSyncData::ExtensionSyncData(const SyncChange& sync_change)
 ExtensionSyncData::ExtensionSyncData(const Extension& extension,
                                      bool enabled,
                                      bool incognito_enabled,
-                                     bool notifications_initial_setup_done,
+                                     const std::string& notifications_client_id,
                                      bool notifications_disabled)
   : id_(extension.id()),
     uninstalled_(false),
@@ -46,7 +44,7 @@ ExtensionSyncData::ExtensionSyncData(const Extension& extension,
     version_(*extension.version()),
     update_url_(extension.update_url()),
     name_(extension.name()),
-    notifications_initial_setup_done_(notifications_initial_setup_done),
+    notifications_client_id_(notifications_client_id),
     notifications_disabled_(notifications_disabled) {
 }
 
@@ -57,7 +55,8 @@ void ExtensionSyncData::PopulateAppSpecifics(
   DCHECK(specifics);
   sync_pb::AppNotificationSettings* notif_settings =
       specifics->mutable_notification_settings();
-  notif_settings->set_initial_setup_done(notifications_initial_setup_done_);
+  if (!notifications_client_id_.empty())
+    notif_settings->set_oauth_client_id(notifications_client_id_);
   notif_settings->set_disabled(notifications_disabled_);
   PopulateSyncSpecifics(specifics->mutable_extension());
 }
@@ -130,10 +129,12 @@ void ExtensionSyncData::PopulateFromSyncData(const SyncData& sync_data) {
         sync_pb::app);
     extension_expecifics = app_specifics.extension();
     type_ = Extension::SYNC_TYPE_APP;
-    notifications_initial_setup_done_ =
-        app_specifics.has_notification_settings() &&
-        app_specifics.notification_settings().has_initial_setup_done() &&
-        app_specifics.notification_settings().initial_setup_done();
+    if (app_specifics.has_notification_settings() &&
+        app_specifics.notification_settings().has_oauth_client_id()) {
+      notifications_client_id_ =
+          app_specifics.notification_settings().oauth_client_id();
+    }
+
     notifications_disabled_ =
         app_specifics.has_notification_settings() &&
         app_specifics.notification_settings().has_disabled() &&
@@ -143,4 +144,3 @@ void ExtensionSyncData::PopulateFromSyncData(const SyncData& sync_data) {
   }
   PopulateFromExtensionSpecifics(extension_expecifics);
 }
-

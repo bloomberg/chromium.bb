@@ -42,11 +42,21 @@ class AppNotifyChannelSetup
     // If successful, |channel_id| will be non-empty. On failure, |channel_id|
     // will be empty and |error| will contain an error to report to the JS
     // callback.
-    virtual void AppNotifyChannelSetupComplete(const std::string& channel_id,
-                                               const std::string& error,
-                                               int return_route_id,
-                                               int callback_id) = 0;
+    virtual void AppNotifyChannelSetupComplete(
+        const std::string& channel_id,
+        const std::string& error,
+        const AppNotifyChannelSetup* setup) = 0;
   };
+
+  // For tests, we allow intercepting the request to setup the channel and
+  // forcing the return of a certain result to the delegate.
+  class InterceptorForTests {
+   public:
+    virtual void DoIntercept(const AppNotifyChannelSetup* setup,
+                             std::string* result_channel_id,
+                             std::string* result_error) = 0;
+  };
+  static void SetInterceptorForTests(InterceptorForTests* interceptor);
 
   // Ownership of |ui| is transferred to this object.
   AppNotifyChannelSetup(Profile* profile,
@@ -68,6 +78,13 @@ class AppNotifyChannelSetup
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Getters for various members.
+  const std::string& extension_id() const { return extension_id_; }
+  const std::string& client_id() const { return client_id_; }
+  int return_route_id() const { return return_route_id_; }
+  int callback_id() const { return callback_id_; }
+
  protected:
   // content::URLFetcherDelegate.
   virtual void OnURLFetchComplete(const content::URLFetcher* source) OVERRIDE;

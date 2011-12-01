@@ -180,8 +180,8 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
           ExtensionAPIPermission::kExperimental) &&
       process_map->Contains(extension->id(), process->GetID());
   if (!allowed) {
-    AppNotifyChannelSetupComplete("", "permission_error", return_route_id,
-                                  callback_id);
+    Send(new ExtensionMsg_GetAppNotifyChannelResponse(
+        return_route_id, "", "permission_error", callback_id));
     return;
   }
 
@@ -202,10 +202,23 @@ void ExtensionTabHelper::OnGetAppNotifyChannel(
 }
 
 void ExtensionTabHelper::AppNotifyChannelSetupComplete(
-    const std::string& client_id, const std::string& error, int return_route_id,
-    int callback_id) {
+    const std::string& channel_id,
+    const std::string& error,
+    const AppNotifyChannelSetup* setup) {
+  CHECK(setup);
+
+  // If the setup was successful, record that fact in ExtensionService.
+  if (!channel_id.empty() && error.empty()) {
+    Profile* profile =
+        Profile::FromBrowserContext(tab_contents()->browser_context());
+    ExtensionService* service = profile->GetExtensionService();
+    if (service->GetExtensionById(setup->extension_id(), true))
+      service->SetAppNotificationSetupDone(setup->extension_id(),
+                                           setup->client_id());
+  }
+
   Send(new ExtensionMsg_GetAppNotifyChannelResponse(
-      return_route_id, client_id, error, callback_id));
+      setup->return_route_id(), channel_id, error, setup->callback_id()));
 }
 
 void ExtensionTabHelper::OnRequest(

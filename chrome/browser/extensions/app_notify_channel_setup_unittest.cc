@@ -71,14 +71,13 @@ class TestDelegate : public AppNotifyChannelSetup::Delegate,
   virtual void AppNotifyChannelSetupComplete(
       const std::string& channel_id,
       const std::string& error,
-      int route_id,
-      int callback_id) OVERRIDE {
+      const AppNotifyChannelSetup* setup) OVERRIDE {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
     EXPECT_FALSE(was_called_);
     was_called_ = true;
     error_ = error;
-    route_id_ = route_id;
-    callback_id_ = callback_id;
+    route_id_ = setup->return_route_id();
+    callback_id_ = setup->callback_id();
     MessageLoop::current()->Quit();
   }
 

@@ -45,8 +45,8 @@ const char kPrefVersion[] = "manifest.version";
 // Indicates whether an extension is blacklisted.
 const char kPrefBlacklist[] = "blacklist";
 
-// Indicates whether the user has done app notifications setup or not.
-const char kPrefAppNotificationSetup[] = "app_notif_setup";
+// The oauth client id used for app notification setup.
+const char kPrefAppNotificationClientId[] = "app_notif_client_id";
 
 // Indicates whether the user has disabled notifications or not.
 const char kPrefAppNotificationDisbaled[] = "app_notif_disabled";
@@ -592,18 +592,23 @@ bool ExtensionPrefs::SetAlertSystemFirstRun() {
   return false;
 }
 
-bool ExtensionPrefs::IsAppNotificationSetupDone(
+std::string ExtensionPrefs::GetAppNotificationClientId(
     const std::string& extension_id) const {
-  return ReadExtensionPrefBoolean(
-      extension_id, kPrefAppNotificationSetup);
+  const DictionaryValue* dict = GetExtensionPref(extension_id);
+  if (!dict || !dict->HasKey(kPrefAppNotificationClientId))
+    return std::string();
+
+  std::string tmp;
+  dict->GetString(kPrefAppNotificationClientId, &tmp);
+  return tmp;
 }
 
-void ExtensionPrefs::SetAppNotificationSetupDone(
+void ExtensionPrefs::SetAppNotificationClientId(
     const std::string& extension_id,
-    bool value) {
+    const std::string& oauth_client_id) {
   DCHECK(Extension::IdIsValid(extension_id));
-  UpdateExtensionPref(extension_id, kPrefAppNotificationSetup,
-                      Value::CreateBooleanValue(value));
+  UpdateExtensionPref(extension_id, kPrefAppNotificationClientId,
+                      Value::CreateStringValue(oauth_client_id));
 }
 
 bool ExtensionPrefs::IsAppNotificationDisabled(

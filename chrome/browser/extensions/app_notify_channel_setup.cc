@@ -31,6 +31,7 @@ using content::BrowserThread;
 using content::URLFetcher;
 
 namespace {
+
 static const char kChannelSetupAuthError[] = "unauthorized";
 static const char kChannelSetupInternalError[] = "internal_error";
 static const char kChannelSetupCanceledByUser[] = "canceled_by_user";
@@ -55,7 +56,19 @@ static const char* kRelevantGaiaServices[] = {
   GaiaConstants::kLSOService,
 };
 static const int kRelevantGaiaServicesCount = arraysize(kRelevantGaiaServices);
+
+static AppNotifyChannelSetup::InterceptorForTests* g_interceptor_for_tests =
+    NULL;
+
 }  // namespace.
+
+// static
+void AppNotifyChannelSetup::SetInterceptorForTests(
+    AppNotifyChannelSetup::InterceptorForTests* interceptor) {
+  // Only one interceptor at a time, please.
+  CHECK(g_interceptor_for_tests == NULL);
+  g_interceptor_for_tests = interceptor;
+}
 
 AppNotifyChannelSetup::AppNotifyChannelSetup(
     Profile* profile,
@@ -81,6 +94,13 @@ AppNotifyChannelSetup::AppNotifyChannelSetup(
 AppNotifyChannelSetup::~AppNotifyChannelSetup() {}
 
 void AppNotifyChannelSetup::Start() {
+  if (g_interceptor_for_tests) {
+    std::string channel_id;
+    std::string error;
+    g_interceptor_for_tests->DoIntercept(this, &channel_id, &error);
+    delegate_->AppNotifyChannelSetupComplete(channel_id, error, this);
+    return;
+  }
   AddRef();  // Balanced in ReportResult.
   BeginLogin();
 }
@@ -317,8 +337,7 @@ void AppNotifyChannelSetup::ReportResult(
   CHECK(state_ == CHANNEL_ID_SETUP_DONE || state_ == ERROR_STATE);
 
   if (delegate_.get()) {
-    delegate_->AppNotifyChannelSetupComplete(
-        channel_id, error, return_route_id_, callback_id_);
+    delegate_->AppNotifyChannelSetupComplete(channel_id, error, this);
   }
   Release(); // Matches AddRef in Start.
 }
