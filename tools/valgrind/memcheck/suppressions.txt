@@ -5285,6 +5285,15 @@
    fun:_ZN16RenderThreadImpl26IdleHandlerInForegroundTabEv
    fun:_ZN16RenderThreadImpl11IdleHandlerEv
 }
+{
+   bug_106104
+   Memcheck:Unaddressable
+   ...
+   fun:_ZN3WTF14deleteOwnedPtrIN7WebCore27InspectorBaseAgentInterfaceEEEvPT_
+   fun:_ZN3WTF6OwnPtrIN7WebCore27InspectorBaseAgentInterfaceEED1Ev
+   fun:_ZN3WTF16VectorDestructorILb1ENS_6OwnPtrIN7WebCore27InspectorBaseAgentInterfaceEEEE8destructEPS4_S6_
+   fun:_ZN3WTF20VectorTypeOperationsINS_6OwnPtrIN7WebCore27InspectorBaseAgentInterfaceEEEE8destructEPS4_S6_
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
