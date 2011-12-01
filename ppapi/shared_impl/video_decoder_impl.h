@@ -59,13 +59,13 @@ class PPAPI_SHARED_EXPORT VideoDecoderImpl
   PP_CompletionCallback reset_callback_;
   CallbackById bitstream_buffer_callbacks_;
 
-  // The resource ID of the underlying Context3d object being used.  Used only
+  // The resource ID of the underlying Graphics3D object being used.  Used only
   // for reference counting to keep it alive for the lifetime of |*this|.
   PP_Resource graphics_context_;
 
-  // Reference to the GLES2Implementation owned by |context3d_id_|.
-  // Context3D is guaranteed to be alive for the lifetime of this class.
-  // In the out-of-process case, Context3D's gles2_impl() exists in the plugin
+  // Reference to the GLES2Implementation owned by |graphics_context_|.
+  // Graphics3D is guaranteed to be alive for the lifetime of this class.
+  // In the out-of-process case, Graphics3D's gles2_impl() exists in the plugin
   // process only, so gles2_impl_ is NULL in that case.
   gpu::gles2::GLES2Implementation* gles2_impl_;
 

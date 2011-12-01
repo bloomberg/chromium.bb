@@ -3,25 +3,12 @@
  * found in the LICENSE file.
  */
 
-/* From pp_graphics_3d.idl modified Tue Nov 29 12:56:32 2011. */
-
-#ifndef PPAPI_C_PP_GRAPHICS_3D_H_
-#define PPAPI_C_PP_GRAPHICS_3D_H_
-
-#include "ppapi/c/pp_macros.h"
-
 /**
- * @file
  * This file defines the <code>PP_Graphics3DAttrib</code> enumeration for use in
  * PPAPI C headers.
  */
 
-
-/**
- * @addtogroup Enums
- * @{
- */
-typedef enum {
+[assert_size(4)] enum PP_Graphics3DAttrib {
   /**
    * Bits of Alpha in the color buffer.
    */
@@ -79,11 +66,4 @@ typedef enum {
    * Indicates that color buffer contents may be destroyed or changed.
    */
   PP_GRAPHICS3DATTRIB_BUFFER_DESTROYED = 0x3095
-} PP_Graphics3DAttrib;
-PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_Graphics3DAttrib, 4);
-/**
- * @}
- */
-
-#endif  /* PPAPI_C_PP_GRAPHICS_3D_H_ */
-
+};

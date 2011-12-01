@@ -10,7 +10,6 @@
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
-#include "ppapi/proxy/ppb_context_3d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/resource_creation_api.h"
@@ -18,7 +17,6 @@
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
-using ppapi::thunk::PPB_Context3D_API;
 using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_VideoDecoder_API;
 
@@ -195,34 +193,23 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
   if (!dispatcher)
     return 0;
 
-  HostResource host_context;
-  gpu::gles2::GLES2Implementation* gles2_impl = NULL;
+  EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context,
+                                                        true);
+  if (enter_context.failed())
+    return 0;
 
-  EnterResourceNoLock<PPB_Context3D_API> enter_context(graphics_context, false);
-  if (enter_context.succeeded()) {
-    Context3D* context = static_cast<Context3D*>(enter_context.object());
-    host_context = context->host_resource();
-    gles2_impl = context->gles2_impl();
-  } else {
-    EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context,
-                                                          true);
-    if (enter_context.failed())
-      return 0;
-    Graphics3D* context = static_cast<Graphics3D*>(enter_context.object());
-    host_context = context->host_resource();
-    gles2_impl = context->gles2_impl();
-  }
+  Graphics3D* context = static_cast<Graphics3D*>(enter_context.object());
 
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBVideoDecoder_Create(
       API_ID_PPB_VIDEO_DECODER_DEV, instance,
-      host_context, profile, &result));
+      context->host_resource(), profile, &result));
   if (result.is_null())
     return 0;
 
   // Need a scoped_refptr to keep the object alive during the Init call.
   scoped_refptr<VideoDecoder> decoder(new VideoDecoder(result));
-  decoder->InitCommon(graphics_context, gles2_impl);
+  decoder->InitCommon(graphics_context, context->gles2_impl());
   return decoder->GetReference();
 }
 

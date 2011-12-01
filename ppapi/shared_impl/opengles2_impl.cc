@@ -12,7 +12,6 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/shared_impl/graphics_3d_impl.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/ppb_context_3d_api.h"
 
 namespace ppapi {
 
@@ -20,13 +19,8 @@ namespace {
 
 gpu::gles2::GLES2Implementation* GetGLES(PP_Resource context) {
   thunk::EnterResource<thunk::PPB_Graphics3D_API> enter_g3d(context, false);
-  if (enter_g3d.succeeded()) {
-    return static_cast<Graphics3DImpl*>(enter_g3d.object())->gles2_impl();
-  } else {
-    thunk::EnterResource<thunk::PPB_Context3D_API> enter_c3d(context, true);
-    DCHECK(enter_c3d.succeeded());
-    return enter_c3d.object()->GetGLES2Impl();
-  }
+  DCHECK(enter_g3d.succeeded());
+  return static_cast<Graphics3DImpl*>(enter_g3d.object())->gles2_impl();
 }
 
 void ActiveTexture(PP_Resource context_id, GLenum texture) {

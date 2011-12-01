@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_decoder_dev.idl modified Wed Oct  5 09:00:09 2011. */
+/* From dev/ppb_video_decoder_dev.idl modified Tue Nov 29 11:27:39 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_VIDEO_DECODER_DEV_H_
 #define PPAPI_C_DEV_PPB_VIDEO_DECODER_DEV_H_
@@ -55,7 +55,7 @@ struct PPB_VideoDecoder_Dev {
    *
    * Parameters:
    *   |instance| pointer to the plugin instance.
-   *   |context_3d| a PPB_Context3D_Dev resource in which decoding will happen.
+   *   |context| a PPB_Graphics3D resource in which decoding will happen.
    *   |profile| the video stream's format profile.
    *
    * The created decoder is returned as PP_Resource. 0 means failure.

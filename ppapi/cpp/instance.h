@@ -24,7 +24,6 @@ class Graphics2D;
 class Graphics3D;
 class InputEvent;
 class Rect;
-class Surface3D_Dev;
 class URLLoader;
 class Var;
 
@@ -277,17 +276,6 @@ class Instance {
   /// correct type. On success, a reference to the device will be held by the
   /// instance, so the caller can release its reference if it chooses.
   bool BindGraphics(const Graphics3D& graphics);
-
-  /// Binds the given Surface3D as the current display surface.
-  /// Refer to <code>BindGraphics(const Graphics2D& graphics)</code> for
-  /// further information.
-  ///
-  /// @param[in] graphics A <code>Surface3D_Dev</code> to bind.
-  ///
-  /// @return true if bind was successful or false if the device was not the
-  /// correct type. On success, a reference to the device will be held by the
-  /// instance, so the caller can release its reference if it chooses.
-  bool BindGraphics(const Surface3D_Dev& graphics);
 
   /// IsFullFrame() determines if the instance is full-frame (repr).
   /// Such an instance represents the entire document in a frame rather than an

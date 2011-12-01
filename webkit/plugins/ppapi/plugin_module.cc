@@ -17,8 +17,6 @@
 #include "ppapi/c/dev/ppb_buffer_dev.h"
 #include "ppapi/c/dev/ppb_char_set_dev.h"
 #include "ppapi/c/dev/ppb_console_dev.h"
-#include "ppapi/c/dev/ppb_context_3d_dev.h"
-#include "ppapi/c/dev/ppb_context_3d_trusted_dev.h"
 #include "ppapi/c/dev/ppb_crypto_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_directory_reader_dev.h"
@@ -30,7 +28,6 @@
 #include "ppapi/c/dev/ppb_layer_compositor_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
-#include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_text_input_dev.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
@@ -283,8 +280,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_AudioTrusted_Thunk();
   if (strcmp(name, PPB_BUFFER_TRUSTED_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_BufferTrusted_Thunk();
-  if (strcmp(name, PPB_CONTEXT_3D_TRUSTED_DEV_INTERFACE) == 0)
-    return ::ppapi::thunk::GetPPB_Context3DTrusted_Thunk();
   if (strcmp(name, PPB_CORE_INTERFACE) == 0)
     return &core_interface;
   if (strcmp(name, PPB_FILEIOTRUSTED_INTERFACE) == 0)
@@ -305,8 +300,6 @@ const void* GetInterface(const char* name) {
     return ::ppapi::thunk::GetPPB_Flash_Menu_Thunk();
   if (strcmp(name, PPB_FLASH_TCPSOCKET_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_TCPSocket_Private_Thunk();
-  if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE_0_4) == 0)
-    return ::ppapi::thunk::GetPPB_FlashFullscreen_Thunk();
   if (strcmp(name, PPB_FULLSCREEN_DEV_INTERFACE) == 0)
     return ::ppapi::thunk::GetPPB_Fullscreen_Thunk();
   if (strcmp(name, PPB_GPU_BLACKLIST_INTERFACE) == 0)

@@ -35,7 +35,7 @@ interface PPB_VideoDecoder_Dev {
    *
    * Parameters:
    *   |instance| pointer to the plugin instance.
-   *   |context_3d| a PPB_Context3D_Dev resource in which decoding will happen.
+   *   |context| a PPB_Graphics3D resource in which decoding will happen.
    *   |profile| the video stream's format profile.
    *
    * The created decoder is returned as PP_Resource. 0 means failure.

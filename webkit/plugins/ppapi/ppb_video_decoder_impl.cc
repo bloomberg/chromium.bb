@@ -21,13 +21,11 @@
 #include "webkit/plugins/ppapi/plugin_module.h"
 #include "webkit/plugins/ppapi/ppapi_plugin_instance.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
-#include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/resource_helper.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Buffer_API;
-using ppapi::thunk::PPB_Context3D_API;
 using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_VideoDecoder_API;
 
@@ -64,28 +62,16 @@ PP_Resource PPB_VideoDecoder_Impl::Create(
     PP_Instance instance,
     PP_Resource graphics_context,
     PP_VideoDecoder_Profile profile) {
-  PluginDelegate::PlatformContext3D* platform_context = NULL;
-  gpu::gles2::GLES2Implementation* gles2_impl = NULL;
-  EnterResourceNoLock<PPB_Context3D_API> enter_context(graphics_context, false);
-  if (enter_context.succeeded()) {
-    PPB_Context3D_Impl* context3d_impl =
-        static_cast<PPB_Context3D_Impl*>(enter_context.object());
-    platform_context = context3d_impl->platform_context();
-    gles2_impl = context3d_impl->gles2_impl();
-  } else {
-    EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context,
-                                                          true);
-    if (enter_context.failed())
-      return 0;
-    PPB_Graphics3D_Impl* graphics3d_impl =
-        static_cast<PPB_Graphics3D_Impl*>(enter_context.object());
-    platform_context = graphics3d_impl->platform_context();
-    gles2_impl = graphics3d_impl->gles2_impl();
-  }
+  EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context, true);
+  if (enter_context.failed())
+    return 0;
+  PPB_Graphics3D_Impl* graphics3d_impl =
+      static_cast<PPB_Graphics3D_Impl*>(enter_context.object());
 
   scoped_refptr<PPB_VideoDecoder_Impl> decoder(
       new PPB_VideoDecoder_Impl(instance));
-  if (decoder->Init(graphics_context, platform_context, gles2_impl, profile))
+  if (decoder->Init(graphics_context, graphics3d_impl->platform_context(),
+                    graphics3d_impl->gles2_impl(), profile))
     return decoder->GetReference();
   return 0;
 }

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash_fullscreen.idl modified Fri Aug 26 10:51:16 2011. */
+/* From private/ppb_flash_fullscreen.idl modified Tue Nov 29 11:39:26 2011. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_
@@ -18,17 +18,10 @@
 #define PPB_FLASHFULLSCREEN_INTERFACE PPB_FLASHFULLSCREEN_INTERFACE_0_1
 
 /**
- * PPB_Fullscreen is a copy of PPB_Fullscreen_Dev at rev 0.4.
- * For backward compatibility keep the string for it until Flash is updated to
- * use PPB_FlashFullscreen.
- */
-#define PPB_FULLSCREEN_DEV_INTERFACE_0_4 "PPB_Fullscreen(Dev);0.4"
-
-
-/**
  * @file
  * This file defines the <code>PPB_FlashFullscreen</code> interface.
  */
+
 
 /**
  * @addtogroup Interfaces
@@ -43,16 +36,16 @@ struct PPB_FlashFullscreen {
    * Switches the plugin instance to/from fullscreen mode. Returns PP_TRUE on
    * success, PP_FALSE on failure.
    *
-   * This unbinds the current Graphics2D or Surface3D. Pending flushes and
+   * This unbinds the current Graphics2D or Graphics3D. Pending flushes and
    * swapbuffers will execute as if the resource was off-screen. The transition
    * is asynchronous. During the transition, IsFullscreen will return PP_FALSE,
-   * and no Graphics2D or Surface3D can be bound. The transition ends at the
+   * and no Graphics2D or Graphics3D can be bound. The transition ends at the
    * next DidChangeView when going into fullscreen mode. The transition out of
    * fullscreen mode is synchronous.
    *
-   * Note: when switching to and from fullscreen, Context3D and Surface3D
-   * resources need to be re-created. This is a current limitation that will be
-   * lifted in a later revision.
+   * Note: when switching to and from fullscreen, Graphics3D resources need to
+   * be re-created. This is a current limitation that will be lifted in a later
+   * revision.
    */
   PP_Bool (*SetFullscreen)(PP_Instance instance, PP_Bool fullscreen);
   /**
@@ -66,3 +59,4 @@ struct PPB_FlashFullscreen {
  */
 
 #endif  /* PPAPI_C_PRIVATE_PPB_FLASH_FULLSCREEN_H_ */
+

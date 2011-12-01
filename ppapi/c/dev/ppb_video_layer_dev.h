@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_video_layer_dev.idl modified Wed Oct  5 09:15:37 2011. */
+/* From dev/ppb_video_layer_dev.idl modified Tue Nov 29 11:43:36 2011. */
 
 #ifndef PPAPI_C_DEV_PPB_VIDEO_LAYER_DEV_H_
 #define PPAPI_C_DEV_PPB_VIDEO_LAYER_DEV_H_
@@ -68,9 +68,9 @@ PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_VideoLayerMode_Dev, 4);
  */
 /**
  * PPB_VideoLayer is a mechanism to enhance rendering performance of video
- * content. Rendering is generally done by using PPB_Context3D or
+ * content. Rendering is generally done by using PPB_Graphics3D or
  * PPB_Graphics2D, however for video content it is redundant to go through
- * PPB_Context3D or PPB_Graphics2D. PPB_VideoLayer allows video content to be
+ * PPB_Graphics3D or PPB_Graphics2D. PPB_VideoLayer allows video content to be
  * rendered directly.
  *
  * PPB_VideoLayer can be used in two modes:

@@ -24,7 +24,6 @@
   F(PPB_Broker_API) \
   F(PPB_Buffer_API) \
   F(PPB_BufferTrusted_API) \
-  F(PPB_Context3D_API) \
   F(PPB_DirectoryReader_API) \
   F(PPB_FileChooser_API) \
   F(PPB_FileIO_API) \
@@ -41,7 +40,6 @@
   F(PPB_LayerCompositor_API) \
   F(PPB_PDFFont_API) \
   F(PPB_Scrollbar_API) \
-  F(PPB_Surface3D_API) \
   F(PPB_TCPSocket_Private_API) \
   F(PPB_Transport_API) \
   F(PPB_UDPSocket_Private_API) \

@@ -20,9 +20,4 @@ PROXIED_IFACE(PPB_TCPSocket_Private, PPB_TCPSOCKET_PRIVATE_INTERFACE,
 PROXIED_IFACE(PPB_UDPSocket_Private, PPB_UDPSOCKET_PRIVATE_INTERFACE,
               PPB_UDPSocket_Private)
 
-// Map the old fullscreen interface string to the Flash one, which is the same
-// at the ABI level. TODO(polina): remove this when Flash is updated.
-PROXIED_IFACE(PPB_Instance, PPB_FULLSCREEN_DEV_INTERFACE_0_4,
-              PPB_FlashFullscreen)
-
 #include "ppapi/thunk/interfaces_postamble.h"

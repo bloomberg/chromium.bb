@@ -1435,6 +1435,7 @@ _FUNCTION_INFO = {
     'get_len_func': 'DoGetShaderiv',
     'get_len_enum': 'GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE',
     'unit_test': False,
+    'extension': True,
     },
   'GetUniformfv': {
     'type': 'Custom',
@@ -5689,7 +5690,8 @@ class GLGenerator(object):
     """Writes the gles2 common utility header."""
     enum_re = re.compile(r'\#define\s+(GL_[a-zA-Z0-9_]+)\s+([0-9A-Fa-fx]+)')
     dict = {}
-    for fname in ['../GLES2/gl2.h', '../GLES2/gl2ext.h']:
+    for fname in ['../../third_party/khronos/GLES2/gl2.h',
+                  '../../third_party/khronos/GLES2/gl2ext.h']:
       lines = open(fname).readlines()
       for line in lines:
         m = enum_re.match(line)
@@ -5779,21 +5781,18 @@ const size_t GLES2Util::enum_to_string_table_len_ =
     file.Write("#include \"base/logging.h\"\n")
     file.Write("#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
     file.Write("#include \"ppapi/shared_impl/graphics_3d_impl.h\"\n")
-    file.Write("#include \"ppapi/thunk/enter.h\"\n")
-    file.Write("#include \"ppapi/thunk/ppb_context_3d_api.h\"\n\n")
+    file.Write("#include \"ppapi/thunk/enter.h\"\n\n")
 
     file.Write("namespace ppapi {\n\n")
     file.Write("namespace {\n\n")
 
-    file.Write("gpu::gles2::GLES2Implementation* GetGLES(PP_Resource context) {\n")
-    file.Write("  thunk::EnterResource<thunk::PPB_Graphics3D_API> enter_g3d(context, false);\n")
-    file.Write("  if (enter_g3d.succeeded()) {\n")
-    file.Write("    return static_cast<Graphics3DImpl*>(enter_g3d.object())->gles2_impl();\n")
-    file.Write("  } else {\n")
-    file.Write("    thunk::EnterResource<thunk::PPB_Context3D_API> enter_c3d(context, true);\n")
-    file.Write("    DCHECK(enter_c3d.succeeded());\n")
-    file.Write("    return enter_c3d.object()->GetGLES2Impl();\n")
-    file.Write("  }\n")
+    file.Write("gpu::gles2::GLES2Implementation*"
+               " GetGLES(PP_Resource context) {\n")
+    file.Write("  thunk::EnterResource<thunk::PPB_Graphics3D_API>"
+               " enter_g3d(context, false);\n")
+    file.Write("  DCHECK(enter_g3d.succeeded());\n")
+    file.Write("  return static_cast<Graphics3DImpl*>"
+               "(enter_g3d.object())->gles2_impl();\n")
     file.Write("}\n\n")
 
     for func in self.original_functions:

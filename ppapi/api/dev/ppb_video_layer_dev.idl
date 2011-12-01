@@ -43,9 +43,9 @@ enum PP_VideoLayerMode_Dev {
 
 /**
  * PPB_VideoLayer is a mechanism to enhance rendering performance of video
- * content. Rendering is generally done by using PPB_Context3D or
+ * content. Rendering is generally done by using PPB_Graphics3D or
  * PPB_Graphics2D, however for video content it is redundant to go through
- * PPB_Context3D or PPB_Graphics2D. PPB_VideoLayer allows video content to be
+ * PPB_Graphics3D or PPB_Graphics2D. PPB_VideoLayer allows video content to be
  * rendered directly.
  *
  * PPB_VideoLayer can be used in two modes:

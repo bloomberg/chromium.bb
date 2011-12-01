@@ -14,7 +14,6 @@
 #include "ppapi/proxy/ppb_audio_proxy.h"
 #include "ppapi/proxy/ppb_buffer_proxy.h"
 #include "ppapi/proxy/ppb_broker_proxy.h"
-#include "ppapi/proxy/ppb_context_3d_proxy.h"
 #include "ppapi/proxy/ppb_file_chooser_proxy.h"
 #include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/ppb_file_system_proxy.h"
@@ -24,7 +23,6 @@
 #include "ppapi/proxy/ppb_graphics_2d_proxy.h"
 #include "ppapi/proxy/ppb_graphics_3d_proxy.h"
 #include "ppapi/proxy/ppb_image_data_proxy.h"
-#include "ppapi/proxy/ppb_surface_3d_proxy.h"
 #include "ppapi/proxy/ppb_tcp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_udp_socket_private_proxy.h"
 #include "ppapi/proxy/ppb_url_loader_proxy.h"
@@ -107,25 +105,6 @@ PP_Resource ResourceCreationProxy::CreateBroker(PP_Instance instance) {
 PP_Resource ResourceCreationProxy::CreateBuffer(PP_Instance instance,
                                                 uint32_t size) {
   return PPB_Buffer_Proxy::CreateProxyResource(instance, size);
-}
-
-PP_Resource ResourceCreationProxy::CreateContext3D(
-    PP_Instance instance,
-    PP_Config3D_Dev config,
-    PP_Resource share_context,
-    const int32_t* attrib_list) {
-  return PPB_Context3D_Proxy::Create(instance, config, share_context,
-                                     attrib_list);
-}
-
-PP_Resource ResourceCreationProxy::CreateContext3DRaw(
-    PP_Instance instance,
-    PP_Config3D_Dev config,
-    PP_Resource share_context,
-    const int32_t* attrib_list) {
-  // Not proxied. The raw creation function is used only in the implementation
-  // of the proxy on the host side.
-  return 0;
 }
 
 PP_Resource ResourceCreationProxy::CreateDirectoryReader(
@@ -289,15 +268,6 @@ PP_Resource ResourceCreationProxy::CreateScrollbar(PP_Instance instance,
   NOTIMPLEMENTED();  // Not proxied yet.
   return 0;
 }
-
-PP_Resource ResourceCreationProxy::CreateSurface3D(
-    PP_Instance instance,
-    PP_Config3D_Dev config,
-    const int32_t* attrib_list) {
-  return PPB_Surface3D_Proxy::CreateProxyResource(instance, config,
-                                                  attrib_list);
-}
-
 
 PP_Resource ResourceCreationProxy::CreateTCPSocketPrivate(
     PP_Instance instance) {

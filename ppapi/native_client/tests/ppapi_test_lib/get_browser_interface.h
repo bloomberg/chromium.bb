@@ -13,7 +13,6 @@
 // versions explicitly in all interfaces.
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
 
-struct PPB_Context3D_Dev;
 struct PPB_Core;
 struct PPB_CursorControl_Dev;
 struct PPB_FileIO;
@@ -31,7 +30,6 @@ struct PPB_Memory_Dev;
 struct PPB_Messaging;
 struct PPB_MouseInputEvent;
 struct PPB_OpenGLES2;
-struct PPB_Surface3D_Dev;
 struct PPB_Testing_Dev;
 struct PPB_URLLoader;
 struct PPB_URLRequestInfo;
@@ -75,12 +73,10 @@ const PPB_WheelInputEvent* PPBWheelInputEvent();
 // Lookup returns NULL if the interface is not available.
 //
 
-const PPB_Context3D_Dev* PPBContext3DDev();
 const PPB_CursorControl_Dev* PPBCursorControlDev();
 const PPB_Font_Dev* PPBFontDev();
 const PPB_Memory_Dev* PPBMemoryDev();
 const PPB_Scrollbar_Dev* PPBScrollbarDev();
-const PPB_Surface3D_Dev* PPBSurface3DDev();
 const PPB_Testing_Dev* PPBTestingDev();
 const PPB_Widget_Dev* PPBWidgetDev();
 

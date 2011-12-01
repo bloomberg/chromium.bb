@@ -55,14 +55,6 @@ class ResourceCreationProxy : public InterfaceProxy,
   virtual PP_Resource CreateBroker(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateBuffer(PP_Instance instance,
                                    uint32_t size) OVERRIDE;
-  virtual PP_Resource CreateContext3D(PP_Instance instance,
-                                      PP_Config3D_Dev config,
-                                      PP_Resource share_context,
-                                      const int32_t* attrib_list) OVERRIDE;
-  virtual PP_Resource CreateContext3DRaw(PP_Instance instance,
-                                         PP_Config3D_Dev config,
-                                         PP_Resource share_context,
-                                         const int32_t* attrib_list) OVERRIDE;
   virtual PP_Resource CreateDirectoryReader(PP_Resource directory_ref) OVERRIDE;
   virtual PP_Resource CreateFileChooser(
       PP_Instance instance,
@@ -110,9 +102,6 @@ class ResourceCreationProxy : public InterfaceProxy,
       const PP_Point* mouse_movement) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;
-  virtual PP_Resource CreateSurface3D(PP_Instance instance,
-                                      PP_Config3D_Dev config,
-                                      const int32_t* attrib_list) OVERRIDE;
   virtual PP_Resource CreateTCPSocketPrivate(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreateTransport(PP_Instance instance,
                                       const char* name,

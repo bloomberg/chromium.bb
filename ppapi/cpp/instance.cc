@@ -8,7 +8,6 @@
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
 #include "ppapi/c/ppb_messaging.h"
-#include "ppapi/cpp/dev/surface_3d_dev.h"
 #include "ppapi/cpp/graphics_2d.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/image_data.h"
@@ -83,13 +82,6 @@ bool Instance::BindGraphics(const Graphics2D& graphics) {
 }
 
 bool Instance::BindGraphics(const Graphics3D& graphics) {
-  if (!has_interface<PPB_Instance>())
-    return false;
-  return PP_ToBool(get_interface<PPB_Instance>()->BindGraphics(
-      pp_instance(), graphics.pp_resource()));
-}
-
-bool Instance::BindGraphics(const Surface3D_Dev& graphics) {
   if (!has_interface<PPB_Instance>())
     return false;
   return PP_ToBool(get_interface<PPB_Instance>()->BindGraphics(

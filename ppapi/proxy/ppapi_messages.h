@@ -313,11 +313,6 @@ IPC_MESSAGE_ROUTED2(PpapiMsg_PPBInstance_MouseLockComplete,
                     PP_Instance /* instance */,
                     int32_t /* result */)
 
-// PPB_Surface3D.
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPBSurface3D_SwapBuffersACK,
-                    ppapi::HostResource /* surface_3d */,
-                    int32_t /* pp_error */)
-
 // PPP_Class.
 IPC_SYNC_MESSAGE_ROUTED3_2(PpapiMsg_PPPClass_HasProperty,
                            int64 /* ppp_class */,
@@ -521,53 +516,6 @@ IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBBuffer_Create,
                            uint32_t /* size */,
                            ppapi::HostResource /* result_resource */,
                            base::SharedMemoryHandle /* result_shm_handle */)
-
-// PPB_Context3D.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBContext3D_Create,
-                           PP_Instance /* instance */,
-                           int32_t /* config */,
-                           std::vector<int32_t> /* attrib_list */,
-                           ppapi::HostResource /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBContext3D_BindSurfaces,
-                           ppapi::HostResource /* context */,
-                           ppapi::HostResource /* draw */,
-                           ppapi::HostResource /* read */,
-                           int32_t /* result */)
-
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBContext3D_Initialize,
-                           ppapi::HostResource /* context */,
-                           int32 /* size */,
-                           base::SharedMemoryHandle /* ring_buffer */)
-
-IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBContext3D_GetState,
-                           ppapi::HostResource /* context */,
-                           gpu::CommandBuffer::State /* state */)
-
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBContext3D_Flush,
-                           ppapi::HostResource /* context */,
-                           int32 /* put_offset */,
-                           int32 /* last_known_get */,
-                           gpu::CommandBuffer::State /* state */)
-
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBContext3D_AsyncFlush,
-                    ppapi::HostResource /* context */,
-                    int32 /* put_offset */)
-
-IPC_SYNC_MESSAGE_ROUTED2_1(PpapiHostMsg_PPBContext3D_CreateTransferBuffer,
-                           ppapi::HostResource /* context */,
-                           int32 /* size */,
-                           int32 /* id */)
-
-IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBContext3D_DestroyTransferBuffer,
-                           ppapi::HostResource /* context */,
-                           int32 /* id */)
-
-IPC_SYNC_MESSAGE_ROUTED2_2(PpapiHostMsg_PPBContext3D_GetTransferBuffer,
-                           ppapi::HostResource /* context */,
-                           int32 /* id */,
-                           base::SharedMemoryHandle /* transfer_buffer */,
-                           uint32 /* size */)
 
 // PPB_Core.
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource,
@@ -957,15 +905,6 @@ IPC_SYNC_MESSAGE_ROUTED2_1(
     ppapi::HostResource /* font_file */,
     uint32_t /* table */,
     std::string /* result */)
-
-// PPB_Surface3D.
-IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBSurface3D_Create,
-                           PP_Instance /* instance */,
-                           int32_t /* config */,
-                           std::vector<int32_t> /* attrib_list */,
-                           ppapi::HostResource /* result */)
-IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBSurface3D_SwapBuffers,
-                    ppapi::HostResource /* surface_3d */)
 
 // PPB_Testing.
 IPC_SYNC_MESSAGE_ROUTED3_1(

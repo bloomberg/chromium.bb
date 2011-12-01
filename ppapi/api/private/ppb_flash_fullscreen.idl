@@ -23,16 +23,16 @@ interface PPB_FlashFullscreen {
    * Switches the plugin instance to/from fullscreen mode. Returns PP_TRUE on
    * success, PP_FALSE on failure.
    *
-   * This unbinds the current Graphics2D or Surface3D. Pending flushes and
+   * This unbinds the current Graphics2D or Graphics3D. Pending flushes and
    * swapbuffers will execute as if the resource was off-screen. The transition
    * is asynchronous. During the transition, IsFullscreen will return PP_FALSE,
-   * and no Graphics2D or Surface3D can be bound. The transition ends at the
+   * and no Graphics2D or Graphics3D can be bound. The transition ends at the
    * next DidChangeView when going into fullscreen mode. The transition out of
    * fullscreen mode is synchronous.
    *
-   * Note: when switching to and from fullscreen, Context3D and Surface3D
-   * resources need to be re-created. This is a current limitation that will be
-   * lifted in a later revision.
+   * Note: when switching to and from fullscreen, Graphics3D resources need to
+   * be re-created. This is a current limitation that will be lifted in a later
+   * revision.
    */
   PP_Bool SetFullscreen(
       [in] PP_Instance instance,

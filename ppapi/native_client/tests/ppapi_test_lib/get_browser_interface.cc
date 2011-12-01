@@ -4,12 +4,10 @@
 
 #include "native_client/src/shared/platform/nacl_check.h"
 
-#include "ppapi/c/dev/ppb_context_3d_dev.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
 #include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_memory_dev.h"
 #include "ppapi/c/dev/ppb_scrollbar_dev.h"
-#include "ppapi/c/dev/ppb_surface_3d_dev.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/dev/ppb_var_deprecated.h"
 #include "ppapi/c/dev/ppb_widget_dev.h"
@@ -145,12 +143,6 @@ const PPB_WheelInputEvent* PPBWheelInputEvent() {
 
 // Dev interfaces.
 
-const PPB_Context3D_Dev* PPBContext3DDev() {
-  return reinterpret_cast<const PPB_Context3D_Dev*>(
-      // Change to GetBrowserInterfaceSafe when moving out of dev.
-      GetBrowserInterface(PPB_CONTEXT_3D_DEV_INTERFACE));
-}
-
 const PPB_CursorControl_Dev* PPBCursorControlDev() {
   return reinterpret_cast<const PPB_CursorControl_Dev*>(
       // Change to GetBrowserInterfaceSafe when moving out of dev.
@@ -173,12 +165,6 @@ const PPB_Scrollbar_Dev* PPBScrollbarDev() {
   return  reinterpret_cast<const PPB_Scrollbar_Dev*>(
       // Change to GetBrowserInterfaceSafe when moving out of dev.
       GetBrowserInterface(PPB_SCROLLBAR_DEV_INTERFACE));
-}
-
-const PPB_Surface3D_Dev* PPBSurface3DDev() {
-  return  reinterpret_cast<const PPB_Surface3D_Dev*>(
-      // Change to GetBrowserInterfaceSafe when moving out of dev.
-      GetBrowserInterface(PPB_SURFACE_3D_DEV_INTERFACE));
 }
 
 const PPB_Testing_Dev* PPBTestingDev() {

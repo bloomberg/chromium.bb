@@ -74,7 +74,6 @@ class PluginObject;
 class PPB_Graphics2D_Impl;
 class PPB_Graphics3D_Impl;
 class PPB_ImageData_Impl;
-class PPB_Surface3D_Impl;
 class PPB_URLLoader_Impl;
 class PPB_URLRequestInfo_Impl;
 
@@ -415,11 +414,6 @@ class PluginInstance : public base::RefCounted<PluginInstance>,
   // Get the bound 3D graphics context.
   // Returns NULL if bound graphics is not a 3D context.
   PPB_Graphics3D_Impl* GetBoundGraphics3D() const;
-
-  // DEPRECATED: PPB_Surface3D_Impl is being replaced with PPB_Graphics3D_Impl.
-  // Get the bound 3D graphics surface.
-  // Returns NULL if bound graphics is not a 3D surface.
-  PPB_Surface3D_Impl* GetBoundSurface3D() const;
 
   // Sets the id of the texture that the plugin draws to. The id is in the
   // compositor space so it can use it to composite with rest of the page.

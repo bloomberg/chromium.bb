@@ -13,7 +13,6 @@
 #include "webkit/plugins/ppapi/ppb_audio_input_impl.h"
 #include "webkit/plugins/ppapi/ppb_broker_impl.h"
 #include "webkit/plugins/ppapi/ppb_buffer_impl.h"
-#include "webkit/plugins/ppapi/ppb_context_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_directory_reader_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_chooser_impl.h"
 #include "webkit/plugins/ppapi/ppb_file_io_impl.h"
@@ -26,7 +25,6 @@
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
 #include "webkit/plugins/ppapi/ppb_scrollbar_impl.h"
-#include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_transport_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
@@ -96,24 +94,6 @@ PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {
 PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
                                                uint32_t size) {
   return PPB_Buffer_Impl::Create(instance, size);
-}
-
-PP_Resource ResourceCreationImpl::CreateContext3D(
-    PP_Instance instance,
-    PP_Config3D_Dev config,
-    PP_Resource share_context,
-    const int32_t* attrib_list) {
-  return PPB_Context3D_Impl::Create(instance, config, share_context,
-                                    attrib_list);
-}
-
-PP_Resource ResourceCreationImpl::CreateContext3DRaw(
-    PP_Instance instance,
-    PP_Config3D_Dev config,
-    PP_Resource share_context,
-    const int32_t* attrib_list) {
-  return PPB_Context3D_Impl::CreateRaw(instance, config, share_context,
-                                       attrib_list);
 }
 
 PP_Resource ResourceCreationImpl::CreateDirectoryReader(
@@ -252,14 +232,6 @@ PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
   return PPB_Scrollbar_Impl::Create(instance, PP_ToBool(vertical));
 }
 
-PP_Resource ResourceCreationImpl::CreateSurface3D(
-    PP_Instance instance,
-    PP_Config3D_Dev config,
-    const int32_t* attrib_list) {
-  return PPB_Surface3D_Impl::Create(instance, config, attrib_list);
-}
-
-
 PP_Resource ResourceCreationImpl::CreateTCPSocketPrivate(PP_Instance instance) {
   // Creating TCP socket resource at the renderer side is not supported.
   return 0;
@@ -298,9 +270,9 @@ PP_Resource ResourceCreationImpl::CreateVideoCapture(PP_Instance instance) {
 
 PP_Resource ResourceCreationImpl::CreateVideoDecoder(
     PP_Instance instance,
-    PP_Resource context3d_id,
+    PP_Resource graphics3d_id,
     PP_VideoDecoder_Profile profile) {
-  return PPB_VideoDecoder_Impl::Create(instance, context3d_id, profile);
+  return PPB_VideoDecoder_Impl::Create(instance, graphics3d_id, profile);
 }
 
 PP_Resource ResourceCreationImpl::CreateVideoLayer(PP_Instance instance,

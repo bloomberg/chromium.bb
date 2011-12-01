@@ -8,10 +8,7 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/shared_impl/resource_tracker.h"
-#include "ppapi/thunk/ppb_context_3d_api.h"
 #include "ppapi/thunk/enter.h"
-
-using ppapi::thunk::PPB_Context3D_API;
 
 namespace ppapi {
 

@@ -72,7 +72,6 @@
 #include "webkit/plugins/ppapi/ppb_graphics_2d_impl.h"
 #include "webkit/plugins/ppapi/ppb_graphics_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_image_data_impl.h"
-#include "webkit/plugins/ppapi/ppb_surface_3d_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_loader_impl.h"
 #include "webkit/plugins/ppapi/ppb_url_request_info_impl.h"
 #include "webkit/plugins/ppapi/ppp_pdf.h"
@@ -111,7 +110,6 @@ using ppapi::thunk::PPB_Graphics2D_API;
 using ppapi::thunk::PPB_Graphics3D_API;
 using ppapi::thunk::PPB_ImageData_API;
 using ppapi::thunk::PPB_Instance_FunctionAPI;
-using ppapi::thunk::PPB_Surface3D_API;
 using ppapi::Var;
 using WebKit::WebBindings;
 using WebKit::WebCanvas;
@@ -409,8 +407,6 @@ void PluginInstance::ScrollRect(int dx, int dy, const gfx::Rect& rect) {
 unsigned PluginInstance::GetBackingTextureId() {
   if (GetBoundGraphics3D())
     return GetBoundGraphics3D()->GetBackingTextureId();
-  else if (GetBoundSurface3D())
-    return GetBoundSurface3D()->GetBackingTextureId();
 
   return 0;
 }
@@ -803,8 +799,6 @@ void PluginInstance::ViewInitiatedPaint() {
     GetBoundGraphics2D()->ViewInitiatedPaint();
   else if (GetBoundGraphics3D())
     GetBoundGraphics3D()->ViewInitiatedPaint();
-  else if (GetBoundSurface3D())
-    GetBoundSurface3D()->ViewInitiatedPaint();
 }
 
 void PluginInstance::ViewFlushedPaint() {
@@ -814,8 +808,6 @@ void PluginInstance::ViewFlushedPaint() {
     GetBoundGraphics2D()->ViewFlushedPaint();
   else if (GetBoundGraphics3D())
     GetBoundGraphics3D()->ViewFlushedPaint();
-  else if (GetBoundSurface3D())
-    GetBoundSurface3D()->ViewFlushedPaint();
 }
 
 bool PluginInstance::GetBitmapForOptimizedPluginPaint(
@@ -1544,15 +1536,6 @@ PPB_Graphics3D_Impl* PluginInstance::GetBoundGraphics3D() const {
   return NULL;
 }
 
-PPB_Surface3D_Impl* PluginInstance::GetBoundSurface3D() const {
-  if (bound_graphics_.get() == NULL)
-    return NULL;
-
-  if (bound_graphics_->AsPPB_Surface3D_API())
-    return static_cast<PPB_Surface3D_Impl*>(bound_graphics_.get());
-  return NULL;
-}
-
 void PluginInstance::setBackingTextureId(unsigned int id) {
   // If we have a fullscreen_container_ (under PPB_FlashFullscreen)
   // or desired_fullscreen_state is true (under PPB_Fullscreen),
@@ -1630,8 +1613,6 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
       GetBoundGraphics2D()->BindToInstance(NULL);
     } else if (GetBoundGraphics3D()) {
       GetBoundGraphics3D()->BindToInstance(false);
-    } else if (GetBoundSurface3D()) {
-      GetBoundSurface3D()->BindToInstance(false);
     }
     bound_graphics_ = NULL;
   }
@@ -1655,9 +1636,6 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
   EnterResourceNoLock<PPB_Graphics3D_API> enter_3d(device, false);
   PPB_Graphics3D_Impl* graphics_3d = enter_3d.succeeded() ?
       static_cast<PPB_Graphics3D_Impl*>(enter_3d.object()) : NULL;
-  EnterResourceNoLock<PPB_Surface3D_API> enter_surface_3d(device, false);
-  PPB_Surface3D_Impl* surface_3d = enter_surface_3d.succeeded() ?
-      static_cast<PPB_Surface3D_Impl*>(enter_surface_3d.object()) : NULL;
 
   if (graphics_2d) {
     if (graphics_2d->pp_instance() != pp_instance())
@@ -1678,16 +1656,6 @@ PP_Bool PluginInstance::BindGraphics(PP_Instance instance,
 
     bound_graphics_ = graphics_3d;
     setBackingTextureId(graphics_3d->GetBackingTextureId());
-  } else if (surface_3d) {
-    // Make sure graphics can only be bound to the instance it is
-    // associated with.
-    if (surface_3d->pp_instance() != pp_instance())
-      return PP_FALSE;
-    if (!surface_3d->BindToInstance(true))
-      return PP_FALSE;
-
-    bound_graphics_ = surface_3d;
-    setBackingTextureId(surface_3d->GetBackingTextureId());
   } else {
     // The device is not a valid resource type.
     return PP_FALSE;

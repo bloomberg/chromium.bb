@@ -31,7 +31,6 @@ struct PPB_AudioInputTrusted_Dev;
 struct PPB_AudioTrusted;
 struct PPB_BrokerTrusted;
 struct PPB_BufferTrusted;
-struct PPB_Context3DTrusted_Dev;
 struct PPB_FileChooserTrusted;
 struct PPB_FileIOTrusted;
 struct PPB_FileRefPrivate;
@@ -59,8 +58,6 @@ PPAPI_THUNK_EXPORT const PPB_AudioInputTrusted_Dev*
 PPAPI_THUNK_EXPORT const PPB_AudioTrusted* GetPPB_AudioTrusted_Thunk();
 PPAPI_THUNK_EXPORT const PPB_BrokerTrusted* GetPPB_Broker_Thunk();
 PPAPI_THUNK_EXPORT const PPB_BufferTrusted* GetPPB_BufferTrusted_Thunk();
-PPAPI_THUNK_EXPORT const PPB_Context3DTrusted_Dev*
-    GetPPB_Context3DTrusted_Thunk();
 PPAPI_THUNK_EXPORT const PPB_FileChooserTrusted*
     GetPPB_FileChooser_Trusted_Thunk();
 PPAPI_THUNK_EXPORT const PPB_FileIOTrusted* GetPPB_FileIOTrusted_Thunk();
