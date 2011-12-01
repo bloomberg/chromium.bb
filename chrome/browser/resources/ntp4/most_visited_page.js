@@ -8,6 +8,7 @@ cr.define('ntp4', function() {
   var TilePage = ntp4.TilePage;
 
   /**
+   * A counter for generating unique tile IDs.
    */
   var tileID = 0;
 
@@ -60,6 +61,9 @@ cr.define('ntp4', function() {
           '</span>' +
           '<div class="color-stripe"></div>' +
           '<span class="title"></span>';
+
+      this.querySelector('.close-button').title =
+          templateData.removethumbnailtooltip;
 
       this.tabIndex = -1;
       this.data_ = null;

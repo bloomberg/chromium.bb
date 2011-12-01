@@ -8891,22 +8891,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
                desc="The 'Most Visited' heading on the new tab page">
         Most visited
       </message>
-      <message name="IDS_NEW_TAB_BOOKMARKS_PAGE_TITLE" desc="The 'Bookmarks' title on the new tab page">
-        Bookmarks
-      </message>
-      <message name="IDS_NEW_TAB_BOOKMARKS_MANAGER_LINK_TITLE" desc="The title of the Bookmarks Manager link on the New Tab Page.">
-        Manage bookmarks
-      </message>
-      <message name="IDS_NEW_TAB_BOOKMARKS_SHOW_ALL_LINK_TITLE" desc="The title of the show all bookmarks link on the New Tab Page.">
-        Show all
-      </message>
-      <message name="IDS_NEW_TAB_BOOKMARKS_IMPORT_LINK_TITLE" desc="The title of the Import bookmarks link on the New Tab Page.">
-        Import bookmarks from another browser
-      </message>
-      <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK"
-         desc="The link that restores previously removed thumbnails">
-        Restore all removed thumbnails
-      </message>
       <message name="IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK"
          desc="The link that restores previously removed thumbnails. Context is 'Thumbnail removed. Undo | Restore all'">
         Restore all
@@ -8964,50 +8948,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
          desc="Tooltip text for the button that removes/blacklists the thumbnail. Once removed the thumbnail will not show up on the new tab page again.">
         Don't show on this page
       </message>
-      <message name="IDS_NEW_TAB_PIN_THUMBNAIL_TOOLTIP"
-         desc="Tooltip text for the button that pins the thumbnail. Once pinned the thumbnail will always be shown on the new tab page and it will alwyas be shown in the same position.">
-        Keep on this page
-      </message>
-      <message name="IDS_NEW_TAB_UNPIN_THUMBNAIL_TOOLTIP"
-         desc="Tooltip text for the button that unpins the thumbnail. Once unpinned the thumbnail might not be displayed on the new tab page any more.">
-        Don't keep on this page
-      </message>
-      <message name="IDS_NEW_TAB_SHOW_HIDE_THUMBNAIL_TOOLTIP"
-         desc="Tooltip text for the button that shows and hides the thumbnail.">
-        Thumbnail view
-      </message>
-      <message name="IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP"
-         desc="Tooltip text for the button that shows and hides the list view.">
-        List view
-      </message>
-      <message name="IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP"
-         desc="Tooltip text for the button that shows the menu that hides and shows different sections on the new tab page.">
-        Change page layout
-      </message>
-      <message name="IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION"
-         desc="Notification text to show after the user has made the NTP his/her home page.">
-        Welcome to your home page!
-      </message>
-      <message name="IDS_NEW_TAB_HOME_PAGE_HIDE_NOTIFICATION"
-         desc="The action text to show as the close link for the notification shown after the user has set his/her home page.">
-        Close
-      </message>
-      <message name="IDS_NEW_TAB_MAKE_THIS_HOMEPAGE"
-               desc="Text for link that sets new tab page as home page">
-        Make this my home page
-      </message>
-      <message name="IDS_NEW_TAB_HISTORY"
-               desc="The text of the link that takes the user to the history page. This is shown in the footer.">
-        History
-      </message>
-      <message name="IDS_NEW_TAB_DOWNLOADS"
-               desc="The text of the link that takes the user to the downloads page. This is shown in the footer.">
-        Downloads
-      </message>
-      <message name="IDS_NEW_TAB_HELP"
-               desc="The text of the link that takes the user to the help page. This is shown in the footer.">
-        Help
-      </message>
       <message name="IDS_NEW_TAB_APP_SETTINGS"
                desc="Text for the tooltip that is used for the button that shows the settings for an app icon.">
         Settings
@@ -9023,10 +8963,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NEW_TAB_APP_CREATE_SHORTCUT"
                desc="Text for the button that creates an app shortcut.">
         Create shortcut
-      </message>
-      <message name="IDS_NEW_TAB_WEBSTORE_PAGE_TITLE"
-         desc="Title for the hard coded thumbnail that represents the webstore page. This is used on the NTP when there aren't enough thumbnails to show.">
-        Apps, Extensions and Themes
       </message>
       <message name="IDS_APP_DEFAULT_PAGE_NAME"
                desc="Default name for the first 'Apps' page on the New Tab Page.">

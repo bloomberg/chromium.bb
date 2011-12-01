@@ -282,7 +282,6 @@ void NTPResourceCache::CreateNewTabHTML() {
   // profile is not the default.
   string16 apps = l10n_util::GetStringUTF16(IDS_NEW_TAB_APPS);
   string16 title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
-  string16 most_visited = l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED);
   DictionaryValue localized_strings;
   localized_strings.SetString("bookmarkbarattached",
       profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
@@ -293,19 +292,14 @@ void NTPResourceCache::CreateNewTabHTML() {
       "true" : "false");
   localized_strings.SetString("apps", apps);
   localized_strings.SetString("title", title);
-  localized_strings.SetString("mostvisited", most_visited);
-  localized_strings.SetString("bookmarksPage",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_BOOKMARKS_PAGE_TITLE));
-  localized_strings.SetString("restorethumbnails",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK));
+  localized_strings.SetString("mostvisited",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED));
   localized_strings.SetString("restoreThumbnailsShort",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RESTORE_THUMBNAILS_SHORT_LINK));
   localized_strings.SetString("recentlyclosed",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED));
   localized_strings.SetString("closedwindowsingle",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
-  localized_strings.SetString("foreignsessions",
-      l10n_util::GetStringUTF16(IDS_SYNC_DATATYPE_TABS));
   localized_strings.SetString("closedwindowmultiple",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE));
   localized_strings.SetString("attributionintro",
@@ -316,27 +310,6 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE));
   localized_strings.SetString("removethumbnailtooltip",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString("pinthumbnailtooltip",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_PIN_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString("unpinthumbnailtooltip",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_UNPIN_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString("showhidethumbnailtooltip",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_SHOW_HIDE_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString("showhidelisttooltip",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
-  localized_strings.SetString("pagedisplaytooltip",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
-  localized_strings.SetString("close", l10n_util::GetStringUTF16(IDS_CLOSE));
-  localized_strings.SetString("history",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_HISTORY));
-  localized_strings.SetString("downloads",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_DOWNLOADS));
-  localized_strings.SetString("help",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_HELP));
-  localized_strings.SetString("helpurl",
-      GetUrlWithLang(GURL(kHelpContentUrl)));
-  localized_strings.SetString("appsettings",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_APP_SETTINGS));
   localized_strings.SetString("appuninstall",
       l10n_util::GetStringFUTF16(
           IDS_NEW_TAB_APP_UNINSTALL,
@@ -355,20 +328,10 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_WINDOW));
   localized_strings.SetString("applaunchtypefullscreen",
       l10n_util::GetStringUTF16(IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN));
-  localized_strings.SetString("web_store_title",
-      l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE));
-  localized_strings.SetString("web_store_url",
-      GetUrlWithLang(GURL(extension_urls::GetWebstoreLaunchURL())));
   localized_strings.SetString("syncpromotext",
       l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL));
   localized_strings.SetString("syncLinkText",
       l10n_util::GetStringUTF16(IDS_SYNC_ADVANCED_OPTIONS));
-  localized_strings.SetString("bookmarksManagerLinkTitle",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_BOOKMARKS_MANAGER_LINK_TITLE));
-  localized_strings.SetString("bookmarksShowAllLinkTitle",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_BOOKMARKS_SHOW_ALL_LINK_TITLE));
-  localized_strings.SetString("importDataLinkTitle",
-      l10n_util::GetStringUTF16(IDS_NEW_TAB_BOOKMARKS_IMPORT_LINK_TITLE));
 #if defined(OS_CHROMEOS)
   localized_strings.SetString("expandMenu",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_CLOSE_MENU_EXPAND));
