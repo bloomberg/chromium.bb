@@ -563,10 +563,6 @@ add_config('arm-tegra2_kaen-aura-private-bin', [internal, arm, binary, {
   'profile' : 'aura',
 }])
 
-add_config('arm-tegra2_aebl-private-bin', [internal, arm, binary, {
-  'board' : 'tegra2_aebl',
-}])
-
 add_config('arm-tegra2_arthur-private-bin', [internal, arm, binary, {
   'board' : 'tegra2_arthur',
 }])
@@ -608,6 +604,12 @@ add_config('stumpy-private-bin', [internal, binary, {
 
 add_config('lumpy-private-bin', [internal, binary, {
   'board' : 'lumpy',
+}])
+
+add_config('link-private-bin', [internal, pfq, {
+  'board' : 'link',
+  'overlays': 'private',
+  'description' : 'link PFQ'
 }])
 
 add_config('x86-alex-toolchain', [internal, full, official, {
@@ -679,6 +681,10 @@ add_config('lumpy-release', [internal, full, official, release, {
   'board' : 'lumpy',
 }])
 
+add_config('link-release', [internal, full, official, release, {
+  'board' : 'link',
+}])
+
 add_config('arm-tegra2_seaboard-release', [
     internal, arm, full, official, release, {
   'board' : 'tegra2_seaboard',
@@ -689,11 +695,6 @@ add_config('arm-tegra2_seaboard-tangent-release',
     'board' : 'tegra2_seaboard',
     'profile' : 'cosine',
     'prebuilts' : False,
-}])
-
-add_config('arm-tegra2_aebl-release', [
-    internal, arm, full, official, release, {
-  'board' : 'tegra2_aebl',
 }])
 
 add_config('arm-tegra2_arthur-release', [
