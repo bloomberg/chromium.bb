@@ -4,6 +4,7 @@
 
 #include "net/curvecp/client_packetizer.h"
 
+#include "base/bind.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/sys_addrinfo.h"
@@ -38,7 +39,7 @@ ClientPacketizer::ClientPacketizer()
       initiate_sent_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           io_callback_(this, &ClientPacketizer::OnIOComplete)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(timers_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   // TODO(mbelshe): Initialize our keys and such properly.
   //     for now we use random values to keep them unique.
   for (int i = 0; i < 32; ++i)
@@ -315,12 +316,12 @@ int ClientPacketizer::ConnectNextAddress() {
 void ClientPacketizer::StartHelloTimer(int milliseconds) {
   MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      timers_factory_.NewRunnableMethod(&ClientPacketizer::OnHelloTimeout),
+      base::Bind(&ClientPacketizer::OnHelloTimeout, weak_factory_.GetWeakPtr()),
       milliseconds);
 }
 
 void ClientPacketizer::RevokeHelloTimer() {
-  timers_factory_.RevokeAll();
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void ClientPacketizer::OnHelloTimeout() {

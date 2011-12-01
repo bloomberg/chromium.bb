@@ -168,13 +168,10 @@ TEST_F(GeolocationGpsProviderLinuxTests, GetPosition) {
   CheckValidPosition(MockLibGps::g_instance_->get_position_, position);
 }
 
-class EnableGpsOpenTask : public Task {
- public:
-  virtual void Run() {
-    CHECK(MockLibGps::g_instance_);
-    MockLibGps::g_instance_->gps_open_ret_ = 0;
-  }
-};
+void EnableGpsOpenCallback() {
+  CHECK(MockLibGps::g_instance_);
+  MockLibGps::g_instance_->gps_open_ret_ = 0;
+}
 
 TEST_F(GeolocationGpsProviderLinuxTests, LibGpsReconnect) {
   // Setup gpsd reconnect interval to be 1000ms to speed up test.
@@ -198,7 +195,7 @@ TEST_F(GeolocationGpsProviderLinuxTests, LibGpsReconnect) {
   // This task makes gps_open() and LibGps::Start() to succeed after
   // 1500ms.
   MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new EnableGpsOpenTask(), 1500);
+      FROM_HERE, base::Bind(&EnableGpsOpenCallback), 1500);
   MessageLoop::current()->Run();
   provider_->GetPosition(&position);
   EXPECT_TRUE(position.IsInitialized());

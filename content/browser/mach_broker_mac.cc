@@ -4,6 +4,8 @@
 
 #include "content/browser/mach_broker_mac.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -27,33 +29,6 @@ std::string MachErrorCode(kern_return_t err) {
   return base::StringPrintf("0x%x %s", err, mach_error_string(err));
 }
 }  // namespace
-
-// Required because notifications happen on the UI thread.
-class RegisterNotificationTask : public Task {
- public:
-  RegisterNotificationTask(
-      MachBroker* broker)
-      : broker_(broker) { }
-
-  virtual void Run() {
-    broker_->registrar_.Add(broker_,
-        content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-        content::NotificationService::AllBrowserContextsAndSources());
-    broker_->registrar_.Add(broker_,
-        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::NotificationService::AllBrowserContextsAndSources());
-    broker_->registrar_.Add(broker_,
-        content::NOTIFICATION_CHILD_PROCESS_CRASHED,
-        content::NotificationService::AllBrowserContextsAndSources());
-    broker_->registrar_.Add(broker_,
-        content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
-        content::NotificationService::AllBrowserContextsAndSources());
-  }
-
- private:
-  MachBroker* broker_;
-  DISALLOW_COPY_AND_ASSIGN(RegisterNotificationTask);
-};
 
 class MachListenerThreadDelegate : public base::PlatformThread::Delegate {
  public:
@@ -126,11 +101,6 @@ MachBroker* MachBroker::GetInstance() {
   return Singleton<MachBroker, LeakySingletonTraits<MachBroker> >::get();
 }
 
-MachBroker::MachBroker() : listener_thread_started_(false) {
-}
-
-MachBroker::~MachBroker() {}
-
 void MachBroker::EnsureRunning() {
   lock_.AssertAcquired();
 
@@ -138,7 +108,8 @@ void MachBroker::EnsureRunning() {
     listener_thread_started_ = true;
 
     BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE, new RegisterNotificationTask(this));
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&MachBroker::RegisterNotifications, base::Unretained(this)));
 
     // Intentional leak.  This thread is never joined or reaped.
     base::PlatformThread::CreateNonJoinable(
@@ -237,4 +208,20 @@ std::string MachBroker::GetMachPortName() {
   // In non-browser (child) processes, use the parent's pid.
   const pid_t pid = is_child ? getppid() : getpid();
   return base::StringPrintf("%s.rohitfork.%d", base::mac::BaseBundleID(), pid);
+}
+
+MachBroker::MachBroker() : listener_thread_started_(false) {
+}
+
+MachBroker::~MachBroker() {}
+
+void MachBroker::RegisterNotifications() {
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_CRASHED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this, content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED,
+                 content::NotificationService::AllBrowserContextsAndSources());
 }

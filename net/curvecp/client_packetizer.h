@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
@@ -93,7 +94,7 @@ class ClientPacketizer : public Packetizer {
   uchar shortterm_public_key_[32];
 
   OldCompletionCallbackImpl<ClientPacketizer> io_callback_;
-  ScopedRunnableMethodFactory<ClientPacketizer> timers_factory_;
+  base::WeakPtrFactory<ClientPacketizer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientPacketizer);
 };

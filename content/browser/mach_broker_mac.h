@@ -86,9 +86,14 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
  private:
-  // Private constructor.
+  friend class MachBrokerTest;
+  friend struct DefaultSingletonTraits<MachBroker>;
+
   MachBroker();
   virtual ~MachBroker();
+
+  // Callback used to register notifications on the UI thread.
+  void RegisterNotifications();
 
   // True if the listener thread has been started.
   bool listener_thread_started_;
@@ -104,10 +109,6 @@ class MachBroker : public base::ProcessMetrics::PortProvider,
   // Mutex that guards |mach_map_|.
   mutable base::Lock lock_;
 
-  friend class MachBrokerTest;
-  friend class RegisterNotificationTask;
-  // Needed in order to make the constructor private.
-  friend struct DefaultSingletonTraits<MachBroker>;
   DISALLOW_COPY_AND_ASSIGN(MachBroker);
 };
 
