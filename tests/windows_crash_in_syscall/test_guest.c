@@ -18,7 +18,7 @@ void SimpleAbort() {
   }
 }
 
-void EntryPoint() {
+void _start() {
   UNTYPED_SYSCALL(CRASHY_TEST_SYSCALL)();
   /* Should not reach here. */
   SimpleAbort();

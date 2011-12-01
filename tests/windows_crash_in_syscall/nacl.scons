@@ -6,6 +6,9 @@
 Import('env')
 
 
+test_prog = env.ComponentProgram('test_guest', ['test_guest.c'],
+                                 EXTRA_LINKFLAGS=['-nostdlib'])
+
 if not env.Bit('host_windows'):
   # This test is specifically for Windows: it checks how NaCl
   # interacts with a Windows API (SetUnhandledExceptionFilter()).
@@ -45,16 +48,6 @@ runner = trusted_env.ComponentProgram(
                 'gio',
                 'dbghelp.lib', # Windows library
                 ] + VALIDATOR_LIBS + DEBUG_LIBS)
-
-if env.Bit('bitcode'):
-  # The PNaCl compiler driver does not yet accept -nostartfiles or
-  # -Wl,--entry.
-  # TODO(mseaborn): Add support for these to the PNaCl compiler driver.
-  Return()
-guest_env = env.Clone()
-guest_env.Append(LINKFLAGS=['-nostartfiles', '-Wl,--entry=EntryPoint'])
-test_prog = guest_env.ComponentProgram(
-    'test_guest', ['test_guest.c'])
 
 STATUS_ACCESS_VIOLATION = 0xc0000005
 
