@@ -76,7 +76,7 @@ void PanelManager::Layout() {
   panel_strip_bounds.set_width(adjusted_work_area_.width() -
                                kPanelStripLeftMargin - kPanelStripRightMargin);
   panel_strip_bounds.set_height(height);
-  panel_strip_->SetBounds(panel_strip_bounds);
+  panel_strip_->SetDisplayArea(panel_strip_bounds);
 }
 
 Panel* PanelManager::CreatePanel(Browser* browser) {

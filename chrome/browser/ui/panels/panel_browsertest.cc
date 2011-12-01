@@ -533,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, FindBar) {
   panel->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(PanelBrowserTest, CreatePanelOnOverflow) {
+IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DISABLED_CreatePanelOnOverflow) {
   TestCreatePanelOnOverflow();
 }
 

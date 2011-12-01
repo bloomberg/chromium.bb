@@ -30,7 +30,7 @@ class PanelStrip : public PanelMouseWatcherObserver {
 
   // Sets the bounds of the panel strip.
   // |bounds| is in screen coordinates.
-  void SetBounds(const gfx::Rect bounds);
+  void SetDisplayArea(const gfx::Rect& area);
 
   // Adds a panel to the strip. The panel may be a newly created panel or one
   // that is transitioning from another grouping of panels.
@@ -112,13 +112,16 @@ class PanelStrip : public PanelMouseWatcherObserver {
   // Handles all the panels that're delayed to be removed.
   void DelayedRemove();
 
-  // Does the remove. Called from Remove and DelayedRemove.
-  void DoRemove(Panel* panel);
+  // Does the actual remove. Caller is responsible for rearranging
+  // the panel strip if necessary.
+  // Returns |false| if panel is not in the strip.
+  bool DoRemove(Panel* panel);
 
-  // Rearranges the positions of the panels starting from the given iterator.
+  // Rearranges the positions of the panels in the strip.
+  // Handles moving panels to/from overflow area as needed.
   // This is called when the display space has been changed, i.e. working
   // area being changed or a panel being closed.
-  void Rearrange(Panels::iterator iter_to_start, int rightmost_position);
+  void Rearrange();
 
   // Help functions to drag the given panel.
   void DragLeft();
@@ -132,10 +135,24 @@ class PanelStrip : public PanelMouseWatcherObserver {
 
   int GetRightMostAvailablePosition() const;
 
+  // Moves the panel from the panel strip to the overflow area because
+  // the panel will not fit within the bounds of the panel strip.
+  // Overflow may occur when new panels are added, the bounds of the strip
+  // changes, a panel's size grows, a panel is moved from overflow into
+  // the strip, etc.
+  void MovePanelToOverflow(Panel* panel, bool is_new);
+
+  // Moves panels to the overflow area, starting from the last panel.
+  // |overflow_point| is the index of the first panel to oveflow.
+  void MovePanelsToOverflow(size_t overflow_point);
+
+  // Adds zero or more panels from overflow as will fit in the panel strip.
+  void MovePanelsFromOverflowIfNeeded();
+
   PanelManager* panel_manager_;  // Weak, owns us.
 
   // All panels in the panel strip must fit within this area.
-  gfx::Rect strip_bounds_;
+  gfx::Rect display_area_;
 
   Panels panels_;
 
@@ -164,6 +181,9 @@ class PanelStrip : public PanelMouseWatcherObserver {
   bool remove_delays_for_testing_;
   // Owned by MessageLoop after posting.
   base::WeakPtrFactory<PanelStrip> titlebar_action_factory_;
+
+  // Factory used for moving new panels to overflow after a delay.
+  base::WeakPtrFactory<PanelStrip> overflow_action_factory_;
 
   static const int kPanelsHorizontalSpacing = 4;
 
