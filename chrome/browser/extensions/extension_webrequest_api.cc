@@ -366,7 +366,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   const net::BoundNetLog* net_log;
 
   // The callback to call when we get a response from all event handlers.
-  net::OldCompletionCallback* callback;
+  net::CompletionCallback callback;
 
   // If non-empty, this contains the new URL that the request will redirect to.
   // Only valid for OnBeforeRequest.
@@ -404,7 +404,6 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
         event(kInvalidEvent),
         num_handlers_blocking(0),
         net_log(NULL),
-        callback(NULL),
         new_url(NULL),
         request_headers(NULL),
         override_response_headers(NULL),
@@ -522,7 +521,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
-    net::OldCompletionCallback* callback,
+    const net::CompletionCallback& callback,
     GURL* new_url) {
   // TODO(jochen): Figure out what to do with events from the system context.
   if (!profile)
@@ -568,7 +567,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
-    net::OldCompletionCallback* callback,
+    const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   // TODO(jochen): Figure out what to do with events from the system context.
   if (!profile)
@@ -642,7 +641,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     void* profile,
     ExtensionInfoMap* extension_info_map,
     net::URLRequest* request,
-    net::OldCompletionCallback* callback,
+    const net::CompletionCallback& callback,
     net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
   if (!profile)
@@ -1301,21 +1300,21 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
         &event_log_entries);
 
     if (blocked_request.event == kOnBeforeRequest) {
-      CHECK(blocked_request.callback);
+      CHECK(!blocked_request.callback.is_null());
       helpers::MergeOnBeforeRequestResponses(
           blocked_request.response_deltas,
           blocked_request.new_url,
           &conflicting_extensions,
           &event_log_entries);
     } else if (blocked_request.event == kOnBeforeSendHeaders) {
-      CHECK(blocked_request.callback);
+      CHECK(!blocked_request.callback.is_null());
       helpers::MergeOnBeforeSendHeadersResponses(
           blocked_request.response_deltas,
           blocked_request.request_headers,
           &conflicting_extensions,
           &event_log_entries);
     } else if (blocked_request.event == kOnHeadersReceived) {
-      CHECK(blocked_request.callback);
+      CHECK(!blocked_request.callback.is_null());
       helpers::MergeOnHeadersReceivedResponses(
           blocked_request.response_deltas,
           blocked_request.original_response_headers.get(),
@@ -1323,7 +1322,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
           &conflicting_extensions,
           &event_log_entries);
     } else if (blocked_request.event == kOnAuthRequired) {
-      CHECK(!blocked_request.callback);
+      CHECK(blocked_request.callback.is_null());
       CHECK(!blocked_request.auth_callback.is_null());
       credentials_set = helpers::MergeOnAuthRequiredResponses(
          blocked_request.response_deltas,
@@ -1356,14 +1355,14 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
       request_time_tracker_->SetRequestRedirected(request_id);
     }
 
-    if (blocked_request.callback) {
+    if (!blocked_request.callback.is_null()) {
       // This triggers onErrorOccurred.
       int rv = canceled ? net::ERR_BLOCKED_BY_CLIENT : net::OK;
-      net::OldCompletionCallback* callback = blocked_request.callback;
+      net::CompletionCallback callback = blocked_request.callback;
       // Ensure that request is removed before callback because the callback
       // might trigger the next event.
       blocked_requests_.erase(request_id);
-      callback->Run(rv);
+      callback.Run(rv);
     } else if (!blocked_request.auth_callback.is_null()) {
       net::NetworkDelegate::AuthRequiredResponse response =
           net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;

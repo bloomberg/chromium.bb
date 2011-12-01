@@ -75,7 +75,7 @@ void ChromeNetworkDelegate::InitializeReferrersEnabled(
 
 int ChromeNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
-    net::OldCompletionCallback* callback,
+    const net::CompletionCallback& callback,
     GURL* new_url) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
   // TODO(joaodasilva): This prevents extensions from seeing URLs that are
@@ -100,7 +100,7 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
 
 int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
-    net::OldCompletionCallback* callback,
+    const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
       profile_, extension_info_map_.get(), request, callback, headers);
@@ -115,7 +115,7 @@ void ChromeNetworkDelegate::OnSendHeaders(
 
 int ChromeNetworkDelegate::OnHeadersReceived(
     net::URLRequest* request,
-    net::OldCompletionCallback* callback,
+    const net::CompletionCallback& callback,
     net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
   return ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
