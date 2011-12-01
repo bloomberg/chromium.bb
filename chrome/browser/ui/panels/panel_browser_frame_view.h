@@ -54,6 +54,10 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // the size of the client area.
   gfx::Size NonClientAreaSize() const;
 
+  // Returns the size of the non-client area upon which only the title icon
+  // is drawn.
+  gfx::Size IconifiedSize() const;
+
  protected:
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const OVERRIDE;
@@ -136,6 +140,9 @@ class PanelBrowserFrameView : public BrowserNonClientFrameView,
   // Returns the thickness of the entire nonclient left, right, and bottom
   // borders, including both the window frame and any client edge.
   int NonClientBorderThickness() const;
+
+  // Returns the width of the panel that is showing only an icon.
+  int IconOnlyWidth() const;
 
   // Update control styles to indicate if the titlebar is active or not.
   void UpdateControlStyles(PaintState paint_state);

@@ -468,38 +468,63 @@ gfx::Size PanelBrowserFrameView::GetMinimumSize() {
 }
 
 void PanelBrowserFrameView::Layout() {
+  // Check if the width is only enough to show only the icon, or both icon
+  // and title. Hide corresponding controls accordingly.
+  bool show_close_button = true;
+  bool show_settings_button = true;
+  bool show_title_label = true;
+  if (panel_browser_view_->panel()->expansion_state() == Panel::IN_OVERFLOW) {
+    if (width() <= IconOnlyWidth()) {
+      show_close_button = false;
+      show_settings_button = false;
+      show_title_label = false;
+    } else {
+      show_settings_button = false;
+    }
+  }
+  close_button_->SetVisible(show_close_button);
+  settings_button_->SetVisible(show_settings_button);
+  title_label_->SetVisible(show_title_label);
+
   // Cancel the settings button animation if the layout of titlebar is being
   // updated.
   if (settings_button_animator_.get() && settings_button_animator_->IsShowing())
     settings_button_animator_->Reset();
 
   // Layout the close button.
-  gfx::Size close_button_size = close_button_->GetPreferredSize();
-  close_button_->SetBounds(
-      width() - kBorderThickness - kCloseButtonAndBorderSpacing -
-          close_button_size.width(),
-      (NonClientTopBorderHeight() - close_button_size.height()) / 2,
-      close_button_size.width(),
-      close_button_size.height());
+  int right = width();
+  if (show_close_button) {
+    gfx::Size close_button_size = close_button_->GetPreferredSize();
+    close_button_->SetBounds(
+        width() - kBorderThickness - kCloseButtonAndBorderSpacing -
+            close_button_size.width(),
+        (NonClientTopBorderHeight() - close_button_size.height()) / 2,
+        close_button_size.width(),
+        close_button_size.height());
+    right = close_button_->x();
 
-  // Layout the settings button.
-  gfx::Size settings_button_size = settings_button_->GetPreferredSize();
-  settings_button_->SetBounds(
-      close_button_->x() - kSettingsButtonAndCloseButtonSpacing -
+    // Layout the settings button.
+    if (show_settings_button) {
+      gfx::Size settings_button_size = settings_button_->GetPreferredSize();
+      settings_button_->SetBounds(
+          close_button_->x() - kSettingsButtonAndCloseButtonSpacing -
+              settings_button_size.width(),
+          (NonClientTopBorderHeight() - settings_button_size.height()) / 2,
           settings_button_size.width(),
-      (NonClientTopBorderHeight() - settings_button_size.height()) / 2,
-      settings_button_size.width(),
-      settings_button_size.height());
+          settings_button_size.height());
+      right = settings_button_->x();
 
-  // Trace the full bounds and zero-size bounds for animation purpose.
-  settings_button_full_bounds_ = settings_button_->bounds();
-  settings_button_zero_bounds_.SetRect(
-      settings_button_full_bounds_.x() +
-          settings_button_full_bounds_.width() / 2,
-      settings_button_full_bounds_.y() +
-          settings_button_full_bounds_.height() / 2,
-      0,
-      0);
+      // Trace the full bounds and zero-size bounds for animation purpose.
+      settings_button_full_bounds_ = settings_button_->bounds();
+      settings_button_zero_bounds_.SetRect(
+          settings_button_full_bounds_.x() +
+              settings_button_full_bounds_.width() / 2,
+          settings_button_full_bounds_.y() +
+              settings_button_full_bounds_.height() / 2,
+          0,
+          0);
+    }
+  }
 
   // Layout the icon.
   int icon_y = (NonClientTopBorderHeight() - kIconSize) / 2;
@@ -510,13 +535,15 @@ void PanelBrowserFrameView::Layout() {
       kIconSize);
 
   // Layout the title.
-  int title_x = title_icon_->bounds().right() + kTitleSpacing;
-  int title_height = BrowserFrame::GetTitleFont().GetHeight();
-  title_label_->SetBounds(
-      title_x,
-      icon_y + ((kIconSize - title_height - 1) / 2),
-      std::max(0, settings_button_->x() - kTitleSpacing - title_x),
-      title_height);
+  if (show_title_label) {
+    int title_x = title_icon_->bounds().right() + kTitleSpacing;
+    int title_height = BrowserFrame::GetTitleFont().GetHeight();
+    title_label_->SetBounds(
+        title_x,
+        icon_y + ((kIconSize - title_height - 1) / 2),
+        std::max(0, right - kTitleSpacing - title_x),
+        title_height);
+  }
 
   // Calculate the client area bounds.
   int top_height = NonClientTopBorderHeight();
@@ -627,6 +654,14 @@ int PanelBrowserFrameView::NonClientTopBorderHeight() const {
 gfx::Size PanelBrowserFrameView::NonClientAreaSize() const {
   return gfx::Size(NonClientBorderThickness() * 2,
                    NonClientTopBorderHeight() + NonClientBorderThickness());
+}
+
+int PanelBrowserFrameView::IconOnlyWidth() const {
+  return kBorderThickness * 2 + kIconAndBorderSpacing * 2 + kIconSize;
+}
+
+gfx::Size PanelBrowserFrameView::IconifiedSize() const {
+  return gfx::Size(IconOnlyWidth(), NonClientTopBorderHeight());
 }
 
 bool PanelBrowserFrameView::UsingDefaultTheme() const {
@@ -792,6 +827,10 @@ void PanelBrowserFrameView::OnMouseEnterOrLeaveWindow(bool mouse_entered) {
 
 void PanelBrowserFrameView::UpdateSettingsButtonVisibility(
     bool focused, bool cursor_in_view) {
+  // The settings button is not shown in the overflow state.
+  if (panel_browser_view_->panel()->expansion_state() == Panel::IN_OVERFLOW)
+    return;
+
   bool is_settings_button_visible = focused || cursor_in_view;
   if (is_settings_button_visible_ == is_settings_button_visible)
     return;

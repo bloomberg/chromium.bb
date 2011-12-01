@@ -39,7 +39,10 @@ class Panel : public BrowserWindow,
    // The panel is shown with the title-bar only.
    TITLE_ONLY,
    // The panel is shown with 3-pixel line.
-   MINIMIZED
+   MINIMIZED,
+   // The panel is put into the overflow area due to no space available in the
+   // normal display area.
+   IN_OVERFLOW
   };
 
   // The panel can be minimized to 4-pixel lines.
