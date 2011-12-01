@@ -2166,7 +2166,7 @@
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
-            '../third_party/mozc/chrome/chromeos/renderer/chromeos_renderer.gyp:mozc_commands_proto',
+            'browser/chromeos/input_method/input_method.gyp:mozc_commands_proto',
           ],
         }],
         ['use_gnome_keyring == 0', {
