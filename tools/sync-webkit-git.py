@@ -18,6 +18,7 @@ import os
 import re
 import subprocess
 import sys
+import urllib
 
 
 def RunGit(command):
@@ -67,7 +68,16 @@ def GetWebKitRev():
   return locals['vars']['webkit_revision']
 
 
-def FindSVNRev(target_rev):
+def GetWebKitRevFromTarball(version):
+  """Extract the 'webkit_revision' variable out of tarball DEPS."""
+  deps_url = "http://src.chromium.org/svn/releases/" + version + "/DEPS"
+  f = urllib.urlopen(deps_url)
+  s = f.read()
+  m = re.search('(?<=/Source@)\w+', s)
+  return m.group(0)
+
+
+def FindSVNRev(branch_name, target_rev):
   """Map an SVN revision to a git hash.
   Like 'git svn find-rev' but without the git-svn bits."""
 
@@ -82,8 +92,10 @@ def FindSVNRev(target_rev):
   commit_re = re.compile(r'^commit ([a-f\d]{40})$')
   # regexp matching the git-svn line from the log.
   git_svn_re = re.compile(r'^\s+git-svn-id: [^@]+@(\d+) ')
+  if not branch_name:
+    branch_name = 'origin/master'
   cmd = ['git', 'log', '--no-color', '--first-parent', '--pretty=medium',
-         'origin/master']
+         branch_name]
   logging.info(' '.join(cmd))
   log = subprocess.Popen(cmd, shell=(os.name == 'nt'), stdout=subprocess.PIPE)
   # Track whether we saw a revision *later* than the one we're seeking.
@@ -123,16 +135,16 @@ def GetRemote():
   return 'origin'
 
 
-def UpdateGClientBranch(webkit_rev, magic_gclient_branch):
+def UpdateGClientBranch(branch_name, webkit_rev, magic_gclient_branch):
   """Update the magic gclient branch to point at |webkit_rev|.
 
   Returns: true if the branch didn't need changes."""
-  target = FindSVNRev(webkit_rev)
+  target = FindSVNRev(branch_name, webkit_rev)
   if not target:
     print "r%s not available; fetching." % webkit_rev
     subprocess.check_call(['git', 'fetch', GetRemote()],
                           shell=(os.name == 'nt'))
-    target = FindSVNRev(webkit_rev)
+    target = FindSVNRev(branch_name, webkit_rev)
   if not target:
     print "ERROR: Couldn't map r%s to a git revision." % webkit_rev
     sys.exit(1)
@@ -166,6 +178,9 @@ def UpdateCurrentCheckoutIfAppropriate(magic_gclient_branch):
 def main():
   parser = optparse.OptionParser()
   parser.add_option('-v', '--verbose', action='store_true')
+  parser.add_option('-r', '--revision', help="switch to desired revision")
+  parser.add_option('-t', '--tarball', help="switch to desired tarball release")
+  parser.add_option('-b', '--branch', help="branch name that gclient generate")
   options, args = parser.parse_args()
   if options.verbose:
     logging.basicConfig(level=logging.INFO)
@@ -180,11 +195,21 @@ def main():
     print "setup instructions."
     return 1
 
-  webkit_rev = GetWebKitRev()
+  if options.revision:
+    webkit_rev = options.revision
+    if options.tarball:
+      print "WARNING: --revision is given, so ignore --tarball"
+  else:
+    if options.tarball:
+      webkit_rev = GetWebKitRevFromTarball(options.tarball)
+    else:
+      webkit_rev = GetWebKitRev()
+
   print 'Desired revision: r%s.' % webkit_rev
   os.chdir('third_party/WebKit')
   magic_gclient_branch = GetGClientBranchName()
-  changed = UpdateGClientBranch(webkit_rev, magic_gclient_branch)
+  changed = UpdateGClientBranch(options.branch, webkit_rev,
+                                magic_gclient_branch)
   if changed:
     return UpdateCurrentCheckoutIfAppropriate(magic_gclient_branch)
   else:
