@@ -197,4 +197,8 @@ std::string TestWebSocket::TestTextSendReceive() {
   PASS();
 }
 
+// TODO(toyoshim): Add tests for GetBufferedAmount().
+// For now, the function doesn't work fine because update callback in WebKit is
+// not landed yet.
+
 // TODO(toyoshim): Add other function tests.

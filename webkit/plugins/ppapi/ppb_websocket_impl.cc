@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/logging.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -37,7 +38,33 @@ using WebKit::WebSocket;
 using WebKit::WebSocketClient;
 using WebKit::WebURL;
 
-static const uint32_t kMaxReasonSizeInBytes = 123;
+namespace {
+
+const uint32_t kMaxReasonSizeInBytes = 123;
+const size_t kHybiBaseFramingOverhead = 2;
+const size_t kHybiMaskingKeyLength = 4;
+const size_t kMinimumPayloadSizeWithTwoByteExtendedPayloadLength = 126;
+const size_t kMinimumPayloadSizeWithEightByteExtendedPayloadLength = 0x10000;
+
+uint64_t SaturateAdd(uint64_t a, uint64_t b) {
+  if (kuint64max - a < b)
+    return kuint64max;
+  return a + b;
+}
+
+uint64_t GetFrameSize(uint64_t payload_size) {
+  if (!payload_size)
+    return 0;
+
+  uint64_t overhead = kHybiBaseFramingOverhead + kHybiMaskingKeyLength;
+  if (payload_size > kMinimumPayloadSizeWithEightByteExtendedPayloadLength)
+    overhead += 8;
+  else if (payload_size > kMinimumPayloadSizeWithTwoByteExtendedPayloadLength)
+    overhead += 2;
+  return SaturateAdd(payload_size, overhead);
+}
+
+}  // namespace
 
 namespace webkit {
 namespace ppapi {
@@ -48,7 +75,9 @@ PPB_WebSocket_Impl::PPB_WebSocket_Impl(PP_Instance instance)
       receive_callback_var_(NULL),
       wait_for_receive_(false),
       close_code_(0),
-      close_was_clean_(PP_FALSE) {
+      close_was_clean_(PP_FALSE),
+      buffered_amount_(0),
+      buffered_amount_after_close_(0) {
   empty_string_ = new StringVar(
       PpapiGlobals::Get()->GetModuleForInstance(instance), "", 0);
 }
@@ -245,7 +274,19 @@ int32_t PPB_WebSocket_Impl::SendMessage(PP_Var message) {
 
   if (state_ == PP_WEBSOCKETREADYSTATE_CLOSING_DEV ||
       state_ == PP_WEBSOCKETREADYSTATE_CLOSED_DEV) {
-    // TODO(toyoshim): Handle bufferedAmount here.
+    // Handle buffered_amount_after_close_.
+    uint64_t payload_size = 0;
+    if (message.type == PP_VARTYPE_STRING) {
+      scoped_refptr<StringVar> message_string = StringVar::FromPPVar(message);
+      if (message_string)
+        payload_size += message_string->value().length();
+    }
+    // TODO(toyoshim): Support binary data.
+
+    buffered_amount_after_close_ =
+        SaturateAdd(buffered_amount_after_close_, GetFrameSize(payload_size));
+
+    return PP_ERROR_FAILED;
   }
 
   if (message.type != PP_VARTYPE_STRING) {
@@ -265,8 +306,7 @@ int32_t PPB_WebSocket_Impl::SendMessage(PP_Var message) {
 }
 
 uint64_t PPB_WebSocket_Impl::GetBufferedAmount() {
-  // TODO(toyoshim): Implement.
-  return 0;
+  return SaturateAdd(buffered_amount_, buffered_amount_after_close_);
 }
 
 uint16_t PPB_WebSocket_Impl::GetCloseCode() {
@@ -337,9 +377,11 @@ void PPB_WebSocket_Impl::didReceiveMessageError() {
   DLOG(INFO) << "didReceiveMessageError is not implemented yet.";
 }
 
-void PPB_WebSocket_Impl::didUpdateBufferedAmount(unsigned long bufferedAmount) {
-  // TODO(toyoshim): Must implement.
-  DLOG(INFO) << "didUpdateBufferedAmount is not implemented yet.";
+void PPB_WebSocket_Impl::didUpdateBufferedAmount(
+    unsigned long buffered_amount) {
+  if (state_ == PP_WEBSOCKETREADYSTATE_CLOSED_DEV)
+    return;
+  buffered_amount_ = buffered_amount;
 }
 
 void PPB_WebSocket_Impl::didStartClosingHandshake() {
@@ -347,7 +389,7 @@ void PPB_WebSocket_Impl::didStartClosingHandshake() {
   DLOG(INFO) << "didStartClosingHandshake is not implemented yet.";
 }
 
-void PPB_WebSocket_Impl::didClose(unsigned long bufferedAmount,
+void PPB_WebSocket_Impl::didClose(unsigned long buffered_amount,
                                   ClosingHandshakeCompletionStatus status,
                                   unsigned short code,
                                   const WebString& reason) {
@@ -363,6 +405,9 @@ void PPB_WebSocket_Impl::didClose(unsigned long bufferedAmount,
   DCHECK_NE(PP_WEBSOCKETREADYSTATE_CLOSED_DEV, state_);
   PP_WebSocketReadyState_Dev state = state_;
   state_ = PP_WEBSOCKETREADYSTATE_CLOSED_DEV;
+
+  // Update buffered_amount_.
+  buffered_amount_ = buffered_amount;
 
   if (state == PP_WEBSOCKETREADYSTATE_CONNECTING_DEV)
     PP_RunAndClearCompletionCallback(&connect_callback_, PP_OK);

@@ -66,9 +66,9 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
       const WebKit::WebData& binaryData) OVERRIDE;
   virtual void didReceiveMessageError() OVERRIDE;
   // TODO(toyoshim): Add OVERRIDE after landing WebKit side change.
-  virtual void didUpdateBufferedAmount(unsigned long bufferedAmount);
+  virtual void didUpdateBufferedAmount(unsigned long buffered_amount);
   virtual void didStartClosingHandshake() OVERRIDE;
-  virtual void didClose(unsigned long bufferedAmount,
+  virtual void didClose(unsigned long buffered_amount,
                         ClosingHandshakeCompletionStatus status,
                         unsigned short code,
                         const WebKit::WebString& reason) OVERRIDE;
@@ -95,6 +95,9 @@ class PPB_WebSocket_Impl : public ::ppapi::Resource,
   scoped_refptr< ::ppapi::StringVar> extensions_;
   scoped_refptr< ::ppapi::StringVar> protocol_;
   scoped_refptr< ::ppapi::StringVar> url_;
+
+  uint64_t buffered_amount_;
+  uint64_t buffered_amount_after_close_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_WebSocket_Impl);
 };
