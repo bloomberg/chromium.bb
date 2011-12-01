@@ -1,6 +1,7 @@
 {
   "name": "Split-mode incognito settings test",
   "version": "1.0",
+  "manifest_version": 2,
   "description": "Tests the API in split incognito mode",
   "permissions": ["experimental"],
   "background_page": "background.html",

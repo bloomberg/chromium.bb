@@ -2,6 +2,7 @@
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCzxp8WFAeJGgwQFdaktyst1HW/8yqbgFeD6z5yKK6MOhGn0HSsiDSU0cjEkBbqbyr4WJFDpAB3uLhUhUOszLtjKJt0c8XdqITKlSXKfa16e4P6z4lA+cVmcCuTvQtop2iXaJrTon7dL6BFPq8xKuaCX8yb+uZo91KmkNpd3OEF6QIDAQAB",
   "name": "chrome.webSocketProxyPrivate",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "Test for webSocketProxyPrivate.getPassportForTCP",
   "background_page": "background.html",
   "permissions": ["webSocketProxyPrivate"]

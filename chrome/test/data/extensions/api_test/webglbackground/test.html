@@ -1,9 +1,7 @@
+<!--
+ * Copyright (c) 2011 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
 <canvas></canvas>
-<script>
-chrome.test.runTests([
-  function checkForWebGL() {
-    chrome.test.assertEq(null, document.getElementsByTagName("canvas")[0].getContext("experimental-webgl"));
-    chrome.test.succeed();
-  }
-]);
-</script>
+<script src="test.js"></script>

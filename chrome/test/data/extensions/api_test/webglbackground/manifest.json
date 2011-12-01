@@ -1,6 +1,7 @@
 {
   "name": "chrome.webglbackground",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "tests access to WebGL from a background page",
   "background_page": "test.html"
 }

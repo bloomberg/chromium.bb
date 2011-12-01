@@ -1,6 +1,7 @@
 {
   "name": "chrome.rlz",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "end-to-end browser test for chrome.rlz API",
   "background_page": "test.html",
   "permissions": ["experimental"]

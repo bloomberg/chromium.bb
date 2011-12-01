@@ -1,6 +1,7 @@
 {
   "name": "settings",
   "version": "1.0",
+  "manifest_version": 2,
   "description": "Tests that the settings API works.",
   "permissions": ["experimental"],
   "background_page": "background.html"
