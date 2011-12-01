@@ -136,7 +136,9 @@ CompositorCC::CompositorCC(CompositorDelegate* delegate,
      command_line->HasSwitch(switches::kUIShowFPSCounter);
   settings.showPlatformLayerTree =
       command_line->HasSwitch(switches::kUIShowLayerTree);
+#ifndef WEBCOMPOSITOR_HAS_INITIALIZE
   settings.enableCompositorThread = !!g_compositor_thread;
+#endif
   host_ = WebKit::WebLayerTreeView::create(this, root_web_layer_, settings);
   root_web_layer_.setAnchorPoint(WebKit::WebFloatPoint(0.f, 0.f));
   OnWidgetSizeChanged();

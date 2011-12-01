@@ -122,6 +122,23 @@ class TestWebGraphicsContext3D : public WebKit::WebGraphicsContext3D {
                          WebKit::WGC3Dboolean blue,
                          WebKit::WGC3Dboolean alpha) {}
   virtual void compileShader(WebKit::WebGLId shader) {}
+  virtual void compressedTexImage2D(WebKit::WGC3Denum target,
+                                    WebKit::WGC3Dint level,
+                                    WebKit::WGC3Denum internalformat,
+                                    WebKit::WGC3Dsizei width,
+                                    WebKit::WGC3Dsizei height,
+                                    WebKit::WGC3Dint border,
+                                    WebKit::WGC3Dsizei imageSize,
+                                    const void* data) {}
+  virtual void compressedTexSubImage2D(WebKit::WGC3Denum target,
+                                       WebKit::WGC3Dint level,
+                                       WebKit::WGC3Dint xoffset,
+                                       WebKit::WGC3Dint yoffset,
+                                       WebKit::WGC3Dsizei width,
+                                       WebKit::WGC3Dsizei height,
+                                       WebKit::WGC3Denum format,
+                                       WebKit::WGC3Dsizei imageSize,
+                                       const void* data) {}
   virtual void copyTexImage2D(WebKit::WGC3Denum target,
                               WebKit::WGC3Dint level,
                               WebKit::WGC3Denum internal_format,
