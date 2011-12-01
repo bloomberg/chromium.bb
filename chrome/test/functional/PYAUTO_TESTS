@@ -427,13 +427,6 @@
       'nacl_sdk',
       'translate',
 
-      # ===========================
-      # Permanently-disabled tests.
-      # ===========================
-      # Can't use automation to change the policy data on Chrome builds.
-      '-policy',
-      '-policy_prefs_ui',
-
       # ==================================================
       # Disabled tests that need to be investigated/fixed.
       # ==================================================
@@ -482,6 +475,14 @@
     'win': [
       'enterprise',
       'gpu',
+
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      # Can't use automation to change the policy data on Chrome builds.
+      '-policy',
+      '-policy_prefs_ui',
+
       # Preloaded extensions affect process count: crbug.com/94350
       '-process_count',
       # Disable sync.SyncIntegrationTest on the QA bots in FULL,
@@ -506,6 +507,13 @@
     ],
 
     'mac': [
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      # Can't use automation to change the policy data on Chrome builds.
+      '-policy',
+      '-policy_prefs_ui',
+
       # Consistently failing on Mac QA bots only: crbug.com/97810
       '-process_count',
     ],
@@ -533,6 +541,12 @@
       'omnibox.OmniboxTest.testSuggest',
       'omnibox.OmniboxTest.testSuggestPref',
 
+      # ===========================
+      # Permanently-disabled tests.
+      # ===========================
+      # Can't use automation to change the policy data on Chrome builds.
+      '-policy',
+      '-policy_prefs_ui',
 
       # ==================================================
       # Disabled tests that need to be investigated/fixed.

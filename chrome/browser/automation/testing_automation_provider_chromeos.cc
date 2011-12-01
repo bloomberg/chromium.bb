@@ -888,27 +888,6 @@ void TestingAutomationProvider::IsEnterpriseDevice(
   reply.SendSuccess(return_value.get());
 }
 
-void TestingAutomationProvider::FetchEnterprisePolicy(
-    DictionaryValue* args, IPC::Message* reply_message) {
-  policy::BrowserPolicyConnector* connector =
-      g_browser_process->browser_policy_connector();
-  if (!connector) {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Unable to access BrowserPolicyConnector");
-    return;
-  }
-  policy::CloudPolicySubsystem* policy_subsystem =
-      connector->user_cloud_policy_subsystem();
-  if (policy_subsystem) {
-    // Set up an observer (it will delete itself).
-    new CloudPolicyObserver(this, reply_message, connector, policy_subsystem);
-    connector->FetchCloudPolicy();
-  } else {
-    AutomationJSONReply(this, reply_message).SendError(
-        "Unable to access CloudPolicySubsystem");
-  }
-}
-
 void TestingAutomationProvider::EnrollEnterpriseDevice(
     DictionaryValue* args, IPC::Message* reply_message) {
   std::string user, password;

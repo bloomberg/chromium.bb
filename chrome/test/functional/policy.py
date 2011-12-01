@@ -6,11 +6,12 @@
 import logging
 
 import pyauto_functional  # must come before pyauto.
+import policy_base
 import pyauto
 from pyauto_errors import JSONInterfaceError
 
 
-class PolicyTest(pyauto.PyUITest):
+class PolicyTest(policy_base.PolicyTestBase):
   """Tests that the effects of policies are being enforced as expected."""
 
   def IsBlocked(self, url):

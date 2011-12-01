@@ -180,12 +180,6 @@ class AutomationInterstitialPage : public InterstitialPage {
   DISALLOW_COPY_AND_ASSIGN(AutomationInterstitialPage);
 };
 
-// Helper function for nested Binds that resolves the overloading of
-// BrowserThread::PostTask, and ignores the return value.
-void PostTask(BrowserThread::ID id, const base::Closure& task) {
-  BrowserThread::PostTask(id, FROM_HERE, task);
-}
-
 }  // namespace
 
 TestingAutomationProvider::TestingAutomationProvider(Profile* profile)
@@ -2329,6 +2323,8 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
       &TestingAutomationProvider::InstallExtension;
   handler_map["GetExtensionsInfo"] =
       &TestingAutomationProvider::GetExtensionsInfo;
+  handler_map["RefreshPolicies"] =
+      &TestingAutomationProvider::RefreshPolicies;
 #if defined(OS_CHROMEOS)
   handler_map["GetLoginInfo"] = &TestingAutomationProvider::GetLoginInfo;
   handler_map["ShowCreateAccountUI"] =
@@ -2371,8 +2367,6 @@ void TestingAutomationProvider::SendJSONRequest(int handle,
 
   handler_map["IsEnterpriseDevice"] =
       &TestingAutomationProvider::IsEnterpriseDevice;
-  handler_map["FetchEnterprisePolicy"] =
-      &TestingAutomationProvider::FetchEnterprisePolicy;
   handler_map["GetEnterprisePolicyInfo"] =
       &TestingAutomationProvider::GetEnterprisePolicyInfo;
   handler_map["EnrollEnterpriseDevice"] =
@@ -5795,19 +5789,13 @@ void TestingAutomationProvider::SetPolicies(
     }
   }
 
-  // OverridePolicies() triggers preference updates, which triggers preference
-  // listeners. Some policies (e.g. URLBlacklist) post tasks to other message
-  // loops before they start being enforced; make sure those tasks have
-  // finished.
-  // Updates of the URLBlacklist are done on IO, after building the blacklist
-  // on FILE, which is initiated from IO.
-  PostTask(BrowserThread::IO,
-      base::Bind(&PostTask, BrowserThread::FILE,
-          base::Bind(&PostTask, BrowserThread::IO,
-              base::Bind(&PostTask, BrowserThread::UI,
-                  base::Bind(&AutomationJSONReply::SendSuccess,
-                             base::Owned(reply.release()),
-                             static_cast<const Value*>(NULL))))));
+  // Make sure the policies are in effect before returning. This will go
+  // away once all platforms rely on directly installing the policy files and
+  // using RefreshPolicies, and SetPolicies is removed.
+  PolicyUpdatesObserver::PostCallbackAfterPolicyUpdates(
+      base::Bind(&AutomationJSONReply::SendSuccess,
+                 base::Owned(reply.release()),
+                 static_cast<const Value*>(NULL)));
 #endif  // defined(OFFICIAL_BUILD)
 }
 
@@ -5841,6 +5829,20 @@ void TestingAutomationProvider::GetPolicyDefinitionList(
   }
 
   reply.SendSuccess(&response);
+#endif
+}
+
+void TestingAutomationProvider::RefreshPolicies(
+    base::DictionaryValue* args,
+    IPC::Message* reply_message) {
+#if !defined(ENABLE_CONFIGURATION_POLICY)
+  AutomationJSONReply(this, reply_message).SendError(
+      "Configuration Policy disabled");
+#else
+  policy::BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  new PolicyUpdatesObserver(this, reply_message, connector);
+  connector->RefreshPolicies();
 #endif
 }
 

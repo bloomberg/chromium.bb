@@ -1231,6 +1231,14 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetPolicyDefinitionList(base::DictionaryValue* args,
                                IPC::Message* reply_message);
 
+  // Triggers a policy update on the platform and cloud providers, if they
+  // exist. Returns after the update notifications are received.
+  // Example:
+  //   input: none
+  //   output: none
+  void RefreshPolicies(base::DictionaryValue* args,
+                       IPC::Message* reply_message);
+
 #if defined(OS_CHROMEOS)
   // Login.
   void GetLoginInfo(base::DictionaryValue* args, IPC::Message* reply_message);
@@ -1300,9 +1308,6 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Enterprise policy.
   void IsEnterpriseDevice(DictionaryValue* args, IPC::Message* reply_message);
-
-  void FetchEnterprisePolicy(DictionaryValue* args,
-                             IPC::Message* reply_message);
 
   void EnrollEnterpriseDevice(DictionaryValue* args,
                               IPC::Message* reply_message);

@@ -16,6 +16,7 @@
 #include "base/json/json_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/password_manager/password_store_change.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -2960,3 +2962,87 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
     NOTREACHED();
   }
 }
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+
+PolicyUpdatesObserver::PolicyUpdatesObserver(
+    AutomationProvider* automation,
+    IPC::Message* reply_message,
+    policy::BrowserPolicyConnector* browser_policy_connector)
+    : automation_(automation->AsWeakPtr()),
+      reply_message_(reply_message) {
+  policy::ConfigurationPolicyProvider* providers[] = {
+    browser_policy_connector->GetManagedCloudProvider(),
+    browser_policy_connector->GetManagedPlatformProvider(),
+    browser_policy_connector->GetRecommendedCloudProvider(),
+    browser_policy_connector->GetRecommendedPlatformProvider(),
+  };
+  for (size_t i = 0; i < arraysize(providers); ++i) {
+    if (providers[i]) {
+      registrars_.push_back(new policy::ConfigurationPolicyObserverRegistrar);
+      registrars_.back()->Init(providers[i], this);
+    }
+  }
+  MaybeReply();
+}
+
+PolicyUpdatesObserver::~PolicyUpdatesObserver() {}
+
+// static
+void PolicyUpdatesObserver::PostCallbackAfterPolicyUpdates(
+    const base::Closure& callback) {
+  // Some policies (e.g. URLBlacklist) post tasks to other message loops before
+  // they start enforcing updated policy values; make sure those tasks have
+  // finished after a policy update.
+  // Updates of the URLBlacklist are done on IO, after building the blacklist
+  // on FILE, which is initiated from IO.
+  PostTask(BrowserThread::IO,
+      base::Bind(&PostTask, BrowserThread::FILE,
+          base::Bind(&PostTask, BrowserThread::IO,
+              base::Bind(&PostTask, BrowserThread::UI, callback))));
+}
+
+void PolicyUpdatesObserver::OnUpdatePolicy(
+    policy::ConfigurationPolicyProvider* provider) {
+  std::vector<policy::ConfigurationPolicyObserverRegistrar*>::iterator it;
+  for (it = registrars_.begin(); it != registrars_.end(); ++it) {
+    if ((*it)->provider() == provider) {
+      delete *it;
+      registrars_.erase(it);
+      MaybeReply();
+      return;
+    }
+  }
+}
+
+void PolicyUpdatesObserver::OnProviderGoingAway(
+    policy::ConfigurationPolicyProvider* provider) {
+  STLDeleteElements(&registrars_);
+  if (automation_) {
+    AutomationJSONReply(automation_, reply_message_.release()).SendError(
+        "Policy provider went away.");
+  }
+  delete this;
+}
+
+void PolicyUpdatesObserver::MaybeReply() {
+  if (registrars_.empty()) {
+    PostCallbackAfterPolicyUpdates(
+        base::Bind(&PolicyUpdatesObserver::Reply, base::Owned(this)));
+  }
+}
+
+void PolicyUpdatesObserver::Reply() {
+  if (automation_) {
+    AutomationJSONReply(
+        automation_, reply_message_.release()).SendSuccess(NULL);
+  }
+}
+
+// static
+void PolicyUpdatesObserver::PostTask(content::BrowserThread::ID id,
+                                     const base::Closure& callback) {
+  content::BrowserThread::PostTask(id, FROM_HERE, callback);
+}
+
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)

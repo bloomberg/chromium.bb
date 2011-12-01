@@ -167,9 +167,10 @@ void CloudPolicyController::OnError(DeviceManagementBackend::ErrorCode code) {
     case DeviceManagementBackend::kErrorTemporaryUnavailable: {
       VLOG(1) << "A temporary error in the communication with the policy server"
               << " occurred.";
+    }
+    default:
       // Will retry last operation but gracefully backing off.
       SetState(STATE_POLICY_ERROR);
-    }
   }
 }
 
@@ -248,6 +249,8 @@ void CloudPolicyController::FetchToken() {
     } else {
       SetState(STATE_TOKEN_UNMANAGED);
     }
+  } else {
+    VLOG(1) << "Not ready to fetch DMToken yet, will try again later.";
   }
 }
 

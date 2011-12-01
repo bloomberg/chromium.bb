@@ -723,10 +723,10 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
       A handle to Sync Server, an instance of TestServer
     """
     sync_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_SYNC,
-         pyautolib.FilePath(''))
+        pyautolib.FilePath(''))
     assert sync_server.Start(), 'Could not start sync server'
     sync_server.ports = dict(port=sync_server.GetPort(),
-                              xmpp_port=sync_server.GetSyncXmppPort())
+                             xmpp_port=sync_server.GetSyncXmppPort())
     logging.debug('Started sync server at ports %s.' % sync_server.ports)
     return sync_server
 
@@ -740,7 +740,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """Start a local file server hosting data files over ftp://
 
     Args:
-      data_dir: path where ftp files should be serverd
+      data_dir: path where ftp files should be served
 
     Returns:
       handle to FTP Server, an instance of TestServer
@@ -756,6 +756,27 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     assert ftp_server, 'FTP Server not yet started'
     assert ftp_server.Stop(), 'Could not stop ftp server'
     logging.debug('Stopped ftp server.')
+
+  def StartHTTPServer(self, data_dir):
+    """Starts a local HTTP TestServer serving files from |data_dir|.
+
+    Args:
+      data_dir: path where the TestServer should serve files from. This will be
+      appended to the source dir to get the final document root.
+
+    Returns:
+      handle to the HTTP TestServer
+    """
+    http_server = pyautolib.TestServer(pyautolib.TestServer.TYPE_HTTP,
+        pyautolib.FilePath(data_dir))
+    assert http_server.Start(), 'Could not start HTTP server'
+    logging.debug('Started HTTP server at "%s".' % data_dir)
+    return http_server
+
+  def StopHTTPServer(self, http_server):
+    assert http_server, 'HTTP server not yet started'
+    assert http_server.Stop(), 'Cloud not stop the HTTP server'
+    logging.debug('Stopped HTTP server.')
 
   class ActionTimeoutChanger(object):
     """Facilitate temporary changes to action_timeout_ms.
@@ -3306,6 +3327,17 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     }
     return self._GetResultFromJSONRequest(cmd_dict)
 
+  def RefreshPolicies(self):
+    """Refreshes all the available policy providers.
+
+    Each policy provider will reload its policy source and push the updated
+    policies. This call waits for the new policies to be applied; any policies
+    installed before this call is issued are guaranteed to be ready after it
+    returns.
+    """
+    cmd_dict = { 'command': 'RefreshPolicies' }
+    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
+
   def SubmitForm(self, form_id, tab_index=0, windex=0, frame_xpath=''):
     """Submits the given form ID, and returns after it has been submitted.
 
@@ -4045,23 +4077,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     """
     cmd_dict = { 'command': 'GetEnterprisePolicyInfo' }
     return self._GetResultFromJSONRequest(cmd_dict, windex=-1)
-
-  def FetchEnterprisePolicy(self):
-    """Fetch enterprise policy from server.
-
-    Triggers a policy fetch and blocks until the policy is fetched or the fetch
-    fails. This is separate from any auto policy fetches the device may perform
-    on its own.
-
-    Returns:
-      The dictionary of policy info obtained from GetEnterprisePolicyInfo().
-
-    Raises:
-      pyauto_errors.JSONInterfaceError if the fetch fails.
-    """
-    cmd_dict = { 'command': 'FetchEnterprisePolicy' }
-    self._GetResultFromJSONRequest(cmd_dict, windex=-1)
-    return self.GetEnterprisePolicyInfo()
 
   def GetTimeInfo(self, windex=0):
     """Gets info about the ChromeOS status bar clock.

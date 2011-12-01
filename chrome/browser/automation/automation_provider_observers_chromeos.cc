@@ -362,40 +362,6 @@ chromeos::VirtualNetwork* VirtualConnectObserver::GetVirtualNetwork(
   return virt;
 }
 
-CloudPolicyObserver::CloudPolicyObserver(AutomationProvider* automation,
-    IPC::Message* reply_message,
-    policy::BrowserPolicyConnector* browser_policy_connector,
-    policy::CloudPolicySubsystem* policy_subsystem)
-    : automation_(automation->AsWeakPtr()),
-      reply_message_(reply_message) {
-  observer_registrar_.reset(
-      new policy::CloudPolicySubsystem::ObserverRegistrar(policy_subsystem,
-                                                          this));
-}
-
-CloudPolicyObserver::~CloudPolicyObserver() {}
-
-void CloudPolicyObserver::OnPolicyStateChanged(
-    policy::CloudPolicySubsystem::PolicySubsystemState state,
-    policy::CloudPolicySubsystem::ErrorDetails error_details) {
-  if (state == policy::CloudPolicySubsystem::TOKEN_FETCHED) {
-    // fetched the token, now return and wait for a call with state SUCCESS
-    return;
-  } else if (automation_) {
-    if (state == policy::CloudPolicySubsystem::SUCCESS) {
-      AutomationJSONReply(automation_,
-                          reply_message_.release()).SendSuccess(NULL);
-    } else {
-      // fetch returned an error
-      AutomationJSONReply(automation_,
-                          reply_message_.release()).SendError(
-                              "Policy fetch failed.");
-    }
-  }
-  delete this;
-  return;
-}
-
 EnrollmentObserver::EnrollmentObserver(AutomationProvider* automation,
     IPC::Message* reply_message,
     chromeos::EnterpriseEnrollmentScreenActor* enrollment_screen_actor,

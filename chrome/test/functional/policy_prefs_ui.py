@@ -21,10 +21,11 @@
 import logging
 
 import pyauto_functional  # must come before pyauto.
+import policy_base
 import pyauto
 
 
-class PolicyPrefsUITest(pyauto.PyUITest):
+class PolicyPrefsUITest(policy_base.PolicyTestBase):
   BROWSER         = 0
   PERSONAL        = 1
   ADVANCED        = 2
@@ -249,9 +250,11 @@ class PolicyPrefsUITest(pyauto.PyUITest):
 
   def RunPoliciesShowBanner(self, include_expected, include_unexpected):
     """Tests all the policies on each settings page.
+
     If |include_expected|, pages where the banner is expected will be verified.
     If |include_unexpected|, pages where the banner should not appear will also
-    be verified. This can take some time."""
+    be verified. This can take some time.
+    """
 
     os = self.GetPlatform()
 
@@ -296,9 +299,12 @@ class PolicyPrefsUITest(pyauto.PyUITest):
     self.RunPoliciesShowBanner(False, True)
 
   def testFailOnPoliciesNotTested(self):
-    """Fails for all policies listed in GetPolicyDefinitionList() that aren't
+    """Verifies that all existing policies are covered.
+
+    Fails for all policies listed in GetPolicyDefinitionList() that aren't
     listed in |PolicyPrefsUITest.policies|, and thus are not tested by
-    |testPoliciesShowBanner|."""
+    |testPoliciesShowBanner|.
+    """
 
     all_policies = self.GetPolicyDefinitionList()
     for policy in all_policies:
