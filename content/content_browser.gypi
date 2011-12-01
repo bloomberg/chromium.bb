@@ -32,7 +32,7 @@
     'public/browser/content_ipc_logging.h',
     'public/browser/download_manager_delegate.h',
     'public/browser/native_web_keyboard_event.h',
-    'public/browser/navigation_types.h',
+    'public/browser/navigation_type.h',
     'public/browser/notification_details.h',
     'public/browser/notification_observer.h',
     'public/browser/notification_registrar.cc',

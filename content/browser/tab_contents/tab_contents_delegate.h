@@ -12,7 +12,7 @@
 #include "base/basictypes.h"
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/navigation_types.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/common/page_transition_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "webkit/glue/window_open_disposition.h"

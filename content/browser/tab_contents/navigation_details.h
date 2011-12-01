@@ -8,7 +8,7 @@
 
 #include <string>
 #include "content/common/content_export.h"
-#include "content/public/browser/navigation_types.h"
+#include "content/public/browser/navigation_type.h"
 #include "googleurl/src/gurl.h"
 
 class NavigationEntry;

@@ -41,7 +41,7 @@
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/navigation_types.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"

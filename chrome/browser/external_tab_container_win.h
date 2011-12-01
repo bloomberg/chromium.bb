@@ -21,7 +21,7 @@
 #include "chrome/browser/ui/views/unhandled_keyboard_event_handler.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
-#include "content/public/browser/navigation_types.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/accelerators/accelerator.h"

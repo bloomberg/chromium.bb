@@ -16,7 +16,7 @@
 #include "googleurl/src/gurl.h"
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/navigation_types.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/common/page_transition_types.h"
 
 class NavigationEntry;
