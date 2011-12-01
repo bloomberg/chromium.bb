@@ -9670,7 +9670,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Unable to open open "$1": $2
       </message>
       <message name="IDS_FILE_BROWSER_MOUNT_ARCHIVE" desc="Title of the action for mounting an archive file to work with its contents.">
-        Open archive
+        Open zip file
       </message>
       <message name="IDS_FILE_BROWSER_UNMOUNT_ARCHIVE" desc="Title of the action for unmounting the archive file.">
         Close archive
