@@ -59,7 +59,7 @@ struct wl_shell {
 };
 
 enum shell_surface_type {
-	SHELL_SURFACE_NORMAL,
+	SHELL_SURFACE_NONE,
 
 	SHELL_SURFACE_PANEL,
 	SHELL_SURFACE_BACKGROUND,
@@ -288,22 +288,47 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 		wl_resource_post_no_memory(resource);
 }
 
+static int
+reset_shell_surface_type(struct shell_surface *surface)
+{
+	switch (surface->type) {
+	case SHELL_SURFACE_FULLSCREEN:
+		surface->surface->x = surface->saved_x;
+		surface->surface->y = surface->saved_y;
+		surface->surface->fullscreen_output = NULL;
+		break;
+	case SHELL_SURFACE_PANEL:
+	case SHELL_SURFACE_BACKGROUND:
+		wl_list_remove(&surface->link);
+		wl_list_init(&surface->link);
+		break;
+	case SHELL_SURFACE_LOCK:
+		wl_resource_post_error(&surface->resource,
+				       WL_DISPLAY_ERROR_INVALID_METHOD,
+				       "cannot reassign lock surface type");
+		return -1;
+	case SHELL_SURFACE_NONE:
+	case SHELL_SURFACE_TOPLEVEL:
+	case SHELL_SURFACE_TRANSIENT:
+		break;
+	}
+
+	surface->type = SHELL_SURFACE_NONE;
+	return 0;
+}
+
 static void
 shell_surface_set_toplevel(struct wl_client *client,
 			   struct wl_resource *resource)
 
 {
-	struct shell_surface *shsurf = resource->data;
-	struct wlsc_surface *es = shsurf->surface;
+	struct shell_surface *surface = resource->data;
 
-	if (shsurf->type == SHELL_SURFACE_FULLSCREEN) {
-		es->x = shsurf->saved_x;
-		es->y = shsurf->saved_y;
-	}
+	if (reset_shell_surface_type(surface))
+		return;
 
-	wlsc_surface_damage(es);
-	shsurf->type = SHELL_SURFACE_TOPLEVEL;
-	es->fullscreen_output = NULL;
+	wlsc_surface_damage(surface->surface);
+	surface->type = SHELL_SURFACE_TOPLEVEL;
 }
 
 static void
@@ -316,6 +341,9 @@ shell_surface_set_transient(struct wl_client *client,
 	struct wlsc_surface *es = shsurf->surface;
 	struct shell_surface *pshsurf = parent_resource->data;
 	struct wlsc_surface *pes = pshsurf->surface;
+
+	if (reset_shell_surface_type(shsurf))
+		return;
 
 	/* assign to parents output  */
 	es->output = pes->output;
@@ -335,6 +363,9 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	struct shell_surface *shsurf = resource->data;
 	struct wlsc_surface *es = shsurf->surface;
 	struct wlsc_output *output;
+
+	if (reset_shell_surface_type(shsurf))
+		return;
 
 	/* FIXME: Fullscreen on first output */
 	/* FIXME: Handle output going away */
@@ -438,7 +469,7 @@ shell_get_shell_surface(struct wl_client *client,
 	/* init link so its safe to always remove it in destroy_shell_surface */
 	wl_list_init(&shsurf->link);
 
-	shsurf->type = SHELL_SURFACE_NORMAL;
+	shsurf->type = SHELL_SURFACE_NONE;
 
 	wl_client_add_resource(client, &shsurf->resource);
 }
@@ -457,6 +488,9 @@ desktop_shell_set_background(struct wl_client *client,
 	struct shell_surface *shsurf = surface_resource->data;
 	struct wlsc_surface *surface = shsurf->surface;
 	struct shell_surface *priv;
+
+	if (reset_shell_surface_type(shsurf))
+		return;
 
 	wl_list_for_each(priv, &shell->backgrounds, link) {
 		if (priv->output == output_resource->data) {
@@ -492,6 +526,9 @@ desktop_shell_set_panel(struct wl_client *client,
 	struct shell_surface *shsurf = surface_resource->data;
 	struct wlsc_surface *surface = shsurf->surface;
 	struct shell_surface *priv;
+
+	if (reset_shell_surface_type(shsurf))
+		return;
 
 	wl_list_for_each(priv, &shell->panels, link) {
 		if (priv->output == output_resource->data) {
@@ -534,13 +571,17 @@ desktop_shell_set_lock_surface(struct wl_client *client,
 			       struct wl_resource *surface_resource)
 {
 	struct wl_shell *shell = resource->data;
+	struct shell_surface *surface = surface_resource->data;
+
+	if (reset_shell_surface_type(surface))
+		return;
 
 	shell->prepare_event_sent = false;
 
 	if (!shell->locked)
 		return;
 
-	shell->lock_surface = surface_resource->data;
+	shell->lock_surface = surface;
 
 	shell->lock_surface_listener.func = handle_lock_surface_destroy;
 	wl_list_insert(&surface_resource->destroy_listener_list,
@@ -603,7 +644,7 @@ get_shell_surface_type(struct wlsc_surface *surface)
 
 	shsurf = get_shell_surface(surface);
 	if (!shsurf)
-		return SHELL_SURFACE_NORMAL;
+		return SHELL_SURFACE_NONE;
 	return shsurf->type;
 }
 
@@ -944,6 +985,9 @@ screensaver_set_surface(struct wl_client *client,
 	struct wl_shell *shell = resource->data;
 	struct shell_surface *surface = shell_surface_resource->data;
 	struct wlsc_output *output = output_resource->data;
+
+	if (reset_shell_surface_type(surface))
+		return;
 
 	/* TODO */
 }
