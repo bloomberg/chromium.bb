@@ -102,6 +102,11 @@ class ExternalProtocolHandlerTest : public testing::Test {
     file_thread_.Start();
   }
 
+  virtual void TearDown() {
+    // Ensure that g_accept_requests gets set back to true after test execution.
+    ExternalProtocolHandler::PermitLaunchUrl();
+  }
+
   void DoTest(ExternalProtocolHandler::BlockState block_state,
               ShellIntegration::DefaultWebClientState os_state,
               bool should_prompt, bool should_launch, bool should_block) {
