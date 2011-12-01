@@ -305,13 +305,7 @@ TEST_F(ProfileInfoCacheTest, GAIAPicture) {
       profile_image, GetCache()->GetAvatarIconOfProfileAtIndex(1)));
 }
 
-#if defined(USE_AURA)
-#define MAYBE_PersistGAIAPicture DISABLED_PersistGAIAPicture
-#else
-#define MAYBE_PersistGAIAPicture PersistGAIAPicture
-#endif
-
-TEST_F(ProfileInfoCacheTest, MAYBE_PersistGAIAPicture) {
+TEST_F(ProfileInfoCacheTest, PersistGAIAPicture) {
   GetCache()->AddProfileToCache(
       GetProfilePath("path_1"), ASCIIToUTF16("name_1"), string16(), 0);
   gfx::Image gaia_image(gfx::test::CreateImage());

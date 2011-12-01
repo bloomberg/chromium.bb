@@ -183,6 +183,8 @@ bool MessagePumpX::RunOnce(GMainContext* context, bool block) {
 }
 
 bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
+  if (!observers().might_have_observers())
+    return false;
   ObserverListBase<MessagePumpObserver>::Iterator it(observers());
   MessagePumpObserver* obs;
   while ((obs = it.GetNext()) != NULL) {
@@ -193,11 +195,7 @@ bool MessagePumpX::WillProcessXEvent(XEvent* xevent) {
 }
 
 void MessagePumpX::DidProcessXEvent(XEvent* xevent) {
-  ObserverListBase<MessagePumpObserver>::Iterator it(observers());
-  MessagePumpObserver* obs;
-  while ((obs = it.GetNext()) != NULL) {
-    obs->DidProcessEvent(xevent);
-  }
+  FOR_EACH_OBSERVER(MessagePumpObserver, observers(), DidProcessEvent(xevent));
 }
 
 }  // namespace base

@@ -222,13 +222,14 @@ bool ShouldSendCharEventForKeyboardCode(ui::KeyboardCode keycode) {
   }
 }
 
-class DesktopHostLinux : public DesktopHost {
+class DesktopHostLinux : public DesktopHost,
+                         public MessageLoop::DestructionObserver {
  public:
   explicit DesktopHostLinux(const gfx::Rect& bounds);
   virtual ~DesktopHostLinux();
 
  private:
-  // base::MessageLoop::Dispatcher Override.
+  // MessageLoop::Dispatcher Override.
   virtual DispatchStatus Dispatch(XEvent* xev) OVERRIDE;
 
   // DesktopHost Overrides.
@@ -242,6 +243,9 @@ class DesktopHostLinux : public DesktopHost {
   virtual void SetCursor(gfx::NativeCursor cursor_type) OVERRIDE;
   virtual gfx::Point QueryMouseLocation() OVERRIDE;
   virtual void PostNativeEvent(const base::NativeEvent& event) OVERRIDE;
+
+  // MessageLoop::DestructionObserver Overrides.
+  virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 
   // Returns true if there's an X window manager present... in most cases.  Some
   // window managers (notably, ion3) don't implement enough of ICCCM for us to
@@ -292,6 +296,9 @@ DesktopHostLinux::DesktopHostLinux(const gfx::Rect& bounds)
   if (base::MessagePumpForUI::HasXInput2())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 #endif
+
+  base::MessagePumpX::SetDefaultDispatcher(this);
+  MessageLoopForUI::current()->AddDestructionObserver(this);
 }
 
 DesktopHostLinux::~DesktopHostLinux() {
@@ -299,6 +306,9 @@ DesktopHostLinux::~DesktopHostLinux() {
 
   // Clears XCursorCache.
   ui::GetXCursor(ui::kCursorClearXCursorCache);
+
+  MessageLoopForUI::current()->RemoveDestructionObserver(this);
+  base::MessagePumpX::SetDefaultDispatcher(NULL);
 }
 
 base::MessagePumpDispatcher::DispatchStatus DesktopHostLinux::Dispatch(
@@ -532,6 +542,10 @@ void DesktopHostLinux::PostNativeEvent(const base::NativeEvent& native_event) {
   }
   Status status = XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
   DLOG(WARNING) << "PostEvent:" << xevent.type << ", status=" << status;
+}
+
+void DesktopHostLinux::WillDestroyCurrentMessageLoop() {
+  desktop_->DeleteInstance();
 }
 
 bool DesktopHostLinux::IsWindowManagerPresent() {

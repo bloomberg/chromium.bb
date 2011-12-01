@@ -172,39 +172,6 @@ TEST_F(WidgetTest, GetTopLevelWidget_Native) {
   // |child| should be automatically destroyed with |toplevel|.
 }
 
-TEST_F(WidgetTest, GetTopLevelWidget_Synthetic) {
-  // Create a hierarchy consisting of a top level platform native widget and a
-  // child NativeWidget.
-  Widget* toplevel = CreateTopLevelPlatformWidget();
-  Widget* child = CreateTopLevelNativeWidget();
-
-  EXPECT_EQ(toplevel, toplevel->GetTopLevelWidget());
-  EXPECT_EQ(child, child->GetTopLevelWidget());
-
-  toplevel->CloseNow();
-  // |child| should be automatically destroyed with |toplevel|.
-}
-
-// Creates a hierarchy consisting of a desktop platform native widget, a
-// toplevel NativeWidget, and a child of that toplevel, another NativeWidget.
-TEST_F(WidgetTest, GetTopLevelWidget_SyntheticDesktop) {
-  // Create a hierarchy consisting of a desktop platform native widget,
-  // a toplevel NativeWidget and a chlid NativeWidget.
-  Widget* desktop = CreateTopLevelPlatformWidget();
-  Widget* toplevel = CreateTopLevelNativeWidget(); // Will be parented
-                                                   // automatically to
-                                                   // |toplevel|.
-
-  Widget* child = CreateChildNativeWidgetWithParent(toplevel);
-
-  EXPECT_EQ(desktop, desktop->GetTopLevelWidget());
-  EXPECT_EQ(toplevel, toplevel->GetTopLevelWidget());
-  EXPECT_EQ(toplevel, child->GetTopLevelWidget());
-
-  desktop->CloseNow();
-  // |toplevel|, |child| should be automatically destroyed with |toplevel|.
-}
-
 // Tests some grab/ungrab events.
 TEST_F(WidgetTest, DISABLED_GrabUngrab) {
   Widget* toplevel = CreateTopLevelPlatformWidget();
@@ -341,35 +308,6 @@ TEST_F(WidgetTest, Visibility_ChildPopup) {
   // |child_popup| should be automatically destroyed with |toplevel|.
 }
 #endif
-
-// Tests visibility of synthetic child widgets.
-TEST_F(WidgetTest, Visibility_Synthetic) {
-  // Create a hierarchy consisting of a desktop platform native widget,
-  // a toplevel NativeWidget and a chlid NativeWidget.
-  Widget* desktop = CreateTopLevelPlatformWidget();
-  desktop->Show();
-
-  Widget* toplevel = CreateTopLevelNativeWidget(); // Will be parented
-                                                   // automatically to
-                                                   // |toplevel|.
-
-  Widget* child = CreateChildNativeWidgetWithParent(toplevel);
-
-  EXPECT_FALSE(toplevel->IsVisible());
-  EXPECT_FALSE(child->IsVisible());
-
-  child->Show();
-
-  EXPECT_FALSE(toplevel->IsVisible());
-  EXPECT_FALSE(child->IsVisible());
-
-  toplevel->Show();
-
-  EXPECT_TRUE(toplevel->IsVisible());
-  EXPECT_TRUE(child->IsVisible());
-
-  desktop->CloseNow();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget ownership tests.

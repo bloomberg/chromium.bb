@@ -90,20 +90,17 @@ class AccessibilityEventRouterViewsTest
  public:
   virtual void SetUp() {
     views::ViewsDelegate::views_delegate = new AccessibilityViewsDelegate();
-    window_delegate_ = NULL;
   }
 
   virtual void TearDown() {
     delete views::ViewsDelegate::views_delegate;
     views::ViewsDelegate::views_delegate = NULL;
-    if (window_delegate_)
-      delete window_delegate_;
   }
 
   views::Widget* CreateWindowWithContents(views::View* contents) {
-    window_delegate_ = new AccessibilityWindowDelegate(contents);
-    return views::Widget::CreateWindowWithBounds(window_delegate_,
-                                                 gfx::Rect(0, 0, 500, 500));
+    return views::Widget::CreateWindowWithBounds(
+        new AccessibilityWindowDelegate(contents),
+        gfx::Rect(0, 0, 500, 500));
   }
 
  protected:
@@ -122,7 +119,6 @@ class AccessibilityEventRouterViewsTest
   MessageLoopForUI message_loop_;
   int focus_event_count_;
   std::string last_control_name_;
-  AccessibilityWindowDelegate* window_delegate_;
 };
 
 TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
@@ -184,6 +180,8 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   focus_manager->AdvanceFocus(false);
   EXPECT_EQ(3, focus_event_count_);
   EXPECT_EQ(kButton1ASCII, last_control_name_);
+
+  window->CloseNow();
 }
 
 #endif  // defined(TOOLKIT_VIEWS)

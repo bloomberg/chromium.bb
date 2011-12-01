@@ -32,10 +32,6 @@
 #include "ui/gfx/compositor/compositor_cc.h"
 #endif
 
-#if defined(USE_X11)
-#include "base/message_pump_x.h"
-#endif
-
 using std::string;
 using std::vector;
 
@@ -429,16 +425,9 @@ Desktop::Desktop()
                                          host_->GetSize());
   }
   DCHECK(compositor_.get());
-#if defined(USE_X11)
-  base::MessagePumpX::SetDefaultDispatcher(host_.get());
-#endif
 }
 
 Desktop::~Desktop() {
-#if defined(USE_X11)
-  base::MessagePumpX::SetDefaultDispatcher(NULL);
-#endif
-
   in_destructor_ = true;
 #ifdef USE_WEBKIT_COMPOSITOR
   if (!ui::Compositor::compositor_factory())
