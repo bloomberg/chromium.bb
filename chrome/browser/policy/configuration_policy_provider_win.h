@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_WIN_H_
 #pragma once
 
+#include "base/string16.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 
 namespace policy {
@@ -18,8 +19,8 @@ namespace policy {
 // the latest version of the policy set by administrators.
 class ConfigurationPolicyProviderWin : public AsynchronousPolicyProvider {
  public:
-  explicit ConfigurationPolicyProviderWin(
-      const PolicyDefinitionList* policy_list);
+  ConfigurationPolicyProviderWin(const PolicyDefinitionList* policy_list,
+                                 const string16& registry_key);
   virtual ~ConfigurationPolicyProviderWin() {}
 
  private:

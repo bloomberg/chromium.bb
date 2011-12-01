@@ -135,28 +135,29 @@ void TestHarness::SetUp() {}
 
 AsynchronousPolicyProvider* TestHarness::CreateProvider(
     const PolicyDefinitionList* policy_definition_list) {
-  return new ConfigurationPolicyProviderWin(policy_definition_list);
+  return new ConfigurationPolicyProviderWin(policy_definition_list,
+                                            policy::kRegistryMandatorySubKey);
 }
 
 void TestHarness::InstallEmptyPolicy() {}
 
 void TestHarness::InstallStringPolicy(const std::string& policy_name,
                                       const std::string& policy_value) {
-  RegKey key(hive_, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  UTF8ToUTF16(policy_value).c_str());
 }
 
 void TestHarness::InstallIntegerPolicy(const std::string& policy_name,
                                        int policy_value) {
-  RegKey key(hive_, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  static_cast<DWORD>(policy_value));
 }
 
 void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
                                        bool policy_value) {
-  RegKey key(hive_, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  RegKey key(hive_, policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS);
   key.WriteValue(UTF8ToUTF16(policy_name).c_str(),
                  static_cast<DWORD>(policy_value));
 }
@@ -164,7 +165,7 @@ void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const ListValue* policy_value) {
   RegKey key(hive_,
-             (string16(policy::kRegistrySubKey) + ASCIIToUTF16("\\") +
+             (string16(policy::kRegistryMandatorySubKey) + ASCIIToUTF16("\\") +
               UTF8ToUTF16(policy_name)).c_str(),
              KEY_ALL_ACCESS);
   int index = 1;
@@ -202,7 +203,8 @@ INSTANTIATE_TEST_CASE_P(
 class ConfigurationPolicyProviderWinTest : public AsynchronousPolicyTestBase {
  protected:
   ConfigurationPolicyProviderWinTest()
-      : provider_(&test_policy_definitions::kList) {}
+      : provider_(&test_policy_definitions::kList,
+                  policy::kRegistryMandatorySubKey) {}
   virtual ~ConfigurationPolicyProviderWinTest() {}
 
   ScopedGroupPolicyRegistrySandbox registry_sandbox_;
@@ -210,10 +212,14 @@ class ConfigurationPolicyProviderWinTest : public AsynchronousPolicyTestBase {
 };
 
 TEST_F(ConfigurationPolicyProviderWinTest, HKLMOverHKCU) {
-  RegKey hklm_key(HKEY_LOCAL_MACHINE, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  RegKey hklm_key(HKEY_LOCAL_MACHINE,
+                  policy::kRegistryMandatorySubKey,
+                  KEY_ALL_ACCESS);
   hklm_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
                       UTF8ToUTF16("hklm").c_str());
-  RegKey hkcu_key(HKEY_CURRENT_USER, policy::kRegistrySubKey, KEY_ALL_ACCESS);
+  RegKey hkcu_key(HKEY_CURRENT_USER,
+                  policy::kRegistryMandatorySubKey,
+                  KEY_ALL_ACCESS);
   hkcu_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
                       UTF8ToUTF16("hkcu").c_str());
 

@@ -564,17 +564,16 @@ extern "C" int __declspec(dllexport) CrashForException(
 static bool MetricsReportingControlledByPolicy(bool* result) {
   std::wstring key_name = UTF8ToWide(policy::key::kMetricsReportingEnabled);
   DWORD value = 0;
-  // TODO(joshia): why hkcu_policy_key opens HKEY_LOCAL_MACHINE?
-  base::win::RegKey hkcu_policy_key(HKEY_LOCAL_MACHINE,
-                                    policy::kRegistrySubKey, KEY_READ);
-  if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
+  base::win::RegKey hklm_policy_key(HKEY_LOCAL_MACHINE,
+                                    policy::kRegistryMandatorySubKey, KEY_READ);
+  if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
     *result = value != 0;
     return true;
   }
 
-  base::win::RegKey hklm_policy_key(HKEY_CURRENT_USER,
-                                    policy::kRegistrySubKey, KEY_READ);
-  if (hklm_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
+  base::win::RegKey hkcu_policy_key(HKEY_CURRENT_USER,
+                                    policy::kRegistryMandatorySubKey, KEY_READ);
+  if (hkcu_policy_key.ReadValueDW(key_name.c_str(), &value) == ERROR_SUCCESS) {
     *result = value != 0;
     return true;
   }

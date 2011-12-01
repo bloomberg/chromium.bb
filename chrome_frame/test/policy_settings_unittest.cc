@@ -22,7 +22,7 @@ namespace {
 // A best effort way to zap CF policy entries that may be in the registry.
 void DeleteChromeFramePolicyEntries(HKEY root) {
   RegKey key;
-  if (key.Open(root, policy::kRegistrySubKey,
+  if (key.Open(root, policy::kRegistryMandatorySubKey,
                KEY_ALL_ACCESS) == ERROR_SUCCESS) {
     key.DeleteValue(
         ASCIIToWide(policy::key::kChromeFrameRendererSettings).c_str());
@@ -35,7 +35,7 @@ void DeleteChromeFramePolicyEntries(HKEY root) {
 
 bool InitializePolicyKey(HKEY policy_root, RegKey* policy_key) {
   EXPECT_EQ(ERROR_SUCCESS, policy_key->Create(policy_root,
-      policy::kRegistrySubKey, KEY_ALL_ACCESS));
+      policy::kRegistryMandatorySubKey, KEY_ALL_ACCESS));
   return policy_key->Valid();
 }
 

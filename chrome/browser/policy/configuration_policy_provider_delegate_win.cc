@@ -46,9 +46,10 @@ bool ReadRegistryStringValue(RegKey* key, const string16& name,
 namespace policy {
 
 ConfigurationPolicyProviderDelegateWin::ConfigurationPolicyProviderDelegateWin(
-    const PolicyDefinitionList* policy_definition_list)
-    : policy_definition_list_(policy_definition_list) {
-}
+    const PolicyDefinitionList* policy_definition_list,
+    const string16& registry_key)
+    : policy_definition_list_(policy_definition_list),
+      registry_key_(registry_key) {}
 
 DictionaryValue* ConfigurationPolicyProviderDelegateWin::Load() {
   DictionaryValue* result = new DictionaryValue();
@@ -94,13 +95,13 @@ DictionaryValue* ConfigurationPolicyProviderDelegateWin::Load() {
 
 bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyString(
     const string16& name, string16* result) const {
-  RegKey policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
+  RegKey policy_key(HKEY_LOCAL_MACHINE, registry_key_.c_str(), KEY_READ);
   // First try the global policy.
   if (ReadRegistryStringValue(&policy_key, name, result))
     return true;
 
   // Fall back on user-specific policy.
-  if (policy_key.Open(HKEY_CURRENT_USER, kRegistrySubKey,
+  if (policy_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
                       KEY_READ) != ERROR_SUCCESS)
     return false;
   return ReadRegistryStringValue(&policy_key, name, result);
@@ -108,7 +109,7 @@ bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyString(
 
 bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyStringList(
     const string16& key, ListValue* result) const {
-  string16 path = string16(kRegistrySubKey);
+  string16 path = registry_key_;
   path += ASCIIToUTF16("\\") + key;
   RegKey policy_key;
   if (policy_key.Open(HKEY_LOCAL_MACHINE, path.c_str(), KEY_READ) !=
@@ -139,13 +140,13 @@ bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyBoolean(
 bool ConfigurationPolicyProviderDelegateWin::GetRegistryPolicyInteger(
     const string16& value_name, uint32* result) const {
   DWORD value = 0;
-  RegKey policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
+  RegKey policy_key(HKEY_LOCAL_MACHINE, registry_key_.c_str(), KEY_READ);
   if (policy_key.ReadValueDW(value_name.c_str(), &value) == ERROR_SUCCESS) {
     *result = value;
     return true;
   }
 
-  if (policy_key.Open(HKEY_CURRENT_USER, kRegistrySubKey, KEY_READ) ==
+  if (policy_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(), KEY_READ) ==
       ERROR_SUCCESS) {
     if (policy_key.ReadValueDW(value_name.c_str(), &value) == ERROR_SUCCESS) {
       *result = value;

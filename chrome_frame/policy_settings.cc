@@ -70,7 +70,7 @@ void PolicySettings::ReadUrlSettings(
   std::wstring settings_value(
       ASCIIToWide(policy::key::kChromeFrameRendererSettings));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
-    if ((config_key.Open(kRootKeys[i], policy::kRegistrySubKey,
+    if ((config_key.Open(kRootKeys[i], policy::kRegistryMandatorySubKey,
                          KEY_READ) == ERROR_SUCCESS) &&
         (config_key.ReadValueDW(settings_value.c_str(),
                                 &value) == ERROR_SUCCESS)) {
@@ -105,7 +105,7 @@ void PolicySettings::ReadContentTypeSetting(
     std::vector<std::wstring>* content_type_list) {
   DCHECK(content_type_list);
 
-  std::wstring sub_key(policy::kRegistrySubKey);
+  std::wstring sub_key(policy::kRegistryMandatorySubKey);
   sub_key += L"\\";
   sub_key += ASCIIToWide(policy::key::kChromeFrameContentTypes);
 
@@ -126,7 +126,7 @@ void PolicySettings::ReadApplicationLocaleSetting(
   std::wstring application_locale_value(
       ASCIIToWide(policy::key::kApplicationLocaleValue));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
-    if ((config_key.Open(kRootKeys[i], policy::kRegistrySubKey,
+    if ((config_key.Open(kRootKeys[i], policy::kRegistryMandatorySubKey,
                          KEY_READ) == ERROR_SUCCESS) &&
         (config_key.ReadValue(application_locale_value.c_str(),
                               application_locale) == ERROR_SUCCESS)) {

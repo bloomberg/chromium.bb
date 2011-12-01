@@ -12,11 +12,13 @@ template is the path to a .json policy template file.'''
 
 from __future__ import with_statement
 from optparse import OptionParser
-import sys;
+import sys
 
 
-CHROME_SUBKEY = 'SOFTWARE\\\\Policies\\\\Google\\\\Chrome';
-CHROMIUM_SUBKEY = 'SOFTWARE\\\\Policies\\\\Chromium';
+CHROME_MANDATORY_SUBKEY = 'SOFTWARE\\\\Policies\\\\Google\\\\Chrome'
+CHROME_RECOMMENDED_SUBKEY = CHROME_MANDATORY_SUBKEY + '\\\\Recommended'
+CHROMIUM_MANDATORY_SUBKEY = 'SOFTWARE\\\\Policies\\\\Chromium'
+CHROMIUM_RECOMMENDED_SUBKEY = CHROMIUM_MANDATORY_SUBKEY + '\\\\Recommended'
 
 TYPE_MAP = {
   'int': 'TYPE_INTEGER',
@@ -29,36 +31,36 @@ TYPE_MAP = {
 
 
 def main():
-  parser = OptionParser(usage=__doc__);
+  parser = OptionParser(usage=__doc__)
   parser.add_option("--pch", "--policy-constants-header", dest="header_path",
                     help="generate header file of policy constants",
-                    metavar="FILE");
+                    metavar="FILE")
   parser.add_option("--pcc", "--policy-constants-source", dest="source_path",
                     help="generate source file of policy constants",
-                    metavar="FILE");
+                    metavar="FILE")
   parser.add_option("--pth", "--policy-type-header", dest="type_path",
                     help="generate header file for policy type enumeration",
-                    metavar="FILE");
+                    metavar="FILE")
   parser.add_option("--ppb", "--policy-protobuf", dest="proto_path",
                     help="generate cloud policy protobuf file",
-                    metavar="FILE");
+                    metavar="FILE")
   parser.add_option("--ppd", "--protobuf-decoder", dest="decoder_path",
                     help="generate C++ code decoding the policy protobuf",
-                    metavar="FILE");
+                    metavar="FILE")
 
-  (opts, args) = parser.parse_args();
+  (opts, args) = parser.parse_args()
 
   if len(args) != 3:
     print "exactly platform, chromium_os flag and input file must be specified."
     parser.print_help()
     return 2
-  template_file_contents = _LoadJSONFile(args[2]);
+  template_file_contents = _LoadJSONFile(args[2])
   if opts.header_path is not None:
-    _WritePolicyConstantHeader(template_file_contents, args, opts);
+    _WritePolicyConstantHeader(template_file_contents, args, opts)
   if opts.source_path is not None:
-    _WritePolicyConstantSource(template_file_contents, args, opts);
+    _WritePolicyConstantSource(template_file_contents, args, opts)
   if opts.type_path is not None:
-    _WritePolicyTypeEnumerationHeader(template_file_contents, args, opts);
+    _WritePolicyTypeEnumerationHeader(template_file_contents, args, opts)
   if opts.proto_path is not None:
     _WriteProtobuf(template_file_contents, args, opts.proto_path)
   if opts.decoder_path is not None:
@@ -90,7 +92,7 @@ def _GetPolicyDetails(policy):
 
 
 def _GetPolicyList(template_file_contents):
-  policies = [];
+  policies = []
   for policy in template_file_contents['policy_definitions']:
     if policy['type'] == 'group':
       for sub_policy in policy['policies']:
@@ -126,7 +128,7 @@ def _LoadJSONFile(json_file):
 
 #------------------ policy constants header ------------------------#
 def _WritePolicyConstantHeader(template_file_contents, args, opts):
-  os = args[0];
+  os = args[0]
   with open(opts.header_path, "w") as f:
     _OutputGeneratedWarningForC(f, args[2])
 
@@ -140,9 +142,12 @@ def _WritePolicyConstantHeader(template_file_contents, args, opts):
             'namespace policy {\n\n')
 
     if os == "win":
-      f.write('// The windows registry path where policy configuration '
-              'resides.\n'
-              'extern const wchar_t kRegistrySubKey[];\n\n')
+      f.write('// The windows registry path where mandatory policy '
+              'configuration resides.\n'
+              'extern const wchar_t kRegistryMandatorySubKey[];\n'
+              '// The windows registry path where recommended policy '
+              'configuration resides.\n'
+              'extern const wchar_t kRegistryRecommendedSubKey[];\n\n')
 
     f.write('// Lists policy types mapped to their names and expected types.\n'
             '// Used to initialize ConfigurationPolicyProviders.\n'
@@ -176,7 +181,7 @@ def _WritePolicyConstantHeader(template_file_contents, args, opts):
 
 #------------------ policy constants source ------------------------#
 def _WritePolicyConstantSource(template_file_contents, args, opts):
-  os = args[0];
+  os = args[0]
   is_chromium_os = args[1] == "1"
   platform = None
   platform_wildcard = None
@@ -209,7 +214,7 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
             '};\n\n')
 
     f.write('// Maps a policy-type enum value to the policy name.\n'
-            'const char* kPolicyNameMap[] = {\n');
+            'const char* kPolicyNameMap[] = {\n')
     for name in _GetPolicyNameList(template_file_contents):
       f.write('  key::k%s,\n' % name)
     f.write('};\n\n')
@@ -224,11 +229,15 @@ def _WritePolicyConstantSource(template_file_contents, args, opts):
 
     if os == "win":
       f.write('#if defined(GOOGLE_CHROME_BUILD)\n'
-              'const wchar_t kRegistrySubKey[] = '
-              'L"' + CHROME_SUBKEY + '";\n'
+              'const wchar_t kRegistryMandatorySubKey[] = '
+              'L"' + CHROME_MANDATORY_SUBKEY + '";\n'
+              'const wchar_t kRegistryRecommendedSubKey[] = '
+              'L"' + CHROME_RECOMMENDED_SUBKEY + '";\n'
               '#else\n'
-              'const wchar_t kRegistrySubKey[] = '
-              'L"' + CHROMIUM_SUBKEY + '";\n'
+              'const wchar_t kRegistryMandatorySubKey[] = '
+              'L"' + CHROMIUM_MANDATORY_SUBKEY + '";\n'
+              'const wchar_t kRegistryRecommendedSubKey[] = '
+              'L"' + CHROMIUM_RECOMMENDED_SUBKEY + '";\n'
               '#endif\n\n')
 
     f.write('const char* GetPolicyName(ConfigurationPolicyType type) {\n'
@@ -269,7 +278,7 @@ def _WritePolicyTypeEnumerationHeader(template_file_contents, args, opts):
             '\n'
             'enum ConfigurationPolicyType {\n')
     for policy_name in _GetPolicyNameList(template_file_contents):
-      f.write('  kPolicy' + policy_name + ",\n");
+      f.write('  kPolicy' + policy_name + ",\n")
     f.write('};\n\n'
             '}  // namespace policy\n\n'
             '#endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_TYPE_H_\n')

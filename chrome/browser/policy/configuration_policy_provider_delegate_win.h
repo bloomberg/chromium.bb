@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_DELEGATE_WIN_H_
 #pragma once
 
+#include "base/string16.h"
 #include "chrome/browser/policy/asynchronous_policy_provider.h"
 
 namespace policy {
@@ -13,8 +14,9 @@ namespace policy {
 class ConfigurationPolicyProviderDelegateWin
     : public AsynchronousPolicyProvider::Delegate {
  public:
-  explicit ConfigurationPolicyProviderDelegateWin(
-      const PolicyDefinitionList* policy_definition_list);
+  ConfigurationPolicyProviderDelegateWin(
+      const PolicyDefinitionList* policy_definition_list,
+      const string16& registry_key);
   virtual ~ConfigurationPolicyProviderDelegateWin() {}
 
   // AsynchronousPolicyProvider::Delegate overrides:
@@ -36,6 +38,7 @@ class ConfigurationPolicyProviderDelegateWin
                                 uint32* result) const;
 
   const PolicyDefinitionList* policy_definition_list_;
+  const string16 registry_key_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProviderDelegateWin);
 };

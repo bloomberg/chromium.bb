@@ -139,8 +139,10 @@ bool LoadUserDataDirPolicyFromRegistry(HKEY hive,
                                        FilePath* user_data_dir) {
   std::wstring value;
 
-  base::win::RegKey hklm_policy_key(hive, policy::kRegistrySubKey, KEY_READ);
-  if (hklm_policy_key.ReadValue(key_name.c_str(), &value) == ERROR_SUCCESS) {
+  base::win::RegKey policy_key(hive,
+                               policy::kRegistryMandatorySubKey,
+                               KEY_READ);
+  if (policy_key.ReadValue(key_name.c_str(), &value) == ERROR_SUCCESS) {
     *user_data_dir = FilePath(policy::path_parser::ExpandPathVariables(value));
     return true;
   }
