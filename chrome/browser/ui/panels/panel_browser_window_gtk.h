@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PANELS_PANEL_BROWSER_WINDOW_GTK_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
 #include "chrome/browser/ui/gtk/menu_gtk.h"
 #include "chrome/browser/ui/panels/native_panel.h"

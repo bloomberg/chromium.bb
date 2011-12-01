@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/component_updater_interceptor.h"

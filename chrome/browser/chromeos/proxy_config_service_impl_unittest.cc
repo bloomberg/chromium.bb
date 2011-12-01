@@ -11,6 +11,7 @@
 #include "base/format_macros.h"
 #include "base/json/json_value_serializer.h"
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"

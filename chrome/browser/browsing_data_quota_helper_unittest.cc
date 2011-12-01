@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "chrome/browser/browsing_data_quota_helper_impl.h"
 #include "content/test/test_browser_thread.h"

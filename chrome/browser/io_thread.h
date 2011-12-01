@@ -19,16 +19,6 @@
 #include "content/public/browser/browser_thread_delegate.h"
 #include "net/base/network_change_notifier.h"
 
-// TODO(joi): Remove these in a follow-up change and IWYU in files
-// that were getting them directly or indirectly from here.
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/thread.h"
-
-class BrowserProcessImpl;
 class ChromeNetLog;
 class ExtensionEventRouterForwarder;
 class MediaInternals;

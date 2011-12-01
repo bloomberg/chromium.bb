@@ -4,6 +4,7 @@
 
 #include "chrome/browser/enumerate_modules_model_win.h"
 
+#include <algorithm>
 #include <Tlhelp32.h>
 #include <wintrust.h>
 

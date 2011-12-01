@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/mac/mac_util.h"
+#include "base/message_loop.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
 #include "chrome/browser/profiles/profile.h"

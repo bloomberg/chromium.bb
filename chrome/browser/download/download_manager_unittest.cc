@@ -10,6 +10,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"

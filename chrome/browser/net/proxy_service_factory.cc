@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/string_number_conversions.h"
+#include "base/threading/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/pref_proxy_config_tracker.h"

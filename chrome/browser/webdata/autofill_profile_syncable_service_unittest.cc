@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/location.h"
+#include "base/message_loop.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/sync/internal_api/read_node_mock.h"

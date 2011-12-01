@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/environment.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/nix/xdg_util.h"
 #include "base/process_util.h"
 #include "content/public/browser/browser_thread.h"

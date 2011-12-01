@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/scoped_temp_dir.h"
+#include "base/threading/thread.h"
 #include "base/time.h"
 #include "chrome/browser/policy/cloud_policy_controller.h"
 #include "chrome/browser/policy/cloud_policy_data_store.h"

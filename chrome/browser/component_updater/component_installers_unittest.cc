@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/json/json_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/version.h"
 #include "build/build_config.h"

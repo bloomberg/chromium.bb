@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_NET_GAIA_TOKEN_SERVICE_UNITTEST_H_
 #pragma once
 
+#include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/net/gaia/token_service.h"
 #include "chrome/browser/webdata/web_data_service.h"

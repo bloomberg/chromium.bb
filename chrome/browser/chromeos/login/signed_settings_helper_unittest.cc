@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/signed_settings_helper.h"
 
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros_settings_names.h"
 #include "chrome/browser/chromeos/dbus/dbus_thread_manager.h"

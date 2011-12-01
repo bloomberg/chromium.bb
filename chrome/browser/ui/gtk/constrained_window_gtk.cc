@@ -7,6 +7,7 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "base/bind.h"
+#include "base/message_loop.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/constrained_window_tab_helper.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"

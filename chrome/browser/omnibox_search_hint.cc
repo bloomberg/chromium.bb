@@ -5,6 +5,7 @@
 #include "chrome/browser/omnibox_search_hint.h"
 
 #include "base/command_line.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/task.h"
 // TODO(avi): remove when conversions not needed any more

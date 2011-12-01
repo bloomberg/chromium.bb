@@ -5,6 +5,7 @@
 #include "chrome/test/base/test_tab_strip_model_observer.h"
 
 #include "base/bind.h"
+#include "base/message_loop.h"
 #include "chrome/browser/printing/print_preview_tab_controller.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_wrapper.h"

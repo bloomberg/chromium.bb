@@ -13,15 +13,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread_delegate.h"
 
-// TODO(joi): Remove these in a follow-up change and IWYU in files
-// that were getting them directly or indirectly from here.
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop.h"
-#include "base/message_loop_proxy.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/thread.h"
-
 #if defined(UNIT_TEST)
 #include "base/logging.h"
 #endif  // UNIT_TEST

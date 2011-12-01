@@ -4,6 +4,7 @@
 
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 
+#include "base/message_loop_proxy.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/default_pref_store.h"

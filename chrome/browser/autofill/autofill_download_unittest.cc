@@ -4,6 +4,7 @@
 
 #include <list>
 
+#include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/utf_string_conversions.h"

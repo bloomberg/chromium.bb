@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
+#include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
 #include "content/test/test_browser_thread.h"

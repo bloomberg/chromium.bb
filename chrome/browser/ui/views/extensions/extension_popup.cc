@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 
 #include "base/bind.h"
+#include "base/message_loop.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profiles/profile.h"

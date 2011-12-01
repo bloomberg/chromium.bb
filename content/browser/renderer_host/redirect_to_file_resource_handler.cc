@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/file_util_proxy.h"
 #include "base/logging.h"
+#include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/task.h"
 #include "content/browser/renderer_host/resource_dispatcher_host.h"

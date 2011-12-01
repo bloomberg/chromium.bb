@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/sync_prefs.h"
 
+#include "base/message_loop.h"
 #include "base/time.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/test/base/testing_pref_service.h"

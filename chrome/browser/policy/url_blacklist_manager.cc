@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/url_blacklist_manager.h"
 
 #include "base/bind.h"
+#include "base/message_loop.h"
 #include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "base/values.h"

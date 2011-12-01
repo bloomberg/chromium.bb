@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/message_loop.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/mock_settings_observer.h"

@@ -5,6 +5,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/test/base/testing_browser_process.h"

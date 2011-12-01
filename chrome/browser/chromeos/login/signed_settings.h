@@ -11,6 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/owner_manager.h"
 
 // There are two categories of operations that can be performed on the

@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/message_loop.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/network_action_predictor_database.h"

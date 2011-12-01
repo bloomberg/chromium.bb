@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/message_loop.h"
 #include "chrome/browser/chromeos/login/client_login_response_handler.h"
 #include "chrome/browser/chromeos/login/cookie_fetcher.h"
 #include "chrome/browser/chromeos/login/issue_response_handler.h"

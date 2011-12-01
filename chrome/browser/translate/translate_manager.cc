@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/memory/singleton.h"
+#include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/string_split.h"
 #include "base/string_util.h"

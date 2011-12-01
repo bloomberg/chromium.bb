@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_INFO_CACHE_UNITTEST_H_
 #pragma once
 
+#include "base/message_loop.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
