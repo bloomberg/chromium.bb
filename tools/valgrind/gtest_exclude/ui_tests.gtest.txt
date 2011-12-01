@@ -136,3 +136,7 @@ IFrameTest.InEmptyFrame
 # Fails consistently on ChromeOS, http://crbug.com/104938
 WidgetOwnershipTest.Ownership_ViewsNativeWidgetOwnsWidget
 WidgetOwnershipTest.Ownership_ViewsNativeWidgetOwnsWidget_NativeDestroy
+
+# Leaks in audio tests http://crbug.com/106036
+PPAPITest.Audio_*
+OutOfProcessPPAPITest.Audio_*
