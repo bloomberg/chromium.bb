@@ -1801,6 +1801,13 @@ void NativeWidgetWin::OnSetFocus(HWND focused_window) {
   SetMsgHandled(FALSE);
 }
 
+LRESULT NativeWidgetWin::OnSetText(const wchar_t* text) {
+  // DefWindowProc for WM_SETTEXT does weird non-client painting, so we need to
+  // call it inside a ScopedRedrawLock.
+  return DefWindowProcWithRedrawLock(WM_SETTEXT, NULL,
+                                     reinterpret_cast<LPARAM>(text));
+}
+
 void NativeWidgetWin::OnSettingChange(UINT flags, const wchar_t* section) {
   if (!GetParent() && (flags == SPI_SETWORKAREA) &&
       !GetWidget()->widget_delegate()->WillProcessWorkAreaChange()) {

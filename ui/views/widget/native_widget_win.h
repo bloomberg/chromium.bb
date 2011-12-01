@@ -351,6 +351,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
     MSG_WM_PAINT(OnPaint)
     MSG_WM_POWERBROADCAST(OnPowerBroadcast)
     MSG_WM_SETFOCUS(OnSetFocus)
+    MSG_WM_SETTEXT(OnSetText)
     MSG_WM_SETTINGCHANGE(OnSettingChange)
     MSG_WM_SIZE(OnSize)
     MSG_WM_SYSCOMMAND(OnSysCommand)
@@ -416,6 +417,7 @@ class VIEWS_EXPORT NativeWidgetWin : public ui::WindowImpl,
   virtual LRESULT OnReflectedMessage(UINT msg, WPARAM w_param, LPARAM l_param);
   virtual LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   virtual void OnSetFocus(HWND focused_window);
+  virtual LRESULT OnSetText(const wchar_t* text);
   virtual void OnSettingChange(UINT flags, const wchar_t* section);
   virtual void OnSize(UINT param, const CSize& size);
   virtual void OnSysCommand(UINT notification_code, CPoint click);
