@@ -538,15 +538,16 @@ const NSTimeInterval kTearDuration = 0.333;
     DCHECK(CFGetTypeID(dict) == CFDictionaryGetTypeID());
 
     // Sanity check the ID.
-    CFNumberRef otherIDRef = (CFNumberRef)base::mac::GetValueFromDictionary(
-        dict, kCGWindowNumber, CFNumberGetTypeID());
+    CFNumberRef otherIDRef =
+        base::mac::GetValueFromDictionary<CFNumberRef>(dict, kCGWindowNumber);
     CGWindowID otherID;
     if (otherIDRef &&
         CFNumberGetValue(otherIDRef, kCGWindowIDCFNumberType, &otherID) &&
         otherID == windowID) {
       // And then get the workspace.
-      CFNumberRef workspaceRef = (CFNumberRef)base::mac::GetValueFromDictionary(
-          dict, kCGWindowWorkspace, CFNumberGetTypeID());
+      CFNumberRef workspaceRef =
+          base::mac::GetValueFromDictionary<CFNumberRef>(dict,
+                                                         kCGWindowWorkspace);
       if (!workspaceRef ||
           !CFNumberGetValue(workspaceRef, kCFNumberIntType, &workspace)) {
         workspace = -1;
