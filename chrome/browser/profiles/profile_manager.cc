@@ -214,7 +214,8 @@ ProfileManager::ProfileManager(const FilePath& user_data_dir)
 ProfileManager::~ProfileManager() {
   BrowserList::RemoveObserver(this);
 #if defined(OS_WIN)
-  profile_info_cache_->RemoveObserver(profile_shortcut_manager_.get());
+  if (profile_shortcut_manager_.get())
+    profile_info_cache_->RemoveObserver(profile_shortcut_manager_.get());
 #endif
 }
 
@@ -593,8 +594,11 @@ ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
     profile_info_cache_.reset(new ProfileInfoCache(
         g_browser_process->local_state(), user_data_dir_));
 #if defined(OS_WIN)
-    profile_shortcut_manager_.reset(new ProfileShortcutManagerWin());
-    profile_info_cache_->AddObserver(profile_shortcut_manager_.get());
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    if (!command_line.HasSwitch(switches::kNoFirstRun)) {
+      profile_shortcut_manager_.reset(new ProfileShortcutManagerWin());
+      profile_info_cache_->AddObserver(profile_shortcut_manager_.get());
+    }
 #endif
   }
   return *profile_info_cache_.get();
