@@ -77,7 +77,7 @@ class DefaultsTest(auto_stub.TestCase):
         results.update(kwargs)
         results['args'] = args
       @staticmethod
-      def communicate():
+      def communicate(input=None, timeout=None):  # pylint: disable=W0622
         return None, None
     self.mock(subprocess2, 'Popen', fake_Popen)
     return results
@@ -179,6 +179,12 @@ class BaseTestCase(unittest.TestCase):
     for fileno, fl in self.states.iteritems():
       self.assertEquals(fl, fcntl.fcntl(fileno, fcntl.F_GETFL))
     super(BaseTestCase, self).tearDown()
+
+  def _check_res(self, res, stdout, stderr, returncode):
+    (out, err), code = res
+    self.assertEquals(stdout, out)
+    self.assertEquals(stderr, err)
+    self.assertEquals(returncode, code)
 
 
 class RegressionTest(BaseTestCase):
@@ -299,6 +305,27 @@ class RegressionTest(BaseTestCase):
       except subp.CalledProcessError, e:
         self._check_exception(subp, e, None, None, 64)
 
+  def test_redirect_stderr_to_stdout_pipe(self):
+    def fn(c, e, un, subp):
+      # stderr output into stdout.
+      proc = subp.Popen(
+          e + ['--stderr'],
+          stdout=subp.PIPE,
+          stderr=subp.STDOUT,
+          universal_newlines=un)
+      res = proc.communicate(), proc.returncode
+      self._check_res(res, c('a\nbb\nccc\n'), None, 0)
+    self._run_test(fn)
+
+  def test_redirect_stderr_to_stdout(self):
+    def fn(c, e, un, subp):
+      # stderr output into stdout but stdout is not piped.
+      proc = subp.Popen(
+          e + ['--stderr'], stderr=STDOUT, universal_newlines=un)
+      res = proc.communicate(), proc.returncode
+      self._check_res(res, None, None, 0)
+    self._run_test(fn)
+
 
 class S2Test(BaseTestCase):
   # Tests that can only run in subprocess2, e.g. new functionalities.
@@ -326,11 +353,11 @@ class S2Test(BaseTestCase):
     function(noop, self.exe + ['--cr'], True)
     function(noop, self.exe + ['--crlf'], True)
 
-  def _check_res(self, res, stdout, stderr, returncode):
-    (out, err), code = res
-    self.assertEquals(stdout, out)
-    self.assertEquals(stderr, err)
-    self.assertEquals(returncode, code)
+  def _check_exception(self, e, stdout, stderr, returncode):
+    """On exception, look if the exception members are set correctly."""
+    self.assertEquals(returncode, e.returncode)
+    self.assertEquals(stdout, e.stdout)
+    self.assertEquals(stderr, e.stderr)
 
   def test_timeout(self):
     # timeout doesn't exist in subprocess.
@@ -383,24 +410,127 @@ class S2Test(BaseTestCase):
       self._check_res(res, None, None, 0)
     self._run_test(fn)
 
-  def test_check_output_redirect_stderr_to_stdout_pipe(self):
+  def test_tee_stderr(self):
     def fn(c, e, un):
-      # stderr output into stdout.
+      stderr = []
       res = subprocess2.communicate(
-          e + ['--stderr'],
-          stdout=PIPE,
-          stderr=STDOUT,
-          universal_newlines=un)
-      self._check_res(res, c('a\nbb\nccc\n'), None, 0)
-    self._run_test(fn)
-
-  def test_check_output_redirect_stderr_to_stdout(self):
-    def fn(c, e, un):
-      # stderr output into stdout but stdout is not piped.
-      res = subprocess2.communicate(
-          e + ['--stderr'], stderr=STDOUT, universal_newlines=un)
+          e + ['--stderr'], stderr=stderr.append, universal_newlines=un)
+      self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
       self._check_res(res, None, None, 0)
     self._run_test(fn)
+
+  def test_tee_stdout_stderr(self):
+    def fn(c, e, un):
+      stdout = []
+      stderr = []
+      res = subprocess2.communicate(
+          e + ['--stdout', '--stderr'],
+          stdout=stdout.append,
+          stderr=stderr.append,
+          universal_newlines=un)
+      self.assertEquals(c('A\nBB\nCCC\n'), ''.join(stdout))
+      self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
+      self._check_res(res, None, None, 0)
+    self._run_test(fn)
+
+  def test_tee_stdin(self):
+    def fn(c, e, un):
+      stdout = []
+      stdin = '0123456789'
+      res = subprocess2.communicate(
+          e + ['--stdout', '--read'], stdin=stdin, stdout=stdout.append,
+          universal_newlines=un)
+      self.assertEquals(c('A\nBB\nCCC\n'), ''.join(stdout))
+      self._check_res(res, None, None, 0)
+    self._run_test(fn)
+
+  def test_tee_throw(self):
+    def fn(c, e, un):
+      stderr = []
+      try:
+        subprocess2.check_output(
+            e + ['--stderr', '--fail'], stderr=stderr.append,
+            universal_newlines=un)
+        self.fail()
+      except subprocess2.CalledProcessError, e:
+        self._check_exception(e, '', None, 64)
+        self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
+    self._run_test(fn)
+
+  def test_tee_timeout_stdout_void(self):
+    def fn(c, e, un):
+      stderr = []
+      res = subprocess2.communicate(
+          e + ['--stdout', '--stderr', '--fail'],
+          stdout=VOID,
+          stderr=stderr.append,
+          shell=False,
+          timeout=10,
+          universal_newlines=un)
+      self._check_res(res, None, None, 64)
+      self.assertEquals(c('a\nbb\nccc\n'), ''.join(stderr))
+    self._run_test(fn)
+
+  def test_tee_timeout_stderr_void(self):
+    def fn(c, e, un):
+      stdout = []
+      res = subprocess2.communicate(
+          e + ['--stdout', '--stderr', '--fail'],
+          stdout=stdout.append,
+          stderr=VOID,
+          shell=False,
+          timeout=10,
+          universal_newlines=un)
+      self._check_res(res, None, None, 64)
+      self.assertEquals(c('A\nBB\nCCC\n'), ''.join(stdout))
+    self._run_test(fn)
+
+  def test_tee_timeout_stderr_stdout(self):
+    def fn(c, e, un):
+      stdout = []
+      res = subprocess2.communicate(
+          e + ['--stdout', '--stderr', '--fail'],
+          stdout=stdout.append,
+          stderr=STDOUT,
+          shell=False,
+          timeout=10,
+          universal_newlines=un)
+      self._check_res(res, None, None, 64)
+      # Ordering is random due to buffering.
+      self.assertEquals(
+          set(c('a\nbb\nccc\nA\nBB\nCCC\n').splitlines(True)),
+          set(''.join(stdout).splitlines(True)))
+    self._run_test(fn)
+
+  def test_tee_large(self):
+    stdout = []
+    # Read 128kb. On my workstation it takes >2s. Welcome to 2011.
+    res = subprocess2.communicate(self.exe + ['--large'], stdout=stdout.append)
+    self.assertEquals(128*1024, len(''.join(stdout)))
+    self._check_res(res, None, None, 0)
+
+  def test_tee_large_stdin(self):
+    stdout = []
+    # Write 128kb.
+    stdin = '0123456789abcdef' * (8*1024)
+    res = subprocess2.communicate(
+        self.exe + ['--large', '--read'], stdin=stdin, stdout=stdout.append)
+    self.assertEquals(128*1024, len(''.join(stdout)))
+    self._check_res(res, None, None, 0)
+
+  def test_tee_cb_throw(self):
+    # Having a callback throwing up should not cause side-effects. It's a bit
+    # hard to measure.
+    class Blow(Exception):
+      pass
+    def blow(_):
+      raise Blow()
+    proc = subprocess2.Popen(self.exe + ['--stdout'], stdout=blow)
+    try:
+      proc.communicate()
+      self.fail()
+    except Blow:
+      self.assertNotEquals(0, proc.returncode)
 
 
 def child_main(args):
