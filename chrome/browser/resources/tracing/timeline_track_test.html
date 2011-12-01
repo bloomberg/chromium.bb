@@ -127,7 +127,8 @@ found in the LICENSE file.
   function testBasicCounter() {
     var testEl = getTestDiv('testBasicCounter');
 
-    var ctr = new TimelineCounter(undefined, 'testBasicCounter', 'testBasicCounter');
+    var ctr = new TimelineCounter(undefined,
+                                  'testBasicCounter', 'testBasicCounter');
     ctr.numSeries = 1;
     ctr.seriesNames = ['value1', 'value2'];
     ctr.seriesColors = [tracing.getStringColorId('testBasicCounter.value1'),

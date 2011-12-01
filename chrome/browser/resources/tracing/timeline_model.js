@@ -506,9 +506,30 @@ cr.define('tracing', function() {
       this.pruneEmptyThreads();
       this.updateBounds();
 
-      // Add end events for any events that are still on the stack. These
-      // are events that were still open when trace was ended, and can often
-      // indicate deadlock behavior.
+      // Adjust the model's max value temporarily to include the max value of
+      // any of the open slices, since they wouldn't have been included in the
+      // bounds calculation. We need the true global max value because the
+      // duration for any open slices is set so that they end at this global
+      // maximum.
+      for (var ptid in threadStateByPTID) {
+        var state = threadStateByPTID[ptid];
+        for (var i = 0; i < state.openSlices.length; i++) {
+          var slice = state.openSlices[i];
+          this.minTimestamp = Math.min(this.minTimestamp, slice.slice.start);
+          this.maxTimestamp = Math.max(this.maxTimestamp, slice.slice.start);
+          for (var s = 0; s < slice.slice.subSlices.length; s++) {
+            var subSlice = slice.slice.subSlices[s];
+            this.minTimestamp = Math.min(this.minTimestamp, subSlice.start);
+            this.maxTimestamp = Math.max(this.maxTimestamp, subSlice.start);
+            if (subSlice.duration)
+              this.maxTimestamp = Math.max(this.maxTimestamp, subSlice.end);
+          }
+        }
+      }
+
+      // Automatically close any slices are still open. These occur in a number
+      // of reasonable situations, e.g. deadlock. This pass ensures the open
+      // slices make it into the final model.
       for (var ptid in threadStateByPTID) {
         var state = threadStateByPTID[ptid];
         while (state.openSlices.length > 0) {
@@ -539,7 +560,7 @@ cr.define('tracing', function() {
     },
 
     /**
-     * Removes threads from the model that have no subrows.
+     * Removes threads from the model that are fully empty.
      */
     pruneEmptyThreads: function() {
       for (var pid in this.processes) {
@@ -547,7 +568,17 @@ cr.define('tracing', function() {
         var prunedThreads = {};
         for (var tid in process.threads) {
           var thread = process.threads[tid];
-          if (thread.subRows[0].length || thread.nonNestedSubRows.legnth)
+
+          // Begin-events without matching end events leave a thread in a state
+          // where the toplevel subrows are empty but child subrows have
+          // entries. The autocloser will fix this up later. But, for the
+          // purposes of pruning, such threads need to be treated as having
+          // content.
+          var hasNonEmptySubrow = false;
+          for (var s = 0; s < thread.subRows.length; s++)
+            hasNonEmptySubrow |= thread.subRows[s].length > 0;
+
+          if (hasNonEmptySubrow || thread.nonNestedSubRows.legnth)
             prunedThreads[tid] = thread;
         }
         process.threads = prunedThreads;
