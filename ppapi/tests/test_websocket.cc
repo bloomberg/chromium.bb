@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "base/logging.h"
 #include "ppapi/c/dev/ppb_websocket_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_var.h"

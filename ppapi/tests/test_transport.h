@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/memory/scoped_ptr.h"
 #include "ppapi/c/dev/ppb_transport_dev.h"
 #include "ppapi/tests/test_case.h"
 
@@ -19,7 +18,13 @@ class Transport_Dev;
 
 class TestTransport : public TestCase {
  public:
-  explicit TestTransport(TestingInstance* instance) : TestCase(instance) {}
+  explicit TestTransport(TestingInstance* instance)
+      : TestCase(instance),
+        transport1_(NULL),
+        transport2_(NULL) {
+  }
+  virtual ~TestTransport();
+
 
   // TestCase implementation.
   virtual bool Init();
@@ -41,8 +46,8 @@ class TestTransport : public TestCase {
   // Used by the tests that access the C API directly.
   const PPB_Transport_Dev* transport_interface_;
 
-  scoped_ptr<pp::Transport_Dev> transport1_;
-  scoped_ptr<pp::Transport_Dev> transport2_;
+  pp::Transport_Dev* transport1_;
+  pp::Transport_Dev* transport2_;
 };
 
 #endif  // PPAPI_TESTS_TEST_TRANSPORT_H_

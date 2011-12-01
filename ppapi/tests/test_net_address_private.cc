@@ -4,29 +4,28 @@
 
 #include "ppapi/tests/test_net_address_private.h"
 
-#include "base/basictypes.h"
-#include "build/build_config.h"
 #include "ppapi/cpp/private/net_address_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
+#include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
 // Other than |GetAnyAddress()|, there's no way to actually get
 // |PP_NetAddress_Private| structs from just this interface. We'll cheat and
 // synthesize some.
 
-#if defined(OS_POSIX)
+#if defined(PPAPI_POSIX)
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #endif
 
-#if defined(OS_MACOSX)
+#if defined(PPAPI_OS_MACOSX)
 // This is a bit evil, but it's standard operating procedure for |s6_addr|....
 #define s6_addr16 __u6_addr.__u6_addr16
 #endif
 
-#if defined(OS_WIN)
+#if defined(PPAPI_OS_WIN)
 #include <ws2tcpip.h>
 
 #define s6_addr16 u.Word
@@ -233,7 +232,7 @@ std::string TestNetAddressPrivate::TestDescribeIPv6() {
     }
   };
 
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); i++) {
+  for (size_t i = 0; i < sizeof(test_cases)/sizeof(test_cases[0]); i++) {
     PP_NetAddress_Private addr = MakeIPv6NetAddress(test_cases[i].address,
                                                     test_cases[i].port,
                                                     test_cases[i].scope);

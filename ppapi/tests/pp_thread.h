@@ -7,20 +7,15 @@
 #define PPAPI_TESTS_PP_THREAD_H_
 
 #include "ppapi/c/pp_macros.h"
+#include "ppapi/tests/test_utils.h"
 
-/* These precompiler names were copied from chromium's build_config.h. */
-#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || \
-    defined(__OpenBSD__) || defined(__sun) || defined(__native_client__)
-#define PPAPI_HAS_POSIX_THREADS 1
-#elif defined (_MSC_VER)
-#define PPAPI_HAS_WINDOWS_THREADS 1
-#endif
-
-#if defined(PPAPI_HAS_POSIX_THREADS)
+#if defined(PPAPI_POSIX)
 #include <pthread.h>
-#elif defined(PPAPI_HAS_WINDOWS_THREADS)
+#elif defined(PPAPI_OS_WIN)
 #include <process.h>
 #include <windows.h>
+#else
+#error No thread library detected.
 #endif
 
 /**
@@ -38,9 +33,9 @@
  * used in ppapi/tests, so is not part of the published API.
  */
 
-#if defined(PPAPI_HAS_POSIX_THREADS)
+#if defined(PPAPI_POSIX)
 typedef pthread_t PP_ThreadType;
-#elif defined(PPAPI_HAS_WINDOWS_THREADS)
+#elif defined(PPAPI_OS_WIN)
 typedef uintptr_t PP_ThreadType;
 #endif
 
@@ -51,7 +46,7 @@ PP_INLINE bool PP_CreateThread(PP_ThreadType* thread,
                                void* thread_arg);
 PP_INLINE void PP_JoinThread(PP_ThreadType thread);
 
-#if defined(PPAPI_HAS_POSIX_THREADS)
+#if defined(PPAPI_POSIX)
 /* Because POSIX thread functions return void* and Windows thread functions do
  * not, we make PPAPI thread functions have the least capability (no returns).
  * This struct wraps the user data & function so that we can use the correct
@@ -88,7 +83,7 @@ PP_INLINE void PP_JoinThread(PP_ThreadType thread) {
   pthread_join(thread, &exit_status);
 }
 
-#elif defined(PPAPI_HAS_WINDOWS_THREADS)
+#elif defined(PPAPI_OS_WIN)
 typedef DWORD (PP_WindowsThreadFunction)(void* data);
 
 PP_INLINE bool PP_CreateThread(PP_ThreadType* thread,

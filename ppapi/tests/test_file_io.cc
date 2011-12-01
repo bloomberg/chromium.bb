@@ -6,7 +6,8 @@
 
 #include <string.h>
 
-#include "base/memory/scoped_ptr.h"
+#include <vector>
+
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_file_io.h"
@@ -697,19 +698,17 @@ std::string TestFileIO::TestParallelReads() {
   TestCompletionCallback callback_1(instance_->pp_instance(), force_async_);
   int32_t read_offset_1 = 0;
   int32_t size_1 = 3;
-  char* extended_buf_1 = new char[border_size * 2 + size_1];
-  scoped_array<char> extended_buf_1_deleter(extended_buf_1);
-  char* buf_1 = extended_buf_1 + border_size;
-  memcpy(extended_buf_1, border, border_size);
+  std::vector<char> extended_buf_1(border_size * 2 + size_1);
+  char* buf_1 = &extended_buf_1[border_size];
+  memcpy(&extended_buf_1[0], border, border_size);
   memcpy(buf_1 + size_1, border, border_size);
 
   TestCompletionCallback callback_2(instance_->pp_instance(), force_async_);
   int32_t read_offset_2 = size_1;
   int32_t size_2 = 9;
-  char* extended_buf_2 = new char[border_size * 2 + size_2];
-  scoped_array<char> extended_buf_2_deleter(extended_buf_2);
-  char* buf_2 = extended_buf_2 + border_size;
-  memcpy(extended_buf_2, border, border_size);
+  std::vector<char> extended_buf_2(border_size * 2 + size_2);
+  char* buf_2 = &extended_buf_2[border_size];
+  memcpy(&extended_buf_2[0], border, border_size);
   memcpy(buf_2 + size_2, border, border_size);
 
   int32_t rv_1 = PP_OK;
@@ -756,9 +755,9 @@ std::string TestFileIO::TestParallelReads() {
   // Make sure every read operation writes into the correct buffer.
   const char expected_result_1[] = "__border__abc__border__";
   const char expected_result_2[] = "__border__defghijkl__border__";
-  if (strncmp(extended_buf_1, expected_result_1,
+  if (strncmp(&extended_buf_1[0], expected_result_1,
               strlen(expected_result_1)) != 0 ||
-      strncmp(extended_buf_2, expected_result_2,
+      strncmp(&extended_buf_2[0], expected_result_2,
               strlen(expected_result_2)) != 0) {
     return std::string(
         "Parallel FileIO::Read operations have written into wrong buffers.");

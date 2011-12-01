@@ -40,7 +40,7 @@ class StreamReader {
                pp::CompletionCallback done_callback)
       : expected_size_(expected_size),
         done_callback_(done_callback),
-        ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
+        PP_ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)),
         transport_(transport),
         received_size_(0) {
     Read();
@@ -96,6 +96,11 @@ class StreamReader {
 
 }  // namespace
 
+TestTransport::~TestTransport() {
+  delete transport1_;
+  delete transport2_;
+}
+
 bool TestTransport::Init() {
   transport_interface_ = reinterpret_cast<PPB_Transport_Dev const*>(
       pp::Module::Get()->GetBrowserInterface(PPB_TRANSPORT_DEV_INTERFACE));
@@ -113,11 +118,11 @@ void TestTransport::RunTests(const std::string& filter) {
 }
 
 std::string TestTransport::InitTargets(PP_TransportType type) {
-  transport1_.reset(new pp::Transport_Dev(instance_, kTestChannelName, type));
-  transport2_.reset(new pp::Transport_Dev(instance_, kTestChannelName, type));
+  transport1_ = new pp::Transport_Dev(instance_, kTestChannelName, type);
+  transport2_ = new pp::Transport_Dev(instance_, kTestChannelName, type);
 
-  ASSERT_TRUE(transport1_.get() != NULL);
-  ASSERT_TRUE(transport2_.get() != NULL);
+  ASSERT_NE(NULL, transport1_);
+  ASSERT_NE(NULL, transport2_);
 
   PASS();
 }
@@ -155,8 +160,10 @@ std::string TestTransport::Connect() {
 }
 
 std::string TestTransport::Clean() {
-  transport1_.reset();
-  transport2_.reset();
+  delete transport1_;
+  transport1_ = NULL;
+  delete transport2_;
+  transport2_ = NULL;
 
   PASS();
 }
@@ -241,8 +248,7 @@ std::string TestTransport::TestSendDataUdp() {
   const int kUdpWaitTimeMs = 1000;  // 1 second.
 
   TestCompletionCallback done_cb(instance_->pp_instance());
-  StreamReader reader(transport1_.get(), kSendBufferSize * kNumPackets,
-                      done_cb);
+  StreamReader reader(transport1_, kSendBufferSize * kNumPackets, done_cb);
 
   std::map<int, std::vector<char> > sent_packets;
   for (int i = 0; i < kNumPackets; ++i) {
@@ -293,8 +299,7 @@ std::string TestTransport::TestSendDataTcp() {
   const int kTcpSendSize = 100000;
 
   TestCompletionCallback done_cb(instance_->pp_instance());
-  StreamReader reader(transport1_.get(), kTcpSendSize,
-                      done_cb);
+  StreamReader reader(transport1_, kTcpSendSize, done_cb);
 
   std::vector<char> send_buffer(kTcpSendSize);
   for (size_t j = 0; j < send_buffer.size(); ++j) {

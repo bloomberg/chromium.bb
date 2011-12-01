@@ -6,7 +6,6 @@
 
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/pp_errors.h"
-#include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/instance.h"

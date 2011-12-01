@@ -8,7 +8,6 @@
 
 #include <limits>
 
-#include "base/basictypes.h"
 #include "ppapi/c/dev/ppb_testing_dev.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppb_var.h"
@@ -46,7 +45,7 @@ std::string TestVar::TestBasicString() {
       instance_->pp_instance());
   {
     const char kStr[] = "Hello";
-    const uint32_t kStrLen(arraysize(kStr) - 1);
+    const uint32_t kStrLen(sizeof(kStr) - 1);
     PP_Var str = var_interface_->VarFromUtf8(pp::Module::Get()->pp_module(),
                                              kStr, kStrLen);
     ASSERT_EQ(PP_VARTYPE_STRING, str.type);

@@ -4,7 +4,6 @@
 
 #include "ppapi/tests/test_audio_config.h"
 
-#include "base/basictypes.h"  // For |arraysize()|.
 #include "ppapi/c/ppb_audio_config.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/tests/testing_instance.h"
@@ -38,10 +37,12 @@ std::string TestAudioConfig::TestValidConfigs() {
     4096
   };
 
-  for (size_t i = 0; i < arraysize(kSampleRates); i++) {
+  for (size_t i = 0; i < sizeof(kSampleRates)/sizeof(kSampleRates[0]); i++) {
     PP_AudioSampleRate sample_rate = kSampleRates[i];
 
-    for (size_t j = 0; j < arraysize(kRequestFrameCounts); j++) {
+    for (size_t j = 0;
+         j < sizeof(kRequestFrameCounts)/sizeof(kRequestFrameCounts);
+         j++) {
       uint32_t request_frame_count = kRequestFrameCounts[j];
       ASSERT_TRUE(request_frame_count >= PP_AUDIOMINSAMPLEFRAMECOUNT);
       ASSERT_TRUE(request_frame_count <= PP_AUDIOMAXSAMPLEFRAMECOUNT);

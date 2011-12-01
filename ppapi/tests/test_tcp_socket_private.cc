@@ -6,7 +6,6 @@
 
 #include <stdlib.h>
 
-#include "base/string_split.h"
 #include "ppapi/c/dev/ppb_url_util_dev.h"
 #include "ppapi/cpp/dev/url_util_dev.h"
 #include "ppapi/cpp/private/tcp_socket_private.h"

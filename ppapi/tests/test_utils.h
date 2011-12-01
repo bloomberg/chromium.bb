@@ -49,4 +49,50 @@ class TestCompletionCallback {
   PP_Instance instance_;
 };
 
+/*
+ * A set of macros to use for platform detection. These were largely copied
+ * from chromium's build_config.h.
+ */
+#if defined(__APPLE__)
+#define PPAPI_OS_MACOSX 1
+#elif defined(ANDROID)
+#define PPAPI_OS_ANDROID 1
+#elif defined(__native_client__)
+#define PPAPI_OS_NACL 1
+#elif defined(__linux__)
+#define PPAPI_OS_LINUX 1
+#elif defined(_WIN32)
+#define PPAPI_OS_WIN 1
+#elif defined(__FreeBSD__)
+#define PPAPI_OS_FREEBSD 1
+#elif defined(__OpenBSD__)
+#define PPAPI_OS_OPENBSD 1
+#elif defined(__sun)
+#define PPAPI_OS_SOLARIS 1
+#else
+#error Please add support for your platform in ppapi/c/pp_macros.h.
+#endif
+
+/* These are used to determine POSIX-like implementations vs Windows. */
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || \
+    defined(__OpenBSD__) || defined(__sun) || defined(__native_client__)
+#define PPAPI_POSIX 1
+#endif
+
+// This is roughly copied from base/compiler_specific.h, and makes it possible
+// to pass 'this' in a constructor initializer list, when you really mean it.
+//
+// Example usage:
+// Foo::Foo(MyInstance* instance)
+//     : ALLOW_THIS_IN_INITIALIZER_LIST(callback_factory_(this)) {}
+#if defined(COMPILER_MSVC)
+#define PP_ALLOW_THIS_IN_INITIALIZER_LIST(code) \
+    __pragma(warning(push)) \
+    __pragma(warning(disable:4355)) \
+    code \
+    __pragma(warning(pop))
+#else
+#define PP_ALLOW_THIS_IN_INITIALIZER_LIST(code) code
+#endif
+
 #endif  // PPAPI_TESTS_TEST_UTILS_H_
