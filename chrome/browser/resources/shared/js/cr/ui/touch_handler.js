@@ -335,8 +335,10 @@ cr.define('cr.ui', function() {
      * Start listenting for events.
      * @param {boolean=} opt_capture True if the TouchHandler should listen to
      *      during the capture phase.
+     * @param {boolean=} opt_mouse True if the TouchHandler should generate
+     *      events for mouse input (in addition to touch input).
      */
-    enable: function(opt_capture) {
+    enable: function(opt_capture, opt_mouse) {
       var capture = !!opt_capture;
 
       // Just listen to start events for now. When a touch is occuring we'll
@@ -344,9 +346,11 @@ cr.define('cr.ui', function() {
       // don't want to incur the cost of lots of no-op handlers on the document.
       this.events_.add(this.element_, 'touchstart', this.onStart_.bind(this),
                        capture);
-      this.events_.add(this.element_, 'mousedown',
-                       this.mouseToTouchCallback_(this.onStart_.bind(this)),
-                       capture);
+      if (opt_mouse) {
+        this.events_.add(this.element_, 'mousedown',
+                         this.mouseToTouchCallback_(this.onStart_.bind(this)),
+                         capture);
+      }
 
       // If the element is long-pressed, we may need to swallow a click
       this.events_.add(this.element_, 'click', this.onClick_.bind(this), true);

@@ -417,9 +417,8 @@ cr.define('ntp4', function() {
 
     /**
      * Invoked whenever some app is released
-     * @param {cr.ui.Grabber.Event} e The Grabber RELEASE event.
      */
-    leaveRearrangeMode: function(e) {
+    leaveRearrangeMode: function() {
       var tempPage = document.querySelector('.tile-page.temporary');
       var dot = tempPage.navigationDot;
       if (!tempPage.tileCount && tempPage != this.cardSlider.currentCardValue) {
