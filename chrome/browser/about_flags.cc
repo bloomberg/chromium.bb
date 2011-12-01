@@ -375,13 +375,6 @@ const Experiment kExperiments[] = {
 #endif
   },
   {
-    "enable-ntp-bookmark-features",
-    IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_NAME,
-    IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_DESCRIPTION,
-    kOsAll,
-    SINGLE_VALUE_TYPE(switches::kEnableNTPBookmarkFeatures)
-  },
-  {
     "enable-video-track",
     IDS_FLAGS_ENABLE_VIDEO_TRACK_NAME,
     IDS_FLAGS_ENABLE_VIDEO_TRACK_DESCRIPTION,

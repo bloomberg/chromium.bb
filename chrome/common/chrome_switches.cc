@@ -516,9 +516,6 @@ const char kEnableNaCl[]                    = "enable-nacl";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
-// Enabled integrated bookmark features in the New Tab pane.
-const char kEnableNTPBookmarkFeatures[]     = "enable-ntp-bookmark-features";
-
 // Enables advanced app capabilities.
 const char kEnablePlatformApps[]            = "enable-platform-apps";
 

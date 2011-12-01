@@ -3759,8 +3759,6 @@
         'browser/ui/webui/net_internals_ui.h',
         'browser/ui/webui/ntp/app_launcher_handler.cc',
         'browser/ui/webui/ntp/app_launcher_handler.h',
-        'browser/ui/webui/ntp/bookmarks_handler.cc',
-        'browser/ui/webui/ntp/bookmarks_handler.h',
         'browser/ui/webui/ntp/favicon_webui_handler.cc',
         'browser/ui/webui/ntp/favicon_webui_handler.h',
         'browser/ui/webui/ntp/foreign_session_handler.cc',

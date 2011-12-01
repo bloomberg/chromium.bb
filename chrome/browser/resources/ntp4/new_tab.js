@@ -155,14 +155,6 @@ cr.define('ntp4', function() {
       infoBubble.show();
     }
 
-    var bookmarkFeatures = localStrings.getString('bookmark_features');
-    if (bookmarkFeatures == 'true') {
-      newTabView.appendTilePage(new ntp4.BookmarksPage(),
-                                localStrings.getString('bookmarksPage'),
-                                false);
-      chrome.send('getBookmarksData');
-    }
-
     var serverpromo = localStrings.getString('serverpromo');
     if (serverpromo) {
       showNotification(parseHtmlSubset(serverpromo), [], function() {
@@ -294,52 +286,6 @@ cr.define('ntp4', function() {
     newTabView.mostVisitedPage.data = data;
   }
 
-  function setBookmarksData(data) {
-    newTabView.bookmarksPage.data = data;
-  }
-
-  function bookmarkImportBegan() {
-    newTabView.bookmarksPage.bookmarkImportBegan.apply(
-        newTabView.bookmarksPage,
-        arguments);
-  }
-
-  function bookmarkImportEnded() {
-    newTabView.bookmarksPage.bookmarkImportEnded.apply(
-        newTabView.bookmarksPage,
-        arguments);
-  }
-
-  function bookmarkNodeAdded() {
-    newTabView.bookmarksPage.bookmarkNodeAdded.apply(
-        newTabView.bookmarksPage,
-        arguments);
-  }
-
-  function bookmarkNodeChanged() {
-    newTabView.bookmarksPage.bookmarkNodeChanged.apply(
-        newTabView.bookmarksPage,
-        arguments);
-  }
-
-  function bookmarkNodeChildrenReordered() {
-    newTabView.bookmarksPage.bookmarkNodeChildrenReordered.apply(
-        newTabView.bookmarksPage,
-        arguments);
-  }
-
-  function bookmarkNodeMoved() {
-    newTabView.bookmarksPage.bookmarkNodeMoved.apply(
-        newTabView.bookmarksPage,
-        arguments);
-  }
-
-  function bookmarkNodeRemoved() {
-    newTabView.bookmarksPage.bookmarkNodeRemoved.apply(
-        newTabView.bookmarksPage,
-        arguments);
-  }
-
   /**
    * Set the dominant color for a node. This will be called in response to
    * getFaviconDominantColor. The node represented by |id| better have a setter
@@ -424,13 +370,6 @@ cr.define('ntp4', function() {
     appAdded: appAdded,
     appRemoved: appRemoved,
     appsPrefChangeCallback: appsPrefChangeCallback,
-    bookmarkImportBegan: bookmarkImportBegan,
-    bookmarkImportEnded: bookmarkImportEnded,
-    bookmarkNodeAdded: bookmarkNodeAdded,
-    bookmarkNodeChanged: bookmarkNodeChanged,
-    bookmarkNodeChildrenReordered: bookmarkNodeChildrenReordered,
-    bookmarkNodeMoved: bookmarkNodeMoved,
-    bookmarkNodeRemoved: bookmarkNodeRemoved,
     enterRearrangeMode: enterRearrangeMode,
     getAppsCallback: getAppsCallback,
     getAppsPageIndex: getAppsPageIndex,
@@ -439,7 +378,6 @@ cr.define('ntp4', function() {
     leaveRearrangeMode: leaveRearrangeMode,
     saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,
-    setBookmarksData: setBookmarksData,
     setMostVisitedPages: setMostVisitedPages,
     setRecentlyClosedTabs: setRecentlyClosedTabs,
     setStripeColor: setStripeColor,

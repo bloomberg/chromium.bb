@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
-#include "chrome/browser/ui/webui/ntp/bookmarks_handler.h"
 #include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/ntp/most_visited_handler.h"
@@ -97,7 +96,6 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new AppLauncherHandler(service))->Attach(this));
 
     AddMessageHandler((new NewTabPageHandler())->Attach(this));
-    AddMessageHandler((new BookmarksHandler())->Attach(this));
     AddMessageHandler((new FaviconWebUIHandler())->Attach(this));
   }
 
@@ -171,9 +169,7 @@ bool NewTabUI::CanShowBookmarkBar() const {
   bool disabled_by_policy =
       prefs->IsManagedPreference(prefs::kShowBookmarkBar) &&
       !prefs->GetBoolean(prefs::kShowBookmarkBar);
-  return browser_defaults::bookmarks_enabled &&
-      !disabled_by_policy &&
-      !NTP4BookmarkFeaturesEnabled();
+  return browser_defaults::bookmarks_enabled && !disabled_by_policy;
 }
 
 void NewTabUI::Observe(int type,
@@ -210,7 +206,6 @@ void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   NewTabPageHandler::RegisterUserPrefs(prefs);
   AppLauncherHandler::RegisterUserPrefs(prefs);
   MostVisitedHandler::RegisterUserPrefs(prefs);
-  BookmarksHandler::RegisterUserPrefs(prefs);
 }
 
 // static
@@ -247,12 +242,6 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
   }
   dictionary->SetString("title", title_to_set);
   dictionary->SetString("direction", direction);
-}
-
-// static
-bool NewTabUI::NTP4BookmarkFeaturesEnabled() {
-  CommandLine* cl = CommandLine::ForCurrentProcess();
-  return cl->HasSwitch(switches::kEnableNTPBookmarkFeatures);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

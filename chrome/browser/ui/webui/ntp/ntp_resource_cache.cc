@@ -381,10 +381,6 @@ void NTPResourceCache::CreateNewTabHTML() {
     UserMetrics::RecordAction(UserMetricsAction("NTPPromoShown"));
   }
 
-  // Enable or disable bookmark features based on an about flag.
-  localized_strings.SetString("bookmark_features",
-      NewTabUI::NTP4BookmarkFeaturesEnabled() ? "true" : "false");
-
   // Load the new tab page appropriate for this build
   std::string full_html;
   base::StringPiece new_tab_html(ResourceBundle::GetSharedInstance().

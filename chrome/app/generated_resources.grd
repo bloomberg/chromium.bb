@@ -4823,12 +4823,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_WEBUI_LOCK_DESCRIPTION" desc="Description for the flag to disable WebUI lock screen.">
         Disable the new HTML implementation of the lock screen.
       </message>
-      <message name="IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_NAME" desc="Title for the flag to enable NTP bookmark features.">
-        Enable NTP bookmark features
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NTP_BOOKMARK_FEATURES_DESCRIPTION" desc="Description for the flag to enable NTP bookmark features.">
-        Enable experimental bookmark features within the NewTabPage.
-      </message>
       <message name="IDS_FLAGS_ENABLE_VIDEO_TRACK_NAME" desc="Title for the flag to enable the &lt;track&gt; element for &lt;video&gt; elements.">
         Enable &lt;track&gt; element
       </message>

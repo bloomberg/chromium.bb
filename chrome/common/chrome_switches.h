@@ -148,7 +148,6 @@ extern const char kEnableMacCookies[];
 extern const char kEnableMemoryInfo[];
 extern const char kEnableNaCl[];
 extern const char kEnableNaClDebug[];
-extern const char kEnableNTPBookmarkFeatures[];
 extern const char kEnablePlatformApps[];
 extern const char kEnablePreconnect[];
 extern const char kEnableProfiling[];

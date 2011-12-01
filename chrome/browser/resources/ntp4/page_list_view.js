@@ -65,12 +65,6 @@ cr.define('ntp4', function() {
     mostVisitedPage: undefined,
 
     /**
-     * The Bookmarks page.
-     * @type {!Element|undefined}
-     */
-    bookmarksPage: undefined,
-
-    /**
      * The 'dots-list' element.
      * @type {!Element|undefined}
      */
@@ -189,7 +183,7 @@ cr.define('ntp4', function() {
     },
 
     /**
-     * Appends a tile page (for bookmarks or most visited).
+     * Appends a tile page.
      *
      * @param {TilePage} page The page element.
      * @param {string} title The title of the tile page.
@@ -200,23 +194,15 @@ cr.define('ntp4', function() {
      * the page list.
      */
     appendTilePage: function(page, title, titleIsEditable, opt_refNode) {
-      // If no opt_refNode given, use bookmarksPage (if any).
-      if (!opt_refNode)
-        opt_refNode = this.bookmarksPage;
-
       // When opt_refNode is falsey, insertBefore acts just like appendChild.
       this.pageList.insertBefore(page, opt_refNode);
 
-      // Remember special MostVisitedPage and BookmarksPage.
+      // Remember special MostVisitedPage.
       if (typeof ntp4.MostVisitedPage != 'undefined' &&
           page instanceof ntp4.MostVisitedPage) {
         assert(this.tilePages.length == 1,
                'MostVisitedPage should be added as first tile page');
         this.mostVisitedPage = page;
-      }
-      if (typeof ntp4.BookmarksPage != 'undefined' &&
-          page instanceof ntp4.BookmarksPage) {
-        this.bookmarksPage = page;
       }
 
       // If we're appending an AppsPage and it's a temporary page, animate it.
@@ -380,14 +366,10 @@ cr.define('ntp4', function() {
         $(data.apps[i].id).appData = data.apps[i];
       }
 
-      // Set the App dot names. Skip the first and last dots (Most Visited and
-      // Bookmarks).
+      // Set the App dot names. Skip the first dot (Most Visited).
       var dots = this.dotList.getElementsByClassName('dot');
-      // TODO(csilv): Remove this calcluation if/when we remove the flag for
-      // for the bookmarks page.
       var start = this.mostVisitedPage ? 1 : 0;
-      var length = this.bookmarksPage ? dots.length - 1 : dots.length;
-      for (var i = start; i < length; ++i) {
+      for (var i = start; i < dots.length; ++i) {
         dots[i].displayTitle = data.appPageNames[i - start] || '';
       }
     },
@@ -406,10 +388,6 @@ cr.define('ntp4', function() {
           this.cardSlider.selectCardByValue(
               this.appsPages[Math.min(this.shownPageIndex,
                                       this.appsPages.length - 1)]);
-          break;
-        case templateData['bookmarks_page_id']:
-          if (this.bookmarksPage)
-            this.cardSlider.selectCardByValue(this.bookmarksPage);
           break;
         case templateData['most_visited_page_id']:
           if (this.mostVisitedPage)
@@ -535,9 +513,6 @@ cr.define('ntp4', function() {
           this.shownPageIndex = this.getAppsPageIndex(page);
         } else if (page.classList.contains('most-visited-page')) {
           this.shownPage = templateData['most_visited_page_id'];
-          this.shownPageIndex = 0;
-        } else if (page.classList.contains('bookmarks-page')) {
-          this.shownPage = templateData['bookmarks_page_id'];
           this.shownPageIndex = 0;
         } else {
           console.error('unknown page selected');

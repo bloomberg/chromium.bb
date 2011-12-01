@@ -44,9 +44,6 @@ class NewTabUI : public ChromeWebUI,
   // The current preference version.
   static int current_pref_version() { return current_pref_version_; }
 
-  // Returns whether NTP4 bookmark features are enabled.
-  static bool NTP4BookmarkFeaturesEnabled();
-
   class NewTabHTMLSource : public ChromeURLDataManager::DataSource {
    public:
     explicit NewTabHTMLSource(Profile* profile);
