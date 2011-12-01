@@ -659,6 +659,10 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareInputSampleRate,
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetHardwareSampleRate,
                             double /* sample_rate */)
 
+// Asks the browser for CPU usage of the renderer process in percents.
+IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GetCPUUsage,
+                            int /* CPU usage in percents */)
+
 // Tells the renderer to create a new view.
 // This message is slightly different, the view it takes (via
 // ViewMsg_New_Params) is the view to create, the message itself is sent as a

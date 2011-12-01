@@ -42,7 +42,6 @@ class WebStorageEventDispatcher;
 }
 
 namespace base {
-class ProcessMetrics;
 class MessageLoopProxy;
 class Thread;
 namespace win {
@@ -233,8 +232,6 @@ class CONTENT_EXPORT RenderThreadImpl : public content::RenderThread,
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThreadImpl> idle_timer_;
-
-  scoped_ptr<base::ProcessMetrics> process_metrics_;
 
   // The channel from the renderer process to the GPU process.
   scoped_refptr<GpuChannelHost> gpu_channel_;

@@ -40,6 +40,7 @@ class ResourceContext;
 }
 
 namespace base {
+class ProcessMetrics;
 class SharedMemory;
 }
 
@@ -73,6 +74,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnChannelClosing() OVERRIDE;
+  virtual void OnChannelConnected(int32 peer_pid) OVERRIDE;
 #if defined (OS_WIN)
   virtual void OnChannelError() OVERRIDE;
 #endif
@@ -179,6 +181,8 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnCheckNotificationPermission(const GURL& source_origin,
                                      int* permission_level);
 
+  void OnGetCPUUsage(int* cpu_usage);
+
   void OnGetHardwareBufferSize(uint32* buffer_size);
   void OnGetHardwareInputSampleRate(double* sample_rate);
   void OnGetHardwareSampleRate(double* sample_rate);
@@ -262,6 +266,13 @@ class RenderMessageFilter : public BrowserMessageFilter {
   int render_process_id_;
 
   std::set<OpenChannelToNpapiPluginCallback*> plugin_host_clients_;
+
+  // Records the last time we sampled CPU usage of the renderer process.
+  base::TimeTicks cpu_usage_sample_time_;
+  // Records the last sampled CPU usage in percents.
+  int cpu_usage_;
+  // Used for sampling CPU usage of the renderer process.
+  scoped_ptr<base::ProcessMetrics> process_metrics_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderMessageFilter);
 };

@@ -16,7 +16,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/stats_table.h"
-#include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "base/task.h"
 #include "base/threading/thread_local.h"
@@ -194,14 +193,6 @@ void RenderThreadImpl::Init() {
   hidden_widget_count_ = 0;
   idle_notification_delay_in_ms_ = kInitialIdleHandlerDelayMs;
   idle_notifications_to_skip_ = 0;
-  base::ProcessHandle handle = base::GetCurrentProcessHandle();
-#if defined(OS_MACOSX)
-  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle,
-                                                                    NULL));
-#else
-  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle));
-#endif
-  process_metrics_->GetCPUUsage(); // Initialize CPU usage counters.
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThreadImpl>(this));
 
   appcache_dispatcher_.reset(new AppCacheDispatcher(Get()));
@@ -622,18 +613,17 @@ void RenderThreadImpl::IdleHandlerInForegroundTab() {
   if (new_delay_ms >= kLongIdleHandlerDelayMs)
     new_delay_ms = kShortIdleHandlerDelayMs;
 
-  // Sample the CPU usage on each timer event, so that it is more accurate.
-  double cpu_usage = process_metrics_->GetCPUUsage();
-
   if (idle_notifications_to_skip_ > 0) {
     idle_notifications_to_skip_--;
-  } else if (cpu_usage < kIdleCPUUsageThresholdInPercents) {
-    if (v8::V8::IdleNotification()) {
+  } else  {
+    int cpu_usage;
+    Send(new ViewHostMsg_GetCPUUsage(&cpu_usage));
+    if (cpu_usage < kIdleCPUUsageThresholdInPercents &&
+        v8::V8::IdleNotification()) {
       // V8 finished collecting garbage.
       new_delay_ms = kLongIdleHandlerDelayMs;
     }
   }
-
   ScheduleIdleHandler(new_delay_ms);
 }
 

@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/process_util.h"
 #include "base/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
@@ -72,6 +73,10 @@ using net::CookieStore;
 namespace {
 
 const int kPluginsRefreshThresholdInSeconds = 3;
+
+// When two CPU usage queries arrive within this interval, we sample the CPU
+// usage only once and send it as a response for both queries.
+static const int64 kCPUUsageSampleIntervalMs = 900;
 
 // Common functionality for converting a sync renderer message to a callback
 // function in the browser. Derive from this, create it on the heap when
@@ -297,6 +302,19 @@ void RenderMessageFilter::OnChannelClosing() {
   plugin_host_clients_.clear();
 }
 
+void RenderMessageFilter::OnChannelConnected(int32 peer_id) {
+  BrowserMessageFilter::OnChannelConnected(peer_id);
+  base::ProcessHandle handle = peer_handle();
+#if defined(OS_MACOSX)
+  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle,
+                                                                    NULL));
+#else
+  process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(handle));
+#endif
+  cpu_usage_ = process_metrics_->GetCPUUsage(); // Initialize CPU usage counters
+  cpu_usage_sample_time_ = base::TimeTicks::Now();
+}
+
 #if defined (OS_WIN)
 void RenderMessageFilter::OnChannelError() {
   ChildProcessHost::ReleaseCachedFonts(render_process_id_);
@@ -359,6 +377,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnCacheableMetadataAvailable)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_Keygen, OnKeygen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenFile, OnAsyncOpenFile)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GetCPUUsage, OnGetCPUUsage)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareBufferSize,
                         OnGetHardwareBufferSize)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetHardwareInputSampleRate,
@@ -629,6 +648,16 @@ void RenderMessageFilter::OnOpenChannelToPpapiBroker(int routing_id,
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
+}
+
+void RenderMessageFilter::OnGetCPUUsage(int* cpu_usage) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  int64 since_last_sample_ms = (now - cpu_usage_sample_time_).InMilliseconds();
+  if (since_last_sample_ms > kCPUUsageSampleIntervalMs) {
+    cpu_usage_sample_time_ = now;
+    cpu_usage_ = static_cast<int>(process_metrics_->GetCPUUsage());
+  }
+  *cpu_usage = cpu_usage_;
 }
 
 void RenderMessageFilter::OnGetHardwareBufferSize(uint32* buffer_size) {
