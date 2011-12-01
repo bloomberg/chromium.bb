@@ -139,6 +139,9 @@ PP_Resource PPB_Audio_Proxy::CreateProxyResource(
   if (config.failed())
     return 0;
 
+  if (!audio_callback)
+    return 0;
+
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBAudio_Create(
       API_ID_PPB_AUDIO, instance_id,

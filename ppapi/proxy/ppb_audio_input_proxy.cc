@@ -140,6 +140,9 @@ PP_Resource PPB_AudioInput_Proxy::CreateProxyResource(
   if (config.failed())
     return 0;
 
+  if (!audio_input_callback)
+    return 0;
+
   HostResource result;
   dispatcher->Send(new PpapiHostMsg_PPBAudioInput_Create(
       API_ID_PPB_AUDIO_INPUT_DEV, instance_id,

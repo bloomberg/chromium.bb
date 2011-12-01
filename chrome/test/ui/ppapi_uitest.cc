@@ -474,4 +474,11 @@ TEST_PPAPI_IN_PROCESS(AudioConfig_InvalidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_ValidConfigs)
 TEST_PPAPI_OUT_OF_PROCESS(AudioConfig_InvalidConfigs)
 
+TEST_PPAPI_IN_PROCESS(Audio_Creation)
+TEST_PPAPI_IN_PROCESS(Audio_DestroyNoStop)
+TEST_PPAPI_IN_PROCESS(Audio_Failures)
+TEST_PPAPI_OUT_OF_PROCESS(Audio_Creation)
+TEST_PPAPI_OUT_OF_PROCESS(Audio_DestroyNoStop)
+TEST_PPAPI_OUT_OF_PROCESS(Audio_Failures)
+
 #endif // ADDRESS_SANITIZER
