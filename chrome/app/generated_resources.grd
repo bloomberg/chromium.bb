@@ -3750,10 +3750,10 @@ are declared in build/common.gypi.
         Background Page: <ph name="BACKGROUND_PAGE_URL">$1<ex>http://www.google.com</ex></ph>
       </message>
       <message name="IDS_TASK_MANAGER_PLUGIN_PREFIX" desc="The prefix for a Task Manager plugin row">
-        Plug-in: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph> (<ph name="PLUGIN_VERSION">$2<ex>3.4.255.1b</ex></ph>)
+        Plug-in: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph>
       </message>
       <message name="IDS_TASK_MANAGER_PLUGIN_BROKER_PREFIX" desc="Task Manager row for PPAPI plugin broker, which provides additional access for PPAPI plugins">
-        Plug-in Broker: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph> (<ph name="PLUGIN_VERSION">$2<ex>3.4.255.1b</ex></ph>)
+        Plug-in Broker: <ph name="PLUGIN_NAME">$1<ex>Unknown Plug-in</ex></ph>
       </message>
       <message name="IDS_TASK_MANAGER_PRERENDER_PREFIX" desc="The prefix for a Task Manager prerender row">
         Prerender: <ph name="PRERENDER_CONTENTS_NAME">$1<ex>http://www.google.com</ex></ph>

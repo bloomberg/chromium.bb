@@ -45,18 +45,6 @@ class CONTENT_EXPORT ChildProcessInfo {
 
   void SetProcessBackgrounded() const { process_.SetProcessBackgrounded(true); }
 
-  // We define the < operator so that the ChildProcessInfo can be used as a key
-  // in a std::map.
-  bool operator <(const ChildProcessInfo& rhs) const {
-    if (process_.handle() != rhs.process_.handle())
-      return process_ .handle() < rhs.process_.handle();
-    return false;
-  }
-
-  bool operator ==(const ChildProcessInfo& rhs) const {
-    return process_.handle() == rhs.process_.handle();
-  }
-
   // Generates a unique channel name for a child renderer/plugin process.
   // The "instance" pointer value is baked into the channel id.
   static std::string GenerateRandomChannelID(void* instance);

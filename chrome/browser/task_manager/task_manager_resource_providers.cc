@@ -746,13 +746,16 @@ void TaskManagerBackgroundContentsResourceProvider::Observe(
 SkBitmap* TaskManagerChildProcessResource::default_icon_ = NULL;
 
 TaskManagerChildProcessResource::TaskManagerChildProcessResource(
-    const ChildProcessInfo& child_proc)
-    : child_process_(child_proc),
-      title_(),
+    content::ProcessType type,
+    const string16& name,
+    base::ProcessHandle handle)
+    : type_(type),
+      name_(name),
+      handle_(handle),
       network_usage_support_(false) {
   // We cache the process id because it's not cheap to calculate, and it won't
   // be available when we get the plugin disconnected notification.
-  pid_ = child_proc.pid();
+  pid_ = base::GetProcId(handle);
   if (!default_icon_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
@@ -780,13 +783,13 @@ SkBitmap TaskManagerChildProcessResource::GetIcon() const {
 }
 
 base::ProcessHandle TaskManagerChildProcessResource::GetProcess() const {
-  return child_process_.handle();
+  return handle_;
 }
 
 TaskManager::Resource::Type TaskManagerChildProcessResource::GetType() const {
   // Translate types to TaskManager::ResourceType, since ChildProcessInfo's type
   // is not available for all TaskManager resources.
-  switch (child_process_.type()) {
+  switch (type_) {
     case content::PROCESS_TYPE_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_BROKER:
@@ -818,9 +821,9 @@ void TaskManagerChildProcessResource::SetSupportNetworkUsage() {
 }
 
 string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
-  string16 title = child_process_.name();
+  string16 title = name_;
   if (title.empty()) {
-    switch (child_process_.type()) {
+    switch (type_) {
       case content::PROCESS_TYPE_PLUGIN:
       case content::PROCESS_TYPE_PPAPI_PLUGIN:
       case content::PROCESS_TYPE_PPAPI_BROKER:
@@ -838,7 +841,7 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
   // or Arabic word for "plugin".
   base::i18n::AdjustStringForLocaleDirection(&title);
 
-  switch (child_process_.type()) {
+  switch (type_) {
     case content::PROCESS_TYPE_UTILITY:
       return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_UTILITY_PREFIX);
 
@@ -853,12 +856,11 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
 
     case content::PROCESS_TYPE_PLUGIN:
     case content::PROCESS_TYPE_PPAPI_PLUGIN:
-      return l10n_util::GetStringFUTF16(
-          IDS_TASK_MANAGER_PLUGIN_PREFIX, title, child_process_.version());
+      return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_PREFIX, title);
 
     case content::PROCESS_TYPE_PPAPI_BROKER:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PLUGIN_BROKER_PREFIX,
-                                        title, child_process_.version());
+                                        title);
 
     case content::PROCESS_TYPE_NACL_LOADER:
       return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_NACL_PREFIX, title);
@@ -889,8 +891,8 @@ string16 TaskManagerChildProcessResource::GetLocalizedTitle() const {
 
 TaskManagerChildProcessResourceProvider::
     TaskManagerChildProcessResourceProvider(TaskManager* task_manager)
-    : updating_(false),
-      task_manager_(task_manager) {
+    : task_manager_(task_manager),
+      updating_(false) {
 }
 
 TaskManagerChildProcessResourceProvider::
@@ -901,8 +903,7 @@ TaskManager::Resource* TaskManagerChildProcessResourceProvider::GetResource(
     int origin_pid,
     int render_process_host_id,
     int routing_id) {
-  std::map<int, TaskManagerChildProcessResource*>::iterator iter =
-      pid_to_resources_.find(origin_pid);
+  PidResourceMap::iterator iter = pid_to_resources_.find(origin_pid);
   if (iter != pid_to_resources_.end())
     return iter->second;
   else
@@ -945,19 +946,23 @@ void TaskManagerChildProcessResourceProvider::StopUpdating() {
 
   resources_.clear();
   pid_to_resources_.clear();
-  existing_child_process_info_.clear();
 }
 
 void TaskManagerChildProcessResourceProvider::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  content::Details<ChildProcessInfo> child_details(details);
+      ChildProcessData data;
+      data.type = child_details->type();
+      data.name = child_details->name();
+      data.handle = child_details->handle();
   switch (type) {
     case content::NOTIFICATION_CHILD_PROCESS_HOST_CONNECTED:
-      Add(*content::Details<ChildProcessInfo>(details).ptr());
+      Add(data);
       break;
     case content::NOTIFICATION_CHILD_PROCESS_HOST_DISCONNECTED:
-      Remove(*content::Details<ChildProcessInfo>(details).ptr());
+      Remove(data);
       break;
     default:
       NOTREACHED() << "Unexpected notification.";
@@ -966,32 +971,29 @@ void TaskManagerChildProcessResourceProvider::Observe(
 }
 
 void TaskManagerChildProcessResourceProvider::Add(
-    const ChildProcessInfo& child_process_info) {
+    const ChildProcessData& child_process_data) {
   if (!updating_)
     return;
   // Workers are handled by TaskManagerWorkerResourceProvider.
-  if (child_process_info.type() == content::PROCESS_TYPE_WORKER)
+  if (child_process_data.type == content::PROCESS_TYPE_WORKER)
     return;
-  std::map<ChildProcessInfo, TaskManagerChildProcessResource*>::
-      const_iterator iter = resources_.find(child_process_info);
-  if (iter != resources_.end()) {
+  if (resources_.count(child_process_data.handle)) {
     // The case may happen that we have added a child_process_info as part of
     // the iteration performed during StartUpdating() call but the notification
     // that it has connected was not fired yet. So when the notification
     // happens, we already know about this plugin and just ignore it.
     return;
   }
-  AddToTaskManager(child_process_info);
+  AddToTaskManager(child_process_data);
 }
 
 void TaskManagerChildProcessResourceProvider::Remove(
-    const ChildProcessInfo& child_process_info) {
+    const ChildProcessData& child_process_data) {
   if (!updating_)
     return;
-  if (child_process_info.type() == content::PROCESS_TYPE_WORKER)
+  if (child_process_data.type == content::PROCESS_TYPE_WORKER)
     return;
-  std::map<ChildProcessInfo, TaskManagerChildProcessResource*>
-      ::iterator iter = resources_.find(child_process_info);
+  ChildProcessMap::iterator iter = resources_.find(child_process_data.handle);
   if (iter == resources_.end()) {
     // ChildProcessInfo disconnection notifications are asynchronous, so we
     // might be notified for a plugin we don't know anything about (if it was
@@ -1004,7 +1006,7 @@ void TaskManagerChildProcessResourceProvider::Remove(
   // Remove it from the provider.
   resources_.erase(iter);
   // Remove it from our pid map.
-  std::map<int, TaskManagerChildProcessResource*>::iterator pid_iter =
+  PidResourceMap::iterator pid_iter =
       pid_to_resources_.find(resource->process_id());
   DCHECK(pid_iter != pid_to_resources_.end());
   if (pid_iter != pid_to_resources_.end())
@@ -1015,20 +1017,29 @@ void TaskManagerChildProcessResourceProvider::Remove(
 }
 
 void TaskManagerChildProcessResourceProvider::AddToTaskManager(
-    const ChildProcessInfo& child_process_info) {
+    const ChildProcessData& child_process_data) {
   TaskManagerChildProcessResource* resource =
-      new TaskManagerChildProcessResource(child_process_info);
-  resources_[child_process_info] = resource;
+      new TaskManagerChildProcessResource(
+          child_process_data.type,
+          child_process_data.name,
+          child_process_data.handle);
+  resources_[child_process_data.handle] = resource;
   pid_to_resources_[resource->process_id()] = resource;
   task_manager_->AddResource(resource);
 }
 
 // The ChildProcessInfo::Iterator has to be used from the IO thread.
 void TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo() {
+  std::vector<ChildProcessData> child_processes;
   for (BrowserChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
     // Only add processes which are already started, since we need their handle.
-    if ((*iter)->handle() != base::kNullProcessHandle)
-      existing_child_process_info_.push_back(**iter);
+    if ((*iter)->handle() == base::kNullProcessHandle)
+      continue;
+    ChildProcessData data;
+    data.type = (*iter)->type();
+    data.name = (*iter)->name();
+    data.handle = (*iter)->handle();
+    child_processes.push_back(data);
   }
   // Now notify the UI thread that we have retrieved information about child
   // processes.
@@ -1036,17 +1047,14 @@ void TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo() {
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived,
-          this));
+          this, child_processes));
 }
 
 // This is called on the UI thread.
-void TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived() {
-  std::vector<ChildProcessInfo>::const_iterator iter;
-  for (iter = existing_child_process_info_.begin();
-       iter != existing_child_process_info_.end(); ++iter) {
-    Add(*iter);
-  }
-  existing_child_process_info_.clear();
+void TaskManagerChildProcessResourceProvider::ChildProcessInfoRetreived(
+    const std::vector<ChildProcessData>& child_processes) {
+  for (size_t i = 0; i < child_processes.size(); ++i)
+    Add(child_processes[i]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

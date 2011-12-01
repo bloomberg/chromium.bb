@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/process_util.h"
 #include "chrome/browser/task_manager/task_manager.h"
-#include "content/common/child_process_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/common/process_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebCache.h"
 
 class BackgroundContents;
@@ -233,7 +233,9 @@ class TaskManagerBackgroundContentsResourceProvider
 
 class TaskManagerChildProcessResource : public TaskManager::Resource {
  public:
-  explicit TaskManagerChildProcessResource(const ChildProcessInfo& child_proc);
+  TaskManagerChildProcessResource(content::ProcessType type,
+                                  const string16& name,
+                                  base::ProcessHandle handle);
   virtual ~TaskManagerChildProcessResource();
 
   // TaskManager::Resource methods:
@@ -253,7 +255,9 @@ class TaskManagerChildProcessResource : public TaskManager::Resource {
   // process would be "Plug-in: Flash" when name is "Flash".
   string16 GetLocalizedTitle() const;
 
-  ChildProcessInfo child_process_;
+  content::ProcessType type_;
+  string16 name_;
+  base::ProcessHandle handle_;
   int pid_;
   mutable string16 title_;
   bool network_usage_support_;
@@ -283,36 +287,45 @@ class TaskManagerChildProcessResourceProvider
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Retrieves the current ChildProcessInfo (performed in the IO thread).
+ private:
+  struct ChildProcessData {
+    content::ProcessType type;
+    string16 name;
+    base::ProcessHandle handle;
+  };
+
+  virtual ~TaskManagerChildProcessResourceProvider();
+
+  // Retrieves information about the running ChildProcessHosts (performed in the
+  // IO thread).
   virtual void RetrieveChildProcessInfo();
 
-  // Notifies the UI thread that the ChildProcessInfo have been retrieved.
-  virtual void ChildProcessInfoRetreived();
+  // Notifies the UI thread that the ChildProcessHosts information have been
+  // retrieved.
+  virtual void ChildProcessInfoRetreived(
+      const std::vector<ChildProcessData>& child_processes);
+
+  void Add(const ChildProcessData& child_process_data);
+  void Remove(const ChildProcessData& child_process_data);
+
+  void AddToTaskManager(const ChildProcessData& child_process_data);
+
+  TaskManager* task_manager_;
 
   // Whether we are currently reporting to the task manager. Used to ignore
   // notifications sent after StopUpdating().
   bool updating_;
 
-  // The list of ChildProcessInfo retrieved when starting the update.
-  std::vector<ChildProcessInfo> existing_child_process_info_;
-
- private:
-  virtual ~TaskManagerChildProcessResourceProvider();
-
-  void Add(const ChildProcessInfo& child_process_info);
-  void Remove(const ChildProcessInfo& child_process_info);
-
-  void AddToTaskManager(const ChildProcessInfo& child_process_info);
-
-  TaskManager* task_manager_;
-
   // Maps the actual resources (the ChildProcessInfo) to the Task Manager
   // resources.
-  std::map<ChildProcessInfo, TaskManagerChildProcessResource*> resources_;
+  typedef std::map<base::ProcessHandle, TaskManagerChildProcessResource*>
+      ChildProcessMap;
+  ChildProcessMap resources_;
 
   // Maps the pids to the resources (used for quick access to the resource on
   // byte read notifications).
-  std::map<int, TaskManagerChildProcessResource*> pid_to_resources_;
+  typedef std::map<int, TaskManagerChildProcessResource*> PidResourceMap;
+  PidResourceMap pid_to_resources_;
 
   // A scoped container for notification registries.
   content::NotificationRegistrar registrar_;
@@ -517,8 +530,6 @@ class TaskManagerBrowserProcessResourceProvider
 
  private:
   virtual ~TaskManagerBrowserProcessResourceProvider();
-
-  void AddToTaskManager(ChildProcessInfo child_process_info);
 
   TaskManager* task_manager_;
   TaskManagerBrowserProcessResource resource_;
