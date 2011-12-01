@@ -90,19 +90,22 @@ class InMemoryURLIndex {
   // directory.
   bool SaveToCacheFile();
 
-  // Given a vector containing one or more words as string16s, scans the
-  // history index and return a vector with all scored, matching history items.
-  // Each term must occur somewhere in the history item's URL or page title for
-  // the item to qualify; however, the terms do not necessarily have to be
-  // adjacent. Results are sorted with higher scoring items first. Each term
-  // from |terms| may contain punctuation but should not contain spaces.
-  // A search request which results in more than |kItemsToScoreLimit| total
-  // candidate items returns no matches (though the results set will be
-  // retained and used for subsequent calls to this function) as the scoring
-  // of such a large number of candidates may cause perceptible typing response
-  // delays in the omnibox. This is likely to occur for short omnibox terms
-  // such as 'h' and 'w' which will be found in nearly all history candidates.
-  ScoredHistoryMatches HistoryItemsForTerms(const String16Vector& terms);
+  // Given a string16 in |term_string|, scans the history index and returns a
+  // vector with all scored, matching history items. The |term_string| is
+  // broken down into individual terms (words), each of which must occur in the
+  // candidate history item's URL or page title for the item to qualify;
+  // however, the terms do not necessarily have to be adjacent. Once we have
+  // a set of candidates, they are filtered to insure that all |term_string|
+  // terms, as separated by whitespace, occur within the candidate's URL
+  // or page title. Scores are then calculated on no more than
+  // |kItemsToScoreLimit| candidates, as the scoring of such a large number of
+  // candidates may cause perceptible typing response delays in the omnibox.
+  // This is likely to occur for short omnibox terms such as 'h' and 'w' which
+  // will be found in nearly all history candidates. Results are sorted by
+  // descending score. The full results set (i.e. beyond the
+  // |kItemsToScoreLimit| limit) will be retained and used for subsequent calls
+  // to this function.
+  ScoredHistoryMatches HistoryItemsForTerms(const string16& term_string);
 
   // Updates or adds an history item to the index if it meets the minimum
   // 'quick' criteria.
@@ -119,7 +122,7 @@ class InMemoryURLIndex {
   FRIEND_TEST_ALL_PREFIXES(LimitedInMemoryURLIndexTest, Initialization);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheFilePath);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, CacheSaveRestore);
-  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Char16Utilities);
+  FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, HugeResultSet);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, NonUniqueTermCharacterSets);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, Scoring);
   FRIEND_TEST_ALL_PREFIXES(InMemoryURLIndexTest, StaticFunctions);
@@ -184,6 +187,20 @@ class InMemoryURLIndex {
     const String16Vector& lower_terms_;
   };
 
+  // A helper predicate class used to filter excess history items when the
+  // candidate results set is too large.
+  class HistoryItemFactorGreater
+      : public std::binary_function<HistoryID, HistoryID, void> {
+   public:
+    explicit HistoryItemFactorGreater(const HistoryInfoMap& history_info_map);
+    ~HistoryItemFactorGreater();
+
+    bool operator()(const HistoryID h1, const HistoryID h2);
+
+  private:
+    const history::HistoryInfoMap& history_info_map_;
+  };
+
   // Initializes all index data members in preparation for restoring the index
   // from the cache or a complete rebuild from the history database.
   void ClearPrivateData();
@@ -221,8 +238,8 @@ class InMemoryURLIndex {
   void ResetSearchTermCache();
 
   // Composes a set of history item IDs by intersecting the set for each word
-  // in |uni_string|.
-  HistoryIDSet HistoryIDSetFromWords(const string16& uni_string);
+  // in |unsorted_words|.
+  HistoryIDSet HistoryIDSetFromWords(const String16Vector& unsorted_words);
 
   // Helper function to HistoryIDSetFromWords which composes a set of history
   // ids for the given term given in |term|.
@@ -305,6 +322,12 @@ class InMemoryURLIndex {
   // TODO(mrossetti): Eliminate once the transition to SQLite has been done.
   // http://crbug.com/83659
   bool cached_at_shutdown_;
+
+  // Used for unit testing only. Records the number of candidate history items
+  // at three stages in the index searching process.
+  size_t pre_filter_item_count;    // After word index is queried.
+  size_t post_filter_item_count;   // After trimming large result set.
+  size_t post_scoring_item_count;  // After performing final filter and scoring.
 
   DISALLOW_COPY_AND_ASSIGN(InMemoryURLIndex);
 };

@@ -400,63 +400,118 @@ void InMemoryURLIndex::DeleteURL(URLID row_id) {
   search_term_cache_.clear();
 }
 
-// Searching
+// InMemoryURLIndex::AddHistoryMatch -------------------------------------------
+
+InMemoryURLIndex::HistoryItemFactorGreater::HistoryItemFactorGreater(
+    const HistoryInfoMap& history_info_map)
+    : history_info_map_(history_info_map) {
+}
+
+InMemoryURLIndex::HistoryItemFactorGreater::~HistoryItemFactorGreater() {}
+
+bool InMemoryURLIndex::HistoryItemFactorGreater::operator()(
+    const HistoryID h1,
+    const HistoryID h2) {
+  const URLRow& r1(history_info_map_.find(h1)->second);
+  const URLRow& r2(history_info_map_.find(h2)->second);
+  // First cut: typed count, visit count, recency.
+  // TODO(mrossetti): This is too simplistic. Consider an approach which ranks
+  // recently visited (within the last 12/24 hours) as highly important. Get
+  // input from mpearson.
+  if (r1.typed_count() != r2.typed_count())
+    return (r1.typed_count() > r2.typed_count());
+  if (r1.visit_count() != r2.visit_count())
+    return (r1.visit_count() > r2.visit_count());
+  return (r1.last_visit() > r2.last_visit());
+}
+
+// Searching -------------------------------------------------------------------
 
 ScoredHistoryMatches InMemoryURLIndex::HistoryItemsForTerms(
-    const String16Vector& terms) {
+    const string16& term_string) {
+  pre_filter_item_count = 0;
+  post_filter_item_count = 0;
+  post_scoring_item_count = 0;
+  string16 clean_string = net::UnescapeURLComponent(term_string,
+      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
+  string16 lower_string(base::i18n::ToLower(clean_string));
+  String16Vector words(
+      history::String16VectorFromString16(lower_string, false));
   ScoredHistoryMatches scored_items;
 
   // Do nothing if we have indexed no words (probably because we've not been
-  // initialized yet).
-  if (private_data_->word_list_.empty())
+  // initialized yet) or the search string has no words.
+  if (private_data_->word_list_.empty() || words.empty()) {
+    search_term_cache_.clear();  // Invalidate the term cache.
     return scored_items;
-
-  if (!terms.empty()) {
-    // Reset used_ flags for search_term_cache_. We use a basic mark-and-sweep
-    // approach.
-    ResetSearchTermCache();
-
-    // Lowercase the terms.
-    // TODO(mrossetti): Another opportunity for a transform algorithm.
-    String16Vector lower_terms;
-    for (String16Vector::const_iterator term_iter = terms.begin();
-         term_iter != terms.end(); ++term_iter)
-      lower_terms.push_back(base::i18n::ToLower(*term_iter));
-
-    string16 all_terms(JoinString(lower_terms, ' '));
-    HistoryIDSet history_id_set = HistoryIDSetFromWords(all_terms);
-
-    // Don't perform any scoring (and don't return any matches) if the
-    // candidate pool is large. (See comments in header.)
-    const size_t kItemsToScoreLimit = 500;
-    if (history_id_set.size() <= kItemsToScoreLimit) {
-      // Pass over all of the candidates filtering out any without a proper
-      // substring match, inserting those which pass in order by score.
-      scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
-          AddHistoryMatch(*this, lower_terms)).ScoredMatches();
-
-      // Select and sort only the top kMaxMatches results.
-      if (scored_items.size() > AutocompleteProvider::kMaxMatches) {
-        std::partial_sort(scored_items.begin(),
-                          scored_items.begin() +
-                              AutocompleteProvider::kMaxMatches,
-                          scored_items.end(),
-                          ScoredHistoryMatch::MatchScoreGreater);
-          scored_items.resize(AutocompleteProvider::kMaxMatches);
-      } else {
-        std::sort(scored_items.begin(), scored_items.end(),
-                  ScoredHistoryMatch::MatchScoreGreater);
-      }
-    }
   }
 
-  // Remove any stale SearchTermCacheItems.
-  for (SearchTermCacheMap::iterator cache_iter = search_term_cache_.begin();
-       cache_iter != search_term_cache_.end(); ) {
-    if (!cache_iter->second.used_)
-      search_term_cache_.erase(cache_iter++);
-    else
-      ++cache_iter;
+  // Reset used_ flags for search_term_cache_. We use a basic mark-and-sweep
+  // approach.
+  ResetSearchTermCache();
+
+  HistoryIDSet history_id_set = HistoryIDSetFromWords(words);
+
+  // Trim the candidate pool if it is large. Note that we do not filter out
+  // items that do not contain the search terms as proper substrings -- doing
+  // so is the performance-costly operation we are trying to avoid in order
+  // to maintain omnibox responsiveness.
+  const size_t kItemsToScoreLimit = 500;
+  pre_filter_item_count = history_id_set.size();
+  // If we trim the results set we do not want to cache the results for next
+  // time as the user's ultimately desired result could easily be eliminated
+  // in this early rough filter.
+  bool was_trimmed = (pre_filter_item_count > kItemsToScoreLimit);
+  if (was_trimmed) {
+    HistoryIDVector history_ids;
+    std::copy(history_id_set.begin(), history_id_set.end(),
+              std::back_inserter(history_ids));
+    // Trim down the set by sorting by typed-count, visit-count, and last
+    // visit.
+    HistoryItemFactorGreater
+        item_factor_functor(private_data_->history_info_map_);
+    std::partial_sort(history_ids.begin(),
+                      history_ids.begin() + kItemsToScoreLimit,
+                      history_ids.end(),
+                      item_factor_functor);
+    history_id_set.clear();
+    std::copy(history_ids.begin(), history_ids.begin() + kItemsToScoreLimit,
+              std::inserter(history_id_set, history_id_set.end()));
+    post_filter_item_count = history_id_set.size();
+  }
+
+  // Pass over all of the candidates filtering out any without a proper
+  // substring match, inserting those which pass in order by score.
+  history::String16Vector terms;
+  Tokenize(lower_string, kWhitespaceUTF16, &terms);
+  scored_items = std::for_each(history_id_set.begin(), history_id_set.end(),
+      AddHistoryMatch(*this, terms)).ScoredMatches();
+
+  // Select and sort only the top kMaxMatches results.
+  if (scored_items.size() > AutocompleteProvider::kMaxMatches) {
+    std::partial_sort(scored_items.begin(),
+                      scored_items.begin() +
+                          AutocompleteProvider::kMaxMatches,
+                      scored_items.end(),
+                      ScoredHistoryMatch::MatchScoreGreater);
+      scored_items.resize(AutocompleteProvider::kMaxMatches);
+  } else {
+    std::sort(scored_items.begin(), scored_items.end(),
+              ScoredHistoryMatch::MatchScoreGreater);
+  }
+  post_scoring_item_count = scored_items.size();
+
+  if (was_trimmed) {
+    search_term_cache_.clear();  // Invalidate the term cache.
+  } else {
+    // Remove any stale SearchTermCacheItems.
+    for (SearchTermCacheMap::iterator cache_iter = search_term_cache_.begin();
+         cache_iter != search_term_cache_.end(); ) {
+      if (!cache_iter->second.used_)
+        search_term_cache_.erase(cache_iter++);
+      else
+        ++cache_iter;
+    }
   }
 
   return scored_items;
@@ -469,19 +524,19 @@ void InMemoryURLIndex::ResetSearchTermCache() {
 }
 
 HistoryIDSet InMemoryURLIndex::HistoryIDSetFromWords(
-    const string16& uni_string) {
+    const String16Vector& unsorted_words) {
   // Break the terms down into individual terms (words), get the candidate
   // set for each term, and intersect each to get a final candidate list.
   // Note that a single 'term' from the user's perspective might be
   // a string like "http://www.somewebsite.com" which, from our perspective,
   // is four words: 'http', 'www', 'somewebsite', and 'com'.
   HistoryIDSet history_id_set;
-  String16Vector terms = String16VectorFromString16(uni_string, true);
+  String16Vector words(unsorted_words);
   // Sort the terms into the longest first as such are likely to narrow down
   // the results quicker. Also, single character terms are the most expensive
   // to process so save them for last.
-  std::sort(terms.begin(), terms.end(), LengthGreater);
-  for (String16Vector::iterator iter = terms.begin(); iter != terms.end();
+  std::sort(words.begin(), words.end(), LengthGreater);
+  for (String16Vector::iterator iter = words.begin(); iter != words.end();
        ++iter) {
     string16 uni_word = *iter;
     HistoryIDSet term_history_set = HistoryIDsForTerm(uni_word);
@@ -489,7 +544,7 @@ HistoryIDSet InMemoryURLIndex::HistoryIDSetFromWords(
       history_id_set.clear();
       break;
     }
-    if (iter == terms.begin()) {
+    if (iter == words.begin()) {
       history_id_set.swap(term_history_set);
     } else {
       HistoryIDSet new_history_id_set;
@@ -821,6 +876,8 @@ int InMemoryURLIndex::ScoreComponentForMatches(const TermMatches& matches,
   return ScoreForValue(raw_score, kTermScoreLevel);
 }
 
+// InMemoryURLIndex::AddHistoryMatch -------------------------------------------
+
 InMemoryURLIndex::AddHistoryMatch::AddHistoryMatch(
     const InMemoryURLIndex& index,
     const String16Vector& lower_terms)
@@ -853,6 +910,8 @@ bool InMemoryURLIndex::GetCacheFilePath(FilePath* file_path) {
 bool InMemoryURLIndex::URLSchemeIsWhitelisted(const GURL& gurl) const {
   return scheme_whitelist_.find(gurl.scheme()) != scheme_whitelist_.end();
 }
+
+// Cache Management ------------------------------------------------------------
 
 void InMemoryURLIndex::SavePrivateData(InMemoryURLIndexCacheItem* cache) const {
   DCHECK(cache);

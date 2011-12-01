@@ -132,6 +132,7 @@ typedef std::map<char16, WordIDSet> CharWordIDMap;
 // A map from word (by word_id) to history items containing that word.
 typedef history::URLID HistoryID;
 typedef std::set<HistoryID> HistoryIDSet;
+typedef std::vector<HistoryID> HistoryIDVector;
 typedef std::map<WordID, HistoryIDSet> WordIDHistoryMap;
 typedef std::map<HistoryID, WordIDSet> HistoryIDWordMap;
 

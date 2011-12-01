@@ -59,11 +59,6 @@ void HistoryQuickProvider::Start(const AutocompleteInput& input,
 
   autocomplete_input_ = input;
 
-  // Do some fixup on the user input before matching against it, so we provide
-  // good results for local file paths, input with spaces, etc.
-  if (!FixupUserInput(&autocomplete_input_))
-    return;
-
   // TODO(pkasting): We should just block here until this loads.  Any time
   // someone unloads the history backend, we'll get inconsistent inline
   // autocomplete behavior here.
@@ -88,11 +83,7 @@ void HistoryQuickProvider::DeleteMatch(const AutocompleteMatch& match) {}
 void HistoryQuickProvider::DoAutocomplete() {
   // Get the matching URLs from the DB.
   string16 term_string = autocomplete_input_.text();
-  term_string = net::UnescapeURLComponent(term_string,
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
-  history::String16Vector terms(
-      history::String16VectorFromString16(term_string, false));
-  ScoredHistoryMatches matches = GetIndex()->HistoryItemsForTerms(terms);
+  ScoredHistoryMatches matches = GetIndex()->HistoryItemsForTerms(term_string);
   if (matches.empty())
     return;
 
