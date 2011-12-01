@@ -12,6 +12,31 @@
 
 using content::BrowserThread;
 
+class TestPerTabPrefsTabHelper : public PerTabPrefsTabHelper {
+ public:
+  explicit TestPerTabPrefsTabHelper(TabContentsWrapper* tab_contents)
+      : PerTabPrefsTabHelper(tab_contents),
+        was_override_web_prefernces_called_(false) {
+  }
+  virtual ~TestPerTabPrefsTabHelper() { }
+
+  virtual void OverrideWebPreferences(WebPreferences* prefs) OVERRIDE {
+    was_override_web_prefernces_called_ = true;
+    PerTabPrefsTabHelper::OverrideWebPreferences(prefs);
+  }
+
+  void NotifyRenderViewCreated() {
+    RenderViewCreated(NULL);
+  }
+
+  bool was_override_web_prefernces_called() {
+    return was_override_web_prefernces_called_;
+  }
+
+ private:
+  bool was_override_web_prefernces_called_;
+};
+
 class PerTabPrefsTabHelperTest : public TabContentsWrapperTestHarness {
  public:
   PerTabPrefsTabHelperTest()
@@ -66,4 +91,13 @@ TEST_F(PerTabPrefsTabHelperTest, PerTabJavaScriptEnabled) {
   prefs2->SetBoolean(key, !initial_value);
   EXPECT_EQ(initial_value, prefs1->GetBoolean(key));
   EXPECT_EQ(!initial_value, prefs2->GetBoolean(key));
+}
+
+TEST_F(PerTabPrefsTabHelperTest, OverridePrefsOnViewCreation) {
+  TestPerTabPrefsTabHelper* test_prefs_helper = new TestPerTabPrefsTabHelper(
+      contents_wrapper());
+  contents_wrapper()->per_tab_prefs_tab_helper_.reset(test_prefs_helper);
+  EXPECT_EQ(false, test_prefs_helper->was_override_web_prefernces_called());
+  test_prefs_helper->NotifyRenderViewCreated();
+  EXPECT_EQ(true, test_prefs_helper->was_override_web_prefernces_called());
 }

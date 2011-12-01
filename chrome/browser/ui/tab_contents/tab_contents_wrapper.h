@@ -235,6 +235,10 @@ class TabContentsWrapper : public TabContentsObserver,
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
+  friend class PerTabPrefsTabHelper;  // for UpdateWebPreferences
+  FRIEND_TEST_ALL_PREFIXES(
+      PerTabPrefsTabHelperTest, OverridePrefsOnViewCreation);
+
   // Internal helpers ----------------------------------------------------------
 
   // Message handlers.

@@ -48,6 +48,10 @@ void PerTabPrefsTabHelper::RegisterPerTabUserPrefs(PrefService* prefs) {
                              PrefService::UNSYNCABLE_PREF);
 }
 
+void PerTabPrefsTabHelper::RenderViewCreated(RenderViewHost* render_view_host) {
+  wrapper_->UpdateWebPreferences();
+}
+
 void PerTabPrefsTabHelper::TabContentsDestroyed(TabContents* tab) {
   pref_change_registrar_.RemoveAll();
 }

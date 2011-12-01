@@ -21,14 +21,16 @@ class PerTabPrefsTabHelper : public TabContentsObserver {
 
   PrefService* prefs() { return prefs_.get(); }
 
-  void OverrideWebPreferences(WebPreferences* prefs);
+  virtual void OverrideWebPreferences(WebPreferences* prefs);
 
- private:
+ protected:
   void RegisterPerTabUserPrefs(PrefService* prefs);
 
   // TabContentsObserver overrides:
+  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void TabContentsDestroyed(TabContents* tab) OVERRIDE;
 
+ private:
   // Our owning TabContentsWrapper.
   TabContentsWrapper* wrapper_;
 
