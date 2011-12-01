@@ -2,6 +2,7 @@
    "name": "geolocation access apitest pass",
    "description": "tests that geolocation is accessible from this extension",
    "version": "0.1",
+   "manifest_version": 2,
    "background_page": "background.html",
    "permissions": [ "geolocation" ]
 }

@@ -2,6 +2,7 @@
   "name": "Stegosaurus!",
   "description": "Warn the user when a stegosaurus might be present.",
   "version": "1",
+  "manifest_version": 2,
   "permissions": ["tabs"],
   "background_page": "background.html",
   "icons": {"48": "icon48.png"},

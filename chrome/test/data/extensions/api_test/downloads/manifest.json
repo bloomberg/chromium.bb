@@ -1,6 +1,7 @@
 {
   "name": "chrome.experimental.downloads",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "end-to-end browser test for chrome.experimental.downloads API",
   "background_page": "test.html",
   "permissions": ["experimental", "downloads", "http://*/*", "https://*/*"]

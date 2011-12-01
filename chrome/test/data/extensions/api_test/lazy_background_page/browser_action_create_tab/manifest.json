@@ -2,10 +2,11 @@
    "name": "Extensions Button",
    "description": "Access the Extensions window directly from the toolbar",
    "version": "1",
+   "manifest_version": 2,
    "permissions" : ["tabs"],
    "background_page": "background.html",
    "browser_action": {
-	"default_icon" : "ext_icon.png",
-	"default_title": "Open Extensions window"
+       "default_icon" : "ext_icon.png",
+       "default_title": "Open Extensions window"
    }
 }

@@ -1,6 +1,7 @@
 {
   "name": "Incognito popup tester",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "apitest for popups in incognito mode",
   "permissions": [ "tabs" ],
   "browser_action": {

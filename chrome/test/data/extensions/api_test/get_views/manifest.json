@@ -1,6 +1,7 @@
 {
   "name": "chrome.extension.getViews",
   "version": "0.1",
+  "manifest_version": 2,
   "description": "end-to-end browser test for chrome.extension.getViews API",
   "background_page": "test.html",
   "permissions": ["experimental", "tabs"]
