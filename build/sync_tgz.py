@@ -17,8 +17,8 @@ import sys
 import tarfile
 import urllib2
 
-import download_utils
 import http_download
+
 
 def CreateCygwinSymlink(filepath, target):
   """create a cygwin 1.7 style link.
@@ -36,7 +36,7 @@ def CreateCygwinSymlink(filepath, target):
   uni += '\x00\x00'
   lnk.write(uni)
   lnk.close()
-  subprocess.call(['cmd', '/C', 'attrib.exe', '+S', filepath])
+  subprocess.check_call(['cmd', '/C', 'attrib.exe', '+S', filepath])
 
 
 def _HashFileHandle(fh):
@@ -114,8 +114,10 @@ def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
     dst_dir = tar_dir
 
   # Crate the directory if it doesn't exist
-  if not os.path.isdir(tar_dir): os.makedirs(tar_dir)
-  if not os.path.isdir(dst_dir): os.makedirs(dst_dir)
+  if not os.path.isdir(tar_dir):
+    os.makedirs(tar_dir)
+  if not os.path.isdir(dst_dir):
+    os.makedirs(dst_dir)
 
   if verbose:
     print "Archive URL: %s" % url
@@ -127,8 +129,9 @@ def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
   shutil.rmtree(dst_dir, True)
   if verbose:
     print 'Downloading %s to %s...' % (url, tar_filepath)
-  http_download.HttpDownload(url, tar_filepath,
-    username=username, password=password, verbose=verbose)
+  http_download.HttpDownload(
+      url, tar_filepath,
+      username=username, password=password, verbose=verbose)
 
   tar_hash = HashFile(tar_filepath)
   if hash and hash != tar_hash:
@@ -168,12 +171,12 @@ def SyncTgz(url, tar_dir, dst_dir=None, username=None, password=None,
       if try_mklink:
         try:
           err = subprocess.call(['cmd', '/C', 'mklink /H %s' % dst_src])
-          if err: try_mklink = False
+          if err != 0:
+            try_mklink = False
         except OSError:
           try_mklink = False
-          pass
       # If we failed to create a hardlink, then just copy it.
-      if err or not os.path.isfile(filepath):
+      if err != 0 or not os.path.isfile(filepath):
         shutil.copyfile(targpath, filepath)
     else:
       tar.extract(m, dst_dir)
