@@ -492,8 +492,9 @@ class LiveWebappLoadTest(BasePerfTest):
       js = """
           var divs = document.getElementsByTagName("div");
           for (var i = 0; i < divs.length; ++i) {
-            if (divs[i].hasOwnProperty("title") &&
-                divs[i].title.indexOf("%s") == 0)
+            if (divs[i].hasOwnProperty("dataset") &&
+                divs[i].dataset.hasOwnProperty("tooltip") &&
+                divs[i].dataset.tooltip.indexOf("%s") == 0)
               window.domAutomationController.send("true");
           }
           window.domAutomationController.send("false");
