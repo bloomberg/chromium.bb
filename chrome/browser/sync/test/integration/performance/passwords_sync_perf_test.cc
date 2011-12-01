@@ -71,9 +71,9 @@ std::string PasswordsSyncPerfTest::NextPassword() {
   return base::StringPrintf("password%d", password_number_++);
 }
 
-// Flaky on Windows, see http://crbug.com/105787
-#if defined(OS_WIN)
-#define MAYBE_P0 FLAKY_P0
+// Flaky on Windows, timing out on Mac, see http://crbug.com/105999
+#if defined(OS_WIN) || defined(OS_MAC)
+#define MAYBE_P0 DISABLED_P0
 #else
 #define MAYBE_P0 P0
 #endif
