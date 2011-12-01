@@ -21,20 +21,23 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/debugger/devtools_client_host.h"
-#include "content/browser/debugger/devtools_manager.h"
-#include "content/browser/debugger/worker_devtools_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/browser/worker_host/worker_service_observer.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "net/test/test_server.h"
 
 using content::BrowserThread;
+using content::DevToolsManager;
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
 
 namespace {
 
@@ -145,7 +148,9 @@ class DevToolsSanityTest : public InProcessBrowserTest {
     // UnregisterDevToolsClientHostFor may destroy window_ so store the browser
     // first.
     Browser* browser = window_->browser();
-    devtools_manager->UnregisterDevToolsClientHostFor(inspected_rvh_);
+    DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+        inspected_rvh_);
+    devtools_manager->UnregisterDevToolsClientHostFor(agent);
 
     // Wait only when DevToolsWindow has a browser. For docked DevTools, this
     // is NULL and we skip the wait.
@@ -386,12 +391,12 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
     window_ = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
     window_->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
     DevToolsAgentHost* agent_host =
-        WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+        DevToolsAgentHostRegistry::GetDevToolsAgentHostForWorker(
             worker_data->worker_process_id,
             worker_data->worker_route_id);
     DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
         agent_host,
-        window_);
+        window_->devtools_client_host());
     RenderViewHost* client_rvh = window_->GetRenderViewHost();
     TabContents* client_contents = client_rvh->delegate()->GetAsTabContents();
     if (client_contents->IsLoading()) {

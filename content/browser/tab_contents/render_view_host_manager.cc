@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -753,11 +753,9 @@ void RenderViewHostManager::CancelPending() {
   RenderViewHost* pending_render_view_host = pending_render_view_host_;
   pending_render_view_host_ = NULL;
 
-  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-  if (devtools_manager) {  // NULL in unit tests.
-      devtools_manager->OnCancelPendingNavigation(pending_render_view_host,
-                                                  render_view_host_);
-  }
+  content::DevToolsManagerImpl::GetInstance()->OnCancelPendingNavigation(
+      pending_render_view_host,
+      render_view_host_);
 
   // We no longer need to prevent the process from exiting.
   pending_render_view_host->process()->RemovePendingView();

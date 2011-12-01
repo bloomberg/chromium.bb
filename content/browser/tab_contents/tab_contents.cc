@@ -15,7 +15,7 @@
 #include "base/utf_string_conversions.h"
 #include "content/browser/browser_context.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/download_stats.h"
 #include "content/browser/host_zoom_map.h"
@@ -41,7 +41,7 @@
 #include "content/common/intents_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/navigation_type.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
@@ -105,6 +105,10 @@
 // In this case the old RVH has been swapped out but the new one has not
 // replaced it, yet. Therefore, we cancel the pending RVH and skip the unloading
 // of the old RVH.
+
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
+using content::DevToolsManagerImpl;
 
 namespace {
 
@@ -614,12 +618,10 @@ bool TabContents::NavigateToEntry(
         is_allowed_in_web_ui_renderer);
 
   // Tell DevTools agent that it is attached prior to the navigation.
-  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-  if (devtools_manager) {  // NULL in unit tests.
-    devtools_manager->OnNavigatingToPendingEntry(render_view_host(),
-                                                 dest_render_view_host,
-                                                 entry.url());
-  }
+  DevToolsManagerImpl::GetInstance()->OnNavigatingToPendingEntry(
+      render_view_host(),
+      dest_render_view_host,
+      entry.url());
 
   // Used for page load time metrics.
   current_load_start_ = base::TimeTicks::Now();
@@ -1892,9 +1894,10 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
   // Ignore renderer unresponsive event if debugger is attached to the tab
   // since the event may be a result of the renderer sitting on a breakpoint.
   // See http://crbug.com/65458
-  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-  if (devtools_manager &&
-      devtools_manager->GetDevToolsClientHostFor(rvh) != NULL)
+  DevToolsAgentHost* agent =
+      content::DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh);
+  if (agent &&
+      DevToolsManagerImpl::GetInstance()->GetDevToolsClientHostFor(agent))
     return;
 
   if (is_during_unload) {

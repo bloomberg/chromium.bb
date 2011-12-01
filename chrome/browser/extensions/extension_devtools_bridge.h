@@ -11,12 +11,12 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
-#include "content/browser/debugger/devtools_client_host.h"
+#include "content/public/browser/devtools_client_host.h"
 
 class Profile;
 
 // This class is a DevToolsClientHost that fires extension events.
-class ExtensionDevToolsBridge : public DevToolsClientHost {
+class ExtensionDevToolsBridge : public content::DevToolsClientHost {
  public:
   ExtensionDevToolsBridge(int tab_id, Profile* profile);
   virtual ~ExtensionDevToolsBridge();
@@ -28,14 +28,12 @@ class ExtensionDevToolsBridge : public DevToolsClientHost {
   // closing.
   virtual void InspectedTabClosing() OVERRIDE;
 
-  // DevToolsClientHost, called to send a message to this host.
-  virtual void SendMessageToClient(const IPC::Message& msg) OVERRIDE;
+  // DevToolsClientHost, called to dispatch a message on this client.
+  virtual void DispatchOnInspectorFrontend(const std::string& message) OVERRIDE;
 
   virtual void TabReplaced(TabContents* new_tab) OVERRIDE;
 
  private:
-  void OnDispatchOnInspectorFrontend(const std::string& data);
-
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
 
   // ID of the tab we are monitoring.

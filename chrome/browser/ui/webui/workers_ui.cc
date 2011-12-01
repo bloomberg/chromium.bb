@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/webui/chrome_url_data_manager_backend.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_data_source.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/debugger/worker_devtools_manager.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
@@ -27,6 +27,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserThread;
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
 
 static const char kWorkersDataFile[] = "workers_data.json";
 
@@ -142,7 +144,7 @@ void WorkersDOMHandler::HandleOpenDevTools(const ListValue* args) {
   if (!profile)
     return;
   DevToolsAgentHost* agent_host =
-      WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+      DevToolsAgentHostRegistry::GetDevToolsAgentHostForWorker(
           worker_process_host_id,
           worker_route_id);
   DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);

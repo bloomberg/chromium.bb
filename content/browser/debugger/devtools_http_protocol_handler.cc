@@ -17,12 +17,13 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/browser/debugger/devtools_client_host.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_observer.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/escape.h"
 #include "net/base/io_buffer.h"
@@ -30,6 +31,10 @@
 #include "net/url_request/url_request_context.h"
 
 using content::BrowserThread;
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
+using content::DevToolsClientHost;
+using content::DevToolsManager;
 
 const int kBufferSize = 16 * 1024;
 
@@ -55,23 +60,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
         base::Bind(&net::HttpServer::Close, server_, connection_id_));
   }
 
-  virtual void SendMessageToClient(const IPC::Message& msg) {
-    IPC_BEGIN_MESSAGE_MAP(DevToolsClientHostImpl, msg)
-      IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                          OnDispatchOnInspectorFrontend);
-      IPC_MESSAGE_UNHANDLED_ERROR()
-    IPC_END_MESSAGE_MAP()
-  }
-
-  virtual void TabReplaced(TabContents* new_tab) {
-  }
-
-  void NotifyCloseListener() {
-    DevToolsClientHost::NotifyCloseListener();
-  }
- private:
-  // Message handling routines
-  void OnDispatchOnInspectorFrontend(const std::string& data) {
+  virtual void DispatchOnInspectorFrontend(const std::string& data) {
     BrowserThread::PostTask(
         BrowserThread::IO,
         FROM_HERE,
@@ -81,6 +70,10 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
                    data));
   }
 
+  virtual void TabReplaced(TabContents* new_tab) {
+  }
+
+ private:
   virtual void FrameNavigating(const std::string& url) {}
   net::HttpServer* server_;
   int connection_id_;
@@ -297,8 +290,10 @@ static PageList GeneratePageList(
     if (entry == NULL || !entry->url().is_valid())
       continue;
 
+    DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+        tab_contents->render_view_host());
     DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
-        GetDevToolsClientHostFor(tab_contents->render_view_host());
+        GetDevToolsClientHostFor(agent);
     PageInfo page_info;
     page_info.id = TabContentsIDHelper::GetID(tab_contents);
     page_info.attached = client_host != NULL;
@@ -368,7 +363,9 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
   }
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->GetDevToolsClientHostFor(tab_contents->render_view_host())) {
+  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+      tab_contents->render_view_host());
+  if (manager->GetDevToolsClientHostFor(agent)) {
     Send500(connection_id, "Page with given id is being inspected: " + page_id);
     return;
   }
@@ -377,9 +374,7 @@ void DevToolsHttpProtocolHandler::OnWebSocketRequestUI(
       new DevToolsClientHostImpl(server_, connection_id);
   connection_to_client_host_ui_[connection_id] = client_host;
 
-  manager->RegisterDevToolsClientHostFor(
-      tab_contents->render_view_host(),
-      client_host);
+  manager->RegisterDevToolsClientHostFor(agent, client_host);
 
   AcceptWebSocket(connection_id, request);
 }
@@ -393,9 +388,7 @@ void DevToolsHttpProtocolHandler::OnWebSocketMessageUI(
     return;
 
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  manager->ForwardToDevToolsAgent(
-      it->second,
-      DevToolsAgentMsg_DispatchOnInspectorBackend(MSG_ROUTING_NONE, data));
+  manager->DispatchOnInspectorBackend(it->second, data);
 }
 
 void DevToolsHttpProtocolHandler::OnCloseUI(int connection_id) {
@@ -404,7 +397,7 @@ void DevToolsHttpProtocolHandler::OnCloseUI(int connection_id) {
   if (it != connection_to_client_host_ui_.end()) {
     DevToolsClientHostImpl* client_host =
         static_cast<DevToolsClientHostImpl*>(it->second);
-    client_host->NotifyCloseListener();
+    DevToolsManager::GetInstance()->ClientHostClosing(client_host);
     delete client_host;
     connection_to_client_host_ui_.erase(connection_id);
   }

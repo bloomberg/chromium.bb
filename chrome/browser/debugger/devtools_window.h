@@ -11,9 +11,9 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/debugger/devtools_toggle_action.h"
-#include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
-#include "content/public/browser/devtools_frontend_window_delegate.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_frontend_host_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -23,7 +23,6 @@ class Message;
 
 class Browser;
 class BrowserWindow;
-class DevToolsAgentHost;
 class PrefService;
 class Profile;
 class RenderViewHost;
@@ -33,10 +32,14 @@ namespace base {
 class Value;
 }
 
-class DevToolsWindow : public DevToolsClientHost,
-                       private content::NotificationObserver,
+namespace content {
+class DevToolsAgentHost;
+class DevToolsClientHost;
+}
+
+class DevToolsWindow : private content::NotificationObserver,
                        private TabContentsDelegate,
-                       private content::DevToolsFrontendWindowDelegate {
+                       private content::DevToolsFrontendHostDelegate {
  public:
   static const char kDevToolsApp[];
   static void RegisterUserPrefs(PrefService* prefs);
@@ -45,7 +48,7 @@ class DevToolsWindow : public DevToolsClientHost,
 
   static DevToolsWindow* OpenDevToolsWindowForWorker(
       Profile* profile,
-      DevToolsAgentHost* worker_agent);
+      content::DevToolsAgentHost* worker_agent);
   static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
   static DevToolsWindow* OpenDevToolsWindow(RenderViewHost* inspected_rvh);
   static DevToolsWindow* ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
@@ -55,7 +58,6 @@ class DevToolsWindow : public DevToolsClientHost,
   virtual ~DevToolsWindow();
 
   // Overridden from DevToolsClientHost.
-  virtual void SendMessageToClient(const IPC::Message& message) OVERRIDE;
   virtual void InspectedTabClosing() OVERRIDE;
   virtual void TabReplaced(TabContents* new_tab) OVERRIDE;
   RenderViewHost* GetRenderViewHost();
@@ -65,6 +67,9 @@ class DevToolsWindow : public DevToolsClientHost,
   TabContentsWrapper* tab_contents() { return tab_contents_; }
   Browser* browser() { return browser_; }  // For tests.
   bool is_docked() { return docked_; }
+  content::DevToolsClientHost* devtools_client_host() {
+    return frontend_host_;
+  }
 
  private:
   static DevToolsWindow* Create(Profile* profile,
@@ -121,10 +126,9 @@ class DevToolsWindow : public DevToolsClientHost,
   static DevToolsWindow* ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
                                               bool force_open,
                                               DevToolsToggleAction action);
-  static DevToolsWindow* AsDevToolsWindow(DevToolsClientHost*);
+  static DevToolsWindow* AsDevToolsWindow(content::DevToolsClientHost*);
 
   // content::DevToolsClientHandlerDelegate overrides.
-  virtual void ForwardToDevToolsAgent(const IPC::Message& message) OVERRIDE;
   virtual void ActivateWindow() OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
@@ -132,6 +136,7 @@ class DevToolsWindow : public DevToolsClientHost,
   virtual void UndockWindow() OVERRIDE;
   virtual void SaveToFile(const std::string& suggested_file_name,
                           const std::string& content) OVERRIDE;
+
   void RequestSetDocked(bool docked);
 
   Profile* profile_;
@@ -142,6 +147,7 @@ class DevToolsWindow : public DevToolsClientHost,
   bool is_loaded_;
   DevToolsToggleAction action_on_load_;
   content::NotificationRegistrar registrar_;
+  content::DevToolsClientHost* frontend_host_;
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 

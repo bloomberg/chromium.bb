@@ -79,7 +79,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/save_package.h"
 #include "content/browser/renderer_host/render_view_host.h"

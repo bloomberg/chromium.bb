@@ -32,10 +32,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/debugger/devtools_client_host.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -45,6 +46,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
+using content::DevToolsClientHost;
+using content::DevToolsManager;
 
 // Prerender tests work as follows:
 //
@@ -395,12 +400,10 @@ class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
 class FakeDevToolsClientHost : public DevToolsClientHost {
  public:
   FakeDevToolsClientHost() {}
-  virtual ~FakeDevToolsClientHost() {
-    NotifyCloseListener();
-  }
+  virtual ~FakeDevToolsClientHost() {}
   virtual void InspectedTabClosing() OVERRIDE {}
   virtual void FrameNavigating(const std::string& url) OVERRIDE {}
-  virtual void SendMessageToClient(const IPC::Message& msg) OVERRIDE {}
+  virtual void DispatchOnInspectorFrontend(const std::string& msg) OVERRIDE {}
   virtual void TabReplaced(TabContents* new_tab) OVERRIDE {}
 };
 
@@ -1836,13 +1839,15 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        NavigateToPrerenderedPageWhenDevToolsAttached) {
   DisableJavascriptCalls();
   TabContents* tab_contents = browser()->GetSelectedTabContents();
-  RenderViewHost* inspected_rvh = tab_contents->render_view_host();
+  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+      tab_contents->render_view_host());
   DevToolsManager* manager = DevToolsManager::GetInstance();
   FakeDevToolsClientHost client_host;
-  manager->RegisterDevToolsClientHostFor(inspected_rvh, &client_host);
+  manager->RegisterDevToolsClientHostFor(agent, &client_host);
   const char* url = "files/prerender/prerender_page.html";
   PrerenderTestURL(url, FINAL_STATUS_DEVTOOLS_ATTACHED, 1);
   NavigateToURL(url);
+  manager->ClientHostClosing(&client_host);
 }
 
 // Validate that the sessionStorage namespace remains the same when swapping

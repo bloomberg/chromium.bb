@@ -32,10 +32,6 @@ DevToolsClient::DevToolsClient(RenderViewImpl* render_view)
 DevToolsClient::~DevToolsClient() {
 }
 
-void DevToolsClient::SendToAgent(const IPC::Message& tools_agent_message) {
-  Send(new DevToolsHostMsg_ForwardToAgent(routing_id(), tools_agent_message));
-}
-
 bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
   DCHECK(RenderThreadImpl::current());
 
@@ -50,8 +46,8 @@ bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
 }
 
 void DevToolsClient::sendMessageToBackend(const WebString& message)  {
-  SendToAgent(DevToolsAgentMsg_DispatchOnInspectorBackend(MSG_ROUTING_NONE,
-                                                          message.utf8()));
+  Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(routing_id(),
+                                                       message.utf8()));
 }
 
 void DevToolsClient::activateWindow() {

@@ -31,7 +31,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/browser/browsing_instance.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/in_process_webkit/session_storage_namespace.h"
 #include "content/browser/load_notification_details.h"
 #include "content/browser/renderer_host/render_view_host.h"
@@ -39,9 +38,9 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/common/devtools_messages.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/devtools_frontend_window.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/bindings_policy.h"
 #include "grit/generated_resources.h"
@@ -52,6 +51,11 @@ base::LazyInstance<DevToolsWindowList,
                    base::LeakyLazyInstanceTraits<DevToolsWindowList> >
      g_instances = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
+
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
+using content::DevToolsClientHost;
+using content::DevToolsManager;
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
 
@@ -68,9 +72,13 @@ TabContentsWrapper* DevToolsWindow::GetDevToolsContents(
   if (!inspected_tab)
     return NULL;
 
+  if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(
+      inspected_tab->render_view_host()))
+    return NULL;
+  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+      inspected_tab->render_view_host());
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  DevToolsClientHost* client_host = manager->
-      GetDevToolsClientHostFor(inspected_tab->render_view_host());
+  DevToolsClientHost* client_host = manager->GetDevToolsClientHostFor(agent);
   DevToolsWindow* window = AsDevToolsWindow(client_host);
   if (!window || !window->is_docked())
     return NULL;
@@ -95,16 +103,17 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
     Profile* profile,
     DevToolsAgentHost* worker_agent) {
   DevToolsWindow* window;
-  DevToolsClientHost* client =
-      DevToolsManager::GetInstance()->GetDevToolsClientHostFor(worker_agent);
+  DevToolsClientHost* client = content::DevToolsManager::GetInstance()->
+      GetDevToolsClientHostFor(worker_agent);
   if (client) {
     window = AsDevToolsWindow(client);
     if (!window)
       return NULL;
   } else {
     window = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
-    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(worker_agent,
-                                                                  window);
+    DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
+        worker_agent,
+        window->frontend_host_);
   }
   window->Show(DEVTOOLS_TOGGLE_ACTION_NONE);
   return window;
@@ -133,10 +142,9 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
 void DevToolsWindow::InspectElement(RenderViewHost* inspected_rvh,
                                     int x,
                                     int y) {
-  inspected_rvh->Send(new DevToolsAgentMsg_InspectElement(
-      inspected_rvh->routing_id(),
-      x,
-      y));
+  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+      inspected_rvh);
+  DevToolsManager::GetInstance()->InspectElement(agent, x, y);
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
   OpenDevToolsWindow(inspected_rvh);
@@ -171,17 +179,16 @@ DevToolsWindow::DevToolsWindow(TabContentsWrapper* tab_contents,
       browser_(NULL),
       docked_(docked),
       is_loaded_(false),
-      action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE) {
+      action_on_load_(DEVTOOLS_TOGGLE_ACTION_NONE),
+      frontend_host_(NULL) {
+  frontend_host_ = DevToolsClientHost::CreateDevToolsFrontendHost(
+      tab_contents->tab_contents(),
+      this);
   g_instances.Get().push_back(this);
   // Wipe out page icon so that the default application icon is used.
   NavigationEntry* entry = tab_contents_->controller().GetActiveEntry();
   entry->favicon().set_bitmap(SkBitmap());
   entry->favicon().set_is_valid(true);
-
-  // Install DevTools front-end message handler.
-  content::SetupDevToolsFrontendDelegate(
-      tab_contents->tab_contents(),
-      this);
 
   // Register on-load actions.
   registrar_.Add(
@@ -212,13 +219,6 @@ DevToolsWindow::~DevToolsWindow() {
                                               this);
   DCHECK(it != instances.end());
   instances.erase(it);
-}
-
-void DevToolsWindow::SendMessageToClient(const IPC::Message& message) {
-  RenderViewHost* target_host = tab_contents_->render_view_host();
-  IPC::Message* m =  new IPC::Message(message);
-  m->set_routing_id(target_host->routing_id());
-  target_host->Send(m);
 }
 
 void DevToolsWindow::InspectedTabClosing() {
@@ -477,7 +477,7 @@ void DevToolsWindow::Observe(int type,
       // of window.Close event.
       // Notify manager that this DevToolsClientHost no longer exists and
       // initiate self-destuct here.
-      NotifyCloseListener();
+      DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_);
       delete this;
     }
   } else if (type == chrome::NOTIFICATION_BROWSER_THEME_CHANGED) {
@@ -598,13 +598,14 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     RenderViewHost* inspected_rvh,
     bool force_open,
     DevToolsToggleAction action) {
+  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+      inspected_rvh);
   DevToolsManager* manager = DevToolsManager::GetInstance();
-
-  DevToolsClientHost* host = manager->GetDevToolsClientHostFor(inspected_rvh);
+  DevToolsClientHost* host = manager->GetDevToolsClientHostFor(agent);
   DevToolsWindow* window = AsDevToolsWindow(host);
   if (host != NULL && window == NULL) {
     // Break remote debugging / extension debugging session.
-    manager->UnregisterDevToolsClientHostFor(inspected_rvh);
+    manager->UnregisterDevToolsClientHostFor(agent);
   }
 
   bool do_open = force_open;
@@ -613,7 +614,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
         inspected_rvh->process()->GetBrowserContext());
     bool docked = profile->GetPrefs()->GetBoolean(prefs::kDevToolsOpenDocked);
     window = Create(profile, inspected_rvh, docked, false);
-    manager->RegisterDevToolsClientHostFor(inspected_rvh, window);
+    manager->RegisterDevToolsClientHostFor(agent, window->frontend_host_);
     do_open = true;
   }
 
@@ -622,7 +623,7 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
   if (!window->is_docked() || do_open)
     window->Show(action);
   else
-    manager->UnregisterDevToolsClientHostFor(inspected_rvh);
+    manager->UnregisterDevToolsClientHostFor(agent);
 
   return window;
 }
@@ -635,15 +636,10 @@ DevToolsWindow* DevToolsWindow::AsDevToolsWindow(
   DevToolsWindowList& instances = g_instances.Get();
   for (DevToolsWindowList::iterator it = instances.begin();
        it != instances.end(); ++it) {
-    DevToolsClientHost* client = *it;
-    if (client == client_host)
+    if ((*it)->frontend_host_ == client_host)
       return *it;
   }
   return NULL;
-}
-
-void DevToolsWindow::ForwardToDevToolsAgent(const IPC::Message& message) {
-  DevToolsManager::GetInstance()->ForwardToDevToolsAgent(this, message);
 }
 
 void DevToolsWindow::ActivateWindow() {
@@ -660,7 +656,7 @@ void DevToolsWindow::ActivateWindow() {
 
 void DevToolsWindow::CloseWindow() {
   DCHECK(docked_);
-  NotifyCloseListener();
+  DevToolsManager::GetInstance()->ClientHostClosing(frontend_host_);
   InspectedTabClosing();
 }
 

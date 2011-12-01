@@ -36,8 +36,6 @@ include_rules = [
   "+content/common/chrome_application_mac.h",
   "+content/common/mac/scoped_sending_event.h",
   "+content/common/view_messages.h",
-  # TODO(pfeldman)
-  "+content/common/devtools_messages.h",
   # TODO(gbilock)
   "+content/common/intents_messages.h",
 

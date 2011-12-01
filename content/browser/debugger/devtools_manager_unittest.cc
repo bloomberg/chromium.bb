@@ -4,8 +4,7 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "content/browser/debugger/devtools_client_host.h"
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/mock_content_browser_client.h"
 #include "content/browser/renderer_host/test_render_view_host.h"
@@ -13,9 +12,16 @@
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_client_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
+using content::DevToolsClientHost;
+using content::DevToolsManager;
+using content::DevToolsManagerImpl;
 
 namespace {
 
@@ -30,20 +36,20 @@ class TestDevToolsClientHost : public DevToolsClientHost {
     EXPECT_TRUE(closed_);
   }
 
-  virtual void Close() {
+  virtual void Close(DevToolsManager* manager) {
     EXPECT_FALSE(closed_);
     close_counter++;
-    NotifyCloseListener();
+    manager->ClientHostClosing(this);
     closed_ = true;
   }
   virtual void InspectedTabClosing() {
-    Close();
+    FAIL();
   }
 
   virtual void SetInspectedTabUrl(const std::string& url) {
   }
 
-  virtual void SendMessageToClient(const IPC::Message& message) {
+  virtual void DispatchOnInspectorFrontend(const std::string& message) {
     last_sent_message = &message;
   }
 
@@ -56,7 +62,7 @@ class TestDevToolsClientHost : public DevToolsClientHost {
 
   static int close_counter;
 
-  const IPC::Message* last_sent_message;
+  const std::string* last_sent_message;
 
  private:
   bool closed_;
@@ -129,42 +135,46 @@ class DevToolsManagerTest : public RenderViewHostTestHarness {
 };
 
 TEST_F(DevToolsManagerTest, OpenAndManuallyCloseDevToolsClientHost) {
-  DevToolsManager manager;
+  DevToolsManagerImpl manager;
 
-  DevToolsClientHost* host = manager.GetDevToolsClientHostFor(rvh());
+  DevToolsAgentHost* agent =
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh());
+  DevToolsClientHost* host = manager.GetDevToolsClientHostFor(agent);
   EXPECT_TRUE(NULL == host);
 
   TestDevToolsClientHost client_host;
-  manager.RegisterDevToolsClientHostFor(rvh(), &client_host);
+  manager.RegisterDevToolsClientHostFor(agent, &client_host);
   // Test that just registered devtools host is returned.
-  host = manager.GetDevToolsClientHostFor(rvh());
+  host = manager.GetDevToolsClientHostFor(agent);
   EXPECT_TRUE(&client_host == host);
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
   // Test that the same devtools host is returned.
-  host = manager.GetDevToolsClientHostFor(rvh());
+  host = manager.GetDevToolsClientHostFor(agent);
   EXPECT_TRUE(&client_host == host);
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
-  client_host.Close();
+  client_host.Close(&manager);
   EXPECT_EQ(1, TestDevToolsClientHost::close_counter);
-  host = manager.GetDevToolsClientHostFor(rvh());
+  host = manager.GetDevToolsClientHostFor(agent);
   EXPECT_TRUE(NULL == host);
 }
 
 TEST_F(DevToolsManagerTest, ForwardMessageToClient) {
-  DevToolsManager manager;
+  DevToolsManagerImpl manager;
 
   TestDevToolsClientHost client_host;
-  manager.RegisterDevToolsClientHostFor(rvh(), &client_host);
+  DevToolsAgentHost* agent_host =
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh());
+  manager.RegisterDevToolsClientHostFor(agent_host, &client_host);
   EXPECT_EQ(0, TestDevToolsClientHost::close_counter);
 
-  IPC::Message m;
-  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(rvh());
-  manager.ForwardToDevToolsClient(agent_host, m);
+  std::string m = "test message";
+  agent_host = DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh());
+  manager.DispatchOnInspectorFrontend(agent_host, m);
   EXPECT_TRUE(&m == client_host.last_sent_message);
 
-  client_host.Close();
+  client_host.Close(&manager);
   EXPECT_EQ(1, TestDevToolsClientHost::close_counter);
 }
 
@@ -176,8 +186,10 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   contents()->set_delegate(&delegate);
 
   TestDevToolsClientHost client_host;
+  DevToolsAgentHost* agent_host =
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(inspected_rvh);
   DevToolsManager::GetInstance()->
-      RegisterDevToolsClientHostFor(inspected_rvh, &client_host);
+      RegisterDevToolsClientHostFor(agent_host, &client_host);
 
   // Start with a short timeout.
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
@@ -188,7 +200,7 @@ TEST_F(DevToolsManagerTest, NoUnresponsiveDialogInInspectedTab) {
   EXPECT_FALSE(delegate.renderer_unresponsive_received());
 
   // Now close devtools and check that the notification is delivered.
-  client_host.Close();
+  client_host.Close(DevToolsManager::GetInstance());
   // Start with a short timeout.
   inspected_rvh->StartHangMonitorTimeout(TimeDelta::FromMilliseconds(10));
   // Wait long enough for first timeout and see if it fired.
@@ -214,21 +226,24 @@ TEST_F(DevToolsManagerTest, ReattachOnCancelPendingNavigation) {
 
   TestDevToolsClientHost client_host;
   DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-  devtools_manager->RegisterDevToolsClientHostFor(rvh(), &client_host);
+  devtools_manager->RegisterDevToolsClientHostFor(
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh()),
+      &client_host);
 
   // Navigate to new site which should get a new RenderViewHost.
   const GURL url2("http://www.yahoo.com");
   controller().LoadURL(
       url2, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(contents()->cross_navigation_pending());
-  EXPECT_EQ(&client_host,
-            devtools_manager->GetDevToolsClientHostFor(pending_rvh()));
+  EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(pending_rvh())));
 
   // Interrupt pending navigation and navigate back to the original site.
   controller().LoadURL(
       url, GURL(), content::PAGE_TRANSITION_TYPED, std::string());
   contents()->TestDidNavigate(orig_rvh, params1);
   EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(rvh()));
-  client_host.Close();
+  EXPECT_EQ(&client_host, devtools_manager->GetDevToolsClientHostFor(
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh())));
+  client_host.Close(DevToolsManager::GetInstance());
 }

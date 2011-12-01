@@ -137,7 +137,6 @@
 #include "chrome/common/web_apps.h"
 #include "content/browser/browser_url_handler.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/download/download_item.h"
 #include "content/browser/download/download_manager.h"
 #include "content/browser/download/save_package.h"
@@ -150,6 +149,7 @@
 #include "content/browser/tab_contents/navigation_entry.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
 #include "content/browser/user_metrics.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/common/content_restriction.h"
@@ -3342,10 +3342,8 @@ void Browser::TabReplacedAt(TabStripModel* tab_strip_model,
         new_contents, tab_handler_->GetTabStripModel()->IsTabPinned(index));
   }
 
-  DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
-  if (devtools_manager)  // NULL in unit tests.
-    devtools_manager->TabReplaced(old_contents->tab_contents(),
-                                  new_contents->tab_contents());
+  content::DevToolsManager::GetInstance()->TabReplaced(
+      old_contents->tab_contents(), new_contents->tab_contents());
 }
 
 void Browser::TabPinnedStateChanged(TabContentsWrapper* contents, int index) {
@@ -4160,7 +4158,7 @@ void Browser::Observe(int type,
       } else if (pref_name == prefs::kDevToolsDisabled) {
         UpdateCommandsForDevTools();
         if (profile_->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled))
-          DevToolsManager::GetInstance()->CloseAllClientHosts();
+          content::DevToolsManager::GetInstance()->CloseAllClientHosts();
       } else if (pref_name == prefs::kEditBookmarksEnabled) {
         UpdateCommandsForBookmarkEditing();
       } else if (pref_name == prefs::kShowBookmarkBar) {

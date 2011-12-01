@@ -14,8 +14,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_client_host.h"
 #include "grit/devtools_resources_map.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -106,8 +106,6 @@ DevToolsUI::DevToolsUI(TabContents* contents) : ChromeWebUI(contents) {
 }
 
 void DevToolsUI::RenderViewCreated(RenderViewHost* render_view_host) {
-  render_view_host->Send(new DevToolsMsg_SetupDevToolsClient(
-      render_view_host->routing_id()));
-
+  content::DevToolsClientHost::SetupDevToolsFrontendClient(render_view_host);
   ChromeWebUI::RenderViewCreated(render_view_host);
 }

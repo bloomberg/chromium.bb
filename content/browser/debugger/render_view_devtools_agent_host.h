@@ -16,15 +16,15 @@
 class RenderViewHost;
 class TabContents;
 
+namespace content {
+
 class CONTENT_EXPORT RenderViewDevToolsAgentHost
     : public DevToolsAgentHost,
       private content::RenderViewHostObserver {
  public:
-  static DevToolsAgentHost* FindFor(RenderViewHost*);
-  static bool IsDebuggerAttached(TabContents*);
+  RenderViewDevToolsAgentHost(RenderViewHost*);
 
  private:
-  RenderViewDevToolsAgentHost(RenderViewHost*);
   virtual ~RenderViewDevToolsAgentHost();
 
   // DevToolsAgentHost implementation.
@@ -36,7 +36,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   virtual void RenderViewHostDestroyed(RenderViewHost* rvh) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnForwardToClient(const IPC::Message& message);
+  void OnDispatchOnInspectorFrontend(const std::string& message);
   void OnSaveAgentRuntimeState(const std::string& state);
   void OnClearBrowserCache();
   void OnClearBrowserCookies();
@@ -45,5 +45,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewDevToolsAgentHost);
 };
+
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_DEBUGGER_RENDER_VIEW_DEVTOOLS_AGENT_HOST_H_

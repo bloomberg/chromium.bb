@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_CLIENT_HOST_H_
-#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_CLIENT_HOST_H_
+#ifndef CONTENT_PUBLIC_BROWSER_DEVTOOLS_CLIENT_HOST_H_
+#define CONTENT_PUBLIC_BROWSER_DEVTOOLS_CLIENT_HOST_H_
 #pragma once
 
 #include <string>
@@ -15,23 +15,22 @@ namespace IPC {
 class Message;
 }
 
+class RenderViewHost;
 class TabContents;
+
+namespace content {
+
+class DevToolsFrontendHostDelegate;
 
 // Describes interface for managing devtools clients from browser process. There
 // are currently two types of clients: devtools windows and TCP socket
 // debuggers.
 class CONTENT_EXPORT DevToolsClientHost {
  public:
-  class CONTENT_EXPORT CloseListener {
-   public:
-    CloseListener() {}
-    virtual ~CloseListener() {}
-    virtual void ClientHostClosing(DevToolsClientHost* host) = 0;
-   private:
-    DISALLOW_COPY_AND_ASSIGN(CloseListener);
-  };
+  virtual ~DevToolsClientHost() {}
 
-  virtual ~DevToolsClientHost();
+  // Dispatches given message on the front-end.
+  virtual void DispatchOnInspectorFrontend(const std::string& message) = 0;
 
   // This method is called when tab inspected by this devtools client is
   // closing.
@@ -41,29 +40,20 @@ class CONTENT_EXPORT DevToolsClientHost {
   // navigating to |url|.
   virtual void FrameNavigating(const std::string& url) = 0;
 
-  // Sends the message to the devtools client hosted by this object.
-  virtual void SendMessageToClient(const IPC::Message& msg) = 0;
-
-  void set_close_listener(CloseListener* listener) {
-    close_listener_ = listener;
-  }
-
   // Invoked when a tab is replaced by another tab. This is triggered by
   // TabStripModel::ReplaceTabContentsAt.
   virtual void TabReplaced(TabContents* new_tab) = 0;
 
- protected:
-  DevToolsClientHost();
+  // Creates DevToolsClientHost for TabContents containing default DevTools
+  // frontend implementation.
+  static DevToolsClientHost* CreateDevToolsFrontendHost(
+      TabContents* client_tab_contents,
+      DevToolsFrontendHostDelegate* delegate);
 
-  void ForwardToDevToolsAgent(const IPC::Message& message);
-
-  // Should be called when the devtools client is going to die and this
-  // DevToolsClientHost should not be used anymore.
-  void NotifyCloseListener();
-
- private:
-  CloseListener* close_listener_;
-  DISALLOW_COPY_AND_ASSIGN(DevToolsClientHost);
+  // Sets up DevToolsClient on the corresponding RenderView.
+  static void SetupDevToolsFrontendClient(RenderViewHost* frontend_rvh);
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_CLIENT_HOST_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_DEVTOOLS_CLIENT_HOST_H_

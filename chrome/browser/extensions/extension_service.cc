@@ -86,11 +86,12 @@
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/plugin_process_host.h"
 #include "content/browser/plugin_service.h"
 #include "content/browser/user_metrics.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
@@ -118,6 +119,8 @@
 
 using base::Time;
 using content::BrowserThread;
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
 
 namespace errors = extension_manifest_errors;
 
@@ -607,10 +610,14 @@ void ExtensionService::ReloadExtension(const std::string& extension_id) {
     // later.
     ExtensionProcessManager* manager = profile_->GetExtensionProcessManager();
     ExtensionHost* host = manager->GetBackgroundHostForExtension(extension_id);
-    if (host) {
+    if (host && DevToolsAgentHostRegistry::HasDevToolsAgentHost(
+            host->render_view_host())) {
       // Look for an open inspector for the background page.
-      int devtools_cookie = DevToolsManager::GetInstance()->DetachClientHost(
-          host->render_view_host());
+      DevToolsAgentHost* agent =
+          DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+              host->render_view_host());
+      int devtools_cookie =
+          content::DevToolsManager::GetInstance()->DetachClientHost(agent);
       if (devtools_cookie >= 0)
         orphaned_dev_tools_[extension_id] = devtools_cookie;
     }
@@ -2297,8 +2304,10 @@ void ExtensionService::DidCreateRenderViewForBackgroundPage(
   if (iter == orphaned_dev_tools_.end())
     return;
 
-  DevToolsManager::GetInstance()->AttachClientHost(
-      iter->second, host->render_view_host());
+  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+      host->render_view_host());
+  content::DevToolsManager::GetInstance()->AttachClientHost(iter->second,
+                                                            agent);
   orphaned_dev_tools_.erase(iter);
 }
 

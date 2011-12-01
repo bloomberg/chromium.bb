@@ -7,6 +7,8 @@
 #include "base/basictypes.h"
 #include "content/common/devtools_messages.h"
 
+namespace content {
+
 DevToolsAgentHost::DevToolsAgentHost() : close_listener_(NULL) {
 }
 
@@ -24,6 +26,16 @@ void DevToolsAgentHost::Detach() {
   SendMessageToAgent(new DevToolsAgentMsg_Detach(MSG_ROUTING_NONE));
 }
 
+void DevToolsAgentHost::DipatchOnInspectorBackend(const std::string& message) {
+  SendMessageToAgent(new DevToolsAgentMsg_DispatchOnInspectorBackend(
+      MSG_ROUTING_NONE, message));
+}
+
+void DevToolsAgentHost::InspectElement(int x, int y) {
+  SendMessageToAgent(new DevToolsAgentMsg_InspectElement(MSG_ROUTING_NONE,
+                                                         x, y));
+}
+
 void DevToolsAgentHost::NotifyCloseListener() {
   if (close_listener_) {
     close_listener_->AgentHostClosing(this);
@@ -31,3 +43,4 @@ void DevToolsAgentHost::NotifyCloseListener() {
   }
 }
 
+}  // namespace content

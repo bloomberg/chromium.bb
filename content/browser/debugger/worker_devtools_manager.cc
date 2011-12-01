@@ -9,12 +9,13 @@
 
 #include "base/bind.h"
 #include "content/browser/debugger/devtools_agent_host.h"
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_manager_impl.h"
 #include "content/browser/debugger/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_process_host.h"
 #include "content/browser/worker_host/worker_service.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -25,6 +26,18 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebString.h"
 
 using content::BrowserThread;
+
+namespace content {
+
+// Called on the UI thread.
+// static
+DevToolsAgentHost* DevToolsAgentHostRegistry::GetDevToolsAgentHostForWorker(
+    int worker_process_id,
+    int worker_route_id) {
+  return WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
+      worker_process_id,
+      worker_route_id);
+}
 
 class WorkerDevToolsManager::AgentHosts
     : private content::NotificationObserver {
@@ -165,10 +178,10 @@ class WorkerDevToolsManager::DetachedClientHosts {
       RemovePendingWorkerData(id);
       return;
     }
-    DevToolsManager::GetInstance()->ForwardToDevToolsClient(agent,
-        DevToolsClientMsg_DispatchOnInspectorFrontend(MSG_ROUTING_NONE,
-            WebKit::WebDevToolsAgent::disconnectEventAsText().utf8()));
-    int cookie = DevToolsManager::GetInstance()->DetachClientHost(agent);
+    DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(
+        agent,
+        WebKit::WebDevToolsAgent::disconnectEventAsText().utf8());
+    int cookie = DevToolsManagerImpl::GetInstance()->DetachClientHost(agent);
     if (cookie == -1) {
       RemovePendingWorkerData(id);
       return;
@@ -194,7 +207,7 @@ class WorkerDevToolsManager::DetachedClientHosts {
         WorkerDevToolsManager::GetDevToolsAgentHostForWorker(
             new_id.first,
             new_id.second);
-    DevToolsManager::GetInstance()->AttachClientHost(
+    DevToolsManagerImpl::GetInstance()->AttachClientHost(
         it->second,
         agent);
     worker_id_to_cookie_.erase(it);
@@ -386,7 +399,7 @@ void WorkerDevToolsManager::RegisterDevToolsAgentHostForWorker(
 void WorkerDevToolsManager::ForwardToDevToolsClient(
     int worker_process_id,
     int worker_route_id,
-    const IPC::Message& message) {
+    const std::string& message) {
   if (FindInspectedWorker(worker_process_id, worker_route_id) ==
           inspected_workers_.end()) {
       NOTREACHED();
@@ -431,13 +444,14 @@ void WorkerDevToolsManager::ForwardToWorkerDevToolsAgent(
 void WorkerDevToolsManager::ForwardToDevToolsClientOnUIThread(
     int worker_process_id,
     int worker_route_id,
-    const IPC::Message& message) {
+    const std::string& message) {
   WorkerDevToolsAgentHost* agent_host = AgentHosts::GetAgentHost(WorkerId(
       worker_process_id,
       worker_route_id));
   if (!agent_host)
     return;
-  DevToolsManager::GetInstance()->ForwardToDevToolsClient(agent_host, message);
+  DevToolsManagerImpl::GetInstance()->DispatchOnInspectorFrontend(agent_host,
+                                                                  message);
 }
 
 // static
@@ -450,7 +464,7 @@ void WorkerDevToolsManager::SaveAgentRuntimeStateOnUIThread(
       worker_route_id));
   if (!agent_host)
     return;
-  DevToolsManager::GetInstance()->SaveAgentRuntimeState(agent_host, state);
+  DevToolsManagerImpl::GetInstance()->SaveAgentRuntimeState(agent_host, state);
 }
 
 // static
@@ -480,3 +494,5 @@ void WorkerDevToolsManager::SendResumeToWorker(const WorkerId& id) {
   if (WorkerProcessHost* process = FindWorkerProcess(id.first))
     process->Send(new DevToolsAgentMsg_ResumeWorkerContext(id.second));
 }
+
+}  // namespace

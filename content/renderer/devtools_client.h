@@ -49,9 +49,6 @@ class DevToolsClient : public content::RenderViewObserver,
 
   void OnDispatchOnInspectorFrontend(const std::string& message);
 
-  // Sends message to DevToolsAgent.
-  void SendToAgent(const IPC::Message& tools_agent_message);
-
   scoped_ptr<WebKit::WebDevToolsFrontend> web_tools_frontend_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClient);

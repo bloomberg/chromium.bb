@@ -17,8 +17,11 @@
 #include "net/server/http_server.h"
 #include "net/url_request/url_request.h"
 
-class DevToolsClientHost;
 class TabContents;
+
+namespace content {
+class DevToolsClientHost;
+}
 
 namespace net {
 class URLRequestContext;
@@ -120,7 +123,7 @@ class DevToolsHttpProtocolHandler
   typedef std::map<net::URLRequest*, scoped_refptr<net::IOBuffer> >
       BuffersMap;
   BuffersMap request_to_buffer_io_;
-  typedef std::map<int, DevToolsClientHost*>
+  typedef std::map<int, content::DevToolsClientHost*>
       ConnectionToClientHostMap;
   ConnectionToClientHostMap connection_to_client_host_ui_;
   scoped_ptr<Delegate> delegate_;

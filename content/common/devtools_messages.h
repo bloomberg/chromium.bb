@@ -100,16 +100,6 @@ IPC_MESSAGE_ROUTED0(DevToolsMsg_SetupDevToolsClient)
 //-----------------------------------------------------------------------------
 // These are messages sent from the renderer to the browser.
 
-// Wraps an IPC message that's destined to the DevToolsClient on
-// DevToolsAgent->browser hop.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_ForwardToClient,
-                    IPC::Message /* one of DevToolsClientMsg_XXX types */)
-
-// Wraps an IPC message that's destined to the DevToolsAgent on
-// DevToolsClient->browser hop.
-IPC_MESSAGE_ROUTED1(DevToolsHostMsg_ForwardToAgent,
-                    IPC::Message /* one of DevToolsAgentMsg_XXX types */)
-
 // Activates (brings to the front) corresponding dev tools window.
 IPC_MESSAGE_ROUTED0(DevToolsHostMsg_ActivateWindow)
 

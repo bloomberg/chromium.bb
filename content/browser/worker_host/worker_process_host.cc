@@ -259,7 +259,7 @@ void WorkerProcessHost::CreateMessageFilters(int render_process_id) {
       new SocketStreamDispatcherHost(
           new URLRequestContextSelector(request_context), resource_context_);
   AddFilter(socket_stream_dispatcher_host);
-  AddFilter(new WorkerDevToolsMessageFilter(id()));
+  AddFilter(new content::WorkerDevToolsMessageFilter(id()));
 }
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {

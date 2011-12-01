@@ -16,13 +16,18 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/browser/debugger/devtools_client_host.h"
-#include "content/browser/debugger/devtools_manager.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/site_instance.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/devtools_messages.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "net/base/net_util.h"
+
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
+using content::DevToolsClientHost;
+using content::DevToolsManager;
 
 // Looks for an ExtensionHost whose URL has the given path component (including
 // leading slash).  Also verifies that the expected number of hosts are loaded.
@@ -73,18 +78,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
 
   // Setting the events should have caused an ExtensionDevToolsBridge to be
   // registered for the tab's RenderViewHost.
+  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+      tab_contents->render_view_host());
   DevToolsClientHost* devtools_client_host =
-      devtools_manager->GetDevToolsClientHostFor(
-          tab_contents->render_view_host());
+      devtools_manager->GetDevToolsClientHostFor(agent);
   ASSERT_TRUE(devtools_client_host);
 
   // Test onPageEvent event.
   result = false;
 
-  DevToolsClientMsg_DispatchOnInspectorFrontend pageEventMessage(
-      MSG_ROUTING_NONE,
-      "");
-  devtools_client_host->SendMessageToClient(pageEventMessage);
+  devtools_client_host->DispatchOnInspectorFrontend("");
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testReceivePageEvent()", &result));
   EXPECT_TRUE(result);
@@ -92,7 +95,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, FLAKY_TimelineApi) {
   // Test onTabClose event.
   result = false;
   devtools_manager->UnregisterDevToolsClientHostFor(
-      tab_contents->render_view_host());
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+          tab_contents->render_view_host()));
   ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testReceiveTabCloseEvent()", &result));
   EXPECT_TRUE(result);
@@ -132,7 +136,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
   // Setting the event listeners should have caused an ExtensionDevToolsBridge
   // to be registered for the tab's RenderViewHost.
   ASSERT_TRUE(devtools_manager->GetDevToolsClientHostFor(
-      tab_contents->render_view_host()));
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+          tab_contents->render_view_host())));
 
   // Register listeners from the second extension as well.
   std::wstring script = base::StringPrintf(L"registerListenersForTab(%d)",
@@ -148,7 +153,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
       host_one->render_view_host(), L"", L"unregisterListeners()", &result));
   EXPECT_TRUE(result);
   ASSERT_TRUE(devtools_manager->GetDevToolsClientHostFor(
-      tab_contents->render_view_host()));
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+          tab_contents->render_view_host())));
 
   // Removing the listeners from the second extension should tear the bridge
   // down.
@@ -157,5 +163,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, ProcessRefCounting) {
       host_two->render_view_host(), L"", L"unregisterListeners()", &result));
   EXPECT_TRUE(result);
   ASSERT_FALSE(devtools_manager->GetDevToolsClientHostFor(
-      tab_contents->render_view_host()));
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+          tab_contents->render_view_host())));
 }

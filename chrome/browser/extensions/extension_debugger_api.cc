@@ -22,12 +22,17 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
-#include "content/browser/debugger/devtools_client_host.h"
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager.h"
 #include "content/browser/tab_contents/tab_contents.h"
-#include "content/common/devtools_messages.h"
 #include "content/public/browser/notification_source.h"
 #include "webkit/glue/webkit_glue.h"
+
+using content::DevToolsAgentHost;
+using content::DevToolsAgentHostRegistry;
+using content::DevToolsClientHost;
+using content::DevToolsManager;
 
 namespace keys = extension_debugger_api_constants;
 
@@ -49,7 +54,7 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
 
   // DevToolsClientHost interface
   virtual void InspectedTabClosing();
-  virtual void SendMessageToClient(const IPC::Message& msg);
+  virtual void DispatchOnInspectorFrontend(const std::string& message);
   virtual void TabReplaced(TabContents* tab_contents);
   virtual void FrameNavigating(const std::string& url) {}
 
@@ -58,7 +63,6 @@ class ExtensionDevToolsClientHost : public DevToolsClientHost,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details);
-  void OnDispatchOnInspectorFrontend(const std::string& data);
 
   TabContents* tab_contents_;
   std::string extension_id_;
@@ -98,8 +102,12 @@ class AttachedClientHosts {
   }
 
   ExtensionDevToolsClientHost* Lookup(RenderViewHost* rvh) {
+    if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(rvh))
+      return NULL;
+    DevToolsAgentHost* agent =
+        DevToolsAgentHostRegistry::GetDevToolsAgentHost(rvh);
     DevToolsClientHost* client_host =
-        DevToolsManager::GetInstance()->GetDevToolsClientHostFor(rvh);
+        DevToolsManager::GetInstance()->GetDevToolsClientHostFor(agent);
     std::set<DevToolsClientHost*>::iterator it =
         client_hosts_.find(client_host);
     if (it == client_hosts_.end())
@@ -130,9 +138,9 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
                  content::Source<Profile>(profile));
 
   // Attach to debugger and tell it we are ready.
-  DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(
-      tab_contents_->render_view_host(),
-      this);
+  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+      tab_contents_->render_view_host());
+  DevToolsManager::GetInstance()->RegisterDevToolsClientHostFor(agent, this);
 }
 
 ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
@@ -163,22 +171,13 @@ void ExtensionDevToolsClientHost::InspectedTabClosing() {
   delete this;
 }
 
-void ExtensionDevToolsClientHost::SendMessageToClient(
-    const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(ExtensionDevToolsClientHost, msg)
-    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
-                        OnDispatchOnInspectorFrontend);
-    IPC_MESSAGE_UNHANDLED_ERROR()
-  IPC_END_MESSAGE_MAP()
-}
-
 void ExtensionDevToolsClientHost::TabReplaced(
     TabContents* tab_contents) {
   tab_contents_ = tab_contents;
 }
 
 void ExtensionDevToolsClientHost::Close() {
-  DevToolsClientHost::NotifyCloseListener();
+  DevToolsManager::GetInstance()->ClientHostClosing(this);
   delete this;
 }
 
@@ -196,10 +195,7 @@ void ExtensionDevToolsClientHost::SendMessageToBackend(
 
   std::string json_args;
   base::JSONWriter::Write(&protocol_request, false, &json_args);
-  DevToolsManager::GetInstance()->ForwardToDevToolsAgent(
-      this,
-      DevToolsAgentMsg_DispatchOnInspectorBackend(MSG_ROUTING_NONE,
-                                                  json_args));
+  DevToolsManager::GetInstance()->DispatchOnInspectorBackend(this, json_args);
 }
 
 void ExtensionDevToolsClientHost::Observe(
@@ -210,14 +206,14 @@ void ExtensionDevToolsClientHost::Observe(
   Close();
 }
 
-void ExtensionDevToolsClientHost::OnDispatchOnInspectorFrontend(
-    const std::string& data) {
+void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
+    const std::string& message) {
   Profile* profile =
       Profile::FromBrowserContext(tab_contents_->browser_context());
   if (profile == NULL || !profile->GetExtensionEventRouter())
     return;
 
-  scoped_ptr<Value> result(base::JSONReader::Read(data, false));
+  scoped_ptr<Value> result(base::JSONReader::Read(message, false));
   if (!result->IsType(Value::TYPE_DICTIONARY))
     return;
   DictionaryValue* dictionary = static_cast<DictionaryValue*>(result.get());
@@ -314,8 +310,10 @@ bool AttachDebuggerFunction::RunImpl() {
     return false;
   }
 
+  DevToolsAgentHost* agent = DevToolsAgentHostRegistry::GetDevToolsAgentHost(
+      contents_->render_view_host());
   DevToolsClientHost* client_host = DevToolsManager::GetInstance()->
-      GetDevToolsClientHostFor(contents_->render_view_host());
+      GetDevToolsClientHostFor(agent);
 
   if (client_host != NULL) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_MANAGER_H_
-#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_MANAGER_H_
+#ifndef CONTENT_BROWSER_DEBUGGER_DEVTOOLS_MANAGER_IMPL_H_
+#define CONTENT_BROWSER_DEBUGGER_DEVTOOLS_MANAGER_IMPL_H_
 #pragma once
 
 #include <map>
@@ -12,10 +12,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/singleton.h"
 #include "content/browser/debugger/devtools_agent_host.h"
-#include "content/browser/debugger/devtools_client_host.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_manager.h"
 
-class DevToolsAgentHost;
 class GURL;
 class RenderViewHost;
 class TabContents;
@@ -24,35 +24,31 @@ namespace IPC {
 class Message;
 }
 
+namespace content {
+
+class DevToolsAgentHost;
+
 // This class is a singleton that manages DevToolsClientHost instances and
 // routes messages between developer tools clients and agents.
 //
 // Methods below that accept inspected RenderViewHost as a parameter are
 // just convenience methods that call corresponding methods accepting
 // DevToolAgentHost.
-class CONTENT_EXPORT DevToolsManager
-    : public DevToolsClientHost::CloseListener,
-      public DevToolsAgentHost::CloseListener {
+class CONTENT_EXPORT DevToolsManagerImpl
+    : public DevToolsAgentHost::CloseListener,
+      public DevToolsManager {
  public:
-  static DevToolsManager* GetInstance();
+  // Returns single instance of this class. The instance is destroyed on the
+  // browser main loop exit so this method MUST NOT be called after that point.
+  static DevToolsManagerImpl* GetInstance();
 
-  DevToolsManager();
-  virtual ~DevToolsManager();
+  DevToolsManagerImpl();
+  virtual ~DevToolsManagerImpl();
 
-  // Returns DevToolsClientHost registered for |inspected_rvh| or NULL if
-  // there is no alive DevToolsClientHost registered for |inspected_rvh|.
-  DevToolsClientHost* GetDevToolsClientHostFor(RenderViewHost* inspected_rvh);
-
-  // Registers new DevToolsClientHost for |inspected_rvh|. There must be no
-  // other DevToolsClientHosts registered for the RenderViewHost at the moment.
-  void RegisterDevToolsClientHostFor(RenderViewHost* inspected_rvh,
-                                     DevToolsClientHost* client_host);
-  void UnregisterDevToolsClientHostFor(RenderViewHost* inspected_rvh);
-
-  bool ForwardToDevToolsAgent(DevToolsClientHost* from,
-                              const IPC::Message& message);
-  void ForwardToDevToolsClient(DevToolsAgentHost* agent_host,
-                               const IPC::Message& message);
+  virtual bool DispatchOnInspectorBackend(DevToolsClientHost* from,
+                                          const std::string& message) OVERRIDE;
+  void DispatchOnInspectorFrontend(DevToolsAgentHost* agent_host,
+                                   const std::string& message);
 
   void SaveAgentRuntimeState(DevToolsAgentHost* agent_host,
                              const std::string& state);
@@ -67,35 +63,33 @@ class CONTENT_EXPORT DevToolsManager
 
   // Invoked when a tab is replaced by another tab. This is triggered by
   // TabStripModel::ReplaceTabContentsAt.
-  void TabReplaced(TabContents* old_tab, TabContents* new_tab);
-
-  // Detaches client host and returns cookie that can be used in
-  // AttachClientHost.
-  int DetachClientHost(RenderViewHost* from_rvh);
-
-  // Attaches orphan client host to new render view host.
-  void AttachClientHost(int client_host_cookie,
-                        RenderViewHost* to_rvh);
+  virtual void TabReplaced(TabContents* old_tab, TabContents* new_tab) OVERRIDE;
 
   // Closes all open developer tools windows.
-  void CloseAllClientHosts();
+  virtual void CloseAllClientHosts() OVERRIDE;
 
-  void AttachClientHost(int client_host_cookie,
-                        DevToolsAgentHost* to_agent);
-  DevToolsClientHost* GetDevToolsClientHostFor(DevToolsAgentHost* agent_host);
-  void RegisterDevToolsClientHostFor(DevToolsAgentHost* agent_host,
-                                     DevToolsClientHost* client_host);
-  void UnregisterDevToolsClientHostFor(DevToolsAgentHost* agent_host);
-  int DetachClientHost(DevToolsAgentHost* from_agent);
+  virtual void AttachClientHost(int client_host_cookie,
+                                DevToolsAgentHost* to_agent) OVERRIDE;
+  virtual DevToolsClientHost* GetDevToolsClientHostFor(
+      DevToolsAgentHost* agent_host) OVERRIDE;
+  virtual void RegisterDevToolsClientHostFor(
+      DevToolsAgentHost* agent_host,
+      DevToolsClientHost* client_host) OVERRIDE;
+  virtual void UnregisterDevToolsClientHostFor(
+      DevToolsAgentHost* agent_host) OVERRIDE;
+  virtual int DetachClientHost(DevToolsAgentHost* from_agent) OVERRIDE;
 
- private:
-  friend struct DefaultSingletonTraits<DevToolsManager>;
-
-  // DevToolsClientHost::CloseListener override.
   // This method will remove all references from the manager to the
   // DevToolsClientHost and unregister all listeners related to the
   // DevToolsClientHost.
   virtual void ClientHostClosing(DevToolsClientHost* host) OVERRIDE;
+
+  // Starts inspecting element at position (x, y) in the specified page.
+  virtual void InspectElement(DevToolsAgentHost* agent_host,
+                              int x, int y) OVERRIDE;
+
+ private:
+  friend struct DefaultSingletonTraits<DevToolsManagerImpl>;
 
   // DevToolsAgentHost::CloseListener implementation.
   virtual void AgentHostClosing(DevToolsAgentHost* host) OVERRIDE;
@@ -108,12 +102,20 @@ class CONTENT_EXPORT DevToolsManager
   void UnbindClientHost(DevToolsAgentHost* agent_host,
                         DevToolsClientHost* client_host);
 
+  // Detaches client host and returns cookie that can be used in
+  // AttachClientHost.
+  int DetachClientHost(RenderViewHost* from_rvh);
+
+  // Attaches orphan client host to new render view host.
+  void AttachClientHost(int client_host_cookie,
+                        RenderViewHost* to_rvh);
+
   // These two maps are for tracking dependencies between inspected tabs and
   // their DevToolsClientHosts. They are useful for routing devtools messages
   // and allow us to have at most one devtools client host per tab.
   //
-  // DevToolsManager start listening to DevToolsClientHosts when they are put
-  // into these maps and removes them when they are closing.
+  // DevToolsManagerImpl starts listening to DevToolsClientHosts when they are
+  // put into these maps and removes them when they are closing.
   typedef std::map<DevToolsAgentHost*, DevToolsClientHost*>
       AgentToClientHostMap;
   AgentToClientHostMap agent_to_client_host_;
@@ -130,7 +132,9 @@ class CONTENT_EXPORT DevToolsManager
   OrphanClientHosts orphan_client_hosts_;
   int last_orphan_cookie_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsManager);
+  DISALLOW_COPY_AND_ASSIGN(DevToolsManagerImpl);
 };
 
-#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_MANAGER_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_DEBUGGER_DEVTOOLS_MANAGER_IMPL_H_

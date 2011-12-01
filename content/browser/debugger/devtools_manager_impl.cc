@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/debugger/devtools_manager.h"
+#include "content/browser/debugger/devtools_manager_impl.h"
 
 #include <vector>
 
@@ -10,26 +10,32 @@
 #include "base/message_loop.h"
 #include "content/browser/browsing_instance.h"
 #include "content/browser/child_process_security_policy.h"
-#include "content/browser/debugger/devtools_client_host.h"
 #include "content/browser/debugger/devtools_netlog_observer.h"
 #include "content/browser/debugger/render_view_devtools_agent_host.h"
 #include "content/browser/renderer_host/render_view_host.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_client_host.h"
+#include "content/public/browser/devtools_agent_host_registry.h"
 #include "googleurl/src/gurl.h"
 
-using content::BrowserThread;
+namespace content {
 
 // static
 DevToolsManager* DevToolsManager::GetInstance() {
-  return Singleton<DevToolsManager>::get();
+  return DevToolsManagerImpl::GetInstance();
 }
 
-DevToolsManager::DevToolsManager()
+// static
+DevToolsManagerImpl* DevToolsManagerImpl::GetInstance() {
+  return Singleton<DevToolsManagerImpl>::get();
+}
+
+DevToolsManagerImpl::DevToolsManagerImpl()
     : last_orphan_cookie_(0) {
 }
 
-DevToolsManager::~DevToolsManager() {
+DevToolsManagerImpl::~DevToolsManagerImpl() {
   DCHECK(agent_to_client_host_.empty());
   DCHECK(client_to_agent_host_.empty());
   // By the time we destroy devtools manager, all orphan client hosts should
@@ -37,14 +43,7 @@ DevToolsManager::~DevToolsManager() {
   DCHECK(orphan_client_hosts_.empty());
 }
 
-DevToolsClientHost* DevToolsManager::GetDevToolsClientHostFor(
-    RenderViewHost* inspected_rvh) {
-  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
-      inspected_rvh);
-  return GetDevToolsClientHostFor(agent_host);
-}
-
-DevToolsClientHost* DevToolsManager::GetDevToolsClientHostFor(
+DevToolsClientHost* DevToolsManagerImpl::GetDevToolsClientHostFor(
     DevToolsAgentHost* agent_host) {
   AgentToClientHostMap::iterator it = agent_to_client_host_.find(agent_host);
   if (it != agent_to_client_host_.end())
@@ -52,50 +51,47 @@ DevToolsClientHost* DevToolsManager::GetDevToolsClientHostFor(
   return NULL;
 }
 
-void DevToolsManager::RegisterDevToolsClientHostFor(
-    RenderViewHost* inspected_rvh,
-    DevToolsClientHost* client_host) {
-  DCHECK(!GetDevToolsClientHostFor(inspected_rvh));
-  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
-      inspected_rvh);
-  RegisterDevToolsClientHostFor(agent_host, client_host);
-}
-
-void DevToolsManager::RegisterDevToolsClientHostFor(
+void DevToolsManagerImpl::RegisterDevToolsClientHostFor(
     DevToolsAgentHost* agent_host,
     DevToolsClientHost* client_host) {
   BindClientHost(agent_host, client_host);
   agent_host->Attach();
-  client_host->set_close_listener(this);
 }
 
-bool DevToolsManager::ForwardToDevToolsAgent(DevToolsClientHost* from,
-                                             const IPC::Message& message) {
+bool DevToolsManagerImpl::DispatchOnInspectorBackend(
+    DevToolsClientHost* from,
+    const std::string& message) {
   DevToolsAgentHost* agent_host = GetAgentHost(from);
   if (!agent_host)
     return false;
 
-  agent_host->SendMessageToAgent(new IPC::Message(message));
+  agent_host->DipatchOnInspectorBackend(message);
   return true;
 }
 
-void DevToolsManager::ForwardToDevToolsClient(DevToolsAgentHost* agent_host,
-                                              const IPC::Message& message) {
+void DevToolsManagerImpl::DispatchOnInspectorFrontend(
+    DevToolsAgentHost* agent_host,
+    const std::string& message) {
   DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host);
   if (!client_host) {
     // Client window was closed while there were messages
     // being sent to it.
     return;
   }
-  client_host->SendMessageToClient(message);
+  client_host->DispatchOnInspectorFrontend(message);
 }
 
-void DevToolsManager::SaveAgentRuntimeState(DevToolsAgentHost* agent_host,
-                                            const std::string& state) {
+void DevToolsManagerImpl::SaveAgentRuntimeState(DevToolsAgentHost* agent_host,
+                                                const std::string& state) {
   agent_runtime_states_[agent_host] = state;
 }
 
-void DevToolsManager::ClientHostClosing(DevToolsClientHost* client_host) {
+void DevToolsManagerImpl::InspectElement(DevToolsAgentHost* agent_host,
+                                         int x, int y) {
+  agent_host->InspectElement(x, y);
+}
+
+void DevToolsManagerImpl::ClientHostClosing(DevToolsClientHost* client_host) {
   DevToolsAgentHost* agent_host = GetAgentHost(client_host);
   if (!agent_host) {
     // It might be in the list of orphan client hosts, remove it from there.
@@ -114,11 +110,11 @@ void DevToolsManager::ClientHostClosing(DevToolsClientHost* client_host) {
   UnbindClientHost(agent_host, client_host);
 }
 
-void DevToolsManager::AgentHostClosing(DevToolsAgentHost* agent_host) {
+void DevToolsManagerImpl::AgentHostClosing(DevToolsAgentHost* agent_host) {
   UnregisterDevToolsClientHostFor(agent_host);
 }
 
-DevToolsAgentHost* DevToolsManager::GetAgentHost(
+DevToolsAgentHost* DevToolsManagerImpl::GetAgentHost(
     DevToolsClientHost* client_host) {
   ClientHostToInspectedRvhMap::iterator it =
       client_to_agent_host_.find(client_host);
@@ -127,14 +123,7 @@ DevToolsAgentHost* DevToolsManager::GetAgentHost(
   return NULL;
 }
 
-void DevToolsManager::UnregisterDevToolsClientHostFor(
-      RenderViewHost* inspected_rvh) {
-  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
-      inspected_rvh);
-  UnregisterDevToolsClientHostFor(agent_host);
-}
-
-void DevToolsManager::UnregisterDevToolsClientHostFor(
+void DevToolsManagerImpl::UnregisterDevToolsClientHostFor(
     DevToolsAgentHost* agent_host) {
   DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host);
   if (!client_host)
@@ -143,9 +132,9 @@ void DevToolsManager::UnregisterDevToolsClientHostFor(
   client_host->InspectedTabClosing();
 }
 
-void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
-                                                 RenderViewHost* dest_rvh,
-                                                 const GURL& gurl) {
+void DevToolsManagerImpl::OnNavigatingToPendingEntry(RenderViewHost* rvh,
+                                                     RenderViewHost* dest_rvh,
+                                                     const GURL& gurl) {
   if (rvh == dest_rvh && rvh->render_view_termination_status() ==
           base::TERMINATION_STATUS_STILL_RUNNING)
     return;
@@ -154,13 +143,16 @@ void DevToolsManager::OnNavigatingToPendingEntry(RenderViewHost* rvh,
     // Navigating to URL in the inspected window.
     AttachClientHost(cookie, dest_rvh);
 
-    DevToolsClientHost* client_host = GetDevToolsClientHostFor(dest_rvh);
+    DevToolsAgentHost* dest_agent_host =
+        DevToolsAgentHostRegistry::GetDevToolsAgentHost(dest_rvh);
+    DevToolsClientHost* client_host = GetDevToolsClientHostFor(
+        dest_agent_host);
     client_host->FrameNavigating(gurl.spec());
   }
 }
 
-void DevToolsManager::OnCancelPendingNavigation(RenderViewHost* pending,
-                                                RenderViewHost* current) {
+void DevToolsManagerImpl::OnCancelPendingNavigation(RenderViewHost* pending,
+                                                    RenderViewHost* current) {
   int cookie = DetachClientHost(pending);
   if (cookie != -1) {
     // Navigating to URL in the inspected window.
@@ -168,10 +160,15 @@ void DevToolsManager::OnCancelPendingNavigation(RenderViewHost* pending,
   }
 }
 
-void DevToolsManager::TabReplaced(TabContents* old_tab,
-                                  TabContents* new_tab) {
+void DevToolsManagerImpl::TabReplaced(TabContents* old_tab,
+                                      TabContents* new_tab) {
   RenderViewHost* old_rvh = old_tab->render_view_host();
-  DevToolsClientHost* client_host = GetDevToolsClientHostFor(old_rvh);
+  if (!DevToolsAgentHostRegistry::HasDevToolsAgentHost(old_rvh))
+    return;
+
+  DevToolsAgentHost* old_agent_host =
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(old_rvh);
+  DevToolsClientHost* client_host = GetDevToolsClientHostFor(old_agent_host);
   if (!client_host)
     return;  // Didn't know about old_tab.
   int cookie = DetachClientHost(old_rvh);
@@ -182,13 +179,13 @@ void DevToolsManager::TabReplaced(TabContents* old_tab,
   AttachClientHost(cookie, new_tab->render_view_host());
 }
 
-int DevToolsManager::DetachClientHost(RenderViewHost* from_rvh) {
-  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
-      from_rvh);
+int DevToolsManagerImpl::DetachClientHost(RenderViewHost* from_rvh) {
+  DevToolsAgentHost* agent_host =
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(from_rvh);
   return DetachClientHost(agent_host);
 }
 
-int DevToolsManager::DetachClientHost(DevToolsAgentHost* agent_host) {
+int DevToolsManagerImpl::DetachClientHost(DevToolsAgentHost* agent_host) {
   DevToolsClientHost* client_host = GetDevToolsClientHostFor(agent_host);
   if (!client_host)
     return -1;
@@ -202,15 +199,15 @@ int DevToolsManager::DetachClientHost(DevToolsAgentHost* agent_host) {
   return cookie;
 }
 
-void DevToolsManager::AttachClientHost(int client_host_cookie,
-                                       RenderViewHost* to_rvh) {
-  DevToolsAgentHost* agent_host = RenderViewDevToolsAgentHost::FindFor(
-      to_rvh);
+void DevToolsManagerImpl::AttachClientHost(int client_host_cookie,
+                                           RenderViewHost* to_rvh) {
+  DevToolsAgentHost* agent_host =
+      DevToolsAgentHostRegistry::GetDevToolsAgentHost(to_rvh);
   AttachClientHost(client_host_cookie, agent_host);
 }
 
-void DevToolsManager::AttachClientHost(int client_host_cookie,
-                                       DevToolsAgentHost* agent_host) {
+void DevToolsManagerImpl::AttachClientHost(int client_host_cookie,
+                                           DevToolsAgentHost* agent_host) {
   OrphanClientHosts::iterator it = orphan_client_hosts_.find(
       client_host_cookie);
   if (it == orphan_client_hosts_.end())
@@ -225,7 +222,7 @@ void DevToolsManager::AttachClientHost(int client_host_cookie,
   orphan_client_hosts_.erase(it);
 }
 
-void DevToolsManager::BindClientHost(
+void DevToolsManagerImpl::BindClientHost(
     DevToolsAgentHost* agent_host,
     DevToolsClientHost* client_host) {
   DCHECK(agent_to_client_host_.find(agent_host) ==
@@ -248,8 +245,8 @@ void DevToolsManager::BindClientHost(
     ChildProcessSecurityPolicy::GetInstance()->GrantReadRawCookies(process_id);
 }
 
-void DevToolsManager::UnbindClientHost(DevToolsAgentHost* agent_host,
-                                       DevToolsClientHost* client_host) {
+void DevToolsManagerImpl::UnbindClientHost(DevToolsAgentHost* agent_host,
+                                           DevToolsClientHost* client_host) {
   DCHECK(agent_host);
   DCHECK(agent_to_client_host_.find(agent_host)->second ==
       client_host);
@@ -282,7 +279,7 @@ void DevToolsManager::UnbindClientHost(DevToolsAgentHost* agent_host,
   ChildProcessSecurityPolicy::GetInstance()->RevokeReadRawCookies(process_id);
 }
 
-void DevToolsManager::CloseAllClientHosts() {
+void DevToolsManagerImpl::CloseAllClientHosts() {
   std::vector<DevToolsAgentHost*> agents;
   for (AgentToClientHostMap::iterator it =
            agent_to_client_host_.begin();
@@ -294,3 +291,5 @@ void DevToolsManager::CloseAllClientHosts() {
     UnregisterDevToolsClientHostFor(*it);
   }
 }
+
+}  // namespace content

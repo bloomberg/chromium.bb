@@ -9,6 +9,8 @@
 #include "content/common/devtools_messages.h"
 #include "content/common/worker_messages.h"
 
+namespace content {
+
 WorkerDevToolsMessageFilter::WorkerDevToolsMessageFilter(
     int worker_process_host_id)
     : worker_process_host_id_(worker_process_host_id),
@@ -25,7 +27,8 @@ bool WorkerDevToolsMessageFilter::OnMessageReceived(
   current_routing_id_ = message.routing_id();
   IPC_BEGIN_MESSAGE_MAP_EX(WorkerDevToolsMessageFilter, message,
                            *message_was_ok)
-    IPC_MESSAGE_HANDLER(DevToolsHostMsg_ForwardToClient, OnForwardToClient)
+    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                        OnDispatchOnInspectorFrontend)
     IPC_MESSAGE_HANDLER(DevToolsHostMsg_SaveAgentRuntimeState,
                         OnSaveAgentRumtimeState)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -33,10 +36,10 @@ bool WorkerDevToolsMessageFilter::OnMessageReceived(
   return handled;
 }
 
-void WorkerDevToolsMessageFilter::OnForwardToClient(
-    const IPC::Message& message) {
+void WorkerDevToolsMessageFilter::OnDispatchOnInspectorFrontend(
+    const std::string& message) {
   WorkerDevToolsManager::GetInstance()->ForwardToDevToolsClient(
-      worker_process_host_id_, message.routing_id(), message);
+      worker_process_host_id_, current_routing_id_, message);
 }
 
 void WorkerDevToolsMessageFilter::OnSaveAgentRumtimeState(
@@ -44,3 +47,5 @@ void WorkerDevToolsMessageFilter::OnSaveAgentRumtimeState(
   WorkerDevToolsManager::GetInstance()->SaveAgentRuntimeState(
       worker_process_host_id_, current_routing_id_, state);
 }
+
+}  // namespace content
