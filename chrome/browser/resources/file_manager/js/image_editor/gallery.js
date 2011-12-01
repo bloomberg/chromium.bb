@@ -172,10 +172,9 @@ Gallery.prototype.initDom_ = function(shareActions) {
 
   if (shareActions.length > 0) {
     this.shareMode_ = new ShareMode(
-        this.container_, this.toolbar_, shareActions,
+        this.editor_, this.container_, this.toolbar_, shareActions,
         this.onShare_.bind(this), this.onActionExecute_.bind(this),
         this.displayStringFunction_);
-
   } else {
     this.shareMode_ = null;
   }
@@ -363,10 +362,15 @@ Gallery.prototype.isEditing_ = function() {
 Gallery.prototype.onEdit_ = function() {
   ImageUtil.setAttribute(this.container_, 'editing', !this.isEditing_());
 
+  // The user has just clicked on the Edit button. Dismiss the Share menu.
+  if (this.isSharing_()) {
+    this.onShare_();
+  }
+
   // isEditing_ has just been flipped to a new value.
   if (this.isEditing_()) {
     this.cancelFading_();
-  } else if (!this.isSharing_()) {
+  } else {
     var item = this.ribbon_.getSelectedItem();
     this.editor_.requestImage(item.updateThumbnail.bind(item));
     this.initiateFading_();
@@ -1045,18 +1049,20 @@ Ribbon.Item.prototype.setMetadata = function(metadata) {
   }
 };
 
-function ShareMode(container, toolbar, shareActions,
+function ShareMode(editor, container, toolbar, shareActions,
                    onClick, actionCallback, displayStringFunction) {
   ImageEditor.Mode.call(this, 'share');
 
   this.message_ = null;
 
   var doc = container.ownerDocument;
-  this.button_ = doc.createElement('div');
-  this.button_.className = 'button share';
-  this.button_.textContent = displayStringFunction('share');
-  this.button_.addEventListener('click', onClick);
-  toolbar.appendChild(this.button_);
+  var button = doc.createElement('div');
+  button.className = 'button share';
+  button.textContent = displayStringFunction('share');
+  button.addEventListener('click', onClick);
+  toolbar.appendChild(button);
+
+  this.bind(editor, button);
 
   this.menu_ = doc.createElement('div');
   this.menu_.className = 'share-menu';
