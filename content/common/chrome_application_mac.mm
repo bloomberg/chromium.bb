@@ -37,7 +37,7 @@
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  content::mac::ScopedSendingEvent sendingEventScoper;
+  base::mac::ScopedSendingEvent sendingEventScoper;
   [super sendEvent:event];
 }
 

@@ -34,7 +34,10 @@ include_rules = [
   "+content/common/child_process_host.h",
   "+content/common/child_process_info.h",
   "+content/common/chrome_application_mac.h",
-  "+content/common/mac/scoped_sending_event.h",
+  "+content/common/geolocation_messages.h",
+  "+content/common/geoposition.h",
+  "+content/common/pepper_plugin_registry.h",
+  "+content/common/test_url_constants.h",
   "+content/common/view_messages.h",
   # TODO(gbilock)
   "+content/common/intents_messages.h",

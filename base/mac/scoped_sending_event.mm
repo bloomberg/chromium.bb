@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "content/common/mac/scoped_sending_event.h"
+#import "base/mac/scoped_sending_event.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace base {
 namespace mac {
 
 ScopedSendingEvent::ScopedSendingEvent()
@@ -21,4 +21,4 @@ ScopedSendingEvent::~ScopedSendingEvent() {
 }
 
 }  // namespace mac
-}  // namespace content
+}  // namespace base

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,32 +13,13 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_pump_mac.h"
+#import "base/test/mock_chrome_application_mac.h"
 #include "third_party/WebKit/Source/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_platform_delegate.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
 
 static NSAutoreleasePool *gTestShellAutoreleasePool = nil;
-
-@interface CrApplication : NSApplication<CrAppProtocol> {
- @private
-  BOOL handlingSendEvent_;
-}
-- (BOOL)isHandlingSendEvent;
-@end
-
-@implementation CrApplication
-- (BOOL)isHandlingSendEvent {
-  return handlingSendEvent_;
-}
-
-- (void)sendEvent:(NSEvent*)event {
-  BOOL wasHandlingSendEvent = handlingSendEvent_;
-  handlingSendEvent_ = YES;
-  [super sendEvent:event];
-  handlingSendEvent_ = wasHandlingSendEvent;
-}
-@end
 
 static void SetDefaultsToLayoutTestValues(void) {
   // So we can match the WebKit layout tests, we want to force a bunch of
@@ -172,15 +153,15 @@ static void SwizzleNSPasteboard(void) {
 TestShellPlatformDelegate::TestShellPlatformDelegate(
     const CommandLine &command_line)
     : command_line_(command_line) {
-  // Force AppKit to init itself, but don't start the runloop yet
-  [CrApplication sharedApplication];
   gTestShellAutoreleasePool = [[NSAutoreleasePool alloc] init];
+  // Force AppKit to init itself, but don't start the runloop yet
+  [MockCrApp sharedApplication];
   InitWebCoreSystemInterface();
   [NSBundle loadNibNamed:@"MainMenu" owner:NSApp];
 }
 
 TestShellPlatformDelegate::~TestShellPlatformDelegate() {
-  [gTestShellAutoreleasePool release];
+  [gTestShellAutoreleasePool drain];
 }
 
 bool TestShellPlatformDelegate::CheckLayoutTestSystemDependencies() {

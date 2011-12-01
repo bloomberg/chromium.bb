@@ -11,7 +11,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/basictypes.h"
-#import "content/common/mac/scoped_sending_event.h"
+#import "base/mac/scoped_sending_event.h"
 
 @interface CrApplication : NSApplication<CrAppControlProtocol> {
  @private
