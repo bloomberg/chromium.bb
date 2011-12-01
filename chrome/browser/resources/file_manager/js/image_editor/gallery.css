@@ -522,6 +522,7 @@ body {
 .gallery .edit-modal .range {
   -webkit-appearance: none !important;
   height: 3px;
+  margin-top: 1px;
   margin-right: 10px;
 }
 
