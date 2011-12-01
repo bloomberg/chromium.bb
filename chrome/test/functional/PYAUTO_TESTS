@@ -169,6 +169,8 @@
       '-notifications.NotificationsTest.testOriginPrefsNotSavedInIncognito',
       # crbug.com/103379
       '-policy.PolicyTest.testDisable3DAPIs',
+      # crbug.com/105632
+      '-plugins.PluginsTest.testBlockPluginException',
     ],
 
     'mac': [
