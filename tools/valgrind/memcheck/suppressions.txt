@@ -5279,6 +5279,12 @@
    fun:_ZN7WebCore15HTMLTreeBuilder22processCharacterBufferERNS0_28ExternalCharacterTokenBufferE
    fun:_ZN7WebCore15HTMLTreeBuilder16processCharacterERNS_15AtomicHTMLTokenE
 }
+{
+   bug_106067
+   Memcheck:Uninitialized
+   fun:_ZN16RenderThreadImpl26IdleHandlerInForegroundTabEv
+   fun:_ZN16RenderThreadImpl11IdleHandlerEv
+}
 
 #-----------------------------------------------------------------------
 # 4. These only occur on our Google workstations
