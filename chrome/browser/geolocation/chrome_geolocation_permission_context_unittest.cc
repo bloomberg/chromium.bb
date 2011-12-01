@@ -24,6 +24,7 @@
 #include "content/browser/geolocation/location_provider.h"
 #include "content/browser/geolocation/mock_location_provider.h"
 #include "content/browser/renderer_host/mock_render_process_host.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/test_tab_contents.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -565,6 +566,36 @@ TEST_F(GeolocationPermissionContextTests, TabDestroyed) {
   ConfirmInfoBarDelegate* infobar_0 = infobar_tab_helper()->
       GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(infobar_0);
+
+  // Delete the tab contents.
+  DeleteContents();
+  infobar_0->InfoBarClosed();
+}
+
+TEST_F(GeolocationPermissionContextTests, InfoBarUsesCommittedEntry) {
+  GURL requesting_frame_0("http://www.example.com/geolocation");
+  GURL requesting_frame_1("http://www.example-2.com/geolocation");
+  NavigateAndCommit(requesting_frame_0);
+  NavigateAndCommit(requesting_frame_1);
+  EXPECT_EQ(0U, infobar_tab_helper()->infobar_count());
+  // Go back: navigate to a pending entry before requesting geolocation
+  // permission.
+  contents()->controller().GoBack();
+  // Request permission for the committed frame (not the pending one).
+  RequestGeolocationPermission(
+      process_id(), render_id(), bridge_id(), requesting_frame_1);
+  // Ensure the infobar is created.
+  ASSERT_EQ(1U, infobar_tab_helper()->infobar_count());
+  InfoBarDelegate* infobar_0 = infobar_tab_helper()->GetInfoBarDelegateAt(0);
+  ASSERT_TRUE(infobar_0);
+  // Ensure the infobar is not yet expired.
+  content::LoadCommittedDetails details;
+  details.entry = contents()->controller().GetLastCommittedEntry();
+  ASSERT_FALSE(infobar_0->ShouldExpire(details));
+  // Commit the "GoBack()" above, and ensure the infobar is now expired.
+  contents()->CommitPendingNavigation();
+  details.entry = contents()->controller().GetLastCommittedEntry();
+  ASSERT_TRUE(infobar_0->ShouldExpire(details));
 
   // Delete the tab contents.
   DeleteContents();

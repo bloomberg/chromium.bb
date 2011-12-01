@@ -24,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/browser/geolocation/geolocation_provider.h"
 #include "content/browser/renderer_host/render_view_host.h"
+#include "content/browser/tab_contents/navigation_details.h"
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -131,6 +132,8 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual ~GeolocationConfirmInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
+  virtual bool ShouldExpire(
+      const content::LoadCommittedDetails& details) const OVERRIDE;
   virtual gfx::Image* GetIcon() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
   virtual string16 GetMessageText() const OVERRIDE;
@@ -144,6 +147,10 @@ class GeolocationConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   int render_process_id_;
   int render_view_id_;
   int bridge_id_;
+  // The unique id of the committed NavigationEntry of the TabContents that we
+  // were opened for. Used to help expire on navigations.
+  int committed_contents_unique_id_;
+
   GURL requesting_frame_url_;
   std::string display_languages_;
 
@@ -165,11 +172,24 @@ GeolocationConfirmInfoBarDelegate::GeolocationConfirmInfoBarDelegate(
       bridge_id_(bridge_id),
       requesting_frame_url_(requesting_frame_url),
       display_languages_(display_languages) {
+  const NavigationEntry* committed_entry =
+      infobar_helper->tab_contents()->controller().GetLastCommittedEntry();
+  committed_contents_unique_id_ = committed_entry ?
+      committed_entry->unique_id() : 0;
 }
 
 GeolocationConfirmInfoBarDelegate::~GeolocationConfirmInfoBarDelegate() {
   controller_->OnInfoBarClosed(render_process_id_, render_view_id_,
                                bridge_id_);
+}
+
+bool GeolocationConfirmInfoBarDelegate::ShouldExpire(
+    const content::LoadCommittedDetails& details) const {
+  if (details.did_replace_entry || !details.is_navigation_to_different_page())
+    return false;
+  return committed_contents_unique_id_ != details.entry->unique_id() ||
+      content::PageTransitionStripQualifier(details.entry->transition_type()) ==
+                    content::PAGE_TRANSITION_RELOAD;
 }
 
 gfx::Image* GeolocationConfirmInfoBarDelegate::GetIcon() const {
