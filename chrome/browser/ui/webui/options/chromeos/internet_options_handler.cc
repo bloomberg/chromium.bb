@@ -71,6 +71,7 @@ const char kNetworkInfoKeyNetworkStatus[] = "networkStatus";
 const char kNetworkInfoKeyNetworkType[] = "networkType";
 const char kNetworkInfoKeyRemembered[] = "remembered";
 const char kNetworkInfoKeyServicePath[] = "servicePath";
+const char kNetworkInfoKeyPolicyManaged[] = "policyManaged";
 
 // A helper class for building network information dictionaries to be sent to
 // the webui code.
@@ -124,6 +125,9 @@ class NetworkInfoDictionary {
   void set_needs_new_plan(bool needs_new_plan) {
     needs_new_plan_ = needs_new_plan;
   }
+  void set_policy_managed(bool policy_managed) {
+    policy_managed_ = policy_managed;
+  }
 
   // Builds the DictionaryValue representation from the previously set
   // parameters. Ownership of the returned pointer is transferred to the caller.
@@ -142,6 +146,7 @@ class NetworkInfoDictionary {
   bool shared_;
   chromeos::ActivationState activation_state_;
   bool needs_new_plan_;
+  bool policy_managed_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkInfoDictionary);
 };
@@ -154,6 +159,7 @@ NetworkInfoDictionary::NetworkInfoDictionary() {
   set_shared(false);
   set_activation_state(chromeos::ACTIVATION_STATE_UNKNOWN);
   set_needs_new_plan(false);
+  set_policy_managed(false);
 }
 
 NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network) {
@@ -167,6 +173,7 @@ NetworkInfoDictionary::NetworkInfoDictionary(const chromeos::Network* network) {
   set_remembered(false);
   set_shared(false);
   set_needs_new_plan(false);
+  set_policy_managed(chromeos::NetworkUIData::IsManaged(network));
 }
 
 NetworkInfoDictionary::NetworkInfoDictionary(
@@ -183,6 +190,8 @@ NetworkInfoDictionary::NetworkInfoDictionary(
   set_remembered(true);
   set_shared(remembered->profile_type() == chromeos::PROFILE_SHARED);
   set_needs_new_plan(false);
+  set_policy_managed(
+      network ? chromeos::NetworkUIData::IsManaged(network) : false);
 }
 
 DictionaryValue* NetworkInfoDictionary::BuildDictionary() {
@@ -228,6 +237,7 @@ DictionaryValue* NetworkInfoDictionary::BuildDictionary() {
                            static_cast<int>(connection_type_));
   network_info->SetBoolean(kNetworkInfoKeyRemembered, remembered_);
   network_info->SetString(kNetworkInfoKeyServicePath, service_path_);
+  network_info->SetBoolean(kNetworkInfoKeyPolicyManaged, policy_managed_);
 
   return network_info.release();
 }
@@ -297,6 +307,9 @@ void InternetOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("changeProxyButton",
       l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CHANGE_PROXY_BUTTON));
+
+  localized_strings->SetString("managedNetwork",
+      l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_MANAGED_NETWORK));
 
   localized_strings->SetString("wifiNetworkTabLabel",
       l10n_util::GetStringUTF16(
@@ -883,6 +896,9 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
       chromeos::NetworkLibrary::FORMAT_COLON_SEPARATED_HEX);
   if (!hardware_address.empty())
     dictionary.SetString("hardwareAddress", hardware_address);
+
+  scoped_ptr<DictionaryValue> ipconfig_dhcp;
+  scoped_ptr<DictionaryValue> ipconfig_static;
   for (chromeos::NetworkIPConfigVector::const_iterator it = ipconfigs.begin();
        it != ipconfigs.end(); ++it) {
     const chromeos::NetworkIPConfig& ipconfig = *it;
@@ -892,10 +908,17 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
     ipconfig_dict->SetString("gateway", ipconfig.gateway);
     ipconfig_dict->SetString("dns", ipconfig.name_servers);
     if (ipconfig.type == chromeos::IPCONFIG_TYPE_DHCP)
-      dictionary.Set("ipconfigDHCP", ipconfig_dict.release());
+      ipconfig_dhcp.reset(ipconfig_dict.release());
     else if (ipconfig.type == chromeos::IPCONFIG_TYPE_IPV4)
-      dictionary.Set("ipconfigStatic", ipconfig_dict.release());
+      ipconfig_static.reset(ipconfig_dict.release());
   }
+
+  chromeos::NetworkPropertyUIData ipconfig_dhcp_ui_data(network, NULL);
+  SetValueDictionary(&dictionary, "ipconfigDHCP", ipconfig_dhcp.release(),
+                     ipconfig_dhcp_ui_data);
+  chromeos::NetworkPropertyUIData ipconfig_static_ui_data(network, NULL);
+  SetValueDictionary(&dictionary, "ipconfigStatic", ipconfig_static.release(),
+                     ipconfig_static_ui_data);
 
   chromeos::ConnectionType type = network->type();
   dictionary.SetInteger("type", type);
@@ -914,14 +937,24 @@ void InternetOptionsHandler::PopulateDictionaryDetails(
   dictionary.SetBoolean("showStaticIPConfig", staticIPConfig &&
       (type == chromeos::TYPE_WIFI || type == chromeos::TYPE_ETHERNET));
 
+  chromeos::NetworkPropertyUIData preferred_ui_data(
+      network, chromeos::NetworkUIData::kPropertyPreferred);
   if (network_profile == chromeos::PROFILE_USER) {
     dictionary.SetBoolean("showPreferred", true);
-    dictionary.SetBoolean("preferred", network->preferred());
+    SetValueDictionary(&dictionary, "preferred",
+                       Value::CreateBooleanValue(network->preferred()),
+                       preferred_ui_data);
   } else {
     dictionary.SetBoolean("showPreferred", false);
-    dictionary.SetBoolean("preferred", false);
+    SetValueDictionary(&dictionary, "preferred",
+                       Value::CreateBooleanValue(network->preferred()),
+                       preferred_ui_data);
   }
-  dictionary.SetBoolean("autoConnect", network->auto_connect());
+  chromeos::NetworkPropertyUIData auto_connect_ui_data(
+      network, chromeos::NetworkUIData::kPropertyAutoConnect);
+  SetValueDictionary(&dictionary, "autoConnect",
+                     Value::CreateBooleanValue(network->auto_connect()),
+                     auto_connect_ui_data);
 
   if (type == chromeos::TYPE_WIFI) {
     dictionary.SetBoolean("deviceConnected", cros_->wifi_connected());
@@ -1014,6 +1047,7 @@ void InternetOptionsHandler::PopulateCellularDetails(
   const chromeos::NetworkDevice* device =
       cros_->FindNetworkDeviceByPath(cellular->device_path());
   if (device) {
+    chromeos::NetworkPropertyUIData cellular_propety_ui_data(cellular, NULL);
     dictionary->SetString("manufacturer", device->manufacturer());
     dictionary->SetString("modelId", device->model_id());
     dictionary->SetString("firmwareRevision", device->firmware_revision());
@@ -1028,8 +1062,11 @@ void InternetOptionsHandler::PopulateCellularDetails(
     dictionary->SetString("min", device->min());
     dictionary->SetBoolean("gsm",
         device->technology_family() == chromeos::TECHNOLOGY_FAMILY_GSM);
-    dictionary->SetBoolean("simCardLockEnabled",
-        device->sim_pin_required() == chromeos::SIM_PIN_REQUIRED);
+    SetValueDictionary(
+        dictionary, "simCardLockEnabled",
+        Value::CreateBooleanValue(
+            device->sim_pin_required() == chromeos::SIM_PIN_REQUIRED),
+        cellular_propety_ui_data);
 
     chromeos::MobileConfig* config = chromeos::MobileConfig::GetInstance();
     if (config->IsReady()) {
@@ -1046,7 +1083,8 @@ void InternetOptionsHandler::PopulateCellularDetails(
          it != apn_list.end(); ++it) {
       apn_list_value->Append(CreateDictionaryFromCellularApn(*it));
     }
-    dictionary->Set("providerApnList", apn_list_value);
+    SetValueDictionary(dictionary, "providerApnList", apn_list_value,
+                       cellular_propety_ui_data);
   }
 
   SetActivationButtonVisibility(cellular, dictionary);
@@ -1334,4 +1372,23 @@ void InternetOptionsHandler::FillNetworkInfo(DictionaryValue* dictionary) {
   dictionary->SetBoolean("cellularAvailable", cros_->cellular_available());
   dictionary->SetBoolean("cellularBusy", cros_->cellular_busy());
   dictionary->SetBoolean("cellularEnabled", cros_->cellular_enabled());
+}
+
+void InternetOptionsHandler::SetValueDictionary(
+    DictionaryValue* settings,
+    const char* key,
+    base::Value* value,
+    const chromeos::NetworkPropertyUIData& ui_data) {
+  DictionaryValue* value_dict = new DictionaryValue();
+  // DictionaryValue::Set() takes ownership of |value|.
+  if (value)
+    value_dict->Set("value", value);
+  const base::Value* default_value = ui_data.default_value();
+  if (default_value)
+    value_dict->Set("default", default_value->DeepCopy());
+  if (ui_data.managed())
+    value_dict->SetString("controlledBy", "policy");
+  else if (ui_data.recommended())
+    value_dict->SetString("controlledBy", "recommended");
+  settings->Set(key, value_dict);
 }

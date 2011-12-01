@@ -61,6 +61,8 @@
                 <input id="preferNetworkWifi" type="checkbox">
                 <span i18n-content="inetPreferredNetwork"></span>
               </label>
+              <span class="controlled-setting-indicator" data="preferred"
+                  for="preferNetworkWifi"></span>
             </div>
           </td>
         </tr>
@@ -71,6 +73,8 @@
                 <input id="autoConnectNetworkWifi" type="checkbox">
                 <span i18n-content="inetAutoConnectNetwork"></span>
               </label>
+              <span class="controlled-setting-indicator" data="autoConnect"
+                  for="autoConnectNetworkWifi"></span>
             </div>
           </td>
         </tr>
@@ -180,6 +184,8 @@
               <option value="-1" i18n-content="cellularApnOther">
               </option>
             </select>
+            <span class="controlled-setting-indicator" data="providerApnList"
+                for="selectApn"></span>
           </td>
         </tr>
         <tr class="gsm-only apn-details-view">
@@ -218,6 +224,8 @@
                 <input id="autoConnectNetworkCellular" type="checkbox">
                 <span i18n-content="inetAutoConnectNetwork"></span>
               </label>
+              <span class="controlled-setting-indicator" data="autoConnect"
+                  for="autoConnectNetworkCellular"></span>
             </div>
           </td>
         </tr>
@@ -294,12 +302,16 @@
             <input type="radio" name="iptype" id="ipTypeDHCP" value="1">
             <span i18n-content="useDHCP"></span>
           </label>
+          <span class="controlled-setting-indicator" data="ipconfigDHCP"
+              for="ipTypeDHCP"></span>
         </div>
         <div id="ipTypeStaticDiv" class="radio">
           <label>
             <input type="radio" name="iptype" id="ipTypeStatic" value="0">
             <span i18n-content="useStaticIP"></span>
           </label>
+          <span class="controlled-setting-indicator" data="ipconfigStatic"
+              for="ipTypeStatic"></span>
         </div>
         <div class="suboption">
           <div id="ipConfigManagement" class="settings-list">
@@ -320,15 +332,19 @@
     <div id="cellular-security-options">
       <section>
         <div id="sim-pin-lock" class="checkbox">
-         <label>
-           <input id="sim-card-lock-enabled" type="checkbox">
-           <span i18n-content="lockSimCard"></span>
-         </label>
+          <label>
+            <input id="sim-card-lock-enabled" type="checkbox">
+            <span i18n-content="lockSimCard"></span>
+          </label>
+          <span class="controlled-setting-indicator" data="simCardLockEnabled"
+              for="sim-card-lock-enabled"></span>
         </div>
       </section>
       <section>
         <div id="change-pin-area">
           <button id="change-pin" i18n-content="changePinButton"></button>
+          <span class="controlled-setting-indicator" data="simCardLockEnabled"
+              for="change-pin"></span>
         </div>
       </section>
     </div>

@@ -26,7 +26,7 @@
 
 .network-item {
   -webkit-box-align: center;
-  -webkit-padding-start: 30px;
+  -webkit-padding-start: 10px;
   border: 1px solid rgba(255,255,255,0); /* transparent white */
   border-radius: 2px;
   display: -webkit-box;
@@ -53,6 +53,15 @@
 .network-item[connecting] {
   background-color: hsl(214, 91%, 97%);
   border-color: hsl(214, 91%, 85%);
+}
+
+.network-item > .controlled-setting-indicator {
+  -webkit-margin-end: 5px;
+  width: 16px;
+}
+
+.hide-indicators .network-item > .controlled-setting-indicator {
+  display: none;
 }
 
 .network-item-text {

@@ -44,6 +44,8 @@ cr.define('options', function() {
       options.internet.NetworkElement.decorate($('remembered-list'));
       $('remembered-list').load(templateData.rememberedList);
 
+      this.updatePolicyIndicatorVisibility_();
+
       options.internet.CellularPlanElement.decorate($('planList'));
 
       $('wired-section').hidden = (templateData.wiredList.length == 0);
@@ -109,11 +111,11 @@ cr.define('options', function() {
           data.userApnIndex = -1;
         }
 
-        if (data.providerApnList.length > 0) {
+        if (data.providerApnList.value.length > 0) {
           var iApn = 0;
-          data.apn.apn = data.providerApnList[iApn].apn;
-          data.apn.username = data.providerApnList[iApn].username;
-          data.apn.password = data.providerApnList[iApn].password;
+          data.apn.apn = data.providerApnList.value[iApn].apn;
+          data.apn.username = data.providerApnList.value[iApn].username;
+          data.apn.password = data.providerApnList.value[iApn].password;
           chrome.send('setApn', [String(data.servicePath),
                                  String(data.apn.apn),
                                  String(data.apn.username),
@@ -184,10 +186,11 @@ cr.define('options', function() {
         var data = $('connectionState').data;
         var apnSelector = $('selectApn');
         if (apnSelector[apnSelector.selectedIndex].value != -1) {
+          var apnList = data.providerApnList.value;
           chrome.send('setApn', [String(data.servicePath),
-              String(data.providerApnList[apnSelector.selectedIndex].apn),
-              String(data.providerApnList[apnSelector.selectedIndex].username),
-              String(data.providerApnList[apnSelector.selectedIndex].password)
+              String(apnList[apnSelector.selectedIndex].apn),
+              String(apnList[apnSelector.selectedIndex].username),
+              String(apnList[apnSelector.selectedIndex].password)
           ]);
           data.selectedApn = apnSelector.selectedIndex;
         } else if (apnSelector.selectedIndex == data.userApnIndex) {
@@ -261,6 +264,22 @@ cr.define('options', function() {
       // is used in supporting infrastructure now.
       if (accesslocked && DetailsInternetPage.getInstance().visible)
         this.closeOverlay();
+    },
+
+    /**
+     * Updates the policy indicator visibility. Space is only allocated for the
+     * policy indicators if there is at least one visible.
+     * @private
+     */
+    updatePolicyIndicatorVisibility_: function() {
+      var page = $('internetPage');
+      if (page.querySelectorAll(
+              '.network-item > .controlled-setting-indicator[controlled-by]')
+              .length) {
+        page.classList.remove('hide-indicators');
+      } else {
+        page.classList.add('hide-indicators');
+      }
     }
   };
 
@@ -372,6 +391,8 @@ cr.define('options', function() {
     $('vpn-list').load(data.vpnList);
     $('remembered-list').load(data.rememberedList);
 
+    self.updatePolicyIndicatorVisibility_();
+
     $('wired-section').hidden = (data.wiredList.length == 0);
     $('wireless-section').hidden = (data.wirelessList.length == 0);
     $('vpn-section').hidden = (data.vpnList.length == 0);
@@ -433,17 +454,17 @@ cr.define('options', function() {
     var inetGateway = '';
     var inetDns = '';
     $('ipTypeDHCP').checked = true;
-    if (data.ipconfigStatic) {
-      inetAddress = data.ipconfigStatic.address;
-      inetSubnetAddress = data.ipconfigStatic.subnetAddress;
-      inetGateway = data.ipconfigStatic.gateway;
-      inetDns = data.ipconfigStatic.dns;
+    if (data.ipconfigStatic.value) {
+      inetAddress = data.ipconfigStatic.value.address;
+      inetSubnetAddress = data.ipconfigStatic.value.subnetAddress;
+      inetGateway = data.ipconfigStatic.value.gateway;
+      inetDns = data.ipconfigStatic.value.dns;
       $('ipTypeStatic').checked = true;
-    } else if (data.ipconfigDHCP) {
-      inetAddress = data.ipconfigDHCP.address;
-      inetSubnetAddress = data.ipconfigDHCP.subnetAddress;
-      inetGateway = data.ipconfigDHCP.gateway;
-      inetDns = data.ipconfigDHCP.dns;
+    } else if (data.ipconfigDHCP.value) {
+      inetAddress = data.ipconfigDHCP.value.address;
+      inetSubnetAddress = data.ipconfigDHCP.value.subnetAddress;
+      inetGateway = data.ipconfigDHCP.value.gateway;
+      inetDns = data.ipconfigDHCP.value.dns;
     }
 
     // Hide the dhcp/static radio if needed.
@@ -455,7 +476,9 @@ cr.define('options', function() {
     $('change-proxy-section').hidden = !data.showProxy;
 
     var ipConfigList = $('ipConfigList');
-    ipConfigList.disabled = $('ipTypeDHCP').checked || !data.showStaticIPConfig;
+    ipConfigList.disabled =
+        $('ipTypeDHCP').checked || data.ipconfigStatic.controlledBy ||
+        !data.showStaticIPConfig;
     options.internet.IPConfigList.decorate(ipConfigList);
     ipConfigList.autoExpands = true;
     var model = new ArrayDataModel([]);
@@ -483,11 +506,12 @@ cr.define('options', function() {
 
     $('ipTypeDHCP').addEventListener('click', function(event) {
       // disable ipConfigList and switch back to dhcp values (if any)
-      if (data.ipconfigDHCP) {
-        ipConfigList.dataModel.item(0).value = data.ipconfigDHCP.address;
-        ipConfigList.dataModel.item(1).value = data.ipconfigDHCP.subnetAddress;
-        ipConfigList.dataModel.item(2).value = data.ipconfigDHCP.gateway;
-        ipConfigList.dataModel.item(3).value = data.ipconfigDHCP.dns;
+      if (data.ipconfigDHCP.value) {
+        var config = data.ipconfigDHCP.value;
+        ipConfigList.dataModel.item(0).value = config.address;
+        ipConfigList.dataModel.item(1).value = config.subnetAddress;
+        ipConfigList.dataModel.item(2).value = config.gateway;
+        ipConfigList.dataModel.item(3).value = config.dns;
       }
       ipConfigList.dataModel.updateIndex(0);
       ipConfigList.dataModel.updateIndex(1);
@@ -522,9 +546,9 @@ cr.define('options', function() {
       detailsPage.shared = data.shared;
       $('inetSsid').textContent = data.ssid;
       detailsPage.showPreferred = data.showPreferred;
-      $('preferNetworkWifi').checked = data.preferred;
+      $('preferNetworkWifi').checked = data.preferred.value;
       $('preferNetworkWifi').disabled = !data.remembered;
-      $('autoConnectNetworkWifi').checked = data.autoConnect;
+      $('autoConnectNetworkWifi').checked = data.autoConnect.value;
       $('autoConnectNetworkWifi').disabled = !data.remembered;
       detailsPage.password = data.encrypted;
     } else if(data.type == options.internet.Constants.TYPE_CELLULAR) {
@@ -577,24 +601,25 @@ cr.define('options', function() {
         var otherOption = apnSelector[0];
         data.selectedApn = -1;
         data.userApnIndex = -1;
-        for (var i = 0; i < data.providerApnList.length; i++) {
+        var apnList = data.providerApnList.value;
+        for (var i = 0; i < apnList.length; i++) {
           var option = document.createElement('option');
-          var name = data.providerApnList[i].localizedName;
-          if (name == '' && data.providerApnList[i].name != '')
-            name = data.providerApnList[i].name;
+          var name = apnList[i].localizedName;
+          if (name == '' && apnList[i].name != '')
+            name = apnList[i].name;
           if (name == '')
-            name = data.providerApnList[i].apn;
+            name = apnList[i].apn;
           else
-            name = name + ' (' + data.providerApnList[i].apn + ')';
+            name = name + ' (' + apnList[i].apn + ')';
           option.textContent = name;
           option.value = i;
-          if ((data.apn.apn == data.providerApnList[i].apn &&
-               data.apn.username == data.providerApnList[i].username &&
-               data.apn.password == data.providerApnList[i].password) ||
+          if ((data.apn.apn == apnList[i].apn &&
+               data.apn.username == apnList[i].username &&
+               data.apn.password == apnList[i].password) ||
               (data.apn.apn == '' &&
-               data.lastGoodApn.apn == data.providerApnList[i].apn &&
-               data.lastGoodApn.username == data.providerApnList[i].username &&
-               data.lastGoodApn.password == data.providerApnList[i].password)) {
+               data.lastGoodApn.apn == apnList[i].apn &&
+               data.lastGoodApn.username == apnList[i].username &&
+               data.lastGoodApn.password == apnList[i].password)) {
             data.selectedApn = i;
           }
           // Insert new option before "other" option.
@@ -616,9 +641,9 @@ cr.define('options', function() {
           cr.doc.querySelectorAll('.apn-details-view'),
           true);
 
-        InternetOptions.updateSecurityTab(data.simCardLockEnabled);
+        InternetOptions.updateSecurityTab(data.simCardLockEnabled.value);
       }
-      $('autoConnectNetworkCellular').checked = data.autoConnect;
+      $('autoConnectNetworkCellular').checked = data.autoConnect.value;
       $('autoConnectNetworkCellular').disabled = false;
 
       $('buyplanDetails').hidden = !data.showBuyButton;
@@ -655,6 +680,27 @@ cr.define('options', function() {
       detailsPage.cellular = false;
       detailsPage.gsm = false;
     }
+
+    // Update controlled option indicators.
+    indicators = cr.doc.querySelectorAll(
+        '#detailsInternetPage .controlled-setting-indicator');
+    for (var i = 0; i < indicators.length; i++) {
+      var dataProperty = indicators[i].getAttribute('data');
+      if (dataProperty && data[dataProperty]) {
+        var controlledBy = data[dataProperty].controlledBy;
+        if (controlledBy) {
+          indicators[i].controlledBy = controlledBy;
+          var forElement = $(indicators[i].getAttribute('for'));
+          if (forElement)
+            forElement.disabled = true;
+          if (forElement.type == 'radio' && !forElement.checked)
+            indicators[i].hidden = true;
+        } else {
+          indicators[i].controlledBy = null;
+        }
+      }
+    }
+
     // Don't show page name in address bar and in history to prevent people
     // navigate here by hand and solve issue with page session restore.
     OptionsPage.showPageByName('detailsInternetPage', false);

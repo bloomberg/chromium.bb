@@ -11904,6 +11904,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_JOIN_VPN" desc="The title for the dialog to join a VPN.">
         Join private network
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_MANAGED_NETWORK" desc="Help text to show in the bubble shown on click of the controlled setting indicator on the internet settings page.">
+        This network is configured by your administrator.
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES" desc="In the settings tab, the text next to the checkbox for allowing proxy settings for shared networks.">
         Allow proxies for shared networks
       </message>

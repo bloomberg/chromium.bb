@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/cros/network_ui_data.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/native_widget_types.h"
@@ -128,6 +129,14 @@ class InternetOptionsHandler
   // display the correct icon for that network's signal strength and, in the
   // case of cellular networks, network technology and roaming status.
   void MonitorNetworks();
+
+  // Stores a dictionary under |key| in |settings| that is suitable to be sent
+  // to the webui that contains the actual value of a setting and whether it's
+  // controlled by policy. Takes ownership of |value|.
+  void SetValueDictionary(DictionaryValue* settings,
+                          const char* key,
+                          base::Value* value,
+                          const chromeos::NetworkPropertyUIData& ui_data);
 
   // Convenience pointer to netwrok library (will not change).
   chromeos::NetworkLibrary* cros_;
