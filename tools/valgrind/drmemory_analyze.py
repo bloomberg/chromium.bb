@@ -157,9 +157,11 @@ class DrMemoryAnalyzer:
       return 0
 
     logging.error("Found %i error reports" % len(to_report))
+    sys.stderr.flush()
     for report in to_report:
       self.error_count += 1
-      logging.error("Report #%d\n%s" % (self.error_count, report))
+      logging.info("Report #%d\n%s" % (self.error_count, report))
+      sys.stdout.flush()
     logging.error("Total: %i error reports" % len(to_report))
     sys.stderr.flush()
     return -1
