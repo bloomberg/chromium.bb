@@ -29,7 +29,8 @@ struct BubbleBorder::BorderImages {
         left_arrow(NULL),
         top_arrow(NULL),
         right_arrow(NULL),
-        bottom_arrow(NULL) {
+        bottom_arrow(NULL),
+        border_thickness(0) {
   }
 
   SkBitmap* left;
@@ -44,6 +45,7 @@ struct BubbleBorder::BorderImages {
   SkBitmap* top_arrow;
   SkBitmap* right_arrow;
   SkBitmap* bottom_arrow;
+  int border_thickness;
 };
 
 // static
@@ -202,6 +204,10 @@ void BubbleBorder::GetInsets(gfx::Insets* insets) const {
   insets->Set(top, left, bottom, right);
 }
 
+int BubbleBorder::border_thickness() const {
+  return images_->border_thickness;
+}
+
 int BubbleBorder::SetArrowOffset(int offset, const gfx::Size& contents_size) {
   gfx::Size border_size(contents_size);
   gfx::Insets insets;
@@ -232,6 +238,7 @@ BubbleBorder::BorderImages* BubbleBorder::GetBorderImages(Shadow shadow) {
     shadow_images_->top_arrow = new SkBitmap();
     shadow_images_->right_arrow = new SkBitmap();
     shadow_images_->bottom_arrow = new SkBitmap();
+    shadow_images_->border_thickness = 10;
   } else if (shadow == NO_SHADOW && normal_images_ == NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     normal_images_ = new BorderImages();
@@ -247,6 +254,7 @@ BubbleBorder::BorderImages* BubbleBorder::GetBorderImages(Shadow shadow) {
     normal_images_->top_arrow = rb.GetBitmapNamed(IDR_BUBBLE_T_ARROW);
     normal_images_->right_arrow = rb.GetBitmapNamed(IDR_BUBBLE_R_ARROW);
     normal_images_->bottom_arrow = rb.GetBitmapNamed(IDR_BUBBLE_B_ARROW);
+    normal_images_->border_thickness = 0;
   }
   return shadow == SHADOW ? shadow_images_ : normal_images_;
 }
@@ -503,6 +511,7 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   SkRect rect;
   rect.set(SkIntToScalar(bounds.x()), SkIntToScalar(bounds.y()),
            SkIntToScalar(bounds.right()), SkIntToScalar(bounds.bottom()));
+  rect.inset(-border_->border_thickness(), -border_->border_thickness());
   SkScalar radius = SkIntToScalar(BubbleBorder::GetCornerRadius());
   path.addRoundRect(rect, radius, radius);
   canvas->GetSkCanvas()->drawPath(path, paint);

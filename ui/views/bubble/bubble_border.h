@@ -116,6 +116,9 @@ class VIEWS_EXPORT BubbleBorder : public views::Border {
   // Overridden from views::Border:
   virtual void GetInsets(gfx::Insets* insets) const OVERRIDE;
 
+  // How many pixels the bubble border is from the edge of the images.
+  int border_thickness() const;
+
  private:
   struct BorderImages;
 
