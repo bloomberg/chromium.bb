@@ -410,7 +410,7 @@ Desktop::Desktop()
       mouse_moved_handler_(NULL),
       focused_window_(NULL),
       touch_event_handler_(NULL) {
-  set_name("RootWindow");
+  SetName("RootWindow");
   gfx::Screen::SetInstance(screen_);
   host_->SetDesktop(this);
   last_mouse_location_ = host_->QueryMouseLocation();

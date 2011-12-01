@@ -65,7 +65,7 @@ void CreateLockScreen() {
       AddChild(widget->GetNativeView());
   widget->SetContentsView(lock_view);
   widget->Show();
-  widget->GetNativeView()->set_name("LockView");
+  widget->GetNativeView()->SetName("LockView");
 }
 
 }  // namespace examples

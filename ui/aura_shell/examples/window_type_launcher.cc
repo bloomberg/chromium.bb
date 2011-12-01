@@ -49,7 +49,7 @@ class ModalWindow : public views::WidgetDelegateView,
   static void OpenModalWindow(aura::Window* parent) {
     views::Widget* widget =
         views::Widget::CreateWindowWithParent(new ModalWindow, parent);
-    widget->GetNativeView()->set_name("ModalWindow");
+    widget->GetNativeView()->SetName("ModalWindow");
     widget->Show();
   }
 
@@ -108,7 +108,7 @@ class NonModalTransient : public views::WidgetDelegateView {
   static void OpenNonModalTransient(aura::Window* parent) {
     views::Widget* widget =
         views::Widget::CreateWindowWithParent(new NonModalTransient, parent);
-    widget->GetNativeView()->set_name("NonModalTransient");
+    widget->GetNativeView()->SetName("NonModalTransient");
     widget->Show();
   }
 
@@ -143,7 +143,7 @@ void InitWindowTypeLauncher() {
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new WindowTypeLauncher,
                                             gfx::Rect(120, 150, 400, 300));
-  widget->GetNativeView()->set_name("WindowTypeLauncher");
+  widget->GetNativeView()->SetName("WindowTypeLauncher");
   widget->Show();
 }
 

@@ -10,6 +10,7 @@
 #include "ui/aura_shell/shell.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/accelerator_manager.h"
+#include "ui/gfx/compositor/debug_utils.h"
 #include "ui/gfx/compositor/layer_animation_sequence.h"
 #include "ui/gfx/compositor/layer_animator.h"
 #include "ui/gfx/compositor/screen_rotation.h"
@@ -22,6 +23,7 @@ enum AcceleratorAction {
   TAKE_SCREENSHOT,
 #if !defined(NDEBUG)
   ROTATE_SCREEN,
+  PRINT_LAYER_HIERARCHY,
   TOGGLE_DESKTOP_FULL_SCREEN,
 #endif
 };
@@ -41,6 +43,7 @@ struct AcceleratorData {
 #if !defined(NDEBUG)
   { ui::VKEY_HOME, false, true, false, ROTATE_SCREEN },
   { ui::VKEY_F11, false, true, false, TOGGLE_DESKTOP_FULL_SCREEN },
+  { ui::VKEY_L, false, false, true, PRINT_LAYER_HIERARCHY },
 #endif
 };
 
@@ -96,6 +99,11 @@ bool HandleRotateScreen() {
 
 bool HandleToggleDesktopFullScreen() {
   aura::Desktop::GetInstance()->ToggleFullScreen();
+  return true;
+}
+
+bool HandlePrintLayerHierarchy() {
+  ui::PrintLayerHierarchy(aura::Desktop::GetInstance()->layer());
   return true;
 }
 #endif
@@ -168,6 +176,8 @@ bool ShellAcceleratorController::AcceleratorPressed(
       return HandleRotateScreen();
     case TOGGLE_DESKTOP_FULL_SCREEN:
       return HandleToggleDesktopFullScreen();
+    case PRINT_LAYER_HIERARCHY:
+      return HandlePrintLayerHierarchy();
 #endif
     default:
       NOTREACHED() << "Unhandled action " << it->second;;

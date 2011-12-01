@@ -135,7 +135,7 @@ void CreateWidgetsWindow() {
   gfx::Rect bounds(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight);
   views::Widget* widget =
       views::Widget::CreateWindowWithBounds(new WidgetsWindow, bounds);
-  widget->GetNativeView()->set_name("WidgetsWindow");
+  widget->GetNativeView()->SetName("WidgetsWindow");
   widget->Show();
 }
 
