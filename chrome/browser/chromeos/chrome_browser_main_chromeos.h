@@ -27,8 +27,13 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
-  virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
+
+  // ChromeBrowserMainExtraParts overrodes.
+  virtual void PreProfileInit() OVERRIDE;
+  virtual void PostProfileInit() OVERRIDE;
+  virtual void PreBrowserStart() OVERRIDE;
+  virtual void PostBrowserStart() OVERRIDE;
 
  private:
   scoped_ptr<chromeos::BrightnessObserver> brightness_observer_;
