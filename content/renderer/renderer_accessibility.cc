@@ -81,6 +81,7 @@ RendererAccessibility::RendererAccessibility(RenderViewImpl* render_view)
     : content::RenderViewObserver(render_view),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       browser_root_(NULL),
+      last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
       logging_(false),
       sent_load_complete_(false) {
@@ -162,6 +163,19 @@ void RendererAccessibility::PostAccessibilityNotification(
     PostAccessibilityNotification(
         document.accessibilityObject(),
         WebKit::WebAccessibilityNotificationLoadComplete);
+  }
+
+  gfx::Size scroll_offset = document.frame()->scrollOffset();
+  if (scroll_offset != last_scroll_offset_) {
+    // Make sure the browser is always aware of the scroll position of
+    // the root document element by posting a generic notification that
+    // will update it.
+    // TODO(dmazzoni): remove this as soon as
+    // https://bugs.webkit.org/show_bug.cgi?id=73460 is fixed.
+    last_scroll_offset_ = scroll_offset;
+    PostAccessibilityNotification(
+        document.accessibilityObject(),
+        WebKit::WebAccessibilityNotificationLayoutComplete);
   }
 
   if (notification == WebKit::WebAccessibilityNotificationLoadComplete)

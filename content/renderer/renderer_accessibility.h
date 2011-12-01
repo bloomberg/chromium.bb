@@ -106,6 +106,11 @@ class RendererAccessibility : public content::RenderViewObserver {
   // A map from IDs to nodes in the browser tree.
   base::hash_map<int32, BrowserTreeNode*> browser_id_map_;
 
+  // The most recently observed scroll offset of the root document element.
+  // TODO(dmazzoni): remove once https://bugs.webkit.org/show_bug.cgi?id=73460
+  // is fixed.
+  gfx::Size last_scroll_offset_;
+
   // Set if we are waiting for an accessibility notification ack.
   bool ack_pending_;
 
