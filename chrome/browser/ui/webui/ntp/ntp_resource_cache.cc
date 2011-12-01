@@ -183,6 +183,7 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   pref_change_registrar_.Add(prefs::kShowBookmarkBar, this);
   pref_change_registrar_.Add(prefs::kHomePageIsNewTabPage, this);
   pref_change_registrar_.Add(prefs::kNTPShownPage, this);
+  pref_change_registrar_.Add(prefs::kSyncPromoShowNTPBubble, this);
 }
 
 NTPResourceCache::~NTPResourceCache() {}
