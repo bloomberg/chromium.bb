@@ -261,7 +261,6 @@ stdlib/tst-strtod
 stdlib/tst-strtod3
 stdlib/tst-strtod4
 stdlib/tst-strtod5
-stdlib/tst-strtoll
 stdlib/tst-system
 string/test-memccpy
 string/test-memchr
