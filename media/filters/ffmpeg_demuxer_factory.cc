@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop.h"
+#include "googleurl/src/gurl.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_demuxer_factory.h"
 
@@ -28,14 +29,14 @@ static void DemuxerInitDone(const DemuxerFactory::BuildCallback& cb,
 
 static void InitializeDemuxerBasedOnDataSourceStatus(
     const DemuxerFactory::BuildCallback& cb,
-    MessageLoop* loop,
+    MessageLoop* loop, bool local_source,
     PipelineStatus status, DataSource* data_source) {
   if (status != PIPELINE_OK) {
     cb.Run(status, NULL);
     return;
   }
   DCHECK(data_source);
-  scoped_refptr<FFmpegDemuxer> demuxer = new FFmpegDemuxer(loop);
+  scoped_refptr<FFmpegDemuxer> demuxer = new FFmpegDemuxer(loop, local_source);
   demuxer->Initialize(
       data_source,
       base::Bind(&DemuxerInitDone, cb, demuxer));
@@ -43,9 +44,12 @@ static void InitializeDemuxerBasedOnDataSourceStatus(
 
 void FFmpegDemuxerFactory::Build(const std::string& url,
                                  const BuildCallback& cb) {
+  GURL gurl = GURL(url);
+  bool local_source = !gurl.SchemeIs("http") && !gurl.SchemeIs("https");
   data_source_factory_->Build(
       url,
-      base::Bind(&InitializeDemuxerBasedOnDataSourceStatus, cb, loop_));
+      base::Bind(&InitializeDemuxerBasedOnDataSourceStatus,
+                 cb, loop_, local_source));
 }
 
 DemuxerFactory* FFmpegDemuxerFactory::Clone() const {

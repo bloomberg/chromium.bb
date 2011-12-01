@@ -49,6 +49,15 @@ class DownloadRateMonitorTest : public ::testing::Test {
     return bytes_buffered;
   }
 
+  void StartMonitor(int bitrate) {
+    StartMonitor(bitrate, false, false);
+  }
+
+  void StartMonitor(int bitrate, bool streaming, bool local_source) {
+    monitor_.Start(base::Bind(&DownloadRateMonitorTest::CanPlayThrough,
+                   base::Unretained(this)), bitrate, streaming, local_source);
+  }
+
   DownloadRateMonitor monitor_;
 
  private:
@@ -59,8 +68,7 @@ TEST_F(DownloadRateMonitorTest, DownloadRateGreaterThanBitrate) {
   static const int media_bitrate = 1024 * 1024 * 8;
 
   // Simulate downloading at double the media's bitrate.
-  monitor_.Start(base::Bind(&DownloadRateMonitorTest::CanPlayThrough,
-                            base::Unretained(this)), media_bitrate);
+  StartMonitor(media_bitrate);
   EXPECT_CALL(*this, CanPlayThrough());
   SimulateNetwork(1, 0, 2 * media_bitrate / 8, 1000, 10);
 }
@@ -72,8 +80,7 @@ TEST_F(DownloadRateMonitorTest, DownloadRateGreaterThanBitrate_Pause) {
   static const int download_byte_rate = 1.1 * media_bitrate / 8;
 
   // Start downloading faster than the media's bitrate.
-  monitor_.Start(base::Bind(&DownloadRateMonitorTest::CanPlayThrough,
-                            base::Unretained(this)), media_bitrate);
+  StartMonitor(media_bitrate);
   EXPECT_CALL(*this, CanPlayThrough());
   int buffered = SimulateNetwork(1, 0, download_byte_rate, 1000, 2);
 
@@ -87,8 +94,7 @@ TEST_F(DownloadRateMonitorTest, DownloadRateGreaterThanBitrate_SeekForward) {
 
   // Start downloading faster than the media's bitrate.
   EXPECT_CALL(*this, CanPlayThrough());
-  monitor_.Start(base::Bind(&DownloadRateMonitorTest::CanPlayThrough,
-                            base::Unretained(this)), media_bitrate);
+  StartMonitor(media_bitrate);
   SimulateNetwork(1, 0, download_byte_rate, 1000, 2);
 
   // Then seek forward mid-file and continue downloading at same rate.
@@ -100,8 +106,7 @@ TEST_F(DownloadRateMonitorTest, DownloadRateGreaterThanBitrate_SeekBackward) {
   static const int download_byte_rate = 1.1 * media_bitrate / 8;
 
   // Start downloading faster than the media's bitrate, in middle of file.
-  monitor_.Start(base::Bind(&DownloadRateMonitorTest::CanPlayThrough,
-                            base::Unretained(this)), media_bitrate);
+  StartMonitor(media_bitrate);
   SimulateNetwork(1, kMediaSizeInBytes / 2, download_byte_rate, 1000, 2);
 
   // Then seek back to beginning and continue downloading at same rate.
@@ -115,29 +120,32 @@ TEST_F(DownloadRateMonitorTest, DownloadRateLessThanBitrate) {
   // Simulate downloading at half the media's bitrate.
   EXPECT_CALL(*this, CanPlayThrough())
       .Times(0);
-  monitor_.Start(base::Bind(&DownloadRateMonitorTest::CanPlayThrough,
-                            base::Unretained(this)), media_bitrate);
+  StartMonitor(media_bitrate);
   SimulateNetwork(1, 0, media_bitrate / 8 / 2, 1000, 10);
 }
 
-TEST_F(DownloadRateMonitorTest, MediaIsLoaded) {
+TEST_F(DownloadRateMonitorTest, MediaSourceIsLocal) {
   static const int media_bitrate = 1024 * 1024 * 8;
 
-  monitor_.set_loaded(true);
-
-  // Simulate no data downloaded (source is already loaded).
+  // Simulate no data downloaded.
   EXPECT_CALL(*this, CanPlayThrough());
-  monitor_.Start(base::Bind(&DownloadRateMonitorTest::CanPlayThrough,
-                            base::Unretained(this)), media_bitrate);
-  SimulateNetwork(1, 0, 0, 1000, 10);
+  StartMonitor(media_bitrate, false, true);
+}
+
+TEST_F(DownloadRateMonitorTest, MediaSourceIsStreaming) {
+  static const int media_bitrate = 1024 * 1024 * 8;
+
+  // Simulate downloading at the media's bitrate while streaming.
+  EXPECT_CALL(*this, CanPlayThrough());
+  StartMonitor(media_bitrate, true, false);
+  SimulateNetwork(1, 0, media_bitrate / 8, 1000, 10);
 }
 
 TEST_F(DownloadRateMonitorTest, VeryFastDownloadRate) {
   static const int media_bitrate = 1024 * 1024 * 8;
 
   // Simulate downloading half the video very quickly in one chunk.
-  monitor_.Start(base::Bind(&DownloadRateMonitorTest::CanPlayThrough,
-                            base::Unretained(this)), media_bitrate);
+  StartMonitor(media_bitrate);
   EXPECT_CALL(*this, CanPlayThrough());
   SimulateNetwork(1, 0, kMediaSizeInBytes / 2, 10, 1);
 }
@@ -147,8 +155,7 @@ TEST_F(DownloadRateMonitorTest, DownloadEntireVideo) {
   static const int media_bitrate = kMediaSizeInBytes * 8 / seconds_of_data;
 
   // Simulate downloading entire video at half the bitrate of the video.
-  monitor_.Start(base::Bind(&DownloadRateMonitorTest::CanPlayThrough,
-                            base::Unretained(this)), media_bitrate);
+  StartMonitor(media_bitrate);
   EXPECT_CALL(*this, CanPlayThrough());
   SimulateNetwork(1, 0, media_bitrate / 8 / 2, 1000, seconds_of_data * 2);
 }

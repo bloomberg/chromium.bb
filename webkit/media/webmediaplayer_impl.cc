@@ -291,9 +291,14 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url) {
     }
 
     // TODO(wjia): add audio decoder handling when it's available.
-    if (has_video || has_audio)
+    if (has_video || has_audio) {
+      // TODO(vrk/wjia): Setting true for local_source is under the assumption
+      // that the MediaStream represents a local webcam. This will need to
+      // change in the future when GetVideoDecoder is no longer hardcoded to
+      // only return CaptureVideoDecoders.
       filter_collection_->SetDemuxerFactory(
-          new media::DummyDemuxerFactory(has_video, has_audio));
+          new media::DummyDemuxerFactory(has_video, has_audio, true));
+    }
   }
 
   // Handle any volume changes that occured before load().
@@ -746,14 +751,11 @@ void WebMediaPlayerImpl::OnPipelineInitialize(PipelineStatus status) {
                             is_accelerated_compositing_active_);
     }
 
-    if (pipeline_->IsLoaded())
+    if (pipeline_->IsLocalSource())
       SetNetworkState(WebKit::WebMediaPlayer::Loaded);
 
     SetReadyState(WebKit::WebMediaPlayer::HaveMetadata);
-    // Fire canplaythrough immediately after playback begins because of
-    // crbug.com/105163.
-    // TODO(vrk): set ready state to HaveFutureData when bug above is fixed.
-    SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
+    SetReadyState(WebKit::WebMediaPlayer::HaveFutureData);
   } else {
     // TODO(hclam): should use |status| to determine the state
     // properly and reports error using MediaError.
@@ -842,10 +844,7 @@ void WebMediaPlayerImpl::OnNetworkEvent(NetworkEvent type) {
       SetNetworkState(WebKit::WebMediaPlayer::Idle);
       break;
     case media::CAN_PLAY_THROUGH:
-      // Temporarily disable delayed firing of CAN_PLAY_THROUGH due to
-      // crbug.com/105163.
-      // TODO(vrk): uncomment code below when bug above is fixed.
-      // SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
+      SetReadyState(WebKit::WebMediaPlayer::HaveEnoughData);
       break;
     default:
       NOTREACHED();

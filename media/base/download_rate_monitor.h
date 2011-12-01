@@ -25,7 +25,8 @@ class MEDIA_EXPORT DownloadRateMonitor {
   // Begin measuring download rate. The monitor will run |canplaythrough_cb|
   // when it believes the media can be played back without needing to pause to
   // buffer. |media_bitrate| is the bitrate of the video.
-  void Start(const base::Closure& canplaythrough_cb, int media_bitrate);
+  void Start(const base::Closure& canplaythrough_cb, int media_bitrate,
+             bool streaming, bool local_source);
 
   // Notifies the monitor of the current number of bytes buffered by the media
   // file at what timestamp. The monitor expects subsequent calls to
@@ -39,8 +40,6 @@ class MEDIA_EXPORT DownloadRateMonitor {
   void SetNetworkActivity(bool is_downloading_data);
 
   void set_total_bytes(int64 total_bytes) { total_bytes_ = total_bytes; }
-
-  void set_loaded(bool loaded) { loaded_ = loaded; }
 
   // Stop monitoring download rate. This does not discard previously learned
   // information, but it will no longer factor incoming information into its
@@ -137,8 +136,9 @@ class MEDIA_EXPORT DownloadRateMonitor {
   // Amount of bytes buffered.
   int64 buffered_bytes_;
 
-  // True if the media file is a fully loaded source, e.g. file:// protocol.
-  bool loaded_;
+  // True if the media file is from a local source, e.g. file:// protocol or a
+  // webcam stream.
+  bool local_source_;
 
   // Bitrate of the media file, 0 if unknown.
   int bitrate_;
@@ -146,6 +146,9 @@ class MEDIA_EXPORT DownloadRateMonitor {
   // True if the monitor has not yet started or has been stopped, false
   // otherwise.
   bool stopped_;
+
+  // True if the data source is a streaming source, false otherwise.
+  bool streaming_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadRateMonitor);
 };

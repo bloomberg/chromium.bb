@@ -56,15 +56,9 @@ class MEDIA_EXPORT FilterHost {
   // Sets the natural size of the video output in pixel units.
   virtual void SetNaturalVideoSize(const gfx::Size& size) = 0;
 
-  // Sets the flag to indicate that we are doing streaming.
-  virtual void SetStreaming(bool streaming) = 0;
-
   // Notifies that this filter has ended, typically only called by filter graph
   // endpoints such as renderers.
   virtual void NotifyEnded() = 0;
-
-  // Sets the flag to indicate that our media is now loaded.
-  virtual void SetLoaded(bool loaded) = 0;
 
   // Sets the flag to indicate current network activity.
   virtual void SetNetworkActivity(bool is_downloading_data) = 0;

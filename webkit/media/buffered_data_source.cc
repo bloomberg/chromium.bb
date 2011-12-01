@@ -45,7 +45,6 @@ BufferedDataSource::BufferedDataSource(
     media::MediaLog* media_log)
     : total_bytes_(kPositionNotSpecified),
       buffered_bytes_(0),
-      loaded_(false),
       streaming_(false),
       frame_(frame),
       loader_(NULL),
@@ -431,7 +430,6 @@ void BufferedDataSource::HttpInitialStartCallback(int error) {
     // TODO(hclam): Needs more thinking about supporting servers without range
     // request or their partial response is not complete.
     total_bytes_ = instance_size;
-    loaded_ = false;
     streaming_ = (instance_size == kPositionNotSpecified) ||
         !loader_->range_supported();
   } else {
@@ -501,7 +499,6 @@ void BufferedDataSource::NonHttpInitialStartCallback(int error) {
   if (success) {
     total_bytes_ = instance_size;
     buffered_bytes_ = total_bytes_;
-    loaded_ = true;
   } else {
     loader_->Stop();
   }
@@ -616,7 +613,7 @@ void BufferedDataSource::NetworkEventCallback() {
 
   // In case of non-HTTP request we don't need to report network events,
   // so return immediately.
-  if (loaded_)
+  if (!url_.SchemeIs(kHttpScheme) && !url_.SchemeIs(kHttpsScheme))
     return;
 
   bool is_downloading_data = loader_->is_downloading_data();
@@ -656,11 +653,6 @@ void BufferedDataSource::UpdateHostState_Locked() {
   media::FilterHost* filter_host = host();
   if (!filter_host)
     return;
-
-  filter_host->SetLoaded(loaded_);
-
-  if (streaming_)
-    filter_host->SetStreaming(true);
 
   if (total_bytes_ != kPositionNotSpecified)
     filter_host->SetTotalBytes(total_bytes_);

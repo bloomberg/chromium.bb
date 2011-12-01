@@ -33,8 +33,6 @@ class MockFilterHost : public FilterHost {
   MOCK_METHOD1(SetTotalBytes, void(int64 total_bytes));
   MOCK_METHOD1(SetBufferedBytes, void(int64 buffered_bytes));
   MOCK_METHOD1(SetNaturalVideoSize, void(const gfx::Size& size));
-  MOCK_METHOD1(SetStreaming, void(bool streamed));
-  MOCK_METHOD1(SetLoaded, void(bool loaded));
   MOCK_METHOD1(SetNetworkActivity, void(bool network_activity));
   MOCK_METHOD0(NotifyEnded, void());
   MOCK_METHOD0(DisableAudioRenderer, void());

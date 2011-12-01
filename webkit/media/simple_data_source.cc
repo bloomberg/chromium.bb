@@ -352,8 +352,6 @@ void SimpleDataSource::UpdateHostState() {
   if (host()) {
     host()->SetTotalBytes(size_);
     host()->SetBufferedBytes(size_);
-    // If scheme is file or data, say we are loaded.
-    host()->SetLoaded(url_.SchemeIsFile() || url_.SchemeIs(kDataScheme));
   }
 }
 

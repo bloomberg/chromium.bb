@@ -84,7 +84,7 @@ class SimpleDataSourceTest : public testing::Test {
     MessageLoop::current()->RunAllPending();
   }
 
-  void RequestSucceeded(bool is_loaded) {
+  void RequestSucceeded() {
     WebURLResponse response(gurl_);
     response.setExpectedContentLength(kDataSize);
 
@@ -93,11 +93,8 @@ class SimpleDataSourceTest : public testing::Test {
     EXPECT_TRUE(data_source_->GetSize(&size));
     EXPECT_EQ(kDataSize, size);
 
-    for (int i = 0; i < kDataSize; ++i) {
+    for (int i = 0; i < kDataSize; ++i)
       data_source_->didReceiveData(NULL, data_ + i, 1, 1);
-    }
-
-    EXPECT_CALL(host_, SetLoaded(is_loaded));
 
     InSequence s;
     EXPECT_CALL(host_, SetTotalBytes(kDataSize));
@@ -170,21 +167,21 @@ class SimpleDataSourceTest : public testing::Test {
 TEST_F(SimpleDataSourceTest, InitializeHTTP) {
   InitializeDataSource(kHttpUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
-  RequestSucceeded(false);
+  RequestSucceeded();
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeHTTPS) {
   InitializeDataSource(kHttpsUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
-  RequestSucceeded(false);
+  RequestSucceeded();
   DestroyDataSource();
 }
 
 TEST_F(SimpleDataSourceTest, InitializeFile) {
   InitializeDataSource(kFileUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
-  RequestSucceeded(true);
+  RequestSucceeded();
   DestroyDataSource();
 }
 
@@ -197,7 +194,6 @@ TEST_F(SimpleDataSourceTest, InitializeData) {
   data_source_->set_host(&host_);
   data_source_->SetURLLoaderForTest(url_loader_);
 
-  EXPECT_CALL(host_, SetLoaded(true));
   EXPECT_CALL(host_, SetTotalBytes(sizeof(kDataUrlDecoded)));
   EXPECT_CALL(host_, SetBufferedBytes(sizeof(kDataUrlDecoded)));
 
@@ -233,7 +229,7 @@ TEST_F(SimpleDataSourceTest, StopWhenDownloading) {
 TEST_F(SimpleDataSourceTest, AsyncRead) {
   InitializeDataSource(kFileUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
-  RequestSucceeded(true);
+  RequestSucceeded();
   AsyncRead();
   DestroyDataSource();
 }
@@ -245,7 +241,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
   // Make sure no redirect case works as expected.
   InitializeDataSource(kHttpUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
-  RequestSucceeded(false);
+  RequestSucceeded();
   EXPECT_TRUE(data_source_->HasSingleOrigin());
   DestroyDataSource();
 
@@ -253,7 +249,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
   InitializeDataSource(kHttpUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
   Redirect(kHttpRedirectToSameDomainUrl1);
-  RequestSucceeded(false);
+  RequestSucceeded();
   EXPECT_TRUE(data_source_->HasSingleOrigin());
   DestroyDataSource();
 
@@ -262,7 +258,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
   Redirect(kHttpRedirectToSameDomainUrl1);
   Redirect(kHttpRedirectToSameDomainUrl2);
-  RequestSucceeded(false);
+  RequestSucceeded();
   EXPECT_TRUE(data_source_->HasSingleOrigin());
   DestroyDataSource();
 
@@ -270,7 +266,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
   InitializeDataSource(kHttpUrl,
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
   Redirect(kHttpRedirectToDifferentDomainUrl1);
-  RequestSucceeded(false);
+  RequestSucceeded();
   EXPECT_FALSE(data_source_->HasSingleOrigin());
   DestroyDataSource();
 
@@ -279,7 +275,7 @@ TEST_F(SimpleDataSourceTest, HasSingleOrigin) {
                        media::NewExpectedStatusCB(media::PIPELINE_OK));
   Redirect(kHttpRedirectToSameDomainUrl1);
   Redirect(kHttpRedirectToDifferentDomainUrl1);
-  RequestSucceeded(false);
+  RequestSucceeded();
   EXPECT_FALSE(data_source_->HasSingleOrigin());
   DestroyDataSource();
 }

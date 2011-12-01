@@ -14,7 +14,7 @@ namespace media {
 
 class MEDIA_EXPORT DummyDemuxerFactory : public DemuxerFactory {
  public:
-  DummyDemuxerFactory(bool has_video, bool has_audio);
+  DummyDemuxerFactory(bool has_video, bool has_audio, bool local_source);
   virtual ~DummyDemuxerFactory();
 
   // DemuxerFactory methods.
@@ -24,6 +24,7 @@ class MEDIA_EXPORT DummyDemuxerFactory : public DemuxerFactory {
  private:
   bool has_video_;
   bool has_audio_;
+  bool local_source_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DummyDemuxerFactory);
 };

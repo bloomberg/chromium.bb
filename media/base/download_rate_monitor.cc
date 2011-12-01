@@ -73,8 +73,11 @@ DownloadRateMonitor::DownloadRateMonitor() {
 }
 
 void DownloadRateMonitor::Start(
-    const base::Closure& canplaythrough_cb, int media_bitrate) {
+    const base::Closure& canplaythrough_cb, int media_bitrate,
+    bool streaming, bool local_source) {
   canplaythrough_cb_ = canplaythrough_cb;
+  streaming_ = streaming;
+  local_source_ = local_source;
   stopped_ = false;
   bitrate_ = media_bitrate;
   current_sample_.Reset();
@@ -139,9 +142,10 @@ void DownloadRateMonitor::Reset() {
   is_downloading_data_ = false;
   total_bytes_ = -1;
   buffered_bytes_ = 0;
-  loaded_ = false;
+  local_source_ = false;
   bitrate_ = 0;
   stopped_ = true;
+  streaming_ = false;
 }
 
 DownloadRateMonitor::~DownloadRateMonitor() { }
@@ -198,14 +202,23 @@ bool DownloadRateMonitor::ShouldNotifyCanPlayThrough() {
   if (has_notified_can_play_through_)
     return false;
 
-  // If the media is from a local file (|loaded_|) or if all bytes are
-  // buffered, fire CanPlayThrough.
-  if (loaded_ || buffered_bytes_ == total_bytes_)
+  // Fire CanPlayThrough immediately if the source is local or streaming.
+  //
+  // NOTE: It is a requirement for CanPlayThrough to fire immediately if the
+  // source is local, but the choice to optimistically fire the event for any
+  // streaming media element is a design decision that may need to be tweaked.
+  if (local_source_ || streaming_)
     return true;
 
-  // Cannot approximate when the media can play through if bitrate is unknown.
+  // If all bytes are buffered, fire CanPlayThrough.
+  if (buffered_bytes_ == total_bytes_)
+    return true;
+
+  // If bitrate is unknown, optimistically fire CanPlayThrough immediately.
+  // This is so a video with an unknown bitrate with the "autoplay" attribute
+  // will not wait until the entire file is downloaded before playback begins.
   if (bitrate_ <= 0)
-    return false;
+    return true;
 
   float bytes_needed_per_second = bitrate_ / 8;
   float download_rate = ApproximateDownloadByteRate();

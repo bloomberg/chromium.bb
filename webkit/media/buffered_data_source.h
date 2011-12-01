@@ -147,9 +147,6 @@ class BufferedDataSource : public WebDataSource {
   int64 total_bytes_;
   int64 buffered_bytes_;
 
-  // True if this data source is considered loaded.
-  bool loaded_;
-
   // This value will be true if this data source can only support streaming.
   // i.e. range request is not supported.
   bool streaming_;

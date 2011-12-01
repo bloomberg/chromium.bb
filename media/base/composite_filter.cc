@@ -27,9 +27,7 @@ class CompositeFilter::FilterHostImpl : public FilterHost {
   virtual void SetTotalBytes(int64 total_bytes) OVERRIDE;
   virtual void SetBufferedBytes(int64 buffered_bytes) OVERRIDE;
   virtual void SetNaturalVideoSize(const gfx::Size& size) OVERRIDE;
-  virtual void SetStreaming(bool streaming) OVERRIDE;
   virtual void NotifyEnded() OVERRIDE;
-  virtual void SetLoaded(bool loaded) OVERRIDE;
   virtual void SetNetworkActivity(bool network_activity) OVERRIDE;
   virtual void DisableAudioRenderer() OVERRIDE;
   virtual void SetCurrentReadPosition(int64 offset) OVERRIDE;
@@ -515,16 +513,8 @@ void CompositeFilter::FilterHostImpl::SetNaturalVideoSize(
   host_->SetNaturalVideoSize(size);
 }
 
-void CompositeFilter::FilterHostImpl::SetStreaming(bool streaming) {
-  host_->SetStreaming(streaming);
-}
-
 void CompositeFilter::FilterHostImpl::NotifyEnded() {
   host_->NotifyEnded();
-}
-
-void CompositeFilter::FilterHostImpl::SetLoaded(bool loaded) {
-  host_->SetLoaded(loaded);
 }
 
 void CompositeFilter::FilterHostImpl::SetNetworkActivity(

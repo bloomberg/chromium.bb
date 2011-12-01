@@ -110,7 +110,6 @@ class BufferedDataSourceTest : public testing::Test {
   void InitializeWith206Response() {
     Initialize(media::PIPELINE_OK);
 
-    EXPECT_CALL(host_, SetLoaded(false));
     EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
     EXPECT_CALL(host_, SetBufferedBytes(0));
     Respond(response_generator_.Generate206(0));
@@ -198,7 +197,6 @@ class BufferedDataSourceTest : public testing::Test {
 TEST_F(BufferedDataSourceTest, Range_Supported) {
   Initialize(media::PIPELINE_OK);
 
-  EXPECT_CALL(host_, SetLoaded(false));
   EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
   EXPECT_CALL(host_, SetBufferedBytes(0));
   Respond(response_generator_.Generate206(0));
@@ -233,13 +231,12 @@ TEST_F(BufferedDataSourceTest, Range_NotSupported) {
   Respond(response_generator_.Generate200());
 
   // Now it'll succeed.
-  EXPECT_CALL(host_, SetLoaded(false));
   EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
   EXPECT_CALL(host_, SetBufferedBytes(0));
-  EXPECT_CALL(host_, SetStreaming(true));
   Respond(response_generator_.Generate200());
 
   EXPECT_TRUE(data_source_->loading());
+  EXPECT_TRUE(data_source_->IsStreaming());
   Stop();
 }
 
@@ -265,7 +262,6 @@ TEST_F(BufferedDataSourceTest, Range_MissingContentLength) {
   Initialize(media::PIPELINE_OK);
 
   // It'll manage without a Content-Length response.
-  EXPECT_CALL(host_, SetLoaded(false));
   EXPECT_CALL(host_, SetTotalBytes(response_generator_.content_length()));
   EXPECT_CALL(host_, SetBufferedBytes(0));
   Respond(response_generator_.Generate206(
