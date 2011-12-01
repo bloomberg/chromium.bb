@@ -4,8 +4,6 @@
 
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 
-#include <string>
-
 #include "base/command_line.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
@@ -39,7 +37,6 @@
 #include "content/browser/tab_contents/tab_contents.h"
 #include "content/browser/tab_contents/tab_contents_delegate.h"
 #include "content/browser/tab_contents/tab_contents_view.h"
-#include "content/browser/webui/web_ui.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/common/view_messages.h"

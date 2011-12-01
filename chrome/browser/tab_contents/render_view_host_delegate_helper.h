@@ -7,6 +7,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 
 #include "base/basictypes.h"
 #include "content/browser/webui/web_ui.h"
@@ -14,7 +15,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/common/window_container_type.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebPopupType.h"
-#include "ui/gfx/rect.h"
 #include "webkit/glue/webpreferences.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -33,25 +33,16 @@ class BrowserContext;
 class RenderProcessHost;
 }
 
+namespace gfx {
+class Rect;
+}
+
 // Provides helper methods that provide common implementations of some
 // RenderViewHostDelegate::View methods.
 class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
  public:
   RenderViewHostDelegateViewHelper();
   virtual ~RenderViewHostDelegateViewHelper();
-
-  // Creates a new renderer for window.open. This will either be a
-  // BackgroundContents (if the window_container_type ==
-  // WINDOW_CONTAINER_TYPE_BACKGROUND and permissions allow) or a TabContents.
-  // If a TabContents is created, it is returned. Otherwise NULL is returned.
-  TabContents* CreateNewWindow(
-      int route_id,
-      Profile* profile,
-      SiteInstance* site,
-      WebUI::TypeID webui_type,
-      RenderViewHostDelegate* opener,
-      WindowContainerType window_container_type,
-      const string16& frame_name);
 
   // Creates a new RenderWidgetHost and saves it for later retrieval by
   // GetCreatedWidget.
@@ -96,6 +87,19 @@ class RenderViewHostDelegateViewHelper : public content::NotificationObserver {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Creates a new renderer for window.open. This will either be a
+  // BackgroundContents (if the window_container_type ==
+  // WINDOW_CONTAINER_TYPE_BACKGROUND and permissions allow) or a TabContents.
+  // If a TabContents is created, it is returned. Otherwise NULL is returned.
+  TabContents* CreateNewWindow(
+      int route_id,
+      Profile* profile,
+      SiteInstance* site,
+      WebUI::TypeID webui_type,
+      RenderViewHostDelegate* opener,
+      WindowContainerType window_container_type,
+      const string16& frame_name);
 
   BackgroundContents* MaybeCreateBackgroundContents(
       int route_id,
